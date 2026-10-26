@@ -7,36 +7,36 @@ hand. A **Presets** category sits at the top of the appearance group (above
 
 ## Shapes
 
-When a **shape** element is right-clicked — on its own, or as part of a
-multi-selection that contains one or more shapes — the menu shows a **Presets**
+When a **shape** element is right-clicked (on its own, or as part of a
+multi-selection that contains one or more shapes), the menu shows a **Presets**
 category with a single row of one-click looks, plus a reset. In a
 multi-selection the chosen preset (or reset) applies to **every** selected
 shape at once, in a single history step; the active-tile highlight reads off
-the first selected shape. The dedicated **icon** glyph is excluded — it has no
+the first selected shape. The dedicated **icon** glyph is excluded, as it has no
 fill / border to preset:
 
-- **Style presets** — one-click looks derived from the active theme, one
+- **Style presets**: one-click looks derived from the active theme, one
   flat 4-wide grid ordered in **four tiers**, each tier quiet → loud so the
   grid reads as a run of ramps. The tiers are an ordering only: headings over
   them were tried and dropped, since they cost more menu height than they
   earned.
-  - **Theme** — the accent at rising intensity: the theme's own look first
+  - **Theme**: the accent at rising intensity: the theme's own look first
     (plus a card per branch hue on multi-colour themes), then Soft / Tinted /
     Solid / Bold.
-  - **Neutral** — theme-independent greys: Ghost / Paper / Muted / Slate /
+  - **Neutral**: theme-independent greys: Ghost / Paper / Muted / Slate /
     Inked. Paper is a plain white card with a hairline grey edge; Slate a
     filled mid-grey, emphasis without the accent.
-  - **Border** — line treatments: Hairline / Outline / Dotted / Dash-Dot /
+  - **Border**: line treatments: Hairline / Outline / Dotted / Dash-Dot /
     Frame. Hairline is the accent as a thin line with the label in the same
     colour (a line drawing); Dash-Dot carries the `dash-dot` border pattern.
-  - **Status** — the semantic set, the same under every theme: Info /
+  - **Status**: the semantic set, the same under every theme: Info /
     Success / Warning / Danger / Highlight (violet, "look here", for a
     callout that is none of the four states).
 
   Each preset is a _complete_ style: it sets the shape's fill, border
   (stroke) and text colour AND a matching border weight + pattern together
   (Bold → thick, Outline → dashed, Dotted → dotted, Dash-Dot → dash-dot,
-  Frame → thick, Ghost → thin dashed, Hairline / Paper → thin) — but **never
+  Frame → thick, Ghost → thin dashed, Hairline / Paper → thin), but **never
   the corner radius**: radius is a silhouette choice the user makes
   separately, and presets clobbering it read as the preset breaking the shape
   (the radius-defined Pill preset left with that rule; a stored 'pill'
@@ -50,7 +50,7 @@ fill / border to preset:
   radius controls in the **Border** category remain for fine-tuning after a
   preset.
 
-- **Reset to Default** — clears the shape's colour overrides back to the
+- **Reset to Default**: clears the shape's colour overrides back to the
   theme and removes border weight / pattern / radius overrides, returning the
   shape to its theme default in one click.
 
@@ -59,7 +59,7 @@ fill / border to preset:
 A colour preset is theme-relative, not a frozen set of hex values. When applied
 to a shape we store the preset's **stable id** (e.g. `bold`, `soft`,
 `branch-0`) on the shape alongside the concrete colours it wrote. Changing the
-diagram's **theme** then re-derives the bound preset for the new theme — a
+diagram's **theme** then re-derives the bound preset for the new theme: a
 shape on the **Bold** preset becomes the new theme's Bold look rather than
 staying pinned to the previous theme's colours. The binding is dropped the
 moment the user hand-edits any of the shape's colours or resets it to theme
@@ -72,7 +72,7 @@ out in whatever theme the tab is created with.
 On a desktop pointer, **hovering** a preset tile shows it **live** on the
 selected element(s) so the user can compare looks at a glance; the change only
 sticks on **click**. Moving the pointer off the tile reverts to the pre-hover
-look. The preview is ephemeral — it never lands an undo step, and is reverted
+look. The preview is ephemeral: it never lands an undo step, and is reverted
 before the click commits, so undo snapshots the true pre-hover state. Touch / pen
 input does not preview (a tap is the commit).
 
@@ -102,8 +102,8 @@ a drag in its colour square never lands a history step.
 
 ## Arrows
 
-When an **arrow** is right-clicked — on its own, or within a multi-selection
-that contains one or more arrows — the **Presets** category offers twelve
+When an **arrow** is right-clicked (on its own, or within a multi-selection
+that contains one or more arrows), the **Presets** category offers twelve
 one-click arrow styles, ordered as hierarchical tiers: the **solid weights**
 lightest → heaviest (Fine / Plain / Bold), then the **patterns** with their
 weight variants (Fine Dash / Dashed / Bold Dash / Dotted), then the

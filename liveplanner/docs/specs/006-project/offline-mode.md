@@ -1,7 +1,7 @@
 # Offline Mode
 
 **Offline Mode** lets you create a project that is saved **only in the current
-browser** — never to the API, never to the server. It is the default for a guest's
+browser**, never to the API, never to the server. It is the default for a guest's
 new project ([Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local))
 and an opt-in choice for everyone else. It suits private/local-first work, air-gapped or
 no-account use, and anyone who wants a project that physically never leaves
@@ -10,9 +10,9 @@ usable with the API _and_ auth switched off.
 
 This is a **deliberate, permanent choice for a project**, not a temporary
 network state. (Handling a transient dropped connection on a _cloud_ project is
-a separate concern — see [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) — and out of scope here.)
+a separate concern; see [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md), and out of scope here.)
 
-Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire` — the two stores must agree about what a tab IS, or a Sync Project would hand the cloud a board that has forgotten itself.
+Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire`: the two stores must agree about what a tab IS, or a Sync Project would hand the cloud a board that has forgotten itself.
 
 ## Turning it on
 
@@ -65,13 +65,13 @@ have cloud projects and offline projects side by side.
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
   `navigator.storage.persist()` to reduce eviction risk, and we surface the
-  trade-off plainly — on the project (see the badge, and its legend), in the Share dialog before a Sync, and in
+  trade-off plainly: on the project (see the badge, and its legend), in the Share dialog before a Sync, and in
   the help article. "Offline" means _yours only_, with the responsibility that
   implies.
 
 ## What's different in an offline project
 
-The project model (`Tab[]` + meta, per [Project structure](project-structure.md)) is **identical** — an offline
+The project model (`Tab[]` + meta, per [Project structure](project-structure.md)) is **identical**: an offline
 project is a normal project whose persistence target is IndexedDB instead of the
 API. The full editor works: shapes, arrows, sketches, layers, tabs, links,
 templates, themes, undo/redo, export. What changes are the features that
@@ -80,15 +80,15 @@ _require the server_, which are hidden or gated (not broken) for an offline proj
 | Feature                                                                 | Offline behaviour                                                                                                                                                                                                                                                                  |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Share links / embeds                                                    | The header **Share** button stays visible, but for an offline project it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason ([Editor app](../007-editor/editor-app.md), /54). |
-| Live presence / realtime                                                | N/A — a private project never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                        |
-| Teams / shared library                                                  | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                                  |
+| Live presence / realtime                                                | N/A: a private project never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                         |
+| Teams / shared library                                                  | Hidden: a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                                   |
 | Comments                                                                | Local-only (just you), stored in the project; no cross-user.                                                                                                                                                                                                                       |
-| Duplicate                                                               | Makes **another offline project** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                        |
+| Duplicate                                                               | Makes **another offline project**; a copy never uploads what the user chose to keep local.                                                                                                                                                                                         |
 | Folders                                                                 | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                       |
 | Add to Plan ([Tab ↔ project many-to-many](tab-project-many-to-many.md)) | Unavailable in either direction: a shared tab is kept in step between plans on the server.                                                                                                                                                                                         |
-| Thumbnails                                                              | The **browser it lives in**, on a wash of the accent of the app that owns it (the Explorer's `LocalPreview`), never the pill's teal — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                  |
+| Thumbnails                                                              | The **browser it lives in**, on a wash of the accent of the app that owns it (the Explorer's `LocalPreview`), never the pill's teal, as there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                |
 
-Autosave still runs for an offline project ([Per-tab storage](per-tab-storage.md)) — it writes to IndexedDB
+Autosave still runs for an offline project ([Per-tab storage](per-tab-storage.md)): it writes to IndexedDB
 instead of the API, and the "Saved" indicator means _saved on this device_.
 
 ## Instant open
@@ -299,7 +299,7 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
 
 - Uploads the project's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud project owned by the current identity (signed-in account, or the guest's
-  liveworkspace guest token if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
+  liveworkspace guest token if not signed in; [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 - **Everything on the record travels**, not just tabs: the created date, the folder (kept only when it is one of the
   caller's own personal folders, else the root of My Work) and the star ([Favourite projects](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
@@ -373,8 +373,8 @@ and gated by a confirmation:
   copy stays authoritative. This is the one failure in this direction that
   nothing could undo: a partial download followed by the server delete leaves
   the missing tab's elements nowhere at all, while reporting success. A tab read
-  can come back empty from two directions — a failed request, or a 404 that the
-  api client maps to `null` rather than an error — and both count as failure
+  can come back empty from two directions: a failed request, or a 404 that the
+  api client maps to `null` rather than an error, and both count as failure
   here. (The best-effort "keep what loaded" shape is right for _duplicating_ a
   project, where the source survives; it inverts once the source is destroyed.)
 - **If that server delete fails, the local copy is rolled back** and the error
@@ -395,7 +395,7 @@ and gated by a confirmation:
 Offline Mode is independent of sign-in:
 
 - Works **signed-in or guest**. An offline project is browser-local regardless of
-  account — a signed-in user's offline projects do **not** appear on their other
+  account: a signed-in user's offline projects do **not** appear on their other
   devices (that's the point).
 - It differs from a **guest cloud** project ([Auth + guest access](../014-identity/auth-and-guest-access.md)): a guest's cloud project is
   on the server and in liveworkspace's index under the guest's liveworkspace identity, and moves to the account at sign-in;
@@ -438,7 +438,7 @@ than threading a mode flag through the editor.
 ## Marketing ([Marketing site](../019-marketing/marketing-site.md), /23)
 
 Offline Mode is **folded into the existing privacy / security area** of the
-landing page — no standalone section. It appears as a short point plus a small
+landing page, with no standalone section. It appears as a short point plus a small
 inline illustration/icon, framed as local-first:
 
 > **Work fully offline.** Flip on Offline Mode when you create a project and it is saved only in
@@ -452,7 +452,7 @@ inside, "no cloud"), consistent with the existing privacy iconography
 ## Help centre ([Help app](../018-help/help-app.md))
 
 Add a help article **"Offline Mode"** (under a saving / privacy-oriented
-category), and — per the help-registry rule — **register it in
+category), and (per the help-registry rule) **register it in
 `apps/help/lib/articles.ts`** in the same change (slug, title, description,
 category, `categorySlug`, and bump the category `articleCount`). The article
 covers:
@@ -460,7 +460,7 @@ covers:
 - What Offline Mode is and how to create one (the New Project wizard's Save
   location chooser, [Save Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
-  you clear site data — the durability warning, stated plainly.
+  you clear site data: the durability warning, stated plainly.
 - **Converting**: "Sync Project" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
 - What's unavailable offline: sharing, live collaboration, teams, and AI.
@@ -486,12 +486,12 @@ Track adoption without content, reusing the closed vocabulary:
 
 ## Non-goals
 
-- **No cross-device sync of offline projects** — that would defeat the purpose;
+- **No cross-device sync of offline projects**: that would defeat the purpose;
   sync is exactly what the cloud path is for.
-- **No collaborative offline editing** — offline is single-user by nature.
+- **No collaborative offline editing**: offline is single-user by nature.
 - **Not** offline-resilience for cloud projects (editing a cloud project through
-  a network blip) — that's [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)'s territory.
-- **No automatic promotion** — a project never silently moves between offline and
+  a network blip): that's [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)'s territory.
+- **No automatic promotion**: a project never silently moves between offline and
   cloud; every conversion is an explicit, user-initiated action (pressing Share,
   Sync Project, or Move on the prompt after signing in).
 
@@ -501,7 +501,7 @@ Track adoption without content, reusing the closed vocabulary:
   the local index (`isOfflineId`) to `lib/offline/offline-store.ts` (IndexedDB) or the api.
 - `/new` ([Dedicated route for new-project creation](../007-editor/new-project-route.md)) asks nothing: the store
   follows who is creating ([Save Locations](save-locations.md)).
-- `EditorHeader` (`SharedBadge`) — the **This Browser** badge state.
+- `EditorHeader` (`SharedBadge`): the **This Browser** badge state.
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
   show the **This Browser** pill wherever an offline project is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.
@@ -514,10 +514,10 @@ Track adoption without content, reusing the closed vocabulary:
   `hooks/persistence/useLocalMovePrompt.ts`, `../packages/workbench/src/lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Project" and "Take Offline" (with confirmation).
-- `apps/marketing` — the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
-- `apps/help` — the "Offline Mode" article + its `articles.ts` registry entry
+- `apps/marketing`: the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
+- `apps/help`: the "Offline Mode" article + its `articles.ts` registry entry
   ([Help app](../018-help/help-app.md)).
-- Telemetry — the create `type` + conversion events ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+- Telemetry: the create `type` + conversion events ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## References
 
@@ -530,5 +530,5 @@ See [Business model + licence](../002-project-scope/business-model-and-licence.m
 [Marketing site](../019-marketing/marketing-site.md) + [Marketing assets](../019-marketing/marketing-assets.md) (landing),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Help app](../018-help/help-app.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
-[Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime — the separate concern),
+[Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime, the separate concern),
 [Save Locations](save-locations.md) (the Save location chooser).

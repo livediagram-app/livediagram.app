@@ -9,8 +9,8 @@ instead of one long vertical list. The palette's categories are a bar of their o
 
 Eight tools in a single column is a lot of travel and a lot of reading for what
 is a flat choice between equal-weight modes. The context menus already made
-this call — category contents there are `MenuTileGrid`, never a column of
-rows — so the two menu systems now read alike.
+this call (category contents there are `MenuTileGrid`, never a column of
+rows), so the two menu systems now read alike.
 
 Measured on the canvas-tool picker: **182px tall against roughly 360px**, at
 208px wide.
@@ -30,7 +30,7 @@ a grid is not always the better shape:
 
 ## Details that had to survive the change
 
-- **Band titles.** The canvas tool's three bands are named — **Edit** (the
+- **Band titles.** The canvas tool's three bands are named: **Edit** (the
   tools that act on the canvas), **Present** (the ones you use in front of an
   audience) and **Preview** (the whole-canvas views). A named band doesn't
   also need a rule to say it started, so the title replaces the divider rather
@@ -39,7 +39,7 @@ a grid is not always the better shape:
   the menu, so a label hanging off an option would vanish exactly when that
   option was the current one.
 - **Group bands.** The canvas tool's options carry a `group` index that draws
-  a divider where the band changes — select-ish tools, then the presentation
+  a divider where the band changes: select-ish tools, then the presentation
   tools, then the whole-canvas modes. In a grid that becomes a full-width rule
   between rows (`col-span-full`) rather than a rule between two items.
 - **Shortcut badges.** Kept, but tucked into the tile's top-right corner

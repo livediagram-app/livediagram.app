@@ -386,6 +386,8 @@ with the colours you see, not blanks.
 
 ## Follow-up: excalidraw.com share links
 
+**Status: Planned.** Not built yet; today only an Excalidraw file imports.
+
 A share link (`https://excalidraw.com/#json=<id>,<key>`) can be imported
 entirely in the browser, without our server, and is specified here for a later
 change:
@@ -411,8 +413,8 @@ change:
   there breaks the import without warning, so failures must name the source
   ("excalidraw.com didn't return this scene") rather than blame the file.
 
-Status: specified, not built. It needs a binary decoder, two legacy branches
-and a network failure surface of its own.
+It needs a binary decoder, two legacy branches and a network failure surface
+of its own.
 
 ## Non-goals
 

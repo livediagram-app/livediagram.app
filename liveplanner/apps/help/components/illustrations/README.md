@@ -6,11 +6,11 @@ static export.
 
 ## Layers
 
-- **`primitives.tsx`** — the shared SVG kit. The only building blocks a scene
+- **`primitives.tsx`**: the shared SVG kit. The only building blocks a scene
   should need: `Scene`, `Shape`, `Arrow`, `SelectionBox`, `Cursor`, `Avatar`,
   `Panel`, `Dialog`, `Button`, `Tabs`, `Menu`, `Tile`, `Label`, `TextBar`. Read
   the props in the file; they are fully typed.
-- **`<area>.tsx`** — one file per help area, exporting named **scene**
+- **`<area>.tsx`**: one file per help area, exporting named **scene**
   components (PascalCase) composed from the primitives. `canvas.tsx` is the
   worked exemplar; mirror its structure and density.
 - **`<surface>.tsx`**: an editor surface several areas show, drawn once and
@@ -18,7 +18,7 @@ static export.
   settings-style row uses are every product's: `@liveworkspace/help-site/art/illustrations/settings-dialog`.
   Name every file after its subject (an area or a surface), never after the
   batch of work that produced it.
-- **`../Figure.tsx`** — frames a scene in an "editor viewport" card with a
+- **`../Figure.tsx`**: frames a scene in an "editor viewport" card with a
   caption. Globally registered in `mdx-components.tsx`, so MDX uses
   `<Figure caption="…"><Scene/></Figure>` without importing `Figure`.
 

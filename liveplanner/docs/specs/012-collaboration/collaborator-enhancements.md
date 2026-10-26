@@ -53,11 +53,11 @@ obvious question it asks: "tell me about this person".
   the tab bar.
 - **Also reachable by name from the search panel** ([Canvas and palette](../008-canvas/canvas-and-palette.md)),
   as the `collaborators` command. The presence stack is the discoverable entry
-  point but it is easy to miss and, on a private project, absent — so the modal
+  point but it is easy to miss and, on a private project, absent, so the modal
   had exactly one door and no way in by typing. The command is in the
   **view-safe** set: it opens a panel and changes nothing, so a view-only
   visitor gets it too, and it is not gated on the project being shared or on
-  anyone else being present — "Just you so far" is a real answer to "who is
+  anyone else being present: "Just you so far" is a real answer to "who is
   here", and the same subtitle already says it.
 
 ### Implementation notes

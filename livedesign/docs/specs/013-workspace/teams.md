@@ -31,11 +31,11 @@ Share roles (Editor / Participant / Viewer) do not apply here: the team page is 
 
 All under `/api/teams`, account Bearer or API token required, handled by `apps/api/src/routes/teams.ts`:
 
-- `GET /api/teams` — teams the caller has joined, from their token's `teams` claim, each with `myRole` (`memberCount` is always 0; the people are `/members`'s).
-- `POST /api/teams` `{ name, organisation? }` — makes a team ([Making a team](#making-a-team)). A signed-in session only.
-- `GET /api/teams/invites` — the invitations waiting for the caller on liveworkspace.app ([Invitations](#invitations)).
-- `GET /api/teams/:id/members` — the team's joined and invited people, asked of liveworkspace, for the assignee picker and @-mentions. Members only, and never an API token; a team the caller is not in is `404 team_not_found`.
-- `GET /api/teams/:id/library` — the team's folders and designs, read from the index ([Team Shared Designs](team-shared-designs.md)). Members only.
+- `GET /api/teams`: teams the caller has joined, from their token's `teams` claim, each with `myRole` (`memberCount` is always 0; the people are `/members`'s).
+- `POST /api/teams` `{ name, organisation? }`: makes a team ([Making a team](#making-a-team)). A signed-in session only.
+- `GET /api/teams/invites`: the invitations waiting for the caller on liveworkspace.app ([Invitations](#invitations)).
+- `GET /api/teams/:id/members`: the team's joined and invited people, asked of liveworkspace, for the assignee picker and @-mentions. Members only, and never an API token; a team the caller is not in is `404 team_not_found`.
+- `GET /api/teams/:id/library`: the team's folders and designs, read from the index ([Team Shared Designs](team-shared-designs.md)). Members only.
 - The assignment and mention emails are the design's, not the team's: `POST /api/designs/:id/notify-action`, and mentions from the comment post and tab save, as [Assigned actions](../012-collaboration/assigned-actions.md) and [Comment mentions](../012-collaboration/comment-mentions.md) describe.
 - Administering a team (rename, delete, invite, change a role, remove, an invite link, accept, decline) happens in the Explorer, against liveworkspace's account API through the router's `/api/workspace/account/…`; this API has no routes for it.
 
@@ -70,7 +70,7 @@ The shared Explorer's ([packages/explorer/README.md](../../../../packages/explor
 The right-pane team view is **one calm card**, which runs the team in place:
 
 - A header line with the organisation, the joined members and the invitations waiting; for admins **Invite by Link**; and the ⋯ menu: Edit Team and Delete Team (admins), Leave Team (anyone but the only admin while others remain).
-- The member list: an avatar per row, the person's **name** as the primary line — the caller's own row with a small "you" chip, other rows their name or the email's local part prettified ("anna.smith" → "Anna Smith") — the **email address** on a muted secondary line, Invited, Declined or Expired where it applies, and the role: a select for admins (the only admin's own row pinned), a pill otherwise, with an × for admins to remove, withdraw or clear.
+- The member list: an avatar per row, the person's **name** as the primary line (the caller's own row with a small "you" chip, other rows their name or the email's local part prettified ("anna.smith" → "Anna Smith")), the **email address** on a muted secondary line, Invited, Declined or Expired where it applies, and the role: a select for admins (the only admin's own row pinned), a pill otherwise, with an × for admins to remove, withdraw or clear.
 - For admins, an invite footer: an address and Member or Admin.
 - The team's shared library below.
 

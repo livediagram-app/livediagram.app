@@ -23,9 +23,9 @@ package never sees text; it only finds paper.
    taken from THIS photograph, on a coarse GRID of it (eight cells over the
    long side, blended between cell centres): the wall's own hue, and the
    saturation split (Otsu) between the wall and the paper on it. One pair of
-   floors for a whole frame cannot serve a wall with a window at one end — it
+   floors for a whole frame cannot serve a wall with a window at one end: it
    is too high for the shaded end and too low for the lit one at the same time. A grey-world white balance is
-   available (`balance: true`) but OFF by default — on a brown kraft wall it
+   available (`balance: true`) but OFF by default: on a brown kraft wall it
    takes the wall for neutral and corrects every paper hue along with it.
 2. **Classify** every pixel against the notation's own catalogue fills
    (`EVENT_STORMING_NOTES`), into a note kind, the wall, or ink. Hue centres are
@@ -49,12 +49,12 @@ package never sees text; it only finds paper.
    onto its own paper, and a block too square for any cutting rule is eroded
    until the notes come apart at their seams. On a real wall the notes are
    lapped edge to edge, and without those a whole row of them was thrown away
-   as one over-sized blob — or kept as one note with four people's words on it.
+   as one over-sized blob, or kept as one note with four people's words on it.
 6. **Does it stand out?** A note is different from the wall it is stuck to:
-   more saturated, much brighter relative to that wall, or a different hue —
+   more saturated, much brighter relative to that wall, or a different hue:
    any one of the three, compared against the dullest quarter of the ring
    around the box, because on a dense wall the rest of the ring is other notes.
-   A note may be darker than its wall — a blue sticky on a whiteboard is. Tape, cardboard, a shadow in a paper
+   A note may be darker than its wall: a blue sticky on a whiteboard is. Tape, cardboard, a shadow in a paper
    seam and the strip of ceiling above the paper are all the colour of their
    surroundings, and this is what refuses them.
 7. **Rows**: cluster the centre-y values, because a wall sags; order by
@@ -62,10 +62,10 @@ package never sees text; it only finds paper.
 
 ## How well it does it
 
-Scored against 645 hand-traced notes on eight photographs — six of one kraft
+Scored against 645 hand-traced notes on eight photographs: six of one kraft
 workshop wall (one in heavy shade, one at night with a window and half a room
 in frame), a white-paper panorama with two sizes of sticky, and a whiteboard
-of about 270 small notes — on the EDITOR'S OWN PIXELS (the sweep renders each
+of about 270 small notes, on the EDITOR'S OWN PIXELS (the sweep renders each
 photo in Chromium exactly as the product does; the labels live in a private
 repository):
 
@@ -75,7 +75,7 @@ repository):
 | with the learned boundary model (`@livediagram/sticky-model`) | 97%       | 95%    | **95.8** | 16, all of them labels |
 
 The editor runs the second, and falls back to the first whenever the model
-cannot load. Counting detections is not a score — a detector that boxes the
+cannot load. Counting detections is not a score: a detector that boxes the
 masking tape too finds more of them. How it got here, experiment by
 experiment: [docs/research/vision/experiments](../../docs/research/vision/experiments/).
 

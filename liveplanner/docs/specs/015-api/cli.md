@@ -2,8 +2,7 @@
 
 `@liveplanner/cli` (version 0.3.0 in `apps/cli/package.json`) is the command line for plans. Every command below
 signs in through the browser, a device code or a token kept in the system's keychain, and is counted on the
-dashboard. The help centre article is `/help/developers/cli/` (Developers). The update check ("Distribution") is
-specified and not built: no command checks npm.
+dashboard. The help centre article is `/help/developers/cli/` (Developers).
 
 `liveplanner` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, pulling projects to files).
@@ -191,10 +190,17 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
 
 - npm package `@liveplanner/cli`, under the `liveplanner` npm organisation, installing the command `liveplanner`: one
   bundled ESM file plus the resvg wasm and font, Node 22 or later, run with `npx @liveplanner/cli@latest` or installed.
-  npm refuses the plain name `liveplanner` as too close to the existing `live-diagram`. Published from CI with provenance, versioned on its own.
+  npm refuses the plain name `liveplanner` as too close to the existing `live-diagram`. Versioned on its own.
+- Publishing to npm is a manual step outside CI. CI builds and packs the CLI on every run that reaches it
+  (`npm pack --dry-run`, [docs/ci.md](../../../../docs/ci.md)).
 - Standalone binaries and a Homebrew tap may follow; a `curl | sh` installer is never offered.
-- Once a day at most, after a command, it checks npm for a newer version and says so on stderr; never in CI, when
-  stderr is not a terminal, or with `LIVEPLANNER_NO_UPDATE_CHECK=1`.
+
+### Update check
+
+**Status: Planned.** Not built yet; no command checks npm today.
+
+Once a day at most, after a command, the CLI checks npm for a newer version and says so on stderr; never in CI,
+when stderr is not a terminal, or with `LIVEPLANNER_NO_UPDATE_CHECK=1`.
 
 ## Telemetry
 

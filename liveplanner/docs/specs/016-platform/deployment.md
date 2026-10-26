@@ -17,7 +17,9 @@ what staging changes and why.
 | `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `liveplanner-router`    | Worker with service bindings to marketing, editor, api and help.              |
 
-`apps/cli` is the npm CLI ([CLI](../015-api/cli.md)) and deploys nowhere.
+`apps/cli` is the npm CLI ([CLI](../015-api/cli.md)) and deploys nowhere. Its npm publishing and the MCP Registry
+listing ([MCP server](../015-api/mcp-server.md) "Registry listing") are manual steps outside CI; CI builds and packs
+the CLI on every run that reaches it (`npm pack --dry-run`, [docs/ci.md](../../../../docs/ci.md)).
 
 The marketing and help workers serve their `out/` folders. The editor worker serves `apps/editor/out/` through
 `apps/editor/src/worker.ts`, which rewrites every `/project/<id>` request to the one statically built

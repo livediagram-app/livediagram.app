@@ -15,7 +15,7 @@ when the service asks through its export door ([Project previews](../006-project
   so only projects the owner has explicitly shared expose an image. The URL is
   effectively public to anyone who has it (an `<img>` can't send a password or
   auth header), which matches a share link's existing semantics.
-  - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL — an `<img>`
+  - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL: an `<img>`
     can't supply the password, so exposing an unguarded image would bypass the
     gate.
   - Revoking / expiring the share link also kills the image URL (it resolves

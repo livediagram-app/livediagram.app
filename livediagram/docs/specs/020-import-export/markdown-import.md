@@ -4,7 +4,7 @@ Import a Markdown document and turn it into a real, themed diagram on the
 current tab, replacing its contents (one undo step puts them back). The goal is to ingest outlines exported from other tools (XMind
 mind-map → Markdown, Obsidian/Logseq outlines, any heading/bullet notes)
 and produce a high-quality node-link diagram, **without assuming a fixed
-shape** — the parser is tolerant of whatever structure the file has.
+shape**: the parser is tolerant of whatever structure the file has.
 
 ## Why a generic parser
 
@@ -19,7 +19,7 @@ than pattern-matching a specific exporter.
 
 Input is treated as a hierarchical outline:
 
-- **ATX headings** (`#`..`######`) — depth = number of `#`. A deeper
+- **ATX headings** (`#`..`######`): depth = number of `#`. A deeper
   heading nests under the nearest shallower one.
 - **List items** (`-`, `*`, `+`, `1.`, `1)`), nested by indentation
   (tabs normalised to spaces). Lists attach under the current heading;
@@ -62,22 +62,22 @@ top-level nodes so the result is one connected diagram.
   **curved pinned arrows**.
 - Any **tables** are placed in a column below the tree.
 - Everything is recoloured to a theme (the active tab's theme, falling
-  back to Brand) and the new tab adopts that theme's background — so the
+  back to Brand) and the new tab adopts that theme's background, so the
   import looks native, not pasted-in.
 
-The diagram is fully editable afterwards — it's ordinary elements, not a
+The diagram is fully editable afterwards: it's ordinary elements, not a
 locked import.
 
-## How it's triggered — the Import dialog
+## How it's triggered: the Import dialog
 
 The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
 dialog**, the mirror of the Export dialog. Both lay their format cards out three across, two across on a phone
 (three left each card about 110px wide there). Above the cards a warning says the import replaces the tab and Undo
 brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine pointer). The user picks the format:
 
-- **JSON** — a `.json` tab export, restored exactly.
-- **Mermaid** — a flowchart, keeping every connection ([Mermaid import & export](mermaid.md)).
-- **Markdown** — a `.md` outline, built into a themed tree as above.
+- **JSON**: a `.json` tab export, restored exactly.
+- **Mermaid**: a flowchart, keeping every connection ([Mermaid import & export](mermaid.md)).
+- **Markdown**: a `.md` outline, built into a themed tree as above.
 
 Every format is text, so each card opens the **same two-step panel**
 (`TextImportPanel`, [Mermaid import & export](mermaid.md)): **paste or write** the
@@ -89,12 +89,12 @@ forward. The export dialog's two second screens (`TextExportPanel`,
 `ImageExportPanel`) use the same bar, so every second screen in both dialogs
 returns the same way. The chosen format drives the
 placeholder, the file-picker's filter, and which parser runs (no content
-auto-detection — the user said which it is). Both the paste and file
+auto-detection: the user said which it is). Both the paste and file
 routes go through one `importTextIntoActiveTab(format, text)` so they
 parse + replace identically.
 
-**Import replaces the current tab's contents** — its elements, theme, and
-background — keeping the tab's id and name. The dialog leads with a
+**Import replaces the current tab's contents**: its elements, theme, and
+background, keeping the tab's id and name. The dialog leads with a
 warning that says so. The replace is a single `commitTabs` step, so
 **Undo (⌘Z) restores** the previous content; the warning says that too.
 Errors render inline in the dialog (e.g. "No headings, lists, or tables
@@ -104,7 +104,7 @@ and the whole ellipsis menu is hidden for view-only visitors. Emits
 `Tab / Imported / Markdown` (or `/ JSON`) telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 (This replaced the earlier behaviour where import always appended a new
-tab — a format picker + an explicit "this overwrites the tab" warning is
+tab: a format picker + an explicit "this overwrites the tab" warning is
 clearer than silently growing the tab list, and Undo makes it safe.)
 
 ## Beside Mermaid
@@ -112,15 +112,15 @@ clearer than silently growing the tab list, and Undo makes it safe.)
 Mermaid ([Mermaid import & export](mermaid.md)) is the connection-preserving text format. Markdown import and export
 solve a _different_ problem:
 
-- **Markdown import — keep.** It ingests an **outline** (headings + nested
+- **Markdown import: keep.** It ingests an **outline** (headings + nested
   lists) from tools that emit exactly that (XMind, Obsidian/Logseq,
   hand-written notes) and lays out the **hierarchy** as a themed tree with
-  parent→child connectors. That hierarchy _is_ preserved — the import is
+  parent→child connectors. That hierarchy _is_ preserved: the import is
   not connectionless. Mermaid doesn't replace it: someone holding a
   Markdown outline is not going to hand-author flowchart syntax, and a
   tree-from-indentation is a genuinely different input from a node/edge
   graph. Different source, different shape → distinct value.
-- **Markdown export — keep, repositioned.** It emits a flat, human-
+- **Markdown export: keep, repositioned.** It emits a flat, human-
   readable **summary** (`## Elements`, the _labelled_ elements, and `## Connections`, every arrow that joins two
   elements: a labelled one as `- *label*: A → B`, an unlabelled one as `- A → B`, since on a flowchart the
   unlabelled arrows are the main path; a free line with no label stays out), sorted for reading, to drop into a
@@ -133,7 +133,7 @@ solve a _different_ problem:
 ## Boundaries / future
 
 - **Round-trip:** the faithful, connection-preserving text round-trip is
-  **Mermaid** ([Mermaid import & export](mermaid.md)) — serialise a tab to `flowchart`
+  **Mermaid** ([Mermaid import & export](mermaid.md)): serialise a tab to `flowchart`
   text and parse it back into the same graph by id. Markdown export
   stays the human _summary_ (see above), not a byte-for-byte
   reconstruction. (Mermaid is the text form for a structured graph; there is no `.lvd` text DSL.)

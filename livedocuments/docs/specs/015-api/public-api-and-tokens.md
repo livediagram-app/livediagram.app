@@ -8,7 +8,7 @@ checked like an account's ([Auth + guest access](../014-identity/auth-and-guest-
 
 Let **signed-in** people call the livedocuments API from their own scripts /
 integrations with a long-lived **API token**, not just from the first-party web
-app. Read their documents, create/update them, manage folders — the same surface
+app. Read their documents, create/update them, manage folders: the same surface
 the app uses, under an explicit, revocable credential.
 
 **Signed-in only (gated like teams, [Teams](../013-workspace/teams.md)).** API tokens are an
@@ -84,7 +84,7 @@ name, read-only flag, expiry and last use) with the account ([liveworkspace/docs
 "API tokens"). What hangs off a token, a workbench pairing or session, is liveworkspace's too, which ends it with the token
 ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
-**Lifetime — fixed 6 months.** Every token expires at `created_at + 6 months`.
+**Lifetime: fixed 6 months.** Every token expires at `created_at + 6 months`.
 This is a hard maximum AND the only option: `expires_at` is **never null** (no
 never-expires tokens) and there is no shorter or user-chosen value: a
 long-lived credential that never lapses is the thing we don't want sitting in
@@ -113,10 +113,10 @@ The resolved owner id flows through the **same** checks every route already enfo
 document, fetched for the token's account, so a token can only touch what its account can reach. No route changes for authorization; only the identity
 source changes.
 
-### 3.4 Access — full read + write, with an optional read-only flag
+### 3.4 Access: full read + write, with an optional read-only flag
 
-A token grants its owner's **full** access — read AND write, the same surface
-the app has — **unless** it was minted **read-only** (the one scope that
+A token grants its owner's **full** access (read AND write, the same surface
+the app has) **unless** it was minted **read-only** (the one scope that
 exists): a `read_only` column that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
@@ -129,8 +129,8 @@ finer-grained scope vocabulary (per-resource, per-verb, [§5](#5-out-of-scope)):
 not a general scopes system.
 
 **Team content counts as "the same surface".** A token's owner is always a
-signed-in account ([§3.3](#33-resolution)), and both credentials — session JWT and
-token — are server-verified, so the token identity feeds the same
+signed-in account ([§3.3](#33-resolution)), and both credentials (session JWT and
+token) are server-verified, so the token identity feeds the same
 team-membership checks the session does (`RouteContext.verifiedUserId`, used by
 `gateRead`/`gateEdit` and the team-scoped document/folder verbs). Concretely: a
 token can read and edit the documents in the shared libraries of the teams its
@@ -157,7 +157,7 @@ delete at all ([MCP server §4.9](mcp-server.md)).
 independently of the owner's interactive app use, and `API_TOKEN_READ_RATE_LIMITER` limits a token's reads
 (`apps/api/wrangler.toml`). Per-IP limits stay as the outer backstop.
 
-### 3.6 Management — the Settings dialog's API Tokens category
+### 3.6 Management: the Settings dialog's API Tokens category
 
 Tokens are made, listed and revoked on liveworkspace.app (the head of §3). The **Settings dialog**
 ([User preferences](../007-editor/user-preferences.md)) has an **API Tokens** sub-category of **Account** (id
@@ -216,12 +216,12 @@ dependency beyond the optional sign-in that teams already need.
 
 An open API magnifies the cost of weak input handling, so every caller's input is validated:
 
-- **Structural schema validation** — `isValidElement` / `isValidTab`
+- **Structural schema validation**: `isValidElement` / `isValidTab`
   (`packages/document/src/validate.ts`) vet the element/tab discriminant,
   required fields, endpoints, array bounds + unique ids. The document routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
-- **Size caps** — a global Content-Length body cap, per-tab byte cap, and
+- **Size caps**: a global Content-Length body cap, per-tab byte cap, and
   name / theme-definition / participant / share-password caps
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Document
   and tab names are shortened to the 60-character name cap rather than
@@ -232,9 +232,9 @@ An open API magnifies the cost of weak input handling, so every caller's input i
 
 ## 5. Out of scope
 
-Finer-grained scopes — per-document / per-folder grants, per-verb permissions —
+Finer-grained scopes (per-document / per-folder grants, per-verb permissions)
 plus webhooks and any billing or quota tiers (the product has no paid tier,
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope is
-the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);
+the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
 OAuth and third-party app authorization are in [MCP server](mcp-server.md).)
 Every full token inherits the owner's read and write access.

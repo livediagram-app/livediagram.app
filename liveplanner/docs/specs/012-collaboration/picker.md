@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-A canvas element that **chooses at random when pressed** — one of the people in the room, or one of the options written on it. Who demos next, which idea to explore, whose turn it is to start.
+A canvas element that **chooses at random when pressed**: one of the people in the room, or one of the options written on it. Who demos next, which idea to explore, whose turn it is to start.
 
 ## Why
 
@@ -13,13 +13,13 @@ It belongs on the canvas rather than in a menu for the same reason the other Beh
 ## The element
 
 - A **shape kind**, `picker`: a card with the choice shown large, and a button that rolls.
-- **`ShapeElement.pickerSource`** — `'participants'` (default) or `'options'`.
-- **`ShapeElement.pickerOptions`** — the written list, used when the source is `options`. Empty falls back to "nothing to pick from" rather than picking nothing silently.
-- **`ShapeElement.pickerResult`** — the last result, so the canvas still shows it after a reload and to anyone who joins later.
+- **`ShapeElement.pickerSource`**: `'participants'` (default) or `'options'`.
+- **`ShapeElement.pickerOptions`**: the written list, used when the source is `options`. Empty falls back to "nothing to pick from" rather than picking nothing silently.
+- **`ShapeElement.pickerResult`**: the last result, so the canvas still shows it after a reload and to anyone who joins later.
 
 ## Rolling
 
-- Pressing it **spins the candidates past and slows to a stop** on the result, over about a second and a half. The frames are spaced on a quadratic ease-out, so it reads as a wheel losing speed rather than a list being flicked at a constant rate — the last few names are the ones the room is actually watching. The spin is local animation over a result decided at press time, so a peer never watches a different reel land on a different name.
+- Pressing it **spins the candidates past and slows to a stop** on the result, over about a second and a half. The frames are spaced on a quadratic ease-out, so it reads as a wheel losing speed rather than a list being flicked at a constant rate; the last few names are the ones the room is actually watching. The spin is local animation over a result decided at press time, so a peer never watches a different reel land on a different name.
 - **People spin past as themselves**: when the source is the room, each candidate is drawn with its participant avatar (their colour and initials, the same `ParticipantAvatar` the presence stack uses) beside the name. The stored result is matched back to whoever is still here, so the winner keeps their avatar after a reload and quietly loses it once they leave.
 - The result is **written to the element**, so everyone sees the same one. That makes it an ordinary edit: it syncs and it undoes.
 - **The whole room watches the spin, not just the presser.** A result arriving from anywhere but our own roll replays the reel locally and lands on what the element now says. Peers getting only the landing would throw away the one moment a picker has and the only reason to use one instead of saying a name out loud.
@@ -35,11 +35,11 @@ It belongs on the canvas rather than in a menu for the same reason the other Beh
 
 ## Configuring it
 
-Right-click → **Picker**: choose the source, and — for a written list — edit the options, one per line. Switching source keeps whatever the other one held, so flipping to People and back doesn't lose a list someone typed.
+Right-click → **Picker**: choose the source and, for a written list, edit the options, one per line. Switching source keeps whatever the other one held, so flipping to People and back doesn't lose a list someone typed.
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): adding one emits `Element·Added·Picker`; rolling or reconfiguring emits `Element·Changed·Picker`. The result itself is never sent — it is a name or a phrase the user wrote, which is content ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) "never user content").
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): adding one emits `Element·Added·Picker`; rolling or reconfiguring emits `Element·Changed·Picker`. The result itself is never sent; it is a name or a phrase the user wrote, which is content ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) "never user content").
 
 ## Out of scope
 

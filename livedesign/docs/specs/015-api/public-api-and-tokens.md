@@ -9,7 +9,7 @@ programmatic callers.
 
 Let **signed-in** people call the livedesign API from their own scripts /
 integrations with a long-lived **API token**, not just from the first-party web
-app. Read their designs, create/update them, manage folders — the same surface
+app. Read their designs, create/update them, manage folders: the same surface
 the app uses, under an explicit, revocable credential.
 
 **Signed-in only (gated like teams, [Teams](../013-workspace/teams.md)).** API tokens are an
@@ -97,7 +97,7 @@ storing tokens itself, the account-level design below supersedes it.
 livedesign stores no tokens. liveworkspace's accounts service keeps each one (its hash, name, read-only flag,
 expiry and the per-account cap), as the head of §3 says.
 
-**Lifetime — fixed 6 months.** Every token expires six months after it is made. There are no never-expires tokens
+**Lifetime: fixed 6 months.** Every token expires six months after it is made. There are no never-expires tokens
 and no shorter, user-chosen lifetime: a long-lived credential that never lapses is the thing we don't want sitting
 in someone's CI config forever. An expired token is refused exactly like a revoked one. **Rotation is manual**:
 mint a fresh token before the old one lapses.
@@ -122,12 +122,12 @@ The resolved owner flows through the **same** `gateRead` / `gateEdit` checks, on
 route already enforces, so a token can only touch what its account can. No route changes for authorization; only
 the identity source changes.
 
-### 3.4 Access — full read + write, with an optional read-only flag
+### 3.4 Access: full read + write, with an optional read-only flag
 
 A token has no share level ([Share roles](../013-workspace/share-roles.md#outside-the-levels)).
 
-A token grants its owner's **full** access — read AND write, the same surface
-the app has — **unless** it was minted **read-only** (the one scope that
+A token grants its owner's **full** access (read AND write, the same surface
+the app has) **unless** it was minted **read-only** (the one scope that
 exists): a read-only flag on the token that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
@@ -137,18 +137,18 @@ open an edit link. Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
 let an AI tool VIEW their designs without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
-([§7](#7-out-of-scope-for-now)) — `read_only` is a single boolean, not a general
+([§7](#7-out-of-scope-for-now)): `read_only` is a single boolean, not a general
 scopes system.
 
 **Team content counts as "the same surface".** A token's owner is always a
-signed-in account ([§3.3](#33-resolution)), and both credentials — session JWT and
-token — are server-verified, so the token identity feeds the same
+signed-in account ([§3.3](#33-resolution)), and both credentials (session JWT and
+token) are server-verified, so the token identity feeds the same
 team-membership checks the session does (`RouteContext.verifiedUserId`, used by
 `gateRead`/`gateEdit` and the team-scoped design/folder verbs). Concretely: a
 token can read and edit the designs in the shared libraries of the teams its
 owner has joined ([Team shared designs](../013-workspace/team-shared-designs.md)), and can `GET` the
 teams surface (list its teams, team detail, a team's library). Without this, a
-design filed into a team was invisible to every external integration — the
+design filed into a team was invisible to every external integration: the
 personal `GET /designs` excludes team designs by design.
 
 **Administration stays interactive-session-only.** Every teams MUTATION
@@ -156,7 +156,7 @@ personal `GET /designs` excludes team designs by design.
 plus token management (on liveworkspace.app) and account deletion
 require a verified signed-in **session** (`accountUserId`), never a token. Boundary
 rationale: a leaked token already exposes the owner's content (that's §3.4's
-deal, revocable + 6-month-capped), but it must not be able to escalate — mint
+deal, revocable + 6-month-capped), but it must not be able to escalate: mint
 further credentials, grant other people membership, or destroy the account.
 
 **Deleting goes to the Trash, with an explicit way past it.** A token's
@@ -175,7 +175,7 @@ runaway integration is throttled independently of the owner's interactive app
 use, and add a read limiter for token reads. Per-IP limits stay as the outer
 backstop.
 
-### 3.6 Management — the Settings dialog's API Tokens category
+### 3.6 Management: the Settings dialog's API Tokens category
 
 > **Superseded**: tokens are managed on liveworkspace.app (see the head of §3). This section records the manager livedesign had.
 
@@ -246,7 +246,7 @@ sign-in rule in [User preferences](../007-editor/user-preferences.md)).
 Behind it, a new `GET/POST/DELETE /api/tokens` surface, **gated exactly like
 the team routes** ([Teams](../013-workspace/teams.md)): it requires a verified account
 identity and rejects a guest (guest-token) caller outright (`401`/`403`,
-mirroring `routes/teams.ts`) — so the manager is inert for guests, the
+mirroring `routes/teams.ts`), so the manager is inert for guests, the
 same way the rest of the signed-in surface is. A token can only ever be minted
 by, and act as, a signed-in account. Creation returns the secret **once**
 (shown in the manager to copy, never retrievable again); the row then shows only
@@ -255,7 +255,7 @@ the public id + metadata. Revoke is immediate (the lookup filters
 so rotation isn't a surprise.
 
 **Per-account cap: 10.** A `POST /api/tokens` is refused (`409`) once the owner
-already has 10 live (non-revoked, non-expired) tokens — enough for any real
+already has 10 live (non-revoked, non-expired) tokens, enough for any real
 integration set, low enough to keep the list + table tidy. Revoking or letting
 one expire frees a slot. The count is part of the INSERT itself (one
 `INSERT ... SELECT ... WHERE (SELECT COUNT(*) ...) < 10` statement in
@@ -286,20 +286,20 @@ Every other `/api/tokens` path is a 404 (management is on liveworkspace.app; see
 API tokens are gated on **auth being enabled**, exactly as teams and sign-in
 are ([Teams](../013-workspace/teams.md), [Auth + guest access](../014-identity/auth-and-guest-access.md)). A
 deployment that hasn't configured sign-in runs in pure-guest mode, and in that
-mode the feature is **absent end to end** — there is no API Tokens category to
+mode the feature is **absent end to end**: there is no API Tokens category to
 open and no way to mint one:
 
-- **Frontend** — the live app always offers sign-in, so the Settings API Tokens
+- **Frontend**: the live app always offers sign-in, so the Settings API Tokens
   category is listed; for a guest it says why it is empty and links to sign in,
   and signing in there settles as a guest again.
-- **Backend** — the `/api/tokens` routes require a verified account identity, and
+- **Backend**: the `/api/tokens` routes require a verified account identity, and
   with `ACCOUNTS_URL` or `API_RESOURCE` unset the worker resolves no account identity at all
   ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so the
   routes reject every caller. Belt and suspenders: even if the UI were somehow
   reached, token creation / use is impossible without auth configured.
 
 So enabling tokens is opt-in with auth, and disabling auth removes them
-cleanly — no orphaned page, no half-working endpoint. This takes nothing away
+cleanly, with no orphaned page, no half-working endpoint. This takes nothing away
 from a guest-only deployment, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 dependency beyond the optional sign-in that teams already need.
@@ -333,17 +333,17 @@ guest into the account, and the index tells each app
 so they move with the index; livedesign moves the guest's images in the media
 service to the account.
 
-## 5. Input validation (prerequisite — shipped)
+## 5. Input validation (prerequisite, shipped)
 
 Opening the API magnifies the cost of weak input handling, so the validation
 hardening landed first:
 
-- **Structural schema validation** — `isValidElement` / `isValidTab`
+- **Structural schema validation**: `isValidElement` / `isValidTab`
   (`packages/design/src/validate.ts`) vet the element/tab discriminant,
   required fields, endpoints, array bounds + unique ids. The design routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
-- **Size caps** — a global Content-Length body cap, per-tab byte cap, and
+- **Size caps**: a global Content-Length body cap, per-tab byte cap, and
   name / theme-definition / participant / share-password caps
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Design
   and tab names are shortened to the 60-character name cap rather than
@@ -364,18 +364,18 @@ hardening landed first:
 3. ✅ `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
    mint/verify (`auth/`), signed-in-only `/api/tokens` routes (the team-route
    gate, [Teams](../013-workspace/teams.md)).
-4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
-   UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
+4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`), the management
+   UI ([§3.6](#36-management-the-settings-dialogs-api-tokens-category)); it
    replaced the original Explorer "API tokens" page
    ([§3.7](#37-without-sign-in)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
-   ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
+   ([§3.4](#34-access-full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
-   features and must be registered — see the help-centre rule in `AGENTS.md`,
+   features and must be registered; see the help-centre rule in `AGENTS.md`,
    so this copy lands when the feature does, not before):
    - A new help article (e.g. `account-and-data/api-tokens`) covering what
      tokens are, creating/revoking them **from the Explorer**, the **6-month
-     expiry + manual rotation**, and the **signed-in-only** limitation —
+     expiry + manual rotation**, and the **signed-in-only** limitation;
      registered in `apps/help/lib/articles.ts`.
    - Add API tokens to the "what signing in unlocks" list in the
      `account-and-data/signing-in` article (next to teams + cross-device sync).
@@ -390,10 +390,10 @@ hardening landed first:
 
 ## 7. Out of scope (for now)
 
-Finer-grained scopes — per-design / per-folder grants, per-verb permissions —
-plus webhooks and any billing or quota tiers (the product has no paid tier —
+Finer-grained scopes (per-design / per-folder grants, per-verb permissions)
+plus webhooks and any billing or quota tiers (the product has no paid tier:
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope that DID land is
-the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);
+the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
 OAuth / third-party app authorization landed in [MCP server](mcp-server.md).)
 Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.

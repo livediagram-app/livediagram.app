@@ -6,7 +6,7 @@ tab is its own row. The autosave path then only ships the tab that
 actually changed.
 
 Driven by the observation that today, every keystroke broadcasts a
-`tabs` op AND PUTs the whole project — including unchanged tabs — to
+`tabs` op AND PUTs the whole project (including unchanged tabs) to
 storage. Cost grows linearly with the project's tab count.
 
 ## Goals
@@ -47,12 +47,12 @@ The table is created by the plan's schema, `apps/api/src/plan-room/plan-schema.t
 
 Owner / edit-role.
 
-- `GET    /api/projects/:id` — returns project metadata + tab list
+- `GET    /api/projects/:id`: returns project metadata + tab list
   (id, name, order; no `data`).
-- `GET    /api/projects/:id/tabs/:tabId` — full tab payload (data + everything).
-- `PUT    /api/projects/:id/tabs/:tabId` — upsert a single tab (active edit path).
-- `DELETE /api/projects/:id/tabs/:tabId` — remove a tab.
-- `PUT    /api/projects/:id` — project-level fields only (rename,
+- `GET    /api/projects/:id/tabs/:tabId`: full tab payload (data + everything).
+- `PUT    /api/projects/:id/tabs/:tabId`: upsert a single tab (active edit path).
+- `DELETE /api/projects/:id/tabs/:tabId`: remove a tab.
+- `PUT    /api/projects/:id`: project-level fields only (rename,
   tab order, shareable). Body
   carries `tabIds: string[]` in
   the new order; the API
@@ -83,7 +83,7 @@ so peers only get the one that changed.
 
 A tab summary carries no `elements`, so before its `GET /tabs/:id`
 lands the tab is an empty placeholder. The canvas MUST NOT render its
-normal "Empty canvas" prompt over that placeholder — it reads as "your
+normal "Empty canvas" prompt over that placeholder: it reads as "your
 canvas is gone", and worse, if the user starts adding elements to the
 blank canvas the autosave persists the empty-plus-new tab and **wipes
 the real server row**. So while the active tab's content is outstanding:
@@ -95,25 +95,25 @@ the real server row**. So while the active tab's content is outstanding:
   this tab" card with a **Retry** that re-issues the fetch. Both network /
   5xx **and a 404** take this path: a legitimately-empty tab returns 200
   with `{ elements: [] }` (the row exists), and the tab being fetched is
-  the active tab, which is always in the hydrated summary — so a 404 means
+  the active tab, which is always in the hydrated summary, so a 404 means
   the row is unexpectedly missing (a transient / mis-routed 404, a
   share-code edge, a row deleted under a stale summary), NOT that the tab
   is empty. Treating a 404 as authoritative-empty would mark the tab
   loaded and arm the autosave to overwrite the real row; routing it to
   Retry instead means a wrong 404 can never wipe content.
 
-The overlay is **pointer-only** — it cannot block `window` keydown or
+The overlay is **pointer-only**: it cannot block `window` keydown or
 `document` paste, so the spinner alone is not the edit lock. The actual
 guard is that the active tab's load state feeds the editor's single
 `editsBlocked` gate (alongside locked-tab and view-only), so EVERY
-commit-based mutator — shape shortcuts, paste, AI apply, import,
-clear-canvas, drag — is refused until the tab is `ready`. The overlay and
+commit-based mutator (shape shortcuts, paste, AI apply, import,
+clear-canvas, drag) is refused until the tab is `ready`. The overlay and
 the edit lock derive from the same `deriveTabLoadState`, so they can't
 disagree.
 
 Only tabs that originate on the server take part in this. A tab created
-locally (add / duplicate / import) is treated as already-loaded — its
-content is authoritative in memory and there is nothing to fetch — so it
+locally (add / duplicate / import) is treated as already-loaded: its
+content is authoritative in memory and there is nothing to fetch, so it
 never flashes a loader and drops straight into the per-tab template
 picker. A tab whose elements a realtime peer already delivered likewise
 renders immediately rather than showing a spinner over real content.
@@ -163,7 +163,7 @@ So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
   so the doomed retries stop.
 - The toast fires **once** and says what actually happened, naming the likely
   cause and the way out (export a copy) rather than a connection to check.
-- Opening a different project clears it — the block is about this one.
+- Opening a different project clears it; the block is about this one.
 
 The user still loses the unsaved work, and no client-side design can prevent
 that once the server has withdrawn write access. What it can do is say so
@@ -230,16 +230,16 @@ wipe path hits **background** tabs and the overlay does nothing for it:
 
 A many-tab project hydrates every non-active tab as an empty placeholder
 (no `elements` until opened). The autosave diff (`computeTabSaveDiff`) is
-identity-based — it persists any tab whose object reference changed since
-the last save. So a **non-content** operation that re-maps the tab array —
-filing tabs into a folder, reordering, a bulk tab edit — bumps the
+identity-based: it persists any tab whose object reference changed since
+the last save. So a **non-content** operation that re-maps the tab array
+(filing tabs into a folder, reordering, a bulk tab edit) bumps the
 reference of tabs the user never opened, the diff flags those empty
 placeholders as "changed", and the per-tab `PUT` overwrites their real
 server rows with `{ elements: [] }`. (Observed in production: filing four
 tabs into a folder wiped the two that hadn't been opened that session.)
 
 Invariant: **a tab is eligible for a content write only when its content
-is authoritative in memory** — it is in the loaded set (`markTabLoaded`:
+is authoritative in memory**: it is in the loaded set (`markTabLoaded`:
 hydration's active tab, a fetched tab, or a locally-created one) OR it
 already carries elements (peer-delivered). An unloaded, still-empty
 placeholder is never persisted, no matter what bumped its reference.
@@ -283,12 +283,12 @@ with 409** unless the request carries `X-Allow-Empty: 1`.
 
 A legitimate **reset-canvas / delete-all** is performed on the active tab,
 which is necessarily loaded (editing an unloaded tab is blocked), so the
-editor sets `X-Allow-Empty: 1` for any tab in the loaded set — those
+editor sets `X-Allow-Empty: 1` for any tab in the loaded set; those
 clears pass. The lazy-load wipe (a never-opened placeholder) is not in the
 loaded set, so it carries no header and the backstop preserves the stored
 row. An empty write over an already-empty / brand-new row, and any
 non-empty write, are unaffected. This is intentionally independent of the
-client guard — belt and suspenders against the most destructive failure.
+client guard, belt and suspenders against the most destructive failure.
 
 ## Risk
 

@@ -14,7 +14,7 @@
 
 A share option that serves the document as a **live image**: an `<img>`-able URL
 that serves the current document as SVG, so it can be embedded in a README / wiki
-/ site and stay up to date — no editor chrome, just the content (like the SVG
+/ site and stay up to date: no editor chrome, just the content (like the SVG
 export).
 
 ## Confirmed decisions
@@ -23,7 +23,7 @@ export).
   so only documents the owner has explicitly shared expose an image. The URL is
   effectively public to anyone who has it (an `<img>` can't send a password or
   auth header), which matches a share link's existing semantics.
-  - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL — an `<img>`
+  - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL: an `<img>`
     can't supply the password, so exposing an unguarded image would bypass the
     gate. The Share dialog hides the image option while a password is set.
   - Revoking / expiring the share link also kills the image URL (it resolves
@@ -35,7 +35,7 @@ export).
 
 `GET /api/share/<code>/image.svg`, answered by liveworkspace's previews (forwarded by this app's router):
 
-1. Resolve `<code>` through the index (`resolveShare`, the single authority — expiry +
+1. Resolve `<code>` through the index (`resolveShare`, the single authority: expiry +
    role). 404 if missing / revoked / expired.
 2. If the document has a share password, 404 (no image for gated shares).
 3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.

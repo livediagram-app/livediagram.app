@@ -2,7 +2,7 @@
 
 > **Status: implemented, as part of [Design SVG snapshots](../006-design/design-snapshots.md).** The
 > endpoint and Share-dialog option below shipped, but two design points here are
-> now superseded by [Design SVG snapshots](../006-design/design-snapshots.md) — read it for the authoritative behaviour:
+> now superseded by [Design SVG snapshots](../006-design/design-snapshots.md); read it for the authoritative behaviour:
 >
 > - **liveworkspace's, not the api's.** The image is one of liveworkspace's previews
 >   ([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)): the router sends the address to the media service,
@@ -21,7 +21,7 @@
 
 A share option that serves the design as a **live image**: an `<img>`-able URL
 that serves the current design as SVG, so it can be embedded in a README / wiki
-/ site and stay up to date — no editor chrome, just the content (like the SVG
+/ site and stay up to date, with no editor chrome, just the content (like the SVG
 export).
 
 ## Confirmed decisions
@@ -30,7 +30,7 @@ export).
   so only designs the owner has explicitly shared expose an image. The URL is
   effectively public to anyone who has it (an `<img>` can't send a password or
   auth header), which matches a share link's existing semantics.
-  - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL — an `<img>`
+  - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL: an `<img>`
     can't supply the password, so exposing an unguarded image would bypass the
     gate. The Share dialog hides the image option while a password is set.
   - Revoking / expiring the share link also kills the image URL (it resolves

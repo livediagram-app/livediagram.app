@@ -9,7 +9,7 @@ thing evaporates. Sits beside the timer and dot-vote in the bottom bar's
 
 The timer and vote live as `Tab` fields, which is exactly why they survive a
 reload and reach late joiners: they ride the tab-sync pipeline into the document's store
-([Session tools (timer + voting)](session-tools.md)). A poll wants the **opposite** guarantee — "no trace of the poll
+([Session tools (timer + voting)](session-tools.md)). A poll wants the **opposite** guarantee: "no trace of the poll
 (question, options, or responses) is left on the document afterward". Storing it
 on the tab would `PUT` the question and every response to the stored tab for the duration
 and rely on a delete to clean up.
@@ -38,16 +38,16 @@ Three additions to `RoomOp` (`packages/api-schema/src/room-messages.ts`). The
 wire keeps `op: unknown`; the room reads each op's kind to gate and order it,
 and reads these three to keep the running poll (above).
 
-- `{ kind: 'poll-start'; poll: LivePoll }` — the question, style, and options.
-- `{ kind: 'poll-answer'; pollId: string; value: string | null; key?: string }`
-  — one participant's answer; `null` means they skipped. Keyed by `key`, the
+- `{ kind: 'poll-start'; poll: LivePoll }`: the question, style, and options.
+- `{ kind: 'poll-answer'; pollId: string; value: string | null; key?: string }`:
+  one participant's answer; `null` means they skipped. Keyed by `key`, the
   answerer's collab key (the sender's presence id only for an old client), so
   re-sending replaces their previous answer, across a reconnect too. The sender
   adds `proof` (its per-browser collab secret), which the room checks and never
   relays. The room decides the key, relays only answers it accepted, and refuses
   one that would change somebody else's answer or stuff the poll
   ([Vote integrity](vote-integrity.md)).
-- `{ kind: 'poll-end'; pollId: string }` — tear it down everywhere.
+- `{ kind: 'poll-end'; pollId: string }`: tear it down everywhere.
 
 None of them touches the document. `poll-answer` relays unordered like cursor /
 select / laser (it is open to a Participant, never a Viewer); `poll-start` / `poll-end` are
@@ -84,15 +84,15 @@ tally path serves them all:
 | `rating`        | 1–5                                |
 | `text`          | free text                          |
 
-### `collaborators` — vote for a person
+### `collaborators`: vote for a person
 
-"Who chose this movie?", "who should take this?", "who explained that best?" —
+"Who chose this movie?", "who should take this?", "who explained that best?":
 the answers are the people in the room, and typing their names into a `choice`
 poll by hand is both tedious and wrong by the time somebody joins.
 
 It is a **snapshot, not a live list.** The roster is read once, when the poll
 starts, and stored in the poll's own `options` exactly as a `choice` poll's
-are. Everything downstream — the wire op, the tally, the bars — is then
+are. Everything downstream (the wire op, the tally, the bars) is then
 identical to `choice`, which is the point: a poll whose answers moved while
 people were voting would re-target votes already cast, and late joiners would
 see a different ballot from everyone else.
@@ -105,7 +105,7 @@ long before the room it will run in exists.
 
 Names are de-duplicated before they are frozen (`poll-collaborators.ts`): two
 guests both called "Guest" would otherwise be one token and their votes would
-merge into a single bar. Repeats are suffixed — `Guest`, `Guest (2)`. The
+merge into a single bar. Repeats are suffixed: `Guest`, `Guest (2)`. The
 roster is capped at `POLL_OPTIONS_MAX` like any other option list, and the
 composer previews exactly what will be sent, so a room bigger than the cap
 shows the truncation before it is asked rather than after.
@@ -115,7 +115,7 @@ Precedent: the Picker ([Picker](picker.md)) already draws candidates from
 
 The union lives in **`@livediagram/document`** (`poll-style.ts`), not beside
 `LivePoll` here, because a Session button ([Session button](session-button.md))
-STORES a style on the element and so needs it in a `Tab` field — and
+STORES a style on the element and so needs it in a `Tab` field, and
 api-schema depends on document, never the reverse. `PollStyle` is re-exported
 from api-schema so existing imports keep resolving. The fixed answer sets
 (`Yes / No`, `1-5`) moved down with it, which is what lets the authoring menus
@@ -126,7 +126,7 @@ Caps (the issue's other open question), enforced at the input and re-checked
 when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 - question ≤ 200 chars
-- ≤ 10 options, each ≤ 60 chars, minimum 2 — for `choice` AND `collaborators`, which are the two styles carrying their own list (`POLL_OPTIONS_MAX`; was 6, which ran out on ordinary polls like the people in the room or a film shortlist — nothing downstream is keyed to the count, the results bars come off the list)
+- ≤ 10 options, each ≤ 60 chars, minimum 2, for `choice` AND `collaborators`, which are the two styles carrying their own list (`POLL_OPTIONS_MAX`; was 6, which ran out on ordinary polls like the people in the room or a film shortlist; nothing downstream is keyed to the count, the results bars come off the list)
 - free-text answer ≤ 280 chars
 
 ## Lifecycle
@@ -150,8 +150,8 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    keyed on the poll id so a second poll never inherits the first one's
    half-typed free-text answer.
 
-   **Not a modal, deliberately.** It was one — a centred dialog with a backdrop
-   — and that stopped the room dead. A poll is a question asked DURING the work,
+   **Not a modal, deliberately.** It was one: a centred dialog with a backdrop,
+   and that stopped the room dead. A poll is a question asked DURING the work,
    and the thing people most want while answering "which of these?" is to look
    at the thing being asked about; the scrim covered exactly that. The canvas
    now stays live behind the sheet: you can pan, point, read the canvas, and
@@ -161,7 +161,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    - **No focus trap and no autofocus.** Focus stays where the person was
      working. Stealing it would be the modal's rudeness without the modal.
    - **Escape still skips**, because the keyboard way out of a prompt should not
-     depend on whether it happens to be modal — except while a text field or
+     depend on whether it happens to be modal, except while a text field or
      label editor has focus, where Escape belongs to the field, and when the
      work behind the sheet already claimed the press (cancelling a label edit,
      the format painter, a pending draw, a deselect, or a dialog over the
@@ -173,7 +173,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, opened as a popover
    from the **Poll button** of the [Session strip](session-tools.md#the-session-strip) in the
    bottom-right cluster, on a desktop and a phone alike. While no poll runs the same button
-   opens the poll composer, and the Vote button works the same way. Shown to the host and to anyone who has responded — so
+   opens the poll composer, and the Vote button works the same way. Shown to the host and to anyone who has responded, so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.
@@ -185,7 +185,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    everyone. Non-hosts additionally get a local **Dismiss** that hides their
    own panel and its button without ending the poll (and rescues them if the host vanished).
 
-## Anonymity — what is and isn't guaranteed
+## Anonymity: what is and isn't guaranteed
 
 **No answer is ever attributed to a person anywhere in the product.** The
 results panel shows counts and free-text answers with no names, no colours, and
@@ -193,7 +193,7 @@ no ordering that tracks the presence list.
 
 **It is not anonymous on the wire.** Every op the room relays carries the
 sender's per-connection presence id, and the presence frame maps that id to a
-display name — so a participant with devtools open can attribute answers. The
+display name, so a participant with devtools open can attribute answers. The
 client even relies on the sender id, to key answers so a person changing their
 mind replaces their earlier answer rather than stacking a second one.
 
@@ -211,15 +211,15 @@ which costs the per-sender dedupe (a client could then answer repeatedly). See
 
 `track('Tab', 'Started', 'Poll')` on start, `track('Tab', 'Ended', 'Poll')` on
 end, and `track('Tab', 'Voted', 'Poll')` when the local participant submits an
-answer (a skip included — the interaction is "responded"). No question text or
+answer (a skip included: the interaction is "responded"). No question text or
 answer content is ever emitted; `type` stays the fixed `'Poll'` token.
 
 ## Out of scope (v1)
 
-- **Wire-level anonymity** (stripping the sender id in the DO) — see above.
+- **Wire-level anonymity** (stripping the sender id in the DO); see above.
 - **A saved history of past polls.** Nothing is stored, so there is nothing to
   browse; Keep Results is the export path.
 - **Multiple concurrent polls.** One poll at a time per document; starting a
   second replaces the first, matching the one-timer-per-tab rule in [Session tools (timer + voting)](session-tools.md).
 - **Per-tab scoping.** A poll goes to everyone on the document, not just the
-  people on the host's tab — a pulse-check is about the room, not the canvas.
+  people on the host's tab: a pulse-check is about the room, not the canvas.

@@ -128,7 +128,9 @@ per-user opt-out ([User preferences](../007-editor/user-preferences.md)) and the
 
 ## Next ideas
 
-Not built yet; each fits the same `Timing·Measured` event with a new metric on an existing scale.
+**Status: Planned.** Not built yet; today the editor times document load, tab load, save, room connect and room
+reconnect, and every frontend reports Web Vitals. Each idea below fits the same `Timing·Measured` event with a new
+metric on an existing scale.
 
 - **Explorer first load**: opening the Explorer to its first list rendered (Home, Recent).
 - **Time to first edit**: finishing the `/new` wizard to the first element placed, the clearest

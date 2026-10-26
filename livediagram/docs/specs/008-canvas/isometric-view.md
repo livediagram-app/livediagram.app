@@ -1,7 +1,7 @@
 # Isometric view
 
 A **canvas tool**, in the picker beside Select / Hand / Laser, that renders the
-current tab as an **isometric scene with depth** — the flat canvas tilted
+current tab as an **isometric scene with depth**: the flat canvas tilted
 onto an isometric plane, each shape extruded into a raised block. It's a way
 to _look_ at a canvas (architecture decks, system maps, screenshots), not a
 way to edit one.
@@ -9,24 +9,24 @@ way to edit one.
 ## What it does
 
 Picking the **Isometric** tool re-projects the canvas content into an
-isometric (axonometric, parallel — no perspective) view:
+isometric (axonometric, parallel; no perspective) view:
 
 - The whole content layer tilts onto the isometric plane, so the canvas
   reads as a surface seen from above and to the side.
 - Each **boxed element** (shapes, tables, images, stickies, link
-  cards, annotations) gains **extruded depth** — a solid raised
-  block standing off the floor — so the scene looks three-dimensional. The
+  cards, annotations) gains **extruded depth**: a solid raised
+  block standing off the floor, so the scene looks three-dimensional. The
   block's side walls paint in the **element's own colour** (its accent),
   shaded darker toward the floor, rather than a flat black slab.
   **Frames are one exception**: a frame is a section backdrop, not a solid
   block, so it gets no extrusion column and instead settles **just below
   the base plane** (a -1px translateZ via the `[data-iso] [data-frame]`
-  rule) — its big surface would otherwise be exactly coplanar with the
+  rule): its big surface would otherwise be exactly coplanar with the
   contents drawn over it, and coplanar 3D layers z-fight (flicker) while
   the camera orbits. **Plain text elements are another**: text draws with
   no background on the flat canvas, so an extrusion column would conjure a
   solid slab behind bare words (the wall-colour fallback). Text stays flat
-  on the base plane. **Icon shapes are the third** — line-art glyphs and
+  on the base plane. **Icon shapes are the third**: line-art glyphs and
   Technology / infra marks alike read as flat markers, like text: a raised
   slab under a glyph turns every icon into an anonymous block and buries
   the artwork, so they stay flat too. All three exemptions live in one
@@ -36,7 +36,7 @@ isometric (axonometric, parallel — no perspective) view:
 - **Arrows, freehand strokes, and labels** stay on the base plane (they have
   no box to extrude); they ride the tilt with everything else.
 
-It reuses the existing element rendering wholesale — the same shapes, fonts,
+It reuses the existing element rendering wholesale: the same shapes, fonts,
 themes, multi-colour tints, SVG shape outlines, and images you see in 2D,
 just projected. Nothing is re-drawn in a lower-fidelity form.
 
@@ -51,7 +51,7 @@ Isometric is **navigation-only**, modelled on the Hand tool:
   side-on). A plain right-click (no drag) still opens the context menu; only
   a right-drag orbits and swallows that menu. The
   angle is local, non-synced view state (it opens at the default isometric
-  angle and keeps whatever angle you orbit to for the session) — it stays a
+  angle and keeps whatever angle you orbit to for the session); it stays a
   parallel (isometric) projection throughout, never a perspective camera.
 - **An orbit button in the zoom bar** offers the same orbit without a held
   modifier: while the isometric tool is active an orbit-icon button appears in
@@ -63,13 +63,13 @@ Isometric is **navigation-only**, modelled on the Hand tool:
   isometric angle (`useIsometricCamera.reset`). It only mounts in isometric
   view and disappears on any other tool.
 - **No selecting, dragging, resizing, marquee, or editing** while it's
-  active — the content layer is non-interactive (like Spotlight, [Canvas and palette](canvas-and-palette.md)),
+  active: the content layer is non-interactive (like Spotlight, [Canvas and palette](canvas-and-palette.md)),
   so there's no reverse hit-testing to get wrong. To edit, switch back to
-  Select. **Escape** exits the view to the default editing tool — Select on
+  Select. **Escape** exits the view to the default editing tool, Select on
   desktop, Hand (pan) on touch viewports where Select isn't the default
   (mirrors how Spotlight reverts to Select).
 - It is **purely a view state**: it changes nothing about the document, never
-  persists to the server, and is **not synced** to other participants — each
+  persists to the server, and is **not synced** to other participants; each
   viewer tilts independently (same contract as Zen mode, [Zen mode](../007-editor/zen-mode.md)).
 
 Available to everyone, including view-only visitors (looking is read-only).
@@ -90,7 +90,7 @@ Available to everyone, including view-only visitors (looking is read-only).
 
 ## Telemetry
 
-Selecting the tool emits `Canvas / Used / Isometric` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) — the same
+Selecting the tool emits `Canvas / Used / Isometric` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), the same
 shape as `Canvas / Used / Laser` and the other distinct-tool selections.
 Like Pan / Select, repeated re-selection isn't re-tracked.
 
@@ -116,12 +116,12 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 - Rendering: when the tool is active, the existing transformed content
   wrapper (`Canvas.tsx`, the `scale(zoom) translate(offset)` layer) also
   carries the isometric tilt **innermost** (appended after scale/translate so
-  it tilts the content first and the pan translate stays in screen space —
+  it tilts the content first and the pan translate stays in screen space:
   drag-to-pan then moves the scene the way the cursor moves at any camera
   angle). The wrapper is made `pointer-events-none` so no element kind can be
   selected or dragged; pan still works because drag-to-pan is handled on
   `<main>` (and `wantsPan` gains the `isometric` case, like `pan` / `laser`).
-  No change to the document data model — every element stays 2D
+  No change to the document data model: every element stays 2D
   (`x, y, width, height`) and the view is a pure projection on top.
 - The tilt **pivots around the content centre**, not the wrapper centre. The
   rotation fragment is wrapped in `translate(pivot) … translate(-pivot)`
@@ -161,13 +161,13 @@ The Export dialog ([Editor app](../007-editor/editor-app.md) `ExportTabDialog`) 
 iOS-style toggle, **off by default**. When on, the image exports (PNG / SVG /
 PDF) tilt the rendered scene into the same isometric projection as the on-canvas
 view; JSON / Markdown ignore it. The export applies the projection's 2D affine
-(`isoCanvasMatrix` in `lib/isometric.ts` — an in-plane rotation by the azimuth
+(`isoCanvasMatrix` in `lib/isometric.ts`: an in-plane rotation by the azimuth
 then a `cos(elevation)` vertical squash, the parallel-projection equivalent of
 the on-screen `rotateX·rotateZ`) and sizes the canvas / SVG viewBox to the
 projected footprint (`isoProjectBounds`) so nothing clips. Each element also
 gets the same **voxel extrusion** the on-screen view paints: a stack of its
 silhouette stepped along the projected depth axis (`isoDepthLayers` /
-`isoLayerBrightness`), dimmed toward the floor, behind the element body — so the
+`isoLayerBrightness`), dimmed toward the floor, behind the element body, so the
 export reads with depth, not as a flat tilted plane.
 
 ## Scope (first cut) and what's deliberately out
@@ -177,7 +177,7 @@ export reads with depth, not as a flat tilted plane.
 - **Out (for now):** a faint isometric floor grid behind the content (a nice
   seat for the scene, deferred), editing in isometric, a perspective (true
   vanishing-point) camera, per-element height authoring, and 3D arrows. These
-  are noted as possible follow-ups, not part of this spec — full 3D node
+  are noted as possible follow-ups, not part of this spec: full 3D node
   placement remains out of scope (see the view-modes discussion; it would
   need a `z` field in the model and a different renderer).
 

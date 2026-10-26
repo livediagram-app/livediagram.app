@@ -27,9 +27,9 @@ wrong shape in three ways:
 A **shape kind**, `qa-board`, in the Collaborate family ([Per-participant responses](participant-responses.md)). Its `label`
 is the prompt ("Questions for the panel").
 
-- **`ShapeElement.qaNotes?: QaNote[]`** — every note, in submission order. The
+- **`ShapeElement.qaNotes?: QaNote[]`**: every note, in submission order. The
   sort is a view, never stored, so two clients can't disagree about it.
-- **`ShapeElement.qaRev?: number`** — a counter the server bumps on every board
+- **`ShapeElement.qaRev?: number`**: a counter the server bumps on every board
   write. See [Consistency](#consistency).
 
 ```ts

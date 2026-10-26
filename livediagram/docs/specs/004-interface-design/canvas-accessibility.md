@@ -2,7 +2,7 @@
 
 A first, honest accessibility layer for the canvas: keyboard traversal of
 elements, selection announced to screen readers, and element views that carry
-names. This is a **baseline**, not full SR canvas editing — the goal is that
+names. This is a **baseline**, not full SR canvas editing: the goal is that
 a keyboard-only or screen-reader user can reach the canvas, walk its
 elements, hear what they are, and use the existing keyboard verbs (nudge,
 delete, undo, label edit via Space) that already work on a selection.

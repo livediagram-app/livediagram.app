@@ -4,8 +4,8 @@ A **tab kind**: the sticky-note workshop notation for exploring a
 business domain (Brandolini's event storming), started from a template
 under the picker's **Technical** category.
 
-An event-storming board is an ordinary tab — plain stickies, one layer,
-the same persistence, realtime, comments and export as everything else —
+An event-storming board is an ordinary tab: plain stickies, one layer,
+the same persistence, realtime, comments and export as everything else:
 carrying `kind: 'event-storming'` (`TabKind`), which the editor reads to
 present it differently: the notation fills the palette, notes take fixed
 paper silhouettes with auto-fitting text and a slight tilt, resize is
@@ -14,8 +14,8 @@ verbs instead of styling. The kind tunes PRESENTATION; it does not fork
 the document model.
 
 It was built incrementally, and two early mechanisms have since been
-withdrawn — a layer per workshop stage with a chip bar to switch them,
-and a timeline rail — each recorded below with why. The working plan
+withdrawn: a layer per workshop stage with a chip bar to switch them,
+and a timeline rail, each recorded below with why. The working plan
 lives in `plans/0003-event-storming.md`.
 
 ## Why a template, not a new surface
@@ -23,7 +23,7 @@ lives in `plans/0003-event-storming.md`.
 livediagram's "diagram types" are template kinds
 (`packages/templates/src/templates.ts`): a `TemplateKind`, a catalogue
 entry, a pure element builder, a preview tile, and per-kind canvas
-overrides. Event storming fits that mould exactly — it is ordinary
+overrides. Event storming fits that mould exactly: it is ordinary
 elements (stickies, text, arrows, frames) arranged by a convention, so
 it inherits every editor feature (realtime, layers, comments, export)
 for free.
@@ -31,7 +31,7 @@ for free.
 What it grew beyond the mould is `Tab.kind`: the editor DOES branch on
 this one after creation, because the notation only reads as a notation
 when the surface respects it (fixed stationery, no resize, verbs not
-styling). That branch is presentation only — every other template kind
+styling). That branch is presentation only: every other template kind
 is still invisible to the editor once its elements are on the canvas.
 
 ## The starter
@@ -75,12 +75,12 @@ semantic colour:
 | `hotspot`         | `#fca5a5` | a conflict, question, or risk       |
 
 - **Single source of truth:** `EVENT_STORMING_NOTES` in
-  `@livediagram/document` (`src/event-storming.ts`) — kind, label, blurb,
+  `@livediagram/document` (`src/event-storming.ts`): kind, label, blurb,
   fill. The palette tiles derive from it (a `map`, not hand-copies) and
   the template builder reads its orange from it, so the surfaces cannot
   drift (pinned by `event-storming.test.ts` + `palette-tile-defs.test.tsx`).
 - **Palette home:** a **top-level Event Storming category** in the
-  Structure band ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)) — promoted out of the Write accordion once
+  Structure band ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)), promoted out of the Write accordion once
   the notation earned first-class status. Rows with a blurb (the
   Behaviour / Data treatment): eight identical squares in different
   colours don't explain themselves. Tile ids keep their historical
@@ -92,7 +92,7 @@ semantic colour:
   belongs to the event-storming mode. Popular stays the landing view there. Help article: `palette/event-storming` (registered,
   with card art).
 - **The kind is stored.** Every note carries `esKind` on the element: the
-  colour says it visually, but the kind is domain data — it names the
+  colour says it visually, but the kind is domain data: it names the
   selection ("Selected Domain Event" rather than "Selected Sticky") and is
   what any later notation-aware feature reads instead of matching hexes.
   Notes authored before the stamp get it as they load (every stored-tab
@@ -104,15 +104,15 @@ semantic colour:
   Copy / Duplicate / Bring to Front / Send to Back / Remove, and nothing
   else: Colours, Shadow, Animation, Text, Rotation and Layer are hidden,
   because a note’s colour, silhouette, text treatment and tilt ARE the
-  notation — those controls could only break the grammar. Front/back are
+  notation: those controls could only break the grammar. Front/back are
   the IN-LAYER stack (the notes share one band), and Cut is copy+delete.
   Collaborate + Resources stay: comments, assigned actions, links. The
   verbs render as full-width rows (`MenuActionRow`, the accordion-header
   shape without the expand), banded clipboard / stacking / remove, with
-  Remove tinting destructive on hover — not a tile grid, because a verb
+  Remove tinting destructive on hover; not a tile grid, because a verb
   list reads down the menu like every other row.
 - **Drop, then type.** Dragging a tile onto the board opens the new
-  element’s label editor, focused — the drag already said WHERE and WHAT,
+  element’s label editor, focused: the drag already said WHERE and WHAT,
   and the only thing left is the words, so making the author double-click
   their own fresh note is a step that answers nothing. Applies to every
   palette drop, gated by `takesTypedLabel`: a sticker, session button,
@@ -122,19 +122,19 @@ semantic colour:
   (`FIT_MAX_PX`, floor 10px). On a real wall everyone writes at roughly one
   size, so a two-word event and a two-line policy sit at the same weight
   and the board reads as one surface. Letting a short label fill its paper
-  made it a poster that shouted down every note beside it — which is what
+  made it a poster that shouted down every note beside it, which is what
   the original 44px ceiling did. Only the top end is pinned; a long note
   still shrinks.
 - **Notes are written in MARKER.** `ES_NOTE_FONT` is `permanent-marker`
   ([Fonts](../004-interface-design/fonts.md)'s catalogue), resolved from the note rather than stamped on the
-  element — same reasoning as the caps: the face is grammar, so every board
+  element; same reasoning as the caps: the face is grammar, so every board
   gets it, including the ones authored before this, and nobody has to keep
   it. It sits between the author's own `element.font` (which still wins) and
   the tab default (which it beats). Chosen by looking at all twelve options
   on real stationery: marker is the only one that reads as a wall rather
   than a diagram, and capitals are its home register. The auto-fit measures
   IN that face (`labelMeasure`'s `fontFamily`), because a marker is far
-  wider than the UI sans at the same px — and the canvas re-renders once the
+  wider than the UI sans at the same px, and the canvas re-renders once the
   webfont lands (`useFontEpoch`), or a board nobody has touched keeps a size
   measured against the swap fallback.
 - **Notes are WRITTEN IN CAPITALS.** A marker on paper produces caps, and a
@@ -144,7 +144,7 @@ semantic colour:
   PRESENTATION-only (`eventStormingLabelText` in `@livediagram/document`, a
   CSS `text-transform` on the canvas): the typed label is stored exactly as
   written, so search, the JSON export and the day a note stops being a note
-  all keep the author's casing. It applies wherever a note PAINTS — display
+  all keep the author's casing. It applies wherever a note PAINTS: display
   label, rich runs, the live editor (so typing shows the note as it will
   read), and the SVG / PNG export, which would otherwise hand out a picture
   that isn't the board. Capitals are WIDER, so the auto-fit measures the
@@ -154,13 +154,13 @@ semantic colour:
   constraint beyond “does it fit”: a multi-word label must keep at least
   one PAIR of words on a line. At a large enough size every word lands on
   its own line and the note stops reading as a phrase and starts reading
-  as a column of fragments — technically fitted, visually wrong. The rule
+  as a column of fragments: technically fitted, visually wrong. The rule
   only ever shrinks, and falls back to the plain fit when two long words
   can never share a line (they must not drag the note down to 10px).
 - **Layer routing:** on an event-storming board the commit path files a
   dropped note onto the board's single layer
   (`eventStormingBoardLayerId`), whatever its kind. Only when that layer
-  exists, is visible AND unlocked — otherwise (and on non-ES boards) the
+  exists, is visible AND unlocked; otherwise (and on non-ES boards) the
   note falls through to ordinary active-layer stamping. Each kind still
   carries a `stage` in the catalogue: it is real domain vocabulary
   (which pass of the workshop the note belongs to) and reads in the
@@ -168,12 +168,12 @@ semantic colour:
 - **Mechanics:** each tile arms the ordinary sticky draw gesture with
   the kind's fill riding the intent (`PendingDraw` sticky variant gains
   `fill?: string`, the session/provider precedent), and `buildDrawnBoxed`
-  lands it as `fillColor`. No new element type, no schema change — the
+  lands it as `fillColor`. No new element type, no schema change: the
   notes are plain stickies, so votes, comments, exports and realtime all
   just work, and the fill survives theming because stickies are
   theme-exempt. Pressed-state matches on the fill so arming Command
   doesn't light all nine sticky tiles.
-- **Telemetry:** adds report `Element / Added / Sticky`, unchanged — the
+- **Telemetry:** adds report `Element / Added / Sticky`, unchanged: the
   colour is a user choice riding the intent, not a new kind (the same
   reasoning as Video's provider, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
@@ -210,7 +210,7 @@ An event-storming board has exactly one layer, `layer:es:board` (`eventStormingL
   depends on which one ran is a field no reader can trust. `tabForWire`
   (cloud) and `upsertTab` (offline IndexedDB) both stamp, so the two
   stores can never disagree about what a tab is. The stamp is a ONE-WAY
-  write, so it resolves legacy signals first — branding a pre-`kind`
+  write, so it resolves legacy signals first: branding a pre-`kind`
   workshop board `diagram` would take its palette, stationery and note
   menu away permanently, with no later load able to tell.
 - Older boards may carry a stage layer or `layer:es:rail` as ordinary layer data; nothing reads them as chrome.
@@ -220,7 +220,7 @@ An event-storming board has exactly one layer, `layer:es:board` (`eventStormingL
 
 The notes behave like the physical kit:
 
-- **Silhouettes.** Each kind carries a `size` class in the catalogue —
+- **Silhouettes.** Each kind carries a `size` class in the catalogue:
   standard `square` (200×200) for events / commands / read models /
   hotspots, `wide` (300×180) for the prose kinds (policy, external
   system, aggregate), `small` (140×140) for the actor. A kinded note
@@ -237,11 +237,11 @@ The notes behave like the physical kit:
   workshop rather than a grid. The template's seed events ship tilted
   (±1.1°) and `fixedSize` too.
 - **No palette chrome.** An ES board hides the palette's whole header
-  band — BOTH dropdowns (canvas tool + category). The notation is the
+  band: BOTH dropdowns (canvas tool + category). The notation is the
   only category that matters here, and every control that doesn't serve
   "add a note, type, drag" is a distraction. Canvas tools stay reachable
   by keyboard shortcut and the command palette ([Command palette (⌘K)](../007-editor/command-palette.md)).
-- **Auto-fit, centred text.** Every ES note is created with `textSize: 'scale'` and centred both ways: a workshop note is one short phrase that should fill its paper and sit in the middle, like a marker-written sticky. It also closes the loop with fixed silhouettes — the note cannot be resized, so the TEXT adapting is what keeps a long phrase legible.
+- **Auto-fit, centred text.** Every ES note is created with `textSize: 'scale'` and centred both ways: a workshop note is one short phrase that should fill its paper and sit in the middle, like a marker-written sticky. It also closes the loop with fixed silhouettes: the note cannot be resized, so the TEXT adapting is what keeps a long phrase legible.
 - **Stacking follows the paper.** Actors are always in FRONT of every other
   note, and hotspots in front of actors: an actor is stuck on top of the note
   it acts on, and a hotspot flags whatever it covers. Everything else keeps
@@ -281,13 +281,13 @@ insertion as ONE undoable step; letting go of Alt, or leaving the gap,
 closes it again.
 
 It works for **a note dragged in from the palette AND a note already on
-the board** — the drag people do most is moving a note they have already
+the board**: the drag people do most is moving a note they have already
 placed, and that is where making room in the middle earns its keep.
 
 - **Armed on a held Alt, never automatically.** Without the modifier the
   drag behaves exactly as it does on every other tab: no slot, no
   ripple, no surprise. Automatic arming was tried first and was wrong
-  twice over — an author dropping a note NEAR a row got the whole board
+  twice over: an author dropping a note NEAR a row got the whole board
   rearranging under them, and the gesture was unavailable in the one
   place it mattered most.
 - **Why Alt and not Ctrl or Shift.** Both are taken during a canvas
@@ -303,7 +303,7 @@ placed, and that is where making room in the middle earns its keep.
   at button-press. All the copy says "press", for that reason.
 - **A moved note leaves its hole behind.** When a note already on the
   board is inserted elsewhere, nothing closes up behind its ORIGINAL
-  position — the board makes room at the destination, and the source gap
+  position: the board makes room at the destination, and the source gap
   is the author's to tidy. Predictable beats clever.
 - **A single sticky only.** A multi-selection drag, and a drag of a
   shape / icon / arrow, behave exactly as they do today whatever is
@@ -319,7 +319,7 @@ placed, and that is where making room in the middle earns its keep.
   hands placement back to the ordinary snap. The drop does whatever the
   state is at the instant the button is released.
 - **Discoverability.** While a note is on the move on one of these
-  boards, the modifier hint banner offers the gesture: "Alt — Press to
+  boards, the modifier hint banner offers the gesture: "Alt · Press to
   insert it between two notes". A held modifier nobody has heard of is a
   feature nobody finds, and the offer only makes sense during the drag.
 
@@ -327,7 +327,7 @@ placed, and that is where making room in the middle earns its keep.
 left-to-right timeline of domain events, so "this happened before that"
 is the entire information content of the x axis. Adding a step in the
 middle is the commonest edit in a session, and without help it costs a manual
-re-shuffle of everything downstream — the one operation a
+re-shuffle of everything downstream: the one operation a
 low-threshold-capture board cannot afford to be slow. On an ordinary
 board x means nothing in particular, so the same gesture would be a
 surprise: everything is gated on `isEventStormingTab`, and no other
@@ -335,7 +335,7 @@ board's behaviour changes at all.
 
 - **The preview NEVER touches the document.** No commit, no tick, no
   realtime broadcast, no autosave, no dirty flag. The slot is published
-  on a module-level store of its own (`lib/insertion-preview.ts` — it
+  on a module-level store of its own (`lib/insertion-preview.ts`; it
   has two publishers, the palette drag and the note drag, which is why
   it does not live beside the palette's own drag state), and the canvas
   renders it as a CSS
@@ -358,7 +358,7 @@ board's behaviour changes at all.
   its event and a policy below it stay lined up with the event they
   annotate. Boxed elements move by `x`; a free arrow entirely at or after the point travels, one that straddles
   it stretches (each endpoint keeps the note it was drawn between);
-  pinned arrows need no help at all. **Locked elements do not move** —
+  pinned arrows need no help at all. **Locked elements do not move**:
   the board opens around them, because a locked element is one the
   author pinned on purpose. Elements on a hidden or locked LAYER cannot
   define the row (you can't aim at a note you can't see) but do travel,
@@ -366,7 +366,7 @@ board's behaviour changes at all.
 - **One placement rule at a time.** While a slot is open the alignment
   snap yields: the slot publishes its own offset through the same snap
   channel, so the ghost, the insertion marker and the drop cannot
-  disagree — the same discipline [Palette drag ghost + drop preview](../010-palette/palette-drag-ghost.md)'s ghost already follows. The
+  disagree: the same discipline [Palette drag ghost + drop preview](../010-palette/palette-drag-ghost.md)'s ghost already follows. The
   marker is a vertical line at the insertion point drawn in the
   alignment guides' own visual language, spanning the board because the
   whole board is what splits.
@@ -374,7 +374,7 @@ board's behaviour changes at all.
   slot stays open until the cursor leaves the gap by a margin; a cursor
   crossing the boundary back and forth cannot toggle it. The slot eases
   open and shut over 120ms (collapsed to instant under reduced motion);
-  the COMMITTED positions never animate — the drop lands exactly where
+  the COMMITTED positions never animate: the drop lands exactly where
   the preview promised.
 - **One undoable step.** The ripple and the new note are one commit
   through the ordinary choke point, so layer stamping, board-kind
@@ -404,7 +404,7 @@ board's behaviour changes at all.
   opens on the next movement, however small.
 - **Not in v1:** vertical insertion (the module is axis-parameterised in
   shape, horizontal in fact), and leading / trailing insertion (there is
-  no "between" at the ends of a row — you can just drop there).
+  no "between" at the ends of a row; you can just drop there).
 - **Telemetry:** `Canvas / Used / InsertBetween`, once per committed
   insertion from EITHER entry point, alongside the ordinary
   `Element / Added / Sticky` when the note is a new one. The two entry
@@ -414,8 +414,8 @@ board's behaviour changes at all.
 ## Timeline lanes
 
 **Timeline lanes** is what an event-storming board IS, not a mode it can be
-put into. The board carries an infinite stack of horizontal lanes — one note tall, evenly pitched, running in
-both directions — and a note being dragged **snaps its centre onto a lane**. A
+put into. The board carries an infinite stack of horizontal lanes: one note tall, evenly pitched, running in
+both directions, and a note being dragged **snaps its centre onto a lane**. A
 lane is a ROW, and rows are all it claims: **x is answered by the notes already
 on the board**, not by a grid.
 
@@ -433,7 +433,7 @@ axis means anything in particular, so the whole feature is gated on
 - **NOT A MODE, and not board state.** There is no switch, no command and no
   menu verb: an event-storming board is a board of lanes, the way it is a board
   of coloured paper. It was a toggle for one afternoon and the toggle was the
-  wrong shape — nobody wants half an event-storming board.
+  wrong shape: nobody wants half an event-storming board.
 - **The stack is FIXED to the canvas.** Lane 0 is centred at world y = 100
   (its band spans y 0..200), and the lanes repeat every pitch in both
   directions (`ES_LANES`). Nothing on the board moves them: not a note placed
@@ -458,9 +458,9 @@ record who asked for what.
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Same lane, no neighbour in reach** | Nothing. The note is free within the lane.                                                                                                                                                                                                                                                                                                                                                                                                             |
 | **Same lane, a neighbour in reach**  | One GUTTER from the neighbour, and then the same again with a square note worth of empty wall between (room kept for an event not yet written): `x = n.x + n.width + 16 + k × (200 + 16)`, `k ≥ 0`, and the mirror to its left. Every step is a SQUARE note, whatever is being placed, so a row has one set of places whichever sticky you hold.                                                                                                       |
-| **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb).                                                                                                                                                                                                              |
-| **Adjacent lane**                    | EDGES LINE UP, in three columns: exactly above/below the note, and ONE rhythm step (216) to either side — the diagonal, a note sitting against its neighbour one place along. Same silhouette lines up on the left edge and, for two SQUARES, the brick as well (centred on the gap beside the note). Different silhouettes line up on the left edge or the right edge, in the same three columns, and get no brick.                                   |
-| **Every other x snap**               | Stands down. On an event-storming board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                                                                                                                                                                                           |
+| **Same lane: never offered**         | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`): that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb).                                                                                                                                                                                                               |
+| **Adjacent lane**                    | EDGES LINE UP, in three columns: exactly above/below the note, and ONE rhythm step (216) to either side: the diagonal, a note sitting against its neighbour one place along. Same silhouette lines up on the left edge and, for two SQUARES, the brick as well (centred on the gap beside the note). Different silhouettes line up on the left edge or the right edge, in the same three columns, and get no brick.                                    |
+| **Every other x snap**               | Stands down. On an event-storming board the lane resolver is the only source of x: the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                                                                                                                                                                                            |
 | **A multi-selection**                | Snapped by the NOTE IN HAND: the offers are asked of the note the drag began on, exactly as if it were dragged alone, and every other note moves by the one delta, so the selection keeps its spacing exactly. The preview is that note’s footprint.                                                                                                                                                                                                   |
 | **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper.                                                                                                                                                                                 |
 | **The gutter**                       | Always `ES_NOTE_GAP` (16). Not measured from the board any more: one number, relative to the notes in the row, is what makes the places predictable.                                                                                                                                                                                                                                                                                                   |
@@ -613,7 +613,7 @@ paper above the notes lanes too low).
 
 - **The pitch is a constant, not a field.** `ES_LANE_PITCH` = 240px: a
   200px-tall standard note plus a 40px gap, the rhythm of stickies pressed onto
-  a wall in rows. One rhythm per board is the whole point — a board with two
+  a wall in rows. One rhythm per board is the whole point: a board with two
   lane heights is a board with no lanes.
 - **Notes are CENTRED on their lane**, which is what makes mixed stationery
   read as one row: the 180-tall wide kinds (policy, external system, aggregate)
@@ -630,7 +630,7 @@ paper above the notes lanes too low).
   the bands span the viewport because the lanes are infinite. Everything goes on release. There are no column marks:
   the board draws the SLOT it is offering instead, which says the same thing
   about x and says it where the note is actually going.
-- **Notes only** — one or many. A selection of notes snaps by the note in hand
+- **Notes only**: one or many. A selection of notes snaps by the note in hand
   (see the rules table); a selection holding a workshop note snaps by it whatever
   else it holds (a label, a frame and its contents), the rest moving by the same
   delta; a shape, an icon, an arrow or an image dragged without one drags exactly
@@ -660,7 +660,7 @@ paper above the notes lanes too low).
   starts on the lanes every drag snaps to (`buildEventStorming`).
 - **Not in v1:** no "snap all notes to lanes" verb (the one-time settle is
   not a verb), no vertical lanes (the module is horizontal in fact, axis-shaped in form), and
-  no per-lane naming — a lane is a position, not an entity.
+  no per-lane naming: a lane is a position, not an entity.
 
 **What shipped, in numbers.** `ES_LANE_HEIGHT` 200 (one standard note),
 `ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_NOTE_GAP` 16 (the board's own
@@ -756,14 +756,14 @@ the tabs and their preview are `components/canvas/NextNoteButtons.tsx`.
 
 ## Import a photo of the wall
 
-Photograph a piece of the physical wall — stickies, possibly overlapping,
-possibly a region already partly on the board — and the board reads the notes
+Photograph a piece of the physical wall (stickies, possibly overlapping,
+possibly a region already partly on the board) and the board reads the notes
 out of it: the **kind from the paper colour**, the **text from the
 handwriting**, the **layout from the photo**. It then **reconciles** against
 what the board already holds: notes already there are matched and left exactly
 as they are, and only the **new** ones are added, placed relative to the
 matched neighbours they sat beside in the photo. Repeating with the next photo
-of the next piece of wall adds only what is new — that is what "incremental"
+of the next piece of wall adds only what is new: that is what "incremental"
 means here.
 
 A real workshop always happens on a physical wall first. Getting it onto the
@@ -771,8 +771,8 @@ board by hand costs a transcription afternoon, which is the one thing a
 low-threshold capture surface can least afford.
 
 - **Detection and reconciliation are ours; only the reading is the model's.**
-  Finding the stickies — where each one is, what colour its paper is and so
-  which KIND it is, which silhouette, which row, in what order — happens in the
+  Finding the stickies (where each one is, what colour its paper is and so
+  which KIND it is, which silhouette, which row, in what order) happens in the
   BROWSER, with classical computer vision (`@livediagram/sticky-vision`). It is
   deterministic, free, offline, and testable against images we draw ourselves.
   The model is asked exactly one thing: read the handwriting on this crop, or
@@ -783,13 +783,13 @@ low-threshold capture surface can least afford.
   vision model's sense of coordinates is famously loose, and a board laid out
   from hallucinated boxes is worse than no import; a hue histogram's is exact.
   And the model is never asked "which of these are already on the board" or
-  "where is this" — those are questions about our data and our geometry, and an
+  "where is this": those are questions about our data and our geometry, and an
   answer to either could not be checked.
 
 - **How the detector works.** Grey-world white balance (so a warm-lit wall does
   not turn orange paper red), then every pixel is classified against the
-  notation's own catalogue fills — hue centre from `EVENT_STORMING_NOTES`, with
-  calibrated hue bands and saturation / value floors — into a note kind, the
+  notation's own catalogue fills (hue centre from `EVENT_STORMING_NOTES`, with
+  calibrated hue bands and saturation / value floors) into a note kind, the
   wall, or ink. Connected components over that mask become candidate blobs;
   fragments split by handwriting are merged back; a blob whose width or height
   is about n times the median note is SPLIT at the valleys of its own
@@ -802,7 +802,7 @@ low-threshold capture surface can least afford.
   confuse kinds; a sticky more than about 60% covered reads as a fragment of
   whatever is left; and pale YELLOW paper at the wall's own hue is wall to it
   (other pale paper is told from the wall in CIELAB; yellow is also masking
-  tape's colour) — on brown kraft that is the pale yellow aggregate (`#fef9c3`, s≈0.23), which the
+  tape's colour): on brown kraft that is the pale yellow aggregate (`#fef9c3`, s≈0.23), which the
   visual demo (`pnpm demo:sticky-vision`) reproduces as the one miss in its
   eighteen. Every one of those lands as a draft the author can fix, or as
   nothing at all.
@@ -811,11 +811,11 @@ low-threshold capture surface can least afford.
   ([Review the detection, draw the misses](#review-the-detection-draw-the-misses)).
 
 - **Existing notes are untouchable.** An import only ever ADDS. A matched note
-  is never moved, resized, re-kinded or re-worded — if the photo says something
+  is never moved, resized, re-kinded or re-worded: if the photo says something
   different, the review SHOWS it ("on the board as …") and leaves it. The board
   is the record; the photo is a reading of one moment of the wall.
 - **The photo is never stored, and never even sent.** Not R2, not a Durable Object, not
-  IndexedDB — and not the api either. The browser decodes
+  IndexedDB, and not the api either. The browser decodes
   it (honouring the EXIF orientation flag), detects on a downscaled working
   copy, cuts each detected sticky out of the full-resolution bitmap and
   re-encodes that CROP as a small JPEG (which drops EXIF with it). Only the
@@ -850,8 +850,8 @@ low-threshold capture surface can least afford.
 
   - The wall is BROWN KRAFT, which is the same hue as an orange domain event.
     The first version read most of the wall as paper. The floors are now
-    measured from each photograph — the wall's own hue and saturation, with the
-    wall/paper split chosen by Otsu over the saturation histogram — and a pixel
+    measured from each photograph: the wall's own hue and saturation, with the
+    wall/paper split chosen by Otsu over the saturation histogram, and a pixel
     near the wall's hue must clear that floor while one far from it (a purple
     policy, a green read model) needs much less.
   - PALE PAPER IS JUDGED IN CIELAB. A pale pink note on white paper has no
@@ -887,7 +887,7 @@ low-threshold capture surface can least afford.
   bitmap, so reading loses nothing. Measured on the three real photos through
   the browser detector: 20, 32 and 34 notes. The far plane of a wall corner is
   largely missed, and crop quality for small pen handwriting is unproven. The
-  flow itself is proven end to end — photo in, draft on the canvas, Add, Undo —
+  flow itself is proven end to end (photo in, draft on the canvas, Add, Undo)
   with the operator's own key and `gemini-3.6-flash`. Treat the DETECTOR as
   usable-but-partial and the reader prompt as untuned; the draft's Change Kind,
   delete and add-by-hand paths are
@@ -914,7 +914,7 @@ Decisions from the operator:
   On each detected sticky sits a box in the note's own colour, and on the box:
 
   - **the words the reader made of that handwriting**, and nothing else. The
-    KIND is the box's colour — colour is the notation's own alphabet here — so
+    KIND is the box's colour: colour is the notation's own alphabet here, so
     printing "Domain event" over the writing only hid the one thing the author
     has to check. Before the words arrive the chip is a quiet ellipsis, never a
     kind name. The words FIT THE BOX: the chip is the box's width, its font steps
@@ -931,7 +931,7 @@ Decisions from the operator:
 
   Status is pills on the photo ("Finding the stickies…", "Detecting N of M",
   "Reading the words…", the reader-failed note, the retake advice), and the two
-  ways out — **Add N notes** and **Cancel** — float over the dimmed margin
+  ways out (**Add N notes** and **Cancel**) float over the dimmed margin
   below it, never over a note's words. Nothing lands until Add, which hands the
   ticked boxes, the boxes the author drew and the words as edited to the one
   place a draft is written (the `esDraft` machinery of [Import a photo of the wall](#import-a-photo-of-the-wall)).
@@ -945,7 +945,7 @@ Decisions from the operator:
   one photograph you look into. A
   whiteboard of three hundred notes puts each sticky at about fifteen pixels
   when the photo fits the window; up to 800% it is a hand's width. The boxes
-  zoom with the photo; their CONTROLS do not — the tick, the word pill and the
+  zoom with the photo; their CONTROLS do not: the tick, the word pill and the
   two-pixel outline keep their size on screen, so zooming in opens space
   between them instead of magnifying the clutter. A plain drag still draws a
   box, and whether it was a click or a drag is judged on SCREEN, so a note
@@ -959,17 +959,17 @@ Decisions from the operator:
   and a share, and says it happens only the first time. Only the WEIGHTS are
   counted, so the bar never fills before they have begun.
 
-  **When too many notes could not be read, the review says so — and leaves
+  **When too many notes could not be read, the review says so, and leaves
   the choice to the author.** Once the reader has finished, if 10% or more of
   the notes it was given still have no words (unread, and not typed in by the
   author since), a tip floats with the other status pills: "_N_ of _M_ notes
-  couldn't be read automatically. A closer, sharper photo usually helps — or
+  couldn't be read automatically. A closer, sharper photo usually helps, or
   you can type the words in yourself." with two buttons, **Try another photo**
   (closes this review and opens the photo picker again) and **I'll type
   them** (dismisses the tip, for the rest of this review). Never decided for
   the author, never blocking Add, counted over the detector's boxes only (a box
   the author drew is read too, but it is the author's own box, not the
-  photo's), and not shown when the reader failed outright —
+  photo's), and not shown when the reader failed outright:
   that already has its own note. Detection and reading are separate: a wall
   whose notes are all FOUND is a success even when many are unread, and the
   tip is the one place that says a better photo would read better.
@@ -999,13 +999,13 @@ Decisions from the operator:
   queue). Add does not wait for a pending re-read: the words on screen are
   what lands.
 
-  **What Add hands over is the boxes as they stand** — positions, sizes and
-  kinds as corrected, the unticked and deleted ones left out — so a moved box
+  **What Add hands over is the boxes as they stand**: positions, sizes and
+  kinds as corrected, the unticked and deleted ones left out, so a moved box
   lands where it was moved to.
 
   **A saved label can be opened again** (on a development machine, where Save
-  as truth lives): dropping a label's `.json` onto the photo — or **Open
-  label** beside Save as truth — replaces the detected boxes with the
+  as truth lives): dropping a label's `.json` onto the photo (or **Open
+  label** beside Save as truth) replaces the detected boxes with the
   labelled ones, words included, ready to correct and save back. A label for
   a different photo is refused, by name.
 
@@ -1022,7 +1022,7 @@ Decisions from the operator:
 
 - **The order is fixed: overlay → frame → photograph → loader → boxes → words.**
 
-  1. The overlay opens ON THE PICK. Not after decoding, not after detection —
+  1. The overlay opens ON THE PICK. Not after decoding, not after detection:
      the click that chooses a file is the click that opens it.
   2. It opens with the FRAME the photo will fill already drawn, even though
      there is no photo in it yet, so the author can see where the picture is
@@ -1030,7 +1030,7 @@ Decisions from the operator:
   3. That frame holds a "Loading your photo…" skeleton until the browser has
      actually painted the image. An empty frame, unexplained, is the same
      question as an empty screen.
-  4. The photograph itself appears next — the file as picked, shown from an
+  4. The photograph itself appears next: the file as picked, shown from an
      object URL, which needs no decoding by us and no round trip.
   5. ONLY THEN does the work start, with its own loader: "Finding the
      stickies…" while the detector runs, then the boxes revealed into the frame
@@ -1039,7 +1039,7 @@ Decisions from the operator:
   This is a rule about ORDER, not about speed. Detection takes a blink on a
   small photo and noticeably longer on a 12-megapixel one; the first version did
   all of it before rendering anything, so picking a big photo was
-  indistinguishable from a broken button — no overlay, no spinner, no error, and
+  indistinguishable from a broken button: no overlay, no spinner, no error, and
   the author's only available move was to click again. The hook yields a frame
   to the browser after opening the overlay, because a React state change and the
   synchronous pixel work that follows it otherwise land in the same frame and
@@ -1050,13 +1050,13 @@ Decisions from the operator:
   file by DOUBLE-CLICK returns nothing at all: the input fires `cancel`, never
   `change`. Selecting the file and pressing Open works, Firefox on the same
   desktop works, and a bare `<input type="file">` with no framework fails
-  identically — so this is not ours and cannot be worked around in the page.
+  identically, so this is not ours and cannot be worked around in the page.
 
   The cause, confirmed from both sources and reproduced with a minimal GTK
   program: Chromium sets the dialog's DEFAULT response to Cancel
   (`select_file_dialog_linux_gtk.cc`, deliberately, so that holding Enter
   cannot silently accept a file), and GTK 3's `file_activated` handler answers
-  a double-click by activating the dialog's default widget — which is therefore
+  a double-click by activating the dialog's default widget, which is therefore
   Cancel. Measured: default Cancel gives response `-6 (CANCEL)`, default accept
   gives `0 (ACCEPT)` with the file. It affects every upload in Chrome on Linux,
   not just this import.
@@ -1068,13 +1068,13 @@ Decisions from the operator:
 - **One dialog per intent.** A pick is a STATE, not an event: while a dialog is
   out, asking again is ignored rather than served, and the lock outlives the
   dialog closing by a short settle. This guards a different hazard from the one
-  above — a stray click landing on the opener as a dialog closes would otherwise
+  above: a stray click landing on the opener as a dialog closes would otherwise
   open a second chooser and discard the first one's file. The input is also
   cleared on every change, so the same photo can be picked twice in a row.
 
-- **Every refusal speaks.** A pick that cannot be honoured — an import already
+- **Every refusal speaks.** A pick that cannot be honoured (an import already
   open, a draft still waiting on the board, a board that cannot take notes, an
-  unsupported file — says which, in a toast, every time. Silence is the one
+  unsupported file) says which, in a toast, every time. Silence is the one
   answer that leaves the author with no move except to try again, and a refusal
   that repeats silently reads as breakage. While the palette's **Add from Photo**
   row is disabled because a draft is waiting, its second line says so ("Finish
@@ -1086,7 +1086,7 @@ Decisions from the operator:
   throw away the thing the advice refers to.
 - **Detection is revealed one box at a time.** The boxes fade in one by one, at
   most TWO a second, deliberately slower than the (instant) detector, so the
-  author registers the wall being read as work done FOR them — the upload feels
+  author registers the wall being read as work done FOR them: the upload feels
   worth it. The WHOLE reveal fits in about six seconds, however many boxes
   there are, spread evenly over them: it is a flourish saying the wall is being
   read, not a progress bar to sit through, and at a flat half-second a box a
@@ -1102,7 +1102,7 @@ Decisions from the operator:
   in-browser model reads them (`browser-reader.ts`, SmolVLM-256M through
   transformers.js, ~180 MB fetched once and cached, WebGPU where the driver
   allows it and WASM everywhere else). Detection is in-browser in both cases,
-  and the photograph itself never leaves the machine in either — only crops of
+  and the photograph itself never leaves the machine in either: only crops of
   individual notes, and only on the server path.
 
   The server wins when it exists because it is markedly better, and that is
@@ -1147,7 +1147,7 @@ Decisions from the operator:
 - **A run of notes is never thrown away whole.** On a real wall the stickies
   are lapped edge to edge, and a row or block of them arrives as ONE blob that
   is too unsolid to cut (a row that sags leaves half its bounding box empty)
-  and too big to keep — so six real notes went in the bin together. Three
+  and too big to keep, so six real notes went in the bin together. Three
   rules stop that: a merge is reversible (a box that fails the shape tests
   hands back the pieces it was assembled from), cuts are made against the mask
   (snapped to the emptiest line near the even step, each piece tightened onto
@@ -1161,8 +1161,8 @@ Decisions from the operator:
 - **The score is PRECISION AND RECALL, per photo.** "How many did we find" is
   not a measure: a detector that boxes the masking tape as well finds more. So
   three of the photographs are hand-labelled note by note (47, 41 and 56
-  notes), and the sweep matches its boxes against those labels — centres within
-  half a note, areas within a factor of two — and prints precision, recall, F1
+  notes), and the sweep matches its boxes against those labels (centres within
+  half a note, areas within a factor of two) and prints precision, recall, F1
   and the list of what it missed and what it invented, for each photograph
   separately. A change that lifts one wall and wrecks another is not a fix, and
   only a per-photo table shows that. The labels never enter the repository, for
@@ -1173,15 +1173,15 @@ Decisions from the operator:
 
   - **The note size is measured before anything is fused.** The close that
     repairs a note shattered by handwriting was sized off the FRAME, and on a
-    close-up photograph — where the notes are large and the gaps between them
-    are a few pixels — it bridged those gaps and welded whole rows into one
+    close-up photograph (where the notes are large and the gaps between them
+    are a few pixels), it bridged those gaps and welded whole rows into one
     blob. The median note was then taken from the welds, at a fraction of a
     real note, and every size-dependent rule downstream was working from a
     number that was wrong by a factor of two. The note is now measured from the
     RAW blobs, before any close, and the close is sized from the note.
   - **A cluster is cut one axis at a time.** The old rule asked an axis to be
     long against the note AND against the box's other side, which a square 2×2
-    block of four notes never is — so four notes stayed one note, with four
+    block of four notes never is, so four notes stayed one note, with four
     people's words concatenated. Cutting one axis at a time, tightening the
     pieces onto the mask between cuts, splits the block the way a person reads
     it. The seam between two notes is PREFERRED, not required: requiring a
@@ -1209,7 +1209,7 @@ Decisions from the operator:
   every candidate is asked of the PICTURE: is the inside of this box different
   from the ring around it, where the wall is the dullest quarter of that ring
   (on a dense wall a note's neighbours are other notes)? More saturated, much
-  brighter relative to the wall, or a different hue — any one is enough,
+  brighter relative to the wall, or a different hue: any one is enough,
   because the eight papers differ from a wall in different ways. Brightness is
   relative, never absolute, or half the light loses half the notes. A note may
   be DARKER than its wall: a blue sticky on a whiteboard is, and a rule that
@@ -1255,16 +1255,16 @@ Decisions from the operator:
   note. They are told apart by their SURFACE: a box that is both dark (median
   brightness under half) and grained (brightness steps across its surface once
   the writing is set aside) is something in the room, not paper. Neither half
-  alone is enough — lit paper photographed sharply shows its fibre, and a note
-  in deep shade is dark — and on the eight labelled walls no note is both.
+  alone is enough: lit paper photographed sharply shows its fibre, and a note
+  in deep shade is dark, and on the eight labelled walls no note is both.
   Precision 85 → 89% (the night wall 36 → 50%), no note lost on any wall.
 
 - **Smaller than the wall's notes is not always junk.** Two kinds of note are
-  smaller than the size floor and still notes. A NARROW note — an actor, a
-  note half under its neighbour, a note seen at a slant — is a whole note long
+  smaller than the size floor and still notes. A NARROW note (an actor, a
+  note half under its neighbour, a note seen at a slant) is a whole note long
   and at least half a note thick, and shows no line of wall across its middle
-  (two small squares fused together do). A PAD of small notes — a far board in
-  the photograph, a pad of smaller stationery — comes as a cluster of three or
+  (two small squares fused together do). A PAD of small notes (a far board in
+  the photograph, a pad of smaller stationery) comes as a cluster of three or
   more like-sized, square, solid boxes, where scraps of tape and cardboard come
   alone; notes of the pad fused into a row are cut by the pad's own note size.
   A pad note is too small to show its surface, so it is judged for standing
@@ -1287,7 +1287,7 @@ Decisions from the operator:
 - **Tuned against eight hand-traced walls, not three by eye.** The author
   labels a wall in the review itself (correct the boxes, **Save as truth**),
   and the labels live in a private repository beside the photographs. Every
-  threshold is then judged by ONE number across every labelled note — and by
+  threshold is then judged by ONE number across every labelled note, and by
   the per-wall rows, so a gain paid for by one wall is visible. Most of the
   pipeline's floors turned out to decide nothing; the two that did were
   retuned: a note's minimum size is measured against its OWN pad of paper
@@ -1300,8 +1300,8 @@ Decisions from the operator:
 
   The honest limits are unchanged in kind: pale paper at the wall's own hue is
   still wall to the classifier, a shade CLIFF sharper than an eighth of the
-  frame is averaged across the blend, and a photo that is half room — a window,
-  furniture, cardboard stacked in front of the paper — still puts boxes on
+  frame is averaged across the blend, and a photo that is half room (a window,
+  furniture, cardboard stacked in front of the paper) still puts boxes on
   things that are not notes. Fill the frame with the wall.
 
 - **A wall is read in batches, and one lost batch is one lost batch.** A
@@ -1327,7 +1327,7 @@ Decisions from the operator:
 - **A failover is reported as a warning.** Each one sends one event to the
   editor's error telemetry, `Error`·`Warning`·`AiQuota.BrowserReader`
   ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): closed values, never a crop, a word or a count of notes. It is a
-  warning, not an error: the author still gets their words — but a run of
+  warning, not an error: the author still gets their words, but a run of
   them says the hosted budget is spent, which nothing else would.
 
 - **A note too small to read is not asked about.** The in-browser reader
@@ -1440,35 +1440,35 @@ An agent builds a board through the MCP's graph input with `style: "storm"` ([MC
 
 ## Domain learnings
 
-One-liners captured as they were learned — product truths for this tab
+One-liners captured as they were learned: product truths for this tab
 kind, kept current every session. Each should stay true on its own.
 
-- The board is a super-low-threshold capture surface: add, type, drag —
+- The board is a super-low-threshold capture surface: add, type, drag:
   anything between a thought and a sticky is friction to remove.
-- Distraction-free by default; options are progressively disclosed —
+- Distraction-free by default; options are progressively disclosed:
   chrome must earn its place on this board.
 - Double-click means "type": menus never open on the capture path, only
   on explicit right-click / long-press.
 - Colour IS the notation: semantic fills are pinned in one catalogue and
   theme-exempt, so restyling can never erase meaning.
 - Shape is notation too: wide = the prose kinds (policy, external
-  system, aggregate), small = actor, square = the rest — mirroring the
+  system, aggregate), small = actor, square = the rest, mirroring the
   physical 76×76 / 127×76mm stationery.
 - Fixed silhouettes, no resizing: uniform sizes are what let size carry
   meaning; one resized note breaks the whole wall's grammar.
 - Authenticity is a feature: the paper peel, glue strip, and hand-placed
   tilt make the board read as a workshop, not a diagram.
 - Tilt is calibrated by eye, not by rule: ±1.1° reads hand-placed,
-  ±2.5° reads messy — seed and dropped notes share the same range.
+  ±2.5° reads messy: seed and dropped notes share the same range.
 - Sticky shadows tolerate no hard edges: continuous ramps (gradient in
-  the paint, then blur) beat masked or clipped fades, which band — the
+  the paint, then blur) beat masked or clipped fades, which band: the
   winning recipe was measured against Miro's renderer and hand-tuned on
   a live board (a 25-variant side-by-side beat isolated mockups).
 - The palette opens ON the notation for this board type: the notation is
   what the board is for, Popular is for everywhere else.
 - The palette rows say shape + meaning, not just colour: silhouette
   glyphs and one-line blurbs do the explaining, in workshop order.
-- Notes know their workshop stage and file themselves onto its layer —
+- Notes know their workshop stage and file themselves onto its layer:
   but never onto a hidden or locked one (fall back to the active layer
   rather than vanish).
 - Workshop stages are SHARED state (layer visibility): the facilitator
@@ -1487,12 +1487,12 @@ kind, kept current every session. Each should stay true on its own.
   pickers still leave keyboard shortcuts and the command palette.
 - Hiding chrome has a second audience: the Diagram tour ([Diagram tour ("Start Diagram Tour")](../007-editor/editor-tour.md))
   pointed at the hidden header until it learned to drop those steps on a
-  board — anything that teaches the UI has to be told when the UI shrinks.
+  board: anything that teaches the UI has to be told when the UI shrinks.
 - Next App Router hydrates React on `document`, so React handlers are
   siblings of document listeners: stopPropagation cannot hide from them.
 - Creation should end where the user's attention already is: a dropped
   element that needs words opens for typing.
-- “It fits” is not the same as “it reads” — one word per line fits.
+- “It fits” is not the same as “it reads”: one word per line fits.
 - An action ANSWERS the right-click: every verb closes the menu, which
   otherwise covers the element whose change the user wants to see.
 - A proxy identity (a layer id, a colour, a shape) always drifts from
@@ -1500,14 +1500,14 @@ kind, kept current every session. Each should stay true on its own.
 - Bands are planes, and a plane you cannot see is a rule you cannot
   learn: stacking that silently no-ops across a layer is worse than no
   stacking. One wall of paper beats three planes of it.
-- One button, one job: the secondary button only opens the menu — no
+- One button, one job: the secondary button only opens the menu; no
   select, no drag, no dismiss.
 - React stopPropagation is dispatched from the root container, so it
   also hides the event from window-level listeners (drag-end lives there).
 - A menu that opens on press fights the hand that opened it: open on
   release, dismiss on capture-phase pointerdown.
 - One gesture, one answer: the selection popover and the context menu
-  never share an element — the right-click menu wins while open.
+  never share an element: the right-click menu wins while open.
 - Where the grammar is fixed, the menu should offer VERBS not styles: a
   control that can only break the notation is worse than no control.
 - Notation kinds belong ON the element, not inferred from colour: a hex
@@ -1522,10 +1522,10 @@ kind, kept current every session. Each should stay true on its own.
 - Quick-connect pluses stand down on an ES board: four affordances
   ringing every note is chrome the capture loop never asks for.
 - A widget can outlive its concept: the edge "anchor" grips resize, so
-  they must follow the resize rule — naming lagged behaviour and let a
+  they must follow the resize rule; naming lagged behaviour and let a
   fixed-size note be dragged wider.
 - Text fills the paper, the paper never resizes: on a fixed-silhouette
-  note, auto-fit is what makes a long phrase legible — but fill it to the
+  note, auto-fit is what makes a long phrase legible, but fill it to the
   brim and a two-word note becomes a poster; the ceiling IS the pen.
 - Paper shadows are backdrop-relative: ink tuned on light paper vanishes
   on a dark wall, so a dark canvas needs its own deeper peel.
@@ -1542,14 +1542,14 @@ kind, kept current every session. Each should stay true on its own.
   by hand is the friction the board can least afford.
 - A preview is a promise, so it must never write: render it as a
   transform over an untouched model and it cannot leak to a peer, the
-  undo stack, or autosave — and it unwinds by deleting a style.
+  undo stack, or autosave, and it unwinds by deleting a style.
 - Insert where the displaced note WAS, not in the middle of the gap:
   taking its place preserves every spacing the author already chose.
 - One drag, one placement rule: a slot and an alignment snap fighting
   over the same drop point is how a ghost starts lying.
 - A live preview needs hysteresis or a shaking hand strobes the board.
 - Chrome anchored to element BOUNDS (the selection popover) has to stand
-  down during a render-time shift — bounds know nothing about a
+  down during a render-time shift: bounds know nothing about a
   transform, so it would float over empty canvas.
 - A gesture that arms ITSELF is a gesture that fires when you did not
   mean it. Automatic insertion read as the board coming apart under an
@@ -1559,7 +1559,7 @@ kind, kept current every session. Each should stay true on its own.
   only one that could mean the same thing on every board.
 - The desktop can eat a modifier before the page ever sees it. Alt+press
   is a window-move on Cinnamon's default, so the gesture had to be
-  taught as "press Alt WHILE dragging" — the WM grabs at button-press,
+  taught as "press Alt WHILE dragging": the WM grabs at button-press,
   so pressing it mid-drag is always safe.
 - A native HTML5 drag gets no key events in Chromium at all. `dragover`
   carries the modifier state and nothing else does, so "live" means
@@ -1587,7 +1587,7 @@ kind, kept current every session. Each should stay true on its own.
   wrong, and an import that just happened is an import nobody can trust.
 - Re-reconcile at COMMIT time, not at review time: a peer can add the very
   note the photo shows while the author is reading it.
-- A React state updater is not a place for side effects — it re-runs, and the
+- A React state updater is not a place for side effects: it re-runs, and the
   import added everything twice. Unit tests missed it; counting stickies on a
   real canvas did not.
 - A lane is where a workshop note IS, not a hint it may ignore: an aid with a
@@ -1619,7 +1619,7 @@ kind, kept current every session. Each should stay true on its own.
   the toggle inside a `role="switch"` row was still announcing its own role
   and name, so every settings row in the editor read as two switches.
 - Screen pixels cannot check a grid: the notes are tilted, so their bounding
-  boxes are rotation-bloated — the e2e reads the SAVED tab back from the api
+  boxes are rotation-bloated; the e2e reads the SAVED tab back from the api
   instead, which proves the placement and the persistence in one assertion.
 - The docked note holds the relation, the host holds nothing: deleting a host
   then needs no write to its neighbours, and every reader derives the same
@@ -1635,7 +1635,7 @@ kind, kept current every session. Each should stay true on its own.
   but a peer can take it between the render and the click, so the commit is
   where "one note per face" actually lives.
 - Healing after a delete had three call sites and two jobs before it had one
-  name — that is exactly how the fourth call site forgets one of them.
+  name: that is exactly how the fourth call site forgets one of them.
 
 ## Counts
 

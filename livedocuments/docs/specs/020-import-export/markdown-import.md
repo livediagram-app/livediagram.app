@@ -18,14 +18,14 @@ The import reads Markdown the way pasting it into an article page does, so a fil
 
 Every other line is a paragraph. The article flows onto as many pages as the writing needs, in the tab's theme.
 
-## How it's triggered — the Import dialog
+## How it's triggered: the Import dialog
 
 The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
 dialog**, the mirror of the Export dialog. Above the format cards a warning says the import replaces the tab and Undo
 brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine pointer). The user picks the format:
 
-- **JSON** — a `.json` tab export, restored exactly.
-- **Markdown** — a `.md` document, written into an article as above.
+- **JSON**: a `.json` tab export, restored exactly.
+- **Markdown**: a `.md` document, written into an article as above.
 
 Every format is text, so each card opens the **same two-step panel**
 (`TextImportPanel`): **paste or write** the
@@ -37,12 +37,12 @@ forward. The export dialog's two second screens (`TextExportPanel`,
 `ImageExportPanel`) use the same bar, so every second screen in both dialogs
 returns the same way. The chosen format drives the
 placeholder, the file-picker's filter, and which parser runs (no content
-auto-detection — the user said which it is). Both the paste and file
+auto-detection; the user said which it is). Both the paste and file
 routes go through one `importTextIntoActiveTab(format, text)` so they
 parse + replace identically.
 
-**Import replaces the current tab's contents** — its elements, theme, and
-background — keeping the tab's id and name. The dialog leads with a
+**Import replaces the current tab's contents** (its elements, theme, and
+background), keeping the tab's id and name. The dialog leads with a
 warning that says so. The replace is a single `commitTabs` step, so
 **Undo (⌘Z) restores** the previous content; the warning says that too.
 Errors render inline in the dialog; cancelling the file picker leaves the dialog
@@ -51,7 +51,7 @@ and the whole ellipsis menu is hidden for view-only visitors. Emits
 `Tab / Imported / Markdown` (or `/ JSON`) telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 (This replaced the earlier behaviour where import always appended a new
-tab — a format picker + an explicit "this overwrites the tab" warning is
+tab: a format picker + an explicit "this overwrites the tab" warning is
 clearer than silently growing the tab list, and Undo makes it safe.)
 
 ## Markdown export

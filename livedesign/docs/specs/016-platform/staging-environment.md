@@ -34,14 +34,14 @@ drawn at the **resource**, not the account.
 ## Wrangler environments, not a second config file
 
 Each app's `wrangler.toml` grows an `[env.staging]` block naming its worker
-explicitly — `name = "livedesign-api-staging"` and so on. Wrangler would append the
+explicitly: `name = "livedesign-api-staging"` and so on. Wrangler would append the
 suffix on its own, but nothing in `wrangler deploy --dry-run` prints the name it
 resolved, and the router's six service bindings depend on those strings being exactly
 right. A name you can read beats a name you have to infer.
 
 The catch that shapes every block below: **wrangler does not inherit bindings into a
 named environment.** `vars`, `r2_buckets`, `kv_namespaces`,
-`durable_objects`, `migrations`, `services` and `unsafe` are all _non-inheritable_ —
+`durable_objects`, `migrations`, `services` and `unsafe` are all _non-inheritable_:
 absent from `[env.staging]` means **absent from the deployed staging worker**, silently.
 So every staging block restates its app's bindings in full, even where the value is
 identical to production's. Only `main`, `compatibility_date`, `compatibility_flags`,
@@ -57,8 +57,8 @@ drifting apart unnoticed.
 
 The router binds six workers and mcp binds one. In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
-never to production's. A missed suffix here is the single worst failure mode available —
-staging frontend, production designs — so `apps/router/wrangler.toml` keeps its staging
+never to production's. A missed suffix here is the single worst failure mode available
+(staging frontend, production designs), so `apps/router/wrangler.toml` keeps its staging
 bindings adjacent to the production ones for eyeball comparison, and the dry-run in CI
 prints the resolved binding table.
 
@@ -99,7 +99,7 @@ ships.
 
 Being public, it must not compete with production in search results. The router worker
 sets **`X-Robots-Tag: noindex, nofollow` on every response** when its `DEPLOY_ENV` var
-is `staging` — one line at the only point every app on the host passes through, rather
+is `staging`: one line at the only point every app on the host passes through, rather
 than a build flag threaded into five static apps.
 
 Two deliberate non-changes:
@@ -111,7 +111,7 @@ Two deliberate non-changes:
   `livedesign.app` are, for a staging mirror, the correct answer rather than a bug:
   they name production as the real home of the page.
 - **The 101 WebSocket upgrade is passed through untouched.** A `Response` carrying a
-  `webSocket` cannot be reconstructed to add a header — doing so kills realtime collab
+  `webSocket` cannot be reconstructed to add a header; doing so kills realtime collab
   on staging, and does so only for that one path, which is exactly the kind of bug that
   survives a smoke test. The header wrapper skips status 101.
 
@@ -137,15 +137,15 @@ Each is wired to its own tenant or its own data, and all three are switched on.
 `GET /api/capabilities` is the authoritative answer at any moment: with the `EMAIL` binding declared in
 both environments it returns `{"emailEnabled":true}` on staging as on production.
 
-| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (its `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET`, set with `--env staging`) with its **own resource** (`API_RESOURCE`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedesign.app/api/auth/callback`.                                                                       |
-| **Telemetry** — ON | Events go to staging liveworkspace's telemetry service (`https://staging.liveworkspace.app/api/telemetry`), so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                  |
-| **Email** — ON     | Cloudflare Email Service through the `[[env.staging.send_email]]` binding `EMAIL` ([liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)), restated because bindings don't inherit. `EMAIL_FROM` is production's sender, and `APP_BASE_URL` points every link back at staging. No key: the binding is the credential. Staging runs the same daily email cron as production, so it mails **real people** (see the warning below). |
+| Integration       | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sign-in**: ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (its `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET`, set with `--env staging`) with its **own resource** (`API_RESOURCE`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedesign.app/api/auth/callback`.                                                                       |
+| **Telemetry**: ON | Events go to staging liveworkspace's telemetry service (`https://staging.liveworkspace.app/api/telemetry`), so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                  |
+| **Email**: ON     | Cloudflare Email Service through the `[[env.staging.send_email]]` binding `EMAIL` ([liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)), restated because bindings don't inherit. `EMAIL_FROM` is production's sender, and `APP_BASE_URL` points every link back at staging. No key: the binding is the credential. Staging runs the same daily email cron as production, so it mails **real people** (see the warning below). |
 
 > **Email warning.** Staging sends the same emails as production
 > (notifications, milestones). Any address that signs into staging receives them, from
-> the same sender as production's — so a staging account made with a colleague's address
+> the same sender as production's, so a staging account made with a colleague's address
 > mails that colleague. Use addresses you own. To take staging's email off, drop the
 > `[[env.staging.send_email]]` block and redeploy: without the binding the email feature is
 > inert ([Transactional email](../014-identity/transactional-email.md)).

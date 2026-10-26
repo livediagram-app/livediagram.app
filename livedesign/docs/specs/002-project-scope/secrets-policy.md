@@ -11,7 +11,7 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 | Environment            | Mechanism                                                         |
 | ---------------------- | ----------------------------------------------------------------- |
 | Local development      | `.env.local` (gitignored) per app/worker                          |
-| Cloudflare Workers     | `wrangler secret put` — never in `wrangler.toml`                  |
+| Cloudflare Workers     | `wrangler secret put`, never in `wrangler.toml`                   |
 | Cloudflare Pages       | Project env vars in the Cloudflare dashboard                      |
 | CI / Deploy            | GitHub repo secrets: see below                                    |
 | Client-side JS bundles | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish |
@@ -22,7 +22,7 @@ livedesign deploys from the liveworkspace monorepo's root workflows ([Deployment
 
 ## Worker secrets in use today
 
-Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which keeps every outside service optional (see [03](open-source-and-business-model.md)).
+Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md); worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored), **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which keeps every outside service optional (see [03](open-source-and-business-model.md)).
 
 | Secret                                          | Worker          | Absent means                                                                                                                                                                                                                 |
 | ----------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -33,7 +33,7 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | `MIGRATION_KEY`                                 | api             | the one-time move from the old livediagram.app cannot write this app's parts with its own key (the index's key still opens the migration door); set only while the move runs ([migration.md](../../../../docs/migration.md)) |
 | `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                                                          |
 
-`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.
+`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent (the posts are simply not stored), so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.
 
 Non-secret configuration (`TELEMETRY_ENABLED`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedesign.app runs with (`TELEMETRY_ENABLED`, the photo store cap `PHOTO_MAX_BYTES_PER_TAB`, the media service's `MEDIA_URL`) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
@@ -55,7 +55,7 @@ Never imported in client code, never bundled into the static export:
 - Storage access (always via a Worker; the browser never holds storage credentials or service keys).
 - Any signing / encryption key.
 
-Workers and server-only code read these from `env` bindings — not from `process.env`-style imports in shared code.
+Workers and server-only code read these from `env` bindings, not from `process.env`-style imports in shared code.
 
 ## `.env.example`
 
@@ -64,7 +64,7 @@ Each app or worker that needs env vars ships a `.env.example` designing **which 
 ```
 # Public, baked into the bundle
 NEXT_PUBLIC_API_BASE=
-# (no secret keys here — those go in the Cloudflare dashboard)
+# (no secret keys here; those go in the Cloudflare dashboard)
 ```
 
 `.env.local` is gitignored. `.env.example` is committed.
@@ -73,10 +73,10 @@ NEXT_PUBLIC_API_BASE=
 
 1. **Rotate immediately** in the relevant provider (the accounts Worker's client secret, Cloudflare, etc.).
 2. Update the secret in the env-var store (`wrangler secret put`, Pages dashboard).
-3. Force-push and `git filter-repo` are **not** sufficient — rotation comes first because Git history is forever public.
+3. Force-push and `git filter-repo` are **not** sufficient: rotation comes first because Git history is forever public.
 4. Open a tracking note in specs (or wherever incidents live, TBD) to design what leaked, when, and what was rotated.
 
 ## Tooling (to be added)
 
-- Pre-commit hook scanning for likely secrets (`gitleaks` or similar) — to be added when there are enough secrets in dev that scanning earns its keep.
+- Pre-commit hook scanning for likely secrets (`gitleaks` or similar), to be added when there are enough secrets in dev that scanning earns its keep.
 - CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`).

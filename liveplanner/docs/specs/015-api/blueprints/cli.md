@@ -2,7 +2,7 @@
 
 Derived from [CLI](../cli.md), with the OAuth server of [MCP server](../mcp-server.md) §3 and its tool contracts
 (§4), the token surface of [Public API and API tokens](../public-api-and-tokens.md) §3.4 to §3.7, the room and
-routes of [API](../api.md), the token roles of [Share roles](../../013-workspace/share-roles.md#api-tokens), the
+routes of [API](../api.md), the token roles of [Share roles](../../013-workspace/share-roles.md#later), the
 words of [Domain language](../../003-system-architecture/domain-language.md#agents) and the `Cli` category of
 [Telemetry](../../017-telemetry/telemetry.md). The write path, the operation vocabulary, the views and
 agent presence are other blueprints' and are consumed through the interfaces they name:
@@ -84,7 +84,7 @@ Scope, by file:
 | `apps/editor/app/oauth/device/page.tsx`, `apps/editor/lib/mcp-device-session.ts` (+ test)                                                                | The `/oauth/device` page and its trust boundary                                                                                                                                                                                                                                                                                                                                                                                          |
 | `apps/editor/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                                                                 | Import the shared modules from `@liveplanner/project` and `@liveworkspace/icons`                                                                                                                                                                                                                                                                                                                                                         |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`                         | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                                                                                                                                                                                                                                                                                                                |
-| `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                                                                          | Pack dry run on every PR; publish with provenance (CLI3)                                                                                                                                                                                                                                                                                                                                                                                 |
+| `../.github/workflows/ci.yml`                                                                                                                            | Pack dry run on every run that reaches the CLI; publishing is manual, outside CI (CLI3)                                                                                                                                                                                                                                                                                                                                                  |
 | `README.md`, `docs/development/{architecture,local-development}.md`, `docs/specs/016-platform/deployment.md`                                             | The app, the packages, the two api vars, the CLI on another host, the env token's host; `AGENTS.md`'s layout needs the operator's permission                                                                                                                                                                                                                                                                                             |
 
 ## Domain and naming
@@ -728,7 +728,9 @@ type PullFile = ProjectEnvelope & { liveplannerSync: PullSync };
   `CLI_CLIENT_ID` (else `MCP`, as today), and the device page always; charted as `CLI Sign-Ins` in API Token
   Activity.
 
-### Update check (planned)
+### Update check
+
+**Status: Planned.** Not built yet; no command checks npm today, and `apps/cli/src/update-check.ts` does not exist.
 
 After a command exits 0, when `CI` is unset or empty, stderr is a terminal, `LIVEPLANNER_NO_UPDATE_CHECK` is not
 `1`, and `update.json`'s `checkedAt` is older than `UPDATE_CHECK_INTERVAL_MS`: `GET
@@ -833,7 +835,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   whichever host is active; `auth status` shows that host, and the README says to set `LIVEPLANNER_HOST` beside it.
 - **Share links.** A link's code rides only on the command that was given its URL, and only to that host.
 - **Catalogue routes** expose only public catalogue data, need no identity, and are cacheable.
-- **Supply chain.** Published by CI with provenance through npm trusted publishing (no npm token stored); the
+- **Supply chain.** Published to npm by hand, outside CI (CLI3), so no npm token is stored in the repository or CI; the
   package's `files` allowlist is the bundle, the wasm, the font, the licences and the README; no install scripts;
   no native addon: the keychain is the platform's own tool.
 - **Roles.** The CLI enforces nothing the api does not; every refusal is the api's gate (`gateRead`,

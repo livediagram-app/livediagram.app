@@ -10,12 +10,12 @@ pointer exactly and can be placed or sized off-grid.
   equal spacing (distribution), drawing the faint guide lines that explain the
   match. Unchanged.
 - While **Cmd (⌘) / Ctrl** is held during a drag:
-  - no alignment or distribution snap is applied — the element tracks the raw
+  - no alignment or distribution snap is applied: the element tracks the raw
     pointer delta;
   - no guide lines are drawn (they're cleared for the gesture).
 - It's a **per-drag override**, read live from the move event, so pressing or
   releasing the key mid-drag flips snapping on the next move. The next drag
-  snaps as usual — nothing to toggle back.
+  snaps as usual; nothing to toggle back.
 - Applies to a single element, a multi-selection move, a dragged **arrow
   endpoint** (both share the snap sites in `useEditorDrag`), an arrow's **curve
   and elbow handles** and a slid bend (`applyArrowDragMove`), and a **resize**: the
@@ -25,7 +25,7 @@ pointer exactly and can be placed or sized off-grid.
   "Dropped on a shape"); an end on an anchor itself still pins.
 - **Insert between wins over it.** On an event-storming board, Alt opens an
   insertion slot ([Event storming](../021-event-storming/event-storming.md)); while one is open the
-  slot IS the placement, so holding Cmd/Ctrl as well changes nothing — free
+  slot IS the placement, so holding Cmd/Ctrl as well changes nothing: free
   placement is meaningless against a gap the board has already opened, and
   two placement rules at once would put the note, the insertion marker and
   the drop in three different places. Release Alt and this override applies

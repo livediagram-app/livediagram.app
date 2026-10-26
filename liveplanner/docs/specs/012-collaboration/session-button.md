@@ -6,14 +6,14 @@ A canvas element that **starts a session tool when pressed**: a countdown timer,
 
 Running a session is a script someone has to remember: start a five-minute timer, then vote three dots each. Without the button that script lives in a menu and in the head of whoever runs the session, which means the canvas only works when the person who built it is the one running it.
 
-Putting the tools ON the canvas makes the canvas run itself. A retro board can carry a "5 minutes" button over the writing column and a "Vote — 3 dots" button over the results column, and anyone can run it: the affordance sits where the user already is.
+Putting the tools ON the canvas makes the canvas run itself. A retro board can carry a "5 minutes" button over the writing column and a "Vote: 3 dots" button over the results column, and anyone can run it: the affordance sits where the user already is.
 
 ## The element
 
 - A **shape kind**, `session-button`: a fixed-size tile (`FIXED_SIZE_SHAPES`), the tool's glyph in a chip over the action's name, a light button surface, pressable on the canvas.
 - What it starts lives in **`ShapeElement.session`**, one small object rather than a scatter of fields:
-  - `{ tool: 'timer', minutes }` — a countdown of that many minutes (default 5).
-  - `{ tool: 'vote', dots }` — a dot vote with that many dots each (default 3).
+  - `{ tool: 'timer', minutes }`: a countdown of that many minutes (default 5).
+  - `{ tool: 'vote', dots }`: a dot vote with that many dots each (default 3).
 - Absent `session` means a timer, so a button authored by an older client (or hand-written through the API) still does something sensible.
 
 ## Pressing it
@@ -26,7 +26,7 @@ Putting the tools ON the canvas makes the canvas run itself. A retro board can c
 
 ## Configuring it
 
-Right-click → **Session**: the button's one setting — minutes for a timer, dots for a vote.
+Right-click → **Session**: the button's one setting: minutes for a timer, dots for a vote.
 
 **It does not choose the tool.** A button is the tool it was made as; a Timer / Vote grid would re-open a settled decision and cost every session button a row of menu height. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
 
@@ -39,7 +39,7 @@ placed on a canvas, with a length, and the question its `…` answers is "how
 long".
 
 Offering the toggle there offered to turn one element into a different element,
-which is not a setting — and it put a control in the popover that the element's
+which is not a setting, and it put a control in the popover that the element's
 own label then contradicted. So a stopwatch is its own palette tile and its own
 element, and it has nothing to configure, which is precisely the difference: a
 countdown is placed WITH a length, a stopwatch has none.
@@ -57,7 +57,7 @@ For a **Vote**, the face's derived label follows that setting ("Start vote · 3 
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): adding one emits `Element·Added·SessionButton`, reconfiguring emits `Element·Changed·SessionButton`. The press itself is NOT tracked separately — it reports as the tool it starts (`Tab·Started·Timer` / `Vote`) through the shared entry point, because a press IS starting that tool.
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): adding one emits `Element·Added·SessionButton`, reconfiguring emits `Element·Changed·SessionButton`. The press itself is NOT tracked separately; it reports as the tool it starts (`Tab·Started·Timer` / `Vote`) through the shared entry point, because a press IS starting that tool.
 
 ## Out of scope
 
@@ -101,8 +101,8 @@ a timer somewhere else. It renders the timer.
 
 It is the **same timer as the pill in the top chrome**, in every sense worth
 having: the same `TabTimer` on the same tab field, the same pure
-`timerDisplayMs`, and — since the look was extracted into
-`components/chrome/timer-pill.tsx` — literally the same clock, drain and
+`timerDisplayMs`, and (since the look was extracted into
+`components/chrome/timer-pill.tsx`) literally the same clock, drain and
 controls. Pausing on the canvas pauses in the chrome. Every client computes the
 value locally off an absolute anchor, so there is no per-second network traffic
 and no drift between machines.
@@ -119,7 +119,7 @@ box on the canvas.
   opts back into pointer events explicitly.
 - A tapped timer lands **224×64**, the pill's proportions. The session button's
   square-ish default clipped the kicker off one end and the remove control off
-  the other. Only on a tap — a deliberate drag is the user saying what size
+  the other. Only on a tap; a deliberate drag is the user saying what size
   they want.
 - A **read-only** surface renders the clock and the drain and withholds the
   controls, rather than hiding the timer.
@@ -145,7 +145,7 @@ number input; these are the common values.
 **Changing the length of a live timer restarts it at the new one.** Leaving it
 mid-run would be the one thing nobody wants: the remaining time would be a
 number measured against the old length and displayed against the new one. The
-running state is preserved either way — someone extending a running timer
+running state is preserved either way: someone extending a running timer
 is asking for more time, not for the session to stop, and one extending a
 paused timer is setting up the next round. With no timer running the element's
 config is simply the length used at the next start.
@@ -158,7 +158,7 @@ trigger's rect at open time.
 It was inline first, reasoning that a portalled menu would have to track a
 canvas element through pan and zoom. It does not: any pan or zoom begins with a
 pointer-down, which dismisses the menu, so the position only has to hold while
-it is open. Inline was wrong for a more immediate reason anyway — every element
+it is open. Inline was wrong for a more immediate reason anyway: every element
 that wants this menu **clips its own contents** (the collab panel, the timer's
 drain fill, the element box's rounded corners), so the popover was cut off at
 the element's edge and mostly invisible.

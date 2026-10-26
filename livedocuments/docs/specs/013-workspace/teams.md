@@ -21,11 +21,11 @@ Two roles, `admin` and `member`, set on the team's card in the Explorer. In live
 
 All under `/api/teams`, handled by `apps/api/src/routes/teams.ts`:
 
-- `GET /api/teams` — the teams the caller's token names, each with `myRole`.
-- `POST /api/teams` `{ name, organisation? }` — makes a team ([Making a team](#making-a-team)). A signed-in session only.
-- `GET /api/teams/invites` — the invitations waiting for the caller on liveworkspace.app ([Invitations](#invitations)).
-- `GET /api/teams/:id/library` — the team's folders and documents, from the index ([Team Shared Documents](team-shared-documents.md)).
-- `GET /api/teams/:id/members` — the team's joined and invited people, for the assignee picker and @-mentions ([Assigned actions](../012-collaboration/assigned-actions.md), [Comment mentions](../012-collaboration/comment-mentions.md)). Never for an API token.
+- `GET /api/teams`: the teams the caller's token names, each with `myRole`.
+- `POST /api/teams` `{ name, organisation? }`: makes a team ([Making a team](#making-a-team)). A signed-in session only.
+- `GET /api/teams/invites`: the invitations waiting for the caller on liveworkspace.app ([Invitations](#invitations)).
+- `GET /api/teams/:id/library`: the team's folders and documents, from the index ([Team Shared Documents](team-shared-documents.md)).
+- `GET /api/teams/:id/members`: the team's joined and invited people, for the assignee picker and @-mentions ([Assigned actions](../012-collaboration/assigned-actions.md), [Comment mentions](../012-collaboration/comment-mentions.md)). Never for an API token.
 
 Administering a team (rename, delete, invite, change a role, remove, leave) happens in the Explorer, against liveworkspace's account API through the router's `/api/workspace/account/…`; livedocuments' API has no route for it. Wire DTOs (`TeamListItem`, `TeamMember`, `TeamRole`, `TeamInvite`) live in `@livedocuments/api-schema`.
 

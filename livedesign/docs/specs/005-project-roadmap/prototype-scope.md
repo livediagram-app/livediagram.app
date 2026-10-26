@@ -52,7 +52,7 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
   edit operations based on read copies; creates, renames, shares and removes designs and tabs; comments, shows its
   presence, and waits on or watches a design's room; pulls a design to a file and pushes it back, exports every
   design, and draws tabs as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Published on npm as `@livedesign/cli`, with provenance.
+  tools are verbs of the same catalogue. Published on npm as `@livedesign/cli`, by hand outside CI.
 - **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
   person's browser, opens a design signed in inside its own frame through a ticket the person's CLI mints; the
   frame is confined to that one design, and the person's selection reaches their agent as a selection reference.
@@ -71,6 +71,8 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 - **One-off prompts and counters**: the sign-in prompt and banner dismissals, the power-user offer, the last active day.
 
 ## Next
+
+**Status: Planned.** Not built yet; the CLI is published without it.
 
 - **The CLI's update check** ([CLI](../015-api/cli.md)): the CLI tells a person when a newer version is published.
 

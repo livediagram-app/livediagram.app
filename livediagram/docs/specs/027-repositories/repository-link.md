@@ -1,9 +1,9 @@
 # Repository link
 
 **Status: first slice built.** The link file, the `none`, `index` and `files` mirror levels, every sync state,
-`link init|status|ls`, `sync` (`--relocate`, `--dry-run`, `--all`) and `sync --watch` (CLI 0.2). Ahead: the merge of
-`ahead` and `diverged` documents, `local-new` creation, `sync --resolve`, the git hooks and the merge driver, and
-[Diagram sources](diagram-sources.md).
+`link init|status|ls`, `sync` (`--relocate`, `--dry-run`, `--all`) and `sync --watch` (CLI 0.2). Planned, and marked so where
+they are specified: the merge of `ahead` and `diverged` documents, `local-new` creation, `sync --resolve`, the git
+hooks and the merge driver, `link status --fail-behind`, and [Diagram sources](diagram-sources.md).
 
 A **repository link** binds a directory in a code repository to documents in livediagram, so the people and agents
 working in that repository find, read and change its diagrams without leaving it. livediagram is the **single source
@@ -150,6 +150,9 @@ and never created, and a conflicted file's refusal names the manual fix (keep on
 
 ## Merging
 
+**Status: Planned.** Not built yet; today `ahead` and `diverged` documents are refused per document, as
+[Sync states](#sync-states) says, and `@livediagram/tab-merge` does not exist.
+
 A merge is a **three-way merge per tab, element by element**, of the **base** (the snapshot the local change was made
 from), the **local** file and the **remote** tab now. It lives in one pure package, `@livediagram/tab-merge`, so the
 CLI and git's merge driver merge alike, and any other front door can.
@@ -193,8 +196,8 @@ report and the changeset's summary.
 | `link status`                                       | Every covered document with its state; exits 0 ([In CI](#in-ci) for `--fail-behind`) |
 | `link ls`                                           | The covered documents, as `document ls` prints them                                  |
 | `sync [--watch] [--relocate] [--dry-run] [--all]`   | One sync of the link; `--watch` keeps syncing until interrupted                      |
-| `sync --resolve <file>`                             | A mirror file git left conflicted, resolved by the driver's table                    |
-| `link hooks install\|uninstall`                     | The git hooks and the merge driver ([Git](#git))                                     |
+| `sync --resolve <file>`                             | Planned: a mirror file git left conflicted, resolved by the driver's table           |
+| `link hooks install\|uninstall`                     | Planned: the git hooks and the merge driver ([Git](#git))                            |
 
 - `link init` without `--folder` or `--doc` shows a picker of the person's folders on a terminal; where stdin or
   stdout is not a terminal it refuses, listing the folders as runnable `link init --folder <id>` commands.
@@ -213,6 +216,9 @@ report and the changeset's summary.
   sync's scan is refused, as `diverged` (or kept, for a removal), and the edit stays for `push`.
 
 ## Git
+
+**Status: Planned.** Not built yet; today the link file's `[hooks]` table is checked and left unread, and
+`link status` has no `--fail-behind`.
 
 Git moves slower than diagrams, so the repository holds **snapshots at commit time**. Diagrams are not branched:
 every branch's snapshots are views of the one document, and every branch's local changes are proposals to it.

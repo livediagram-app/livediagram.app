@@ -14,20 +14,20 @@ point, and stays attached as the trunk moves.
   that pins as before. Arrow snapping only kicks in when no anchor is in range.
 - The connection is **persistent and dynamic**: the endpoint stores the target
   arrow + a parametric position `t` (0 = the target's `from`, 1 = its `to`), and
-  resolves its absolute position from the target's centreline every render — so
+  resolves its absolute position from the target's centreline every render, so
   it tracks the target as it moves, reshapes (straight / curved / angled), or
   its own endpoints move.
 - A connected endpoint draws filled (like a pinned endpoint), not hollow.
 - It applies both ways an arrow is created: **repositioning** an existing
   endpoint (live snap dots as you drag), and **drawing a new arrow** (the arrow
-  tool, or a pencil-recognised line) — a fresh arrow's ends connect to a nearby
+  tool, or a pencil-recognised line): a fresh arrow's ends connect to a nearby
   line at commit, so you don't have to drop it and nudge it after.
 - **Shift-drag the arrow HEAD forks a branch** ([Canvas and palette](canvas-and-palette.md)): holding Shift while
   grabbing a selected arrow's head handle leaves the arrow untouched and
   instead starts a NEW arrow whose tail is an `on-arrow` connection at ~70%
   along the trunk's line; the branch's head follows the drag and lands like
   any new arrow (anchor / arrow / free). One trunk can then point at several
-  targets — a Y-fork instead of parallel near-duplicate arrows — and the
+  targets (a Y-fork instead of parallel near-duplicate arrows), and the
   branch inherits the trunk's stroke colour / weight / pattern so the fork
   reads as one connector. Repositioning (the plain drag) is unchanged.
 

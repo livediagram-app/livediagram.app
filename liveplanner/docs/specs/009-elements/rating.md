@@ -2,7 +2,7 @@
 
 A **Rating** element is a row of five stars showing a 1–5 score. Drag it in from
 the palette (Data category, by the progress elements), set the score, and optionally
-give it a star-specific animation — the same shape of feature as the progress
+give it a star-specific animation, the same shape of feature as the progress
 elements ([Progress elements](progress.md)).
 
 ## Behaviour
@@ -20,7 +20,7 @@ elements ([Progress elements](progress.md)).
 ## Model
 
 Rating is a `ShapeKind` `'rating'` (like the progress elements), not a new
-top-level type — so it inherits boxed-element behaviour with no new
+top-level type, so it inherits boxed-element behaviour with no new
 render/copy/export branches.
 
 - `ShapeElement.rating?` (0..`RATING_MAX` = 5), `ratingAnim?` (`RatingAnim`),

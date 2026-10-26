@@ -211,7 +211,7 @@ present-only tick, inside the budget above. No LCP impact (lazy).
 | Constant                             | Value   | Provenance                                                                                                             | Safe range      |
 | ------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
 | `POPOVER_WIDTHS['tidy-up']`          | 320     | Two 152 px tiles, gap and padding                                                                                      | 288–384         |
-| `TIDY_PREVIEW_WORST_CASE_NODES`      | 300     | A dense hand-drawn diagram (D83)                                                                                       | —               |
+| `TIDY_PREVIEW_WORST_CASE_NODES`      | 300     | A dense hand-drawn diagram (D83)                                                                                       | n/a             |
 | `TIDY_PREVIEW_BUDGET_MS`             | 100     | One hover must feel immediate (D83); asserted as `cpuBudgetMs` of it, 300 on CI's coverage runners (`CI_CPU_HEADROOM`) | 50–200 (CI: 3x) |
 | `ALIGN_TOLERANCE`                    | 8 px    | Hand drift under one grid step (D99)                                                                                   | 4–10            |
 | `LINK_TOLERANCE`                     | 16 px   | An arrow's ends a little out of line (D99)                                                                             | 10–24           |

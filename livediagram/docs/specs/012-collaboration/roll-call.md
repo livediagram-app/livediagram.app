@@ -7,8 +7,8 @@ A card that freezes **who was in the room** at a moment, onto the canvas.
 ## Why
 
 The presence stack shows who is here now, and forgets. Every session that
-produces a record — a workshop, an incident review, a design review, a
-decision ([Decision record](decision-record.md)) — needs the attendance beside the output, and today the
+produces a record (a workshop, an incident review, a design review, a
+decision ([Decision record](decision-record.md))) needs the attendance beside the output, and today the
 canvas that holds the output can't hold the attendance.
 
 ## Take, don't track
@@ -22,7 +22,7 @@ who rejoined on a new socket, is one chip, not two.
 That is the entire feature. A card that tracked presence would be empty five
 minutes after the session, which is precisely when anyone reads it.
 
-- **`ShapeElement.rollCall`** — `{ name, color, at }[]`, plus the moment the
+- **`ShapeElement.rollCall`**: `{ name, color, at }[]`, plus the moment the
   roll was taken. Bounded in `validate.ts`.
 - Taking a roll again **replaces** the list. Latecomers are the normal reason,
   and a merge would quietly turn "who was here" into "who has ever been here",

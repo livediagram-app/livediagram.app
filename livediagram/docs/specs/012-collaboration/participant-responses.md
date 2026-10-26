@@ -11,10 +11,10 @@ temperature check ([Temperature check](temperature-check.md)).
 Every collaborative thing on the canvas today is one of two shapes, and neither
 is "what does each person think":
 
-- **One value, one author, persisted** — rating ([Rating](../009-elements/rating.md)), progress ([Progress elements](../009-elements/progress.md)),
+- **One value, one author, persisted**: rating ([Rating](../009-elements/rating.md)), progress ([Progress elements](../009-elements/progress.md)),
   checklist ([Checklist](../009-elements/checklist.md)), picker result ([Picker](picker.md)). Anyone can change it, and the
   element remembers only the last change.
-- **Room-wide and ephemeral** — the timer and dot-vote ([Session tools (timer + voting)](session-tools.md)), the live poll
+- **Room-wide and ephemeral**: the timer and dot-vote ([Session tools (timer + voting)](session-tools.md)), the live poll
   ([Live poll (ephemeral pulse-check)](live-poll.md)). Per-person, but scoped to a session and gone afterwards.
 
 A planning-poker round and a temperature check are neither. They need each
@@ -24,8 +24,8 @@ is one field, so it is built once here rather than three times.
 ## The field
 
 `ShapeElement.responses?: ParticipantResponse[]`, where a response is
-`{ participantId, value, at }` — the answer as a **string**, when it was cast,
-and the id of who cast it (see below — it is NOT the owner id).
+`{ participantId, value, at }`: the answer as a **string**, when it was cast,
+and the id of who cast it (see below; it is NOT the owner id).
 
 - **At most one response per participant**, enforced by `setResponse`: casting
   again REPLACES your earlier answer rather than stacking a second one. This is
@@ -37,7 +37,7 @@ and the id of who cast it (see below — it is NOT the owner id).
   `pieSlices`, so it bounds in `validate.ts` with the same array clamp as the
   rest and round-trips through JSON export with no key-order surprise.
 
-Helpers live in `packages/document/src/responses.ts` — a leaf module (types
+Helpers live in `packages/document/src/responses.ts`: a leaf module (types
 only), for the same module-cycle reason `data-shapes.ts` is one.
 
 ## `participantId` is the COLLAB KEY, not the owner id
@@ -52,19 +52,19 @@ here:
 | Id                                                                                    | Stable across reconnects? | Safe to publish? |
 | ------------------------------------------------------------------------------------- | ------------------------- | ---------------- |
 | **Owner id** (account or guest token id)                                              | yes                       | **no**           |
-| **Presence id** ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6) | **no** — per socket       | yes              |
+| **Presence id** ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6) | **no**, per socket        | yes              |
 | **Collab key**                                                                        | yes                       | yes              |
 
 The owner id is a credential: for a guest it is exactly what authenticates
 their API calls, so writing it into a shared document hands it to every
 co-viewer. The presence id is deliberately a fresh server-minted random per
-socket, so peers never read an owner id off a roster — which also means it
+socket, so peers never read an owner id off a roster, which also means it
 matches nothing that was ever saved, and changes on every reconnect.
 
 So the document gets a third id: **`livediagram:v2:collab-key`**, a per-browser
 random the client mints and keeps (`ensureCollabKey`). Stable like the owner
 id, worthless like the presence id. It rides the roster as
-`ParticipantPresence.key`, the **one claimed field** on it — relayed verbatim
+`ParticipantPresence.key`, the **one claimed field** on it, relayed verbatim
 rather than server-stamped, because it has to survive a reconnect to do its
 job, and because it grants nothing (any edit-role peer can already write any id
 straight into the document, so leaving it claimable adds no reach).
@@ -77,7 +77,7 @@ existed rather than a crash.
 Two consequences worth stating:
 
 - **Per browser, not per account.** The same person signed in on a laptop and a
-  phone is two answers — and two presence entries, so the card stays
+  phone is two answers, and two presence entries, so the card stays
   self-consistent.
 - **Answers written before this shipped don't match anybody.** They were keyed
   on owner ids. A done check is a round you reset anyway; an estimate card
@@ -124,10 +124,10 @@ The estimate card uses it; the temperature check deliberately does not.
 
 ## Limit, stated plainly
 
-`participantId` is in the element, so an answer is **not anonymous** — the
+`participantId` is in the element, so an answer is **not anonymous**: the
 element knows who said 8. (Not anonymous to the ROOM, that is; the key is not
-an owner id, so it identifies a browser in this session rather than an account
-— see above.) That is right for these two consumers (a team that
+an owner id, so it identifies a browser in this session rather than an account;
+see above.) That is right for these two consumers (a team that
 cannot see who estimated what cannot discuss the outlier) and wrong for a
 brainstorm, which is why the idea box ([Idea box](idea-box.md)) does not use
 this field and has nowhere to put an author at all.
@@ -136,15 +136,15 @@ this field and has nowhere to put an author at all.
 
 Every Behaviours element rendered as the same rounded rectangle with a title
 and some controls, so a canvas of them read as one repeated component in
-thirteen sizes. The thing each of them IS — a clipboard, a ballot box, a ticket
-stub, a filed record — was carried entirely by the words on it.
+thirteen sizes. The thing each of them IS (a clipboard, a ballot box, a ticket
+stub, a filed record) was carried entirely by the words on it.
 
 The **paper kit** (`components/canvas/paper-kit.tsx`) is the shared set of
 textures that fixes that. Its one rule: everything is built from
 `tint(textColor, alpha)`, so a card is drawn in ITS OWN colour and the tab
 theme still owns the palette ([Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)). A pink canvas stays a pink canvas. All
-the distinction comes from **form** — a folded corner, a punched margin, a torn
-edge, a rotated stamp — which survives any hue, any theme, and light or dark
+the distinction comes from **form**: a folded corner, a punched margin, a torn
+edge, a rotated stamp, which survives any hue, any theme, and light or dark
 mode, none of which a per-kind colour would.
 
 | Element         | Object             | What draws it                                                                                                        |
@@ -175,7 +175,7 @@ House rules for anything added to the kit: decorative, so `aria-hidden` and
 `pointer-events-none` without exception (these sit over cards whose controls
 must stay clickable); absolutely positioned, so a texture can never change the
 layout it decorates; built from `tint`, never a Tailwind colour class; and no
-animation — a canvas of thirteen moving textures is a canvas nobody can read.
+animation: a canvas of thirteen moving textures is a canvas nobody can read.
 
 `CollabPanel` takes the textures as **two** slots, `backdrop` and `overlay`,
 because the layering is the effect: rules under the words read as a page they

@@ -12,10 +12,10 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
   the canvas ghost.
 - While dragging over the **canvas** (not over a panel or the strip), a
   translucent, brand-tinted ghost follows the cursor:
-  - It is the shape's real silhouette (`ShapeGlyph` — a circle previews as a
+  - It is the shape's real silhouette (`ShapeGlyph`: a circle previews as a
     circle, a cylinder as a cylinder) inside a dashed brand footprint.
   - Sized to the shape's `SHAPE_DEFAULT_SIZE` × the current zoom, and
-    **centred on the cursor** — matching where `dropPaletteItem` places the
+    **centred on the cursor**, matching where `dropPaletteItem` places the
     element (it centres on the drop point).
 - Over a panel or the strip (a "changed my mind" drag back to the palette) the
   ghost hides, mirroring the existing `usePaletteDrop` no-drop guard.
@@ -26,7 +26,7 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
 
 ## Implementation
 
-- `lib/palette-drag-preview.ts` — a tiny module store
+- `lib/palette-drag-preview.ts`: a tiny module store
   (`{ kind, iconId?, width, height } | null`) with `useSyncExternalStore`
   access, plus `suppressNativeDragImage(e)`. Drag state is inherently global
   - transient, so a subscribable module store fits better than threading it
@@ -39,7 +39,7 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
   Technology catalogues' tiles drag on their own mimes). Tiles that arm a gesture (Text, the pens,
   Polygon, Arrow) offer no drag.
 - Every drag source clears the preview on `dragend`.
-- `components/canvas/PaletteDragGhost.tsx` — an overlay rendered by `Canvas`
+- `components/canvas/PaletteDragGhost.tsx`: an overlay rendered by `Canvas`
   that reads the preview + tracks the cursor via a `dragover` listener and
   paints the ghost at the `z-overlay` rung.
 
@@ -49,7 +49,7 @@ purely an additive preview layer.
 ## Where the ghost draws
 
 The ghost follows the cursor, offset by whatever the drag's **snap channel**
-(`setPaletteDragSnap`) currently holds — the one number the guides, the ghost
+(`setPaletteDragSnap`) currently holds: the one number the guides, the ghost
 and the drop all read, so the three can't disagree. Two things publish into
 it, and only ever one at a time:
 
@@ -57,10 +57,10 @@ it, and only ever one at a time:
   footprint onto its neighbours' edges and even spacing; and
 - an **insertion slot** on an event-storming board ([Event storming](../021-event-storming/event-storming.md) "insert a note
   between two notes"), which places the ghost IN the gap it is offering to
-  open. While a slot is active the alignment snap yields entirely — two
+  open. While a slot is active the alignment snap yields entirely: two
   placement rules bidding for one drop point is how a preview starts lying.
   A slot is only ever resolved **while Alt is held** and only for a tile
   that will land as a **note**; without both, the alignment snap is the
   whole story, exactly as on any other canvas. Since a note has no shape kind
-  of its own — the ghost draws it as a square at the note's real size — the
+  of its own: the ghost draws it as a square at the note's real size; the
   preview carries a `note` flag saying what it will actually become.

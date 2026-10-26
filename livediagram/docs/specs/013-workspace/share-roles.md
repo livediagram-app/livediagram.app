@@ -1,7 +1,7 @@
 # Share roles
 
-**Status: built (Viewer, Participant, Editor links); token levels, ownership powers and collaboration keys still
-ahead ([Later](#later)).**
+**Status: built** for the Viewer, Participant and Editor links. Token levels, ownership powers, server-derived
+collaboration keys and an answers route are planned ([Later](#later)).
 
 Everyone who reaches a document without owning it, by a share link or an embed, does so at one of three **access
 levels**: **Viewer**, **Participant** or **Editor**. **Ownership** is not a level: it is a set of powers over the
@@ -157,7 +157,8 @@ and moves stay with the owner and joined team members. No level grants any of th
 
 ## Later
 
-Specified in the research and not built yet:
+**Status: Planned.** Not built yet; today API tokens carry the read-only flag, ownership is checked door by door,
+and a session chooses its own collaboration key. Specified in the research:
 
 - **Token levels**: API tokens carry view, participate or edit instead of the read-only flag.
 - **Ownership powers** as a named set every door asks beside the level.

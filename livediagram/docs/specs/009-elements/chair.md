@@ -14,7 +14,7 @@ table is a seating plan, an attendance display, and a turn-taking device all at
 once, drawn with elements the author already knows how to place. "Everyone grab
 a seat" is a thing facilitators say, and on this canvas it becomes literal.
 
-It is also the cheapest possible version of the idea — the walk hook already
+It is also the cheapest possible version of the idea: the walk hook already
 fires when a character arrives on top of something, which is exactly how the
 portal ([Portal element](portal-element.md)) works.
 
@@ -26,7 +26,7 @@ A **shape kind**, `chair`, in the palette's **Collaborate** category under
 - Drawn as a chair seen from above-front: a seat, a back, and a shadow, so it
   reads as furniture rather than as a box with a label. It is drawn **upright at every facing**
   (see [Facing](#facing)).
-- **`ShapeElement.chairFacing`** — `'n' | 'e' | 's' | 'w'`, which way the seat
+- **`ShapeElement.chairFacing`**: `'n' | 'e' | 's' | 'w'`, which way the seat
   points. Absent = `'n'` (back at the top, sitter facing down the canvas, toward
   the reader). Set from the element's context menu.
 - **No settings `…` on its face.** Every other Behaviours card carries the
@@ -34,7 +34,7 @@ A **shape kind**, `chair`, in the palette's **Collaborate** category under
   and its one setting is set once from the element menu, so an ellipsis over
   the backrest only reads as a control on the seat.
 - Its `label` is optional and renders under the chair: "Scribe", "Facilitator",
-  "Alex" — a chair that is somebody's chair.
+  "Alex": a chair that is somebody's chair.
 - Otherwise a completely ordinary element: move, resize, rotate, theme, group,
   lock, copy, export.
 - **One drawing, on the canvas and in an export.** The chair is a piece of the shared furniture table
@@ -79,7 +79,7 @@ same `useAvatarWalk` mechanism the portal uses (not every frame it stands
 there).
 
 - The character **snaps to the chair's seat point** and switches to a seated
-  pose — legs forward, body lowered, **facing the way the chair faces**
+  pose: legs forward, body lowered, **facing the way the chair faces**
   (`n` down the canvas, `e` left, `s` up, `w` right: the same words the menu
   tiles use). The seat point turns with the chair, so the sitter lands on the
   seat rather than on the backrest of a sideways chair.
@@ -103,8 +103,8 @@ chair cannot be left permanently occupied by someone who closed their laptop, a
 chair's occupancy cannot conflict between two clients, and no seating state
 reaches the stored document or undo.
 
-- The chair renders **occupied** — a soft ring in the sitter's presence colour
-  and their name under it — derived from the peer presence the canvas already
+- The chair renders **occupied**: a soft ring in the sitter's presence colour
+  and their name under it, derived from the peer presence the canvas already
   receives.
 - **Two people can sit in the same chair.** Not an accident: enforcing one
   seat means a lock, a lock means an owner, and an owner means a chair that

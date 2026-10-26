@@ -17,8 +17,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   ("Proportions of a whole", "A trend over time") rather than a caption tile:
   the picture names the chart, not the job it does.
 - A **Data** context-menu category edits the chart. Pie / bar edit inline: one
-  row per datum — a recolourable swatch (opening the
-  [colour picker](../004-interface-design/colour-picker.md) in a popover), a **label**, and a **value** — plus
+  row per datum: a recolourable swatch (opening the
+  [colour picker](../004-interface-design/colour-picker.md) in a popover), a **label**, and a **value**, plus
   add / remove. The line chart's 2-D grid is too wide for the narrow menu, so
   the category instead **summarises the series** (a colour dot + name) and an
   **Edit Data** button opens a **modal** (`LineDataDialog`): a row per category,
@@ -28,12 +28,12 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
 - Hovering a mark (slice / bar / line point) shows a readout with its label +
   value, regardless of the legend toggle.
 - A **Chart** context-menu category holds display options: a **Legend**
-  placement picker — **Off / Top / Left / Right / Below** (glyph-over-label
+  placement picker: **Off / Top / Left / Right / Below** (glyph-over-label
   tiles). Picking a side both turns the legend on and positions it (setting
   `chartLegend: true` and `chartLegendPosition`), while **Off** sets
   `chartLegend: false`. The default is **Below**: a side legend spends up to
   130px of a 280px-wide chart on series names, squeezing the plot into a third
-  of the card, and it is the plot people are reading — a bottom band costs
+  of the card, and it is the plot people are reading: a bottom band costs
   height, which these charts have more of to give. The resolved default applies
   to every chart that never picked a placement, which is the point of a default
   rather than a per-element field. The chart default sizes are squarer to match. The chart layout (`chartFrame`) reserves a
@@ -71,14 +71,14 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
 ChartAxis`); a series on the right shows "(right)" after its name in the Data summary. An Editor changes it.
 - The **Animation** category carries the chart-specific animations
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
-  in place of the boxed-element animation set — a chart animates its marks, not
+  in place of the boxed-element animation set: a chart animates its marks, not
   the whole box. Grow / Pop play once (an entrance); Spin / Pulse loop.
-- Mark colours default to **variants of the active theme** (`themeChartPalette`
-  — each branch hue on multi-colour themes, accent tints/shades on single-accent
+- Mark colours default to **variants of the active theme** (`themeChartPalette`:
+  each branch hue on multi-colour themes, accent tints/shades on single-accent
   themes), overridable per datum. So a chart reads as part of the theme out of
   the box.
 - It's a normal boxed element otherwise (move / resize / select / lock),
-  but the **Colours / Border** context-menu categories are hidden — a
+  but the **Colours / Border** context-menu categories are hidden: a
   chart styles per-datum via its Data category, not as one filled box. Its
   **Presets** grid holds the chart palettes (see Chart palettes).
 
@@ -127,7 +127,7 @@ Chart" and a screen reader hears "Column chart", as the palette's tile says, nev
 ## Model
 
 Each chart is a `ShapeKind` (`'pie-chart'` / `'bar-chart'` / `'line-chart'`),
-not a new top-level type — so they inherit boxed-element behaviour. `isChartShape`
+not a new top-level type, so they inherit boxed-element behaviour. `isChartShape`
 groups all three (they're all in `isSelfDrawingShape` too).
 
 - Pie + bar: `ShapeElement.pieSlices?: PieSlice[]` (`{ label, value, color? }`).
@@ -136,7 +136,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
   A `LineSeries` may carry `axis?: 'right'`, its own scale (a second axis); any other value reads as absent. The
   axes are laid out with the marks, in `chartValueAxis` (`packages/document/src/chart-axis.ts`) for both renderers.
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
-  (`{ name, color?, values: number[] }`), aligned to the categories — a 2-D
+  (`{ name, color?, values: number[] }`), aligned to the categories: a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
 - **Rows on the way in**: validation refuses a slice that is not `{ label, ... }`, a series that is
   not `{ name, values, ... }` and a category that is not text. A row that arrives malformed anyway

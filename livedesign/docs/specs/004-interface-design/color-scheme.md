@@ -11,23 +11,23 @@ generated from (the app's `palettes` in `packages/brand/src/apps.ts` (`@livework
 that cannot read a CSS token (the email templates, the social card, the web manifest, the unthemed tab accent, the help
 centre's print styles) name the same hexes, and a change of accent changes them together.
 
-## Primary palette — Rose
+## Primary palette: Rose
 
 A single brand hue with a full 50–950 ramp. Built on Tailwind's `rose` scale, unchanged.
 
-| Token           | Hex           | Usage                                                      |
-| --------------- | ------------- | ---------------------------------------------------------- |
-| `brand-50`      | `#fff1f2`     | App backgrounds, faint tints, hover surfaces               |
-| `brand-100`     | `#ffe4e6`     | Subtle fills, selected-row backgrounds                     |
-| `brand-200`     | `#fecdd3`     | Accents, soft borders, collaborator cursor tints           |
-| `brand-300`     | `#fda4af`     | Decorative accents, secondary indicators                   |
-| `brand-400`     | `#fb7185`     | Light brand surfaces, illustrations                        |
-| **`brand-500`** | **`#f43f5e`** | **Primary brand color — accents, focus rings, decoration** |
-| `brand-600`     | `#e11d48`     | Focus outlines, decorative accents with no text            |
-| `brand-700`     | `#be123c`     | **Solid fills under white text**, **all light brand ink**  |
-| `brand-800`     | `#9f1239`     | Hover on a solid fill, high-contrast emphasis              |
-| `brand-900`     | `#881337`     | Dark mode brand text                                       |
-| `brand-950`     | `#4c0519`     | Dark mode surfaces                                         |
+| Token           | Hex           | Usage                                                     |
+| --------------- | ------------- | --------------------------------------------------------- |
+| `brand-50`      | `#fff1f2`     | App backgrounds, faint tints, hover surfaces              |
+| `brand-100`     | `#ffe4e6`     | Subtle fills, selected-row backgrounds                    |
+| `brand-200`     | `#fecdd3`     | Accents, soft borders, collaborator cursor tints          |
+| `brand-300`     | `#fda4af`     | Decorative accents, secondary indicators                  |
+| `brand-400`     | `#fb7185`     | Light brand surfaces, illustrations                       |
+| **`brand-500`** | **`#f43f5e`** | **Primary brand color: accents, focus rings, decoration** |
+| `brand-600`     | `#e11d48`     | Focus outlines, decorative accents with no text           |
+| `brand-700`     | `#be123c`     | **Solid fills under white text**, **all light brand ink** |
+| `brand-800`     | `#9f1239`     | Hover on a solid fill, high-contrast emphasis             |
+| `brand-900`     | `#881337`     | Dark mode brand text                                      |
+| `brand-950`     | `#4c0519`     | Dark mode surfaces                                        |
 
 `brand-500` (`#f43f5e`) is the canonical "livedesign rose": the color of selection highlights, accents and focus rings.
 It carries no white text: white on it is 3.7:1, so a primary button sits two steps deeper, on `brand-700`. The logo
@@ -36,7 +36,7 @@ draws on its own prism palette, rose into pink into deep brown ([Brand mark](./b
 **Why no stop is hand-tuned.** Rose is deep enough at Tailwind's own steps for every role: `brand-600` (`#e11d48`), the focus outline, is 4.7:1 on white and 3.9:1 on `slate-100` and `brand-100`, past the 3:1 a focus indicator needs, and `brand-700` (`#be123c`) holds white at 6.3:1, so a banner's 90% white copy clears 4.5:1. (Amber, livedocuments' accent, needed both stops deepened.) `brand-100` is also the Warning chip's background ([Semantic colors](#semantic-colors)); the two stay
 apart by the Warning's icon and label, never by colour alone.
 
-## Neutrals — Slate
+## Neutrals: Slate
 
 Slate is cool where rose is warm, so the accent stands off the neutrals rather than blending into them. Use it for text,
 borders, surfaces, and dividers.
@@ -64,7 +64,7 @@ holds the class strings to it. White words on a coloured banner (the sign-in ban
 
 ## Semantic colors
 
-Reserved for status — never used decoratively.
+Reserved for status, never used decoratively.
 
 | Role    | Light bg    | Foreground  | Notes                          |
 | ------- | ----------- | ----------- | ------------------------------ |
@@ -269,4 +269,4 @@ The package's `theme.css` declares the brand ramp as CSS variables inside a `@th
 }
 ```
 
-Slate, success / warning / error utilities live on Tailwind's own defaults — only the `brand` ramp is custom.
+Slate, success / warning / error utilities live on Tailwind's own defaults; only the `brand` ramp is custom.

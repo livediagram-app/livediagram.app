@@ -7,7 +7,7 @@ reveals every answer at once.
 
 ## Why
 
-Estimating out loud anchors — the first number said is the number the room
+Estimating out loud anchors: the first number said is the number the room
 converges on, and the most senior voice says it. The fix is older than software
 and is always the same: everyone commits before anyone sees.
 
@@ -23,15 +23,15 @@ A **shape kind**, `estimate`, on the per-participant response primitive
 ([Per-participant responses](participant-responses.md)). Its `label` is the thing being
 estimated, so it edits and exports like any other label.
 
-- **`ShapeElement.estimateScale`** — `'fibonacci'` (1 2 3 5 8 13 21 ?),
+- **`ShapeElement.estimateScale`**: `'fibonacci'` (1 2 3 5 8 13 21 ?),
   `'tshirt'` (XS S M L XL ?) or `'powers'` (1 2 4 8 16 ?). Every scale ends in
   `?`, which is a real answer ("I can't size this") and the most useful one on
   the card. **Absent means not chosen yet** (below), except on a card that
   already holds answers: that is an older card from before the choice existed,
   when absent meant Fibonacci, and it keeps meaning that
   (`estimateScalePending`).
-- **`ShapeElement.responses`** — one pick per participant ([Per-participant responses](participant-responses.md)).
-- **`ShapeElement.responsesRevealed`** — shared, false by default.
+- **`ShapeElement.responses`**: one pick per participant ([Per-participant responses](participant-responses.md)).
+- **`ShapeElement.responsesRevealed`**: shared, false by default.
 
 ## Choosing a scale
 

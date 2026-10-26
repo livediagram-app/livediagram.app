@@ -35,8 +35,8 @@ owns `shape: 'document'`, so the kind is named `page` and the two never share a 
 ## The masthead
 
 A Page carries a **fixed heading and subtitle** above its body, separated by a
-hairline rule. Two plain-string fields on the shape — `pageTitle` and
-`pageSubtitle` — bounded at `PAGE_HEADING_MAX` (200) and validated with the
+hairline rule. Two plain-string fields on the shape, `pageTitle` and
+`pageSubtitle`, are bounded at `PAGE_HEADING_MAX` (200) and validated with the
 rest.
 
 **Not the first two lines of the body.** A page's title is structure, not
@@ -74,7 +74,7 @@ touched.
 
 ## Paper, not a big box
 
-- **420 × 594** — √2, the A-series ratio, at a size that reads as a page next
+- **420 × 594**: √2, the A-series ratio, at a size that reads as a page next
   to a 120px square without dominating the canvas.
 - **Body top-left**, not centred. Centred prose is the single strongest tell
   that something is a label pretending to be a page.
@@ -82,8 +82,8 @@ touched.
   to the edge of a sheet is the other half of "this isn't paper".
 - **A white body, a hairline border and a soft shadow**, so it reads as paper
   laid ON the canvas rather than drawn into it.
-- **A turned-back bottom-right corner.** Two triangles — the corner cut away,
-  a slightly darker leaf laid over the cut — rather than a real curl, which
+- **A turned-back bottom-right corner.** Two triangles (the corner cut away,
+  a slightly darker leaf laid over the cut) rather than a real curl, which
   would need a gradient and a bezier and would fight the element's own border
   on every resize. Fixed at 22px in element space, so the fold is the same
   physical size on an A4 page and on one dragged out wide.

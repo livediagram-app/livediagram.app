@@ -29,7 +29,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document; each document's content in its own Durable Object, no D1).
 - **Telemetry** is liveworkspace's: events go to its central service and `/telemetry` redirects to its public dashboard, filtered to livedocuments (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
-- **MCP** at `mcp.livedocuments.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
+- **MCP** at `mcp.livedocuments.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host, not a router path.
 - **Router** stitches marketing, the editor, help and the API under one hostname.
 - **CLI** (`apps/cli`) is `livedocuments`, the command line agents and scripts read and change documents with, published on npm as `@livedocuments/cli`. It also opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
@@ -48,6 +48,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). A free hosted version runs at [livedocuments.app](https://www.livedocuments.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in, gated on its client key) and Cloudflare Email Service (transactional email, gated on its `EMAIL` binding) — and the editor runs fully without either of them.
+[MIT](LICENSE). A free hosted version runs at [livedocuments.app](https://www.livedocuments.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker (sign-in, gated on its client key) and Cloudflare Email Service (transactional email, gated on its `EMAIL` binding), and the editor runs fully without either of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://www.livedocuments.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

@@ -7,23 +7,23 @@
 > handlers. The recommended approach in this spec is what shipped; the
 > "As built" note at the end records the concrete file layout. A
 > human-facing reference in the help centre links to this project
-> (`apps/help`, the **Developers** category — see [Help app](../018-help/help-app.md)).
+> (`apps/help`, the **Developers** category; see [Help app](../018-help/help-app.md)).
 
 ## Why
 
 The api worker ([API app](api.md)) is documented two ways today:
 
 - **Prose** in [API app](api.md) plus the per-feature specs (teams → [Teams](../013-workspace/teams.md), telemetry → [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), share password / expiry → [Share password](../013-workspace/share-password.md) / [Share-link expiry](../013-workspace/share-link-expiry.md)).
-- **Compile-time payload shapes** in `@liveplanner/api-schema` — every request / response DTO, imported by both the worker (which builds them) and the live editor (which consumes them), so the typechecker catches drift between the two sides.
+- **Compile-time payload shapes** in `@liveplanner/api-schema`: every request / response DTO, imported by both the worker (which builds them) and the live editor (which consumes them), so the typechecker catches drift between the two sides.
 
 What's missing is a **single, machine-readable description of the surface**: the paths, methods, auth requirements, and status codes. The TS types cover payload _shape_ but say nothing about URL shape, verbs, or auth; the prose isn't discoverable, testable, or consumable by tooling. An integrator can't point a client generator, a Postman import, or a docs viewer at anything.
 
-The goal is an **OpenAPI 3.1 project** for `/api/*` that is generated from the existing source of truth (not hand-maintained in parallel, which would drift — the one thing this repo most wants to avoid) and cannot fall behind the real routes without turning CI red, within the bounds the drift test states below.
+The goal is an **OpenAPI 3.1 project** for `/api/*` that is generated from the existing source of truth (not hand-maintained in parallel, which would drift, the one thing this repo most wants to avoid) and cannot fall behind the real routes without turning CI red, within the bounds the drift test states below.
 
 ## Goals
 
 - One OpenAPI 3.1 project covering every `/api/*` endpoint (the surface enumerated in [API app](api.md)): path template, method, summary, auth scheme, request body schema, response schema(s), and the meaningful status codes (200/201/204/400/401/403/404/409).
-- Served at **`GET /api/openapi.json`** — public, no auth, cacheable. It's the contract, not data, so a token holder isn't needed.
+- Served at **`GET /api/openapi.json`**: public, no auth, cacheable. It's the contract, not data, so a token holder isn't needed.
 - **Component schemas reuse `@liveplanner/api-schema`**: DTO shapes are generated from those TS types, never re-typed by hand. Adding a field to a DTO updates the doc automatically.
 - **A drift test** (CI) that fails when a `(method, path-template)` is reachable in the worker's dispatch but absent from the OpenAPI doc, or vice versa, to the precision stated under "Drift test" below. This mirrors the test-pinned template / theme catalogues ([Canvas and palette](../008-canvas/canvas-and-palette.md)): the doc cannot fall behind the code without turning CI red.
 - Self-contained: the doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (sign-in unset).
@@ -36,17 +36,17 @@ The goal is an **OpenAPI 3.1 project** for `/api/*` that is generated from the e
 
 ## Approach
 
-The worker uses vanilla `fetch` handlers with segment-based dispatch (`apps/api/src/index.ts` → `routes/*.ts`), **not** Hono — see [docs/development/architecture.md](../../development/architecture.md). Two routes are therefore available:
+The worker uses vanilla `fetch` handlers with segment-based dispatch (`apps/api/src/index.ts` → `routes/*.ts`), **not** Hono; see [docs/development/architecture.md](../../development/architecture.md). Two routes are therefore available:
 
-1. **Migrate to `@hono/zod-openapi`** — rewrite the dispatch as Hono routes with Zod schemas, getting OpenAPI generation + runtime validation for free. Powerful, but it replaces the entire routing layer and the api-schema types with Zod schemas. Too large and too speculative for the payoff here. **Rejected for v1.**
+1. **Migrate to `@hono/zod-openapi`**: rewrite the dispatch as Hono routes with Zod schemas, getting OpenAPI generation + runtime validation for free. Powerful, but it replaces the entire routing layer and the api-schema types with Zod schemas. Too large and too speculative for the payoff here. **Rejected for v1.**
 2. **A declarative route manifest + schema generation, keeping the vanilla handlers.** **Recommended.**
 
 ### Recommended: route manifest + generated component schemas
 
-- **Route manifest** — `apps/api/src/openapi/manifest.ts`: an array, one entry per endpoint. Each entry carries the method, the path template (`/api/...` with `{param}` placeholders), a summary, the auth mode (public / guest / clerk / either; `clerk` is the manifest's name for Bearer-only, kept from before sign-in moved to the accounts Worker), optional request and response schema names, and the meaningful status codes. The manifest is plain data referencing DTO names from `@liveplanner/api-schema`; it is the single declaration of the surface.
-- **Component schemas** — generated from the api-schema TS types into JSON Schema (e.g. `ts-json-schema-generator` as a build step in `packages/api-schema` or the api worker), emitted into the OpenAPI `components.schemas`. Shapes are never re-typed; the manifest only references them by name.
-- **Assembly** — a build step composes the manifest + generated schemas + the auth-scheme definition (one Bearer: an account access token, a guest token or an API token, per [Auth + guest access](../014-identity/auth-and-guest-access.md)) into one OpenAPI 3.1 object, written to a TS constant the worker serves verbatim at `GET /api/openapi.json`. Build-time generation keeps the request path a constant lookup, no per-request work.
-- **Drift test** — the dispatch is segment-based and imperative, not declarative, so there is no route table to diff; the manifest is the declaration and the test pins it to the running dispatch (see "Drift test" below). Every `requestSchema` / `responseSchema` name must also exist in `@liveplanner/api-schema`. This is the anti-drift guarantee; without it the doc is just another thing that rots.
+- **Route manifest**: `apps/api/src/openapi/manifest.ts`: an array, one entry per endpoint. Each entry carries the method, the path template (`/api/...` with `{param}` placeholders), a summary, the auth mode (public / guest / clerk / either; `clerk` is the manifest's name for Bearer-only, kept from before sign-in moved to the accounts Worker), optional request and response schema names, and the meaningful status codes. The manifest is plain data referencing DTO names from `@liveplanner/api-schema`; it is the single declaration of the surface.
+- **Component schemas**: generated from the api-schema TS types into JSON Schema (e.g. `ts-json-schema-generator` as a build step in `packages/api-schema` or the api worker), emitted into the OpenAPI `components.schemas`. Shapes are never re-typed; the manifest only references them by name.
+- **Assembly**: a build step composes the manifest + generated schemas + the auth-scheme definition (one Bearer: an account access token, a guest token or an API token, per [Auth + guest access](../014-identity/auth-and-guest-access.md)) into one OpenAPI 3.1 object, written to a TS constant the worker serves verbatim at `GET /api/openapi.json`. Build-time generation keeps the request path a constant lookup, no per-request work.
+- **Drift test**: the dispatch is segment-based and imperative, not declarative, so there is no route table to diff; the manifest is the declaration and the test pins it to the running dispatch (see "Drift test" below). Every `requestSchema` / `responseSchema` name must also exist in `@liveplanner/api-schema`. This is the anti-drift guarantee; without it the doc is just another thing that rots.
 
 ### Drift test
 
@@ -78,7 +78,7 @@ A human-facing viewer (Scalar / Redoc / Stoplight Elements) is nice but pulls a 
 
 ## Hard constraints honored
 
-- Served by the **api worker**, not Next.js — no SSR, no Node runtime added ([AGENTS.md](../../../AGENTS.md) static-only rule).
+- Served by the **api worker**, not Next.js: no SSR, no Node runtime added ([AGENTS.md](../../../AGENTS.md) static-only rule).
 - **Self-contained** with no external dependency; the doc generates at build time and ships in the worker bundle.
 - **Reuse over duplication**: component schemas come from `@liveplanner/api-schema`, the existing single source of truth, never re-typed.
 
@@ -91,30 +91,30 @@ If runtime request validation is wanted later, introduce Zod schemas for request
 The recommended route-manifest approach shipped. Concrete layout, all under
 `apps/api/src/openapi/` unless noted:
 
-- **`manifest.ts`** — `ROUTE_MANIFEST`, one `RouteSpec` per endpoint (method,
+- **`manifest.ts`**: `ROUTE_MANIFEST`, one `RouteSpec` per endpoint (method,
   path template, resource segment, tag, summary, `auth` mode, an
   `x-token-usable` hint for external-token callers, optional query params, and
   request/response bodies). A body is either a component name (a `$ref` into the
   generated schemas) or an inline JSON Schema for the small response envelopes
   (`{ projects: ProjectSummary[] }` etc.) that aren't named DTOs.
-- **`schemas.generated.ts`** — committed, generated by
+- **`schemas.generated.ts`**: committed, generated by
   `scripts/gen-openapi-schemas.mjs` (`pnpm --filter @liveplanner/api gen:openapi`)
   from the api-schema TS types via `ts-json-schema-generator` (`expose: 'export'`
   so only exported DTOs become named components; `Record<…>`/`Partial<…>`
   utilities inline). The generator is a dev dependency only and is **not** in the
-  worker bundle — nothing on the runtime path imports it.
-- **`project.ts`** — `buildOpenApiProject()` assembles the manifest + generated
+  worker bundle; nothing on the runtime path imports it.
+- **`project.ts`**: `buildOpenApiProject()` assembles the manifest + generated
   schemas + the one security scheme (`Bearer` = account access token, guest token
   **or** API token) + a shared `Error` envelope into the 3.1
   object. Path parameters are derived from the `{param}` placeholders, so the
   manifest doesn't repeat them. Pure and deterministic.
-- **`routes/openapi.ts`** — `handleOpenapi`, dispatched from `index.ts` on the
+- **`routes/openapi.ts`**: `handleOpenapi`, dispatched from `index.ts` on the
   `openapi.json` segment. GET only, public, `Cache-Control: public, max-age=3600`,
   memoised once per isolate.
-- **`route-parity.test.ts`** + **`dispatch-probe.ts`** — the `(method,
+- **`route-parity.test.ts`** + **`dispatch-probe.ts`**: the `(method,
 path-template)` parity described under "Drift test", run in the api worker's
   Node test env against `index.ts`'s default export.
-- **`manifest.test.ts`** — the remaining guards: (1) the manifest's segment set
+- **`manifest.test.ts`**: the remaining guards: (1) the manifest's segment set
   equals the `case '…':` labels in `index.ts`'s dispatch, in both directions,
   and every verb a segment's handlers compare against is documented for it;
   (2) every schema the manifest / assembled project references exists; (3) the
@@ -122,7 +122,7 @@ path-template)` parity described under "Drift test", run in the api worker's
   change that wasn't regenerated fails CI; (4) the 429 each operation declares
   mirrors `index.ts`'s limiters. The (method, path) pairs are also asserted
   unique.
-- **Media types** — a success body is `application/json` unless the entry sets
+- **Media types**: a success body is `application/json` unless the entry sets
   `responseMediaType`; the tab render (`GET /projects/{id}/tabs/{tabId}/render.svg`) declares `image/svg+xml`. A
   project's previews are liveworkspace's ([previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)), not this api's.
 
@@ -133,4 +133,4 @@ the `GET …/ws` upgrade is listed but its message protocol is not.
 ## Out of scope
 
 - The marketing / live / telemetry frontends (static Next exports) are not OpenAPI surfaces.
-- Versioning the API (`/api/v2`) — the surface is single-version today; revisit if a breaking change is ever needed.
+- Versioning the API (`/api/v2`): the surface is single-version today; revisit if a breaking change is ever needed.

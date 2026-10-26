@@ -12,8 +12,8 @@ vertical list.
 
 Nine tools in a single column is a lot of travel and a lot of reading for what
 is a flat choice between equal-weight modes. The context menus already made
-this call — category contents there are `MenuTileGrid`, never a column of
-rows — so the two menu systems now read alike.
+this call (category contents there are `MenuTileGrid`, never a column of
+rows), so the two menu systems now read alike.
 
 Measured on the canvas-tool picker: **182px tall against roughly 360px**, at
 208px wide.
@@ -38,7 +38,7 @@ a grid is not always the better shape:
 
 ## Details that had to survive the change
 
-- **Band titles.** The canvas tool's three bands are named — **Edit** (the
+- **Band titles.** The canvas tool's three bands are named **Edit** (the
   tools that act on the canvas), **Present** (the ones you use in front of an
   audience) and **Preview** (the whole-canvas views). A named band doesn't
   also need a rule to say it started, so the title replaces the divider rather
@@ -47,14 +47,14 @@ a grid is not always the better shape:
   the menu, so a label hanging off an option would vanish exactly when that
   option was the current one.
 - **Group bands.** The canvas tool's options carry a `group` index that draws
-  a divider where the band changes — select-ish tools, then the presentation
+  a divider where the band changes: select-ish tools, then the presentation
   tools, then the whole-canvas modes. In a grid that becomes a full-width rule
   between rows (`col-span-full`) rather than a rule between two items.
 - **Shortcut badges.** Kept, but tucked into the tile's top-right corner
   rather than taking a column of their own. A shortcut is worth discovering
   and worth nothing at the cost of the label's line.
 - **The selected option is shown, in its selected tone**, not filtered out.
-  It used to be hidden on the reasoning that the trigger already names it —
+  It used to be hidden on the reasoning that the trigger already names it,
   but that makes the reader infer the current value from the trigger alone,
   and worse, the remaining options _shift position_ every time the selection
   changes, so the thing you want is never twice in the same place. Showing all

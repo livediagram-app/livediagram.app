@@ -151,7 +151,7 @@ there leaves placeholders and a count, never a failed import.
 
 ### Resize behaviour
 
-`naturalWidth` / `naturalHeight` are captured on load so a future "Reset to natural size" affordance can snap back to them — but that menu entry is **not yet wired** (the right-click context menu currently exposes Link / Remove Icon / layer order / Note / Comment only). Aspect lock defaults to true on first paint (the user can explicitly unlock via the Shape accordion's existing aspect-lock toggle, which works on ImageElement the same way it works on shapes).
+`naturalWidth` / `naturalHeight` are captured on load so a future "Reset to natural size" affordance can snap back to them, but that menu entry is **not yet wired** (the right-click context menu currently exposes Link / Remove Icon / layer order / Note / Comment only). Aspect lock defaults to true on first paint (the user can explicitly unlock via the Shape accordion's existing aspect-lock toggle, which works on ImageElement the same way it works on shapes).
 
 ### Visual export (PNG / SVG / PDF)
 
@@ -242,7 +242,7 @@ Image uploads / deletes don't go through the realtime room. The element's `image
 
 ## Undo
 
-Setting or clearing an image is one undoable step. Undo restores the prior `imageId` (which may resolve to a still-live image, a deleted one rendering broken, or `null`). Clearing the image doesn't delete the gallery row — gallery management is a separate gesture in the picker modal.
+Setting or clearing an image is one undoable step. Undo restores the prior `imageId` (which may resolve to a still-live image, a deleted one rendering broken, or `null`). Clearing the image doesn't delete the gallery row; gallery management is a separate gesture in the picker modal.
 
 ## Agents
 

@@ -1,16 +1,16 @@
 # Source layout: group `apps/live` components + hooks by domain
 
-Status: **done** — both `apps/live/hooks/` and `apps/live/components/` have
+Status: **done**. Both `apps/live/hooks/` and `apps/live/components/` have
 been reorganised into the buckets below.
 
 ## Problem
 
 `apps/live` has grown two flat grab-bag directories:
 
-- `apps/live/components/` — ~157 files, alphabetical, mixing 3-line leaves
+- `apps/live/components/`: ~157 files, alphabetical, mixing 3-line leaves
   (`ChartReadout.tsx`, `CloseIcon.tsx`) with 1,000+ line screens
   (`Canvas.tsx`, `EditorContextMenu.tsx`, `BoxedElementView.tsx`).
-- `apps/live/hooks/` — ~66 files, canvas state machines
+- `apps/live/hooks/`: ~66 files, canvas state machines
   (`useEditorDrag.ts`, `useElementStyle.ts`) sitting next to UI-only hooks
   (`useConfirm.tsx`, `useToast.tsx`) and persistence hooks
   (`useFolders.ts`, `useTeams.ts`).
@@ -25,28 +25,28 @@ the no-god-files rule in `AGENTS.md` (cohesion over line count).
 ## Proposed taxonomy
 
 Group by domain, not by type. Target subdirectories (indicative, not
-exhaustive — each file lands in the bucket that owns its concern):
+exhaustive; each file lands in the bucket that owns its concern):
 
 `apps/live/components/`
 
-- `canvas/` — `Canvas*`, element views (`BoxedElementView`, `ArrowView`,
+- `canvas/`: `Canvas*`, element views (`BoxedElementView`, `ArrowView`,
   `LinkCardView`, …), overlays, marquee, layers.
-- `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
+- `dialogs/`: modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
   `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`).
-- `panels/` — side/floating panels (`CollaboratePanel`,
+- `panels/`: side/floating panels (`CollaboratePanel`,
   `GalleryPane`, Explorer surfaces).
-- `palette/` — palette + context-menu tiles/rows.
-- `chrome/` — header, toolbars, docks, tab bar.
+- `palette/`: palette + context-menu tiles/rows.
+- `chrome/`: header, toolbars, docks, tab bar.
 - `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.
-- `primitives/` — local leaves (`PortalMenu`, `BackBar`, chart leaves) not
+- `primitives/`: local leaves (`PortalMenu`, `BackBar`, chart leaves) not
   promoted to `@livedesign/ui` or `@liveworkspace/ui` (which holds `Portal`).
 
 `apps/live/hooks/`
 
-- `canvas/` — drag, marquee, element style, keyboard shortcuts.
-- `persistence/` — folders, teams, capabilities, share links.
-- `ui/` — confirm, toast, panel layout, escape/click-outside.
-- `collab/` — room connection, presence.
+- `canvas/`: drag, marquee, element style, keyboard shortcuts.
+- `persistence/`: folders, teams, capabilities, share links.
+- `ui/`: confirm, toast, panel layout, escape/click-outside.
+- `collab/`: room connection, presence.
 
 Rules:
 
@@ -60,7 +60,7 @@ Rules:
 
 ## Execution
 
-Each directory moves **atomically in its own pass** — never a partial move
+Each directory moves **atomically in its own pass**, never a partial move
 within a directory, which would leave it half-organised (worse than
 consistently-flat). Every move rewrites that directory's `@/<dir>/X` import
 sites across hundreds of files, including hot files (`EditorView`,
@@ -70,9 +70,9 @@ auto-committer, so each pass runs in an isolated `git worktree` off
 project-wide import-path rewrite, then `typecheck && lint && test && format`
 green before a single commit and push.
 
-- **`hooks/` — done.** 66 files → canvas / persistence / ui / collab; ~410
+- **`hooks/`: done.** 66 files → canvas / persistence / ui / collab; ~410
   files had their `@/hooks/*` imports rewritten; full suite green.
-- **`components/` — done.** 158 files → dialogs / panels / palette / chrome /
+- **`components/`: done.** 158 files → dialogs / panels / palette / chrome /
   primitives / canvas (`providers/` already existed, left as-is). Two passes:
   first every inter-component relative import (`./X`, `../X`, `./providers/X`)
   was resolved to a `@/components/...` alias, then the files moved and the

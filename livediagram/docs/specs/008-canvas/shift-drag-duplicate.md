@@ -15,7 +15,7 @@ platforms.
 ## Semantics
 
 - **Live ghost, decided at release**: the first pointer-move with Shift
-  held swaps identities — the ORIGINAL elements park back at their start
+  held swaps identities: the ORIGINAL elements park back at their start
   position (keeping their ids, so every arrow pinned to them stays
   attached to the stationary set), and a fresh CLONE set takes over the
   cursor, rendered as a translucent ghost (0.45 opacity, multiplied over
@@ -24,11 +24,11 @@ platforms.
   originals (a plain move); re-pressing re-materialises. The final
   keep/dissolve decision is made at pointer-up (Shift held + a real
   displacement keeps the clones, selected at the drop point). The drag
-  itself stays a normal move throughout — same snapping, guides, frame
+  itself stays a normal move throughout: same snapping, guides, frame
   sections.
 - **Connections come along**: arrows linking the dragged set to the rest
   of the canvas (one end pinned to a dragged element, the other outside
-  the set) are DUPLICATED onto the clone — the copy is wired the same way
+  the set) are DUPLICATED onto the clone: the copy is wired the same way
   the original is (an incoming connector is drawn to both boxes after the
   drop). Internal both-ends-inside connectors ride along as before;
   group-pinned and on-arrow boundary connections stay with the original
@@ -40,7 +40,7 @@ platforms.
   move drag, and only a release that never travelled (a true shift-click,
   within the 4 px engage threshold) applies the toggle. So shift-click
   still curates the selection, and shift-drag duplicates it.
-- **What clones**: exactly the dragged set — the selection's members plus
+- **What clones**: exactly the dragged set, the selection's members plus
   any follower arrows the move carried (a frame section's connectors),
   via the same `duplicateElements` machinery as the toolbar's
   Duplicate: fresh ids, internal references remapped, internal connectors ride along,

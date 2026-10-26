@@ -14,12 +14,12 @@ A short list of what-to-copy toggles turns the painter from one blunt action int
 
 ## The settings
 
-- **Copies** — five toggles, all on by default (which is exactly today's painter):
-  - **Fill** — the fill colour, a table header's or lane gutter's fill, its theme-preset binding ([Style presets](../010-palette/style-presets.md)), and the fill's theme lock.
-  - **Border** — stroke colour, width, pattern, corner radius; on an arrow, the line's look including arrowheads (and their colour), path style, and route-behind.
-  - **Text** — colour, size, weight, italic / underline / strikethrough, font, alignment, a table header's text colour, and an arrow label's backing plate.
-  - **Effects** — shadow ([Element shadows](element-shadows.md)), finish ([Finish](finish.md)), opacity, and the looping / icon / flow animations.
-  - **Size** — width, height, aspect lock, padding, icon size.
+- **Copies**: five toggles, all on by default (which is exactly today's painter):
+  - **Fill**: the fill colour, a table header's or lane gutter's fill, its theme-preset binding ([Style presets](../010-palette/style-presets.md)), and the fill's theme lock.
+  - **Border**: stroke colour, width, pattern, corner radius; on an arrow, the line's look including arrowheads (and their colour), path style, and route-behind.
+  - **Text**: colour, size, weight, italic / underline / strikethrough, font, alignment, a table header's text colour, and an arrow label's backing plate.
+  - **Effects**: shadow ([Element shadows](element-shadows.md)), finish ([Finish](finish.md)), opacity, and the looping / icon / flow animations.
+  - **Size**: width, height, aspect lock, padding, icon size.
 
   Turning them all off leaves nothing to paint, so the panel says so and the brush goes inert rather than silently doing nothing on every tap.
 
@@ -27,7 +27,7 @@ A short list of what-to-copy toggles turns the painter from one blunt action int
 
 ## Which field belongs to which toggle
 
-`lib/format-painter.ts` stays the single source of truth for **what CAN be painted**; the panel decides **which of it does**. The mapping from field to toggle lives beside it in `../packages/workbench/src/lib/format-config.ts`, and a test asserts that **every field either projection produces is assigned to a group** — so a field added to the painter later can't quietly escape the panel and always travel regardless of the toggles.
+`lib/format-painter.ts` stays the single source of truth for **what CAN be painted**; the panel decides **which of it does**. The mapping from field to toggle lives beside it in `../packages/workbench/src/lib/format-config.ts`, and a test asserts that **every field either projection produces is assigned to a group**, so a field added to the painter later can't quietly escape the panel and always travel regardless of the toggles.
 
 ## The panel shows what is loaded
 
@@ -37,7 +37,7 @@ The top of the panel is the brush itself: the source element's name and a swatch
 
 Device-local, in `localStorage` (`livediagram:v2:format-config`), like the other tool panels. Never sent to the api, never in the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
-The **Copies** toggles are the setting most likely to be wrong later — someone leaves Fill off, comes back tomorrow, and wonders why the painter isn't copying colours. So the panel keeps the count in view ("Copies: Border, Text") and the brush swatch shows only what is enabled.
+The **Copies** toggles are the setting most likely to be wrong later: someone leaves Fill off, comes back tomorrow, and wonders why the painter isn't copying colours. So the panel keeps the count in view ("Copies: Border, Text") and the brush swatch shows only what is enabled.
 
 ## Telemetry
 
@@ -46,5 +46,5 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 ## Out of scope
 
 - Painting between kinds (a shape's look onto an arrow). The two share almost no formattable fields, which is why it is a no-op today.
-- Painting content — labels, links, comments. The painter copies looks; that boundary is what makes it safe.
+- Painting content: labels, links, comments. The painter copies looks; that boundary is what makes it safe.
 - Saving named brushes ("my heading style"). That is style presets ([Style presets](../010-palette/style-presets.md)) wearing a different hat.

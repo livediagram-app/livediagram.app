@@ -14,7 +14,7 @@ types of [Telemetry](../../017-telemetry/telemetry.md). The code sites it answer
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `SRn`.
 
 The spec's [Later](../share-roles.md#later) items (token levels, ownership powers, collaboration keys pinned per
-socket, the answers route, a look-only Viewer) are not derived here; their earlier draft is in git history
+socket, the answers route) are planned and not derived here; their earlier draft is in git history
 (`70a6f843f`).
 
 ## Scope, by file

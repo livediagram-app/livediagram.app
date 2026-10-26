@@ -47,7 +47,7 @@ columns as the monospace face draws them: a character takes one, a wide one
 ## Syntax highlighting: lazy, hand-rolled, dependency-free
 
 - A small generic tokenizer lives in `apps/editor/lib/code-tokens.ts`: one engine (comments, strings, numbers, keywords, punctuation) driven by a per-language config table. No dependency, no WASM.
-- It loads as an **async chunk** on the icon-registry pattern (`apps/editor/lib/code-highlight-registry.ts`: memoized dynamic import, `useSyncExternalStore` pair, sync lookup returning undefined pre-load). Until the chunk lands, the block renders plain monospace text — it degrades, never blanks. First paints that show no code block never pay for the tokenizer.
+- It loads as an **async chunk** on the icon-registry pattern (`apps/editor/lib/code-highlight-registry.ts`: memoized dynamic import, `useSyncExternalStore` pair, sync lookup returning undefined pre-load). Until the chunk lands, the block renders plain monospace text: it degrades, never blanks. First paints that show no code block never pay for the tokenizer.
 - Token classes map to the active scheme's colour set (keyword / string / comment / number / punctuation), independent of the app theme.
 
 ## Editing
@@ -57,7 +57,7 @@ columns as the monospace face draws them: a character takes one, a wide one
 
 ## Headless render (share thumbnails, MCP, exports)
 
-`svg-render` has a `code-block` branch (`svgCodeBlockShape`): the scheme's card + plain monospace `<text>` lines (clipped to the box, no highlighting — the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
+`svg-render` has a `code-block` branch (`svgCodeBlockShape`): the scheme's card + plain monospace `<text>` lines (clipped to the box, no highlighting: the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
 
 ## Plumbing checklist (per the data-shape route)
 

@@ -247,7 +247,7 @@ Image uploads / deletes don't go through the realtime room. The element's `image
 
 ## Undo
 
-Setting or clearing an image is one undoable step. Undo restores the prior `imageId` (which may resolve to a still-live image, a deleted one rendering broken, or `null`). Clearing the image doesn't delete the gallery row — gallery management is a separate gesture in the picker modal.
+Setting or clearing an image is one undoable step. Undo restores the prior `imageId` (which may resolve to a still-live image, a deleted one rendering broken, or `null`). Clearing the image doesn't delete the gallery row; gallery management is a separate gesture in the picker modal.
 
 ## Agents
 

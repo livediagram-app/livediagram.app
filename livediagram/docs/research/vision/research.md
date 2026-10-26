@@ -61,7 +61,7 @@ Agreement across independent angles is the strongest signal research gives.
 | Shade, night  | CLAHE on L*                                                                                                                                                    | 0 KB, ~8 ms           | ours       | S                 |
 | Junk          | Ink-masked substrate gradient variance, LBP, edge straightness; a small tree trained leave-one-wall-out                                                        | ~2 KB, <1 ms          | ours       | M                 |
 | Glare         | Specular mask (V high, S low) exempted from floors                                                                                                             | 0 KB                  | ours       | S                 |
-| Small notes   | Higher working resolution (1500–2500px) with the relative thresholds; or tiled detection                                                                       | —                     | ours       | S–M               |
+| Small notes   | Higher working resolution (1500–2500px) with the relative thresholds; or tiled detection                                                                       | n/a                   | ours       | S–M               |
 | Reading       | PP-OCRv4 mobile recogniser (2.4 MB, Apache) or SmolVLM-256M in the browser as the free reader; a pre-flight photo-quality check (blur, pixels per note, glare) | 2–250 MB              | Apache     | M                 |
 
 ## The second round of research (separation, light, method, reading)
@@ -76,7 +76,7 @@ Mostly confirmation of what the experiment groups had by then measured
 - **Amodal completion**: a note partly under another is completed from its
   three visible corners.
 - **A gated cascade**: classical proposals, and a small model run only on the
-  ambiguous blobs — which is where the experiments were already heading
+  ambiguous blobs, which is where the experiments were already heading
   (group E's boundary model splits merged notes; the classical pipeline has
   the precision).
 - **Evaluation**: Hungarian matching at IoU ≥ 0.5 as a second measure,

@@ -65,11 +65,11 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
 
 ### Lane geometry (`event-storming-lanes.ts`)
 
-- `laneSnapThreshold(held: boolean): number` — `Infinity` when held, else `ES_LANE_SNAP_Y` (20).
-- `nearestLaneTop(box, timeline = ES_LANES): number` — `laneCentre(laneIndexAt(cy)) − h / 2`,
+- `laneSnapThreshold(held: boolean): number`: `Infinity` when held, else `ES_LANE_SNAP_Y` (20).
+- `nearestLaneTop(box, timeline = ES_LANES): number`: `laneCentre(laneIndexAt(cy)) − h / 2`,
   `cy = y + h / 2`.
-- `isOnLane(box, timeline = ES_LANES): boolean` — `|box.y − nearestLaneTop(box)| ≤ LANE_EPSILON`.
-- `laneStepTop(box, direction: -1 | 1, timeline = ES_LANES): number` — `t = (cy − laneCentre(0)) / pitch`.
+- `isOnLane(box, timeline = ES_LANES): boolean`: `|box.y − nearestLaneTop(box)| ≤ LANE_EPSILON`.
+- `laneStepTop(box, direction: -1 | 1, timeline = ES_LANES): number`: `t = (cy − laneCentre(0)) / pitch`.
   On a lane (`|t − round(t)| · pitch ≤ LANE_EPSILON`): target `round(t) + direction`. Off a
   lane: target `floor(t)` going up, `ceil(t)` going down. Returns `laneCentre(target) − h / 2`.
 

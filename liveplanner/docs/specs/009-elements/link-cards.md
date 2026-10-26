@@ -16,7 +16,7 @@ defaults + `supportsColours`, `element-variant.ts` (a bordered, rounded card:
 (exports as a rounded rect). It is **resizable** like a shape (not a fixed
 marker) and recolour / move / lock / layer / delete like any element.
 
-- **URL source = `element.link` (`{ kind: 'url' }`)** — no new field. Editing
+- **URL source = `element.link` (`{ kind: 'url' }`)**: no new field. Editing
   reuses the existing `LinkPickerDialog` + `applyElementLink`: double-clicking
   the card opens that picker (`useBoxedElementGestures`), and the element menu's
   Link section sets, changes or removes it (`ElementContentSections`). The card also gets the normal
@@ -24,7 +24,7 @@ marker) and recolour / move / lock / layer / delete like any element.
 - **`meta` is the cached preview** (`LinkCardMeta`: `url` + optional `title` /
   `siteName` / `image` / `favicon` / `description`). It is validated and saved
   with the tab, and nothing in liveplanner writes it.
-- `THEME_COLOUR_FIELDS` gives link cards an **empty** list — a bookmark card
+- `THEME_COLOUR_FIELDS` gives link cards an **empty** list: a bookmark card
   keeps its neutral look across themes (like sticky / image); the user can
   still recolour per-card.
 

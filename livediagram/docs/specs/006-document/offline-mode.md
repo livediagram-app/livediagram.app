@@ -1,7 +1,7 @@
 # Offline Mode
 
 **Offline Mode** lets you create a document that is saved **only in the current
-browser** — never to the API, never to the server. It is the default for a guest's
+browser**, never to the API, never to the server. It is the default for a guest's
 new document ([Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local))
 and an opt-in choice for everyone else. It suits private/local-first work, air-gapped or
 no-account use, and anyone who wants a document that physically never leaves
@@ -10,9 +10,9 @@ usable with the API _and_ auth switched off.
 
 This is a **deliberate, permanent choice for a document**, not a temporary
 network state. (Handling a transient dropped connection on a _cloud_ document is
-a separate concern — see [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) — and out of scope here.)
+a separate concern, see [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md), and out of scope here.)
 
-Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire` — the two stores must agree about what a tab IS, or a Sync Canvas would hand the cloud a board that has forgotten itself ([Event storming](../021-event-storming/event-storming.md)).
+Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire`: the two stores must agree about what a tab IS, or a Sync Canvas would hand the cloud a board that has forgotten itself ([Event storming](../021-event-storming/event-storming.md)).
 
 ## Turning it on
 
@@ -93,7 +93,7 @@ documents with retired parts` (`apps/editor/lib/offline/retired-parts-upgrade.ts
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
   `navigator.storage.persist()` to reduce eviction risk, and we surface the
-  trade-off plainly — on the document (see the badge, and its legend), in the Share dialog before a Sync, and in
+  trade-off plainly: on the document (see the badge, and its legend), in the Share dialog before a Sync, and in
   the help article. "Offline" means _yours only_, with the responsibility that
   implies.
 
@@ -101,7 +101,7 @@ documents with retired parts` (`apps/editor/lib/offline/retired-parts-upgrade.ts
 
 ## What's different in an offline document
 
-The document model (`Tab[]` + meta, per [Document structure](document-structure.md)) is **identical** — an offline
+The document model (`Tab[]` + meta, per [Document structure](document-structure.md)) is **identical**: an offline
 document is a normal document whose persistence target is IndexedDB instead of the
 API. The full editor works: shapes, arrows, sketches, layers, tabs, links,
 templates, themes, undo/redo, export. What changes are the features that
@@ -110,22 +110,22 @@ _require the server_, which are hidden or gated (not broken) for an offline docu
 | Feature                                                                   | Offline behaviour                                                                                                                                                                                                                                                                   |
 | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Share links / embeds                                                      | The header **Share** button stays visible, but for an offline document it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason ([Editor app](../007-editor/editor-app.md), /54). |
-| Live presence / realtime                                                  | N/A — a private document never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                        |
-| Teams / shared library                                                    | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                                   |
+| Live presence / realtime                                                  | N/A: a private document never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                         |
+| Teams / shared library                                                    | Hidden: a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                                    |
 | Comments                                                                  | Local-only (just you), stored in the document; no cross-user.                                                                                                                                                                                                                       |
-| Duplicate                                                                 | Makes **another offline document** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                        |
+| Duplicate                                                                 | Makes **another offline document**: a copy never uploads what the user chose to keep local.                                                                                                                                                                                         |
 | Folders                                                                   | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                        |
-| Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction — the server keeps a shared tab's copies in step, and an offline document is not on the server.                                                                                                                                                     |
-| Thumbnails                                                                | The **browser it lives in**, on a wash of the accent of the app that owns it (the Explorer's `LocalPreview`), never the pill's teal — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                   |
-| Images                                                                    | **Embedded locally** — see below.                                                                                                                                                                                                                                                   |
+| Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction: the server keeps a shared tab's copies in step, and an offline document is not on the server.                                                                                                                                                      |
+| Thumbnails                                                                | The **browser it lives in**, on a wash of the accent of the app that owns it (the Explorer's `LocalPreview`), never the pill's teal: there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                    |
+| Images                                                                    | **Embedded locally**; see below.                                                                                                                                                                                                                                                    |
 
 **Images embed locally ([Image element + per-owner gallery](../009-elements/images.md)).** In a cloud document, an added image uploads
-to R2 and is referenced by URL. In an offline document it can't — so an image is
+to R2 and is referenced by URL. In an offline document it can't, so an image is
 stored **inline as a `data:` URI** inside the document. Rendering is unchanged
 (`<img>` reads a data URI fine). This costs local storage, which is the accepted
-trade for staying fully offline. (Conversion re-homes images — see below.)
+trade for staying fully offline. (Conversion re-homes images; see below.)
 
-Autosave still runs for an offline document ([Per-tab storage](per-tab-storage.md)) — it writes to IndexedDB
+Autosave still runs for an offline document ([Per-tab storage](per-tab-storage.md)): it writes to IndexedDB
 instead of the API, and the "Saved" indicator means _saved on this device_.
 
 ## Instant open
@@ -392,8 +392,8 @@ confirmation:
   copy stays authoritative. This is the one failure in this direction that
   nothing could undo: a partial download followed by the server delete leaves
   the missing tab's elements nowhere at all, while reporting success. A tab read
-  can come back empty from two directions — a failed request, or a 404 that the
-  api client maps to `null` rather than an error — and both count as failure
+  can come back empty from two directions: a failed request, or a 404 that the
+  api client maps to `null` rather than an error, and both count as failure
   here. (The best-effort "keep what loaded" shape is right for _duplicating_ a
   document, where the source survives; it inverts once the source is destroyed.)
 - **If that server delete fails, the local copy is rolled back** and the error
@@ -414,7 +414,7 @@ confirmation:
 Offline Mode is independent of sign-in:
 
 - Works **signed-in or guest**. An offline document is browser-local regardless of
-  account — a signed-in user's offline documents do **not** appear on their other
+  account: a signed-in user's offline documents do **not** appear on their other
   devices (that's the point).
 - It differs from a **guest cloud** document ([Auth + guest access](../014-identity/auth-and-guest-access.md)): a guest's cloud document is
   anonymous but still on the server (keyed by the browser's participant id);
@@ -505,7 +505,7 @@ than threading a mode flag through the editor.
 ## Marketing ([Marketing site](../019-marketing/marketing-site.md), /23)
 
 Offline Mode is **folded into the existing privacy / security area** of the
-landing page — no standalone section. It appears as a short point plus a small
+landing page, no standalone section. It appears as a short point plus a small
 inline illustration/icon, framed as local-first:
 
 > **Work fully offline.** Flip on Offline Mode when you create a document and it is saved only in
@@ -519,7 +519,7 @@ inside, "no cloud"), consistent with the existing privacy iconography
 ## Help centre ([Help app](../018-help/help-app.md))
 
 Add a help article **"Offline Mode"** (under a saving / privacy-oriented
-category), and — per the help-registry rule — **register it in
+category), and, per the help-registry rule, **register it in
 `apps/help/lib/articles.ts`** in the same change (slug, title, description,
 category, `categorySlug`, and bump the category `articleCount`). The article
 covers:
@@ -527,7 +527,7 @@ covers:
 - What Offline Mode is and how to create one (the New Canvas wizard's Save
   location chooser, [Save Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
-  you clear site data — the durability warning, stated plainly.
+  you clear site data: the durability warning, stated plainly.
 - **Converting**: "Sync Canvas" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
 - What's unavailable offline: sharing, live collaboration and teams.
@@ -556,24 +556,24 @@ Track adoption without content, reusing the closed vocabulary:
 
 ## Non-goals
 
-- **No cross-device sync of offline documents** — that would defeat the purpose;
+- **No cross-device sync of offline documents**: that would defeat the purpose;
   sync is exactly what the cloud path is for.
-- **No collaborative offline editing** — offline is single-user by nature.
+- **No collaborative offline editing**: offline is single-user by nature.
 - **Not** offline-resilience for cloud documents (editing a cloud document through
-  a network blip) — that's [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)'s territory.
-- **No automatic promotion** — a document never silently moves between offline and
+  a network blip): that's [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)'s territory.
+- **No automatic promotion**: a document never silently moves between offline and
   cloud; every conversion is an explicit, user-initiated action (pressing Share,
   Sync Canvas, or Move on the prompt after signing in).
 
 ## Implementation map
 
-- `apps/editor/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
+- `apps/editor/lib/api-client.ts` + `lib/api/*`: the persistence-backend seam;
   `lib/offline/offline-store.ts` (IndexedDB, `OfflineBackend` in `offline-backend.ts`) beside the API calls;
   per-document dispatch via a local index.
 - New Canvas wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
   This Browser tile) + data-loss warning + contextual help link.
-- `EditorHeader` (`SharedBadge`) — the **This Browser** badge state.
+- `EditorHeader` (`SharedBadge`): the **This Browser** badge state.
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
   show the **This Browser** pill wherever an offline document is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.
@@ -586,12 +586,12 @@ Track adoption without content, reusing the closed vocabulary:
   `hooks/persistence/useLocalMovePrompt.ts`, `../packages/workbench/src/lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Canvas" and "Take Offline" (with confirmation + image re-homing).
-- Image handling ([Image element + per-owner gallery](../009-elements/images.md)) — embed `data:` URIs offline; upload-on-save,
+- Image handling ([Image element + per-owner gallery](../009-elements/images.md)): embed `data:` URIs offline; upload-on-save,
   download-on-take-offline.
-- `apps/marketing` — the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
-- `apps/help` — the "Offline Mode" article + its `articles.ts` registry entry
+- `apps/marketing`: the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
+- `apps/help`: the "Offline Mode" article + its `articles.ts` registry entry
   ([Help app](../018-help/help-app.md)).
-- Telemetry — the create `type` + conversion events ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+- Telemetry: the create `type` + conversion events ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## References
 
@@ -605,5 +605,5 @@ See [Open source + distribution](../002-project-scope/open-source-and-business-m
 [Image element + per-owner gallery](../009-elements/images.md) (images),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Help app](../018-help/help-app.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
-[Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime — the separate concern),
+[Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime, the separate concern),
 [Save Locations](save-locations.md) (the Save location chooser).

@@ -20,10 +20,10 @@ the registry from selection/design verbs to the whole app surface.
 ## Registry expansion
 
 New commands join `buildEditorCommands`, each mapping 1:1 to an existing
-editor handler (the non-negotiable rule of that registry — no behaviour
+editor handler (the non-negotiable rule of that registry: no behaviour
 forks, no drifted telemetry):
 
-- **History:** Undo, Redo — offered only when `canUndo` / `canRedo`.
+- **History:** Undo, Redo: offered only when `canUndo` / `canRedo`.
 - **View:** Toggle zen mode, Fit to screen.
 - **Cleanup:** Auto Layout (one per style), Auto-align: their only home since the tab menu's
   Cleanup category was removed ([Layout cleanup](../008-canvas/layout-cleanup.md)); Renumber Steps, while the tab

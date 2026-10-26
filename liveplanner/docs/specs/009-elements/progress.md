@@ -6,13 +6,13 @@ Two canvas elements for showing a 0–100 percentage: a **horizontal progress ba
 
 They are `ShapeElement`s with the `ShapeKind`s `'progress-bar'` and `'progress-ring'` (grouped by the `isProgressShape` helper in `packages/project`). Two fields back them:
 
-- `progress?: number` — the filled percentage, clamped to 0–100, default **50**. Set from the element's context menu.
-- `progressAnim?: ProgressAnim` — `'fill' | 'pulse' | 'stripes'` (unset = a static fill). Animates **how the filled portion behaves**:
-  - **Fill** grows the fill from 0 up to the set value (bar: a `scaleX` reveal; ring: a `stroke-dashoffset` draw keyed off `--lvd-progress`). By default it plays **once and holds** the filled state (`animation-fill-mode: forwards`) rather than looping — a dropped progress element animates in and stays done.
+- `progress?: number`: the filled percentage, clamped to 0–100, default **50**. Set from the element's context menu.
+- `progressAnim?: ProgressAnim`: `'fill' | 'pulse' | 'stripes'` (unset = a static fill). Animates **how the filled portion behaves**:
+  - **Fill** grows the fill from 0 up to the set value (bar: a `scaleX` reveal; ring: a `stroke-dashoffset` draw keyed off `--lvd-progress`). By default it plays **once and holds** the filled state (`animation-fill-mode: forwards`) rather than looping: a dropped progress element animates in and stays done.
   - **Pulse** breathes the fill's opacity.
   - **Stripes** runs a barber-pole / marching pattern over the fill (bar: an animated `repeating-linear-gradient`; ring: a marching dashed arc masked to the progress sweep).
-- `progressAnimSpeed?: AnimationSpeed` — the shared `slowest | slow | normal | fast` set ([Canvas and palette](../008-canvas/canvas-and-palette.md)), the same duration multiplier (`ANIMATION_SPEED_FACTOR`) every element's own animation uses, fed to the `lvd-prog-*` keyframes as `--lvd-prog-speed`. Undefined = slow (`DEFAULT_ANIMATION_SPEED`).
-- `progressAnimRepeat?: boolean` — whether the animation loops. Undefined defaults per kind: **fill plays once**, **pulse / stripes loop** (they are continuous by nature). Exposed inline to the keyframes as `--lvd-prog-iter` (`1` or `infinite`).
+- `progressAnimSpeed?: AnimationSpeed`: the shared `slowest | slow | normal | fast` set ([Canvas and palette](../008-canvas/canvas-and-palette.md)), the same duration multiplier (`ANIMATION_SPEED_FACTOR`) every element's own animation uses, fed to the `lvd-prog-*` keyframes as `--lvd-prog-speed`. Undefined = slow (`DEFAULT_ANIMATION_SPEED`).
+- `progressAnimRepeat?: boolean`: whether the animation loops. Undefined defaults per kind: **fill plays once**, **pulse / stripes loop** (they are continuous by nature). Exposed inline to the keyframes as `--lvd-prog-iter` (`1` or `infinite`).
 
 `createShape` (in `packages/project/src/shape-factory.ts`, re-exported from `factories.ts`) seeds both at `progress: 50` **and `progressAnim: 'fill'`**, so a new bar / ring fills in on arrival; the ring is `aspectLocked` on create so it stays circular. Default sizes: bar 220×44 (a wide pill), ring 130×130.
 
@@ -20,8 +20,8 @@ They are `ShapeElement`s with the `ShapeKind`s `'progress-bar'` and `'progress-r
 
 The export renderer (`svg-render-body.ts`, colours from `progress-colours.ts`) draws the two kinds:
 
-- **Bar** — an HTML track (the element's **fill** colour, fully rounded) with an inner fill (the element's **stroke/accent** colour) sized to `progress%`.
-- **Ring** — an SVG track circle plus a progress arc (`pathLength={100}`, `stroke-dasharray="<pct> 100"`, round cap, starting at 12 o'clock).
+- **Bar**: an HTML track (the element's **fill** colour, fully rounded) with an inner fill (the element's **stroke/accent** colour) sized to `progress%`.
+- **Ring**: an SVG track circle plus a progress arc (`pathLength={100}`, `stroke-dasharray="<pct> 100"`, round cap, starting at 12 o'clock).
 - Both render a centred **percentage label** and therefore **suppress the standard editable element label**.
 
 Colours map to the existing controls: the **fill colour** is the track, the **stroke colour** is the filled portion. A track with no fill of its own follows the paper the element is drawn on: a pale slate (`#e2e8f0`) on light paper, the dark-ink shape fill on dark paper (a dark canvas, or a page with a dark fill), in every export.

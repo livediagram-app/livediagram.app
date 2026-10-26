@@ -11,7 +11,7 @@ that layout **persist in the browser** so a reload restores their arrangement.
 Without docking, corners are fixed: the Format panel is always in one corner, the Minimap always
 bottom-left. A left-handed user, or one whose content lives on the right, can drag a panel away but it
 snaps back on reload and there is no guidance toward a tidy resting spot. Letting people
-park each panel where it suits them — and remembering it — makes the chrome feel like
+park each panel where it suits them, and remembering it, makes the chrome feel like
 theirs without adding a settings screen.
 
 ## Scope
@@ -30,20 +30,20 @@ theirs without adding a settings screen.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
-  docked there never overlaps the zoom bar — the snap anchor, the corner guide, and the
+  docked there never overlaps the zoom bar: the snap anchor, the corner guide, and the
   dock container all use the raised inset.
 
 ## The four corners
 
-A panel rests in one of four **corner zones** — `top-left`, `top-right`, `bottom-left`,
-`bottom-right` — or sits **free** at an explicit `{x, y}`.
+A panel rests in one of four **corner zones** (`top-left`, `top-right`, `bottom-left`,
+`bottom-right`) or sits **free** at an explicit `{x, y}`.
 
 Each corner is a **stack**: zero or more panels in a fixed order. Top corners stack
 **downward** (first panel flush to the corner, the next below it, a 16 px gap between);
 bottom corners stack **upward** (first panel flush to the bottom corner, the next above
 it). The stack is a flex column anchored to its corner, so removing or hiding a panel
 **reflows** the rest automatically: take the top panel away and the next one slides up to
-the corner. No manual re-measuring — the layout falls out of the flexbox.
+the corner. No manual re-measuring: the layout falls out of the flexbox.
 
 ### Default layout
 
@@ -70,11 +70,11 @@ like any unknown id: ignored.
 
 The panel header is the drag handle, as today. While a panel is being dragged on desktop:
 
-- **Snap guides appear** — a faint target marker in each of the four corners, drawn on a
+- **Snap guides appear**: a faint target marker in each of the four corners, drawn on a
   pointer-inert overlay above the canvas. They only show during an active panel drag.
 - As the dragged panel's nearest corner comes within a **snap radius** (~96 px from the
   corner), that corner's marker **highlights** to signal where the panel will land. The
-  panel itself keeps following the pointer freely — the guide is a hint, not a magnet that
+  panel itself keeps following the pointer freely; the guide is a hint, not a magnet that
   yanks it.
 - **On release near a highlighted corner**, the panel **docks** to that corner, appended
   to the bottom of that corner's stack (it joins below whatever is already there).
@@ -91,10 +91,10 @@ editor (element drag, palette-to-canvas drag).
 
 A drag only **starts** once the pointer has travelled past a shared tolerance
 (`isDragTravel` in `../packages/workbench/src/lib/press-gestures.ts`), so a click on a panel header that jitters by a
-pixel stays a click. That tolerance is one definition for every draggable chrome control —
-panel headers, palette tiles, the quick-connect plus — because several of them had their own and the copies had drifted: one
+pixel stays a click. That tolerance is one definition for every draggable chrome control:
+panel headers, palette tiles, the quick-connect plus, because several of them had their own and the copies had drifted: one
 said 5px where the rest said 4, and one measured each axis separately, which is a square
-rather than a circle and let a diagonal slip of (4, 4) — 5.66px of real travel — still
+rather than a circle and let a diagonal slip of (4, 4), 5.66px of real travel, still
 count as a click. The shared thing is the **predicate**, not just the number, since
 publishing only the constant would have left that split in place.
 
@@ -106,7 +106,7 @@ in view. Its glyph flips between a dash (collapse) and a plus (expand). A panel 
 a desktop and collapsed on a phone, and stays as set until pressed again. A panel that is not
 collapsible has no such button.
 
-## Persistence — device-local
+## Persistence: device-local
 
 The layout is stored in **`localStorage` only**, under `liveplanner:panel-layout:v1`, on
 the browser that set it. It is **not** synced to the account and **not** part of the
@@ -141,17 +141,17 @@ covers cross-tab. Mirrors the eventing pattern of `lib/user-preferences.ts` but 
 network step.
 
 Forward-compat: unknown panel ids in a stored layout are ignored on read, and a panel id
-missing from the stored layout falls back to its default corner — so adding a new panel
+missing from the stored layout falls back to its default corner, so adding a new panel
 later, or reading a layout written by a newer client, never strands the UI.
 
 ## Implementation
 
-- **`apps/editor/lib/panel-layout.ts`** — types, `DEFAULT_PANEL_CORNER` (which corner each
+- **`apps/editor/lib/panel-layout.ts`**: types, `DEFAULT_PANEL_CORNER` (which corner each
   panel rests in out of the box) plus `defaultPanelLayout()` that builds a layout from it,
   `normalizePanelLayout()`, and `readPanelLayout()` / `writePanelLayout()` against
   `localStorage`. Pure, unit-tested (placement normalisation: a panel can't be in two
   corners; reflow ordering; default fallback).
-- **`apps/editor/hooks/ui/usePanelDock.ts`** — owns the layout state (hydrated synchronously
+- **`apps/editor/hooks/ui/usePanelDock.ts`**: owns the layout state (hydrated synchronously
   from `localStorage` at mount, re-read on the change event), derives the per-corner
   ordered panel lists, tracks the active drag + nearest-corner snap candidate, and exposes
   handlers: `dockToCorner(panelId, corner)`, `setFree(panelId, x, y)`,
@@ -160,7 +160,7 @@ later, or reading a layout written by a newer client, never strands the UI.
 - **`MovablePanel`** gains an additive **docked** render mode: when the parent places it
   inside a corner stack it renders as a static flex child (no `absolute`, no corner class,
   no inline `left/top`), so the flex column owns its position and reflow. **Dragging never
-  reparents the panel** — a reparent would remount the component and drop the in-flight
+  reparents the panel**: a reparent would remount the component and drop the in-flight
   gesture. Instead, once the pointer clears a small **movement threshold** (so a bare click
   never disturbs the layout or re-docks), the panel lifts to **`position: fixed`** against
   the viewport and follows the pointer there: fixed is immune to its (shrink-to-fit) corner
@@ -169,11 +169,11 @@ later, or reading a layout written by a newer client, never strands the UI.
   callbacks report start / move (with the live bounding rect, converted to dock-layer
   coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
   decision. The popover and `collapsible` paths are untouched. The persisted corner/free placement only changes on pointer-up.
-- **`../packages/workbench/src/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
+- **`../packages/workbench/src/components/canvas/PanelSnapSlot.tsx`**: the drop-target slot rendered
   by `CanvasChrome` as the last flex child of the candidate corner's stack container
   while a panel drag is active, so flexbox previews exactly where the released panel will
   land (its height mirrors the dragged panel); the candidate corner comes from the dock hook.
-- **`CanvasChrome`** — renders four corner **stack
+- **`CanvasChrome`**: renders four corner **stack
   containers** (absolutely positioned flex columns, `gap-4`; bottom corners
   `flex-col-reverse`; bottom-right raised to clear the zoom controls) and distributes each
   visible panel node into the container for its **persisted** corner. A panel mid-drag stays
@@ -189,10 +189,10 @@ pair fits. Layout reads / reflows are silent.
 
 ## Relationship to other specs
 
-- [Toolbar layout](toolbar-layout.md) — the Palette strip, the menu-button Explorer and the
+- [Toolbar layout](toolbar-layout.md): the Palette strip, the menu-button Explorer and the
   cluster popovers, none of which take a corner.
-- [User preferences](user-preferences.md) — panel layout is intentionally a **separate,
+- [User preferences](user-preferences.md): panel layout is intentionally a **separate,
   device-local** store, not part of the synced preferences blob.
-- [Minimap](../008-canvas/minimap.md) — the Minimap's default corner (bottom-left) and its position
+- [Minimap](../008-canvas/minimap.md): the Minimap's default corner (bottom-left) and its position
   now flow through this docking system like the other panels.
-- [Zen mode](zen-mode.md) — zen mode still hides all panels; docking is inert there.
+- [Zen mode](zen-mode.md): zen mode still hides all panels; docking is inert there.

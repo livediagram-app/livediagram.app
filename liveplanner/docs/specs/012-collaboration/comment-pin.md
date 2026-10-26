@@ -1,7 +1,7 @@
 # The Comment Panel
 
-A **Collaborate** element: a card on the canvas carrying a whole comment thread —
-its count, the comments, a composer, and resolve / reopen — read where it sits
+A **Collaborate** element: a card on the canvas carrying a whole comment thread
+(its count, the comments, a composer, and resolve / reopen), read where it sits
 rather than opened.
 
 (Filed as 136-comment-pin.md, and the shape kind is still `comment-pin`, from
@@ -77,14 +77,14 @@ and right-click opens the ordinary element menu.
 - **It does not collapse.** A collapse-to-summary was built and then dropped: a
   panel you have deliberately put on the canvas is there to be READ, and folding
   it left an element whose whole purpose sat behind another click. "I don't
-  want to see this right now" is already answered by the anchored popover —
+  want to see this right now" is already answered by the anchored popover;
   you simply don't add a panel.
 
 **Attached with an ordinary arrow.** A panel that is _about_ an element is
 joined to it with a normal pinned arrow, drawn the way any arrow is: "about"
 is what an arrow already says on this canvas. Not a bespoke link: a second
 kind of connection would be a second thing to lay out, export and explain.
-It also means the pair behaves like anything else — move the element and the
+It also means the pair behaves like anything else: move the element and the
 arrow follows; delete the arrow and the panel is a note that floated free.
 No Plan surface places a panel: one arrives with a tab (an import, a paste). The element menu keeps
 `Add Comment`, the anchored popover.

@@ -49,9 +49,9 @@ off", not "this diagram has no layout".
 ## Auto Layout (Tidy up)
 
 `autoLayoutElements` (`packages/document/src/auto-layout.ts`, a pure transform over the
-element model so importers and the editor share it — see GitHub issue #12). A
+element model so importers and the editor share it; see GitHub issue #12). A
 **structural layout**: it reads the arrow graph, splits it into connected components,
-and computes brand-new positions — a layered (Sugiyama-style) layout for DAG-ish
+and computes brand-new positions: a layered (Sugiyama-style) layout for DAG-ish
 components, with cycle-breaking for cyclic graphs (when a loop stalls the order it resumes from the loop's entry: a
 waiting node some placed node already feeds, with the fewest predecessors still to come, so a node or group the loop
 does not hold is never ranked ahead of what feeds it); direction is inferred from the elements' current rough

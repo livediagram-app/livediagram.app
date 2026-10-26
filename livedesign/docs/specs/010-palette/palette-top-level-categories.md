@@ -27,7 +27,7 @@ Where things landed, for anything that moved:
 | Image, Avatar                   | **Media** (new) |
 
 The **Blocks** and **Structure** groups emptied out and were deleted; **Write & Draw** split into **Write** (the wordy
-elements) and **Draw** (the gesture tools plus Frame). The **User / actor** tile was deleted outright — see below.
+elements) and **Draw** (the gesture tools plus Frame). The **User / actor** tile was deleted outright; see below.
 
 **The category bar has bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
@@ -80,8 +80,8 @@ the other flowchart-only kinds: livedesign has no stored designs that could hold
 
 ## The body scrolls when it has to
 
-A long category (Components runs to ten rows) never runs off the bottom of a short window. The panel body's height is capped at the space between its top edge and the bottom chrome — the zoom
-dock and the tab bar, both measured rather than assumed, since the dock hides in Zen mode — and only then does it
+A long category (Components runs to ten rows) never runs off the bottom of a short window. The panel body's height is capped at the space between its top edge and the bottom chrome (the zoom
+dock and the tab bar, both measured rather than assumed, since the dock hides in Zen mode), and only then does it
 scroll. A category that fits shows no scrollbar and still animates its height on switch.
 
 ## Searching across the categories
@@ -95,7 +95,7 @@ catalogues ([Browsing the palette by category](palette-category-browse.md)).
 ## The pickers unfold from their trigger
 
 Both palette dropdowns grew from their own centre-top, which made opening the canvas-tool picker and the category
-picker look identical — the one thing the animation exists to distinguish.
+picker look identical, the one thing the animation exists to distinguish.
 
 The menu's `transform-origin` is now the corner its trigger sits at: top-left for the left-aligned canvas-tool picker,
 top-right for the right-aligned category picker (and the bottom corners when a menu flips up). One direction-agnostic
@@ -115,7 +115,7 @@ Concepts, Components and Devices sit in their own band above Decorate.
 
 All three are things you lay a page OUT with rather than draw on it: the concept graphics, the ready-made page
 composites, the device frames a screenshot sits inside. Arranging a page comes before dressing it, which is the order
-the bands read in — Common, Structure, Decorate, Dynamic.
+the bands read in: Common, Structure, Decorate, Dynamic.
 
 The category array must stay sorted by band: the category bar renders it straight through and groups under the
 headings without sorting, so a misplaced entry appears under the wrong one.

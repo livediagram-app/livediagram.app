@@ -9,7 +9,7 @@ When starting a dot-vote ([Session tools (timer + voting)](session-tools.md)), t
 stays on the canvas but recedes, and the votable set is ringed.
 
 The case it solves: a tab where the ideas being voted on share the canvas with
-scaffolding — a background frame, an annotation layer, last round's output. A
+scaffolding: a background frame, an annotation layer, last round's output. A
 whole-tab vote makes all of it a target.
 
 ## Set once, at start
@@ -17,7 +17,7 @@ whole-tab vote makes all of it a target.
 `tab.vote.voteLayerId`. Absent = every layer is votable, which is both the
 pre-scoping behaviour and what a single-layer tab always gets.
 
-**It cannot change while the vote runs** — to vote on a different layer you end
+**It cannot change while the vote runs**: to vote on a different layer you end
 the vote and start another. Same rule as the privacy switches ([Session tools (timer + voting)](session-tools.md)): a
 setting the facilitator can flip mid-vote isn't a guarantee anyone can rely on,
 and here it would also silently invalidate dots already cast on what was
@@ -25,7 +25,7 @@ votable a moment ago.
 
 The `VotePrivacy` type widened to `VoteSetup` (privacy + `layerId`) rather than
 growing a third positional argument on `startVote`: everything in it shares one
-lifecycle — chosen before the vote, baked in at start, immutable after.
+lifecycle: chosen before the vote, baked in at start, immutable after.
 
 ## The picker
 
@@ -36,7 +36,7 @@ The **Vote** set-up (the [Session strip](session-tools.md#the-session-strip)'s V
 - **"All layers"** is an explicit option. Without it a multi-layer tab couldn't
   run an ordinary whole-tab vote, which would be a capability regression.
 - **Hidden entirely on a single-layer tab.** Scoping to the only layer is the
-  same as not scoping, so the control would be pure noise — and most tabs never
+  same as not scoping, so the control would be pure noise, and most tabs never
   touch layers at all.
 
 While the vote runs, the scope joins the read-only "…end the vote to change
@@ -58,7 +58,7 @@ votable.
   normal, so the results walkthrough reads against the full document.
 
 `votableInVote` is resolved **once** in `CanvasElementsLayer`, where the vote
-and the tab's layers are both in scope, and passed down — rather than threading
+and the tab's layers are both in scope, and passed down, rather than threading
 `layers` separately into the gesture hook and the overlay. It folds in the kind
 rule too, so a text element on the votable layer still dims: it can't take a
 dot either, and pretending otherwise would be a lie.
@@ -67,7 +67,7 @@ dot either, and pretending otherwise would be a lie.
 
 `isVotableInVote` resolves an element's layer through `resolveLayerId` rather
 than comparing `element.layerId` directly. Everything authored before [Layers](../006-document/layers.md)
-carries **no** `layerId` and belongs to the base layer — a raw comparison would
+carries **no** `layerId` and belongs to the base layer; a raw comparison would
 make every one of those elements unvotable the instant a scope was set.
 
 ## Out of scope

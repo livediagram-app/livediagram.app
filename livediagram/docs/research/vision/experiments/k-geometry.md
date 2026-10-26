@@ -84,7 +84,7 @@ First, how much placement matters at all: the greedy snap's reach.
 | reach (steps) | 0           | 0.15          | 0.3 (today) | 0.45            |
 | ------------- | ----------- | ------------- | ----------- | --------------- |
 | TOTAL         | 93.3 / 26   | 93.4 / 26     | 93.5 / 23   | 92.5 / 26       |
-| moves         | 201707 +1 m | panorama +2 m | —           | whiteboard +2 m |
+| moves         | 201707 +1 m | panorama +2 m | None        | whiteboard +2 m |
 
 It matters: the panorama's precision swings 85–94 with the reach alone.
 

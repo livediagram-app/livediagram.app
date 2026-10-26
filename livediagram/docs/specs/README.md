@@ -40,5 +40,5 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 
 - A new feature, scope decision, or constraint goes into a spec **before** code.
 - Reference specs by filename in PRs and discussions.
-- If two specs conflict, that's the bug — fix the specs first, then the code.
+- If two specs conflict, that's the bug: fix the specs first, then the code.
 - Keep specs terse but unambiguous. Update them when something changes; don't let them drift.

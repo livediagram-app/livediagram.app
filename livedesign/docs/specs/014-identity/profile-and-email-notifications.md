@@ -143,11 +143,11 @@ notified.
 
 Both are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
-request's critical path — same contract as every [Transactional email](transactional-email.md) send. Recipients'
+request's critical path, the same contract as every [Transactional email](transactional-email.md) send. Recipients'
 addresses come only from trusted server state (the account's verified
 address, asked of the accounts Worker), never from a client header.
 
-### a. Someone joins my design — `notifyDesignJoin`
+### a. Someone joins my design: `notifyDesignJoin`
 
 The signal is **a new person opening one of my shared designs for the first
 time**. liveworkspace's index records every visit through a link, and on a person's first it sends livedesign a
@@ -158,7 +158,7 @@ emails: a guest token is free to get, so every fresh guest would be another firs
 
 - no-ops unless `emailEnabled(env)`;
 - resolves the owner's verified address from their liveworkspace account (so
-  it only fires for a signed-in owner — a guest-owned design has no address
+  it only fires for a signed-in owner; a guest-owned design has no address
   and is silently skipped);
 - no-ops when the owner's `notifyDesignJoin` pref is `false`;
 - no-ops unless it wins the per-design throttle: at most one join email per
@@ -177,12 +177,12 @@ Shared-with-you list); it's HTML-escaped like the team name.
 The notification is on by default (an opt-out), so the email says so rather
 than claiming the owner turned it on, and points at the notification settings.
 
-Only the first visit notifies — repeat opens by the same person are silent,
+Only the first visit notifies; repeat opens by the same person are silent,
 so an active collaborator doesn't generate a mail per reload. This is the
 only server-observable "join" signal; live-room reconnects in the Durable
 Object are deliberately **not** wired (they'd be far too chatty).
 
-### b. Someone responds to a team invite — `notifyInviteResponse`
+### b. Someone responds to a team invite: `notifyInviteResponse`
 
 Sent by liveworkspace, not livedesign: teams, their invitations and the
 answer emails belong to the liveworkspace account, and the accounts Worker

@@ -58,7 +58,7 @@ enumerated in `generateStaticParams`. `placeholder` is the only
 enumerated id, so every real document URL triggers `notFound()` the
 instant the JS hydrates.
 
-Earlier attempts tried to _prevent_ the trigger — a route-level
+Earlier attempts tried to _prevent_ the trigger: a route-level
 `not-found.tsx`, a pre-hydration URL swap to `placeholder`, then
 the same swap using the captured native `replaceState` so Next's
 patched version wouldn't re-notify the router. None of them held
@@ -69,9 +69,9 @@ router reaches it before any of those interventions can finish.
 Working approach: **embrace the trigger**. `apps/editor/app/not-found.tsx`
 exports `<EditorPage />` directly. When the client router fires
 `notFound()` for an unrecognised id, the layout swaps from
-`children` to the `notFound` slot — which is now the editor. The
+`children` to the `notFound` slot, which is now the editor. The
 editor mounts, reads the real id from `window.location.pathname`
-(unchanged throughout — no URL swap means no restoration to fight
+(unchanged throughout: no URL swap means no restoration to fight
 about), and loads the document via the API. The address bar stays
 on `/document/<uuid>`; nothing about the URL needs to lie.
 
@@ -96,7 +96,7 @@ Document wizard with no word of what went wrong.
 ### A failed load is not a missing document
 
 NotFound means "this document doesn't exist, or isn't yours". A load
-that FAILS — network down, 5xx, share link unresolvable — means
+that FAILS (network down, 5xx, share link unresolvable) means
 nothing of the sort, and showing NotFound for it tells someone their
 work is gone when the server is merely unreachable. So the two are
 kept apart: only a clean 404 reaches NotFound, and a thrown request
@@ -113,9 +113,9 @@ ids it first tried: a create that reached the server but whose answer was lost
 is then taken as the re-commit of an id the caller already owns, never a second
 document.
 
-The distinction is made at every call site that can fail this way —
+The distinction is made at every call site that can fail this way:
 the document load and the share-link resolve in `useIdentityBootstrap`,
-and the create in `/new` — rather than in one place, so it is worth
+and the create in `/new`, rather than in one place, so it is worth
 knowing about when adding another.
 
 ## Navigation flows
@@ -124,7 +124,7 @@ knowing about when adding another.
 
 1. User clicks **New Canvas** in the Explorer.
 2. Browser navigates to `/new`.
-3. `/new` renders the welcome card immediately — no spinner.
+3. `/new` renders the welcome card immediately, no spinner.
 4. User picks a mode, which creates the document at once, where new documents go by default
    ([One-step wizard](#one-step-wizard)). The header **X** backs out to the page that opened
    `/new`, creating nothing, as Escape does; see [Escape backs out](#escape-backs-out).
@@ -146,7 +146,7 @@ knowing about when adding another.
 1. URL is `/document/shared?s=<code>`.
 2. Editor route hydrates via the existing `apiLoadShared` branch.
 3. Visitor identity confirmation (the `identityOnlyScreenOpen` mini-flow)
-   stays on the editor route — it's about the visitor, not the document.
+   stays on the editor route: it's about the visitor, not the document.
 
 ### Empty tab on an existing document
 
@@ -235,13 +235,13 @@ This is the only welcome surface so it sets the mobile floor for the rest of the
 ## Jump Back In (recent documents card)
 
 Returning users get a **"Jump Back In" card** pinned to the right of the
-centred wizard (desktop `xl+` only — below that the wizard owns the width):
+centred wizard (desktop `xl+` only; below that the wizard owns the width):
 the 5 most recently-saved documents they own or that sit in a team they have
 joined, as the index lists them, each row opening that
 document directly, with a relative "saved N ago" line. A team document's name
 follows the team mark (the Explorer's team icon), read out as "<team> team:". It is a side affordance,
 deliberately separate from the create flow, and hidden entirely for someone
-with no documents yet, of their own or their teams' (best-effort fetch — a failure just means no shortcut).
+with no documents yet, of their own or their teams' (best-effort fetch: a failure just means no shortcut).
 A footer link **"Open Explorer"** goes to `/explorer/recent`, the same list
 uncapped, so users with more history than the card shows have a way into the
 full library. Component: `apps/editor/app/new/RecentDocumentsCard.tsx`.
@@ -360,12 +360,12 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 "Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
 `JustDraw`, so the funnel's history reads on unbroken.
 
-Some users don't want to choose even a mode — they want
+Some users don't want to choose even a mode: they want
 an empty canvas right now. Two affordances serve them, both committing the
 documented Skip defaults (Blank template, Default theme, the template's
 default document name) without walking the wizard:
 
-- **`/new?blank=1`** — the query param bypasses the wizard entirely. The
+- **`/new?blank=1`**: the query param bypasses the wizard entirely. The
   page renders the opening screen (below) at its "Creating your canvas"
   stage instead of the wizard, commits the blank document as soon as
   identity resolves, and hands off to the editor in place (below). Any
@@ -390,7 +390,7 @@ default document name) without walking the wizard:
   - **The wizard must never paint on this path, not even for a frame.**
     `/new` is a static export, so its prerendered HTML is the wizard and
     the query param is only knowable in the browser. A React-side check
-    alone runs after hydration — the static wizard HTML would flash first
+    alone runs after hydration: the static wizard HTML would flash first
     (and a window-reading state initializer would additionally make the
     hydration render disagree with the server HTML). So the page ships a
     tiny inline script ahead of the wizard markup that reads
@@ -407,7 +407,7 @@ default document name) without walking the wizard:
   a signed-in person's create still waits for auth to settle. A placement param
   (`folder` / `team`) names a server place, so it makes the create a cloud one
   whoever is creating.
-- **`/new?template=<kind>`** — the same bypass for a named template: the
+- **`/new?template=<kind>`**: the same bypass for a named template: the
   page commits that template (Default theme, the template's default name)
   the moment identity resolves and lands on the editor, with the same
   opening screen, in-place handoff, bfcache-restore redirect, placement params and error card
@@ -566,7 +566,7 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 ## API impact
 
 - No new endpoints. `POST /api/documents` already accepts an
-  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the new route uses it,
+  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md); the new route uses it,
   and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist

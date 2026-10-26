@@ -236,7 +236,7 @@ type UserPreferences = {
   // Email notification preferences (docs/specs/014-identity/profile-and-email-notifications.md). Account-level email
   // settings that share this synced blob rather than a parallel store,
   // surfaced in the Settings dialog's Notifications category (only when the deployment has
-  // email configured — capabilities.emailEnabled). The api worker reads
+  // email configured, per capabilities.emailEnabled). The api worker reads
   // these server-side before sending the matching transactional email
   // (docs/specs/014-identity/transactional-email.md), so a missing key === undefined === notify (opt-out, not
   // opt-in). Distinct from `notificationsEnabled`, which gates in-editor
@@ -534,7 +534,7 @@ and the dialog stays as the one complete, browsable index of them.
   (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md))), **Account** (identity, Trash, delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and
-  revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);
+  revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category);
   only when sign-in is enabled on the deployment)), **Privacy** (telemetry).
   Editor leads because it is what most
   people came to change; Account and Privacy sit at the end, where the
@@ -823,14 +823,14 @@ event on the preferences key.
 
 ## API
 
-- **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
+- **`GET /api/preferences`**: returns `{ prefs: UserPreferences }`
   for the resolved owner: the `all` and `liveplanner.app` scopes
   joined, in one call to the accounts Worker. Empty object when
   nothing is stored; `{ prefs: null }` when the api keeps no
   preferences (see Degradation without the api); 503
   `preferences_unavailable` when the accounts Worker cannot be
   reached. Auth: the standard identity (an account or guest Bearer).
-- **`PUT /api/preferences`** — body `{ prefs: <patch> }`: each key
+- **`PUT /api/preferences`**: body `{ prefs: <patch> }`: each key
   named takes its value whole, a key set to `null` is deleted, keys
   not named stay. The api splits it into the two scopes and writes
   them in one call. Returns 204; 400 for a body that is not an object

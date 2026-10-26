@@ -10,7 +10,7 @@ The whole editor in a real browser, against the production build and the api wor
 ecosystem default for Vite/TS projects, runs TypeScript with no extra build
 step, and has a Jest-compatible API so tests read conventionally.
 
-There is **no per-app runner divergence** — every workspace that has tests uses
+There is **no per-app runner divergence**: every workspace that has tests uses
 Vitest with the same shared config.
 
 ## Shared config: `@liveworkspace/vitest-config`
@@ -21,9 +21,9 @@ place: the monorepo's `packages/vitest-config`. It sits alongside the other shar
 
 It exports:
 
-- `baseConfig` — the shared Vitest defaults (node environment, coverage via
+- `baseConfig`: the shared Vitest defaults (node environment, coverage via
   `v8`, file-name conventions, `clearMocks`).
-- `defineProject(overrides)` — merges the base with per-workspace overrides.
+- `defineProject(overrides)`: merges the base with per-workspace overrides.
 
 A workspace's `vitest.config.ts` is therefore one line in the common case:
 
@@ -111,10 +111,10 @@ export default defineProject({ test: { environment: 'jsdom' } });
 
 Every testable workspace exposes:
 
-| Script          | What it does                             |
-| --------------- | ---------------------------------------- |
-| `test`          | `vitest run` — single pass, CI mode      |
-| `test:coverage` | `vitest run --coverage` — with v8 report |
+| Script          | What it does                            |
+| --------------- | --------------------------------------- |
+| `test`          | `vitest run`: single pass, CI mode      |
+| `test:coverage` | `vitest run --coverage`, with v8 report |
 
 Run from the repo root:
 
@@ -134,7 +134,7 @@ workspaces never collide. Only first-party TypeScript source under `src/` and
 `lib/` is counted; the editor (`apps/editor`) also counts `app/`, `components/`
 and `hooks/`, where most of its source lives. Fixtures beside the code
 (goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
-excluded. `index.ts` is intentionally **not** excluded — in this repo a
+excluded. `index.ts` is intentionally **not** excluded: in this repo a
 package's `index.ts` is its implementation (e.g. `@livedocuments/document`), not
 a barrel of re-exports.
 
@@ -146,7 +146,7 @@ functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
 | Files                                                                     | Why                                                                                                                                            |
 | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                             | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                           |
+| `src/auth/**`                                                             | Decides WHO a request is: access-token checks, guest-id signatures, api tokens, the read/edit gates                                            |
 | `src/db/api-tokens.ts`, `src/routes/tokens.ts`                            | Mint, resolve and revoke the credentials that act as an account                                                                                |
 | `src/routes/document-grant.ts` (room tickets: `@liveworkspace/index-app`) | The index's grant as the room ticket, and settling a request's grant before it reaches the document                                            |
 | `src/routes/share.ts`                                                     | The only unauthenticated read path into a document                                                                                             |
@@ -303,15 +303,15 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   editor's autosave (`useAutosave.test.tsx`), its changeset feed (`useChangesetFeed.test.tsx`) and the
   workbench page's renewal (`useWorkbenchRenewal.test.ts`) each render their hook.
 
-  Both workspaces load the same setup file — `react-cleanup` out of
+  Both workspaces load the same setup file, `react-cleanup` out of
   `@liveworkspace/vitest-config`, one copy for the repo rather than one per
-  workspace — which calls Testing Library's `cleanup` in an `afterEach`,
+  workspace, which calls Testing Library's `cleanup` in an `afterEach`,
   guarded on `typeof document` so the DOM-less majority is untouched. Testing Library registers that itself only under
   `globals: true`, which this repo does not use, so a file that rendered
   without unmounting left a live React root behind; the scheduler then woke
   on a later macrotask, after Vitest had already torn the jsdom environment
   down, and raised `ReferenceError: window is not defined` as an unhandled
-  error — a run that fails with every test passing, only on a machine slow
+  error: a run that fails with every test passing, only on a machine slow
   enough to lose the race. `vitest.setup.test.tsx` in each workspace is the
   deterministic guard on that wiring. Files that must unmount **before**
   their own teardown (a hook whose window listeners would otherwise answer

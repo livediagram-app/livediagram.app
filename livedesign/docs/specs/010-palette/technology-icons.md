@@ -18,20 +18,20 @@ recoloured (an orange Lambda is only recognisable orange). They need their own
 model (raw coloured SVG markup, not stroke prims) and their own render path
 (no stroke tint), so they live in their own catalogue and palette tab.
 
-## The element — reuses the `icon` shape kind
+## The element: reuses the `icon` shape kind
 
 A Technology icon is the **same `shape: 'icon'` element** the Icons category
-produces — no new element type, no schema migration. `element.iconId` keys the
+produces: no new element type, no schema migration. `element.iconId` keys the
 icon; the only difference is the id resolves in the **tech-icon registry**
 instead of the line-art catalogue. The shared `createShape('icon', …)` already
 gives icons the two properties this feature needs:
 
-- `aspectLocked` — Technology icons drop **unlocked**: the mark renders at a
+- `aspectLocked`: Technology icons drop **unlocked**: the mark renders at a
   fixed pixel size (see Rendering below), so warping the box can't warp the
   mark, and the lock would only fight resizing the caption room. (Line-art
-  icons keep `createShape('icon')`'s `aspectLocked: true` — their glyph
+  icons keep `createShape('icon')`'s `aspectLocked: true`; their glyph
   scales with the box.)
-- `textAlignY: 'bottom'` — the label sits in a band **below** the glyph, the
+- `textAlignY: 'bottom'`: the label sits in a band **below** the glyph, the
   architecture-diagram convention (icon on top, caption beneath). This is why
   double-clicking a Technology icon to type drops the text under it, which is
   exactly the desired behaviour for labelling `S3`, `Orders DB`, etc.
@@ -40,7 +40,7 @@ gives icons the two properties this feature needs:
 render path **dispatches on the id**: `isTechIconId(iconId)` picks the coloured
 brand renderer, otherwise the stroke-tinted line renderer.
 
-## The catalogue — `../packages/workbench/src/lib/tech-icons.ts`
+## The catalogue: `../packages/workbench/src/lib/tech-icons.ts`
 
 ```ts
 type TechIconDef = {
@@ -49,7 +49,7 @@ type TechIconDef = {
   short?: string; // short palette caption where `label` would truncate ('VM')
   provider: TechProvider; // 'aws' | 'azure' | 'cloudflare' | 'firebase' | 'generic'
   keywords: string; // extra search terms
-  color: string; // tile fill — the service / brand colour
+  color: string; // tile fill: the service / brand colour
   glyph: string; // inner SVG markup (0..24 box) drawn white on the tile
 };
 ```
@@ -66,9 +66,9 @@ type TechIconDef = {
   `../packages/icons/src/tech-icon-catalog.ts` (the shared `@liveworkspace/icons`
   package) and is dynamic-imported (together with the line-art catalogue) by
   `../packages/workbench/src/lib/icon-registry.ts`, keeping ~25 kB of source out of the
-  editor's first-load JS (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Catalogue loading"). `isTechIconId` —
+  editor's first-load JS (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Catalogue loading"). `isTechIconId`,
   which gates hot paths that can't wait for the chunk (the coloured-vs-line-art
-  render dispatch, the drag fold-into-shape exclusion, telemetry typing) —
+  render dispatch, the drag fold-into-shape exclusion, telemetry typing),
   answers from a lightweight first-load id set, `TECH_ICON_IDS`; tech ids share
   no common prefix (`aws-*` but also bare `k8s` / `docker`), so exact
   membership needs the set. Adding an icon is therefore a **two-line change**
@@ -77,11 +77,11 @@ type TechIconDef = {
   renders a **muted skeleton tile** in the mark's rounded-square silhouette
   (never a blank, and nothing jumps when the brand colours arrive); the
   Technology picker shows a brief "Loading icons…" note.
-- The mark is a **brand-coloured rounded tile + a white line-art glyph** — the
+- The mark is a **brand-coloured rounded tile + a white line-art glyph**: the
   AWS resource-icon visual language, applied uniformly across AWS / Azure /
   Cloudflare / Firebase / generic for a cohesive palette, using each service's **official brand /
   category colour**. It is authored in-repo as compact SVG, not the verbatim
-  vendor asset packs — keeps the bundle small, renders crisply at icon size, and
+  vendor asset packs, keeps the bundle small, renders crisply at icon size, and
   sidesteps redistributing proprietary SVGs from a public MIT repo (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md),
   [Secrets policy](../002-project-scope/secrets-policy.md)).
 - Glyphs are generic: no vendor trademark mark (Vercel draws a rocket, a generic deploy
@@ -109,15 +109,15 @@ type TechIconDef = {
 The set is intentionally the services people reach for first; it expands by
 adding `TechIconDef` entries.
 
-## Palette — the Technology tab
+## Palette: the Technology tab
 
 A palette category, alongside Shapes / Devices / Icons. It mirrors the Icons tab: a search box over a grid of
 **provider** category tiles you drill into (AWS / Azure / Cloudflare / Firebase
-/ Generic), with a breadcrumb back — see [Browsing the palette by category](palette-category-browse.md), which replaced the provider
+/ Generic), with a breadcrumb back; see [Browsing the palette by category](palette-category-browse.md), which replaced the provider
 filter dropdown this originally shipped with. Clicking a tile adds the icon at
 the viewport centre; dragging a tile onto the canvas drops it at the pointer.
 
-Unlike the line-art Icons grid (5 across, no captions — a labelled line icon's
+Unlike the line-art Icons grid (5 across, no captions, since a labelled line icon's
 shape reads on its own), the Technology grid is **3 across with a caption under
 each tile**: the brand glyphs aren't self-explanatory at thumbnail size, so the
 name sits beneath each one. A handful of long names carry a `short` caption
@@ -126,17 +126,17 @@ name sits beneath each one. A handful of long names carry a `short` caption
 → `Elastic`) so they don't truncate to an ambiguous prefix; the full `label` is
 still used for search, the aria-label, and the on-canvas element.
 
-Unlike the Icons tab, a Technology tile is **always a standalone element** — it
+Unlike the Icons tab, a Technology tile is **always a standalone element**: it
 never drops _inside_ a selected shape as an inline icon (a coloured brand tile
 beside a shape's text is not meaningful, and the inline-icon renderer only knows
 line-art prims). It therefore carries its own DnD MIME (`TECH_ICON_DND_MIME`, beside `ICON_DND_MIME` in `lib/icons.ts`),
 which the canvas drop handler routes to a standalone-icon create and which the
 shape drop target ignores. The same rule holds _after_ placement: dragging an
-existing standalone tech icon over a shape leaves it standalone — the
+existing standalone tech icon over a shape leaves it standalone: the
 icon-fold-into-shape gesture (`useEditorDrag`, which absorbs a dragged line-art
 `icon` shape into the shape beneath it) excludes tech icons via `isTechIconId`.
 
-## Rendering — `apps/live/components/primitives/tech-icon-glyph.tsx`
+## Rendering: `apps/live/components/primitives/tech-icon-glyph.tsx`
 
 `TechIconGlyph` paints the brand-coloured tile + the icon's white `glyph` markup
 inside an `<svg>`. No stroke tint is applied; the brand colour is the tile fill
@@ -153,7 +153,7 @@ same weight.
 
 **The mark renders at a fixed pixel size, not scaled to the element box.**
 Resizing a Technology icon element gives the caption more room / adds
-whitespace around the mark, but the tile itself stays the same size — an
+whitespace around the mark, but the tile itself stays the same size: an
 architecture diagram's brand marks read as a uniform set of chips, not blobs
 that grow with their boxes. The size comes from an optional `iconSize` preset
 on the element (`IconSize = 'sm' | 'md' | 'lg' | 'xl'` → 32 / 48 / 64 / 96 px,
@@ -165,17 +165,17 @@ horizontally-centred caption flips the mark vertically: a bottom-aligned
 caption (the icon default) puts it in the top ~64% of the box, a top-aligned
 caption sends it to the bottom band, and a middle-centre label leaves it the
 whole box (the label sits on the art, below). A **left- or
-right-aligned caption flips it horizontally instead** — left caption → mark
-in the right half, right caption → left half — and the mark stays on the
+right-aligned caption flips it horizontally instead** (left caption → mark
+in the right half, right caption → left half), and the mark stays on the
 caption's row (top / middle / bottom) so the pair reads as one line. Without
 a label the mark centres in the whole box. `iconBandBounds` / `techIconMarkBounds`
 (`../packages/model-core/src/icon-size.ts`) are the single source of this geometry;
 the editor overlay's CSS bands (`iconBandClass`) mirror their numbers.
 **Line-art icons share the same inverse band**: the glyph keeps scaling with
 its box (no fixed pixel preset), but a captioned glyph scales into the band
-opposite the caption's alignment exactly like a mark — bottom caption → top
+opposite the caption's alignment exactly like a mark (bottom caption → top
 band, top caption → bottom band, left/right caption → the other half
-on the caption's row — so moving the text never stacks it over the art (the
+on the caption's row), so moving the text never stacks it over the art (the
 one exception, middle-centre, is a label deliberately put on the art).
 The exports / headless renders (`svgIconShape` in the shared renderer) apply
 the same band geometry so a captioned icon exports exactly as drawn.
@@ -224,11 +224,11 @@ be much larger than the visible chip, arrow anchors on a Technology icon are
 computed on the mark's rectangle (`techIconMarkBounds`, the same geometry the
 renderers use): pinned endpoints touch the chip's edge, and the side choice
 (`exitSideTowards` / `anchorAimPoint` in `packages/design/src/anchor-choice.ts`,
-[Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)) answers for the chip — so an arrow to an
+[Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)) answers for the chip, so an arrow to an
 element below leaves the mark's bottom centre instead of a box edge floating
 in whitespace. **Exception: the caption's side.** The caption sits between
 the mark and the element edge on its side, so the anchors on that side push
-out to the element edge — a connector leaving toward a bottom caption starts
+out to the element edge: a connector leaving toward a bottom caption starts
 at the element's bottom line, under the text, instead of crossing it (and
 mirrored for top / left / right captions). Line-art icons keep box anchors
 (their glyph scales with the box). The design package reads `isTechIconId` from `@liveworkspace/icons`
@@ -237,14 +237,14 @@ mirrored for top / left / right captions). Line-art icons keep box anchors
 **The format painter carries the icon fields.** Painting from one icon to
 another copies `iconSize` (the Technology mark's fixed-size preset),
 `iconAnimation` + `iconAnimationSpeed`, and every generic styling field
-(colours, border, text styling, alignment, size, opacity) — the glyph
+(colours, border, text styling, alignment, size, opacity); the glyph
 identity (`iconId`) never paints, same as labels. The usual painter contract
 applies: fields the source leaves unset don't overwrite the target's.
 
 **Icon size presets in the context menu.** A Technology icon element's
 right-click menu gains an **Icon** category (single-element menu only, like
 the other type-specific categories): a 4-tile grid of size presets rendered
-as icon buttons — a rounded-square chip glyph at graduated sizes with a
+as icon buttons: a rounded-square chip glyph at graduated sizes with a
 Small / Medium / Large / Huge caption under each (the `MenuTile` icon-over-
 label convention), the active preset highlighted. Picking one writes
 `iconSize` selection-wide (history-aware, `track('Element', 'Changed',
@@ -252,10 +252,10 @@ label convention), the active preset highlighted. Picking one writes
 
 **Exports and headless renders draw the same art.** The shared SVG renderer
 (`packages/design/src/svg-render.ts`) takes an injected `resolveIconArt`
-resolver; with it, a `shape: 'icon'` element exports its real glyph — a
+resolver; with it, a `shape: 'icon'` element exports its real glyph: a
 Technology mark as its self-coloured tile (its glyph stroke set from the size
 preset by `techGlyphStrokeUnits`, exactly as on the canvas), a line-art icon stroke-tinted, each
-with the caption in the bottom band — instead of the old box-with-caption
+with the caption in the bottom band, instead of the old box-with-caption
 fallback (which remains the output for an unknown id or a resolver-less
 caller). The in-app SVG / PNG / PDF export resolves from the loaded icon
 registry (`resolveIconArtLoaded`, awaited via `ensureIconCatalogs` in the
@@ -265,7 +265,7 @@ import of the catalogue data).
 
 ## Telemetry
 
-Adding a Technology icon fires `track('Element', 'Added', 'TechIcon')` — a
+Adding a Technology icon fires `track('Element', 'Added', 'TechIcon')`, a
 distinct `type` from line-art icons (`'Icon'`) so the dashboard can tell
 architecture-icon usage apart, while reusing the closed `Element` / `Added`
 category/action pair ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). The `type` is the constant `'TechIcon'`, never

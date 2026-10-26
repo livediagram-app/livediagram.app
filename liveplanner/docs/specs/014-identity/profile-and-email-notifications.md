@@ -84,7 +84,7 @@ Account self-deletion already exists end to end (`DELETE /api/account`,
 to hang off the header dropdown; now that there is a dedicated account home,
 the **Delete account** trigger lives on the profile page's Danger zone and is
 **removed from the header menu** (one home for destructive account actions,
-no drift). The dialog component itself is unchanged and simply reused — the
+no drift). The dialog component itself is unchanged and simply reused: the
 confirmation flow (type your email, then wipe liveplanner's data and close the
 liveworkspace account, then end the session) is exactly as [Transactional email](transactional-email.md) describes.
 Account deletion is immediate and total within liveplanner: it deletes the account's own projects for good
@@ -109,7 +109,7 @@ setting it can't honour.
 ## 3. Email notification preferences
 
 Per-user flags, stored with the editor flags in the **same synced
-preferences** ([User preferences](../007-editor/user-preferences.md)), which the liveworkspace accounts database keeps —
+preferences** ([User preferences](../007-editor/user-preferences.md)), which the liveworkspace accounts database keeps,
 reusing that store rather than minting a parallel one (it already
 round-trips to localStorage and follows the account across devices and
 apps). Most `notify*` switches are settings all liveworkspace apps share (the
@@ -159,12 +159,12 @@ liveplanner sends the first (§a); the invite answer (§b) is the accounts Worke
 
 Both are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
-request's critical path — same contract as every [Transactional email](transactional-email.md) send. Recipients'
+request's critical path, the same contract as every [Transactional email](transactional-email.md) send. Recipients'
 addresses come only from trusted server state (the account's verified
 address, looked up at the accounts Worker with `accountEmails`), never from a
 client header.
 
-### a. Someone joins my plan — `notifyProjectJoin`
+### a. Someone joins my plan: `notifyProjectJoin`
 
 The signal is **a new person opening one of my shared plans for the first
 time**, which the index sees: it records who came in through a link (its `shared_with`), whether by resolving
@@ -193,12 +193,12 @@ Shared-with-you list); it's HTML-escaped like the team name.
 The notification is on by default (an opt-out), so the email says so rather
 than claiming the owner turned it on, and points at the notification settings.
 
-Only the first visit notifies — repeat opens by the same person are silent,
+Only the first visit notifies; repeat opens by the same person are silent,
 so an active collaborator doesn't generate a mail per reload. This is the
 only server-observable "join" signal; live-room reconnects in the Durable
 Object are deliberately **not** wired (they'd be far too chatty).
 
-### b. Someone responds to a team invite — `notifyInviteResponse`
+### b. Someone responds to a team invite: `notifyInviteResponse`
 
 Sent by liveworkspace, not liveplanner: teams, their invitations and the
 answer emails belong to the liveworkspace account, and the accounts Worker

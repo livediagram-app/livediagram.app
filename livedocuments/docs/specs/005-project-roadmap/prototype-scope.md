@@ -52,7 +52,7 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
   edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
   presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
   document, and draws tabs as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Published on npm as `@livedocuments/cli`, with provenance.
+  tools are verbs of the same catalogue. Published on npm as `@livedocuments/cli`, by hand outside CI.
 - **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
   person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
   frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
@@ -75,15 +75,17 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 
 ## Next
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
-- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links are built; token levels, ownership as separate powers, server-derived collaboration keys and a look-only Viewer are next.
+**Status: Planned.** Not built yet; Participant links, a look-only Viewer, and the agent changesets, views, edit operations, presence and [CLI](../015-api/cli.md) are built.
+
+- **Agents as collaborators** ([Agents](../024-agents/README.md)): the CLI's update check.
+- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels, ownership as separate powers, and server-derived collaboration keys.
 
 ## Later
 
 These are the meaningful gaps between today and "full product":
 
-- **Finer-grained team permissions** — every member of a team can edit every document in its shared library ([Team shared documents](../013-workspace/team-shared-documents.md)).
-- **Per-user grants beyond teams + share links** — a document is private, shared via a link with a role, or part of a team's shared library (teams with Admin/Member roles shipped — see [Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)). There are still no per-document per-user grants outside those.
+- **Finer-grained team permissions**: every member of a team can edit every document in its shared library ([Team shared documents](../013-workspace/team-shared-documents.md)).
+- **Per-user grants beyond teams + share links**: a document is private, shared via a link with a role, or part of a team's shared library (teams with Admin/Member roles shipped; see [Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)). There are still no per-document per-user grants outside those.
 - **Same-element concurrent edits are last-writer-wins.** Edits to different elements merge ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)), and the fields many people write at once merge as deltas, but two people changing the same element at the same moment still lose one edit. The advisory selection lock ([Editor app](../007-editor/editor-app.md)) makes that rare; it does not prevent it. A field-level CRDT that would close it was scoped and deliberately dropped, so this gap stays open by choice.
 
 ## Hard rules carried forward

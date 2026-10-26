@@ -7,7 +7,7 @@ labelled blank (two pieces of tape, the photographer's two shoes). Every reader
 got the same crops, cut exactly as `apps/editor/lib/photo-detect.ts` cuts them.
 
 **What shipped** ([Event storming](../../specs/021-event-storming/event-storming.md) Phase 9): the reader is pluggable. A model configured
-on the api reads the crops — Google defaults to `gemini-2.5-flash-lite` for this
+on the api reads the crops: Google defaults to `gemini-2.5-flash-lite` for this
 route, the cheapest tier and, measured here, also the most accurate. With no
 model configured the browser reads them with SmolVLM-256M, which keeps the photo
 import working with no key at all. Detection is in-browser either way.
@@ -289,11 +289,11 @@ Worth re-running when any of these is true:
 - A sub-500MB VLM claims handwriting ability (the size ceiling is the phone
   download, not the accuracy).
 - transformers.js or ONNX Runtime ships a WebGPU release that no longer needs
-  `shader-f16`, or Chrome exposes it on Linux/NVIDIA — that unblocks the 14x
+  `shader-f16`, or Chrome exposes it on Linux/NVIDIA: that unblocks the 14x
   speed-up and changes the 200-second wall into a 15-second one.
 - A browser ships a built-in multimodal model (Chrome's Prompt API and friends)
   that a page may use without downloading weights itself.
-- The hosted reader's provider changes its cheap tier — the cheapest model being
+- The hosted reader's provider changes its cheap tier: the cheapest model being
   the most accurate one is a happy accident of this moment, not a law.
 
 What would actually change the shipped decision: an in-browser reader within a
@@ -324,8 +324,8 @@ It cuts crops at the resolution production uses, sends them through the api
 worker's own prompt and request shape (six per call, JSON mode, the same token
 budget), and appends a scored row to `read-bench-results.md` beside the truth
 file. Labels are keyed by each note's POSITION rather than its index, because an
-index silently rots the moment the detector finds one sticky more than last time
-— which is exactly the run where you are trying to learn whether something
+index silently rots the moment the detector finds one sticky more than last time,
+which is exactly the run where you are trying to learn whether something
 helped. A label that matches no detection is reported, not quietly scored.
 
 In-browser readers are scored in node against the labelled walls, through the
@@ -343,5 +343,5 @@ edge. The words stay in `/tmp`; only numbers are printed. Speed is measured IN
 a browser (node cannot stand in for WebGPU): point a Playwright run at the
 editor with no model configured on the api, or with `E2E_AI_BUDGET_SPENT=1`.
 
-Real photographs never enter the repo — keep the wall PNG and its labels
+Real photographs never enter the repo: keep the wall PNG and its labels
 outside it.

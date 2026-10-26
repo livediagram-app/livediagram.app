@@ -1,7 +1,7 @@
 # Offline Mode
 
 **Offline Mode** lets you create a design that is saved **only in the current
-browser** — never to the API, never to the server. It is the default for a guest's
+browser**: never to the API, never to the server. It is the default for a guest's
 new design ([Auth + guest access → Guest designs start local](../014-identity/auth-and-guest-access.md#guest-designs-start-local))
 and an opt-in choice for everyone else. It suits private/local-first work, air-gapped or
 no-account use, and anyone who wants a design that physically never leaves
@@ -10,9 +10,9 @@ usable with the API _and_ auth switched off.
 
 This is a **deliberate, permanent choice for a design**, not a temporary
 network state. (Handling a transient dropped connection on a _cloud_ design is
-a separate concern — see [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) — and out of scope here.)
+a separate concern (see [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)) and out of scope here.)
 
-Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire` — the two stores must agree about what a tab IS, or a Sync Design would hand the cloud a board that has forgotten itself.
+Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire`: the two stores must agree about what a tab IS, or a Sync Design would hand the cloud a board that has forgotten itself.
 
 ## Turning it on
 
@@ -67,7 +67,7 @@ have cloud designs and offline designs side by side.
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
   `navigator.storage.persist()` to reduce eviction risk, and we surface the
-  trade-off plainly — on the design (see the badge, and its legend), in the Share dialog before a Sync, and in
+  trade-off plainly: on the design (see the badge, and its legend), in the Share dialog before a Sync, and in
   the help article. "Offline" means _yours only_, with the responsibility that
   implies.
 
@@ -75,7 +75,7 @@ have cloud designs and offline designs side by side.
 
 ## What's different in an offline design
 
-The design model (`Tab[]` + meta, per [Design structure](design-structure.md)) is **identical** — an offline
+The design model (`Tab[]` + meta, per [Design structure](design-structure.md)) is **identical**: an offline
 design is a normal design whose persistence target is IndexedDB instead of the
 API. The full editor works: shapes, arrows, sketches, layers, tabs, links,
 templates, themes, undo/redo, export. What changes are the features that
@@ -84,22 +84,22 @@ _require the server_, which are hidden or gated (not broken) for an offline desi
 | Feature                                                               | Offline behaviour                                                                                                                                                                                                                                                             |
 | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Share links / embeds                                                  | The header **Share** button stays visible, but for an offline design it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason ([Live app](../007-editor/live-app.md), /54). |
-| Live presence / realtime                                              | N/A — a private design never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                    |
-| Teams / shared library                                                | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                             |
+| Live presence / realtime                                              | N/A: a private design never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                     |
+| Teams / shared library                                                | Hidden: a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                              |
 | Comments                                                              | Local-only (just you), stored in the design; no cross-user.                                                                                                                                                                                                                   |
-| Duplicate                                                             | Makes **another offline design** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                    |
+| Duplicate                                                             | Makes **another offline design**; a copy never uploads what the user chose to keep local.                                                                                                                                                                                     |
 | Folders                                                               | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                  |
-| Tab linking ([Tab ↔ design many-to-many](tab-design-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                      |
-| Thumbnails                                                            | The **browser it lives in**, on a wash of the accent of the app that owns it (the Explorer's `LocalPreview`), never the pill's teal — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                             |
-| Images                                                                | **Embedded locally** — see below.                                                                                                                                                                                                                                             |
+| Tab linking ([Tab ↔ design many-to-many](tab-design-many-to-many.md)) | Unavailable in either direction: linked tabs are one shared server row.                                                                                                                                                                                                       |
+| Thumbnails                                                            | The **browser it lives in**, on a wash of the accent of the app that owns it (the Explorer's `LocalPreview`), never the pill's teal, since there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                        |
+| Images                                                                | **Embedded locally**; see below.                                                                                                                                                                                                                                              |
 
 **Images embed locally ([Image element + per-owner gallery](../009-elements/images.md)).** In a cloud design, an added image uploads
-to R2 and is referenced by URL. In an offline design it can't — so an image is
+to R2 and is referenced by URL. In an offline design it can't, so an image is
 stored **inline as a `data:` URI** inside the design. Rendering is unchanged
 (`<img>` reads a data URI fine). This costs local storage, which is the accepted
-trade for staying fully offline. (Conversion re-homes images — see below.)
+trade for staying fully offline. (Conversion re-homes images; see below.)
 
-Autosave still runs for an offline design ([Per-tab storage](per-tab-storage.md)) — it writes to IndexedDB
+Autosave still runs for an offline design ([Per-tab storage](per-tab-storage.md)): it writes to IndexedDB
 instead of the API, and the "Saved" indicator means _saved on this device_.
 
 ## Instant open
@@ -298,7 +298,7 @@ the Explorer's This Browser view, the Share dialog gate and the move prompt afte
 
 - Uploads the design's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud design owned by the current identity (signed-in account, or the liveworkspace
-  guest if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
+  guest if not signed in; [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 - **Images re-home:** each embedded `data:` URI is uploaded to the gallery
   (SHA-256 dedupe server-side, [Image element + per-owner gallery](../009-elements/images.md)) and the element's reference swaps to
   the returned R2 id, so the cloud copy carries real gallery images instead of
@@ -372,8 +372,8 @@ confirmation:
   copy stays authoritative. This is the one failure in this direction that
   nothing could undo: a partial download followed by the server delete leaves
   the missing tab's elements nowhere at all, while reporting success. A tab read
-  can come back empty from two directions — a failed request, or a 404 that the
-  api client maps to `null` rather than an error — and both count as failure
+  can come back empty from two directions (a failed request, or a 404 that the
+  api client maps to `null` rather than an error), and both count as failure
   here. (The best-effort "keep what loaded" shape is right for _duplicating_ a
   design, where the source survives; it inverts once the source is destroyed.)
 - **If that server delete fails, the local copy is rolled back** and the error
@@ -394,7 +394,7 @@ confirmation:
 Offline Mode is independent of sign-in:
 
 - Works **signed-in or guest**. An offline design is browser-local regardless of
-  account — a signed-in user's offline designs do **not** appear on their other
+  account: a signed-in user's offline designs do **not** appear on their other
   devices (that's the point).
 - It differs from a **guest cloud** design ([Auth + guest access](../014-identity/auth-and-guest-access.md)): a guest's cloud design is
   anonymous but still on the server (keyed by the browser's participant id);
@@ -438,7 +438,7 @@ than threading a mode flag through the editor.
 ## Marketing ([Marketing site](../019-marketing/marketing-site.md), /23)
 
 Offline Mode is **folded into the existing privacy / security area** of the
-landing page — no standalone section. It appears as a short point plus a small
+landing page, with no standalone section. It appears as a short point plus a small
 inline illustration/icon, framed as local-first:
 
 > **Work fully offline.** A guest's design is saved only in your browser: no account, no server,
@@ -455,7 +455,7 @@ The help centre has an **"Offline Mode"** article, registered in the help regist
 
 - What Offline Mode is and when a design is made in This Browser ([Save Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
-  you clear site data — the durability warning, stated plainly.
+  you clear site data: the durability warning, stated plainly.
 - **Converting**: "Sync Design" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
 - What's unavailable offline: sharing, live collaboration and teams.
@@ -477,12 +477,12 @@ Adoption is tracked without content, in the closed vocabulary:
 
 ## Non-goals
 
-- **No cross-device sync of offline designs** — that would defeat the purpose;
+- **No cross-device sync of offline designs**: that would defeat the purpose;
   sync is exactly what the cloud path is for.
-- **No collaborative offline editing** — offline is single-user by nature.
+- **No collaborative offline editing**: offline is single-user by nature.
 - **Not** offline-resilience for cloud designs (editing a cloud design through
-  a network blip) — that's [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)'s territory.
-- **No automatic promotion** — a design never silently moves between offline and
+  a network blip); that's [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)'s territory.
+- **No automatic promotion**: a design never silently moves between offline and
   cloud; every conversion is an explicit, user-initiated action (pressing Share,
   Sync Design, or Move on the prompt after signing in).
 
@@ -492,7 +492,7 @@ Adoption is tracked without content, in the closed vocabulary:
   dispatch via the local index (`lib/offline/offline-ids.ts`) to `lib/offline/offline-store.ts`.
 - `/new` (`app/new/page.tsx`, [New design route](../007-editor/new-design-route.md)): `offlineCreateDesign` for a
   This Browser create.
-- `EditorHeader` (`SharedBadge`) — the **This Browser** badge state.
+- `EditorHeader` (`SharedBadge`): the **This Browser** badge state.
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
   show the **This Browser** pill wherever an offline design is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.
@@ -505,12 +505,12 @@ Adoption is tracked without content, in the closed vocabulary:
   `hooks/persistence/useLocalMovePrompt.ts`, `../packages/workbench/src/lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Design" and "Take Offline" (with confirmation + image re-homing).
-- Image handling ([Image element + per-owner gallery](../009-elements/images.md)) — embed `data:` URIs offline; upload-on-save,
+- Image handling ([Image element + per-owner gallery](../009-elements/images.md)): embed `data:` URIs offline; upload-on-save,
   download-on-take-offline.
-- `apps/marketing` — the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
-- `apps/help` — the "Offline Mode" article + its `articles.ts` registry entry
+- `apps/marketing`: the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
+- `apps/help`: the "Offline Mode" article + its `articles.ts` registry entry
   ([Help app](../018-help/help-app.md)).
-- Telemetry — the create `type` + conversion events ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+- Telemetry: the create `type` + conversion events ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## References
 
@@ -524,5 +524,5 @@ See [Open source + distribution](../002-project-scope/open-source-and-business-m
 [Image element + per-owner gallery](../009-elements/images.md) (images),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Help app](../018-help/help-app.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
-[Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime — the separate concern),
+[Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime, the separate concern),
 [Save Locations](save-locations.md) (where a new design is stored).

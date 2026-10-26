@@ -38,11 +38,11 @@ The **Shadow** accordion sits after **Border** in the element context menu's
 style group (and in the multi-select Style flyout, applying selection-wide
 like Border does). Contents:
 
-- **Preset tiles** — `None`, `Soft`, `Drop`, `Lifted`, `Hard`
+- **Preset tiles**: `None`, `Soft`, `Drop`, `Lifted`, `Hard`
   (`SHADOW_PRESETS` in `@liveplanner/project`): hover-to-preview /
   click-to-commit like the border grids. `None` clears the field. `Hard` is
   the zero-blur offset "poster" shadow; the other three are elevation steps.
-- **Sliders** — Offset X (±24), Offset Y (±24), Blur (0..48), Opacity
+- **Sliders**: Offset X (±24), Offset Y (±24), Blur (0..48), Opacity
   (0..100%). They follow the opacity-slider policy (debounced non-history
   ticks, one undo step per gesture). Dragging any slider when
   no shadow is set seeds the rest from `DEFAULT_SHADOW` (the Drop preset's
@@ -71,7 +71,7 @@ equivalence), so exports match the canvas. Snapshots ([Project SVG snapshots](..
 
 - **Format painter** copies `shadow` with the other boxed style fields.
 - **Reset style** ([Style presets](../010-palette/style-presets.md)'s shape reset) clears it; **Reset to Theme**
-  (colours only) leaves it alone — a shadow is geometry, not a colour.
+  (colours only) leaves it alone: a shadow is geometry, not a colour.
 - Themes never write shadows; presets are theme-independent.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): preset commits fire `track('Element', 'Changed',
 'Shadow')` via the shared preview/commit path; slider drags stay untracked

@@ -16,7 +16,7 @@ and `note` is the plain-text mirror.
 
 - **Visual:** a fixed-size circle (~44 px), themed like a shape (fill +
   stroke from the active theme), with a single **note glyph** centred inside,
-  tinted by the stroke colour. There is no inline label — the content lives in
+  tinted by the stroke colour. There is no inline label; the content lives in
   the note.
 - **Fixed marker, not a box.** The circle does not resize: no corner / rotate
   handles. You can still move it (drag), recolour it (Colours accordion),
@@ -33,7 +33,7 @@ and `note` is the plain-text mirror.
   undoable commit. This is the **only** palette tile that places
   instantly: every other one arms the tap-or-drag draw gesture ([Canvas and palette](../008-canvas/canvas-and-palette.md)
   "Placement on add"). A marker is a fixed 44×44 glyph, so a drag would ask
-  for a size the element then ignores — there is nothing to draw.
+  for a size the element then ignores, since there is nothing to draw.
 - New annotations inherit the active theme's colours via the same
   `deriveNewBoxedColours` path every palette add uses, so they match the
   diagram out of the box.
@@ -43,7 +43,7 @@ and `note` is the plain-text mirror.
 - **Hover → read.** Pointer-entering an annotation that has note text floats a
   read-only preview of the note in a portal **above every canvas element**
   (rendered by `NoteRichText`, so headings / lists / links read the same as
-  they do in the popover — [Rich-text notes](rich-text-notes.md)), so the note is legible even when other
+  they do in the popover; [Rich-text notes](rich-text-notes.md)), so the note is legible even when other
   elements are painted on top of the annotation. The preview disappears on
   pointer-leave. An annotation with no note yet shows nothing on hover. The
   hover preview is suppressed while the annotation is selected (the click /
@@ -54,7 +54,7 @@ and `note` is the plain-text mirror.
   drag moves it. Typing + commit goes through history like any other element
   edit. Double-clicking the same annotation again toggles the popover closed.
 - **Read-only viewers** (view-role share visitors) can hover to read and open
-  the note read-only, but can't edit, move, or delete it — same gating as
+  the note read-only, but can't edit, move, or delete it, the same gating as
   every other element.
 
 ## Model
@@ -77,7 +77,7 @@ size. `isBoxed` and the `BoxedElement` union include it.
   (`defaultFillColor` / `defaultStrokeColor` / `defaultTextColor` /
   `defaultPadding`) and `supportsColours` returns true for it.
 - **Controls hidden:** the Shape morph grid, Border accordion, and aspect-lock
-  are hidden (an annotation isn't a morphable box) — this falls out of those
+  are hidden (an annotation isn't a morphable box); this falls out of those
   controls being gated on `type === 'shape'`. The Colours accordion (fill +
   stroke) and the Layer controls apply.
 
@@ -86,7 +86,7 @@ size. `isBoxed` and the `BoxedElement` union include it.
 - Persists like any element; the wire format treats element `type` as an open
   string, so no schema change is required.
 - **Visual exports** (PNG / SVG) render an annotation as its themed circle
-  (the note text is not drawn — it's a hover affordance, not page content).
+  (the note text is not drawn; it's a hover affordance, not page content).
 
 ## Telemetry
 

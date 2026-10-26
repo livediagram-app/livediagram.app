@@ -19,8 +19,8 @@ Chosen to cover distinct **things people mean**, not five ways of saying
 
 **The palette offers a tile per reaction**, in the palette's **React**
 category, one of Workshop's Collaborate categories.
-Which reaction you want is the whole decision — a pad is not useful until it is
-the right one — so placing one and then going to change it is two steps for
+Which reaction you want is the whole decision: a pad is not useful until it is
+the right one, so placing one and then going to change it is two steps for
 something you already knew. The choice rides the draw intent
 (`PendingDraw.reaction`) and lands on the element at commit, along with a
 matching label ("Celebrate", "Thanks", "It shipped").
@@ -79,7 +79,7 @@ not replayed to somebody who joins after it finished. The `reaction` room op
 sits in the never-logged set beside `cursor` / `laser` / `avatar`: a burst you
 missed is a burst that is over.
 
-It is **local-first** — the presser's own machine plays it immediately and then
+It is **local-first**: the presser's own machine plays it immediately and then
 tells the room, rather than round-tripping through the server. A press has to
 feel instant, and a burst is not shared state that could disagree; it is the
 same animation run independently on every machine.
@@ -89,7 +89,7 @@ around the element, and the element is where everyone already agrees it is;
 sending x/y would mean a peer who has since moved the pad draws confetti over
 empty canvas. It also carries the reaction, so a peer plays the right one even
 if the pad's field changed under them mid-flight. An unrecognised reaction name
-(a peer on a newer build) falls back to confetti rather than playing nothing —
+(a peer on a newer build) falls back to confetti rather than playing nothing:
 the point of the press was that something visible happened.
 
 Bursts are keyed by **element id**, so a pad can only be mid-burst once.
@@ -111,8 +111,8 @@ with per-particle keyframes is both slower and harder to read than one canvas
 and a step function.
 
 Particles carry position, velocity, rotation, spin, size, colour, gravity,
-drag, a flutter phase and a life. Six drawn kinds — `ribbon`, `star`, `heart`,
-`dot`, `ring`, `spark` — none of them emoji.
+drag, a flutter phase and a life. Six drawn kinds: `ribbon`, `star`, `heart`,
+`dot`, `ring`, `spark`, none of them emoji.
 
 **Each reaction is a different physics**, which is what tells them apart at a
 glance far better than the glyph did:
@@ -159,7 +159,7 @@ heavier than it needs to.
 ### Cost
 
 The canvas is `OVERSCAN` = 2 pad-widths larger per side (5x the pad in each
-dimension), because the burst is supposed to leave the element — confetti that
+dimension), because the burst is supposed to leave the element: confetti that
 stopped at the pad's edge would be a rectangle of paper. The backing store is
 capped at 2x DPR: a 3x phone painting a hundred sparks gains nothing anybody
 can see and costs fill rate every frame. The whole surface unmounts when the

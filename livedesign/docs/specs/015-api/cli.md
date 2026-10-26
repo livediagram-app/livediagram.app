@@ -2,7 +2,7 @@
 
 **Status: published.** `@livedesign/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
-article is `/help/developers/cli/` (Developers). Ahead: the update check.
+article is `/help/developers/cli/` (Developers). The update check is planned ([Update check](#update-check)).
 
 `livedesign` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a wireframe while a person talks to it) and second for people (scripts, pulling designs to files).
@@ -186,10 +186,17 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
 
 - npm package `@livedesign/cli`, under the `livedesign` npm organisation, installing the command `livedesign`: one
   bundled ESM file plus the resvg wasm and font, Node 22 or later, run with `npx @livedesign/cli@latest` or installed.
-  npm refuses the plain name `livedesign` as too close to the existing `live-diagram`. Published from CI with provenance, versioned on its own.
+  npm refuses the plain name `livedesign` as too close to the existing `live-diagram`. Versioned on its own.
+- Publishing is a manual step outside CI: no workflow publishes the package. CI builds and packs the CLI on every run
+  that reaches it (`npm pack --dry-run`, [docs/ci.md](../../../../docs/ci.md)).
 - Standalone binaries and a Homebrew tap may follow; a `curl | sh` installer is never offered.
-- Once a day at most, after a command, it checks npm for a newer version and says so on stderr; never in CI, when
-  stderr is not a terminal, or with `LIVEDESIGN_NO_UPDATE_CHECK=1`.
+
+## Update check
+
+**Status: Planned.** Not built yet; the published CLI makes no npm request.
+
+Once a day at most, after a command, the CLI checks npm for a newer version and says so on stderr; never in CI, when
+stderr is not a terminal, or with `LIVEDESIGN_NO_UPDATE_CHECK=1`.
 
 ## Telemetry
 

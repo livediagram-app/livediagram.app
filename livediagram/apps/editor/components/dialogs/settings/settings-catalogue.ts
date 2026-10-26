@@ -197,7 +197,7 @@ export type SettingsSliderRowSpec = RowBase & {
 // no read/write here and is rendered against its own store.
 export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
 
-// API tokens (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
+// API tokens (docs/specs/015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category):
 // the whole manager, create, one-time reveal, list and revoke. Not a
 // preference at all: it reads account state from the api, so like the
 // appearance row it carries no read/write pair.

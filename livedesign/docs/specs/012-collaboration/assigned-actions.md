@@ -4,7 +4,7 @@
 element on the canvas: a new **Assign Action** tile attaches a named, described,
 assigned action to the element, optionally emailing the assignee. It sits on the element menu's
 [quick bar](../008-canvas/element-menu-quick-bar.md) with Add Comment, Add Link and Add Note, above every category. The floating
-**Collaborate Panel** (§5 — the merged Comments + Actions surface,
+**Collaborate Panel** (§5, the merged Comments + Actions surface,
 [Panel corner docking](../007-editor/panel-docking.md) docking) lists the tab's actions and comment threads and jumps
 to them. Builds on teams ([Teams](../013-workspace/teams.md)) for the assignee picker, the
 comment-thread element-data pattern (see `commentThread`), transactional
@@ -30,14 +30,14 @@ interface ElementAction {
   name: string; // required, short ("Confirm the retry budget")
   description: string; // optional detail, '' when empty
   assignee: {
-    // The stable key: an account user id, or — for a SELF-assignment made
-    // while signed out — the guest participant id (docs/specs/014-identity/auth-and-guest-access.md hybrid
+    // The stable key: an account user id, or (for a SELF-assignment made
+    // while signed out) the guest participant id (docs/specs/014-identity/auth-and-guest-access.md hybrid
     // identity). Guests can only ever pick themselves, so a guest id
     // here always means "the assigner's own browser identity".
     // Null for an INVITED member who hasn't been identified with an
-    // account yet — `memberId` is their key then.
+    // account yet; `memberId` is their key then.
     userId: string | null;
-    // The team membership row id — set when the assignee was picked
+    // The team membership row id, set when the assignee was picked
     // from a team (joined or invited). For an invited member it is the
     // only stable key: the server resolves their invite email from the
     // membership row at send time (§4), so no address enters the blob.
@@ -86,9 +86,9 @@ Today's single Collaborate category (`ElementContentSections.tsx`: Add/Edit
 Link, Add/Edit Note, Comments) splits into **two categories in the same
 collaboration band** ([Canvas and palette](../008-canvas/canvas-and-palette.md) band 4), in this order:
 
-1. **Collaborate** (comment icon): the people tiles — **Assign Action**
+1. **Collaborate** (comment icon): the people tiles: **Assign Action**
    (new) and **Comments**.
-2. **Resources** (link icon): the attached-material tiles — **Add/Edit
+2. **Resources** (link icon): the attached-material tiles: **Add/Edit
    Link** and **Add/Edit Note**. Link-cards keep their existing carve-out
    (their Link lives in its own category), so a link-card's Resources shows
    Note alone.
@@ -100,12 +100,12 @@ unchanged. The **Assign Action** tile:
 
 - **Always shows, for everyone.** The feature is not sign-in gated:
   a signed-out user (or a deployment without sign-in, [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) can assign an
-  action to **themselves** — the picker offers a pinned **Myself** row in
+  action to **themselves**: the picker offers a pinned **Myself** row in
   every session, so actions double as personal to-dos on the design.
   Only assigning to OTHER people needs an account: teammates come from
   teams ([Teams](../013-workspace/teams.md)), so a signed-out picker shows Myself alone plus a
   gentle "sign in and join a team to assign teammates" nudge with the
-  sign-in CTA ([Sign-in encouragement](../014-identity/sign-in-encouragement.md) encouragement, not a wall — [Auth + guest access](../014-identity/auth-and-guest-access.md)). No email is
+  sign-in CTA ([Sign-in encouragement](../014-identity/sign-in-encouragement.md) encouragement, not a wall; [Auth + guest access](../014-identity/auth-and-guest-access.md)). No email is
   ever offered for a self-assignment (§4).
 - When the element already has an action, the tile reads **View Action**
   and opens that action's popover (§3) instead of the assign dialog, the
@@ -114,7 +114,7 @@ unchanged. The **Assign Action** tile:
 Clicking it opens the **Assign Action dialog** (its own component under
 `components/dialogs/`, per the no-god-files rule), with:
 
-- **Assignee**: a pinned **Myself** row (every session — the signed-in
+- **Assignee**: a pinned **Myself** row (every session: the signed-in
   account, or the guest participant identity), then the **joined members
   of the team whose shared library holds this design** (`GET
 /api/teams/<designTeamId>/members`, via the existing api-client
@@ -122,19 +122,19 @@ Clicking it opens the **Assign Action dialog** (its own component under
   (email local-part fallback, as TeamPane does). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
   design's team, so they almost certainly can't open the design to
-  complete the action — offering them just manufactures the §4 access
+  complete the action, and offering them just manufactures the §4 access
   warning. **Invited-but-not-joined members ARE offered** (with the same
   amber "Invited" badge the team pane uses): work often gets divided up
   while invites are still in flight. An invited member is keyed by their
   membership `memberId` (their `userId` when the lazy claim has already
   identified an account, else null), and picking one shows an
-  informational hint — "{name} hasn't accepted the team invite yet;
-  they'll get access when they join" — instead of the §4 access check,
+  informational hint ("{name} hasn't accepted the team invite yet;
+  they'll get access when they join") instead of the §4 access check,
   which needs an account to ask about. **Myself is preselected** when
   creating, so the common self-assignment is zero-click and handing off
   is one.
   Myself-only states, each with its own nudge: a **personal design**
-  (no team library) offers the fix INLINE — "Move this design into a
+  (no team library) offers the fix INLINE: "Move this design into a
   team library to assign teammates", with a button per joined team that
   performs the [Team shared designs](../013-workspace/team-shared-designs.md) placement move (the index's item move
   into the team, landing at the team root) right from the dialog and
@@ -154,7 +154,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
   on**, rendered only when `useCapabilities().emailEnabled` is true
   ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §2): a deployment without the `EMAIL` binding never advertises a send it
   can't perform. **Hidden entirely for a self-assignment** (guest or
-  signed-in) — you don't email yourself about your own action, so the
+  signed-in): you don't email yourself about your own action, so the
   row disappears rather than defaulting off.
 
 Confirming writes `el.action` (status `open`, assigner stamped from the
@@ -172,8 +172,8 @@ blob. View-role visitors see actions read-only (§7).
   action badge alongside the comment badge, shown only while the element has
   an `open` action. Clicking it opens the action popover. Done actions show
   no badge (finished work should not shout). The cluster itself renders as
-  **one connected pill** — link / note / action / comment as segments with
-  hairline separators — rather than detached circles.
+  **one connected pill** (link / note / action / comment as segments with
+  hairline separators) rather than detached circles.
 - **Popover**: `ActionPopover`, anchored on the element like
   `CommentThreadPopover`: the action name + description up top, one calm
   assignee/assigner meta row (avatar bubble, "Assigned to you"/name,
@@ -247,7 +247,7 @@ or a design/team fact the two already share.
 **Invited-assignee caveat:** the panel's / popover's "mine" match is by
 `userId`, so an action assigned to a not-yet-identified invitee (null
 `userId`) renders by name but won't join their Mine view even after they
-accept — acceptable v1: the action is still on the canvas, and reassigning
+accept. That is acceptable for v1: the action is still on the canvas, and reassigning
 (or completing) it works for anyone with edit access. Invitees the lazy
 claim already identified carry their real `userId` and match normally.
 
@@ -266,7 +266,7 @@ names no design and links to none.
 ## 5. The Collaborate Panel
 
 ONE docked panel ([Panel corner docking](../007-editor/panel-docking.md)) for both ways work gets discussed / divided
-on a design — it replaced the separate Comments and Actions panels,
+on a design; it replaced the separate Comments and Actions panels,
 which crowded the same corner:
 
 - `PanelId` `'collaborate'` in `lib/panel-layout.ts` (stored layouts naming the
@@ -396,7 +396,7 @@ enum-ish tokens, not user content.
 
 ## 9. Out of scope (v1)
 
-- ~~A cross-design "my actions" inbox~~ — shipped as the Explorer's
+- ~~A cross-design "my actions" inbox~~: shipped as the Explorer's
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
   a projection in liveworkspace's index (`collab_actions`), pushed from each design's outbox,
   with the per-element blob still the source of truth.

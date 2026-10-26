@@ -8,15 +8,15 @@ to-do that's done or not) without adding a separate element.
 
 Five markers, plus a **None** option that clears it:
 
-- **Green circle**, **Orange circle**, **Red circle** — filled status dots.
-- **Checkbox (unchecked)** — an empty box ("To do").
-- **Checkbox (checked)** — a ticked box ("Done").
+- **Green circle**, **Orange circle**, **Red circle**: filled status dots.
+- **Checkbox (unchecked)**: an empty box ("To do").
+- **Checkbox (checked)**: a ticked box ("Done").
 
 ## Placement + size
 
 - The marker sits **just to the left of the element's text**. When the shape
   has **no label**, it is **centred** in the shape. It composes with the
-  existing inline icon (drag-an-icon-onto-a-shape) — the marker hugs the label;
+  existing inline icon (drag-an-icon-onto-a-shape); the marker hugs the label;
   the icon keeps its chosen side.
 - **Size** is a `TextSizePreset`: **Scale / Small / Medium / Large** (never a px: the
   [Text Size](../004-interface-design/fonts.md#text-size) slider sizes type, not a marker's dot). `Scale`

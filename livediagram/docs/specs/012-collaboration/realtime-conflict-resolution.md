@@ -2,8 +2,8 @@
 
 Make simultaneous multi-user editing **robust**: two people working the same tab
 at the same time must not clobber each other, and a dropped connection must
-recover cleanly. Two mechanisms shipped for this. A third — a full field-level
-CRDT for concurrent edits to the _same_ element — was scoped and **deliberately
+recover cleanly. Two mechanisms shipped for this. A third (a full field-level
+CRDT for concurrent edits to the _same_ element) was scoped and **deliberately
 dropped** (see the decision at the end). Same-element collisions therefore
 remain last-writer-wins; the advisory selection lock makes them rare, it does
 not prevent them.
@@ -12,7 +12,7 @@ not prevent them.
 
 The realtime room (`apps/api/src/document-room/document-room.ts`) was a **stateless relay**: it
 broadcast ops between peers and tracked presence, but held no document state and
-merged nothing. The conflict unit was a **whole tab** — editing anything on a tab
+merged nothing. The conflict unit was a **whole tab**: editing anything on a tab
 broadcast the tab's entire element array and receivers **replaced** their copy.
 So if A moved element X and B moved element Y on the same tab within the sync
 window, whichever op landed last overwrote the other's whole element set. One
@@ -20,7 +20,7 @@ edit silently vanished.
 
 The **selection lock** ([Editor app](../007-editor/editor-app.md)) already soft-locks an element for peers while
 someone has it selected, heading off most _same-element_ collisions. The gap was
-_same-tab, different-element_ edits — the common case — plus messy recovery when
+_same-tab, different-element_ edits (the common case) plus messy recovery when
 a socket dropped.
 
 ## What shipped
@@ -37,7 +37,7 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   lives in `@livediagram/document` so it's shared and unit-tested off-socket.
 - Derivation is free: `diffToElementOps(before, after)` diffs the tab's
   elements before and after each commit. Apply
-  is `applyElementOp(elements, op)` by id — an op for an already-removed id is a
+  is `applyElementOp(elements, op)` by id: an op for an already-removed id is a
   safe no-op.
 - `update` replaces the whole element by id (simple + correct). Two peers editing
   the same element are still last-writer-wins per element, in room order, on every screen
@@ -87,7 +87,7 @@ DO that assigns a total order, all peers converge. Ephemeral presence ops
 **Which an op is has one definition.** `PRESENCE_OP_KINDS`,
 `MUTATION_OP_KINDS` and `SYSTEM_OP_KINDS` live in `@livediagram/api-schema`
 beside the room message types, because the classification decides three things
-at once — an op's ordering, its role gate ([API app](../015-api/api.md) drops non-presence ops from a
+at once: an op's ordering, its role gate ([API app](../015-api/api.md) drops non-presence ops from a
 view-role sender), and whether a client may originate it at all. The wire payload
 itself stays `unknown`, so this shares the vocabulary without coupling the room
 to the editor's op shapes.
@@ -175,7 +175,7 @@ the editor until a reload, and nothing says so. The client therefore checks its 
 ## Locked decisions
 
 1. **Undo is local, not global.** Undo/redo affects the current user's own
-   changes only — never rolls back a peer's edit. Every peer op (and every
+   changes only, never rolls back a peer's edit. Every peer op (and every
    agent changeset) is applied to each undo and redo snapshot as well as to
    what is on screen, so a restored snapshot already holds the peer's change:
    undoing takes back your own edits alone, never a collaborator's element or a
@@ -203,7 +203,7 @@ same instant (one moves a box while another recolours it) field by field. The co
   grabbing the same element at once rare, though it does not prevent it, and the
   fields many people write at once already merge as deltas. So the case the CRDT
   uniquely rescues is uncommon. And it can't help when two people change the
-  _same_ field — someone's value still has to win.
+  _same_ field: someone's value still has to win.
 - **The cost is paid by everyone, always.** It would pull a third-party CRDT
   library (~60 KB gzipped) into the editor bundle regardless of use,
   add a permanent second sync path to maintain alongside the element-op path,
@@ -217,16 +217,16 @@ dormant.
 
 ## Implementation map
 
-- `packages/document` — `element-ops.ts`: `ElementOp`, `diffToElementOps`,
+- `packages/document`: `element-ops.ts`: `ElementOp`, `diffToElementOps`,
   `applyElementOp` (pure, unit-tested).
-- `packages/api-schema/src/room-messages.ts` — `el` / `tab-meta` ops; `seq` /
+- `packages/api-schema/src/room-messages.ts`: `el` / `tab-meta` ops; `seq` /
   `epoch` on the op frame; the `sync` + `catchup` frames.
-- `packages/api-schema/src/room-messages.ts` — `PRESENCE_OP_KINDS` /
+- `packages/api-schema/src/room-messages.ts`: `PRESENCE_OP_KINDS` /
   `MUTATION_OP_KINDS` / `SYSTEM_OP_KINDS`, the one classification of every op.
-- `packages/document` — `element-deltas.ts` (`applyElementDelta`,
+- `packages/document`: `element-deltas.ts` (`applyElementDelta`,
   `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the
   save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`).
-- `apps/api/src/document-room/document-room.ts` — the role / class gate, seq + epoch
+- `apps/api/src/document-room/document-room.ts`: the role / class gate, seq + epoch
   (persisted as `order-state`), the bounded in-memory op log and the
   `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
@@ -235,10 +235,10 @@ dormant.
   facilitator baton (`facilitator.ts`). It writes the stored tab for Q&A boards
   (`handleQaWrite` → `qa-board-write.ts`). The full description is
   [API app → Realtime model](../015-api/api.md#realtime-model).
-- `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
+- `apps/api/src/room-client.ts`: the worker's calls into the room: the ledger
   merge on a tab PUT (`fetchRoomLedger` + `applyRoomLedger`, driven by `X-Room-Cursor`), the
   view-role comment relay (`relayElementDelta`) and share-link broadcasts.
-- `apps/editor` — `tab-broadcast-ops.ts` (emit), `tab-save-flow.ts` (a save's
+- `apps/editor`: `tab-broadcast-ops.ts` (emit), `tab-save-flow.ts` (a save's
   ledger deltas sequenced before its PUT, its element ops after) + the room
   `onOp` handler (apply); `lib/api/room.ts` (auto-reconnect, seq/epoch
   tracking, the outbox, `sequence` and its `ref`);

@@ -208,7 +208,7 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 ## Accessibility
 
 - The chip is a native `<button type="button">`, keyboard focusable.
-- `aria-label`: `"<text> — switch to <Mode> mode"`, or `"<text> — back to your previous mode"`
+- `aria-label`: `"<text>: switch to <Mode> mode"`, or `"<text>: back to your previous mode"`
   when current.
 - The glyph layer is `aria-hidden`.
 - Motion is a 100 ms scale on hover and press only.

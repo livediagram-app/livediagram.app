@@ -1,7 +1,7 @@
 # Fonts
 
-Let users set the **typeface** of text on the canvas — per element and as
-a per-tab default — from a curated set of eleven Google Fonts.
+Let users set the **typeface** of text on the canvas, per element and as
+a per-tab default, from a curated set of eleven Google Fonts.
 
 ## The eleven fonts
 
@@ -26,24 +26,24 @@ hand-drawn, or bold. Defined once in `../packages/model-core/src/fonts.ts` (id +
 
 Each CSS stack ends in a system fallback, and the stylesheet loads with
 `display=swap`, so text stays visible (in the fallback face) while a font
-loads — or permanently, if Google Fonts is blocked (offline / a
+loads, or permanently if Google Fonts is blocked (offline / a
 network that blocks it). The editor never depends on the fonts loading.
 
 ## Two levels
 
-- **Per element** — a Font option in the inline edit-text toolbar's `⋯`
+- **Per element**: a Font option in the inline edit-text toolbar's `⋯`
   menu (and, for arrows, the right-click context menu's Text category).
   Sets `Element.font`. "Tab default" clears the override.
-- **Per tab** — the **Font** tab of the Tab Style dialog
+- **Per tab**: the **Font** tab of the Tab Style dialog
   ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md), opened from the Style dock
   button; it was a category of the tab / canvas context menu until the
   menu was slimmed to actions), holding:
-  - **Font** — sets `Tab.font`: the default for **every** text element on
+  - **Font**: sets `Tab.font`, the default for **every** text element on
     the tab that hasn't set its own. "Default" clears it.
-  - **Default size for new elements** — sets `Tab.defaultTextSize` (Scale or a px, on the
+  - **Default size for new elements**: sets `Tab.defaultTextSize` (Scale or a px, on the
     [Text Size](#text-size) control), which
     is seeded onto each element added from the palette next (a create-time
-    copy onto the element's own `textSize`, not a render-time resolve — so
+    copy onto the element's own `textSize`, not a render-time resolve, so
     changing it later never resizes existing elements). Unset = the
     per-type factory default ('md').
 
@@ -51,7 +51,7 @@ A **new project's first tab** (and any blank tab minted by `createTab`)
 defaults `defaultTextSize` to **small** (`sm`), so a fresh canvas starts
 compact. A **new tab added to an existing project** inherits the active
 tab's `font` and `defaultTextSize` (the same way it inherits the theme),
-falling back to small when the active tab has no explicit size — so tabs in
+falling back to small when the active tab has no explicit size, so tabs in
 one project stay consistent and a brand-new tab still defaults to small
 rather than the `md` factory baseline.
 
@@ -101,7 +101,7 @@ editor default` (the system sans stack). `resolveFontStack` maps a stored id
 to its CSS stack; an unknown / unset id falls through to the next level.
 
 Auto-fitting labels (`textSize: 'scale'` on a sticky) **measure in the face
-they paint** — `labelMeasure(size, bold, italic, fontFamily)` — since faces
+they paint** (`labelMeasure(size, bold, italic, fontFamily)`), since faces
 differ in width at the same px. Webfonts arrive after first paint
 (`display=swap`, from a stylesheet that does not block it), so the canvas
 re-renders each time a batch of faces lands (`useFontEpoch`: every

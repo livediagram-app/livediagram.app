@@ -2,7 +2,8 @@
 
 **Status: built.** Closed livediagram-app/livediagram.app#343. Operations are the full
 [edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer carries the [lint](diagram-lint.md) of the tab it leaves; the
-[agent presence](agent-presence.md) refresh is not built yet.
+[agent presence](agent-presence.md) refresh is built: each changeset a token applies or reverts refreshes that
+token's presence on the tab.
 
 Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the document's
 room, shown live to everyone with the tab open, credited to the person whose token wrote it, and revertable as one

@@ -12,8 +12,8 @@ Those two tabs have no category **filter dropdowns** and no "All" entry.
 
 ## Why
 
-All three tabs hold a catalogue too big for one screen — Tools has ~25 tiles,
-Icons 183 glyphs, Technology a few dozen brand marks — and all three were
+All three tabs hold a catalogue too big for one screen: Tools has ~25 tiles,
+Icons 183 glyphs, Technology a few dozen brand marks, and all three were
 answering that in different ways. Tools drilled in ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Sub-categories");
 Icons and Technology showed a flat scroll behind a dropdown.
 
@@ -23,7 +23,7 @@ know when you don't have a name in mind, and it sat inside a control you had to
 open to read. The default view was instead a wall of 183 glyphs you scrolled.
 
 Category tiles put that structure on the first screen, and each tile carries the
-category's **first glyph** as its artwork — so a category looks like what it
+category's **first glyph** as its artwork, so a category looks like what it
 holds, and no separate icon set can drift from the contents.
 
 ## No descriptions on Icons / Technology
@@ -34,7 +34,7 @@ here?".
 
 "People", "Arrows", "AWS" and "Azure" already answer it. A hover card that restates
 the label under the glyph is a delay in exchange for nothing, so `description`
-on a category is now optional and those two tabs omit it — no hover card renders at
+on a category is now optional and those two tabs omit it: no hover card renders at
 all.
 
 ## Search is never narrowed
@@ -45,7 +45,7 @@ filter silently missed every match elsewhere. With browsing and searching now
 two separate ways in, filtering one by the other would be the same trap with
 better scenery.
 
-A non-empty query replaces the whole navigation with one flat grid of hits —
+A non-empty query replaces the whole navigation with one flat grid of hits:
 the breadcrumb would be lying about where the results came from.
 
 ## Two panes in the category bar's flyouts

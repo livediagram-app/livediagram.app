@@ -11,23 +11,23 @@ generated from (the app's `palettes` in `packages/brand/src/apps.ts` (`@livework
 that cannot read a CSS token (the email templates, the social card, the web manifest, the unthemed tab accent, the help
 centre's print styles) name the same hexes, and a change of accent changes them together.
 
-## Primary palette — Amber
+## Primary palette: Amber
 
 A single brand hue with a full 50–950 ramp. Built on Tailwind's `amber` scale, with two stops hand-tuned deeper.
 
-| Token           | Hex           | Usage                                                      |
-| --------------- | ------------- | ---------------------------------------------------------- |
-| `brand-50`      | `#FFFBEB`     | App backgrounds, faint tints, hover surfaces               |
-| `brand-100`     | `#FEF3C7`     | Subtle fills, selected-row backgrounds                     |
-| `brand-200`     | `#FDE68A`     | Accents, soft borders, collaborator cursor tints           |
-| `brand-300`     | `#FCD34D`     | Decorative accents, secondary indicators                   |
-| `brand-400`     | `#FBBF24`     | Light brand surfaces, illustrations                        |
-| **`brand-500`** | **`#F59E0B`** | **Primary brand color — accents, focus rings, decoration** |
-| `brand-600`     | `#C76508`     | Focus outlines, decorative accents with no text            |
-| `brand-700`     | `#A34A0C`     | **Solid fills under white text**, **all light brand ink**  |
-| `brand-800`     | `#92400E`     | Hover on a solid fill, high-contrast emphasis              |
-| `brand-900`     | `#78350F`     | Dark mode brand text                                       |
-| `brand-950`     | `#451A03`     | Dark mode surfaces                                         |
+| Token           | Hex           | Usage                                                     |
+| --------------- | ------------- | --------------------------------------------------------- |
+| `brand-50`      | `#FFFBEB`     | App backgrounds, faint tints, hover surfaces              |
+| `brand-100`     | `#FEF3C7`     | Subtle fills, selected-row backgrounds                    |
+| `brand-200`     | `#FDE68A`     | Accents, soft borders, collaborator cursor tints          |
+| `brand-300`     | `#FCD34D`     | Decorative accents, secondary indicators                  |
+| `brand-400`     | `#FBBF24`     | Light brand surfaces, illustrations                       |
+| **`brand-500`** | **`#F59E0B`** | **Primary brand color: accents, focus rings, decoration** |
+| `brand-600`     | `#C76508`     | Focus outlines, decorative accents with no text           |
+| `brand-700`     | `#A34A0C`     | **Solid fills under white text**, **all light brand ink** |
+| `brand-800`     | `#92400E`     | Hover on a solid fill, high-contrast emphasis             |
+| `brand-900`     | `#78350F`     | Dark mode brand text                                      |
+| `brand-950`     | `#451A03`     | Dark mode surfaces                                        |
 
 `brand-500` (`#F59E0B`) is the canonical "livedocuments amber": the color of selection highlights, accents and focus rings.
 It carries no white text: white on it is 2.2:1, so a primary button sits two steps deeper, on `brand-700`. The logo
@@ -42,7 +42,7 @@ and `brand-100`, under the 3:1 a focus indicator needs, and a banner's 90% white
 `brand-50`, 5.3:1 on `brand-100`). Every other stop is Tailwind's. `brand-100` is also the Warning chip's background ([Semantic colors](#semantic-colors)); the two stay
 apart by the Warning's icon and label, never by colour alone.
 
-## Neutrals — Slate
+## Neutrals: Slate
 
 Slate is cool where amber is warm, so the accent stands off the neutrals rather than blending into them. Use it for text,
 borders, surfaces, and dividers.
@@ -70,7 +70,7 @@ holds the class strings to it. White words on a coloured banner (the sign-in ban
 
 ## Semantic colors
 
-Reserved for status — never used decoratively.
+Reserved for status, never used decoratively.
 
 | Role    | Light bg    | Foreground  | Notes                          |
 | ------- | ----------- | ----------- | ------------------------------ |
@@ -274,4 +274,4 @@ The package's `theme.css` declares the brand ramp as CSS variables inside a `@th
 }
 ```
 
-Slate, success / warning / error utilities live on Tailwind's own defaults — only the `brand` ramp is custom.
+Slate, success / warning / error utilities live on Tailwind's own defaults; only the `brand` ramp is custom.

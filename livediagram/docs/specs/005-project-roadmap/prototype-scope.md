@@ -64,7 +64,7 @@ The editor is real:
   edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
   presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
   document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Published on npm as `@livediagram/cli`, with provenance.
+  tools are verbs of the same catalogue. Published on npm as `@livediagram/cli`, by hand outside CI.
 - **Repository links** ([Repository link](../027-repositories/repository-link.md)): `livediagram.toml` binds a
   directory to a folder or documents; `livediagram sync` writes an `INDEX.md` agents find with a search, plus a
   snapshot and a text outline per document at the `files` level, and `sync --watch` keeps them in step live.
@@ -99,16 +99,18 @@ The editor is real:
 
 ## Next
 
+**Status: Planned.** Not built yet; each item's spec marks what exists today.
+
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
 - **Repository sync** ([Repository link](../027-repositories/repository-link.md), [Diagram sources](../027-repositories/diagram-sources.md)): merging offline edits back, the git hooks and merge driver, adopting existing Mermaid, PlantUML, DOT, draw.io and Excalidraw diagrams, and strict and relaxed compatibility.
-- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links are built; token levels, ownership as separate powers, server-derived collaboration keys and a look-only Viewer are next.
+- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links and the look-only Viewer are built; token levels, ownership as separate powers, server-derived collaboration keys and an answers route are next.
 
 ## Later
 
 These are the meaningful gaps between today and "full product":
 
-- **Finer-grained team permissions** — every member of a team can edit every document in its shared library ([Team shared documents](../013-workspace/team-shared-documents.md)).
-- **Per-user grants beyond teams + share links** — a document is private, shared via a link with a role, or part of a team's shared library (teams with Admin/Member roles shipped — see [Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)). There are still no per-document per-user grants outside those.
+- **Finer-grained team permissions**: every member of a team can edit every document in its shared library ([Team shared documents](../013-workspace/team-shared-documents.md)).
+- **Per-user grants beyond teams + share links**: a document is private, shared via a link with a role, or part of a team's shared library (teams with Admin/Member roles shipped; see [Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)). There are still no per-document per-user grants outside those.
 - **Same-element concurrent edits are last-writer-wins.** Edits to different elements merge ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)), and the fields many people write at once merge as deltas, but two people changing the same element at the same moment still lose one edit. The advisory selection lock ([Editor app](../007-editor/editor-app.md)) makes that rare; it does not prevent it. A field-level CRDT that would close it was scoped and deliberately dropped, so this gap stays open by choice.
 
 ## Hard rules carried forward
@@ -118,4 +120,4 @@ These were called out at prototype time and still apply:
 - **Static-only frontends.** Next.js apps use `output: 'export'`. No SSR, no Node runtime, no Next.js API routes. Server logic goes in the api worker.
 - **Reuse over duplication** ([AGENTS.md](../../../AGENTS.md#core-principle-reuse-over-duplication)). Shared types, UI primitives, configs, and the document data model live in `packages/`, never copy-pasted across apps.
 - **No required external service.** The OSS core can run fully without any external SaaS dependency. Sign-in is optional (see [04](../014-identity/auth-and-guest-access.md)); when it isn't configured, the worker and the live frontend degrade to pure-guest mode and the editor remains fully usable. There is no paid tier and no plan to introduce one (see [03](../002-project-scope/open-source-and-business-model.md)).
-- **No secrets in source** — see [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+- **No secrets in source**: see [06-secrets-policy.md](../002-project-scope/secrets-policy.md).

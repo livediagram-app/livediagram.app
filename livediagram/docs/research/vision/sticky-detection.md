@@ -75,7 +75,7 @@ and testable.
    measure the note size, drop specks, split runs, drop non-paper shapes.
 
    **The note is measured BEFORE anything is fused** (`estimateNoteSize`, from
-   the raw blobs: plausible ones only — bigger than the noise floor, more than
+   the raw blobs: plausible ones only: bigger than the noise floor, more than
    half filled, not a strip), and the morphological close is then sized from
    the NOTE (`closeRadiusFor`). Sizing the close off the frame instead is what
    welded whole rows together on a close-up photograph, where the gaps between
@@ -89,7 +89,7 @@ and testable.
    - the merge never joins two **whole notes**: a piece at least 0.45 of a
      note thick is not a fragment, and two narrow actors a pen stroke apart
      are otherwise a solid square exactly one note in size;
-   - the merge is **reversible** — a box that fails the shape filters hands
+   - the merge is **reversible**: a box that fails the shape filters hands
      back the pieces it was assembled from, instead of taking six real notes
      down with it;
    - a cut is made with the **mask** in hand: snapped to the emptiest line near
@@ -98,7 +98,7 @@ and testable.
      wall) into notes rather than tall slices. **One axis at a time**, tightening
      between cuts (`split.ts`): the old rule asked an axis to be long against
      the note AND against the box's other side, and a square 2×2 block of four
-     notes is never long against itself — so four notes stayed one note with
+     notes is never long against itself, so four notes stayed one note with
      four people's words concatenated. The seam between two notes is PREFERRED,
      not required; requiring a visible gap cost fifteen points of recall,
      because lapped paper has no gap. Seams are read from the RAW mask, since
@@ -135,7 +135,7 @@ and testable.
      dropped so it no longer inflates its neighbour's box;
    - a block too square for any cutting rule is **rescued**: its region is
      eroded until the notes come apart at their seams, relabelled, and each
-     piece grown back — up to three times, and only solid pieces are kept, or a
+     piece grown back, up to three times, and only solid pieces are kept, or a
      sunlit patch of wall yields a hundred note-sized scraps;
    - a whole component (not a cut piece) a note long but thinner than the
      size floor is a **narrow note** (`narrow.ts`): an actor, a note half
@@ -150,8 +150,8 @@ and testable.
      and cut it into slivers.
 
    What the size, area and aspect gates refuse is not thrown away yet: a
-   **pad of small notes** (`pads.ts`) — a far board in the photograph, a pad
-   of smaller stationery — comes as a CLUSTER of like-sized, square, solid
+   **pad of small notes** (`pads.ts`), a far board in the photograph, a pad
+   of smaller stationery, comes as a CLUSTER of like-sized, square, solid
    boxes, where scraps come alone. At least three siblings, linked one to the
    next (small kept notes count), none clipped by the frame, none over a kept
    note. A refused box beside a pad and at least 1.75 times as long as wide is
@@ -164,14 +164,14 @@ and testable.
 5. **Does it stand out?** (`standsOut`, in `standout.ts`). Colour floors alone
    cannot say what is NOT a note: tape, cardboard, a shadow in a paper seam and
    the strip of ceiling above the paper all pass them somewhere. So each
-   candidate is asked of the PICTURE — is the inside different from the ring
+   candidate is asked of the PICTURE: is the inside different from the ring
    around it, where the wall is the dullest quarter of that ring (on a dense
    wall a note's neighbours are other notes)? More saturated, much brighter
    RELATIVE to the wall, or a different hue; any one is enough, because the
    eight papers differ from a wall in different ways. Hue only counts when
    there is enough saturation for a hue to mean anything. There is NO "paper
    is brighter than its wall" veto: true on kraft, false on a whiteboard,
-   where a blue sticky is far darker than the wall — it cost two thirds of the
+   where a blue sticky is far darker than the wall: it cost two thirds of the
    blue notes on a real one and, once the fill floor took the cardboard it was
    added for, bought nothing anywhere.
 
@@ -218,9 +218,9 @@ and testable.
 | `PALE_PAPER_MIN_BRIGHTNESS`                 | 0.9               | …and only when lit like the wall (a fraction of its value). A note's blurred rim and the gap between notes are darker. 0.8–1.1 score the same.                                                          |
 | `BLOWN_OUT`                                 | 250               | A pixel with every channel at or above this is clipped and says nothing about the wall. 240–253 score the same.                                                                                         |
 | `MIN_PAPER_SATURATION`                      | 0.28              | A floor under the measured split, so a white-wall photo does not start calling its own shadows paper.                                                                                                   |
-| `PEN_STROKE_FRACTION`                       | 0.006             | The gap the merge has to close is a pen stroke, and that is knowable without any statistic — which matters, see below.                                                                                  |
+| `PEN_STROKE_FRACTION`                       | 0.006             | The gap the merge has to close is a pen stroke, and that is knowable without any statistic, which matters, see below.                                                                                   |
 | `NOISE_FLOOR_FRACTION`                      | 0.008             | Half the merged boxes on a real photo are 1–5px of sensor noise, sitting exactly where a median would otherwise land.                                                                                   |
-| `MIN_AREA_FRACTION`                         | 0.35              | A speck, relative to the median note — measured AFTER merging, never before.                                                                                                                            |
+| `MIN_AREA_FRACTION`                         | 0.35              | A speck, relative to the median note, measured AFTER merging, never before.                                                                                                                             |
 | `SPLIT_RATIO` / `SPLIT_KEEP_RATIO`          | 1.8 / 1.4         | Above the notation's widest silhouette (300×180 = 1.67), so a policy is never sawn in half, but below two notes abutting.                                                                               |
 | `MIN_SOLID_FILL` / `MIN_PAPER_FILL`         | 0.55 / 0.45       | To CUT a blob it must be convincingly solid; to KEEP one it need only be more paper than holes.                                                                                                         |
 | `MAX_PAPER_ASPECT` / `MAX_PAPER_SIZE_RATIO` | 2.4 / 2.6         | Masking tape is a thin strip and a radiator is enormous; neither is paper.                                                                                                                              |
@@ -266,7 +266,7 @@ and testable.
   cuts a note into dozens of paper pieces, so fragments outnumber notes twenty
   to one: the median is a fragment, the mode is a fragment, and the
   area-weighted "bulk" is whichever blob happens to be biggest. The merge gap is
-  the one quantity knowable without a statistic — a pen stroke — so the merge
+  the one quantity knowable without a statistic (a pen stroke) so the merge
   goes first and everything else is measured after it.
 - **One giant blob poisons any max-based scale.** A run of three touching notes,
   or a patch of sunlit wall, is bigger than any note; a speck filter scaled off
@@ -387,13 +387,13 @@ stay under 200ms.
 ### Ground truth: precision and recall, not "how many did we find"
 
 A detection COUNT cannot tell a fix from a regression once false positives are
-in play — a change that finds two more notes and invents five scores higher on
+in play: a change that finds two more notes and invents five scores higher on
 the count and is a loss. So the sweep scores against hand-labelled notes when
 they exist:
 
 - Photographs and labels live **outside this repo**, in the private
   `livediagram-app/vision-model-truths` repository (`event-storming/photos`
-  and `event-storming/labels`) — they describe somebody's real workshop wall,
+  and `event-storming/labels`): they describe somebody's real workshop wall,
   this repo is public, and hours of hand-labelling must not live on one disk.
   The tools find a checkout at `$VISION_TRUTHS_DIR`, or cloned beside this
   repo as `../vision-model-truths`; with neither, they fall back to
@@ -403,12 +403,12 @@ they exist:
 }] }`, every box in FRACTIONS of the image so the labels survive any working
   size.
 - **The cheap way to make one: correct a review and save it.** Open the editor
-  **on localhost** — that is the whole arming rule, because calibration happens
+  **on localhost**: that is the whole arming rule, because calibration happens
   on the machine the photographs and the sweep are on, and the hosted site
   never shows it. (`?truth=1` / `?truth=0` on any editor URL overrules the
   host in either direction, and is remembered.) Import the photo, then
-  do exactly what the import asks of you anyway — untick every box that is not
-  a sticky, drag a box around every sticky it missed — and press **Save as
+  do exactly what the import asks of you anyway: untick every box that is not
+  a sticky, drag a box around every sticky it missed, and press **Save as
   truth**. The download is a label file named after the photograph. File it
   where the sweep looks:
 
@@ -435,9 +435,9 @@ they exist:
   deliberate: one box over a 2x2 cluster of touching notes scores as one
   spurious box AND four missed notes, which is exactly what it is.
 - **The sweep scores the editor's own pixels.** Each photo's working image is
-  made the product's way — decoded by a real Chromium (`createImageBitmap`,
+  made the product's way: decoded by a real Chromium (`createImageBitmap`,
   EXIF applied) and drawn at the working size with high-quality smoothing
-  (`scripts/chrome.ts`), sized by the one shared rule `workingSizeOf` — and
+  (`scripts/chrome.ts`), sized by the one shared rule `workingSizeOf`, and
   cached. ImageMagick's resize is a different filter, and on small notes it
   moved whole boxes: the same detector scored 91.4 on its pixels and 90.7 on
   the editor's, and a different wall passed. `--magick` still forces it.
@@ -445,9 +445,9 @@ they exist:
   plans/0007-event-storming-photo-95.md:
   recall without the small actors (`rec-A`; actors reported apart), the count
   of MERGED boxes (a box holding the centres of two or more labelled notes),
-  and a PASS / FAIL per wall — recall without actors ≥ 95%, precision ≥ 95%,
+  and a PASS / FAIL per wall: recall without actors ≥ 95%, precision ≥ 95%,
   no merged box. A TOTAL row sums every labelled note.
-- The sweep then prints precision / recall / F1 per photo plus the LISTS — the
-  centre of every missed note and every spurious box — and draws the labels as
+- The sweep then prints precision / recall / F1 per photo plus the LISTS: the
+  centre of every missed note and every spurious box, and draws the labels as
   a dotted white frame under the detections in the overlay. The lists are the
   useful half: a named missing note is somewhere to go and look.

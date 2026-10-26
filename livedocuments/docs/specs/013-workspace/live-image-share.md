@@ -12,7 +12,7 @@
 
 A share option that serves the document as a **live image**: an `<img>`-able URL
 that serves the current document as SVG, so it can be embedded in a README / wiki
-/ site and stay up to date — no editor chrome, just the content (like the SVG
+/ site and stay up to date, with no editor chrome, just the content (like the SVG
 export).
 
 ## Confirmed decisions
@@ -21,7 +21,7 @@ export).
   so only documents the owner has explicitly shared expose an image. The URL is
   effectively public to anyone who has it (an `<img>` can't send a password or
   auth header), which matches a share link's existing semantics.
-  - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL — an `<img>`
+  - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL: an `<img>`
     can't supply the password, so exposing an unguarded image would bypass the
     gate.
   - Revoking / expiring the share link also kills the image URL (it resolves

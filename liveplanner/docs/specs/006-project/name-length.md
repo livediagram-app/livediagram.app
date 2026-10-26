@@ -9,7 +9,7 @@ whitespace inside a name is collapsed to single spaces.
 
 ## Why 60, and why a cap at all
 
-Names had no limit. That is mostly invisible when you type one by hand — but
+Names had no limit. That is mostly invisible when you type one by hand, but
 the editor also **auto-names** a tab and the project from the first element's
 label ([Project structure](project-structure.md)). Paste a paragraph into the welcome rectangle and the entire
 paragraph became the project's name, newlines included, and then had to be
@@ -17,7 +17,7 @@ rendered in the header, the browser tab title, the Explorer list, the tab pill
 and every share surface.
 
 60 is the top of the 40–60 range that reads comfortably in tab/title UI: long
-enough for a real title ("Q3 platform migration — phase 2 rollout") and short
+enough for a real title ("Q3 platform migration: phase 2 rollout") and short
 enough that a tab pill and a browser tab title can still show something useful.
 
 ## Truncation rules (`../packages/model-core/src/names.ts`)
@@ -31,7 +31,7 @@ enough that a tab pill and a browser tab title can still show something useful.
 3. Otherwise cut at the last **word boundary** inside the budget and append an
    ellipsis. Word-boundary because a mid-word chop reads as corruption
    ("Quarterly platform migra…") where a whole-word cut reads as a summary.
-4. **Except** when that would leave almost nothing — a single enormous word (a
+4. **Except** when that would leave almost nothing: a single enormous word (a
    URL, a hash) has no space to break on, so it hard-cuts instead. The guard is
    "the boundary must fall past a third of the budget".
 
@@ -41,7 +41,7 @@ character the way a reader counts it rather than two.
 ## Where it applies
 
 At the **mutation points**, not at each input, so a name can't arrive over-long
-from any direction — inline rename, command palette, the `/new` wizard, an
+from any direction: inline rename, command palette, the `/new` wizard, an
 import, or an API-driven change.
 
 ### The server is the enforcement point
@@ -54,11 +54,11 @@ The worker **shortens, it does not reject**: a name over the cap is stored in
 its truncated form and the response carries the stored name, exactly as the
 editor would have shortened it. The write points are:
 
-- `POST /api/projects` — the project name and the name of every seeded tab.
-- `PUT /api/projects/<id>` — a project rename.
-- `PUT /api/projects/<id>/tabs/<tabId>` — a tab's name (a tab rename rides the
+- `POST /api/projects`: the project name and the name of every seeded tab.
+- `PUT /api/projects/<id>`: a project rename.
+- `PUT /api/projects/<id>/tabs/<tabId>`: a tab's name (a tab rename rides the
   ordinary tab save).
-- `POST /api/projects/<id>/copy` — the copy's name, whether the caller sent one
+- `POST /api/projects/<id>/copy`: the copy's name, whether the caller sent one
   or it defaulted to `Copy of <name>`, which can itself run past the cap.
 
 A name that collapses to nothing (only whitespace) is refused on a project
@@ -84,7 +84,7 @@ states the cap on each name field.
 The editor shortens at its own mutation points, so what the author sees is
 already the stored name without waiting on a round trip:
 
-- `useSelectionEditing` — the auto-name path (the case that prompted this).
+- `useSelectionEditing`: the auto-name path (the case that prompted this).
 - `useTabActions.renameTab`.
 - `useProjectListActions.renameProject` and `useTeamLibrary.renameProject`.
 - `EditorView`'s header rename.

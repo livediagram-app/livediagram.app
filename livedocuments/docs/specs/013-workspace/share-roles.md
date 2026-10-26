@@ -76,7 +76,7 @@ capabilities, the room) keep a new feature from widening a role by accident.
 Ownership is a set of powers, held by the document's **owner** (its creator) and every joined member of the team it is
 filed in. Who holds them is the index's to say: it issues the owner and team members an `edit` grant, and keeps
 sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
-"Sharing and access"). No level grants any of them. A named set of ownership powers is [out of scope](#out-of-scope).
+"Sharing and access"). No level grants any of them. A named set of ownership powers is [planned](#later).
 
 ## Share links
 
@@ -131,9 +131,10 @@ once a document is open.
 `Document·Joined` takes the type `Participate` beside `Edit` and `View`
 ([Telemetry](../017-telemetry/telemetry.md)).
 
-## Out of scope
+## Later
 
-Outside this design:
+**Status: Planned.** Not built yet; today an API token carries only the read-only flag, ownership powers stay
+implicit in owning the document, and each browser mints its own collaboration key.
 
 - **Token levels**: API tokens carry view, participate or edit instead of the read-only flag.
 - **Ownership powers** as a named set every door asks beside the level.

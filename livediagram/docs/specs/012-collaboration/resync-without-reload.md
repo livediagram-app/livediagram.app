@@ -16,15 +16,15 @@ faults, both fixed here:
 Live telemetry pointed straight at it: `RealtimeResync` was the single most
 common client error.
 
-## Fault 1 — the epoch didn't survive hibernation
+## Fault 1: the epoch didn't survive hibernation
 
 Reconnect catch-up ([Realtime conflict resolution](realtime-conflict-resolution.md), Level 1) is scoped by an `epoch` + a monotonic
 `seq`. Both lived **in memory only** on the Durable Object, with a comment
 arguing the reset was harmless because it "only ever forces a resync".
 
 The reasoning was sound and the premise was wrong. The room uses the WebSocket
-**Hibernation API** — hibernating is the normal, intended lifecycle, not an
-exceptional event — and a wake re-runs the constructor, so
+**Hibernation API**: hibernating is the normal, intended lifecycle, not an
+exceptional event, and a wake re-runs the constructor, so
 `epoch = crypto.randomUUID()` produced a room that no returning client could
 recognise. Any reconnect after any wake fell through `sendCatchup`'s final
 `else` and resynced. That is the "backgrounded tab" case in the issue: the tab
@@ -36,7 +36,7 @@ constructor under `blockConcurrencyWhile`, so no request can observe the
 pre-restore values. A client that reconnects fully caught-up matches the epoch
 **and** satisfies `lastSeq >= this.seq`, so it gets an empty delta.
 
-Cost is one storage `put` per mutation op, un-awaited — the DO output gate
+Cost is one storage `put` per mutation op, un-awaited: the DO output gate
 holds outbound messages until pending writes land, so a peer can never see an
 op whose seq failed to persist. The original comment rejected this as "a
 storage write per mutation for no correctness gain"; the gain isn't
@@ -46,14 +46,14 @@ the fan-out broadcast beside it.
 **`opLog` stays in memory.** It's a replay buffer, not identity: a client that
 fell behind across a wake genuinely did miss ops that can no longer be sent to
 it. `floor` already reports an empty log honestly, so that client still
-resyncs — correctly, and now only when it really must.
+resyncs, correctly, and now only when it really must.
 
-## Fault 2 — resync meant reloading
+## Fault 2: resync meant reloading
 
 Even a legitimate resync only ever needs the **tab content** back. Everything
 else the editor holds is either unaffected (viewport, selection, active tab,
 undo stack) or re-established by the reconnect itself (presence, cursors). A
-page reload threw all of it away, and with it any edit not yet autosaved —
+page reload threw all of it away, and with it any edit not yet autosaved:
 exactly the worry the issue raised.
 
 `useRoomResync` re-fetches the loaded tabs from the api and merges them through
@@ -80,7 +80,7 @@ Three details it has to get right:
   certainly the same outage that broke the socket, so local state is the better
   copy; `usePerTabLoad`'s retry path owns recovery from there.
 
-Only tabs already in the loaded set are refetched — an unvisited placeholder
+Only tabs already in the loaded set are refetched: an unvisited placeholder
 has nothing to correct and would just race its own lazy load.
 
 ## No toast
@@ -88,11 +88,11 @@ has nothing to correct and would just race its own lazy load.
 The recovery is silent. It's an internal correction the user didn't cause and
 can't act on, and the content simply becoming current is the right outcome to
 present. The `RealtimeResync` telemetry still fires, which is how we'd notice a
-regression — and now the metric measures something real rather than counting
+regression, and now the metric measures something real rather than counting
 routine hibernation.
 
 ## Out of scope
 
 - **Persisting `opLog`**, per above.
-- **A CRDT for same-element concurrent edits** — still deliberately dropped
+- **A CRDT for same-element concurrent edits**: still deliberately dropped
   ([Realtime conflict resolution](realtime-conflict-resolution.md)); the advisory selection lock makes the case rare, and it stays last-writer-wins.

@@ -62,7 +62,7 @@ type StoredPresentation = { decks: Deck[] };
 
 ### Persistence
 
-This is the one part of the feature that is not free. Tab bodies live in their own table, so there is **no document-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
+This is the one part of the feature that is not free. Tab bodies live in their own table, so there is **no document-level JSON blob to extend**, unlike layers, which ride the opaque tab body and needed no api change at all.
 
 - A `presentation TEXT NULL` column on the document's own `document` row, holding the serialised `Deck`.
 - The api's document DTO in `@livediagram/api-schema` carries it through, and the read / save routes round-trip it.
@@ -72,26 +72,26 @@ This is the one part of the feature that is not free. Tab bodies live in their o
 
 **Slide Deck is a canvas tool**, alongside Select, Hand, Eraser, Format, Laser, Spotlight, Avatar and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the **Slide Deck panel**, where you build and administer the deck. Starting is a deliberate second act.
 
-The tool and the panel are both called **Slide Deck** — the thing you are making — rather than "Presentation", which names the act of showing it. You spend far more time building a deck than running one, and the tool you pick is the workbench, not the performance. "Presentation mode" stays the name of what Start puts you into, and of this spec.
+The tool and the panel are both called **Slide Deck**, the thing you are making, rather than "Presentation", which names the act of showing it. You spend far more time building a deck than running one, and the tool you pick is the workbench, not the performance. "Presentation mode" stays the name of what Start puts you into, and of this spec.
 
 **Slide Deck is desktop-only**, like Spotlight. Building a deck is a workbench job: a slide list with thumbnails, drag-to-reorder rows, and a canvas selection you add from, all at once, and a phone-width viewport (below the 640px `sm` breakpoint, `isMobileViewportSync`) has room for the panel or the canvas but not both. So on a phone the tool is **not offered**: it is left out of the tool dropdown and the command palette, and `pickCanvasTool` refuses it (with a toast saying so) for any path that still asks. A viewport that shrinks past the breakpoint while the tool is picked drops back to Hand, the phone's default tool, so the panel never renders in a layout it does not fit. A deck built on desktop is untouched; it simply cannot be edited or started from a phone.
 
-It joins `CanvasTool` only, **not** `SELECTION_MODES` — there is no Slide Deck Mode Button, because handing a collaborator's screen into a full-screen deck is not something one person should do to another.
+It joins `CanvasTool` only, **not** `SELECTION_MODES`: there is no Slide Deck Mode Button, because handing a collaborator's screen into a full-screen deck is not something one person should do to another.
 
-The **Slide Deck panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack. It is the **single home for everything about the deck** — build it, order it, check it, start it — so there is never a second place to look. Its header carries a **`?`** to the help article and a **settings gear** holding the full presenter settings (Settings > Presenting has them too), because discovering "Actual Size" or "Auto-Advance" mid-talk means changing it while a room watches: one state, in the person's preferences, several doors. It carries:
+The **Slide Deck panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack. It is the **single home for everything about the deck**: build it, order it, check it, start it, so there is never a second place to look. Its header carries a **`?`** to the help article and a **settings gear** holding the full presenter settings (Settings > Presenting has them too), because discovering "Actual Size" or "Auto-Advance" mid-talk means changing it while a room watches: one state, in the person's preferences, several doors. It carries:
 
-- **The slide list**, in deck order, each row with its position, name, tab, member count, and a **preview thumbnail** from the shared headless SVG renderer (`useSlideThumbnails`, the same renderer the Layers panel rows, the Map and the exports use). One difference from the layer previews and the reason it is its own hook: every layer preview shares ONE viewBox, the tab's content bounds, so each band shows where its elements sit. Slides cannot, because a deck spans tabs and two tabs share no coordinate space, so each slide is framed to its own bounds — which is also what the presentation does when it runs.
-- **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
+- **The slide list**, in deck order, each row with its position, name, tab, member count, and a **preview thumbnail** from the shared headless SVG renderer (`useSlideThumbnails`, the same renderer the Layers panel rows, the Map and the exports use). One difference from the layer previews and the reason it is its own hook: every layer preview shares ONE viewBox, the tab's content bounds, so each band shows where its elements sit. Slides cannot, because a deck spans tabs and two tabs share no coordinate space, so each slide is framed to its own bounds, which is also what the presentation does when it runs.
+- **New slide from selection**: the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
 - **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant.
-- **Remove from slide** — the other half of adding. Membership is edited for the life of the deck, not just when a slide is created.
-- **Every verb lives in the row's `…` menu**, built from the shared menu furniture the Explorer's rows and the tab context menu use, in the same shape: a quick-action icon **toolbar** (rename, notes, duplicate, with delete pinned right), then labelled accordion categories — **Selection** (add / remove what you have selected, with a line above the buttons saying what they act on) and **Visibility** (hide this slide from the run, or show it again). A menu that looks like this one and like nothing else in the app is a menu people have to learn twice.
+- **Remove from slide**: the other half of adding. Membership is edited for the life of the deck, not just when a slide is created.
+- **Every verb lives in the row's `…` menu**, built from the shared menu furniture the Explorer's rows and the tab context menu use, in the same shape: a quick-action icon **toolbar** (rename, notes, duplicate, with delete pinned right), then labelled accordion categories: **Selection** (add / remove what you have selected, with a line above the buttons saying what they act on) and **Visibility** (hide this slide from the run, or show it again). A menu that looks like this one and like nothing else in the app is a menu people have to learn twice.
 - **Deleting a slide asks first**, in a ConfirmPopover anchored to the row's own menu button. The elements survive, but the arrangement does not, and the arrangement is what you spent the time on. The confirm says so: "The elements stay on the canvas." ("The element stays", for one).
-- **Hidden slides** are skipped by `presentableSlides`, which is the ONE place the run is decided — so the count on the Present button, the `7 / 23` in the HUD, and what advancing lands on can never disagree about the deck's length. The row shows a struck-through name and an eye marker, so a hidden slide is visible in the panel and invisible in the show. A row itself does ONE thing — press it to open that slide — because a panel the width of the palette cannot carry five controls per row and stay legible.
+- **Hidden slides** are skipped by `presentableSlides`, which is the ONE place the run is decided, so the count on the Present button, the `7 / 23` in the HUD, and what advancing lands on can never disagree about the deck's length. The row shows a struck-through name and an eye marker, so a hidden slide is visible in the panel and invisible in the show. A row itself does ONE thing: press it to open that slide, because a panel the width of the palette cannot carry five controls per row and stay legible.
 - **Reorder** by dragging rows. The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders ([Tab folders](../006-document/tab-folders.md)). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
 - **Rename** inline, **delete**, and **duplicate** a slide.
-- **Presenter notes** opened from the row's `…` menu, written in a text area under the list, with the slide's optional **time budget** beside them — the two things you decide about a slide while writing the talk rather than while giving it (see Pacing). Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
+- **Presenter notes** opened from the row's `…` menu, written in a text area under the list, with the slide's optional **time budget** beside them: the two things you decide about a slide while writing the talk rather than while giving it (see Pacing). Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
 - Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one.
-- **Present** — enters the full-screen deck at slide 1, with a badge carrying the slide count.
+- **Present**: enters the full-screen deck at slide 1, with a badge carrying the slide count.
 
 ### The header's Present button
 
@@ -127,8 +127,8 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
 
 - **Full screen.** Browser fullscreen where available, all chrome hidden (the zen treatment, [Zen mode](../007-editor/zen-mode.md)). A refused request (no user gesture, a browser that declines) leaves the deck running in the window and logs `[presentation] fullscreen-refused` with the reason; leaving it logs `[presentation] fullscreen-exit-failed` if that is refused.
 - **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a canvas: advancing does not accumulate.
-- **The backdrop is the slide's tab's** — its background colour, pattern and theme. Well-defined precisely because a slide belongs to one tab.
-- **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. **If a slide contains exactly one frame element, its bounds are used instead** — that gives precise, authored framing using an element the product already has, with nothing new to learn.
+- **The backdrop is the slide's tab's**: its background colour, pattern and theme. Well-defined precisely because a slide belongs to one tab.
+- **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. **If a slide contains exactly one frame element, its bounds are used instead**: that gives precise, authored framing using an element the product already has, with nothing new to learn.
 - **Nothing on a slide can be CHANGED.** No editing, moving, resizing or deleting; and none of the session verbs either: no voting, no starting or pausing a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that alters the document is not a feature.
   - Live DATA still displays. A timer somebody started before the presentation goes on counting down on the slide, and a poll shows the results it has. That is the slide reporting the document, not the audience changing it, and freezing a running clock mid-sentence would read as a bug.
 - **Everything on a slide can be READ.** Clicking an element opens a **read-only popover** carrying what that element has to say: its **note** ([Document structure](../006-document/document-structure.md), rendered rich per [Rich-text notes](../009-elements/rich-text-notes.md)), its **comment thread** ([Canvas and palette](../008-canvas/canvas-and-palette.md)), and its **assigned actions** ([Assigned actions](assigned-actions.md)) with assignee and status. Nothing in the popover is editable, and there is no composer: you can show the room the objection somebody left on this box, and you cannot answer it from here.
@@ -136,13 +136,13 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
   - The element popover is a different thing from the HUD's notes popover, and they do not overlap. The HUD's carries the SLIDE's presenter note, what you mean to say. This one carries the ELEMENT's, what the document records about that box.
 - **A click on empty space advances the slide; a click on an element opens its popover.** The disambiguation matters, because click-to-advance and click-to-inspect are the same gesture on different targets. Clicking outside an open popover closes it rather than advancing, so dismissing never skips a slide.
 - **Rendered by the real canvas**, not by the static SVG renderer. Two reasons, and the first one is now load-bearing rather than tidy: a slide has to RESPOND to clicks and carry live element state, which a rasterised or SVG snapshot cannot do at all. The second is that there is then exactly one thing that knows how an element looks, so presenting cannot drift from the canvas the first time an element gains a feature.
-- **The pointing tools stay available**: Laser ([Laser Panel](../008-canvas/laser-panel.md)) and Spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)) both work while presenting, and neither breaks the rule above because neither touches the document. This is the room the laser was built for — [Laser Panel](../008-canvas/laser-panel.md) opens by calling it "the presenting tool" — and a spotlight is how you read one lane of a dense slide to a room. Both keep their device-local recipes, so the pen and the shroud you tuned for this projector are the ones you get. `L` arms the laser and `S` the spotlight; the same key again puts the pointer back, so arming one is never a trap.
+- **The pointing tools stay available**: Laser ([Laser Panel](../008-canvas/laser-panel.md)) and Spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)) both work while presenting, and neither breaks the rule above because neither touches the document. This is the room the laser was built for: [Laser Panel](../008-canvas/laser-panel.md) opens by calling it "the presenting tool", and a spotlight is how you read one lane of a dense slide to a room. Both keep their device-local recipes, so the pen and the shroud you tuned for this projector are the ones you get. `L` arms the laser and `S` the spotlight; the same key again puts the pointer back, so arming one is never a trap.
   - While one is armed the click-catcher stands down, because both tools need the pointer on the canvas to work at all. Click-to-advance goes with it: mid-stroke a click means "point", not "next slide". The keys and the HUD's own buttons still advance, and the tool is handed back on exit so a presenter does not land in the editor still holding the laser.
-  - The laser still **broadcasts**, as it does everywhere else ([Laser Panel](../008-canvas/laser-panel.md), "Everyone sees your pen"). Presenting is local, but the laser is the document's tool and your camera is on a real tab: a collaborator reading that tab should see the dot you are pointing with, which is the whole point of a shared pointer. Suppressing it would mean a second laser path existing only here, to hide something somebody may be watching on purpose. Spotlight raises no such question — it is a local view treatment and always was ([Spotlight Panel](../008-canvas/spotlight-panel.md), "Still local, still not broadcast").
+  - The laser still **broadcasts**, as it does everywhere else ([Laser Panel](../008-canvas/laser-panel.md), "Everyone sees your pen"). Presenting is local, but the laser is the document's tool and your camera is on a real tab: a collaborator reading that tab should see the dot you are pointing with, which is the whole point of a shared pointer. Suppressing it would mean a second laser path existing only here, to hide something somebody may be watching on purpose. Spotlight raises no such question: it is a local view treatment and always was ([Spotlight Panel](../008-canvas/spotlight-panel.md), "Still local, still not broadcast").
   - The presenter still does not see anyone ELSE's cursor or laser, as above. It is your screen on a projector.
 - **The screen is kept awake** for the duration (`navigator.wakeLock`, released on exit). A slide you talk over for five minutes is a slide the laptop dims, and a presenter waking their own screen mid-sentence is a small indignity a deck should not cause. Where the API is absent or the request is refused, the deck runs exactly as before.
 - **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends.
-- **The editor's own shortcuts are off** for as long as a deck is running. The overlay consumes the keys it uses, but everything else propagated straight through, so pressing `G` in front of a room armed a parallelogram on a canvas you cannot draw on and the next click dropped it. One derived flag (`keyboardEnabled = shortcutsEnabled && !presenting`) feeds every keyboard surface — the shortcut hook and the canvas a11y traversal — rather than the overlay swallowing keys it does not understand, so a surface added later is covered by the flag it already takes.
+- **The editor's own shortcuts are off** for as long as a deck is running. The overlay consumes the keys it uses, but everything else propagated straight through, so pressing `G` in front of a room armed a parallelogram on a canvas you cannot draw on and the next click dropped it. One derived flag (`keyboardEnabled = shortcutsEnabled && !presenting`) feeds every keyboard surface (the shortcut hook and the canvas a11y traversal) rather than the overlay swallowing keys it does not understand, so a surface added later is covered by the flag it already takes.
 - Advancing past the last slide shows an end state; one more advance exits.
 
 ### Motion
@@ -158,7 +158,7 @@ A deck should feel like a deck, and the transitions are what sell it.
 - **Exiting**: back to the editor at once, the view restored in the same commit.
 - **Reduced motion** (the OS setting or the in-app preference) cuts between slides and shows the first slide without the card arriving, like every other motion under reduced motion ([Motion](../004-interface-design/motion.md) "Reduced motion").
 - The travel is **the full width of the screen**, and what travels is the picture of the whole canvas SURFACE, so the backdrop goes with it: the whole screen moves rather than what's on the canvas sliding around inside a stationary frame. A gentle nudge was tried first and read as a wobble.
-- The curve is a plain **decelerate** with no overshoot. Easing with a long slow tail reads as rubber-banding — the slide appears to arrive, then keeps creeping.
+- The curve is a plain **decelerate** with no overshoot. Easing with a long slow tail reads as rubber-banding: the slide appears to arrive, then keeps creeping.
 - One moving picture at any slide size: a hundred-element slide moves as smoothly as a one-element slide, and the canvas's content wrapper, which carries the pan/zoom transform, is never animated. The fit measures `offsetWidth/offsetHeight` (layout size) rather than `getBoundingClientRect` (the transformed box).
 
 ### The HUD
@@ -169,7 +169,7 @@ The HUD does not fade while a popover is open, or the popover would be left orph
 
 **Jumping to a slide.** `→` and `←` walk the deck and `Home` / `End` reach its ends, which is everything you need while the talk goes to plan. It goes to plan until somebody asks about the part of the canvas you showed nine slides ago, and arrowing back through nine slides in front of a room is the moment a deck feels like a toy.
 
-The jump button (or `G`) opens a popover listing every slide by position and name, with the current one marked. A slide's name there, in the HUD and in what a screen reader is told, is the first it has of: its own name, an item slide's card, the headline on it (as the deck panel's row reads it), the name of the page it shows, the name of its tab, and only then "Slide n" (`presentedSlideName`); picking one goes straight there. The list is the RUN, in deck order — hidden slides are not in it, because a slide left out of the presentation has no position to jump to. Click again, `Esc`, or picking a slide closes it, and `Esc` closes it before it leaves the deck (the popover precedence below).
+The jump button (or `G`) opens a popover listing every slide by position and name, with the current one marked. A slide's name there, in the HUD and in what a screen reader is told, is the first it has of: its own name, an item slide's card, the headline on it (as the deck panel's row reads it), the name of the page it shows, the name of its tab, and only then "Slide n" (`presentedSlideName`); picking one goes straight there. The list is the RUN, in deck order: hidden slides are not in it, because a slide left out of the presentation has no position to jump to. Click again, `Esc`, or picking a slide closes it, and `Esc` closes it before it leaves the deck (the popover precedence below).
 
 `Esc` closes an open popover before it leaves the deck. Both popovers can be open over a slide and both take `Esc`, so without an order the key that dismisses a list would end the presentation.
 
@@ -185,9 +185,9 @@ On demand is the whole point: nothing about your script is on screen until you a
 
 Both parts are off by default and both are the presenter's, not the document's.
 
-**Elapsed time** — a clock in the HUD counting from Start. You cannot pace a talk you cannot time, and the alternative is a phone face-up beside the laptop.
+**Elapsed time**: a clock in the HUD counting from Start. You cannot pace a talk you cannot time, and the alternative is a phone face-up beside the laptop.
 
-**Per-slide budget** — when the current slide carries `minutes`, the HUD shows the time spent on it against that target and marks it once it is over. Budgets are authored per slide in the Slide Deck panel, beside the notes, because deciding a slide is worth four minutes is a thing you do while writing the talk, not while giving it.
+**Per-slide budget**: when the current slide carries `minutes`, the HUD shows the time spent on it against that target and marks it once it is over. Budgets are authored per slide in the Slide Deck panel, beside the notes, because deciding a slide is worth four minutes is a thing you do while writing the talk, not while giving it.
 
 The deck **never advances itself** on a budget, and going over is marked rather than enforced. A slide that moved on because its four minutes were up would cut off the answer you were giving. The agenda element ([Agenda](agenda.md)) already models minutes-per-segment this way for a room, and it does not drive the clock either; this is the same idea pointed at the presenter instead of the audience.
 
@@ -201,19 +201,19 @@ Presenting. Anything needing thought belongs before you start, which is why per-
 panel and only their DISPLAY is switched here. The Slide Deck panel's gear keeps the full set too, as the door
 before the talk.
 
-- **Transition** — Slide, Fade or None, plus a **speed** (Quick / Normal / Slow) which disappears when the transition is None, rather than sitting there greyed out. The speed drives the animation through a `--lvd-slide-ms` custom property, so the keyframes stay one definition.
-- **Auto-Advance** — Off, 5s, 10s, 30s or 60s. With Loop, this is the whole "leave it running on the wall" setup. Paused while a popover is open, because something the presenter is reading must not be swept away by a timer they had forgotten about. The timer runs from the slide's arrival; a re-render (a collaborator's edit, the clock) never restarts it.
-- **Slide Size** — Fill Screen (a small slide is blown up) or Actual Size (never past 100%), for authors whose slides are already the size they meant.
-- **Keep Controls Visible** — stop the HUD fading when the pointer rests.
-- **Hide the Pointer** — a still cursor left on a projector is a distraction. Driven by the same idle signal that fades the HUD, so the two come back together; a hidden cursor you could not bring back would be a trap.
-- **Click to Advance** — off for a presenter who gestures at the screen with
+- **Transition**: Slide, Fade or None, plus a **speed** (Quick / Normal / Slow) which disappears when the transition is None, rather than sitting there greyed out. The speed drives the animation through a `--lvd-slide-ms` custom property, so the keyframes stay one definition.
+- **Auto-Advance**: Off, 5s, 10s, 30s or 60s. With Loop, this is the whole "leave it running on the wall" setup. Paused while a popover is open, because something the presenter is reading must not be swept away by a timer they had forgotten about. The timer runs from the slide's arrival; a re-render (a collaborator's edit, the clock) never restarts it.
+- **Slide Size**: Fill Screen (a small slide is blown up) or Actual Size (never past 100%), for authors whose slides are already the size they meant.
+- **Keep Controls Visible**: stop the HUD fading when the pointer rests.
+- **Hide the Pointer**: a still cursor left on a projector is a distraction. Driven by the same idle signal that fades the HUD, so the two come back together; a hidden cursor you could not bring back would be a trap.
+- **Click to Advance**: off for a presenter who gestures at the screen with
   the mouse and would rather drive from the keys alone.
-- **Loop the Deck** — the last slide returns to the first instead of the end
+- **Loop the Deck**: the last slide returns to the first instead of the end
   state, for a deck left running in a room.
-- **Show Position** — the counter and slide name, off for a clean screen.
-- **Show Elapsed Time** — the clock counting from Start. Off by default: a
+- **Show Position**: the counter and slide name, off for a clean screen.
+- **Show Elapsed Time**: the clock counting from Start. Off by default: a
   timer nobody asked for is a timer reminding the room you are behind.
-- **Show Slide Budget** — the time on this slide against its `minutes`, for the
+- **Show Slide Budget**: the time on this slide against its `minutes`, for the
   slides that carry one. Off by default, and inert on a deck where nobody set
   any.
 
@@ -239,13 +239,13 @@ Exiting restores the previous tab, viewport, chrome and **keyboard focus**: back
 
 ### Cross-tab loading
 
-Tabs load lazily ([Per-tab storage](../006-document/per-tab-storage.md)), so a deck whose slides reach into a tab nobody has visited would stall mid-presentation. `loadAllTabs()` already exists in `usePerTabLoad.ts` — a one-shot parallel fetch of every unloaded tab, built for cross-tab element search — and Start awaits it. A slide whose tab still cannot be resolved is skipped rather than blocking the deck.
+Tabs load lazily ([Per-tab storage](../006-document/per-tab-storage.md)), so a deck whose slides reach into a tab nobody has visited would stall mid-presentation. `loadAllTabs()` already exists in `usePerTabLoad.ts`: a one-shot parallel fetch of every unloaded tab, built for cross-tab element search, and Start awaits it. A slide whose tab still cannot be resolved is skipped rather than blocking the deck.
 
 ## Presenter notes
 
 **Each slide carries its own notes**, written and edited in the Slide Deck panel: pick a slide, type what you mean to say over it. They are the slide's, stored on the slide.
 
-They are deliberately NOT the elements' existing `note?` field ([Document structure](../006-document/document-structure.md), rich text per [Rich-text notes](../009-elements/rich-text-notes.md)), which the previous draft reused. That field is a note about a _thing_ — "this queue is the one that backs up" — and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
+They are deliberately NOT the elements' existing `note?` field ([Document structure](../006-document/document-structure.md), rich text per [Rich-text notes](../009-elements/rich-text-notes.md)), which the previous draft reused. That field is a note about a _thing_ ("this queue is the one that backs up") and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
 
 - Plain text in v1, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold.
 - During a presentation they live behind the HUD's notes button, opened on demand. See The HUD above.
@@ -270,27 +270,27 @@ The deck itself IS shared: a teammate opening the document sees your slides and 
 
 Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the sixth tool panel, built like `EraserPanel` / `FormatPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentPanelFace` already takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/document` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
-The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in `lib/presentation-config.ts`, which keeps them in the person's preferences. Laser and Spotlight need nothing new at all — they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
+The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in `lib/presentation-config.ts`, which keeps them in the person's preferences. Laser and Spotlight need nothing new at all: they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
 
 ## Telemetry
 
 Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), enough to answer "is this used, and which parts" without a flood.
 
-**Building a deck** — `UI·Opened·SlideDeck` (the tool picked), `UI·Added·Slide`
+**Building a deck**: `UI·Opened·SlideDeck` (the tool picked), `UI·Added·Slide`
 (created or duplicated), `UI·Removed·Slide`, `UI·Moved·Slide` (one per
 completed drag, since the reorder only commits on release),
 `UI·Toggled·SlideHidden` / `UI·Toggled·SlideShown` (which way it went matters:
 "people hide slides" and "people unhide them" are different findings), and
-`UI·Changed·SlideNotes` once per editing session, fired on the first keystroke
-— per-keystroke would be a flood and per-open would count looking without
+`UI·Changed·SlideNotes` once per editing session, fired on the first keystroke:
+per-keystroke would be a flood and per-open would count looking without
 typing.
 
-**Running one** — `UI·Started·Presentation`, `UI·Closed·Presentation`,
+**Running one**: `UI·Started·Presentation`, `UI·Closed·Presentation`,
 `UI·Opened·PresenterNotes`, `UI·Opened·PresentationSettings`, and
 `UI·Opened·SlideElementDetail`, which is the whole question "read anything,
 change nothing" was written to answer.
 
-**Settings** — `UI·Changed·Presentation-<field>`. The FIELD, not the value:
+**Settings**: `UI·Changed·Presentation-<field>`. The FIELD, not the value:
 what is worth learning is which settings people reach for at all, and values
 would multiply the vocabulary for no extra signal.
 
@@ -311,10 +311,10 @@ events per run to tell us something the start / close pair already implies.
 
 The three questions this draft opened with are answered, and the answers are in the body above rather than left hanging here:
 
-- **Empty deck** — it stays empty. No seeding.
-- **Interaction while presenting** — read anything, change nothing. Clicking an element opens a read-only popover of its note, comments and actions; no session verb and no edit is reachable. Live data still displays.
-- **Slide backdrop** — the slide's tab's, which is well-defined because a slide belongs to one tab.
-- **Presenter notes on screen** — behind a notes button in the HUD, opened in a popover on demand.
+- **Empty deck**: it stays empty. No seeding.
+- **Interaction while presenting**: read anything, change nothing. Clicking an element opens a read-only popover of its note, comments and actions; no session verb and no edit is reachable. Live data still displays.
+- **Slide backdrop**: the slide's tab's, which is well-defined because a slide belongs to one tab.
+- **Presenter notes on screen**: behind a notes button in the HUD, opened in a popover on demand.
 
 ## Open questions
 

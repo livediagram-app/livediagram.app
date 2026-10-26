@@ -86,7 +86,7 @@ Scope, by file:
 | `apps/editor/app/oauth/device/page.tsx`, `apps/editor/lib/mcp-device-session.ts` (+ test)                                                      | The `/oauth/device` page and its trust boundary                                                                                                                                                                                                                                                                                                                       |
 | `apps/editor/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                                                       | Import the moved modules from `@livediagram/document` and `@liveworkspace/icons`                                                                                                                                                                                                                                                                                      |
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/connections.ts, `computed-emitters.ts`, `event-explanations.ts`                    | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                                                                                                                                                                                                                                             |
-| `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                                                                | Pack dry run on every PR; publish with provenance (CLI3)                                                                                                                                                                                                                                                                                                              |
+| `.github/workflows/ci.yml` (the monorepo root's)                                                                                               | Build and pack dry run on every run that reaches the CLI; publishing is manual, outside CI (CLI3)                                                                                                                                                                                                                                                                     |
 | `README.md`, `docs/development/{architecture,local-development}.md`                                                                            | The app, the packages, the two api vars, the CLI on a deployment, the env token's host; `AGENTS.md`'s layout needs the operator's permission                                                                                                                                                                                                                          |
 
 ## Domain and naming
@@ -749,6 +749,8 @@ type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
 
 ### Update check
 
+**Status: Planned.** Not built yet; `apps/cli/src/update-check.ts` does not exist and the CLI never contacts npm.
+
 After a command exits 0, when `CI` is unset or empty, stderr is a terminal, `LIVEDIAGRAM_NO_UPDATE_CHECK` is not
 `1`, and `update.json`'s `checkedAt` is older than `UPDATE_CHECK_INTERVAL_MS`: `GET
 https://registry.npmjs.org/livediagram/latest` with `UPDATE_CHECK_TIMEOUT_MS`; `checkedAt` and `latest` are stored
@@ -852,7 +854,8 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   whichever host is active; `auth status` shows that host, and the README says to set `LIVEDIAGRAM_HOST` beside it.
 - **Share links.** A link's code rides only on the command that was given its URL, and only to that host.
 - **Catalogue routes** expose only public catalogue data, need no identity, and are cacheable.
-- **Supply chain.** Published by CI with provenance through npm trusted publishing (no npm token stored); the
+- **Supply chain.** Published to npm by hand, outside CI; CI builds and packs the CLI on every run that reaches it
+  (`npm pack --dry-run`, see the root `docs/ci.md`), and no npm token is stored in the repository. The
   package's `files` allowlist is the bundle, the wasm, the font, the licences and the README; no install scripts;
   no native addon: the keychain is the platform's own tool.
 - **Roles.** The CLI enforces nothing the api does not; every refusal is the api's gate (`gateRead`,

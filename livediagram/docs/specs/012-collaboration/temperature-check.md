@@ -19,7 +19,7 @@ session.
 A **shape kind**, `temperature`, on the response primitive
 ([Per-participant responses](participant-responses.md)). Its `label` is the question.
 
-- **`ShapeElement.responses`** — one reading per participant, `'1'`..`'5'`.
+- **`ShapeElement.responses`**: one reading per participant, `'1'`..`'5'`.
 - Nothing else. Five is not configurable: fist-of-five is a named ritual with a
   shared meaning (1 = blocked, 5 = enthusiastic), and a 1-to-7 variant is a
   different instrument wearing the same face.

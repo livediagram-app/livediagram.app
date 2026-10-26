@@ -25,7 +25,7 @@ So there is no new storage, no new merge rule, no new realtime path:
 - Marking yourself calls the same `respond(element, DONE_VALUE)` the estimate
   card calls.
 - **Unmarking is the same call.** `respond` withdraws when you send the value
-  you already sent, so marking and unmarking cannot drift apart — there is one
+  you already sent, so marking and unmarking cannot drift apart: there is one
   code path, not two that have to agree.
 - **Reset** is the existing `clearResponses`.
 
@@ -38,7 +38,7 @@ never on `Participant.id`.
 It shipped keyed on `id` and the card did nothing: `id` is our own owner id for
 ourselves and the room's per-socket presence id for everybody else ([Public API and API tokens](../015-api/public-api-and-tokens.md)
 §6), so a peer's mark could never match a peer's roster entry. Every viewer saw
-their own mark and no one else's, in both directions — a card whose entire
+their own mark and no one else's, in both directions: a card whose entire
 purpose is showing you the room's state, showing you only yourself.
 
 ## The waiting list is live
@@ -47,7 +47,7 @@ purpose is showing you the room's state, showing you only yourself.
 the room now**, not from everyone who was ever in it.
 
 This is the decision that makes the card work. A card that waited on somebody
-who closed their tab would never complete, and completing is the entire point —
+who closed their tab would never complete, and completing is the entire point:
 the facilitator would be left staring at "3/4" with no fourth person to ask.
 
 The flip side, deliberately: a response from someone who has since left is
@@ -67,7 +67,7 @@ theme colour, and a wash would fight it.
 It **runs out** after four cycles. A card left flashing forever is noise on a
 canvas somebody walked away from, and the completed state is still perfectly
 legible afterwards from the ring, the "Everyone's done!" line and the empty
-waiting list. Under `prefers-reduced-motion` it is a steady ring instead — the
+waiting list. Under `prefers-reduced-motion` it is a steady ring instead: the
 completion is information, so it stays visible; only the pulsing goes.
 
 When the last person marks themselves done **while the card is on screen**, a
@@ -79,8 +79,8 @@ that was already complete: it celebrates the moment, not the state.
 A small `…` leading the card's title (`headerExtra` on `CollabPanel`, added for
 this):
 
-- **Clear My Mark** — only shown when you have one.
-- **Reset Everyone** — clears the round.
+- **Clear My Mark**: only shown when you have one.
+- **Reset Everyone**: clears the round.
 
 Inline rather than portalled: the card is already a pointer-active surface, and
 a portalled menu would have to track a canvas element through pan, zoom and the

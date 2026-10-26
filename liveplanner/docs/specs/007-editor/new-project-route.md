@@ -70,9 +70,9 @@ slot of the layout's flight payload, and the client router reaches it before any
 So the editor **embraces the trigger**. `apps/editor/app/not-found.tsx`
 exports `<EditorPage />` directly. When the client router fires
 `notFound()` for an unrecognised id, the layout swaps from
-`children` to the `notFound` slot — which is now the editor. The
+`children` to the `notFound` slot, which is now the editor. The
 editor mounts, reads the real id from `window.location.pathname`
-(unchanged throughout — no URL swap means no restoration to fight
+(unchanged throughout; no URL swap means no restoration to fight
 about), and loads the project via the API. The address bar stays
 on `/project/<uuid>`; nothing about the URL needs to lie.
 
@@ -96,7 +96,7 @@ A mistyped or retired page never makes a new project.
 ### A failed load is not a missing project
 
 NotFound means "this project doesn't exist, or isn't yours". A load
-that FAILS — network down, 5xx, share link unresolvable — means
+that FAILS (network down, 5xx, share link unresolvable) means
 nothing of the sort, and showing NotFound for it tells someone their
 work is gone when the server is merely unreachable. So the two are
 kept apart: only a clean 404 reaches NotFound, and a thrown request
@@ -113,9 +113,9 @@ ids it first tried: a create that reached the server but whose answer was lost
 is then taken as the re-commit of an id the caller already owns, never a second
 project.
 
-The distinction is made at every call site that can fail this way —
+The distinction is made at every call site that can fail this way,
 the project load and the share-link resolve in `useIdentityBootstrap`,
-and the create in `/new` — rather than in one place, so it is worth
+and the create in `/new`, rather than in one place, so it is worth
 knowing about when adding another.
 
 ## Navigation flows
@@ -140,7 +140,7 @@ knowing about when adding another.
 1. URL is `/project/shared?s=<code>`.
 2. The editor route hydrates through `apiLoadShared`.
 3. Visitor identity confirmation (the `identityOnlyScreenOpen` mini-flow)
-   stays on the editor route — it's about the visitor, not the project.
+   stays on the editor route; it's about the visitor, not the project.
 
 ### Empty tab on an existing project
 
@@ -313,7 +313,7 @@ default ([Default folders](../013-workspace/default-folders.md) "A template pick
 ## API impact
 
 - No endpoint of its own. `POST /api/projects` accepts an
-  optional `tabs` array per [Per-tab storage](../006-project/per-tab-storage.md) — the route uses it,
+  optional `tabs` array per [Per-tab storage](../006-project/per-tab-storage.md); the route uses it,
   and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist

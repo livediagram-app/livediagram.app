@@ -16,7 +16,7 @@ Web Worker (`apps/editor/lib/photo-model/`), on the uint8 weights shipped there
 
 ## What is in it
 
-- `src/synth/` — a procedural event-storming wall generator (pure TypeScript,
+- `src/synth/`: a procedural event-storming wall generator (pure TypeScript,
   no canvas): backings, paper colours, rows / columns / 2x2 blocks flush and
   lapped, shadows, curl, handwriting, tape, cardboard, marker lines, the room
   past the wall, loose notes at any angle, light gradients and shadow edges,
@@ -24,19 +24,19 @@ Web Worker (`apps/editor/lib/photo-model/`), on the uint8 weights shipped there
   One seed in five is drawn FLAT instead (`flat.ts`: a screenshot of a digital
   board; flat canvas and fills, crisp edges, no light or noise), from its own
   salted draw, so the photographed walls are unchanged by it.
-- `src/mask.ts` — the three-class target: note CORE, the SEAM ring round each
+- `src/mask.ts`: the three-class target: note CORE, the SEAM ring round each
   note, background. Touching notes' cores are always two seams apart.
-- `src/decode.ts` — model output to boxes: each core blob is a note, flooded
+- `src/decode.ts`: model output to boxes: each core blob is a note, flooded
   back through the seam; tiny cores and boxes far below the wall's median
   are dropped.
-- `src/stride.ts` — the network's framing, shared by Node and the browser: RGBA
+- `src/stride.ts`: the network's framing, shared by Node and the browser: RGBA
   to RGB floats, edge-repeated padding to the stride of 16, the crop back.
-- `src/cues.ts` — probabilities to the plain cues the hybrid rules read.
-- `src/flatness.ts` — is an image a photograph or a flat drawing? The editor
+- `src/cues.ts`: probabilities to the plain cues the hybrid rules read.
+- `src/flatness.ts`: is an image a photograph or a flat drawing? The editor
   does not ask the model about a flat one (it learnt photographs).
-- `src/train/distil.ts` — distillation targets: fine-tune without forgetting.
-- `src/train/tile.ts` — training tiles: crop, zoom, the eight flips/turns.
-- `scripts/` — shards, the U-Net (TensorFlow.js), training, leave-one-wall-out,
+- `src/train/distil.ts`: distillation targets: fine-tune without forgetting.
+- `src/train/tile.ts`: training tiles: crop, zoom, the eight flips/turns.
+- `scripts/`: shards, the U-Net (TensorFlow.js), training, leave-one-wall-out,
   and scoring with the classical sweep's own scorer and bar; `scripts/flat/`
   draws flat boards the generator never drew and scores the hybrid on them.
 

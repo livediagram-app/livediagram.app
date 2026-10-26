@@ -11,29 +11,29 @@ in this product's `packages/tailwind-config/theme.css` (its palette over the mon
 read a CSS token (the email templates, the social card, the web manifest, the unthemed tab accent) name the same
 hexes, and a change of accent changes them together.
 
-## Primary palette — Violet
+## Primary palette: Violet
 
 A single brand hue with a full 50–950 ramp. Built on Tailwind's `violet` scale.
 
-| Token           | Hex           | Usage                                                      |
-| --------------- | ------------- | ---------------------------------------------------------- |
-| `brand-50`      | `#F5F3FF`     | App backgrounds, faint tints, hover surfaces               |
-| `brand-100`     | `#EDE9FE`     | Subtle fills, selected-row backgrounds                     |
-| `brand-200`     | `#DDD6FE`     | Accents, soft borders, collaborator cursor tints           |
-| `brand-300`     | `#C4B5FD`     | Decorative accents, secondary indicators                   |
-| `brand-400`     | `#A78BFA`     | Light brand surfaces, illustrations                        |
-| **`brand-500`** | **`#8B5CF6`** | **Primary brand color — accents, focus rings, decoration** |
-| `brand-600`     | `#7C3AED`     | Decorative accents with no text, dark-mode fills           |
-| `brand-700`     | `#6D28D9`     | **Solid fills under white text**, **all light brand ink**  |
-| `brand-800`     | `#5B21B6`     | Hover on a solid fill, high-contrast emphasis              |
-| `brand-900`     | `#4C1D95`     | Dark mode brand text                                       |
-| `brand-950`     | `#2E1065`     | Dark mode surfaces                                         |
+| Token           | Hex           | Usage                                                     |
+| --------------- | ------------- | --------------------------------------------------------- |
+| `brand-50`      | `#F5F3FF`     | App backgrounds, faint tints, hover surfaces              |
+| `brand-100`     | `#EDE9FE`     | Subtle fills, selected-row backgrounds                    |
+| `brand-200`     | `#DDD6FE`     | Accents, soft borders, collaborator cursor tints          |
+| `brand-300`     | `#C4B5FD`     | Decorative accents, secondary indicators                  |
+| `brand-400`     | `#A78BFA`     | Light brand surfaces, illustrations                       |
+| **`brand-500`** | **`#8B5CF6`** | **Primary brand color: accents, focus rings, decoration** |
+| `brand-600`     | `#7C3AED`     | Decorative accents with no text, dark-mode fills          |
+| `brand-700`     | `#6D28D9`     | **Solid fills under white text**, **all light brand ink** |
+| `brand-800`     | `#5B21B6`     | Hover on a solid fill, high-contrast emphasis             |
+| `brand-900`     | `#4C1D95`     | Dark mode brand text                                      |
+| `brand-950`     | `#2E1065`     | Dark mode surfaces                                        |
 
 `brand-500` (`#8B5CF6`) is the canonical "liveplanner violet": the color of selection highlights, accents and focus rings.
 It carries no white text: white on it is 4.2:1, so a primary button sits two steps deeper, on `brand-700` (7.1:1). The
 logo draws on its own prism palette, violet into deep purple ([Brand mark](./brand-mark.md)).
 
-## Neutrals — Slate
+## Neutrals: Slate
 
 Slate complements violet cleanly (both are cool-toned). Use for text, borders, surfaces, and dividers.
 
@@ -60,7 +60,7 @@ holds the class strings to it. White words on a coloured banner (the sign-in ban
 
 ## Semantic colors
 
-Reserved for status — never used decoratively.
+Reserved for status, never used decoratively.
 
 | Role    | Light bg    | Foreground  | Notes                          |
 | ------- | ----------- | ----------- | ------------------------------ |
@@ -262,4 +262,4 @@ The package's `theme.css` declares the brand ramp as CSS variables inside a `@th
 }
 ```
 
-Slate, success / warning / error utilities live on Tailwind's own defaults — only the `brand` ramp is custom.
+Slate, success / warning / error utilities live on Tailwind's own defaults; only the `brand` ramp is custom.

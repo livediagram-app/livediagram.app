@@ -54,7 +54,7 @@ Account self-deletion already exists end to end (`DELETE /api/account`,
 to hang off the header dropdown; now that there is a dedicated account home,
 the **Delete account** trigger lives on the profile page's Danger zone and is
 **removed from the header menu** (one home for destructive account actions,
-no drift). The dialog component itself is unchanged and simply reused — the
+no drift). The dialog component itself is unchanged and simply reused: the
 confirmation flow (type your email, then wipe livedocuments's data and close the
 liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email](transactional-email.md) describes.
 Account deletion is immediate and total within livedocuments: it deletes the account's own documents for good
@@ -79,7 +79,7 @@ setting it can't honour.
 ## 3. Email notification preferences
 
 Two per-user flags, stored with the editor flags in the **same synced
-preferences** ([User preferences](../007-editor/user-preferences.md)), which the liveworkspace accounts database keeps —
+preferences** ([User preferences](../007-editor/user-preferences.md)), which the liveworkspace accounts database keeps,
 reusing that store rather than minting a parallel one (it already
 round-trips to localStorage and survives the sign-up migration). Every
 `notify*` switch is a setting all liveworkspace apps share (the `all`
@@ -126,12 +126,12 @@ livedocuments sends the first (§a); the invite answer (§b) is the accounts Wor
 
 Both are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
-request's critical path — same contract as every [Transactional email](transactional-email.md) send. Recipients'
+request's critical path, the same contract as every [Transactional email](transactional-email.md) send. Recipients'
 addresses come only from trusted server state (the account's verified
 address, looked up at the accounts Worker with `accountEmails`, or the
 inviter-typed `team_members.email`), never from a client header.
 
-### a. Someone joins my document — `notifyDocumentJoin`
+### a. Someone joins my document: `notifyDocumentJoin`
 
 The signal is **a new person opening one of my shared documents for the first
 time**, which the index sees: it records who came in through a link (its `shared_with`), whether by resolving
@@ -160,12 +160,12 @@ Shared-with-you list); it's HTML-escaped like the team name.
 The notification is on by default (an opt-out), so the email says so rather
 than claiming the owner turned it on, and points at the notification settings.
 
-Only the first visit notifies — repeat opens by the same person are silent,
+Only the first visit notifies: repeat opens by the same person are silent,
 so an active collaborator doesn't generate a mail per reload. This is the
 only server-observable "join" signal; live-room reconnects in the Durable
 Object are deliberately **not** wired (they'd be far too chatty).
 
-### b. Someone responds to a team invite — `notifyInviteResponse`
+### b. Someone responds to a team invite: `notifyInviteResponse`
 
 Sent by liveworkspace, not livedocuments: teams, their invitations and the
 answer emails belong to the liveworkspace account, and the accounts Worker

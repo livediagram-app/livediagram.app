@@ -4,7 +4,7 @@
 
 A **Page** in the palette's **Write** category: a large, paper-proportioned
 element you write into with the rich-text editor, for the prose a page
-needs but a label can't hold — a brief, a summary, a page of notes.
+needs but a label can't hold: a brief, a summary, a page of notes.
 
 Everything on the canvas so far is a label on a thing: short, centred, sized
 to its box. A sticky note is the closest, and it is deliberately a scrap. When
@@ -34,8 +34,8 @@ a palette tile. Nothing downstream learns a new element.
 
 It is **Page**, in the palette and in the selection toolbar and in the code.
 
-"Document" would be wrong twice over. The palette has **Document** in Shapes — the output-document symbol with the wavy bottom
-(`shape: 'document'`) — so two unrelated things would share a name in
+"Document" would be wrong twice over. The palette has **Document** in Shapes (the output-document symbol with the wavy bottom
+(`shape: 'document'`)), so two unrelated things would share a name in
 one search box. And the selection toolbar names an element by its kind, so a
 tile called Document selecting into "Selected Page" made the editor look like
 it disagreed with itself.
@@ -49,8 +49,8 @@ and "Document" is its usual name in diagram vocabulary.
 ## The masthead
 
 A Page carries a **fixed heading and subtitle** above its body, separated by a
-hairline rule. Two plain-string fields on the shape — `pageTitle` and
-`pageSubtitle` — bounded at `PAGE_HEADING_MAX` (200) and validated with the
+hairline rule. Two plain-string fields on the shape, `pageTitle` and
+`pageSubtitle`, are bounded at `PAGE_HEADING_MAX` (200) and validated with the
 rest.
 
 **Not the first two lines of the body.** A page's title is structure, not
@@ -88,7 +88,7 @@ touched.
 
 ## Paper, not a big box
 
-- **420 × 594** — √2, the A-series ratio, at a size that reads as a page next
+- **420 × 594**: √2, the A-series ratio, at a size that reads as a page next
   to a 120px square without dominating the canvas.
 - **Body top-left**, not centred. Centred prose is the single strongest tell
   that something is a label pretending to be a design.
@@ -96,8 +96,8 @@ touched.
   to the edge of a sheet is the other half of "this isn't paper".
 - **A white body, a hairline border and a soft shadow**, so it reads as paper
   laid ON the canvas rather than drawn into it.
-- **A turned-back bottom-right corner.** Two triangles — the corner cut away,
-  a slightly darker leaf laid over the cut — rather than a real curl, which
+- **A turned-back bottom-right corner.** Two triangles (the corner cut away,
+  a slightly darker leaf laid over the cut) rather than a real curl, which
   would need a gradient and a bezier and would fight the element's own border
   on every resize. Fixed at 22px in element space, so the fold is the same
   physical size on an A4 page and on one dragged out wide.

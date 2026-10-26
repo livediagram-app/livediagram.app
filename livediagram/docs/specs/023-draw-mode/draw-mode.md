@@ -882,9 +882,9 @@ Draw mode is built in rounds and tuned with the operator between them.
   (`useTemplateFlow`'s `putToolDown`). Blank lands nothing and keeps the pen.
   The dock sits at the top, or at the bottom by choice
   ([Where the dock sits](#where-the-dock-sits)).
-- **Still ahead:** the trimmed element menu (colour, width, delete, stacking,
-  duplicate, comment); until then a whiteboard element opens the ordinary
-  menu.
+- **Trimmed element menu.** **Status: Planned.** Not built yet; today a
+  whiteboard element opens the ordinary menu. The plan is a trimmed menu:
+  colour, width, delete, stacking, duplicate, comment.
 - **Imports:** Excalidraw paste and the
   Microsoft Whiteboard import land through the board scene, and the quick style
   panel styles mixed selections of everything they bring.

@@ -4,7 +4,7 @@ Status: shipped
 
 ## What
 
-With boxes packed close together — a parent fanning out to several children —
+With boxes packed close together (a parent fanning out to several children)
 an arrow to a far child draws straight over the children in between. It reads
 as though the line belongs to the box it crosses, and a fan of them turns into
 clutter.
@@ -22,7 +22,7 @@ explicit `false` opts out.
 This is a rendering default rather than a stored one, which matters on two
 counts: existing diagrams pick the behaviour up without a migration, and an
 arrow that should pass behind never has to be told to. The cost is that
-existing diagrams _change appearance_ on upgrade — deliberate, since crossing
+existing diagrams _change appearance_ on upgrade, deliberate, since crossing
 a box was never the intent in the cases this fixes.
 
 The per-arrow escape is the **Pass Behind Boxes** toggle in the arrow's Line
@@ -35,8 +35,8 @@ single answer.
 The exclusions carry the weight here, because the feature is on by default and
 a wrong obstacle **erases a line that should be visible**:
 
-- **`frame` shapes never cut.** A frame is a section backdrop — everything
-  inside it sits on top by design — so treating one as an obstacle would break
+- **`frame` shapes never cut.** A frame is a section backdrop: everything
+  inside it sits on top by design, so treating one as an obstacle would break
   every arrow drawn within a section. The single worst failure this feature
   could have.
 - **Swimlanes (`lane` shapes) never cut**, for the same reason: a lane paints
@@ -55,7 +55,7 @@ a wrong obstacle **erases a line that should be visible**:
   `transparent`.
 - **The arrow's own endpoint elements never cut.** The line has to reach their
   edges, and the arrowhead sits on one.
-- **A box containing an endpoint never cuts** — and containment is tested
+- **A box containing an endpoint never cuts**, and containment is tested
   against the **inflated hole**, not the raw box. Two cases, one rule: an
   arrow drawn out of an overlapping element (which would otherwise be erased
   at its own start, the same rule [Arrow collision avoidance at draw time](arrow-collision-avoidance.md) uses), and an arrow that merely
@@ -64,7 +64,7 @@ a wrong obstacle **erases a line that should be visible**:
   swallowed the **arrowhead** and left the line running into nothing.
   Whatever we would cut is exactly what must not contain an endpoint.
 
-Everything else opaque — shapes, stickies, images, tables, link cards — cuts,
+Everything else opaque (shapes, stickies, images, tables, link cards) cuts,
 **provided it is being drawn**: a box on a hidden layer, or one a thumbnail or
 export leaves out, never cuts (a gap around nothing reads as a broken line).
 The canvas hands each arrow the elements it paints; each export and thumbnail
@@ -78,7 +78,7 @@ for the cost of one, so a single-box limit would be extra code for less.
 Fixed rather than scaled to the box or the stroke: every arrow crossing a
 given box then breaks identically, which is what makes a fan of them look
 deliberate rather than ragged. Being canvas units it scales with zoom like
-everything else. Box-proportional sizing was rejected — a large box already
+everything else. Box-proportional sizing was rejected: a large box already
 makes a long break by being wide, so scaling on top over-cuts the line.
 
 ## How (packages/document/src/arrow-behind.ts + ArrowView)
@@ -98,7 +98,7 @@ to the visible path and the selection halo:
 - The mask **region** (`x`/`y`/`width`/`height` on the `<mask>` itself) and its
   white backdrop are both stated explicitly, and both vast. A mask with no
   region defaults to `-10%`/`120%` **of the referencing element's bounding
-  box**, and everything outside that region is masked away — so a straight
+  box**, and everything outside that region is masked away, so a straight
   horizontal or vertical arrow, whose bbox has zero height or width, collapsed
   the region to a hairline that swallowed the **arrowhead** (it sticks out
   either side of the line) along with part of the stroke. The vast box also
@@ -127,7 +127,7 @@ across it in an export.
 around an obstacle: one shot, at creation, and it changes the arrow's
 geometry. This is a **render-time** treatment that never moves the line.
 
-They don't fight — an arrow that bowed clear at draw time simply never crosses
+They don't fight: an arrow that bowed clear at draw time simply never crosses
 anything, so it has no holes. The two cover different cases: [Arrow collision avoidance at draw time](arrow-collision-avoidance.md) can't
 help an arrow whose obstacle arrived later (a box dragged into the path, or an
 arrow whose endpoint moved), and this can't tidy an arrow that would read
@@ -142,7 +142,7 @@ interaction.
 ## Out of scope
 
 - **Breaking around non-box elements** (freehand strokes, other arrows). Arrow
-  crossings are a different problem — a jump/hop notation — and freehand has
+  crossings are a different problem (a jump/hop notation) and freehand has
   no rectangle to break around.
 - **Path-accurate holes.** The mask cuts the arrow's bounding-box neighbours,
   not the exact crossings. Invisible in practice, per the note above.

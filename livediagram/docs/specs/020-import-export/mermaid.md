@@ -1,6 +1,6 @@
 # Mermaid import & export
 
-Import and export [Mermaid](https://mermaid.js.org/) **flowchart** text — the
+Import and export [Mermaid](https://mermaid.js.org/) **flowchart** text: the
 lingua franca of diagram-as-code, sitting in countless READMEs, issues, and AI
 outputs. Unlike the Markdown outline import ([Markdown import](markdown-import.md)), Mermaid carries the full
 **connection graph** (which node points at what), so a round-trip preserves the
@@ -14,20 +14,20 @@ they map onto livediagram's model losslessly: `graphToElements`
 (packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
 arrows.
 
-- **Flowcharts** (`graph TD`, `flowchart LR`, …) — full import **and**
+- **Flowcharts** (`graph TD`, `flowchart LR`, …): full import **and**
   export. The richest dialect: nodes, edges, node shapes, edge styles,
   labels, subgraphs, click links, layout direction.
-- **State diagrams** (`stateDiagram` / `stateDiagram-v2`) — **import only**.
+- **State diagrams** (`stateDiagram` / `stateDiagram-v2`): **import only**.
   States and transitions are nodes and edges; composite states reuse the
   cluster/frame machinery.
-- **ER diagrams** (`erDiagram`) — **import only**. Entities and
+- **ER diagrams** (`erDiagram`): **import only**. Entities and
   relationships are nodes and edges; each entity becomes an Entity element
   with its attributes as field rows.
 
 Import is per-dialect; **export always emits flowchart text**. The canvas has
 no semantic layer (a state and a flowchart node are both just shapes once
 imported), so exporting back to `stateDiagram` / `erDiagram` would mean
-guessing meaning from geometry — the flowchart export preserves the
+guessing meaning from geometry: the flowchart export preserves the
 connection graph, which is the part that's real.
 
 Sequence diagrams are drawn by the agents' graph input only (below, [Sequence diagrams](#sequence-diagrams-agents));
@@ -35,7 +35,7 @@ the editor's import does not take them yet. Other non-graph Mermaid types (gantt
 and class diagrams remain out of scope; importing one reports a clear error naming the supported types.
 
 Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
-theme owns colours — Mermaid styling is skipped, never an error) and true
+theme owns colours; Mermaid styling is skipped, never an error) and true
 `RL` / `BT` layouts (`RL` folds to LR, `BT` to TB; the graph is identical,
 only the sweep direction differs).
 
@@ -64,7 +64,7 @@ only the sweep direction differs).
   - heads: `---` no head (`arrowEnds: 'none'`) · `<-->` both ends
     (`arrowEnds: 'both'`) · trailing/leading `o` → hollow-circle arrowhead ·
     `x` → open-V arrowhead (closest marker we have to Mermaid's cross);
-  - `~~~` (invisible link) is parsed and **dropped** — it exists for Mermaid
+  - `~~~` (invisible link) is parsed and **dropped**: it exists for Mermaid
     layout spacing and would be an invisible-arrow trap on a real canvas.
 
   An edge to an id with no node still creates the node.
@@ -85,7 +85,7 @@ only the sweep direction differs).
   the top-level flow as one block, and the frame is sized around the result.
   A node belongs to the **first subgraph that mentions it** (matching
   Mermaid), wherever it was first written: `A --> C` above a `subgraph Kitchen` whose block uses `C` still puts
-  `C` in Kitchen; mentions outside every subgraph claim nothing. Edges may reference a subgraph id — the arrow pins to the frame.
+  `C` in Kitchen; mentions outside every subgraph claim nothing. Edges may reference a subgraph id: the arrow pins to the frame.
   An empty subgraph draws no frame; an edge to it keeps a box of its own, labelled with the subgraph's title.
   A subgraph opened again by the same id carries on the first one (one frame, the members of both). A node written
   out with a subgraph's id (`a[Real node]` beside `subgraph a`) keeps the id, so edges naming it reach the node, and
@@ -100,7 +100,7 @@ only the sweep direction differs).
 - **Click links**: `click A "https://…"` (and the `click A href "https://…"`
   form) imports as the node's element link (`{ kind: 'url' }`), and a node
   whose element carries a URL link exports a matching `click` line. Callback
-  forms (`click A someJsFunction`) are skipped — there's no code to call.
+  forms (`click A someJsFunction`) are skipped: there's no code to call.
 - Lines it doesn't understand (`classDef`, `style`, `linkStyle`,
   `direction`, comments `%%`) are skipped, not fatal: a real-world paste
   imports its graph and ignores the decoration. So is a class written on a node (`a:::hot --> b`, `a[Label]:::hot`):
@@ -229,12 +229,12 @@ Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
   `DiagramGraph` carries subgraphs / composite states as optional
   `clusters: { id, label, members }[]`; `GraphEdge` carries the edge style
   (`line: solid|dashed|thick`, `ends: to|none|both|from`, `head:
-triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
+triangle|circle|cross`); `GraphNode` carries an optional `link` URL:
   all additive, so every existing `graphToElements` caller (the MCP) is
   untouched.
 - **`layoutGraph(graph, { wholeLabels: true })`** (graph-input.ts), over **`graphFromMermaid(text)`**: the
   import's entry, shared with the MCP ("Layout" above).
-- **`layoutClusteredGraph(graph, { direction })`** (auto-layout-clusters.ts) —
+- **`layoutClusteredGraph(graph, { direction })`** (auto-layout-clusters.ts):
   the layered composition point `layoutGraph` builds on. Without clusters it's exactly
   `graphToElements` + `autoLayoutElements({ direction })`. With clusters it
   lays out each cluster's members, contracts each cluster to one
@@ -253,7 +253,7 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
   `==>`, no head → `---`, both heads → `<-->`, head-at-from exports with the
   endpoints swapped, circle heads → `o`). Edgeless boxed content (titles,
   captions) and non-graph element kinds (tables, images, freehand) have no
-  flowchart representation and are dropped with the graph preserved — the
+  flowchart representation and are dropped with the graph preserved: the
   export is the connection graph, faithfully.
   - **Every connection is kept.** Stickies are nodes like shapes (a board of
     them exports as nodes, not an empty flowchart its own import refuses),
@@ -281,7 +281,7 @@ took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119`
 - draw.io's graph-only JSON export is truncated to the caps rather than refused
   ([draw.io import](drawio-import.md#the-json-export)).
 
-## Import & export UX — file **or** text
+## Import & export UX: file **or** text
 
 Mermaid introduced a **two-step** panel (pasting/copying text is as common as a
 file for a text format), and that panel is now the shared pattern for **every
@@ -297,12 +297,12 @@ text format** in both dialogs (JSON, Mermaid, Markdown), not just Mermaid:
 - **Export → JSON / Mermaid / Markdown** → a panel with a textarea pre-filled
   with the tab serialised to that format (`tabToJsonText` / `mermaidFromTab` /
   `tabToMarkdownText`), editable, with **Copy** and **Download** buttons.
-  **Edits in the textarea never touch the tab** — it's a scratch view for
+  **Edits in the textarea never touch the tab**: it's a scratch view for
   copying, not a round-trip editor. Shared component: `TextExportPanel`.
 
 The **image formats** (PNG / SVG / PDF) get their own second screen too
 (`ImageExportPanel`): the **Isometric view** and **Background pattern** toggles
-live behind the format card, not on the export grid, since they only affect image output — so the main grid is just the six
+live behind the format card, not on the export grid, since they only affect image output, so the main grid is just the six
 format cards, nothing format-specific bleeding onto it.
 
 Naming: the JSON export/import card is titled **"JSON"** (was "File" /

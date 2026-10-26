@@ -2,7 +2,7 @@
 
 ## Principle
 
-**The canvas always works without signing in.** A first-time visitor can land on `/new`, create a document, build something real, and only later be asked to sign up. This is intentional — friction-free engagement is the acquisition strategy.
+**The canvas always works without signing in.** A first-time visitor can land on `/new`, create a document, build something real, and only later be asked to sign up. This is intentional: friction-free engagement is the acquisition strategy.
 
 We don't put auth in front of the core experience. We add auth where it _enables_ something the user wants (sharing, syncing, collaborating, paying).
 
@@ -84,15 +84,15 @@ Every other random value the editor rolls for a guest (the display name, the pre
 | Open a share link as editor | ✓                             | ✓                                     |
 | Mint a new share link       | ✓                             | ✓                                     |
 | Real-time presence          | ✓ on shared sessions          | ✓                                     |
-| Team workspaces             | —                             | ✓ (future)                            |
+| Team workspaces             | n/a                           | ✓ (future)                            |
 
 ## Auth surface
 
 The auth routes and the pages around them:
 
 - **`/sign-in/`** and **`/get-started/`** (`components/chrome/AuthHandoff.tsx`) hand the visitor straight to `/api/auth/sign-in`, which goes on to the accounts site. The accounts site signs new and returning people in alike, so the two routes differ only in where they land afterwards: **sign-in → the Explorer** (`POST_AUTH_SIGNIN_DEFAULT`), **sign-up → the welcome / new-document flow** (`POST_AUTH_DEFAULT`, `/new`). The hand-off uses `location.replace`, so Back from the accounts site skips the interstitial. When `/api/auth/callback` sends the browser back with `?error=expired` or `?error=failed`, the page shows what went wrong with a **Try again** link instead of redirecting.
-- **`?redirect_url=...`** — the return destination. Routes are clean (no `/live` prefix — [Router app](../016-platform/router-app.md)), so a valid `redirect_url` is any **same-origin path**. `resolvePostAuthDestination(searchParams, default)` in `components/chrome/auth-shared.tsx` validates it (`isPostAuthPath`, from `@liveworkspace/auth-client/return-path`, the one return-path check every app and liveworkspace.app share): the path must start with a single `/` — NOT `//`, and with no `\` anywhere or control character (the protocol-relative / backslash / dropped-tab open-redirect tricks) — must come out of the browser's normalising unchanged — and must not point back at `/sign-in` or `/get-started` (loop guard). Missing, unsafe or auth-page values fall back to the per-route default. `accountsSignInUrl(destination)` carries it to the api as `return_to`, and the api checks it again (`safeReturnPath`, the same shared check with the Explorer as its fallback) before it redirects anywhere.
-  - **Every in-app trigger builds the param.** So a visitor who clicks any "Sign in" / "Create account" affordance returns to the page they were on after auth — not a generic default. `authHrefWithReturn(authPath, returnTo)` composes `?redirect_url=<encoded returnTo>` through the **same** `isPostAuthPath` guard (an unsafe or auth-page `returnTo` is dropped, yielding a bare auth href — never a loop or open redirect), and the `useAuthReturnPath()` hook supplies the visitor's live location (path + query + `#t=<tab>` hash, so you land back on the exact tab). Every trigger — the header pill (`AuthControls`), the floating banner + its reasons modal (`SignInBanner` / `SignInReasonsModal`), the Explorer panel's guest prompt (`SignInPrompt`), and the `/join` invite page — uses it.
+- **`?redirect_url=...`**: the return destination. Routes are clean (no `/live` prefix; [Router app](../016-platform/router-app.md)), so a valid `redirect_url` is any **same-origin path**. `resolvePostAuthDestination(searchParams, default)` in `components/chrome/auth-shared.tsx` validates it (`isPostAuthPath`, from `@liveworkspace/auth-client/return-path`, the one return-path check every app and liveworkspace.app share): the path must start with a single `/`, NOT `//`, and with no `\` anywhere or control character (the protocol-relative / backslash / dropped-tab open-redirect tricks), must come out of the browser's normalising unchanged, and must not point back at `/sign-in` or `/get-started` (loop guard). Missing, unsafe or auth-page values fall back to the per-route default. `accountsSignInUrl(destination)` carries it to the api as `return_to`, and the api checks it again (`safeReturnPath`, the same shared check with the Explorer as its fallback) before it redirects anywhere.
+  - **Every in-app trigger builds the param.** So a visitor who clicks any "Sign in" / "Create account" affordance returns to the page they were on after auth, not a generic default. `authHrefWithReturn(authPath, returnTo)` composes `?redirect_url=<encoded returnTo>` through the **same** `isPostAuthPath` guard (an unsafe or auth-page `returnTo` is dropped, yielding a bare auth href, never a loop or open redirect), and the `useAuthReturnPath()` hook supplies the visitor's live location (path + query + `#t=<tab>` hash, so you land back on the exact tab). Every trigger, the header pill (`AuthControls`), the floating banner + its reasons modal (`SignInBanner` / `SignInReasonsModal`), the Explorer panel's guest prompt (`SignInPrompt`), and the `/join` invite page, uses it.
 - **`/explorer/`** is the shared Explorer, liveworkspace's page served at livediagram's address ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)). Open to guests and signed-in people alike: the owner id resolves as on every other surface (the account id when signed in, the guest token's id otherwise), so a guest sees what their guest owns. Reached from the AuthControls dropdown's "Explorer" item. The page itself doesn't gate; a guest's token lives in one browser, so their work is per-browser until they sign up.
 
 The shared card chrome lives in `apps/editor/components/chrome/auth-shared.tsx` so the two pages don't drift.
@@ -144,7 +144,7 @@ the marketing site's "No Catch" night section:
 - **Interstitials** (the redirecting card) use the same frame with no pitch, the card centred, so a
   hand-off between pages never flashes a different ground.
 
-Signed-in status surfaces in the editor header via `<AuthControls>` (the account's Google picture over its initial, from the ID token's `picture` claim, + Sign out menu). Signed-out users see a "Sign in" link in the same slot. Neither blocks the editor — they're purely informational.
+Signed-in status surfaces in the editor header via `<AuthControls>` (the account's Google picture over its initial, from the ID token's `picture` claim, + Sign out menu). Signed-out users see a "Sign in" link in the same slot. Neither blocks the editor: they're purely informational.
 
 ## Identity display name
 
@@ -155,7 +155,7 @@ Two welcome-modal rules follow from that:
 - **Owner on their own document**: the identity-only welcome screen never opens. The user's identity is already settled by their account; prompting them to pick a display name on a document they own would be noise.
 - **Visitor on someone else's document (signed in)**: the welcome screen still opens (it carries the "you're joining X's document" context), but the "Your name" input is `readOnly` and the shuffle button hides. Visitors who _are_ signed in can't masquerade under a different display name on a host's document.
 
-Guests see the legacy behaviour in both cases — first-load identity prompt, fully editable name, shuffle button present.
+Guests see the legacy behaviour in both cases: first-load identity prompt, fully editable name, shuffle button present.
 
 The join prompt is **independent of share role**: both **edit-role and view-role** visitors get it. A viewer's display name is broadcast to everyone else (cursor label, the tab presence stack, comments), so they need a chance to set it before joining rather than appearing under a random default. The identity card only writes the visitor's **own** profile (`PUT /api/participants/:id`, authorised on `owner === id`, not on document-edit rights), so confirming a name never hits a `403` even for a read-only viewer. The card's edit-only affordances (template grid, theme grid) don't render in identity mode, so there's nothing a viewer could trigger that they lack permission for.
 

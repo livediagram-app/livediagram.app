@@ -126,7 +126,9 @@ per-user opt-out ([User preferences](../007-editor/user-preferences.md)) and the
 
 ## Next ideas
 
-Not built yet; each fits the same `Timing·Measured` event with a new metric on an existing scale.
+**Status: Planned.** Not built yet; the five editor timings and the Core Web Vitals above are what exists today.
+
+Each fits the same `Timing·Measured` event with a new metric on an existing scale.
 
 - **Explorer first load**: opening the Explorer to its first list rendered (Home, Recent).
 - **Time to first edit**: finishing the `/new` wizard to the first element placed, the clearest

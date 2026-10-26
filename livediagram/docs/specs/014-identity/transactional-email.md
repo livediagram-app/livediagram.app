@@ -4,8 +4,8 @@
 emails through Cloudflare Email Service, the way every app on the platform does
 ([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)) and the photo reader
 ([Note reader](../021-event-storming/note-reader.md)), it is **entirely gated on configuration**, here the
-`send_email` binding `EMAIL`: when it is absent the whole feature is inert — no sends, no new request
-work — and everything else behaves exactly as before. Guests and the canvas stay
+`send_email` binding `EMAIL`: when it is absent the whole feature is inert: no sends, no new request
+work, and everything else behaves exactly as before. Guests and the canvas stay
 account-free and never receive email.
 
 ## 1. What we send
@@ -19,35 +19,35 @@ liveworkspace what it needs for them: each signed-in account it sees (a sighting
 which also counts sign-ups) and each save of a document someone owns (activity,
 once a minute a document, `apps/api/src/liveworkspace/activity.ts`).
 
-**Transactional — always send (when the feature is on):**
+**Transactional, always send (when the feature is on):**
 
-1. **Account deleted** — after a user deletes their account (spec: account
+1. **Account deleted**: after a user deletes their account (spec: account
    self-deletion), a confirmation that their livediagram data and their
    liveworkspace account are gone.
 
-**Notifications — each opt-out, read from the preference blob
+**Notifications, each opt-out, read from the preference blob
 ([User preferences](../007-editor/user-preferences.md)), set in the Settings dialog:**
 
-2. **Someone joined my document** (`notifyDocumentJoin`) —
+2. **Someone joined my document** (`notifyDocumentJoin`):
    [Account settings & email notifications](profile-and-email-notifications.md).
-3. **New comment** (opt-out `notifyComments`) — when someone other than the
+3. **New comment** (opt-out `notifyComments`): when someone other than the
    owner comments on a document (either comment path), the owner is emailed
    **immediately** (no cron). Never includes the comment text. On the tab save
    it counts only the saver's own new comments: a save can carry a peer's
    comment that reached the saver live first, and that is not the saver
    commenting.
-4. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
+4. **Action assigned** (opt-out `notifyActionAssigned`): a teammate assigned
    the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
-5. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
+5. **Mentioned** (opt-out `notifyMentions`): a teammate @-mentioned the
    recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
    quotes the comment (the first 280 characters): the recipient was named in
    it, and the document is in their own team's library.
 
-**Milestones — once each, opt-out `notifyMilestones`:**
+**Milestones, once each, opt-out `notifyMilestones`:**
 
-6. **Milestone** — a celebration when an owner's document count reaches 10,
+6. **Milestone**: a celebration when an owner's document count reaches 10,
    fired on a genuine create.
-7. **First share** — the first time an owner shares a document.
+7. **First share**: the first time an owner shares a document.
 
 Each milestone is claimed from liveworkspace before it is sent
 (`claimMilestone(credentials, { userId, milestone: 'milestone' | 'firstShare' })`):
@@ -66,21 +66,21 @@ recipient can turn it off in one click. The opt-out toggles are
 documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
 help article.
 
-## 2. Gating — the binding is the switch
+## 2. Gating: the binding is the switch
 
 - `EMAIL` (the `send_email` binding, declared in `apps/api/wrangler.toml` as `[[send_email]]` and restated
-  as `[[env.staging.send_email]]`, since bindings don't inherit) — when it is **absent**,
+  as `[[env.staging.send_email]]`, since bindings don't inherit): when it is **absent**,
   `emailEnabled(env)` is false and every send is a no-op, so a deployment with email off does zero extra
   work. There is no API key: the binding is the credential. This mirrors the model-key-absent → AI-hidden
   pattern. A fork turns email off by leaving the binding out.
 - Sign-in (`ACCOUNTS_URL` and the client credentials): the addresses are
   liveworkspace's, so without it nobody has one and nothing is sent.
-- `EMAIL_FROM` (plain var) — the From identity, a bare address or `Name <address>`. Its domain must be
+- `EMAIL_FROM` (plain var): the From identity, a bare address or `Name <address>`. Its domain must be
   onboarded to Email Service on this account. livediagram.app isn't on it yet, so production and staging
   both send as `livediagram <hello@liveplanner.app>` until it moves
   ([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md) "Senders until the domains move"). Unset, it defaults to
   `livediagram <hello@livediagram.app>`.
-- `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
+- `APP_BASE_URL` (plain var, optional): public origin for links in emails.
   Default `https://livediagram.app`.
 
 Local dev: nothing to set. `wrangler dev` simulates the binding, printing each email and saving its HTML
@@ -96,11 +96,11 @@ every address in one call. Guests have no address and never receive email.
 
 ## 6. Code shape
 
-- `apps/api/src/email/client.ts` — `emailEnabled(env)` + `sendEmail(env, msg)`, which hands the message
+- `apps/api/src/email/client.ts`: `emailEnabled(env)` + `sendEmail(env, msg)`, which hands the message
   to `@liveworkspace/email`'s `sendEmail(env.EMAIL, …)` (the one place that calls the binding; it sends
   `List-Unsubscribe` and gives up after 10 seconds). Never throws: returns `{ sent }` and logs on failure,
   with the address redacted, so email is always best-effort and never blocks or fails the caller.
-- `apps/api/src/email/templates.ts` — the `{ kind, subject, html }` builders
+- `apps/api/src/email/templates.ts`: the `{ kind, subject, html }` builders
   (on-brand, inline-styled HTML; links use `APP_BASE_URL`). `kind` is the
   template's telemetry token (see below): it rides on the builder's return so
   it reaches `sendEmail` through the spread every caller already writes,
@@ -118,12 +118,12 @@ every address in one call. Guests have no address and never receive email.
   Its `alt` is empty, since the wordmark beside it names the product when
   images are blocked. The path is permanent: every email already sent points
   at it.
-- `apps/api/src/liveworkspace/emails.ts` — `getOwnerEmails`
+- `apps/api/src/liveworkspace/emails.ts`: `getOwnerEmails`
   (the verified addresses, never throwing) and `claimMilestone`.
-- `apps/api/src/email/notifications.ts` — the notification sends, each reading
+- `apps/api/src/email/notifications.ts`: the notification sends, each reading
   the address, then the recipient's switch, then sending.
 
-All sends use `ctx.waitUntil` — email is never on the request's critical path.
+All sends use `ctx.waitUntil`: email is never on the request's critical path.
 
 **Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` writes one
 anonymous `Email·Sent·<kind>` row straight to the events table, and a failure
@@ -131,10 +131,10 @@ writes `Error·Api·<code>.SendEmail`: Email Service's refusal code when it give
 `E_RECIPIENT_SUPPRESSED.SendEmail`), else `Network.SendEmail` (a timeout, or a failure with no code). Server-side rather than through `POST /api/events`
 because nothing about an email reaches a browser: the send happens in a
 `waitUntil` after the response has gone, so this is the only place that can
-count it. Without it a refused sender was invisible — every failure went to `console.error` and
+count it. Without it a refused sender was invisible: every failure went to `console.error` and
 nowhere else. Gated on `TELEMETRY_ENABLED` like every other emit, and its own
 failure is swallowed: telemetry must never turn a delivered email into a thrown
-send. The template kind and nothing else goes on the wire — never an address, a
+send. The template kind and nothing else goes on the wire: never an address, a
 name, or a recipient count.
 
 ## 7. Privacy / security

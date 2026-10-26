@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The API Tokens category (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
+// The API Tokens category (docs/specs/015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category):
 // a guest gets the reason plus a Sign In link; a signed-in user is sent to liveworkspace.app, where
 // the account's tokens are run (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens").
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';

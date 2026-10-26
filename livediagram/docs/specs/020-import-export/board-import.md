@@ -105,7 +105,7 @@ rule) rather than a second one.
 
 ## Bulk readiness
 
-Bulk import is not built. What keeps it cheap to add:
+**Status: Planned.** Not built yet; today a board imports one file at a time. What keeps bulk import cheap to add:
 
 - Stages take one source and share no module state; a queue calls them in turn
   and aggregates reports.

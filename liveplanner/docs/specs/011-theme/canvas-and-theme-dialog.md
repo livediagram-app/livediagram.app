@@ -221,13 +221,13 @@ cleared).
 
 The canvas-style controls, shared with the palette's **Canvas** accordion (`CanvasStyleControls`, so the two can never drift):
 
-- **Pattern** — in the dialog, two carousels of real pattern previews: **static** patterns and **animated** ones,
+- **Pattern**: in the dialog, two carousels of real pattern previews: **static** patterns and **animated** ones,
   nine to a page on a desktop and six on a phone (`PatternCarousel`). The narrow palette accordion keeps its 4-wide
   grid with "Show more". ([Canvas and palette](../008-canvas/canvas-and-palette.md) lists the patterns.)
-- **Colours** — Canvas colour + Pattern colour, each opening the [colour picker](../004-interface-design/colour-picker.md) in a popover (soft and strong standard colours for the canvas, strong only for the pattern).
-- **Opacity** — the pattern-opacity slider with its percentage readout.
-- **Size** — the pattern-size slider (50%–200%, default 100%) with its percentage readout, directly under Opacity. Writes `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies every tile's `background-size` by it (never the pan phase, so the pattern still tracks panning at any size). Blank has no tile, so the slider is a no-op there.
-- **Speed** — a motion-rate slider (25%–300%, default 100%) with its percentage readout, directly under Size, shown **only while an animated pattern is active** (a static pattern has nothing to pace). Writes `backgroundAnimationSpeed` on the tab; the animated backdrop divides each motif's tuned duration by it via the `--lvd-bg-speed` var, so every pattern keeps its character and the slider just scales the pace.
+- **Colours**: Canvas colour + Pattern colour, each opening the [colour picker](../004-interface-design/colour-picker.md) in a popover (soft and strong standard colours for the canvas, strong only for the pattern).
+- **Opacity**: the pattern-opacity slider with its percentage readout.
+- **Size**: the pattern-size slider (50%–200%, default 100%) with its percentage readout, directly under Opacity. Writes `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies every tile's `background-size` by it (never the pan phase, so the pattern still tracks panning at any size). Blank has no tile, so the slider is a no-op there.
+- **Speed**: a motion-rate slider (25%–300%, default 100%) with its percentage readout, directly under Size, shown **only while an animated pattern is active** (a static pattern has nothing to pace). Writes `backgroundAnimationSpeed` on the tab; the animated backdrop divides each motif's tuned duration by it via the `--lvd-bg-speed` var, so every pattern keeps its character and the slider just scales the pace.
 
 ### Colours panel
 
@@ -260,12 +260,12 @@ Most themes paint every shape the same fill / stroke / text. A **Formal** theme 
 
 The editor chrome **follows the active tab's theme** so it matches the diagram you're editing, in two ways. Both the brand accent and the neutral slate surfaces are Tailwind v4 CSS variables (`--color-brand-50..950`, `--color-slate-*`), so `useEditorAccent` retargets those variables for the editor session by injecting one `<style>` element:
 
-- **Accent (both modes).** The active theme's accent (its `elementStroke`) is spun into an 11-stop ramp anchored at `600` (a pale dark-theme stroke is darkened first so white-on-`600` keeps contrast) and emitted as `html:root { --color-brand-* }`, so every `brand-*` utility — buttons, rings, focus outlines — takes the theme colour.
+- **Accent (both modes).** The active theme's accent (its `elementStroke`) is spun into an 11-stop ramp anchored at `600` (a pale dark-theme stroke is darkened first so white-on-`600` keeps contrast) and emitted as `html:root { --color-brand-* }`, so every `brand-*` utility (buttons, rings, focus outlines) takes the theme colour.
 - **Dark mode (a darker version of the theme).** Plain dark mode is the blue-slate dark palette. The hook also emits `html.dark { --color-slate-600..950 }`, a muted-then-shaded ramp of the theme hue (the accent pulled toward neutral slate so it's a tint, not a garish saturated dark), so dark-mode panels / borders / deep backgrounds read as a dark version of the chosen theme. Only the surface stops (600–950) are retargeted; the lighter stops stay neutral so dark-mode text keeps its readable greys. The override is `.dark`-scoped, so CSS handles the mode switch with no JS detection.
 - **The tint outranks the base by selector.** Dark mode's own palette ([Colour scheme](../004-interface-design/color-scheme.md#dark-palette-steel)) also retargets `--color-brand-*` and the surface stops under `.dark`, so the hook's rules are written as `html:root` (brand) and `html.dark` (surfaces): one element-type step more specific than the base, so the theme's tint wins whatever order the stylesheets load in.
 - The `<style>` lives in `<head>` so body-portaled UI (context menus, dialogs, popovers, toasts) inherits both. The **Default** (`brand`) scheme and an unthemed tab have no `elementStroke`, so nothing is injected: the built-in brand stands (sky in light mode, Steel in dark) on the built-in surfaces. Switching tabs re-resolves it; leaving the editor removes the `<style>` so the rest of the app (Explorer, marketing) keeps the defaults.
 - The header, the tab bar and the logo opt out ([The app's chrome](#the-apps-chrome)).
-- Only the chrome retargets — element colours come from the theme applied to the elements themselves ([Multi-colour (rainbow) themes](multicolour-themes.md)), unaffected.
+- Only the chrome retargets; element colours come from the theme applied to the elements themselves ([Multi-colour (rainbow) themes](multicolour-themes.md)), unaffected.
 
 ## The app's chrome
 
@@ -306,9 +306,9 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 
 ## Reuse notes
 
-- `CanvasStyleControls` — pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
-- `ThemeBrowser` — the flat, paged theme list. Rendered by the palette accordion, the New-project picker and the dialog's Colours panel.
-- `PagedCarousel` — the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share.
+- `CanvasStyleControls`: pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
+- `ThemeBrowser`: the flat, paged theme list. Rendered by the palette accordion, the New-project picker and the dialog's Colours panel.
+- `PagedCarousel`: the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share.
 - On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the Theme & canvas button**: its
   bottom-right corner sits 8 px above the button, its right edge on the bottom-right cluster's (the right of the zoom
   controls, so it sits as far right as the cluster and covers as little of the work as it can), and it grows from that corner (the long motion
@@ -316,4 +316,4 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
   button on screen it is the centred dialog. On a phone it is a **bottom sheet**, as the editor's other phone sheets
   are: the screen's width, rising from the bottom edge (`sheet-up`), at most 75% of the screen tall so the canvas stays
   in view above it, with the shared grab handle that drags it taller or down to close.
-- The dialog follows the existing modal contract (`Portal` + `useEscape` + a full-screen click-catcher, see `SettingsDialog`) — but with **no dimming / blur backdrop**: because every control applies live, the catcher is left transparent so the user can watch the canvas background + theme update behind the dialog as they click. The catcher still closes on an outside click and swallows pointer / right-click events so an edit doesn't leak to the canvas while it's open.
+- The dialog follows the existing modal contract (`Portal` + `useEscape` + a full-screen click-catcher, see `SettingsDialog`), but with **no dimming / blur backdrop**: because every control applies live, the catcher is left transparent so the user can watch the canvas background + theme update behind the dialog as they click. The catcher still closes on an outside click and swallows pointer / right-click events so an edit doesn't leak to the canvas while it's open.

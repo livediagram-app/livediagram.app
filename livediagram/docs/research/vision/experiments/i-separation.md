@@ -407,8 +407,8 @@ which is the one approach here that sees seams at 19 px.
 
 ## Integration (the parent session)
 
-On its own branch every step above held. Merged on top of groups G and H —
-whose recall changes landed in parallel — three of them no longer did, and
+On its own branch every step above held. Merged on top of groups G and H,
+whose recall changes landed in parallel: three of them no longer did, and
 were taken back out; replayed one at a time on the merged branch:
 
 | step added                           | panorama F1 / rec-A / merged | whiteboard merged | 201654 merged | TOTAL merged |
@@ -420,7 +420,7 @@ were taken back out; replayed one at a time on the merged branch:
 | (all five, as on the branch)         | 83 / 85 / 6                  | 8                 | 3             | 22           |
 
 Kept: I1 and I5a. Dropped: I2 (thin boxes at their own scale), I4 (a seam
-between two pads' colours) and I2b (a thin neck part as a column) — each cost
+between two pads' colours) and I2b (a thin neck part as a column): each cost
 the panorama recall or precision, or 201654 a merged box, more than the one
 merged box it saved. Result on the editor's own pixels: TOTAL F1 93.5,
 precision 96%, merged 23, walls passing 2/8 (201707, 201713).

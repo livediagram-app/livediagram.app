@@ -12,7 +12,7 @@ import { SettingsSignInLink } from './SettingsSignInLink';
 import { SettingsTokenPairings } from './SettingsTokenPairings';
 import type { SettingsTokensRowSpec } from './settings-catalogue';
 
-// The API Tokens category's one row (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category).
+// The API Tokens category's one row (docs/specs/015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category).
 // API tokens are the liveworkspace account's (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): one token
 // works on every app's API and MCP server, and they are made, listed and revoked on liveworkspace.app,
 // so this row says so and links there. Workbenches paired through a token stay this app's, so they

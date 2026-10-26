@@ -39,7 +39,7 @@ upgrade the api resolves the visitor's role and forwards only
 
 So the two obvious ways to name a facilitator both fail. A **presence id** is
 minted per socket, so it dies on every refresh. The **participant key**
-([Per-participant responses](participant-responses.md)) is client-claimed and relayed unchanged — the room's own comment
+([Per-participant responses](participant-responses.md)) is client-claimed and relayed unchanged: the room's own comment
 says holding it grants nothing, which stops being true the moment it grants the
 baton.
 
@@ -59,7 +59,7 @@ their `hello`.
 - No identity plumbing: the one thing it needs, the owner bit the upgrade carries (below), is a boolean.
 
 For "the owner can always take it back", the api forwards one more
-server-verified bit at upgrade — `X-Verified-Owner`. A boolean, carrying no
+server-verified bit at upgrade: `X-Verified-Owner`. A boolean, carrying no
 identifier, so nothing about the anti-spoofing property changes. Every editor
 joins through a room ticket ([API](../015-api/api.md) "Realtime model"), which is
 the index's grant itself, so the bit is read from it at the upgrade: the
@@ -68,13 +68,13 @@ signed-in owner, who always joined by ticket, was never seated as the owner and
 could lose the baton for good.
 
 **Server-verified means the route must overwrite it, not just set it.** The room
-holds no identities, so it believes this header outright — which makes stamping
+holds no identities, so it believes this header outright, which makes stamping
 it on **every** path, not only the owner's, part of the contract. It first
 shipped as a conditional `set`, and since the upgrade forwards the client's own
 request (`new Request(request)`), a copy the client sent survived on every
 non-owner path: browsers can't put headers on a WebSocket upgrade, but
 `websocat` / `curl` can, so any edit-role share-link holder could send
-`X-Verified-Owner: 1` and be seated as the owner — enough to seize the baton off
+`X-Verified-Owner: 1` and be seated as the owner, enough to seize the baton off
 its holder and end someone else's turn. Both trust headers are now written
 unconditionally (`X-Verified-Owner: '1' | '0'`), which is also why the room reads
 `=== '1'`. `document-room-routes.test.ts` asserts the forwarded headers rather
@@ -176,7 +176,7 @@ unchanged. [Bring Focus](bring-focus.md) gets the amendment.
 
 This is **who is driving, not who is allowed**. Everybody in the room already
 has edit rights or does not, and the baton is not defending the document from
-them — it is stopping two well-meaning people from starting timers at once.
+them: it is stopping two well-meaning people from starting timers at once.
 
 Enforcement is therefore uneven, and deliberately so:
 
@@ -206,19 +206,19 @@ verified identity inside the room, and field-level guards on the save path.
 
 The concurrent-selection lock ([Editor app](../007-editor/editor-app.md)) makes an element
 somebody else has selected un-editable for everyone else. Usually that resolves
-itself — they click away, or they leave and their presence goes with them. What
+itself: they click away, or they leave and their presence goes with them. What
 does not resolve is the person who is still connected and has wandered off with
 something selected, and the session stops on an element nobody can touch.
 
 So the facilitator can free it: right-click the locked element, and the one
-thing there is to do is offered. For everybody else, right-clicking a locked element opens nothing — the element is
+thing there is to do is offered. For everybody else, right-clicking a locked element opens nothing: the element is
 still locked, and a full element menu would be a menu of dead rows with one
 live one, so this is a small menu of its own (`LockedElementMenu`).
 
 **Who may.** The same rule as the session tools (`mayReleaseLock` is
 `mayRunSession`): yours while somebody is facilitating, everybody's while the
 baton is free. A stricter "must hold the baton" would hide the affordance in
-the ordinary room — most sessions never claim a baton, and the moment you need
+the ordinary room: most sessions never claim a baton, and the moment you need
 this is precisely a moment nobody was thinking about facilitation. It is also
 the least invasive session verb: it drops a selection. The holder loses no
 work, because an edit in flight is their own local state and the element itself
@@ -238,7 +238,7 @@ selection and re-broadcasts its ordinary `select` op, so every other peer's
 lock falls away through the path that already existed and the room tells nobody
 else anything.
 
-Refusals are silent — a caller without the baton, a target who has already
+Refusals are silent: a caller without the baton, a target who has already
 left, an unlock aimed at yourself, or one from a tab-scoped session aimed at
 someone on another tab ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)).
 Answering any of them would tell a peer which presence ids are live.
@@ -289,7 +289,7 @@ beside Follow, because "make this person the facilitator" is a thing you do
 _to a person_ and the list of people is where you are already looking.
 
 ```
-On this tab — Board
+On this tab: Board
   (LD) Live Diagram   You  Editor  Facilitating
        Online                                    [ Step Down ]
   (BW) Bright Wolf    Editor
@@ -305,7 +305,7 @@ On this tab — Board
 | Somebody else, not an Editor | **Make Facilitator**, disabled    | Always. The hover card says why, rather than hiding the button and leaving the rule unlearnable             |
 | Somebody else, holding it    | no button, **Facilitating** badge | Taking it back is done from my own row, so the baton has one home per person                                |
 | Mine, baton free             | **Take Facilitation**             | I have edit rights. This is also how a solo facilitator starts                                              |
-| Mine, somebody else holds it | **Take Over**                     | Owner only — the one row that makes "the document can always take back control" true                        |
+| Mine, somebody else holds it | **Take Over**                     | Owner only: the one row that makes "the document can always take back control" true                         |
 | Mine, I hold it              | **Step Down**                     | Always                                                                                                      |
 
 Self rows carry no button today; this is the first thing that gives them one,
@@ -354,9 +354,9 @@ name is the roster's, else the holder's as last seen, so the 90 seconds an absen
 still name them rather than "Someone else". A Participant or a Viewer, who could never start one, is told
 "Only people with edit access can start this." instead.
 
-The **card-level** verbs — an idea box's Reveal, an estimate's Clear, a done
+The **card-level** verbs (an idea box's Reveal, an estimate's Clear, a done
 check's Reset Everyone, the roll call, the picker's spin, a reveal zone's cover
-and a Bring Focus press — go the other way: while somebody else facilitates the
+and a Bring Focus press) go the other way: while somebody else facilitates the
 control is simply **absent**, exactly as it is for a view-only visitor today.
 That is the shape those faces already have (each verb is drawn only when its
 handler is passed), and a card is small enough that a row of disabled buttons
@@ -380,7 +380,7 @@ canvas, and it names the person to ask.
 ## Telemetry
 
 `track('Collab', 'Changed', …)` on claim / grant / release, with a preset type
-token. No user content, no names — [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)'s rule is unchanged.
+token. No user content, no names; [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)'s rule is unchanged.
 
 ## Out of scope
 

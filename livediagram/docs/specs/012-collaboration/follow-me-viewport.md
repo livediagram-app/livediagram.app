@@ -9,8 +9,8 @@ take the canvas back.
 
 "Look at this" is the most common sentence spoken over a shared canvas, and the
 canvas answers it worst. The tools that exist all point AT something from where
-the speaker already is — the laser ([Laser Panel](../008-canvas/laser-panel.md)), the spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)), a
-walked-to avatar ([Avatar mode](../008-canvas/avatar-mode.md)) — and every one of them is useless to the person
+the speaker already is: the laser ([Laser Panel](../008-canvas/laser-panel.md)), the spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)), a
+walked-to avatar ([Avatar mode](../008-canvas/avatar-mode.md)), and every one of them is useless to the person
 who is scrolled somewhere else entirely. Presentation mode ([Presentation mode](presentation-mode.md)) is still
 draft and solves a different problem: an authored sequence, not a live one.
 
@@ -27,8 +27,8 @@ logged, never ordered (no `seq`), never replayed to a reconnecting client.
 - **Sent on change only**, throttled to ~10 Hz. A camera is not a pointer;
   10 Hz is smooth for a pan and a third of the traffic of the cursor stream, and
   an idle participant sends nothing at all.
-- **Sent by everyone, not on request.** The alternative — a follower asks, the
-  presenter starts publishing — needs a second op kind, a re-request on every
+- **Sent by everyone, not on request.** The alternative (a follower asks, the
+  presenter starts publishing) needs a second op kind, a re-request on every
   reconnect, and a rule for what happens when the presenter reloads mid-follow.
   For three numbers on an already-throttled channel, the handshake costs more
   than the traffic it saves. The cost is real and accepted: a room where nobody
@@ -64,7 +64,7 @@ recognise itself in a peer's message.
   it, a follower who joined after the presenter's last pan read "Following Alex" over a view of their own until
   Alex next moved.
 - While following, a pill reads **"Following Alex"** with a **Stop**.
-- **Any canvas gesture of your own breaks it, instantly and silently** — pan,
+- **Any canvas gesture of your own breaks it, instantly and silently**: pan,
   zoom, pinch, arrow keys, fit-to-screen, the minimap ([Minimap](../008-canvas/minimap.md)). Grabbing the
   canvas IS the statement that you want your own view back, and a follow that
   survives it would be a fight the user cannot win. No confirmation, no toast:
@@ -76,7 +76,7 @@ recognise itself in a peer's message.
 
 ## Rules
 
-- **View-role visitors can follow, and can be followed.** It mutates nothing —
+- **View-role visitors can follow, and can be followed.** It mutates nothing:
   it's the purest possible read-only feature, and the audience on a view link
   is exactly who most needs it.
 - **It is unilateral and needs no consent.** Being in the room is the consent;

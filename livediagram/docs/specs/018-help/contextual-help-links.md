@@ -33,7 +33,7 @@ is the only way the editor links to a help article. It:
 - draws that `?` as **one look everywhere**: a bare glyph that picks up a soft
   rounded hover background, the same affordance the floating panels' own
   chrome (reset / minimise) uses. It is never a ring or a bordered circle
-  around the mark — an outlined `?` in a dialog header beside a bare `?` on a
+  around the mark: an outlined `?` in a dialog header beside a bare `?` on a
   panel reads as two different controls for the same thing, and the drift is
   self-propagating: the since-removed `ShortcutsDialog` had already grown a row of `!important`
   overrides to cancel the ring locally. Only the hit box varies, via
@@ -149,7 +149,7 @@ chrome, beside reset / minimise, from a `helpArticle` prop on `MovablePanel`
 (forwarded by `ModePanel`, so a tool panel opts in with one word).
 
 Declared on the shared component rather than left to each panel's own
-`headerActions`, so the affordance sits in the SAME place on every panel — a
+`headerActions`, so the affordance sits in the SAME place on every panel: a
 help button that moves around teaches people not to look for it. It renders in
 both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.

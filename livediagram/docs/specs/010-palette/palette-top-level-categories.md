@@ -22,7 +22,7 @@ The full set, in band order: **Popular**, then **Shapes / Write / Draw /
 Devices**, then **Icons / Stickers / Technology / Media / Components**, then
 **Data / Collaborate**. (Stickers joined the Decorate band later, in
 [Stickers](stickers.md); a first Collaborate category was merged into Behaviours later
-still, and Behaviours was then renamed Collaborate — see below.)
+still, and Behaviours was then renamed Collaborate; see below.)
 
 Where things landed, for anything that moved:
 
@@ -36,7 +36,7 @@ Where things landed, for anything that moved:
 
 The **Blocks** and **Structure** groups emptied out and were deleted; **Write &
 Draw** split into **Write** (the wordy elements) and **Draw** (the gesture
-tools plus Frame). The **User / actor** tile was deleted outright — see below.
+tools plus Frame). The **User / actor** tile was deleted outright; see below.
 
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
@@ -103,9 +103,9 @@ and MCP callers. So it renders wherever one exists, and nothing adds one.
 
 A long category (Components runs to ten rows) must not run off the bottom of a
 short window. The panel body's height is
-capped at the space between its top edge and the bottom chrome — the zoom dock
+capped at the space between its top edge and the bottom chrome: the zoom dock
 and the tab bar, both measured rather than assumed, since the dock hides in Zen
-mode — and only then does it scroll. A category that fits shows no scrollbar
+mode, and only then does it scroll. A category that fits shows no scrollbar
 and still animates its height on switch.
 
 ## Searching across the categories
@@ -121,14 +121,14 @@ Icons, Stickers and Technology tabs still search their own catalogues
 ## The pickers unfold from their trigger
 
 Both palette dropdowns grew from their own centre-top, which made opening the
-canvas-tool picker and the category picker look identical — the one thing the
+canvas-tool picker and the category picker look identical: the one thing the
 animation exists to distinguish.
 
 The menu's `transform-origin` is now the corner its trigger sits at: top-left
 for the left-aligned canvas-tool picker, top-right for the right-aligned
 category picker (and the bottom corners when a menu flips up). One
 direction-agnostic keyframe scales uniformly out of that origin, replacing the
-old `scaleY`-only pair — squashing the Y axis on top of a corner origin read as
+old `scaleY`-only pair: squashing the Y axis on top of a corner origin read as
 a blind coming down rather than a menu growing out of a button.
 
 ## What did not move
@@ -142,7 +142,7 @@ looking for a chart would not find one.
 
 The same call was made when **Collaborate merged into Behaviours**: its seven
 articles keep their `/help/palette/collaborate/` URLs and their parent page,
-and only the copy changed — it now says where the elements actually live and
+and only the copy changed: it now says where the elements actually live and
 which two groups they are. A rename that broke seven live links to say
 "Behaviours" in a path would be a cosmetic match bought with real breakage.
 
@@ -178,7 +178,7 @@ is filed with the estimate card, not apart from it).
 asking the room, so they sit with the estimate card and the temperature check, where somebody wanting to put a
 question to everybody looks; a timer is facilitation, so it sits with the Reveal, the Done check and the Picker.
 
-They remain one shape kind with a `session` config ([Session button](../012-collaboration/session-button.md)) —
+They remain one shape kind with a `session` config ([Session button](../012-collaboration/session-button.md)):
 this is a palette grouping, not a model change.
 
 The **Comment panel** is in **Record**: a comment thread is a thing you leave behind on the canvas for somebody to
@@ -193,7 +193,7 @@ the tab body need no special case.
 The grouping is by **what the element does with the room**, not by what it
 looks like. That is the same rule that produced the Build category ([The Build palette category](build-category.md)),
 and it is why Portal sits with Chair and the Link card (all three take you
-somewhere — another tab, a seat, the page itself) rather than with Reveal
+somewhere: another tab, a seat, the page itself) rather than with Reveal
 (which the facilitator drives). The Link card came here from Components, which
 groups by what a thing looks like: a ready-made composite you recolour and
 retitle. A link card is neither composite nor decoration, so it read as filler
@@ -201,8 +201,8 @@ in that category and as an obvious member of this one.
 
 Three kinds were split into a tile per variant at the same time, on the
 [More than YouTube](../009-elements/embed-providers.md) pattern: selection modes, session tools, reactions, and estimate
-scales. In every case the variant IS the decision — you know which mode, which
-tool, which scale before you reach for the palette — so placing a default and
+scales. In every case the variant IS the decision: you know which mode, which
+tool, which scale before you reach for the palette, so placing a default and
 then reconfiguring it was two steps for something already settled. They remain
 one shape kind each with a mode field; the choice rides the draw intent.
 
@@ -213,7 +213,7 @@ Build, Components and Devices sit in their own band above Decorate.
 All three are things you lay a canvas OUT with rather than draw on it: Build's
 containers, the ready-made page composites, the device frames a wireframe sits
 inside. Arranging a canvas comes before dressing it, which is the order the
-bands now read in — Common, Structure, Decorate, Dynamic.
+bands now read in: Common, Structure, Decorate, Dynamic.
 
 The category array must stay sorted by band: the category picker renders it
 straight through and groups under the headings without sorting, so a

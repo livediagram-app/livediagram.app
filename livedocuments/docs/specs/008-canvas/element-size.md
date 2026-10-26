@@ -7,7 +7,7 @@ lock, and the reset-to-default-proportion action.
 ## Why a category
 
 The three were scattered. The **lock** lived at the bottom of Layer, under the
-opacity slider, next to send-to-back — filed by "it is a property of the
+opacity slider, next to send-to-back, filed by "it is a property of the
 element" rather than by what it does. The **reset** lived in Shape, which meant
 it only appeared for morphable kinds, so an image or a table could be locked
 but never un-warped. And there was no way to state a size at all: every
@@ -19,7 +19,7 @@ Two number boxes, width and height, in **canvas pixels at 100% zoom**.
 
 That is the only unit the model has. A floorplan drawn at "10px per cm" is the
 author's own scale, and inventing a units system to record it would be a far
-bigger feature than a number box — one that would have to touch export, the
+bigger feature than a number box, one that would have to touch export, the
 grid, the ruler that does not exist yet, and every element that stores a size.
 Pixels are honest about what they are, and they are enough to draw to scale.
 
@@ -36,7 +36,7 @@ Behaviour:
   and Escape's own blur commits nothing.
 - **The lock applies.** With it on, typing one dimension carries the other, so
   the lock means the same thing here as it does on a drag handle. Setting both
-  at once is not overruled — that IS the intent.
+  at once is not overruled: that IS the intent.
 - **Clamped to 8…20000px.** A zero or negative box is not a shape, and a stray
   extra digit should not produce a canvas nobody can pan out of.
 - The boxes **follow the element**: a drag-resize, an undo, or the lock

@@ -1,6 +1,6 @@
 # Document structure
 
-A document is the top-level artifact users create. It is not a single canvas — it is a **collection of tabs**, each its own run of pages, with **links between elements across tabs**.
+A document is the top-level artifact users create. It is not a single canvas; it is a **collection of tabs**, each its own run of pages, with **links between elements across tabs**.
 
 ## Hierarchy
 
@@ -18,7 +18,7 @@ Document
 ```
 
 - A document has **one or more tabs**. New documents start with a single empty tab.
-- Each tab has its own independent canvas — pages, elements, layout, theme, optional lock state. Pages are themselves elements on the tab's canvas ([Pages mode](../007-editor/pages-mode.md)).
+- Each tab has its own independent canvas: pages, elements, layout, theme, optional lock state. Pages are themselves elements on the tab's canvas ([Pages mode](../007-editor/pages-mode.md)).
 - Tabs are **ordered**; users can drag-reorder them in the tab bar.
 - A tab has a name (default `"Tab 1"`, `"Tab 2"`, etc.) and is renameable.
 - **Auto-rename on first edit.** While a tab still has its default name (matching `^Tab \d+$`), editing the label of its first element renames the tab to that label. The rename only fires once: as soon as the tab name diverges from the default pattern (auto-rename or manual rename), subsequent label edits leave the tab name alone. This mirrors the document-name auto-fill from the default `Untitled document`.
@@ -35,12 +35,12 @@ Activating a tab/element/document link is a navigation action; a `url` link open
 
 ### Use cases
 
-- **Drill-down.** A summary slide's "Results" box links to the tab holding the full report — clicking it dives into detail.
+- **Drill-down.** A summary slide's "Results" box links to the tab holding the full report, and clicking it dives into detail.
 - **Cross-references.** A step in an infographic links to the article page that explains it, without duplicating the content.
 
 ## Data model
 
-Canonical types live in **`@livedocuments/document`** — that package is the source of truth for the cross-app shape (consumed by the live editor, the api worker, and any future code that handles documents). Everything is re-exported through `src/index.ts`, so consumers import from the package and never from a file inside it; the split below is for readability only and can change without touching a caller.
+Canonical types live in **`@livedocuments/document`**; that package is the source of truth for the cross-app shape (consumed by the live editor, the api worker, and any future code that handles documents). Everything is re-exported through `src/index.ts`, so consumers import from the package and never from a file inside it; the split below is for readability only and can change without touching a caller.
 
 | File               | Holds                                                                   |
 | ------------------ | ----------------------------------------------------------------------- |
@@ -52,14 +52,14 @@ Canonical types live in **`@livedocuments/document`** — that package is the so
 **The vocabularies exist twice, and tests hold them together.** `Element`'s
 `type` discriminants and `ShapeKind`'s members are compile-time unions, while
 `validate.ts` keeps each as a runtime set (`ELEMENT_TYPES`, `SHAPE_KINDS`) so it
-can gate input crossing a trust boundary — the api worker, the MCP server, the AI
+can gate input crossing a trust boundary: the api worker, the MCP server, the AI
 panel. Nothing in the compiler makes a union and a set agree, and both drift
 silently:
 
 - A shape kind missing from `SHAPE_KINDS` is coerced to a square by
   `coerceShapeKind`. Wrong, visible, recoverable.
 - An element type missing from `ELEMENT_TYPES` fails `isValidElement`, and
-  `isValidTab` fails a tab if **any** element does — so the api answers
+  `isValidTab` fails a tab if **any** element does, so the api answers
   `400 invalid tab` and the tab stops persisting at all. Add an element type,
   wire it through the editor, forget the set, and the feature works until the
   first save. `ELEMENT_TYPES` is also the list of types the MCP hands the calling
@@ -167,6 +167,6 @@ Element IDs are document-scoped so cross-tab links are stable even if elements m
 
 - The tab bar sits at the **bottom** of the editor (see [Editor app](../007-editor/editor-app.md)). The active tab fills the canvas area.
 - A `+` button on the tab bar adds a new empty tab and switches to it.
-- **Rename** a tab by double-clicking its label (inline input — Enter commits, Escape cancels). Also available via the per-tab ellipsis menu.
+- **Rename** a tab by double-clicking its label (inline input: Enter commits, Escape cancels). Also available via the per-tab ellipsis menu.
 - **Reorder** tabs by dragging a tab to a new position in the bar.
 - **Create a link** from the element's right-click context menu, click "Link Element", and pick a target (tab, element, another document, or an external URL); the link follows the element if it's moved.

@@ -1,6 +1,6 @@
 # Diagram sources
 
-**Status: specified.** Built by `plans/0047-repository-sync.md`.
+**Status: Planned.** Not built yet; the link file accepts `[[sources]]` tables and leaves them unread.
 
 Most repositories already hold diagrams as text: Mermaid in READMEs, PlantUML beside the code, Graphviz written by
 generators such as code2flow. A **source** is one such diagram, a file or a fenced block in Markdown, **bound** to a

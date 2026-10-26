@@ -4,9 +4,9 @@ A click-to-place vertex tool that fills the geometry gap between the Pencil (fre
 
 ## Model
 
-A committed polygon **is a `FreehandElement`** — normalised `points`, `closed` flag, everything inherited (selection, resize, rotate, lock, layers, theming via `strokeColor`/`fillColor`, history, sync, export, eraser). No new element type and no new fields: a polygon is just a freehand whose points happen to be sparse straight-line vertices.
+A committed polygon **is a `FreehandElement`**: normalised `points`, `closed` flag, everything inherited (selection, resize, rotate, lock, layers, theming via `strokeColor`/`fillColor`, history, sync, export, eraser). No new element type and no new fields: a polygon is just a freehand whose points happen to be sparse straight-line vertices.
 
-One rendering nuance: freehand paths are smoothed through `catmullRomToBezierPath`, which would round off deliberate corners. Both renderers (canvas `FreehandSvg`, headless `svgFreehandShape`) therefore render **straight `M/L` segments when the element has ≤ some vertex-count heuristic?** No — heuristics drift. Instead the element carries one new optional field:
+One rendering nuance: freehand paths are smoothed through `catmullRomToBezierPath`, which would round off deliberate corners. Both renderers (canvas `FreehandSvg`, headless `svgFreehandShape`) therefore render **straight `M/L` segments when the element has ≤ some vertex-count heuristic?** No: heuristics drift. Instead the element carries one new optional field:
 
 ```ts
 straightEdges?: boolean; // true = render M/L segments, no Catmull-Rom smoothing
@@ -25,7 +25,7 @@ Set by this tool at commit; absent on pencil/highlighter strokes. Both renderers
 - Banner copy: "Click to place points, click the start to close, double-click to finish". Mobile taps behave as clicks; the banner keeps the shorter mobile copy convention.
 - A minimum of 2 vertices is required to commit an open line, 3 to close; anything less on finish is a cancel, not a degenerate element.
 
-Commit runs through `createFreehand(vertices, closed)` (no RDP simplification — the user placed exactly the vertices they want), spreads theme colours the same way the pencil does (fill only when closed), selects the new element, and pushes one history entry.
+Commit runs through `createFreehand(vertices, closed)` (no RDP simplification: the user placed exactly the vertices they want), spreads theme colours the same way the pencil does (fill only when closed), selects the new element, and pushes one history entry.
 
 ## Telemetry
 

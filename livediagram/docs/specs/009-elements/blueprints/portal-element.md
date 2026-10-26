@@ -6,11 +6,11 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                 | Role                                                              |
-| ---------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/document/src/shape-factory.ts`             | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled |
-| `packages/document/src/validate.ts`                  | `portalTarget` must be a non-empty string                         |
-| `packages/document/src/svg-render-faces.ts`          | The export ring (`'portal'`)                                      |
+| File                                                   | Role                                                              |
+| ------------------------------------------------------ | ----------------------------------------------------------------- |
+| `packages/document/src/shape-factory.ts`               | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled |
+| `packages/document/src/validate.ts`                    | `portalTarget` must be a non-empty string                         |
+| `packages/document/src/svg-render-faces.ts`            | The export ring (`'portal'`)                                      |
 | `apps/editor/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring             |
 | `apps/editor/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`    | Calls `usePortalTravel`; walk-in through `enterPortalRef`         |
@@ -190,7 +190,7 @@ export function usePortalTravel(deps: PortalTravelDeps): {
 
 ## Accessibility
 
-- Linked: a native `<button>`, `aria-label` `"<label> — go to <far name>"`.
+- Linked: a native `<button>`, `aria-label` `"<label>: go to <far name>"`.
 - Unlinked: a `div` inside the hover card; no role.
 - The art is `aria-hidden`.
 - Hover and press are 100 ms transitions; nothing loops.
@@ -213,21 +213,21 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 ## Testing
 
-| Rule                                                   | Test                                            | File                                                |
-| ------------------------------------------------------ | ----------------------------------------------- | --------------------------------------------------- |
-| Defaults: taller than wide, unlinked, unlabelled, lock | "makes a portal portal-shaped and unpaired"     | `packages/document/src/factories.test.ts`           |
+| Rule                                                   | Test                                            | File                                                  |
+| ------------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------- |
+| Defaults: taller than wide, unlinked, unlabelled, lock | "makes a portal portal-shaped and unpaired"     | `packages/document/src/factories.test.ts`             |
 | Candidates and positional names                        | `portalsOnTab`, `portalName` blocks             | `apps/editor/lib/portals.test.ts`                     |
 | Every broken link resolves to unlinked (E1-E3)         | `resolvePortalTarget` block                     | `apps/editor/lib/portals.test.ts`                     |
 | Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/editor/lib/portals.test.ts`                     |
 | Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/editor/lib/portals.test.ts`                     |
 | Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/editor/lib/portals.test.ts`                     |
 | Travel order, ignored exit, unlinked inert (I4)        | `usePortalTravel` block                         | `apps/editor/components/canvas/portal-travel.test.ts` |
-| Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`             |
-| Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`  |
-| Export ring lit when linked, dim when not              | "draws a portal as its lit ring when paired, …" | `packages/document/src/svg-render-fidelity.test.ts` |
-| Two-way link, release, unlink, create, rename (I2)     | none                                            | (gap) [QF9] [QF10]                                  |
-| Walk-in once, exit ignored (I3)                        | none                                            | (gap)                                               |
-| Drag never travels                                     | none                                            | (gap)                                               |
+| Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`               |
+| Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`    |
+| Export ring lit when linked, dim when not              | "draws a portal as its lit ring when paired, …" | `packages/document/src/svg-render-fidelity.test.ts`   |
+| Two-way link, release, unlink, create, rename (I2)     | none                                            | (gap) [QF9] [QF10]                                    |
+| Walk-in once, exit ignored (I3)                        | none                                            | (gap)                                                 |
+| Drag never travels                                     | none                                            | (gap)                                                 |
 
 ## Constants and configuration
 

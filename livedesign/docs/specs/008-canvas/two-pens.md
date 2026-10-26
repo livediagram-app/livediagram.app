@@ -7,7 +7,7 @@ Status: shipped
 The Pencil splits into two palette tiles in the **Draw** category (a logo page's, [Logo pages](../007-editor/logo-pages.md) "The Logo palette"):
 
 - **Freehand Pencil** (`P` or `7`): the stroke is kept exactly as you drew it.
-- **Shape Pen** (`6`) — a rough circle, square, triangle or line converts to
+- **Shape Pen** (`6`): a rough circle, square, triangle or line converts to
   the real shape on release.
 
 The **"recognise shapes" toggle in the pen's mode banner is gone**, along with
@@ -36,14 +36,14 @@ picker, so picking the other pen is one gesture, as a toggle would be.
 { type: 'freehand'; variant?: 'highlighter' | 'shape-pen' }
 ```
 
-`useCanvasDrawGesture` reads the armed intent on release —
-`pendingDraw?.variant === 'shape-pen'` — rather than a lifted preference, and
+`useCanvasDrawGesture` reads the armed intent on release
+(`pendingDraw?.variant === 'shape-pen'`) rather than a lifted preference, and
 passes that to `onCommitFreehand`. The recognition code itself
 (`../packages/model-core/src/recognise-shape.ts`) is untouched; only what decides to
 call it changed.
 
 Each pen gets its own cursor and banner. The shape pen's cursor is the nib
-with a dashed square beside it, and its banner reads "Draw a rough shape — it
+with a dashed square beside it, and its banner reads "Draw a rough shape; it
 snaps to the real one", because saying what it will do is the whole difference
 between the two tiles.
 

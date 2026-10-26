@@ -17,9 +17,9 @@ lives in the facilitator's head or in a doc nobody on the canvas can see.
 
 A **shape kind**, `agenda`. Its `label` is the session's name.
 
-- **`ShapeElement.agendaItems`** — `{ label, minutes }[]`, in order. Bounded in
+- **`ShapeElement.agendaItems`**: `{ label, minutes }[]`, in order. Bounded in
   `validate.ts`.
-- **`ShapeElement.agendaCurrent`** — the index of the running segment, or
+- **`ShapeElement.agendaCurrent`**: the index of the running segment, or
   absent for "not started". Shared, so the whole room sees where they are.
 - **`ShapeElement.agendaTimerStartedAt`**: the `startedAt` of the tab timer
   run that segment started (`TabTimer.startedAt`, minted by `startTimer` and
@@ -54,7 +54,7 @@ its minutes instead.
 ## Pressing a segment
 
 Routes through **`startTimer`**, the same entry point the Current Tab menu and
-the session button already use — so the edit-role gate and
+the session button already use, so the edit-role gate and
 the telemetry all still happen exactly once, in the one place that owns them
 ([Session tools (timer + voting)](session-tools.md), [Session button](session-button.md)). It then writes `agendaCurrent`.
 
@@ -63,7 +63,7 @@ queueing: an agenda that refuses to move on because the last segment overran is
 an agenda nobody uses twice.
 
 There is deliberately **no auto-advance** when a timer expires. A segment
-ending is a prompt to a human, not an instruction — the room is mid-sentence,
+ending is a prompt to a human, not an instruction: the room is mid-sentence,
 and a canvas that silently starts the next timer takes a decision that belongs
 to the person facilitating.
 

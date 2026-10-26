@@ -30,7 +30,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per design; each design's content in its own SQLite-backed Durable Object, with where it is filed and who may open it in liveworkspace's index).
 - **Telemetry** is liveworkspace's: events go to its central service and `/telemetry` redirects to its public dashboard, filtered to livedesign (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
-- **MCP** at `mcp.livedesign.app` is a Cloudflare Worker that exposes the design tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
+- **MCP** at `mcp.livedesign.app` is a Cloudflare Worker that exposes the design tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host, not a router path.
 - **Router** stitches marketing, the editor, help and the API under one hostname.
 - **CLI** (`apps/cli`) is `livedesign`, the command line agents and scripts read and change designs with, published on npm as `@livedesign/cli`. It also opens a design inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
@@ -49,6 +49,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). It runs free at [livedesign.app](https://www.livedesign.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Cloudflare Email Service (transactional email), each gated on its own configuration — and the editor runs fully without any of them.
+[MIT](LICENSE). It runs free at [livedesign.app](https://www.livedesign.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker (sign-in) and Cloudflare Email Service (transactional email), each gated on its own configuration), and the editor runs fully without any of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://www.livedesign.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

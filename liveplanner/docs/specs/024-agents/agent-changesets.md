@@ -1,8 +1,8 @@
 # Agent changesets
 
 **Status: built.** Closed liveplanner-app/liveplanner.app#343. Operations are the full
-[edit operations](edit-operations.md), in the line form or JSON, plus `replace`. The
-[agent presence](agent-presence.md) refresh is not built yet.
+[edit operations](edit-operations.md), in the line form or JSON, plus `replace`. A written changeset or revert
+refreshes the token's [agent presence](agent-presence.md) on its tab.
 
 Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the project's
 room, shown live to everyone with the tab open, credited to the person whose token wrote it, and revertable as one

@@ -164,7 +164,7 @@ Workflow:
 - New feature, scope change, or rule → write or update a spec **first**, code second.
 - Capture each user request in a spec before writing code, filed in its category folder.
 - Reference specs by filename in PRs and discussions.
-- If specs and code disagree, that's a bug — usually the spec is right; if not, fix the spec first.
+- If specs and code disagree, that's a bug. Usually the spec is right; if not, fix the spec first.
 
 ## Keep docs and the README current
 
@@ -218,7 +218,7 @@ packages/
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client, api-kit, mcp-kit, cli-kit,
   # telemetry-client, render-png, source-ast, style-guards, ui (the design system), model-core, api-schema (the wire shapes and validators every product shares), page-background, help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, template-previews (the previews' motion kit, story parts, fan and checks), marketing-site (the marketing pages every product shares), and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
-  specs/        # product specs — read these first
+  specs/        # product specs; read these first
   instructions/ # repeatable processes (e.g. registering a help article)
 ```
 
@@ -240,7 +240,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 
 ## Secrets policy
 
-See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
+See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public: no secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, GitHub Actions secrets for the deploy workflows.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_API_BASE`).
@@ -252,7 +252,7 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is 
 See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The editor always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
-- **One kind of identity, two kinds of person** — every caller sends a liveworkspace token as `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`); the api uses its `sub` claim as the owner id:
+- **One kind of identity, two kinds of person**: every caller sends a liveworkspace token as `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`); the api uses its `sub` claim as the owner id:
   - **Guest**: a year-long guest token (`kind: "guest"`, `sub: guest_<uuid>`) fetched once through the accounts site (`/api/auth/guest`, back to `/auth/guest`) and kept in `localStorage` (`livedocuments:v2:guest-token`). The same guest in every liveworkspace app. Full feature set.
   - **Account**: an account access token from signing in, or from signing in without a click (`/api/auth/silent`) when the browser already has a liveworkspace session.
   - There is no `X-Owner-Id` header, guest signature or `/api/migrate`.
@@ -264,10 +264,10 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 **Avoid duplication. Build things in reusable ways from the start.** Non-negotiable.
 
-- Before writing something new, check `packages/` for an existing shared module — extend it rather than recreating it.
+- Before writing something new, check `packages/` for an existing shared module, and extend it rather than recreating it.
 - If two apps need the same thing (UI component, util, type, schema, API client, validator, config), it lives in `packages/`, not copied into each app.
 - If you find yourself copy-pasting code across apps or packages, stop and extract it. "I'll dedupe later" is how drift starts.
-- Design package APIs to be consumed by multiple callers — generic enough to reuse, specific enough to be useful.
+- Design package APIs to be consumed by multiple callers: generic enough to reuse, specific enough to be useful.
 - Tailwind theme, oxlint, Prettier, TS config, and shared UI primitives all live in `packages/` for exactly this reason.
 
 When the right place for code is genuinely unclear, default to `packages/`.
@@ -288,13 +288,13 @@ When the right place for code is genuinely unclear, default to `packages/`.
 - A new dialog / page / overlay → its **own component file** (e.g. `../packages/workbench/src/components/chrome/ApiErrorPage.tsx`), not another branch inside an existing screen.
 - New behaviour or a slice of state → its **own hook** (`useXxx.ts`), then composed in. Editor state lives in domain slices, not piled into one hook.
 - When you add to an existing file, confirm it's the _cohesive_ home, not just the convenient one. Wire new pieces in with the smallest edit to the host file.
-- If a file is drifting toward a "kitchen sink", stop and extract — the same way duplication gets extracted on first sight (see the reuse principle above).
+- If a file is drifting toward a "kitchen sink", stop and extract, the same way duplication gets extracted on first sight (see the reuse principle above).
 
 ## Hard constraints
 
 - **All websites must be static, served as Workers Static Assets.** They deploy from the monorepo's root workflows (`.github/workflows/`). Next.js apps use `output: 'export'`: no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
 - Server-side logic lives in Cloudflare Workers, **not** in Next.js. Frontends call those Workers.
-- Stored data is reached only through a Worker (the api's Durable Objects, liveworkspace's index and accounts) — never from the browser.
+- Stored data is reached only through a Worker (the api's Durable Objects, liveworkspace's index and accounts), never from the browser.
 
 ## Tech stack
 
@@ -313,9 +313,9 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/editor/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
 - This is a public repo, rely on CI rather than running full E2E locally before a PR
-- Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
+- Worker apps target the Cloudflare Workers runtime, so prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - The api has no D1 and no migrations: each Durable Object makes its own SQLite schema on first use (`document-room/document-schema.ts`), beside the class that owns it.
-- The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
+- The router worker (`apps/router`) holds **no business logic**, only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
 - **Track key new functionality** via the anonymous-events schema ([spec](docs/specs/017-telemetry/telemetry.md)).
 - A feature that meaningfully changes user behaviour gets a one-liner `track(category, action, type)` in its handler.
 - Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums; extend them only when no existing pair fits.

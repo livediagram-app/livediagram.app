@@ -20,10 +20,10 @@ the registry from selection/project verbs to the whole app surface.
 ## Registry expansion
 
 New commands join `buildEditorCommands`, each mapping 1:1 to an existing
-editor handler (the non-negotiable rule of that registry — no behaviour
+editor handler (the non-negotiable rule of that registry: no behaviour
 forks, no drifted telemetry):
 
-- **History:** Undo, Redo — offered only when `canUndo` / `canRedo`.
+- **History:** Undo, Redo, offered only when `canUndo` / `canRedo`.
 - **Project and tab:** Create New Tab, Rename Tab, Rename Project, Delete Project, Share Project, Open Theme.
 - **View:** Toggle zen mode, Collaborators.
 - **Dialogs:** Export…, Import…, Settings, Keyboard shortcuts (opens

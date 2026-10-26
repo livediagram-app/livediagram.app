@@ -15,7 +15,7 @@ Everything else is inherited from the shape path: tap-to-drop AND draw-to-size, 
 
 ## Visual treatment
 
-A themed boxed card (fill/stroke/text follow the tab theme like any shape — unlike the code block, a checklist belongs to the page's palette). Each row: a rounded checkbox square + the row text, top-aligned, clipped to the card. Done rows tick the box (brand-coloured check), strike through the text, and mute it. A footer count ("2/5") renders bottom-right when at least one row is done.
+A themed boxed card (fill/stroke/text follow the tab theme like any shape; unlike the code block, a checklist belongs to the page's palette). Each row: a rounded checkbox square + the row text, top-aligned, clipped to the card. Done rows tick the box (brand-coloured check), strike through the text, and mute it. A footer count ("2/5") renders bottom-right when at least one row is done.
 
 ## Interaction
 

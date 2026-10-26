@@ -15,7 +15,7 @@ Everything else is inherited from the shape path: tap-to-drop AND draw-to-size, 
 
 ## Visual treatment
 
-A themed boxed card (fill/stroke/text follow the tab theme like any shape — unlike the code block, a checklist belongs to the diagram's palette). Each row: a rounded checkbox square + the row text, top-aligned, clipped to the card. Done rows tick the box (brand-coloured check), strike through the text, and mute it. A footer count ("2/5") renders bottom-right when at least one row is done.
+A themed boxed card (fill/stroke/text follow the tab theme like any shape; unlike the code block, a checklist belongs to the diagram's palette). Each row: a rounded checkbox square + the row text, top-aligned, clipped to the card. Done rows tick the box (brand-coloured check), strike through the text, and mute it. A footer count ("2/5") renders bottom-right when at least one row is done.
 
 ## Interaction
 
@@ -36,7 +36,7 @@ undoable: like a dot or an answer, they are the room's, not an edit.
 
 ## Plumbing checklist
 
-`SHAPE_KINDS` + field bounds in `validate.ts`, colour defaults in `colors.ts` (standard themed boxed element), kind label ("Checklist"), palette tile `tools:checklist` (Components category; favouritable, no letter shortcut), quick-connect excluded, OpenAPI regen, MCP schema prose (built from `SHAPE_KINDS`), AI-generate prompt vocabulary (include — "the AI may emit checklists for plan/retro asks" is genuinely useful), telemetry dashboard TOOLS label set.
+`SHAPE_KINDS` + field bounds in `validate.ts`, colour defaults in `colors.ts` (standard themed boxed element), kind label ("Checklist"), palette tile `tools:checklist` (Components category; favouritable, no letter shortcut), quick-connect excluded, OpenAPI regen, MCP schema prose (built from `SHAPE_KINDS`), AI-generate prompt vocabulary (include: "the AI may emit checklists for plan/retro asks" is genuinely useful), telemetry dashboard TOOLS label set.
 
 ## Telemetry
 

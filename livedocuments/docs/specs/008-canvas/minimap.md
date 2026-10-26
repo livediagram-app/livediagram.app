@@ -8,7 +8,7 @@ lets you jump the viewport anywhere with a tap or drag.
 - **A movable panel.** The Map is a first-class corner panel (`MovablePanel`,
   like AI and the tool panels), labelled **"Map"**: drag its header to move it and collapse
   it to a banner. It **docks into the four canvas corners** like the other panels
-  ([Panel corner docking](../007-editor/panel-docking.md)) — snap-to-corner on drag, free-drop, and a
+  ([Panel corner docking](../007-editor/panel-docking.md)): snap-to-corner on drag, free-drop, and a
   device-local persisted position; its default corner is **bottom-left**.
 - **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
   default**), the tab has **at least 4 elements**, **on desktop** (hidden on
@@ -31,7 +31,7 @@ lets you jump the viewport anywhere with a tap or drag.
   (`svgBoxed` / `svgArrow`, [MCP server](../015-api/mcp-server.md) §5), so every element appears with its
   real colours, silhouette, table grid, freehand stroke, icon glyph (the
   Technology marks pop in when the async catalogue lands), rotation, and
-  every arrow with its true curved / elbow path — not a grey wireframe. That
+  every arrow with its true curved / elbow path, not a grey wireframe. That
   drawing is shown as **one image**, not as a copy of the board in the page: on
   a large board a live copy doubled the page's elements and slowed every
   gesture ([Canvas performance](canvas-performance.md)). **It draws no labels**:
@@ -86,15 +86,15 @@ The canvas transform is `scale(z) translate(o)` about the `<main>` centre
 
 The minimap is an SVG whose `viewBox` **is** world space (the union bounding box
 of the elements, padded), so element rects are drawn at their literal world
-coords and `getScreenCTM().inverse()` maps a click back to world coords —
+coords and `getScreenCTM().inverse()` maps a click back to world coords, with
 letterboxing handled for free.
 
 ## Implementation
 
-- `../packages/workbench/src/lib/fit-clear-of-panel.ts` — `fitClearOfPanel`, the fit moved beside or above the Map
+- `../packages/workbench/src/lib/fit-clear-of-panel.ts`: `fitClearOfPanel`, the fit moved beside or above the Map
   (above), used by `lib/tab-fit-view.ts`.
 
-- `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
+- `components/canvas/Minimap.tsx`: the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is
   memoised on `elements` so panning only re-renders the viewport rectangle, and
   redrawn when a gesture ends rather than on each frame of it, a remote edit at most
@@ -104,7 +104,7 @@ letterboxing handled for free.
   inside `<main>`, and a child's layout effect runs before its parent's ref
   attaches, so a map mounted with the canvas never measures and loses the
   viewport rectangle.
-- `../packages/workbench/src/hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
+- `../packages/workbench/src/hooks/ui/useIsMobileViewport.ts`: a reactive (`useSyncExternalStore`)
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.
 - `Canvas` renders it gated on

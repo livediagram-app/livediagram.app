@@ -2,28 +2,28 @@
 
 The livediagram brand color is **light blue**. Everything below builds on that.
 
-## Primary palette — Sky blue
+## Primary palette: Sky blue
 
 A single brand hue with a full 50–950 ramp. Built on Tailwind's `sky` scale.
 
-| Token           | Hex           | Usage                                                      |
-| --------------- | ------------- | ---------------------------------------------------------- |
-| `brand-50`      | `#F0F9FF`     | App backgrounds, faint tints, hover surfaces               |
-| `brand-100`     | `#E0F2FE`     | Subtle fills, selected-row backgrounds                     |
-| `brand-200`     | `#BAE6FD`     | Accents, soft borders, collaborator cursor tints           |
-| `brand-300`     | `#7DD3FC`     | Decorative accents, secondary indicators                   |
-| `brand-400`     | `#38BDF8`     | Light brand surfaces, illustrations                        |
-| **`brand-500`** | **`#0EA5E9`** | **Primary brand color — accents, focus rings, decoration** |
-| `brand-600`     | `#0284C7`     | Decorative accents with no text, dark-mode fills           |
-| `brand-700`     | `#0369A1`     | **Solid fills under white text**, **all light brand ink**  |
-| `brand-800`     | `#075985`     | Hover on a solid fill, high-contrast emphasis              |
-| `brand-900`     | `#0C4A6E`     | Dark mode brand text                                       |
-| `brand-950`     | `#082F49`     | Dark mode surfaces                                         |
+| Token           | Hex           | Usage                                                     |
+| --------------- | ------------- | --------------------------------------------------------- |
+| `brand-50`      | `#F0F9FF`     | App backgrounds, faint tints, hover surfaces              |
+| `brand-100`     | `#E0F2FE`     | Subtle fills, selected-row backgrounds                    |
+| `brand-200`     | `#BAE6FD`     | Accents, soft borders, collaborator cursor tints          |
+| `brand-300`     | `#7DD3FC`     | Decorative accents, secondary indicators                  |
+| `brand-400`     | `#38BDF8`     | Light brand surfaces, illustrations                       |
+| **`brand-500`** | **`#0EA5E9`** | **Primary brand color: accents, focus rings, decoration** |
+| `brand-600`     | `#0284C7`     | Decorative accents with no text, dark-mode fills          |
+| `brand-700`     | `#0369A1`     | **Solid fills under white text**, **all light brand ink** |
+| `brand-800`     | `#075985`     | Hover on a solid fill, high-contrast emphasis             |
+| `brand-900`     | `#0C4A6E`     | Dark mode brand text                                      |
+| `brand-950`     | `#082F49`     | Dark mode surfaces                                        |
 
 `brand-500` (`#0EA5E9`) is the canonical "livediagram blue": the color of selection highlights, accents and focus rings. It
 carries no white text: white on it is 2.8:1, so a primary button sits two steps deeper, on `brand-700`. The logo draws on its own prism palette, sky into deep indigo ([Brand mark](./brand-mark.md)).
 
-## Neutrals — Slate
+## Neutrals: Slate
 
 Slate complements sky cleanly (both are cool-toned). Use for text, borders, surfaces, and dividers.
 
@@ -50,7 +50,7 @@ holds the class strings to it. White words on a coloured banner (the sign-in ban
 
 ## Semantic colors
 
-Reserved for status — never used decoratively.
+Reserved for status, never used decoratively.
 
 | Role    | Light bg    | Foreground  | Notes                          |
 | ------- | ----------- | ----------- | ------------------------------ |
@@ -252,4 +252,4 @@ The package's `theme.css` declares the brand ramp as CSS variables inside a `@th
 }
 ```
 
-Slate, success / warning / error utilities live on Tailwind's own defaults — only the `brand` ramp is custom.
+Slate, success / warning / error utilities live on Tailwind's own defaults; only the `brand` ramp is custom.

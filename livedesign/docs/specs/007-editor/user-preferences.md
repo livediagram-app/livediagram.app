@@ -219,7 +219,7 @@ type UserPreferences = {
   // Email notification preferences (docs/specs/014-identity/profile-and-email-notifications.md). Account-level email
   // settings that share this synced blob rather than a parallel store,
   // surfaced in the Settings dialog's Notifications category (only when the deployment has
-  // email configured — capabilities.emailEnabled). The api worker reads
+  // email configured: capabilities.emailEnabled). The api worker reads
   // these server-side before sending the matching transactional email
   // (docs/specs/014-identity/transactional-email.md), so a missing key === undefined === notify (opt-out, not
   // opt-in). Distinct from `notificationsEnabled`, which gates in-editor
@@ -539,7 +539,7 @@ and the dialog stays as the one complete, browsable index of them.
   (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and
-  revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);
+  revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category);
   only when sign-in is enabled on the deployment)), **Privacy** (telemetry).
   Editor leads because it is what most
   people came to change; Account and Privacy sit at the end, where the
@@ -781,7 +781,7 @@ and the dialog stays as the one complete, browsable index of them.
   [Canvas and palette](../008-canvas/canvas-and-palette.md).) The
   **Editor** group holds `middleMousePan` (default on): holding the
   middle mouse button drags the canvas in both axes from anywhere, over
-  empty space or elements, whatever tool is active — off leaves the middle
+  empty space or elements, whatever tool is active; off leaves the middle
   button to the browser. The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
@@ -833,13 +833,13 @@ event on the preferences key.
 
 ## API
 
-- **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
+- **`GET /api/preferences`**: returns `{ prefs: UserPreferences }`
   for the resolved owner: both scopes joined, `{}` when nothing is
   stored. Auth: the standard hybrid identity (an account's or a
   guest's Bearer token). 404 `preferences_not_stored` without liveworkspace
   accounts; 503 `preferences_unavailable` when the accounts Worker
   can't be reached.
-- **`PUT /api/preferences`** — body `{ prefs: PreferencesPatch }`: the
+- **`PUT /api/preferences`**: body `{ prefs: PreferencesPatch }`: the
   keys to change, each value whole, `null` to delete one, keys left out
   unchanged. The api splits it between the All scope and livedesign's
   own and makes one accounts write. Returns 204. Refused with 400 for a

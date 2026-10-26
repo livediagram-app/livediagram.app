@@ -1,7 +1,7 @@
 # Link cards
 
 A **link tool**: a rectangular bookmark element that turns a URL into a rich
-preview card — favicon, page title, site name, and (when available) the page's
+preview card: favicon, page title, site name, and (when available) the page's
 OG image. The URL is edited the same way every other element's link is.
 
 ## The element
@@ -14,7 +14,7 @@ defaults + `supportsColours`, `element-variant.ts` (a bordered, rounded card:
 (exports as a rounded rect). It is **resizable** like a shape (not a fixed
 marker) and recolour / move / lock / layer / delete like any element.
 
-- **URL source = `element.link` (`{ kind: 'url' }`)** — no new field. Editing
+- **URL source = `element.link` (`{ kind: 'url' }`)**: no new field. Editing
   reuses the existing `LinkPickerDialog` + `applyElementLink`; the empty card
   prompts "Double-click to add a link", and double-clicking opens that picker
   (`onEditLink` → `setLinkPickerOpenForId`). The card also gets the normal
@@ -24,11 +24,11 @@ marker) and recolour / move / lock / layer / delete like any element.
   sync, so peers + reloads get the preview without re-fetching. `LinkCardView`
   only trusts `meta` whose `url` matches the current link (stale guard), and
   falls back to the bare URL + host while there's no meta.
-- `THEME_COLOUR_FIELDS` gives link cards an **empty** list — a bookmark card
+- `THEME_COLOUR_FIELDS` gives link cards an **empty** list, so a bookmark card
   keeps its neutral look across themes (like sticky / image); the user can
   still recolour per-card.
 
-## Fetching the preview — `GET /api/unfurl`
+## Fetching the preview: `GET /api/unfurl`
 
 The static client can't read cross-origin page HTML, so a Worker route
 (`apps/api/src/routes/unfurl.ts`, over the shared fetch in `../packages/api-kit/src/unfurl-fetch.ts`) does it. When `applyElementLink` sets a URL
@@ -44,7 +44,7 @@ The endpoint is **SSRF-safe** (public repo):
   link-local / cloud-metadata (`169.254.0.0/16`, incl. `169.254.169.254`), plus
   IPv6 ULA / link-local. Re-validates the **final** post-redirect URL.
 - 8s `AbortController` timeout, ~512 KB read cap, HTML-only `Accept`, a
-  descriptive `User-Agent`. Parses with **`HTMLRewriter`** (streaming — there's
+  descriptive `User-Agent`. Parses with **`HTMLRewriter`** (streaming; there's
   no DOMParser in Workers): `<title>`, `og:title|image|site_name|description`,
   `name="description"`, and the favicon `<link rel="…icon…">` (relative URLs
   resolved against the final URL, `/favicon.ico` fallback).
@@ -68,6 +68,6 @@ neutral chip).
 ## Out of scope
 
 A Worker **image proxy / cache** (so viewers don't hit the third-party image
-host directly, and dead links keep their thumbnail) — noted follow-up.
+host directly, and dead links keep their thumbnail), a noted follow-up.
 oEmbed players (the separate embed-element idea), manual metadata editing, and
 scheduled re-unfurling.

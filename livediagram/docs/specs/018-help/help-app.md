@@ -8,7 +8,7 @@ The editor is friction-free and discoverable, but there's no place that explains
 
 ## Shape
 
-A new Next.js app, `apps/help`, deployed as the `livediagram-help` Worker and stitched in by the router under `/help` — the same pattern as `apps/community` (see [Router app](../016-platform/router-app.md)):
+A new Next.js app, `apps/help`, deployed as the `livediagram-help` Worker and stitched in by the router under `/help`, the same pattern as `apps/community` (see [Router app](../016-platform/router-app.md)):
 
 - `output: 'export'`, `basePath: '/help'`, `assetPrefix: '/help'`. Static only, no SSR (see [hard constraints](../../../AGENTS.md)).
 - The router strips `/help` and forwards to the worker, which serves `./out`.
@@ -25,13 +25,13 @@ livediagram is free and MIT-licensed with no plan for a paid tier (see [Open sou
 
 The **`@livediagram/help-registry` package** is the single source of truth for categories and articles; `apps/help/lib/articles.ts` re-exports it so the help app's `@/lib/articles` import path stays stable. It lives in `packages/` (not in the help app) because the live editor's search panel consumes the same catalogue (see "Help in global search" below). Two flat arrays (`categories`, `articles`) plus helpers (`getArticlesByCategory`, `getCategoryGroups`, `getSubArticles`, `searchArticles`). The arrays are this product's; their shapes (`Article`, `Category`) and the helpers are `@liveworkspace/help-registry`'s (the monorepo's `packages/help-registry`, shared by every product), which the package binds to its arrays with `createHelpRegistry`, as its `telemetry` module binds its id overrides with `createHelpTelemetryIds`. The link helpers (`articleHref`, `categoryHref`) also live apart in the data-free `@liveworkspace/help-registry/hrefs`, so a page that only builds links never bundles the catalogue: the article layout reads its own URL and its parent's off the route (`../packages/help-site/src/lib/article-route.ts`) and imports only the hrefs, and the search box loads the registry on the reader's first focus, hover or keystroke ([Web performance](../016-platform/web-performance.md)). An article's `categorySlug` is its full nested path (e.g. `canvas/the-canvas`); `parentSlug` links a sub-article to its feature landing page.
 
-**Search keywords.** Every article carries a required `keywords` field: space-separated, lowercase synonyms for the vocabulary users actually type when they don't know the article's title — synonyms ("transparency" for opacity, "hotkey" for keyboard shortcuts), adjacent spellings ("color" beside "colour"), and concept words the copy doesn't happen to use. `searchArticles` matches case-insensitively on **title + description + keywords**, and the editor's search panel matches the same fields, so an article is findable by the concept it discusses, not only by an exact title match. A test enforces that no article ships without keywords. (Born from a user report: searching "Opacity" found nothing because the element-opacity article is titled "Layer Order and Opacity" and the in-editor catalogue didn't cover it.)
+**Search keywords.** Every article carries a required `keywords` field: space-separated, lowercase synonyms for the vocabulary users actually type when they don't know the article's title: synonyms ("transparency" for opacity, "hotkey" for keyboard shortcuts), adjacent spellings ("color" beside "colour"), and concept words the copy doesn't happen to use. `searchArticles` matches case-insensitively on **title + description + keywords**, and the editor's search panel matches the same fields, so an article is findable by the concept it discusses, not only by an exact title match. A test enforces that no article ships without keywords. (Born from a user report: searching "Opacity" found nothing because the element-opacity article is titled "Layer Order and Opacity" and the in-editor catalogue didn't cover it.)
 
 **Sub-category grouping.** A feature category's landing cards can be split into labelled sub-category sections on its index page via an optional `group` field on each landing (e.g. Palette's `Selection Modes` / `Elements` / `Palette Settings`). `getCategoryGroups` buckets the category's landings by `group` in first-appearance order, and `FeatureCategoryIndex` renders one card grid per group under a heading. Landings without a `group` render in a single ungrouped grid, so other feature categories are unchanged.
 
 Categories fall into two kinds. The **support** categories carry standalone articles; the **feature** categories (`kind: 'feature'`) carry the in-depth feature guides and are grouped under a separate "Editor Guides" heading on the home page and listed on the `/features` index. Each feature category has a card-grid index page at `/help/<slug>/` (shared `FeatureCategoryIndex` component), and within it each feature has its own landing page plus optional sub-articles.
 
-**Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The livediagram API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Documents_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
+**Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles (_The livediagram API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Documents_ (worked `curl` examples), and _Errors and Rate Limits_) that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
 **Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Use** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, livediagram.app included, so they live at `https://www.liveworkspace.app/terms` and `https://www.liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`, and the older `/help/privacy-and-security/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them (each help stub binds `@liveworkspace/help-site/lib/moved`).
 
@@ -57,13 +57,13 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
-- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
-- **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
-- **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Canvas, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
-- **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools** — zen mode (26), appearance / light-dark-system (07), Markdown import (27), layout cleanup (47).
-- **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
+- **Explorer**: the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
+- **Palette**: the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
+- **Canvas**: the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
+- **Tabs**: multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Canvas, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
+- **Collaboration**: comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
+- **Tools**: zen mode (26), appearance / light-dark-system (07), Markdown import (27), layout cleanup (47).
+- **Search Panel**: the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
 
@@ -87,7 +87,7 @@ that teaches something says it in its caption.
 Separate from the illustrations above: every card in the catalogue carries a
 small outline glyph in a tinted tile. `lib/featureIcons.tsx` maps a feature slug
 to the glyph, `lib/featureColours.ts` to the hue, and the two maps are kept
-**key-for-key identical** (enforced by test) — a bespoke glyph beside a
+**key-for-key identical** (enforced by test): a bespoke glyph beside a
 fallback hue reads as an oversight.
 
 Both fall back **to the article's top-level feature category**, not to a single
@@ -98,13 +98,13 @@ frame in the same grey tile. **None still take it.** All 172 cards under
 the ten feature categories now have a glyph and a hue of their own, so the
 category fallback has become what it should be: the safety net a NEW card lands
 on before someone draws it, rather than something a reader sees. Keep it that
-way — a new landing page should arrive with its own entry in both maps, the way
+way: a new landing page should arrive with its own entry in both maps, the way
 it arrives with its own registry entry.
 
 The **support** categories work the same way one level simpler. Their cards render
 through `ArticleCard`, which takes its glyph from `SUPPORT_ARTICLE_ICONS`
 (`lib/articleIcons.tsx`) and its tone from the brand, so there is no paired hue
-map to keep in step — and it falls back to a generic document glyph rather than a
+map to keep in step, and it falls back to a generic document glyph rather than a
 per-category one. That fallback had 13 of the 40 icon-showing support cards on it,
 a third of them identical, so those are drawn too. (Getting Started is the
 exception by design: its cards lead with a numbered step badge instead of an
@@ -112,10 +112,10 @@ icon.) Both halves of the catalogue are now fully illustrated, and a test per ha
 them that way: `feature-icons.test.ts` and `help-site.test.ts` each fail on a
 card with no glyph of its own, naming the slug. The support one also reads WHICH
 browse pages number their cards straight off the pages, rather than hardcoding
-that Getting Started is the numbered one — so if the numbering ever moves, its
+that Getting Started is the numbered one, so if the numbering ever moves, its
 eight cards start needing glyphs and the test says so instead of quietly exempting
 the wrong category. A grid where most tiles are identical is decoration, not a
-catalogue — the
+catalogue: the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -126,13 +126,13 @@ category lookup reads only the FIRST segment (`topCategorySlug` in
 `palette/tools/data-elements` inherits Palette's. Both resolvers are shared by
 the category index cards and the MDX `<Feature>` tile, so a feature looks the
 same wherever it appears. Adding a bespoke glyph is still the better answer for
-any individual card — the category fallback is the floor, not the goal. Draw them
+any individual card: the category fallback is the floor, not the goal. Draw them
 a category at a time: a batch that shares a family reads as a set. And **look at
-them rendered before shipping** — valid path geometry is not the same as a
+them rendered before shipping**: valid path geometry is not the same as a
 legible 24px glyph. Three of the Palette thirteen had to be redrawn only after
 seeing them: a chair that read as a table, a button whose pointer swallowed it,
 and a sticker using the folded corner that already means a document here. The
-Canvas batch cost two more, both from colliding with a glyph already in the set —
+Canvas batch cost two more, both from colliding with a glyph already in the set:
 a magnet drawn as a shield, and a drop shadow that read first as "duplicate" and
 then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
 that fills and fades, because it is the only one whose subject IS a fill and a
@@ -144,8 +144,8 @@ lines read as a bulleted list until the circles became heads and shoulders.
 The pattern in every redraw so far is worth stating, since it is not what you
 would guess: none was wrong on its own terms. Each had either landed on a glyph
 already in the set, or landed on a completely different idiom's meaning. Portals
-took three attempts for exactly that reason — two rings joined by a line is the
-chain that `links` means, and joined by an arc it is a pair of headphones — and
+took three attempts for exactly that reason: two rings joined by a line is the
+chain that `links` means, and joined by an arc it is a pair of headphones, and
 settled on the single ring with an arrow entering it, accepting that the pairing
 lives in the label rather than the picture.
 
@@ -157,21 +157,21 @@ triangle, the tick, the burst, the mosaic and the die.
 
 Applied up front, that rule is also what made the Search Panel's six the first
 batch to need no redraw at all: six articles about one control, and not one of
-them draws a magnifier. They draw what you find — documents in a folder, a team,
+them draws a magnifier. They draw what you find: documents in a folder, a team,
 a tab and the element inside it, a shape landing on the canvas, a new tab.
 
 The Explorer's five raised the mirror-image problem and it is worth naming: a
 bespoke glyph has to differ from its own CATEGORY's fallback too, since the two
 sit side by side in the same grid until every card in the category is drawn. The
 Explorer's fallback is a folder tree, so Folders is two folders nested and
-Unsorted is loose cards sitting outside one — folders that are unmistakably about
+Unsorted is loose cards sitting outside one: folders that are unmistakably about
 something other than being a folder.
 
 One more, from the Data elements: **half a subject drawn clearly beats the whole
 subject drawn ambiguously.** Progress Bars and Rings covers both, and a ring above
 a bar is a circle on a stem, which reads as a lightbulb and nothing else. It draws
-the bar only. Rating hit the same collision rule from the other side — stars, when
-a star reads as a favourite — so it draws the SCALE, a row part-filled, rather
+the bar only. Rating hit the same collision rule from the other side: stars, when
+a star reads as a favourite, so it draws the SCALE, a row part-filled, rather
 than the symbol.
 
 Voting's five are the clearest case of the whole exercise, and needed no redraw
@@ -180,15 +180,15 @@ single one could have been drawn as "some dots". They draw spending a dot,
 restricting to a layer, hiding the count, tracking the room, and what won.
 `casting-dots` has no box around its dots for the same reason Rating has no star:
 dots in a box is the die that `pickers` already draws. The four Arrow guides are
-the same shape of problem — four articles about arrows, next to an `arrows` family
-glyph that is already an arrow — so they draw the three shapes, the handle you
+the same shape of problem: four articles about arrows, next to an `arrows` family
+glyph that is already an arrow, so they draw the three shapes, the handle you
 drag, the obstacle, and the other arrow. The Sharing guides ran into it a third
 way: the obvious drawing for each was already spoken for somewhere else in the
-set — a padlock is `locking`, a chain is `links`, a picture is `images` — so they
+set: a padlock is `locking`, a chain is `links`, a picture is `images`, so they
 draw the password field, the deadline, the page the diagram sits inside, and the
 refresh. Avatar Mode and Walking Together met it a fourth way: the set already
 had five person glyphs and every one was a head-and-shoulders bust, so these two
-are whole figures mid-stride — which happens to be exactly what the feature is.
+are whole figures mid-stride, which happens to be exactly what the feature is.
 And Changing the Theme is the plainest collision of the lot: a wheel of hues
 rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
 palette, so what was left to draw
@@ -203,26 +203,26 @@ things the eye skims: every path must parse (a leading moveto, seven-parameter
 arcs, correct arity elsewhere), and every anchor point must sit far enough inside
 the 24-unit box that its stroke does not clip the edge. The second one found a
 sparkle on Shape Recognition sitting low enough to be shaved. Note that any such
-checker has to split ARC parameters properly — SVG allows the two flags to be
+checker has to split ARC parameters properly: SVG allows the two flags to be
 glued to the following coordinate (`0 1 4.5` written `014.5`), and a naive number
 scan reads that as one value and then reports perfectly good glyphs as broken.
 
 The system has these layers. The kit, and every figure that is the same in each product that shows it, live
 once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
 
-- **`../packages/help-site/src/art/primitives.tsx`** — the shared SVG kit (`Scene`,
+- **`../packages/help-site/src/art/primitives.tsx`**: the shared SVG kit (`Scene`,
   `Shape`, `Arrow`, `SelectionBox`, `Cursor`, `Avatar`, `Panel`, `Dialog`,
   `Button`, `Tabs`, `Menu`, `Tile`, `Label`, `TextBar`). Every figure composes
   from these so the house style (white panels, slate borders, sky-blue `brand`
   accents) lands in one place. This is the no-duplication rule applied to art.
-- **`../packages/help-site/src/art/illustrations/<area>.tsx`** — a figure that is the
+- **`../packages/help-site/src/art/illustrations/<area>.tsx`**: a figure that is the
   same in every product that shows it (the colour and border controls, the layers
   panel, undo and redo, the presentation tools): drawn once, and imported by an
   article from `@liveworkspace/help-site/art/illustrations/<area>`. A figure stays in
   the app while it shows that product's own work, words or palette. A figure whose only product words are its name or what it calls its work takes them as props
   (`product`, `noun`), and the article passes them: `<StuckCanvas noun="canvas" />`,
   `<CliConsent product="livediagram" noun="canvas" />`.
-- **`components/illustrations/<area>.tsx`** — one file per area (canvas, palette,
+- **`components/illustrations/<area>.tsx`**: one file per area (canvas, palette,
   collaboration, ...) exporting named **scene** components (e.g.
   `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond
   brand use the on-brand accent set (emerald / violet / amber / rose / teal /
@@ -231,17 +231,17 @@ once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
   areas show, drawn once and imported wherever it recurs (the Settings dialog, with the shared
   `Switch`, is every product's: `@liveworkspace/help-site/art/illustrations/settings-dialog`). Files are named after
   their subject, never after the batch of work that produced them.
-- **`components/illustrations/<area>-parts.tsx`** — an area's own building
+- **`components/illustrations/<area>-parts.tsx`**: an area's own building
   blocks, when it grows enough of them to interleave with its scenes (the
   Explorer's sidebar row and document card; the palette's per-mode glyphs and
   shared mode-row). Distinct from `primitives.tsx`, which is the house style
   every area shares: these are wanted by one area only. The split exists so an
   `<area>.tsx` reads as a uniform list of complete scenes rather than
-  alternating between two kinds of thing — an area with one or two helpers
+  alternating between two kinds of thing: an area with one or two helpers
   keeps them inline and needs no parts file. The marketing feature-art files
   (`apps/marketing/components/feature-art/<name>-parts.tsx`) follow the same
   convention.
-- **`../packages/help-site/src/components/Figure.tsx`** — frames any scene in an "editor viewport" card
+- **`../packages/help-site/src/components/Figure.tsx`**: frames any scene in an "editor viewport" card
   with an optional caption. Registered globally in `mdx-components.tsx` (like
   `Tip` / `Note`), so an article only imports the specific scene and writes
   `<Figure caption="…"><Scene/></Figure>`.
@@ -318,14 +318,14 @@ One rule for every public page, shared with the marketing site ([Marketing site]
 
 ## In-editor entry point
 
-The editor's `TabBar` gains a **Help** link on its right edge, beside the existing GitHub link — a plain `<a href="/help/" target="_blank">` (same convention as the GitHub link, no editor-page wiring). It fires `track('UI', 'Opened', 'Help')` (see [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md); reuses existing `UI`/`Opened` enum pair). A "Help" link also lives in the help app's own header/footer.
+The editor's `TabBar` gains a **Help** link on its right edge, beside the existing GitHub link: a plain `<a href="/help/" target="_blank">` (same convention as the GitHub link, no editor-page wiring). It fires `track('UI', 'Opened', 'Help')` (see [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md); reuses existing `UI`/`Opened` enum pair). A "Help" link also lives in the help app's own header/footer.
 
 ### Help in global search
 
 The editor's global search panel ([Canvas and palette](../008-canvas/canvas-and-palette.md)) surfaces matching help articles as a
 **Help** group, so "how do I…" is answerable without leaving the canvas. The
 searchable catalogue (`apps/editor/lib/help-search.ts`) is derived from the
-**full `@livediagram/help-registry` registry** — every article, matched on its
+**full `@livediagram/help-registry` registry**: every article, matched on its
 title plus the registry's description + `keywords` synonyms, resolved to an
 absolute `/help` href, with the article's telemetry id ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Help) as the
 click's `UI·Opened` type.
@@ -336,7 +336,7 @@ palette results), matches on a non-empty query only, caps the group at 6, ranks
 it last (navigation and edit results keep the default Enter), and picking one
 opens the article in a new tab. Both the editor and the Explorer pass the
 catalogue, since help is global. (The `help-articles.ts` deep-link map remains,
-but only for surfaces that link ONE article contextually — see [Contextual help links](contextual-help-links.md).)
+but only for surfaces that link ONE article contextually; see [Contextual help links](contextual-help-links.md).)
 
 ## Analytics
 
@@ -354,9 +354,9 @@ A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-telemetry`
   coverage makes the group noisy.
 
 (Previously listed here: surfacing the full article catalogue in editor
-search. That shipped — the registry moved to `@livediagram/help-registry` with
+search. That shipped: the registry moved to `@livediagram/help-registry` with
 per-article `keywords`, and `help-search.ts` now derives from it.)
 
 ## articleCount is pinned by a test
 
-A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category — **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `help-site.test.ts` pins it, along with two things that were previously only convention: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.
+A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category, **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `help-site.test.ts` pins it, along with two things that were previously only convention: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.

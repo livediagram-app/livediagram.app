@@ -321,7 +321,7 @@ renders the generic empty-state copy. JSON export round-trips through `validate.
   to `target.embedUrl` [QC6].
 - **Link dialog.** Title "Link embed". Subtitle, field label, placeholder and hint per provider as
   built in `EditorElementDialogs`; error "That isn't a link we can embed. Check it starts with
-  https:// — or, for a named service, that it is a link to a real file." [QC9]. Help link:
+  https://, or, for a named service, that it is a link to a real file." [QC9]. Help link:
   `embedElements` (D72).
 - **Draw banner.** "Click to drop or drag to draw <Label> (stays 16:9)" ("Tap to drop …" on a phone), without the parenthesis on
   mobile; no provider reads as Website (D71).

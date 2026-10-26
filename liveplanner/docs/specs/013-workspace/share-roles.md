@@ -1,7 +1,6 @@
 # Share roles
 
-**Status: built (Viewer, Participant, Editor links); token levels, ownership powers and collaboration keys still
-ahead ([Later](#later)).**
+**Status: built** (Viewer, Participant, Editor links). The items under [Later](#later) are planned.
 
 Everyone who reaches a project without owning it, by a share link or an embed, does so at one of three **access
 levels**: **Viewer**, **Participant** or **Editor**. **Ownership** is not a level: it is a set of powers over the
@@ -128,8 +127,8 @@ once a plan is open.
 - **Peers take only what a Participant changed.** The room relays a Participant's update as the fields it changed,
   never the stored element whole, so an Editor's change that has not been saved yet is never undone by it.
 - **A Participant answers as itself.** Its dots and responses must name the key its own session published; one in
-  another's name is dropped. Until keys are server-derived ([Later](#later)), a session could still claim someone
-  else's key from the start.
+  another's name is dropped. Keys are client-chosen today (server-derived keys are planned, [Later](#later)), so a
+  session can still claim someone else's key from the start.
 - **A held-back gesture says so.** When the editor holds back a change a Participant may not make (deleting
   someone else's sticky, resizing a shape), it shows one short notice for the burst rather than failing silently.
 - A guest who signs in becomes a different adder: stickies added as a guest can no longer be deleted by them.
@@ -148,12 +147,12 @@ once a plan is open.
 
 ## Later
 
-Specified in the research and not built yet:
+**Status: Planned.** Not built yet; today API tokens carry the read-only flag, ownership is the index's `edit`
+grant, and a Participant's dots and answers carry the same client-chosen key an Editor's do.
 
 - **Token levels**: API tokens carry view, participate or edit instead of the read-only flag.
 - **Ownership powers** as a named set every door asks beside the level.
-- **Server-derived collaboration keys**, pinned per socket, so nobody can answer as someone else; until then a
-  Participant's dots and answers carry the same client-chosen key an Editor's do.
+- **Server-derived collaboration keys**, pinned per socket, so nobody can answer as someone else.
 - **An answers route** so a token can take part without a socket.
 
 ## Domain language

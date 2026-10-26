@@ -9,7 +9,7 @@ closed until the facilitator opens it.
 
 Brainwriting, pre-mortems, retro round one and "what is nobody saying" all
 depend on the same thing: an idea that cannot be traced to the person who had
-it. A sticky note can't do this — the author's cursor was sitting on it as
+it. A sticky note can't do this: the author's cursor was sitting on it as
 they typed.
 
 ## Anonymity is structural
@@ -33,7 +33,7 @@ being reintroduced. The two that had to be closed deliberately:
 This is anonymity **against the other people in the room**, not against a
 determined observer. The `el` op that carries the new card is rebroadcast with
 the sender's participant id in the envelope (`from`), because the room adds it
-to every frame — so a peer reading their own devtools can tell who submitted
+to every frame, so a peer reading their own devtools can tell who submitted
 what. Closing that would mean relaying idea submissions through a separate
 unattributed path, which is a second sync route for one element.
 
@@ -47,14 +47,14 @@ wrong?"). It arrives at 340x420, tall enough for its empty state above the
 composer, and like the Q&A board it reflows: resizing makes room for more ideas
 rather than bigger ones.
 
-- **`ShapeElement.ideaCards`** — the submissions, in submission order. Bounded
+- **`ShapeElement.ideaCards`**: the submissions, in submission order. Bounded
   in `validate.ts` like every other list field.
 - **`ShapeElement.ideaCardIds`**: each card's id, by position: `ideaCardIds[i]`
   names `ideaCards[i]`. Optional and back-compatible: a box from before ids,
   a card a template or a poll capture put in, or one the room's ledger
   restored has no id (the entry is missing or `''`), and is still a card.
   Same bound as `ideaCards`; each id at most 64 characters.
-- **`ShapeElement.ideasRevealed`** — shared, false by default.
+- **`ShapeElement.ideasRevealed`**: shared, false by default.
 
 ## Posting at once
 

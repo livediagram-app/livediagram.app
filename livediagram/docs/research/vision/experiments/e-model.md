@@ -34,7 +34,7 @@ look. The model is **84 859 parameters (331 KB fp32)**.
 
 ## Baseline (re-measured, 645 notes)
 
-`npx tsx scripts/score-classical.ts` — the classical detector through the
+`npx tsx scripts/score-classical.ts`: the classical detector through the
 model's table, with the two supplementary merged columns explained below.
 
 | wall             | prec | recall | F1    | rec-A | merged | real | floor | bar     |

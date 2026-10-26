@@ -5,33 +5,33 @@ Status: shipped
 ## What
 
 A **Stickers** category in the palette, in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
-between Icons and Media — and a **`sticker` shape kind** behind it.
+between Icons and Media, and a **`sticker` shape kind** behind it.
 
 A sticker is the thing you slap on a canvas: a die-cut plate with a soft shadow,
 in colours that are its own. Two flavours:
 
-- **Emoji** — ~193 colour emoji on a white die-cut plate.
-- **Badges** — 32 word pills that no emoji says: APPROVED, BLOCKED, WIP,
+- **Emoji**: ~193 colour emoji on a white die-cut plate.
+- **Badges**: 32 word pills that no emoji says: APPROVED, BLOCKED, WIP,
   NEEDS REVIEW, AT RISK, P0, OUT OF SCOPE, OWNER?, MVP, …
 
 Eleven groups, browsed by drill-in with a breadcrumb and searched across all of
-them at once — the same navigation every catalogue tab uses ([Browsing the palette by category](palette-category-browse.md)):
+them at once, the same navigation every catalogue tab uses ([Browsing the palette by category](palette-category-browse.md)):
 
-| Group         | What it holds                                                                |
-| ------------- | ---------------------------------------------------------------------------- |
-| **Badges**    | The word pills, tone-coloured by what they mean                              |
-| **Reactions** | Responding to somebody's work: thumbs, clap, heart, fire, 💯, eyes           |
-| **Feelings**  | The face set: happy, laughing, thinking, confused, sad, angry, mind-blown    |
-| **Status**    | Check, cross, warning, traffic-light dots, blocked, WIP, new, trend arrows   |
-| **Direction** | Arrows, pointing hands, pins, compass, play — pointing at things on a canvas |
-| **Celebrate** | Party popper, confetti, trophy, medals, cake, gift, crown, rocket            |
-| **Decorate**  | Sparkles, rainbow, sun, flowers, hearts in every colour, gems                |
-| **Meeting**   | Timers, calendar, speech + thought bubbles, megaphone, mic, coffee, brain    |
-| **Work**      | Bug, wrench, gear, key, folder, package, laptop, money, target               |
-| **People**    | Person, people, raising a hand, bowing, worker, detective, walking           |
-| **Fun**       | Robot, alien, unicorn, cat, pizza, dice, controller, music                   |
+| Group         | What it holds                                                               |
+| ------------- | --------------------------------------------------------------------------- |
+| **Badges**    | The word pills, tone-coloured by what they mean                             |
+| **Reactions** | Responding to somebody's work: thumbs, clap, heart, fire, 💯, eyes          |
+| **Feelings**  | The face set: happy, laughing, thinking, confused, sad, angry, mind-blown   |
+| **Status**    | Check, cross, warning, traffic-light dots, blocked, WIP, new, trend arrows  |
+| **Direction** | Arrows, pointing hands, pins, compass, play: pointing at things on a canvas |
+| **Celebrate** | Party popper, confetti, trophy, medals, cake, gift, crown, rocket           |
+| **Decorate**  | Sparkles, rainbow, sun, flowers, hearts in every colour, gems               |
+| **Meeting**   | Timers, calendar, speech + thought bubbles, megaphone, mic, coffee, brain   |
+| **Work**      | Bug, wrench, gear, key, folder, package, laptop, money, target              |
+| **People**    | Person, people, raising a hand, bowing, worker, detective, walking          |
+| **Fun**       | Robot, alien, unicorn, cat, pizza, dice, controller, music                  |
 
-Groups are **disjoint** — every sticker has exactly one home, pinned by a test,
+Groups are **disjoint**: every sticker has exactly one home, pinned by a test,
 the same rule the icon categories follow. Search cuts across all eleven, and a
 badge also matches on the word on its pill, so "blocked" finds BLOCKED.
 
@@ -45,13 +45,13 @@ shape's label. A sticker is a physical-feeling object you stick on the canvas.
 Those want opposite treatment on every axis, so a sticker is its own shape kind
 carrying its own `stickerId`:
 
-|                     | Icon                            | Sticker                         |
-| ------------------- | ------------------------------- | ------------------------------- |
-| Artwork             | line art, one colour            | die-cut plate + shadow + art    |
-| Theme tint          | takes the element stroke colour | never — its colours are its own |
-| Caption             | a label band under the glyph    | none, ever                      |
-| Fold into a shape   | yes, becomes an inline glyph    | never                           |
-| Colours / Border UI | stroke + text swatches          | none (nothing to recolour)      |
+|                     | Icon                            | Sticker                        |
+| ------------------- | ------------------------------- | ------------------------------ |
+| Artwork             | line art, one colour            | die-cut plate + shadow + art   |
+| Theme tint          | takes the element stroke colour | never: its colours are its own |
+| Caption             | a label band under the glyph    | none, ever                     |
+| Fold into a shape   | yes, becomes an inline glyph    | never                          |
+| Colours / Border UI | stroke + text swatches          | none (nothing to recolour)     |
 
 Mechanically that means: `'sticker'` in `ShapeKind`, `stickerId` on
 `ShapeElement`, its own `STICKER_DND_MIME` (in `lib/icons.ts` beside `ICON_DND_MIME`, so a drag onto a shape can't be
@@ -62,16 +62,16 @@ label editor, no markers, no text alignment, no morph), and exclusion from
 
 **Animations all work.** Glow, Pulse, Trace and Gradient did nothing at all: a
 sticker counts as SVG-rendered, so the wrapper dropped its animation class on
-the assumption `ShapeSvgOverlay` would paint it — and the overlay never renders
+the assumption `ShapeSvgOverlay` would paint it, and the overlay never renders
 for a sticker, which paints its own art. They now ride the same filter-based
 path standalone text uses (`drop-shadow` off the real silhouette, since a
 box-shadow would ring the bounding rectangle). `gradient` is the one that
 can't: it is a background clipped to glyphs, and a sticker has none, so it gets
-a hue cycle over its own colours instead — the same idea on a surface that has
+a hue cycle over its own colours instead, the same idea on a surface that has
 one. The other eleven were already fine on the wrapper.
 
 **Presets go too.** A preset ([Style presets](style-presets.md)) is nothing but fill + stroke + text
-colours, so a shape that takes no element colour has nothing for it to set —
+colours, so a shape that takes no element colour has nothing for it to set:
 a sticker showed a full grid of preset tiles where every one did nothing.
 `shapeSupportsPresets` now asks `supportsColours` rather than keeping a second
 exclusion list of its own, which is what let stickers through: the list knew
@@ -80,7 +80,7 @@ sticker. With Presets, Colours and Border all empty, the whole **Style flyout
 stops rendering** for a sticker rather than opening onto nothing.
 
 **No text, by any route.** The selection toolbar drops its Add-text button,
-double-click doesn't open an editor, and type-to-edit refuses — all three off
+double-click doesn't open an editor, and type-to-edit refuses: all three off
 the one `isSelfDrawingShape` predicate, which already documented itself as
 exactly this behaviour. A caption under a die-cut sticker is the icon treatment
 it exists not to be.
@@ -116,7 +116,7 @@ scrapbook look.
 The attempt did surface a real bug, which is fixed and worth naming because it
 was never sticker-specific. The pop-in entry animation sets
 `transform: scale(...)`, and a keyframe that touches `transform` **replaces**
-the element's inline `transform: rotate(Ndeg)` for its whole duration — so any
+the element's inline `transform: rotate(Ndeg)` for its whole duration, so any
 rotated element popped in flat and then visibly snapped to its angle when the
 class dropped. The keyframe now multiplies in `--lvd-enter-rot` (0deg when
 unset), which BoxedElementView publishes alongside the rotation. Duplicate a
@@ -136,7 +136,7 @@ palette moved: the Emoji category is gone from `ICON_CATEGORIES`, the Icons
 tab's search and the global "Add to canvas" list both filter legacy emoji ids
 out, and Stickers is the one place you browse or place them.
 
-Sticker ids keep the `emoji-` prefix for the same reason — an id is what a
+Sticker ids keep the `emoji-` prefix for the same reason: an id is what a
 saved element, an API payload and an MCP call carry.
 
 ## What we deliberately did NOT build

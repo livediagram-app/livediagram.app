@@ -21,16 +21,16 @@ artefact rather than a picture of a whiteboard.
 
 A **shape kind**, `decision`. Its `label` is the decision **statement** ("Use
 Cloudflare D1 for durable storage"), so it edits, formats, wraps and exports
-like any other label — the same reasoning the record box uses for its title
+like any other label: the same reasoning the record box uses for its title
 ([The entity](../009-elements/entity.md)).
 
-- **`ShapeElement.decisionStatus`** — `'proposed' | 'accepted' | 'rejected' |
+- **`ShapeElement.decisionStatus`**: `'proposed' | 'accepted' | 'rejected' |
 'superseded'`. Absent = proposed, so a card dropped mid-discussion is honest
   about being mid-discussion.
-- **`ShapeElement.decisionDate`** — an ISO `YYYY-MM-DD`. A date, not a
+- **`ShapeElement.decisionDate`**: an ISO `YYYY-MM-DD`. A date, not a
   timestamp: a decision is taken on a day, and a time-of-day invites a
   precision nobody has.
-- **`ShapeElement.decisionDrivers`** — the short list of reasons. Bounded in
+- **`ShapeElement.decisionDrivers`**: the short list of reasons. Bounded in
   `validate.ts`.
 
 ## The card draws itself
@@ -44,7 +44,7 @@ difference is what the label holds: a record's title is a name, a decision's is
 a sentence. A three-line statement ran straight under the status chip and over
 the drivers, because nothing constrained it to a band. Owning the layout means
 the three parts **cannot** collide, at the cost of clamping a very long
-statement — which is the right trade, since a decision nobody can read in three
+statement, which is the right trade, since a decision nobody can read in three
 lines is a decision that needs rewriting.
 
 The label is still an ordinary label: typed, formatted and exported like every

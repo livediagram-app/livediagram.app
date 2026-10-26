@@ -53,7 +53,10 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 
 ## Token levels
 
-What an agent may do follows its token's [level](../013-workspace/share-roles.md#api-tokens), through the same gates
+**Status: Planned.** Not built yet; today a token is full or read-only, and a read-only token is refused every
+write ([Public API and API tokens](../015-api/public-api-and-tokens.md) §3.4).
+
+What an agent may do follows its token's [level](../013-workspace/share-roles.md#later), through the same gates
 as a share link: reading needs read access; comments, session answers and presence need the participation gate
 (`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
 submits no changesets; a view token reads and writes nothing, comments and presence included.

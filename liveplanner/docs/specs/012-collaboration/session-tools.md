@@ -5,7 +5,7 @@ Live **session tools** that make a shared board interactive: a per-tab **timer**
 
 ## Why they need no new infrastructure
 
-Both tools store their state as optional **`Tab` fields** — `tab.timer` and
+Both tools store their state as optional **`Tab` fields**: `tab.timer` and
 `tab.vote` (`packages/project/src/index.ts`, helpers in `session.ts`). That
 means they ride the **existing tab-sync pipeline** with zero realtime / API
 changes: a control mutates the tab via `commitTabs` → autosave (`useAutosave`,
@@ -13,24 +13,24 @@ changes: a control mutates the tab via `commitTabs` → autosave (`useAutosave`,
 to peers (`useRoomConnection` merges it). So **late-joiners and reloads see
 current state for free**, and persistence is automatic.
 
-`commitTabs` does **not** push undo history — starting a timer or placing a dot
+`commitTabs` does **not** push undo history; starting a timer or placing a dot
 isn't undoable.
 
 **One exception, learned the hard way: dots needed their own op.** Everything
 above holds for the timer and for a vote's lifecycle, which have a single
 writer. It did not hold for `vote.votes`, which every participant writes at
-once — see "Casting a dot" below.
+once; see "Casting a dot" below.
 
 ## Roles
 
 The realtime room already **drops view-role mutations** ([API app](../015-api/api.md)). So every
-control + every dot cast is naturally **edit-role only** — whoever runs the session and the
+control + every dot cast is naturally **edit-role only**: whoever runs the session and the
 participants share an edit link; **view-role visitors watch** the timer and
 live counts but can't control or vote. No extra gating code.
 
 ## Starting one from the canvas
 
-Both tools can also be started by a [Session button](session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a board can carry its own session instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
+Both tools can also be started by a [Session button](session-button.md), a canvas element carrying "5 minute timer" or "vote, 3 dots each", so a board can carry its own session instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
 
 ## The session panes
 
@@ -94,7 +94,7 @@ length change from the Timer menu start a new run without it.
   second one by accident; ending it returns to the set-up.
 - Clients tick **locally off an absolute wall-clock anchor** (`anchorAt` =
   countdown end-time or stopwatch start instant), so there is **no per-second
-  network chatter** — every client computes the same value via the pure
+  network chatter**: every client computes the same value via the pure
   `timerDisplayMs(timer, now)`. Pausing freezes the value into `frozenMs`;
   resuming re-anchors. Minor cross-client clock skew is acceptable for a
   workshop timer (out of scope: a server-authoritative clock).
@@ -106,8 +106,8 @@ length change from the Timer menu start a new run without it.
 
 ## Voting (dot-voting)
 
-`tab.vote: { active; revealed; votesPerPerson; votes: Record<elementId, participantId[]> }`
-— one participant id per dot, so stacking N dots on one element is N entries.
+`tab.vote: { active; revealed; votesPerPerson; votes: Record<elementId, participantId[]> }`,
+with one participant id per dot, so stacking N dots on one element is N entries.
 
 ### Voting on Plan cards
 
@@ -135,7 +135,7 @@ tab-sync pipeline described above; this one field cannot, and the reason is
 worth keeping because it is easy to re-introduce.
 
 `votes` is a single map that **every participant writes at the same time**, and
-tab meta travelled between peers as a whole-object patch — `{ ...tab, ...patch }`
+tab meta travelled between peers as a whole-object patch: `{ ...tab, ...patch }`
 on receipt, replacing the field. So a peer's patch, built from a snapshot taken
 before your dot arrived, silently erased it. The window was the full 600 ms
 autosave debounce, because dots waited for the autosave like any other tab
@@ -144,7 +144,7 @@ retract on their own; with that many people casting at once, collisions were
 close to certain.
 
 It also drifted the budget. `votesSpentBy` counts your remaining dots out of
-that same map, so a clobber did not just lose a dot — it handed it back as
+that same map, so a clobber did not just lose a dot; it handed it back as
 spendable, and a stale snapshot restoring a retracted dot took one away.
 
 The fix carries the **change**, not the state, so concurrent dots commute: every
@@ -158,7 +158,7 @@ Two rules keep it honest:
 - **`votes` changing ALONE is dots**, and is withheld from the tab-meta patch
   (`voteChangeIsDotsOnly`). Shipping it there as well would put the clobber
   straight back.
-- **`votes` changing alongside any other vote field is a lifecycle event** —
+- **`votes` changing alongside any other vote field is a lifecycle event**:
   start, end, reveal, clear, or stepping the results walkthrough. Those are the
   host's alone, so there is exactly one writer, and the whole object still
   travels as a patch (which is also how a start or a clear resets the map).
@@ -208,7 +208,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   dots placed and distinct voters, the rules in force as chips, and ONE
   primary button for the next step (Clear vote stays available as a
   secondary until results are shown).
-- **Votable targets** (`isVotable`): shapes, sticky notes, and images — **not**
+- **Votable targets** (`isVotable`): shapes, sticky notes, and images, **not**
   the `frame` shape (a section backdrop) and not text / freehand / table /
   arrow / annotation. Nor the controls: the Behaviour elements and the
   collaboration panels (temperature, decision, comment and action panels), whose own presses answer them, so a dot would give
@@ -223,13 +223,13 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   select/drag); your budget (`votesPerPerson`), and the one-per-item rule when it is on, are enforced by `canCastVote`, the one check the cast handler and the stepper's plus both read.
   Non-votable elements still select normally so the canvas stays editable.
   Counts are **live**. While casting is open, every votable element carries a
-  **stepper** — minus, the count, plus — reading `0` before anything lands.
+  **stepper** (minus, the count, plus) reading `0` before anything lands.
   Plus casts one of your dots, minus retracts one. It replaced a bare
   click-to-retract count that only appeared once an element already had a
   dot, which made the first dot on a canvas an act of faith: nothing on
   screen said an element was a target or how to add to it. Minus is
   disabled at zero and plus once your budget is spent (or, on a one-per-item vote, once you have a dot on that element), rather than
-  hidden, so the row's width — and so the plus's position — never shifts
+  hidden, so the row's width (and so the plus's position) never shifts
   under the pointer mid-vote. The stepper sits INSIDE the element's
   bottom-right corner (clearance from the edge, and from a neighbour's
   stepper on a packed canvas) and stops its own pointer events so a minus
@@ -242,7 +242,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   you have left shows on the [Session strip](#the-session-strip)'s Vote
   button as a count badge, and in words ("2 of 3 dots left") at the top of the
   Vote panel, for anyone who can cast.
-- **Vote privacy** — two per-vote switches set before **Start vote** (see
+- **Vote privacy**: two per-vote switches set before **Start vote** (see
   "Vote privacy" below); they live on the vote, not as a user preference.
 - **End vote** closes casting (tallies stay). **Show results** sets
   `revealed`; the pill flags joint winners by comparing to the tab-wide max
@@ -314,7 +314,7 @@ A **`VotePanel`** on the shared `MovablePanel`, opened as a popover from the
 [Session strip](#the-session-strip)'s Vote button. Present only while a vote is
 on the tab. Two phases, one panel:
 
-- **While casting is open — turnout.** Dots cast against dots available, how
+- **While casting is open: turnout.** Dots cast against dots available, how
   many people have finished, and one row per voter showing their budget as
   filled / hollow pips. This exists because the canvas pills answer "what is
   winning" but never "is everyone done", which is the question that decides
@@ -323,7 +323,7 @@ on the tab. Two phases, one panel:
   remaining, which is exactly when you shouldn't call it. The people are those
   who can cast: one per person however many tabs they have open, never a
   view-link guest or an agent row (the [Participant responses](participant-responses.md) "Who counts" rule).
-- **Once results are revealed — the ranked list.** Every voted element, most
+- **Once results are revealed: the ranked list.** Every voted element, most
   dots first, each row clickable to **jump the results walkthrough** straight
   to that element (`jumpToVoteResult`, the same clamped setter Previous /
   Next use). The list renders from the SAME `results` array the walkthrough
@@ -333,11 +333,11 @@ on the tab. Two phases, one panel:
 
 **Voter rows carry no names, and can't.** Dots are keyed by the local
 participant id, while the room's presence roster is keyed by a server-random
-per-connection id ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6) — the two never match, so a client has no way
+per-connection id ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6); the two never match, so a client has no way
 to turn a voter into a person. For a dot-vote that is a happy accident, and
 the turnout numbers answer the host's actual question without it.
 Naming voters would mean writing names alongside the dots, which would make
-every dot trivially attributable in stored data — the opposite of the
+every dot trivially attributable in stored data, the opposite of the
 direction "Vote privacy" below takes.
 
 The panel is **read-only for view-role** (the End vote / Show results buttons
@@ -367,7 +367,7 @@ is this" has one answer rather than three.
   [Session tools (timer + voting)](session-tools.md), where roles are the only real gate.
 - `startedBy` is **optional**, and `isVoteHost` treats its absence as "anyone
   may drive". A vote persisted before this shipped would otherwise become
-  unendable — nobody matches a missing starter.
+  unendable: nobody matches a missing starter.
 - The host's controls live on the **Vote panel**: **End vote** while
   casting, then **Show results**, then **Clear vote** once results are up.
   The panel also lists the **rules the vote runs under** as chips (`voteRules`:
@@ -394,7 +394,7 @@ and behaves as it always did (absent = off).
   instead of a setting the host can flip once they've seen where
   people are pointing.
 - **Room-wide, not per-viewer.** The flags ride `tab.vote`, so every client
-  on the tab reads the same values off the synced tab — nobody can opt back
+  on the tab reads the same values off the synced tab; nobody can opt back
   into seeing cursors. Late-joiners and reloads get the current setting for
   free, like the rest of the session state.
 - **Any edit-role participant can start a privacy-mode vote**, exactly as
@@ -406,7 +406,7 @@ While `vote.active`, peer **cursors** are neither drawn nor sent:
 
 - **Render:** `usePresenceRows` returns empty `remoteCursorRows`, so nothing reaches the canvas
   overlays.
-- **Wire:** `useEditorBroadcast` stops emitting `cursor` room ops altogether. Suppressing the send (not just the paint) is the point — a
+- **Wire:** `useEditorBroadcast` stops emitting `cursor` room ops altogether. Suppressing the send (not just the paint) is the point: a
   render-only gate would still put every participant's coordinates on the
   socket for anyone with devtools open. It also drops the room's busiest
   packet stream for the duration of the vote.
@@ -416,7 +416,7 @@ While `vote.active`, peer **cursors** are neither drawn nor sent:
 - **Presence stays**: the tab avatar stack, the "who's on this tab" dots and
   the per-element **selection badges + selection lock** ([Editor app](../007-editor/editor-app.md)) are
   untouched. You can still see who is in the room, and an element someone
-  else holds still names them — silently locking an element with no
+  else holds still names them; silently locking an element with no
   explanation would read as a bug, and the lock is a correctness mechanism
   rather than an intent signal.
 - **Restored the moment casting closes** (`vote.active` goes false), i.e. on
@@ -430,7 +430,7 @@ While the vote is **unrevealed**, the tally pill on each element shows only
 **your own** dots (so you can still see and retract what you spent); other
 participants' dots are excluded from the number and no pill appears on an
 element you haven't voted on. **Show results** reveals the true totals and
-the winner rings as usual — the existing reveal step is the natural gate, so
+the winner rings as usual; the existing reveal step is the natural gate, so
 this switch changes _when_ counts appear rather than adding a new phase.
 
 It defaults **off** because live counts are load-bearing for ordinary
@@ -457,5 +457,5 @@ data**. `vote.votes` remains `elementId -> participantId[]`, so the switches
 hide who's pointing where and (optionally) the running totals, but a
 determined participant reading the synced tab could still attribute dots.
 Making casts unattributable would mean dropping the participant id, which
-breaks both the per-person budget (`votesSpentBy`) and retraction — a real
+breaks both the per-person budget (`votesSpentBy`) and retraction: a real
 design change, not a toggle.

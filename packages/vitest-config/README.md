@@ -45,8 +45,8 @@ Add the scripts:
 
 ## Exports
 
-- `baseConfig` — the shared Vitest config object.
-- `defineProject(overrides?)` — `baseConfig` merged with per-workspace overrides.
+- `baseConfig`: the shared Vitest config object.
+- `defineProject(overrides?)`: `baseConfig` merged with per-workspace overrides.
 - `@liveworkspace/vitest-config/react-cleanup`: a setup file that unmounts every tree React Testing
   Library rendered after each test.
 - `@liveworkspace/vitest-config/cpu-time`: CPU-time measures and budgets for speed tests.

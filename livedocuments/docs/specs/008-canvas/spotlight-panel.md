@@ -4,9 +4,9 @@ While the **Spotlight** tool ([Canvas and palette](canvas-and-palette.md)) is ac
 
 ## Why
 
-Spotlight has exactly two controls today — left-click grows the light, right-click shrinks it — and no way at all to change the two things that decide whether it works in the room you are in: how dark the surround goes, and how big a shape it is lighting.
+Spotlight has exactly two controls today (left-click grows the light, right-click shrinks it) and no way at all to change the two things that decide whether it works in the room you are in: how dark the surround goes, and how big a shape it is lighting.
 
-The defaults suit a dense canvas on a laptop. They are wrong for a projector in daylight (needs a much darker shroud to read at all), wrong for a wide row you want to walk along (a circle lights three rows and a lot of nothing), and wrong for a screen-share where a hard-edged pool of light looks like a bug rather than an effect. None of that is a permanent preference — it changes with the room, which is why it belongs in a panel that exists only while the tool does.
+The defaults suit a dense canvas on a laptop. They are wrong for a projector in daylight (needs a much darker shroud to read at all), wrong for a wide row you want to walk along (a circle lights three rows and a lot of nothing), and wrong for a screen-share where a hard-edged pool of light looks like a bug rather than an effect. None of that is a permanent preference: it changes with the room, which is why it belongs in a panel that exists only while the tool does.
 
 ## Where it lives
 
@@ -14,22 +14,22 @@ A normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)) w
 
 ## The settings
 
-Four accordion rows over a **live preview** — a miniature of the shroud with the light in it, drawn from the same recipe the canvas uses, so the effect of "Blackout with a crisp edge" is visible before you inflict it on the room.
+Four accordion rows over a **live preview**, a miniature of the shroud with the light in it, drawn from the same recipe the canvas uses, so the effect of "Blackout with a crisp edge" is visible before you inflict it on the room.
 
-- **Size** — Small / Medium / Large (110 / 170 / 280px radius). Clicking on the canvas still grows and shrinks freely; when the radius has been nudged off a preset the row reads **Custom**, so the panel never lies about what the light is doing.
-- **Dim** — how dark the surround goes: Soft / Normal / Dark / Blackout (60% / 82% / 92% / 98.5% shroud). Blackout is for a projector, where anything less reads as "slightly grey" and defeats the tool.
-- **Edge** — **Soft** (a 60px feathered rim, today's look) or **Crisp** (12px, a defined pool of light). Crisp reads as deliberate on a screen-share; soft reads as lighting.
-- **Shape** — **Circle**, or **Wide**: an ellipse about twice as wide as it is tall, for lighting a band of a page, a table row, or a line of boxes without dragging half the canvas into the dark.
+- **Size**: Small / Medium / Large (110 / 170 / 280px radius). Clicking on the canvas still grows and shrinks freely; when the radius has been nudged off a preset the row reads **Custom**, so the panel never lies about what the light is doing.
+- **Dim**: how dark the surround goes: Soft / Normal / Dark / Blackout (60% / 82% / 92% / 98.5% shroud). Blackout is for a projector, where anything less reads as "slightly grey" and defeats the tool.
+- **Edge**: **Soft** (a 60px feathered rim, today's look) or **Crisp** (12px, a defined pool of light). Crisp reads as deliberate on a screen-share; soft reads as lighting.
+- **Shape**: **Circle**, or **Wide**: an ellipse about twice as wide as it is tall, for lighting a band of a page, a table row, or a line of boxes without dragging half the canvas into the dark.
 
 ## Persistence
 
 Device-local, in `localStorage` (`livedocuments:v2:spotlight-config`), like the laser pen: it depends on your screen and the room, not on the document. Never sent to the api, never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
-The RADIUS deliberately stays where it always was — session state on `useSpotlight`, not persisted — because it is the one value the canvas itself changes on every click, and restoring a radius somebody clicked their way to three weeks ago is not a kindness. The light opens at the saved **Size** preset's radius, though: the preset is a choice, the clicks are not.
+The RADIUS deliberately stays where it always was (session state on `useSpotlight`, not persisted) because it is the one value the canvas itself changes on every click, and restoring a radius somebody clicked their way to three weeks ago is not a kindness. The light opens at the saved **Size** preset's radius, though: the preset is a choice, the clicks are not.
 
 ## Still local, still not broadcast
 
-Spotlight remains a **view aid for the person using it** ([Canvas and palette](canvas-and-palette.md)): peers see the full canvas, unshrouded. So unlike the laser pen, none of this travels — there is nothing on the wire, and the panel says so in a line at the bottom.
+Spotlight remains a **view aid for the person using it** ([Canvas and palette](canvas-and-palette.md)): peers see the full canvas, unshrouded. So unlike the laser pen, none of this travels: there is nothing on the wire, and the panel says so in a line at the bottom.
 
 ## Telemetry
 

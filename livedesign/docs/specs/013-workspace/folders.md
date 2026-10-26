@@ -59,7 +59,7 @@ In scope:
   ([Save locations](../006-design/save-locations.md), "It opens where its selection is"); the "Move Here" button
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
-  /explorer page, the editor's Explorer, and the team library —
+  /explorer page, the editor's Explorer, and the team library,
   and every design-move surface offers every space (My Work + each
   team, [Team shared designs](team-shared-designs.md)), so a design is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
@@ -68,7 +68,7 @@ In scope:
 
 ## Explorer routes
 
-Every Explorer section is its own page under `/explorer` (the chrome — header, sidebar tree, mobile drawer — is a shared layout, so the sidebar and its loaded data persist across section navigations):
+Every Explorer section is its own page under `/explorer` (the chrome, meaning header, sidebar tree and mobile drawer, is a shared layout, so the sidebar and its loaded data persist across section navigations):
 
 | Section                                                        | Route                                                              |
 | -------------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -95,7 +95,7 @@ A retired address replaces itself with its successor, so links already out there
 Out of scope (V1):
 
 - Drag-and-drop reordering between folders.
-- Shared / collaborative folder ownership — folders are scoped to
+- Shared / collaborative folder ownership: folders are scoped to
   the owner just like designs.
 - Per-folder permissions or sharing.
 - Folder colour / icon customisation.
@@ -135,7 +135,7 @@ designs wherever they are filed.
   deleted folder's parent** ([Deleting a folder](#deleting-a-folder)).
   The `ON DELETE SET NULL` on both foreign keys is a backstop only; the
   delete re-parents explicitly before the row goes.
-- Folder name uniqueness is **not** enforced — sibling folders can
+- Folder name uniqueness is **not** enforced: sibling folders can
   share names if the user really wants. The breadcrumb path
   disambiguates them in the move picker.
 - The API rejects cycles when moving a folder (a folder can't
@@ -251,7 +251,7 @@ What a caller does with a rejection is its own: `/new` shows it
 Mode sync files the design at the root of My Work on a refused folder, saying so in its log
 ([Offline Mode](../006-design/offline-mode.md)).
 
-## Explorer UI — two surfaces
+## Explorer UI: two surfaces
 
 Folders show up in two places, and the two surfaces use different
 layouts because they're solving different problems.
@@ -307,7 +307,7 @@ toggle ([Live app](../007-editor/live-app.md)).
   through the same prompt.
 - Design-row ellipsis menu gains a "Change Folder" sub-action that
   opens the shared placement browser (personal folders + the root,
-  and teams with their folders — see the move-picker note above).
+  and teams with their folders; see the move-picker note above).
   Picking one moves the design in the index.
 - **Drag-and-drop**: design rows are HTML5-draggable. Drop targets
   are personal folder rows (any nested depth) and the My Work
@@ -340,7 +340,7 @@ surfaces a "Sign in" CTA for guests who want to upgrade. The page is
 modelled on Windows Explorer: a sidebar tree drives navigation, a
 breadcrumb + list view on the right shows the focused folder's
 contents. A **bottom bar** mirrors the editor's tab-bar strip (minus the
-tabs): the shared right-hand control cluster (`ChromeControls` — search,
+tabs): the shared right-hand control cluster (`ChromeControls`: search,
 the open-source GitHub link, Settings, dark-mode toggle). It's sticky so
 it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).

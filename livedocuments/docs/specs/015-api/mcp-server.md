@@ -9,11 +9,11 @@ ultimately mints. No new authorization model; an OAuth front door onto the exist
 Let a person connect livedocuments to whatever AI tool they already drive (Claude
 desktop/web, Claude Code, any MCP client) and, from inside that tool:
 
-1. **Find and view** the documents they already have — search by name, get back a
+1. **Find and view** the documents they already have: search by name, get back a
    link to open in the editor **and an inline image** of the document.
-2. **Create** a new document from a request — e.g. point the AI at a codebase and
+2. **Create** a new document from a request, e.g. point the AI at a codebase and
    have it write an article or a slide deck explaining it.
-3. **Edit** an existing document — full rework of a tab, or a small adjustment.
+3. **Edit** an existing document: a full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
 load-bearing decision. livedocuments runs no model of its own. The user already has a capable model in front of them; the
@@ -42,25 +42,25 @@ stays a pure REST/WS surface.
 
 - **Framework / transport.** [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol)
   with **Streamable HTTP** transport (`WebStandardStreamableHTTPServerTransport`,
-  `enableJsonResponse: true`), fronted by **Hono** for routing/CORS — the exact
+  `enableJsonResponse: true`), fronted by **Hono** for routing/CORS, the exact
   stack proven in the Manager Toolkit MCP. Tools are defined with `zod` input
   schemas.
 - **Talks to `apps/api` over a Cloudflare service binding** (`API`), not public
   DNS. Every tool resolves to one or more `/api/*` calls carrying
-  `Authorization: Bearer lwt_…` — the caller's token, passed straight through.
+  `Authorization: Bearer lwt_…`, the caller's token, passed straight through.
   The api worker already accepts `lwt_` tokens on every route
   ([Public API and API tokens §3.3](public-api-and-tokens.md)), so **no api authorization
   changes are needed** for the tools themselves.
 - **Reuses `packages/document`** headless: element factories, `validate.ts`
   (`isValidTab`/`isValidElement`), `auto-layout.ts` (`autoLayoutElements`,
-  `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise--inline-image-render)).
+  `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise-inline-image-render)).
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
   validation, geometry, or theme-colour resolution.
 - **Routing + deploy.** Served at **`mcp.livedocuments.app`** (its own hostname,
   `mcp-staging.livedocuments.app` in staging, each a custom domain declared in
   `apps/mcp/wrangler.toml`, [Deployment](../016-platform/deployment.md#custom-domain)). Add the service to the deploy workflow alongside marketing /
   live / telemetry / api (it depends on api existing, so it deploys in the same
-  wave as api or just after). The `router` worker is unchanged — `mcp.` is a
+  wave as api or just after). The `router` worker is unchanged: `mcp.` is a
   separate host, not a path under the main hostname, so it carries no router
   business logic. `GET /health` returns `{ status: 'ok' }`.
 - **Endpoints on the worker:** `POST /mcp` (the MCP transport, Bearer-gated),
@@ -73,19 +73,19 @@ registration**, so a user gets a one-click "Connect" in their AI tool rather
 than pasting a raw token. The flow **mints an `lwt_` token** under the hood and
 hands it to the client; from then on every request is just
 `Authorization: Bearer lwt_…`. This deliberately reuses the entire token model
-from [Public API and API tokens](public-api-and-tokens.md) — storage, hashing, 6-month expiry,
-per-account cap, revoke, account-deletion cascade, rate limiting — instead of
+from [Public API and API tokens](public-api-and-tokens.md) (storage, hashing, 6-month expiry,
+per-account cap, revoke, account-deletion cascade, rate limiting) instead of
 inventing a parallel credential. An MCP-minted token is an ordinary liveworkspace
 account token: it is listed on liveworkspace.app and can be revoked there like any
 other, and it works with every liveworkspace app's MCP server.
 
 This implements the OAuth flow Manager Toolkit uses:
 
-1. **Discovery** — the MCP worker serves RFC 8414 metadata at
+1. **Discovery**: the MCP worker serves RFC 8414 metadata at
    `/.well-known/oauth-authorization-server` (and the protected-resource
    metadata): `authorization_endpoint`, `token_endpoint`, `registration_endpoint`,
    `code_challenge_methods_supported: ["S256"]`, `token_endpoint_auth_methods_supported: ["none"]`.
-2. **Dynamic client registration** — `POST /oauth/register` issues a `client_id`
+2. **Dynamic client registration**: `POST /oauth/register` issues a `client_id`
    (validates redirect URIs: `https:` anywhere, or `http:` on a loopback host for
    local clients; the scheme is checked on its own, so a loopback host never
    admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
@@ -94,7 +94,7 @@ This implements the OAuth flow Manager Toolkit uses:
    Rate-limited per IP, an IPv6 caller by its /64 (`clientRateKey`, as the api keys its limiters). Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.
-3. **Authorize** — `GET /oauth/authorize` creates a short-lived session in KV and
+3. **Authorize**: `GET /oauth/authorize` creates a short-lived session in KV and
    redirects to a **consent page in `apps/editor`** (e.g. `/oauth/authorize` or an
    Explorer "Connect an app" screen), passing the session id. The user is
    already signed in there (a livedocuments session through the liveworkspace accounts
@@ -116,14 +116,14 @@ This implements the OAuth flow Manager Toolkit uses:
    (10-minute TTL, held by the browser in the flow); the response carries no
    token, code or PKCE material and does not consume the session, so answering
    grants a holder nothing it could not get by completing the flow. Client
-   **name** is never a trust signal either way (it is whatever was registered) —
+   **name** is never a trust signal either way (it is whatever was registered);
    the host is the fact to check, which is why it must come from the server. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See
    `apps/editor/lib/mcp-consent-session.ts`. The screen is never frameable
    (`X-Frame-Options: DENY`, [Embeds](../013-workspace/embeds.md)), so the
    Connect click can't be clickjacked from an attacker's page.
-4. **Consent + mint** — on approve, `apps/editor` calls `POST /api/oauth/exchange`
+4. **Consent + mint**: on approve, `apps/editor` calls `POST /api/oauth/exchange`
    on the api worker with the person's account access token. It asks liveworkspace
    to mint an `lwt_` account token named for the connecting client (e.g. "Claude
    (MCP)"), read-only if the person ticked that (`POST /api/account/internal/tokens`,
@@ -139,7 +139,7 @@ This implements the OAuth flow Manager Toolkit uses:
    Revoke one on liveworkspace.app, under API tokens, then try again."), or anything
    else ("Something went wrong. Please try again."). The device page does the same
    (`../packages/workbench/src/lib/oauth-handover.ts`).
-5. **Callback + token exchange** — the MCP redirects back to the client with a
+5. **Callback + token exchange**: the MCP redirects back to the client with a
    code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
    `access_token` (= the `lwt_` secret). `expires_in` reflects the token's
    remaining 6-month lifetime.
@@ -152,10 +152,10 @@ needs no KV: liveworkspace mints the token ([Public API and API tokens](public-a
 Claude Code / custom connectors, but the polished "Connect" button in claude.ai
 web connectors expects OAuth, and the user chose the OAuth path. Because it still
 resolves to an `lwt_` token, the heavy lifting (verification, gating, revoke,
-caps) is already built — OAuth is the front door, not a new lock.
+caps) is already built. OAuth is the front door, not a new lock.
 
 **Sign-in gating.** OAuth depends on the consent page authenticating
-the user through sign-in and on `/api/oauth/exchange` requiring an account identity — the
+the user through sign-in and on `/api/oauth/exchange` requiring an account identity, the
 same gate as `/api/tokens` ([Public API and API tokens §3.7](public-api-and-tokens.md)). On a
 deployment without sign-in the exchange endpoint rejects every caller and the consent
 page has no signed-in user, so the MCP can mint nothing. Operators who don't want
@@ -192,29 +192,29 @@ the one the api stores ([Tab and document name length](../006-document/name-leng
 
 ### 4.1 `find_documents`
 
-Search/list the caller's documents — the **personal library AND every joined
+Search/list the caller's documents: the **personal library AND every joined
 team's shared library** ([Team shared documents](../013-workspace/team-shared-documents.md)). A document
 filed into a team leaves its owner's personal list entirely, so the personal
 `GET /api/documents` alone is not "the user's documents": the tool sweeps
 `GET /api/teams` + `GET /api/teams/:id/library` alongside it (the api accepts
-the token identity on those reads — [Public API and API tokens §3.4](public-api-and-tokens.md)),
+the token identity on those reads, [Public API and API tokens §3.4](public-api-and-tokens.md)),
 merges, and ranks newest-saved first. The team sweep is best-effort: a teams
 failure degrades to personal-only results, never an error. Input: optional
 `query` (name match), `limit`. Returns a compact list:
 `{ id, name, updatedAt, library, url }` where `library` is `personal` or the
 team's name and `url` is the `livedocuments.app` deep link to open it. **No image
-here** — kept lightweight so the model can scan many results cheaply, then
+here**, kept lightweight so the model can scan many results cheaply, then
 `read_document` the one it wants.
 
 ### 4.2 `read_document`
 
-Fetch one document's full content **and render it** — this is the "visualise"
+Fetch one document's full content **and render it**: this is the "visualise"
 capability. Input: `documentId`, optional `tabId` (defaults to the first tab).
 Wraps `GET /api/documents/:id` + `GET /api/documents/:id/tabs/:tabId?view=outline`. Returns the
 tab's [outline view](../024-agents/document-views.md), about a tenth of the element JSON, with
 the refs the edit tools take (`format: "json"` returns the elements instead), plus the deep-link
 `url`. With `image: true` it also attaches an inline **PNG** of the tab as MCP image content
-([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my onboarding deck" → `find_documents` →
+([§5](#5-visualise-inline-image-render)); without it a read costs no image tokens. So "show me my onboarding deck" → `find_documents` →
 `read_document` with `image: true` renders it inline. Its structured result carries the tab's `rev`,
 which `update_document` takes back as the base of its ops ([§4.4](#44-update_document)).
 It also takes `view` (`outline`, `pages`, `layout`, `comments`, `show`, `find`), `budget` (8,000 tokens unless
@@ -225,9 +225,9 @@ correctable result naming the candidates.
 
 Create a new document from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
-document in one call — an overview plus a detail tab per subsystem), the
+document in one call, an overview plus a detail tab per subsystem), the
 optional `layout`, and the optional `markUsed` (boolean, default `true`). Each tab may instead pass `template: TemplateKind` in place
-of `elements` — the server materialises the hand-tuned scaffold from
+of `elements`: the server materialises the hand-tuned scaffold from
 `@livedocuments/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
 canvas overrides; the model then personalises labels via `update_document`'s
@@ -235,9 +235,9 @@ canvas overrides; the model then personalises labels via `update_document`'s
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
    a clear message naming the offending tab).
-2. **Lays out — but the model decides.** A `layout` argument (`'auto'` |
+2. **Lays out, but the model decides.** A `layout` argument (`'auto'` |
    `'preserve'`, optional) governs it: `'preserve'` keeps the exact coordinates
-   the model gave (so it can draw a deliberate shape — a cycle as a ring, a tree,
+   the model gave (so it can draw a deliberate shape: a cycle as a ring, a tree,
    a grid), `'auto'` runs `autoLayoutElements`, and **omitted = auto-detect**:
    preserve a real arrangement, but run the layout when the model left elements
    piled at ~one point (`nodesLookUnplaced`). The server never overrides the
@@ -260,9 +260,9 @@ canvas overrides; the model then personalises labels via `update_document`'s
 
 ### 4.3a `add_tab`
 
-Add a **new tab** (its own canvas) to an existing document — the motivating case:
+Add a **new tab** (its own canvas) to an existing document. The motivating case:
 "add a tab with the speaker handout for this deck." Input:
-`documentId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
+`documentId`, `name`, `elements`, optional `layout`, or `template: TemplateKind`
 instead of `elements`, exactly like a `create_document` tab. Validates + lays out
 exactly like a `create_document` tab, then submits a [changeset](../024-agents/agent-changesets.md)
 that creates the tab, so anyone with the document open sees it arrive. Returns the new `tabId`, `url`,
@@ -273,15 +273,15 @@ existing tabs, to decide where a new one fits.)
 
 Edit an existing tab. **Two modes** (the user asked for both):
 
-- **`replace`** — for building or reworking a whole tab. Input: full new
+- **`replace`**: for building or reworking a whole tab. Input: full new
   `elements: Element[]` (and the same optional `layout` control as
   `create_document`). Validated + laid out exactly like `create_document`, as a
   `replace` changeset. Use when the change is large enough that re-emitting the
   tab is cleaner than patching.
-- **`ops`** — for small adjustments. Input: an ordered list of
+- **`ops`**: for small adjustments. Input: an ordered list of
   `{ op: 'add' | 'update' | 'remove', element? , elementId? }` targeting existing
   elements by id or by the ref `read_document` prints, sent as `set` / `rm` on the always-safe `id:"…"` ref and
-  compiled by the api's edit-operation engine. **Auto-layout is NOT run by default** in `ops` mode —
+  compiled by the api's edit-operation engine. **Auto-layout is NOT run by default** in `ops` mode:
   the point of a granular edit is to preserve the user's existing positions;
   re-laying out would move everything. (A future `relayout: true` opt-in could be
   added if wanted.)
@@ -329,14 +329,14 @@ be a string.`, or an id given twice), as `add_tab` and `update_document` do, rat
 
 ### 4.5 `list_templates`
 
-Browse the template library — the same hand-tuned catalogue the editor's
+Browse the template library: the same hand-tuned catalogue the editor's
 template starts ship ([Canvas and palette](../008-canvas/canvas-and-palette.md)), served from the shared
 `@livedocuments/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
-`{ kind, title, description, category }` — enough for the model to pick a
+`{ kind, title, description, category }`, enough for the model to pick a
 `kind` and pass it as `template` on `create_document` / `add_tab`. Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
-so the model never has to re-emit — or accidentally mangle — a curated layout.
+so the model never has to re-emit (or accidentally mangle) a curated layout.
 The recommended flow for "make me a pitch deck"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
 
@@ -360,7 +360,7 @@ size, uploadedAt }], more }`, newest first, `query` matching the name, `limit` 2
 in bytes. An id is what an `image` element's `imageId` takes. Names are often a camera's or a screenshot tool's
 ("Screenshot 2026-10-12 at 14.03.png"), so `image: true` adds a **contact sheet**: one PNG of the listed images (the
 first 12), each drawn to fit a cell above its place in the list and its name, through the same image embedding as
-the preview ([§5](#5-visualise--inline-image-render)). The sheet spends the preview's picture budget itself, from the
+the preview ([§5](#5-visualise-inline-image-render)). The sheet spends the preview's picture budget itself, from the
 sizes and dimensions the gallery lists: it draws pictures in order only while they stay within it, and each one past
 that keeps a placeholder captioned "too large to draw here", and its bytes are not fetched. The gallery is the caller's own (`GET /api/images`, owner
 only): a teammate's uploads are not in it. Read-only, so a read-only token may call it. A deployment without image
@@ -371,18 +371,18 @@ through the editor (upload, paste or drop) and the assistant places them from th
 
 ### 4.6 Schema resource (not a tool)
 
-A static, cacheable MCP **resource** — e.g. `livedocuments://schema/elements` —
+A static, cacheable MCP **resource** (e.g. `livedocuments://schema/elements`)
 returning a compact description of the element schema: the element types
 (`shape` / `text` / `sticky` / `arrow` / `table` / …), the shape vocabulary,
 required fields, the pinned-arrow anchor convention (`from.e → to.w` etc.), and
-the design rules that make pages read well (don't set colours — the theme
+the design rules that make pages read well (don't set colours, the theme
 owns them, a sticky's own colours excepted; size siblings consistently; prefer
 pinned arrows), and the content fields of the kinds that carry content (§4.7a). This is **how the
 model produces high-quality pages**: the schema is presented once, declaratively,
 rather than baked verbatim into every tool description. The same essentials are
 also summarised in the MCP server `instructions` and in the `create`/`update`
 input-schema field descriptions, so a client that ignores resources still gets
-enough. The schema text derives from `packages/document` types — single source of
+enough. The schema text derives from `packages/document` types, a single source of
 truth, no hand-maintained copy that can drift.
 
 ### 4.7a Content-carrying element kinds
@@ -482,7 +482,7 @@ so a position read from a result is not sent back off by it.
 ### 4.8 `share_document`
 
 Create a shareable link so anyone with the URL can open a document without
-signing in — the verb that turns "the AI made a deck" into "the AI made a
+signing in: the verb that turns "the AI made a deck" into "the AI made a
 deck and here's a link to send the team." Wraps `POST /api/documents/<id>/share`
 ([Share password](../013-workspace/share-password.md)): `{ documentId, role?, expiry? }` → the public URL
 (`/document/shared?s=<code>`), the granted role, and the expiry. `role` is
@@ -495,13 +495,13 @@ a token can only share documents its account owns. `expiry` ([Share-link expiry]
 
 ### 4.9 `rename_document` and `delete_document`
 
-CRUD completeness — the verbs a user will reach for the moment they ask their
+CRUD completeness: the verbs a user will reach for the moment they ask their
 assistant to "rename that" or "delete the old one":
 
-- **`rename_document`** — `{ documentId, name, tabId? }`. Renames the document
+- **`rename_document`**: `{ documentId, name, tabId? }`. Renames the document
   (`PUT /api/documents/<id>` `{ name }`), or one tab when `tabId` is given
   (`PUT /api/documents/<id>/tabs/<tabId>/name`, no whole-tab save). Non-destructive.
-- **`delete_document`** — `{ documentId, tabId? }`. Moves the document to the
+- **`delete_document`**: `{ documentId, tabId? }`. Moves the document to the
   [Trash](../013-workspace/trash.md) (`DELETE /api/documents/<id>`), restorable
   for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
   There is no permanent option: an AI tool can only ever bin a document, never
@@ -522,12 +522,12 @@ The way back from `delete_document`, with exactly the REST Trash's authority
 (`GET /api/trash`, `POST /api/trash/<id>/restore`): the user's personal Trash
 and every team Trash they have joined.
 
-- **`list_trash`** — `{}`. Read-only. Each document the user may restore:
+- **`list_trash`**: `{}`. Read-only. Each document the user may restore:
   `{ id, name, library, reason, deletedAt, purgeAt }`, `library` being
   `personal` or the team's name, `reason` being `deleted` or `empty` (moved by
   the [empty document clean-up](../013-workspace/empty-document-cleanup.md)),
   the two times ISO 8601.
-- **`restore_document`** — `{ documentId }`. Restores it to its folder, or
+- **`restore_document`**: `{ documentId }`. Restores it to its folder, or
   the root of its space when that folder is gone, and returns `{ restored, id, name, url }`.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
@@ -554,12 +554,12 @@ Pages are named by id, place (`2`) or name; articles by flow id or title. Both t
 
 ### 4.10 Prompts (discoverability)
 
-Registered MCP **prompts** — pre-canned templates a client surfaces as slash
+Registered MCP **prompts**: pre-canned templates a client surfaces as slash
 commands / quick actions, so a user finds what the server does without knowing
 the tool names. Pure text (no api calls, no auth to list); each steers the model
 to the right tools:
 
-- **`show_my_document`** `{ name }` — find a document by name and read_document it
+- **`show_my_document`** `{ name }`: find a document by name and read_document it
   inline.
 
 Registered by `registerShowMyPrompt` (`../packages/mcp-kit/src/prompts.ts`, every product's), wired in `buildServer` beside the tools
@@ -570,14 +570,14 @@ and schema resource.
 A trust story for cautious users: the MCP consent screen offers a **"read-only
 access"** checkbox. When ticked, the minted `lwt_` token carries `read_only = 1`
 ([Public API and API tokens](public-api-and-tokens.md) §3.4), and the api worker rejects every write it
-presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
+presents (`POST`/`PUT`/`DELETE` → `403 read_only_token`) at a **single
 dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
 reached, present or future, with no per-route changes. The read tools
 (find_documents, read_document, both GETs) still work; every write tool
 (create/update/delete/share/add_tab/rename) is blocked server-side, which is the
 security boundary (the tool list is static, but the api is the enforcer). Signed-in
 sessions and full tokens are unaffected. The token list in the Explorer shows a
-"Read-only" badge. This is a single boolean, not a general scopes system —
+"Read-only" badge. This is a single boolean, not a general scopes system;
 finer grants stay deferred ([Public API and API tokens](public-api-and-tokens.md) §7).
 
 ### 4.12 Error telemetry
@@ -585,14 +585,14 @@ finer grants stay deferred ([Public API and API tokens](public-api-and-tokens.md
 Genuine tool failures reach the public **Exceptions** dashboard ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Error
 category), so we see WHERE the MCP breaks. `apiJson` reports a **5xx** from the
 api worker (`Error·Api·Http5xx.<Tool>`) and a **network fault** (the service
-binding threw — `Error·Api·Internal.<Tool>`), then rethrows; the
+binding threw, `Error·Api·Internal.<Tool>`), then rethrows; the
 `delete_document` raw-fetch path reports a 5xx too. `<Tool>` is the running
 tool's PascalCase name (`Http503.UpdateDocument`), the same token as its
 `Mcp·Used` event, carried by the `AsyncLocalStorage` scope `registerTool` wraps
-every handler in (`tool-scope.ts`, over `../packages/mcp-kit/src/tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
+every handler in (`tool-scope.ts`, over `../packages/mcp-kit/src/tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported**: a bad id or
 malformed elements is expected, model-correctable input, not a fault, and
 reporting it would flood the view (an empty Exceptions view is the goal).
-Fire-and-forget, generic tokens only — never a message, stack, or user content.
+Fire-and-forget, generic tokens only, never a message, stack, or user content.
 Every post (these reports and `Mcp·Used`) is handed to the request's
 `ctx.waitUntil` (`../packages/mcp-kit/src/request-scope.ts`) so it outlives the response, and
 `Mcp·Used` is sent by `registerTool` only after a tool call succeeds
@@ -690,17 +690,17 @@ The hosted server is listed in the official **MCP Registry**
 (`registry.modelcontextprotocol.io`), which other directories (PulseMCP among
 them) ingest from, so one listing reaches several catalogues.
 
-- **Descriptor.** `server.json` at the repo root, under the registry's
+- **Descriptor.** `server.json` at the product root (`livedocuments/server.json`), under the registry's
   `2025-12-11` schema. Name `io.github.livedocuments-app/livedocuments`: the
-  `io.github.<org>` namespace is proven by the repo's own GitHub OIDC token, so
+  `io.github.<org>` namespace is proven by the publisher's GitHub sign-in, so
   publishing needs no DNS record and no secret. One `remotes` entry,
   `streamable-http` at `https://mcp.livedocuments.app/mcp`, with no `headers`:
   OAuth (§3) is discovered from the server's metadata, not configured by the
   client. The icon is the 512px mark in `marketing/media/icons`.
-- **Publishing.** `.github/workflows/mcp-registry.yml` runs `mcp-publisher
-login github-oidc` then `mcp-publisher publish` when `server.json` changes on
-  `main`, or on manual dispatch. The registry rejects a version it already
-  holds, so republishing means bumping `version` in `server.json`.
+- **Publishing.** The listing is a manual step outside CI: `mcp-publisher login github`, then
+  `mcp-publisher publish`, run by hand when `server.json` changes. No workflow publishes it; the monorepo
+  reads workflows only from its root `.github/`, which has no publish workflow. The registry rejects a
+  version it already holds, so republishing means bumping `version` in `server.json`.
 - Only the hosted origin is listed: the descriptor names it alone.
 
 ### 4.17 Structured output and described parameters
@@ -711,7 +711,7 @@ returns on success. A successful result carries that object twice: as
 prose, and serialised as the first text block, for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
 render a preview (`read_document`, `create_document`, `add_tab`,
-`update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
+`update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise-inline-image-render)).
 An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema. Every mistake the caller can fix is
 such a result, never a thrown protocol error: the `registerTool` wrapper answers an api 4xx in words (by its
@@ -771,7 +771,7 @@ descriptions.
   reaches once laid out, from the same estimate; `write_article`'s last line says it in words ("It takes about 2 pages
   once laid out"), so an agent asked for one page sees at once that it ran over.
 
-## 5. Visualise — inline image render
+## 5. Visualise: inline image render
 
 `create_document`, `add_tab` and `update_document` return, and `read_document` with `image: true` returns, an **inline
 PNG** so the pages show in the chat. This needs headless rendering inside a
@@ -786,15 +786,15 @@ Worker (no DOM, no React).
   and are **not** reusable.
 - **Extract a shared renderer.** Move the SVG-building logic into a new pure
   `packages/document/src/svg-render.ts` (`renderElementsToSvg(tab): string`),
-  consumed by **both** the existing in-app export (dedup — the editor stops
+  consumed by **both** the existing in-app export (dedup: the editor stops
   carrying its own copy) and the MCP worker. This is the reuse rule applied: one
   renderer, two callers.
 - **Rasterise in the worker.** Convert the SVG to PNG with
   [`@resvg/resvg-wasm`](https://github.com/yisibl/resvg-js) (runs in the Workers
-  runtime), return it as base64 MCP image content (`image/png`) — broadest client
+  runtime), return it as base64 MCP image content (`image/png`), for broadest client
   support vs. raw SVG.
 - **Embedded font.** Workers have no system fonts, so the worker bundles one
-  (Inter, OFL — `packages/render-png/fonts/`, Regular and Bold, wired as `Data` modules + passed to resvg as
+  (Inter, OFL, `packages/render-png/fonts/`, Regular and Bold, wired as `Data` modules + passed to resvg as
   `fontBuffers`) and renders every label in it; a weight past 500 (a title, a table's header row) draws
   in Bold. Without an embedded font resvg
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
@@ -816,7 +816,7 @@ Worker (no DOM, no React).
 - **Image-element embedding.** When a rendered tab has image elements,
   `imageResult` prefetches their bytes (owner-authed via the caller's token,
   `GET /api/images/:id`) and inlines them as base64 data URIs through the
-  renderer's `resolveImageHref` hook — resvg (WASM) can't fetch, so the bytes
+  renderer's `resolveImageHref` hook: resvg (WASM) can't fetch, so the bytes
   must be inline. A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livedocuments/api-schema`, shared with the api worker's
   snapshot render ([Document previews](../006-document/document-snapshots.md)), which passes its own byte source
@@ -839,7 +839,7 @@ Worker (no DOM, no React).
   (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
   sketches as the canvas draws them (the same Catmull-Rom smoothing, straight
   segments for a polygon-tool path), the full shape-silhouette vocabulary (hexagon /
-  cylinder / document / cloud / devices / actor ... —
+  cylinder / document / cloud / devices / actor ...:
   `svg-render-shapes.ts`, drawn from the same geometry table as the editor's
   ShapeSvgOverlay: `shape-geometry.ts`, pinned by a test per kind on each side),
   element rotation, and icon glyphs (above). The PNG/PDF canvas path
@@ -851,51 +851,51 @@ Worker (no DOM, no React).
 - **Icon elements render their real glyph.** The renderer takes an injected
   `resolveIconArt(iconId)` (like `resolveImageHref`); the MCP worker supplies
   `resolveIconExportArt` from `@liveworkspace/icons/resolve` (a static import of
-  the catalogue data — fine in a Worker), so line-art icons draw stroke-tinted
+  the catalogue data, fine in a Worker), so line-art icons draw stroke-tinted
   and Technology marks draw their brand tile instead of the old
   box-with-caption fallback. Without a resolver (or for an unknown id) the
   renderer still emits that fallback, so resolver-less callers are unchanged.
 
 ## 6. Rollout
 
-1. **`apps/mcp` skeleton** — worker, Hono, MCP SDK, service binding to api,
+1. **`apps/mcp` skeleton**: worker, Hono, MCP SDK, service binding to api,
    `/health`, deploy wiring + `mcp.livedocuments.app` host. `.env.example`.
-2. **Shared SVG renderer** — extract `packages/document/src/svg-render.ts` from
+2. **Shared SVG renderer**: extract `packages/document/src/svg-render.ts` from
    `export-tab.ts`, repoint the in-app export to it (no behaviour change), add
    `@resvg/resvg-wasm` rasterisation in the worker.
-3. **Tools, read-first** — `find_documents`, `read_document` (+ schema resource).
+3. **Tools, read-first**: `find_documents`, `read_document` (+ schema resource).
    These are read-only and prove the schema + render path end to end.
-4. **Write tools** — `create_document`, `update_document` (both modes), reusing
+4. **Write tools**: `create_document`, `update_document` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
-5. **OAuth** — `/api/oauth/exchange` on the api worker (reusing the token-mint
+5. **OAuth**: `/api/oauth/exchange` on the api worker (reusing the token-mint
    path, signed-in only like `/api/tokens`); `apps/editor` consent page; the MCP
    OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
    with a hand-pasted `lwt_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in
    `AGENTS.md`):
-   - A help article (e.g. `account-and-data/connect-ai-mcp`) — what the MCP is,
+   - A help article (e.g. `account-and-data/connect-ai-mcp`): what the MCP is,
      connecting it to Claude/an AI tool, the signed-in-only limitation, that it
-     mints a revocable API token — **registered in `apps/help/lib/articles.ts`**.
-   - `docs/development/architecture.md` — the new `apps/mcp` worker in the layout + deploy
-     order — MCP needs sign-in (like tokens/teams) and is
+     mints a revocable API token, **registered in `apps/help/lib/articles.ts`**.
+   - `docs/development/architecture.md`: the new `apps/mcp` worker in the layout + deploy
+     order: MCP needs sign-in (like tokens/teams) and is
      optional to deploy; `README.md` repo-layout tree gets the new app.
    - Cross-link from the API-token help/docs ([Public API and API tokens](public-api-and-tokens.md)).
 
 ## 7. Out of scope (for now)
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
-- **Folder / team management** via MCP — there are no tools to list, rename, or
+- **Folder / team management** via MCP: there are no tools to list, rename, or
   move folders (create_document files new documents at the root of the user's My Work, or their default folder);
   more `/api` surface can be wrapped later if demand appears. (Share-link
-  creation IS in scope now — `share_document`, [§4.8](#48-share_document); managing
+  creation IS in scope now: `share_document`, [§4.8](#48-share_document); managing
   folders/teams themselves stays out.)
   (Team **content** is in scope: `find_documents` sweeps team shared libraries
   and the other tools read/edit team documents through the ordinary access
-  gates — [§4.1](#41-find_documents), [Public API and API tokens §3.4](public-api-and-tokens.md).
+  gates; see [§4.1](#41-find_documents), [Public API and API tokens §3.4](public-api-and-tokens.md).
   Managing teams themselves stays out, and the api refuses it to tokens.)
-- **Token-paste connector** as a supported path — OAuth is the chosen front door
+- **Token-paste connector** as a supported path: OAuth is the chosen front door
   ([§3](#3-authentication-oauth-21)); a raw Bearer still works for local dev but
   isn't a documented user flow.
-- **Finer-grained scoped MCP tokens** — a **read-only** token now exists
+- **Finer-grained scoped MCP tokens**: a **read-only** token now exists
   ([§4.11](#411-read-only-tokens-the-one-scope), [Public API and API tokens](public-api-and-tokens.md) §3.4); per-resource /
   per-verb scopes beyond that stay deferred.

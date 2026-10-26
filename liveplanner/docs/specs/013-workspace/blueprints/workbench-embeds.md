@@ -16,7 +16,7 @@ Derived from [Workbench embeds](../workbench-embeds.md), with the frame headers 
 choke point of [API](../../015-api/api.md#auth) and [Public API and API tokens](../../015-api/public-api-and-tokens.md),
 the whole-tab save rule of [Agent changesets](../../024-agents/agent-changesets.md#whole-tab-saves-and-tab-renames),
 the person tag of [Agent presence](../../024-agents/agent-presence.md), the levels of
-[Share roles](../share-roles.md#api-tokens), the commands of [CLI](../../015-api/cli.md) and the refs and kind words of
+[Share roles](../share-roles.md#later), the commands of [CLI](../../015-api/cli.md) and the refs and kind words of
 [Project views](../../024-agents/project-views.md). The device-grant wait it models the pairing wait on is
 `loginWithDevice` in `apps/cli/src/auth/oauth.ts`. The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `WBn`.

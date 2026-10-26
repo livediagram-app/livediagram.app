@@ -10,7 +10,7 @@ this app resolves them and enforces what they allow.
 
 Let **signed-in** people call the liveplanner API from their own scripts /
 integrations with a long-lived **API token**, not just from the first-party web
-app. Read their projects, create/update them, manage folders — the same surface
+app. Read their projects, create/update them, manage folders: the same surface
 the app uses, under an explicit, revocable credential.
 
 **Signed-in only (gated like teams, [Teams](../013-workspace/teams.md)).** API tokens are an
@@ -74,7 +74,7 @@ storing tokens itself, the account-level design below supersedes it.
   mints `lvd_`.
 - Shown **once** at creation; never retrievable again.
 - Stored **hashed** (SHA-256), never in plaintext. Auth hashes the presented
-  token and looks the hash up by its UNIQUE-indexed column — an indexed
+  token and looks the hash up by its UNIQUE-indexed column; an indexed
   equality lookup, not a per-row compare: the hash derives from 256 bits of
   randomness, so there's no low-entropy value to time-attack (unlike a
   password) and the lookup leaks nothing useful.
@@ -99,9 +99,9 @@ api_tokens(
 
 Indexed on `token_hash` (lookup) and `owner_id` (listing).
 
-**Lifetime — fixed 6 months.** Every token expires at `created_at + 6 months`.
+**Lifetime: fixed 6 months.** Every token expires at `created_at + 6 months`.
 This is a hard maximum AND the only option: `expires_at` is **never null** (no
-never-expires tokens) and there is no shorter / user-chosen value for now — a
+never-expires tokens) and there is no shorter / user-chosen value: a
 long-lived credential that never lapses is the thing we don't want sitting in
 someone's CI config forever. `expires_at` is therefore always set and always in
 the future at creation; the lookup filters on it (`expires_at > now`) so an
@@ -130,14 +130,14 @@ The resolved owner id flows through the **same** checks every route already enfo
 plan, fetched for the token's account, so a token can only touch what its account can reach. No route changes for authorization; only the identity
 source changes.
 
-### 3.4 Access — full read + write, with an optional read-only flag
+### 3.4 Access: full read + write, with an optional read-only flag
 
-> **Specified, not built:** the read-only flag becomes a token level (view, participate or edit), one vocabulary with
-> share links ([Share roles](../013-workspace/share-roles.md#api-tokens)). Read-only tokens become view tokens; the
-> rest become edit tokens.
+> **Status: Planned.** Not built yet; today a token is full or read-only, as below. The read-only flag becomes a
+> token level (view, participate or edit), one vocabulary with share links ([Share roles](../013-workspace/share-roles.md#later)).
+> Read-only tokens become view tokens; the rest become edit tokens.
 
-A token grants its owner's **full** access — read AND write, the same surface
-the app has — **unless** it was minted **read-only** (the one scope that
+A token grants its owner's **full** access (read AND write, the same surface
+the app has) **unless** it was minted **read-only** (the one scope that
 exists): a `read_only` column that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
@@ -147,18 +147,18 @@ open an edit link. Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
 let an AI tool VIEW their projects without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
-([§7](#7-out-of-scope-for-now)) — `read_only` is a single boolean, not a general
+([§7](#7-out-of-scope-for-now)); `read_only` is a single boolean, not a general
 scopes system.
 
 **Team content counts as "the same surface".** A token's owner is always a
-signed-in account ([§3.3](#33-resolution)), and both credentials — session JWT and
-token — are server-verified, so the token identity feeds the same
+signed-in account ([§3.3](#33-resolution)), and both credentials (session JWT and
+token) are server-verified, so the token identity feeds the same
 team-membership checks the session does (`RouteContext.verifiedUserId`, used by
 `gateRead`/`gateEdit` and the team-scoped project/folder verbs). Concretely: a
 token can read and edit the projects in the shared libraries of the teams its
 owner has joined ([Team shared projects](../013-workspace/team-shared-projects.md)), and can `GET` the
 teams surface (list its teams, team detail, a team's library). Without this, a
-project filed into a team was invisible to every external integration — the
+project filed into a team was invisible to every external integration; the
 personal `GET /projects` excludes team projects by design.
 
 **Administration stays interactive-session-only.** Every teams MUTATION
@@ -166,7 +166,7 @@ personal `GET /projects` excludes team projects by design.
 plus account deletion
 require a verified signed-in **session** (`accountUserId`), never a token. Boundary
 rationale: a leaked token already exposes the owner's content (that's §3.4's
-deal, revocable + 6-month-capped), but it must not be able to escalate — mint
+deal, revocable + 6-month-capped), but it must not be able to escalate: mint
 further credentials, grant other people membership, or destroy the account.
 
 **Deleting goes to the Trash, with an explicit way past it.** A token's
@@ -185,7 +185,7 @@ runaway integration is throttled independently of the owner's interactive app
 use, and add a read limiter for token reads. Per-IP limits stay as the outer
 backstop.
 
-### 3.6 Management — the Settings dialog's API Tokens category
+### 3.6 Management: the Settings dialog's API Tokens category
 
 > **Superseded**: tokens are managed on liveworkspace.app (see the head of §3). This section records the manager liveplanner had.
 
@@ -281,14 +281,14 @@ Every other `/api/tokens` path is a 404 (management is on liveworkspace.app; see
 Sign-in is always offered in the editor ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
 Settings API Tokens category is always listed; a guest sees why it is empty and a Sign In link.
 
-- **Backend** — a token is checked with the liveworkspace accounts Worker, and
+- **Backend**: a token is checked with the liveworkspace accounts Worker, and
   with `ACCOUNTS_URL` or `API_RESOURCE` unset the worker resolves no account identity at all
   ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so no token
   is accepted. Belt and suspenders: even if the UI were somehow
   reached, token creation / use is impossible without auth configured.
 
 So enabling tokens is opt-in with auth, and disabling auth removes them
-cleanly — no orphaned page, no half-working endpoint. This takes nothing away
+cleanly: no orphaned page, no half-working endpoint. This takes nothing away
 from a guest-only deployment, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 dependency beyond the optional sign-in that teams already need.
@@ -305,12 +305,12 @@ never leaves the guest's own browser.
 Opening the API magnifies the cost of weak input handling, so the validation
 hardening landed first:
 
-- **Structural schema validation** — `isValidElement` / `isValidTab`
+- **Structural schema validation**: `isValidElement` / `isValidTab`
   (`packages/project/src/validate.ts`) vet the element/tab discriminant,
   required fields, endpoints, array bounds + unique ids. The project routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
-- **Size caps** — a global Content-Length body cap, per-tab byte cap, and
+- **Size caps**: a global Content-Length body cap, per-tab byte cap, and
   name / theme-definition / participant / share-password caps
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Project
   and tab names are shortened to the 60-character name cap rather than
@@ -329,10 +329,10 @@ the stable collab key (`ParticipantPresence.key`,
 
 ## 7. Out of scope
 
-Finer-grained scopes — per-project / per-folder grants, per-verb permissions —
-plus webhooks and any billing or quota tiers (the product has no paid tier —
+Finer-grained scopes (per-project / per-folder grants, per-verb permissions),
+plus webhooks and any billing or quota tiers (the product has no paid tier;
 [Business model + licence](../002-project-scope/business-model-and-licence.md)). (The one scope there is is
-the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);
+the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
 OAuth / third-party app authorization is in [MCP server](mcp-server.md).)
 Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.

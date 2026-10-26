@@ -37,7 +37,7 @@ In order, the first match wins:
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                             | 308 redirect to `/help/<path>`                                                                                                         |
 | everything else                                                                                                                                                              | marketing app (`apps/marketing`)                                                                                                       |
 
-The editor app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livedocuments/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the editor worker's `out/` files are already prefix-free).
+The editor app serves at **clean URLs**: there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livedocuments/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip, as the editor worker's `out/` files are already prefix-free).
 
 The one thing that keeps a `/live` prefix is the editor app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the editor app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (`forward(request, url, binding, origin, prefix)`, as for `/help/*`) so the worker serves them from `out/_next`. Pages carry no prefix: only `assetPrefix` is set, on assets.
 
@@ -111,21 +111,21 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 ## Local development
 
-The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3300` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, a local liveworkspace site on `:3000` in dev), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
+The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port: `http://localhost:3300` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, a local liveworkspace site on `:3000` in dev), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
-| App       | Local URL                                                       |
-| --------- | --------------------------------------------------------------- |
-| router    | `http://localhost:3300/` — everything, stitched like production |
-| marketing | `http://localhost:3301/`                                        |
-| live      | `http://localhost:3302/new`, `/offline`, ... (clean routes)     |
-| help      | `http://localhost:3304/help` (basePath baked in)                |
-| api       | `http://localhost:8987/api/...` (wrangler dev)                  |
+| App       | Local URL                                                      |
+| --------- | -------------------------------------------------------------- |
+| router    | `http://localhost:3300/`: everything, stitched like production |
+| marketing | `http://localhost:3301/`                                       |
+| live      | `http://localhost:3302/new`, `/offline`, ... (clean routes)    |
+| help      | `http://localhost:3304/help` (basePath baked in)               |
+| api       | `http://localhost:8987/api/...` (wrangler dev)                 |
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livedocuments/router dev` runs `wrangler dev --env local --port 3300`, and the root `pnpm dev` includes it.
 
-Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves — `basePath` for telemetry/help, and the editor app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
+Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves, through `basePath` for telemetry/help and the editor app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
 
-The routing decisions stay identical in both modes — only the transport (binding vs origin proxy) and the stripping differ. The router remains optional: visiting each app's own port directly still works.
+The routing decisions stay identical in both modes; only the transport (binding vs origin proxy) and the stripping differ. The router remains optional: visiting each app's own port directly still works.
 
 ## Routing infrastructure, not logic
 

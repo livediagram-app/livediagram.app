@@ -32,7 +32,7 @@ To keep that invariant true after any reorder or membership change, the client *
 
 This groups every folder's tabs at the position of the folder's first member, preserves each tab's order within its folder, and interleaves loose tabs by position. Normalization is idempotent and preserves tab object identity for tabs whose content did not change (so the autosave content diff doesn't spuriously re-save bodies). The single implementation lives in `packages/document/src/tab-folders.ts` (`normalizeFolderOrder`, `groupTabsIntoRuns`, `folderNamesInDocument`) and is consumed by the tab-bar renderer, the client save path, and the server route (defensive).
 
-A drag both reorders AND sets membership: the dropped tab **adopts the drop target's folder** (see "Membership UX" below), then normalization re-groups the runs. So dragging never "snaps back" — it moves the tab to wherever it was dropped, in or out of a folder.
+A drag both reorders AND sets membership: the dropped tab **adopts the drop target's folder** (see "Membership UX" below), then normalization re-groups the runs. So dragging never "snaps back": it moves the tab to wherever it was dropped, in or out of a folder.
 
 ## Membership UX
 
@@ -52,7 +52,7 @@ Folder membership changes two ways:
 
 `TabBar` maps over `groupTabsIntoRuns(tabs)` instead of the flat list:
 
-- **Loose** entries render the tab pill: a softly-rounded chip (rounded-lg — deliberately not a full pill) with **neutral slate text** so the name reads on the bar whatever the tab's theme, and the theme accent kept on the label's leading **tab icon** (the Pages glyph). The **active** tab is a raised card — a bar-contrasting surface (white / slate-800) with an accent ring + shadow and accent-coloured text — so it can never blend into the bar; inactive tabs are soft tinted chips. The bar itself sits on a slate-50 surface so the active card pops.
+- **Loose** entries render the tab pill: a softly-rounded chip (rounded-lg, deliberately not a full pill) with **neutral slate text** so the name reads on the bar whatever the tab's theme, and the theme accent kept on the label's leading **tab icon** (the Pages glyph). The **active** tab is a raised card: a bar-contrasting surface (white / slate-800) with an accent ring + shadow and accent-coloured text, so it can never blend into the bar; inactive tabs are soft tinted chips. The bar itself sits on a slate-50 surface so the active card pops.
 - **Folder** entries render as a **container**, clearly distinct from the tab pills inside it: a **dashed** rounded boundary over a tinted inset surface, carrying a **folder glyph** (closed when the fan is tucked away, open while it shows: no separate chevron), the folder **name** (small caps, no tooltip), and the member count as a small rounded **badge**. Members **fan UPWARD**: clicking the chip opens a transient popover above the bar listing the members vertically: the same pills loose tabs use (selection, presence, drag-reorder, context menu): instead of expanding sideways, so a big folder costs one chip of horizontal space. Only the folder's **active member** (when the active tab lives in the folder) renders inline beside the chip; picking a member from the fan switches to it (it becomes the inline pill) and closes the fan. The fan closes on outside press, Escape, or any tab switch; no per-folder collapse state is stored (the fan is transient), and the chip surfaces the **presence** of its hidden members (the inline pill shows its own stack).
 - Clicking the chip toggles the fan. Double-clicking renames (rewrites every member). Nothing about the fan is stored or broadcast.
 
@@ -61,7 +61,7 @@ Folder membership changes two ways:
 Folder rides the **same wire path as `orderIndex`**, never the per-tab content `PUT`:
 
 - `PUT /api/documents/:id` body widens from `{ name?, tabIds? }` to also accept `{ tabs?: { id, folder? }[] }`. New clients send `tabs` (order = array position, plus folder); the server falls back to `tabIds` (folder null) for older clients. Empty/whitespace folder names are trimmed to NULL server-side. An entry that is neither a tab id nor `{ id, folder? }` with a text or null folder refuses the whole request (400 `invalid tabs`) before anything is written, the rename included.
-- The `document-meta` room op's `tabs` entries widen to `{ id, name, orderIndex, folder? }` so a peer's folder change applies live. `folder` is optional throughout, so an older peer/client omitting it is treated as loose — no parse break.
+- The `document-meta` room op's `tabs` entries widen to `{ id, name, orderIndex, folder? }` so a peer's folder change applies live. `folder` is optional throughout, so an older peer/client omitting it is treated as loose, with no parse break.
 - `reorderTabs` writes `document_tabs.folder` alongside `order_index`. The per-tab content upsert (`upsertTab`) leaves `document_tabs.folder` untouched, so a content save can never clobber membership.
 - The persisted tab body strips `folder` (centralised with `templateChosen` in `stripUiTabFields`), so folder never leaks into the shared `tabs.data`.
 
@@ -76,7 +76,7 @@ Reuses the closed vocabulary ([Telemetry + public transparency dashboard](../017
 | A folder came into existence    | `Folder·Created·Tab` |
 | A folder was renamed            | `Folder·Renamed·Tab` |
 
-The folder **name is user content** and is never sent as the `type` argument — the `Tab` type on the `Folder` events distinguishes a tab folder from an explorer folder of documents, nothing more.
+The folder **name is user content** and is never sent as the `type` argument; the `Tab` type on the `Folder` events distinguishes a tab folder from an explorer folder of documents, nothing more.
 
 The `type` is not decoration. A dashboard metric card selects rows by an exact `type` match and `null` is a value, so the original untyped spelling of this table (`Tab·Created` for a new folder, `Tab·Renamed` for a folder rename) landed folder operations in the headline "Tabs Created" and "Tabs Renamed" cards, inflating a count of tabs with a count of folders.
 
@@ -95,6 +95,6 @@ Two further rules, both learned from the untyped version:
 
 ## Cross-references
 
-- [Per-tab storage](per-tab-storage.md) — per-tab storage; folder is link metadata, not body content.
-- [Tab ↔ document many-to-many](tab-document-many-to-many.md) — the `document_tabs` link table folder now extends.
-- [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) — telemetry enums reused here.
+- [Per-tab storage](per-tab-storage.md): per-tab storage; folder is link metadata, not body content.
+- [Tab ↔ document many-to-many](tab-document-many-to-many.md): the `document_tabs` link table folder now extends.
+- [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): telemetry enums reused here.

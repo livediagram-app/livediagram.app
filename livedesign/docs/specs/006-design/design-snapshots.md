@@ -135,7 +135,7 @@ This Browser), the team library page, the "Shared With Me" list, and the
 in-editor Explorer. A single shared `DesignThumbnail`
 component (`components/panels/DesignThumbnail.tsx`) backs them all, fed
 the **viewer's** owner id (never the design's) plus, for a shared row,
-its share code — so the authed fetch authorises the same way the design
+its share code, so the authed fetch authorises the same way the design
 itself does (owner / team membership / share code). A stranger with none
 of those gets a 404 and the row falls back to its icon.
 
@@ -194,11 +194,11 @@ snapshot's fixed `width`/`height` (keeping the `viewBox`) before handing
 it to the `<img>`, so the vector scales to the card's size crisply
 rather than rasterising at its intrinsic size and upscaling.
 
-The same toggle is on the **team library** ([Team shared designs](../013-workspace/team-shared-designs.md)) — its shared
+The same toggle is on the **team library** ([Team shared designs](../013-workspace/team-shared-designs.md)); its shared
 designs + folders reuse the same `CardView`, sharing the
 `livedesign:explorer-view` preference so a card-view user gets cards
 there too. Team cards hide the visibility badge (every card is a team
-design, so a per-card badge is noise — the team list omits it as well).
+design, so a per-card badge is noise, and the team list omits it as well).
 
 ## Scope (v1)
 
