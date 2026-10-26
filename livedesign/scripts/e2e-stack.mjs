@@ -10,11 +10,11 @@
 //      a developer's own local index, trusting this stack's accounts stand-in and calling this api.
 //   2. api — `wrangler dev --local` (apps/api): each design's and each person's Durable Object keeps its own
 //      SQLite in wrangler's local storage, so persistence works.
-//   3. live — a static file server for `out/` that reproduces the four
-//      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
-//      rewrite `/design/*` to the single placeholder, forward `/api/index/*` to the index, and proxy
-//      the rest of `/api/*` (WebSocket upgrades included) to the api worker so the app
-//      is same-origin.
+//   3. live: a static file server for `out/` that reproduces what production
+//      does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
+//      rewrite `/design/*` to the single placeholder, forward `/api/index/*` to the index, serve
+//      liveworkspace's Explorer at `/explorer` when its site is built, and proxy the rest of
+//      `/api/*` (WebSocket upgrades included) to the api worker so the app is same-origin.
 //
 // Foregrounds both and stays alive; Playwright's webServer waits on the
 // live port. SIGINT/SIGTERM tears the whole tree down.
@@ -47,7 +47,6 @@ import {
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
 import { createTokenStandIn } from '../../packages/auth-client/src/e2e-token-stand-in.ts';
-import { EXPLORER_LANDING_PATH } from '../apps/live/lib/explorer-landing.ts';
 import {
   isWorkspaceFramePath,
   WORKSPACE_FRAME_PAGE,
@@ -102,6 +101,17 @@ const INDEX_KEY = 'e2e-index-key';
 const INDEX_DIR = path.resolve(ROOT, '..', 'liveworkspace', 'apps', 'index');
 // The index's local D1 for this stack, apart from a developer's `wrangler dev` state.
 const INDEX_STATE = path.join(INDEX_DIR, '.wrangler', 'e2e-state');
+// liveworkspace's site, whose Explorer production serves at livedesign's own /explorer (the router's
+// routeToWorkspace, @liveworkspace/sites/workspace-proxy): its static export, when built.
+// E2E_WORKSPACE_SITE_OUT serves another export of it (the site's `.next/out-e2e`, from its build:e2e).
+const WORKSPACE_SITE_DIR = path.resolve(
+  ROOT,
+  '..',
+  'liveworkspace',
+  'apps',
+  'site',
+  process.env.E2E_WORKSPACE_SITE_OUT ?? 'out',
+);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the
 // router mounts it; marketing owns "/" in production, so it gets its own port. (The telemetry
@@ -473,6 +483,29 @@ function proxyApiUpgrade(req, socket, head) {
   socket.on('error', () => upstream.destroy());
 }
 
+// The router's routeToWorkspace (@liveworkspace/sites/workspace-proxy): the Explorer is liveworkspace's page, shown
+// at livedesign's own /explorer with the address unchanged, its build assets under /_liveworkspace. Served from
+// the site's static export when it is built; otherwise a logged 404, so only the specs that open the Explorer page
+// need the build.
+const isWorkspacePath = (pathname) =>
+  pathname === '/explorer' ||
+  pathname.startsWith('/explorer/') ||
+  pathname.startsWith('/_liveworkspace/');
+
+function serveWorkspace(req, res, pathname) {
+  if (!existsSync(WORKSPACE_SITE_DIR)) {
+    console.warn(`[e2e] ${pathname}: liveworkspace's site is not built (${WORKSPACE_SITE_DIR})`);
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end(`Not built: ${WORKSPACE_SITE_DIR}`);
+    return;
+  }
+  // The export's own layout: each Explorer view a page of its own, its assets under out/_liveworkspace.
+  const p = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  const file = resolveIn(WORKSPACE_SITE_DIR, p);
+  if (file) return serveFile(req, res, file, pathname);
+  serveNotFound(req, res, pathname, path.join(WORKSPACE_SITE_DIR, '404.html'));
+}
+
 function startLiveServer() {
   const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
@@ -501,12 +534,7 @@ function startLiveServer() {
       return;
     }
     if (pathname === '/api' || pathname.startsWith('/api/')) return proxyApi(req, res);
-    // Match the worker's /explorer → Home redirect, from the same constant.
-    if (pathname === '/explorer' || pathname === '/explorer/') {
-      res.writeHead(302, { Location: EXPLORER_LANDING_PATH });
-      res.end();
-      return;
-    }
+    if (isWorkspacePath(pathname)) return serveWorkspace(req, res, pathname);
     // Cloudflare's assets layer (`html_handling` defaults to
     // "auto-trailing-slash") answers `/new/` — whose file is `new.html`, not
     // `new/index.html` — with a redirect to `/new`, query intact. Without
@@ -564,6 +592,11 @@ async function main() {
     console.log(`[e2e] static editor only, proxying to the api on :${API_PORT}`);
     startLiveServer();
     return;
+  }
+  if (!existsSync(WORKSPACE_SITE_DIR)) {
+    console.warn(
+      `[e2e] liveworkspace's site is not built (${WORKSPACE_SITE_DIR}): /explorer answers 404 until it is`,
+    );
   }
   console.log('[e2e] applying the index local D1 migrations…');
   rmSync(INDEX_STATE, { recursive: true, force: true });
