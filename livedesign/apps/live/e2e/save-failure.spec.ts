@@ -3,7 +3,8 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
-  startBlankDesign,
+  onPage,
+  openBlankPage,
   paletteTile,
 } from './fixtures';
 
@@ -12,7 +13,8 @@ import {
 // The worker's exact 401 is replayed on the tab PUT, since no signed-in session
 // exists in the e2e stack; lifting it proves the next edit saves again.
 test('a save refused as unauthenticated says so, then recovers', async ({ page, pageErrors }) => {
-  await startBlankDesign(page);
+  // Its page chosen a Logo first, its save awaited, so the squares below have a page to land on.
+  await openBlankPage(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
   const tabWrites = '**/api/designs/*/tabs/*';
 
@@ -26,7 +28,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
       : route.continue(),
   );
   await (await paletteTile(page, 'Add Square')).click();
-  await canvas.click({ position: { x: 420, y: 300 } });
+  await canvas.click({ position: await onPage(page, 0.3, 0.25) });
 
   // Next's route announcer is an alert too; the toast is the other one.
   const alert = page.locator('[role="alert"]:not(#__next-route-announcer__)');
@@ -39,7 +41,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
     (r) => r.request().method() === 'PUT' && /\/api\/designs\/[^/]+\/tabs\//.test(r.url()),
   );
   await (await paletteTile(page, 'Add Square')).click();
-  await canvas.click({ position: { x: 560, y: 300 } });
+  await canvas.click({ position: await onPage(page, 0.7, 0.25) });
   expect((await saved).status()).toBeLessThan(300);
 
   expectNoPageErrors(pageErrors);
