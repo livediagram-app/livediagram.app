@@ -35,10 +35,11 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   page,
   pageErrors,
 }) => {
-  // New Design from the Explorer goes through /new, which makes a guest's design in This Browser and opens it
+  // A new guest's Explorer Home is a first run, so its hero is the welcome (liveworkspace/docs/specs/004-index/
+  // one-explorer.md): its Start Blank goes through /new, which makes a guest's design in This Browser and opens it
   // (docs/specs/006-design/save-locations.md "The default depends on who is creating").
   await page.goto('/explorer');
-  await page.getByRole('button', { name: 'New Design' }).first().click();
+  await page.getByRole('link', { name: 'Start Blank', exact: true }).first().click();
   await page.waitForURL(/\/design\/[0-9a-f-]{36}/, { timeout: 30_000 });
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   const id = new URL(page.url()).pathname.split('/').pop()!;
@@ -117,7 +118,9 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
 
 // The Explorer lists what the index holds for the person, not only designs: the Show switch widens it to every app.
 test('the Explorer offers every app’s items, designs first', async ({ page, pageErrors }) => {
+  // The switch heads a list's pane (My Work here); Home's hero has none.
   await page.goto('/explorer');
+  await showView(page, 'My Work');
   const show = page.getByRole('group', { name: 'Show' });
   await expect(show.getByRole('button', { name: 'livedesign' })).toHaveAttribute(
     'aria-pressed',
