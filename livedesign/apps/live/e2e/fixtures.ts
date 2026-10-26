@@ -213,8 +213,8 @@ export async function pagePoint(
 // (docs/specs/006-design/save-locations.md "The default depends on who is creating"), where the index holds no item
 // and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so
 // /new makes it there whoever is creating. The page becomes a minted guest (its token where the app keeps it, so /new
-// never leaves for the guest handoff), or keeps the guest a spec already gave it or its context (adoptGuest), and the
-// folder is one of theirs, made at the index.
+// never leaves for the guest handoff), or keeps the guest a spec already gave it or its context (adoptGuest), or the
+// account it is signed in as (adoptAccount), and the folder is one of theirs, made at the index.
 export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
   let owner = adoptedGuests.get(page) ?? adoptedGuests.get(page.context());
   if (!owner) {
@@ -310,6 +310,14 @@ export async function adoptGuest(target: Page | BrowserContext, owner: string): 
       // A page with no storage keeps none.
     }
   }, token);
+}
+
+// The page opens signed in as this account (signed-in/session.ts installSession puts the session where the app reads
+// it): serverNewUrl then makes its folder as the account, never as a guest it would mint, so the design is the
+// account's, on the server. A folder a minted guest made is refused to the account ("Couldn't file the design there").
+export function adoptAccount(page: Page, userId: string, token: string): void {
+  guestTokens.set(userId, token);
+  adoptedGuests.set(page, userId);
 }
 
 export function ownerHeaders(

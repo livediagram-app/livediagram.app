@@ -73,7 +73,8 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
 - **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-design/save-locations.md#the-default-depends-on-who-is-creating)),
   and the index holds no item for it, so its grant request answers 404. A spec that needs its new design on the
   server (it seeds it through the api with `seedTab`, watches the api's saves, or shares it) opens `/new` through
-  `serverNewUrl`, which keeps the page's adopted guest (or adopts a minted one) and adds a `?folder=` of theirs, the
+  `serverNewUrl`, which keeps the page's adopted guest or signed-in account (`installSession` adopts the account, so
+  a signed-in spec's folder is never a minted guest's) or adopts a minted guest, and adds a `?folder=` of theirs, the
   placement that makes `/new` create on livedesign whoever is creating. `openStartBlank`, `startBlankDesign` and
   `openBlankPage` do it for every caller; a spec that means the guest's own create opens `/new` itself.
 - **Elements go on a page.** A press off every page places nothing ([Pages mode](../007-editor/pages-mode.md) "The
