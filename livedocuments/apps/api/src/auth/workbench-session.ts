@@ -62,7 +62,7 @@ export async function resolveWorkbenchSession(
   }
   if (!result.ok) return { ok: false, reason: result.reason };
   const s = result.session;
-  if (s.scope === 'item' && s.itemId === null) return { ok: false, reason: 'unknown' };
+  // An item session always names its item: the shared checker refuses one that doesn't (auth-client workbench.ts).
   const reach: WorkbenchReach =
     s.scope === 'item'
       ? { scope: 'document', documentId: s.itemId!, folderId: null }
