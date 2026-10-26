@@ -78,6 +78,7 @@ describe('showView (R17, VW34)', () => {
     expect(arrowText[2]).toBe('  3,4 → e.w');
     expect(arrowText).toContain('  ← e "Entity" [rider]');
     expect(showView(model, elementOf(model, 'e')).text).toContain('  ← free label="go" [arr]');
+    expect(showView(model, elementOf(model, 'rider')).text).toContain(' → arrow:arr@0.25');
   });
 
   it('fits a budget by whole lines', () => {

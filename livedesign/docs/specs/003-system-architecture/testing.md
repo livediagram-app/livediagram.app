@@ -81,7 +81,10 @@ export default defineProject({ test: { environment: 'jsdom' } });
   Vitest config passes `LIVEWORKSPACE_COVERAGE` to its workers). Three is enough
   beside a 4x slower runner because each budget keeps its own room over the
   local timing (Tidy Up: 100 ms against 24). A loose regression guard (a budget many times what the
-  work measures) needs neither.
+  work measures) needs neither. The photo engine's budgets
+  (`packages/photo-engine/src/engine.perf.test.ts`) skip a coverage run instead: v8 slows their
+  per-pixel loops 6 to 12 times, past any headroom, so its `test:coverage` runs that file again
+  uninstrumented and CI still holds them to `cpuBudgetMs`.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it
   statically, so its transform happens at collection, outside every test's

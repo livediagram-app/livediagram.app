@@ -73,6 +73,7 @@ describe('landingFunnel', () => {
       'Home.HeroBlankIllustration',
       'Home.HeroBlankPlan',
       'Home.HeroFan',
+      'Home.HeroBoard',
       'Home.GalleryDraw',
       'Home.Closing',
     ]);

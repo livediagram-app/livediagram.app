@@ -1496,7 +1496,7 @@ which lives in `Canvas` rather than in the clipboard hook.
 
 - **The isometric export** (removed 2026-10-25; livediagram keeps the isometric view). The Isometric canvas
   tool went on 2026-10-24 ([Plan mode](../026-plan/plan-mode.md#tools)); the image export's **Isometric
-  view** toggle, the last of it, went after it, with `lib/isometric.ts`, the export's extrusion columns and
+  view** toggle, the last of it, went after it, with the isometric projection helpers, the export's extrusion columns and
   the `isometric-view.md` spec. Every image export is flat and top-down. Telemetry: `UI·Toggled·IsometricExport`
   is no longer sent ([Telemetry](../017-telemetry/telemetry.md#retired-features)).
   - **Old plans open unchanged, drawn flat.** Nothing a plan stores was ever isometric (the toggle was dialog

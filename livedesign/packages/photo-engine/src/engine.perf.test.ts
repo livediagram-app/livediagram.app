@@ -1,7 +1,7 @@
 // The engine's hot paths held to their budgets (docs/specs/031-photo/blueprints/photo-engine.md
 // "Performance and limits"), each the median of a few runs, with an allowance for slower machines.
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { UNDER_COVERAGE_ENV, cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { applyAdjustment } from './adjust/catalogue';
 import { compositePhoto } from './composite/composite';
 import { FILTERS } from './filters/catalogue';
@@ -15,7 +15,9 @@ import { floodSelect } from './select/flood';
 import { selectSubject } from './select/grabcut';
 
 // Budgets are for an Apple M1, in CPU time (so a busy machine does not fail them), with an allowance
-// for slower machines; CI and coverage get cpuBudgetMs's headroom on top.
+// for slower machines; CI gets cpuBudgetMs's headroom on top. They never run under coverage: v8's
+// instrumentation slows these per-pixel loops 6 to 12 times (the magic wand read 1460 ms against 117
+// plain), far past that headroom, so `test:coverage` runs this file again without it.
 const ALLOWANCE = Number(process.env.PHOTO_PERF_ALLOWANCE ?? 2);
 
 /** The fastest of a few runs, in CPU ms. */
@@ -43,7 +45,7 @@ const report = (name: string, ms: number, budget: number) => {
   expect(ms).toBeLessThan(cpuBudgetMs(budget * ALLOWANCE));
 };
 
-describe('budgets', { timeout: 120_000 }, () => {
+describe.skipIf(process.env[UNDER_COVERAGE_ENV])('budgets', { timeout: 120_000 }, () => {
   it('lays a 100 px soft dab', () => {
     const layer = new TiledRaster();
     const s = new StrokeEngine(

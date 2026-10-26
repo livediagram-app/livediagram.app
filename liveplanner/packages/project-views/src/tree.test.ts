@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { arrowBetween, shapeAt, strokeAt } from './__fixtures__/build';
-import { buildViewTree, isViewRun, type ViewItem } from './tree';
+import { buildViewTree, depthFirst, isViewRun, type ViewItem } from './tree';
 
 const outline = (items: ViewItem[]): unknown[] =>
   items.map((item) =>
@@ -36,6 +36,17 @@ describe('buildViewTree', () => {
     ]);
     expect(tree.nodes.has('arr')).toBe(false);
     expect(tree.nodes.get('in-lane')?.container).toBe('lane');
+    // Depth-first walks each container's children before its next sibling, and unfolds a run into its strokes.
+    expect(depthFirst(tree.roots).map((node) => node.el.id)).toEqual([
+      'frame',
+      'a',
+      'b',
+      'lane',
+      'in-lane',
+      'far',
+      's1',
+      's2',
+    ]);
   });
 
   it('has no roots for an empty tab', () => {

@@ -50,9 +50,7 @@ export function createPngRenderer(loaders: PngLoaders): {
           all.map((bytes) => new Uint8Array(bytes)),
         );
         // As with the wasm, a failed load is tried again by the next render rather than kept as broken.
-        loading.catch(() => {
-          if (fonts === loading) fonts = null;
-        });
+        loading.catch(() => (fonts = null));
         fonts = loading;
       }
       const options = {

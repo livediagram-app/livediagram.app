@@ -210,7 +210,9 @@ describe('the keyboard tree', () => {
 });
 
 describe('a big tree', () => {
-  it('keeps a key press cheap with 2,000 folder rows open', async () => {
+  // Rendering 2,000 rows in jsdom took over 8 s on a CI runner, past Vitest's 5 s default; the budget that
+  // matters is the per-key one below.
+  it('keeps a key press cheap with 2,000 folder rows open', { timeout: 30_000 }, async () => {
     localStorage.clear();
     const folders = Array.from({ length: 2000 }, (_, i) =>
       folder(`f${i}`, `Folder ${String(i).padStart(4, '0')}`),

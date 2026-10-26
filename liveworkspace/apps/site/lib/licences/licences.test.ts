@@ -14,8 +14,11 @@ const appsDir = `${productRoot}apps/`;
 const config = { productRoot, overrides: OVERRIDES, embedded: EMBEDDED_WORKS };
 
 describe('LICENCE_APPS', () => {
+  // Every app that ships (a Worker, with a wrangler.toml); the migrate tool runs from a laptop and ships nothing.
   it('registers every app in liveworkspace/apps/, so a new one cannot ship unlisted', () => {
-    const dirs = readdirSync(appsDir).filter((d) => statSync(appsDir + d).isDirectory());
+    const dirs = readdirSync(appsDir).filter(
+      (d) => statSync(appsDir + d).isDirectory() && existsSync(`${appsDir}${d}/wrangler.toml`),
+    );
     expect(LICENCE_APPS.map((a) => a.id).toSorted()).toEqual(dirs.toSorted());
   });
 });

@@ -1,3 +1,5 @@
+import { RAIL_CLEAR_PADDING } from '@livedesign/ui';
+
 import { HeroBoard } from './HeroBoard';
 import { HeroConnectors } from './HeroConnectors';
 import { HeroFan } from './HeroFan';
@@ -19,9 +21,11 @@ export function Hero() {
     <section className="hero-band relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col xl:min-h-[47.5rem] xl:bg-[#fdeef0] xl:dark:bg-[#0c0507]">
       <div aria-hidden className="hero-band-dots pointer-events-none absolute inset-0 xl:hidden" />
       {/* From `xl` this row spans the collage's cards, so only the card in it takes the pointer. */}
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col 2xl:max-w-7xl px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44 xl:pointer-events-none xl:pt-[7.5rem] xl:pb-[6.25rem]">
+      <div
+        className={`relative z-10 mx-auto flex w-full max-w-6xl flex-col 2xl:max-w-7xl ${RAIL_CLEAR_PADDING} max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:pt-36 lg:pt-44 xl:pointer-events-none xl:pt-[7.5rem] xl:pb-[6.25rem]`}
+      >
         {/* The card from `xl`; plain below. */}
-        <div className="relative flex flex-col xl:pointer-events-auto xl:mx-auto xl:min-h-[33.75rem] xl:w-full xl:max-w-[42.5rem] 2xl:max-w-[50rem] xl:justify-center xl:rounded-[1.75rem] xl:border xl:border-rose-100 xl:bg-white/95 xl:px-[3.75rem] xl:py-10 xl:shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] xl:dark:border-slate-800 xl:dark:bg-slate-900/95">
+        <div className="relative flex flex-col xl:pointer-events-auto xl:mx-auto xl:min-h-[33.75rem] xl:w-full xl:max-w-[42.5rem] 2xl:max-w-[50rem] xl:justify-center xl:rounded-[1.75rem] xl:border xl:border-rose-100 xl:bg-white/95 xl:px-[3.75rem] xl:py-10 xl:shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] xl:dark:border-slate-700 xl:dark:bg-slate-900/95">
           {/* An arrow drawn on load from the end of the question down onto the search; the card has no room for it. */}
           <HeroConnectors wide={false} />
           {/* Two promises, each its own badge and each true today (free, MIT, no account needed). A

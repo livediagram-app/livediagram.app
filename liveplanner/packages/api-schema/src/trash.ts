@@ -16,8 +16,8 @@ export {
 } from '@liveworkspace/api-schema/trash';
 
 // One row of `GET /api/trash`: a project the caller may restore or purge. The row is every product's
-// (TrashedDocument in @liveworkspace/api-schema/trash); it is declared here so the api's OpenAPI
-// document keeps naming it `TrashedProject`.
+// (TrashedDocument in @liveworkspace/api-schema/trash); it is declared here so the api's
+// OpenAPI document keeps naming it `TrashedProject`.
 export type TrashedProject = {
   id: string;
   name: string;

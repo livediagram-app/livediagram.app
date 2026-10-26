@@ -34,6 +34,16 @@ describe('createPngRenderer', () => {
     expect(l.wasm).toHaveBeenCalledTimes(2);
   });
 
+  it('retries a font load that failed', async () => {
+    const l = loaders();
+    vi.mocked(l.bold).mockRejectedValueOnce(new Error('disk'));
+    const renderer = createPngRenderer(l);
+    await expect(renderer.renderPng(svg('Hello'))).rejects.toThrow('disk');
+    const { png } = await renderer.renderPng(svg('Hello'));
+    expect([...png.slice(0, 4)]).toEqual(PNG_SIGNATURE);
+    expect(l.font).toHaveBeenCalledTimes(2);
+  });
+
   it('draws text in Inter whatever family it asks for, reading the font once', async () => {
     const l = loaders();
     const renderer = createPngRenderer(l);

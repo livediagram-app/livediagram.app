@@ -124,6 +124,7 @@ describe('renderView refusals (R4, R5, E17, E18)', () => {
 
   it('shows an arrow but refuses one as a subtree (VW41), and refuses find without q', () => {
     expect(render({ view: 'show', ref: 'arr' }, tab).ok).toBe(true);
+    expect(render({ view: 'outline', only: 'abcd0' }, tab).ok).toBe(true);
     expect(render({ view: 'outline', only: 'arr' }, tab)).toEqual({
       ok: false,
       refusal: { error: 'invalid_value', message: 'only takes an element, not an arrow' },

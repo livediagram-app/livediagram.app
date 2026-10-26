@@ -198,7 +198,7 @@ the server, which the rest of this spec covers.
   when you reconnect." for a viewer. Changes are held in memory only, so the
   banner says "in this tab": closing it while offline loses them. The words
   say it all: no coloured dot beside them (never a dot standing for a status), and not the This
-  Browser pill's teal, since a dropped connection is not where a document lives. The save
+  Browser pill's teal, since a dropped connection is not where a project lives. The save
   failure toast reads "You're offline. Keep this tab open to save when you
   reconnect." instead of the connection message: one line, as every toast is
   ([Toasts](../004-interface-design/toasts.md)).

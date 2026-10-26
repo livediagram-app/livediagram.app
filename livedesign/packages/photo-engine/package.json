@@ -12,7 +12,7 @@
   "scripts": {
     "lint": "oxlint",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage && vitest run src/engine.perf.test.ts",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo coverage"
   },

@@ -68,17 +68,16 @@ export const PERSON_ID_FIELDS = [
   'addedBy',
 ] as const;
 
-// `each`: every item of a list (`[]`); `values`: every value of a record (`{}`).
-type Segment = { key: string; each: boolean; values?: boolean };
+// `each`: every item of a list (`[]`).
+type Segment = { key: string; each: boolean };
 type Path = readonly [Segment, ...Segment[]];
 type Stripped<T> = { value: T; removed: boolean };
 
 // `qaNotes[].voters` → [{ qaNotes, each }, { voters }].
 function pathOf(field: string): Path {
   const [first, ...rest] = field.split('.').map((part) => ({
-    key: part.replace(/(\[\]|\{\})$/, ''),
+    key: part.replace(/\[\]$/, ''),
     each: part.endsWith('[]'),
-    values: part.endsWith('{}'),
   }));
   return [first!, ...rest];
 }
@@ -104,12 +103,6 @@ function stripRecord(
     return { value: copy, removed: true };
   }
   const child = copy[segment.key];
-  if (segment.values) {
-    if (!isObject(child) || Array.isArray(child)) return { value: copy, removed: false };
-    const entries = Object.entries(child).map(([k, v]) => [k, stripValue(v, rest)] as const);
-    copy[segment.key] = Object.fromEntries(entries.map(([k, v]) => [k, v.value]));
-    return { value: copy, removed: entries.some(([, v]) => v.removed) };
-  }
   if (segment.each) {
     if (!Array.isArray(child)) return { value: copy, removed: false };
     const items = child.map((item: unknown) => stripValue(item, rest));
