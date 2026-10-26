@@ -53,10 +53,20 @@ describe('hexToRgb / rgbToHex', () => {
     expect(hexToRgb('0ea5e9')).toEqual({ r: 14, g: 165, b: 233 });
   });
 
-  it('is null for anything that is not six hex digits', () => {
-    expect(hexToRgb('#fff')).toBeNull();
-    expect(hexToRgb('#0ea5e980')).toBeNull();
-    expect(hexToRgb('red')).toBeNull();
+  // Tabs and elements carry user-picked colours, and older documents predate the hex-only rule
+  // (@liveworkspace/model-core/css-colour).
+  it('reads #rgb, #rgba and CSS named colours too, dropping alpha', () => {
+    expect(hexToRgb('#fff')).toEqual({ r: 255, g: 255, b: 255 });
+    expect(hexToRgb('#f0a8')).toEqual({ r: 255, g: 0, b: 170 });
+    expect(hexToRgb('#0ea5e980')).toEqual({ r: 14, g: 165, b: 233 });
+    expect(hexToRgb('red')).toEqual({ r: 255, g: 0, b: 0 });
+    expect(hexToRgb('rebeccapurple')).toEqual({ r: 102, g: 51, b: 153 });
+  });
+
+  it('is null for anything CSS would not read as a solid colour this way', () => {
+    expect(hexToRgb('rgb(1,2,3)')).toBeNull();
+    expect(hexToRgb('transparent')).toBeNull();
+    expect(hexToRgb('#ff')).toBeNull();
   });
 
   it('writes channels back rounded and clamped into 0-255', () => {
@@ -67,7 +77,8 @@ describe('hexToRgb / rgbToHex', () => {
   it('shade mixes toward black and leaves unparseable input alone', () => {
     // The avatar sprite's shaded side is this 22% shade.
     expect(shade('#0ea5e9', 0.22)).toBe('#0b81b6');
-    expect(shade('red', 0.5)).toBe('red');
+    expect(shade('rgb(1, 2, 3)', 0.5)).toBe('rgb(1, 2, 3)');
+    expect(shade('red', 0.5)).toBe(shade('#ff0000', 0.5));
   });
 });
 
@@ -312,9 +323,10 @@ describe('contrastRatio', () => {
     expect(contrastRatio('#767676', '#ffffff')).toBeCloseTo(4.54, 2);
   });
 
-  it('is NaN for anything but #rrggbb, so no threshold check can pass', () => {
+  it('is NaN for anything but a # hex colour, so no threshold check can pass', () => {
     expect(contrastRatio('red', '#ffffff')).toBeNaN();
-    expect(contrastRatio('#fff', '#000000')).toBeNaN();
+    // Shorthand reads like its six digits.
+    expect(contrastRatio('#fff', '#000000')).toBe(21);
   });
 
   it('names the AA threshold for normal text', () => {

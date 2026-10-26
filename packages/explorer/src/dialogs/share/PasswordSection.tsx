@@ -3,10 +3,11 @@
 // Password Protection: one optional password that guards every link of the item, behind a switch. Off hides the
 // field and on shows it; with a password saved, switching off removes it, so the switch never disagrees with what
 // the index enforces. The index keeps only a hash, so a saved password can't be shown again: it reads "Password Set"
-// with Replace and Remove. Spaces around a password are trimmed, and a field of spaces alone saves nothing.
+// with Replace and Remove. Spaces around a password are trimmed, and a field of spaces alone saves nothing. A new
+// password needs SHARE_PASSWORD_MIN characters (the index refuses fewer); until then Save waits and the field says so.
 
 import { useRef, useState } from 'react';
-import { SHARE_PASSWORD_MAX } from '@liveworkspace/index-client';
+import { SHARE_PASSWORD_MAX, SHARE_PASSWORD_MIN } from '@liveworkspace/index-client';
 import { Button, Switch } from '@liveworkspace/ui';
 import { LockIcon } from '../../ui/icons';
 import { HelpLink } from './HelpLink';
@@ -47,7 +48,7 @@ export function PasswordSection({
 
   const save = async () => {
     const next = passwordToSave(typed);
-    if (!next) return;
+    if (!next || next.length < SHARE_PASSWORD_MIN) return;
     if (!(await onSet(next))) return;
     setTyped('');
     setReplacing(false);
@@ -74,7 +75,9 @@ export function PasswordSection({
   const showSet = passwordSet && !replacing;
   // The host's lock: a password already in force stays removable; only setting a new one is locked.
   const locked = !!lockedReason && !passwordSet;
-  const canSave = !busy && passwordToSave(typed) !== null;
+  const next = passwordToSave(typed);
+  const tooShort = next !== null && next.length < SHARE_PASSWORD_MIN;
+  const canSave = !busy && next !== null && !tooShort;
 
   return (
     <section
@@ -159,56 +162,67 @@ export function PasswordSection({
         </div>
       ) : null}
       {on && !showSet && !locked ? (
-        <form
-          className={DETAIL}
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (canSave) void save();
-          }}
-        >
-          <div className="relative min-w-0 flex-1">
-            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
-              <LockIcon />
-            </span>
-            <input
-              ref={field}
-              type="text"
-              value={typed}
-              maxLength={SHARE_PASSWORD_MAX}
-              onChange={(e) => setTyped(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape' && replacing) {
-                  // Escape here backs out of Replace, and leaves the dialog open.
-                  e.stopPropagation();
-                  e.nativeEvent.stopImmediatePropagation();
+        <>
+          <form
+            className={DETAIL}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (canSave) void save();
+            }}
+          >
+            <div className="relative min-w-0 flex-1">
+              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+                <LockIcon />
+              </span>
+              <input
+                ref={field}
+                type="text"
+                value={typed}
+                maxLength={SHARE_PASSWORD_MAX}
+                onChange={(e) => setTyped(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && replacing) {
+                    // Escape here backs out of Replace, and leaves the dialog open.
+                    e.stopPropagation();
+                    e.nativeEvent.stopImmediatePropagation();
+                    setReplacing(false);
+                    setTyped('');
+                  }
+                }}
+                placeholder={replacing ? 'Choose a new password' : 'Choose a password'}
+                aria-label="Share password"
+                aria-describedby={tooShort ? 'share-password-hint' : undefined}
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-2 font-mono text-sm text-slate-800 outline-none transition duration-micro placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              />
+            </div>
+            <Button type="submit" size="xs" disabled={!canSave} className="shadow-sm">
+              Save
+            </Button>
+            {replacing ? (
+              <Button
+                variant="secondary"
+                size="xs"
+                disabled={busy}
+                onClick={() => {
                   setReplacing(false);
                   setTyped('');
-                }
-              }}
-              placeholder={replacing ? 'Choose a new password' : 'Choose a password'}
-              aria-label="Share password"
-              autoComplete="off"
-              spellCheck={false}
-              className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-2 font-mono text-sm text-slate-800 outline-none transition duration-micro placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            />
-          </div>
-          <Button type="submit" size="xs" disabled={!canSave} className="shadow-sm">
-            Save
-          </Button>
-          {replacing ? (
-            <Button
-              variant="secondary"
-              size="xs"
-              disabled={busy}
-              onClick={() => {
-                setReplacing(false);
-                setTyped('');
-              }}
+                }}
+              >
+                Cancel
+              </Button>
+            ) : null}
+          </form>
+          {tooShort ? (
+            <p
+              id="share-password-hint"
+              className="ml-3.5 border-l-2 border-slate-200 pl-3 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400"
             >
-              Cancel
-            </Button>
+              At least {SHARE_PASSWORD_MIN} characters.
+            </p>
           ) : null}
-        </form>
+        </>
       ) : null}
     </section>
   );

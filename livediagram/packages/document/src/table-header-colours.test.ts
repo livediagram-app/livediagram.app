@@ -34,6 +34,22 @@ describe('tableHeaderColours', () => {
     expect(ink).toBe('#ffffff');
   });
 
+  // docs/specs/011-theme/light-and-dark.md "Colours an agent writes".
+  it('tints a shorthand or named stroke into a band, never paints the stroke itself', () => {
+    const named = tableHeaderColours(table({ strokeColor: 'red', fillColor: 'white' }), 'light');
+    const hex = tableHeaderColours(
+      table({ strokeColor: '#ff0000', fillColor: '#ffffff' }),
+      'light',
+    );
+    expect(named).toEqual(hex);
+    expect(tableHeaderColours(table({ strokeColor: '#f00', fillColor: '#fff' }), 'light')).toEqual(
+      hex,
+    );
+    // A translucent fill shows the paper, so the band tints the paper.
+    const clear = tableHeaderColours(table({ strokeColor: 'red', fillColor: '#fff0' }), 'dark');
+    expect(clear).toEqual(tableHeaderColours(table({ strokeColor: 'red' }), 'dark'));
+  });
+
   it('tints the cells own fill when they have one', () => {
     const { fill } = tableHeaderColours(
       table({ fillColor: '#fef3c7', strokeColor: '#000000' }),

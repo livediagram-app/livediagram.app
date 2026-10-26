@@ -172,7 +172,6 @@ describe('deleting', () => {
     expect(last.status).toBe(200);
     expect(thread(last.body.item)).toBeUndefined();
   });
-
 });
 
 describe('resolving', () => {

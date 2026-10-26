@@ -88,8 +88,7 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       // Owner or edit-role share visitor only, and a tab-scoped visitor on their own tab only.
       const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
       if (!allowed) return forbidden();
-      const tabScoped = (await gateGrant(ctx, id))?.tabScope != null;
-      return handleTabPut(ctx, saving, tabId, owner, tabScoped);
+      return handleTabPut(ctx, saving, tabId, owner);
     }
     const existing = await getProject(env, id);
     if (!existing) return missingProject(ctx, id);

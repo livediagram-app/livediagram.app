@@ -8,6 +8,7 @@
 
 import {
   APP_NAMES,
+  DRIVE_IMPORT_MAX_BYTES,
   DRIVE_PROP_APP,
   DRIVE_PROP_ITEM_ID,
   DRIVE_PROP_ORIGIN,
@@ -21,7 +22,7 @@ import {
   type DriveImportAnswer,
   type DriveOpenAnswer,
 } from '@liveworkspace/drive';
-import { DriveApiError, type DriveFile } from '@liveworkspace/drive/server';
+import { DriveApiError, DriveFileTooLarge, type DriveFile } from '@liveworkspace/drive/server';
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { driveLog, driveWarn } from './log';
 import type { Runtime } from './mirror/context';
@@ -88,7 +89,10 @@ export async function resolveOpen(rt: Runtime, target: OpenTarget): Promise<Driv
 
 export type ImportOutcome =
   | DriveImportAnswer
-  | { refused: 'not_connected' | 'not_found' | 'invalid_request' | 'google_failed' };
+  | {
+      refused:
+        'not_connected' | 'not_found' | 'invalid_request' | 'file_too_large' | 'google_failed';
+    };
 
 /** Import as a copy: the file's contents, checked to be an app's envelope, made a new item of the person's own
  *  through that app's import door. */
@@ -97,8 +101,13 @@ export async function importCopy(rt: Runtime, target: OpenTarget): Promise<Impor
   if (!file) return { refused: 'not_found' };
   let text: string;
   try {
-    text = await rt.drive.download(file.id, target.resourceKey);
+    // No bigger than an app's import door takes, read no further than that.
+    text = await rt.drive.download(file.id, target.resourceKey, DRIVE_IMPORT_MAX_BYTES);
   } catch (err) {
+    if (err instanceof DriveFileTooLarge) {
+      driveWarn('import-refused', { fileId: file.id, reason: 'too_large' });
+      return { refused: 'file_too_large' };
+    }
     driveWarn('import-download-failed', {
       fileId: file.id,
       status: err instanceof DriveApiError ? err.status : 0,
@@ -129,7 +138,9 @@ export async function importCopy(rt: Runtime, target: OpenTarget): Promise<Impor
       refused:
         answer.error === 'failed' || answer.error === 'not_configured'
           ? 'google_failed'
-          : 'invalid_request',
+          : answer.error === 'too_large'
+            ? 'file_too_large'
+            : 'invalid_request',
     };
   }
   const url = doors.itemUrl(format.app, answer.id);

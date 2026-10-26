@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { opForScope, scopedSenderMayRelay } from './room-scope';
+import { opForScope, opFromScopedSender, scopedSenderMayRelay } from './room-scope';
 
 // docs/specs/013-workspace/tab-scoped-share-links.md, Realtime. A session admitted on a link scoped to one
 // tab must receive nothing about another tab and must not be able to change
@@ -95,8 +95,37 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
     expect(scopedSenderMayRelay({ kind: 'design-meta', name: 'x', tabs: [] }, SCOPE)).toBe(false);
   });
 
+  // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md).
+  it('refuses a rename of its own tab, set or cleared', () => {
+    const rename = { kind: 'tab-meta', tabId: SCOPE, patch: { name: 'Mine now' } };
+    expect(scopedSenderMayRelay(rename, SCOPE)).toBe(false);
+    expect(scopedSenderMayRelay({ ...rename, patch: {}, clear: ['name'] }, SCOPE)).toBe(false);
+    expect(scopedSenderMayRelay({ ...rename, patch: { theme: 'dark' } }, SCOPE)).toBe(true);
+    expect(scopedSenderMayRelay(rename, null)).toBe(true);
+  });
+
   it('fails closed on anything else', () => {
     expect(scopedSenderMayRelay({ kind: 'something-new' }, SCOPE)).toBe(false);
     expect(scopedSenderMayRelay(undefined, SCOPE)).toBe(false);
+  });
+});
+
+describe('opFromScopedSender (a scoped whole-tab op keeps no name)', () => {
+  const op = { kind: 'tab', tabId: SCOPE, tab: { id: SCOPE, name: 'Renamed', elements: [] } };
+
+  it("drops the name from a scoped session's whole tab", () => {
+    expect(opFromScopedSender(op, SCOPE)).toEqual({
+      kind: 'tab',
+      tabId: SCOPE,
+      tab: { id: SCOPE, elements: [] },
+    });
+  });
+
+  it('passes everything else through untouched', () => {
+    expect(opFromScopedSender(op, null)).toBe(op);
+    const el = { kind: 'el', tabId: SCOPE };
+    expect(opFromScopedSender(el, SCOPE)).toBe(el);
+    const nameless = { kind: 'tab', tabId: SCOPE, tab: { id: SCOPE, elements: [] } };
+    expect(opFromScopedSender(nameless, SCOPE)).toBe(nameless);
   });
 });

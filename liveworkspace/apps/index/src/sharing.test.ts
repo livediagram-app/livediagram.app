@@ -2,7 +2,8 @@
 // me; revoking.
 import type { Item, ShareLink, SharedWithItem } from '@liveworkspace/index-client';
 import { decodeJwt } from 'jose';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { hashSharePassword } from './password-hash';
 import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
 
 useHarness();
@@ -291,6 +292,36 @@ describe('share passwords', () => {
     expect((await call(`/share/${link.code}`)).status).toBe(200);
   });
 
+  it('refuses a new password shorter than six characters, and keeps an older short one working', async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth);
+    const link = await share(ada.auth, item.id, { level: 'view' });
+    // Counted after trimming: spaces don't make a password longer.
+    for (const password of ['abc12', '  abc12  ']) {
+      const res = await call(`/items/${item.id}/share-password`, {
+        method: 'PUT',
+        auth: ada.auth,
+        body: { password },
+      });
+      expect(res.status).toBe(400);
+      expect(await body(res)).toEqual({ error: 'password_too_short' });
+    }
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM share_passwords').get()).toEqual({ n: 0 });
+    const ok = await call(`/items/${item.id}/share-password`, {
+      method: 'PUT',
+      auth: ada.auth,
+      body: { password: 'abc123' },
+    });
+    expect(await body(ok)).toEqual({ passwordSet: true });
+
+    // One set before the minimum still opens.
+    h.db.sql
+      .prepare('UPDATE share_passwords SET hash = ? WHERE item_id = ?')
+      .run(await hashSharePassword('pw'), item.id);
+    const opened = await call(`/share/${link.code}`, { headers: { 'X-Share-Password': 'pw' } });
+    expect(opened.status).toBe(200);
+  });
+
   it('refuses an overlong password', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
@@ -300,6 +331,222 @@ describe('share passwords', () => {
       body: { password: 'x'.repeat(257) },
     });
     expect(await body(res)).toEqual({ error: 'invalid_password' });
+  });
+});
+
+describe('setting a password on links already opened', () => {
+  async function openedByBob() {
+    const ada = await person('user_a');
+    const bob = await person('user_b');
+    const item = await makeItem(ada.auth);
+    const link = await share(ada.auth, item.id, { level: 'view' });
+    const other = await share(ada.auth, item.id, { level: 'edit' });
+    expect((await call(`/share/${link.code}`, { auth: bob.auth })).status).toBe(200);
+    await settle();
+    h.appCalls = [];
+    return { ada, bob, item, link, other };
+  }
+  const sharedOf = async (auth: string) =>
+    (await body<{ shared: SharedWithItem[] }>(await call('/shared', { auth }))).shared;
+  const setPassword = (auth: string, itemId: string, password: string | null) =>
+    call(`/items/${itemId}/share-password`, { method: 'PUT', auth, body: { password } });
+
+  it('takes the item out of their Shared and Inbox, and ends the link sessions, until they enter it', async () => {
+    const { ada, bob, item, link, other } = await openedByBob();
+    expect(await sharedOf(bob.auth)).toHaveLength(1);
+    await setPassword(ada.auth, item.id, 'opened-1');
+    await settle();
+    expect(await sharedOf(bob.auth)).toEqual([]);
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM shared_with').get()).toEqual({ n: 0 });
+    // Every link's sessions reload into what the link now asks: the password.
+    expect(h.appCalls).toEqual([
+      expect.objectContaining({
+        method: 'POST',
+        url: `https://liveplanner.app/api/internal/items/${item.id}/revoke`,
+        body: { codes: [link.code, other.code], reason: 'rescoped' },
+      }),
+    ]);
+    // Without it, nothing opens for them, by the code or by what they opened before.
+    const grant = await call(`/items/${item.id}/grant`, { method: 'POST', auth: bob.auth });
+    expect(grant.status).toBe(404);
+    // With it, they are back.
+    const back = await call(`/share/${link.code}`, {
+      auth: bob.auth,
+      headers: { 'X-Share-Password': 'opened-1' },
+    });
+    expect(back.status).toBe(200);
+    expect(await sharedOf(bob.auth)).toHaveLength(1);
+  });
+
+  it('does the same when the password changes, but not when it is saved unchanged or removed', async () => {
+    const { ada, bob, item, link } = await openedByBob();
+    await setPassword(ada.auth, item.id, 'opened-2');
+    await call(`/share/${link.code}`, {
+      auth: bob.auth,
+      headers: { 'X-Share-Password': 'opened-2' },
+    });
+    await settle();
+    h.appCalls = [];
+    // The same password again changes nothing for anyone.
+    await setPassword(ada.auth, item.id, ' opened-2 ');
+    await settle();
+    expect(h.appCalls).toEqual([]);
+    expect(await sharedOf(bob.auth)).toHaveLength(1);
+    // A new one cuts them off again.
+    await setPassword(ada.auth, item.id, 'opened-3');
+    await settle();
+    expect(await sharedOf(bob.auth)).toEqual([]);
+    expect(h.appCalls).toHaveLength(1);
+    // Removing it opens the links wider, so no one is sent away.
+    await call(`/share/${link.code}`, {
+      auth: bob.auth,
+      headers: { 'X-Share-Password': 'opened-3' },
+    });
+    await settle();
+    h.appCalls = [];
+    await setPassword(ada.auth, item.id, null);
+    await settle();
+    expect(h.appCalls).toEqual([]);
+    expect(await sharedOf(bob.auth)).toHaveLength(1);
+  });
+});
+
+describe('share-password guesses', () => {
+  // A limiter that allows `allow` calls per key, recording each key it was asked about.
+  function limiter(allow: number) {
+    const counts = new Map<string, number>();
+    const keys: string[] = [];
+    return {
+      keys,
+      limit: vi.fn(async ({ key }: { key: string }) => {
+        keys.push(key);
+        const n = (counts.get(key) ?? 0) + 1;
+        counts.set(key, n);
+        return { success: n <= allow };
+      }),
+    };
+  }
+
+  async function protectedLink(password: string) {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth);
+    const link = await share(ada.auth, item.id, { level: 'view' });
+    await call(`/items/${item.id}/share-password`, {
+      method: 'PUT',
+      auth: ada.auth,
+      body: { password },
+    });
+    await settle();
+    h.appCalls = [];
+    return { item, link };
+  }
+
+  it('answers 429 with Retry-After once a visitor has guessed too often, even the right password', async () => {
+    const { item, link } = await protectedLink('limit-right-1');
+    const visitors = limiter(3);
+    const items = limiter(100);
+    const env = {
+      ...h.db.env,
+      SHARE_GUESS_VISITOR_LIMITER: visitors,
+      SHARE_GUESS_ITEM_LIMITER: items,
+    };
+    const guess = (password: string) =>
+      call(`/share/${link.code}`, {
+        env,
+        headers: { 'X-Share-Password': password, 'CF-Connecting-IP': '203.0.113.7' },
+      });
+    for (const wrong of ['nope-1', 'nope-2', 'nope-3'])
+      expect((await guess(wrong)).status).toBe(403);
+    const limited = await guess('limit-right-1');
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get('Retry-After')).toBe('60');
+    expect(await body(limited)).toEqual({ error: 'rate_limited' });
+    // The grant's door is guarded the same way.
+    const grant = await call(`/items/${item.id}/grant`, {
+      method: 'POST',
+      env,
+      headers: {
+        'X-Share-Code': link.code,
+        'X-Share-Password': 'limit-right-1',
+        'CF-Connecting-IP': '203.0.113.7',
+      },
+    });
+    expect(grant.status).toBe(429);
+    expect(visitors.keys.every((k) => k === '203.0.113.7')).toBe(true);
+    expect(items.keys.every((k) => k === `item:${item.id}`)).toBe(true);
+    // Another network still gets its tries.
+    const elsewhere = await call(`/share/${link.code}`, {
+      env,
+      headers: { 'X-Share-Password': 'limit-right-1', 'CF-Connecting-IP': '198.51.100.1' },
+    });
+    expect(elsewhere.status).toBe(200);
+  });
+
+  it('limits every guess at one item, whichever network they come from', async () => {
+    const { link } = await protectedLink('limit-right-2');
+    const env = {
+      ...h.db.env,
+      SHARE_GUESS_VISITOR_LIMITER: limiter(100),
+      SHARE_GUESS_ITEM_LIMITER: limiter(2),
+    };
+    const from = (ip: string) =>
+      call(`/share/${link.code}`, {
+        env,
+        headers: { 'X-Share-Password': 'nope', 'CF-Connecting-IP': ip },
+      });
+    expect((await from('203.0.113.1')).status).toBe(403);
+    expect((await from('203.0.113.2')).status).toBe(403);
+    expect((await from('203.0.113.3')).status).toBe(429);
+  });
+
+  it('counts a visitor by the address their app’s router names, and an app’s server by the item alone', async () => {
+    const { link } = await protectedLink('limit-right-3');
+    const visitors = limiter(100);
+    const items = limiter(100);
+    const env = {
+      ...h.db.env,
+      SHARE_GUESS_VISITOR_LIMITER: visitors,
+      SHARE_GUESS_ITEM_LIMITER: items,
+    };
+    // Through a router: its named address, kept apart from direct callers; IPv6 by its /64.
+    await call(`/share/${link.code}`, {
+      env,
+      headers: {
+        'X-Share-Password': 'nope',
+        'CF-Connecting-IP': '2a06:98c0::1',
+        'CF-Worker': 'livediagram.app',
+        'X-Liveworkspace-Client-IP': '2001:db8:1:2:aaaa::1',
+      },
+    });
+    expect(visitors.keys).toEqual(['via:2001:0db8:0001:0002::/64']);
+    // An app's server asking for a visitor (a Worker's subrequest, from Cloudflare's own address): the item's limit
+    // only, so one visitor can't use up every other visitor's tries.
+    await call(`/share/${link.code}`, {
+      env,
+      headers: { 'X-Share-Password': 'nope', 'CF-Connecting-IP': '2a06:98c0::1', 'CF-Worker': 'x' },
+    });
+    expect(visitors.keys).toHaveLength(1);
+    expect(items.keys).toHaveLength(2);
+  });
+
+  it('spends no try on a visit without a password, nor on one this isolate has already checked', async () => {
+    const { link } = await protectedLink('limit-right-4');
+    const visitors = limiter(100);
+    const items = limiter(100);
+    const env = {
+      ...h.db.env,
+      SHARE_GUESS_VISITOR_LIMITER: visitors,
+      SHARE_GUESS_ITEM_LIMITER: items,
+    };
+    expect((await call(`/share/${link.code}`, { env })).status).toBe(401);
+    expect(items.limit).not.toHaveBeenCalled();
+    const right = { 'X-Share-Password': 'limit-right-4', 'CF-Connecting-IP': '203.0.113.9' };
+    expect((await call(`/share/${link.code}`, { env, headers: right })).status).toBe(200);
+    expect(items.limit).toHaveBeenCalledTimes(1);
+    // A visitor already in: their app asks again and again (each grant renewal), and costs nothing more.
+    expect((await call(`/share/${link.code}`, { env, headers: right })).status).toBe(200);
+    expect(items.limit).toHaveBeenCalledTimes(1);
+    expect(visitors.limit).toHaveBeenCalledTimes(1);
   });
 });
 

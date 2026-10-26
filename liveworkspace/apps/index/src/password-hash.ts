@@ -52,6 +52,15 @@ async function memoryKey(stored: string, provided: string): Promise<string> {
   return bytesToBase64Url(digest);
 }
 
+// Whether this isolate has already found `provided` right for `stored`: such a check costs no guess (share-guesses.ts),
+// since only a correct password is ever remembered.
+export async function isRememberedSharePassword(
+  stored: string,
+  provided: string,
+): Promise<boolean> {
+  return verified.has(await memoryKey(stored, provided));
+}
+
 export async function verifySharePassword(stored: string, provided: string): Promise<boolean> {
   const key = await memoryKey(stored, provided);
   if (verified.has(key)) return true;

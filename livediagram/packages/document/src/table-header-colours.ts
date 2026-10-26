@@ -2,7 +2,13 @@
 // for the canvas's TableView and the headless table emitter, so a header reads the same on screen and in
 // every export. The band follows the surface the table is drawn on, the same surface its cell text follows,
 // so a dark page gets a dark band under light ink rather than a light band under white ink.
-import { defaultStrokeColor, defaultTextColor, hexToRgb, type CanvasSurface } from './colors';
+import {
+  colourIsOpaque,
+  defaultStrokeColor,
+  defaultTextColor,
+  normaliseHex,
+  type CanvasSurface,
+} from './colors';
 import { readableInk } from './cell-colours';
 import { mixHex } from './svg-render-face-kit';
 import type { TableElement } from './index';
@@ -16,7 +22,10 @@ export const TABLE_HEADER_BASE: Record<CanvasSurface, string> = {
   dark: '#141b26',
 };
 
-const opaqueHex = (c: string | undefined): string | undefined => (c && hexToRgb(c) ? c : undefined);
+// An opaque colour as `#rrggbb` (a shorthand or named one too: docs/specs/011-theme/light-and-dark.md "Colours an
+// agent writes"), else undefined: a translucent or unreadable fill shows what is under it.
+const opaqueHex = (c: string | undefined): string | undefined =>
+  c && colourIsOpaque(c) ? (normaliseHex(c) ?? undefined) : undefined;
 
 type TableHeaderColours = {
   /** The band's fill: a colour, or 'transparent' when the table asks for no band. */
@@ -34,7 +43,8 @@ export function tableHeaderColours(
   const text = el.textColor ?? defaultTextColor(el, surface);
   // Under the band: the cells' own fill when it is a colour, else the paper.
   const base = opaqueHex(el.fillColor) ?? TABLE_HEADER_BASE[surface];
-  const fill = el.headerFill ?? (hexToRgb(stroke) ? mixHex(stroke, base, TABLE_HEADER_TINT) : base);
+  const strokeHex = normaliseHex(stroke);
+  const fill = el.headerFill ?? (strokeHex ? mixHex(strokeHex, base, TABLE_HEADER_TINT) : base);
   // A transparent (or unreadable) band shows what is under it, so the ink is checked against that.
   const behind = opaqueHex(fill) ?? base;
   return { fill, ink: readableInk(el.headerTextColor ?? text, behind) };

@@ -16,7 +16,7 @@ One row per default applied where a spec is silent or qualitative.
 | D10 | forms     | Where the Form Panel docks                     | Beside the form from 1,100 px wide; a sheet over it below                                        |
 | D11 | forms     | How Sketch draws a form's boxes                | Uneven elliptical corners (255/14 px), 2 px slate ink, a 2×3 px pencil shadow                    |
 | D12 | forms     | Which theme colour is a form's                 | The shared theme accent; the brand blue of each half on Default                                  |
-| D13 | forms     | Where add_form puts a new Form tab             | After the project's last tab; its responses tab right after it                                  |
+| D13 | forms     | Where add_form puts a new Form tab             | After the project's last tab; its responses tab right after it                                   |
 | D14 | forms     | Where questions given alone send responses     | A new board, so the form can be published at once                                                |
 | D15 | forms     | How an agent's question names its type         | By the model's id (`short`, `single`...), each described with the builder's name                 |
 | D16 | forms     | Which reason Not Taking Responses names first  | Suspended, paused, switched off, Close On, Response Limit, full: the first fix unblocks the rest |

@@ -65,6 +65,10 @@ export const DRIVE_CHANNEL_TTL_MS = 7 * 24 * HOUR;
 export const DRIVE_CHANNEL_RENEW_BEFORE_MS = 24 * HOUR;
 // Google's multipart upload ceiling; larger contents go resumable.
 export const DRIVE_MULTIPART_MAX_BYTES = 5 * 1024 * 1024;
+// The largest Drive file Import as a copy downloads: an app's import door takes no bigger body
+// (@liveworkspace/index-app IMPORT_MAX_BYTES, a Durable Object message's cap), so anything larger could never be
+// imported. A bigger file is refused `file_too_large` without reading past the cap.
+export const DRIVE_IMPORT_MAX_BYTES = 32 * 1024 * 1024;
 // The thumbnail's long side (Google requires 220 or more), and Google's size ceiling for it.
 export const DRIVE_THUMBNAIL_PX = 440;
 export const DRIVE_THUMBNAIL_MAX_BYTES = 2 * 1000 * 1000;
@@ -83,7 +87,12 @@ const DRIVE_ID_RE = /^[A-Za-z0-9_-]+$/;
 
 /** A Drive file id, or a liveworkspace item or folder id: the same url-safe charset. */
 export function isDriveId(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= DRIVE_ID_MAX && DRIVE_ID_RE.test(value);
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= DRIVE_ID_MAX &&
+    DRIVE_ID_RE.test(value)
+  );
 }
 
 export type DriveEnvironment = 'production' | 'staging' | 'development';

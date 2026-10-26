@@ -570,6 +570,39 @@ describe('who may do what', () => {
     ).toBe(404);
   });
 
+  // A card id on another tab never shows through a create's `item_exists`: from a tab that shows only some cards a
+  // create is refused before any id is looked at, the same answer whether the id is taken elsewhere or free.
+  it('answers a tab-scoped create naming a card out of reach as it answers a free id', async () => {
+    const elsewhere = (await add({ title: 'Elsewhere' })).body.item;
+    sql.sql.prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'`).run(
+      JSON.stringify({
+        elements: [
+          {
+            id: 'c1',
+            type: 'shape',
+            shape: 'plan-card',
+            x: 0,
+            y: 0,
+            width: 240,
+            height: 120,
+            planCard: { itemId: 'i_none' },
+          },
+        ],
+      }),
+    );
+    const named = (id: string) =>
+      call({
+        path: '/items?tabId=t1',
+        owner: 'v',
+        code: 'TAB1',
+        body: { id, type: 'task', fields: { title: 'Probe' } },
+      });
+    const taken = await named(elsewhere.id);
+    const free = await named('i_free0001');
+    expect(taken).toEqual(free);
+    expect(taken.status).toBe(403);
+  });
+
   it('answers 405 for a wrong method', async () => {
     expect((await call({ method: 'PUT', path: '/items' })).status).toBe(405);
     expect((await call({ method: 'GET', path: '/items/bulk' })).status).toBe(405);

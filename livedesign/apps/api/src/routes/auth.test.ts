@@ -203,6 +203,31 @@ describe('POST /api/auth/token', () => {
     expect(sent.get('resource')).toBe('https://lp.example/api');
   });
 
+  // docs/specs/014-identity/profile-and-email-notifications.md "Avatars": within the accounts Worker's reuse window a
+  // refresh can replay an earlier response, so the page is told how old the ID token is, in the server's own clock.
+  it("says how old the session's ID token is, and nothing when it carries no issue time", async () => {
+    const now = Date.now();
+    vi.spyOn(Date, 'now').mockReturnValue(now);
+    fetchMock.mockResolvedValueOnce(
+      tokenResponse({ id_token: jwt({ sub: 'user_abc', iat: Math.floor(now / 1000) - 20 }) }),
+    );
+    const res = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldes_refresh=refresh-2' },
+    });
+    const body = (await res.json()) as { tokenAgeMs?: number };
+    expect(body.tokenAgeMs).toBeGreaterThanOrEqual(20_000);
+    expect(body.tokenAgeMs).toBeLessThan(21_000);
+
+    fetchMock.mockResolvedValueOnce(tokenResponse());
+    const plain = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldes_refresh=refresh-2' },
+    });
+    expect(await plain.json()).not.toHaveProperty('tokenAgeMs');
+    vi.restoreAllMocks();
+  });
+
   it('signs out, dropping the cookie, when the refresh is refused', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
@@ -355,22 +380,10 @@ describe('the account name cookie (ldes_account)', () => {
 });
 
 describe('safeReturnPath', () => {
-  it('keeps a path on this site and replaces anything that would leave it', () => {
+  // The cases live with the one check, in @liveworkspace/auth-client/return-path; this binds the Explorer fallback.
+  it('keeps a path on this site and sends anything else to the Explorer', () => {
     expect(safeReturnPath('/design/abc?tab=1')).toBe('/design/abc?tab=1');
-    for (const unsafe of [null, '', 'https://evil.example', '//evil.example', '/\\evil.example']) {
-      expect(safeReturnPath(unsafe)).toBe('/explorer/home');
-    }
-  });
-
-  it('refuses control characters and spaces, which the browser drops to leave `//evil.example`', () => {
-    for (const unsafe of [
-      '/\t/evil.example',
-      '/\n/evil.example',
-      '/\r/evil.example',
-      '/ /evil.example',
-      '/\x00/evil.example',
-      '/\x7f/evil.example',
-    ]) {
+    for (const unsafe of [null, '//evil.example', '/\t/evil.example']) {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
     }
   });

@@ -401,6 +401,10 @@ export function createFakeIndex(
       }),
     deleteFolder: (id: string) =>
       answer('deleteFolder', [id], undefined, () => {
+        // As the index does: the folder's children (folders and items) move up a level.
+        const parentId = folders.find((f) => f.id === id)?.parentId ?? null;
+        for (const f of folders) if (f.parentId === id) f.parentId = parentId;
+        for (const i of items) if (i.folderId === id) i.folderId = parentId;
         folders.splice(
           folders.findIndex((f) => f.id === id),
           1,

@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./silent": "./src/silent.ts",
-    "./account-name": "./src/account-name.ts"
+    "./account-name": "./src/account-name.ts",
+    "./return-path": "./src/return-path.ts"
   },
   "scripts": {
     "lint": "oxlint",

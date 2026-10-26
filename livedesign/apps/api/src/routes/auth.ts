@@ -41,6 +41,7 @@ import {
   silentCookiesForHint,
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
+import { safeReturnPath as sharedSafeReturnPath } from '@liveworkspace/auth-client/return-path';
 import { accountNameCookies, accountNameCookieFor } from '@liveworkspace/auth-client/account-name';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
@@ -110,24 +111,9 @@ function appOrigin(env: Env, request: Request): string {
 
 const callbackUrl = (env: Env, request: Request) => `${appOrigin(env, request)}/api/auth/callback`;
 
-// Only a path on this site: anything else (`//evil.example`, `https://…`, `/\evil`) would make the
-// sign-in an open redirect. So would a tab, newline or other control character: the browser drops
-// them from the Location it follows, so `/<tab>/evil.example` lands on `//evil.example`.
-function hasControlOrSpace(path: string): boolean {
-  for (let i = 0; i < path.length; i++) {
-    const code = path.charCodeAt(i);
-    if (code <= 0x20 || code === 0x7f) return true;
-  }
-  return false;
-}
-
-export function safeReturnPath(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
-    return DEFAULT_RETURN;
-  }
-  if (hasControlOrSpace(value)) return DEFAULT_RETURN;
-  return value;
-}
+// Only a path on this site (`@liveworkspace/auth-client/return-path`), else the Explorer.
+export const safeReturnPath = (value: string | null): string =>
+  sharedSafeReturnPath(value, DEFAULT_RETURN);
 
 export function readCookie(request: Request, name: string): string | null {
   const header = request.headers.get('Cookie');
@@ -205,6 +191,17 @@ function userOf(tokens: TokenSet): AuthUser | null {
     picture: profilePictureOf(payload.picture),
     pictureHidden: payload.picture_hidden === true,
   };
+}
+
+// How long ago the ID token was minted (its `iat`), by this Worker's clock, so the page can compare it with a
+// Show My Google Picture save without trusting its own clock to agree with the accounts Worker's. Within the
+// accounts Worker's refresh-token reuse window a refresh replays an earlier response, whose claims predate any save
+// made since (docs/specs/014-identity/profile-and-email-notifications.md "Avatars"). Null without an `iat`.
+function tokenAgeOf(tokens: TokenSet, now: number): number | null {
+  const payload = jwtPayload(tokens.idToken) ?? jwtPayload(tokens.accessToken);
+  const iat = payload?.iat;
+  if (typeof iat !== 'number' || !Number.isFinite(iat)) return null;
+  return Math.max(0, now - iat * 1000);
 }
 
 function jwtPayload(token: string | null): Record<string, unknown> | null {
@@ -345,8 +342,15 @@ async function token(request: Request, config: Configured): Promise<Response> {
   const cookies = tokens.refreshToken
     ? sessionCookies(tokens.refreshToken, user)
     : nameCookies(user);
+  const tokenAgeMs = tokenAgeOf(tokens, Date.now());
   return json(
-    { signedIn: true, accessToken: tokens.accessToken, expiresAt: tokens.expiresAt, user },
+    {
+      signedIn: true,
+      accessToken: tokens.accessToken,
+      expiresAt: tokens.expiresAt,
+      user,
+      ...(tokenAgeMs === null ? {} : { tokenAgeMs }),
+    },
     { headers: noStore(cookies) },
   );
 }

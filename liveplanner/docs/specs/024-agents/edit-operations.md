@@ -16,12 +16,12 @@ or selector, compiled by the api into element ops. A full rebuild uses `replace`
 
 ## The vocabulary
 
-| Operation | Line form                                             | Does                                                         |
-| --------- | ----------------------------------------------------- | ------------------------------------------------------------ |
-| `add`     | `{"op":"add","element":{…}}` (a JSON line only)       | Puts a whole element on the tab, kept at the x and y it has  |
-| `set`     | `set <selector> key=value… [all]`                     | Changes the named fields; `key=` unsets one                  |
-| `rm`      | `rm <selector> [all]`                                 | Removes                                                      |
-| `test`    | `test <selector> key=value…`                          | Fails the changeset unless the element holds these values    |
+| Operation | Line form                                       | Does                                                        |
+| --------- | ----------------------------------------------- | ----------------------------------------------------------- |
+| `add`     | `{"op":"add","element":{…}}` (a JSON line only) | Puts a whole element on the tab, kept at the x and y it has |
+| `set`     | `set <selector> key=value… [all]`               | Changes the named fields; `key=` unsets one                 |
+| `rm`      | `rm <selector> [all]`                           | Removes                                                     |
+| `test`    | `test <selector> key=value…`                    | Fails the changeset unless the element holds these values   |
 
 - **`replace`** is the other changeset body: a whole tab from exactly one of `template`, `dashboard` (a new
   Plan Dashboard tab, or a Dashboard tab rebuilt whole, [Plan agents](../026-plan/plan-agents.md) "Making a
@@ -30,17 +30,18 @@ or selector, compiled by the api into element ops. A full rebuild uses `replace`
   It is still a changeset: previewed, based, attributed and revertable.
 - **Element kinds.** A tab holds only Plan elements, each `{ "type": "shape", "shape": <kind>, x, y, width, height }`:
 
-  | Kind                                   | Is                                                          | Its own fields                                                                                         |
-  | -------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-  | `plan-board`                           | A Board tab's board; its cards are items                    | `planBoard`                                                                                            |
-  | `plan-sheet`                           | A Sheet tab's spreadsheet; its cells change by sheet writes | `planSheet`                                                                                            |
-  | `plan-view`                            | A Dashboard's metric or chart of the cards                  | `planView`, `textSize`                                                                                 |
+  | Kind                                   | Is                                                          | Its own fields                                                                                                                     |
+  | -------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+  | `plan-board`                           | A Board tab's board; its cards are items                    | `planBoard`                                                                                                                        |
+  | `plan-sheet`                           | A Sheet tab's spreadsheet; its cells change by sheet writes | `planSheet`                                                                                                                        |
+  | `plan-view`                            | A Dashboard's metric or chart of the cards                  | `planView`, `textSize`                                                                                                             |
   | `bar-chart`, `line-chart`, `pie-chart` | A chart of a Sheet's cells                                  | `chartSource` (required), `sheetAnchor`, `chartVariant`, `chartLegend`, `chartValues`, `chartPalette`; `chartAxis` on bar and line |
 
   Every kind also takes `x`, `y`, `width`, `height`, `label` and `locked`. An `add` or a replace holding any other
   element is refused as `invalid_value` ("shape "square" is not an element a liveplanner tab holds"), naming the
   kinds. `PLAN_ELEMENT_KINDS` and the field lists live in `plan-elements.ts`; `liveplanner schema` and
   `GET /api/schema` print them.
+
 - **Ids.** An added element's `id` names it, so later operations in the same changeset can refer to it; without one it
   takes a fresh id.
 - **Fields** are the stored fields the element's kind takes, by name (no aliases). A field it does not take is
@@ -68,12 +69,12 @@ or selector, compiled by the api into element ops. A full rebuild uses `replace`
 A selector is a ref, or `key:value` tokens joined by spaces (all must match), in the token style of the Explorer's
 filters ([Explorer filters](../013-workspace/explorer-filters.md)), one value a token:
 
-| Selector          | Matches                                                                   |
-| ----------------- | ------------------------------------------------------------------------- |
-| `146b`, `w1`      | That element (ref, prefix or id)                                          |
-| `"Workload"`      | The element with that label, ignoring case; `label~work` is a substring  |
-| `type:plan-view`  | By kind as the outline prints it                                          |
-| `selected`        | What the agent's owner has selected in an open editor                     |
+| Selector         | Matches                                                                 |
+| ---------------- | ----------------------------------------------------------------------- |
+| `146b`, `w1`     | That element (ref, prefix or id)                                        |
+| `"Workload"`     | The element with that label, ignoring case; `label~work` is a substring |
+| `type:plan-view` | By kind as the outline prints it                                        |
+| `selected`       | What the agent's owner has selected in an open editor                   |
 
 A selector must match exactly one element unless the operation says `all`. No match is refused with the nearest
 labels; several matches are refused with the candidates. `selected` with nothing selected is refused.
@@ -106,22 +107,22 @@ error target_ambiguous · op 2 · set type:plan-view textSize=lg
 nothing was applied
 ```
 
-| Code                 | When                                                                                                                         | Names                            |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `parse_error`        | A line does not parse (an `add` in the line form among them)                                                                 | The column and what was expected |
-| `unknown_operation`  | Not in the vocabulary                                                                                                        | The vocabulary                   |
-| `target_not_found`   | A selector matches nothing; up to 10 such operations are named in one answer, the rest read on past it                       | The nearest labels and refs      |
-| `target_ambiguous`   | Several matches without `all`                                                                                                | The matches                      |
-| `unknown_field`      | A field the kind does not take                                                                                               | The kind's fields                |
-| `invalid_value`      | A value outside the vocabulary or range, or an element no tab holds                                                          | The allowed values or kinds      |
-| `id_taken`           | An added element's id collides                                                                                               | A free id                        |
-| `element_locked`     | The tab, a target or its layer is locked                                                                                     | Each locked element or the tab   |
-| `test_failed`        | A `test` does not hold                                                                                                       | Expected and actual              |
-| `changeset_conflict` | A target changed since the base                                                                                              | Each element as read and as now  |
-| `elements_held`      | A target is selected by a person                                                                                             | Each element and who holds it    |
-| `invalid_result`     | The result fails validation (a chart's `chartSource` naming no sheet range, say)                                             | The element, field and rule      |
-| `not_expressible`    | A strict source's tab would hold residue (`422`)                                                                             | Each element and field           |
-| `too_large`          | Over `CHANGESET_MAX_OPERATIONS` or the tab cap                                                                               | The cap                          |
+| Code                 | When                                                                                                   | Names                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| `parse_error`        | A line does not parse (an `add` in the line form among them)                                           | The column and what was expected |
+| `unknown_operation`  | Not in the vocabulary                                                                                  | The vocabulary                   |
+| `target_not_found`   | A selector matches nothing; up to 10 such operations are named in one answer, the rest read on past it | The nearest labels and refs      |
+| `target_ambiguous`   | Several matches without `all`                                                                          | The matches                      |
+| `unknown_field`      | A field the kind does not take                                                                         | The kind's fields                |
+| `invalid_value`      | A value outside the vocabulary or range, or an element no tab holds                                    | The allowed values or kinds      |
+| `id_taken`           | An added element's id collides                                                                         | A free id                        |
+| `element_locked`     | The tab, a target or its layer is locked                                                               | Each locked element or the tab   |
+| `test_failed`        | A `test` does not hold                                                                                 | Expected and actual              |
+| `changeset_conflict` | A target changed since the base                                                                        | Each element as read and as now  |
+| `elements_held`      | A target is selected by a person                                                                       | Each element and who holds it    |
+| `invalid_result`     | The result fails validation (a chart's `chartSource` naming no sheet range, say)                       | The element, field and rule      |
+| `not_expressible`    | A strict source's tab would hold residue (`422`)                                                       | Each element and field           |
+| `too_large`          | Over `CHANGESET_MAX_OPERATIONS` or the tab cap                                                         | The cap                          |
 
 ## Where the engine lives
 

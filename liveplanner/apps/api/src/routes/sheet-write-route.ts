@@ -11,6 +11,7 @@ import {
   applySheetWrite,
   cellKey,
   cellsFromJson,
+  shrinkReadersOf,
   validateWrite,
   valuesOnly,
   writesFormats,
@@ -58,6 +59,37 @@ function readWrite(raw: unknown): SheetWriteRequest | null {
     ...(b.undo === true ? { undo: true } : {}),
     ...(b.unchecked === true ? { unchecked: true } : {}),
   };
+}
+
+// Rows or columns deleted from `head` shrink the ranges into it held by the tab's other sheets, as its own formulas'
+// ranges shrink (formulas.md "Other sheets"): each reading sheet's formula cells read once, its rewrites stored and
+// relayed as a write of its own. Linear in the tab's formula references; the tab's sheets are read side by side.
+async function shrinkReaders(
+  ctx: PlanRouteContext,
+  projectId: string,
+  head: SheetHead,
+  changes: Extract<SheetWrite, { kind: 'layout' }>['changes'],
+  by: SheetPerson,
+): Promise<void> {
+  const heads = await listSheetHeads(ctx.env, projectId, head.tabId);
+  await Promise.all(
+    heads
+      .filter((h) => h.id !== head.id)
+      .map(async (h) => {
+        const cells = cellsFromJson(await readFormulaCells(ctx.env, projectId, h.id));
+        const rewrites = shrinkReadersOf(head.id, head.layout, changes, cells);
+        if (rewrites.length === 0) return;
+        const res = await storeSheetWrite(
+          ctx,
+          projectId,
+          h.id,
+          { write: { kind: 'cells', cells: rewrites }, unchecked: true },
+          by,
+          null,
+        );
+        if (!res.ok) console.warn('[sheets] sheets.readers.shrink_failed', { status: res.status });
+      }),
+  );
 }
 
 function deletes(write: SheetWrite): boolean {
@@ -238,6 +270,8 @@ export async function storeSheetWrite(
       by,
       ...(body.wid ? { wid: body.wid } : {}),
     });
+    if (applied.kind === 'layout' && deletes(write))
+      await shrinkReaders(ctx, projectId, head, applied.changes, by);
     return json(answer);
   }
   return sheetBusy();

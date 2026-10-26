@@ -26,7 +26,9 @@ import {
   mermaidStatements,
   decodeLabel,
   directionOf,
+  foldedEdgeEnds,
   framedClusters,
+  pointEdgesAtFrames,
   readId,
   type MermaidDirection,
   type ParseMermaidResult,
@@ -314,6 +316,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   let subgraphDepth = 0;
   // Subgraphs inside another, folded into it: said back to an agent rather than dropped silently.
   let folded = 0;
+  // Each folded subgraph's id, by the top-level subgraph it folded into: an edge naming it points at that frame.
+  const foldedInto = new Map<string, string>();
 
   // Nodes some subgraph has already claimed.
   const claimed = new Set<string>();
@@ -409,15 +413,19 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     const sub = /^subgraph\s+(\S.*)$/i.exec(line);
     if (sub) {
       subgraphDepth += 1;
-      if (subgraphDepth > 1) folded += 1;
+      const spec = sub[1]!.trim();
+      const idTitle = /^([A-Za-z0-9_-]+)\s*\[(.*)\]$/.exec(spec);
+      const subId = idTitle ? idTitle[1]! : spec;
+      if (subgraphDepth > 1) {
+        folded += 1;
+        if (currentCluster && subId !== currentCluster.id) foldedInto.set(subId, currentCluster.id);
+      }
       // Only top-level subgraphs become frames; nested ones fold into
       // their ancestor (frames import one level deep).
       if (subgraphDepth === 1) {
-        const spec = sub[1]!.trim();
-        const idTitle = /^([A-Za-z0-9_-]+)\s*\[(.*)\]$/.exec(spec);
         const cluster: GraphCluster = idTitle
-          ? { id: idTitle[1]!, label: decodeLabel(idTitle[2]!), members: [] }
-          : { id: spec, label: decodeLabel(spec), members: [] };
+          ? { id: subId, label: decodeLabel(idTitle[2]!), members: [] }
+          : { id: subId, label: decodeLabel(spec), members: [] };
         // A subgraph opened again by its id carries on the first: two clusters of one id became two frames under
         // one element id, and the second (with its members' frame) was lost.
         const reopened = clusters.find((c) => c.id === cluster.id);
@@ -480,8 +488,13 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     return { ok: false, error: MERMAID_UNSUPPORTED_ERROR };
   }
 
+  // An edge to a folded subgraph's id pins to the frame it folded into, rather than minting a stray box for the id.
+  const toFrame = foldedEdgeEnds(foldedInto, implicit, nodes, clusters);
+  for (const id of toFrame.keys()) claimed.delete(id);
+
   // An edge to a subgraph id pins to its frame.
-  const realClusters = framedClusters(clusters, implicit, nodes).map((c) => {
+  const framed = framedClusters(clusters, implicit, nodes);
+  const realClusters = framed.map((c) => {
     // A node written out with a subgraph's id keeps the id (edges naming it meant the node); the frame takes a fresh
     // one, so neither is lost to the other's element id.
     if (!nodes.has(c.id)) return c;
@@ -490,6 +503,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
       id = `${c.id}_subgraph${n}`;
     return { ...c, id };
   });
+  const frameId = new Map(framed.map((c, i) => [c.id, realClusters[i]!.id]));
+  pointEdgesAtFrames(edges, toFrame, (id) => frameId.get(id) ?? id);
 
   // A flowchart needs either the header or at least one connection — a bare
   // word (or a stray line of prose) is not a diagram.

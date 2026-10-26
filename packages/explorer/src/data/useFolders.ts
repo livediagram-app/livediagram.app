@@ -38,6 +38,8 @@ export function useFolderStore(
   onTreeChanged: () => void,
   // Folder·Created / Renamed / Moved / Deleted, once the index took the change.
   onOrganise?: OrganiseTelemetry,
+  // A folder the index deleted: anything still standing for a move into it is dropped.
+  onFolderGone?: (id: string) => void,
 ): FolderStore {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -209,11 +211,12 @@ export function useFolderStore(
         )) === true;
       if (ok) {
         onOrganise?.('Folder·Deleted', null);
+        onFolderGone?.(id);
         onTreeChanged();
       }
       return ok;
     },
-    [client, optimistic, onTreeChanged, onOrganise],
+    [client, optimistic, onTreeChanged, onOrganise, onFolderGone],
   );
 
   const reload = useCallback(() => setAttempt((n) => n + 1), []);

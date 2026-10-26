@@ -30,3 +30,16 @@ export function itemIdsShownOnTab(elements: readonly object[], items: Iterable<I
   if (tabShowsEveryCard(elements)) for (const it of items) ids.add(it.id);
   return ids;
 }
+
+// What an element adds to the cards its tab shows (docs/specs/013-workspace/tab-scoped-share-links.md "Structure"):
+// `board` for a Plan board, `view` for a plan view, `card:<item id>` for a Plan card, null for anything that pulls in
+// no card. One id keeping its reach leaves the tab's cards as they were; any change of reach (an element added or
+// removed, a Plan card pointed at another card, an element turned into a board) is structure.
+export function elementReach(el: object): string | null {
+  const e = el as TabItemElement;
+  if (e.shape === 'plan-board') return normaliseBoardSetup(e.planBoard) !== null ? 'board' : null;
+  if (e.shape === 'plan-view') return 'view';
+  if (e.shape === 'plan-card')
+    return typeof e.planCard?.itemId === 'string' ? `card:${e.planCard.itemId}` : null;
+  return null;
+}

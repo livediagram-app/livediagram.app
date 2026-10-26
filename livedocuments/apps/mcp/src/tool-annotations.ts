@@ -15,10 +15,9 @@ import type { McpServer, ToolCallback } from '@modelcontextprotocol/sdk/server/m
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ZodRawShape } from 'zod';
 import type { McpToolVerb } from '@livedocuments/agent-verbs/mcp';
-import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import { pascalToken } from '@livedocuments/api-schema';
 import { apiRefusalOf } from '@livedocuments/agent-verbs';
-import { errorResult, ToolInputError } from './tool-helpers';
+import { answerFixable, isErrorResult, TOOL_ANNOTATIONS } from '@liveworkspace/mcp-kit/tool-result';
 import { postTelemetry } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { runInTool } from './tool-scope';
@@ -29,20 +28,8 @@ import { runInTool } from './tool-scope';
 // api enforces can't drift apart.
 export type ToolBehaviour = McpToolVerb['behaviour'];
 
-// `openWorldHint: false` throughout: every tool acts on the caller's own
-// livedocuments library through our api, a closed and known domain rather than
-// an open-ended external world like a web search.
-//
-// `destructiveHint` is omitted on `read` on purpose. MCP ignores it when
-// `readOnlyHint` is true, and stating it would imply the tool writes at all.
-export const TOOL_ANNOTATIONS: Record<ToolBehaviour, ToolAnnotations> = {
-  read: { readOnlyHint: true, openWorldHint: false },
-  // Additive: creates a document, a tab, a link. Nothing that existed is lost.
-  write: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-  // May overwrite or remove what the user already had, so a client should ask
-  // before each call.
-  destructive: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
-};
+// The hints each behaviour ships (`@liveworkspace/mcp-kit/tool-result`).
+export { TOOL_ANNOTATIONS };
 
 /**
  * Register an MCP tool with its behaviour annotations attached.
@@ -84,24 +71,5 @@ export function registerTool<
   server.registerTool(name, { ...config, annotations: TOOL_ANNOTATIONS[behaviour] }, scoped);
 }
 
-// A mistake the caller can fix is a tool error that says so, never a thrown protocol error
-// (docs/specs/015-api/mcp-server.md): a named input refusal, or an api 4xx in words. A 5xx
-// or anything else still throws, and is reported as Error·Api underneath.
-async function answered(run: () => unknown): Promise<unknown> {
-  try {
-    return await run();
-  } catch (err) {
-    if (err instanceof ToolInputError) return errorResult(err.message);
-    const refusal = apiRefusalOf(err);
-    if (refusal) return errorResult(refusal.message);
-    throw err;
-  }
-}
-
-function isErrorResult(result: unknown): boolean {
-  return (
-    typeof result === 'object' &&
-    result !== null &&
-    (result as { isError?: unknown }).isError === true
-  );
-}
+// A fixable mistake answers as a tool error in words; anything else throws (`@liveworkspace/mcp-kit/tool-result`).
+const answered = (run: () => unknown) => answerFixable(run, apiRefusalOf);

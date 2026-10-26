@@ -276,6 +276,14 @@ describe('applyReplace refusals', () => {
     );
   });
 
+  // docs/specs/009-elements/badge.md "The cap holds for agents".
+  it('refuses a badge label over its cap, naming the element and the cap', () => {
+    const badge = { id: 'b', type: 'shape', shape: 'badge', x: 0, y: 0, width: 40, height: 24 };
+    expect(refusal({ elements: [{ ...badge, label: 'y'.repeat(25) }] }).details).toEqual([
+      "b label: a badge's label is at most 24 characters",
+    ]);
+  });
+
   it('refuses two elements with one id', () => {
     const el = { id: 'x', type: 'sticky', x: 0, y: 0, width: 10, height: 10 };
     expect(refusal({ elements: [el, el] }).details).toEqual(['the tab elements: every id once']);

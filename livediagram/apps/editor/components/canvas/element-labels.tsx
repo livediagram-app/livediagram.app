@@ -14,6 +14,7 @@
 // BoxedElementView is split here in the same change.
 
 import {
+  chipLabelMax,
   hasRichFormatting,
   isEventStormingNote,
   labelFontPx,
@@ -153,6 +154,7 @@ export function renderLabel(
         onCancel={onCancelEdit}
         onSetAlign={onSetAlign}
         inline={inlineIcon}
+        maxLength={chipLabelMax(element) ?? undefined}
       />
     );
   }

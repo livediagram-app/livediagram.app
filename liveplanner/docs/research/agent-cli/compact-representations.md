@@ -30,7 +30,7 @@ serve all of them cheaply:
 
 | Need                | Typical prompt                               | Wants                                       | Does not want                 |
 | ------------------- | -------------------------------------------- | ------------------------------------------- | ----------------------------- |
-| Orient              | "What is in this project?"                  | tabs, sizes, open threads, freshness        | any element                   |
+| Orient              | "What is in this project?"                   | tabs, sizes, open threads, freshness        | any element                   |
 | Understand          | "Explain this architecture"                  | labels, grouping, connections, notes        | coordinates, colours, anchors |
 | Reason on structure | "What depends on Orders?", "find cycles"     | nodes and edges only, with edge ids         | prose, styling                |
 | Edit precisely      | "Rename Payments, add Redis under Auth"      | stable refs, containment, one element fully | the rest of the canvas        |
@@ -90,7 +90,7 @@ a scratch directory and are not part of the repo; the formats are reproduced in 
 
 | Format                                                  | chars  | chars/4 | cl100k | o200k     | vs JSON |
 | ------------------------------------------------------- | ------ | ------- | ------ | --------- | ------- |
-| JSON, pretty (`read_project` text block today)         | 12,665 | 3,166   | 4,219  | **4,213** | 100%    |
+| JSON, pretty (`read_project` text block today)          | 12,665 | 3,166   | 4,219  | **4,213** | 100%    |
 | JSON, minified                                          | 7,558  | 1,890   | 2,893  | 2,910     | 69%     |
 | tldraw-style blurry shapes (JSON, geometry, short refs) | 2,439  | 610     | 883    | 882       | 21%     |
 | Outline with full UUIDs                                 | 2,144  | 536     | 977    | 970       | 23%     |
@@ -100,7 +100,7 @@ a scratch directory and are not part of the repo; the formats are reproduced in 
 | Graphviz DOT                                            | 1,039  | 260     | 388    | 387       | 9%      |
 | **Outline, prefix refs (proposed default)**             | 1,184  | 296     | 388    | **386**   | **9%**  |
 | Outline, positional refs `e1..eN`                       | 1,141  | 285     | 357    | 355       | 8%      |
-| Outline, slug ids (an agent-authored project)          | 1,315  | 329     | 345    | 343       | 8%      |
+| Outline, slug ids (an agent-authored project)           | 1,315  | 329     | 345    | 343       | 8%      |
 | Outline, prefix refs, notes omitted                     | 992    | 248     | 330    | 329       | 8%      |
 | Mermaid (`mermaidFromTab` today)                        | 608    | 152     | 232    | 232       | 6%      |
 | Markdown export (`tabToMarkdownText` today)             | 730    | 183     | 202    | 201       | 5%      |

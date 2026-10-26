@@ -22,7 +22,7 @@ import {
   type CollabFormInput,
   type CollabThreadInput,
 } from '@liveworkspace/index-client';
-import { isId } from './codec';
+import { isId, isPartId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, noContent, notFound, readObject } from './http';
 import { bulkEventStatements, type BulkEvent } from './timeline';
@@ -67,7 +67,7 @@ export function parseCard(value: unknown): CollabCard | null | undefined {
     const b = c.board as Record<string, unknown>;
     const boardTitle = clip(b?.title, LABEL_MAX);
     const tabName = clip(b?.tabName, LABEL_MAX);
-    if (!isId(b?.tabId) || !isId(b?.elementId) || boardTitle === null || tabName === null) {
+    if (!isPartId(b?.tabId) || !isPartId(b?.elementId) || boardTitle === null || tabName === null) {
       return undefined;
     }
     board = { tabId: b.tabId, elementId: b.elementId, title: boardTitle, tabName };
@@ -87,7 +87,7 @@ export function parseThread(value: unknown): CollabThreadInput | null {
     t.latestAuthorColor === undefined ? '' : clip(t.latestAuthorColor, COLOR_MAX);
   const card = parseCard(t.card);
   if (
-    !isId(t.elementId) ||
+    !isPartId(t.elementId) ||
     elementLabel === null ||
     typeof t.resolved !== 'boolean' ||
     !isCount(t.commentCount) ||
@@ -132,8 +132,8 @@ export function parseAction(value: unknown): CollabActionInput | null {
   const assignerName = optionalText(a.assignerName, LABEL_MAX);
   const card = parseCard(a.card);
   if (
-    !isId(a.elementId) ||
-    !isId(a.actionId) ||
+    !isPartId(a.elementId) ||
+    !isPartId(a.actionId) ||
     elementLabel === null ||
     name === null ||
     description === null ||
@@ -433,7 +433,7 @@ export function parseForm(value: unknown): CollabFormInput | null | undefined {
   if (
     heading === null ||
     !(code === null || (typeof code === 'string' && FORM_CODE.test(code))) ||
-    !nullableId(boardTabId) ||
+    !(boardTabId === null || isPartId(boardTabId)) ||
     !isCount(f.responses) ||
     f.responses > RESPONSES_MAX ||
     !isTime(f.latestAt)

@@ -52,14 +52,14 @@ the outline renders whatever a stored tab holds.
 
 ## The views
 
-| View           | Answers                         | Holds                                                                                                                                                          |
-| -------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `overview`     | What is in this project?       | Its tabs, their sizes, open threads, last edit; no elements                                                                                                    |
-| `outline`      | What does this tab mean?        | As above                                                                                                                                                       |
-| `comments`     | What are people saying?         | Open threads with their element's ref and label, every comment in full                                                                                         |
-| `show <ref>`   | Everything about one element    | Every field, with its geometry from the content origin; or `selected`                                                                                          |
-| `find <text>`  | Where is this?                  | Matching elements                                                                                                                                              |
-| `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision                                                                                                    |
+| View           | Answers                         | Holds                                                                  |
+| -------------- | ------------------------------- | ---------------------------------------------------------------------- |
+| `overview`     | What is in this project?        | Its tabs, their sizes, open threads, last edit; no elements            |
+| `outline`      | What does this tab mean?        | As above                                                               |
+| `comments`     | What are people saying?         | Open threads with their element's ref and label, every comment in full |
+| `show <ref>`   | Everything about one element    | Every field, with its geometry from the content origin; or `selected`  |
+| `find <text>`  | Where is this?                  | Matching elements                                                      |
+| `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision            |
 
 Every view opens with a header line naming the tab, its counts and its `rev`, so a later write can carry it as a
 base. The overview's first line names the project: `project <id> "<name>" · <n> tabs · edited <age>`. There is no

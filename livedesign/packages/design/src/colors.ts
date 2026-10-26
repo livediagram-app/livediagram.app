@@ -11,6 +11,7 @@ import {
   type TextAlignY,
 } from './index';
 import type { BorderRadius } from '@liveworkspace/model-core/border-style';
+import { parseCssColour } from '@liveworkspace/model-core/css-colour';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
 import { isConceptShape } from './concept';
@@ -47,13 +48,13 @@ export function defaultPadding(element: BoxedElement): Padding {
 
 export type RGB = { r: number; g: number; b: number };
 
-// `#rrggbb` (the `#` optional) to 0-255 channels, or null for anything else
-// (shorthand, a CSS name, an rgb() string). The one hex parser: callers that
-// know their input is a catalogue hex assert it rather than re-parsing.
+// A colour as CSS writes it (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, the `#`
+// optional, or a CSS named colour) to 0-255 channels, alpha dropped, or null for
+// anything else (an rgb() string, `transparent`). The one parser, shared by the
+// models (@liveworkspace/model-core/css-colour): callers that know their input
+// is a catalogue hex assert it rather than re-parsing.
 export function hexToRgb(hex: string): RGB | null {
-  const m = /^#?([a-fA-F\d]{2})([a-fA-F\d]{2})([a-fA-F\d]{2})$/.exec(hex);
-  if (!m) return null;
-  return { r: parseInt(m[1]!, 16), g: parseInt(m[2]!, 16), b: parseInt(m[3]!, 16) };
+  return parseCssColour(hex);
 }
 
 // WCAG 2.2 SC 1.4.3: the minimum contrast for normal-size text (AA).

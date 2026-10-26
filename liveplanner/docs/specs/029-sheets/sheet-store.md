@@ -9,14 +9,14 @@ elements, its snapshots, its changesets or its room.
 
 | Term                      | Means                                                                          | Never called              |
 | ------------------------- | ------------------------------------------------------------------------------ | ------------------------- |
-| **sheet store**           | Every sheet of one project                                                    | workbook, database        |
+| **sheet store**           | Every sheet of one project                                                     | workbook, database        |
 | **sheet id**              | A sheet's internal id, named by its Sheet element                              | key                       |
 | **row id**, **column id** | A row's or column's own id, kept for life whatever its place                   | index (that is its place) |
 | **layout**                | A sheet's rows and columns in order, with their sizes, hidden flags and freeze | structure, shape          |
 | **cell write**            | A change to cells' inputs and/or formats                                       | update, edit              |
 | **layout write**          | A change to rows or columns: insert, delete, move, resize, hide, freeze        | structural change         |
 | **sheet rev**             | The sheet's revision, raised by one on every write to it                       | version                   |
-| **referenced**            | Named by an element of its project: a Sheet's `sheetId` or a copy's `copyOf`  | used, linked              |
+| **referenced**            | Named by an element of its project: a Sheet's `sheetId` or a copy's `copyOf`   | used, linked              |
 
 ## What a sheet is
 
@@ -42,7 +42,8 @@ elements, its snapshots, its changesets or its room.
   - inserting, moving and sorting rows or columns rewrites no cell, and every formula still reads the cells it
     read;
   - deleting a row or column deletes its cells, and a reference to one of them reads `#REF!`; a range with a
-    corner in it shrinks to what is left;
+    corner in it shrinks to what is left, in the tab's other sheets too (each reading sheet's rewrite stored and
+    relayed as a write of its own; the editor makes it part of the deletion's change, so one undo puts it back);
   - renaming a sheet rewrites nothing; a formula naming it shows the new title;
   - a write sent before someone else's layout write lands on the cells its sender meant, wherever they now are.
 - A reference to a sheet title no sheet on the tab has is stored by its title and reads `#REF!` until such a

@@ -91,11 +91,17 @@ describe('both, on the shape of what they return', () => {
 
   it('hands an unparseable colour straight back', () => {
     // The documented failsafe. Documents carry user-picked colours
-    // and older documents predate the hex-only rule, so a CSS name or an rgb()
+    // and older documents predate the hex-only rule, so an rgb()
     // string does reach here — it must pass through, not become '#NaNNaNNaN'.
-    for (const bad of ['', 'rebeccapurple', 'rgb(1,2,3)', '#abc', 'not a colour']) {
+    for (const bad of ['', 'rgb(1,2,3)', '#ab', 'not a colour']) {
       expect(tint(bad, 0.5)).toBe(bad);
       expect(shade(bad, 0.5)).toBe(bad);
     }
+  });
+
+  // docs/specs/011-theme/light-and-dark.md "Colours an agent writes": a shorthand or a CSS name is a colour.
+  it('ramps a shorthand or named colour as its #rrggbb', () => {
+    expect(tint('rebeccapurple', 0.5)).toBe(tint('#663399', 0.5));
+    expect(shade('#abc', 0.5)).toBe(shade('#aabbcc', 0.5));
   });
 });

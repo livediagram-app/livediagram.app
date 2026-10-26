@@ -3,6 +3,7 @@ import {
   ACCESS_CHANGED_CLOSE,
   GRANT_LAPSED_CLOSE,
   ROOM_GRANT_ASK_BEFORE_MS,
+  ROOM_MAX_CONNECTIONS,
 } from '@liveplanner/api-schema';
 import type { GrantClaims } from '@liveworkspace/index-client';
 import { setGrantVerifierForTests } from '../index-service';
@@ -174,11 +175,14 @@ describe('a session grant', () => {
 });
 
 describe('a room full of sessions', () => {
-  // The alarm walks every socket, and each `grant` frame is checked: both stay well inside a frame's budget at
-  // 1,000 sessions (measured ~1-3 ms per sweep, ~40-180 ms for 1,000 renewals).
-  it('asks, renews and lapses 1,000 sessions within budget', async () => {
+  // The alarm walks every socket, and each `grant` frame is checked: both stay well inside a frame's budget for a
+  // full room, ROOM_MAX_CONNECTIONS sessions (the most a room seats; the 101st is turned away). Measured at 1,000
+  // sessions before the cap: ~1-3 ms per sweep, ~40-180 ms for 1,000 renewals.
+  it("asks, renews and lapses a full room's sessions within budget", async () => {
     const { plan, join } = room();
-    const sockets = Array.from({ length: 1000 }, () => join({ expMs: T0 + 600_000 }));
+    const sockets = Array.from({ length: ROOM_MAX_CONNECTIONS }, () =>
+      join({ expMs: T0 + 600_000 }),
+    );
     vi.setSystemTime(T0 + 590_000);
     let t = performance.now();
     await plan.alarm();

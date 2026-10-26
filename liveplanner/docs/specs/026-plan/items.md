@@ -178,6 +178,9 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   ([Card tables](../029-sheets/sheet.md#card-tables)). On an empty tab, or one of only diagrams, stickies and plain
   Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
   placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
+- **On a phone beside the Session strip** (a tab whose cards take votes) the strip is one **More Card Tools** button,
+  its menu holding New Card, Find a Card, Card Types and, for an editor, the Trash (the Trash's only door on a phone);
+  each opens its panel above that button ([Session tools](../012-collaboration/session-tools.md#the-session-strip)).
 - On a wide desktop (1440 px and up) each of its buttons is named beside its icon in one short word (**Trash**,
   **New**, **Find**, **Types**), as the cluster's other strips are ([Editor app](../007-editor/editor-app.md)); narrower,
   they are icons alone. Their accessible names and hover cards keep the fuller labels (New Card, Find a Card, Card
@@ -188,8 +191,8 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 - **Trash** is a status, `trash`, that no board shows (not in a column, not counted, not "not on this board", not
   on All Cards). A trashed item keeps the status it had under `trashedFrom`.
 - In Plan mode a **Trash** button leads the bottom-right cluster's Plan strip, on its left before **Find a
-  Card** and **Card Types** (not on a phone, whose cluster has no room for it: a card's menu still sends it to
-  the Trash), its count tucked into its corner (beside its name where the strip is named, The Plan strip); with a grey badge of how many cards
+  Card** and **Card Types** (not on a phone, whose cluster has no room for it, unless the strip is folded beside the Session strip, The Plan
+  strip; a card's menu still sends it to the Trash), its count tucked into its corner (beside its name where the strip is named, The Plan strip); with a grey badge of how many cards
   it holds. While a card is dragged the button opens out into a dashed **Drop to Trash** target, and while the
   card is over it fills with the brand colour, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
   colours still change); a card let go there is trashed and the move is announced. That holds wherever the board is:
@@ -313,12 +316,12 @@ author redaction, and the same thread list, composer and resolve control the com
 Items follow the project's access ([Auth and guest access](../014-identity/auth-and-guest-access.md)):
 
 - **Read** with any access to the project. A visitor on a **tab-scoped** link sees only the items that tab shows:
-  the items its boards show and its Plan cards point at.
+  the items its boards show and its Plan cards point at. Those boards, plan views and Plan cards are the tab's structure,
+  which the link never adds, removes or repoints ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md#structure)).
 - **Create, update, move, delete** with edit access. A tab-scoped link creates cards only from a tab that shows
   every card (a board or plan view on it); from any other tab the card would land on boards outside its reach, so
-  the api refuses it (403).
-- **A tab-scoped link never adds a board or plan view** to its tab, since either shows every card: the api refuses
-  the save (403 `tab_scope_widen`) and the room drops the op ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)).
+  the api refuses it (403), before it looks at any id the create names, so a taken id on another tab answers
+  exactly as a free one does and never shows that the card exists.
 - **Who a card can be assigned to**: you and the joined members of the teams you are part of (by their profile
   name, else their invite address's local part), fetched once a project has Plan content. A guest, who has no
   teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its

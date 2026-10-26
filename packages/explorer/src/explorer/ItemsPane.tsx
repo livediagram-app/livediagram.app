@@ -5,6 +5,7 @@
 // in the chosen layout. As livediagram's: cards by default; Shared With Me is a fixed list and the Trash its
 // own grouped page, neither with the layout toggle; New Folder only where folders live.
 
+import { MoreFailed } from './MoreFailed';
 import { useEffect, useMemo, useRef } from 'react';
 import type { App, Folder } from '@liveworkspace/index-client';
 import { folderPath, type FolderStore } from '../data/useFolders';
@@ -143,7 +144,8 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
     folders: folderRows,
     items: state.items,
     options,
-    hasMore: state.hasMore,
+    // A failed page shows Try again below instead of loading on scroll.
+    hasMore: state.hasMore && !state.moreFailed,
     loadingMore: state.loadingMore,
     onLoadMore: state.loadMore,
   };
@@ -160,7 +162,7 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
   ) : view.kind === 'trash' ? (
     <TrashPane
       items={state.items}
-      hasMore={state.hasMore}
+      hasMore={state.hasMore && !state.moreFailed}
       loadingMore={state.loadingMore}
       onLoadMore={state.loadMore}
     />
@@ -221,6 +223,9 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
       ) : null}
       {view.kind === 'trash' ? <TrashNote words={words} /> : null}
       {view.kind === 'team' && !view.folderId ? <TeamPage teamId={view.id}>{body}</TeamPage> : body}
+      {state.moreFailed && !state.error ? (
+        <MoreFailed onRetry={state.retryMore} loading={state.loadingMore} />
+      ) : null}
     </div>
   );
 }

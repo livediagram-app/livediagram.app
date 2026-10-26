@@ -8,7 +8,7 @@ import {
   parseStoredLevel,
 } from '@livediagram/api-schema';
 import { answersAsSelf } from './document-room-rules';
-import { scopedSenderMayRelay } from './room-scope';
+import { scopedRenames, scopedSenderMayRelay } from './room-scope';
 
 type OpGate =
   /** Never relayed, never answered. */
@@ -68,6 +68,8 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A tab-scoped session acts on its own tab only, and never on the
   // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
+  // Nor its tab's name, which is structure too.
+  if (scopedRenames(op, sender.tabScope)) return DROP;
   if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
   // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's dots,

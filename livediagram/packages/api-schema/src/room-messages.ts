@@ -691,5 +691,16 @@ export const WORKBENCH_ENDED_CLOSE = 4006;
 // new grant and reconnects.
 export const GRANT_LAPSED_CLOSE = 4007;
 
+// A room's capacity and the close an over-capacity join gets (docs/specs/015-api/api.md "A room holds at most
+// 100 connections"), one number for every product's room.
+export {
+  ROOM_FULL_CLOSE,
+  ROOM_FULL_MESSAGE,
+  ROOM_FULL_REASON,
+  ROOM_FULL_RETRY_MS,
+  ROOM_MAX_CONNECTIONS,
+  roomIsFull,
+} from '@liveworkspace/api-schema/room-capacity';
+
 export const ROOM_PING = 'ping';
 export const ROOM_PONG = 'pong';

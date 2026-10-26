@@ -71,6 +71,8 @@ export function createItemActions({
     const undo = overlay.patch(item.id, patch);
     try {
       await call();
+      // Taken: the next read of the index stands in for the patch from here on.
+      undo.settle();
       if ('folderId' in patch || 'trashedAt' in patch || 'gone' in patch) onPlaced?.();
       return true;
     } catch (e) {

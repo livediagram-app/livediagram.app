@@ -60,7 +60,11 @@ describe('the sheet expiry', () => {
       `s${String(count - 2).padStart(7, '0')}`,
       `s${String(count - 1).padStart(7, '0')}`,
     ]);
-    expect(await runSheetExpiry(sql.env, 'd1', now)).toEqual({ sheets: 2, cells: 2 * full, more: false });
+    expect(await runSheetExpiry(sql.env, 'd1', now)).toEqual({
+      sheets: 2,
+      cells: 2 * full,
+      more: false,
+    });
     expect(ids()).toEqual([]);
   });
 

@@ -50,8 +50,7 @@ export async function makeTemplateSheets(
       updatedBy: by,
     };
     const full =
-      totals.sheets >= PROJECT_SHEETS_MAX ||
-      totals.cells + sheet.cells.length > PROJECT_CELLS_MAX;
+      totals.sheets >= PROJECT_SHEETS_MAX || totals.cells + sheet.cells.length > PROJECT_CELLS_MAX;
     if (full || !validateSheetCreate(sheetFromJson(sheet)).ok) {
       changesetLog('warn', '[changeset] template sheet skipped', { projectId, full });
       continue;

@@ -130,7 +130,8 @@ function Chip({
       {dot ? (
         <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: dot }} />
       ) : null}
-      {children}
+      {/* The label centres on its cap band, keeping the chip one line tall (optical-alignment.md). */}
+      <span className="text-optical-line">{children}</span>
     </span>
   );
 }

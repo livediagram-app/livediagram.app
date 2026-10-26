@@ -106,6 +106,57 @@ describe('parseMermaid: state diagrams', () => {
     expect(r.graph.clusters).toEqual([{ id: 'outer', label: 'Outer title', members: ['A', 'B'] }]);
   });
 
+  // docs/specs/020-import-export/mermaid.md: a transition to a folded composite points at the frame it folded into.
+  it('points a transition to a folded nested composite at its outer frame', () => {
+    const r = parseMermaid(`stateDiagram-v2
+  state outer {
+    A
+    state inner {
+      B
+    }
+    A --> inner
+  }
+  X --> inner
+  inner --> Y`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.map((n) => n.id).sort()).toEqual(['A', 'B', 'X', 'Y']);
+    expect(r.graph.edges).toEqual([
+      { from: 'A', to: 'outer' },
+      { from: 'X', to: 'outer' },
+      { from: 'outer', to: 'Y' },
+    ]);
+    expect(r.graph.clusters).toEqual([{ id: 'outer', label: 'outer', members: ['A', 'B'] }]);
+  });
+
+  it('keeps a state written out under a folded composite id', () => {
+    const r = parseMermaid(`stateDiagram-v2
+  state outer {
+    state inner {
+      B
+    }
+  }
+  inner : Inner state
+  inner --> B`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.find((n) => n.id === 'inner')?.label).toBe('Inner state');
+    expect(r.graph.edges).toEqual([{ from: 'inner', to: 'B' }]);
+  });
+
+  it('keeps the box when the outer composite holds nothing else, so the transition keeps a target', () => {
+    const r = parseMermaid(`stateDiagram-v2
+  state outer {
+    state inner {
+    }
+  }
+  X --> inner`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.edges).toEqual([{ from: 'X', to: 'inner' }]);
+    expect(r.graph.nodes.map((n) => n.id).sort()).toEqual(['X', 'inner']);
+  });
+
   it('skips notes (block and one-line) and concurrency separators', () => {
     const r = parseMermaid(`stateDiagram-v2
   A --> B

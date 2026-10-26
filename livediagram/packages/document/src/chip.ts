@@ -21,6 +21,25 @@ export const STEP_LABEL_MAX = 3;
 export const STEP_SIZE_PX = 28;
 export const STEP_SEQUENCE_BEAT_S = 0.4;
 
+/** A chip's label cap: a badge's 24 characters, a step's 3; null for anything else. */
+export function chipLabelMax(el: { type?: unknown; shape?: unknown }): number | null {
+  if (el.type !== 'shape') return null;
+  return el.shape === 'badge' ? BADGE_LABEL_MAX : el.shape === 'step' ? STEP_LABEL_MAX : null;
+}
+
+/**
+ * A chip label over its cap, as the field and rule an agent write is refused with
+ * (docs/specs/009-elements/badge.md "The cap holds for agents"); null otherwise. Only the agent write paths run it,
+ * on the elements a write touches: the editor's own saves are never refused for an old, longer label.
+ */
+export function chipLabelIssue(el: unknown): { field: string; rule: string } | null {
+  if (typeof el !== 'object' || el === null) return null;
+  const chip = el as { type?: unknown; shape?: unknown; label?: unknown };
+  const max = chipLabelMax(chip);
+  if (max === null || typeof chip.label !== 'string' || chip.label.length <= max) return null;
+  return { field: 'label', rule: `a ${String(chip.shape)}'s label is at most ${max} characters` };
+}
+
 export function isChipShape(kind: string): kind is ChipShape {
   return kind === 'badge' || kind === 'step';
 }

@@ -54,6 +54,6 @@ export { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, tabOf, tabPath } from '
 export { tabListOf } from './verbs/tab';
 export { EXPORT_FORMATS } from './verbs/local';
 export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
-export { apiRefusalOf } from './api-refusal';
+export { apiRefusalOf, deleteRefusal } from './api-refusal';
 export * from './pages';
 export * from './images';

@@ -218,6 +218,42 @@ describe('teams', () => {
     const changes = await teamChanges(db, null);
     expect(changes.teams.find((t) => t.id === solo.value.id)?.deleted).toBe(true);
   });
+
+  it('takes a closed account’s address off every team row it had, and says so in the change feed', async () => {
+    const current = await teamWith(BEA);
+    const earlier = await createTeam(db, ADA, 'Earlier');
+    if (!earlier.ok) throw new Error(earlier.error);
+    // One they were removed from, one they turned down, both before closing.
+    const invited = await inviteMember(db, ADA, earlier.value.id, BEA.email, 'member');
+    if (!invited.ok) throw new Error(invited.error);
+    await answerInvitation(db, BEA, invited.value.member.id, true);
+    await removeMember(db, ADA, earlier.value.id, await memberId(earlier.value.id, BEA));
+    const third = await createTeam(db, ADA, 'Third');
+    if (!third.ok) throw new Error(third.error);
+    const declined = await inviteMember(db, ADA, third.value.id, BEA.email, 'member');
+    if (!declined.ok) throw new Error(declined.error);
+    await answerInvitation(db, BEA, declined.value.member.id, false);
+    const before = await teamChanges(db, null);
+
+    await leaveAllTeams(db, BEA.id);
+
+    const rows = sql
+      .prepare('SELECT email, status FROM team_member WHERE email != ? ORDER BY teamId')
+      .all(ADA.email) as { email: string; status: string }[];
+    expect(rows).toHaveLength(3);
+    expect(rows.every((r) => r.email === 'Deleted account')).toBe(true);
+    expect(
+      sql.prepare('SELECT COUNT(*) AS n FROM team_member WHERE email = ?').get(BEA.email),
+    ).toEqual({
+      n: 0,
+    });
+    // The apps' copies hear it: every scrubbed row comes again after the cursor, address gone.
+    const after = await teamChanges(db, before.cursor);
+    const theirs = after.members.filter((m) => m.email !== ADA.email);
+    expect(theirs).toHaveLength(3);
+    expect(theirs.every((m) => m.email === 'Deleted account')).toBe(true);
+    expect((await listMembers(db, current)).map((m) => m.email)).not.toContain(BEA.email);
+  });
 });
 
 describe('teamChanges', () => {

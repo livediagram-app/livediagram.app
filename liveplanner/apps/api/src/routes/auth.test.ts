@@ -366,20 +366,11 @@ describe('the account name cookie (lp_account)', () => {
 });
 
 describe('safeReturnPath', () => {
-  it('keeps a path on this site and replaces anything that would leave it', () => {
+  // The cases live with the one check, in @liveworkspace/auth-client/return-path; this binds the Explorer fallback.
+  it('keeps a path on this site and sends anything else to the Explorer', () => {
     expect(safeReturnPath('/project/abc?tab=1')).toBe('/project/abc?tab=1');
-    for (const unsafe of [null, '', 'https://evil.example', '//evil.example', '/\\evil.example']) {
+    for (const unsafe of [null, '//evil.example', '/\t/evil.example']) {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
-    }
-    // A tab, newline, space or DEL would be dropped by the browser, leaving `//evil.example`.
-    for (const dropped of [
-      '/\t/evil.example',
-      '/\n/evil.example',
-      '/\r/evil.example',
-      '/ /evil.example',
-      '/\x7f/x',
-    ]) {
-      expect(safeReturnPath(dropped)).toBe('/explorer/home');
     }
   });
 });

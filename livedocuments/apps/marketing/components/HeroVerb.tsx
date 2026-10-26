@@ -20,6 +20,18 @@ export const HERO_VERB_HOLD_MS = 2600;
 const DELETE_MS = 55;
 const TYPE_MS = 95;
 
+export type HeroFlagPlace = 'above' | 'below' | 'none';
+
+// Where the co-author's name flag can ride without covering another word of the headline: below the caret while
+// the verb is on the last line (nothing of the headline under it), above it while the verb is on the first, and
+// nowhere on a line between. Above was the only place once, and on a phone it covered "are". Line tops are
+// offsetTop values.
+export function heroFlagPlace(verbTop: number, firstTop: number, lastTop: number): HeroFlagPlace {
+  if (verbTop >= lastTop) return 'below';
+  if (verbTop <= firstTop) return 'above';
+  return 'none';
+}
+
 export function HeroVerb({ before, after }: { before: string; after: string }) {
   const [shown, setShown] = useState<string>(HERO_VERBS[0]);
   const [running, setRunning] = useState(true);
@@ -27,6 +39,7 @@ export function HeroVerb({ before, after }: { before: string; after: string }) {
   const rootRef = useRef<HTMLSpanElement>(null);
   const typedRef = useRef<HTMLSpanElement>(null);
   const wordsRef = useRef<HTMLSpanElement>(null);
+  const flagRef = useRef<HTMLSpanElement>(null);
   // Where the typing has got to, kept beside the state so a pause resumes mid-word.
   const step = useRef<{ verb: number; text: string; deleting: boolean }>({
     verb: 0,
@@ -109,12 +122,16 @@ export function HeroVerb({ before, after }: { before: string; after: string }) {
     const close = () => {
       const half = (slot.offsetWidth - typed.offsetWidth) / 2;
       const line = slot.offsetTop;
+      const all = words.children as HTMLCollectionOf<HTMLElement>;
       let past = false;
-      for (const el of words.children as HTMLCollectionOf<HTMLElement>) {
+      for (const el of all) {
         if (el === slot) past = true;
         const shift = el.offsetTop !== line ? 0 : past && el !== slot ? -half : half;
         el.style.transform = shift ? `translateX(${shift}px)` : '';
       }
+      const flag = flagRef.current;
+      if (flag && all.length > 0)
+        flag.dataset.place = heroFlagPlace(line, all[0]!.offsetTop, all[all.length - 1]!.offsetTop);
     };
     close();
     if (typeof ResizeObserver === 'undefined') return;
@@ -162,7 +179,14 @@ export function HeroVerb({ before, after }: { before: string; after: string }) {
           {/* The caret blinks; its name flag, beside it rather than in it, stays lit. */}
           <span className="relative ml-[0.04em] inline-block h-[0.85em] w-[0.06em] translate-y-[0.08em]">
             <span className="hero-caret absolute inset-0 rounded-full bg-amber-700 dark:bg-amber-400" />
-            <span className="absolute bottom-full left-0 mb-1 whitespace-nowrap rounded-md rounded-bl-none bg-amber-700 px-2 py-0.5 font-sans text-xs font-bold leading-4 tracking-normal text-white sm:text-sm dark:bg-amber-400 dark:text-amber-950">
+            {/* Below the caret until measured (the verb sits on the last line at every width it has been
+                seen at); heroFlagPlace moves it above, or hides it, when that would cover a word. */}
+            <span
+              ref={flagRef}
+              data-hero-flag=""
+              data-place="below"
+              className="absolute left-0 whitespace-nowrap rounded-md bg-amber-700 px-2 py-0.5 font-sans text-xs font-bold leading-4 tracking-normal text-white data-[place=above]:bottom-full data-[place=above]:mb-1 data-[place=above]:rounded-bl-none data-[place=below]:top-full data-[place=below]:mt-1 data-[place=below]:rounded-tl-none data-[place=none]:hidden sm:text-sm dark:bg-amber-400 dark:text-amber-950"
+            >
               {HERO_COAUTHOR}
             </span>
           </span>

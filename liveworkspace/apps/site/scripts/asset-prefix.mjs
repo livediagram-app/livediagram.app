@@ -4,7 +4,10 @@
 import { existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const out = fileURLToPath(new URL('../out/', import.meta.url));
+// The export's folder: out/, or the one given (scripts/build-e2e.mjs builds into .next/out-e2e/).
+const out = process.argv[2]
+  ? `${fileURLToPath(new URL('../', import.meta.url))}${process.argv[2].replace(/\/?$/, '/')}`
+  : fileURLToPath(new URL('../out/', import.meta.url));
 const from = `${out}_next`;
 const to = `${out}_liveworkspace/_next`;
 if (!existsSync(from)) {
@@ -14,4 +17,4 @@ if (!existsSync(from)) {
 rmSync(`${out}_liveworkspace`, { recursive: true, force: true });
 mkdirSync(`${out}_liveworkspace`, { recursive: true });
 renameSync(from, to);
-console.log('[asset-prefix] out/_next -> out/_liveworkspace/_next');
+console.log(`[asset-prefix] ${out}_next -> ${out}_liveworkspace/_next`);

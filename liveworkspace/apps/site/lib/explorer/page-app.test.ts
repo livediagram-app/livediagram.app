@@ -5,7 +5,13 @@
 // sends liveworkspace's own pages to liveworkspace.app.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appHosts, appOfHost, appOfPageHost, appOrigin, pageApp, workspaceHref } from './page-app';
-import { appAccount, appSignInHref, resetAppSession } from './app-session';
+import {
+  appAccount,
+  appSignInHref,
+  e2eAccount,
+  e2eSessionKey,
+  resetAppSession,
+} from './app-session';
 import { accountFetch, resetWorkspaceIdentity, workspaceIdentity } from './token';
 import { explorerSilentSignInScript } from './silent';
 
@@ -125,5 +131,51 @@ describe('the silent sign-in script', () => {
     expect(script).toContain('/auth/silent?return=');
     expect(script).not.toContain('liveworkspace.app"');
     expect(script.startsWith('(function(){var h=location.host')).toBe(true);
+  });
+});
+
+describe('the e2e stack’s session (test builds only)', () => {
+  const session = JSON.stringify({
+    token: token('user_e2e'),
+    userId: 'user_e2e',
+    email: 'ada@example.com',
+    firstName: 'Ada',
+    lastName: 'Lovelace',
+  });
+  afterEach(() => {
+    localStorage.clear();
+    vi.unstubAllEnvs();
+  });
+
+  it('is read only in a build made for the e2e stack', async () => {
+    localStorage.setItem(e2eSessionKey('liveplanner'), session);
+    // A production build: the session in storage is never read, and with no hint cookie nobody is signed in.
+    expect(e2eAccount('liveplanner')).toBeNull();
+    expect(await appAccount()).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('signs the Explorer in as the specs’ person, with the stand-in’s token, without asking the app', async () => {
+    vi.stubEnv('NEXT_PUBLIC_E2E_AUTH', '1');
+    localStorage.setItem('liveplanner:e2e:session', session);
+    const account = await appAccount();
+    expect(account).toMatchObject({
+      token: token('user_e2e'),
+      sub: 'user_e2e',
+      name: 'Ada',
+      fullName: 'Ada Lovelace',
+      email: 'ada@example.com',
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    const identity = await workspaceIdentity();
+    expect(identity).toMatchObject({ kind: 'account', sub: 'user_e2e', token: token('user_e2e') });
+  });
+
+  it('is a guest as before when the specs put no session, or a broken one', () => {
+    expect(e2eAccount('liveplanner', true)).toBeNull();
+    localStorage.setItem(e2eSessionKey('liveplanner'), '{not json');
+    expect(e2eAccount('liveplanner', true)).toBeNull();
+    localStorage.setItem(e2eSessionKey('liveplanner'), JSON.stringify({ token: 't' }));
+    expect(e2eAccount('liveplanner', true)).toBeNull();
   });
 });

@@ -93,7 +93,9 @@ only the sweep direction differs).
   the frame takes a fresh one (`a_subgraph`): neither is lost under the other's element id.
   Nested subgraphs fold into their top-level ancestor (frames import one
   level deep); through the MCP the reply says so (`notes`: "2 nested subgraphs folded into their outer group:
-  groups draw one level deep"), rather than dropping the nesting silently. On export, each frame becomes a `subgraph` block containing
+  groups draw one level deep"), rather than dropping the nesting silently. An edge naming a folded subgraph's id
+  points at the frame it folded into, rather than a stray box of the id (a node written out under that id stays a
+  node, as does the box when the outer subgraph holds nothing else). On export, each frame becomes a `subgraph` block containing
   the boxed nodes whose centre sits inside it (a node inside several frames
   belongs to the smallest).
 - **Click links**: `click A "https://…"` (and the `click A href "https://…"`
@@ -124,7 +126,10 @@ LR` line sets the layout direction (TB default).
 - **Transitions**: `A --> B` with an optional `: label`.
 - **Composite states**: `state Name { … }` becomes a cluster → frame, same
   as a flowchart subgraph; nested composites fold into their top-level
-  ancestor. Transitions may reference a composite's id (pins to the frame).
+  ancestor. Transitions may reference a composite's id (pins to the frame); one naming a folded composite points at
+  the frame it folded into, rather than a stray box of the id (a state written out under that id stays a state, and
+  so does the box when the outer composite holds nothing else, since no frame is drawn). Flowcharts share the rule
+  (`foldedEdgeEnds` in `mermaid-shared.ts`).
 - Notes, concurrency separators (`--`), and history states are skipped.
 
 ## ER diagram coverage (import)

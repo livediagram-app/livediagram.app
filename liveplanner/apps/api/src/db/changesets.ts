@@ -127,7 +127,9 @@ export function insertChangesetPartStatement(
 
 // The revision of the tab's latest changeset: the relay's `prevRev` (CS21). Null when none.
 export async function lastChangesetRev(env: PlanEnv, tabId: string): Promise<number | null> {
-  const row = await env.PLAN_DB.prepare('SELECT MAX(rev) AS rev FROM agent_changesets WHERE tab_id = ?')
+  const row = await env.PLAN_DB.prepare(
+    'SELECT MAX(rev) AS rev FROM agent_changesets WHERE tab_id = ?',
+  )
     .bind(tabId)
     .first<{ rev: number | null }>();
   return row?.rev ?? null;

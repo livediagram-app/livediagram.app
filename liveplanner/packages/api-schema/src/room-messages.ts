@@ -401,6 +401,17 @@ export const WORKBENCH_ENDED_CLOSE = 4006;
 // new grant and reconnects.
 export const GRANT_LAPSED_CLOSE = 4007;
 
+// A room past its connection cap closes the newcomer with ROOM_FULL_CLOSE (4008); the editor says the plan is full
+// and tries again later (docs/specs/015-api/api.md "A room holds 100 connections"). One cap for every product.
+export {
+  ROOM_MAX_CONNECTIONS,
+  ROOM_FULL_CLOSE,
+  ROOM_FULL_MESSAGE,
+  ROOM_FULL_REASON,
+  ROOM_FULL_RETRY_MS,
+  roomIsFull,
+} from '@liveworkspace/api-schema/room-capacity';
+
 // A request about one plan carries the index's grant for it here (liveworkspace/docs/one-explorer-contracts.md
 // "Grants"), so `Authorization` keeps the person's own token. The api checks it offline against the index's keys.
 // A caller with no grant (an API token, a workbench session) has one fetched for it by the api.

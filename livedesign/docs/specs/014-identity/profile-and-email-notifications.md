@@ -43,6 +43,12 @@ picture or it fails to load. The rules are liveworkspace's, the same in every ap
 - **Show My Google Picture.** A switch in Settings › Profile, on by default. Off, other people see the initials;
   the person's own chrome (the header's account button, their own presence avatar, the composer beside their
   comments) still shows their picture, since it is their own screen.
+- **Across tabs.** Each session reads the switch from its ID token's `picture_hidden`. Within the accounts Worker's
+  30-second refresh-token reuse window, a second tab's refresh can replay the first tab's earlier response, minted
+  before a save, which would briefly show a just-hidden picture. So a save notes its time in this browser
+  (`livedesign:v2:picture-setting-saved-at`, any tab, `lib/own-picture.ts`), `POST /api/auth/token` says how old
+  the ID token is by the api's clock (`tokenAgeMs`, from its `iat`), and a session whose token predates the save is
+  refreshed once more; the fresh one stands.
 - **Who sees it.** Only signed-in people see other people's pictures. A guest or a link visitor gets the same
   roster and participant reads with every picture taken out.
 - **In the room.** The editor says `hello` with its published picture (`picture`, only while the switch is on),

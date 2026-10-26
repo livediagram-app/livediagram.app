@@ -7,7 +7,13 @@ import { getDocument, renameTab } from '../db';
 import { capStoredName } from '../names';
 import { forbidden, json, notFound } from '../responses';
 import { relayTabRename } from '../room-client';
-import { gateEdit, missingDocument, requireOwner, type DocumentRouteContext } from './context';
+import {
+  gateEdit,
+  grantOn,
+  missingDocument,
+  requireOwner,
+  type DocumentRouteContext,
+} from './context';
 
 export async function handleTabRename(
   ctx: DocumentRouteContext,
@@ -19,6 +25,9 @@ export async function handleTabRename(
   const existing = await getDocument(ctx.env, id);
   if (!existing) return missingDocument(ctx, id);
   if (!(await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId))) return forbidden();
+  // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-scoped link
+  // may edit its tab's content, never rename it.
+  if (grantOn(ctx, id)?.tabScope != null) return forbidden();
   const summary = existing.tabs.find((t) => t.id === tabId);
   if (!summary) return notFound();
   const body = (await ctx.request.json().catch(() => null)) as { name?: unknown } | null;

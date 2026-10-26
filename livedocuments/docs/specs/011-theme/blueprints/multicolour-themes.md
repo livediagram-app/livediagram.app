@@ -119,8 +119,10 @@ New, in `packages/document/src/colors.ts` (D3):
 export function contrastRatio(a: string, b: string): number;
 ```
 
-The helper returns `NaN` when either argument isn't `#rrggbb`, reusing `hexToRgb`, which returns
-null. A `NaN` fails every `>=` comparison, so the contrast test cannot pass on a malformed colour.
+The helper returns `NaN` when either argument isn't a `#` hex colour (`#rgb`, `#rgba`, `#rrggbb` or
+`#rrggbbaa`, alpha dropped), reusing `hexToRgb`, which returns null. A `NaN` fails every `>=` comparison, so the
+contrast test cannot pass on a malformed colour. `hexToRgb` itself also reads CSS named colours
+(`@liveworkspace/model-core/css-colour`), so tints, shades and ink picks work on a user-picked `#abc` or `red`.
 
 ## Data and persistence
 

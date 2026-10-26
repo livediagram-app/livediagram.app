@@ -66,6 +66,27 @@ describe('value labels', () => {
     }
   });
 
+  // docs/specs/009-elements/pie-chart.md "Below zero on a column or bar chart".
+  it('reads a negative value past the end of its column or bar, and names columns under the plot', () => {
+    const mixed = [
+      { label: 'Q1', value: 30 },
+      { label: 'Q2', value: -10 },
+    ];
+    const cols = barMarks(area, mixed, false);
+    const labels = barValueLabels(cols, mixed, false, 12);
+    const [up, down] = labels.filter((l) => !l.category);
+    expect(up!.y).toBeLessThan(cols.bars[0]!.y);
+    expect(down!.y).toBeGreaterThan(cols.bars[1]!.y + cols.bars[1]!.h);
+    for (const name of labels.filter((l) => l.category)) {
+      expect(name.y).toBeGreaterThan(cols.floor);
+      expect(name.y).toBeGreaterThan(down!.y);
+    }
+    const bars = barMarks(area, mixed, true);
+    const left = barValueLabels(bars, mixed, true, 12)[1]!;
+    expect(left.anchor).toBe('end');
+    expect(left.x).toBeLessThan(bars.bars[1]!.x);
+  });
+
   it('puts a bar value after each bar, and no names', () => {
     const marks = barMarks(area, months, true);
     const labels = barValueLabels(marks, months, true, 12);

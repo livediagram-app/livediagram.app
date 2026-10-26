@@ -1,3 +1,4 @@
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 
@@ -135,7 +136,8 @@ function Avatar({ x, y, who, colour }: { x: number; y: number; who: string; colo
       <circle cx={x} cy={y} r="8" fill={colour} />
       <text
         x={x}
-        y={y + 2.8}
+        // The initials centre on their cap band (optical-alignment.md "SVG text centres on its cap band too").
+        y={capBandBaselineY(y, 7)}
         textAnchor="middle"
         fontFamily={FONT}
         fontSize="7"

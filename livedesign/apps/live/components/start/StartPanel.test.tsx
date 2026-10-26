@@ -114,4 +114,25 @@ describe('the chosen rail count', () => {
     // The accent it replaced, for the record: under AA on the same pill.
     expect(contrastRatio(palette.focus, pill)).toBeLessThan(4.5);
   });
+
+  // The chosen row's name: the accent on its 14% tint over the card. Brand blue there read 3.4:1 in light.
+  it.each<CanvasSurface>(['dark', 'light'])('names the chosen group at AA in %s', (surface) => {
+    render(
+      <CanvasSurfaceProvider surface={surface}>
+        <StartFromTemplates mode="pages" tabId="t1" onTemplate={vi.fn()} />
+      </CanvasSurfaceProvider>,
+    );
+    const palette = startPalette(surface, {});
+    const chosen = document.querySelector<HTMLElement>('[data-rail][aria-current="true"]')!;
+    const ink = chosen.style.color;
+    const row = over(palette.card, palette.focus, 0.14);
+    const hexOf = (rgb: string) =>
+      '#' +
+      rgb
+        .match(/\d+/g)!
+        .slice(0, 3)
+        .map((n) => Number(n).toString(16).padStart(2, '0'))
+        .join('');
+    expect(contrastRatio(hexOf(ink), row)).toBeGreaterThanOrEqual(4.5);
+  });
 });

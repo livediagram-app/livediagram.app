@@ -14,7 +14,7 @@ import { articles } from './articles';
 //
 // Copying one into the other costs nothing visible, which is exactly why it
 // is easy to do and hard to notice: the card still renders and the page
-// still has a meta tag. The old Terms of Service article had the same
+// still has a meta tag. The old Terms of Use article had the same
 // sentence in both until this test was written.
 
 const APP_DIR = fileURLToPath(new URL('../app', import.meta.url));

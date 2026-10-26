@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { IndexClient, ShareLink } from '@liveworkspace/index-client';
+import { IndexError, type IndexClient, type ShareLink } from '@liveworkspace/index-client';
+import { failureText } from '../data/errors';
 import { ShareDialog, type ShareDialogProps } from './ShareDialog';
 import { embedSnippet, liveImageHtml, liveImageMarkdown } from './share/handover';
 import { passwordToSave } from './share/PasswordSection';
@@ -183,6 +184,25 @@ describe('ShareDialog', () => {
     expect(screen.getByRole('status').textContent).toContain('with the password');
   });
 
+  it('saves a password only once it is six characters, saying so under the field', async () => {
+    const { calls } = renderDialog({}, { links: [link('a1')] });
+    fireEvent.click(await screen.findByRole('switch', { name: 'Password Protection' }));
+    const field = screen.getByRole('textbox', { name: 'Share password' });
+    const save = () => screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement;
+    // Spaces around it don't count.
+    fireEvent.change(field, { target: { value: '  abc12  ' } });
+    expect(save().disabled).toBe(true);
+    expect(screen.getByText('At least 6 characters.')).toBeTruthy();
+    fireEvent.submit(field.closest('form')!);
+    expect(calls.some((c) => c.method === 'setSharePassword')).toBe(false);
+    fireEvent.change(field, { target: { value: 'abc123' } });
+    expect(save().disabled).toBe(false);
+    fireEvent.click(save());
+    await waitFor(() =>
+      expect(calls).toContainEqual({ method: 'setSharePassword', args: ['abc123'] }),
+    );
+  });
+
   it("locks Password Protection with the host's reason, and shows the host's own section below it", async () => {
     renderDialog({
       passwordLockedReason: 'Remove the canvas from the Community first.',
@@ -360,6 +380,14 @@ describe('share helpers', () => {
   it('trims a password and treats spaces alone as none', () => {
     expect(passwordToSave('  a b  ')).toBe('a b');
     expect(passwordToSave('   ')).toBeNull();
+  });
+  it('words the index’s refusals of a password', () => {
+    expect(failureText(new IndexError(400, 'password_too_short'), 'x')).toBe(
+      'A password needs at least 6 characters.',
+    );
+    expect(failureText(new IndexError(429, 'rate_limited'), 'x')).toBe(
+      'Too many tries just now. Wait a minute and try again.',
+    );
   });
   it('builds the hand-over snippets, escaping the address', () => {
     expect(embedSnippet('https://x/e?s=a&b')).toContain('src="https://x/e?s=a&amp;b"');

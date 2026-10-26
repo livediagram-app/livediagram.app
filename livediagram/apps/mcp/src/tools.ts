@@ -41,7 +41,7 @@ import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
+import { deleteRefusal, fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -523,19 +523,4 @@ export function registerTools(server: McpServer, env: Env): void {
       throw err;
     }
   });
-}
-
-// Why a delete was refused, by what was deleted and the status.
-export function deleteRefusal(status: number, tab: boolean): string {
-  if (status === 410) return 'It is already in the Trash (see list_trash).';
-  if (status === 403) return 'You may view this document but not change it.';
-  if (status === 404)
-    return tab
-      ? 'No such tab in this document: read_document lists its tabs.'
-      : 'No such document, or it is not yours: find_documents lists them.';
-  if (tab && status === 409)
-    return 'A document must keep at least one tab: you cannot delete the last one.';
-  return tab
-    ? `The api refused it (${status}): check the document and tab ids.`
-    : 'Check the document id and that you own it.';
 }

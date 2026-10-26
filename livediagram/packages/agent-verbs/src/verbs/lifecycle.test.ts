@@ -169,6 +169,16 @@ describe('document rename, share, rm and restore', () => {
     expect(documentShare.quiet!(out)).toEqual([out.url]);
   });
 
+  // docs/specs/015-api/blueprints/cli.md: `document share` takes share_document's values and defaults.
+  it('makes a participate link by default, as share_document does', async () => {
+    const { seen, api } = docRoutes(() =>
+      Response.json({ link: { code: 'abc', role: 'participate', expiresAt: null } }),
+    );
+    await documentShare.run!(contextOf(api), documentShare.input.parse({ doc: 'Auth flow' }));
+    expect(seen[0]).toMatchObject({ body: { role: 'participate', expiry: 'never' } });
+    expect(documentShare.description).toContain('participate (default)');
+  });
+
   it('moves a document to the Trash, naming how to restore it; a refusal throws', async () => {
     const { seen, api } = docRoutes(() => undefined);
     const out = await documentRm.run!(contextOf(api), { doc: 'Auth flow' });

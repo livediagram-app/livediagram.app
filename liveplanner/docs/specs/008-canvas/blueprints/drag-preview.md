@@ -5,18 +5,18 @@ drags for collaborators.
 
 ## Files
 
-| File                                                  | Role                                                                           |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| File                                                    | Role                                                                           |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `apps/editor/lib/drag-preview.ts`                       | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
 | `apps/editor/hooks/canvas/useEditorDrag.ts`             | Writes ticks to the preview; reads through the virtual tab; commits on release |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx` | Lists the elements; renders for a preview only when it adds or removes some    |
 | `apps/editor/hooks/canvas/useLayerDragPreview.ts`       | The layer's preview store: one entry per previewed element and affected arrow  |
 | `apps/editor/components/canvas/CanvasElementList.tsx`   | Lists a `PreviewedElement` per element, in paint order                         |
-| `apps/editor/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the project                      |
+| `apps/editor/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the project                       |
 | `apps/editor/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
 | `apps/editor/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts        |
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
-| `packages/api-schema/src/room-messages.ts`            | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
+| `packages/api-schema/src/room-messages.ts`              | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
 | `apps/editor/hooks/collab/useDragPreviewBroadcast.ts`   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
 | `apps/editor/hooks/collab/peer-drag-previews.ts`        | Receives peers' previews: role check, expiry, cleared by real ops              |
 
@@ -223,9 +223,9 @@ type DragPreviewOp =
 
 | Spec rule                                             | Test                                                                                                                                                                                |
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A gesture draws from a preview, not the project      | `useEditorDrag.preview.test.tsx`: no `deps.tick` during a move; overlay set                                                                                                         |
+| A gesture draws from a preview, not the project       | `useEditorDrag.preview.test.tsx`: no `deps.tick` during a move; overlay set                                                                                                         |
 | One change on release                                 | Same: one `markCheckpoint`, one `deps.tick`, one log schedule; result equals today's                                                                                                |
-| A cancel writes nothing                               | Same: Escape and pointercancel leave the project untouched, overlay cleared                                                                                                        |
+| A cancel writes nothing                               | Same: Escape and pointercancel leave the project untouched, overlay cleared                                                                                                         |
 | Drag logic reads the gesture's own result             | Existing `useEditorDrag.*` suites reading the board as drawn; the drag e2e specs                                                                                                    |
 | In a real browser                                     | `e2e/drag-preview.spec.ts`: drawn mid-drag, nothing saved, saved on release; Escape; one undo                                                                                       |
 | Overlay derivation and application                    | `drag-preview.test.ts`                                                                                                                                                              |

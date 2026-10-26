@@ -13,8 +13,15 @@ const MAX_ELEMENT_ID_LEN = 128;
 
 type StoredSelection = { tabId: string | null; elementIds: string[] };
 
-// What the room knows about one live session, off its attachment.
-export type LiveSession = { name: string; color: string; personTag: string | null };
+// What the room knows about one live session, off its attachment. `holds`: the session may change the
+// document's content (a Participant or an Editor), so what it selects is held against agents; a Viewer's
+// selection never is (docs/specs/024-agents/agent-changesets.md "Held elements").
+export type LiveSession = {
+  name: string;
+  color: string;
+  personTag: string | null;
+  holds: boolean;
+};
 
 type SelectionStorage = {
   get<T>(key: string): Promise<T | undefined>;
@@ -58,7 +65,8 @@ export class RoomSelectionStore {
     await this.storage.delete(KEY_PREFIX + presenceId);
   }
 
-  // Every live session's selection on `tabId`, whatever its role. `mine` when the session's
+  // Every live session's selection on `tabId`, from the sessions that hold (a Participant or an Editor) and the
+  // agent owner's own. `mine` when the session's
   // person tag equals `person`, both non-empty (CS39).
   async read(
     tabId: string,
@@ -73,13 +81,16 @@ export class RoomSelectionStore {
         await this.storage.delete(key);
         continue;
       }
+      const mine = person !== '' && session.personTag !== null && session.personTag === person;
+      // The owner's own selection is still answered (it is what the `selected` selector reads), held or not.
+      if (!session.holds && !mine) continue;
       const selection = value as StoredSelection;
       if (selection.tabId !== null && selection.tabId !== tabId) continue;
       out.push({
         elementIds: selection.elementIds,
         name: session.name,
         color: session.color,
-        mine: person !== '' && session.personTag !== null && session.personTag === person,
+        mine,
       });
     }
     return out;

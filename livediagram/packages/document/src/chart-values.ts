@@ -61,25 +61,37 @@ export function barValueLabels(
   // Each column's share of the baseline, less a little air between neighbours' names.
   const slot =
     (marks.baseline.x2 - marks.baseline.x1) / Math.max(1, marks.bars.length) - CATEGORY_AIR;
+  // A column's name sits a row under the plot; when a column hangs to the foot, its value takes that row and the
+  // names go one row lower.
+  const nameY = marks.floor + GAP + fontPx + (data.some((d) => d.value < 0) ? GAP + fontPx : 0);
   marks.bars.forEach((bar, i) => {
     const d = data[i];
     if (!d) return;
+    // A value below zero reads past its column's foot (left of its bar), as a positive one reads past its end
+    // (docs/specs/009-elements/pie-chart.md "Below zero on a column or bar chart").
+    const below = d.value < 0;
     out.push(
       horizontal
         ? {
-            x: bar.tip.x + GAP,
+            x: below ? bar.tip.x - GAP : bar.tip.x + GAP,
             y: bar.tip.y + fontPx * 0.35,
             text: shortNumber(d.value),
-            anchor: 'start',
+            anchor: below ? 'end' : 'start',
           }
-        : { x: bar.tip.x, y: bar.tip.y - GAP, text: shortNumber(d.value), anchor: 'middle' },
+        : {
+            x: bar.tip.x,
+            y: below ? bar.tip.y + GAP + fontPx : bar.tip.y - GAP,
+            text: shortNumber(d.value),
+            anchor: 'middle',
+          },
     );
-    // A column names itself under the baseline, so the legend can go; cut to its slot.
+    // A column names itself under the plot, so the legend can go; cut to its slot. Under the plot's foot, not the
+    // zero line, so a hanging column never runs through its name.
     const name = horizontal ? null : fitCategory(d.label, slot, fontPx);
     if (name !== null)
       out.push({
         x: bar.tip.x,
-        y: marks.baseline.y1 + GAP + fontPx,
+        y: nameY,
         text: name,
         anchor: 'middle',
         category: true,

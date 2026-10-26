@@ -18,6 +18,7 @@ import {
   mergeSheetChange,
   sheetFromJson,
   sheetToJson,
+  shrinkReadersOf,
   splitWrite,
   undoReadsNow,
   uniqueSheetTitle,
@@ -386,9 +387,11 @@ export class SheetStore {
   // A large write goes in parts of at most one write's size; each part is checked against the sheet as the parts
   // before it leave it, so the per-write cap never refuses what the sheet allows.
   writeAll(
-    edits: readonly { sheetId: string; write: SheetWrite }[],
+    asMadeEdits: readonly { sheetId: string; write: SheetWrite }[],
     opts: WriteOpts = {},
   ): SheetRejection | null {
+    // An undo or redo replays writes that already carry their readers' rewrites.
+    const edits = opts.undo ? asMadeEdits : this.withReaders(asMadeEdits);
     const now = Date.now();
     const states = new Map<string, Sheet>();
     const plan: { sheetId: string; write: SheetWrite; parts: SheetWrite[] }[] = [];
@@ -470,6 +473,28 @@ export class SheetStore {
     }
     this.notify();
     return null;
+  }
+
+  // Rows or columns deleted from a sheet shrink the ranges into it held by the tab's other loaded sheets (formulas.md
+  // "Other sheets"), in the same change, so one undo puts them back; the api shrinks them too, for writers that are not
+  // an editor (and finds nothing left to do after this). Linear in the tab's formula references.
+  private withReaders(
+    edits: readonly { sheetId: string; write: SheetWrite }[],
+  ): { sheetId: string; write: SheetWrite }[] {
+    const out = [...edits];
+    const named = new Set(edits.map((e) => e.sheetId));
+    for (const { sheetId, write } of edits) {
+      if (write.kind !== 'layout') continue;
+      if (!write.changes.some((c) => c.k === 'deleteRows' || c.k === 'deleteCols')) continue;
+      const target = this.entries.get(sheetId)?.view;
+      if (!target) continue;
+      for (const [id, entry] of this.entries) {
+        if (named.has(id) || entry.view.tabId !== target.tabId) continue;
+        const cells = shrinkReadersOf(sheetId, target.layout, write.changes, entry.view.cells);
+        if (cells.length) out.push({ sheetId: id, write: { kind: 'cells', cells } });
+      }
+    }
+    return out;
   }
 
   // The undo of a change, as it lands on the sheets now: a deletion's undo puts back what it took into the layout

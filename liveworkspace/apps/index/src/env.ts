@@ -30,6 +30,10 @@ export interface Env {
   DRIVE?: Fetcher;
   // The migration's handoff (migration-handoff.ts), per person. Absent (tests, local), not limited.
   MIGRATION_LIMITER?: RateLimit;
+  // Share-password guesses (share-guesses.ts): per visitor's network, and per item whatever the network. Absent
+  // (tests, local), not limited.
+  SHARE_GUESS_VISITOR_LIMITER?: RateLimit;
+  SHARE_GUESS_ITEM_LIMITER?: RateLimit;
   // Where each app's internal routes live (copy, purge, revoke).
   APP_ORIGIN_LIVEDIAGRAM?: string;
   APP_ORIGIN_LIVEPLANNER?: string;

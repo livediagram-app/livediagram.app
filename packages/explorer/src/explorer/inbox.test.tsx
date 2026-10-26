@@ -440,6 +440,42 @@ describe('on a phone', () => {
     back.mockRestore();
   });
 
+  it('leaves no extra history entry when the open row disappears', async () => {
+    asPhone();
+    const now = vi.spyOn(Date, 'now');
+    now.mockReturnValue(1_000_000);
+    // A clean entry: earlier tests' Back was a stand-in that left theirs on top.
+    window.history.replaceState(null, '');
+    const push = vi.spyOn(window.history, 'pushState');
+    const replace = vi.spyOn(window.history, 'replaceState');
+    const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+    const index = createFakeIndex();
+    index.inbox.threads.push(thread());
+    index.inbox.forms.push(form());
+    renderInbox(index);
+    await screen.findAllByRole('option');
+    fireEvent.click(screen.getByRole('option', { name: /Budget/ }));
+    expect(push).toHaveBeenCalledTimes(1);
+
+    // The row is gone from the index's next read (done elsewhere): the pane closes and steps back off its entry.
+    index.inbox.threads.length = 0;
+    now.mockReturnValue(1_100_000);
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    await waitFor(() => expect(screen.getByRole('listbox')).toBeTruthy());
+    expect(back).toHaveBeenCalledTimes(1);
+
+    // Opening another row while that step back is on its way takes the entry over rather than stacking one.
+    fireEvent.click(screen.getByRole('option', { name: /Bug Report/ }));
+    expect(push).toHaveBeenCalledTimes(1);
+    expect(replace).toHaveBeenCalledTimes(1);
+    now.mockRestore();
+    push.mockRestore();
+    replace.mockRestore();
+    back.mockRestore();
+  });
+
   it('opens the pane from the keyboard too', async () => {
     asPhone();
     vi.spyOn(window.history, 'back').mockImplementation(() => {});

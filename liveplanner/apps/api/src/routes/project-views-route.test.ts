@@ -471,5 +471,4 @@ describe('views behind the read gate (E22, E23, E25)', () => {
     ]);
     expect(logged('[views] overview')).toMatchObject({ batches: 1 });
   });
-
 });

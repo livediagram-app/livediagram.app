@@ -74,7 +74,7 @@ export function buildMostUsedQuery(
     'i.trashed_at IS NULL',
     // Jump Back In leaves out what the person hid from Recent, as Recent does.
     'COALESCE(o.hidden, 0) = 0',
-    `(i.owner_id = ? OR i.scope ${IN_JSON} OR EXISTS (SELECT 1 FROM shared_with sw2 JOIN share_links sl2
+    `((i.owner_id = ? AND i.team_id IS NULL) OR i.scope ${IN_JSON} OR EXISTS (SELECT 1 FROM shared_with sw2 JOIN share_links sl2
       ON sl2.code = sw2.share_code AND sl2.item_id = sw2.item_id
       WHERE sw2.person_id = ? AND sw2.item_id = i.id AND ${LIVE_LINK('sl2')}))`,
   ];
@@ -176,7 +176,7 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
   // Reached as owner, through the person's own scopes, or through a live link they opened.
   const reachable = () => {
     where.push(
-      `(i.owner_id = ? OR i.scope ${IN_JSON} OR EXISTS (SELECT 1 FROM shared_with sw2 JOIN share_links sl2
+      `((i.owner_id = ? AND i.team_id IS NULL) OR i.scope ${IN_JSON} OR EXISTS (SELECT 1 FROM shared_with sw2 JOIN share_links sl2
         ON sl2.code = sw2.share_code AND sl2.item_id = sw2.item_id
         WHERE sw2.person_id = ? AND sw2.item_id = i.id AND ${LIVE_LINK('sl2')}))`,
     );

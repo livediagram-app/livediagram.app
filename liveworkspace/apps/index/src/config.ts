@@ -44,3 +44,6 @@ export const INBOX_LIMIT_DEFAULT = 100;
 export const OPEN_MEMORY_MAX = 5_000;
 // A per-isolate memory of checked share passwords (PBKDF2 is slow on purpose). Bounded.
 export const PASSWORD_MEMORY_MAX = 1_000;
+// How long a visitor refused for guessing a share password too often is told to wait (Retry-After): the period of
+// SHARE_GUESS_VISITOR_LIMITER and SHARE_GUESS_ITEM_LIMITER (wrangler.toml), whose own limits are 10 and 30 a minute.
+export const SHARE_GUESS_RETRY_AFTER_S = 60;

@@ -17,14 +17,17 @@ import { GUEST_ID, USER_ID } from './ids.ts';
 const LEGACY_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 // An HMAC-SHA-256 in base64url without padding: 32 bytes, 43 characters.
 const SIGNATURE = /^[A-Za-z0-9_-]{43}$/;
+// How long a claim holds the row while it merges: far past the merge's own 5-second timeout, so a live claim is never
+// overtaken, and short enough that one which died midway (its Worker gone) frees the id within the minute.
+export const LEGACY_CLAIM_HOLD_MS = 60_000;
 
 export type ClaimOutcome =
   | { status: 200; body: LegacyGuestClaimAnswer }
-  | { status: 400 | 403 | 502; body: { error: string } };
+  | { status: 400 | 403 | 502 | 503; body: { error: string } };
 
 type LegacyGuestRow = { firstSeenAt: number; claimedAt: number | null; claimedBy: string | null };
 
-const refuse = (status: 400 | 403 | 502, error: string): ClaimOutcome => ({
+const refuse = (status: 400 | 403 | 502 | 503, error: string): ClaimOutcome => ({
   status,
   body: { error },
 });
@@ -64,7 +67,8 @@ export function legacyClaimConfig(env: Env, secret: string): ClaimConfig {
   return { db: env.AUTH_DB, secret, merge: guestMergeConfig(env) };
 }
 
-// One claim. Possession is checked before anything is moved; the row is stamped only once the index has merged.
+// One claim. Possession is checked before anything is moved; the row is held while the merge runs, so two claims at
+// once can't both merge, and stamped only once the index has merged.
 export async function claimLegacyGuest(
   config: ClaimConfig,
   body: Record<string, unknown>,
@@ -105,15 +109,47 @@ export async function claimLegacyGuest(
       : { status: 200, body: { merged: false, reason: 'claimed' } };
   }
 
+  // Hold the row before anything moves, in one conditional update: of two claims at once only one merges, and the
+  // other is told to come back (503, which livediagram's editor takes as "try on a later load"). A hold that lapsed
+  // (its claim died midway) or is the caller's own (a retry) is taken over.
+  const now = config.now ?? Date.now();
+  const held = await config.db
+    .prepare(
+      `UPDATE legacy_guest SET claimingBy = ?, claimingUntil = ?
+       WHERE id = ? AND claimedAt IS NULL
+         AND (claimingUntil IS NULL OR claimingUntil <= ? OR claimingBy = ?)`,
+    )
+    .bind(into, now + LEGACY_CLAIM_HOLD_MS, guestId, now, into)
+    .run();
+  if ((held.meta.changes ?? 0) === 0) {
+    const current = await config.db
+      .prepare('SELECT claimedAt, claimedBy FROM legacy_guest WHERE id = ?')
+      .bind(guestId)
+      .first<Pick<LegacyGuestRow, 'claimedAt' | 'claimedBy'>>();
+    if (current && current.claimedAt !== null) {
+      return current.claimedBy === into
+        ? { status: 200, body: { merged: true } }
+        : { status: 200, body: { merged: false, reason: 'claimed' } };
+    }
+    return refuse(503, 'claim_in_progress');
+  }
+
   if (!(await mergeGuestInto(config.merge, guestId, into, { legacy: true }))) {
+    // Let the next try in at once rather than wait out the hold.
+    await config.db
+      .prepare(
+        'UPDATE legacy_guest SET claimingBy = NULL, claimingUntil = NULL WHERE id = ? AND claimingBy = ?',
+      )
+      .bind(guestId, into)
+      .run();
     return refuse(502, 'merge_failed');
   }
-  const now = config.now ?? Date.now();
   const stamped = await config.db
     .prepare(
-      'UPDATE legacy_guest SET claimedAt = ?, claimedBy = ? WHERE id = ? AND claimedAt IS NULL',
+      `UPDATE legacy_guest SET claimedAt = ?, claimedBy = ?, claimingBy = NULL, claimingUntil = NULL
+       WHERE id = ? AND claimedAt IS NULL`,
     )
-    .bind(now, into, guestId)
+    .bind(config.now ?? Date.now(), into, guestId)
     .run();
   if ((stamped.meta.changes ?? 0) === 0) {
     // Two claims at once: the other stamped first. Its merge took the items; ours found what was left, if anything.

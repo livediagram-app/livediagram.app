@@ -172,6 +172,8 @@ source scanner already skips it), built by `pnpm build:signed-in` with
 spec puts a session in `localStorage` (`installSession` in `e2e/signed-in/session.ts`) before the
 page loads, so a chosen user (name, email) is signed in with no accounts Worker, secret or network.
 
+The Explorer at `/explorer` is liveworkspace's site, a separate export, so it needs the same switch: `pnpm --filter @liveworkspace/site build:e2e` builds it into `liveworkspace/apps/site/.next/out-e2e/` (never `out/`) with `NEXT_PUBLIC_E2E_AUTH=1`, and on the app's address it then reads the spec's session (`<app>:e2e:session`, the same key) as the account (`e2eAccount`, in the site's Explorer session module) instead of asking the app's API for a cookie the stack never sets. The signed-in project serves it with `E2E_WORKSPACE_SITE_OUT=.next/out-e2e`; unbuilt, `/explorer` answers the logged 404 as before. A production build inlines the flag as false and never reads the key.
+
 `pnpm --filter @liveplanner/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
 (live `:3215`, api `:8225`, marketing `:3216`), so a guest stack already up on `:3202` is never

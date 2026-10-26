@@ -9,9 +9,14 @@ import {
 } from './fixtures';
 
 // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md), end to end: the owner scopes a
-// link to one tab in the Share dialog; a visitor on it sees that tab, the rest
+// pass to one tab in the Share dialog; a visitor on it sees that tab, the rest
 // as "Not shared" pills, and not one byte of the other tabs in any response or
 // realtime frame; rescoping to All tabs reloads the visitor into every tab.
+//
+// The Share dialog is the shared one, `@liveworkspace/explorer`'s ShareDialog (its roles and labels are pinned by
+// packages/explorer/src/dialogs/ShareDialog.test.tsx): the composer's "Tabs this link opens" select and Create
+// Pass, then each pass in the "Passes" region (an `li[data-share-link]`) with its "<Level> pass link" field and
+// its "Tabs this pass opens" select, whose every-tab option reads "All tabs".
 
 const SECRET = 'TOP SECRET PRICING';
 
@@ -48,17 +53,20 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   await adoptGuest(page, owner);
   await page.addInitScript(() => localStorage.setItem('livedocuments:v2:name-confirmed', '1'));
   await page.goto(`/document/${liveDoc}`);
-  await page.getByRole('button', { name: /^Share$/ }).click();
-  const dialog = page.getByRole('dialog', { name: /^Share / });
+  await page.getByRole('button', { name: /^Shared?$/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Share Launch document' });
   await dialog
-    .getByRole('region', { name: 'New link' })
-    .getByRole('combobox', { name: 'Opens' })
+    .getByRole('region', { name: 'Issue a pass' })
+    .getByRole('combobox', { name: 'Tabs this link opens' })
     .selectOption({ label: 'Roadmap' });
-  await dialog.getByRole('button', { name: /create/i }).click();
-  const link = dialog.getByRole('region', { name: 'Links' }).locator('[data-share-link]').first();
-  const scopeSelect = link.getByRole('combobox', { name: 'Opens' });
+  await dialog.getByRole('button', { name: 'Create Pass' }).click();
+  const link = dialog
+    .getByRole('region', { name: /^Passes/ })
+    .locator('[data-share-link]')
+    .first();
+  const scopeSelect = link.getByRole('combobox', { name: 'Tabs this pass opens' });
   await expect(scopeSelect).toHaveValue(roadmap);
-  const url = (await link.locator('span.font-mono').innerText()).trim();
+  const url = (await link.getByRole('textbox', { name: /pass link$/ }).inputValue()).trim();
 
   // A visitor opens it, with every response and frame watched.
   const visitorContext = await browser.newContext();
@@ -90,7 +98,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   expect(leaks).toEqual([]);
 
   // Widening the link reloads the visitor into every tab.
-  await scopeSelect.selectOption({ label: 'Every tab' });
+  await scopeSelect.selectOption({ label: 'All tabs' });
   await expect(visitor.getByRole('button', { name: /Pricing/ })).toBeVisible({ timeout: 15_000 });
   await expect(visitor.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
 

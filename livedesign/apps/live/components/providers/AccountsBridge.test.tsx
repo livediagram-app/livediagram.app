@@ -13,6 +13,9 @@ import type { DeferredAuthState } from '@liveworkspace/workbench/components/prov
 vi.mock('@/lib/recent-designs-snapshot', () => ({ forgetRecentDesigns: vi.fn(async () => {}) }));
 
 const { AccountsBridge, namesOf, resetAccountsSessionForTests } = await import('./AccountsBridge');
+const { notePictureSettingSaved, ownPicture, resetOwnPicture, tokenPredatesPictureSetting } =
+  await import('@/lib/own-picture');
+const { announceProfileSaved } = await import('@liveworkspace/settings-ui/profile-events');
 
 const USER = { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace' };
 const fetchMock = vi.fn<typeof fetch>();
@@ -48,6 +51,58 @@ async function mount(): Promise<DeferredAuthState> {
   await waitFor(() => expect(onState).toHaveBeenCalled());
   return onState.mock.lastCall![0];
 }
+
+describe('AccountsBridge and Show My Google Picture', () => {
+  const PICTURE = 'https://lh3.googleusercontent.com/a/me';
+  const session = (token: string, tokenAgeMs: number, pictureHidden: boolean) =>
+    new Response(
+      JSON.stringify({
+        signedIn: true,
+        accessToken: token,
+        expiresAt: Date.now() + 3_600_000,
+        tokenAgeMs,
+        user: { ...USER, picture: PICTURE, pictureHidden },
+      }),
+      { status: 200 },
+    );
+  afterEach(() => {
+    localStorage.clear();
+    resetOwnPicture();
+  });
+
+  // docs/specs/014-identity/profile-and-email-notifications.md "Avatars": another tab hid the picture 5 s ago, and
+  // this tab's refresh replays a response minted 20 s ago, before the save.
+  it('refreshes again when the token predates the last save, so a hidden picture stays hidden', async () => {
+    notePictureSettingSaved(Date.now() - 5_000);
+    fetchMock
+      .mockResolvedValueOnce(session('replayed', 20_000, false))
+      .mockResolvedValueOnce(session('fresh', 0, true));
+    const state = await mount();
+    expect(await state.getToken()).toBe('fresh');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(ownPicture().shown).toBe(false);
+  });
+
+  it('asks once when the token is newer than the save', async () => {
+    notePictureSettingSaved(Date.now() - 30_000);
+    fetchMock.mockResolvedValueOnce(session('fresh', 1_000, true));
+    const state = await mount();
+    expect(await state.getToken()).toBe('fresh');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('notes a Show My Google Picture save made anywhere on the page', async () => {
+    fetchMock.mockResolvedValueOnce(session('fresh', 0, true));
+    await mount();
+    announceProfileSaved({
+      patch: { showPicture: false },
+      name: null,
+      color: null,
+      showPicture: false,
+    });
+    expect(tokenPredatesPictureSetting(5_000)).toBe(true);
+  });
+});
 
 describe('AccountsBridge', () => {
   it('settles a browser without the hint as a guest, asking the api nothing', async () => {

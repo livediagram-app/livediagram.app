@@ -25,6 +25,10 @@ export type ItemListState = {
   hasMore: boolean;
   loadMore: () => void;
   retry: () => void;
+  // The next page's read failed: the list is not complete, and only a press of Try again (`retryMore`) asks
+  // for that page again. `loadMore` does nothing meanwhile, so a scroll never turns into a retry loop.
+  moreFailed: boolean;
+  retryMore: () => void;
 };
 
 type Loaded = {
@@ -33,6 +37,7 @@ type Loaded = {
   cursor: string | null;
   error: boolean;
   done: boolean;
+  moreError: boolean;
 };
 
 export function useItemList({
@@ -63,26 +68,39 @@ export function useItemList({
   const [loadingMore, setLoadingMore] = useState(false);
   const loadRef = useRef(load);
   loadRef.current = load;
+  const overlayRef = useRef(overlay);
+  overlayRef.current = overlay;
   const more = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
     more.current?.abort();
+    const startedAt = overlayRef.current.stamp();
     loadRef
       .current(null, controller.signal)
-      .then((page) =>
+      .then((page) => {
+        // What the index says now retires the person's patches it already took.
+        overlayRef.current.observe(page.items, startedAt);
         setLoaded({
           key: fullKey,
           items: page.items,
           cursor: page.nextCursor,
           error: false,
           done: page.nextCursor === null,
-        }),
-      )
+          moreError: false,
+        });
+      })
       .catch((error: unknown) => {
         if (isAbort(error)) return;
-        setLoaded({ key: fullKey, items: [], cursor: null, error: true, done: true });
+        setLoaded({
+          key: fullKey,
+          items: [],
+          cursor: null,
+          error: true,
+          done: true,
+          moreError: false,
+        });
       });
     return () => controller.abort();
   }, [fullKey, enabled]);
@@ -91,34 +109,53 @@ export function useItemList({
 
   const current = loaded?.key === fullKey ? loaded : null;
 
-  const loadMore = useCallback(() => {
-    if (!current || current.done || current.error || more.current) return;
+  const fetchMore = useCallback((from: Loaded) => {
     const controller = new AbortController();
     more.current = controller;
     setLoadingMore(true);
+    const startedAt = overlayRef.current.stamp();
     loadRef
-      .current(current.cursor, controller.signal)
+      .current(from.cursor, controller.signal)
       .then((page) => {
+        overlayRef.current.observe(page.items, startedAt);
         setLoaded((prev) =>
-          prev && prev.key === current.key
+          prev && prev.key === from.key
             ? {
                 ...prev,
                 // A row already listed (it changed while paging) is not listed twice.
                 items: appendNew(prev.items, page.items),
                 cursor: page.nextCursor,
                 done: page.nextCursor === null,
+                moreError: false,
               }
             : prev,
         );
       })
       .catch((error: unknown) => {
-        if (!isAbort(error)) setLoaded((prev) => (prev ? { ...prev, done: true } : prev));
+        // The page is still there to read: the list stays incomplete, with Try again.
+        if (!isAbort(error)) {
+          setLoaded((prev) =>
+            prev && prev.key === from.key ? { ...prev, moreError: true } : prev,
+          );
+        }
       })
       .finally(() => {
         if (more.current === controller) more.current = null;
         setLoadingMore(false);
       });
-  }, [current]);
+  }, []);
+
+  const loadMore = useCallback(() => {
+    if (!current || current.done || current.error || current.moreError || more.current) return;
+    fetchMore(current);
+  }, [current, fetchMore]);
+
+  // One read of the failed page per press.
+  const retryMore = useCallback(() => {
+    if (!current || !current.moreError || more.current) return;
+    setLoaded((prev) => (prev && prev.key === current.key ? { ...prev, moreError: false } : prev));
+    fetchMore(current);
+  }, [current, fetchMore]);
 
   const version = useSyncExternalStore(overlay.subscribe, overlay.version, overlay.version);
   const raw = current?.items;
@@ -147,6 +184,8 @@ export function useItemList({
     hasMore: current ? !current.done : false,
     loadMore,
     retry,
+    moreFailed: current?.moreError ?? false,
+    retryMore,
   };
 }
 

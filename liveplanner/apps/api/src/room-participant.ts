@@ -167,8 +167,7 @@ export class RoomParticipantWrites {
         }),
       );
       if (result.ok) console.debug('[participant-write] answers', { projectId, tabId, ok: true });
-      else
-        console.error('[participant-write] failed', { projectId, tabId, status: result.status });
+      else console.error('[participant-write] failed', { projectId, tabId, status: result.status });
     } catch (error) {
       console.error('[participant-write] failed', { projectId, tabId, error: String(error) });
     }

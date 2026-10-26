@@ -5,7 +5,7 @@
 import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
 import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
-import { isId } from './codec';
+import { isId, isPartId } from './codec';
 import { handleDriveFlag, sendDriveSignals } from './drive';
 import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
@@ -51,7 +51,7 @@ export async function handleApp(
     segments.length === 7 &&
     segments[3] === 'forms' &&
     segments[5] === 'seen' &&
-    isId(segments[4]) &&
+    isPartId(segments[4]) &&
     isId(segments[6]);
   // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/forms/:tabId
   if (segments[1] !== 'items' || !isId(segments[2])) return notFound();
@@ -102,11 +102,11 @@ export async function handleApp(
     return pushAppEvents(env, itemId, body);
   }
 
-  if (segments.length === 5 && segments[3] === 'collab' && isId(segments[4])) {
+  if (segments.length === 5 && segments[3] === 'collab' && isPartId(segments[4])) {
     return pushCollab(request, env, app, itemId, segments[4]);
   }
   // /app/items/:id/forms/:tabId and .../seen: the Inbox's Form Responses (collab-push.ts).
-  if (segments[3] === 'forms' && isId(segments[4])) {
+  if (segments[3] === 'forms' && isPartId(segments[4])) {
     if (segments.length === 5) return pushForm(request, env, app, itemId, segments[4]);
     if (segments.length === 6 && segments[5] === 'seen') {
       return pushFormSeen(request, env, itemId, segments[4]);

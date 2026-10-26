@@ -66,6 +66,17 @@ describe('tabElementsIssue', () => {
     );
   });
 
+  // docs/specs/009-elements/badge.md "The cap holds for agents".
+  it('names a badge or step whose label is over its cap, and the cap', () => {
+    expect(tabElementsIssue([box({ id: 'b', shape: 'badge', label: 'z'.repeat(25) })])).toBe(
+      'element "b": a badge\'s label is at most 24 characters.',
+    );
+    expect(tabElementsIssue([box({ id: 's', shape: 'step', label: '1000' })])).toBe(
+      'element "s": a step\'s label is at most 3 characters.',
+    );
+    expect(tabElementsIssue([box({ id: 's', shape: 'step', label: '100' })])).toBeNull();
+  });
+
   it('names an id given twice', () => {
     expect(tabElementsIssue([box({ id: 'svc' }), box({ id: 'svc' })])).toBe(
       'element "svc": the id is used twice; give each element its own.',

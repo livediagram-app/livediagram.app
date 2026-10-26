@@ -22,6 +22,7 @@ import {
   type App,
 } from '@liveworkspace/index-client';
 import { isId, isShareCode } from './codec';
+import { guessVisitorOf } from './share-guesses';
 import { accountsUrl, appKey, audiences, type Env } from './env';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
@@ -37,7 +38,8 @@ export type Person = {
   drive?: true;
 };
 
-export type ShareCredentials = { code: string; password: string | null };
+// `visitor`: the network a password guess is counted against (share-guesses.ts), null when the request can't say.
+export type ShareCredentials = { code: string; password: string | null; visitor: string | null };
 
 export type Caller = { person: Person | null; share: ShareCredentials | null };
 
@@ -82,7 +84,7 @@ export function shareOf(request: Request): ShareCredentials | null {
   const code = request.headers.get(SHARE_CODE_HEADER);
   if (!isShareCode(code)) return null;
   const password = request.headers.get(SHARE_PASSWORD_HEADER);
-  return { code: code.toUpperCase(), password: password || null };
+  return { code: code.toUpperCase(), password: password || null, visitor: guessVisitorOf(request) };
 }
 
 // What the Drive mirror's service names itself in X-Index-App when it acts for a person.

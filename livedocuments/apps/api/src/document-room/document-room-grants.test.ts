@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   ACCESS_CHANGED_CLOSE,
   GRANT_LAPSED_CLOSE,
+  ROOM_MAX_CONNECTIONS,
+  ROOM_FULL_CLOSE,
   ROOM_GRANT_ASK_BEFORE_MS,
 } from '@livedocuments/api-schema';
 import type { GrantClaims } from '@liveworkspace/index-client';
@@ -23,6 +25,7 @@ type FakeSocket = {
   serializeAttachment: (value: unknown) => void;
   deserializeAttachment: () => unknown;
   close: (code: number, reason: string) => void;
+  accept: () => void;
 };
 
 function room() {
@@ -63,6 +66,7 @@ function room() {
       serializeAttachment: (value) => void (ws.attachment = value),
       deserializeAttachment: () => ws.attachment,
       close: (code, reason) => void (ws.closed = { code, reason }),
+      accept: () => {},
     };
     document.acceptSession(
       ws as unknown as WebSocket,
@@ -176,11 +180,13 @@ describe('a session grant', () => {
 });
 
 describe('a room full of sessions', () => {
-  // The alarm walks every socket, and each `grant` frame is checked: both stay well inside a frame's budget at
-  // 1,000 sessions (measured ~1-3 ms per sweep, ~40-180 ms for 1,000 renewals).
-  it('asks, renews and lapses 1,000 sessions within budget', async () => {
+  // The alarm walks every socket, and each `grant` frame is checked: both stay well inside a frame's budget for a
+  // full room (measured at 1,000 sessions before the cap: ~1-3 ms per sweep, ~40-180 ms for 1,000 renewals).
+  it('asks, renews and lapses a full room within budget', async () => {
     const { document, join } = room();
-    const sockets = Array.from({ length: 1000 }, () => join({ expMs: T0 + 600_000 }));
+    const sockets = Array.from({ length: ROOM_MAX_CONNECTIONS }, () =>
+      join({ expMs: T0 + 600_000 }),
+    );
     vi.setSystemTime(T0 + 590_000);
     let t = performance.now();
     await document.alarm();
@@ -197,6 +203,24 @@ describe('a room full of sessions', () => {
     await document.alarm();
     expect(performance.now() - t).toBeLessThan(250);
     expect(sockets.every((ws) => ws.closed?.code === GRANT_LAPSED_CLOSE)).toBe(true);
+  });
+
+  // docs/specs/015-api/api.md "Room size": one more than ROOM_MAX_CONNECTIONS is turned away with a close code
+  // the editor can show, and a place that frees up is taken again.
+  it('turns connection 101 away as full, and admits again once someone leaves', () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { join } = room();
+    const sockets = Array.from({ length: ROOM_MAX_CONNECTIONS }, () =>
+      join({ expMs: T0 + 600_000 }),
+    );
+    expect(sockets.every((ws) => ws.closed === null)).toBe(true);
+
+    const extra = join({ expMs: T0 + 600_000 });
+    expect(extra.closed).toEqual({ code: ROOM_FULL_CLOSE, reason: 'room-full' });
+    expect(info).toHaveBeenCalledWith('[room] full', { connections: ROOM_MAX_CONNECTIONS });
+
+    sockets[0]!.close(1000, 'bye');
+    expect(join({ expMs: T0 + 600_000 }).closed).toBeNull();
   });
 });
 

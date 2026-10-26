@@ -365,6 +365,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../../../packages/model-core
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -1485,6 +1488,9 @@ importers:
       '@liveworkspace/migration':
         specifier: workspace:*
         version: link:../../../packages/migration
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../../../packages/model-core
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -2610,6 +2616,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../../../packages/model-core
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -3709,6 +3718,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../../../packages/model-core
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -4802,6 +4814,9 @@ importers:
 
   liveworkspace/apps/index:
     dependencies:
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -5146,6 +5161,9 @@ importers:
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/api-schema
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
@@ -5826,6 +5844,9 @@ importers:
 
   packages/index-client:
     dependencies:
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../auth-client
       jose:
         specifier: ^6.2.12
         version: 6.2.13

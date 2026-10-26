@@ -28,7 +28,7 @@ describe('cell colours', () => {
     expect(contrastRatio(lifted, '#111827')).toBeGreaterThanOrEqual(4.5);
     const deepened = readableInk('#e2e8f0', '#ecfdf5');
     expect(contrastRatio(deepened, '#ecfdf5')).toBeGreaterThanOrEqual(4.5);
-    expect(readableInk('red', '#ffffff')).toBe('red');
+    expect(readableInk('rgb(255, 0, 0)', '#ffffff')).toBe('rgb(255, 0, 0)');
   });
 
   it('resolves a cell: its fill for the surface and an ink readable on it', () => {

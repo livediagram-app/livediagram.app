@@ -9,7 +9,6 @@ import {
   TAB_SAVE_CAS_ATTEMPTS,
   parseChangesetSeen,
 } from '@liveplanner/api-schema';
-import { tabShowsEveryCard } from '@liveplanner/items';
 import { isValidTab, migrateIncomingTab, type Tab } from '@liveplanner/project';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { newCommentsBy, rewriteCommentAuthors } from '../comments';
@@ -19,10 +18,11 @@ import { emailEnabled } from '../email/client';
 import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
-import { badRequest, conflict, forbidden, json, payloadTooLarge } from '../responses';
+import { badRequest, conflict, json, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import type { TabSaveProject } from '../db/tab-save-project';
-import { readBody, type PlanRouteContext } from './context';
+import { grantOn, readBody, type PlanRouteContext } from './context';
+import { keepStoredStructure } from '../tab-structure';
 
 // Fields of the stored record, not of the tab body; a client echoing them back never stores them
 // (CS32).
@@ -51,9 +51,6 @@ export async function handleTabPut(
   existing: TabSaveProject,
   tabId: string,
   owner: string,
-  // The caller holds a link confined to this tab: it may not add the tab's first board or plan view, which would show
-  // it every card (docs/specs/026-plan/items.md "Who may do what").
-  tabScoped = false,
 ): Promise<Response> {
   const { request, env } = ctx;
   const id = existing.id;
@@ -71,6 +68,7 @@ export async function handleTabPut(
   const incoming = withoutRecordFields({ ...received, id: tabId });
   const seenHeader = request.headers.get(CHANGESET_SEEN_HEADER);
   const seen = parseChangesetSeen(seenHeader);
+  const scope = grantOn(ctx, id)?.tabScope ?? null;
   if (seenHeader !== null && seen === null) {
     console.warn('[changeset] seen-invalid', { projectId: id, tabId, length: seenHeader.length });
   }
@@ -87,10 +85,17 @@ export async function handleTabPut(
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
     // A copy: each attempt starts again from the save as sent.
-    const body: Tab = { ...ledger.tab };
+    let body: Tab = { ...ledger.tab };
     // The name cap (docs/specs/006-project/name-length.md): a new or changed name is shortened;
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
+    // A link to one tab saves its content, never its structure: the stored name, Plan elements and form targets
+    // stay as they are while the rest of the save lands (docs/specs/013-workspace/tab-scoped-share-links.md).
+    if (scope) {
+      const kept = keepStoredStructure(body, existingTab, scope);
+      if (kept !== body) console.info('[tabs] tab.structure.kept', { projectId: id, tabId });
+      body = kept;
+    }
     // Data-loss backstop (docs/specs/006-project/per-tab-storage.md): refuse to blank a tab that
     // holds content unless the editor marks the empty write intentional (`X-Allow-Empty: 1`, set
     // only when it had the tab's content authoritatively loaded).
@@ -101,14 +106,6 @@ export async function handleTabPut(
       request.headers.get('X-Allow-Empty') !== '1'
     ) {
       return conflict('empty_tab_overwrite_blocked');
-    }
-    // The save as sent, not the merge: a board the owner added in the room meanwhile is theirs, not the visitor's.
-    if (
-      tabScoped &&
-      tabShowsEveryCard(received.elements) &&
-      !tabShowsEveryCard(existingTab?.elements ?? [])
-    ) {
-      return forbidden('tab_scope_widen');
     }
     const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
     // Newly added comments carry the resolved owner's participant record, never the client's claim

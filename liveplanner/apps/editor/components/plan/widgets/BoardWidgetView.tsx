@@ -19,6 +19,7 @@ import {
   type ItemTypeDef,
   type PlanBoardSetup,
   type QuickFilter,
+  finishedStatuses,
   type QuickDueWindow,
 } from '@liveplanner/items';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from '../plan-palette';
@@ -454,9 +455,9 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
       const today = todayNumber(ctx.now);
       // Each count narrows the board to exactly the cards it counts, not done: overdue (due by
       // yesterday), or due from today to a week out.
-      const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
+      const finished = finishedStatuses(setup);
       const tag = (n: number, color: string, label: string, window: QuickDueWindow) => {
-        const value = doneStatus ? { ...window, doneStatus } : window;
+        const value = finished.length > 0 ? { ...window, finished } : window;
         const on = JSON.stringify(ctx.quick.due) === JSON.stringify(value);
         return (
           <button

@@ -21,6 +21,7 @@ import { heldTargets } from './held-check';
 import { changesetLog, engineLog } from './log';
 import { engineRefusal, type ParsedChangeset } from './request';
 import { readStoredTab, withRev, type StoredTab } from './stored-tab';
+import { structureChange, structureRefusal } from '../tab-structure';
 import { writeChangeset, type Author } from './write';
 
 // The changeset pipeline (docs/specs/024-agents/agent-changesets.md "The write path"; blueprint "The
@@ -39,6 +40,8 @@ type SubmitArgs = {
   dryRun: boolean;
   author: Author;
   tokenId: string | null;
+  // The one tab a tab-scoped grant reaches: its structure stays as stored (tab-structure.ts).
+  scope?: string | null;
   frontDoor: FrontDoor;
   waitUntil?: (promise: Promise<unknown>) => void;
 };
@@ -64,6 +67,10 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     }
     const compiled = compile(args, stored, selections);
     if ('errors' in compiled) return rejected(args, stored, compiled.errors, where);
+    if (args.scope) {
+      const why = structureChange(stored ? stored.tab : null, compiled.tab, args.scope);
+      if (why) return structureRefusal(why, where);
+    }
     const base = checkBase(
       request.base,
       withRev(stored),

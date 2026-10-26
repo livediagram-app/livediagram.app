@@ -41,6 +41,8 @@ export type RichTextEditorProps = {
   // the inline-icon shape layout so the icon stays visible beside the editor
   // while typing; positioning + padding are handled by that flex group.
   inline?: boolean;
+  // The label's character cap (a badge's 24, a step's 3: docs/specs/009-elements/badge.md); none when absent.
+  maxLength?: number;
   onCommit: (label: string, runs: TextRun[]) => void;
   onCancel: () => void;
   // Whole-element controls surfaced in the edit toolbar (they operate on the

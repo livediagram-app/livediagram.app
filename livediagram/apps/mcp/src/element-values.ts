@@ -6,6 +6,7 @@
 
 import {
   ELEMENT_FIELD_NAMES,
+  chipLabelIssue,
   elementValidationIssue,
   fieldValueIssue,
   withArticle,
@@ -101,6 +102,9 @@ export function tabElementsIssue(elements: readonly unknown[]): string | null {
     const where = id !== null ? `element "${id}"` : `element ${i + 1}`;
     const issue = elementValidationIssue(el);
     if (issue) return `${where}: "${issue.field}" must be ${issue.rule}.`;
+    // A chip's label cap holds for agent writes (docs/specs/009-elements/badge.md "The cap holds for agents").
+    const chip = chipLabelIssue(el);
+    if (chip) return `${where}: ${chip.rule}.`;
     if (id !== null && seen.has(id))
       return `${where}: the id is used twice; give each element its own.`;
     if (id !== null) seen.add(id);

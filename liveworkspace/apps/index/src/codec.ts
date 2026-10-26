@@ -76,5 +76,15 @@ export function generateShareCode(): string {
 export const isShareCode = (value: unknown): value is string =>
   typeof value === 'string' && /^[A-Za-z0-9]{4,64}$/.test(value);
 
+// An id the index keys by: an item's, a folder's, a team's or a person's. Every one is minted as a UUID, a
+// `user_`/`guest_` id, a Clerk id or a hex hash, so letters, digits, `-` and `_` cover them, and nothing else
+// can reach a path, a scope (`p:<id>`, `team:<id>`) or a key the index builds from it.
+const ID = new RegExp(`^[A-Za-z0-9_-]{1,${ID_MAX}}$`);
 export const isId = (value: unknown): value is string =>
+  typeof value === 'string' && ID.test(value);
+
+// An id naming a part of an item, as its app pushes it: a tab (the cards' `~cards` among them), an element, an
+// action. The apps' documents take any non-empty string there (an agent may name its own), so only the length is
+// held to.
+export const isPartId = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= ID_MAX;

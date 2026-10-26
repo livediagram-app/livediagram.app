@@ -10,15 +10,7 @@ const OPEN_INTERACTIVE_MS = 3000;
 const IDLE_WORK_MS = 5;
 
 export type Gesture =
-  | 'open'
-  | 'idle'
-  | 'pan'
-  | 'zoom'
-  | 'select'
-  | 'drag'
-  | 'deselect'
-  | 'marquee'
-  | 'hover';
+  'open' | 'idle' | 'pan' | 'zoom' | 'select' | 'drag' | 'deselect' | 'marquee' | 'hover';
 
 export type Measurement = {
   tab: 'plan';

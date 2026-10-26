@@ -186,18 +186,18 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 
 ## Testing
 
-| Rule                                           | Test                                                      |
-| ---------------------------------------------- | --------------------------------------------------------- |
-| Ids, sizes, phases, metric board               | packages/items/src/plan-views.test.ts                     |
-| Gantt rows, marks, axis, ticks, drags, scales  | packages/items/src/plan-view-gantt.test.ts                |
-| Calendar, workload, status, priority models    | packages/items/src/plan-view-charts.test.ts               |
-| Calendar moves, Start Calendar model           | packages/items/src/calendar-move.test.ts                  |
+| Rule                                           | Test                                                        |
+| ---------------------------------------------- | ----------------------------------------------------------- |
+| Ids, sizes, phases, metric board               | packages/items/src/plan-views.test.ts                       |
+| Gantt rows, marks, axis, ticks, drags, scales  | packages/items/src/plan-view-gantt.test.ts                  |
+| Calendar, workload, status, priority models    | packages/items/src/plan-view-charts.test.ts                 |
+| Calendar moves, Start Calendar model           | packages/items/src/calendar-move.test.ts                    |
 | Calendar drag, keyboard move, roles, Start Cal | apps/editor/components/plan/views/CalendarView.test.tsx     |
-| Element seed, validation, export box           | packages/project/src/plan-shapes.test.ts                 |
+| Element seed, validation, export box           | packages/project/src/plan-shapes.test.ts                    |
 | Rendering, empty and loading, opening, metrics | apps/editor/components/plan/views/PlanViewView.test.tsx     |
 | Gantt window pin, pan, slop, cleanup           | apps/editor/components/plan/views/useGanttWindow.test.ts    |
 | Gantt View flyout (card types, swimlanes)      | apps/editor/components/palette/PlanViewMenuSection.test.tsx |
-| Gantt row order (apply, reorder, validation)   | packages/items/src/gantt-row-order.test.ts                |
+| Gantt row order (apply, reorder, validation)   | packages/items/src/gantt-row-order.test.ts                  |
 | Gantt row drag, keyboard move, lanes           | apps/editor/components/plan/views/GanttRowOrder.test.tsx    |
 | Palette categories and tiles                   | apps/editor/components/palette/palette-*.test.ts(x)         |
 

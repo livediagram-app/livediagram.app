@@ -64,6 +64,7 @@ export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
 export {
   addBoard,
   apiRefusalOf,
+  deleteRefusal,
   changeBoard,
   resolveBoard,
   resolveDashboardInput,

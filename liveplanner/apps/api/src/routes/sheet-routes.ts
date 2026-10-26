@@ -204,7 +204,11 @@ async function keepRestored(
   return stored ? { sheet: stored } : null;
 }
 
-async function remove(ctx: PlanRouteContext, projectId: string, sheetId: string): Promise<Response> {
+async function remove(
+  ctx: PlanRouteContext,
+  projectId: string,
+  sheetId: string,
+): Promise<Response> {
   const caller = await sheetCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
   const head = await readSheetHead(ctx.env, projectId, sheetId);

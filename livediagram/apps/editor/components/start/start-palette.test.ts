@@ -1,5 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { startPanelColours } from './start-palette';
+import { contrastRatio, mixHex } from '@livediagram/document';
+import {
+  CHOSEN_HOVER_TINT,
+  CHOSEN_TINT,
+  chosenLabel,
+  startPalette,
+  startPanelColours,
+  type StartPalette,
+} from './start-palette';
+
+// docs/specs/007-editor/start-diagramming.md "Rail": the chosen row's label reads at AA on its tint and its hover's.
+describe('chosenLabel', () => {
+  const on = (p: StartPalette, pct: number) => mixHex(p.focus, p.surface, pct / 100);
+  const cases: [string, StartPalette][] = [
+    ['light', startPalette('light')],
+    ['dark', startPalette('dark')],
+    [
+      'a pale themed accent',
+      startPalette('light', { fill: '#fdf2f8', stroke: '#f472b6', text: '#831843' }),
+    ],
+  ];
+
+  it.each(cases)('reaches 4.5:1 on the chosen row in %s', (_, p) => {
+    const ink = chosenLabel(p);
+    for (const pct of [CHOSEN_TINT, CHOSEN_HOVER_TINT])
+      expect(contrastRatio(ink, on(p, pct))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('darkens the light accent, which read about 3.4:1 on its own tint', () => {
+    const p = startPalette('light');
+    expect(contrastRatio(p.focus, on(p, CHOSEN_TINT))).toBeLessThan(4.5);
+    expect(chosenLabel(p)).not.toBe(p.focus);
+  });
+});
 
 // docs/specs/007-editor/start-diagramming.md "Look"
 describe('startPanelColours', () => {

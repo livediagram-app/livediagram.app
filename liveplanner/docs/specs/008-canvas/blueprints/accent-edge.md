@@ -2,16 +2,16 @@
 
 Derived from [Accent edge](../accent-edge.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                    | Role                                                                |
-| ------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/project/src/accent-edge.ts`                  | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
-| `packages/project/src/element-types.ts`                | `accentEdge`, `accentEdgeColor` on `ShapeElement`                   |
-| `packages/project/src/element-fields.ts`               | Both fields listed for `shape`                                      |
-| `packages/project/src/svg-render.ts`                   | Appends `svgAccentEdge` after the box, before the face and label    |
+| File                                                      | Role                                                                |
+| --------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/project/src/accent-edge.ts`                     | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
+| `packages/project/src/element-types.ts`                   | `accentEdge`, `accentEdgeColor` on `ShapeElement`                   |
+| `packages/project/src/element-fields.ts`                  | Both fields listed for `shape`                                      |
+| `packages/project/src/svg-render.ts`                      | Appends `svgAccentEdge` after the box, before the face and label    |
 | `apps/editor/components/canvas/AccentEdgeOverlay.tsx`     | The canvas bar, clipped by the wrapper's own radius                 |
 | `apps/editor/components/canvas/BoxedElementView.tsx`      | Mounts the overlay (one line)                                       |
 | `apps/editor/components/palette/AccentEdgeRow.tsx`        | The Border category's Accent Edge row + colour well                 |
-| format-painter.ts, `format-config.ts`   | Copied with Border                                                  |
+| format-painter.ts, `format-config.ts`                     | Copied with Border                                                  |
 | `apps/editor/lib/element-telemetry.ts` / telemetry schema | `Element·Changed·AccentEdge`                                        |
 
 ## Domain and naming
@@ -105,14 +105,14 @@ path of its own).
 
 ## Testing
 
-| Rule                                     | Test file                                                |
-| ---------------------------------------- | -------------------------------------------------------- |
-| Supported kinds, resolution, E1, E2      | `packages/project/src/accent-edge.test.ts`              |
-| Thickness clamp and rects per edge       | same                                                     |
-| Export draws a clipped bar in the colour | same (`svgAccentEdge`), `svg-render.test.ts`             |
+| Rule                                     | Test file                                                  |
+| ---------------------------------------- | ---------------------------------------------------------- |
+| Supported kinds, resolution, E1, E2      | `packages/project/src/accent-edge.test.ts`                 |
+| Thickness clamp and rects per edge       | same                                                       |
+| Export draws a clipped bar in the colour | same (`svgAccentEdge`), `svg-render.test.ts`               |
 | Canvas overlay draws per edge / nothing  | `apps/editor/components/canvas/AccentEdgeOverlay.test.tsx` |
 | Row writes, hides on unsupported         | `apps/editor/components/palette/AccentEdgeRow.test.tsx`    |
-| Format painter maps both to Border       | apps/editor/lib/format-config.test.ts (exhaustive table) |
+| Format painter maps both to Border       | apps/editor/lib/format-config.test.ts (exhaustive table)   |
 
 ## Constants and configuration
 

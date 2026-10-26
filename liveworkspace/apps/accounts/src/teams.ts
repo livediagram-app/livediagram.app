@@ -828,8 +828,14 @@ export async function answerInvitation(
   return ok({ id: memberId, teamId: row.teamId, teamName: row.teamName, status, inviterApp });
 }
 
+// What a closed account's team rows say in place of its address (as the apps say it in place of its name).
+export const DELETED_MEMBER_EMAIL = 'Deleted account';
+
 // Before an account is deleted: it leaves every team. A team it ran alone goes with it; one where it
-// was the only admin passes to the longest-standing member.
+// was the only admin passes to the longest-standing member. Then its address comes off every team row
+// it had (those it joined, was removed from or left, and invitations to it it turned down), each row
+// moved on in the change feed so the apps' copies lose it too. An invitation still waiting is the
+// inviter's, to an address rather than to the account, and stays.
 // Answers the teams that closed with the account (those it ran alone).
 export async function leaveAllTeams(
   db: D1Database,
@@ -874,7 +880,27 @@ export async function leaveAllTeams(
         .bind(now, row.id),
     );
   }
-  if (statements.length) await db.batch(statements);
+  const user = await db
+    .prepare('SELECT email FROM "user" WHERE id = ?')
+    .bind(userId)
+    .first<{ email: string }>();
+  statements.push(
+    db.prepare(BUMP),
+    db
+      .prepare(
+        `UPDATE team_member SET email = ?, updatedAt = ?, rev = ${REV}
+         WHERE (userId = ? OR (email = ? AND status IN ('declined', 'removed')))
+           AND email != ?`,
+      )
+      .bind(
+        DELETED_MEMBER_EMAIL,
+        now,
+        userId,
+        user?.email.toLowerCase() ?? '',
+        DELETED_MEMBER_EMAIL,
+      ),
+  );
+  await db.batch(statements);
   return closed;
 }
 

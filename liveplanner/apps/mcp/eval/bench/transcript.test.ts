@@ -153,9 +153,10 @@ describe('metricsOf', () => {
 describe('projectIdsIn', () => {
   it('reads ids from projectId fields and project links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
-    expect(
-      projectIdsIn(`"projectId": "${DOC}" https://liveplanner.app/project/${other}`),
-    ).toEqual([DOC, other]);
+    expect(projectIdsIn(`"projectId": "${DOC}" https://liveplanner.app/project/${other}`)).toEqual([
+      DOC,
+      other,
+    ]);
     expect(projectIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });
 });

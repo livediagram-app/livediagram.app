@@ -118,6 +118,49 @@ export function readId(s: string): { id: string; rest: string } | null {
   return m ? { id: m[1]!, rest: s.slice(m[0].length) } : null;
 }
 
+// Nested subgraphs and composite states fold into their top-level one (`foldedInto`: each folded id by the cluster it
+// folded into). An edge naming a folded id would mint a stray box for it, so the box goes and the id is answered with
+// the frame it folded into. A node written out under the id stays a node; so does the box when the outer cluster
+// holds nothing else (it draws no frame, and the edge needs a target). Call before framedClusters.
+export function foldedEdgeEnds(
+  foldedInto: ReadonlyMap<string, string>,
+  implicit: ReadonlySet<string>,
+  nodes: Map<string, unknown>,
+  clusters: GraphCluster[],
+): Map<string, string> {
+  const strays = new Set<string>();
+  for (const id of foldedInto.keys())
+    if (implicit.has(id) && nodes.has(id) && !clusters.some((c) => c.id === id)) strays.add(id);
+  const toFrame = new Map<string, string>();
+  for (const id of strays) {
+    const parent = foldedInto.get(id)!;
+    const outer = clusters.find((c) => c.id === parent);
+    if (!outer?.members.some((m) => !strays.has(m))) continue;
+    toFrame.set(id, parent);
+    nodes.delete(id);
+  }
+  for (const c of clusters) c.members = c.members.filter((m) => !toFrame.has(m));
+  return toFrame;
+}
+
+// Points each edge end that names a folded id at its frame, by the frame's final id (`frameId`, for a frame renamed
+// beside a node of its id).
+export function pointEdgesAtFrames(
+  edges: { from: string; to: string }[],
+  toFrame: ReadonlyMap<string, string>,
+  frameId: (clusterId: string) => string = (id) => id,
+): void {
+  if (!toFrame.size) return;
+  const end = (id: string) => {
+    const parent = toFrame.get(id);
+    return parent === undefined ? id : frameId(parent);
+  };
+  for (const e of edges) {
+    e.from = end(e.from);
+    e.to = end(e.to);
+  }
+}
+
 // The clusters that become frames. An arrow may reference a cluster's id (it pins to the frame), and that mention
 // auto-created a node with the id: drop it (unless a real node claimed it) so the id resolves to the frame. Only
 // for a cluster that BECOMES a frame: an empty one (`subgraph X … end`, `state X { }`) is dropped, so deleting its

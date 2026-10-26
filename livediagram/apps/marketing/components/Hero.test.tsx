@@ -81,6 +81,16 @@ describe('the hero', () => {
     ]);
   });
 
+  // Pages mode is retired (livedocuments carries it), so the subhead promises nothing about publishing.
+  it('says what you can do here, and no longer offers to publish', () => {
+    render(<Hero />);
+    const lead = document.querySelector('[data-hero-anchor="lead"]')!;
+    expect(lead.textContent).toBe(
+      'Pick a starting point and release what’s inside your mind. Diagram, sketch or run a session, then share one link and build it together.',
+    );
+    expect(lead.textContent).not.toMatch(/publish/i);
+  });
+
   it('draws the band as a whiteboard wall, its sticky notes decoration hung only from xl', () => {
     const { container } = render(<Hero />);
     const band = container.querySelector('section')!;

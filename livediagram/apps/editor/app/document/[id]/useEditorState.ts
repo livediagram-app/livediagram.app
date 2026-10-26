@@ -2,6 +2,7 @@
 
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
+import { ROOM_FULL_NOTICE } from '@/lib/api/room';
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { useTabRevisions } from './useTabRevisions';
@@ -556,6 +557,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     unresolveThread,
   } = useEditorComments({
     applyElementDelta,
+    activeTabId: activeId,
     selfParticipant,
     // A Community visitor reads the board, never its conversation (docs/specs/025-community/community.md).
     commentsOff: realtime.sessionCommunity !== null,
@@ -1064,6 +1066,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
     enabled: realtime.sessionCommunity === null && !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
+    // docs/specs/015-api/api.md "A room holds at most 100 connections": said once; editing carries on alone.
+    onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
     documentTeamId,
     selfParticipant,
     sessionShareCode,

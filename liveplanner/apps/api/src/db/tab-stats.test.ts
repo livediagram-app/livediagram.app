@@ -1,12 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
-import {
-  projectStatsSql,
-  readProjectStats,
-  tabStatsOfData,
-  tabStatsStatement,
-} from './tab-stats';
+import { projectStatsSql, readProjectStats, tabStatsOfData, tabStatsStatement } from './tab-stats';
 
 // docs/specs/013-workspace/explorer-details-view.md "Where the numbers come from".
 
@@ -27,9 +22,7 @@ function arrange() {
       .prepare('INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, ?)')
       .run(tabId, tabId, '{}', T0);
     db.sql
-      .prepare(
-        'INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)',
-      )
+      .prepare('INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)')
       .run(docId, tabId, order, T0);
   };
   const stats = async (
@@ -56,9 +49,9 @@ function arrange() {
 }
 
 function docStats(sql: DatabaseSync, id: string) {
-  const row = sql
-    .prepare(`SELECT ${projectStatsSql('?1')}`)
-    .get(id) as { doc_stats: string | null };
+  const row = sql.prepare(`SELECT ${projectStatsSql('?1')}`).get(id) as {
+    doc_stats: string | null;
+  };
   return readProjectStats(row.doc_stats);
 }
 

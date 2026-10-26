@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { opForScope, scopedSenderMayRelay } from './room-scope';
+import { opForScope, scopedSenderMayRelay, scopedTabOp } from './room-scope';
 
 // docs/specs/013-workspace/tab-scoped-share-links.md, Realtime. A session admitted on a link scoped to one
 // tab must receive nothing about another tab and must not be able to change
@@ -111,5 +111,36 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
   it('fails closed on anything else', () => {
     expect(scopedSenderMayRelay({ kind: 'something-new' }, SCOPE)).toBe(false);
     expect(scopedSenderMayRelay(undefined, SCOPE)).toBe(false);
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md "No rename from a scoped session".
+describe('scopedTabOp (a scoped whole-tab op carries the stored name)', () => {
+  const op = { kind: 'tab', tabId: 't1', tab: { id: 't1', name: 'Mine now', elements: [] } };
+
+  it("stamps the stored name on a scoped session's whole-tab op", () => {
+    expect(scopedTabOp(op, 't1', () => 'Board')).toEqual({
+      ...op,
+      tab: { ...op.tab, name: 'Board' },
+    });
+  });
+
+  it('leaves an unscoped op, another kind, or a tab with no stored name alone', () => {
+    const lookup = () => 'Board';
+    expect(scopedTabOp(op, null, lookup)).toBe(op);
+    const meta = { kind: 'tab-meta', tabId: 't1', patch: {} };
+    expect(scopedTabOp(meta, 't1', lookup)).toBe(meta);
+    expect(scopedTabOp(op, 't1', () => null)).toBe(op);
+  });
+
+  it('reads the store only for a scoped whole-tab op', () => {
+    let reads = 0;
+    const lookup = () => {
+      reads += 1;
+      return 'Board';
+    };
+    scopedTabOp({ kind: 'el', tabId: 't1' }, 't1', lookup);
+    scopedTabOp(op, null, lookup);
+    expect(reads).toBe(0);
   });
 });

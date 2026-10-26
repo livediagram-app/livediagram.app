@@ -15,7 +15,12 @@ import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDesigns } from '@/lib/recent-designs-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
-import { setOwnPicture } from '@/lib/own-picture';
+import {
+  notePictureSettingSaved,
+  setOwnPicture,
+  tokenPredatesPictureSetting,
+} from '@/lib/own-picture';
+import { onProfileSaved } from '@liveworkspace/settings-ui/profile-events';
 import {
   DEFERRED_AUTH_DEFAULT,
   type DeferredAuthState,
@@ -30,7 +35,8 @@ type SessionUser = {
   picture?: string | null;
   pictureHidden?: boolean;
 };
-type Session = { accessToken: string; expiresAt: number; user: SessionUser };
+// `tokenAgeMs`: how old the session's ID token is, by the api's clock (apps/api/src/routes/auth.ts tokenAgeOf).
+type Session = { accessToken: string; expiresAt: number; user: SessionUser; tokenAgeMs?: number };
 
 // Refresh this long before the access token expires, so a request never goes out with one that
 // lapses in flight.
@@ -49,7 +55,12 @@ async function requestSession(): Promise<Session | null> {
     if (!res.ok) return null;
     const body = (await res.json()) as Partial<Session> & { signedIn?: boolean };
     if (!body.signedIn || !body.accessToken || !body.user?.id) return null;
-    return { accessToken: body.accessToken, expiresAt: body.expiresAt ?? 0, user: body.user };
+    return {
+      accessToken: body.accessToken,
+      expiresAt: body.expiresAt ?? 0,
+      user: body.user,
+      ...(typeof body.tokenAgeMs === 'number' ? { tokenAgeMs: body.tokenAgeMs } : {}),
+    };
   } catch {
     // Offline or the api unreachable: no session this time. The next getToken tries again.
     return null;
@@ -58,8 +69,18 @@ async function requestSession(): Promise<Session | null> {
 
 // One refresh at a time for the whole page: the editor asks for a token on every save, and
 // concurrent refreshes would each rotate the refresh token.
+//
+// A session whose ID token predates the last Show My Google Picture save (another tab's earlier response, replayed
+// inside the accounts Worker's reuse window) carries the old switch: it is asked for once more, and the fresh one
+// stands (docs/specs/014-identity/profile-and-email-notifications.md "Avatars").
+async function freshSession(): Promise<Session | null> {
+  const session = await requestSession();
+  if (!session || !tokenPredatesPictureSetting(session.tokenAgeMs)) return session;
+  return (await requestSession()) ?? session;
+}
+
 function refresh(): Promise<Session | null> {
-  inflight ??= requestSession().then((session) => {
+  inflight ??= freshSession().then((session) => {
     current = session;
     inflight = null;
     setOwnPicture(session?.user.picture ?? null, session?.user.pictureHidden === true);
@@ -139,6 +160,15 @@ async function initialSession(): Promise<Session | null> {
 }
 
 export function AccountsBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {
+  // A Show My Google Picture save made anywhere on this page (Settings, here or on the Explorer): its time, for the
+  // token check above in every tab.
+  useEffect(
+    () =>
+      onProfileSaved((saved) => {
+        if (saved.patch.showPicture !== undefined) notePictureSettingSaved();
+      }),
+    [],
+  );
   useEffect(() => {
     let live = true;
     void initialSession().then((session) => {

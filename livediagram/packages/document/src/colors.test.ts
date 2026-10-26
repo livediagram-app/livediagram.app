@@ -20,6 +20,8 @@ import {
   inkOn,
   bestInk,
   hexToRgb,
+  colourIsOpaque,
+  normaliseHex,
   isLightColor,
   rgbToHex,
   shade,
@@ -55,10 +57,39 @@ describe('hexToRgb / rgbToHex', () => {
     expect(hexToRgb('0ea5e9')).toEqual({ r: 14, g: 165, b: 233 });
   });
 
-  it('is null for anything that is not six hex digits', () => {
-    expect(hexToRgb('#fff')).toBeNull();
-    expect(hexToRgb('#0ea5e980')).toBeNull();
-    expect(hexToRgb('red')).toBeNull();
+  // Agents write `#fff` and `red` (docs/specs/011-theme/light-and-dark.md "Colours an agent writes").
+  it('reads shorthand hex, hex with alpha and CSS named colours, alpha set aside', () => {
+    expect(hexToRgb('#fff')).toEqual({ r: 255, g: 255, b: 255 });
+    expect(hexToRgb('#0A5')).toEqual({ r: 0, g: 170, b: 85 });
+    expect(hexToRgb('#0a58')).toEqual({ r: 0, g: 170, b: 85 });
+    expect(hexToRgb('#0ea5e980')).toEqual({ r: 14, g: 165, b: 233 });
+    expect(hexToRgb('red')).toEqual({ r: 255, g: 0, b: 0 });
+    expect(hexToRgb(' SlateGray ')).toEqual({ r: 112, g: 128, b: 144 });
+  });
+
+  it('is null for anything else', () => {
+    for (const bad of ['', '#', '#ff', '#fffff', 'fff', 'transparent', 'rgb(0,0,0)', 'notacolour'])
+      expect(hexToRgb(bad)).toBeNull();
+  });
+
+  it('normalises any colour it reads to #rrggbb, and says whether it is opaque', () => {
+    expect(normaliseHex('#FFF')).toBe('#ffffff');
+    expect(normaliseHex('navy')).toBe('#000080');
+    expect(normaliseHex('nope')).toBeNull();
+    expect(colourIsOpaque('#fff')).toBe(true);
+    expect(colourIsOpaque('#fff8')).toBe(false);
+    expect(colourIsOpaque('#0ea5e9ff')).toBe(true);
+    expect(colourIsOpaque('#0ea5e980')).toBe(false);
+    expect(colourIsOpaque('transparent')).toBe(false);
+  });
+
+  // It runs for every label drawn, so a named colour is a map read, not a scan.
+  it('reads 100k mixed colours in well under a second', () => {
+    const inputs = ['#0ea5e9', '#fff', 'red', 'cornflowerblue', '#0ea5e980', 'nope'];
+    const start = performance.now();
+    for (let i = 0; i < 100_000; i++) hexToRgb(inputs[i % inputs.length]!);
+    // Measured about 15 ms; the budget leaves room for a busy CI machine.
+    expect(performance.now() - start).toBeLessThan(500);
   });
 
   it('writes channels back rounded and clamped into 0-255', () => {
@@ -69,7 +100,8 @@ describe('hexToRgb / rgbToHex', () => {
   it('shade mixes toward black and leaves unparseable input alone', () => {
     // The avatar sprite's shaded side is this 22% shade.
     expect(shade('#0ea5e9', 0.22)).toBe('#0b81b6');
-    expect(shade('red', 0.5)).toBe('red');
+    expect(shade('nope', 0.5)).toBe('nope');
+    expect(shade('red', 0.5)).toBe('#800000');
   });
 });
 
@@ -322,9 +354,10 @@ describe('contrastRatio', () => {
     expect(contrastRatio('#767676', '#ffffff')).toBeCloseTo(4.54, 2);
   });
 
-  it('is NaN for anything but #rrggbb, so no threshold check can pass', () => {
-    expect(contrastRatio('red', '#ffffff')).toBeNaN();
-    expect(contrastRatio('#fff', '#000000')).toBeNaN();
+  it('reads shorthand and named colours, and is NaN for anything else, so no threshold check can pass', () => {
+    expect(contrastRatio('#fff', '#000000')).toBeCloseTo(21, 5);
+    expect(contrastRatio('white', 'black')).toBeCloseTo(21, 5);
+    expect(contrastRatio('nope', '#ffffff')).toBeNaN();
   });
 
   it('names the AA threshold for normal text', () => {

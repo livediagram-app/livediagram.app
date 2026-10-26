@@ -202,6 +202,25 @@ describe('Mermaid', () => {
     expect(JSON.stringify(els)).not.toContain('null');
   });
 
+  // docs/specs/015-api/mcp-server.md §4.7 `sequence`: the heading cap is a box's, and a message is a sentence.
+  it('keeps a sequence message label and a participant name whole, past the 40-character cap', () => {
+    const long = 'POST /api/checkout with the basket, the address and the card token';
+    const who = 'The payments service that charges the card';
+    expect(long.length).toBeGreaterThan(GRAPH_LABEL_MAX);
+    const els = layoutGraph({
+      nodes: [
+        { id: 'a', label: 'Browser' },
+        { id: 'b', label: who },
+      ],
+      edges: [{ from: 'a', to: 'b', label: long }],
+      style: 'sequence',
+    });
+    const text = JSON.stringify(els);
+    expect(text).toContain(long);
+    expect(text).toContain(who);
+    expect(text).not.toContain('…');
+  });
+
   it('holds a sequence graph to the Mermaid sequence caps', () => {
     const nodes = Array.from({ length: 31 }, (_, i) => ({ id: `p${i}` }));
     expect(resolveGraphInput({ graph: { nodes, edges: [], style: 'sequence' } }).error).toMatch(

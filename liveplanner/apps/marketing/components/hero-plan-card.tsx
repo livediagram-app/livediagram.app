@@ -1,3 +1,4 @@
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { FONT } from '@/components/art-tokens';
 
 // One Plan card face as the hero's Plan window draws it (hero-plan-board.tsx), after the board's
@@ -50,7 +51,8 @@ export function Avatar({ x, y, who, r = 7 }: { x: number; y: number; who: Person
       <circle cx={x} cy={y} r={r} fill={who.colour} />
       <text
         x={x}
-        y={y + r * 0.34}
+        // The initials centre on their cap band (optical-alignment.md "SVG text centres on its cap band too").
+        y={capBandBaselineY(y, r * 0.9)}
         textAnchor="middle"
         fontFamily={FONT}
         fontSize={r * 0.9}

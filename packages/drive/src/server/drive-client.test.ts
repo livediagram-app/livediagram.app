@@ -3,7 +3,7 @@ import { FakeGoogle, fakePngBase64Url } from '@liveworkspace/fake-google';
 import { sentUrl } from '@liveworkspace/vitest-config/sent-request';
 import { DRIVE_FOLDER_MIME, DRIVE_MULTIPART_MAX_BYTES } from '../constants';
 import { APP_FILE_FORMATS } from '../formats';
-import { createDriveClient, DriveApiError } from './drive-client';
+import { createDriveClient, DriveApiError, DriveFileTooLarge } from './drive-client';
 
 // The service's Drive client against the fake Google (liveworkspace/docs/drive.md "The service").
 
@@ -434,5 +434,40 @@ describe('watchChanges / stopChannel', () => {
       expiration: 42,
     });
     expect(channel).toEqual({ id: 'c', resourceId: 'r', expiration: 42 });
+  });
+
+  it('stops a download over the cap it is given, whether or not Google says the size first', async () => {
+    const { client } = setup();
+    const f = await client.createFile({
+      name: 'Big',
+      parentId: 'root',
+      mimeType: MIME,
+      content: 'x'.repeat(2_000),
+      thumbnailPng: null,
+    });
+    expect(await client.download(f.id, undefined, 2_000)).toHaveLength(2_000);
+    await expect(client.download(f.id, undefined, 1_999)).rejects.toBeInstanceOf(DriveFileTooLarge);
+
+    // A body sent in chunks with no Content-Length is counted as it arrives, and stops at the cap.
+    let pulled = 0;
+    const streaming = createDriveClient(
+      {
+        fetch: async () =>
+          new Response(
+            new ReadableStream({
+              pull(controller) {
+                pulled += 1;
+                if (pulled > 100) controller.close();
+                else controller.enqueue(new Uint8Array(1_000));
+              },
+            }),
+          ),
+      },
+      async () => 'token',
+    );
+    await expect(streaming.download('any', undefined, 5_500)).rejects.toBeInstanceOf(
+      DriveFileTooLarge,
+    );
+    expect(pulled).toBeLessThan(10);
   });
 });

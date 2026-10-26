@@ -130,11 +130,21 @@ export interface PlanBoardSetup {
 export const LINKED_RECORD_KINDS = ['actions'] as const;
 export type LinkedRecordKind = (typeof LINKED_RECORD_KINDS)[number];
 
-// The Due Soon widget's narrowing: due from `from` (absent: any earlier day) to `to`, not done.
+// The Due Soon widget's narrowing: due from `from` (absent: any earlier day) to `to`, not done (`finished`, the
+// board's finishedStatuses, left out).
 export interface QuickDueWindow {
   from?: string;
   to: string;
-  doneStatus?: string;
+  finished?: string[];
+}
+
+// The statuses a board counts as finished (docs/specs/026-plan/board-widgets.md "Not done"): its done column's and
+// those of every column after it (Won't Do). None without a done column, when every card is not done.
+export function finishedStatuses(
+  setup: Pick<PlanBoardSetup, 'columns' | 'doneColumnId'>,
+): string[] {
+  const at = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
+  return at < 0 ? [] : setup.columns.slice(at).map((c) => c.status);
 }
 
 export interface QuickFilter {
@@ -400,7 +410,7 @@ export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): 
     const due = item.fields['due'];
     if (typeof due !== 'string' || due > quick.due.to) return false;
     if (quick.due.from && due < quick.due.from) return false;
-    if (quick.due.doneStatus && itemStatus(item) === quick.due.doneStatus) return false;
+    if (quick.due.finished?.includes(itemStatus(item) ?? '')) return false;
   }
   const text = quick.text?.trim().toLowerCase();
   if (text) {

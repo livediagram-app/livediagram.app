@@ -37,7 +37,7 @@ import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDesign } from './read-design';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { fetchTeamLibraries, matchDesigns } from '@livedesign/agent-verbs';
+import { deleteRefusal, fetchTeamLibraries, matchDesigns } from '@livedesign/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -524,18 +524,4 @@ async function refuseUnknownTab(
   throw new ToolInputError(
     `No tab "${tabId}" in this design. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
   );
-}
-
-export function deleteRefusal(status: number, tab: boolean): string {
-  if (status === 410) return 'It is already in the Trash (see list_trash).';
-  if (status === 403) return 'You may view this design but not change it.';
-  if (status === 404)
-    return tab
-      ? 'No such tab in this design: read_design lists its tabs.'
-      : 'No such design, or it is not yours: find_designs lists them.';
-  if (tab && status === 409)
-    return 'A design must keep at least one tab: you cannot delete the last one.';
-  return tab
-    ? `The api refused it (${status}): check the design and tab ids.`
-    : 'Check the design id and that you own it.';
 }

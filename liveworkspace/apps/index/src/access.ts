@@ -8,7 +8,8 @@ import type { Caller } from './auth';
 import type { Env } from './env';
 import { inTeamNow } from './fresh-teams';
 import { fail, notFound, unauthorized } from './http';
-import { verifySharePassword } from './password-hash';
+import { isRememberedSharePassword, verifySharePassword } from './password-hash';
+import { guessRefusal } from './share-guesses';
 import { directAccess, getItemRow, LIVE_LINK, type Access, type ItemRow } from './rows';
 
 type LinkRow = {
@@ -44,14 +45,22 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
 }
 
 // A link's access, after its password. A refusal is the response to send. A public link (a Community post's) never
-// asks for one: behind a password it is closed, and answers as missing.
+// asks for one: behind a password it is closed, and answers as missing. A password this isolate hasn't already found
+// right is a guess, counted against the visitor's network and the item before it is checked (share-guesses.ts).
 export async function linkAccess(
+  env: Env,
+  itemId: string,
   link: LinkRow,
   password: string | null,
+  visitor: string | null,
 ): Promise<Access | Response> {
   if (link.hash && link.public) return notFound();
   if (link.hash) {
     if (!password) return fail(401, 'password_required');
+    if (!(await isRememberedSharePassword(link.hash, password))) {
+      const refused = await guessRefusal(env, itemId, visitor);
+      if (refused) return refused;
+    }
     if (!(await verifySharePassword(link.hash, password))) return fail(403, 'password_invalid');
   }
   return {
@@ -76,7 +85,13 @@ export async function accessTo(env: Env, row: ItemRow, caller: Caller): Promise<
   const link = await linkFor(env, row.id, caller);
   // An item the caller can't reach answers as missing, revealing nothing.
   if (!link) return notFound();
-  return linkAccess(link, caller.share?.password ?? null);
+  return linkAccess(
+    env,
+    row.id,
+    link,
+    caller.share?.password ?? null,
+    caller.share?.visitor ?? null,
+  );
 }
 
 export type Loaded = { row: ItemRow; access: Access };

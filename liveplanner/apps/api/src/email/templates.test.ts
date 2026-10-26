@@ -40,7 +40,13 @@ describe('email templates', () => {
     ['comment notification', () => commentNotificationEmail(env, 'Roadmap', 'p1', 'Ada')],
     [
       'form response',
-      () => formResponseEmail(env, { heading: 'Intake', projectId: 'p1', projectName: 'Roadmap' }, 'A card', 0),
+      () =>
+        formResponseEmail(
+          env,
+          { heading: 'Intake', projectId: 'p1', projectName: 'Roadmap' },
+          'A card',
+          0,
+        ),
     ],
   ])('%s carries the manage-notifications footer and unsubscribe url', (_label, build) => {
     const e = build();
@@ -83,7 +89,13 @@ describe('projectJoinedEmail', () => {
 
 describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)', () => {
   it('names the assigner, plan, and action, links to the plan', () => {
-    const e = actionAssignedEmail(env, 'Sam', { id: 'd1', name: 'Roadmap' }, 'Review the copy', 'Hero only');
+    const e = actionAssignedEmail(
+      env,
+      'Sam',
+      { id: 'd1', name: 'Roadmap' },
+      'Review the copy',
+      'Hero only',
+    );
     expect(e.kind).toBe('ActionAssigned');
     expect(e.subject).toMatch(/Sam/);
     expect(e.html).toContain('Roadmap');
@@ -94,7 +106,13 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
   });
 
   it('escapes user-influenced strings and truncates a long description', () => {
-    const e = actionAssignedEmail(env, '<b>x</b>', { id: 'd1', name: 'Roadmap' }, '<script>', 'y'.repeat(500));
+    const e = actionAssignedEmail(
+      env,
+      '<b>x</b>',
+      { id: 'd1', name: 'Roadmap' },
+      '<script>',
+      'y'.repeat(500),
+    );
     expect(e.html).not.toContain('<script>');
     expect(e.html).toContain('&lt;script&gt;');
     expect(e.html).not.toContain('<b>x</b>');

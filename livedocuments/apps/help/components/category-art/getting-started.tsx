@@ -6,7 +6,9 @@ function Step({ cx, cy, n }: { cx: number; cy: number; n: number }) {
   return (
     <g>
       <circle cx={cx} cy={cy} r={11} className="fill-brand-500 stroke-white" strokeWidth={2.5} />
-      <DiscText cx={cx} cy={cy} size={11} weight={800}>
+      {/* Raised 0.3 units: these heavy numerals stand a touch short of the cap band DiscText centres, and sat
+          0.55px low on the help home at its 1.6x scale (the optical audit's 0.5px line). */}
+      <DiscText cx={cx} cy={cy - 0.3} size={11} weight={800}>
         {n}
       </DiscText>
     </g>

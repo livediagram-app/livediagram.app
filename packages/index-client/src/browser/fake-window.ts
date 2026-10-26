@@ -1,4 +1,4 @@
-// A window for node tests: the two storages, a location whose assign is recorded, and globals to set.
+// A window for node tests: the two storages, a location whose assign and replace are recorded, and globals to set.
 import { vi, type Mock } from 'vitest';
 
 function memoryStorage(): Storage {
@@ -18,13 +18,14 @@ function memoryStorage(): Storage {
 export function fakeWindow(
   pathname = '/design/d1',
   search = '?x=1',
-): { win: Window & Record<string, unknown>; assign: Mock } {
+): { win: Window & Record<string, unknown>; assign: Mock; replace: Mock } {
   const assign = vi.fn();
+  const replace = vi.fn();
   const win = {
     localStorage: memoryStorage(),
     sessionStorage: memoryStorage(),
-    location: { pathname, search, hash: '', assign },
+    location: { pathname, search, hash: '', assign, replace },
   } as unknown as Window & Record<string, unknown>;
   vi.stubGlobal('window', win);
-  return { win, assign };
+  return { win, assign, replace };
 }

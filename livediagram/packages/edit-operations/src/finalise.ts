@@ -10,6 +10,7 @@ import {
   coerceShapeKind,
   deriveContainers,
   isContainer,
+  chipLabelIssue,
   elementValidationIssue,
   isValidTab,
   landWorkshopArrivals,
@@ -105,7 +106,8 @@ function normaliseTouched(state: EditState, log: EditLog): void {
 function touchedIssue(state: EditState): EditRejection | null {
   for (const id of state.touched.keys()) {
     const el = state.byId.get(id);
-    const issue = el && elementValidationIssue(el);
+    // A chip's label cap holds for agent writes, on what they touch (docs/specs/009-elements/badge.md).
+    const issue = el && (elementValidationIssue(el) ?? chipLabelIssue(el));
     if (issue) return invalidResult(id, kindOf(el), issue);
   }
   return null;

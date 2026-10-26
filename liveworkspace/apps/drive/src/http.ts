@@ -23,6 +23,7 @@ export const STATUS_OF: Record<DriveErrorCode, number> = {
   invalid_state: 400,
   rate_limited: 429,
   not_found: 404,
+  file_too_large: 413,
   google_failed: 502,
 };
 

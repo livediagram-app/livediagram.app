@@ -477,6 +477,21 @@ export async function swapTabData(
   return true;
 }
 
+// A tab's revision alone, or null when the plan lacks it: the room's scoped-structure check reads the stored body
+// only when this has moved on (room-scoped-structure.ts).
+export async function getTabRev(
+  env: PlanEnv,
+  projectId: string,
+  tabId: string,
+): Promise<number | null> {
+  const row = await env.PLAN_DB.prepare(
+    `SELECT t.rev FROM tabs t JOIN plan_tabs dt ON dt.tab_id = t.id WHERE t.id = ? AND dt.plan_id = ?`,
+  )
+    .bind(tabId, projectId)
+    .first<{ rev: number }>();
+  return row?.rev ?? null;
+}
+
 // Does the plan hold this tab? A workbench ticket naming a tab the plan lacks is refused
 // (docs/specs/013-workspace/blueprints/workbench-embeds.md "The ticket mint").
 export async function planHasTab(env: PlanEnv, projectId: string, tabId: string): Promise<boolean> {

@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { driveConnectUrl, parseDriveOpenState } from '@liveworkspace/drive/client';
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { driveClient } from '@/lib/drive/client';
-import { defaultReturn, openView, type OpenView } from '@/lib/drive/pages';
+import { defaultReturn, importFailedBody, openView, type OpenView } from '@/lib/drive/pages';
 import { workspaceOrigin } from '@/lib/explorer/page-app';
 import {
   DriveMessage,
@@ -22,7 +22,8 @@ import {
   useSignedIn,
 } from './DrivePage';
 
-type Step = { kind: 'opening' } | { kind: 'importing' } | { kind: 'import-failed' } | OpenView;
+type Step =
+  { kind: 'opening' } | { kind: 'importing' } | { kind: 'import-failed'; body: string } | OpenView;
 
 export function DriveOpenPage() {
   const here = useHere();
@@ -50,7 +51,7 @@ export function DriveOpenPage() {
     setStep({ kind: 'importing' });
     const result = await driveClient.importFile(fileId);
     if (result.ok) window.location.assign(result.data.url);
-    else setStep({ kind: 'import-failed' });
+    else setStep({ kind: 'import-failed', body: importFailedBody(result.error) });
   };
 
   const explorer = `${workspaceOrigin()}/explorer`;
@@ -100,11 +101,7 @@ export function DriveOpenPage() {
         return <DriveWorking text="Importing…" />;
       case 'import-failed':
         return (
-          <DriveMessage
-            state="import-failed"
-            title="The copy couldn’t be made"
-            body="The file couldn’t be read as one of your liveworkspace apps’ files."
-          >
+          <DriveMessage state="import-failed" title="The copy couldn’t be made" body={step.body}>
             <PrimaryLink href={explorer}>Go to Explorer</PrimaryLink>
           </DriveMessage>
         );

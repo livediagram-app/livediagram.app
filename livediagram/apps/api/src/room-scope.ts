@@ -58,6 +58,35 @@ export function scopedSenderMayRelay(op: unknown, tabScope: string | null): bool
   return typeof o.kind === 'string' && TAB_LESS_SENDABLE.has(o.kind);
 }
 
+// A tab's name is structure, so a scoped session never renames its tab
+// (docs/specs/013-workspace/tab-scoped-share-links.md "No rename from a scoped session"). Its `tab-meta` rename is
+// refused by scopedRenames below; its whole-`tab` op, which every receiver merges name and all, goes out stamped
+// with the stored name. `storedName` reads the room's store and is called only for that one case; a tab the store
+// does not name (null) passes as sent.
+export function scopedTabOp(
+  op: unknown,
+  tabScope: string | null,
+  storedName: (tabId: string) => string | null,
+): unknown {
+  if (tabScope === null) return op;
+  const o = op as { kind?: unknown; tabId?: unknown; tab?: unknown } | null;
+  if (o?.kind !== 'tab' || typeof o.tabId !== 'string') return op;
+  if (typeof o.tab !== 'object' || o.tab === null) return op;
+  const name = storedName(o.tabId);
+  if (name === null) return op;
+  return { ...o, tab: { ...o.tab, name } };
+}
+
+// Whether a scoped session's op renames its tab: a `tab-meta` patch that sets `name` or clears it.
+export function scopedRenames(op: unknown, tabScope: string | null): boolean {
+  if (tabScope === null) return false;
+  const o = op as { kind?: unknown; patch?: unknown; clear?: unknown } | null;
+  if (o?.kind !== 'tab-meta') return false;
+  const patch = o.patch;
+  if (typeof patch === 'object' && patch !== null && Object.hasOwn(patch, 'name')) return true;
+  return Array.isArray(o.clear) && o.clear.includes('name');
+}
+
 // document-meta carries every tab's name and folder. Other tabs keep their id
 // and position and are marked out of scope, exactly like the REST document
 // (redactDocumentForScope).

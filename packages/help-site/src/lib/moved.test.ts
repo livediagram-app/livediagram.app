@@ -7,9 +7,9 @@ describe('moved policy stubs', () => {
   it('words the terms stub as the marketing site does', () => {
     const help = termsMoved('livedesign');
     expect(help.metadata.description).toBe(
-      "The terms of service for livedesign are liveworkspace's, on liveworkspace.app.",
+      "The terms of use for livedesign are liveworkspace's, on liveworkspace.app.",
     );
-    expect(help.label).toBe('terms of service');
+    expect(help.label).toBe('terms of use');
     expect(help.href).toBe('https://liveworkspace.app/terms');
   });
 

@@ -69,6 +69,13 @@ describe('text', () => {
     ['=COUNTA(SPLIT("a,,b", ",", TRUE, FALSE))', 3],
     ['=COUNTA(SPLIT("a--b", "--", FALSE))', 2],
     ['=SPLIT(",", ",")', ''],
+    // An ISO date part (YYYY-MM-DD, a time after it allowed) is a date; other date-looking text stays text.
+    ['=SPLIT("2026-10-26,x", ",")', serialFromDate(2026, 10, 26)],
+    ['=SPLIT("2026-10-26 12:00", ",")', serialFromDate(2026, 10, 26) + 0.5],
+    ['=ISTEXT(SPLIT("26/10/2026", ","))', true],
+    ['=ISTEXT(SPLIT("Oct 26 2026", ","))', true],
+    ['=ISTEXT(SPLIT("2026-1-5", ","))', true],
+    ['=ISTEXT(SPLIT("2026-02-30", ","))', true],
     ['="a"&1&TRUE', 'a1TRUE'],
   ])('%s', (f, out) => {
     expect(calc(f, T)).toEqual(out);

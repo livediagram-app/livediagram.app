@@ -11,6 +11,7 @@ import {
   SHARE_LINKS_PER_ITEM,
   SHARE_PASSWORD_HEADER,
   SHARE_PASSWORD_MAX,
+  SHARE_PASSWORD_MIN,
   type Level,
   type ShareLink,
   type ShareLinkExpiry,
@@ -23,6 +24,7 @@ import {
   encodeCursor,
   generateShareCode,
   isId,
+  isPartId,
   isShareCode,
   parseLimit,
 } from './codec';
@@ -32,7 +34,8 @@ import { badRequest, conflict, json, noContent, notFound, readObject } from './h
 import { parseListFilters, sharedWithUpsert } from './items';
 import { filterClauses } from './lists';
 import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
-import { hashSharePassword } from './password-hash';
+import { hashSharePassword, verifySharePassword } from './password-hash';
+import { guessVisitorOf } from './share-guesses';
 import { expiringEventId, expiringStatements } from './share-expiry';
 import { eventStatements } from './timeline';
 import {
@@ -73,7 +76,7 @@ const LINK_COLUMNS = 'code, item_id, level, tab_id, expiry, expires_at, created_
 const INVALID = Symbol('invalid');
 function readTab(value: unknown): string | null | undefined | typeof INVALID {
   if (value === undefined || value === null) return value;
-  return isId(value) ? value : INVALID;
+  return isPartId(value) ? value : INVALID;
 }
 
 // The app ends the sessions a link admitted: at once when it is revoked, and when it is rescoped (another level or
@@ -127,14 +130,36 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
       await db.prepare('DELETE FROM share_passwords WHERE item_id = ?').bind(id).run();
       return json({ passwordSet: false });
     }
+    // A new one is at least SHARE_PASSWORD_MIN long; one stored before the rule keeps working (access.ts never asks).
+    if (trimmed.length < SHARE_PASSWORD_MIN) return badRequest('password_too_short');
+    const [current, codes] = (await db.batch([
+      db.prepare('SELECT hash FROM share_passwords WHERE item_id = ?').bind(id),
+      db
+        .prepare('SELECT code FROM share_links WHERE item_id = ? ORDER BY created_at LIMIT ?')
+        .bind(id, SHARE_LINKS_PER_ITEM),
+    ])) as D1Result<Record<string, unknown>>[];
+    const stored = (current!.results[0] as { hash: string } | undefined)?.hash ?? null;
+    // Saved unchanged: nobody is sent away.
+    if (stored && (await verifySharePassword(stored, trimmed))) return json({ passwordSet: true });
     const hash = await hashSharePassword(trimmed);
-    await db
-      .prepare(
-        `INSERT INTO share_passwords (item_id, hash, updated_at) VALUES (?, ?, ?)
-         ON CONFLICT (item_id) DO UPDATE SET hash = excluded.hash, updated_at = excluded.updated_at`,
-      )
-      .bind(id, hash, Date.now())
-      .run();
+    // A new or changed password holds for everyone who came in through a link before it, too: their Shared with me
+    // rows go (and with them the item from their Inbox and lists), and the app reloads the sessions every link admitted
+    // into what the link now asks, the password. Entering it records them again.
+    await db.batch([
+      db
+        .prepare(
+          `INSERT INTO share_passwords (item_id, hash, updated_at) VALUES (?, ?, ?)
+           ON CONFLICT (item_id) DO UPDATE SET hash = excluded.hash, updated_at = excluded.updated_at`,
+        )
+        .bind(id, hash, Date.now()),
+      db.prepare('DELETE FROM shared_with WHERE item_id = ?').bind(id),
+    ]);
+    tellRevoked(
+      ctx,
+      row,
+      (codes!.results as { code: string }[]).map((r) => r.code),
+      'rescoped',
+    );
     return json({ passwordSet: true });
   }
 
@@ -339,7 +364,7 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
   if (!access) {
     // The code is in the path, so the password header may come alone.
     const password = ctx.request.headers.get(SHARE_PASSWORD_HEADER) || null;
-    access = await linkAccess(link, password);
+    access = await linkAccess(env, row.id, link, password, guessVisitorOf(ctx.request));
     if (access instanceof Response) return access;
     // A public link (a Community post's) is not kept under Shared, and its author is not told of the visit.
     if (person && !link.public) {

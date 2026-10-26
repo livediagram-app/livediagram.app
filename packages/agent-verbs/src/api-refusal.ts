@@ -2,7 +2,7 @@
 // words on the CLI and the MCP. A 5xx or anything not from the api is not a refusal: the caller lets it throw.
 // The words name the product's files and its MCP tools (`find_<collection>`, `restore_<noun>`).
 import { ApiError } from '@liveworkspace/api-client';
-import type { AgentProduct } from './product';
+import { wordOf, type AgentProduct } from './product';
 
 export interface ApiRefusal {
   code: string;
@@ -27,5 +27,24 @@ export function createApiRefusal(product: Pick<AgentProduct, 'noun' | 'collectio
     const known = BY_STATUS[err.status];
     if (known) return { code, message: `The api refused it: ${known}` };
     return { code, message: `The api refused it (${code}).` };
+  };
+}
+
+// Why a delete of one of the product's files, or of one of its tabs, was refused, by the status the api answered.
+export function createDeleteRefusal(product: AgentProduct) {
+  const { noun, collection } = product;
+  const word = wordOf(product);
+  return function deleteRefusal(status: number, tab: boolean): string {
+    if (status === 410) return 'It is already in the Trash (see list_trash).';
+    if (status === 403) return `You may view this ${word} but not change it.`;
+    if (status === 404)
+      return tab
+        ? `No such tab in this ${word}: read_${noun} lists its tabs.`
+        : `No such ${word}, or it is not yours: find_${collection} lists them.`;
+    if (tab && status === 409)
+      return `A ${word} must keep at least one tab: you cannot delete the last one.`;
+    return tab
+      ? `The api refused it (${status}): check the ${word} and tab ids.`
+      : `Check the ${word} id and that you own it.`;
   };
 }

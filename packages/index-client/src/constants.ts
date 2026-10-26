@@ -76,6 +76,8 @@ export const COLLAB_CARDS_TAB = '~cards';
 export const TITLE_MAX = 500;
 export const FOLDER_NAME_MAX = 500;
 export const SHARE_PASSWORD_MAX = 256;
+// The shortest share password the index takes, counted after trimming. One set before this rule keeps working.
+export const SHARE_PASSWORD_MIN = 6;
 // Live and lapsed links together, per item.
 export const SHARE_LINKS_PER_ITEM = 100;
 export const SEARCH_MAX = 200;
@@ -233,6 +235,8 @@ export const INDEX_ERRORS = [
   'invalid_form_seen',
   'invalid_events',
   'invalid_password',
+  // A new share password shorter than SHARE_PASSWORD_MIN.
+  'password_too_short',
   'not_team_member',
   'folder_exists',
   'item_exists',
@@ -245,7 +249,8 @@ export const INDEX_ERRORS = [
   'wrong_app',
   'copy_failed',
   'grants_unavailable',
-  // The migration's handoff (POST /app/migration/handoff): too many a minute, a body over 32 MiB, the app's door failed.
+  // Too many a minute: the migration's handoff, and share-password guesses (429 with Retry-After). Then the
+  // handoff's: a body over 32 MiB, the app's door failed.
   'rate_limited',
   'payload_too_large',
   'migration_failed',

@@ -70,7 +70,9 @@ function interleave(db: SqliteD1, times: number) {
   let left = times;
   db.env.PLAN_DB.batch = async (statements: D1PreparedStatement[]) => {
     // Only a tab write meets the race: the plan's reads (its outline, the outbox drain) batch too.
-    const writesTab = statements.some((st) => /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query));
+    const writesTab = statements.some((st) =>
+      /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query),
+    );
     if (writesTab && left > 0) {
       left -= 1;
       const row = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!;

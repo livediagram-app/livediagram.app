@@ -132,9 +132,9 @@ describe('the reference index on tab writes', () => {
     sheetRow('d1', 'sheetA00', 't1');
     await upsertTab(sql.env, 'd1', tab('t1', [sheetEl('e1', 'sheetA00')]), 0);
     await testCopyPlan(sql.env, 'd1', 'd3', 'o', 'Copy');
-    const copied = sql.sql
-      .prepare(`SELECT tab_id FROM plan_tabs WHERE plan_id = 'd3'`)
-      .get() as { tab_id: string };
+    const copied = sql.sql.prepare(`SELECT tab_id FROM plan_tabs WHERE plan_id = 'd3'`).get() as {
+      tab_id: string;
+    };
     expect(refs(copied.tab_id)).toEqual(['sheetA00']);
     expect(state('d3', 'sheetA00')!.since).toBeNull();
   });

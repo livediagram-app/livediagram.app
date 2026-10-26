@@ -655,7 +655,8 @@ url.dll,FileProtocolHandler <url>` on Windows; the URL is one argument and never
   `error=access_denied` ends with exit 4. `POST /oauth/token` form `grant_type=authorization_code`, `code`,
   `code_verifier`, `redirect_uri`, `client_id`. Timeout `LOGIN_TIMEOUT_MS`.
 - `loginWithDevice`: `POST /oauth/device_authorization`; stderr: `Open <verification_uri> and enter <user code>.`
-  and the complete URL; polls `/oauth/token` every `interval` seconds, honouring `slow_down`, until the code's
+  and the complete URL; polls `/oauth/token` every `interval` seconds (`DEVICE_POLL_INTERVAL_S` when it is not a number, clamped to 1 to 60
+  s), honouring `slow_down` (never past 60 s), until the code's
   `expires_in` (`DEVICE_CODE_TTL_S` when absent) has passed: a poll that would land after it is not sent, and the
   login ends with the expired-code error, as for `expired_token`.
 - `loginWithToken`: stdin must not be a terminal (exit 2 otherwise); reads to end, trims, `isApiTokenFormat`, else

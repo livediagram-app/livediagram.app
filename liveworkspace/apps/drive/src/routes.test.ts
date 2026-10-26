@@ -313,6 +313,25 @@ describe('open and import', () => {
       expect(await res.json()).toEqual({ error: 'google_failed' });
     }
   });
+
+  it('answers 413 file_too_large for a file bigger than an import takes', async () => {
+    await h.connect();
+    const object = asObject();
+    deps = {
+      ...deps,
+      mirrors: () => ({
+        ...object,
+        importFile: async () => ({ refused: 'file_too_large' as const }),
+      }),
+    };
+    const res = await call('/api/drive/import', {
+      method: 'POST',
+      bearer: await token(PERSON),
+      body: { fileId: 'file_1' },
+    });
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: 'file_too_large' });
+  });
 });
 
 describe('the index’s and accounts’ calls', () => {

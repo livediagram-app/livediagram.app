@@ -42,8 +42,8 @@ export function Hero() {
           data-hero-anchor="lead"
           className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
         >
-          Pick a starting point and release what&rsquo;s inside your mind. Diagram, sketch, run a
-          session or publish, then share one link and build it together.
+          Pick a starting point and release what&rsquo;s inside your mind. Diagram, sketch or run a
+          session, then share one link and build it together.
         </p>
         <HeroSearch />
       </div>

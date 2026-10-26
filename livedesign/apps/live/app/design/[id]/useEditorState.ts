@@ -101,6 +101,7 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import type { Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
+import { ROOM_FULL_NOTICE } from '@/lib/api/room';
 import { useDesignList } from '@/hooks/persistence/useDesignList';
 import { useDesignShareState } from '@/hooks/persistence/useDesignShareState';
 import { useTokenTeams } from '@/lib/explorer-host';
@@ -908,6 +909,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
     enabled: !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
+    onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
     designTeamId,
     selfParticipant,
     sessionShareCode,

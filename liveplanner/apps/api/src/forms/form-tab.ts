@@ -51,9 +51,7 @@ export async function sheetOnItsTab(
   sheet: FormSheetDestination,
 ): Promise<boolean> {
   const head = await readSheetHead(env, projectId, sheet.sheetId);
-  return (
-    !!head && head.tabId === sheet.tabId && (await planHasTab(env, projectId, sheet.tabId))
-  );
+  return !!head && head.tabId === sheet.tabId && (await planHasTab(env, projectId, sheet.tabId));
 }
 
 // Why responses could not land now, or null when they can (docs/specs/030-forms/forms.md "Responses to a Sheet",

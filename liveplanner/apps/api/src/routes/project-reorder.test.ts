@@ -28,13 +28,10 @@ async function board(): Promise<SqliteD1> {
 
 const order = (db: SqliteD1) =>
   db.sql
-    .prepare(
-      "SELECT tab_id, folder FROM plan_tabs WHERE plan_id = 'D' ORDER BY order_index",
-    )
+    .prepare("SELECT tab_id, folder FROM plan_tabs WHERE plan_id = 'D' ORDER BY order_index")
     .all()
     .map((r) => [r.tab_id, r.folder]);
-const name = (db: SqliteD1) =>
-  db.sql.prepare("SELECT name FROM plan WHERE id = 'D'").get()!.name;
+const name = (db: SqliteD1) => db.sql.prepare("SELECT name FROM plan WHERE id = 'D'").get()!.name;
 
 beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {});

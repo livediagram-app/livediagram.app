@@ -4,12 +4,15 @@
 // ROOM_RECONNECT_MAX_MS; a document moved to the Trash ends the stream.
 
 import { ApiError, type ApiClient } from '@liveworkspace/api-client';
-import { DOCUMENT_TRASHED_CLOSE } from '@livedocuments/api-schema';
+import { DOCUMENT_TRASHED_CLOSE, ROOM_FULL_CLOSE } from '@livedocuments/api-schema';
 import type { CliIo, RoomSocket } from '../io';
 
 export const ROOM_RECONNECT_MIN_MS = 1_000;
 export const ROOM_RECONNECT_MAX_MS = 30_000;
 const NORMAL_CLOSE = 1000;
+// Said once per spell of being turned away from a full room (docs/specs/015-api/api.md "Room size").
+export const ROOM_FULL_LINE = 'This room is full; waiting for a place…';
+const ROOM_FULL_SETTLE_MS = 1_000;
 
 export type RoomStreamEnd = 'stopped' | 'trashed';
 
@@ -47,6 +50,7 @@ export function openRoomStream(deps: Deps): RoomStream {
   let stopped = false;
   let backoff = ROOM_RECONNECT_MIN_MS;
   let reconnecting = false;
+  let roomFull = false;
   let cancelRetry: (() => void) | null = null;
   let settle!: (end: RoomStreamEnd) => void;
   let fail!: (err: unknown) => void;
@@ -56,7 +60,7 @@ export function openRoomStream(deps: Deps): RoomStream {
   });
 
   const retry = () => {
-    deps.notice('reconnecting…');
+    if (!roomFull) deps.notice('reconnecting…');
     reconnecting = true;
     log(`room reconnect in ${backoff} ms`);
     cancelRetry = io.timer(backoff, () => {
@@ -82,11 +86,20 @@ export function openRoomStream(deps: Deps): RoomStream {
     if (stopped) return;
     const ws = io.openSocket(socketUrl(deps.apiBase, documentId, ticket));
     socket = ws;
+    // After a full room, a socket that opens may be closed again at once: it counts as rejoined only once it
+    // has stayed open ROOM_FULL_SETTLE_MS, so a crowd outside the room never hears "reconnected" each minute.
+    let cancelSettle: (() => void) | null = null;
     ws.onOpen(() => {
       log('room open');
-      backoff = ROOM_RECONNECT_MIN_MS;
-      if (reconnecting) deps.onReconnected();
-      reconnecting = false;
+      const rejoined = () => {
+        cancelSettle = null;
+        backoff = ROOM_RECONNECT_MIN_MS;
+        roomFull = false;
+        if (reconnecting) deps.onReconnected();
+        reconnecting = false;
+      };
+      if (roomFull) cancelSettle = io.timer(ROOM_FULL_SETTLE_MS, rejoined);
+      else rejoined();
     });
     ws.onMessage((data) => {
       let frame: unknown;
@@ -108,10 +121,18 @@ export function openRoomStream(deps: Deps): RoomStream {
     ws.onClose((code) => {
       log(`room closed ${code}`);
       socket = null;
+      cancelSettle?.();
+      cancelSettle = null;
       if (stopped) return;
       if (code === DOCUMENT_TRASHED_CLOSE) {
         stopped = true;
         return settle('trashed');
+      }
+      // A full room frees up when somebody leaves: try again at the longest backoff, saying so once.
+      if (code === ROOM_FULL_CLOSE) {
+        if (!roomFull) deps.notice(ROOM_FULL_LINE);
+        roomFull = true;
+        backoff = ROOM_RECONNECT_MAX_MS;
       }
       retry();
     });

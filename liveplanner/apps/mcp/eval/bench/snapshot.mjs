@@ -37,9 +37,7 @@ async function snapshotProject(client, projectId) {
   const listed = resultJson(await client.call('list_sheets', { projectId }));
   const sheets = [];
   for (const s of listed?.sheets ?? []) {
-    const read = resultJson(
-      await client.call('read_sheet', { projectId, sheet: s.id ?? s.title }),
-    );
+    const read = resultJson(await client.call('read_sheet', { projectId, sheet: s.id ?? s.title }));
     sheets.push({ ...s, read });
   }
   return { id: projectId, name: first.name, tabs, items, sheets };

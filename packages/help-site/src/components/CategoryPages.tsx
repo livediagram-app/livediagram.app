@@ -3,10 +3,12 @@ import type { HelpSite } from '../site';
 import { ArticleCard } from './ArticleCard';
 import { BrowsePage } from './BrowsePage';
 import { CategoryCard } from './CategoryCard';
+import { featuresDescription } from '../lib/features-description';
 
 // The listing routes every help centre has (docs/specs/018-help/help-pages.md "Category pages"): a support
-// category's page of article cards, and the features index of category cards. The copy (title, lede, the
-// description search engines show) is the product's, passed in by its route file.
+// category's page of article cards, and the features index of category cards. A support category's copy (title,
+// lede, the description search engines show) is the product's, passed in by its route file; the features index's
+// description is made from the catalogue.
 
 export interface ListingCopy {
   title: string;
@@ -59,9 +61,15 @@ export function SupportCategoryPage({
   );
 }
 
-/** The features index's metadata, at `/help/features/`. */
-export function featuresMetadata(site: HelpSite, description: string): Metadata {
-  return site.helpMetadata({ title: 'Features', description, path: '/help/features/' });
+/** The features index's metadata, at `/help/features/`. Its description names every feature category, made from
+ *  the catalogue (featuresDescription), so no app writes it by hand. */
+export function featuresMetadata(site: HelpSite): Metadata {
+  const areas = site.catalogue.categories.filter((c) => c.kind === 'feature').map((c) => c.title);
+  return site.helpMetadata({
+    title: 'Features',
+    description: featuresDescription(site.facts.siteName, areas),
+    path: '/help/features/',
+  });
 }
 
 /** The features index: every feature category as a card. */

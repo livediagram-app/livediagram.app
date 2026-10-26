@@ -1,3 +1,4 @@
+import { parseCssColour, parseCssColourAlpha } from '@liveworkspace/model-core/css-colour';
 import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
@@ -54,19 +55,33 @@ export function defaultPadding(element: BoxedElement): Padding {
 
 export type RGB = { r: number; g: number; b: number };
 
-// `#rrggbb` (the `#` optional) to 0-255 channels, or null for anything else
-// (shorthand, a CSS name, an rgb() string). The one hex parser: callers that
-// know their input is a catalogue hex assert it rather than re-parsing.
+// A colour as written to 0-255 channels, or null for anything it cannot read. It reads `#rrggbb` and the shorthand
+// `#rgb` (the `#` optional, surrounding spaces ignored), either with an alpha digit pair or digit (`#rrggbbaa`, `#rgba`, the alpha set aside: the
+// channels are what an ink is judged against), and the CSS named colours (`red`, `slategray`; any case, trimmed),
+// because agents write all of them (docs/specs/011-theme/light-and-dark.md "Colours an agent writes"). An rgb()
+// string, `transparent` and anything else stay null. The one colour parser, shared by the models
+// (@liveworkspace/model-core/css-colour): callers that know their input is a catalogue hex assert it rather than
+// re-parsing.
 export function hexToRgb(hex: string): RGB | null {
-  const m = /^#?([a-fA-F\d]{2})([a-fA-F\d]{2})([a-fA-F\d]{2})$/.exec(hex);
-  if (!m) return null;
-  return { r: parseInt(m[1]!, 16), g: parseInt(m[2]!, 16), b: parseInt(m[3]!, 16) };
+  return parseCssColour(hex);
+}
+
+// Any colour hexToRgb reads, as `#rrggbb`; null for the rest. For code that hands a colour on to a parser that only
+// knows `#rrggbb` (mixing, OKLCH walks).
+export function normaliseHex(colour: string): string | null {
+  const c = parseCssColour(colour);
+  return c ? rgbToHex(c) : null;
+}
+
+// Whether a colour reads and is fully opaque: `#fff8` and `#0ea5e980` read but show what is under them.
+export function colourIsOpaque(colour: string): boolean {
+  return parseCssColourAlpha(colour)?.a === 255;
 }
 
 // WCAG 2.2 SC 1.4.3: the minimum contrast for normal-size text (AA).
 export const MIN_TEXT_CONTRAST = 4.5;
 
-// WCAG 2.2 contrast ratio of two `#rrggbb` colours, in [1, 21] and
+// WCAG 2.2 contrast ratio of two colours hexToRgb reads, in [1, 21] and
 // order-independent. NaN for any other input, so a `>=` threshold check
 // can never pass on a colour it could not read.
 export function contrastRatio(a: string, b: string): number {
@@ -77,7 +92,6 @@ export function contrastRatio(a: string, b: string): number {
 }
 
 function relativeLuminance(hex: string): number | null {
-  if (!hex.startsWith('#')) return null;
   const rgb = hexToRgb(hex);
   if (!rgb) return null;
   const channel = (v: number) => {

@@ -42,6 +42,9 @@ header; they are not in the palette.
   every card is done and 0% only when none is: 199 of 200 is 99%, 1 of 300 is 1%. Points counts points, not cards,
   so it reads 100% once every point is done (an unestimated card left open counts for nothing); a dashboard Sheet
   Metric's goal percent reads 100% only once its target is met.
+- **Not done** means a card in a column before the board's done column. Due Soon's overdue and due-soon counts, Stale
+  Cards and their dashboard tiles count only those, and Due Soon's narrowing shows only those: a card in Done, or in a
+  column after it (Won't Do), is never overdue or stale. A board with no done column counts every card.
 - Lone counts in widgets and column heads are badges: the figure in a small pill.
 - The Filter and Only Mine widgets are each viewer's own and unsaved (the quick filter, see plan-board.md); taking
   either widget off the board clears that narrowing.

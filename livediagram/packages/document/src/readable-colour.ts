@@ -1,6 +1,6 @@
 // Readable colour pairs (docs/specs/011-theme/light-and-dark.md): walking a colour's lightness until it reads on
 // another. Shared by the theme halves (tuning a theme's text and lines) and the style presets (a label on its fill).
-import { contrastRatio, isLightColor, shade } from './colors';
+import { contrastRatio, isLightColor, normaliseHex, shade } from './colors';
 import { hexOklch, oklchHex } from './pen-colours';
 
 /** The WCAG 2.2 AA floors: text on its fill, and outlines / arrows (non-text) on the canvas. */
@@ -38,7 +38,9 @@ export function reachContrast(fg: string, bg: string, min: number): string {
 
 /** A label for a filled tile: white on a dark fill, a deep shade of the fill on a light one. When that misses the text
  *  floor (white on a mid sky blue is 2.8:1), whichever of the two reads better is walked on until it reaches it. */
-export function labelOn(fill: string): string {
+export function labelOn(written: string): string {
+  // A shorthand or named fill (`#fff`, `red`) as `#rrggbb`, which the OKLCH walk below reads; an unreadable one as is.
+  const fill = normaliseHex(written) ?? written;
   const deep = shade(fill, 0.6);
   const first = isLightColor(fill) ? deep : '#ffffff';
   if (contrastRatio(first, fill) >= THEME_TEXT_CONTRAST) return first;

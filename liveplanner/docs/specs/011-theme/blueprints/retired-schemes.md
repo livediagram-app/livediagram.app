@@ -10,7 +10,7 @@ Scope, by file:
 
 | File                                               | Role                                                                     |
 | -------------------------------------------------- | ------------------------------------------------------------------------ |
-| packages/project/src/retired-schemes.ts          | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`        |
+| packages/project/src/retired-schemes.ts            | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`        |
 | `packages/project/src/stored-tab.ts`               | `migrateStoredTab`: retired scheme + stored-element migrations, one call |
 | `packages/project/src/themes-data.ts`, `themes.ts` | `LEGACY_THEMES` and the `'charcoal'` `ThemeId` are removed               |
 | `apps/editor/lib/themes.ts`, `themes-taxonomy.ts`  | Drop the legacy lookup and Charcoal's taxonomy rows                      |
@@ -127,19 +127,19 @@ a tab with nothing to migrate.
 
 ## Testing
 
-| Rule                                                   | Test                                                              |
-| ------------------------------------------------------ | ----------------------------------------------------------------- |
+| Rule                                                   | Test                                                            |
+| ------------------------------------------------------ | --------------------------------------------------------------- |
 | Detection (three branches)                             | packages/project/src/retired-schemes.test.ts, "retiredSchemeOf" |
-| Charcoal → Default, baked colours removed              | `retired-schemes.test.ts`, "a Charcoal tab"                       |
-| Choices kept (I2), untouched kinds, table cell fill    | `retired-schemes.test.ts`                                         |
-| Previous dark half → current; single-colour match kept | `retired-schemes.test.ts`, "Default's previous dark half"         |
-| Idempotent (I1), same object (I3)                      | `retired-schemes.test.ts`                                         |
-| Composition (I4)                                       | `packages/project/src/stored-tab.test.ts`                         |
-| Charcoal no longer resolves or is offered              | `packages/project/src/default-scheme.test.ts`                     |
-| api read path                                          | `apps/api/src/tab-row.test.ts`                                    |
-| Thumbnail path                                         | `apps/api/src/thumbnail.test.ts`                                  |
-| Offline read path                                      | `apps/editor/lib/offline/offline-store.test.ts`                   |
-| Import path                                            | `apps/editor/lib/import-merge.test.ts`                            |
+| Charcoal → Default, baked colours removed              | `retired-schemes.test.ts`, "a Charcoal tab"                     |
+| Choices kept (I2), untouched kinds, table cell fill    | `retired-schemes.test.ts`                                       |
+| Previous dark half → current; single-colour match kept | `retired-schemes.test.ts`, "Default's previous dark half"       |
+| Idempotent (I1), same object (I3)                      | `retired-schemes.test.ts`                                       |
+| Composition (I4)                                       | `packages/project/src/stored-tab.test.ts`                       |
+| Charcoal no longer resolves or is offered              | `packages/project/src/default-scheme.test.ts`                   |
+| api read path                                          | `apps/api/src/tab-row.test.ts`                                  |
+| Thumbnail path                                         | `apps/api/src/thumbnail.test.ts`                                |
+| Offline read path                                      | `apps/editor/lib/offline/offline-store.test.ts`                 |
+| Import path                                            | `apps/editor/lib/import-merge.test.ts`                          |
 
 ## Constants and configuration
 

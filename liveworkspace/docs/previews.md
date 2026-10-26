@@ -193,6 +193,9 @@ Locally it runs with media (`corepack pnpm dev:media`, port 8792, in `dev:worksp
 - **An Explorer page of 50 items** asks for at most 50 previews, 4 at a time, only as cards near the screen, once per
   item version (the browser keeps each a day). Every request is same-origin now: no CORS preflight, which a
   cross-origin request with `Authorization` needed per item before, and livedocuments' items have previews at all.
+- **The page's preview cache** holds 200 previews (blob URLs, least recently used out), grown to every mounted card
+  while more than that are on the page and shrunk back as they unmount, so a long grid never evicts and refetches its
+  own pictures. It never holds more than 1,000; past that a card asks once and stays empty rather than ask again.
 - **A preview on the hit path** is one index read (a service binding, one D1 lookup by id) and one R2 read. The old
   path also woke the item's Durable Object to learn its last save, and minted and signed a grant.
 - **A miss** is one call to the app's door: one Durable Object call, one render, as before.

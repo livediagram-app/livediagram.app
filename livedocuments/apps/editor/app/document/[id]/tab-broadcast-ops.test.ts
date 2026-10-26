@@ -170,4 +170,13 @@ describe('tabBroadcastOps: articles (docs/specs/007-editor/article-pages.md "Col
     const local = withDoc(P('mine'));
     expect(mergeRemoteTab(local, tab()).articles).toBe(local.articles);
   });
+
+  // A tab-scoped session's whole tab reaches us without its name (the room drops it: a tab's name is
+  // structure, docs/specs/013-workspace/tab-scoped-share-links.md): ours stays.
+  it('keeps our tab name when the whole tab arrives without one', () => {
+    const { name: _name, ...nameless } = tab({ name: 'Theirs' });
+    void _name;
+    expect(mergeRemoteTab(tab({ name: 'Ours' }), nameless as Tab).name).toBe('Ours');
+    expect(mergeRemoteTab(tab({ name: 'Ours' }), tab({ name: 'Theirs' })).name).toBe('Theirs');
+  });
 });

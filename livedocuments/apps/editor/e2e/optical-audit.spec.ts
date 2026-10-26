@@ -66,8 +66,12 @@ test.describe('Optical alignment audit', () => {
 
   test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
     await openSeededEditor(page, baseURL!);
-    await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Document' }).waitFor();
+    // The shared Share dialog (`@liveworkspace/explorer`, ShareDialog.test.tsx): named "Share <the document>",
+    // headed "Share This Document", its composer ending in Create Pass.
+    await page.getByRole('button', { name: /^Shared?$/ }).click();
+    const dialog = page.getByRole('dialog', { name: /^Share / });
+    await dialog.getByRole('heading', { name: 'Share This Document' }).waitFor();
+    await dialog.getByRole('button', { name: 'Create Pass' }).waitFor();
     await expectCentred(page, 'Share dialog');
     expectNoPageErrors(pageErrors);
   });

@@ -107,4 +107,38 @@ describe('the tab rename route', () => {
       (await call(db, 'PUT', '/api/documents/D/tabs/t1/name', { name: 'A' }, 'user_x')).status,
     ).toBe(403);
   });
+
+  // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): an editor whose
+  // link opens only this tab may edit its content, never rename it.
+  it('refuses a tab-scoped editor, even on its own tab', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { db, room } = await setUp();
+    const scoped = {
+      item: 'D',
+      level: 'edit' as const,
+      tab: 't1',
+      sub: 'user_v',
+      team: null,
+      exp: 2_000_000_000,
+      shareCode: 'code1',
+      token: 'g',
+    };
+    const res = await handleDocuments(
+      makeTestRouteContext('PUT', '/api/documents/D/tabs/t1/name', {
+        env: db.env,
+        owner: 'user_v',
+        accountUserId: 'user_v',
+        verifiedUserId: 'user_v',
+        body: { name: 'Mine now' },
+        grant: scoped,
+      }),
+    );
+    expect(res.status).toBe(403);
+    expect(db.sql.prepare("SELECT name FROM tabs WHERE id = 't1'").get()).toEqual({
+      name: 'Board',
+    });
+    expect(room.bodies).not.toContainEqual(
+      expect.objectContaining({ op: expect.objectContaining({ kind: 'tab-meta' }) }),
+    );
+  });
 });

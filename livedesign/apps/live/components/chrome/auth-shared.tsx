@@ -13,7 +13,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
-import { sameOriginPath } from '@liveworkspace/workbench/lib/same-origin-path';
+import { isPostAuthPath } from '@liveworkspace/auth-client/return-path';
 import { AUTH_TITLE, AuthStage } from './AuthStage';
 import { AccountPitch } from './auth-pitches';
 
@@ -135,25 +135,12 @@ export const POST_AUTH_DEFAULT = '/new';
 // welcome flow that suits a fresh sign-up. See docs/specs/014-identity/auth-and-guest-access.md.
 export const POST_AUTH_SIGNIN_DEFAULT = '/explorer';
 
-// A redirect_url is safe iff it's a same-origin absolute path that isn't an
-// auth page. sameOriginPath is the open-redirect guard: it also refuses the
-// `\` and control-character tricks browsers normalise into `//host`.
-function isSafeInternalPath(p: string | null | undefined): p is string {
-  const safe = sameOriginPath(p);
-  return (
-    safe !== null &&
-    safe === p &&
-    !safe.toLowerCase().startsWith('/sign-in') &&
-    !safe.toLowerCase().startsWith('/get-started')
-  );
-}
-
 export function resolvePostAuthDestination(
   searchParams: { get: (key: string) => string | null },
   defaultDest: string = POST_AUTH_DEFAULT,
 ): string {
   const redirect = searchParams.get('redirect_url');
-  return isSafeInternalPath(redirect) ? redirect : defaultDest;
+  return isPostAuthPath(redirect) ? redirect : defaultDest;
 }
 
 // Where the header's "Not now, keep going as a guest" link goes
@@ -165,9 +152,7 @@ export function resolvePostAuthDestination(
 const SIGNED_IN_ONLY = /^\/(oauth|workbench)(\/|\?|#|$)/i;
 export function guestReturnHref(searchParams: { get: (key: string) => string | null }): string {
   const redirect = searchParams.get('redirect_url');
-  return isSafeInternalPath(redirect) && !SIGNED_IN_ONLY.test(redirect)
-    ? redirect
-    : POST_AUTH_DEFAULT;
+  return isPostAuthPath(redirect) && !SIGNED_IN_ONLY.test(redirect) ? redirect : POST_AUTH_DEFAULT;
 }
 
 // The hand-off to the accounts site: this app's api starts the sign-in and
@@ -184,7 +169,7 @@ export function accountsSignInUrl(destination: string): string {
 // The resolvers above CONSUME `?redirect_url` on the auth pages. These
 // build it, so every "Sign in" / "Create account" trigger sends the user
 // back where they started after auth. Same param name, same safety rules
-// (via isSafeInternalPath) — an unsafe or auth-page `returnTo` is simply
+// (via isPostAuthPath) — an unsafe or auth-page `returnTo` is simply
 // dropped, so the auth page falls back to its own default and we never
 // seed a redirect loop or an open redirect.
 // ---------------------------------------------------------------------
@@ -194,7 +179,7 @@ export function authHrefWithReturn(
   authPath: '/sign-in/' | '/get-started/',
   returnTo: string | null | undefined,
 ): string {
-  return isSafeInternalPath(returnTo)
+  return isPostAuthPath(returnTo)
     ? `${authPath}?redirect_url=${encodeURIComponent(returnTo)}`
     : authPath;
 }

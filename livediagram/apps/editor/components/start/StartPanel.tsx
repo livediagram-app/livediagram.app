@@ -7,6 +7,7 @@
 // draws them, in the tab's own light or dark look (the palette).
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -29,7 +30,7 @@ import { useChromeFloor } from '@liveworkspace/workbench/components/toast/useToa
 import type { EditorMode } from '@livediagram/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import type { StartPalette } from './start-palette';
+import { CHOSEN_HOVER_TINT, CHOSEN_TINT, chosenLabel, type StartPalette } from './start-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
 import { StartOtherModes, type StartPanelElsewhere } from './StartOtherModes';
 import { takeStartQuery } from '@liveworkspace/workbench/components/start/start-query';
@@ -167,6 +168,8 @@ export function StartPanel<C extends string>({
       ?.querySelector<HTMLButtonElement>(`[data-rail="${next.id}"]`)
       ?.focus();
   };
+  // The chosen row's label: the accent, darkened as far as it needs to read at AA on its tint.
+  const chosenInk = useMemo(() => chosenLabel(palette), [palette]);
   const railButton = (c: StartPanelCategory<C>) => {
     const Icon = c.icon;
     const on = !searching && c.id === category;
@@ -180,9 +183,9 @@ export function StartPanel<C extends string>({
         className="flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] font-medium transition duration-micro hover:bg-[var(--start-hover)] motion-reduce:transition-none"
         style={
           {
-            backgroundColor: on ? startTint(palette, 14) : undefined,
-            color: on ? palette.focus : palette.text,
-            '--start-hover': on ? startTint(palette, 18) : startTint(palette, 7),
+            backgroundColor: on ? startTint(palette, CHOSEN_TINT) : undefined,
+            color: on ? chosenInk : palette.text,
+            '--start-hover': on ? startTint(palette, CHOSEN_HOVER_TINT) : startTint(palette, 7),
           } as CSSProperties
         }
       >

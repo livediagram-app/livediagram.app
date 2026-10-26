@@ -54,6 +54,18 @@ name = "MIGRATION_LIMITER"
 namespace_id = "1106"
 simple = { limit = 60, period = 60 }
 
+# Share-password guesses (src/share-guesses.ts): a try this isolate hasn't already found right counts against the
+# visitor's network and against the item, whatever the network. Over either: 429 with Retry-After (60, the period).
+[[ratelimits]]
+name = "SHARE_GUESS_VISITOR_LIMITER"
+namespace_id = "1107"
+simple = { limit = 10, period = 60 }
+
+[[ratelimits]]
+name = "SHARE_GUESS_ITEM_LIMITER"
+namespace_id = "1108"
+simple = { limit = 30, period = 60 }
+
 # The Google Drive mirror's service, which the change signal goes through (src/drive.ts). Without it
 # the index sends no signal and nothing else changes.
 [[services]]
@@ -90,6 +102,16 @@ crons = ["23 4 * * *", "*/15 * * * *"]
 name = "MIGRATION_LIMITER"
 namespace_id = "2106"
 simple = { limit = 60, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "SHARE_GUESS_VISITOR_LIMITER"
+namespace_id = "2107"
+simple = { limit = 10, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "SHARE_GUESS_ITEM_LIMITER"
+namespace_id = "2108"
+simple = { limit = 30, period = 60 }
 
 # The Google Drive mirror on staging (liveworkspace/docs/drive.md).
 [[env.staging.services]]

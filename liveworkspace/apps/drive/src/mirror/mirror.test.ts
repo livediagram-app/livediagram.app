@@ -2,7 +2,12 @@
 // can't see", "Open with", "Disconnecting"): consent, the account switch, disconnect, the Picker's token, adopting a
 // folder, the marks, Check now, and what Open with does with a file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DRIVE_ACCOUNT_SWITCH_TTL_MS, DRIVE_PICKER_TOKENS_PER_MINUTE } from '@liveworkspace/drive';
+import {
+  DRIVE_ACCOUNT_SWITCH_TTL_MS,
+  DRIVE_IMPORT_MAX_BYTES,
+  DRIVE_PICKER_TOKENS_PER_MINUTE,
+} from '@liveworkspace/drive';
+import { IMPORT_MAX_BYTES } from '@liveworkspace/index-app';
 import {
   envelopeOf,
   GOOGLE_USER,
@@ -261,6 +266,20 @@ describe('Open with', () => {
     const hidden = h.google.userCreateFolder(GOOGLE_USER, 'Hidden');
     expect(await h.mirror.open(PERSON, { fileId: hidden })).toEqual({ action: 'allow_access' });
     expect(await h.mirror.open('user_other', { fileId: pdf })).toEqual({ action: 'allow_access' });
+  });
+
+  it('refuses to import a file larger than an app’s import door takes, without reading all of it', async () => {
+    expect(DRIVE_IMPORT_MAX_BYTES).toBe(IMPORT_MAX_BYTES);
+    const big = h.google.otherUserFile({
+      owner: GOOGLE_USER,
+      name: 'Huge.livediagram',
+      mimeType: 'application/vnd.livediagram+json',
+      content: `{"kind":"livediagram.document","pad":"${'x'.repeat(DRIVE_IMPORT_MAX_BYTES)}"}`,
+      appProperties: {},
+    });
+    expect(await h.mirror.importFile(PERSON, { fileId: big })).toEqual({
+      refused: 'file_too_large',
+    });
   });
 
   it('refuses to import a file that isn’t an app’s envelope', async () => {

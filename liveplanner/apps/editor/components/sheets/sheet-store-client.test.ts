@@ -717,6 +717,65 @@ describe('validation rules in the store (docs/specs/029-sheets/data-validation.m
     const sent = srv.api.writeSheet.mock.calls.map((c) => c[2] as { unchecked?: boolean });
     expect(sent.map((r) => r.unchecked)).toEqual([true, true]);
   });
+  it('shrinks another sheet’s range into one whose rows go, in the same undo step', async () => {
+    // Two sheets on the tab, each stored by a fake server that applies writes in order.
+    const sheets = new Map<string, Sheet>([
+      ['sheet0001', sheetFromJson(initial())],
+      [
+        'sheet0002',
+        sheetFromJson({
+          ...initial(),
+          id: 'sheet0002',
+          title: 'Sum',
+          layout: emptyLayout(rand, 3, 2),
+        }),
+      ],
+    ]);
+    const sent: { id: string; write: SheetWrite }[] = [];
+    const api = {
+      fetchSheets: vi.fn(async () => [...sheets.values()].map(sheetToJson)),
+      createSheet: vi.fn(),
+      deleteSheet: vi.fn(async () => {}),
+      writeSheet: vi.fn(async (_s: unknown, id: string, req: { write: SheetWrite }) => {
+        sent.push({ id, write: req.write });
+        const r = applySheetWrite(sheets.get(id)!, req.write, { now: 1, by });
+        sheets.set(id, r.sheet);
+        return { applied: r.applied, rev: r.sheet.rev, cells: [] };
+      }),
+    };
+    const steps: { undo: () => void }[] = [];
+    const two = store(api, { pushUndo: (st) => steps.push(st as never) });
+    await two.loadTab('t1');
+    const a = sheets.get('sheet0001')!.layout;
+    const b = sheets.get('sheet0002')!.layout;
+    const range = {
+      s: 'sheet0001',
+      r1: a.rows[0]!,
+      c1: a.cols[0]!,
+      r2: a.rows[2]!,
+      c2: a.cols[0]!,
+    };
+    two.write('sheet0002', {
+      kind: 'cells',
+      cells: [{ r: b.rows[0]!, c: b.cols[0]!, i: { f: { t: 'SUM(@0)', r: [range] } } }],
+    });
+    two.write('sheet0001', {
+      kind: 'cells',
+      cells: [1, 2, 3].map((n, i) => ({ r: a.rows[i]!, c: a.cols[0]!, i: { n } })),
+    });
+    await two.settle();
+    steps.length = 0;
+    const sum = () => two.workbook('t1').value('sheet0002', 0, 0);
+    expect(sum()).toBe(6);
+    two.write('sheet0001', { kind: 'layout', changes: [{ k: 'deleteRows', ids: [a.rows[0]!] }] });
+    expect(sum()).toBe(5);
+    expect(steps).toHaveLength(1);
+    await two.settle();
+    expect(sent.at(-1)?.id).toBe('sheet0002');
+    steps[0]!.undo();
+    await two.settle();
+    expect(sum()).toBe(6);
+  });
   it('words a refusal without a line as the store does', () => {
     expect(writeRefusalMessage({ error: 'rules_full' })).toBe(
       'This sheet holds the most rules it can',

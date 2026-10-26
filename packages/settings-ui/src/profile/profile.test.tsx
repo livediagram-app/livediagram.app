@@ -333,6 +333,40 @@ describe('Name and Colour, in place', () => {
     expect(profile.onColour).toHaveBeenLastCalledWith('#8b5cf6');
   });
 
+  it('clears a refused name’s error once the stored name is typed back', async () => {
+    const profile = fakeProfile({
+      save: vi.fn(async () => ({ ok: false as const, error: 'invalid_name' })),
+    });
+    const field = await editor(profile);
+    fireEvent.change(field, { target: { value: 'Ada B' } });
+    fireEvent.blur(field);
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    fireEvent.change(field, { target: { value: 'Ada Lovelace' } });
+    fireEvent.blur(field);
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+    expect(profile.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('puts back the colour the server took when two colour writes are refused', async () => {
+    const answers: ((r: { ok: false; error: string }) => void)[] = [];
+    const profile = fakeProfile({
+      save: vi.fn(
+        () =>
+          new Promise<{ ok: false; error: string }>((resolve) => {
+            answers.push(resolve);
+          }),
+      ),
+    });
+    await editor(profile);
+    fireEvent.click(screen.getByRole('radio', { name: 'Sky' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Pink' }));
+    await act(async () => answers[0]!({ ok: false, error: 'offline' }));
+    await act(async () => answers[1]!({ ok: false, error: 'offline' }));
+    // Violet, as loaded: never Sky, which the server never stored.
+    expect(screen.getByRole('radio', { name: 'Violet' }).getAttribute('aria-checked')).toBe('true');
+    expect(profile.onColour).toHaveBeenLastCalledWith('#8b5cf6');
+  });
+
   it('sends a name still waiting as the panel goes', async () => {
     const saveOnLeave = vi.fn();
     const profile = fakeProfile({ saveOnLeave });
@@ -424,6 +458,35 @@ describe('the Google picture', () => {
     expect(save).toHaveBeenCalledWith({ showPicture: false });
     await waitFor(() => expect(toggle.getAttribute('aria-checked')).toBe('false'));
     expect(document.querySelector('[data-profile-editor] figure img')).toBeNull();
+  });
+
+  it('puts the switch back to what the server took when two flips are refused', async () => {
+    const answers: ((r: { ok: false; error: string }) => void)[] = [];
+    const profile = fakeProfile({
+      load: vi.fn(async () => ({
+        ok: true as const,
+        data: {
+          id: 'user_ada',
+          name: 'Ada Lovelace',
+          color: '#8b5cf6',
+          googlePicture: PICTURE,
+          showPicture: true,
+        },
+      })),
+      save: vi.fn(
+        () =>
+          new Promise<{ ok: false; error: string }>((resolve) => {
+            answers.push(resolve);
+          }),
+      ),
+    });
+    drawn(profileRows({ ...base, identity: ada, profile }).find((r) => r.key === 'profile'));
+    const toggle = await screen.findByRole('switch', { name: /Show My Google Picture/ });
+    fireEvent.click(toggle);
+    fireEvent.click(toggle);
+    // Off, then on again (newest); both writes are refused, oldest first: on, as the server holds it.
+    for (const answer of answers) await act(async () => answer({ ok: false, error: 'offline' }));
+    expect(toggle.getAttribute('aria-checked')).toBe('true');
   });
 
   it('has no switch for an account without a picture', async () => {

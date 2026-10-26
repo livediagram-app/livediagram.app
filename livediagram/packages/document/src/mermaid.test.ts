@@ -177,6 +177,68 @@ describe('parseMermaid', () => {
     expect(r.graph.clusters).toEqual([{ id: 'outer', label: 'outer', members: ['A', 'B', 'C'] }]);
   });
 
+  // docs/specs/020-import-export/mermaid.md: an edge to a folded subgraph points at the frame it folded into, not a stray box.
+  it('points an edge to a folded nested subgraph at its outer frame', () => {
+    const r = parseMermaid(`flowchart TD
+  subgraph outer
+    A
+    subgraph inner
+      B
+    end
+  end
+  X --> inner
+  inner --> Y`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.map((n) => n.id).sort()).toEqual(['A', 'B', 'X', 'Y']);
+    expect(r.graph.edges).toEqual([
+      { from: 'X', to: 'outer' },
+      { from: 'outer', to: 'Y' },
+    ]);
+    expect(r.graph.clusters).toEqual([{ id: 'outer', label: 'outer', members: ['A', 'B'] }]);
+  });
+
+  it('points at the outer frame by its own id when a node shares the outer id', () => {
+    const r = parseMermaid(`flowchart TD
+  subgraph outer
+    subgraph inner [Inner]
+      B
+    end
+  end
+  outer[A real node] --> inner`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.edges).toEqual([{ from: 'outer', to: 'outer_subgraph' }]);
+    expect(r.graph.nodes.map((n) => n.id).sort()).toEqual(['B', 'outer']);
+  });
+
+  it('keeps a node written out under a folded subgraph id', () => {
+    const r = parseMermaid(`flowchart TD
+  subgraph outer
+    subgraph inner
+      B
+    end
+  end
+  inner[Inner node] --> B`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.find((n) => n.id === 'inner')?.label).toBe('Inner node');
+    expect(r.graph.edges).toEqual([{ from: 'inner', to: 'B' }]);
+  });
+
+  it('keeps the box for a folded subgraph when the outer one holds nothing else', () => {
+    const r = parseMermaid(`flowchart TD
+  subgraph outer
+    subgraph inner
+    end
+  end
+  X --> inner`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.edges).toEqual([{ from: 'X', to: 'inner' }]);
+    expect(r.graph.nodes.map((n) => n.id).sort()).toEqual(['X', 'inner']);
+  });
+
   // Mermaid's rule: the first subgraph to mention a node holds it, wherever the node was first written.
   it('puts a node in the first subgraph that mentions it, though it was written above', () => {
     const r = parseMermaid(`flowchart LR

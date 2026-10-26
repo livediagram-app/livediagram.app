@@ -11,6 +11,7 @@ import {
   type Element,
   type ElementId,
 } from './index';
+import { remapElementRefs as sharedRemapElementRefs } from '@liveworkspace/model-core/id-remap';
 
 // What a COPY regenerates rather than inherits. EVERY copy path must spread this: the set duplication below, and
 // the editor's hand-rolled single / multi duplicate paths.
@@ -189,73 +190,17 @@ export function duplicateElements(
   return { newElements: [...rewired, ...newArrows], idMap };
 }
 
-// Re-point element-to-element references after a caller has renamed some
-// element ids (old → new in `idMap`): arrow endpoints pinned to an element or
-// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md), and an attached badge's, step's or pointer
-// note's host (docs/specs/009-elements/badge.md). A reference whose target isn't in the map is
-// left alone. Element links are deliberately NOT touched: a link names its
-// tab as well as its element, and that is still the source tab.
-//
-// This is the reference half of every "same elements, fresh ids" path
-// (import re-mint, AI merge). Each of those used to re-list the reference
-// kinds itself, and each one that forgot a kind left the copy wired to the
-// original. duplicateElements has its own richer pass (offsets, dropping
+// The element-id fields this product's elements hold besides an arrow's ends: an attached chip's host (missed, a
+// duplicated or imported tab's badges named hosts on the SOURCE tab and came loose from their copies).
+const ELEMENT_REF_FIELDS = ['attachedTo'] as const;
+
+// Re-point element-to-element references after a caller renamed some element ids (old to new in `idMap`), by the
+// shared walk (`@liveworkspace/model-core/id-remap`). duplicateElements has its own richer pass (offsets, dropping
 // unresolvable arrows) and stays separate.
-export function remapElementRefs<E extends Element>(
+export const remapElementRefs = <E extends Element>(
   elements: E[],
   idMap: Map<ElementId, ElementId>,
-): E[] {
-  if (idMap.size === 0) return elements;
-  const endpoint = (end: ArrowElement['from']): ArrowElement['from'] => {
-    if (end.kind === 'pinned') {
-      const mapped = idMap.get(end.elementId);
-      return mapped ? { ...end, elementId: mapped } : end;
-    }
-    if (end.kind === 'on-arrow') {
-      const mapped = idMap.get(end.arrowId);
-      return mapped ? { ...end, arrowId: mapped } : end;
-    }
-    return end;
-  };
-  return elements.map((el) => {
-    if (el.type === 'arrow') {
-      const from = endpoint(el.from);
-      const to = endpoint(el.to);
-      return from === el.from && to === el.to ? el : { ...el, from, to };
-    }
-    // An attached chip follows its host's new id; missed, a duplicated or imported tab's badges named hosts on the
-    // SOURCE tab and came loose from their copies.
-    const hostId = (el as { attachedTo?: ElementId }).attachedTo;
-    const host = hostId !== undefined ? idMap.get(hostId) : undefined;
-    return host ? { ...el, attachedTo: host } : el;
-  });
-}
+): E[] => sharedRemapElementRefs(elements, idMap, ELEMENT_REF_FIELDS);
 
-// Re-point tab and element links after a whole design is copied with fresh
-// tab ids (old → new in `tabIdMap`), so the copy's internal navigation lands
-// on its own tabs instead of the source design's. A Tab Window's tab
-// (`windowTabId`, docs/specs/009-elements/tab-window.md) is re-pointed the same way, so the copy's windows show the
-// copy's tabs rather than "This tab isn't available". Design and url links
-// leave the design, so they survive unchanged. Shared by the editor's
-// Explorer duplicate and the api's copy route, which drifted apart when each
-// owned a copy of this walk: the api's copies kept pointing at the source.
-export function remapTabLinks<E extends Element>(
-  elements: E[],
-  tabIdMap: Map<string, string>,
-): E[] {
-  return elements.map((el) => {
-    const link = el.link;
-    const linked =
-      link && (link.kind === 'tab' || link.kind === 'element')
-        ? tabIdMap.get(link.tabId)
-        : undefined;
-    const windowTabId = (el as { windowTabId?: string }).windowTabId;
-    const shown = windowTabId ? tabIdMap.get(windowTabId) : undefined;
-    if (!linked && !shown) return el;
-    return {
-      ...el,
-      ...(linked ? { link: { ...link!, tabId: linked } } : {}),
-      ...(shown ? { windowTabId: shown } : {}),
-    };
-  });
-}
+// Re-point tab and element links (and Tab Windows) after a whole file is copied with fresh tab ids.
+export { remapTabLinks } from '@liveworkspace/model-core/id-remap';

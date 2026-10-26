@@ -269,9 +269,18 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
   ),
 };
 
-// One part of a SPLIT: a number (or a percentage) when it reads as one, else the text. A blank part stays text.
+// A part written as an ISO date, YYYY-MM-DD, with or without a time after it. Only this form: `26/10/2026` or
+// `Oct 26` reads differently by locale, so it stays text (formulas.md "Text").
+const ISO_DATE_PART = /^\d{4}-\d{2}-\d{2}(?:[ T]|$)/;
+
+// One part of a SPLIT: a number (or a percentage) when it reads as one, a date when written as an ISO date, else the
+// text. A blank part stays text.
 function splitPart(part: string): Scalar {
   if (part.trim() === '') return part;
+  if (ISO_DATE_PART.test(part.trim())) {
+    const date = parseDateText(part, false);
+    if (date) return date.serial;
+  }
   const n = toNumber(part);
   return typeof n === 'number' ? n : part;
 }

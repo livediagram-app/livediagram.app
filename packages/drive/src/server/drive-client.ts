@@ -2,7 +2,11 @@
 // Drive's REST API v3, with an access token the caller supplies. Every call names its `fields`, since Drive's default
 // subset omits parents, md5Checksum and appProperties.
 
-import { DRIVE_CHANGES_PAGE_SIZE, DRIVE_FOLDER_MIME, DRIVE_MULTIPART_MAX_BYTES } from '../constants';
+import {
+  DRIVE_CHANGES_PAGE_SIZE,
+  DRIVE_FOLDER_MIME,
+  DRIVE_MULTIPART_MAX_BYTES,
+} from '../constants';
 import { googleApiBase, timedFetch, type GoogleConfig } from './google';
 
 export type DriveFile = {
@@ -17,9 +21,18 @@ export type DriveFile = {
   ownedByMe: boolean;
 };
 
-export type DriveChange = { fileId: string; removed: boolean; time: string; file: DriveFile | null };
+export type DriveChange = {
+  fileId: string;
+  removed: boolean;
+  time: string;
+  file: DriveFile | null;
+};
 
-export type DriveChangePage = { changes: DriveChange[]; nextPageToken?: string; newStartPageToken?: string };
+export type DriveChangePage = {
+  changes: DriveChange[];
+  nextPageToken?: string;
+  newStartPageToken?: string;
+};
 
 export type DriveFileWrite = {
   content: string;
@@ -45,9 +58,17 @@ export interface DriveClient {
   // Every page of a files.list query.
   listFiles(q: string): Promise<DriveFile[]>;
   getFile(id: string, resourceKey?: string): Promise<DriveFile>;
-  download(id: string, resourceKey?: string): Promise<string>;
-  createFolder(input: { name: string; parentId: string; appProperties: Record<string, string> }): Promise<DriveFile>;
-  createFile(input: DriveFileWrite & { name: string; parentId: string; mimeType: string }): Promise<DriveFile>;
+  // The file's content as text. With `maxBytes`, a larger file is refused (DriveFileTooLarge) without reading
+  // past the cap.
+  download(id: string, resourceKey?: string, maxBytes?: number): Promise<string>;
+  createFolder(input: {
+    name: string;
+    parentId: string;
+    appProperties: Record<string, string>;
+  }): Promise<DriveFile>;
+  createFile(
+    input: DriveFileWrite & { name: string; parentId: string; mimeType: string },
+  ): Promise<DriveFile>;
   updateFile(id: string, input: DriveFileUpdate): Promise<DriveFile>;
   deleteFile(id: string): Promise<void>;
   watchChanges(input: {
@@ -63,6 +84,48 @@ export interface DriveClient {
 const RATE_LIMIT_REASONS = new Set(['userRateLimitExceeded', 'rateLimitExceeded']);
 
 /** A non-2xx answer from Google, with its `reason` when the body names one. */
+/** A download refused for being larger than the caller's cap. */
+export class DriveFileTooLarge extends Error {
+  readonly maxBytes: number;
+
+  constructor(maxBytes: number) {
+    super(`Drive file is larger than ${maxBytes} bytes`);
+    this.name = 'DriveFileTooLarge';
+    this.maxBytes = maxBytes;
+  }
+}
+
+// A response's body as text, refused once it passes `maxBytes`: a declared Content-Length over it before reading, or
+// the bytes as they arrive (a body sent in chunks declares none), cancelling the rest.
+async function textWithin(res: Response, maxBytes: number): Promise<string> {
+  const declared = Number(res.headers.get('Content-Length') ?? NaN);
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    await res.body?.cancel().catch(() => {});
+    throw new DriveFileTooLarge(maxBytes);
+  }
+  if (!res.body) return '';
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => {});
+      throw new DriveFileTooLarge(maxBytes);
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
+}
+
 export class DriveApiError extends Error {
   readonly status: number;
   readonly reason: string | null;
@@ -75,7 +138,9 @@ export class DriveApiError extends Error {
   }
 
   get isRateLimit(): boolean {
-    return this.status === 429 || (this.status === 403 && RATE_LIMIT_REASONS.has(this.reason ?? ''));
+    return (
+      this.status === 429 || (this.status === 403 && RATE_LIMIT_REASONS.has(this.reason ?? ''))
+    );
   }
 
   get isNotFound(): boolean {
@@ -87,7 +152,8 @@ export class DriveApiError extends Error {
   }
 }
 
-const FILE_FIELDS = 'id,name,mimeType,parents,trashed,appProperties,md5Checksum,headRevisionId,ownedByMe';
+const FILE_FIELDS =
+  'id,name,mimeType,parents,trashed,appProperties,md5Checksum,headRevisionId,ownedByMe';
 const CHANGE_FIELDS = `nextPageToken,newStartPageToken,changes(fileId,removed,time,file(${FILE_FIELDS}))`;
 const LIST_PAGE_SIZE = 1000;
 
@@ -116,7 +182,9 @@ async function errorOf(res: Response): Promise<DriveApiError> {
   let reason: string | null = null;
   let message = `${res.status}`;
   try {
-    const body = (await res.json()) as { error?: { message?: string; errors?: { reason?: string }[] } | string };
+    const body = (await res.json()) as {
+      error?: { message?: string; errors?: { reason?: string }[] } | string;
+    };
     if (typeof body.error === 'object') {
       reason = body.error.errors?.[0]?.reason ?? null;
       message = body.error.message ?? message;
@@ -126,7 +194,11 @@ async function errorOf(res: Response): Promise<DriveApiError> {
   } catch {
     // A body that isn't JSON keeps the status as the message.
   }
-  return new DriveApiError(res.status, reason, `drive ${res.status} ${reason ?? ''} ${message}`.trim());
+  return new DriveApiError(
+    res.status,
+    reason,
+    `drive ${res.status} ${reason ?? ''} ${message}`.trim(),
+  );
 }
 
 const thumbnailHints = (png: string | null | undefined) =>
@@ -137,12 +209,19 @@ function randomBoundary(): string {
   return `lw${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
 }
 
-export function createDriveClient(config: Pick<GoogleConfig, 'baseUrl' | 'fetch'>, getAccessToken: TokenGetter): DriveClient {
+export function createDriveClient(
+  config: Pick<GoogleConfig, 'baseUrl' | 'fetch'>,
+  getAccessToken: TokenGetter,
+): DriveClient {
   const API = googleApiBase(config);
   const send = timedFetch(config);
 
   // One retry with a fresh token on 401: an access token can lapse between the check and the call.
-  async function call(url: string, init: RequestInit = {}, resourceKey?: string): Promise<Response> {
+  async function call(
+    url: string,
+    init: RequestInit = {},
+    resourceKey?: string,
+  ): Promise<Response> {
     const attempt = async (force: boolean) => {
       const headers = new Headers(init.headers);
       headers.set('Authorization', `Bearer ${await getAccessToken({ force })}`);
@@ -187,19 +266,27 @@ export function createDriveClient(config: Pick<GoogleConfig, 'baseUrl' | 'fetch'
     // Over the multipart ceiling: a resumable session, then one PUT.
     const session = await call(`${base}?uploadType=resumable&${fields}`, {
       method,
-      headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': mimeType },
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Upload-Content-Type': mimeType,
+      },
       body: JSON.stringify(metadata),
     });
     const location = session.headers.get('Location');
     if (!location) throw new DriveApiError(0, 'noUploadLocation', 'resumable upload: no Location');
     return toFile(
-      await json<RawFile>(location, { method: 'PUT', headers: { 'Content-Type': mimeType }, body: content }),
+      await json<RawFile>(location, {
+        method: 'PUT',
+        headers: { 'Content-Type': mimeType },
+        body: content,
+      }),
     );
   }
 
   return {
     async getStartPageToken() {
-      return (await json<{ startPageToken: string }>(`${API}/drive/v3/changes/startPageToken`)).startPageToken;
+      return (await json<{ startPageToken: string }>(`${API}/drive/v3/changes/startPageToken`))
+        .startPageToken;
     },
 
     async listChanges(pageToken) {
@@ -240,16 +327,18 @@ export function createDriveClient(config: Pick<GoogleConfig, 'baseUrl' | 'fetch'
     },
 
     async getFile(id, resourceKey) {
-      return toFile(await json<RawFile>(fileUrl(id), {}, resourceKey ? `${id}/${resourceKey}` : undefined));
+      return toFile(
+        await json<RawFile>(fileUrl(id), {}, resourceKey ? `${id}/${resourceKey}` : undefined),
+      );
     },
 
-    async download(id, resourceKey) {
+    async download(id, resourceKey, maxBytes) {
       const res = await call(
         `${API}/drive/v3/files/${encodeURIComponent(id)}?alt=media`,
         {},
         resourceKey ? `${id}/${resourceKey}` : undefined,
       );
-      return res.text();
+      return maxBytes === undefined ? res.text() : textWithin(res, maxBytes);
     },
 
     async createFolder(input) {
@@ -330,7 +419,11 @@ export function createDriveClient(config: Pick<GoogleConfig, 'baseUrl' | 'fetch'
           }),
         },
       );
-      return { id: body.id, resourceId: body.resourceId, expiration: Number(body.expiration ?? input.expiration) };
+      return {
+        id: body.id,
+        resourceId: body.resourceId,
+        expiration: Number(body.expiration ?? input.expiration),
+      };
     },
 
     async stopChannel(channel) {

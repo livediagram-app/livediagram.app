@@ -51,9 +51,7 @@ export function renewalFits(
   bound: WorkbenchSessionResponse,
 ): boolean {
   return (
-    next.scope === bound.scope &&
-    next.origin === bound.origin &&
-    next.projectId === bound.projectId
+    next.scope === bound.scope && next.origin === bound.origin && next.projectId === bound.projectId
   );
 }
 

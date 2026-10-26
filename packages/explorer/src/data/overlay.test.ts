@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { makeItem } from '../test/fakeClient';
-import { createItemOverlay } from './overlay';
+import { createItemOverlay, OVERLAY_BASE_MAX } from './overlay';
 
 describe('createItemOverlay', () => {
   it('lays a patch over an item and keeps unpatched items as they are', () => {
@@ -58,6 +58,70 @@ describe('createItemOverlay', () => {
     const v = overlay.version();
     undo();
     expect(overlay.version()).toBe(v);
+  });
+
+  it('retires a settled patch once a read that started after it lands', () => {
+    const overlay = createItemOverlay();
+    const a = makeItem(1);
+    const handle = overlay.patch(a.id, { folderId: 'f1' });
+    // A read that started before the index took it says nothing about it.
+    const early = overlay.stamp();
+    handle.settle();
+    overlay.observe([a], early);
+    expect(overlay.apply(a).folderId).toBe('f1');
+    // One that started after it is the index's answer, whatever it says.
+    const later = overlay.stamp();
+    overlay.observe([{ ...a, folderId: 'f2' }], later);
+    expect(overlay.apply(a).folderId).toBe('f2');
+    // A list still holding the oldest copy shows the newest answer.
+    expect(overlay.apply({ ...a, folderId: null }).folderId).toBe('f2');
+  });
+
+  it('never retires a patch the index has not taken yet', () => {
+    const overlay = createItemOverlay();
+    const a = makeItem(1);
+    overlay.patch(a.id, { title: 'Pending' });
+    overlay.observe([a], overlay.stamp());
+    expect(overlay.apply(a).title).toBe('Pending');
+  });
+
+  it('keeps a newer patch over a retired older one (newest wins)', () => {
+    const overlay = createItemOverlay();
+    const a = makeItem(1);
+    overlay.patch(a.id, { title: 'B' }).settle();
+    const read = overlay.stamp();
+    overlay.patch(a.id, { title: 'C' });
+    overlay.observe([{ ...a, title: 'B' }], read);
+    expect(overlay.apply(a).title).toBe('C');
+  });
+
+  it('drops a move into a folder once that folder is deleted', () => {
+    const overlay = createItemOverlay();
+    const a = makeItem(1);
+    overlay.patch(a.id, { folderId: 'f1', teamId: null });
+    overlay.patch(a.id, { favourite: true });
+    overlay.dropFolder('f1');
+    const shown = overlay.apply(a);
+    expect(shown.folderId).toBeNull();
+    expect(shown.favourite).toBe(true);
+  });
+
+  it('holds the latest word for at most OVERLAY_BASE_MAX items', () => {
+    const overlay = createItemOverlay();
+    const n = OVERLAY_BASE_MAX + 50;
+    const items = Array.from({ length: n }, (_, i) => makeItem(i));
+    for (const item of items) overlay.patch(item.id, { favourite: true }).settle();
+    overlay.observe(items, overlay.stamp());
+    expect(overlay.size()).toBe(OVERLAY_BASE_MAX);
+  });
+
+  it('observes a large read quickly', () => {
+    const overlay = createItemOverlay();
+    const items = Array.from({ length: 5000 }, (_, i) => makeItem(i));
+    for (const item of items.slice(0, 400)) overlay.patch(item.id, { title: 'x' }).settle();
+    const t = performance.now();
+    for (let r = 0; r < 20; r++) overlay.observe(items, overlay.stamp());
+    expect(performance.now() - t).toBeLessThan(500);
   });
 
   it('tells subscribers and bumps its version on every change', () => {

@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   ACCESS_CHANGED_CLOSE,
   GRANT_LAPSED_CLOSE,
+  ROOM_MAX_CONNECTIONS,
+  ROOM_FULL_CLOSE,
   ROOM_GRANT_ASK_BEFORE_MS,
 } from '@livedesign/api-schema';
 import type { GrantClaims } from '@liveworkspace/index-client';
@@ -23,6 +25,7 @@ type FakeSocket = {
   serializeAttachment: (value: unknown) => void;
   deserializeAttachment: () => unknown;
   close: (code: number, reason: string) => void;
+  accept: () => void;
 };
 
 function room() {
@@ -60,6 +63,7 @@ function room() {
       serializeAttachment: (value) => void (ws.attachment = value),
       deserializeAttachment: () => ws.attachment,
       close: (code, reason) => void (ws.closed = { code, reason }),
+      accept: () => {},
     };
     design.acceptSession(
       ws as unknown as WebSocket,
@@ -153,6 +157,26 @@ describe('a session grant', () => {
     vi.setSystemTime(T0 + 600_000);
     await design.alarm();
     expect(ws.closed?.code).toBe(GRANT_LAPSED_CLOSE);
+  });
+});
+
+// docs/specs/015-api/api.md "Room size": one more than ROOM_MAX_CONNECTIONS is turned away with a close code the
+// editor can show, and a place that frees up is taken again.
+describe('a full room', () => {
+  it('turns connection 101 away as full, and admits again once someone leaves', () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { join } = room();
+    const sockets = Array.from({ length: ROOM_MAX_CONNECTIONS }, () =>
+      join({ expMs: T0 + 600_000 }),
+    );
+    expect(sockets.every((ws) => ws.closed === null)).toBe(true);
+
+    const extra = join({ expMs: T0 + 600_000 });
+    expect(extra.closed).toEqual({ code: ROOM_FULL_CLOSE, reason: 'room-full' });
+    expect(info).toHaveBeenCalledWith('[room] full', { connections: ROOM_MAX_CONNECTIONS });
+
+    sockets[0]!.close(1000, 'bye');
+    expect(join({ expMs: T0 + 600_000 }).closed).toBeNull();
   });
 });
 

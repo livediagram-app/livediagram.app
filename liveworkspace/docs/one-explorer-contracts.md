@@ -58,7 +58,10 @@ Errors are `{ "error": "<code>" }` with a 4xx status. Lists are paged with `limi
 A guest's id lives on liveworkspace.app, so it is the same in every app.
 
 1. The first time an app needs an identity, it sends the browser to
-   `liveworkspace.app/api/auth/guest?client_id=<app's accounts client>&redirect_uri=<registered>&state=<random>`.
+   `liveworkspace.app/api/auth/guest?client_id=<app's accounts client>&redirect_uri=<registered>&state=<random>`,
+   in place of the page that asked (`location.replace`): the round trip leaves no history entry, so Back
+   from where it comes back to never lands on the page that asked, which would only hand off again or, on `/new`,
+   make another document.
 2. accounts reads (or sets) its long-lived `lw_guest` cookie, and redirects to
    `<redirect_uri>#guest_token=<jwt>&state=<state>`. The fragment keeps the token out of logs.
    If it fails after checking the client and `redirect_uri`, it still goes back there, with
@@ -125,6 +128,11 @@ type ItemSummary = {
   [k: string]: unknown;
 }; // ≤ 2 KB
 ```
+
+Ids the index keys by (an item's, a folder's, a team's, a person's) are 1 to 128 letters, digits, `-` and `_`:
+every one is minted as a UUID, a `user_` or `guest_` id, a Clerk id or a hex hash, and anything else is refused
+as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an element, an action) are any 1 to
+128 characters, because the apps' documents take any non-empty id there.
 
 | Call                           | Who                 | Does                                                                          |
 | ------------------------------ | ------------------- | ----------------------------------------------------------------------------- |
@@ -225,7 +233,9 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
 - `GET /folders/previews?ids=a,b,…&app=` — what folder cards show of their insides: for each of up to 60 folders
   the person reaches, `{folderId, itemCount, items}` with its 4 newest live items (of `app`, when given) and a count
   that stops at 1000. One batch however many folders; folders out of reach are left out.
-- `GET /favourites`, `PUT/DELETE /favourites/:itemId`.
+- `GET /favourites`, `PUT/DELETE /favourites/:itemId`. A `PUT` here or on `/recent-hidden/:itemId` for an item the
+  person doesn't reach (not theirs, not their team's, no live link they opened) is 404, the same answer as a missing
+  one, and writes nothing.
 - `PUT/DELETE /recent-hidden/:itemId` — Hide from Recent and Show in Recent: the person's own; a hidden item
   leaves their `view=recent` and Most Used, and says `hiddenFromRecent: true` everywhere else.
 - `GET /placement-defaults`, `PUT/DELETE /placement-defaults/:key` — default folders: where a person's new items
@@ -249,12 +259,25 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   `POST /items/:id/share {public: true}` makes a public link (a Community post's): it never asks for the
   item's share password, and while one is set it opens nothing (404), as if closed.
 - `GET /share/:code` — public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
-  opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401 `password_required`, 403 `password_invalid` (a public link: 404).
+  opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401
+  `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right
+  is a guess, limited per visitor's network (10 a minute) and per item (30 a minute) on every door that takes one
+  (this, `POST /items/:id/grant` and any read with `X-Share-Password`): over either, 429 `rate_limited` with
+  `Retry-After` in seconds, even for the right one.
+- `PUT /items/:id/share-password {password}` — a new password is 6 to 256 characters after trimming
+  (`SHARE_PASSWORD_MIN`, `SHARE_PASSWORD_MAX`): shorter is 400 `password_too_short`, longer `invalid_password`; one
+  set before the minimum keeps working. Spaces alone, or null, clear it. Setting a new password or changing it holds for
+  everyone who came in through a link before: their Shared with me rows go (the item leaves their Shared, Inbox and
+  lists), and the app is told to reload every link's sessions (`revoke`, `reason: "rescoped"`, below), so they meet
+  the password; entering it records them again. Saving the same password, or removing it, sends no one away.
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
 
-Who gets what, the rule the grant applies: the owner, and every joined member of the item's team, edit
-everything; anyone else needs a live share link (its level, and its tab when it is scoped to one). Team
-membership comes from the `teams` claim of the person's access token, so the index keeps no copy of teams.
+Who gets what, the rule the grant applies: the owner of a personal item, and every joined member of a team item's
+team, edit everything; anyone else needs a live share link (its level, and its tab when it is scoped to one). A team
+item is the team's: the person who made it (its `ownerId`) reaches it as a member like anyone else, so when they leave
+or are removed from the team it stops answering to them as owner, in reads, grants, lists and the Inbox alike, and
+the team's remaining members (its admins among them) run it. Team membership comes from the `teams` claim of the
+person's access token, and from accounts for a team the claim does not hold yet, so the index keeps no copy of teams.
 
 ## Grants
 
@@ -295,7 +318,8 @@ before it runs out; the item's Durable Object checks each against the cached key
 whose grant has lapsed without a renewal. Changing a link, a password or a team takes effect within
 those 10 minutes; revoking a link also tells the item at once (`POST <app>/api/internal/items/:id/revoke`
 `{codes}`), and so does rescoping one to another level or tab (the same call with `reason: "rescoped"`, so the app
-reloads the link's visitors into what it now opens rather than send them away).
+reloads the link's visitors into what it now opens rather than send them away), and so does setting or changing the
+item's password (every link's codes, `reason: "rescoped"`).
 
 ### Carrying a grant to the app
 
@@ -549,7 +573,10 @@ component on the page and in every editor's panel:
   The keys show on the buttons, except on a touch screen.
 - **Narrow.** Under 768 px, and always in the editor's panel, the list stands alone; choosing a row opens the pane in
   its place (on a phone, full screen) with **Back to Inbox**. The browser's Back (Android's, an iPhone's swipe) and
-  Esc return to the list: opening the pane adds one history entry, keeping the page's history state as it was. The
+  Esc return to the list: opening the pane adds one history entry, keeping the page's history state as it was. If the
+  open row disappears (done elsewhere, gone from a re-read), the pane closes and steps back off that entry, so the
+  next Back leaves the list; opening a row while the pane's entry is still on top replaces it rather than adding
+  another. The
   filter bar becomes a strip of chips that scrolls sideways within itself, so the page never does; chips, rows and
   Back are at least 44 px tall; the page keeps its 16 px gutter.
 

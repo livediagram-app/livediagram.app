@@ -594,10 +594,15 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as
   wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and
   a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
-  node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
+  node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more; a message's label and a participant's name stay whole, never cut to the 40-character heading cap, since a message is a sentence and a lifeline's head is not a box), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
-  out alike, a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
+  out alike; an edge between stops that are not ring neighbours, as a star's spokes are, goes round the outside of the
+  stops between them the shorter way, each hop further a lane further out, never along the ring behind them; a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
   the stops, the ring widened until no stop comes within half a gap of the centre's stack, a node given no shape a circle).
+- **Self-edges**: an edge from a node to itself never loses the node. The flow style (and lanes and tree) draws it as
+  a loop round the node; the mindmap and cycle styles have no place for one (a branch cannot enter its own node, and
+  a ring's arcs run between stops), so there the node shows and the self-edge is dropped, as if never given: a cycle
+  node whose only edge is a self-edge sits at the centre with the other nodes no edge joins.
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its

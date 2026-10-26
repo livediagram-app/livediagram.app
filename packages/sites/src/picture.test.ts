@@ -49,6 +49,14 @@ describe('sizedPictureUrl', () => {
     );
   });
 
+  it('falls back to the default size when the size is no number', () => {
+    for (const px of [Number.NaN, Infinity, -Infinity, '40' as unknown as number]) {
+      expect(sizedPictureUrl(GOOGLE, px)).toBe(
+        'https://lh3.googleusercontent.com/a/ACg8ocJ1abcDEF_ghi-jkl=s96-c',
+      );
+    }
+  });
+
   it('keeps the size in bounds and leaves other shapes alone', () => {
     expect(sizedPictureUrl(GOOGLE, 2)).toMatch(/=s16-c$/);
     expect(sizedPictureUrl(GOOGLE, 5000)).toMatch(/=s1024-c$/);

@@ -175,6 +175,46 @@ describe('favourites', () => {
     expect(after.item.favourite).toBe(false);
     expect((await call('/favourites?cursor=garbage!', { auth: ada.auth })).status).toBe(400);
   });
+
+  // Starring or hiding someone else's item answered 204 where a missing one was 404, so either told a stranger that
+  // an id was real. Both are 404 now, and nothing is written for an item out of reach.
+  it('answers an item out of reach exactly as a missing one, starring or hiding it', async () => {
+    const ada = await person('user_a');
+    const eve = await person('user_e');
+    const bob = await person('user_b', { teams: [{ id: 'team1' }] });
+    const secret = await makeItem(ada.auth);
+    const team = await makeItem(bob.auth, { teamId: 'team1' });
+    for (const path of ['/favourites', '/recent-hidden']) {
+      const missing = await call(`${path}/missing`, { method: 'PUT', auth: eve.auth });
+      const forbidden = await call(`${path}/${secret.id}`, { method: 'PUT', auth: eve.auth });
+      expect(forbidden.status).toBe(missing.status);
+      expect(forbidden.status).toBe(404);
+      expect(await body(forbidden)).toEqual(await body(missing));
+    }
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM favourites').get()).toEqual({ n: 0 });
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM opens').get()).toEqual({ n: 0 });
+    // Reached through a team, or a link they opened, it stars and hides as before.
+    expect((await call(`/favourites/${team.id}`, { method: 'PUT', auth: bob.auth })).status).toBe(
+      204,
+    );
+    expect(
+      (await call(`/recent-hidden/${team.id}`, { method: 'PUT', auth: bob.auth })).status,
+    ).toBe(204);
+    const made = await call(`/items/${secret.id}/share`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: { level: 'view' },
+    });
+    const { link } = await body<{ link: { code: string } }>(made);
+    await call(`/share/${link.code}`, { auth: eve.auth });
+    expect((await call(`/favourites/${secret.id}`, { method: 'PUT', auth: eve.auth })).status).toBe(
+      204,
+    );
+    // Starring twice is no different.
+    expect((await call(`/favourites/${secret.id}`, { method: 'PUT', auth: eve.auth })).status).toBe(
+      204,
+    );
+  });
 });
 
 describe('placement defaults', () => {

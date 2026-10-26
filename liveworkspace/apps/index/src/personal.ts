@@ -1,15 +1,40 @@
 // A person's own things about items (liveworkspace/docs/one-explorer-contracts.md "Folders, favourites,
 // defaults"): favourites, what they hid from Recent, and the folder New files each kind of item into.
 
-import { personalScope, scopesOf } from './auth';
+import { personalScope, scopesOf, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId, parseLimit } from './codec';
 import { DEFAULT_KEY_MAX } from './config';
 import type { PersonContext } from './context';
+import type { Env } from './env';
+import { inTeamNow } from './fresh-teams';
 import { reachableFolder } from './folders';
 import { badRequest, json, noContent, notFound, readObject } from './http';
+import { directAccess, getItemRow, LIVE_LINK } from './rows';
 import { eventStatements } from './timeline';
 
 const isForeignKeyError = (err: unknown) => String(err).includes('FOREIGN KEY');
+
+// Whether the person reaches the item at all: as a personal item's owner, through a team (a fresh one asked of
+// accounts), or through a live link they opened. Starring or hiding one out of reach answers 404 exactly as a missing
+// one does, so neither tells a stranger an id is real; one primary-key read, and a shared-row read only for an item
+// they don't own or share a team with.
+async function reachesItem(env: Env, person: Person, itemId: string): Promise<boolean> {
+  const row = await getItemRow(env, itemId);
+  if (!row) return false;
+  if (person.app && person.app !== row.app) return false;
+  if (person.drive && (row.team_id !== null || row.owner_id !== person.id)) return false;
+  if (directAccess(row, person)) return true;
+  if (row.team_id && (await inTeamNow(env, person, row.team_id))) return true;
+  if (row.trashed_at !== null) return false;
+  const link = await env.INDEX_DB.prepare(
+    `SELECT 1 AS reached FROM shared_with sw
+     JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
+     WHERE sw.person_id = ? AND sw.item_id = ? AND ${LIVE_LINK('sl')}`,
+  )
+    .bind(person.id, itemId, Date.now())
+    .first();
+  return link !== null;
+}
 
 export async function handleFavourites(ctx: PersonContext): Promise<Response> {
   const { request, env, url, segments, person } = ctx;
@@ -38,6 +63,7 @@ export async function handleFavourites(ctx: PersonContext): Promise<Response> {
   if (segments.length === 2 && isId(segments[1])) {
     const itemId = segments[1];
     if (request.method === 'PUT') {
+      if (!(await reachesItem(env, person, itemId))) return notFound();
       const now = Date.now();
       try {
         // A new favourite is on the person's own Timeline (theirs alone), when they reach the item.
@@ -87,6 +113,7 @@ export async function handleRecentHidden(ctx: PersonContext): Promise<Response> 
   if (segments.length !== 2 || !isId(segments[1])) return notFound();
   const itemId = segments[1];
   if (request.method === 'PUT') {
+    if (!(await reachesItem(env, person, itemId))) return notFound();
     try {
       await db
         .prepare(

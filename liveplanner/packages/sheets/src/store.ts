@@ -3,7 +3,7 @@
 // inverse, for undo. A write lands on ids: what it names that is gone is skipped, never moved somewhere else.
 import { FORMAT_KEYS, mergeFormat, type FormatPatch } from './format';
 import { layoutIndex } from './layout';
-import { mapFormulaRefs } from './formula/stored';
+import { formulaReadsSheet, mapFormulaRefs } from './formula/stored';
 import { applyLayoutChange, shrinkRange, type LayoutChange } from './store-layout';
 import { idRangeOf, inverseDelete } from './store-inverse-delete';
 import { sameName } from './range-names';
@@ -16,6 +16,7 @@ import {
   type Sheet,
   type SheetLayout,
   type SheetPerson,
+  type StoredFormula,
   type StoredRef,
 } from './sheet';
 
@@ -75,12 +76,60 @@ function shrinkFormulas(
   for (const [key, cell] of cells) {
     const input = cell.input;
     if (!input || !('f' in input)) continue;
-    const next = mapFormulaRefs(input.f, (ref) => shrinkRef(ref, before, goneRows, goneCols));
+    const next = mapFormulaRefs(input.f, (ref) =>
+      ref.s !== undefined || ref.st !== undefined
+        ? ref
+        : shrinkRef(ref, before, goneRows, goneCols),
+    );
     if (next === input.f) continue;
     const { r, c } = splitCellKey(key);
     out.push({ r, c, i: { f: next } });
   }
   return out;
+}
+
+/**
+ * The rewrites another sheet's formulas need when `changes` (a layout write) land on sheet `targetId`, laid out as
+ * `before`: each range on that sheet with a corner in deleted rows or columns shrinks to what is left, as the
+ * target's own formulas' ranges do (formulas.md "Other sheets"). One pass over the formulas per delete, each
+ * reference looked at once: linear in references. `cells` are the reading sheet's (its formula cells suffice).
+ */
+export function shrinkReadersOf(
+  targetId: string,
+  before: SheetLayout,
+  changes: readonly LayoutChange[],
+  cells: ReadonlyMap<string, Cell>,
+): CellChange[] {
+  const formulas = new Map<string, StoredFormula>();
+  for (const [key, cell] of cells) {
+    const input = cell.input;
+    if (input && 'f' in input && formulaReadsSheet(input.f, '', targetId))
+      formulas.set(key, input.f);
+  }
+  if (formulas.size === 0) return [];
+  const changed = new Set<string>();
+  let layout = before;
+  for (const ch of changes) {
+    const was = layout;
+    layout = applyLayoutChange(layout, ch);
+    if ((ch.k !== 'deleteRows' && ch.k !== 'deleteCols') || layout === was) continue;
+    const had = new Set(ch.k === 'deleteRows' ? was.rows : was.cols);
+    const gone = new Set(ch.ids.filter((id) => had.has(id)));
+    const none = new Set<string>();
+    const [goneRows, goneCols] = ch.k === 'deleteRows' ? [gone, none] : [none, gone];
+    for (const [key, f] of formulas) {
+      const next = mapFormulaRefs(f, (ref) =>
+        ref.s === targetId ? shrinkRef(ref, was, goneRows, goneCols) : ref,
+      );
+      if (next === f) continue;
+      formulas.set(key, next);
+      changed.add(key);
+    }
+  }
+  return [...changed].map((key) => {
+    const { r, c } = splitCellKey(key);
+    return { r, c, i: { f: formulas.get(key)! } };
+  });
 }
 
 function shrinkRef(
@@ -89,7 +138,6 @@ function shrinkRef(
   goneRows: ReadonlySet<string>,
   goneCols: ReadonlySet<string>,
 ): StoredRef {
-  if (ref.s !== undefined || ref.st !== undefined) return ref;
   const isRange = ref.r2 !== undefined || ref.c2 !== undefined;
   if (!isRange) return ref;
   const cornerGone =

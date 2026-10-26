@@ -164,6 +164,36 @@ describe('the tab PUT', () => {
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'b']);
   });
 
+  // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-scoped
+  // editor's save stores its content and keeps the stored name.
+  it("keeps the stored name through a tab-scoped editor's save", async () => {
+    const db = await designWith([box('a')]);
+    const res = await handleDesigns(
+      makeTestRouteContext('PUT', '/api/designs/D/tabs/t1', {
+        env: db.env,
+        owner: 'user_v',
+        accountUserId: 'user_v',
+        verifiedUserId: 'user_v',
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'user_v',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'code1',
+          token: 'g',
+        },
+        body: { id: 't1', name: 'Mine now', elements: [box('a'), box('b')] },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(stored(db).map((e) => e.id)).toEqual(['a', 'b']);
+    expect(db.sql.prepare("SELECT name FROM tabs WHERE id = 't1'").get()).toEqual({
+      name: 'Board',
+    });
+  });
+
   it('answers the new revision and strips record fields from the body', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await designWith([box('a')]);

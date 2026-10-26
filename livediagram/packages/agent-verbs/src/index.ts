@@ -48,7 +48,7 @@ export { argvToOperationLine } from '@liveworkspace/agent-verbs/argv-line';
 export { baseFromCopy, readPlainTab, recordCopy, type ReadCopies, type ReadCopy } from './copies';
 export { classifySource } from './source-kind';
 export { HELD_RETRY_INTERVAL_MS, submitChangeset, type WriteFlags } from './write';
-export { apiRefusalOf } from './api-refusal';
+export { apiRefusalOf, deleteRefusal } from './api-refusal';
 export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';
 export { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, tabOf, tabPath } from './verbs/shared';

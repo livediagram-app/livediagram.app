@@ -113,7 +113,11 @@ function payload(over: Partial<MigrationRoomPayload> = {}): MigrationRoomPayload
   };
 }
 
-const rows = (db: DatabaseSync, sql: string) => db.prepare(sql).all().map((r) => ({ ...r }));
+const rows = (db: DatabaseSync, sql: string) =>
+  db
+    .prepare(sql)
+    .all()
+    .map((r) => ({ ...r }));
 const one = (db: DatabaseSync, sql: string) => ({ ...db.prepare(sql).get() });
 
 beforeEach(() => {
@@ -144,13 +148,18 @@ describe('importMigrated (the migration door into a plan)', () => {
       created_at: 100,
       saved_at: 300,
     });
-    expect(rows(r.db, 'SELECT id, item_key, created_by, updated_by FROM items ORDER BY id')).toEqual([
+    expect(
+      rows(r.db, 'SELECT id, item_key, created_by, updated_by FROM items ORDER BY id'),
+    ).toEqual([
       { id: 'i1', item_key: 1, created_by: 'p-ali', updated_by: '' },
       { id: 'i2', item_key: 2, created_by: 'p-ali', updated_by: '' },
     ]);
     // The reference found its sheet: the sheet is referenced, its counts settled.
     expect(
-      one(r.db, "SELECT title, rev, cell_count, unreferenced_since FROM sheets WHERE id = 'sheet1'"),
+      one(
+        r.db,
+        "SELECT title, rev, cell_count, unreferenced_since FROM sheets WHERE id = 'sheet1'",
+      ),
     ).toEqual({ title: 'Budget', rev: 3, cell_count: 2, unreferenced_since: null });
     expect(rows(r.db, 'SELECT tab_id, sheet_id FROM sheet_refs')).toEqual([
       { tab_id: 'tab-sheet', sheet_id: 'sheet1' },

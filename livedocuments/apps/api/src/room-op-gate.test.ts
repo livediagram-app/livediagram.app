@@ -78,7 +78,14 @@ describe('gateClientOp', () => {
     }
     expect(gateClientOp({ kind: 'tab-meta', tabId: 't1' }, scoped)).toEqual(DROP);
     expect(
+      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { color: '#0ea5e9' } }, scoped),
+    ).toEqual(relay(false));
+    // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): not the scoped link's to change.
+    expect(
       gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan' } }, scoped),
+    ).toEqual(DROP);
+    expect(
+      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan' } }, as('edit')),
     ).toEqual(relay(false));
     // The same holds for an unscoped editor: the payload's id is never the sender's to change.
     expect(gateClientOp({ kind: 'tab', tabId: 't1', tab: { id: 't2' } }, as('edit'))).toEqual(DROP);

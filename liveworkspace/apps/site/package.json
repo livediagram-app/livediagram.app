@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "node lib/licences/generate.ts --out . && next build && node scripts/asset-prefix.mjs && node ../../../packages/licences/scripts/verify.ts .",
+    "build:e2e": "node scripts/build-e2e.mjs",
     "deploy": "wrangler deploy",
     "lint": "oxlint",
     "test": "vitest run",

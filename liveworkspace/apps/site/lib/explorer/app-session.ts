@@ -90,11 +90,62 @@ async function askToken(): Promise<AppAccount | null> {
   }
 }
 
+// ---------- The e2e stack's session (test builds only) ----------------------------------------------------------
+// A product's e2e stack has no accounts Worker and no refresh cookie: its signed-in specs put a session in
+// localStorage under `<app>:e2e:session` (each editor's E2E_SESSION_KEY, e2e/signed-in/session.ts), holding a token
+// the stack's accounts stand-in minted, which the index and the api accept. The editor's E2EAuthBridge reads it; a
+// site built for those specs (NEXT_PUBLIC_E2E_AUTH=1, scripts/build-e2e.mjs) reads the same one here, so the
+// Explorer on the app's address is the same person. A production build inlines the flag as false and never reads it.
+
+/** The e2e session key a product's specs write. */
+export const e2eSessionKey = (app: AppName) => `${app}:e2e:session`;
+
+/** The e2e stack's session for `app` as an account, or null. Read only when `enabled` (the build's flag). */
+export function e2eAccount(
+  app: AppName,
+  enabled = process.env.NEXT_PUBLIC_E2E_AUTH === '1',
+  now = Date.now(),
+): AppAccount | null {
+  if (!enabled) return null;
+  let raw: string | null;
+  try {
+    raw = localStorage.getItem(e2eSessionKey(app));
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  let session: Record<string, unknown>;
+  try {
+    session = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+  const token = text(session.token);
+  const sub = text(session.userId);
+  if (!token || !sub) return null;
+  const firstName = text(session.firstName);
+  const full = [firstName, text(session.lastName)].filter(Boolean).join(' ') || null;
+  return {
+    token,
+    // The stand-in's tokens live for minutes; the page reads the session again past this.
+    expiresAt: now + 5 * 60_000,
+    sub,
+    name: firstName ?? text(session.email) ?? 'Your account',
+    fullName: full,
+    colour: null,
+    picture: null,
+    email: text(session.email),
+  };
+}
+
 /** The person signed in to the app this page is on, or null (a guest, or liveworkspace.app). Asks the app's API only
  *  when its hint cookie says there is a session to ask about. */
 export function appAccount(now = Date.now()): Promise<AppAccount | null> {
   const app = pageApp();
   if (!app) return Promise.resolve(null);
+  // Test builds only: the e2e stack's session stands in for the app's cookie.
+  const e2e = e2eAccount(app);
+  if (e2e) return Promise.resolve(e2e);
   if (account && account.expiresAt - RENEW_BEFORE_MS > now) return Promise.resolve(account);
   if (cookie(SIGNED_IN_HINTS[app]) !== '1') {
     account = null;

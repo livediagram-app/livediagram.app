@@ -122,6 +122,7 @@ import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePerTabLoad } from './usePerTabLoad';
 import { useRoomConnection } from './useRoomConnection';
+import { useRoomFullNotice } from './useRoomFullNotice';
 import { useRoomResync } from './useRoomResync';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
@@ -897,8 +898,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       }),
   });
 
+  const roomFullNotice = useRoomFullNotice(toast.warning);
   useRoomConnection({
     onAdderKey: participant.setAdderKey,
+    onRoomFull: roomFullNotice.noticeFull,
     hydrated,
     projectId,
     projectServerStored: realtime.projectServerStored,
@@ -939,6 +942,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveSheets: sheets.receiveSheets,
     receiveSheetPresence: sheets.receiveSheetPresence,
     onRoomJoined: () => {
+      roomFullNotice.joined();
       void changesetFeed.checkSinceLoad();
       planItems.refetch();
       sheets.resync();

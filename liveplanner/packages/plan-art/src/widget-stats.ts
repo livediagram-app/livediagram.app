@@ -4,6 +4,7 @@ import {
   DAY_MS,
   PRIORITIES,
   dayNumber,
+  finishedStatuses,
   itemAssignee,
   itemStatus,
   itemVoteTotal,
@@ -71,20 +72,21 @@ export function overWipColumns(projection: BoardProjection): number {
   return projection.columns.filter((c) => c.overLimit).length;
 }
 
-// Cards not yet done that are past due, and due within DUE_SOON_DAYS (today included).
+// Cards not yet done (before the done column, finishedStatuses) that are past due, and due within DUE_SOON_DAYS
+// (today included).
 export function dueCounts(
   setup: PlanBoardSetup,
   items: readonly Item[],
   now: Date,
 ): { overdue: number; soon: number } {
-  const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
+  const finished = new Set(finishedStatuses(setup));
   const today = todayNumber(now);
   const last = today + DUE_SOON_DAYS;
   let overdue = 0;
   let soon = 0;
   for (const it of items) {
     const due = dayNumber(it.fields['due']);
-    if (due === undefined || (doneStatus && itemStatus(it) === doneStatus)) continue;
+    if (due === undefined || isFinished(finished, it)) continue;
     if (due < today) overdue += 1;
     else if (due <= last) soon += 1;
   }
@@ -140,11 +142,21 @@ export function topVoted(items: readonly Item[]): { item: Item; votes: number } 
   return best;
 }
 
-// Cards not yet done that nobody has changed in STALE_DAYS.
-export function staleCount(setup: PlanBoardSetup, items: readonly Item[], now: Date): number {
-  const doneStatus = doneStatusOf(setup);
+// Cards not yet done (before the done column) that nobody has changed in STALE_DAYS, stalest first.
+export function staleItems(setup: PlanBoardSetup, items: readonly Item[], now: Date): Item[] {
+  const finished = new Set(finishedStatuses(setup));
   const before = now.getTime() - STALE_DAYS * DAY_MS;
-  return items.filter(
-    (it) => it.updatedAt < before && !(doneStatus && itemStatus(it) === doneStatus),
-  ).length;
+  return items
+    .filter((it) => it.updatedAt < before && !isFinished(finished, it))
+    .sort((a, b) => a.updatedAt - b.updatedAt);
+}
+
+export function staleCount(setup: PlanBoardSetup, items: readonly Item[], now: Date): number {
+  return staleItems(setup, items, now).length;
+}
+
+// Whether a card sits in the done column or one after it.
+function isFinished(finished: ReadonlySet<string>, it: Item): boolean {
+  const status = itemStatus(it);
+  return status !== undefined && finished.has(status);
 }

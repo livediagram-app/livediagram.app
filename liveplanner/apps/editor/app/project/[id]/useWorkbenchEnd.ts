@@ -4,10 +4,7 @@
 import { useEffect } from 'react';
 import type { WorkbenchProjectSession } from '@/components/providers/workbench-session-context';
 
-export function useWorkbenchEnd(
-  workbench: WorkbenchProjectSession | null,
-  trashed: boolean,
-): void {
+export function useWorkbenchEnd(workbench: WorkbenchProjectSession | null, trashed: boolean): void {
   const end = workbench?.end;
   useEffect(() => {
     if (trashed) end?.('trashed');

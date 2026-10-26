@@ -12,6 +12,7 @@ import {
   type Element,
   type ElementId,
 } from './index';
+import { remapElementRefs as sharedRemapElementRefs } from '@liveworkspace/model-core/id-remap';
 
 // What a COPY regenerates rather than inherits. Today: an event-storming
 // note's hand-placement (docs/specs/021-event-storming/event-storming.md) — a duplicate is a new piece of paper, so
@@ -238,79 +239,25 @@ export function duplicateElements(
   return { newElements: [...rewired, ...newArrows], idMap };
 }
 
-// Re-point element-to-element references after a caller has renamed some
-// element ids (old → new in `idMap`): arrow endpoints pinned to an element or
-// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md), a mind-map node's parent (docs/specs/009-elements/mind-node.md), a
-// portal's partner (docs/specs/009-elements/portal-element.md) and an attached badge's or pointer note's host
-// (docs/specs/009-elements/badge.md). A reference whose target isn't in the map is
-// left alone. Element links are deliberately NOT touched: a link names its
-// tab as well as its element, and that is still the source tab.
-//
-// This is the reference half of every "same elements, fresh ids" path
-// (import re-mint, AI merge). Each of those used to re-list the reference
-// kinds itself, and each one that forgot a kind left the copy wired to the
-// original. duplicateElements has its own richer pass (offsets, dropping
+// The element-id fields this product's elements hold besides an arrow's ends: a mind node's parent
+// (docs/specs/009-elements/mind-node.md), a portal's partner (docs/specs/009-elements/portal-element.md), a flowchart's
+// first step and a step's lane (both rename with it), and an attached badge's, step's or pointer note's host
+// (docs/specs/009-elements/badge.md).
+const ELEMENT_REF_FIELDS = [
+  'mindParentId',
+  'portalTarget',
+  'flowchartId',
+  'flowLaneId',
+  'attachedTo',
+] as const;
+
+// Re-point element-to-element references after a caller renamed some element ids (old to new in `idMap`), by the
+// shared walk (`@liveworkspace/model-core/id-remap`). duplicateElements has its own richer pass (offsets, dropping
 // unresolvable arrows) and stays separate.
-export function remapElementRefs<E extends Element>(
+export const remapElementRefs = <E extends Element>(
   elements: E[],
   idMap: Map<ElementId, ElementId>,
-): E[] {
-  if (idMap.size === 0) return elements;
-  const endpoint = (end: ArrowElement['from']): ArrowElement['from'] => {
-    if (end.kind === 'pinned') {
-      const mapped = idMap.get(end.elementId);
-      return mapped ? { ...end, elementId: mapped } : end;
-    }
-    if (end.kind === 'on-arrow') {
-      const mapped = idMap.get(end.arrowId);
-      return mapped ? { ...end, arrowId: mapped } : end;
-    }
-    return end;
-  };
-  return elements.map((el) => {
-    if (el.type === 'arrow') {
-      const from = endpoint(el.from);
-      const to = endpoint(el.to);
-      return from === el.from && to === el.to ? el : { ...el, from, to };
-    }
-    if (el.type !== 'shape') return el;
-    const parent = el.mindParentId !== undefined ? idMap.get(el.mindParentId) : undefined;
-    const portal = el.portalTarget !== undefined ? idMap.get(el.portalTarget) : undefined;
-    // A flowchart's id is its first step's, so it renames with it; so does a step's lane.
-    const chart = el.flowchartId !== undefined ? idMap.get(el.flowchartId) : undefined;
-    const lane = el.flowLaneId !== undefined ? idMap.get(el.flowLaneId) : undefined;
-    // An attached badge, step or pointer note follows its host's new id; missed, a duplicated tab's chips
-    // named hosts on the SOURCE tab and came loose from their copies.
-    const host = el.attachedTo !== undefined ? idMap.get(el.attachedTo) : undefined;
-    if (!parent && !portal && !chart && !lane && !host) return el;
-    return {
-      ...el,
-      ...(parent ? { mindParentId: parent } : {}),
-      ...(portal ? { portalTarget: portal } : {}),
-      ...(chart ? { flowchartId: chart } : {}),
-      ...(lane ? { flowLaneId: lane } : {}),
-      ...(host ? { attachedTo: host } : {}),
-    };
-  });
-}
+): E[] => sharedRemapElementRefs(elements, idMap, ELEMENT_REF_FIELDS);
 
-// Re-point tab and element links after a whole document is copied with fresh
-// tab ids (old → new in `tabIdMap`), so the copy's internal navigation lands
-// on its own tabs instead of the source document's. Document and url links
-// leave the document, so they survive unchanged. Shared by the editor's
-// Explorer duplicate and the api's copy route, which drifted apart when each
-// owned a copy of this walk: the api's copies kept pointing at the source.
-export function remapTabLinks<E extends Element>(
-  elements: E[],
-  tabIdMap: Map<string, string>,
-): E[] {
-  return elements.map((el) => {
-    const link = el.link;
-    const linked =
-      link && (link.kind === 'tab' || link.kind === 'element')
-        ? tabIdMap.get(link.tabId)
-        : undefined;
-    if (!linked) return el;
-    return { ...el, link: { ...link!, tabId: linked } };
-  });
-}
+// Re-point tab and element links (and Tab Windows) after a whole file is copied with fresh tab ids.
+export { remapTabLinks } from '@liveworkspace/model-core/id-remap';

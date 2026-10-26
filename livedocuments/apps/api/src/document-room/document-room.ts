@@ -19,12 +19,17 @@ import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
   GRANT_LAPSED_CLOSE,
+  ROOM_FULL_CLOSE,
+  ROOM_FULL_REASON,
   ROOM_GRANT_ASK_BEFORE_MS,
+  roomIsFull,
   WORKBENCH_ENDED_CLOSE,
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
   isRoomOpRef,
+  levelAtLeast,
   parseBuildId,
+  parseStoredLevel,
   ROOM_PING,
   ROOM_PONG,
   type AccessLevel,
@@ -50,7 +55,7 @@ import {
   resolveCatchup,
 } from '../document-room-rules';
 import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
-import { opForScope } from '../room-scope';
+import { opForScope, opFromScopedSender } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
@@ -881,6 +886,16 @@ export class DocumentRoom extends DurableObject<Env> {
     // A signed-in account's session (room-session.ts `account`): it may show a Google picture and see others'.
     account = false,
   ): void {
+    // The room's size (docs/specs/015-api/api.md "Room size"): past ROOM_MAX_CONNECTIONS the socket is accepted
+    // only to be closed with ROOM_FULL_CLOSE, which a browser can read where a refused upgrade says nothing. A
+    // plain accept, not the hibernation one: the socket never joins, so the room never hears from it again.
+    const connections = this.state.getWebSockets().length;
+    if (roomIsFull(connections)) {
+      console.info('[room] full', { connections });
+      ws.accept();
+      ws.close(ROOM_FULL_CLOSE, ROOM_FULL_REASON);
+      return;
+    }
     ws.serializeAttachment(
       newSessionAttachment(
         {
@@ -1177,8 +1192,9 @@ export class DocumentRoom extends DurableObject<Env> {
       // the next hibernation and mis-place peers for every later joiner.
       // The live relay below still drives real-time updates for peers
       // already connected.
-      // Every selection is noted for the api's held check, whatever the role
-      // (docs/specs/024-agents/agent-changesets.md "Held elements"). The DO's output gate holds
+      // Every selection is noted for the api's held check, whatever the role; the check answers only
+      // the sessions that may change the content (liveSessions, docs/specs/024-agents/agent-changesets.md
+      // "Held elements"). The DO's output gate holds
       // what follows until the write lands.
       if (opKind === 'select') {
         void this.selections.note(sender.id, selectionFromOp(msg.op)).catch(() => {});
@@ -1211,7 +1227,11 @@ export class DocumentRoom extends DurableObject<Env> {
         // the author's owner id, a guest's credential. And a posted comment
         // carries the name of the session that sent it, the one on its
         // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
-        const op = stampCommentAuthor(opForTheWire(msg.op), sender);
+        // A scoped session's whole tab relays without its name (room-scope.ts): the name is structure.
+        const op = stampCommentAuthor(
+          opForTheWire(opFromScopedSender(msg.op, session.tabScope ?? null)),
+          sender,
+        );
         const seq = this.sequenceMutation(sender.id, op, ws);
         // The relay skips the sender, so tell it the seq its op took: its own
         // ops are already applied, and a reconnect must not replay them. The
@@ -1419,7 +1439,13 @@ export class DocumentRoom extends DurableObject<Env> {
       const session = this.readSession(ws);
       const p = session?.presence;
       if (!p) continue;
-      live.set(p.id, { name: p.name, color: p.color, personTag: session.personTag ?? null });
+      live.set(p.id, {
+        name: p.name,
+        color: p.color,
+        personTag: session.personTag ?? null,
+        // Only someone who may change the content holds what they select: never a Viewer.
+        holds: levelAtLeast(parseStoredLevel(p.role), 'participate'),
+      });
     }
     return live;
   }

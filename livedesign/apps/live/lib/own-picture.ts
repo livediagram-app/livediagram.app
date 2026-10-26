@@ -51,6 +51,39 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
+// When Show My Google Picture was last saved in this browser, any tab (localStorage, so a second tab knows). A
+// refresh inside the accounts Worker's reuse window can hand one tab another's earlier response, minted before the
+// save, so its `picture_hidden` is the old one; a token older than the save is refreshed again (AccountsBridge).
+const SAVED_AT_KEY = 'livedesign:v2:picture-setting-saved-at';
+
+/** A Show My Google Picture save, just made (or at `at`). */
+export function notePictureSettingSaved(at: number = Date.now()): void {
+  try {
+    localStorage.setItem(SAVED_AT_KEY, String(at));
+  } catch {
+    // Storage refused: this tab still hears the save itself.
+  }
+}
+
+function pictureSettingSavedAt(): number | null {
+  try {
+    const at = Number(localStorage.getItem(SAVED_AT_KEY));
+    return Number.isFinite(at) && at > 0 ? at : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Whether a session's ID token, `ageMs` old (the api's `tokenAgeMs`), was minted before the last save. */
+export function tokenPredatesPictureSetting(
+  ageMs: number | undefined,
+  now: number = Date.now(),
+): boolean {
+  if (typeof ageMs !== 'number') return false;
+  const savedAt = pictureSettingSavedAt();
+  return savedAt !== null && now - ageMs < savedAt;
+}
+
 const serverSnapshot = () => NONE;
 
 export function useOwnPicture(): OwnPicture {

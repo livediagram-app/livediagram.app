@@ -10,6 +10,10 @@ describe('readableInk', () => {
     expect(contrastRatio(lifted, '#111827')).toBeGreaterThanOrEqual(4.5);
     const deepened = readableInk('#e2e8f0', '#ecfdf5');
     expect(contrastRatio(deepened, '#ecfdf5')).toBeGreaterThanOrEqual(4.5);
-    expect(readableInk('red', '#ffffff')).toBe('red');
+    expect(readableInk('nope', '#ffffff')).toBe('nope');
+    // A named or shorthand ink is read (docs/specs/011-theme/light-and-dark.md "Colours an agent writes"): red on
+    // white is 4.0:1, so it is deepened; navy already reads and is kept as written.
+    expect(contrastRatio(readableInk('red', '#fff'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
+    expect(readableInk('navy', '#fff')).toBe('navy');
   });
 });

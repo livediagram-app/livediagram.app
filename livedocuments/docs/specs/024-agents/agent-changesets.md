@@ -86,7 +86,7 @@ editor that was offline when it landed.
 - When the element ops exceed `CHANGESET_RELAY_MAX_BYTES`, the op carries no element ops and editors re-fetch the
   tab in place, as a resync does ([Resync without reloading the page](../012-collaboration/resync-without-reload.md)).
 - Answers the api's internal `GET /selections?tab=<tabId>`: every element each connected person has selected (the
-  whole multi-selection), whatever their role, and which of those sessions are the agent owner's own (recognised by
+  whole multi-selection) from everyone who may change the content (a Participant or an Editor, never a Viewer), and which of those sessions are the agent owner's own (recognised by
   the [person tag](agent-presence.md)).
 
 ## Rooms for personal documents
@@ -130,8 +130,9 @@ element by the fingerprint read and the element now; the CLI prints the as-read 
 
 ## Held elements
 
-An element a person has selected in an open editor is **held**: every element of their selection, whatever their
-role. An agent changeset whose operations target a held element is refused with `409 elements_held`, naming each
+An element a person has selected in an open editor is **held**: every element of their selection, when they may
+change the content (a Participant or an Editor). A Viewer's selection holds nothing: they cannot change what an
+agent would, so agents are never blocked by people only looking. An agent changeset whose operations target a held element is refused with `409 elements_held`, naming each
 held element and who holds it; nothing is applied. The agent resubmits without those operations, or after the
 person lets go. The CLI's `--wait-held <seconds>` retries for it.
 

@@ -3,6 +3,7 @@
 // (liveworkspace/docs/accounts.md "Signing in on the app's own address"), where the app's router
 // forwards the API under /api/workspace/auth instead, beside the app's own /api/auth.
 
+import { isSameSitePath } from '@liveworkspace/auth-client/return-path';
 import { appOfAnyOrigin } from '@liveworkspace/sites';
 import { ACCOUNTS_ON_APP_PATH } from '@liveworkspace/sites/workspace-proxy';
 
@@ -98,20 +99,9 @@ export const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 // off-site.
 export const RETURN_PARAM = 'return';
 
-// The C0 controls, space and DEL: a URL parser strips or drops them, so none belongs in a path we follow.
-function hasControlOrSpace(path: string): boolean {
-  for (let i = 0; i < path.length; i++) {
-    const code = path.charCodeAt(i);
-    if (code <= 0x20 || code === 0x7f) return true;
-  }
-  return false;
-}
-
 export function returnPath(search: string): string | null {
   const path = new URLSearchParams(search).get(RETURN_PARAM);
-  if (!path || !path.startsWith('/') || path.startsWith('//') || path.includes('\\')) return null;
-  if (hasControlOrSpace(path)) return null;
-  return path;
+  return isSameSitePath(path) ? path : null;
 }
 
 // The sign-in link for a page: back to that page once signed in. Under an app's own address (the

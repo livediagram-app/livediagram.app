@@ -131,6 +131,8 @@ export default defineConfig({
     env: signedIn
       ? {
           E2E_EDITOR_OUT: '.next/out-signed-in',
+          // The Explorer at /explorer, built to read the same session (liveworkspace/apps/site build:e2e).
+          E2E_WORKSPACE_SITE_OUT: '.next/out-e2e',
           E2E_EDITOR_PORT: SIGNED_IN_PORTS.live,
           E2E_API_PORT: SIGNED_IN_PORTS.api,
           E2E_MARKETING_PORT: SIGNED_IN_PORTS.marketing,

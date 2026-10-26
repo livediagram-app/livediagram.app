@@ -10,7 +10,9 @@ import {
   cleanLine,
   decodeLabel,
   directionOf,
+  foldedEdgeEnds,
   framedClusters,
+  pointEdgesAtFrames,
   type MermaidDirection,
   type ParseMermaidResult,
 } from './mermaid-shared';
@@ -50,6 +52,8 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
   const clusters: GraphCluster[] = [];
   let currentCluster: GraphCluster | null = null;
   let compositeDepth = 0;
+  // Each nested composite's id, by the top-level composite it folded into: a transition naming it points at that frame.
+  const foldedInto = new Map<string, string>();
   let inNote = false;
 
   const touch = (id: string) => {
@@ -119,8 +123,10 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
       // Opening a composite block: only top-level composites become
       // frames; nested ones fold into their ancestor.
       compositeDepth += 1;
+      const id = stateAs ? stateAs[2]! : composite![1]!;
+      if (compositeDepth > 1 && currentCluster && id !== currentCluster.id)
+        foldedInto.set(id, currentCluster.id);
       if (compositeDepth === 1) {
-        const id = stateAs ? stateAs[2]! : composite![1]!;
         const label = stateAs ? decodeLabel(stateAs[1]!) : id;
         const cluster: GraphCluster = { id, label, members: [] };
         clusters.push(cluster);
@@ -169,6 +175,8 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
     // Anything else (history states, unknown decoration) is skipped.
   }
 
+  // A transition to a folded composite's id pins to the frame it folded into, rather than a stray box of the id.
+  pointEdgesAtFrames(edges, foldedEdgeEnds(foldedInto, implicit, nodes, clusters));
   // A transition to a composite's id pins to its frame.
   const realClusters = framedClusters(clusters, implicit, nodes);
 

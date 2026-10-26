@@ -54,7 +54,11 @@ export async function getItemRow(env: Env, id: string): Promise<ItemRow | null> 
 // Owner or joined team member: edit everything, no link needed.
 export function directAccess(row: ItemRow, person: Person | null): Access | null {
   if (!person) return null;
-  if (row.owner_id === person.id) return { level: 'edit', tabId: null, via: 'owner', code: null };
+  // A team's item is the team's (one-explorer-contracts.md "Items": `teamId` set, owned by a team): its maker reaches it
+  // as a member like any other, so once they leave or are removed it no longer answers to them as its owner.
+  if (row.owner_id === person.id && row.team_id === null) {
+    return { level: 'edit', tabId: null, via: 'owner', code: null };
+  }
   if (row.team_id && person.teams.includes(row.team_id)) {
     return { level: 'edit', tabId: null, via: 'team', code: null };
   }

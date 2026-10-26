@@ -40,10 +40,15 @@ export function profilePictureOf(url: unknown): string | null {
 // Google sizes a picture by the options after the path's last `=` (`…=s96-c`: 96 px square, cropped).
 const SIZE_OPTIONS = /=[a-z0-9-]*$/i;
 
-/** The picture as Google serves it at `px` square (`=s<px>-c`), replacing whatever size the URL asked for. A URL
- *  with a query or a fragment is left as it is: it isn't the shape Google's claim takes. */
+/** The size Google's claim itself asks for (`=s96-c`), used when a caller's size is no number. */
+export const DEFAULT_PICTURE_PX = 96;
+
+/** The picture as Google serves it at `px` square (`=s<px>-c`, 16 to 1024), replacing whatever size the URL asked
+ *  for; DEFAULT_PICTURE_PX when `px` is not a finite number. A URL with a query or a fragment is left as it is: it
+ *  isn't the shape Google's claim takes. */
 export function sizedPictureUrl(url: string, px: number): string {
-  const size = Math.max(16, Math.min(1024, Math.round(px)));
+  const wanted = typeof px === 'number' && Number.isFinite(px) ? px : DEFAULT_PICTURE_PX;
+  const size = Math.max(16, Math.min(1024, Math.round(wanted)));
   let parsed: URL;
   try {
     parsed = new URL(url);

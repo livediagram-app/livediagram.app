@@ -10,7 +10,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
 │  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, rate-limit keys, link unfurls, refusal logs, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
-│  ├─ auth-client              sign-in redirect, code swap, refresh, token check
+│  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
 │  ├─ brand                    every app's logo drawn once: the Living Prism and wordmark, as React and as SVG strings
 │  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures; each product binds its names
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
@@ -30,7 +30,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ model-core               what every product's model shares and needs nothing of its element union; each re-exports it
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
 │  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
-│  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts; each product hands in its server and OAuth config
+│  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ migration                the move from the historical livediagram.app: the payload contract and the splitter
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig)
@@ -438,6 +438,9 @@ Each step is its own PR, and both products build and pass their tests after ever
        repository link.
      - `mcp-kit`: the Worker's `Env`, the preview budget and `svgToPngBase64`, and the `show_my_<record>` prompt every
        server registers with its own nouns.
+     - `mcp-kit` (`tool-result`): the tools' text, view and error results, the bearer-token guard, `ToolInputError`,
+       the behaviour annotations and the rule that a fixable mistake answers as a tool error. Each MCP's
+       `tool-helpers.ts` and `tool-annotations.ts` re-export them beside its own links, `loadTab` and `registerTool`.
      - `api-kit`: the room's access closes, follows, multiplayer count and agent presence (each room hands in its
        trashed op), the image reference extractor, the telemetry relay's localhost check and the OpenAPI document
        types. About 4,600 lines of copies went; tool names, prompt text, CLI output and wire formats are unchanged.

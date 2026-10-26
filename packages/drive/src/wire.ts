@@ -60,7 +60,12 @@ export type DriveMarkState = 'synced' | 'waiting' | 'syncing' | 'failed';
 
 /** GET /api/drive/marks: one per mirrored item and folder of the person's own. */
 export type DriveMarksAnswer = {
-  marks: { id: string; kind: 'item' | 'folder'; state: DriveMarkState; notice: DriveNotice | null }[];
+  marks: {
+    id: string;
+    kind: 'item' | 'folder';
+    state: DriveMarkState;
+    notice: DriveNotice | null;
+  }[];
 };
 
 /** POST /api/drive/picker-token. */
@@ -69,7 +74,12 @@ export type DrivePickerTokenAnswer = { accessToken: string; expiresAt: number };
 /** POST /api/drive/open `{ fileId }`. */
 export type DriveOpenAnswer =
   | { action: 'open'; app: AppName; itemId: string; url: string }
-  | { action: 'import'; app: AppName; name: string; reason: 'copy' | 'shared' | 'other_environment' }
+  | {
+      action: 'import';
+      app: AppName;
+      name: string;
+      reason: 'copy' | 'shared' | 'other_environment';
+    }
   | { action: 'not_ours' }
   // The person isn't connected, or the grant doesn't reach this file: connect (Allow access) and come back.
   | { action: 'allow_access' };
@@ -87,4 +97,6 @@ export type DriveErrorCode =
   | 'invalid_state'
   | 'rate_limited'
   | 'not_found'
+  // Import as a copy: the file is larger than DRIVE_IMPORT_MAX_BYTES (413).
+  | 'file_too_large'
   | 'google_failed';

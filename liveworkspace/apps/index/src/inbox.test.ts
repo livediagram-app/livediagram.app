@@ -89,6 +89,21 @@ describe('Inbox threads', () => {
     expect(owned).toMatchObject({ onYourItem: true, youCommented: false, mentionsYou: false });
   });
 
+  it('leave a team item’s maker once they are out of the team', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const item = await makeItem(ada.auth, { title: 'Plan', teamId: 'team1' });
+    await asApp(`/app/items/${item.id}/collab/t1`, {
+      tabName: 'Roadmap',
+      threads: [thread({ elementId: 'owned', participantIds: ['user_c'] })],
+      actions: [action({ assigneeId: 'user_a' })],
+    });
+    expect((await inbox(ada.auth)).threads).toHaveLength(1);
+    const gone = await person('user_a');
+    const after = await inbox(gone.auth);
+    expect(after.threads).toEqual([]);
+    expect(after.actions).toEqual([]);
+  });
+
   it('reach a link visitor only on the tab their link opens', async () => {
     const ada = await person('user_a');
     const bob = await person('user_b');

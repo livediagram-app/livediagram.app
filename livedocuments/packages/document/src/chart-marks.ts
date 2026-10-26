@@ -98,40 +98,54 @@ export function barMarks(
   // Show Axis: tick labels and gridlines, the plot drawn in from the side they take.
   showAxis = false,
 ): BarMarks {
-  const top = data.reduce((m, d) => Math.max(m, Math.max(0, d.value)), 0) || 1;
-  // With Show Axis the bars run to a round top tick.
-  const scale = showAxis ? axisScale(0, top) : null;
-  const maxVal = scale ? scale.max : top;
+  // The value range always takes zero in, and a negative value hangs on the other side of a zero baseline
+  // (pie-chart.md "Chart types").
+  let hi = 0;
+  let lo = 0;
+  for (const d of data) {
+    if (!Number.isFinite(d.value)) continue;
+    if (d.value > hi) hi = d.value;
+    if (d.value < lo) lo = d.value;
+  }
+  if (hi === lo) hi = 1;
+  // With Show Axis the bars run to round end ticks.
+  const scale = showAxis ? axisScale(lo, hi) : null;
+  const minVal = scale ? scale.min : lo;
+  const span = (scale ? scale.max : hi) - minVal;
   const n = Math.max(1, data.length);
-  const share = (d: PieSlice) => Math.max(0, d.value) / maxVal;
+  // Where a value sits along the value axis, 0 at the low end and 1 at the high.
+  const at = (v: number) => (v - minVal) / span;
+  const value = (d: PieSlice) => (Number.isFinite(d.value) ? d.value : 0);
   if (horizontal) {
     // The bottom keeps a row for the tick labels.
     const padY = Math.min(20, area.h * 0.08);
     const tickRow = scale ? AXIS_TICK_FONT_PX + AXIS_TICK_GAP : 0;
-    const baseX = ox + area.x + area.w * 0.06;
-    const fullW = Math.max(1, ox + area.x + area.w * 0.94 - baseX);
+    const leftX = ox + area.x + area.w * 0.06;
+    const fullW = Math.max(1, ox + area.x + area.w * 0.94 - leftX);
     const innerH = Math.max(1, area.h - padY * 2 - tickRow);
     const slot = innerH / n;
     const thick = Math.min(slot * 0.7, 48);
     const y0 = oy + area.y + padY;
+    const baseX = leftX + at(0) * fullW;
     return {
       baseline: { x1: baseX, y1: y0, x2: baseX, y2: y0 + innerH },
       bars: data.map((d, i) => {
-        const len = share(d) * fullW;
+        const v = value(d);
+        const len = Math.abs(at(v) - at(0)) * fullW;
         const cy = y0 + slot * (i + 0.5);
+        const x = v < 0 ? baseX - len : baseX;
         return {
-          x: baseX,
+          x,
           y: cy - thick / 2,
           w: len,
           h: thick,
           rx: Math.min(3, thick / 4),
-          tip: { x: baseX + len, y: cy },
+          tip: { x: v < 0 ? x : baseX + len, y: cy },
         };
       }),
       origin: { x: baseX, y: y0 + innerH / 2 },
       axis: {
-        ticks:
-          scale?.ticks.map((t) => ({ at: baseX + (t.value / maxVal) * fullW, text: t.text })) ?? [],
+        ticks: scale?.ticks.map((t) => ({ at: leftX + at(t.value) * fullW, text: t.text })) ?? [],
         span: [y0, y0 + innerH],
       },
     };
@@ -140,30 +154,32 @@ export function barMarks(
   // The left keeps a column for the tick labels.
   const tickCol = scale ? axisLabelRoom(scale) : 0;
   const topPad = oy + area.y + area.h * 0.1;
-  const baseY = oy + area.y + area.h * 0.88;
+  const bottomY = oy + area.y + area.h * 0.88;
   const innerW = Math.max(1, area.w - padX * 2 - tickCol);
   const slot = innerW / n;
   const thick = Math.min(slot * 0.7, 48);
-  const fullH = Math.max(1, baseY - topPad);
+  const fullH = Math.max(1, bottomY - topPad);
   const x0 = ox + area.x + padX + tickCol;
+  const baseY = bottomY - at(0) * fullH;
   return {
     baseline: { x1: x0, y1: baseY, x2: x0 + innerW, y2: baseY },
     bars: data.map((d, i) => {
-      const len = share(d) * fullH;
+      const v = value(d);
+      const len = Math.abs(at(v) - at(0)) * fullH;
       const cx = x0 + slot * (i + 0.5);
+      const y = v < 0 ? baseY : baseY - len;
       return {
         x: cx - thick / 2,
-        y: baseY - len,
+        y,
         w: thick,
         h: len,
         rx: Math.min(3, thick / 4),
-        tip: { x: cx, y: baseY - len },
+        tip: { x: cx, y: v < 0 ? baseY + len : y },
       };
     }),
     origin: { x: ox + area.x + area.w / 2, y: baseY },
     axis: {
-      ticks:
-        scale?.ticks.map((t) => ({ at: baseY - (t.value / maxVal) * fullH, text: t.text })) ?? [],
+      ticks: scale?.ticks.map((t) => ({ at: bottomY - at(t.value) * fullH, text: t.text })) ?? [],
       span: [x0, x0 + innerW],
     },
   };

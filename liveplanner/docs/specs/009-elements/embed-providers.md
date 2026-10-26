@@ -25,7 +25,7 @@ One function, `(url) => { provider, embedUrl, posterUrl?, label } | null`.
 | Vimeo    | `vimeo.com/<digits>`                                            | `player.vimeo.com/video/<id>`          |
 | Loom     | `loom.com/share/<id>` or `loom.com/embed/<id>`                  | `loom.com/embed/<id>`                  |
 | Figma    | any `figma.com` URL                                             | `figma.com/embed?url=<original>`       |
-| Google   | `docs.google.com/{project,spreadsheets,presentation}/…`        | the same URL with `/edit` → `/preview` |
+| Google   | `docs.google.com/{project,spreadsheets,presentation}/…`         | the same URL with `/edit` → `/preview` |
 
 Figma takes the **original URL as a query parameter** rather than a rewritten
 path, so anything Figma accepts keeps working without this having to know

@@ -147,17 +147,7 @@ export const PLAN_GLYPH_CATEGORIES: readonly {
   {
     id: 'ideas',
     label: 'Ideas and Notes',
-    glyphs: [
-      'note',
-      'idea',
-      'bookmark',
-      'book',
-      'page',
-      'pencil',
-      'lightbulb',
-      'puzzle',
-      'quote',
-    ],
+    glyphs: ['note', 'idea', 'bookmark', 'book', 'page', 'pencil', 'lightbulb', 'puzzle', 'quote'],
   },
   {
     id: 'signals',

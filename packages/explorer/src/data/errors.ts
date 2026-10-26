@@ -1,4 +1,4 @@
-import { IndexError } from '@liveworkspace/index-client';
+import { IndexError, SHARE_PASSWORD_MIN } from '@liveworkspace/index-client';
 
 // A refusal from the index, said in words a person can act on.
 export function failureText(error: unknown, fallback: string): string {
@@ -16,6 +16,10 @@ export function failureText(error: unknown, fallback: string): string {
         return 'A folder can’t go inside itself.';
       case 'share_link_limit':
         return 'This has as many passes as it can hold. Delete an old one first.';
+      case 'password_too_short':
+        return `A password needs at least ${SHARE_PASSWORD_MIN} characters.`;
+      case 'rate_limited':
+        return 'Too many tries just now. Wait a minute and try again.';
       case 'unauthorized':
         return 'Your session ended. Sign in again and try once more.';
     }

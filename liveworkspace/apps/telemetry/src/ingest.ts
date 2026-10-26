@@ -13,6 +13,7 @@ import {
   TELEMETRY_KEY_HEADER,
   type TelemetrySender,
 } from '@liveworkspace/telemetry';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { insertEvents } from './db';
 import { appKey, type Env } from './env';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
@@ -41,9 +42,10 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
   const sender = await senderOf(request, env, app);
   if (sender === null) return noop();
   // Browsers share one public door, so each network gets a budget. An app's own Workers hold its key
-  // and are bounded by their own traffic, so they skip it.
+  // and are bounded by their own traffic, so they skip it. The key is every api's (api-kit's clientRateKey): the exact
+  // IPv4 address, or the IPv6 /64. Never stored.
   if (sender !== 'server' && env.EVENTS_RATE_LIMITER) {
-    const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: rateKey(request) });
+    const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: clientRateKey(request) });
     if (!success) return noop();
   }
 
@@ -93,21 +95,4 @@ async function senderOf(
   // A localhost page in development: the site's Explorer (liveworkspace.app's own name) as the
   // platform, an app as itself.
   return app === PLATFORM_TELEMETRY_APP ? 'platform' : 'browser';
-}
-
-// The rate-limit key: the exact IPv4 address (one is often a whole office behind NAT), or the IPv6
-// /64 (a single host is routinely handed a whole /64). Never stored.
-export function rateKey(request: Request): string {
-  const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous';
-  if (!ip.includes(':')) return ip;
-  const [head = '', tail = ''] = ip.split('::');
-  const left = head ? head.split(':') : [];
-  const right = tail ? tail.split(':') : [];
-  const full = ip.includes('::')
-    ? [...left, ...Array.from({ length: 8 - left.length - right.length }, () => '0'), ...right]
-    : left;
-  return `${full
-    .slice(0, 4)
-    .map((h) => h.toLowerCase().replace(/^0+(?=.)/, ''))
-    .join(':')}::/64`;
 }

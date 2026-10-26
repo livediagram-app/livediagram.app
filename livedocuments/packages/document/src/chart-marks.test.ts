@@ -38,6 +38,64 @@ describe('chart marks (docs/specs/009-elements/pie-chart.md "Chart types")', () 
     expect(pieMarks(area, [...slices, { label: 'C', value: 0 }], true).wedges[2]!.d).toBe('');
   });
 
+  // pie-chart.md "Chart types": a negative value is drawn on the other side of a zero baseline, never clamped to it.
+  it('hangs a negative column below a zero baseline, and a negative bar left of it', () => {
+    const mixed = [
+      { label: 'Up', value: 30 },
+      { label: 'Down', value: -10 },
+    ];
+    const cols = barMarks(area, mixed, false);
+    const zero = cols.baseline.y1;
+    const [up, down] = cols.bars as [(typeof cols.bars)[0], (typeof cols.bars)[0]];
+    expect(up.y + up.h).toBeCloseTo(zero);
+    expect(down.y).toBeCloseTo(zero);
+    expect(down.h).toBeCloseTo(up.h / 3);
+    expect(down.tip.y).toBeCloseTo(zero + down.h);
+    // Both fit in the plot, the zero line between them.
+    expect(up.y).toBeGreaterThanOrEqual(area.y);
+    expect(down.y + down.h).toBeLessThanOrEqual(area.y + area.h);
+    expect(cols.origin.y).toBeCloseTo(zero);
+
+    const bars = barMarks(area, mixed, true);
+    const zx = bars.baseline.x1;
+    expect(bars.bars[0]!.x).toBeCloseTo(zx);
+    expect(bars.bars[1]!.x + bars.bars[1]!.w).toBeCloseTo(zx);
+    expect(bars.bars[1]!.w).toBeCloseTo(bars.bars[0]!.w / 3);
+    expect(bars.bars[1]!.tip.x).toBeCloseTo(bars.bars[1]!.x);
+    expect(bars.bars[1]!.x).toBeGreaterThanOrEqual(area.x);
+  });
+
+  it('draws an all-negative column chart down from a zero baseline at the top', () => {
+    const cols = barMarks(
+      area,
+      [
+        { label: 'A', value: -4 },
+        { label: 'B', value: -2 },
+      ],
+      false,
+    );
+    expect(cols.bars[0]!.y).toBeCloseTo(cols.baseline.y1);
+    expect(cols.bars[0]!.h).toBeCloseTo(cols.bars[1]!.h * 2);
+    expect(cols.bars[0]!.h).toBeGreaterThan(0);
+  });
+
+  it('puts the zero tick on the baseline when the axis shows negatives', () => {
+    const cols = barMarks(
+      area,
+      [
+        { label: 'A', value: 8 },
+        { label: 'B', value: -3 },
+      ],
+      false,
+      0,
+      0,
+      true,
+    );
+    const zeroTick = cols.axis.ticks.find((t) => t.text === '0');
+    expect(zeroTick?.at).toBeCloseTo(cols.baseline.y1);
+    expect(cols.axis.ticks[0]!.text.startsWith('-')).toBe(true);
+  });
+
   it('lays columns upright from the bottom and bars rightward from the left', () => {
     const cols = barMarks(area, slices, false);
     expect(cols.bars[0]!.h).toBeGreaterThan(cols.bars[1]!.h);

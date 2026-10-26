@@ -21,7 +21,7 @@ import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import type { TabSaveDocument } from '../db/tab-save-document';
-import { readBody, type DocumentRouteContext } from './context';
+import { grantOn, readBody, type DocumentRouteContext } from './context';
 
 // Fields of the stored record, not of the tab body; a client echoing them back never stores them
 // (CS32).
@@ -71,6 +71,7 @@ export async function handleTabPut(
     console.warn('[changeset] seen-invalid', { documentId: id, tabId, length: seenHeader.length });
   }
 
+  const scoped = (grantOn(ctx, id)?.tabScope ?? null) !== null;
   for (let attempt = 1; attempt <= TAB_SAVE_CAS_ATTEMPTS; attempt += 1) {
     // The stored tab and the changesets this editor had not seen, read together. Changesets merge
     // first, so their before-image compare sees the save as sent; then the room's ledger.
@@ -87,6 +88,9 @@ export async function handleTabPut(
     // The name cap (docs/specs/006-document/name-length.md): a new or changed name is shortened;
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
+    // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-scoped
+    // editor's save stores its content under the name the tab already has.
+    if (scoped && existingTab) body.name = existingTab.name;
     // Data-loss backstop (docs/specs/006-document/per-tab-storage.md): refuse to blank a tab that
     // holds content unless the editor marks the empty write intentional (`X-Allow-Empty: 1`, set
     // only when it had the tab's content authoritatively loaded).

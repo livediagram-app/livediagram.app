@@ -1723,7 +1723,8 @@ describe('DesignRoom and agent changesets', () => {
     expect(peer.sent).toEqual([]);
   });
 
-  it("answers every selection on the tab, any role, marking the agent owner's own", async () => {
+  // docs/specs/024-agents/agent-changesets.md "Held elements": a Viewer's selection holds nothing.
+  it("answers the selections on the tab that hold, never a viewer's, marking the agent owner's own", async () => {
     const { room } = newRoom();
     const owner = join(room, 'o', 'tag-owner');
     const viewer = join(room, 'v', null, 'view');
@@ -1736,7 +1737,6 @@ describe('DesignRoom and agent changesets', () => {
     await Promise.resolve();
     expect((await selections(room, 'tab=t1&person=tag-owner')).selections).toEqual([
       { elementIds: ['a', 'b'], name: 'Name o', color: '#abc', mine: true },
-      { elementIds: ['c'], name: 'Name v', color: '#abc', mine: false },
     ]);
     expect((await selections(room, 'tab=t2&person=tag-owner')).selections).toEqual([]);
   });

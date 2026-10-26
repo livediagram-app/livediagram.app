@@ -108,7 +108,8 @@ describe('rgba', () => {
     expect(rgba('#ff8000', 0.5)).toBe('rgba(255, 128, 0, 0.5)');
   });
 
-  it('leaves a colour it cannot read as it is', () => {
-    expect(rgba('red', 0.5)).toBe('red');
+  it('reads a named colour, and leaves one it cannot read as it is', () => {
+    expect(rgba('red', 0.5)).toBe('rgba(255, 0, 0, 0.5)');
+    expect(rgba('transparent', 0.5)).toBe('transparent');
   });
 });

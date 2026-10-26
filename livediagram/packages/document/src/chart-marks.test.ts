@@ -50,6 +50,58 @@ describe('chart marks (docs/specs/009-elements/pie-chart.md "Chart types")', () 
     expect(bars.bars[0]!.tip.x).toBeCloseTo(bars.bars[0]!.x + bars.bars[0]!.w);
   });
 
+  // docs/specs/009-elements/pie-chart.md "Below zero on a column or bar chart".
+  it('hangs a negative column below a zero baseline, and runs a negative bar left of it', () => {
+    const mixed = [
+      { label: 'Q1', value: 30 },
+      { label: 'Q2', value: -10 },
+    ];
+    const cols = barMarks(area, mixed, false);
+    const zero = cols.baseline.y1;
+    const [up, down] = cols.bars;
+    // The positive column ends on the baseline, the negative one starts there and hangs below.
+    expect(up!.y + up!.h).toBeCloseTo(zero);
+    expect(down!.y).toBeCloseTo(zero);
+    expect(down!.h).toBeGreaterThan(0);
+    expect(up!.h / down!.h).toBeCloseTo(3);
+    expect(down!.tip.y).toBeCloseTo(zero + down!.h);
+    // The baseline sits up the plot, and the names go below the whole plot.
+    expect(zero).toBeLessThan(cols.floor);
+    expect(cols.floor).toBeCloseTo(down!.y + down!.h);
+    expect(cols.origin.y).toBeCloseTo(zero);
+
+    const bars = barMarks(area, mixed, true);
+    const zeroX = bars.baseline.x1;
+    expect(bars.bars[0]!.x).toBeCloseTo(zeroX);
+    expect(bars.bars[1]!.x + bars.bars[1]!.w).toBeCloseTo(zeroX);
+    expect(bars.bars[1]!.tip.x).toBeCloseTo(bars.bars[1]!.x);
+  });
+
+  it('draws a chart with no negatives exactly as before, its baseline at the foot', () => {
+    const cols = barMarks(area, slices, false);
+    expect(cols.floor).toBeCloseTo(cols.baseline.y1);
+    expect(cols.baseline.y1).toBeCloseTo(88);
+  });
+
+  it('covers the negatives with Show Axis, zero a tick on the baseline', () => {
+    const cols = barMarks(
+      area,
+      [
+        { label: 'A', value: 120 },
+        { label: 'B', value: -40 },
+      ],
+      false,
+      0,
+      0,
+      true,
+    );
+    const texts = cols.axis.ticks.map((t) => t.text);
+    expect(texts[0]).toBe('-50');
+    expect(texts).toContain('0');
+    expect(cols.axis.ticks.find((t) => t.text === '0')!.at).toBeCloseTo(cols.baseline.y1);
+    expect(cols.axis.ticks[0]!.at).toBeCloseTo(cols.floor);
+  });
+
   it('reads a scatter category as a number', () => {
     expect(scatterX(' 1,200 ')).toBe(1200);
     expect(scatterX('-3.5')).toBe(-3.5);

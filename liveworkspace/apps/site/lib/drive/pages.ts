@@ -1,8 +1,17 @@
 // What liveworkspace's three Drive pages decide (liveworkspace/docs/drive.md "Connecting", "Open with"), pure so every
 // outcome is tested: /drive/connect asks for a consent state and leaves for Google; /drive/connected takes Google's
 // answer to the service and sends the browser back where it came from; /drive/open is Drive's Open with.
-import { withCloudSyncOpen, withDriveOutcome, type DriveResult } from '@liveworkspace/drive/client';
-import type { DriveConnectAnswer, DriveOpenAnswer } from '@liveworkspace/drive';
+import {
+  withCloudSyncOpen,
+  withDriveOutcome,
+  type DriveCallError,
+  type DriveResult,
+} from '@liveworkspace/drive/client';
+import {
+  DRIVE_IMPORT_MAX_BYTES,
+  type DriveConnectAnswer,
+  type DriveOpenAnswer,
+} from '@liveworkspace/drive';
 import type { AppName } from '@liveworkspace/sites';
 import { DRIVE_SETTINGS_PARAM } from './client';
 
@@ -188,4 +197,12 @@ export function openView(result: DriveResult<DriveOpenAnswer>): OpenView {
     case 'not_ours':
       return { kind: 'not_ours' };
   }
+}
+
+/** What /drive/open says when Import as a copy fails: the file too big for an import, or not an app's file. */
+export function importFailedBody(error: DriveCallError): string {
+  if (error === 'file_too_large') {
+    return `The file is bigger than ${DRIVE_IMPORT_MAX_BYTES / (1024 * 1024)} MB, the most an import can take.`;
+  }
+  return 'The file couldn’t be read as one of your liveworkspace apps’ files.';
 }

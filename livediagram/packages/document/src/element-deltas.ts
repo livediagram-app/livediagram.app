@@ -61,7 +61,8 @@ export type ElementDelta =
   | { kind: 'check'; index: number; text: string; done: boolean }
   // Comment threads (docs/specs/008-canvas/canvas-and-palette.md): append, delete, the server's id replacing the
   // local one, and resolve / unresolve.
-  | { kind: 'comment-add'; comment: Comment }
+  // `before`: a refused delete put back ahead of the comment that followed it (useEditorComments).
+  | { kind: 'comment-add'; comment: Comment; before?: string }
   | { kind: 'comment-remove'; commentId: string }
   | { kind: 'comment-rekey'; from: string; to: string }
   | { kind: 'comment-resolve'; resolved: boolean };
@@ -155,7 +156,8 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
     case 'comment-add': {
       if (!isComment(delta.comment)) return el;
       const thread = threadOf(el);
-      const next = threadWithComment(thread, delta.comment, COMMENTS_MAX);
+      const before = typeof delta.before === 'string' ? delta.before : undefined;
+      const next = threadWithComment(thread, delta.comment, COMMENTS_MAX, before);
       return next === thread ? el : withThread(el, next);
     }
     case 'comment-remove': {

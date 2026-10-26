@@ -78,17 +78,22 @@ export function pieMarks(
 export type BarRect = { x: number; y: number; w: number; h: number; rx: number; tip: ChartPoint };
 
 export type BarMarks = {
+  // The zero line the bars grow from: up the plot when a value is below zero, else at its foot (or left edge).
   baseline: { x1: number; y1: number; x2: number; y2: number };
   bars: BarRect[];
-  // Where the bars grow from (the animation's origin).
+  // Where the bars grow from (the animation's origin), on the baseline.
   origin: ChartPoint;
+  // The plot's far edge below zero: a column chart's foot (its names go under it), a bar chart's left edge. The
+  // baseline's own place when no value is below zero.
+  floor: number;
   // Show Axis (pie-chart.md): each tick at its place along the value axis (a y on a column chart, an x on a bar
   // chart), its gridline running across the plot from `span` to its end. Empty without.
   axis: { ticks: { at: number; text: string }[]; span: [number, number] };
 };
 
-// Upright columns from a baseline near the bottom, or (horizontal) bars to the right from a baseline at the left.
-// Evenly spaced with a gap, each at most 48 px thick so a two-bar chart is not two slabs.
+// Upright columns from a zero baseline, or (horizontal) bars to the right of one; a value below zero hangs below it
+// (runs left of it), as standard charts draw them (docs/specs/009-elements/pie-chart.md "Below zero on a column or
+// bar chart"). Evenly spaced with a gap, each at most 48 px thick so a two-bar chart is not two slabs.
 export function barMarks(
   area: ChartRect,
   data: readonly PieSlice[],
@@ -98,40 +103,52 @@ export function barMarks(
   // Show Axis: tick labels and gridlines, the plot drawn in from the side they take.
   showAxis = false,
 ): BarMarks {
-  const top = data.reduce((m, d) => Math.max(m, Math.max(0, d.value)), 0) || 1;
-  // With Show Axis the bars run to a round top tick.
-  const scale = showAxis ? axisScale(0, top) : null;
-  const maxVal = scale ? scale.max : top;
+  // The range always holds zero; one pass, as a chart may hold many data.
+  let lo = 0;
+  let hi = 0;
+  for (const d of data) {
+    if (d.value < lo) lo = d.value;
+    if (d.value > hi) hi = d.value;
+  }
+  if (hi === lo) hi = lo + 1;
+  // With Show Axis the bars run to round ticks at both ends.
+  const scale = showAxis ? axisScale(lo, hi) : null;
+  const minVal = scale ? scale.min : lo;
+  const maxVal = scale ? scale.max : hi;
+  const span = maxVal - minVal;
+  // A value's place along the value axis, as a share of the plot from its low end.
+  const at = (v: number) => (v - minVal) / span;
   const n = Math.max(1, data.length);
-  const share = (d: PieSlice) => Math.max(0, d.value) / maxVal;
   if (horizontal) {
     // The bottom keeps a row for the tick labels.
     const padY = Math.min(20, area.h * 0.08);
     const tickRow = scale ? AXIS_TICK_FONT_PX + AXIS_TICK_GAP : 0;
-    const baseX = ox + area.x + area.w * 0.06;
-    const fullW = Math.max(1, ox + area.x + area.w * 0.94 - baseX);
+    const leftX = ox + area.x + area.w * 0.06;
+    const fullW = Math.max(1, ox + area.x + area.w * 0.94 - leftX);
+    const xOf = (v: number) => leftX + at(v) * fullW;
+    const zeroX = xOf(0);
     const innerH = Math.max(1, area.h - padY * 2 - tickRow);
     const slot = innerH / n;
     const thick = Math.min(slot * 0.7, 48);
     const y0 = oy + area.y + padY;
     return {
-      baseline: { x1: baseX, y1: y0, x2: baseX, y2: y0 + innerH },
+      baseline: { x1: zeroX, y1: y0, x2: zeroX, y2: y0 + innerH },
       bars: data.map((d, i) => {
-        const len = share(d) * fullW;
+        const end = xOf(d.value);
         const cy = y0 + slot * (i + 0.5);
         return {
-          x: baseX,
+          x: Math.min(zeroX, end),
           y: cy - thick / 2,
-          w: len,
+          w: Math.abs(end - zeroX),
           h: thick,
           rx: Math.min(3, thick / 4),
-          tip: { x: baseX + len, y: cy },
+          tip: { x: end, y: cy },
         };
       }),
-      origin: { x: baseX, y: y0 + innerH / 2 },
+      origin: { x: zeroX, y: y0 + innerH / 2 },
+      floor: leftX,
       axis: {
-        ticks:
-          scale?.ticks.map((t) => ({ at: baseX + (t.value / maxVal) * fullW, text: t.text })) ?? [],
+        ticks: scale?.ticks.map((t) => ({ at: xOf(t.value), text: t.text })) ?? [],
         span: [y0, y0 + innerH],
       },
     };
@@ -140,30 +157,32 @@ export function barMarks(
   // The left keeps a column for the tick labels.
   const tickCol = scale ? axisLabelRoom(scale) : 0;
   const topPad = oy + area.y + area.h * 0.1;
-  const baseY = oy + area.y + area.h * 0.88;
+  const footY = oy + area.y + area.h * 0.88;
   const innerW = Math.max(1, area.w - padX * 2 - tickCol);
   const slot = innerW / n;
   const thick = Math.min(slot * 0.7, 48);
-  const fullH = Math.max(1, baseY - topPad);
+  const fullH = Math.max(1, footY - topPad);
+  const yOf = (v: number) => footY - at(v) * fullH;
+  const zeroY = yOf(0);
   const x0 = ox + area.x + padX + tickCol;
   return {
-    baseline: { x1: x0, y1: baseY, x2: x0 + innerW, y2: baseY },
+    baseline: { x1: x0, y1: zeroY, x2: x0 + innerW, y2: zeroY },
     bars: data.map((d, i) => {
-      const len = share(d) * fullH;
+      const end = yOf(d.value);
       const cx = x0 + slot * (i + 0.5);
       return {
         x: cx - thick / 2,
-        y: baseY - len,
+        y: Math.min(zeroY, end),
         w: thick,
-        h: len,
+        h: Math.abs(zeroY - end),
         rx: Math.min(3, thick / 4),
-        tip: { x: cx, y: baseY - len },
+        tip: { x: cx, y: end },
       };
     }),
-    origin: { x: ox + area.x + area.w / 2, y: baseY },
+    origin: { x: ox + area.x + area.w / 2, y: zeroY },
+    floor: footY,
     axis: {
-      ticks:
-        scale?.ticks.map((t) => ({ at: baseY - (t.value / maxVal) * fullH, text: t.text })) ?? [],
+      ticks: scale?.ticks.map((t) => ({ at: yOf(t.value), text: t.text })) ?? [],
       span: [x0, x0 + innerW],
     },
   };

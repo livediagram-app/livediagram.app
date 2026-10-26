@@ -15,7 +15,9 @@ the node's corner where people expect a status mark, and stays there.
 
 ## The element
 
-- **Text** is the label, one line, at most 24 characters. Double-click edits it.
+- **Text** is the label, one line, at most 24 characters (`BADGE_LABEL_MAX`). Double-click edits it, and the editor
+  stops taking text at the cap: typing past it does nothing and a paste is cut to fit. An agent's longer label is
+  refused, not shortened (Agents, below).
 - **Size follows the text.** Height comes from the text size (24px at the default size); width is the text's width
   plus the padding, never narrower than the height, so a single character makes a circle. It re-fits when the text
   or text size changes. Width is estimated from the character count (`badgeWidth`), the same estimate the export uses,
@@ -128,3 +130,10 @@ host's move, not a badge edit.
 The MCP server and the REST API take `badge` with `attachedTo` / `attachAt`; an agent sets those and the editor
 places the badge on its point when the board next loads (a stored `x` / `y` that disagrees with the point is
 settled on read).
+
+**The cap holds for agents.** An agent write (MCP, CLI, REST changesets and replace) that gives a badge a label
+longer than 24 characters is refused with `invalid_result`, naming the element and the cap (`b1 label: a badge's
+label is at most 24 characters`). A step's label over 3 is refused the same way. Only the elements a write touches are
+checked, so a document that already holds a longer label (made before the cap was enforced) still takes edits to its
+other elements, and the editor's own saves are never refused for it (`chipLabelIssue` in
+`packages/document/src/chip.ts`, run by the agent write paths alone).

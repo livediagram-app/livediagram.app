@@ -209,6 +209,48 @@ describe('claiming a returning guest of the old livediagram.app', () => {
     expect(merges).toHaveLength(2);
   });
 
+  it('lets only one of two claims at once merge, into one person', async () => {
+    addLegacy(AFTER);
+    const signature = await sign(OLD);
+    // Hold every merge until both claims have started.
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const inner = globalThis.fetch;
+    vi.stubGlobal('fetch', async (input: string | URL | Request, init?: RequestInit) => {
+      await held;
+      return inner(input, init);
+    });
+    const first = claim({ legacyId: OLD, signature, into: NEW_GUEST });
+    const second = claim({ legacyId: OLD, signature, into: 'user_ada' });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    release();
+    const answers = await Promise.all([first, second]);
+    expect(merges).toHaveLength(1);
+    expect(answers.filter((a) => a.body.merged === true)).toHaveLength(1);
+    const winner = (merges[0]!.body as { userId: string }).userId;
+    expect(row()).toEqual({ claimedAt: expect.any(Number), claimedBy: winner });
+    // The other is told to come back, which keeps the old keys in its browser for a later load.
+    const loser = answers.find((a) => a.body.merged !== true)!;
+    expect(loser).toEqual({ status: 503, body: { error: 'claim_in_progress' } });
+    // Coming back, it finds the id taken.
+    const again = await claim({
+      legacyId: OLD,
+      signature,
+      into: winner === NEW_GUEST ? 'user_ada' : NEW_GUEST,
+    });
+    expect(again.body).toEqual({ merged: false, reason: 'claimed' });
+  });
+
+  it('takes over a claim that never finished once its hold has run out', async () => {
+    addLegacy(AFTER);
+    sql
+      .prepare('UPDATE legacy_guest SET claimingBy = ?, claimingUntil = ? WHERE id = ?')
+      .run('user_ada', Date.now() - 1, LEGACY);
+    const answer = await claim({ legacyId: OLD, signature: await sign(OLD), into: NEW_GUEST });
+    expect(answer.body).toEqual({ merged: true });
+    expect(row().claimedBy).toBe(NEW_GUEST);
+  });
+
   it('checks the body', async () => {
     addLegacy(BEFORE);
     const signature = await sign(OLD);

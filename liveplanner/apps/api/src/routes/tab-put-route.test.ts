@@ -313,7 +313,7 @@ describe('a tab-scoped link and boards', () => {
       }),
     );
 
-  it('refuses the first board from the link, and lets it edit a tab that already has one', async () => {
+  it("keeps the tab's structure when the link's save adds a board, and saves the rest", async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await projectWith([box('a')]);
     db.sql
@@ -321,9 +321,8 @@ describe('a tab-scoped link and boards', () => {
         "INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB1', 'D', 'edit', 't1', 1)",
       )
       .run();
-    const refused = await asVisitor(db, [box('a'), board]);
-    expect(refused.status).toBe(403);
-    expect(await refused.json()).toEqual({ error: 'tab_scope_widen' });
+    // A lagging autosave may carry a board the owner just removed: the save lands, the board doesn't.
+    expect((await asVisitor(db, [box('a'), board])).status).toBe(200);
     expect(stored(db).map((e) => e.id)).toEqual(['a']);
     // A plain edit from the link still saves.
     expect((await asVisitor(db, [box('a', 'moved')])).status).toBe(200);

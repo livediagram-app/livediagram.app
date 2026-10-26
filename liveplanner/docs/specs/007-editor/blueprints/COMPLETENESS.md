@@ -51,7 +51,6 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-
 ## load-recovery
 
 - [x] Domain and naming

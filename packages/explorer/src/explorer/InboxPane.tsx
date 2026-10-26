@@ -51,6 +51,8 @@ function readFilter(viewerId: string | null): InboxFilter {
 // The pane's entry in the browser's history while it stands in for the list, so Back (Android's, iOS's swipe, the
 // browser's) returns to the list. The history state is kept as it was (a router's own fields with it).
 const PANE_STATE = 'liveworkspaceInboxPane';
+const isPaneState = (state: unknown) =>
+  Boolean(state && typeof state === 'object' && (state as Record<string, unknown>)[PANE_STATE]);
 
 // `compact`: inside the editor's Explorer panel, under the pane's own header, with the small empty state.
 export function InboxPane({
@@ -136,13 +138,25 @@ export function InboxPane({
   }, []);
   const paneStands = stacked && showPane;
   useEffect(() => {
-    if (!paneStands) return;
+    if (!paneStands) {
+      // The open row went (its work done, or gone from the index) while its entry stood: step back off it, so
+      // the next Back leaves the list instead of doing nothing.
+      if (pushed.current) {
+        pushed.current = false;
+        try {
+          if (isPaneState(window.history.state)) window.history.back();
+        } catch {
+          // No history to step back through.
+        }
+      }
+      return;
+    }
     try {
       const state: unknown = window.history.state;
-      window.history.pushState(
-        { ...(state && typeof state === 'object' ? state : {}), [PANE_STATE]: true },
-        '',
-      );
+      const next = { ...(state && typeof state === 'object' ? state : {}), [PANE_STATE]: true };
+      // The pane's entry is already on top (a step back still on its way): take it over rather than stack another.
+      if (isPaneState(state)) window.history.replaceState(next, '');
+      else window.history.pushState(next, '');
       pushed.current = true;
     } catch {
       // A sandboxed frame: Back stays the page's.

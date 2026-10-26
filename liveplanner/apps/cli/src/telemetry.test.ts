@@ -84,9 +84,7 @@ describe('the usage count', () => {
       7,
     );
     const missing = host((url) =>
-      url.pathname === '/api/projects'
-        ? Response.json({ error: 'x' }, { status: 404 })
-        : undefined,
+      url.pathname === '/api/projects' ? Response.json({ error: 'x' }, { status: 404 }) : undefined,
     );
     await run(['project', 'ls'], fakeIo({ env: on(), routes: [capabilities, missing.route] }));
     const refused = new Error('no');

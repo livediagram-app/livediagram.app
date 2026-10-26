@@ -403,12 +403,8 @@ describe('autosaveReadOnly', () => {
     expect(autosaveReadOnly({ canEdit: false, loadError: false, projectNotFound: false })).toBe(
       true,
     );
-    expect(autosaveReadOnly({ canEdit: true, loadError: true, projectNotFound: false })).toBe(
-      true,
-    );
-    expect(autosaveReadOnly({ canEdit: true, loadError: false, projectNotFound: true })).toBe(
-      true,
-    );
+    expect(autosaveReadOnly({ canEdit: true, loadError: true, projectNotFound: false })).toBe(true);
+    expect(autosaveReadOnly({ canEdit: true, loadError: false, projectNotFound: true })).toBe(true);
   });
 });
 

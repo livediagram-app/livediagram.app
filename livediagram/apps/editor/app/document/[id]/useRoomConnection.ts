@@ -75,6 +75,9 @@ export function useRoomConnection(opts: {
   // A workbench session (docs/specs/013-workspace/blueprints/workbench-embeds.md): told when the room
   // ends it (close 4006), or when an access change does (4005, WB31), instead of reloading.
   onWorkbenchEnded?: () => void;
+  // The room turned this editor away as full (docs/specs/015-api/api.md "A room holds at most 100 connections"),
+  // once per streak; the connector keeps trying on its own.
+  onRoomFull?: () => void;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.
@@ -187,6 +190,7 @@ export function useRoomConnection(opts: {
     documentServerStored,
     enabled = true,
     onWorkbenchEnded,
+    onRoomFull,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -567,6 +571,7 @@ export function useRoomConnection(opts: {
     window.location.reload();
   });
   const roomWorkbenchEnded = useEffectEvent(() => onWorkbenchEnded?.());
+  const roomFull = useEffectEvent(() => onRoomFull?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
   // answer changes anything.
@@ -644,6 +649,7 @@ export function useRoomConnection(opts: {
       // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
       onAccessChanged: () => roomAccessChanged(),
       onWorkbenchEnded: () => roomWorkbenchEnded(),
+      onRoomFull: () => roomFull(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };

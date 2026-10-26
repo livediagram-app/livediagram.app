@@ -392,7 +392,12 @@ last uploaded, the liveworkspace name it mirrors, the notice). Its alarm runs pa
   the fallback check covers it.
 - Check now sets the next pass to write every changed item regardless of the per-item interval.
 - An import lands in the person's root (`folderId: null`). An import door that refuses the envelope answers
-  `400 invalid_request`. Any other door failure answers `502 google_failed`.
+  `400 invalid_request`, and one that finds it too big `413 file_too_large`. Any other door failure answers
+  `502 google_failed`.
+- An import downloads at most 32 MiB (`DRIVE_IMPORT_MAX_BYTES`, the apps' import door's own cap, index-app
+  `IMPORT_MAX_BYTES`): a larger file is `413 file_too_large`, refused by its declared length or, without one, as soon
+  as the bytes read pass the cap, so the service never holds more than that. /drive/open says the file is bigger than
+  32 MB, the most an import can take.
 - Open and import answer `502 google_failed` for any failure they have no named answer for: Google erroring once the
   client stops retrying, Google's token endpoint down, the index erroring, or a door timing out. Never a bare 500.
 - Marks cover the mirrored rows and failed writes. An item not yet mirrored carries no mark until its first pass.

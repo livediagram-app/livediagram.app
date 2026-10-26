@@ -48,13 +48,13 @@ export function privacyPolicyMoved(product: string): MovedPage {
   );
 }
 
-/** /help/policies/terms: liveworkspace.app's terms of service. */
+/** /help/policies/terms: liveworkspace.app's terms of use. */
 export function termsMoved(product: string): MovedPage {
   return moved(
     `${LIVEWORKSPACE_URL}/terms`,
-    'terms of service',
-    'Terms of Service',
-    `The terms of service for ${product} are liveworkspace's, on liveworkspace.app.`,
+    'terms of use',
+    'Terms of Use',
+    `The terms of use for ${product} are liveworkspace's, on liveworkspace.app.`,
   );
 }
 

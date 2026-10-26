@@ -18,6 +18,7 @@
     "@livediagram/api-schema": "workspace:*",
     "@livedocuments/api-schema": "workspace:*",
     "@liveplanner/api-schema": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"

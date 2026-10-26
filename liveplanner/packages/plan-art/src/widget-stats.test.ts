@@ -114,6 +114,22 @@ describe('more widget stats', () => {
     const fresh = { ...item({ status: 'todo' }), updatedAt: new Date(2026, 9, 29).getTime() };
     expect(staleCount(setup, [old, oldDone, fresh], now)).toBe(1);
   });
+
+  // A column after Done (Won't Do) is finished too: only a card before Done is not done.
+  it('never counts a card after Done as overdue or stale', () => {
+    const board: PlanBoardSetup = {
+      ...setup,
+      columns: [...setup.columns, { id: 'wont', status: 'wont-do', name: "Won't Do" }],
+    };
+    const now = new Date(2026, 9, 30);
+    const after = { ...item({ status: 'wont-do', due: '2026-10-01' }), updatedAt: 0 };
+    const open = { ...item({ status: 'todo', due: '2026-10-01' }), updatedAt: 0 };
+    expect(dueCounts(board, [after, open], now)).toEqual({ overdue: 1, soon: 0 });
+    expect(staleCount(board, [after, open], now)).toBe(1);
+    // No done column: every card is not done.
+    const { doneColumnId: _done, ...noDone } = board;
+    expect(staleCount(noDone, [after, open], now)).toBe(2);
+  });
 });
 
 // docs/specs/026-plan/board-widgets.md "Widget kinds": Completion never reads finished, or untouched, when it is not.

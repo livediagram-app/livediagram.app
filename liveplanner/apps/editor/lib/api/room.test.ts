@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PROJECT_FORMAT } from '@liveplanner/api-schema';
+import { PROJECT_FORMAT, ROOM_FULL_CLOSE, ROOM_FULL_RETRY_MS } from '@liveplanner/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverProjectFormat } from '../server-release';
 import {
   connectRoom,
@@ -593,6 +593,42 @@ describe('connectRoom when the project is trashed', () => {
     expect(onWorkbenchEnded).toHaveBeenCalledTimes(1);
     expect(onAccessChanged).not.toHaveBeenCalled();
     expect(ClosingSocket.all).toHaveLength(1);
+  });
+
+  // A full room (docs/specs/015-api/api.md "A room holds 100 connections"): close 4008. The connector says so
+  // and knocks again every ROOM_FULL_RETRY_MS, however long the room stays full.
+  it('reports a full room and tries again after a while, without spending its attempts', () => {
+    const onRoomFull = vi.fn();
+    const onRefused = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onRoomFull, onRefused },
+    );
+    for (let i = 0; i < 12; i += 1) {
+      const socket = ClosingSocket.all[i]!;
+      socket.fire('open');
+      socket.fire('close', { code: ROOM_FULL_CLOSE });
+      vi.advanceTimersByTime(ROOM_FULL_RETRY_MS - 1);
+      expect(ClosingSocket.all).toHaveLength(i + 1);
+      vi.advanceTimersByTime(1);
+      expect(ClosingSocket.all).toHaveLength(i + 2);
+    }
+    expect(onRoomFull).toHaveBeenCalledTimes(12);
+    expect(onRefused).not.toHaveBeenCalled();
+    expect(ROOM_FULL_RETRY_MS).toBe(60_000);
+  });
+
+  it('tries a full room again as soon as the tab is shown, without waiting out the minute', () => {
+    connectRoom('d1', { id: 'me', name: 'Me', color: '#000' }, { onPresence() {}, onOp() {} });
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: ROOM_FULL_CLOSE });
+    expect(ClosingSocket.all).toHaveLength(1);
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(ClosingSocket.all).toHaveLength(2);
+    // The minute's retry was dropped with it: no second knock from the old timer.
+    vi.advanceTimersByTime(ROOM_FULL_RETRY_MS);
+    expect(ClosingSocket.all).toHaveLength(2);
   });
 
   it('still reconnects after an ordinary drop', () => {

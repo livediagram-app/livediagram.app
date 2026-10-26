@@ -1,9 +1,10 @@
 import type { Page } from '@playwright/test';
 import { expect } from '../fixtures';
+import { ARRANGED_VIEW } from './agent-changeset-bodies';
 import type { StubUser } from './session';
 
 // What the agent specs share (docs/specs/024-agents/): Webber, signed in, with his own unshared project holding one
-// square, his participant row, and an API token for his agent; and opening that project until its room greets the
+// Dashboard view (ARRANGED_VIEW), his participant row, and an API token for his agent; and opening that project until its room greets the
 // editor.
 
 export const CANVAS = '[data-canvas-a11y-root]';
@@ -15,7 +16,7 @@ export const WEBBER: StubUser = {
 
 export type Setup = { id: string; tabId: string; token: string; session: Record<string, string> };
 
-// Webber's personal project with one square, his participant row, and an API token for his agent.
+// Webber's personal project with one Dashboard view, his participant row, and an API token for his agent.
 export async function arrange(page: Page, baseURL: string, userId: string): Promise<Setup> {
   const jwt = await (await page.request.get(`/e2e/token?sub=${userId}`)).text();
   const session = { Authorization: `Bearer ${jwt}`, Origin: new URL(baseURL).origin };
@@ -34,18 +35,7 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
         {
           id: tabId,
           name: 'Board',
-          elements: [
-            {
-              id: 'api',
-              type: 'shape',
-              shape: 'square',
-              x: 200,
-              y: 200,
-              width: 180,
-              height: 80,
-              label: 'API',
-            },
-          ],
+          elements: [ARRANGED_VIEW],
         },
       ],
     },
@@ -76,6 +66,15 @@ export async function storedIds(page: Page, s: Setup): Promise<string[]> {
   return tab.elements.map((e) => e.id);
 }
 
+// Where a stored element sits across, or null when it is not stored.
+export async function storedX(page: Page, s: Setup, id: string): Promise<number | null> {
+  const res = await page.request.get(`/api/projects/${s.id}/tabs/${s.tabId}`, {
+    headers: { Authorization: `Bearer ${s.token}` },
+  });
+  const { tab } = (await res.json()) as { tab: { elements: { id: string; x: number }[] } };
+  return tab.elements.find((e) => e.id === id)?.x ?? null;
+}
+
 // Opens the project and waits for its room to greet the editor: from then on a changeset is relayed
 // live (one that lands before is caught up by the join check, without a toast).
 export async function open(page: Page, s: Setup) {
@@ -88,5 +87,5 @@ export async function open(page: Page, s: Setup) {
   const ws = await socket;
   await ws.waitForEvent('framereceived', (f) => String(f.payload).includes('"kind":"presence"'));
   await page.locator(CANVAS).waitFor();
-  await expect(page.getByText('API', { exact: true })).toBeVisible();
+  await expect(page.locator('[data-element-id="api"]')).toBeVisible();
 }

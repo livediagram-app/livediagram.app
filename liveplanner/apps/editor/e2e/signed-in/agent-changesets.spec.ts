@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures';
-import { agentSubmits, arrange, CANVAS, open, storedIds, WEBBER } from './agent-session';
+import { ADD_PAYMENTS_VIEW, ARRANGED_VIEW, RENAME_API_VIEW } from './agent-changeset-bodies';
+import { agentSubmits, arrange, CANVAS, open, storedIds, storedX, WEBBER } from './agent-session';
 import { freshUserId, installSession } from './session';
 
 // Agent changesets end to end (docs/specs/024-agents/agent-changesets.md; liveplanner #343): a
@@ -7,27 +8,12 @@ import { freshUserId, installSession } from './session';
 // changesets the change never reached the editor and the person's next autosave erased it. Now it
 // arrives live, outlined in their colour, with a toast; it survives their save; Ctrl+Z leaves it;
 // the toast's Undo reverts it; and an element they have selected is refused to the agent.
+// An agent adds only what a Plan tab holds, so the project holds a Dashboard view and the agent adds
+// another (agent-changeset-bodies.ts; the api's route test runs the same bodies).
 
 test.use({ colorScheme: 'dark', viewport: { width: 1440, height: 860 } });
 
-const paymentBox = {
-  operations: [
-    {
-      op: 'add',
-      element: {
-        id: 'payments',
-        type: 'shape',
-        shape: 'square',
-        x: 520,
-        y: 200,
-        width: 220,
-        height: 80,
-        label: 'Payment service',
-      },
-    },
-  ],
-  summary: 'add payment service',
-};
+const PAYMENTS = '[data-element-id="payments"]';
 
 test("an agent's changeset reaches the open editor, survives its save, and the toast's Undo reverts it", async ({
   page,
@@ -41,8 +27,8 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
   await open(page, s);
 
   // The agent writes; the person sees it arrive, outlined, with a toast naming them.
-  expect((await agentSubmits(page, s, paymentBox)).status()).toBe(200);
-  await expect(page.getByText('Payment service', { exact: true })).toBeVisible();
+  expect((await agentSubmits(page, s, ADD_PAYMENTS_VIEW)).status()).toBe(200);
+  await expect(page.locator(PAYMENTS)).toBeVisible();
   await expect(page.locator('[data-reveal-id="payments"]')).toBeVisible();
   const toast = page
     .getByRole('status')
@@ -52,31 +38,30 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
 
   // Show frames what changed.
   await toast.getByRole('button', { name: "Show Webber Takken's changes" }).click();
-  await expect(page.getByText('Payment service', { exact: true })).toBeInViewport();
+  await expect(page.locator(PAYMENTS)).toBeInViewport();
   // The outline goes after its reveal time; the toast stays.
   await expect(page.locator('[data-reveal-id="payments"]')).toHaveCount(0, { timeout: 5_000 });
   await expect(toast).toBeVisible();
 
-  // The person draws a square: their autosave keeps the agent's element.
-  await page.mouse.click(1000, 600);
-  await page.keyboard.press('r');
-  await page.mouse.move(900, 500);
-  await page.mouse.down();
-  await page.mouse.move(1040, 580, { steps: 6 });
-  await page.mouse.up();
+  // The person nudges their own view: their autosave keeps the agent's view.
+  await page.locator('[data-element-id="api"]').click();
+  await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Escape');
-  await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toHaveLength(3);
-  expect(await storedIds(page, s)).toContain('payments');
+  await expect
+    .poll(() => storedX(page, s, 'api'), { timeout: 10_000 })
+    .toBeGreaterThan(ARRANGED_VIEW.x);
+  expect(await storedIds(page, s)).toEqual(['api', 'payments']);
 
-  // Ctrl+Z undoes the person's own square, never the agent's change.
+  // Ctrl+Z undoes the person's own nudge, never the agent's change.
   await page.keyboard.press('ControlOrMeta+z');
-  await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toEqual(['api', 'payments']);
-  await expect(page.getByText('Payment service', { exact: true })).toBeVisible();
+  await expect.poll(() => storedX(page, s, 'api'), { timeout: 10_000 }).toBe(ARRANGED_VIEW.x);
+  expect(await storedIds(page, s)).toEqual(['api', 'payments']);
+  await expect(page.locator(PAYMENTS)).toBeVisible();
 
   // The toast's Undo reverts the changeset, for the person and in storage.
   await toast.getByRole('button', { name: "Undo Webber Takken's changes" }).click();
   await expect(page.getByRole('status').filter({ hasText: /^Undone/ })).toBeVisible();
-  await expect(page.getByText('Payment service', { exact: true })).toHaveCount(0);
+  await expect(page.locator(PAYMENTS)).toHaveCount(0);
   await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toEqual(['api']);
   expect(pageErrors).toEqual([]);
 });
@@ -107,21 +92,11 @@ test('an element the person has selected is held from the agent', async ({
   await bea.locator('[data-element-id="api"]').click();
 
   await expect
-    .poll(
-      async () =>
-        (
-          await agentSubmits(page, s, {
-            operations: [{ op: 'set', target: 'api', fields: { label: 'Gateway' } }],
-          })
-        ).status(),
-      {
-        timeout: 10_000,
-      },
-    )
+    .poll(async () => (await agentSubmits(page, s, RENAME_API_VIEW)).status(), {
+      timeout: 10_000,
+    })
     .toBe(409);
-  const refused = await agentSubmits(page, s, {
-    operations: [{ op: 'set', target: 'api', fields: { label: 'Gateway' } }],
-  });
+  const refused = await agentSubmits(page, s, RENAME_API_VIEW);
   expect(await refused.json()).toMatchObject({ error: 'elements_held', held: [{ id: 'api' }] });
   await visitor.close();
   expect(pageErrors).toEqual([]);

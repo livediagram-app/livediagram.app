@@ -204,6 +204,23 @@ describe('applyElementDelta (docs/specs/012-collaboration/collab-race-hardening.
     expect(el.commentThread?.comments.map((c) => c.id)).toEqual(['c1', 'c2']);
   });
 
+  // A refused delete put back (useEditorComments): before the comment that followed it, else at the end.
+  it('puts a comment back before the one it preceded, or at the end when that one has gone', () => {
+    const three = apply(
+      card(),
+      { kind: 'comment-add', comment: comment('c1') },
+      { kind: 'comment-add', comment: comment('c3') },
+      { kind: 'comment-add', comment: comment('c2'), before: 'c3' },
+    );
+    expect(three.commentThread?.comments.map((c) => c.id)).toEqual(['c1', 'c2', 'c3']);
+    const gone = apply(
+      card(),
+      { kind: 'comment-add', comment: comment('c1') },
+      { kind: 'comment-add', comment: comment('c2'), before: 'nope' },
+    );
+    expect(gone.commentThread?.comments.map((c) => c.id)).toEqual(['c1', 'c2']);
+  });
+
   it('removing the last comment removes the thread', () => {
     const el = apply(
       card(),

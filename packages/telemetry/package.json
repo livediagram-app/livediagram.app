@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./emitter": "./src/emitter.ts",
+    "./error-tokens": "./src/error-tokens.ts",
     "./testing": "./src/testing.ts"
   },
   "scripts": {

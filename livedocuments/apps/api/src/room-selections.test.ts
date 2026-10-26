@@ -18,8 +18,13 @@ function memoryStorage() {
 }
 
 const live = (entries: [string, LiveSession][]) => new Map(entries);
-const bea: LiveSession = { name: 'Bea', color: '#f00', personTag: 'tag-bea' };
-const webber: LiveSession = { name: 'Webber', color: '#0ea5e9', personTag: 'tag-webber' };
+const bea: LiveSession = { name: 'Bea', color: '#f00', personTag: 'tag-bea', holds: true };
+const webber: LiveSession = {
+  name: 'Webber',
+  color: '#0ea5e9',
+  personTag: 'tag-webber',
+  holds: true,
+};
 
 describe('selectionFromOp', () => {
   it('reads the whole selection, defaulting to the single element', () => {
@@ -77,6 +82,32 @@ describe('RoomSelectionStore', () => {
       { elementIds: ['a', 'b'], name: 'Bea', color: '#f00', mine: false },
       { elementIds: ['c'], name: 'Webber', color: '#0ea5e9', mine: true },
     ]);
+  });
+
+  // docs/specs/024-agents/agent-changesets.md "Held elements": only someone who may change the content holds
+  // what they select; a viewer's selection is kept (it may yet hold) but never answered.
+  it("never answers a viewer's selection", async () => {
+    const storage = memoryStorage();
+    const store = new RoomSelectionStore(storage);
+    await store.note('p-viewer', { tabId: 't1', elementIds: ['a'] });
+    await store.note('p-bea', { tabId: 't1', elementIds: ['b'] });
+    const answer = await store.read(
+      't1',
+      live([
+        ['p-viewer', { name: 'Vic', color: '#000', personTag: 'tag-vic', holds: false }],
+        ['p-bea', bea],
+      ]),
+      '',
+    );
+    expect(answer.map((s) => s.name)).toEqual(['Bea']);
+    expect(storage.map.size).toBe(2);
+    // The agent owner's own selection is what `selected` reads: answered, as theirs, even from a Viewer's seat.
+    const own = await store.read(
+      't1',
+      live([['p-viewer', { name: 'Vic', color: '#000', personTag: 'tag-vic', holds: false }]]),
+      'tag-vic',
+    );
+    expect(own).toEqual([{ elementIds: ['a'], name: 'Vic', color: '#000', mine: true }]);
   });
 
   it('never marks a session mine without both tags', async () => {

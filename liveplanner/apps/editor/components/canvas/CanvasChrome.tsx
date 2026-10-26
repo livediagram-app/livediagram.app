@@ -177,6 +177,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
   const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);
   const stripTools = sessionStripTools(planVoting);
+  // On a phone beside the Session strip the Plan strip is one More Card Tools button (session-tools.md "The Session strip").
+  const planStripFolded = isMobile && !!(props.sessionTools && stripTools);
   // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
   const tabShowsCards = useTabShowsCards(elements);
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
@@ -396,7 +398,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 typesOpen={activeDockPanel === 'card-types'}
                 onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
                 typesButtonRef={cardTypesButtonRef}
-                // The Trash leads the strip, off a phone and for an editor (docs/specs/026-plan/items.md "Trash").
+                folded={planStripFolded}
+                // The Trash leads the strip for an editor, off a phone or in its folded menu (docs/specs/026-plan/items.md "Trash").
                 // A Participant adds cards too (docs/specs/013-workspace/share-roles.md); the Trash stays an Editor's.
                 newCard={
                   !readOnly || !!props.participantPalette
@@ -407,7 +410,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     : undefined
                 }
                 trash={
-                  !readOnly && !isMobile
+                  !readOnly && (!isMobile || planStripFolded)
                     ? {
                         open: activeDockPanel === 'plan-trash',
                         onToggle: (button) => handleDockButtonClick('plan-trash', button, true),

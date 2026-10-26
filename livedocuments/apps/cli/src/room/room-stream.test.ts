@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createApiClient } from '@liveworkspace/api-client';
-import { DOCUMENT_TRASHED_CLOSE } from '@livedocuments/api-schema';
+import { DOCUMENT_TRASHED_CLOSE, ROOM_FULL_CLOSE } from '@livedocuments/api-schema';
 import { fakeIo, type Route } from '../testing/fake-io';
-import { openRoomStream, ROOM_RECONNECT_MAX_MS, ROOM_RECONNECT_MIN_MS } from './room-stream';
+import {
+  openRoomStream,
+  ROOM_FULL_LINE,
+  ROOM_RECONNECT_MAX_MS,
+  ROOM_RECONNECT_MIN_MS,
+} from './room-stream';
 
 // docs/specs/015-api/blueprints/cli.md "The room stream", CLI32.
 
@@ -79,6 +84,33 @@ describe('openRoomStream', () => {
     io.sockets[2]!.open();
     expect(reconnected()).toBe(1);
     expect(io.sockets[2]!.url).not.toBe(io.sockets[0]!.url);
+    stream.stop();
+  });
+
+  // docs/specs/015-api/api.md "Room size": a full room is no outage to hurry back from. The stream says so
+  // once and waits the longest backoff before each try.
+  it('waits the longest backoff when the room is full, and says so once', async () => {
+    const { io, notices, reconnected, stream } = setUp(ticketing);
+    await tick();
+    io.sockets[0]!.open();
+    io.sockets[0]!.drop(ROOM_FULL_CLOSE);
+    await io.advance(ROOM_RECONNECT_MAX_MS - 1);
+    await tick();
+    expect(io.sockets).toHaveLength(1);
+    await io.advance(1);
+    await tick();
+    expect(io.sockets).toHaveLength(2);
+    io.sockets[1]!.open();
+    io.sockets[1]!.drop(ROOM_FULL_CLOSE);
+    expect(notices).toEqual([ROOM_FULL_LINE]);
+    expect(reconnected()).toBe(0);
+    // A place frees up: the socket stays open, and only then is it a reconnect.
+    await io.advance(ROOM_RECONNECT_MAX_MS);
+    await tick();
+    io.sockets[2]!.open();
+    expect(reconnected()).toBe(0);
+    await io.advance(1_000);
+    expect(reconnected()).toBe(1);
     stream.stop();
   });
 

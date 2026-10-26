@@ -675,7 +675,8 @@ export function EditorCanvasHost() {
                     // popover's do (lib/comment-persistence.ts); an Editor's ride the room and its save.
                     add: (id, text, mentions) =>
                       addComment(id, text, commentPersist.add(id, text, mentions), mentions),
-                    remove: (id, cid) => deleteComment(id, cid, commentPersist.remove(cid)),
+                    remove: (id, cid) =>
+                      deleteComment(id, cid, commentPersist.remove(cid), threadOn(id)),
                     resolve: (id) =>
                       resolveThread(id, commentPersist.threadState(threadOn(id), true)),
                     unresolve: (id) =>

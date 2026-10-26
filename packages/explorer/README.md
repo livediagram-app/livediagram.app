@@ -338,7 +338,9 @@ Down Arrow (about 9 ms in jsdom).
 ## How it loads
 
 Every list is one request per page of at most 200 (`LIST_LIMIT_MAX`). The next page loads as the end of
-the list scrolls near.
+the list scrolls near. If that read fails, the list is not marked complete: a "Couldn’t load the rest of this
+list. Try again" row shows under it (the panel's Show more says "Couldn’t load more. Try again"), and each press
+reads that page once. Scrolling never asks again on its own.
 
 | Data                  | When it loads                                                                                                                                                                                                                                                                                                                                |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -356,6 +358,12 @@ Nothing is fetched per row, or per folder.
 Changes are optimistic: rename, favourite, move, Trash, restore and dismiss.
 
 - A change is laid over every loaded list at once, through a shared overlay.
+- A change lasts only until the index has answered for it: once the index took it, the first list read that
+  started after that retires the patch and keeps that read's values for the fields it touched, so a list still
+  holding an older copy shows the newer one. A later change made elsewhere (a folder deleted, its items moved up
+  a level) shows without a refresh. A move into a folder that is then deleted is dropped at once. A newer change
+  on the same field still wins over an older one, whichever settles first. The latest values are kept for at most
+  500 items (`OVERLAY_BASE_MAX`).
 - If the index refuses, the change is taken back and a toast says why.
 - Toasts name what they acted on: a move ("Moved “X” to Y.") and a delete ("Moved “X” to the Trash.") each carry an
   Undo, a restore says "“X” restored.". A toast with an Undo stays 10 s (`TOAST_ANSWER_MS`), its clock stopped while

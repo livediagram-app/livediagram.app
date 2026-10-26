@@ -23,6 +23,23 @@ describe('fieldsOf', () => {
   });
 });
 
+describe('fieldsOf descriptions', () => {
+  it('keeps a description written before .optional() or .default()', () => {
+    const input = z.object({
+      before: z.string().describe('Before optional.').optional(),
+      after: z.string().optional().describe('After optional.'),
+      defaulted: z.number().describe('Before default.').default(3),
+      both: z.string().describe('Inner.').optional().describe('Outer.'),
+    });
+    expect(fieldsOf(input).map((f) => f.description)).toEqual([
+      'Before optional.',
+      'After optional.',
+      'Before default.',
+      'Outer.',
+    ]);
+  });
+});
+
 describe('flags and positionals', () => {
   it('spells a camelCase key as a kebab-case flag', () => {
     expect(flagOf('tabId')).toBe('--tab-id');

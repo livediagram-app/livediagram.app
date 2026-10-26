@@ -119,7 +119,17 @@ const INDEX_DIR = path.resolve(ROOT, '..', 'liveworkspace', 'apps', 'index');
 const INDEX_STATE = path.join(INDEX_DIR, '.wrangler', 'e2e-state');
 // liveworkspace's site, whose Explorer production serves at livediagram's own /explorer (the router's
 // routeToWorkspace, @liveworkspace/sites/workspace-proxy): its static export, when built.
-const WORKSPACE_SITE_DIR = path.resolve(ROOT, '..', 'liveworkspace', 'apps', 'site', 'out'); // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
+// E2E_WORKSPACE_SITE_OUT serves another export of it: the signed-in specs' `.next/out-e2e`
+// (liveworkspace/apps/site/scripts/build-e2e.mjs), which reads the specs' session as the editor's signed-in build does.
+const WORKSPACE_SITE_DIR = path.resolve(
+  ROOT,
+  '..',
+  'liveworkspace',
+  'apps',
+  'site',
+  process.env.E2E_WORKSPACE_SITE_OUT ?? 'out',
+);
+// The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help and the Community sit under their basePath on the
 // live origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.
 const SITES = [

@@ -21,7 +21,7 @@ import {
   dueCounts,
   percentDone,
   priorityCounts,
-  staleCount,
+  staleItems,
   topVoted,
   unassignedCount,
 } from './widget-stats';
@@ -245,12 +245,9 @@ export function metricModel(
         : { hero: '0', unit: 'votes', line: 'No votes yet', visual: null };
     }
     case 'stale': {
-      const n = staleCount(setup, items, now);
-      const before = now.getTime() - STALE_DAYS * 86_400_000;
-      const done = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
-      const rows = items
-        .filter((it) => it.updatedAt < before && !(done && it.fields['status'] === done))
-        .sort((a, b) => a.updatedAt - b.updatedAt)
+      const stale = staleItems(setup, items, now);
+      const n = stale.length;
+      const rows = stale
         .slice(0, 5)
         .map((it) => ({ itemId: it.id, title: itemTitle(it) || 'Untitled card' }));
       return {

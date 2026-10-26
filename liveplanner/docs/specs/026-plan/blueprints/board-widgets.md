@@ -55,7 +55,7 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 - The + toggles `BoardWidgetPicker` (a `PortalMenu`, `below-start`, wide) offering `BOARD_WIDGET_KINDS` minus the
   board's; a pick calls `onChange(placeWidget(widgets, kind, widgets.length))` and closes it.
 - New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
-  `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount`, `STALE_DAYS` 14). Presets
+  `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount` over `staleItems`, `STALE_DAYS` 14); `dueCounts`, `staleItems` and the Due Soon narrowing (`QuickDueWindow.finished`) leave out `finishedStatuses(setup)`, the done column's status and every later column's. Presets
   carry their own `widgets` (presets.ts), Blank included, per board-widgets.md "Defaults"; a guard test keeps
   Completion off any preset or template board without `doneColumnId` and WIP Alerts off any without a `wipLimit`.
 - Counts render through `CountBadge` from `@liveplanner/ui` at `size="md"` (an 18 px pill with

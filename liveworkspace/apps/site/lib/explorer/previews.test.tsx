@@ -1,13 +1,17 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 
 vi.mock('./token', () => ({ workspaceToken: async () => 'tok' }));
 
 import {
   loadPreview,
+  PREVIEW_CACHE_CEILING,
   PREVIEW_CACHE_MAX,
   PREVIEW_CONCURRENCY,
+  previewCacheSize,
   previewUrl,
   renderPreview,
   resetPreviews,
@@ -81,4 +85,63 @@ describe('previews on liveworkspace.app', () => {
     await loadPreview(items[1]!);
     expect(fetch).toHaveBeenCalledTimes(PREVIEW_CACHE_MAX + 2);
   });
+
+  it('keeps every mounted preview past PREVIEW_CACHE_MAX, fetching each once, and shrinks back on unmount', async () => {
+    const fetch = vi.fn(async () => new Response('<svg/>', { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+    const n = PREVIEW_CACHE_MAX + 100;
+    const view = mountPreviews(Array.from({ length: n }, (_, i) => item({ id: `m${i}` })));
+    await until(() => view.images() === n);
+    // Settled: no box lost its picture to another and asked again.
+    await act(() => new Promise((r) => setTimeout(r, 50)));
+    expect(fetch).toHaveBeenCalledTimes(n);
+    expect(view.images()).toBe(n);
+    view.unmount();
+    expect(previewCacheSize()).toBe(PREVIEW_CACHE_MAX);
+  });
+
+  it('never holds more than PREVIEW_CACHE_CEILING, mounted or not', async () => {
+    const fetch = vi.fn(async () => new Response('<svg/>', { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+    const items = Array.from({ length: PREVIEW_CACHE_CEILING + 20 }, (_, i) =>
+      item({ id: `c${i}` }),
+    );
+    const view = mountPreviews(items);
+    await until(() => fetch.mock.calls.length >= items.length);
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(previewCacheSize()).toBeLessThanOrEqual(PREVIEW_CACHE_CEILING);
+    view.unmount();
+  }, 20_000);
 });
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+function mountPreviews(items: Item[]) {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  act(() =>
+    root.render(
+      <div>
+        {items.map((it) => (
+          <span key={it.id}>{renderPreview(it, 'card')}</span>
+        ))}
+      </div>,
+    ),
+  );
+  return {
+    images: () => host.querySelectorAll('img').length,
+    unmount: () => {
+      act(() => root.unmount());
+      host.remove();
+    },
+  };
+}
+
+async function until(done: () => boolean, ms = 10_000) {
+  const end = Date.now() + ms;
+  while (!done()) {
+    if (Date.now() > end) throw new Error('timed out');
+    await act(() => new Promise((r) => setTimeout(r, 5)));
+  }
+}

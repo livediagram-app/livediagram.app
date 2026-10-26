@@ -302,7 +302,8 @@ export function ExplorerProvider({
   const [overlay] = useState(createItemOverlay);
   const [epoch, setEpoch] = useState(0);
   const reloadLists = useCallback(() => setEpoch((n) => n + 1), []);
-  const folders = useFolderStore(client, toast.error, reloadLists, onOrganise);
+  const onFolderGone = useCallback((id: string) => overlay.dropFolder(id), [overlay]);
+  const folders = useFolderStore(client, toast.error, reloadLists, onOrganise, onFolderGone);
   const defaults = usePlacementDefaults(client, toast.error, onOrganise);
   const entries = useMemo(
     () => defaultEntries(app, kindWords(app), lensTemplates, defaultFolderOptions),

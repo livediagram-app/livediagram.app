@@ -9,7 +9,7 @@ a card is never dropped into one.
 
 | Term              | Meaning                                                                       | Not                   |
 | ----------------- | ----------------------------------------------------------------------------- | --------------------- |
-| **plan view**     | The element: one view of the project's cards, of one view kind               | chart, report         |
+| **plan view**     | The element: one view of the project's cards, of one view kind                | chart, report         |
 | **view kind**     | What a plan view shows (Completion, Gantt Chart, ...)                         | view type             |
 | **metric**        | A plan view that is a board widget kind, free on the canvas                   | board widget (header) |
 | **visualisation** | A plan view that charts the cards (Gantt, calendar, workload, status, matrix) | dashboard             |

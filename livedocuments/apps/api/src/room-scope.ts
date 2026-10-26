@@ -46,9 +46,31 @@ export function scopedSenderMayRelay(op: unknown, tabScope: string | null): bool
   if (tabScope === null) return true;
   const o = asOp(op);
   if (!o || o.kind === 'document-meta') return false;
+  if (o.kind === 'tab-meta' && renamesTab(op)) return false;
   const mine = onScope(o, tabScope);
   if (mine !== undefined) return mine;
   return typeof o.kind === 'string' && TAB_LESS_SENDABLE.has(o.kind);
+}
+
+// A tab's name is structure, like the tabs around it: a scoped session never renames its own tab.
+// A `tab-meta` patch that sets or clears `name` is refused whole.
+function renamesTab(op: unknown): boolean {
+  const { patch, clear } = op as { patch?: unknown; clear?: unknown };
+  if (typeof patch === 'object' && patch !== null && Object.hasOwn(patch, 'name')) return true;
+  return Array.isArray(clear) && clear.includes('name');
+}
+
+// The op as the room relays it from a session scoped to `tabScope`. A whole `tab` op is content and
+// relays, but without its `name`: a receiving editor keeps the name it has, so a scoped session's
+// bulk edit can never rename the tab on its peers (whose next save would store it).
+export function opFromScopedSender(op: unknown, tabScope: string | null): unknown {
+  if (tabScope === null) return op;
+  const o = op as { kind?: unknown; tab?: unknown };
+  if (o.kind !== 'tab' || typeof o.tab !== 'object' || o.tab === null) return op;
+  if (!Object.hasOwn(o.tab, 'name')) return op;
+  const { name: _name, ...tab } = o.tab as Record<string, unknown>;
+  void _name;
+  return { ...o, tab };
 }
 
 // document-meta carries every tab's name and folder. Other tabs keep their id

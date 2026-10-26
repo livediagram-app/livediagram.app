@@ -53,7 +53,8 @@ app's `@<app>/telemetry-client` only binds it to the app: its name here, the key
 stored under, its vocabulary's types and its error and timing tokens. It sends the body as `text/plain`, with no cookies, so a
 cross-site send needs no CORS preflight. The service stores a browser batch only when its `Origin` is
 one of its app's own sites (`TELEMETRY_APP_ORIGINS`), so one site can't post in another's name.
-Browser batches are rate-limited per network (120 a minute; the IPv6 /64), and the address is never
+Browser batches are rate-limited per network (120 a minute; the IPv4 address or the IPv6 /64, keyed by
+`@liveworkspace/api-kit` `clientRateKey` as every api is), and the address is never
 stored.
 
 **From a Worker** (the apps' api and mcp Workers report server-side events, such as a sign-up, an

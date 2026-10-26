@@ -56,15 +56,15 @@ export function privacyMoved(product: string): LegalMovedPage {
   );
 }
 
-/** /terms: liveworkspace.app's terms of service. */
+/** /terms: liveworkspace.app's terms of use. */
 export function termsMoved(product: string): LegalMovedPage {
   return moved(
-    `Terms of Service · ${product}`,
-    `The terms of service for ${product} are liveworkspace's, on liveworkspace.app.`,
+    `Terms of Use · ${product}`,
+    `The terms of use for ${product} are liveworkspace's, on liveworkspace.app.`,
     {
       href: `${LIVEWORKSPACE_URL}/terms`,
-      heading: 'Our terms of service have moved',
-      linkText: 'read the terms of service here',
+      heading: 'Our terms of use have moved',
+      linkText: 'read the terms of use here',
       lead: 'They now live on liveworkspace.app and cover every liveworkspace app.',
     },
   );

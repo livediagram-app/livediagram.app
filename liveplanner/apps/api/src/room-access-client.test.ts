@@ -39,7 +39,11 @@ describe('closeWorkbenchSessions', () => {
     const { env, calls } = roomsEnv();
     expect(await closeWorkbenchSessions(env, 'd1', 'pair1')).toBe(true);
     expect(calls).toEqual([
-      { projectId: 'd1', path: '/close-sessions', body: { match: 'workbench', pairingId: 'pair1' } },
+      {
+        projectId: 'd1',
+        path: '/close-sessions',
+        body: { match: 'workbench', pairingId: 'pair1' },
+      },
     ]);
   });
 
@@ -52,4 +56,3 @@ describe('closeWorkbenchSessions', () => {
     warn.mockRestore();
   });
 });
-

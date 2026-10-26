@@ -91,15 +91,15 @@ A chart is **named by its type** wherever the editor names an element: the selec
 Chart" and a screen reader hears "Column chart", as the palette's tile says, never the kind's "Bar Chart"
 (`elementKindLabel`, `kindLabel`).
 
-| Chart type | Kind (`shape`) | `chartVariant` | Draws                                                                                         |
-| ---------- | -------------- | -------------- | --------------------------------------------------------------------------------------------- |
-| Column     | `bar-chart`    | (none)         | Upright bars from a baseline, one per datum                                                   |
-| Bar        | `bar-chart`    | `horizontal`   | Bars to the right from a left baseline, one per datum, top to bottom                          |
-| Line       | `line-chart`   | (none)         | A line with point markers per series                                                          |
-| Area       | `line-chart`   | `area`         | Line's lines, each with the area between it and zero filled in its colour at 25%, overlapping |
-| Scatter    | `line-chart`   | `scatter`      | A point per category per series, no lines, at x = the category read as a number (below)       |
-| Pie        | `pie-chart`    | (none)         | Wedges clockwise from twelve o'clock                                                          |
-| Doughnut   | `pie-chart`    | `doughnut`     | Pie's wedges with the middle open: a ring whose hole is 55% of its radius                     |
+| Chart type | Kind (`shape`) | `chartVariant` | Draws                                                                                            |
+| ---------- | -------------- | -------------- | ------------------------------------------------------------------------------------------------ |
+| Column     | `bar-chart`    | (none)         | Upright bars from a zero baseline, one per datum; a negative one hangs below it                  |
+| Bar        | `bar-chart`    | `horizontal`   | Bars to the right from a zero baseline, one per datum, top to bottom; a negative one to its left |
+| Line       | `line-chart`   | (none)         | A line with point markers per series                                                             |
+| Area       | `line-chart`   | `area`         | Line's lines, each with the area between it and zero filled in its colour at 25%, overlapping    |
+| Scatter    | `line-chart`   | `scatter`      | A point per category per series, no lines, at x = the category read as a number (below)          |
+| Pie        | `pie-chart`    | (none)         | Wedges clockwise from twelve o'clock                                                             |
+| Doughnut   | `pie-chart`    | `doughnut`     | Pie's wedges with the middle open: a ring whose hole is 55% of its radius                        |
 
 - A chart with no `chartVariant`, or one its kind does not take, draws as its kind's first type, so every chart
   made before chart types draws as it did.

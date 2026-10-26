@@ -5,6 +5,7 @@
 
 import { edgeToArrow, graphToElements, type DiagramGraph, type GraphLook } from './graph-authoring';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
+import { anchorPosition } from './geometry';
 import { ALL_ANCHORS, isBoxed, type Anchor, type BoxedElement, type Element } from './index';
 
 // Room between two stops along the ring, and the smallest ring.
@@ -15,13 +16,19 @@ const RING_MIN_R = 200;
 const HUB_GAP = 16;
 const RING_GROW = 8;
 const RING_GROW_STEPS = 1500;
+// An arc between stops that are not ring neighbours goes round the outside of the stops between, this far out past
+// their outer edge, each hop further a lane further out so nested arcs never lie on one another.
+const OUTER_CLEAR = RING_GAP / 2;
+const OUTER_LANE = 24;
 
 export function layoutCycle(
   graph: DiagramGraph,
   opts: { look: GraphLook; makeEdgeId?: (() => string) | undefined },
 ): Element[] {
   const makeEdgeId = opts.makeEdgeId ?? (() => crypto.randomUUID());
-  const wired = new Set(graph.edges.flatMap((e) => [e.from, e.to]));
+  // A self-edge has no place on a ring: dropped as if never given (mcp-server.md §4.7 "Self-edges"), so a node whose
+  // only edge is one sits at the centre with the other unwired nodes.
+  const wired = new Set(graph.edges.filter((e) => e.from !== e.to).flatMap((e) => [e.from, e.to]));
   const nodes = graph.nodes.map((n) => (n.shape ? n : { ...n, shape: 'circle' }));
   // Stops and hubs sized apart: the look sizes boxes of one kind alike, and a round hub's longer label grew every stop.
   const sizedOf = (ns: typeof nodes) =>
@@ -76,6 +83,7 @@ export function layoutCycle(
     hy += b.height + HUB_GAP;
   }
   const at = new Map(placed.map((b) => [b.id, b]));
+  const slot = new Map(ring.map((b, i) => [b.id, i]));
   const centers = new Map<string, Pt>(
     placed.map((b) => [b.id, { x: b.x + b.width / 2, y: b.y + b.height / 2 }]),
   );
@@ -83,6 +91,8 @@ export function layoutCycle(
     .filter((e) => at.has(e.from) && at.has(e.to) && e.from !== e.to)
     .map((e) => {
       const arrow = reanchorArrow(edgeToArrow(e, makeEdgeId()), centers);
+      const outer = roundTheOutside(slot.get(e.from), slot.get(e.to));
+      if (outer) return { ...arrow, ...outer };
       const a = centers.get(e.from)!;
       const b = centers.get(e.to)!;
       // Bow out to the ring's arc: the chord's midpoint pushed out to the circle through both centres.
@@ -102,6 +112,43 @@ export function layoutCycle(
       };
     });
   return [...placed, ...arrows];
+
+  // The route for an edge between two stops that are not ring neighbours, or null for neighbours (and hubs): out of
+  // the first stop, round the outside of every stop between them the shorter way (clockwise at a tie), and into the
+  // second, as a spline through points on a circle outside the ring. Along the ring's own arc it ran behind them.
+  function roundTheOutside(i: number | undefined, j: number | undefined) {
+    if (i === undefined || j === undefined) return null;
+    const ahead = (((j - i) % n) + n) % n;
+    if (ahead <= 1 || ahead >= n - 1) return null;
+    const dir = ahead <= n / 2 ? 1 : -1;
+    const hops = dir > 0 ? ahead : n - ahead;
+    const radius = r + reach / 2 + OUTER_CLEAR + (hops - 2) * OUTER_LANE;
+    const step = (Math.PI * 2) / n / 2;
+    // A point every half step from one stop's angle to the other's, so the spline keeps to the circle.
+    const through: Pt[] = [];
+    for (let m = 1; m < hops * 2; m++) {
+      const t = angle(i) + dir * step * m;
+      through.push({ x: radius * Math.cos(t), y: radius * Math.sin(t) });
+    }
+    const fromBox = placed[i]!;
+    const toBox = placed[j]!;
+    const fromC = centers.get(fromBox.id)!;
+    const toC = centers.get(toBox.id)!;
+    const first = through[0]!;
+    const last = through[through.length - 1]!;
+    const fromAnchor = towards({ x: first.x - fromC.x, y: first.y - fromC.y });
+    const toAnchor = towards({ x: last.x - toC.x, y: last.y - toC.y });
+    // The points are deltas from the midpoint of the two anchors, as the renderer reads them.
+    const p = anchorPosition(fromBox, fromAnchor);
+    const q = anchorPosition(toBox, toAnchor);
+    const mid = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 };
+    return {
+      from: { kind: 'pinned' as const, elementId: fromBox.id, anchor: fromAnchor },
+      to: { kind: 'pinned' as const, elementId: toBox.id, anchor: toAnchor },
+      arrowStyle: 'curved' as const,
+      curvePoints: through.map((pt) => ({ dx: pt.x - mid.x, dy: pt.y - mid.y })),
+    };
+  }
 }
 
 // The anchor nearest a direction: the sixteen run clockwise from north, 22.5 degrees apart, and on a round stop they

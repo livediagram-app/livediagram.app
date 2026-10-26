@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/auth-client": "workspace:*",
     "jose": "^6.2.12"
   },
   "devDependencies": {

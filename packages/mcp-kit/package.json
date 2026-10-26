@@ -14,6 +14,7 @@
     "./prompts": "./src/prompts.ts",
     "./render": "./src/render.ts",
     "./request-scope": "./src/request-scope.ts",
+    "./tool-result": "./src/tool-result.ts",
     "./tool-scope": "./src/tool-scope.ts"
   },
   "scripts": {

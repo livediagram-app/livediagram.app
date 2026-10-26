@@ -43,6 +43,7 @@ import { readProject } from './read-project';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import {
   bringBoardCardTypes,
+  deleteRefusal,
   fetchTeamLibraries,
   imageIdIssue,
   matchProjects,
@@ -521,21 +522,6 @@ export function registerTools(server: McpServer, env: Env): void {
       throw err;
     }
   });
-}
-
-// Why a delete was refused, by what was deleted and the status.
-export function deleteRefusal(status: number, tab: boolean): string {
-  if (status === 410) return 'It is already in the Trash (see list_trash).';
-  if (status === 403) return 'You may view this plan but not change it.';
-  if (status === 404)
-    return tab
-      ? 'No such tab in this plan: read_project lists its tabs.'
-      : 'No such plan, or it is not yours: find_projects lists them.';
-  if (tab && status === 409)
-    return 'A plan must keep at least one tab: you cannot delete the last one.';
-  return tab
-    ? `The api refused it (${status}): check the plan and tab ids.`
-    : 'Check the plan id and that you own it.';
 }
 
 // add_tab takes a template's first tab only (docs/specs/015-api/mcp-server.md §4.5): said in the answer when the

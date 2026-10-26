@@ -10,6 +10,11 @@ import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
+import {
+  ADD_PAYMENTS_VIEW,
+  ARRANGED_VIEW,
+  RENAME_API_VIEW,
+} from '../../../editor/e2e/signed-in/agent-changeset-bodies';
 
 // The changeset routes end to end on real SQLite (docs/specs/024-agents/agent-changesets.md; blueprint
 // "Testing"): submit, list, one, revert, with a recording room.
@@ -194,7 +199,6 @@ describe('submitting a changeset', () => {
       op: { tab?: { name: string } };
     };
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
-
   });
 
   it('writes nothing on any refusal, and says why', async () => {
@@ -309,6 +313,34 @@ describe('submitting a changeset', () => {
       { owner: 'guest-2', headers: { 'X-Share-Code': 'VIEWCODE' } },
     );
     expect(view.status).toBe(403);
+  });
+});
+
+// The bodies the editor's agent changeset E2E spec sends (apps/editor/e2e/signed-in/agent-changesets.spec.ts), run
+// through the real route, so the spec never sends a body the api refuses (a shape is no Plan element: 422).
+describe("the E2E spec's bodies", () => {
+  const asElement = (el: unknown) => el as Element;
+
+  it('adds the payments view beside the arranged one', async () => {
+    quiet();
+    const { db } = await setUp([], [asElement(ARRANGED_VIEW)]);
+    const res = await submit(db, ADD_PAYMENTS_VIEW);
+    expect(res.status).toBe(200);
+    expect(stored(db).map((e) => e.id)).toEqual(['api', 'payments']);
+  });
+
+  it('refuses the rename of a view a person holds', async () => {
+    quiet();
+    const { db } = await setUp(
+      [{ elementIds: ['api'], name: 'Bea', color: '#f00', mine: false }],
+      [asElement(ARRANGED_VIEW)],
+    );
+    const res = await submit(db, RENAME_API_VIEW);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ error: 'elements_held', held: [{ id: 'api' }] });
+    // Unheld, the same rename applies.
+    const free = await setUp([], [asElement(ARRANGED_VIEW)]);
+    expect((await submit(free.db, RENAME_API_VIEW)).status).toBe(200);
   });
 });
 

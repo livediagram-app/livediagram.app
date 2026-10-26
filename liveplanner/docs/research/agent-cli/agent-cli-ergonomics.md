@@ -191,9 +191,9 @@ a huge API at 485 at the top. Past about 900 tokens, the help is a manual.
 
 | Tool                                                              | Tokens          |
 | ----------------------------------------------------------------- | --------------- |
-| `create_project`                                                 | 4,631           |
+| `create_project`                                                  | 4,631           |
 | `add_tab`                                                         | 2,439           |
-| `update_project`                                                 | 2,401           |
+| `update_project`                                                  | 2,401           |
 | the other eight                                                   | 257 to 384 each |
 | **11 current tools**                                              | **≈12.2k**      |
 | **all 19 advertised (with `*_diagram` aliases until 2027-04-30)** | **21.5k**       |
@@ -228,7 +228,7 @@ grouping, id prefixes and comment counts, is 279 tokens.
 | Reference form                 | Tokens |
 | ------------------------------ | ------ |
 | full element UUID              | 23     |
-| project URL with UUID         | 33     |
+| project URL with UUID          | 33     |
 | 4-hex prefix (`e7a1`)          | 4      |
 | quoted label (`"API gateway"`) | 4      |
 | positional handle (`s12`)      | 2      |

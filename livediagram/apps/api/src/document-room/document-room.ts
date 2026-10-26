@@ -21,8 +21,11 @@ import {
   DOCUMENT_TRASHED_CLOSE,
   isRoomOpRef,
   parseBuildId,
+  ROOM_FULL_CLOSE,
+  ROOM_FULL_REASON,
   ROOM_PING,
   ROOM_PONG,
+  roomIsFull,
   type AccessLevel,
 } from '@livediagram/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
@@ -47,7 +50,7 @@ import {
   resolveCatchup,
 } from '../document-room-rules';
 import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
-import { opForScope } from '../room-scope';
+import { opForScope, scopedTabOp } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
@@ -423,6 +426,16 @@ export class DocumentRoom extends DurableObject<Env> {
       .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
       .toArray()[0];
     this.communityAt = post ? post.checked_at + COMMUNITY_CHECK_EVERY_MS : null;
+  }
+
+  // A tab's stored name, or null when the store holds no such tab (or no document yet). One primary-key read.
+  private storedTabName(tabId: string): string | null {
+    const sql = this.state.storage.sql;
+    if (!sql || !this.hasSchema()) return null;
+    const row = sql
+      .exec<{ name: string }>('SELECT name FROM tabs WHERE id = ?', tabId)
+      .toArray()[0];
+    return typeof row?.name === 'string' ? row.name : null;
   }
 
   private hasSchema(): boolean {
@@ -916,6 +929,9 @@ export class DocumentRoom extends DurableObject<Env> {
     // owned by this Durable Object.
     const client = pair[0];
     const server = pair[1];
+    // A full room answers the upgrade and closes it at once (docs/specs/015-api/api.md "A room holds at most
+    // 100 connections"): the close code is the only thing a browser can read, an HTTP refusal reads as 1006.
+    if (this.turnAwayIfFull(server)) return new Response(null, { status: 101, webSocket: client });
     // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
     const v = verifiedSessionOf(request);
     this.acceptSession(
@@ -1018,6 +1034,17 @@ export class DocumentRoom extends DurableObject<Env> {
       return;
     }
     this.armAlarm();
+  }
+
+  // Turn an upgrade away when the room already holds ROOM_MAX_CONNECTIONS sockets: accepted only to be closed
+  // with ROOM_FULL_CLOSE, never handed to the hibernation runtime, so it holds no session and receives nothing.
+  turnAwayIfFull(server: WebSocket): boolean {
+    const connections = this.state.getWebSockets().length;
+    if (!roomIsFull(connections)) return false;
+    console.warn('[room] full', { documentId: this.documentId, connections });
+    server.accept();
+    server.close(ROOM_FULL_CLOSE, ROOM_FULL_REASON);
+    return true;
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
@@ -1500,7 +1527,12 @@ export class DocumentRoom extends DurableObject<Env> {
         // the author's owner id, a guest's credential. And a posted comment
         // carries the name of the session that sent it, the one on its
         // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
-        const op = stampCommentAuthor(opForTheWire(msg.op), sender);
+        // A scoped session's whole-tab op goes out under the stored name: it may not rename its tab
+        // (docs/specs/013-workspace/tab-scoped-share-links.md "No rename from a scoped session").
+        const scoped = scopedTabOp(msg.op, session.tabScope ?? null, (tabId) =>
+          this.storedTabName(tabId),
+        );
+        const op = stampCommentAuthor(opForTheWire(scoped), sender);
         const seq = this.sequenceMutation(sender.id, op, ws);
         // The relay skips the sender, so tell it the seq its op took: its own
         // ops are already applied, and a reconnect must not replay them. The

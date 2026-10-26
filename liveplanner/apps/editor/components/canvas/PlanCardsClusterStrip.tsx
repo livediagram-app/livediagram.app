@@ -1,7 +1,12 @@
 'use client';
 
 import { isTrashed } from '@liveplanner/items';
-import { PlanCardsIcon, SearchIcon } from '@liveplanner/ui';
+import { useState } from 'react';
+import { EllipsisIcon, PlanCardsIcon, PlusIcon, SearchIcon, TrashIcon } from '@liveplanner/ui';
+import {
+  MenuActionRow,
+  PortalMenu,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import {
   ClusterPopoverSegment,
   ClusterStrip,
@@ -27,7 +32,11 @@ export function PlanCardsClusterStrip({
   typesButtonRef,
   trash,
   newCard,
+  folded = false,
 }: {
+  // On a phone beside the Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): the
+  // strip folds into one More Card Tools button, whose menu holds New Card, Find a Card, Card Types and the Trash.
+  folded?: boolean;
   finderOpen: boolean;
   onToggleFinder: (button: HTMLElement) => void;
   typesOpen: boolean;
@@ -46,6 +55,50 @@ export function PlanCardsClusterStrip({
   const showsTrash = !!trash && (hasTypes || hasTrashed(plan?.items.values()));
   const showsNewCard = !!newCard && canEdit && hasTypes;
   const trashInStrip = showsTrash && !dragging;
+  if (folded)
+    return (
+      <FoldedPlanStrip
+        rows={[
+          ...(newCard && showsNewCard
+            ? [
+                {
+                  label: 'New Card',
+                  icon: <PlusIcon size={18} />,
+                  open: newCard.open,
+                  onPick: newCard.onToggle,
+                },
+              ]
+            : []),
+          ...(hasTypes
+            ? [
+                {
+                  label: 'Find a Card',
+                  icon: <SearchIcon size={18} />,
+                  open: finderOpen,
+                  onPick: onToggleFinder,
+                },
+              ]
+            : []),
+          {
+            label: 'Card Types',
+            icon: <PlanCardsIcon size={18} />,
+            open: typesOpen,
+            onPick: onToggleTypes,
+          },
+          ...(trash && showsTrash
+            ? [
+                {
+                  label: 'Trash',
+                  icon: <TrashIcon size={18} />,
+                  open: trash.open,
+                  onPick: trash.onToggle,
+                },
+              ]
+            : []),
+        ]}
+        buttonRef={typesButtonRef}
+      />
+    );
   return (
     <>
       {trash && showsTrash && dragging ? <TrashDropTarget /> : null}
@@ -82,6 +135,68 @@ export function PlanCardsClusterStrip({
           {...(typesButtonRef ? { buttonRef: typesButtonRef } : {})}
         />
       </ClusterStrip>
+    </>
+  );
+}
+
+type FoldedRow = {
+  label: string;
+  icon: React.ReactNode;
+  open: boolean;
+  onPick: (button: HTMLElement) => void;
+};
+
+// The Plan strip folded into one button, for a phone whose cluster row has no room for its three (the strip's
+// panels open above that button, as they would above their own). Lit while its menu or any of its panels is open.
+function FoldedPlanStrip({
+  rows,
+  buttonRef,
+}: {
+  rows: FoldedRow[];
+  buttonRef?: React.Ref<HTMLButtonElement> | undefined;
+}) {
+  // The button the menu hangs from, taken from its press; null while the menu is shut.
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const menuOpen = anchor !== null;
+  const panelOpen = rows.find((r) => r.open);
+  return (
+    <>
+      <ClusterStrip>
+        <ClusterPopoverSegment
+          label="More card tools"
+          hoverTitle="Cards"
+          hoverDescription="New Card, Find a Card, Card Types and the Trash."
+          icon={<EllipsisIcon size={18} />}
+          dataTourId="card-types"
+          popoverOpen={menuOpen || !!panelOpen}
+          // Pressed while one of its panels is open, it closes that panel, as a panel's own button does.
+          onTogglePopover={(el) =>
+            panelOpen ? panelOpen.onPick(el) : setAnchor(menuOpen ? null : el)
+          }
+          {...(buttonRef ? { buttonRef } : {})}
+        />
+      </ClusterStrip>
+      {menuOpen ? (
+        <PortalMenu
+          anchor={anchor}
+          placement="above"
+          onClose={() => setAnchor(null)}
+          initialFocus="first"
+        >
+          {rows.map((row) => (
+            <MenuActionRow
+              key={row.label}
+              plain
+              label={row.label}
+              icon={row.icon}
+              onClick={() => {
+                setAnchor(null);
+                row.onPick(anchor);
+              }}
+            />
+          ))}
+        </PortalMenu>
+      ) : null}
     </>
   );
 }

@@ -35,7 +35,9 @@ export function useTeamPeople(
     let live = true;
     void (async () => {
       try {
-        const lists = await Promise.all(teamKey.split(',').map((id) => apiTeamMembers(ownerId, id)));
+        const lists = await Promise.all(
+          teamKey.split(',').map((id) => apiTeamMembers(ownerId, id)),
+        );
         const byId = new Map<string, ItemPerson>();
         for (const members of lists)
           for (const m of members) {

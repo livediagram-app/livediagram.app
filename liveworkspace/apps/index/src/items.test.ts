@@ -149,6 +149,40 @@ describe('making and reading an item', () => {
     expect((await call(`/items/${team.id}`)).status).toBe(401);
     expect((await call('/items/missing', { auth: ada.auth })).status).toBe(404);
   });
+
+  it('gives no owner rights over a team item once its maker has left the team', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const bob = await person('user_b', { teams: [{ id: 'team1' }] });
+    const team = await makeItem(ada.auth, { teamId: 'team1', title: 'Team plan' });
+    const own = await makeItem(ada.auth, { title: 'Mine' });
+    // Removed: their token no longer names the team, and accounts says they are in none.
+    h.appAnswer = (c) =>
+      c.url.endsWith('/api/account/index/teams')
+        ? Response.json({ teams: [] })
+        : new Response(null, { status: 200 });
+    const gone = await person('user_a');
+    expect((await call(`/items/${team.id}`, { auth: gone.auth })).status).toBe(404);
+    const grant = await call(`/items/${team.id}/grant`, { method: 'POST', auth: gone.auth });
+    expect(grant.status).toBe(404);
+    const rename = await call(`/items/${team.id}`, {
+      method: 'PATCH',
+      auth: gone.auth,
+      body: { title: 'Taken' },
+    });
+    expect(rename.status).toBe(404);
+    expect((await call(`/items/${team.id}/share`, { auth: gone.auth })).status).toBe(404);
+    expect((await call(`/items/${team.id}`, { method: 'DELETE', auth: gone.auth })).status).toBe(
+      404,
+    );
+    // Nor in their lists; their own items are untouched.
+    const listed = await body<{ items: Item[] }>(await call('/items', { auth: gone.auth }));
+    expect(listed.items.map((i) => i.id)).toEqual([own.id]);
+    const mine = await body<{ items: Item[] }>(await call('/items?owner=me', { auth: gone.auth }));
+    expect(mine.items.map((i) => i.id)).toEqual([own.id]);
+    // The team keeps it, run by those still in it.
+    const kept = await body<ItemBody>(await call(`/items/${team.id}`, { auth: bob.auth }));
+    expect(kept.item).toMatchObject({ access: 'edit', teamId: 'team1', title: 'Team plan' });
+  });
 });
 
 describe('renaming and moving', () => {

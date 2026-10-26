@@ -33,7 +33,7 @@ describe('page ink contrast', () => {
     expect(mixHex('#000000', '#ffffff', 0)).toBe('#000000');
     expect(mixHex('#000000', '#ffffff', 1)).toBe('#ffffff');
     expect(mixHex('#000000', '#ffffff', 0.5)).toBe('#808080');
-    expect(mixHex('bad', '#ffffff', 0.5)).toBe('bad');
+    expect(mixHex('nope', '#ffffff', 0.5)).toBe('nope');
   });
 
   it('keeps a colour that clears its floor, and anything it cannot read', () => {

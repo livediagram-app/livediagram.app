@@ -158,13 +158,13 @@ export const documentShare = defineVerb({
   id: 'document.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a document: view (default) lets people open and read it, participate also lets them comment, add stickies, write and vote without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a document: participate (default) lets people comment, add stickies, write and vote without reshaping it, view lets them only open and read it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
     role: z
       .enum(['view', 'participate', 'edit'])
-      .default('view')
+      .default('participate')
       .describe('view, participate or edit'),
     expiry: z
       .enum(['never', 'week', 'month', 'sixMonths'])

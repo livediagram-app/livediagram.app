@@ -73,8 +73,12 @@ and right-click opens the ordinary element menu.
   (`commentPersisters` in `apps/editor/lib/comment-persistence.ts`, shared by both surfaces); an Editor's ride the room
   and the tab save. Before the two shared it, a Participant's panel comment stayed on its own screen, unsaved.
   A change the server refuses goes back on screen (`useEditorComments`): a refused resolve or reopen puts the
-  thread back, and a refused comment is taken off again with `[comments] comment not saved`, so nothing reads as
-  posted that nobody else can see.
+  thread back, a refused comment is taken off again with `[comments] comment not saved`, and a refused delete puts
+  the comment back in its place (ahead of the one that followed it, the thread as resolved as it was) with
+  `[comments] comment delete not saved`, so nothing reads as posted, or as gone, that nobody else sees that way.
+  Every delete surface passes the thread as it stood, so the hook has the comment to put back. Each change names
+  the tab active when it was made, so an answer that lands after a tab switch (a refused post, delete or resolve
+  put back, a post's server id adopted) reaches the comment's own tab, never whichever tab is active by then.
 - **Export** draws the header (with **Resolved** once resolved) and the newest
   comments as bubbles with their authors (`svg-render-faces.ts`), so the card reads the same in a PNG.
 - **It does not collapse.** A collapse-to-summary was built and then dropped: a

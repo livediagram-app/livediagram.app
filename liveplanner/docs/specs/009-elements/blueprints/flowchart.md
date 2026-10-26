@@ -8,8 +8,8 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                       | Role                                                                                                                           |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| File                                                      | Role                                                                                                                           |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/project/src/flowchart.ts`                       | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
 | `packages/project/src/flowchart-layout.ts`                | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
 | `packages/project/src/flowchart-spread.ts`                | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
@@ -20,27 +20,27 @@ Scope, by file:
 | `packages/project/src/validate-shape.ts`                  | The three fields validated                                                                                                     |
 | `packages/project/src/duplicate.ts`                       | Copies remap the three ids                                                                                                     |
 | `packages/project/src/participant-content.ts`             | A Participant's growth may move the chart's steps, connectors and lanes                                                        |
-| useFlowchartGrowth.ts        | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
-| useGrowthLanding.ts          | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
-| useFlowchartSetters.ts            | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
-| flowchart-dress.ts                         | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
-| `apps/editor/components/palette/palette-tile-defs.tsx`       | `tools:flowchart` tile (component action `flowchart`)                                                                          |
-| `apps/editor/components/canvas/SelectionPopover.tsx`         | Add Step, Add Branch, Step Type, Lane                                                                                          |
-| `apps/editor/components/canvas/quick-connect-options.tsx`    | The ring's Add Step and Add Branch                                                                                             |
-| FlowchartMenuSections.tsx | The Flowchart flyout row: Chart, Step Type and Direction categories                                                            |
+| useFlowchartGrowth.ts                                     | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
+| useGrowthLanding.ts                                       | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
+| useFlowchartSetters.ts                                    | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
+| flowchart-dress.ts                                        | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
+| `apps/editor/components/palette/palette-tile-defs.tsx`    | `tools:flowchart` tile (component action `flowchart`)                                                                          |
+| `apps/editor/components/canvas/SelectionPopover.tsx`      | Add Step, Add Branch, Step Type, Lane                                                                                          |
+| `apps/editor/components/canvas/quick-connect-options.tsx` | The ring's Add Step and Add Branch                                                                                             |
+| FlowchartMenuSections.tsx                                 | The Flowchart flyout row: Chart, Step Type and Direction categories                                                            |
 
 ## Domain and naming
 
-| Term       | Identifier                         | Meaning                                                                                                       |
-| ---------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Flowchart  | `flowchartId`                      | The chart; the id of its first step                                                                           |
-| Step       | `FlowchartStep` (a `ShapeElement`) | A shape of a step-type kind carrying `flowchartId`                                                            |
+| Term       | Identifier                         | Meaning                                                                                                      |
+| ---------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Flowchart  | `flowchartId`                      | The chart; the id of its first step                                                                          |
+| Step       | `FlowchartStep` (a `ShapeElement`) | A shape of a step-type kind carrying `flowchartId`                                                           |
 | Step type  | `FlowchartStepType`                | `'terminator' \| 'process' \| 'decision' \| 'io' \| 'project' \| 'database' \| 'preparation' \| 'connector'` |
-| First step | `flowchartAnchor`                  | The step that never moves                                                                                     |
-| Connector  | an `ArrowElement`                  | A pinned arrow between two steps of one chart                                                                 |
-| Exit       | an outgoing connector              | Of a Decision: labelled Yes / No                                                                              |
-| Lane       | a `lane` shape with `flowchartId`  | A chart's swimlane                                                                                            |
-| Direction  | `FlowchartDirection`               | `'down' \| 'right'`                                                                                           |
+| First step | `flowchartAnchor`                  | The step that never moves                                                                                    |
+| Connector  | an `ArrowElement`                  | A pinned arrow between two steps of one chart                                                                |
+| Exit       | an outgoing connector              | Of a Decision: labelled Yes / No                                                                             |
+| Lane       | a `lane` shape with `flowchartId`  | A chart's swimlane                                                                                           |
+| Direction  | `FlowchartDirection`               | `'down' \| 'right'`                                                                                          |
 
 Banned synonyms: "node" for a step (a mind node is a different element), "swimlane" in code (it is a
 lane), "orientation" for direction.

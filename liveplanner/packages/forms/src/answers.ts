@@ -128,11 +128,11 @@ export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): Ans
         typed = typedOther;
       }
       // Kept in option order, so a card reads the same whoever ticked first; an Other typed as one of the options
-      // counts as that option.
+      // counts as that option. The picks are counted once merged, so an Other repeating a ticked option is one pick.
       const out = options.filter((o) => picks.includes(o) || o === typed);
       if (typed !== null && !options.includes(typed)) out.push(typed);
-      if (q.min !== undefined && picks.length < q.min) return { error: 'too_few' };
-      if (q.max !== undefined && picks.length > q.max) return { error: 'too_many' };
+      if (q.min !== undefined && out.length < q.min) return { error: 'too_few' };
+      if (q.max !== undefined && out.length > q.max) return { error: 'too_many' };
       return { value: out };
     }
     case 'rating': {

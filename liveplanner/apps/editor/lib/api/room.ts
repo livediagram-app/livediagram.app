@@ -11,6 +11,8 @@ import {
   isMutationOpKind,
   ROOM_PING,
   ROOM_PONG,
+  ROOM_FULL_CLOSE,
+  ROOM_FULL_RETRY_MS,
   WORKBENCH_ENDED_CLOSE,
   type AgentPresence,
   type ParticipantPresence,
@@ -42,6 +44,9 @@ export type RoomHandlers = {
   // A workbench session's pairing or token ended (docs/specs/013-workspace/workbench-embeds.md): the
   // room closed it with WORKBENCH_ENDED_CLOSE; the connector stops and the page turns read-only.
   onWorkbenchEnded?: () => void;
+  // The room is full (docs/specs/015-api/api.md "A room holds 100 connections"): it closed this connection with
+  // ROOM_FULL_CLOSE. The connector tries again every ROOM_FULL_RETRY_MS; the caller says so.
+  onRoomFull?: () => void;
   // The room refused to open this connection (it closed before ever opening): the join was turned away
   // at the upgrade, which the browser reports only as an abnormal close. The caller finds out why over
   // REST, which names a trashed project (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
@@ -325,6 +330,17 @@ export function connectRoom(
         settleTimings(false);
         return;
       }
+      // A full room (ROOM_MAX_CONNECTIONS): said once by the caller, then parked until the tab is shown again or the
+      // minute's retry, whichever comes first, without spending the reconnect attempts; a fast backoff would only
+      // hammer a room that is still full.
+      if (event?.code === ROOM_FULL_CLOSE) {
+        settleTimings(false);
+        handlers.onRoomFull?.();
+        parked = true;
+        if (reconnectTimer !== null) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(resume, ROOM_FULL_RETRY_MS, true);
+        return;
+      }
       if (event?.code === PROJECT_TRASHED_CLOSE) {
         closed = true;
         settleTimings(false);
@@ -374,19 +390,24 @@ export function connectRoom(
   else open();
 
   // A fresh round of attempts once the browser is back online or the tab is shown again, only while parked.
-  const resume = () => {
+  // `timed`: the full room's retry, which runs whether or not the tab is in view.
+  const resume = (timed = false) => {
     if (closed || !parked) return;
-    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    if (!timed && typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    if (reconnectTimer !== null) clearTimeout(reconnectTimer);
+    reconnectTimer = null;
     parked = false;
     attempts = 0;
     debugLog('[room] reconnecting after a wait');
     void reopen();
   };
-  if (typeof window !== 'undefined') window.addEventListener('online', resume);
-  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', resume);
+  // A wake is never the timed retry (the listeners would otherwise hand `resume` their event).
+  const onWake = () => resume();
+  if (typeof window !== 'undefined') window.addEventListener('online', onWake);
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onWake);
   const stopResuming = () => {
-    if (typeof window !== 'undefined') window.removeEventListener('online', resume);
-    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', resume);
+    if (typeof window !== 'undefined') window.removeEventListener('online', onWake);
+    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onWake);
   };
 
   const send = (raw: RoomOutgoing) => {

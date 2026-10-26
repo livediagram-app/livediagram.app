@@ -263,4 +263,34 @@ describe('page ls and page set', () => {
     expect(refused).toBeInstanceOf(VerbRefusal);
     expect((refused as Error).message).toContain('change 1: No page.');
   });
+
+  it('refuses page ls on a tab whose route is gone, in the api’s words', async () => {
+    // The tab is in the design's list but its own route is gone (deleted between the two reads).
+    const { ctx } = setUp({ [TWO]: { id: TWO, elements: [] } });
+    const out = await pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A, tab: ONE })).catch(
+      (e: unknown) => e,
+    );
+    expect(out).toBeInstanceOf(VerbRefusal);
+    expect((out as VerbRefusal).code).toBe('not_found');
+  });
+
+  it('answers 400 for a refusal that is not a missing thing, and names no change it was not given', async () => {
+    const { ctx } = setUp(undefined, () =>
+      Response.json({ error: 'invalid_value', message: 'Too wide.' }, { status: 400 }),
+    );
+    const out = await pageSet.run!(
+      ctx,
+      pageSet.input.parse({ doc: DOC_A, page: '1', size: 'a3' }),
+    ).catch((e: unknown) => e);
+    expect(out).toBeInstanceOf(VerbRefusal);
+    expect((out as VerbRefusal).status).toBe(400);
+    expect((out as VerbRefusal).message).toBe('Too wide.');
+  });
+
+  it('lists a page of no kind as blank', async () => {
+    const blank = { ...ANSWER, pages: [{ ...ANSWER.pages[0]!, kind: null }] };
+    const { ctx } = setUp(undefined, () => Response.json(blank));
+    const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'logo' }));
+    expect(pageSet.text!(out)[1]).toBe('1  blank  logo  -960,-540 1920x1080  Cover');
+  });
 });

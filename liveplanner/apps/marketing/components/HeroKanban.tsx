@@ -86,7 +86,8 @@ export function HeroKanban() {
             >
               {lane.name}
               <span className="rounded-full bg-brand-500/15 px-1.5 py-px font-medium normal-case tracking-normal text-(--hero-ink)">
-                {lane.count}
+                {/* The count centres on its cap band, keeping the pill one line tall (optical-alignment.md). */}
+                <span className="text-optical-line">{lane.count}</span>
               </span>
             </p>
           </div>

@@ -4,6 +4,7 @@ import { elementFingerprint, type Element, type ElementOp } from '@livediagram/d
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import type { ChangesetRecord } from '../db/changesets';
+import type { ItemGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
@@ -283,5 +284,37 @@ describe('a tab id', () => {
       body: { id: 't1', name: 'Board', elements: [box('a', 'Edited')] },
     });
     expect(again.status).toBeLessThan(300);
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md "A tab's name is structure": a tab-scoped editor's
+// whole-tab save keeps the stored name, whatever name it carries.
+describe('a tab-scoped whole-tab save', () => {
+  it('saves the content and keeps the stored name', async () => {
+    const db = await documentWith([]);
+    const scoped: ItemGrant = {
+      item: 'D',
+      level: 'edit',
+      tab: 't1',
+      sub: 'link:abc',
+      team: null,
+      exp: 2_000_000_000,
+      shareCode: 'abc',
+      token: 'g',
+    };
+    const res = await handleDocuments(
+      makeTestRouteContext('PUT', '/api/documents/D/tabs/t1', {
+        env: db.env,
+        owner: 'guest_v',
+        body: { id: 't1', name: 'Renamed', elements: [box('a')] },
+        grant: scoped,
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json<{ tab: { name: string } }>()).tab.name).toBe('Board');
+    expect(db.sql.prepare("SELECT name FROM tabs WHERE id = 't1'").get()).toEqual({
+      name: 'Board',
+    });
+    expect(stored(db).map((e) => e.id)).toEqual(['a']);
   });
 });

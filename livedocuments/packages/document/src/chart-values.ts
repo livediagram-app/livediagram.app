@@ -61,25 +61,38 @@ export function barValueLabels(
   // Each column's share of the baseline, less a little air between neighbours' names.
   const slot =
     (marks.baseline.x2 - marks.baseline.x1) / Math.max(1, marks.bars.length) - CATEGORY_AIR;
+  // A negative column hangs below the baseline with its value under it (pie-chart.md "Chart types"), so the names
+  // go under the lowest of them.
+  let floor = marks.baseline.y1;
+  if (!horizontal)
+    marks.bars.forEach((bar, i) => {
+      if ((data[i]?.value ?? 0) < 0) floor = Math.max(floor, bar.y + bar.h + GAP + fontPx);
+    });
   marks.bars.forEach((bar, i) => {
     const d = data[i];
     if (!d) return;
+    const below = d.value < 0;
     out.push(
       horizontal
         ? {
-            x: bar.tip.x + GAP,
+            x: below ? bar.tip.x - GAP : bar.tip.x + GAP,
             y: bar.tip.y + fontPx * 0.35,
             text: shortNumber(d.value),
-            anchor: 'start',
+            anchor: below ? 'end' : 'start',
           }
-        : { x: bar.tip.x, y: bar.tip.y - GAP, text: shortNumber(d.value), anchor: 'middle' },
+        : {
+            x: bar.tip.x,
+            y: below ? bar.tip.y + GAP + fontPx * 0.8 : bar.tip.y - GAP,
+            text: shortNumber(d.value),
+            anchor: 'middle',
+          },
     );
     // A column names itself under the baseline, so the legend can go; cut to its slot.
     const name = horizontal ? null : fitCategory(d.label, slot, fontPx);
     if (name !== null)
       out.push({
         x: bar.tip.x,
-        y: marks.baseline.y1 + GAP + fontPx,
+        y: floor + GAP + fontPx,
         text: name,
         anchor: 'middle',
         category: true,

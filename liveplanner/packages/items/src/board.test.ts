@@ -14,7 +14,7 @@ import {
   presetSetupOrBlank,
   PLAN_BOARD_PRESET_IDS,
 } from './presets';
-import { itemIdsShownOnTab } from './tab-items';
+import { elementReach, itemIdsShownOnTab } from './tab-items';
 import { itemAccessibleName, itemSummary } from './views';
 import { ALI, SAM, item } from './test-items';
 import type { Item } from './item';
@@ -293,6 +293,17 @@ describe('itemIdsShownOnTab', () => {
       ...itemIdsShownOnTab([{ shape: 'plan-card', planCard: { itemId: loose.id } }], [bug, loose]),
     ]).toEqual([loose.id]);
     expect(itemIdsShownOnTab([], [bug]).size).toBe(0);
+  });
+});
+
+describe('elementReach', () => {
+  it('names what an element pulls onto its tab, and nothing for the rest', () => {
+    expect(elementReach({ shape: 'plan-board', planBoard: presetSetup('kanban') })).toBe('board');
+    expect(elementReach({ shape: 'plan-board', planBoard: 'broken' })).toBeNull();
+    expect(elementReach({ shape: 'plan-view' })).toBe('view');
+    expect(elementReach({ shape: 'plan-card', planCard: { itemId: 'i1' } })).toBe('card:i1');
+    expect(elementReach({ shape: 'plan-card', planCard: {} })).toBeNull();
+    expect(elementReach({ type: 'sticky' })).toBeNull();
   });
 });
 

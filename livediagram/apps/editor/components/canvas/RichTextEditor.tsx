@@ -29,6 +29,7 @@ import {
   wordmarkTextStyle,
 } from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
+import { capInsertion } from '@/components/rich-text/text-cap';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 import { listStyleOfText } from '@/components/rich-text/block-type';
 import type { RichTextEditorProps } from './RichTextEditor.types';
@@ -56,6 +57,7 @@ export function RichTextEditor({
   onCancel,
   onSetAlign,
   inline = false,
+  maxLength,
 }: RichTextEditorProps) {
   const zoom = useCanvasZoom();
   const {
@@ -92,6 +94,16 @@ export function RichTextEditor({
     onCommit,
     onCancel,
   });
+  // The part of an insertion the label's cap leaves room for (a badge's 24, a step's 3: badge.md "The element"),
+  // counting what the selection it replaces frees.
+  const fitting = (text: string): string => {
+    const el = editorRef.current;
+    if (maxLength === undefined || !el) return text;
+    const sel = window.getSelection();
+    const selected =
+      sel && sel.rangeCount > 0 && el.contains(sel.anchorNode) ? sel.toString().length : 0;
+    return capInsertion(text, (el.textContent ?? '').length, selected, maxLength);
+  };
   const wordmark = wordmarkTextStyle(element);
   // Mind map (docs/specs/009-elements/mind-node.md): a no-op for every other element, and outside the
   // editor canvas (share view, embed, exports) where there is no grower.
@@ -191,13 +203,14 @@ export function RichTextEditor({
             // so it survives read-back and keeps plain-text length == DOM
             // textContent length.
             e.preventDefault();
+            if (fitting('\n') === '') return;
             insertTextAtCaret('\n');
             syncFromDom();
           }
         }}
         onPaste={(e) => {
           e.preventDefault();
-          const text = e.clipboardData.getData('text/plain');
+          const text = fitting(e.clipboardData.getData('text/plain'));
           if (text) {
             insertTextAtCaret(text);
             syncFromDom();
@@ -210,7 +223,13 @@ export function RichTextEditor({
           composingRef.current = false;
           syncFromDom();
         }}
-        onBeforeInput={() => {
+        onBeforeInput={(e) => {
+          // A typed character past the label's cap is not taken (a paste is cut in onPaste).
+          const typed = (e as unknown as { data?: string | null }).data;
+          if (!composingRef.current && typed && fitting(typed) !== typed) {
+            e.preventDefault();
+            return;
+          }
           // Type-to-edit's end caret, re-asserted at the last safe moment
           // (see the mount effect): the first keystroke lands at the end
           // no matter what remounted / moved this node since mount.

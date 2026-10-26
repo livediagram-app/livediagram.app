@@ -85,7 +85,7 @@ describe('resolvePostAuthDestination', () => {
 // authHrefWithReturn is the OTHER half of the round-trip: every Sign in
 // / Create account trigger builds its href with it, so the user returns
 // where they started. It MUST apply the same safety rules the resolver
-// consumes with (isSafeInternalPath) — otherwise a trigger could emit a
+// consumes with (isPostAuthPath) — otherwise a trigger could emit a
 // redirect_url the page then rejects (silent surprise) or, worse, an
 // open redirect. These pin that the builder drops exactly what the
 // resolver would refuse, and encodes what it keeps.

@@ -82,16 +82,30 @@ describe('gateClientOp', () => {
       ).toEqual(DROP);
     }
     expect(gateClientOp({ kind: 'tab-meta', tabId: 't1' }, scoped)).toEqual(DROP);
-    expect(
-      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan' } }, scoped),
-    ).toEqual(relay(false));
+    expect(gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { timer: null } }, scoped)).toEqual(
+      relay(false),
+    );
     // The same holds for an unscoped editor: the payload's id is never the sender's to change.
     expect(gateClientOp({ kind: 'tab', tabId: 't1', tab: { id: 't2' } }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md "No rename from a scoped session".
+  it("drops a scoped session's rename, set or cleared, and keeps an unscoped editor's", () => {
+    const scoped = as('edit', { tabScope: 't1' });
+    expect(
+      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan' } }, scoped),
+    ).toEqual(DROP);
+    expect(
+      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: {}, clear: ['name'] }, scoped),
+    ).toEqual(DROP);
+    expect(
+      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan' } }, as('edit')),
+    ).toEqual(relay(false));
+  });
+
   it('decides a tab op in well under a microsecond (it runs on every op)', () => {
     const op = { kind: 'tab', tabId: 't1', tab: { id: 't1', elements: [] } };
-    const meta = { kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan', vote: null } };
+    const meta = { kind: 'tab-meta', tabId: 't1', patch: { timer: null, vote: null } };
     const sender = as('edit', { tabScope: 't1' });
     const n = 200_000;
     const start = performance.now();

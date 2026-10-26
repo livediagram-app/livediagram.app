@@ -8,6 +8,8 @@
 // Each app makes one set with createGuestTokens, naming its own storage keys, its api's base and where a handoff
 // with nowhere safe to go back to lands.
 
+import { isSameSitePath } from '@liveworkspace/auth-client/return-path';
+
 export const GUEST_TOKEN_REFRESH_BEFORE_MS = 30 * 24 * 3600 * 1000;
 
 // A handoff that came back without a token (the accounts site down, a deployment without one): no other is started
@@ -98,16 +100,6 @@ function randomState(): string {
     .replace(/=+$/, '');
 }
 
-// Only a path on this site, so the handoff can never be an open redirect.
-function isSafePath(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.startsWith('/') &&
-    !value.startsWith('//') &&
-    !value.startsWith('/\\')
-  );
-}
-
 export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
   const handoffKey = `${opts.sessionPrefix}:guest-handoff`;
   const failedKey = `${opts.sessionPrefix}:guest-handoff-failed`;
@@ -136,8 +128,11 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
     );
     // On the next task, never inside the caller's own: a handoff begun from a React effect would otherwise fire
     // beforeunload mid-commit, where the editors' unload flush (flushSync) cannot run.
+    // In place of this page (liveworkspace/docs/one-explorer-contracts.md "Guests"): the round trip leaves no history
+    // entry, so Back from where it comes back to skips this page, which would only hand off again or, on a /new,
+    // make another document. Pushed, it trapped Back on the editor.
     const to = `${opts.apiBase}/auth/guest?state=${encodeURIComponent(state)}`;
-    setTimeout(() => window.location.assign(to), 0);
+    setTimeout(() => window.location.replace(to), 0);
     return new Promise(() => {});
   };
 
@@ -153,7 +148,7 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
       pending = {};
     }
     write('sessionStorage', handoffKey, null);
-    const returnTo = isSafePath(pending.returnTo) ? pending.returnTo : opts.fallbackPath;
+    const returnTo = isSameSitePath(pending.returnTo) ? pending.returnTo : opts.fallbackPath;
     const token = params.get('guest_token');
     const parsed = token ? parseGuestToken(token) : null;
     if (!parsed || !pending.state || params.get('state') !== pending.state) {

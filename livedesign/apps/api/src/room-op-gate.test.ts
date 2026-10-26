@@ -44,12 +44,20 @@ describe('gateClientOp', () => {
         const op = { kind: 'tab-meta', tabId: 't1', patch: { [key]: 't2' } };
         expect(gateClientOp(op, sender), key).toEqual(DROP);
       }
-      const rename = { kind: 'tab-meta', tabId: 't1', patch: { name: 'Roadmap' } };
-      expect(gateClientOp(rename, sender)).toEqual(relay(false));
+      const recolour = { kind: 'tab-meta', tabId: 't1', patch: { color: '#0ea5e9' } };
+      expect(gateClientOp(recolour, sender)).toEqual(relay(false));
       expect(gateClientOp({ kind: 'tab', tabId: 't1', tab: { id: 't1' } }, sender)).toEqual(
         relay(false),
       );
     }
+  });
+
+  // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-limited editor can't rename
+  // even the tab it holds; a full editor can.
+  it('relays a rename from a full editor only', () => {
+    const rename = { kind: 'tab-meta', tabId: 't1', patch: { name: 'Roadmap' } };
+    expect(gateClientOp(rename, as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(rename, as('edit', { tabScope: 't1' }))).toEqual(DROP);
   });
 
   it("routes a participant's element op through the content rule, and drops its other mutations", () => {

@@ -11,6 +11,7 @@ import {
   coerceShapeKind,
   contentOrigin,
   diffToElementOps,
+  chipLabelIssue,
   elementValidationIssue,
   getBuiltInTheme,
   invertElementOps,
@@ -64,7 +65,8 @@ function fromElements(
   // Elements the tab already holds keep their own look; only new ones take a raw element's defaults.
   const normalised = normaliseElements(raw, { kept }) as unknown[];
   for (const el of normalised) {
-    const issue = elementValidationIssue(el);
+    // A chip's label cap holds for agent writes (docs/specs/009-elements/badge.md "The cap holds for agents").
+    const issue = elementValidationIssue(el) ?? chipLabelIssue(el);
     if (issue) {
       const subject = el as { id?: unknown; type?: unknown; shape?: unknown };
       const ref = typeof subject.id === 'string' && subject.id !== '' ? subject.id : 'an element';

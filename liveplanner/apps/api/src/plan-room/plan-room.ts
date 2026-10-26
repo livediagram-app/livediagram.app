@@ -24,6 +24,9 @@ import {
   PROJECT_FORMAT,
   PROJECT_TRASHED_CLOSE,
   isRoomOpRef,
+  ROOM_FULL_CLOSE,
+  ROOM_FULL_REASON,
+  roomIsFull,
   parseBuildId,
   ROOM_PING,
   ROOM_PONG,
@@ -31,6 +34,7 @@ import {
 } from '@liveplanner/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@liveplanner/project';
 import { RoomParticipantWrites } from '../room-participant';
+import { RoomScopedStructure, cachedStoredTab } from '../room-scoped-structure';
 import { RoomLedgerStore } from '../room-ledger-store';
 import { RoomSelectionStore, selectionFromOp, type LiveSession } from '../room-selections';
 import {
@@ -256,6 +260,8 @@ export class PlanRoom extends DurableObject<Env> {
   private readonly internal: InternalRoom;
   // A Participant's content and answers (docs/specs/013-workspace/share-roles.md), see room-participant.ts.
   private participantWrites: RoomParticipantWrites;
+  // A tab-scoped session's ops, each keeping its tab's structure (room-scoped-structure.ts).
+  private readonly scopedStructure: RoomScopedStructure;
   // The plan's owner and team, kept from every grant the room is handed (a socket's ticket, a renewal, an API
   // request's grant), so a guest's merge into an account or a move to another team reaches the plan's emails,
   // pushes and alarm (@liveworkspace/index-app item-head.ts).
@@ -305,6 +311,7 @@ export class PlanRoom extends DurableObject<Env> {
       position: () => ({ epoch: this.epoch, seq: this.seq }),
       readLedger: (tabId) => this.ledger.read(tabId),
     });
+    this.scopedStructure = new RoomScopedStructure(cachedStoredTab(this.roomEnv));
     this.internal = {
       broadcastSystemOp: (op) => this.broadcastSystemOp(op),
       broadcastOrderedSystemOp: (op) => this.broadcastOrderedSystemOp(op),
@@ -868,6 +875,14 @@ export class PlanRoom extends DurableObject<Env> {
     account = false,
     tabShowsAll = false,
   ): void {
+    // A full room (ROOM_MAX_CONNECTIONS, docs/specs/015-api/api.md "A room holds 100 connections") turns the
+    // newcomer away with a close the browser can read: accepted, closed at once, never a session.
+    if (roomIsFull(this.state.getWebSockets().length)) {
+      ws.accept();
+      ws.close(ROOM_FULL_CLOSE, ROOM_FULL_REASON);
+      console.info('[room] room.full', { open: this.state.getWebSockets().length });
+      return;
+    }
     ws.serializeAttachment(
       newSessionAttachment(
         {
@@ -1139,59 +1154,78 @@ export class PlanRoom extends DurableObject<Env> {
         );
         return;
       }
-      if (gate.participantAnswers) {
-        this.participantWrites.scheduleAnswers(
-          session.projectId ?? null,
-          (msg.op as { tabId?: unknown }).tabId,
+      // A tab-scoped session's op keeps its tab's structure (room-scoped-structure.ts): checked, in order, before
+      // it relays; everyone else's relays at once.
+      if (session.tabScope && !gate.presence) {
+        this.scopedStructure.admit(msg.op, session.tabScope, session.projectId ?? null, () =>
+          this.relayClientOp(ws, session, sender, msg, gate),
         );
+        return;
       }
-      const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
-      const isPresenceOp = gate.presence;
-      // Remember the sender's current tab so a future joiner learns it
-      // from the presence list (tab-focus ops only fire on a switch, so
-      // they're invisible to anyone who joins afterwards). Persisted to
-      // the attachment — in-memory-only would forget everyone's tab on
-      // the next hibernation and mis-place peers for every later joiner.
-      // The live relay below still drives real-time updates for peers
-      // already connected.
-      // Every selection is noted for the api's held check, whatever the role
-      // (docs/specs/024-agents/agent-changesets.md "Held elements"). The DO's output gate holds
-      // what follows until the write lands.
-      if (opKind === 'select') {
-        void this.selections.note(sender.id, selectionFromOp(msg.op)).catch(() => {});
+      this.relayClientOp(ws, session, sender, msg, gate);
+    }
+  }
+
+  // Relay one client op the gates let through: presence unordered, a mutation sequenced into the catch-up log.
+  private relayClientOp(
+    ws: WebSocket,
+    session: SessionAttachment,
+    sender: NonNullable<SessionAttachment['presence']>,
+    msg: Extract<ClientMessage, { kind: 'op' }>,
+    gate: Extract<ReturnType<typeof gateClientOp>, { kind: 'relay' }>,
+  ): void {
+    if (gate.participantAnswers) {
+      this.participantWrites.scheduleAnswers(
+        session.projectId ?? null,
+        (msg.op as { tabId?: unknown }).tabId,
+      );
+    }
+    const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
+    const isPresenceOp = gate.presence;
+    // Remember the sender's current tab so a future joiner learns it
+    // from the presence list (tab-focus ops only fire on a switch, so
+    // they're invisible to anyone who joins afterwards). Persisted to
+    // the attachment — in-memory-only would forget everyone's tab on
+    // the next hibernation and mis-place peers for every later joiner.
+    // The live relay below still drives real-time updates for peers
+    // already connected.
+    // Every selection is noted for the api's held check, whatever the role
+    // (docs/specs/024-agents/agent-changesets.md "Held elements"). The DO's output gate holds
+    // what follows until the write lands.
+    if (opKind === 'select') {
+      void this.selections.note(sender.id, selectionFromOp(msg.op)).catch(() => {});
+    }
+    if (opKind === 'tab-focus') {
+      const { tabId, besideTabId } = msg.op as { tabId?: unknown; besideTabId?: unknown };
+      if (typeof tabId === 'string') {
+        sender.tabId = tabId.slice(0, MAX_TAB_ID_LEN);
+        // The other pane of a side by side split (docs/specs/007-editor/split-view.md "Presence"),
+        // clamped like tabId; anything but a string clears it. A tab-scoped session has one tab
+        // and no split, so it never holds one.
+        if (typeof besideTabId === 'string' && !session.tabScope)
+          sender.besideTabId = besideTabId.slice(0, MAX_TAB_ID_LEN);
+        else delete sender.besideTabId;
+        ws.serializeAttachment({ ...session, presence: sender } satisfies SessionAttachment);
       }
-      if (opKind === 'tab-focus') {
-        const { tabId, besideTabId } = msg.op as { tabId?: unknown; besideTabId?: unknown };
-        if (typeof tabId === 'string') {
-          sender.tabId = tabId.slice(0, MAX_TAB_ID_LEN);
-          // The other pane of a side by side split (docs/specs/007-editor/split-view.md "Presence"),
-          // clamped like tabId; anything but a string clears it. A tab-scoped session has one tab
-          // and no split, so it never holds one.
-          if (typeof besideTabId === 'string' && !session.tabScope)
-            sender.besideTabId = besideTabId.slice(0, MAX_TAB_ID_LEN);
-          else delete sender.besideTabId;
-          ws.serializeAttachment({ ...session, presence: sender } satisfies SessionAttachment);
-        }
-      }
-      // Presence ops relay unordered (ephemeral, no catch-up). Mutation
-      // ops get a monotonic seq within the epoch and land in the catch-up
-      // log so a reconnecting peer can replay the delta (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
-      if (isPresenceOp) {
-        this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
-      } else {
-        // No comment author id leaves the room, whatever a client sent: it is
-        // the author's owner id, a guest's credential. And a posted comment
-        // carries the name of the session that sent it, the one on its
-        // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
-        const op = stampCommentAuthor(opForTheWire(msg.op), sender);
-        const seq = this.sequenceMutation(sender.id, op, ws);
-        // The relay skips the sender, so tell it the seq its op took: its own
-        // ops are already applied, and a reconnect must not replay them. The
-        // op's `ref` comes back with it, so a save waiting on this op knows the
-        // ledger has it (docs/specs/012-collaboration/collab-race-hardening.md phase 6).
-        const ref = isRoomOpRef(msg.ref) ? { ref: msg.ref } : {};
-        this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq, ...ref });
-      }
+    }
+    // Presence ops relay unordered (ephemeral, no catch-up). Mutation
+    // ops get a monotonic seq within the epoch and land in the catch-up
+    // log so a reconnecting peer can replay the delta (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
+    if (isPresenceOp) {
+      this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
+    } else {
+      // No comment author id leaves the room, whatever a client sent: it is
+      // the author's owner id, a guest's credential. And a posted comment
+      // carries the name of the session that sent it, the one on its
+      // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
+      const op = stampCommentAuthor(opForTheWire(msg.op), sender);
+      const seq = this.sequenceMutation(sender.id, op, ws);
+      // The relay skips the sender, so tell it the seq its op took: its own
+      // ops are already applied, and a reconnect must not replay them. The
+      // op's `ref` comes back with it, so a save waiting on this op knows the
+      // ledger has it (docs/specs/012-collaboration/collab-race-hardening.md phase 6).
+      const ref = isRoomOpRef(msg.ref) ? { ref: msg.ref } : {};
+      this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq, ...ref });
     }
   }
 

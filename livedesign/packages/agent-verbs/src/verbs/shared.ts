@@ -10,6 +10,7 @@ export {
   LIST_DEFAULT_LIMIT,
   LIST_MAX_LIMIT,
   minute,
+  moreLine,
 } from '@liveworkspace/agent-verbs/listing';
 
 type DesignWithTabs = ResolvedDesign & {
@@ -35,12 +36,3 @@ export const tabPath = (designId: string, tabId: string) =>
   `/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(tabId)}`;
 
 export type { ApiClient };
-
-// The line under a cut list: how many more, and the --limit that shows them all, never one past the flag's own
-// maximum (which the flag would refuse); past it, only narrowing helps.
-export function moreLine(shown: number, more: number, max: number, narrow: string): string {
-  const all = shown + more;
-  return all <= max
-    ? `… ${more} more; --limit ${all}, or ${narrow}`
-    : `… ${more} more; ${narrow} (--limit goes up to ${max})`;
-}

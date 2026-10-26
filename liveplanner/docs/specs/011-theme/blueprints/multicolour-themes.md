@@ -5,12 +5,12 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                              | Role                                                              |
-| ------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/project/src/hierarchy.ts`              | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
-| `packages/project/src/theme-graph.ts`            | The four wrappers and the per-element branch resolution           |
-| `packages/project/src/themes-data.ts`            | The five built-in multi-colour themes                             |
-| `packages/project/src/colors.ts`                 | `contrastRatio`, the WCAG contrast helper (D3)                    |
+| File                                                | Role                                                              |
+| --------------------------------------------------- | ----------------------------------------------------------------- |
+| `packages/project/src/hierarchy.ts`                 | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
+| `packages/project/src/theme-graph.ts`               | The four wrappers and the per-element branch resolution           |
+| `packages/project/src/themes-data.ts`               | The five built-in multi-colour themes                             |
+| `packages/project/src/colors.ts`                    | `contrastRatio`, the WCAG contrast helper (D3)                    |
 | `apps/editor/components/primitives/ThemeSwatch.tsx` | The card preview                                                  |
 
 ## Domain and naming
@@ -132,19 +132,19 @@ null. A `NaN` fails every `>=` comparison, so the contrast test cannot pass on a
 
 ## Errors and edge cases
 
-| #   | Case                                       | Handling                                                                            |
-| --- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
-| E1  | Arrow with a free endpoint                 | Not an edge                                                                         |
-| E2  | Arrow pinned to another arrow, or dangling | Not an edge                                                                         |
-| E3  | Self-loop                                  | Not an edge                                                                         |
-| E4  | Loop with no root                          | Every node gets the trunk colour (step 7)                                           |
-| E5  | Empty palette at render                    | Trunk colour for every element, O2 warning                                          |
-| E7  | Palette theme without `rootColor`          | Element colours, then `TRUNK_FALLBACK` per null field                               |
-| E8  | Chain of `MAX_ELEMENTS_PER_TAB` elements   | Iterative walk, no throw (I4)                                                       |
-| E9  | More branches than palette entries         | Index wraps modulo the palette length                                               |
-| E10 | Loose element after a wrap                 | Shares a limb's hue, which is accepted                                              |
-| E11 | Shared or diamond descendant               | Keeps the first index that reached it                                               |
-| E12 | Unknown or deleted theme id                | `getTheme` falls back to Default                                                    |
+| #   | Case                                       | Handling                                              |
+| --- | ------------------------------------------ | ----------------------------------------------------- |
+| E1  | Arrow with a free endpoint                 | Not an edge                                           |
+| E2  | Arrow pinned to another arrow, or dangling | Not an edge                                           |
+| E3  | Self-loop                                  | Not an edge                                           |
+| E4  | Loop with no root                          | Every node gets the trunk colour (step 7)             |
+| E5  | Empty palette at render                    | Trunk colour for every element, O2 warning            |
+| E7  | Palette theme without `rootColor`          | Element colours, then `TRUNK_FALLBACK` per null field |
+| E8  | Chain of `MAX_ELEMENTS_PER_TAB` elements   | Iterative walk, no throw (I4)                         |
+| E9  | More branches than palette entries         | Index wraps modulo the palette length                 |
+| E10 | Loose element after a wrap                 | Shares a limb's hue, which is accepted                |
+| E11 | Shared or diamond descendant               | Keeps the first index that reached it                 |
+| E12 | Unknown or deleted theme id                | `getTheme` falls back to Default                      |
 
 ## Security and trust
 
@@ -203,7 +203,7 @@ Each spec rule maps to one test, and every test is deterministic.
 | Rule                                                     | Test                                                            | File                                        |
 | -------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------- |
 | Box-to-box edges only (E1–E3)                            | free endpoint; arrow-to-arrow and dangling pins; self-loop      | `hierarchy.test.ts`                         |
-| Roots seed branches in project order                    | root with three children                                        | `hierarchy.test.ts` (exists)                |
+| Roots seed branches in project order                     | root with three children                                        | `hierarchy.test.ts` (exists)                |
 | Subtree shares one index                                 | deep subtree                                                    | `hierarchy.test.ts` (exists)                |
 | Diamond keeps first index (E11)                          | two parents                                                     | `hierarchy.test.ts` (exists)                |
 | Loose elements continue the counter (E10)                | root + 2 branches + loose ⇒ index 2                             | `hierarchy.test.ts`                         |
@@ -218,14 +218,14 @@ Each spec rule maps to one test, and every test is deterministic.
 | O1 logged once per palette call, never for single-colour | spy `console.info`                                              | `theme-graph.test.ts`                       |
 | `contrastRatio`                                          | black/white = 21; equal = 1; order-independent; malformed = NaN | `colors.test.ts`                            |
 | Built-in contrast ≥ 4.5                                  | every palette entry + `rootColor` of every built-in             | `themes-data.test.ts` (new)                 |
-| Five built-ins, 26 total                                 | counts                                                          | `apps/editor/lib/themes.test.ts` (exists)     |
-| Colours reach the canvas + O1 in the browser             | Rainbow on a mind map: ≥ 3 palette hues, switch log             | `apps/editor/e2e/multicolour-theme.spec.ts`   |
+| Five built-ins, 26 total                                 | counts                                                          | `apps/editor/lib/themes.test.ts` (exists)   |
+| Colours reach the canvas + O1 in the browser             | Rainbow on a mind map: ≥ 3 palette hues, switch log             | `apps/editor/e2e/multicolour-theme.spec.ts` |
 
 ## Constants and configuration
 
-| Name                   | Value                                                     | Provenance                                             | Safe range            | Home                     |
-| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------ | --------------------- | ------------------------ |
-| `ROOT_BRANCH`          | `-1`                                                      | Sentinel outside the index range                       | any negative          | `hierarchy.ts`           |
-| `MIN_TEXT_CONTRAST`    | `4.5`                                                     | WCAG 2.2 SC 1.4.3, normal text                         | `[4.5, 21]`           | `colors.ts`              |
-| `TRUNK_FALLBACK`       | `{ fill: '#f1f5f9', stroke: '#475569', text: '#0f172a' }` | Tailwind slate-100/600/900, the current inline literal | any triple at ≥ 4.5:1 | `theme-graph.ts`         |
-| `MAX_ELEMENTS_PER_TAB` | `10_000`                                                  | Existing tab limit                                     | unchanged             | `validate.ts`            |
+| Name                   | Value                                                     | Provenance                                             | Safe range            | Home             |
+| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------ | --------------------- | ---------------- |
+| `ROOT_BRANCH`          | `-1`                                                      | Sentinel outside the index range                       | any negative          | `hierarchy.ts`   |
+| `MIN_TEXT_CONTRAST`    | `4.5`                                                     | WCAG 2.2 SC 1.4.3, normal text                         | `[4.5, 21]`           | `colors.ts`      |
+| `TRUNK_FALLBACK`       | `{ fill: '#f1f5f9', stroke: '#475569', text: '#0f172a' }` | Tailwind slate-100/600/900, the current inline literal | any triple at ≥ 4.5:1 | `theme-graph.ts` |
+| `MAX_ELEMENTS_PER_TAB` | `10_000`                                                  | Existing tab limit                                     | unchanged             | `validate.ts`    |

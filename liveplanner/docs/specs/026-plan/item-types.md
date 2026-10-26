@@ -11,14 +11,14 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## Domain language
 
-| Term                | Means                                                                                                                                | Never called                |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
-| **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                                     | kind, category, template    |
+| Term                | Means                                                                                                                               | Never called                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                                    | kind, category, template    |
 | **type catalogue**  | A project's item types, in the order the interface lists them                                                                       | schema, config, type list   |
-| **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                      | property, attribute, column |
-| **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards            | (no other name)             |
+| **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                     | property, attribute, column |
+| **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards           | (no other name)             |
 | **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a project made before card types started empty reads as | built-in types              |
-| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the ten more a template uses                   | preset type, built-in type  |
+| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the ten more a template uses                  | preset type, built-in type  |
 
 ## The type catalogue
 
@@ -63,7 +63,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | `custom`           | Its custom fields: `{ id, label, kind, options?, linkType?, onCard? }` (`linkType`: a Card field's target card type id)                                                                                                                         |
 | `tabs`             | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields |
 | `detailsLabel`     | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                            |
-| `excludedStatuses` | The statuses (ids) cards of this type do not use, up to 64 (a project's boards may name more; the type editor stops at 64). Absent: every status. A status added later is open to every type                                                   |
+| `excludedStatuses` | The statuses (ids) cards of this type do not use, up to 64 (a project's boards may name more; the type editor stops at 64). Absent: every status. A status added later is open to every type                                                    |
 | `defaultStatus`    | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                              |
 | `display`          | What its cards show at each **card size**: `{ minimal?, compact?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default                                             |
 

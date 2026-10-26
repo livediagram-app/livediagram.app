@@ -32,6 +32,17 @@ describe('reachContrast', () => {
 });
 
 describe('labelOn', () => {
+  // Agents write `#fff` and `red` (docs/specs/011-theme/light-and-dark.md "Colours an agent writes").
+  it('reads a shorthand or named fill, and the label it picks reads on it', () => {
+    for (const fill of ['#fff', '#fc0', '#0a58', 'red', 'navy', 'gold', 'cornflowerblue', 'teal']) {
+      const label = labelOn(fill);
+      expect(label).toMatch(/^#[0-9a-f]{6}$/);
+      expect(contrastRatio(label, fill)).toBeGreaterThanOrEqual(THEME_TEXT_CONTRAST);
+    }
+    expect(labelOn('navy')).toBe('#ffffff');
+    expect(labelOn('#fff')).not.toBe('#ffffff');
+  });
+
   it('keeps white on a fill dark enough for it', () => {
     expect(labelOn('#0f172a')).toBe('#ffffff');
   });

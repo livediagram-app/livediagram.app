@@ -91,6 +91,7 @@ async function handleSubmit(
     author,
     tokenId: ctx.token?.id ?? null,
     frontDoor: frontDoorOf(ctx.request),
+    scope: grantOn(ctx, project.id)?.tabScope ?? null,
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
   refreshAfterWrite(ctx, project.id, tabId, author, result);
@@ -157,6 +158,7 @@ async function handleRevert(
     author,
     tokenId: ctx.token?.id ?? null,
     frontDoor: frontDoorOf(ctx.request),
+    scope: grantOn(ctx, project.id)?.tabScope ?? null,
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
   refreshAfterWrite(ctx, project.id, record.tabId, author, result);

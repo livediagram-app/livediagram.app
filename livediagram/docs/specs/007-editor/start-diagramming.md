@@ -17,7 +17,9 @@ draws them.
 - **Rail:** led by the mode switch over a hairline ([Changing mode](#changing-mode)), then **Recommended** and the
   mode's groups, each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
   count sits on a pill tinted with the accent, in the panel's ink: the accent on its own tint fell to 4.2:1 in dark
-  and 2.7:1 in light.
+  and 2.7:1 in light. The chosen group's name is the accent leaned toward the ink just far enough to read at 4.5:1 on
+  its tint and its hover's (`chosenLabel`): light's brand accent on its tint read 3.3:1, so light wears a darker
+  accent there (5.2:1); dark's accent already reads (6.4:1) and is kept.
 - **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
   the template on the tab at once (`chooseTemplate`), painted in the **tab's theme**: the
   panel picks no theme, so the scaffold takes the colours the tab already wears (its own theme, or the one a new

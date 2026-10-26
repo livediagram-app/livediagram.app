@@ -40,7 +40,8 @@ function applyOperation(
 // The refused operation in its canonical line form, for the header `error <code> · op <n> · <op>`
 // (docs/specs/024-agents/blueprints/edit-operations.md "Rejections").
 function withOp(rejection: EditRejection, operations: readonly EditOperation[]): EditRejection {
-  const operation = rejection.operation === undefined ? undefined : operations[rejection.operation - 1];
+  const operation =
+    rejection.operation === undefined ? undefined : operations[rejection.operation - 1];
   return operation && rejection.op === undefined
     ? { ...rejection, op: formatOperation(operation) }
     : rejection;

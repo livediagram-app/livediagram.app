@@ -27,7 +27,7 @@ import { timelineNewQuery } from './timeline';
 // tab's boards (pushed under COLLAB_CARDS_TAB, each naming its board's tab). `row` is the thread's or action's alias.
 const reachable = (
   row: string,
-) => `(i.owner_id = ? OR i.scope IN (SELECT value FROM json_each(?)) OR EXISTS (
+) => `((i.owner_id = ? AND i.team_id IS NULL) OR i.scope IN (SELECT value FROM json_each(?)) OR EXISTS (
   SELECT 1 FROM shared_with sw JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
   WHERE sw.person_id = ? AND sw.item_id = i.id AND (sl.tab_id IS NULL OR sl.tab_id = ${row}.tab_id
     OR (${row}.tab_id = '${COLLAB_CARDS_TAB}' AND json_extract(${row}.card, '$.board.tabId') = sl.tab_id))
@@ -142,7 +142,7 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       FROM items i
       JOIN collab_forms f ON f.item_id = i.id
       LEFT JOIN collab_form_reads r ON r.person_id = ? AND r.item_id = f.item_id AND r.tab_id = f.tab_id
-      WHERE (i.owner_id = ? OR i.scope IN (SELECT value FROM json_each(?)))
+      WHERE ((i.owner_id = ? AND i.team_id IS NULL) OR i.scope IN (SELECT value FROM json_each(?)))
         AND i.trashed_at IS NULL ${app ? 'AND f.app = ?' : ''}
         AND f.responses > COALESCE(r.seen, 0)
       ORDER BY f.latest_at DESC LIMIT ?`,

@@ -66,18 +66,20 @@ describe('the handoff', () => {
     vi.useRealTimers();
   });
 
-  it('leaves on the next task, never inside the call that starts it', () => {
+  // In place of the page, so Back from where it comes back never lands on the page that asked.
+  it('leaves on the next task, never inside the call that starts it, replacing the page', () => {
     void tokens().startGuestHandoff();
-    expect(w.assign).not.toHaveBeenCalled();
+    expect(w.replace).not.toHaveBeenCalled();
     vi.runAllTimers();
-    expect(w.assign).toHaveBeenCalledOnce();
+    expect(w.replace).toHaveBeenCalledOnce();
+    expect(w.assign).not.toHaveBeenCalled();
   });
 
   it("leaves for the api's guest door with a state, and keeps the token that comes back for it", () => {
     const t = tokens();
     void t.startGuestHandoff();
     vi.runAllTimers();
-    const url = new URL(w.assign.mock.calls[0]![0] as string, 'http://localhost');
+    const url = new URL(w.replace.mock.calls[0]![0] as string, 'http://localhost');
     expect(url.pathname).toBe('/api/auth/guest');
     const state = url.searchParams.get('state')!;
     expect(state).toMatch(/^[A-Za-z0-9_-]{8,}$/);
@@ -99,10 +101,10 @@ describe('the handoff', () => {
       false,
     );
     expect(w.win.localStorage.getItem(KEY)).toBeNull();
-    w.assign.mockReset();
+    w.replace.mockReset();
     void t.startGuestHandoff();
     vi.runAllTimers();
-    expect(w.assign).not.toHaveBeenCalled();
+    expect(w.replace).not.toHaveBeenCalled();
   });
 
   it('only ever goes back to a path on this site', () => {
@@ -120,7 +122,7 @@ describe('the handoff', () => {
     const t = tokens();
     w.win.localStorage.setItem(KEY, guestTokenFor('guest_kept'));
     expect((await t.ensureGuestToken())?.id).toBe('guest_kept');
-    expect(w.assign).not.toHaveBeenCalled();
+    expect(w.replace).not.toHaveBeenCalled();
     t.clearGuestToken();
     expect(t.readGuestToken()).toBeNull();
   });

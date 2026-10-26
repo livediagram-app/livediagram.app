@@ -6,16 +6,22 @@ import type { Comment, CommentThread } from './comments';
 // comment deltas apply. Each returns the SAME thread when nothing
 // changes, so callers keep identity.
 
-// Appends `comment` (unless its id is already there, or the thread holds `max`), reopening a resolved thread.
+// Appends `comment` (unless its id is already there, or the thread holds `max`), reopening a resolved thread. With
+// `before`, the id of a comment still in the thread, it goes in ahead of that one instead: a refused delete put back
+// in its place.
 export function threadWithComment(
   thread: CommentThread | undefined,
   comment: Comment,
   max: number,
+  before?: string,
 ): CommentThread | undefined {
   const comments = thread?.comments ?? [];
   if (comments.some((c) => c.id === comment.id)) return thread;
   if (comments.length >= max) return thread;
-  return { comments: [...comments, comment], resolved: false };
+  const at = before === undefined ? -1 : comments.findIndex((c) => c.id === before);
+  const next =
+    at < 0 ? [...comments, comment] : [...comments.slice(0, at), comment, ...comments.slice(at)];
+  return { comments: next, resolved: false };
 }
 
 // Takes `commentId` out; the last comment going takes the thread with it (undefined).

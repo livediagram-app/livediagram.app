@@ -122,6 +122,12 @@ test.describe('mobile', () => {
       ),
     ]);
     expect(rows).toHaveLength(1);
+    // Beside the Session strip the Plan strip is one More Card Tools button, so a voting board's cluster fits one
+    // row at 390px; Card Types is in its menu.
+    await expect(page.getByRole('button', { name: 'Open Card Types' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'More card tools' }).tap();
+    await expect(page.getByRole('menuitem', { name: 'Card Types' })).toBeVisible();
+    await page.keyboard.press('Escape');
 
     // The Timer opens its set-up as a popover that is genuinely on top, not just present.
     await page.getByRole('button', { name: 'Open Timer' }).tap();

@@ -4,7 +4,7 @@
 // on the paper. A theme with no colours of its own (Default) leaves the panel the app's light or dark look.
 import {
   contrastRatio,
-  hexToRgb,
+  normaliseHex,
   isLightColor,
   mixHex,
   type CanvasSurface,
@@ -69,8 +69,27 @@ function readableMuted(text: string, paper: string, fills: readonly string[]): s
   return text;
 }
 
+// The chosen rail row's tint (StartPanel), and its hover's, in percent: the accent over the paper.
+export const CHOSEN_TINT = 14;
+export const CHOSEN_HOVER_TINT = 18;
+const CHOSEN_STEP = 0.06;
+
+// The chosen rail row's label: the accent, leaned toward the ink a step at a time until it reads at INK_CONTRAST on
+// the row's tint and its hover's (start-diagramming.md "Rail"). Light's brand accent on its own tint read 3.4:1.
+export function chosenLabel(palette: StartPalette): string {
+  const fills = [CHOSEN_TINT, CHOSEN_HOVER_TINT].map((pct) =>
+    mixHex(palette.focus, palette.surface, pct / 100),
+  );
+  for (let share = 0; share < 1; share += CHOSEN_STEP) {
+    const ink = mixHex(palette.text, palette.focus, share);
+    if (fills.every((f) => contrastRatio(ink, f) >= INK_CONTRAST)) return ink;
+  }
+  return palette.text;
+}
+
+// Any colour the parser reads, as `#rrggbb` for the mixes below (a shorthand or named one too).
 const hex = (v: string | null | undefined): string | undefined =>
-  v && hexToRgb(v) ? v : undefined;
+  (v && normaliseHex(v)) || undefined;
 
 export function startPalette(surface: CanvasSurface, own: StartOwnColours = {}): StartPalette {
   const base = surface === 'dark' ? DARK : LIGHT;

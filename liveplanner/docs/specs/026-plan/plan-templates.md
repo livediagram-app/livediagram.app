@@ -55,11 +55,11 @@ board of the template shows some, and every plan view on its Dashboard has somet
 
 ## Domain language
 
-| Term                | Means                                                                                      | Not                        |
-| ------------------- | ------------------------------------------------------------------------------------------ | -------------------------- |
-| **template tab**    | One tab a template makes, named by the template (Roadmap, Backlog...)                      | page, sheet                |
-| **hand-off**        | A status two boards of a template share, so a card leaving one board arrives on the other  | link, sync                 |
-| **dashboard tab**   | A template tab of plan views and no board, reading every card                              | report tab                 |
+| Term                | Means                                                                                     | Not                        |
+| ------------------- | ----------------------------------------------------------------------------------------- | -------------------------- |
+| **template tab**    | One tab a template makes, named by the template (Roadmap, Backlog...)                     | page, sheet                |
+| **hand-off**        | A status two boards of a template share, so a card leaving one board arrives on the other | link, sync                 |
+| **dashboard tab**   | A template tab of plan views and no board, reading every card                             | report tab                 |
 | **ready-made type** | A card type defined in code that a board brings into the project when it is made (a Role) | preset type, built-in type |
 
 ## How a template with tabs is made

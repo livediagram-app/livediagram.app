@@ -5,7 +5,8 @@ import { ApiError } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
 import { loadTab, ToolInputError } from './tool-helpers';
-import { deleteRefusal, templateNote } from './tools';
+import { deleteRefusal } from '@liveplanner/agent-verbs';
+import { templateNote } from './tools';
 
 // Errors that teach (docs/specs/026-plan/plan-agents.md; docs/specs/015-api/mcp-server.md): a mistake the caller
 // can fix is a tool error in words, never a thrown protocol error.

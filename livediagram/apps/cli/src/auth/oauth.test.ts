@@ -229,6 +229,25 @@ describe('auth login --device', () => {
     }
   });
 
+  it('polls at the default interval when the server’s is not a number, and within bounds when it is', async () => {
+    for (const [interval, slept] of [
+      ['soon', 5000],
+      [null, 5000],
+      [Number.NaN, 5000],
+      [0, 1000],
+      [-3, 1000],
+      [3600, 60000],
+      ['7', 7000],
+    ] as const) {
+      const { io, exit } = await start(['auth', 'login', '--device'], {
+        tokenAnswers: [{ error: 'authorization_pending' }],
+        device: { interval },
+      });
+      expect(await exit).toBe(0);
+      expect(io.slept).toEqual([slept, slept]);
+    }
+  });
+
   it('needs a device endpoint, and a host whose server starts one', async () => {
     const none = await start(['auth', 'login', '--device'], {
       meta: { authorization_endpoint: `${ISSUER}/a`, token_endpoint: `${ISSUER}/t` },

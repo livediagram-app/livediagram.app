@@ -444,7 +444,9 @@ const graphField = z
           label: z
             .string()
             .optional()
-            .describe(`Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters.`),
+            .describe(
+              `Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters (a sequence message stays whole).`,
+            ),
           line: z
             .enum(['solid', 'dashed', 'thick'])
             .optional()

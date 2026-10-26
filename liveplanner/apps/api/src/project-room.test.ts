@@ -1,6 +1,6 @@
 import { MAX_TAB_ID_LEN } from './project-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PROJECT_FORMAT } from '@liveplanner/api-schema';
+import { PROJECT_FORMAT, ROOM_MAX_CONNECTIONS, ROOM_FULL_CLOSE } from '@liveplanner/api-schema';
 import type { ParticipantPresence, RoomIncoming } from '@liveplanner/api-schema';
 import {
   MUTATION_OP_KINDS,
@@ -351,6 +351,36 @@ describe('PlanRoom non-WebSocket upgrades', () => {
     const { room } = newRoom();
     const res = await room.fetch(new Request('https://room/ws'));
     expect(res.status).toBe(426);
+  });
+});
+
+// docs/specs/015-api/api.md "A room holds 100 connections".
+describe('PlanRoom connection cap', () => {
+  it('turns connection 101 away with ROOM_FULL_CLOSE, and seats it once someone leaves', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { room, state } = newRoom();
+    for (let i = 0; i < ROOM_MAX_CONNECTIONS; i += 1)
+      room.acceptSession(asWs(makeSocket()), 'edit');
+    expect(state.sockets).toHaveLength(ROOM_MAX_CONNECTIONS);
+    const late = Object.assign(makeSocket(), {
+      accepted: false,
+      closed: undefined as [number, string] | undefined,
+      accept() {
+        late.accepted = true;
+      },
+      close(code: number, reason: string) {
+        late.closed = [code, reason];
+      },
+    });
+    room.acceptSession(asWs(late), 'edit');
+    expect(late.accepted).toBe(true);
+    expect(late.closed).toEqual([ROOM_FULL_CLOSE, 'room-full']);
+    expect(late.attachment).toBeNull();
+    expect(state.sockets).toHaveLength(ROOM_MAX_CONNECTIONS);
+    state.sockets.pop();
+    const next = makeSocket();
+    room.acceptSession(asWs(next), 'edit');
+    expect(state.sockets).toContain(asWs(next));
   });
 });
 
@@ -1388,20 +1418,31 @@ describe('PlanRoom tab-scoped sessions', () => {
     expect(ops(owner)).toEqual([{ kind: 'el', tabId: 't2', op: {} }]);
   });
 
-  // docs/specs/026-plan/items.md "Who may do what": a board shows every card, so a scoped session never adds one.
-  it("relays a scoped session's board only when its tab already showed every card", () => {
+  it('drops a scoped Editor adding a board or renaming its tab, and relays its content', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     const { room, state } = newRoom();
     const owner = makeSocket();
     const scoped = makeSocket();
-    const settled = makeSocket();
     scopedSession(state, owner, presence('p-o', 'edit'), null);
     scopedSession(state, scoped, presence('p-s', 'edit'), 't2');
-    scopedSession(state, settled, presence('p-t', 'edit'), 't2', null, true);
-    const board = { kind: 'el', tabId: 't2', op: { element: { id: 'b', shape: 'plan-board' } } };
-    sendFrame(room, scoped, { kind: 'op', op: board });
+    const view = { id: 'v', type: 'shape', shape: 'plan-view', planView: { view: 'gantt' } };
+    const sticky = { id: 's', type: 'sticky', text: 'hi' };
+    sendFrame(room, scoped, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't2', op: { kind: 'add', element: view, at: 0 } },
+    });
+    sendFrame(room, scoped, {
+      kind: 'op',
+      op: { kind: 'tab-meta', tabId: 't2', patch: { name: 'Mine' } },
+    });
     expect(ops(owner)).toEqual([]);
-    sendFrame(room, settled, { kind: 'op', op: board });
-    expect(ops(owner)).toEqual([board]);
+    sendFrame(room, scoped, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't2', op: { kind: 'add', element: sticky, at: 0 } },
+    });
+    expect(ops(owner)).toEqual([
+      { kind: 'el', tabId: 't2', op: { kind: 'add', element: sticky, at: 0 } },
+    ]);
   });
 
   it('filters the catch-up replay the same way', () => {

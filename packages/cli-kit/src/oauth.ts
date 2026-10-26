@@ -7,6 +7,7 @@ import {
   pkceChallenge,
   DEVICE_CODE_GRANT,
   DEVICE_CODE_TTL_S,
+  DEVICE_POLL_INTERVAL_S,
   DEVICE_SLOW_DOWN_S,
 } from '@liveworkspace/api-kit/oauth';
 import type { DebugLog } from './debug';
@@ -20,6 +21,18 @@ type Product = Pick<CliProduct, 'name' | 'clientId'>;
 
 // The authorize session's own life (10 minutes): past it the browser could not finish anyway.
 export const LOGIN_TIMEOUT_MS = 600_000;
+
+// The device poll's bounds, in seconds: never faster than once a second, never slower than once a minute.
+export const DEVICE_POLL_MIN_S = 1;
+export const DEVICE_POLL_MAX_S = 60;
+
+/** The poll interval a server asked for, as seconds: the default when it is not a number, clamped to the bounds. */
+export function devicePollInterval(raw: unknown): number {
+  const n =
+    typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() ? Number(raw) : NaN;
+  if (!Number.isFinite(n)) return DEVICE_POLL_INTERVAL_S;
+  return Math.min(DEVICE_POLL_MAX_S, Math.max(DEVICE_POLL_MIN_S, n));
+}
 
 type AuthServer = {
   authorization_endpoint: string;
@@ -171,7 +184,8 @@ export async function loginWithDevice(
     `Open ${String(started.field('verification_uri'))} and enter ${String(started.field('user_code'))}. Waiting for approval…\n` +
       `Or open ${String(started.field('verification_uri_complete'))}\n`,
   );
-  let interval = Number(started.field('interval') ?? 5);
+  // A server's interval is trusted only as a number within bounds: "soon" or 0 would poll in a tight loop.
+  let interval = devicePollInterval(started.field('interval'));
   // The code's own lifetime bounds the wait, so a server that keeps answering pending never holds the CLI forever.
   const expiresIn = Number(started.field('expires_in') ?? DEVICE_CODE_TTL_S);
   const expiresAt =
@@ -196,7 +210,7 @@ export async function loginWithDevice(
     log(`oauth device ${error}`);
     if (error === 'authorization_pending') continue;
     if (error === 'slow_down') {
-      interval += DEVICE_SLOW_DOWN_S;
+      interval = Math.min(DEVICE_POLL_MAX_S, interval + DEVICE_SLOW_DOWN_S);
       continue;
     }
     if (error === 'access_denied') throw authError('sign-in was refused on the device page');

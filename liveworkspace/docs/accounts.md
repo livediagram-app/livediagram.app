@@ -20,7 +20,8 @@ change roles (making someone else admin is how a team changes hands), remove peo
 answered invitations and delete it; anyone can leave. A team always keeps an admin: the last one
 can't step down or leave while others remain, and the last member leaving deletes the team.
 Closing an account leaves every team first: a team it ran alone goes, and one where it was the only
-admin passes to the longest-standing member.
+admin passes to the longest-standing member. Its address then comes off every team row it had (joined, removed, left
+or declined), which reads "Deleted account" instead, in the members lists and the change feed alike.
 
 **How an app and the index know someone's teams.** Neither keeps a copy. Every access token carries the
 person's teams (`teams`, up to an hour old), and so does every API token check. A team made or joined
@@ -288,11 +289,17 @@ When the new editor finds the old id in a browser, livediagram's api forwards it
   when `into` is an account its settings and profile move first, then the index is sent
   `POST ${INDEX_URL}/internal/merge` `{ guestId: 'guest_<legacyId>', userId: into, legacy: true }` with
   `INDEX_MERGE_KEY` (the `legacy` form lets the target be a guest, [one-explorer-contracts.md](one-explorer-contracts.md#guests)).
+  Before the merge the claim holds the row (`claimingBy`, `claimingUntil`, migration `0013_legacy_guest_claiming.sql`)
+  in one conditional update that needs no stamp and no live hold but the caller's own, so of two claims at once only
+  one merges; the other is 503 `claim_in_progress`, which livediagram's api passes on and its editor takes as "try on
+  a later load", keeping the old keys (it then finds the id `claimed`). A hold lasts a minute
+  (`LEGACY_CLAIM_HOLD_MS`, far past the merge's 5-second timeout), so a claim that died midway frees the id.
   Only once the index has answered is the row stamped (`claimedAt`, `claimedBy`, in an update that also requires
-  `claimedAt IS NULL`), and the answer is `{ merged: true }`. A failed or unconfigured index is 502
-  `merge_failed` and stamps nothing, so the next try merges again.
+  `claimedAt IS NULL`) and the hold cleared, and the answer is `{ merged: true }`. A failed or unconfigured index is
+  502 `merge_failed`, stamps nothing and lets the hold go, so the next try merges again.
 
-The route costs one primary-key read of `legacy_guest`, the merge, and one primary-key update.
+The route costs one primary-key read of `legacy_guest`, the hold (one primary-key update), the merge, and one
+primary-key update.
 
 ### liveworkspace.app's own token
 
@@ -674,7 +681,8 @@ accounts (`b964b391d`, `46ae449b1`, `ff9a2d834`, `ff2ef0123`), since the account
   account that only ever signed in with an emailed code has none. Nothing fetches, stores or proxies the image: only
   the URL travels, and each browser loads it from Google.
 - **The switch.** **Show My Google Picture** in Settings › Profile, for an account with a picture, on unless turned
-  off (`profile.show_picture`, `migrations/0012_profile_picture.sql`; null is on). Off, everyone else sees the
+  off (`profile.show_picture`, `migrations/0012_profile_picture.sql`; null is on), saved at once; a refused write
+  puts back what the server last took, newest wins. Off, everyone else sees the
   initials everywhere; your own chrome still shows it to you, since it is your screen. It is not a choice between
   pictures: the accounts Worker has no upload, so the picture is Google's or none, and the colour stays your own
   either way (it rings the picture in presence, and paints the initials where there is no picture).
@@ -697,7 +705,7 @@ accounts (`b964b391d`, `46ae449b1`, `ff9a2d834`, `ff2ef0123`), since the account
   the initials on their disc always render, and the picture is an `<img>` over them with fixed `width` and
   `height`, `loading="lazy"`, `decoding="async"`, `referrerpolicy="no-referrer"` (Google's image host refuses some
   requests that carry a referrer, and it never learns which page is open) and the person's name as its `alt`. It
-  asks Google for the size it paints (`=s<px>-c`, a 1x and a 2x source), shows only once loaded, and on an error
+  asks Google for the size it paints (`=s<px>-c`, a 1x and a 2x source, 16 to 1024 px, 96 when the size is no number), shows only once loaded, and on an error
   falls back to the initials for the rest of that URL's life on the page. So a picture never moves anything.
 - **The Content-Security-Policy.** Every app's and liveworkspace.app's pages send Trusted Types only, with no
   `img-src` or `default-src`, so Google's image host is allowed. A test keeps it that way: should an `img-src`
@@ -856,7 +864,10 @@ An app's server asks (`POST /api/auth/delete-account`, with its client credentia
 access token, `src/delete-account.ts`), and the account closes for every app at once:
 
 1. It leaves every team: a team it ran alone is deleted, and one where it was the only admin passes to
-   the longest-standing member.
+   the longest-standing member. Then every `team_member` row it had (its own by `userId`, and those addressed to it that
+   were declined or removed) has its `email` replaced by "Deleted account" (`DELETED_MEMBER_EMAIL`), in one update
+   that moves them on in the change feed (`rev`), so the apps' copies lose the address too. An invitation still
+   waiting is the inviter's, to an address, and keeps it.
 2. Its settings rows and its profile are deleted, and its workbench store is emptied: every pairing ends and the
    rooms its sessions had open are closed ([workbench.md](workbench.md)).
 3. A purge request for the index is written to `pending_purges` (`migrations/0004_pending_purges.sql`),

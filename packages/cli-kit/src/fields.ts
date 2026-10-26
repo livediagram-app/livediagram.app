@@ -1,5 +1,6 @@
 // What a verb's input fields are, read from its zod schema (each product's docs/specs/015-api/blueprints/cli.md
-// "buildParseOptions"): each key's kind (flag type), whether it is required, and its description for help.
+// "buildParseOptions"): each key's kind (flag type), whether it is required, and its description for help
+// (written before or after `.optional()` / `.default()`).
 
 import type { z } from 'zod';
 
@@ -23,6 +24,9 @@ export function fieldsOf(input: z.ZodObject): Field[] {
   return Object.entries(shape).map(([key, schema]) => {
     let inner = schema;
     let required = true;
+    // The outermost description wins, wherever it was written: `.describe()` before `.optional()` lands on the
+    // inner schema, after it on the wrapper.
+    let description = schema.description;
     for (
       let def = defOf(inner);
       def.type === 'optional' || def.type === 'default';
@@ -30,6 +34,7 @@ export function fieldsOf(input: z.ZodObject): Field[] {
     ) {
       required = false;
       inner = def.innerType!;
+      description ??= inner.description;
     }
     const def = defOf(inner);
     const kind: FieldKind =
@@ -46,7 +51,7 @@ export function fieldsOf(input: z.ZodObject): Field[] {
       key,
       kind,
       required,
-      description: schema.description ?? '',
+      description: description ?? '',
       ...(def.entries ? { values: Object.values(def.entries) } : {}),
     };
   });

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
+import type { ItemGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
@@ -106,5 +107,35 @@ describe('the tab rename route', () => {
     expect(
       (await call(db, 'PUT', '/api/documents/D/tabs/t1/name', { name: 'A' }, 'user_x')).status,
     ).toBe(403);
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md "A tab's name is structure".
+  it('refuses a tab-scoped editor, even on its own tab, and leaves the name alone', async () => {
+    const { db, room } = await setUp();
+    const scoped: ItemGrant = {
+      item: 'D',
+      level: 'edit',
+      tab: 't1',
+      sub: 'link:abc',
+      team: null,
+      exp: 2_000_000_000,
+      shareCode: 'abc',
+      token: 'g',
+    };
+    const res = await handleDocuments(
+      makeTestRouteContext('PUT', '/api/documents/D/tabs/t1/name', {
+        env: db.env,
+        owner: 'guest_v',
+        body: { name: 'Mine now' },
+        grant: scoped,
+      }),
+    );
+    expect(res.status).toBe(403);
+    expect(db.sql.prepare("SELECT name FROM tabs WHERE id = 't1'").get()).toEqual({
+      name: 'Board',
+    });
+    expect(room.bodies).not.toContainEqual(
+      expect.objectContaining({ op: expect.objectContaining({ kind: 'tab-meta' }) }),
+    );
   });
 });

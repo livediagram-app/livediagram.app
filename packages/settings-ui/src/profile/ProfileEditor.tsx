@@ -25,8 +25,10 @@ import type { Profile, ProfileHost } from './profile-host';
 
 // Settings › Profile › Name and Colour (liveworkspace/docs/site.md "Settings", "Profile"), the one editor every host
 // draws in place: a preview of what collaborators see, the display name (saved once typing pauses, when the field is
-// left, or as the page goes) and the presence colour (saved at once, put back if the write fails). The host loads and
-// saves (ProfileHost); nothing here links away.
+// left, or as the page goes; typing the stored name back clears its refusal) and the presence colour and Show My
+// Google Picture (saved at once; a refused newest write puts back what the server last took, as the settings saver
+// does, never a value an earlier refused write showed). The host loads and saves (ProfileHost); nothing here links
+// away.
 
 /** How long typing must pause before the name is saved. */
 export const NAME_SAVE_DELAY_MS = 800;
@@ -72,7 +74,14 @@ export function ProfileEditor({ initial, host }: { initial: Profile | null; host
   const [name, setName] = useState(initial?.name ?? '');
   const [color, setColor] = useState<string | null>(initial?.color ?? null);
   const [nameStatus, setNameStatus] = useState<NameStatus>('idle');
-  const [error, setError] = useState<string | null>(null);
+  // The last refusal and what it was for, so the name's own error goes when the name is put right again.
+  const [failure, setFailure] = useState<{
+    of: 'name' | 'colour' | 'picture';
+    error: string;
+  } | null>(null);
+  const error = failure?.error ?? null;
+  const setError = (of: 'name' | 'colour' | 'picture', next: string | null) =>
+    setFailure(next === null ? null : { of, error: next });
   const [colourSaved, flashColourSaved] = useSavedFlash();
   // Show My Google Picture, for an account with one: saved at once, put back if the write fails.
   const googlePicture = initial?.googlePicture ?? null;
@@ -87,7 +96,14 @@ export function ProfileEditor({ initial, host }: { initial: Profile | null; host
   const pending = useRef<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const turn = useRef(0);
+  // The newest name write's value while any is on its way: typing that value again sends nothing more.
+  const sending = useRef<{ count: number; newest: string | null }>({ count: 0, newest: null });
   const colourTurn = useRef(0);
+  // The colour and picture switch as the server last took them (the newest write it answered OK): what a refused
+  // write puts back, newest wins. The value shown before a change is not that while an earlier change is still on
+  // its way, so two refusals in a row never leave a value the server never stored.
+  const colourTaken = useRef({ turn: 0, value: initial?.color ?? null });
+  const pictureTaken = useRef({ turn: 0, value: initial?.showPicture ?? true });
   // The host as it is now, for the page's leaving (registered once).
   const hostRef = useRef(host);
   useLayoutEffect(() => {
@@ -99,20 +115,26 @@ export function ProfileEditor({ initial, host }: { initial: Profile | null; host
     timer.current = null;
     pending.current = null;
     const clean = cleanProfileName(value);
-    if (clean === stored.current) {
-      setNameStatus((s) => (s === 'saving' ? 'saved' : s));
+    // What the server holds, or will once the newest write lands: the same name again needs no write, and the
+    // name's refusal no longer stands (the old name typed back over a refused one).
+    const settled = sending.current.count > 0 ? sending.current.newest : stored.current;
+    if (clean === settled) {
+      setNameStatus((s) => (s === 'saving' ? 'saved' : s === 'error' ? 'idle' : s));
+      setFailure((f) => (f?.of === 'name' ? null : f));
       return;
     }
     const mine = ++turn.current;
+    sending.current = { count: sending.current.count + 1, newest: clean };
     setNameStatus('saving');
-    setError(null);
+    setError('name', null);
     const result = await host.save({ name: clean });
+    sending.current = { ...sending.current, count: sending.current.count - 1 };
     if (result.ok) stored.current = clean;
     if (mine !== turn.current) return;
     if (result.ok) setNameStatus('saved');
     else {
       setNameStatus('error');
-      setError(result.error);
+      setError('name', result.error);
     }
   }
 
@@ -143,32 +165,36 @@ export function ProfileEditor({ initial, host }: { initial: Profile | null; host
 
   async function pick(next: string | null) {
     if (next === color) return;
-    const previous = color;
     const mine = ++colourTurn.current;
     setColor(next);
     // The host's own avatar takes it at once too, and is put back with the editor when the write fails.
     host.onColour?.(next);
-    setError(null);
+    setError('colour', null);
     const result = await host.save({ color: next });
+    if (result.ok && mine > colourTaken.current.turn)
+      colourTaken.current = { turn: mine, value: next };
     if (mine !== colourTurn.current) return;
     if (result.ok) flashColourSaved();
     else {
-      setColor(previous);
-      host.onColour?.(previous);
-      setError(result.error);
+      const back = colourTaken.current.value;
+      setColor(back);
+      host.onColour?.(back);
+      setError('colour', result.error);
     }
   }
 
   async function switchPicture(next: boolean) {
     const mine = ++pictureTurn.current;
     setShowPicture(next);
-    setError(null);
+    setError('picture', null);
     const result = await host.save({ showPicture: next });
+    if (result.ok && mine > pictureTaken.current.turn)
+      pictureTaken.current = { turn: mine, value: next };
     if (mine !== pictureTurn.current) return;
     if (result.ok) flashPictureSaved();
     else {
-      setShowPicture(!next);
-      setError(result.error);
+      setShowPicture(pictureTaken.current.value);
+      setError('picture', result.error);
     }
   }
 

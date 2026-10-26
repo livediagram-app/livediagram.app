@@ -66,6 +66,22 @@ describe('value labels', () => {
     }
   });
 
+  it('puts a negative column value under its column, and every name below the lowest column', () => {
+    const mixed = [
+      { label: 'Jul', value: 30 },
+      { label: 'Aug', value: -10 },
+    ];
+    const marks = barMarks(area, mixed, false);
+    const labels = barValueLabels(marks, mixed, false, 12);
+    const [up, down] = labels.filter((l) => !l.category);
+    expect(up!.y).toBeLessThan(marks.bars[0]!.y);
+    expect(down!.y).toBeGreaterThan(marks.bars[1]!.y + marks.bars[1]!.h);
+    for (const name of labels.filter((l) => l.category)) expect(name.y).toBeGreaterThan(down!.y);
+
+    const across = barValueLabels(barMarks(area, mixed, true), mixed, true, 12);
+    expect(across[1]!.anchor).toBe('end');
+  });
+
   it('puts a bar value after each bar, and no names', () => {
     const marks = barMarks(area, months, true);
     const labels = barValueLabels(marks, months, true, 12);

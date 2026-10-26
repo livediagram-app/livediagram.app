@@ -1,48 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import {
-  apiRouteLabel,
-  errorNameToken,
-  errorPageToken,
-  errorTypeToken,
-  pascalToken,
-} from './error-telemetry';
+import { apiRouteLabel, errorTypeToken } from './error-telemetry';
 import { isValidTelemetryEvent } from './telemetry-schema';
 
-// Error telemetry tokens (docs/specs/017-telemetry/telemetry.md): every Error source builds its `type`
-// through these, so a token that failed TELEMETRY_TYPE_PATTERN would be
-// dropped at ingest with nothing to notice. Pin the shape.
-
-describe('pascalToken', () => {
-  it('PascalCases words split on anything non-alphanumeric', () => {
-    expect(pascalToken('save tab')).toBe('SaveTab');
-    expect(pascalToken('room-ticket')).toBe('RoomTicket');
-    expect(pascalToken('find_projects')).toBe('FindProjects');
-    expect(pascalToken('PUT')).toBe('PUT');
-  });
-
-  it('drops separators that could smuggle a path or id shape', () => {
-    expect(pascalToken('a/b:c?d')).toBe('ABCD');
-  });
-});
+// This api's route labels, and the tokens built on them passing this app's ingest validator. The token helpers
+// themselves are tested in @liveworkspace/telemetry (error-tokens.test.ts).
 
 describe('errorTypeToken', () => {
-  it('joins parts with a dot and skips empties', () => {
-    expect(errorTypeToken('Http403', 'save tab')).toBe('Http403.SaveTab');
-    expect(errorTypeToken('Uncaught', null, 'TypeError')).toBe('Uncaught.TypeError');
-    expect(errorTypeToken('Http500', '')).toBe('Http500');
-  });
-
   it('keeps the dots inside a dotted part such as a route label', () => {
     expect(errorTypeToken('Internal', apiRouteLabel('PUT', '/api/projects/x/tabs/y'))).toBe(
       'Internal.Put.Projects.Tabs',
     );
-  });
-
-  it('caps at 40 characters without leaving a trailing dot', () => {
-    const t = errorTypeToken('UnhandledRejection', 'SignIn', 'QuotaExceededError');
-    expect(t.length).toBeLessThanOrEqual(40);
-    expect(t.startsWith('UnhandledRejection.SignIn')).toBe(true);
-    expect(t.endsWith('.')).toBe(false);
   });
 
   it('always passes the ingest validator', () => {
@@ -53,41 +20,6 @@ describe('errorTypeToken', () => {
     ]) {
       expect(isValidTelemetryEvent({ category: 'Error', action: 'Api', type: t })).toBe(true);
     }
-  });
-});
-
-describe('errorNameToken', () => {
-  it('keeps known constructor names', () => {
-    expect(errorNameToken(new TypeError('x'))).toBe('TypeError');
-    expect(errorNameToken(new Error('x'))).toBe('Error');
-    const chunk = new Error('Loading chunk 12 failed');
-    chunk.name = 'ChunkLoadError';
-    expect(errorNameToken(chunk)).toBe('ChunkLoadError');
-  });
-
-  it('never forwards an arbitrary name', () => {
-    const e = new Error('x');
-    e.name = 'alice@example.com';
-    expect(errorNameToken(e)).toBe('Other');
-  });
-
-  it('marks a thrown non-Error', () => {
-    expect(errorNameToken('boom')).toBe('NonError');
-    expect(errorNameToken(undefined)).toBe('NonError');
-  });
-});
-
-describe('errorPageToken', () => {
-  it('names the page by its first segment', () => {
-    expect(errorPageToken('/project')).toBe('Project');
-    expect(errorPageToken('/explorer/team')).toBe('Explorer');
-    expect(errorPageToken('/get-started')).toBe('GetStarted');
-    expect(errorPageToken('/help/canvas/the-canvas')).toBe('Help');
-    expect(errorPageToken('/')).toBe('Home');
-  });
-
-  it('is null when the path could not be normalised', () => {
-    expect(errorPageToken(null)).toBeNull();
   });
 });
 

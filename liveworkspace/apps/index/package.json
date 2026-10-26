@@ -18,6 +18,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply liveworkspace-index --remote"
   },
   "dependencies": {
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",

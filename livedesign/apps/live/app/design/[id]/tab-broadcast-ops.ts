@@ -118,6 +118,9 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
   });
   return {
     ...incoming,
+    // A tab-scoped sender's whole tab comes without its name (the room drops it: a tab's name is
+    // structure, docs/specs/013-workspace/tab-scoped-share-links.md), so ours stays.
+    name: typeof incoming.name === 'string' ? incoming.name : local.name,
     elements,
     folder: local.folder,
     // Photos are the `photo` ops' alone (wholeTabOp): ours stay through a whole-tab merge.

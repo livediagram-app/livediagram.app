@@ -1289,10 +1289,14 @@ function PlaceSection({
           <button
             type="button"
             disabled={state.loadingMore}
-            onClick={state.loadMore}
+            onClick={state.moreFailed ? state.retryMore : state.loadMore}
             className={`${PANE_LINK} self-center py-1`}
           >
-            {state.loadingMore ? 'Loading…' : 'Show more'}
+            {state.loadingMore
+              ? 'Loading…'
+              : state.moreFailed
+                ? 'Couldn’t load more. Try again'
+                : 'Show more'}
           </button>
         ) : null}
       </div>
@@ -1496,10 +1500,14 @@ function TrashSection() {
         <button
           type="button"
           disabled={state.loadingMore}
-          onClick={state.loadMore}
+          onClick={state.moreFailed ? state.retryMore : state.loadMore}
           className={`${PANE_LINK} self-center py-1`}
         >
-          {state.loadingMore ? 'Loading…' : 'Show more'}
+          {state.loadingMore
+            ? 'Loading…'
+            : state.moreFailed
+              ? 'Couldn’t load more. Try again'
+              : 'Show more'}
         </button>
       ) : null}
       {confirming ? (

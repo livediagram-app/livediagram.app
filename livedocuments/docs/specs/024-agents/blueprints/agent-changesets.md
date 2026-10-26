@@ -120,7 +120,7 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
 3. **Check the base** with `checkBase` (below). When the engine refused and the base's revision is behind, the base
    check runs over `base.elements` alone first; its conflict wins over the engine's errors (CS13).
 4. **Check held**, agent changesets only: `heldTargets(targets, selections)` over the selections not marked
-   `mine`, any role. A person's changeset or revert is never held.
+   `mine`, from sessions at Participant or above (`LiveSession.holds`); a Viewer's never. A person's changeset or revert is never held.
 5. **Dry run** stops here and answers the plan.
 6. **No-op.** No element op and no new tab: answer 200 with `changeset: null`; nothing is written (CS11).
 7. **Bound.** `CHANGESET_MAX_OPERATIONS` is checked before compile; after it, each part against
@@ -664,7 +664,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | Any edit identity may submit; dry run writes nothing                                                          | `changesets.test.ts` "share-link editor submits", "dry run answers the plan only"                                                          |
 | Base table, each row (missing fingerprint conflicts)                                                          | `apps/api/src/changesets/base-check.test.ts`, one case per row                                                                             |
 | Shifts are not fingerprinted; live fields are ignored                                                         | `base-check.test.ts` "ignores make-room shifts"; `element-fingerprint.test.ts` "ignores live fields"                                       |
-| Held: every selected element, any role, never the owner, agents only                                          | `held-check.test.ts`; `changesets.test.ts` "elements_held", "owner's own selection", "person's revert"                                     |
+| Held: every selected element, Participant or Editor (never a Viewer), never the owner, agents only            | `held-check.test.ts`; `changesets.test.ts` "elements_held", "owner's own selection", "person's revert"                                     |
 | Unreachable room holds nothing and logs                                                                       | `changesets.test.ts` "room down logs and applies"                                                                                          |
 | Compile through the engine and `isValidTab`                                                                   | `changesets.test.ts` with the engine, "invalid_result"                                                                                     |
 | CAS; lost race repeats once then 409                                                                          | `apps/api/src/changesets/submit.test.ts` (real SQLite, injected interleaving)                                                              |

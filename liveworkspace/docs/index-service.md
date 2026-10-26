@@ -14,7 +14,7 @@ The plan is [one-explorer.md](one-explorer.md). The calls, types and tokens are
 ```
 apps/index/src/index.ts       routing, and the crons (daily, and every 15 minutes)
 apps/index/src/auth.ts        people (access and guest tokens), link visitors, app keys, the merge key
-apps/index/src/access.ts      the access rule: owner, joined team member, or a live link (+ password)
+apps/index/src/access.ts      the access rule: a personal item's owner, a joined team member, or a live link (+ password)
 apps/index/src/grants.ts      ES256 grants and the public keys at /jwks
 apps/index/src/lists.ts       the Explorer's lists, one indexed and keyset-paged query each
 apps/index/src/items.ts       items: make, read, rename, move, Trash, copy, open, grant
@@ -95,6 +95,8 @@ apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
   last opened through its link).
 - `POST /folders` takes an optional client-made `id`, as the apps' Explorers mint them
   today; 409 `folder_exists` is that id taken. `GET /folders` is paged like every list.
+- A team item answers to its maker only while they are in the team (`rows.ts` `directAccess`, and every list's and
+  the Inbox's reach clause): removed or gone, they lose it like any former member, and the team keeps it.
 - Moving an item out of a team makes it the mover's own. Moving it into or out of a team drops its folder
   (the folder belonged to the old scope).
 - `DELETE /items/:id?reason=empty` trashes with `trashReason: 'empty'`. The index's own daily empty clean-up
@@ -104,24 +106,36 @@ apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
   it; a copy through a link lands in the person's root, and the app is told the link's tab so a
   tab-scoped link copies only that tab.
 - A person who reaches an item only through a link they opened before (Shared with me) still needs the
-  item's password when it has one.
+  item's password when it has one. Setting or changing the password deletes the item's Shared with me rows and tells the app to
+  reload every link's sessions (`revoke` with `reason: "rescoped"`), so earlier visitors enter it again; saving the
+  same one again (checked against the stored hash) or removing it does neither.
+- A share password is at least 6 characters (`SHARE_PASSWORD_MIN`, after trimming): a shorter new one is 400
+  `password_too_short`, while one set before the rule keeps working. A password this isolate hasn't already found right
+  is a guess (`share-guesses.ts`): it counts against the visitor's network (10 a minute) and against the item from any
+  network (30 a minute) before it is checked, and over either the answer is 429 `rate_limited` with `Retry-After: 60`,
+  even for the right password. The network is the address an app's router names (`X-Liveworkspace-Client-IP`, kept
+  apart as `via:`), else the connection's (api-kit's `clientRateKey`); an app's server asking for a visitor (a
+  `CF-Worker` subrequest, from Cloudflare's shared address) counts against the item only. A visit with no password,
+  or one already checked in this isolate (a visitor's grant renewals), spends nothing.
 - Emptying the Trash purges up to 1,000 items per call; the rest wait for another call or the daily run.
 
 ## Secrets and settings
 
-| Name                | What                                                                                                                     |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `INDEX_KEY_<APP>`   | secret, per app (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`); the app's `INDEX_KEY`                     |
-| `GRANT_SIGNING_KEY` | secret: the private ES256 JWK, with its `kid`. Development makes one per isolate if unset                                |
-| `MERGE_KEY`         | secret: accounts' `INDEX_MERGE_KEY`                                                                                      |
-| `INDEX_KEY_DRIVE`   | secret: the Drive mirror's `INDEX_KEY_DRIVE`, with which it acts for a person and sets their flag                        |
-| `DRIVE_KEY_INDEX`   | secret: the Drive mirror's `DRIVE_KEY_INDEX`, carried by the change signal                                               |
-| `DRIVE`             | service binding to `liveworkspace-drive` (`-staging`); commented out in `wrangler.toml` until that Worker is deployed    |
-| `ACCOUNTS_URL`      | var: the accounts origin; tokens are checked as `${ACCOUNTS_URL}/api/auth`, grants issued as `${ACCOUNTS_URL}/api/index` |
-| `INDEX_AUDIENCES`   | var: every app's API resource, comma-separated                                                                           |
-| `APP_ORIGIN_<APP>`  | var: where each app's internal routes are                                                                                |
-| `INDEX_ENABLED`     | var: `off` answers every route as missing                                                                                |
-| `MIGRATION_LIMITER` | rate limit binding: the migration's handoff, 60 a minute per person; absent (tests), not limited                         |
+| Name                          | What                                                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `INDEX_KEY_<APP>`             | secret, per app (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`); the app's `INDEX_KEY`                     |
+| `GRANT_SIGNING_KEY`           | secret: the private ES256 JWK, with its `kid`. Development makes one per isolate if unset                                |
+| `MERGE_KEY`                   | secret: accounts' `INDEX_MERGE_KEY`                                                                                      |
+| `INDEX_KEY_DRIVE`             | secret: the Drive mirror's `INDEX_KEY_DRIVE`, with which it acts for a person and sets their flag                        |
+| `DRIVE_KEY_INDEX`             | secret: the Drive mirror's `DRIVE_KEY_INDEX`, carried by the change signal                                               |
+| `DRIVE`                       | service binding to `liveworkspace-drive` (`-staging`); commented out in `wrangler.toml` until that Worker is deployed    |
+| `ACCOUNTS_URL`                | var: the accounts origin; tokens are checked as `${ACCOUNTS_URL}/api/auth`, grants issued as `${ACCOUNTS_URL}/api/index` |
+| `INDEX_AUDIENCES`             | var: every app's API resource, comma-separated                                                                           |
+| `APP_ORIGIN_<APP>`            | var: where each app's internal routes are                                                                                |
+| `INDEX_ENABLED`               | var: `off` answers every route as missing                                                                                |
+| `MIGRATION_LIMITER`           | rate limit binding: the migration's handoff, 60 a minute per person; absent (tests), not limited                         |
+| `SHARE_GUESS_VISITOR_LIMITER` | rate limit binding: share-password guesses, 10 a minute per visitor's network; absent (tests), not limited               |
+| `SHARE_GUESS_ITEM_LIMITER`    | rate limit binding: share-password guesses, 30 a minute per item from any network; absent (tests), not limited           |
 
 Without `GRANT_SIGNING_KEY` outside development, `/jwks` and grants answer 503 `grants_unavailable`, and
 nothing can be made (there would be no grant to open it with).
@@ -153,7 +167,9 @@ change signal costs a write request nothing before it answers: afterwards, one p
 for the people it touched (usually one), and a call per flagged person; without the `DRIVE` binding, nothing.
 The legacy guest merge is the ordinary merge's one batch, with the same statements (each driven by an index on
 `owner_id`, `person_id`, `scope` or `actor_id`); its flag rides the `person_app_merges` rows it already writes.
-The migration's handoff is one rate-limit check, one batch (the item and its event), the app call, and on a
+A share-password guess adds two rate-limit checks, made at once, before the PBKDF2 check (about 16 ms); a password
+this isolate already found right (its bounded memory of 1,000) costs one SHA-256 and no check, so visitors already in
+add nothing per request. The migration's handoff is one rate-limit check, one batch (the item and its event), the app call, and on a
 failure one delete by primary key. Its body can be up to 32 MiB, parsed once and sent on once, so a request
 holds about three copies of it in memory at worst (well under a Worker's 128 MB at the cap).
 

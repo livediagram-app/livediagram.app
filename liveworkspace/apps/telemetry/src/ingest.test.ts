@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { handleIngest, rateKey } from './ingest';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { handleIngest } from './ingest';
 import { testEnv } from './test-env';
 
 const post = (body: unknown, headers: Record<string, string> = {}) =>
@@ -232,13 +233,18 @@ describe('ingest', () => {
   });
 });
 
-describe('rateKey', () => {
-  const req = (ip?: string) =>
-    new Request('https://x', { headers: ip ? { 'CF-Connecting-IP': ip } : {} });
-  it('keeps IPv4 whole and widens IPv6 to its /64', () => {
-    expect(rateKey(req('203.0.113.9'))).toBe('203.0.113.9');
-    expect(rateKey(req('2001:db8:0:1:aaaa::1'))).toBe('2001:db8:0:1::/64');
-    expect(rateKey(req('2001:DB8::1'))).toBe('2001:db8:0:0::/64');
-    expect(rateKey(req())).toBe('anonymous');
+describe('the rate-limit key', () => {
+  // api-kit's clientRateKey, the one every api keys its limiters on, not a copy of it.
+  it('is api-kit’s clientRateKey for every kind of address', async () => {
+    const addresses = ['203.0.113.9', '2001:db8:0:1:aaaa::1', '2001:DB8::1', '::ffff:192.0.2.1'];
+    for (const ip of [...addresses, undefined]) {
+      const limit = vi.fn().mockResolvedValue({ success: true });
+      const env = testEnv({ ENVIRONMENT: 'production', EVENTS_RATE_LIMITER: { limit } });
+      const headers: Record<string, string> = { Origin: 'https://livedocuments.app' };
+      if (ip) headers['CF-Connecting-IP'] = ip;
+      const request = post({ app: 'livedocuments.app', events: [created] }, headers);
+      await handleIngest(request.clone(), env);
+      expect(limit).toHaveBeenCalledWith({ key: clientRateKey(request) });
+    }
   });
 });

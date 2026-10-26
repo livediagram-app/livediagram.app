@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PlanCardsClusterStrip } from './PlanCardsClusterStrip';
 
@@ -55,5 +55,33 @@ describe('the Plan strip’s names', () => {
     expect(
       screen.getByRole('button', { name: /Open the Trash/ }).querySelector('.absolute'),
     ).toBeTruthy();
+  });
+});
+
+// On a phone beside the Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip") the strip
+// folds into one More Card Tools button, so the cluster stays one row at 390px; its menu holds the four.
+describe('the Plan strip folded on a phone', () => {
+  it('is one button whose menu opens each panel above it', () => {
+    dock.names = false;
+    const types = vi.fn();
+    render(
+      <PlanCardsClusterStrip
+        folded
+        finderOpen={false}
+        onToggleFinder={() => {}}
+        typesOpen={false}
+        onToggleTypes={types}
+        trash={{ open: false, onToggle: () => {} }}
+        newCard={{ open: false, onToggle: () => {} }}
+      />,
+    );
+    const more = screen.getByRole('button', { name: 'More card tools' });
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    fireEvent.click(more);
+    const rows = screen.getAllByRole('menuitem').map((r) => r.textContent);
+    expect(rows).toEqual(['New Card', 'Find a Card', 'Card Types', 'Trash']);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Card Types' }));
+    expect(types).toHaveBeenCalledWith(more);
+    expect(screen.queryByRole('menuitem')).toBeNull();
   });
 });

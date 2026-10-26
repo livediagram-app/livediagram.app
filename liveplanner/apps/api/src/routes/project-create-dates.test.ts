@@ -39,9 +39,7 @@ describe('POST /projects with its own dates', () => {
         body: { id: 'd2', name: 'Doc', tabs: [{ id: 't2', name: 'Tab 1', elements: [] }] },
       }),
     );
-    const row = db.sql
-      .prepare('SELECT created_at, saved_at FROM plan WHERE id = ?')
-      .get('d2') as {
+    const row = db.sql.prepare('SELECT created_at, saved_at FROM plan WHERE id = ?').get('d2') as {
       created_at: number;
       saved_at: number;
     };

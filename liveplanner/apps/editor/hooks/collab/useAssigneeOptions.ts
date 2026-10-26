@@ -119,7 +119,9 @@ export function useAssigneeOptions({
     );
   }, [open, existing, members, selfRow, setAssignee]);
 
-  const assigneeAccess: Access = assignee ? accessOf(assignee, selfUserId, projectTeamId) : 'unknown';
+  const assigneeAccess: Access = assignee
+    ? accessOf(assignee, selfUserId, projectTeamId)
+    : 'unknown';
 
   const grouped = useMemo(() => {
     const byTeam = new Map<string, { teamName: string; members: PickableMember[] }>();

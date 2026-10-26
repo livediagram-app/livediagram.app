@@ -5,6 +5,7 @@ import {
   connectedQuery,
   connectedView,
   defaultReturn,
+  importFailedBody,
   openView,
   planConnected,
   rememberConsent,
@@ -186,5 +187,16 @@ describe('/drive/open', () => {
     expect(openView(ok<DriveOpenAnswer>({ action: 'not_ours' }))).toEqual({ kind: 'not_ours' });
     expect(openView(refused(404, 'not_found'))).toEqual({ kind: 'not_ours' });
     expect(openView(refused(0, 'offline'))).toEqual({ kind: 'failed' });
+  });
+});
+
+describe('a failed import', () => {
+  it('says when the file is too big to import, and otherwise that it couldn’t be read', () => {
+    expect(importFailedBody('file_too_large')).toBe(
+      'The file is bigger than 32 MB, the most an import can take.',
+    );
+    expect(importFailedBody('invalid_request')).toBe(
+      'The file couldn’t be read as one of your liveworkspace apps’ files.',
+    );
   });
 });

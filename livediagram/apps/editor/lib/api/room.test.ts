@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT, ROOM_FULL_CLOSE, ROOM_FULL_RETRY_MS } from '@livediagram/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 import {
   connectRoom,
@@ -645,6 +645,55 @@ describe('connectRoom when the document is trashed', () => {
     await vi.waitFor(() => expect(ClosingSocket.all).toHaveLength(2));
     expect(mintTicket).toHaveBeenCalledOnce();
     expect(onAccessChanged).not.toHaveBeenCalled();
+  });
+
+  // A full room (docs/specs/015-api/api.md "A room holds at most 100 connections"): close 4008. Said once, then
+  // a quiet try every ROOM_FULL_RETRY_MS, and on the tab shown again, never a fast backoff.
+  it('reports a full room once, then tries again each minute without saying it again', () => {
+    const onRoomFull = vi.fn();
+    const onRefused = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onRoomFull, onRefused },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: ROOM_FULL_CLOSE });
+    expect(onRoomFull).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(ROOM_FULL_RETRY_MS - 1);
+    expect(ClosingSocket.all).toHaveLength(1);
+    vi.advanceTimersByTime(1);
+    expect(ClosingSocket.all).toHaveLength(2);
+    ClosingSocket.all[1]!.fire('open');
+    ClosingSocket.all[1]!.fire('close', { code: ROOM_FULL_CLOSE });
+    expect(onRoomFull).toHaveBeenCalledTimes(1);
+    expect(onRefused).not.toHaveBeenCalled();
+    // The tab shown again tries at once, and the minute's timer does not open a second socket beside it.
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(ClosingSocket.all).toHaveLength(3);
+    vi.advanceTimersByTime(ROOM_FULL_RETRY_MS);
+    expect(ClosingSocket.all).toHaveLength(3);
+  });
+
+  it('says a full room again after it got in and was turned away later', () => {
+    const onRoomFull = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onRoomFull },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: ROOM_FULL_CLOSE });
+    vi.advanceTimersByTime(ROOM_FULL_RETRY_MS);
+    ClosingSocket.all[1]!.fire('open');
+    ClosingSocket.all[1]!.fire('message', {
+      data: JSON.stringify({ kind: 'presence', participants: [] }),
+    } as never);
+    ClosingSocket.all[1]!.fire('close', { code: 1006 });
+    vi.runOnlyPendingTimers();
+    ClosingSocket.all[2]!.fire('open');
+    ClosingSocket.all[2]!.fire('close', { code: ROOM_FULL_CLOSE });
+    expect(onRoomFull).toHaveBeenCalledTimes(2);
   });
 
   it('still reconnects after an ordinary drop', () => {

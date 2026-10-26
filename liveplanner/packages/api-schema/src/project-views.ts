@@ -4,14 +4,7 @@
 import type { Finish, TabKind } from '@liveplanner/project';
 
 // Every view.
-export const VIEW_NAMES = [
-  'overview',
-  'outline',
-  'comments',
-  'show',
-  'find',
-  'diff',
-] as const;
+export const VIEW_NAMES = ['overview', 'outline', 'comments', 'show', 'find', 'diff'] as const;
 export type ViewName = (typeof VIEW_NAMES)[number];
 
 // What each api door serves. `diff` has no api door: the CLI computes it from its cache.

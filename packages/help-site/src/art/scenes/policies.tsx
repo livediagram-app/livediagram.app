@@ -52,7 +52,7 @@ export function PoliciesArt() {
   return (
     <Stage>
       <Page x={196} y={20} title="Privacy Policy" rotate={5} />
-      <Page x={60} y={22} title="Terms of Service" rotate={-4} />
+      <Page x={60} y={22} title="Terms of Use" rotate={-4} />
 
       {/* The seal. */}
       <g>

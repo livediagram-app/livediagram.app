@@ -5,23 +5,22 @@
 // result lives in image-result.ts and the pure tab builders in @liveplanner/project
 // and @liveplanner/templates. tools.ts keeps the registrations.
 
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import type { Project, ProjectResponse, TabRecord, TabResponse } from '@liveplanner/api-schema';
 import { apiJson } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
+import { errorResult, ToolInputError } from '@liveworkspace/mcp-kit/tool-result';
 
-export type Extra = RequestHandlerExtra<never, never>;
-// A success carries its result object as `structuredContent` (validated by the
-// SDK against the tool's outputSchema, docs/specs/015-api/mcp-server.md §4.17) and the same object
-// as the first text block for clients that only read `content`.
-export type StructuredValue = Record<string, unknown>;
-export type ToolResult = {
-  content: Array<
-    { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
-  >;
-  structuredContent?: StructuredValue;
-  isError?: boolean;
-};
+// The result shapes, the token guard and ToolInputError every product's tools share.
+export {
+  errorResult,
+  requireToken,
+  textResult,
+  ToolInputError,
+  viewResult,
+  type Extra,
+  type StructuredValue,
+  type ToolResult,
+} from '@liveworkspace/mcp-kit/tool-result';
 
 // The editor app this MCP server belongs to: its own host on staging and on any other deployment
 // (CONSENT_BASE_URL, as the consent and device pages use), liveplanner.app otherwise.
@@ -36,55 +35,9 @@ export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
 export const shareUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, code: string) =>
   `${appBase(env)}/project/shared?s=${encodeURIComponent(code)}`;
 
-export function requireToken(extra: Extra): string {
-  const token = extra.authInfo?.token;
-  if (!token) throw new Error('unauthorized: no bearer token');
-  return token;
-}
-
-export function textResult(value: StructuredValue): ToolResult {
-  return {
-    content: [{ type: 'text', text: JSON.stringify(value, null, 2) }],
-    structuredContent: value,
-  };
-}
-
-// A project view (docs/specs/024-agents/project-views.md): the view's text first, then one line of
-// JSON naming the project, the tab, its revision and its link (VW55).
-export function viewResult(
-  text: string,
-  meta: {
-    id: string;
-    name: string;
-    tab: { id: string; name: string; rev: number; view: string };
-    // Every tab, in order.
-    tabs: { id: string; name: string }[];
-    url: string;
-  },
-): ToolResult {
-  const line = {
-    id: meta.id,
-    name: meta.name,
-    tab: { id: meta.tab.id, name: meta.tab.name, rev: meta.tab.rev },
-    tabs: meta.tabs,
-    url: meta.url,
-  };
-  return {
-    content: [{ type: 'text', text: `${text}\n${JSON.stringify(line)}` }],
-    structuredContent: { ...meta, tab: { ...meta.tab, text } },
-  };
-}
-
-export function errorResult(message: string): ToolResult {
-  return { content: [{ type: 'text', text: message }], isError: true };
-}
-
 // A refusal after some changes went through says which did (the Plan and Sheet tools' many-change writes).
 export const stopped = (message: string, applied: readonly string[]) =>
   errorResult(applied.length ? `${message} Applied before it: ${applied.join('; ')}.` : message);
-
-// An input the caller can correct, thrown from deep in a handler and answered as a tool error by registerTool.
-export class ToolInputError extends Error {}
 
 // Load a project and one of its tabs: the named tab, or the first one when the
 // caller didn't name one (the default every tab-scoped tool applies). Null when

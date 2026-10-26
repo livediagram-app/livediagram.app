@@ -27,6 +27,7 @@ closed.
 | `GET /api/share/:code`, `GET /api/documents/:id` | `{ document, role, tabId }`, the canvas redacted (below)                                            |
 | `PUT /api/documents/:id` (rename, reorder, deck) | 403: the canvas's structure is not theirs to change                                                 |
 | `GET/PUT/DELETE /api/documents/:id/tabs/:tabId`  | Their tab only, with the level's usual rules; another tab is a 404; deleting their own tab is a 403 |
+| `PUT /api/documents/:id/tabs/:tabId/name`        | 403: a tab's name is structure, so they can't rename even their own tab                             |
 | Comments, Q&A board                              | Their tab only; otherwise 404                                                                       |
 | `POST /api/documents/:id/copy`                   | A copy holding only their tab                                                                       |
 | `GET /api/previews/items/:id` (liveworkspace's)  | Their tab's picture                                                                                 |
@@ -37,6 +38,11 @@ closed.
 **Redaction.** A scoped visitor's copy of the canvas keeps every tab's `id` and `orderIndex`, so the bar can draw it in
 place; the other tabs carry `name: ''`, no folder, `updatedAt: 0` and `outOfScope: true`. `presentation` is null (a
 slide deck spans tabs). The canvas's name, owner name and colour stay.
+
+**A tab's name is structure.** Like the canvas's name and its tab order, a scoped visitor's own tab's name is not
+theirs to change. The rename door answers 403 (`apps/api/src/routes/tab-name-route.ts`), and their whole-tab save
+keeps the stored name whatever name it carries (`apps/api/src/routes/tab-put-route.ts`), so an editor holding a name
+from before an owner's rename never writes it back.
 
 **The tab must still belong to the canvas.** A grant whose tab is no longer in the canvas reaches nothing.
 
@@ -50,6 +56,9 @@ The room confines a scoped session to its tab (`apps/api/src/room-scope.ts`), bo
   reach it.
 - **Inbound**: the room drops any op from it that carries another `tabId`, a `select` with no `tabId`, and
   `document-meta`. Anything unknown fails closed.
+- **No rename from a scoped session.** The room drops its `tab-meta` patch that sets or clears `name`, and stamps its
+  whole-`tab` op with the stored name (`scopedTabOp` in `apps/api/src/room-scope.ts`), so no receiver takes a new name
+  from it. The owner's renames still reach it.
 - **A tab op's payload keeps to the tab it names**, from anyone (`apps/api/src/room-op-gate.ts`): the room drops a
   whole-tab op whose tab carries another id, and a `tab-meta` patch that names an id, elements or articles. An editor
   receiving one keeps its tab's own id. A receiver merges the payload over its tab, so a payload naming another id
@@ -69,7 +78,7 @@ out ([API](../015-api/api.md) "A grant lapses; the session renews it").
   draggable, no context menu; the hover card reads "This tab isn't shared with you". They never sit inside a tab
   folder.
 - Everything that works across tabs, or on the tab bar itself, is off: the add-tab button, the mode menu's New Tab
-  offer, the tab menu, drag-reordering, tab folders, canvas rename, and the slide deck ("The slide deck isn't shared
+  offer, the tab menu, drag-reordering, tab folders, renaming the canvas or their tab, and the slide deck ("The slide deck isn't shared
   with you").
 - An element link, search result or keyboard switch pointing at another tab shows the toast "That tab isn't shared
   with you".

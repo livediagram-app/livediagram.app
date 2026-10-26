@@ -81,7 +81,10 @@ as what it means, never as the text typed, so everyone reads it the same whateve
   of another sheet **on the same tab**, by its title; a range too (`'Q3 Costs'!A1:D20`).
 - Renaming a sheet rewrites every formula on the tab that names it; a reference to a title no sheet on the tab has
   (deleted, or never there) is `#REF!` until a sheet of that title is there again.
-- Inserting or deleting rows and columns in a sheet rewrites references to it in every sheet on the tab.
+- Inserting or deleting rows and columns in a sheet rewrites references to it in every sheet on the tab: a range in
+  another sheet with a corner in deleted rows or columns shrinks to what is left, as the sheet's own ranges do
+  (`=SUM(Costs!A1:A3)` with Costs' row 1 deleted reads `Costs!A1:A2`); a single cell reads `#REF!`. The shrink is
+  part of the same change, so one undo puts it back, and it stays linear in the references on the tab.
 - Sheets on other tabs and other projects are out of reach.
 
 ### Named ranges
@@ -174,6 +177,11 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
 **Text**: `CONCAT`, `CONCATENATE`, `TEXTJOIN`, `LEFT`, `RIGHT`, `MID`, `LEN`, `UPPER`, `LOWER`, `PROPER`, `TRIM`,
 `CLEAN`, `SUBSTITUTE`, `REPLACE`, `FIND`, `SEARCH`, `REPT`, `EXACT`, `TEXT`, `VALUE`, `CHAR`, `CODE`, `SPLIT`,
 `JOIN`, `REGEXMATCH`, `REGEXEXTRACT`, `REGEXREPLACE`, `HYPERLINK`.
+
+- `SPLIT` reads each part as Google Sheets does: one that reads as a number (or a percentage) is that number, and one
+  written as an ISO date, `YYYY-MM-DD` (a time after it allowed, `2026-10-26 12:00`), is that date. Other
+  date-looking text (`26/10/2026`, `Oct 26 2026`, `2026-1-5`) stays text, as its day and month read differently by
+  locale; so does an ISO date that is no date (`2026-02-30`). A blank part stays text.
 
 **Date and time**: `TODAY`, `NOW`, `DATE`, `TIME`, `DATEVALUE`, `TIMEVALUE`, `YEAR`, `MONTH`, `DAY`, `HOUR`,
 `MINUTE`, `SECOND`, `WEEKDAY`, `WEEKNUM`, `ISOWEEKNUM`, `EDATE`, `EOMONTH`, `DATEDIF`, `DAYS`, `NETWORKDAYS`,

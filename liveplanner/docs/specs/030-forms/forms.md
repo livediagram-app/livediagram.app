@@ -281,7 +281,9 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
   ignoring case (a repeat is put back), edited as a list: Enter adds the next ("Option 3", selected), Backspace in an
   empty one removes it, Alt+Up and Alt+Down move it, pasting several lines adds one option a line. **Add “Other”**
   adds an Other option with its own text box to Single and Multiple Choice; typing in it picks it, and its text is
-  kept as the answer.
+  kept as the answer. An Other text that repeats one of the options is that option: on Multiple Choice it merges
+  with it first, and only then are the picks counted against the question's least and most, so ticking A and typing
+  A in Other is one pick.
 - A **required** question is marked with a red asterisk and its accessible name says "required". A required
   Checkbox must be ticked.
 - A **Number** answer is read as the respondent's locale writes it: the box offers a decimal keypad, which has a comma
@@ -609,7 +611,7 @@ board settings, for switching back.
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
 card: only an Editor's Preview makes one), with a
 line over it: "This is a form. Its responses become cards on **Bugs**." ("rows in" for a sheet). A tab-scoped share link to a Form tab shows the
-same. The form link's code is never sent to a Participant or a Viewer; they see the status and the count. A locked
+same. The form link's code is never sent to a Participant or a Viewer; they see the status and the count. An Editor on a link to one Form tab builds its form but points its responses only at a board or sheet on that tab; a destination set elsewhere by someone with wider access stays as it is ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md#structure)). A locked
 Form tab reads as a Viewer's does. Each is gated on the session's `can.level === 'edit'`, never on `isReadOnly` alone: a Participant's
 session can add content elsewhere, never to a form.
 

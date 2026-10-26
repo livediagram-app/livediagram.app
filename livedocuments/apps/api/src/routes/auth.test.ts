@@ -355,31 +355,12 @@ describe('the account name cookie (ldoc_account)', () => {
 });
 
 describe('safeReturnPath', () => {
-  it('keeps a path on this site and replaces anything that would leave it', () => {
+  // The cases live with the one check, in @liveworkspace/auth-client/return-path; this binds the Explorer fallback.
+  it('keeps a path on this site and sends anything else to the Explorer', () => {
     expect(safeReturnPath('/document/abc?tab=1')).toBe('/document/abc?tab=1');
-    for (const unsafe of [null, '', 'https://evil.example', '//evil.example', '/\\evil.example']) {
+    for (const unsafe of [null, '//evil.example', '/\t/evil.example']) {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
     }
-  });
-
-  it('refuses control characters and spaces, which the browser drops to leave `//evil.example`', () => {
-    for (const unsafe of [
-      '/\t/evil.example',
-      '/\n/evil.example',
-      '/\r/evil.example',
-      '/ /evil.example',
-      '/\u007f/x',
-    ]) {
-      expect(safeReturnPath(unsafe)).toBe('/explorer/home');
-    }
-  });
-
-  it('sends a rate-limited bounce with a tab in its return path home, never off the site', async () => {
-    const limit = vi.fn(async () => ({ success: false }));
-    const res = await call(`/api/auth/silent?return=${encodeURIComponent('/\t/evil.example')}`, {
-      env: { ...ENV, WRITE_RATE_LIMITER: { limit } } as unknown as Env,
-    });
-    expect(res.headers.get('Location')).toBe('/explorer/home');
   });
 });
 

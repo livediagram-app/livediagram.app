@@ -2,6 +2,8 @@
 // and the next call to make, the same words on the CLI and the MCP. A 5xx or anything not from the api is not a
 // refusal: the caller lets it throw.
 import { ApiError } from '@liveworkspace/api-client';
+import { createDeleteRefusal } from '@liveworkspace/agent-verbs/api-refusal';
+import { AGENT_PRODUCT } from '../agent-product';
 import { SHEET_REFUSAL_WORDS } from '../sheets/sheet-refusals';
 
 export const FIELD_HINT =
@@ -62,3 +64,6 @@ export function apiRefusalOf(err: unknown): ApiRefusal | null {
     return { code, message: `The api refused a field value (${err.code}). ${FIELD_HINT}` };
   return { code, message: `The api refused it (${code}).` };
 }
+
+// Why a delete of a plan or one of its tabs was refused (@liveworkspace/agent-verbs/api-refusal).
+export const deleteRefusal = createDeleteRefusal(AGENT_PRODUCT);

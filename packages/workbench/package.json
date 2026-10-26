@@ -316,7 +316,6 @@
     "./lib/reload-guard": "./src/lib/reload-guard.ts",
     "./lib/reload-when-saved": "./src/lib/reload-when-saved.ts",
     "./lib/responsive": "./src/lib/responsive.ts",
-    "./lib/same-origin-path": "./src/lib/same-origin-path.ts",
     "./lib/sankey-flows-dialog-handle": "./src/lib/sankey-flows-dialog-handle.ts",
     "./lib/sankey-tour-focus": "./src/lib/sankey-tour-focus.ts",
     "./lib/save-health": "./src/lib/save-health.ts",

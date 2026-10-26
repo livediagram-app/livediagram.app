@@ -179,6 +179,6 @@ describe('toneToContrast', () => {
 
   it('keeps a colour that already reads, and one it cannot read as hex', () => {
     expect(toneToContrast('#075985', '#ffffff', 'light', 4.5)).toBe('#075985');
-    expect(toneToContrast('rebeccapurple', '#ffffff', 'light', 4.5)).toBe('rebeccapurple');
+    expect(toneToContrast('rgb(102, 51, 153)', '#ffffff', 'light', 4.5)).toBe('rgb(102, 51, 153)');
   });
 });
