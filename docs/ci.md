@@ -139,5 +139,4 @@ product's hosted build vars, and on staging its product's staging MCP address), 
 hosted vars (`apps/api/hosted-vars.json`, checked on the live deployment afterwards). Secrets are not
 written: each Worker's were set on it with `wrangler secret put` and survive a deploy. The only
 credential is the repository secret **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace account
-with Workers Scripts and D1 edit rights. livediagram.app itself, on its old account, still deploys from
-its own repository until the migration's switch (docs/migration.md, step 7).
+with Workers Scripts and D1 edit rights.

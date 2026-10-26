@@ -43,6 +43,7 @@ format, test and Next.js settings are shared (`packages/oxlint-config`, `prettie
 
 ## Deploys
 
-Nothing deploys from here yet. livediagram still deploys from its own repo, and liveplanner from
-its own, now to the liveworkspace Cloudflare account it shares with liveworkspace. livedocuments and livedesign have never been deployed and have no
-Cloudflare resources yet. The switch is described in docs/structure.md.
+Every product deploys from here, from the root `.github/`, to the liveworkspace Cloudflare account
+each `wrangler.toml` pins. Staging follows `main`, and production is a manual gate that ships what
+staging runs. A deploy builds and ships only the Workers a change reaches. The products' own
+`.github/` folders are inert. [docs/ci.md](docs/ci.md#deploys) has the details.
