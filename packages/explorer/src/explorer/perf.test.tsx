@@ -3,6 +3,7 @@
 
 import { act, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { createItemOverlay } from '../data/overlay';
 import { useItemList } from '../data/useItemList';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
@@ -14,8 +15,9 @@ import { DetailsView } from './DetailsView';
 import type { Item } from '@liveworkspace/index-client';
 
 const N = 2000;
-// Generous for a slow CI machine; locally each render takes a few tens of milliseconds.
-const BUDGET_MS = 1000;
+// Locally each render takes a few tens of milliseconds. CPU time, so a busy runner's waiting doesn't count;
+// cpuBudgetMs gives CI its headroom (a wall-clock budget failed on a loaded runner at 1,035 ms).
+const BUDGET_MS = cpuBudgetMs(1000);
 
 const items: Item[] = Array.from({ length: N }, (_, i) => makeItem(i, { favourite: i % 7 === 0 }));
 
@@ -47,27 +49,28 @@ function Grab() {
 
 async function mount(layout: 'list' | 'card' | 'details') {
   const index = createFakeIndex();
-  const t0 = performance.now();
-  const utils = render(
-    <ToastProvider>
-      <ExplorerProvider
-        app="liveplanner"
-        client={index.client}
-        view={{ kind: 'all' }}
-        filter="all"
-        setFilter={vi.fn()}
-        onNavigate={vi.fn()}
-        itemHref={(i) => `/open/${i.id}`}
-        onCreate={vi.fn()}
-      >
-        <Grab />
-        <Harness layout={layout} raw={items} />
-      </ExplorerProvider>
-    </ToastProvider>,
-  );
-  // The list resolves in a microtask; flush it inside act.
-  await act(async () => {});
-  const ms = performance.now() - t0;
+  let utils!: ReturnType<typeof render>;
+  const ms = await cpuMsOfAsync(async () => {
+    utils = render(
+      <ToastProvider>
+        <ExplorerProvider
+          app="liveplanner"
+          client={index.client}
+          view={{ kind: 'all' }}
+          filter="all"
+          setFilter={vi.fn()}
+          onNavigate={vi.fn()}
+          itemHref={(i) => `/open/${i.id}`}
+          onCreate={vi.fn()}
+        >
+          <Grab />
+          <Harness layout={layout} raw={items} />
+        </ExplorerProvider>
+      </ToastProvider>,
+    );
+    // The list resolves in a microtask; flush it inside act.
+    await act(async () => {});
+  });
   return { ...utils, ms };
 }
 
@@ -81,11 +84,11 @@ describe('2,000 items', () => {
     expect(ms).toBeLessThan(BUDGET_MS);
 
     // One change re-renders within budget too.
-    const t1 = performance.now();
-    act(() => {
-      overlayRef!.patch('item-1', { title: 'Renamed' });
+    const patchMs = cpuMsOf(() => {
+      act(() => {
+        overlayRef!.patch('item-1', { title: 'Renamed' });
+      });
     });
-    const patchMs = performance.now() - t1;
     console.info(`list: one rename over ${N} items re-rendered in ${patchMs.toFixed(1)} ms`);
     expect(container.textContent).toContain('Renamed');
     expect(patchMs).toBeLessThan(BUDGET_MS / 4);
