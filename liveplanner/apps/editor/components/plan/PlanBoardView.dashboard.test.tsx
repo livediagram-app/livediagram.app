@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
@@ -10,11 +10,17 @@ import { DashboardContext, type DashboardContextValue } from './dashboard/dashbo
 import { SlotSettings, type SlotSettingsValue } from './dashboard/slot-menu';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { maximisePlanElement, releasePlanElement } from '@/hooks/plan/maximised-plan';
+import { FormBoardContext, type FormBoardValue } from '@/components/forms/form-board-context';
 
 // docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified": in a Dashboard slot an Editor still works the
 // cards (Add card, the column counts and WIP limits, the saved widgets), but the board's set-up is not offered there:
 // no column cogs, no widget +, no Add New Card Type, no renaming, and the cog is the slot's own.
-afterEach(cleanup);
+afterEach(() => {
+  releasePlanElement('b1');
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 const card: Item = {
   id: 'i1',
@@ -72,7 +78,34 @@ const slot: SlotSettingsValue = {
   toolbar: () => null,
 };
 
+// A form sending its responses to the board: its strip leads the widgets where the board is whole.
+const forms: FormBoardValue = {
+  forms: [{ tabId: 'f1', heading: 'Bug Report' }],
+  projectId: 'd1',
+  ownerId: 'me',
+  share: null,
+  online: true,
+  canShare: true,
+  openTab: vi.fn(),
+};
+
+// The board's set-up, there or not: column cogs, Board Settings, the widget +, the Form strip.
+const setUpShown = () => ({
+  columnCogs: document.querySelectorAll('[data-column-cog]').length > 0,
+  boardSettings: !!screen.queryByRole('button', { name: 'Board Settings' }),
+  addWidget: !!screen.queryByRole('button', { name: 'Add a widget' }),
+  formStrip: !!document.querySelector('[data-form-strip]'),
+});
+const WHOLE = { columnCogs: true, boardSettings: true, addWidget: true, formStrip: true };
+const SIMPLIFIED = { columnCogs: false, boardSettings: false, addWidget: false, formStrip: false };
+
 const draw = (opts: { dashboard: boolean; value?: PlanContextValue }) => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () =>
+      Response.json({ link: null, responses: 0, unseen: 0, suspendedAt: null, canPublish: true }),
+    ),
+  );
   const wrap = (children: ReactNode) =>
     opts.dashboard ? (
       <DashboardContext.Provider value={{} as DashboardContextValue}>
@@ -84,7 +117,9 @@ const draw = (opts: { dashboard: boolean; value?: PlanContextValue }) => {
   render(
     <SelectionStoreProvider store={createSelectionStore()}>
       <PlanProvider value={opts.value ?? plan()}>
-        {wrap(<PlanBoardView element={board} />)}
+        <FormBoardContext.Provider value={forms}>
+          {wrap(<PlanBoardView element={board} />)}
+        </FormBoardContext.Provider>
       </PlanProvider>
     </SelectionStoreProvider>,
   );
@@ -93,6 +128,7 @@ const draw = (opts: { dashboard: boolean; value?: PlanContextValue }) => {
 describe('a board in a Dashboard slot', () => {
   it('offers its set-up on a Board tab: column cogs and Board Settings', () => {
     draw({ dashboard: false });
+    expect(setUpShown()).toEqual(WHOLE);
     expect(document.querySelectorAll('[data-column-cog]').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'Board Settings' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Add a widget' })).toBeTruthy();
@@ -104,6 +140,7 @@ describe('a board in a Dashboard slot', () => {
 
   it("keeps an Editor's card work and drops the board's set-up", () => {
     draw({ dashboard: true });
+    expect(setUpShown()).toEqual(SIMPLIFIED);
     // The cards, Add card and each column's count against its WIP limit stay.
     expect(screen.getByText('Write the plan')).toBeTruthy();
     expect(
@@ -123,6 +160,19 @@ describe('a board in a Dashboard slot', () => {
     expect(screen.queryByRole('textbox')).toBeNull();
     // Maximise stays.
     expect(screen.getByRole('button', { name: /Maximise/ })).toBeTruthy();
+  });
+
+  it('is the whole board while maximised from the slot, and simplified again once restored', () => {
+    draw({ dashboard: true });
+    expect(setUpShown()).toEqual(SIMPLIFIED);
+    expect(screen.getByRole('button', { name: 'Slot Settings' })).toBeTruthy();
+    act(() => maximisePlanElement('b1'));
+    expect(setUpShown()).toEqual(WHOLE);
+    // Board Settings (the slot's section after the board's) in place of the slot's own cog.
+    expect(screen.queryByRole('button', { name: 'Slot Settings' })).toBeNull();
+    act(() => releasePlanElement('b1'));
+    expect(setUpShown()).toEqual(SIMPLIFIED);
+    expect(screen.getByRole('button', { name: 'Slot Settings' })).toBeTruthy();
   });
 
   it('shows a Viewer with no slot settings no cog at all', () => {

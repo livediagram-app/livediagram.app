@@ -144,12 +144,15 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   card faces, dragging cards between columns and within them, **Add card** (without **Add New Card Type**), opening a
   card (and its right-click menu), each column's name, count and WIP limit, the board's saved widgets, read-only (they
   count and filter as anywhere, but there is no **+**, no reordering and no × to take one off, and nothing in them
-  changes the board's set-up, such as a Done widget's Set Done Column), and **Maximise Board**, which stays simplified
-  while maximised. It drops **Focus**, the column cogs (and with them adding a column), the form strip (a form sending
+  changes the board's set-up, such as a Done widget's Set Done Column), and **Maximise Board**. It drops **Focus**, the column cogs (and with them adding a column), the form strip (a form sending
   its responses to the board), renaming the board from its title, **Reveal**, and the board-setup sections of its cog:
   the cog is the slot's own (**Slot Settings**, with the slot toolbar's **Open Tab**), or none for someone with no
   slot settings. Changes to the board are made on its own tab, through **Open Tab**. A board not set up yet still
   offers **Set Up Board** there, so a new board can be started from its slot.
+  **Maximised** from its slot the board is the whole board again, as on its tab: column cogs and adding a column, the
+  widget **+**, reordering and ×, the form strip, renaming, Reveal, Add New Card Type and, for an Editor, the
+  **Board Settings** cog (its board sections, then the slot's **Slot** section). **Restore** returns it to the
+  simplified slot board. Focus stays off (a slot has no place on the canvas to glide to).
 - **A new slot settles into place**: a slot added (Add a Slot, a new Dashboard's rows, or by a collaborator)
   fades up from 8 px low at 96% scale, at the long motion token; a new row's slots cascade left to right, landing by
   the motion ceiling. The slots a Dashboard opens with, or shows on switching to another Dashboard, draw still, and

@@ -55,6 +55,7 @@ import { boardLook, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
+import { SlotBoardCog } from './SlotBoardCog';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
 import { usePlan } from './PlanContext';
@@ -140,15 +141,16 @@ export function PlanBoardView({
     (s) => s.selectedId === element.id || s.multiSelectedIds.has(element.id),
   );
   const canEdit = !!plan?.canEdit;
-  // In a Dashboard slot the board is simplified, for working its cards (docs/specs/026-plan/plan-tabs.md "A board in a
-  // slot is simplified"): its set-up (title, widgets, columns, Reveal, new card types, Board Settings) changes on its tab.
-  const inDashboard = useInDashboard();
-  const setUpHere = canEdit && !inDashboard;
   // Cards move, open for editing and are added by an Editor or a Participant (docs/specs/013-workspace/share-roles.md).
   const canEditCards = !!plan?.canEditCards;
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.
   const { maximised, filled } = useBoardMaximised(element.id, interactive);
+  // In a Dashboard slot the board is simplified, for working its cards (docs/specs/026-plan/plan-tabs.md "A board in a
+  // slot is simplified"): its set-up (title, widgets, columns, Reveal, new card types, Board Settings, the Form strip)
+  // changes on its tab. Maximised from the slot it is the whole board again, and simplified once restored.
+  const simplified = useInDashboard() && !maximised;
+  const setUpHere = canEdit && !simplified;
   const slot = useSlotSettings();
   // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
   const tabCardVote = useCardVote();
@@ -358,6 +360,7 @@ export function PlanBoardView({
         onQuick={setQuick}
         canFilterMine={self?.id ?? null}
         canEdit={setUpHere}
+        simplified={simplified}
         loadFailed={plan?.status === 'error'}
         onRetry={() => plan?.retry()}
         onReveal={() => {
@@ -382,10 +385,15 @@ export function PlanBoardView({
                 <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
               )}
               {/* The cog last, at the header's far right: the board's one menu (its element menu). In a Dashboard
-                  slot, the slot's own cog (slot-menu.ts): the board is set up on its tab. */}
+                  slot, the slot's own cog (slot-menu.ts), the board set up on its tab; maximised from the slot, an
+                  Editor's Board Settings with the slot's section after the board's. */}
               {slot ? (
-                slot.cog
-              ) : canEdit && !inDashboard ? (
+                setUpHere ? (
+                  <SlotBoardCog element={element} palette={palette} slot={slot} />
+                ) : (
+                  slot.cog
+                )
+              ) : canEdit ? (
                 <BoardSettingsButton element={element} palette={palette} />
               ) : null}
             </>
