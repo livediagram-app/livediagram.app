@@ -78,9 +78,9 @@ result for a click whose obvious meaning is "tell me about this person".
 
 ### The problem
 
-In a busy session everyone's cursor and name pill move over the canvas at once. The room can hide them all
-with a vote ([Session tools](session-tools.md)), but that is for everyone and only while the vote is open. One
-person who just wants to read or work without the movement had no way to turn them off for themselves.
+In a busy session everyone's cursor and name pill move over the canvas at once. Only presenting hid them
+([Presentation mode](presentation-mode.md)). One person who just wants to read or work without the movement had
+no way to turn them off for themselves.
 
 ### The behaviour
 
