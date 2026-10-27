@@ -1,8 +1,16 @@
 // @vitest-environment jsdom
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, render } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { configureWorkbench, resetWorkbenchForTests } from '../../bindings';
+import { writeLocalStorageValue } from '../../hooks/ui/useLocalStorageValue';
+import { testBindings } from '../../lib/testing/bindings';
 import { CanvasZoomProvider } from './CanvasZoomContext';
 import { RemoteCursor, RemoteCursors, type RemoteCursorRow } from './RemoteCursor';
+
+afterEach(() => {
+  resetWorkbenchForTests();
+  window.localStorage.clear();
+});
 
 const paint = (color: string) => ({ '--identity': color }) as React.CSSProperties;
 const ada: RemoteCursorRow = { id: 'a', name: 'Ada Lovelace', color: '#0ea5e9', x: 120, y: 40 };
@@ -47,6 +55,7 @@ describe('RemoteCursor', () => {
 
 describe('RemoteCursors', () => {
   it('draws every cursor at the canvas zoom', () => {
+    configureWorkbench(testBindings({ hideCursorsKey: 'test:layer-a' }));
     const { container } = render(
       <CanvasZoomProvider zoom={4}>
         <RemoteCursors cursors={[ada, bo]} paint={paint} />
@@ -55,5 +64,16 @@ describe('RemoteCursors', () => {
     const roots = [...container.querySelectorAll<HTMLElement>('[data-remote-cursor]')];
     expect(roots.map((r) => r.textContent)).toEqual(['Ada Lovelace', 'Bo']);
     expect(roots[0]!.style.transform).toBe('scale(0.25)');
+  });
+
+  it('draws none while this screen hides participant cursors, and all again when it stops', () => {
+    configureWorkbench(testBindings({ hideCursorsKey: 'test:layer-b' }));
+    const { container } = render(<RemoteCursors cursors={[ada, bo]} paint={paint} />);
+    const drawn = () => container.querySelectorAll('[data-remote-cursor]').length;
+    expect(drawn()).toBe(2);
+    act(() => writeLocalStorageValue('test:layer-b', 'true'));
+    expect(drawn()).toBe(0);
+    act(() => writeLocalStorageValue('test:layer-b', 'false'));
+    expect(drawn()).toBe(2);
   });
 });

@@ -165,6 +165,15 @@ BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX
                          Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
 phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action) + shownQuick
+                         In a Dashboard slot and not maximised (`simplified = useInDashboard() && !maximised`,
+                         dashboard-context.ts: DashboardContext present) PlanBoardView is simplified: `setUpHere =
+                         canEdit && !simplified` gates PlanBoardHeader's `canEdit` (widget zone read-only, no Set Done
+                         Column, no Reveal) and `canRename`, PlanColumnHeader's `canEdit` (no column cog, so no Add
+                         Column After) and Add New Card Type; the header's end is Maximise then `slot.cog` (none
+                         without slot settings); PlanBoardHeader `simplified` drops FormBoardStrip. Maximised
+                         from the slot all of it returns, the cog SlotBoardCog (PlanBoardSectionsPanel + slot
+                         sections) for an Editor. Cards, drag, Add card, the card
+                         menu, SetupBoardHost and counts keep `canEdit`/`canEditCards` as on a Board tab
 AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
 PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face (custom fields as chips where Display places them; its gathered votes read-only)
@@ -172,7 +181,7 @@ PlanCardView.tsx         the plan-card element body (themed; a lone card's fill 
 PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
-../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel: PLAN_BOARD_SECTIONS (Board Setup, Columns,
+../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel (a board maximised from a slot): PLAN_BOARD_SECTIONS (Board Setup, Columns,
                          Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
                          Cards / Archive), each Body given `open` so it can defer work while shut
 ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column
@@ -255,13 +264,27 @@ the items too.
 - **Input routing**: `PlanBoardView` receives `interactive = editorMode === 'plan' && !readOnly`. Interactive:
   card pointerdown stops propagation and starts `usePlanCardDrag`; header/border do not stop propagation (the
   generic box drag moves the board). Not interactive: nothing stops propagation; double-click on a card opens it.
+- **Team people** (`useTeamPeople(ownerId, enabled, signedIn, teams, projectTeamId)`, `useEditorState`): the
+  token's team whose id is `projectTeamId` (`editor-realtime.ts`, the plan's `team_id`), else none, so a personal,
+  This Browser, shared-from-My-Work or guest plan asks for nobody. One `apiTeamMembers` request for that team,
+  joined members only (`teamMemberPerson`). The mention list (`useCommentMentions`) picks the same team.
 - **Assignable people** (`usePlanSlice` `people`): `planPeople(self, teamPeople, assigned)` from
   `@liveplanner/items` (`plan-people.ts`): self, then team members, then every assignee a card holds
   (`assignedPeople`), once each by id (the first source wins), sorted by name. The assigned list is recomputed when
   the item map changes and the result is kept by a key of its ids and names, so a write that changes no assignee
   hands the context the same array.
-- **Custom assignee**: `PersonPicker` adds a last `<option value="__custom__">+ Custom Assignee</option>` when not
-  disabled; picking it keeps the select's value and opens `CustomAssigneePopover` under the select. Add (or Enter,
+- **Person list** (`PersonPicker`): a trigger button (`aria-haspopup="listbox"`, named `Assignee: <name>`, the
+  current person's name and a chevron, no mark) over an in-place `role="listbox"`
+  (`aria-activedescendant`): `None` (**No one**), the options (the current person first when not among the people,
+  then the people), then `CUSTOM_ASSIGNEE_OPTION` (**+ Custom Assignee**) when not disabled. Opens on press, Enter,
+  Space, ArrowUp/Down at the current choice; ArrowUp/Down move, Enter picks, Escape (capture, before the panel's)
+  and `useClickOutside` close, Tab closes without refocus. `AccountMark` (`components/plan/AccountMark.tsx`):
+  `BrandGlyph` from `@liveworkspace/brand` (re-exported by `@liveplanner/ui`) at 12 px in `text-slate-500 dark:text-slate-400`, `role="img"` named `ACCOUNT_MARK_LABEL` ("liveworkspace account"), no Tooltip and no `title` (no visible hover text);
+  drawn before the name in each list row whose person id passes `isIdentityPersonId` (`@liveplanner/items`
+  person.ts: 24 hex characters, as `itemPersonId` makes; a same-width spacer otherwise), the row's `aria-label`
+  then `<name>, liveworkspace account`; nowhere else.
+- **Custom assignee**: `PersonPicker`'s last row **+ Custom Assignee** when not disabled; picking it keeps the
+  current value and opens `CustomAssigneePopover` under the trigger. Add (or Enter,
   the trimmed name non-empty) calls `onSave(personNamed(name, people))`; Escape, Cancel or a press outside close it
   unsaved. `personNamed` matches an existing person by `statusKey` of the name before minting `n-<slug>`.
 - **Cards push**: `cardsPushOf` hands `cardsCollabPush` no assignee for an `n-` id (`isNamedPerson`), so a custom
@@ -535,6 +558,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Setup Board Layout step, stepper, Fill Tab                     | `apps/editor/components/plan/PlanSetupBoard.test.tsx`                                                                                                       |
 | Setup Board as a dialog: opens, Escape, placeholder, toast     | `apps/editor/components/plan/SetupBoardHost.test.tsx`                                                                                                       |
 | Layout read from and written to the board                      | `apps/editor/components/plan/setup-board.test.ts`                                                                                                           |
+| Accounts marked in the picker's list only                      | `apps/editor/components/plan/PersonPicker.test.tsx`                                                                                                         |
 | Maximised/filled insets from the chrome                        | `apps/editor/lib/canvas-layer-insets.test.ts`, `apps/editor/hooks/ui/useCanvasLayerInsets.test.ts`                                                          |
 | The header band, and the cover's band variables                | `apps/editor/lib/canvas-layer-insets.test.ts`, `apps/editor/components/plan/MaximisedPlanLayer.test.tsx`                                                    |
 | Zoom off while the canvas is covered                           | `apps/editor/components/chrome/ZoomControls.test.tsx`                                                                                                       |
@@ -572,6 +596,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Linked as rows, empty state, open                              | `apps/editor/components/plan/LinkedCards.test.tsx`                                                                                                          |
 | Breadcrumb crumbs, fold, step back                             | `apps/editor/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                      |
 | Phone look: Minimal, no widgets, columns, touch                | `apps/editor/components/plan/phone-board.test.ts`, `plan-board-columns.test.ts`                                                                             |
+| Simplified in a Dashboard slot, whole maximised, restored      | `apps/editor/components/plan/PlanBoardView.dashboard.test.tsx`                                                                                              |
 | Phone's shared top row                                         | `apps/editor/lib/canvas-layer-insets.test.ts` (`phoneRow`)                                                                                                  |
 | Empty widget zone keeps its + in a band                        | `apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx`                                                                                              |
 | Dashboard Settings steps aside while maximised                 | `apps/editor/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                          |

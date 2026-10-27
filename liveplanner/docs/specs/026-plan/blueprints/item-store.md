@@ -259,7 +259,7 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
 - The patch is a POST: the api's CORS admits GET, POST, PUT and DELETE only.
 - `/items/patches` changes many items at once (a type's or a removed column's cards sent to the Trash): every id
   must exist (`404 item_not_found`, and in a tab-scoped grant be in scope), each patch is validated as a single
-  one is, and every resulting item is checked (`status_excluded` unless `undo`, the field bounds) before anything
+  one is, and every resulting item is checked (`status_excluded` and `field_required` unless `undo`, the field bounds) before anything
   is written, so one refusal refuses the whole request, naming the item (`{ error, field?, id }`). The updates go
   in one batch, each guarded by the rev read, with one `items_rev` raise; an item a concurrent write moved on
   is read again and retried (`ITEM_WRITE_RETRIES`), the rest kept. One room op relays every changed item. Logs

@@ -82,6 +82,8 @@ export interface ListedType {
     // A Rating field's top score.
     scale?: number;
     onCard?: boolean;
+    // A card of the type must have a value for it (docs/specs/026-plan/item-types.md "Required fields").
+    required?: boolean;
   }[];
   // The column a new card of it starts in, by name.
   defaultStatus?: string;
@@ -198,6 +200,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.kind === 'currency' ? { currency: f.currency ?? CURRENCY_DEFAULT } : {}),
       ...(f.kind === 'rating' ? { scale: ratingScaleOf(f) } : {}),
       ...(f.onCard ? { onCard: true } : {}),
+      ...(f.required ? { required: true } : {}),
     })),
     ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),
     display: namedDisplay(t, (size) => typeCardLayout(t, size)),

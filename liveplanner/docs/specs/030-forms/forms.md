@@ -397,7 +397,13 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
     - "A question has no wording yet.";
     - "A choice question has no options." (a Single or Multiple Choice with none);
     - "An answer goes to a card field that was removed or no longer fits." (a broken mapping);
-    - "A section shows only on an answer that is no longer there." (a broken section rule).
+    - "A section shows only on an answer that is no longer there." (a broken section rule);
+    - "{Field} is required on {Type} cards: add a required question that goes to it." (a
+      [required field](../026-plan/item-types.md#required-fields) of the card type with no required question
+      mapped to it in a section every response sees: the first section, or one with no Show If; one line per
+      field). A required Link to Card field cannot be asked by a form, so a card type with one takes no form.
+      A form already published keeps taking responses when a field becomes required later; the problem is listed
+      under "Problems with this Form" until it is fixed.
       The api checks the same (`publishProblems`) and refuses with 409 `form_not_ready` and the problems.
   - Published: any problem since publishing listed the same way under "Problems with this Form"; the link in a
     read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
@@ -552,7 +558,8 @@ board settings, for switching back.
   read out), "3 responses · 1 new", **Copy Form Link** (an Editor's, once published; it reads "Copied") and **Open
   Form** (opens the Form tab). It reads the count without marking anything seen (only opening the Form tab does), and
   refreshes as the Form tab's status bar does. It is not a stored widget: it comes and goes with the form's
-  destination.
+  destination. The same board shown in a Dashboard slot has no strip, until it is maximised from the slot (a board there is simplified:
+  [Dashboard tab](../026-plan/plan-tabs.md#dashboard-tab) "A board in a slot is simplified").
 - **On the board**: a card made by a response shows a **New** dot (the brand colour, beside its flag, named "New
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,

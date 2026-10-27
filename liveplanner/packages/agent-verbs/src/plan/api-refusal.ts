@@ -17,6 +17,9 @@ const BY_CODE: Readonly<Record<string, string>> = {
     '(set excludedStatuses).',
   type_invalid: 'that is not a card type id. list_items lists the card types.',
   title_required: 'an item needs a title.',
+  field_required:
+    'a required custom field would be left empty: give it a value in fields, by name. list_items marks each ' +
+    'required field (required: true).',
   item_types_invalid: 'the card types would break a rule.',
   item_types_stale:
     'someone else kept changing the card types at the same moment: list_items reads them again, then retry.',

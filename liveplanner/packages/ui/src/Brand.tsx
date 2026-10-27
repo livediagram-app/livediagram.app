@@ -2,6 +2,7 @@
 
 import {
   Brand as SharedBrand,
+  BrandGlyph,
   BrandMark as SharedBrandMark,
   type BrandProps,
 } from '@liveworkspace/brand';
@@ -16,3 +17,6 @@ export function Brand(props: Omit<BrandProps, 'app'>) {
 export function BrandMark(props: Omit<ComponentProps<typeof SharedBrandMark>, 'app'>) {
   return <SharedBrandMark app={BRAND_APP} {...props} />;
 }
+
+// The prism at rest in one colour, for a list's every row (the liveworkspace account mark beside a person's name).
+export { BrandGlyph };

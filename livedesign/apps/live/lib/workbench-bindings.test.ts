@@ -6,6 +6,7 @@ import {
   APP_RECOVERY_FLAG,
   E2E_SESSION_KEY,
   DEBUG_STORAGE_KEY,
+  HIDE_CURSORS_KEY,
   EMPTY_CARD_DISMISSED_KEY,
   FORMAT_CONFIG_KEY,
   LOCAL_MOVE_DISMISSED_PREFIX,
@@ -26,6 +27,7 @@ describe('workbench bindings', () => {
     expect(OPEN_SETTINGS_EVENT).toBe('livedesign:open-settings');
     expect(PANEL_PRESENCE_EVENT).toBe('livedesign:panel-presence');
     expect(START_QUERY_KEY).toBe('livedesign:v2:start-query');
+    expect(HIDE_CURSORS_KEY).toBe('livedesign:v2:hide-cursors');
     expect(LOCAL_MOVE_DISMISSED_PREFIX).toBe('livedesign:v2:local-move-dismissed:');
     expect(EMPTY_CARD_DISMISSED_KEY).toBe('livedesign:v2:empty-card-dismissed');
     expect(FORMAT_CONFIG_KEY).toBe('livedesign:v2:format-config');
@@ -43,6 +45,7 @@ describe('workbench bindings', () => {
     expect(workbench.openSettingsEvent).toBe(OPEN_SETTINGS_EVENT);
     expect(workbench.panelPresenceEvent).toBe(PANEL_PRESENCE_EVENT);
     expect(workbench.startQueryKey).toBe(START_QUERY_KEY);
+    expect(workbench.hideCursorsKey).toBe(HIDE_CURSORS_KEY);
     expect(workbench.localMoveDismissedPrefix).toBe(LOCAL_MOVE_DISMISSED_PREFIX);
     expect(workbench.emptyCardDismissedKey).toBe(EMPTY_CARD_DISMISSED_KEY);
     expect(workbench.formatConfigKey).toBe(FORMAT_CONFIG_KEY);

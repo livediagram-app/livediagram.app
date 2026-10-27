@@ -5,6 +5,7 @@ import { PictureDisc } from '@liveworkspace/ui';
 import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { initialsOf } from '@liveworkspace/model-core/names';
 import { useCursorsNearPointer } from '../../hooks/canvas/useCursorsNearPointer';
+import { useHideCursors } from '../../hooks/collab/useHideCursors';
 import { useCanvasZoom } from './CanvasZoomContext';
 
 // Another participant's cursor on the canvas: the arrow in their colour and the pill with their name (and their
@@ -89,9 +90,12 @@ export const RemoteCursor = memo(function RemoteCursor({
 
 // Every remote cursor on the active tab, drawn inside the canvas's panned + zoomed wrapper. It reads the zoom
 // itself (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas"), so the layer around it takes
-// no view. A cursor under or near this screen's own pointer fades out of the way until the pointer leaves
-// (docs/specs/012-collaboration/collaborator-enhancements.md "Cursors Step Aside"); the anchor, a point at canvas
-// (0, 0), is where the hit test reads the canvas's place on screen.
+// no view, and it draws nothing while this screen hides participant cursors
+// (docs/specs/012-collaboration/collaborator-enhancements.md "Hide Participant Cursors"). A cursor under or near
+// this screen's own pointer fades out of the way until the pointer leaves ("Cursors Step Aside"); the anchor, a
+// point at canvas (0, 0), is where the hit test reads the canvas's place on screen.
+const NO_CURSORS: readonly RemoteCursorRow[] = [];
+
 export function RemoteCursors({
   cursors,
   paint,
@@ -100,13 +104,16 @@ export function RemoteCursors({
   paint: PaintIdentity;
 }) {
   const zoom = useCanvasZoom();
+  const { hidden } = useHideCursors();
+  // Hidden draws no cursor, so the hook gets none and attaches no listener.
+  const drawn = hidden ? NO_CURSORS : cursors;
   const anchor = useRef<HTMLDivElement>(null);
-  const near = useCursorsNearPointer(cursors, zoom, anchor);
-  if (cursors.length === 0) return null;
+  const near = useCursorsNearPointer(drawn, zoom, anchor);
+  if (drawn.length === 0) return null;
   return (
     <>
       <div ref={anchor} aria-hidden className="pointer-events-none absolute left-0 top-0 size-0" />
-      {cursors.map((c) => (
+      {drawn.map((c) => (
         <RemoteCursor key={c.id} cursor={c} zoom={zoom} paint={paint} faded={near.has(c.id)} />
       ))}
     </>

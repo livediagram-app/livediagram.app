@@ -25,6 +25,7 @@ import {
   withLinkTypes,
 } from './item-types';
 import { ITEM_STATUS_MAX, ITEM_TYPE_PATTERN } from './limits';
+import { canBeRequired } from './required-fields';
 import { cutSlug, slugText, uniqueSlug } from './slug';
 import { statusNamed } from './status-names';
 import { HEX_COLOUR, isObj } from './validate';
@@ -303,6 +304,8 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
   if (input['onCard'] === true) field.onCard = true;
+  // Kept only as true, and never on a Checkbox: anything else reads as optional rather than refusing the catalogue.
+  if (input['required'] === true && canBeRequired(field.kind)) field.required = true;
   return field;
 }
 

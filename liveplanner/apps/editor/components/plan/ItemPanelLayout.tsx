@@ -18,14 +18,29 @@ export function ItemTypeBand({ colour }: { colour: string }) {
 }
 
 // A main-column field (or section) under its heading.
+// A required field's mark after its name (docs/specs/026-plan/item-types.md "Required fields"): a red asterisk,
+// read as "required".
+export function RequiredMark() {
+  return (
+    <>
+      <span aria-hidden className="ml-0.5 text-red-600 dark:text-red-400">
+        *
+      </span>
+      <span className="sr-only"> required</span>
+    </>
+  );
+}
+
 export function ItemPanelSection({
   heading,
   htmlFor,
+  required,
   children,
 }: {
   heading: string;
   // The control the heading labels, when it labels one.
   htmlFor?: string | undefined;
+  required?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -35,6 +50,7 @@ export function ItemPanelSection({
         className="mb-2 block text-[13px] font-semibold text-slate-800 dark:text-slate-100"
       >
         {heading}
+        {required ? <RequiredMark /> : null}
       </label>
       {children}
     </section>
@@ -46,10 +62,12 @@ export function ItemPanelSection({
 export function ItemDetailsRow({
   label,
   htmlFor,
+  required,
   children,
 }: {
   label: string;
   htmlFor?: string | undefined;
+  required?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -59,6 +77,7 @@ export function ItemDetailsRow({
         className="self-start pt-2 text-[12px] text-slate-500 max-sm:pt-0 max-sm:font-medium dark:text-slate-400"
       >
         {label}
+        {required ? <RequiredMark /> : null}
       </label>
       <div className="min-w-0 text-[13px]">{children}</div>
     </div>

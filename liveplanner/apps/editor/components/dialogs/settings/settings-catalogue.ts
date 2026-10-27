@@ -1,4 +1,8 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
+import {
+  HIDE_CURSORS_HINT,
+  HIDE_CURSORS_LABEL,
+} from '@liveworkspace/workbench/components/dialogs/HideCursorsSwitch';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@liveplanner/api-schema';
 import { panelEnabled, type PanelSwitch, type UserPreferences } from '@/lib/user-preferences';
@@ -188,6 +192,11 @@ export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string; signIn
 // carries no read/write pair and is rendered against its own store.
 export type SettingsShortcutsRowSpec = RowBase & { kind: 'shortcuts' };
 
+// Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md): per-device like the
+// shortcuts switch, so it too carries no read/write pair and is rendered against its own store
+// (@liveworkspace/workbench's useHideCursors), the one the Collaborators modal's switch reads.
+export type SettingsHideCursorsRowSpec = RowBase & { kind: 'hideCursors' };
+
 // The shortcut catalogue itself (shortcut-sections.ts), rendered as the
 // collapsible reference list that used to be its own Keyboard Shortcuts
 // window. Read-only, so no read/write pair either.
@@ -221,6 +230,7 @@ export type SettingsRowSpec =
   | SettingsLinkRowSpec
   | SettingsNoteRowSpec
   | SettingsShortcutsRowSpec
+  | SettingsHideCursorsRowSpec
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
@@ -540,6 +550,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
         event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
       }),
+      {
+        kind: 'hideCursors',
+        key: 'hideCursors',
+        label: HIDE_CURSORS_LABEL,
+        keywords:
+          'cursors pointers names pills participants collaborators hide show busy session distracting',
+        description: HIDE_CURSORS_HINT,
+      },
     ],
   },
   {

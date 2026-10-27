@@ -69,7 +69,42 @@ obvious question it asks: "tell me about this person".
   its open flag and the clicked participant id live in `useEditorDialogs`.
 - Telemetry: `UI` / `Opened` / `Collaborators` on open.
 
-## 2. Cursors Step Aside
+## 2. Hide Participant Cursors
+
+### The problem
+
+In a busy session everyone's cursor and name pill move over the canvas at once. The room can hide them all
+with a vote ([Session tools](session-tools.md)), but that is for everyone and only while the vote is open. One
+person who just wants to read or work without the movement had no way to turn them off for themselves.
+
+### The behaviour
+
+- **One switch, Hide Participant Cursors**, off by default. On, this screen stops drawing other people's
+  cursor arrows and name pills. Nothing else changes: avatars on the tabs, the Collaborators modal, Follow,
+  selection discs and locks, laser trails and agents' focus rings all stay, and everyone else still sees your
+  cursor.
+- **Two places, one value.** The switch is in Settings under **Panels › Collaborate**, and the same switch sits
+  at the foot of the Collaborators modal, one click away when a session gets busy. Flipping either flips both.
+- **Remembered on this device**, in `localStorage` (`<product>:v2:hide-cursors`), never in the synced
+  `UserPreferences` ([User preferences](../007-editor/user-preferences.md)): like the Keyboard Shortcuts switch,
+  it suits a screen (a projector, a small laptop) rather than a person. Every tab of the browser follows a flip
+  at once (the `storage` event). It is not on the Settings page at liveworkspace.app, which shows synced
+  settings only.
+- **A filter at render, nothing on the wire.** Peers' cursor positions still arrive; they are just not drawn.
+  Turning it off shows every cursor again at its latest position.
+- **Every role** (Editor, Participant, Viewer) has it: it only changes what this screen draws, and nobody
+  else sees any difference.
+
+### Implementation notes
+
+- `@liveworkspace/workbench`: `hooks/collab/useHideCursors` (the store, over `useLocalStorageValue` and the
+  `hideCursorsKey` binding), `components/canvas/RemoteCursor` (the cursor, and `RemoteCursors`, the layer that
+  draws the list and draws nothing while the switch is on) and `components/dialogs/HideCursorsSwitch` (the
+  modal's row). The editors' four copies of `RemoteCursor.tsx` are gone.
+- Settings: a `hideCursors` row (its own kind, like `shortcuts`) in the Collaborate category.
+- Telemetry: `UI` / `Toggled` / `HideCursorsOn` / `HideCursorsOff`, sent before the write, from either place.
+
+## 3. Cursors Step Aside
 
 ### The problem
 
@@ -99,5 +134,6 @@ until they moved.
   at most one check per animation frame, one rect read per check: a zero-size anchor at canvas (0, 0)), and
   `components/canvas/RemoteCursor`, whose `RemoteCursors` layer fades the cursors the hook names.
 - It renders only when the set of cursors near the pointer changes, never per pointer move.
-- The cursor itself (`RemoteCursor`) was one file copied into each of the four editors; it moved into the workbench with
-  this change, and each editor draws `RemoteCursors` with its own identity fill (`identityVars`).
+- The fade lives in the shared `RemoteCursors` layer (moved into the workbench by
+  [Hide Participant Cursors](#2-hide-participant-cursors)), so all four editors get it; each draws the layer with its
+  own identity fill (`identityVars`).

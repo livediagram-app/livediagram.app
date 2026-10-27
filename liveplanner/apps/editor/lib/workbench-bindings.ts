@@ -11,6 +11,7 @@ import { readUserPreferences } from './user-preferences';
 import {
   APP_RECOVERY_FLAG,
   DEBUG_STORAGE_KEY,
+  HIDE_CURSORS_KEY,
   LOCAL_MOVE_DISMISSED_PREFIX,
   OPEN_SETTINGS_EVENT,
   PANEL_PRESENCE_EVENT,
@@ -34,5 +35,6 @@ export function bindWorkbench(): void {
     panelPresenceEvent: PANEL_PRESENCE_EVENT,
     startQueryKey: START_QUERY_KEY,
     localMoveDismissedPrefix: LOCAL_MOVE_DISMISSED_PREFIX,
+    hideCursorsKey: HIDE_CURSORS_KEY,
   });
 }

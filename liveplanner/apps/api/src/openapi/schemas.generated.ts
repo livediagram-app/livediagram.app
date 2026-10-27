@@ -2284,6 +2284,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "required": {
+        "type": "boolean"
+      },
       "scale": {
         "type": "number"
       }

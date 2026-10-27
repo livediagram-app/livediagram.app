@@ -21,6 +21,7 @@ import {
   ITEM_TYPE_TABS_MAX,
   REQUIRED_TYPE_FIELDS,
   requiredFieldsOf,
+  requiredCustomFieldsOf,
   newCustomFieldId,
   type ItemFieldId,
 } from '@liveplanner/items';
@@ -109,6 +110,7 @@ export function ItemTypeLayoutEditor({
                 label={labelOf(id)}
                 icon={fieldIconOf(id, c)}
                 removable={!kept.includes(id) && !isRequired(id)}
+                required={!!c && requiredCustomFieldsOf({ fields: [id], custom: [c] }).length > 0}
                 editing={editing === id}
                 onEdit={c ? () => setEditing(editing === id ? null : id) : undefined}
                 moveTargets={group === undefined ? [] : groups.filter((g) => g.id !== group)}
