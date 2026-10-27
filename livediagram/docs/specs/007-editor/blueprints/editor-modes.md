@@ -307,7 +307,9 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
   corner on a Draw tab or for a read-only visitor). Nothing unless `canEdit && canSwitch`. A content-width slot
   (`data-editor-mode-switch`), the name dropped with `iconOnly` (`useIsMobileViewport() || inline`).
   Its chip is `ModeMenuChip compact`: `h-9 rounded-md px-2 gap-1.5`, the icon, the name unless `iconOnly`, the
-  chevron, on `TOOLBAR_TRIGGER_TONE` with `MODE_SWITCH_FOCUS`; its menu opens with `fill={false}`.
+  chevron, on `TOOLBAR_TRIGGER_TONE` with `MODE_SWITCH_FOCUS`; its menu opens with `fill={false}`, so it mounts in a `Portal`, fixed 6px below the chip and clamped
+  `POPOVER_VIEWPORT_MARGIN` inside the viewport (re-placed on resize); the chip's outside-press check counts
+  `[data-mode-menu]` as inside. In the card it sat under the empty tab's tray and ran off a phone's edge.
 - The start's chip (`ModeMenuChip`): a full-bleed `h-12` row at the top of the rail, the mode's icon, its name and a chevron
   on `TOOLBAR_TRIGGER_TONE`, its focus ring drawn inside. No hover card (it would cover the menu). The menu opens
   downward (`absolute top-full mt-1.5 left-0`), spanning the panel under `sm`. The menu opens at design size: on
