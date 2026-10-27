@@ -18,6 +18,8 @@ export const NOTICE_BATCH_MAX = 50;
 // Split documents one recipient's email lists, and the parts one document has (one per app).
 export const NOTICE_DOCUMENTS_MAX = 50;
 export const NOTICE_PARTS_MAX = 4;
+// Split documents the email lists by name; the rest are counted ("and N more").
+export const NOTICE_DOCUMENTS_SHOWN = 10;
 // A person's name, and a document's name or a part's title.
 export const NOTICE_NAME_MAX = 120;
 export const NOTICE_TEXT_MAX = 200;
@@ -36,6 +38,8 @@ export type NoticeRecipient = {
   email: string;
   name: string;
   splitDocuments?: SplitDocument[];
+  // The person's whole count of split documents, when the list holds only some of them.
+  splitDocumentsTotal?: number;
   hasTokens?: boolean;
   hasTeams?: boolean;
   hasAiTool?: boolean;
@@ -123,6 +127,14 @@ function checkRecipient(v: unknown, at: string): string | null {
       }
     }
   }
+  const total = r.splitDocumentsTotal;
+  if (
+    total !== undefined &&
+    (typeof total !== 'number' ||
+      !Number.isSafeInteger(total) ||
+      total < (Array.isArray(r.splitDocuments) ? r.splitDocuments.length : 0))
+  )
+    return `${at}.splitDocumentsTotal must be a whole number no smaller than splitDocuments`;
   return null;
 }
 
@@ -193,7 +205,13 @@ export function noticeEmail(
   if (docs.length > 0) {
     const lead =
       'Some of your documents now live in more than one app. Where a document mixed a diagram with pages, a plan or a design, each part now opens in the app made for it. The diagram stays in livediagram and links to the rest:';
-    const parts = docs.flatMap((d) => d.parts.map((p) => ({ doc: d.name, ...p })));
+    const shown = docs.slice(0, NOTICE_DOCUMENTS_SHOWN);
+    const parts = shown.flatMap((d) => d.parts.map((p) => ({ doc: d.name, ...p })));
+    const more = Math.max(r.splitDocumentsTotal ?? 0, docs.length) - shown.length;
+    const rest =
+      more > 0
+        ? `And ${more} more ${more === 1 ? 'document' : 'documents'}: open any of them in livediagram and it links to its other parts.`
+        : '';
     blocks.push({
       html: `${paragraph(escapeHtml(lead), 16)}
         <ul style="margin:10px 0 0;padding-left:20px">${parts
@@ -201,8 +219,12 @@ export function noticeEmail(
             (p) =>
               `<li style="margin:0 0 6px;color:${MUTED};font-size:15px;line-height:1.6"><strong style="color:${INK}">${escapeHtml(p.doc)}</strong>: ${link(p.url, p.title)} in ${p.app}</li>`,
           )
-          .join('')}</ul>`,
-      text: [lead, ...parts.map((p) => `- ${p.doc}: ${p.title} in ${p.app} (${p.url})`)],
+          .join('')}</ul>${rest ? paragraph(escapeHtml(rest), 16) : ''}`,
+      text: [
+        lead,
+        ...parts.map((p) => `- ${p.doc}: ${p.title} in ${p.app} (${p.url})`),
+        ...(rest ? [rest] : []),
+      ],
     });
   }
   if (r.hasTokens) {

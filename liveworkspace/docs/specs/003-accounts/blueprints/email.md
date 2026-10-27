@@ -57,7 +57,9 @@ as `List-Unsubscribe`.
 `POST /api/auth/internal/migration-notice` `{ recipients, dryRun? }`, `Bearer ADMIN_TOKEN` (`sameSecret`, `401`).
 `400 bad_request` with a `message` naming the first bad field: 1 to `NOTICE_BATCH_MAX` (50) recipients, each with a
 valid address (at most 254 characters, no two the same in a call), a `name` string of at most `NOTICE_NAME_MAX`
-(120), boolean flags, and at most `NOTICE_DOCUMENTS_MAX` (50) split documents of 1 to `NOTICE_PARTS_MAX` (4) parts;
+(120), boolean flags, and at most `NOTICE_DOCUMENTS_MAX` (50) split documents of 1 to `NOTICE_PARTS_MAX` (4) parts,
+with an optional whole-number `splitDocumentsTotal` no smaller than the list (the copy lists `NOTICE_DOCUMENTS_SHOWN`,
+10, and says "and N more" for the rest);
 a document name or part title is 1 to `NOTICE_TEXT_MAX` (200) characters, no control characters, and a part's `url`
 is `https` on its own app's domain (`www.`, `staging.` or the bare domain). Then, per address, lower-cased:
 

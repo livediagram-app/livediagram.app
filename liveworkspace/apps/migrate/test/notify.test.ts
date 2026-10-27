@@ -149,6 +149,31 @@ describe('buildRecipients', () => {
     expect(recipients.find((r) => r.email === 'ali@example.com')!.splitDocuments).toBeUndefined();
   });
 
+  it('sends the first ten split documents and the whole count', async () => {
+    const { snapshot, outDir: first } = await planned();
+    // A copy whose Launch split eleven times over, as eleven documents of Ali's.
+    const outDir = join(tempDir('many'), 'b');
+    cpSync(first, outDir, { recursive: true });
+    const movedFile = join(outDir, 'moved-parts.json');
+    const [launch] = JSON.parse(readFileSync(movedFile, 'utf8')) as { oldId: string }[];
+    const row = snapshot
+      .prepare('SELECT * FROM documents WHERE id = ?')
+      .get(launch!.oldId) as Record<string, unknown>;
+    const copies = Array.from({ length: 11 }, (_, i) => ({
+      ...launch!,
+      oldId: `${launch!.oldId}-${i}`,
+    }));
+    for (const c of copies) put(snapshot, 'documents', { ...row, id: c.oldId });
+    writeFileSync(movedFile, JSON.stringify(copies));
+    const ali = (dirs: string[]) =>
+      buildRecipients({ bundleDirs: dirs, snapshot, env: 'production', now: NOW }).recipients.find(
+        (r) => r.email === 'ali@example.com',
+      )!;
+    expect(ali([outDir]).splitDocuments).toHaveLength(10);
+    expect(ali([outDir]).splitDocumentsTotal).toBe(11);
+    expect(ali([first]).splitDocumentsTotal).toBeUndefined();
+  });
+
   it('skips an account the bundles hold no address for', async () => {
     const { snapshot, outDir: first } = await planned();
     // A copy whose owner map names an account no bundle holds a row for, and one merged onto an .invalid address.

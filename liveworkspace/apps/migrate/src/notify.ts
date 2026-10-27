@@ -22,6 +22,7 @@ export type NotifyRecipient = {
   email: string;
   name: string;
   splitDocuments?: { name: string; parts: { app: MigrationApp; title: string; url: string }[] }[];
+  splitDocumentsTotal?: number;
   hasTokens?: boolean;
   hasTeams?: boolean;
   hasAiTool?: boolean;
@@ -30,8 +31,9 @@ export type NotifyRecipient = {
 
 /** The route's batch cap (NOTICE_BATCH_MAX): the tool sends this many a call. */
 export const NOTIFY_BATCH = 50;
-// The route's own caps on what one recipient carries (NOTICE_DOCUMENTS_MAX, NOTICE_TEXT_MAX).
-const DOCUMENTS_MAX = 50;
+// What one recipient carries: the documents the email names (NOTICE_DOCUMENTS_SHOWN; the rest are counted),
+// and the route's text cap (NOTICE_TEXT_MAX).
+const DOCUMENTS_SHOWN = 10;
 const TEXT_MAX = 200;
 
 export const NOTIFY_PATH = '/api/auth/internal/migration-notice';
@@ -248,11 +250,11 @@ export function buildRecipients(input: NotifyInput): NotifyPlan {
     const has = (set: Set<string>) => olds.some((o) => set.has(o));
     const r: NotifyRecipient = byEmail.get(email) ?? { email, name };
     if (!r.name && name) r.name = name;
-    const docs = [...(r.splitDocuments ?? []), ...(split.get(account) ?? [])].slice(
-      0,
-      DOCUMENTS_MAX,
-    );
-    if (docs.length) r.splitDocuments = docs;
+    const all = [...(r.splitDocuments ?? []), ...(split.get(account) ?? [])];
+    const total =
+      (r.splitDocumentsTotal ?? r.splitDocuments?.length ?? 0) + (split.get(account)?.length ?? 0);
+    if (all.length) r.splitDocuments = all.slice(0, DOCUMENTS_SHOWN);
+    if (total > DOCUMENTS_SHOWN) r.splitDocumentsTotal = total;
     if (has(tokens)) r.hasTokens = true;
     if (has(teams)) r.hasTeams = true;
     if (has(ai)) r.hasAiTool = true;

@@ -5,6 +5,7 @@ import {
   migrationNotice,
   MIGRATION_NOTICE_PATH,
   NOTICE_BATCH_MAX,
+  NOTICE_DOCUMENTS_SHOWN,
   NOTICE_SUBJECT,
   noticeEmail,
   readNoticeBody,
@@ -170,6 +171,35 @@ describe('noticeEmail', () => {
     expect(only({ splitDocuments: [] })).not.toContain('more than one app');
   });
 
+  it('lists the first ten split documents and counts the rest', () => {
+    const docs = Array.from({ length: 12 }, (_, i) => ({
+      name: `Doc ${i + 1}`,
+      parts: [
+        {
+          app: 'liveplanner' as const,
+          title: 'Board',
+          url: `https://www.liveplanner.app/project/p${i}`,
+        },
+      ],
+    }));
+    const email = (r: Partial<NoticeRecipient>) =>
+      noticeEmail(BASE, { email: 'a@b.co', name: 'A', ...r });
+    const listed = email({ splitDocuments: docs });
+    expect(NOTICE_DOCUMENTS_SHOWN).toBe(10);
+    expect(listed.text).toContain('- Doc 10: Board');
+    expect(listed.text).not.toContain('Doc 11');
+    expect(listed.text).toContain('And 2 more documents: open any of them in livediagram');
+    expect(listed.html).toContain('And 2 more documents');
+    // The whole count, when the tool sent only the first ten.
+    expect(email({ splitDocuments: docs.slice(0, 10), splitDocumentsTotal: 31 }).text).toContain(
+      'And 21 more documents',
+    );
+    expect(email({ splitDocuments: docs.slice(0, 10), splitDocumentsTotal: 11 }).text).toContain(
+      'And 1 more document:',
+    );
+    expect(email({ splitDocuments: docs.slice(0, 10) }).text).not.toContain('more document');
+  });
+
   it('escapes every value the recipient carries', () => {
     const { html } = noticeEmail(BASE, {
       email: 'x"y@example.com',
@@ -264,6 +294,12 @@ describe('readNoticeBody', () => {
     expect(bad(one({ hasTokens: 'yes' }))).toMatch(/hasTokens/);
     expect(bad(one({ hadDrive: 1 }))).toMatch(/hadDrive/);
     expect(bad(one({ splitDocuments: 'x' }))).toMatch(/splitDocuments/);
+    expect(bad(one({ splitDocumentsTotal: 1.5 }))).toMatch(/splitDocumentsTotal/);
+    expect(bad(one({ splitDocumentsTotal: '3' }))).toMatch(/splitDocumentsTotal/);
+    expect(
+      bad({ ...doc({}), recipients: [{ ...doc({}).recipients[0], splitDocumentsTotal: 0 }] }),
+    ).toMatch(/no smaller/);
+    expect(bad(one({ splitDocumentsTotal: 40 }))).toBeNull();
     expect(bad(one({ splitDocuments: [null] }))).toMatch(/object/);
     expect(bad(one({ splitDocuments: [{ name: 'D', parts: [] }] }))).toMatch(/parts/);
     expect(bad(doc({}, ''))).toMatch(/name/);

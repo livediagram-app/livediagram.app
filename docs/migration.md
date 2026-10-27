@@ -293,7 +293,8 @@ liveworkspace", with an **Open livediagram** button. Every person gets:
 And only where it applies to them:
 
 - **Split documents**: where their documents went, as a short list of links built from `moved_parts`, one line per
-  part outside livediagram (`<document>: <its tabs> in <app>`);
+  part outside livediagram (`<document>: <its tabs> in <app>`), for the first ten documents only; with more, a
+  closing line says how many others there are and that each opens in livediagram and links to its parts;
 - **API tokens** (a live old token): they still work until they expire, and are now at
   `https://www.liveworkspace.app/account/tokens`;
 - **Teams** (a joined member of an old team): they came across with their members and roles, managed in
