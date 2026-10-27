@@ -73,3 +73,36 @@ result for a click whose obvious meaning is "tell me about this person".
   its open flag and the clicked participant id live in `useEditorDialogs`.
 - Telemetry: `UI` / `Opened` / `Collaborators` on open. Following from the
   modal keeps the existing `Canvas` / `Used` / `FollowMe` event.
+
+## 2. Cursors Step Aside
+
+### The problem
+
+Another person's cursor and name pill can sit right over the thing you want to read or click. The cursor never
+took the click (it has always let pointer events through), but you could not see what you were aiming at
+until they moved.
+
+### The behaviour
+
+- **Over or near a cursor, it fades out.** When your pointer comes within 8 px of another person's arrow or name
+  pill, that cursor fades away (a short opacity fade, none with reduced motion) and stays faded while your pointer
+  is there. Move away and it comes back at its latest position. Only the cursors near your pointer fade; the rest
+  stay.
+- **It works both ways round:** a cursor that moves under your still pointer steps aside too, and one that moves
+  away comes back.
+- **Never steals a click.** Cursors stay `pointer-events: none`, faded or not, so a click lands on whatever is
+  beneath.
+- **Mouse and pen only.** A touch screen has no hover, so nothing fades there; a touch clears anything a pen
+  left faded. Leaving the window or the page brings every cursor back.
+- **Every role** (Editor, Participant, Viewer) gets it: it changes only what this screen draws.
+
+### Implementation notes
+
+- `@liveworkspace/workbench`: `lib/cursor-hover` (the hit test: each cursor's box on screen from its canvas
+  point, the zoom and the canvas origin, its pill's width estimated from the name's length, so no layout is read
+  per cursor), `hooks/canvas/useCursorsNearPointer` (one passive `pointermove` listener while any cursor is drawn,
+  at most one check per animation frame, one rect read per check: a zero-size anchor at canvas (0, 0)), and
+  `components/canvas/RemoteCursor`, whose `RemoteCursors` layer fades the cursors the hook names.
+- It renders only when the set of cursors near the pointer changes, never per pointer move.
+- The cursor itself (`RemoteCursor`) was one file copied into each of the four editors; it moved into the workbench with
+  this change, and each editor draws `RemoteCursors` with its own identity fill (`identityVars`).
