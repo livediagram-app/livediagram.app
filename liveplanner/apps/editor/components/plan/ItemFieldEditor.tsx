@@ -9,6 +9,7 @@ import {
   customFieldOf,
   isBuiltInFieldId,
   linkCandidates,
+  linkTypesOf,
   typeAllowsStatus,
   type Item,
   type ItemFieldId,
@@ -97,14 +98,15 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
   const custom = customFieldOf(type, f);
   // A save fired from an event: only a text field waits for whether it landed.
   const save = (v: ItemFieldValue | undefined) => void onSave(f, v);
-  // A Card field (docs/specs/026-plan/item-types.md "Card fields"): one card of the type it links to.
-  if (custom?.kind === 'card' && custom.linkType) {
+  // A Card field (docs/specs/026-plan/item-types.md "Card fields"): one card of any of the types it links to.
+  const linkTypes = custom?.kind === 'card' ? linkTypesOf(custom) : [];
+  if (custom && linkTypes.length) {
     return (
       <LinkedCardField
         id={id}
         label={custom.label}
         value={value}
-        candidates={linkCandidates(items.values(), custom.linkType, item.id)}
+        candidates={linkCandidates(items.values(), linkTypes, item.id)}
         items={items}
         types={types}
         disabled={disabled}

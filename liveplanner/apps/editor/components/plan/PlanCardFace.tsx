@@ -219,13 +219,14 @@ export function PlanCardFace({
         const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
         const text = def ? customFieldText(def, item.fields[def.id], plan?.items) : null;
         if (!def || !text) return null;
-        const linkedType =
-          def.kind === 'card' && def.linkType
-            ? typeIn(plan?.types ?? ITEM_TYPES, def.linkType)
-            : undefined;
-        // A linked card with its own Colour shows it (a Parent project's colour), else its type's glyph.
+        // A linked card with its own Colour shows it (a Parent project's colour), else its own type's glyph (a field
+        // may link to several types), the field's first type's while the card is missing.
         const linked =
           def.kind === 'card' && plan ? linkedCard(plan.items, item.fields[def.id]) : undefined;
+        const linkedTypeId = def.kind === 'card' ? (linked?.type ?? def.linkType) : undefined;
+        const linkedType = linkedTypeId
+          ? typeIn(plan?.types ?? ITEM_TYPES, linkedTypeId)
+          : undefined;
         const linkedColour = linked ? itemColourOf(linked) : undefined;
         return (
           <MetaPill key={f} palette={palette} label={`${def.label}: ${text}`}>
