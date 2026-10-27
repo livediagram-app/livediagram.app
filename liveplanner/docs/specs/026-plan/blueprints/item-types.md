@@ -5,15 +5,15 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`            |
-| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)              |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, onCard? }`; kinds `CUSTOM_FIELD_KINDS` |
-| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                 |
-| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`               |
-| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover` |
-| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                |
+| Spec term         | Identifier                                                                                                                 |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                          |
+| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                            |
+| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard? }`; kinds `CUSTOM_FIELD_KINDS` |
+| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                               |
+| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                             |
+| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`               |
+| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                              |
 
 ## Package `@liveplanner/items`
 
@@ -114,6 +114,20 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   carries `linkTypes`). `PlanCardFace` draws a Card field as a pill: the linked
   card's colour dot when it has one, else the linked card's own type's glyph (the field's first type when the card
   is missing).
+- Calculated fields: `calculated-fields.ts` (packages/items) is the one reading: `CALCULATIONS` (`childCount`,
+  `childrenDone`) and `CALCULATION_LABELS`, `calculationOf(field)`, `childIndexOf(items, types)` (one pass over the
+  cards: every live card's Card-field links by the card linked to, trashed cards left out), `childrenOf(item, index)`
+  (the links whose field names the item's type, each card once), `doneStatusesOf(boards)` (from a plan outline, the
+  first board naming a status deciding) and `donePhase(phases)` (from the editor's `statusPhases`),
+  `calculatedValue`, `calculatedValuesOf(item, type, index, isDone)` and `calculatedText` ("40%").
+  `readCustom` keeps a `calculated` field only with a known `calculation`. `write-checks.ts`
+  `calculatedWritten(types, next, before)` refuses a write giving one a value (`field_calculated`), shared by the api
+  and `offline-items.ts`. The api's `GET /items?include=calculated` reads the plan's boards (`planOutline`, as
+  `GET /plan`) only then, and answers `calculated`. The agents (`plan-listing.ts`) work the values out from the
+  `PlanState` they already read. `childIndexFor(items, types)` caches the index once per items map (a
+  WeakMap), so the editor's `calculated-values.ts` (`calculatedFieldValue`, read by `PlanCardFace` and
+  `ItemFieldEditor`) and the SVG export (`svg-render-plan-card.ts`, Children Done only with a board's done columns)
+  cost one pass per store; `CalculatedFieldValue` draws one read-only.
 - Consumers: `PlanCardFace` (stripe, glyph, custom field chips via `custom-field-text.ts`), `ItemPanel` (the
   type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
   (projection), `PlanBoardCells`/`PlanCardView` names,
@@ -221,28 +235,29 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 
 ## Testing
 
-| Rule                                                      | Test                                                                                                                            |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`                                                                                     |
-| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                                                                                             |
-| Card fields of several types: read, stored, linked, lanes | `packages/items/src/card-links.test.ts`, `packages/items/src/type-catalogue.test.ts`, `packages/items/src/type-changes.test.ts` |
-| Links To multi-select                                     | `apps/editor/components/plan/LinksToPicker.test.tsx`                                                                            |
-| Glyph picker filters, empty state, picks                  | `apps/editor/components/plan/GlyphPicker.test.tsx`                                                                              |
-| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                                                                                       |
-| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                                                                                       |
-| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`                                                                              |
-| Editor: stale resend, failure drops one, undo keeps later | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                   |
-| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                             |
-| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                                                                                               |
-| Card tiles follow the catalogue                           | `apps/editor/components/palette/palette-plan-tiles.test.ts`                                                                     |
-| Custom values on a card                                   | `apps/editor/components/plan/custom-field-text.test.ts`                                                                         |
-| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`                                                                                     |
-| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                                                                                       |
-| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                   |
-| Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                         |
-| Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                      |
-| Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                             |
-| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)                                                                             |
+| Rule                                                      | Test                                                                                                                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`                                                                                              |
+| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                                                                                                      |
+| Card fields of several types: read, stored, linked, lanes | `packages/items/src/card-links.test.ts`, `packages/items/src/type-catalogue.test.ts`, `packages/items/src/type-changes.test.ts`          |
+| Links To multi-select                                     | `apps/editor/components/plan/LinksToPicker.test.tsx`                                                                                     |
+| Glyph picker filters, empty state, picks                  | `apps/editor/components/plan/GlyphPicker.test.tsx`                                                                                       |
+| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
+| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
+| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`                                                                                       |
+| Editor: stale resend, failure drops one, undo keeps later | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                            |
+| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                      |
+| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                                                                                                        |
+| Card tiles follow the catalogue                           | `apps/editor/components/palette/palette-plan-tiles.test.ts`                                                                              |
+| Custom values on a card                                   | `apps/editor/components/plan/custom-field-text.test.ts`                                                                                  |
+| Calculated fields: children, done, values, refusals       | `packages/items/src/calculated-fields.test.ts`, `apps/api/src/routes/item-routes.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts` |
+| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`                                                                                              |
+| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
+| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                            |
+| Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |
+| Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                               |
+| Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                                      |
+| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)                                                                                      |
 
 ## Constants and configuration
 
