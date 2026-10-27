@@ -40,23 +40,23 @@ fields people usually want, and any item may carry other fields. The store never
 
 The fields the shipped types use. Each has a **field kind** that validates and draws it.
 
-| Field             | Kind      | Holds                                                                                                                                                                 |
-| ----------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`           | text      | One line, required, up to 500 characters                                                                                                                              |
-| `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                                  |
-| `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror     |
-| `status`          | status    | A status value, matched against a board's columns                                                                                                                     |
-| `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                            |
-| `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                                   |
-| `labels`          | labels    | Up to 12 short strings                                                                                                                                                |
-| `estimate`        | number    | Story points, 0 to 999; the card panel picks it from a dropdown of None, 1, 2, 3, 5, 8, 13 and 21 (`ESTIMATE_POINTS`), keeping any other value a card holds           |
-| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#gantt-chart))                                                 |
-| `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                         |
-| `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                |
-| `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                        |
-| `parent`          | card link | Another item's id (a Project): the Card field named Parent that Task carries (item-types.md "Card fields"), under its reserved id                                     |
-| `votes`           | votes     | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                               |
-| `comments`        | comments  | The card's conversation: the same comment thread a canvas element carries (`{ comments, resolved }`), written only through the comment writes ([Comments](#comments)) |
+| Field             | Kind      | Holds                                                                                                                                                                     |
+| ----------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`           | text      | One line, required, up to 500 characters                                                                                                                                  |
+| `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                                      |
+| `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror         |
+| `status`          | status    | A status value, matched against a board's columns                                                                                                                         |
+| `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                                |
+| `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                                       |
+| `labels`          | labels    | Up to 12 short strings                                                                                                                                                    |
+| `estimate`        | number    | Story points, 0 to 999; the card panel picks it from a dropdown of None, 1, 2, 3, 5, 8, 13 and 21 (`ESTIMATE_POINTS`), keeping any other value a card holds               |
+| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#gantt-chart))                                                     |
+| `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                             |
+| `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                    |
+| `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                            |
+| `parent`          | card link | Another item's id (a Project): the Card field named Parent that Task carries (item-types.md "Card fields"), under its reserved id                                         |
+| `votes`           | votes     | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                                   |
+| `comments`        | comments  | The card's comment threads: stored apart from the card, in the plan's thread store, never in `fields`, and written only through the thread writes ([Comments](#comments)) |
 
 A card's type may leave statuses out ([Item types](item-types.md#an-item-type)): an item made or moved into one is
 refused (`status_excluded`), from the editor, the api and agents alike. A card already in one is never moved out
@@ -126,9 +126,10 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   cards"), which keeps its own budget and privacy.
 - **Delete**: removes the item. Its key is not reused.
 - **Restore** (an undo of a delete, or an offline project's sync): a create may name the item's old id and key
-  and carry its votes and its comment thread; the key is honoured while it is free.
-- **Comment**: add a comment, delete one, resolve or reopen the thread ([Comments](#comments)). Comments are
-  written only this way, so two people commenting at once never lose a comment.
+  and carry its votes and the threads it was on; the key is honoured while it is free.
+- **Comment**: start a thread, reply, edit or delete a comment, resolve, reopen, rename, add a thread to a card or
+  delete it ([Comments](#comments)). Threads are written only this way, so two people commenting at once never lose
+  a comment.
 - Every write answers with the item as stored.
 - **Busy**: writes racing for the same keys or revisions (a quick run of new cards, people dragging the same
   card) are retried by the api after a short, jittered pause; when its retries are spent it answers `item_busy`
@@ -215,56 +216,197 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 
 ## Comments
 
-A card carries a comment thread through the canvas's own comment model ([Canvas and
-palette](../008-canvas/canvas-and-palette.md), [Comment mentions](../012-collaboration/comment-mentions.md)): the
-same `Comment` and `CommentThread` values, the same rules for who may write, delete, resolve and reopen, the same
-author redaction, and the same thread list, composer and resolve control the comment popover draws.
+A card holds **comment threads**: as many conversations as it needs, each with its own title, its own replies and
+its own resolved state. Most cards have none; a busy card has a handful (about five is what the panel is drawn
+for), and nothing stops one having many more. A thread is made of the canvas's own `Comment` values
+([Canvas and palette](../008-canvas/canvas-and-palette.md), [Comment mentions](../012-collaboration/comment-mentions.md)):
+the same text, mentions, author stamp and author redaction, drawn with the same comment rows and composer.
 
-- **Where it shows**: `comments` is a built-in field. In the item panel it is the last field of the Overview tab,
-  under its label **Comments**, drawn as a feed with no surrounding box:
-  - Once there is a comment, a quiet header row says how many (**1 comment**, **3 comments**) with **Resolve** (a
-    check icon and the word) at its end. While resolved, the header shows a green **Resolved** badge with
-    **Reopen** beside it, and the composer is hidden.
-  - Each comment is a row: the author's avatar (28 px, initials on
-    their colour), their name in medium weight, the relative time muted ("2m ago"; the full date and time in a
-    tooltip), and the text below at 13 px with relaxed line height, line breaks kept and @-mentions as chips.
-    Rows sit a hairline apart. Delete is a quiet trash icon (with a tooltip) that shows on the row's hover or
-    focus, to whoever may delete it.
-  - The composer sits under the thread beside your own avatar: a one-line field that grows with its text (to
-    about eight lines, then scrolls), a soft border taking the brand ring on focus, placeholder **Add a
-    comment…**. **Comment** stays disabled until there is text. While the field has focus a hint names the
-    shortcut, **⌘ Enter to send** on Apple devices and **Ctrl Enter to send** elsewhere, and none on a touch screen (a coarse pointer), which sends with Comment; a plain Enter adds a line.
-  - Empty, it reads **No comments yet. Start the conversation.** as a quiet line. Someone who may not comment
-    reads the thread with no composer and no Resolve. A type that stops offering comments keeps the card's thread
-    stored, unshown, like votes.
-- **On the card**: a `comments` card field (a speech-bubble glyph and the count of comments in an open thread,
-  drawn only when there is one), on Compact and Detailed cards, beside the votes. New boards show it. Exports and
-  thumbnails draw it too, after the votes, by the same rule (a board's card fields; a Plan card always).
-- **Writes**: add (text up to 2,000 characters, optional mentions), delete, resolve, reopen. Each is applied by the
-  api to the item as stored, so concurrent comments, deletes and resolves all land. A comment's author name,
-  colour and id are stamped by the server from the caller, never taken from the request. Adding to a resolved
-  thread reopens it, as on the canvas. A comment change counts as a change to the item (its `rev`, **Edited by**).
-- **Who may**: anyone who may comment on the project (participate access) may add a comment and resolve or
-  reopen the thread; they may delete their own comments, and someone with edit access may delete any.
-- **Author ids**: a comment's author id never leaves the api except to its own author (as on the canvas): every
-  read and every write's answer leaves it out of other people's comments, and the room's `items` op leaves it out
-  of all of them.
-- **Live**: every comment change is an item write, so it reaches the room like any other, and an open item panel
-  shows it at once.
-- **Trash, Archive, Delete**: trashing or archiving a card keeps its thread; restoring brings it back as it was.
-  Deleting a card for good (from the Trash) deletes its thread with it; undoing that delete restores the thread, keeping the author id only
-  on the restorer's own comments.
-- **Not undoable**: comments, deletes and resolves are outside Undo, as on the canvas.
-- **Mentions** show as chips and are kept on the comment, and reach people the way a canvas mention does
-  ([Comment mentions](../012-collaboration/comment-mentions.md)): the card's thread lists on the mentioned person's
-  Inbox (with the thread's other readers: whoever commented in it, and the project's owner), and the
-  author's editor asks the api to email them, the email's button opening the card. `Comment · Mentioned` counts
-  each mentioning comment, as on the canvas.
-- **Timeline and email**: a new comment records on the project's timeline and emails the owner (when email is
-  on and the commenter is not the owner), exactly as a canvas comment does; resolving records too.
-- **Offline projects** comment locally, the same rules minus the room; the thread syncs with the item.
-- Telemetry: the canvas's own comment events with the type `Item`: `Comment · Added · Item`,
-  `Comment · Deleted · Item`, `Comment · Resolved · Item` and `Comment · Unresolved · Item` (existing pairs).
+| Term          | Means                                                                                          | Never called                    |
+| ------------- | ---------------------------------------------------------------------------------------------- | ------------------------------- |
+| **thread**    | One conversation: a title, its comments oldest first, open or resolved, and the cards it is on | discussion, topic, conversation |
+| **home plan** | The plan that stores a thread: the plan of the card it was started on                          | owner plan, source              |
+| **shared**    | A thread that is on more than one card                                                         | linked, copied                  |
+| **reply**     | A comment added to a thread after its first                                                    | answer                          |
+
+### What a thread is
+
+- **`id`**: a random id, unique across every plan (`th-` and 16 letters and digits), so a thread keeps one id on
+  every card it is on.
+- **`title`**: up to 120 characters. Made automatically when the thread is started, from the starter's name and the
+  start of the first comment: `{name}: {opening}`, the opening being the comment's first line cut at a word to about
+  60 characters with an ellipsis ("Gentle Falcon: Basket empties after switching restaurants"). Anyone who may reply
+  may **rename** it; a renamed title is kept as written. The same title shows on every card it is on, in the Inbox and
+  to agents.
+- **`comments`**: oldest first, up to 200 and 128 KB per thread (`comments_full` past either). A thread always has at
+  least one: it is started with its first comment, and deleting its last comment deletes the thread.
+- **`resolved`**: open or resolved, with who resolved it and when. Resolving and reopening keep every comment.
+  Replying to a resolved thread is not offered (the composer is hidden), and a reply that reaches one anyway (an
+  agent's, the Inbox's) reopens it, as on the canvas.
+- **`createdBy`**, **`createdAt`**, and **`updatedAt`** (its last activity: a comment added or edited, a resolve, a
+  reopen or a rename).
+- **`cards`**: every card it is on (up to 20), each named by its plan and card id, with its number and, for a card in
+  another plan, that plan's name as it was when the thread was added there. The first is the card it was started
+  on.
+- A card is on up to 50 threads (`threads_full` past it).
+
+### Stored once, on every card
+
+A thread is **stored once**, in its home plan, and **shown on every card it is on**: a reply, a resolve, a rename
+or a deleted comment made from any of them changes it everywhere at once. Nothing is copied.
+
+- **Add Thread to Card** puts an existing thread on another card: in the same plan, or in **any other plan the person
+  can edit a card in** (an Editor or a Participant there). The card it is added to must be one they may change.
+- **Anyone who can see one of its cards can read it.** So sharing a thread into another plan shows it to that plan's
+  people: the picker warns first (below). Someone who reaches a thread only through a card in another plan acts by
+  their role **on the card they are viewing**: a Participant or an Editor there may reply, resolve, reopen and
+  rename it, and a Viewer reads it.
+- **There is no removing a thread from one card.** A thread leaves a card only when the thread is deleted (it goes
+  from every card), or the card is deleted for good (it leaves that card; a thread on no other card goes with it).
+- **Deleting a thread** removes it from every card it is on, after a confirmation that says how many cards that is
+  ("Delete this thread? It is on 3 cards, and goes from all of them. This can't be undone."). An Editor (on the card
+  they are viewing) may delete any thread; the person who started a thread may delete their own.
+
+### Who may do what
+
+| Who                                    | Read | Start, reply, resolve, reopen, rename | Edit or delete own comments | Delete any comment | Add to another card | Delete the thread |
+| -------------------------------------- | ---- | ------------------------------------- | --------------------------- | ------------------ | ------------------- | ----------------- |
+| **Editor** (on the card viewed)        | yes  | yes                                   | yes                         | yes                | yes                 | yes               |
+| **Participant**                        | yes  | yes                                   | yes                         | no                 | yes                 | their own thread  |
+| **Viewer**                             | yes  | no                                    | no                          | no                 | no                  | no                |
+| **An agent** (API token, MCP, the CLI) | yes  | start, reply, resolve, reopen         | only comments it wrote      | no                 | no                  | no                |
+
+- Adding a thread to a card also needs Participant or Editor on **the target card's plan**.
+- A tab-scoped link reaches a thread only through a card its tab shows.
+- An agent token acts as its person, by that person's role, with the limits in the last row: it edits and deletes
+  only comments an agent posted for that person (those carrying **Generated by AI**), never a comment a person
+  typed, nor anyone else's.
+
+### Generated by AI
+
+Every comment an agent writes (posted with an API token: the MCP, the CLI, a script) carries `ai: true`, stamped by
+the server from the request, never taken from it. Wherever a comment row is drawn (a card's threads, the canvas's
+comment popover, the Comment panel), a quiet **Generated by AI** label with a sparkle glyph sits above the comment's
+text. Editing an AI comment keeps the flag; a person cannot set or clear it.
+
+### Where it shows
+
+**In the card panel.** `comments` stays a built-in field, the last of the Overview tab, under its label
+**Comments**:
+
+- **The header**: the label, then, quietly, how many are open and resolved ("2 open · 1 resolved"), and at its end
+  **New Thread** (a plus and the word) for anyone who may start one.
+- **No threads**: a soft empty state: a speech-bubble glyph, **No threads yet**, and "Start a thread to discuss this
+  card." with **New Thread**; someone who may not comment reads **No comments yet.** alone.
+- **New Thread** opens the starter at the top of the list (sliding in; none with reduced motion): your avatar, a
+  field with the placeholder **Start a thread…** that grows with its text, the title it will get shown live beneath it
+  ("Titled “Gentle Falcon: Basket empties…”", muted), and **Cancel** and **Start Thread** (off until there is text).
+  ⌘ Enter or Ctrl Enter starts it, Escape cancels; mentions work as in any composer. The new thread lands at the top,
+  open.
+- **Open threads** come first, the most recently active at the top. Each is a rounded tile with a header that
+  opens and closes it (a disclosure button, `aria-expanded`):
+  - its title (one line, cut with an ellipsis, the whole title in a tooltip);
+  - under it, the avatars of up to three people in it (then "+2"), "4 comments", and its last activity ("2h ago",
+    the full date in a tooltip);
+  - a **shared chip** when it is on more than one card ("On 3 cards", a link glyph), which opens a small popover
+    listing the cards (#12 Title, and for another plan's card, its plan's name), each opening that card (one in this
+    plan in the card panel, one in another plan in a new tab);
+  - a chevron, and a **⋯** menu: **Rename**, **Add to Card…**, **Resolve** or **Reopen**, and **Delete Thread…**,
+    each shown only to whoever may do it.
+- **An open thread, expanded**, shows its comments as the comment rows draw them (author avatar, name, relative
+  time, text with mention chips, **Generated by AI** above an agent's comment, **Edited** after an edited comment's
+  time), then a reply composer (**Reply…**, **Reply**) and **Resolve** beside it. Your own comment offers **Edit**
+  (in place: the text becomes a field, **Save** and **Cancel**, ⌘/Ctrl Enter saves, Escape cancels) and **Delete**; an
+  Editor's row offers Delete on anyone's. The most recently active open thread is expanded when the panel opens;
+  the others are closed, and each remembers being opened while the panel stays on the card.
+- **Resolved threads** sit at the bottom under a **Resolved · 2** disclosure, closed by default. Each is drawn
+  quieter: a green check before its title, "Resolved by Ada · 3d ago" in its meta line, its comments dimmed when
+  opened, and **Reopen** where an open thread has Resolve. Resolving a thread moves it there (smoothly; at once with
+  reduced motion), and reopening it brings it back up.
+- **Rename** turns the title into a field in place (its text selected): Enter or leaving the field saves, Escape
+  cancels, an emptied title goes back to the automatic one.
+- **A link** to a card's thread (`#item=<card>&thread=<thread>`: the Inbox, a mention email) opens the card with
+  that thread expanded and scrolled into view (and the Resolved disclosure opened when it is resolved).
+- **Keyboard and screen readers**: every control is a button or a field in reading order; Enter or Space opens a
+  thread; the ⋯ menu is a menu (arrows, Escape); a new thread, a resolve, a reopen and a delete are announced ("Thread
+  started", "Thread resolved"). Every target is at least 32 px on a touch screen, and the ⋯ menu and Edit and Delete
+  are always visible there (on hover with a mouse).
+
+**Add Thread to Card** opens a dialog, **Add Thread to Card**, naming the thread:
+
+- A search field (focused on open with a mouse), matching a card's number (`12`, `#12`), title or type, and a
+  plan's name.
+- **This plan** first: its cards (not archived, not in the Trash), as the card finder draws them (type glyph and
+  colour, number, title), newest change first, at most 50 until a search narrows them. A card the thread is already
+  on is shown with **Already on this card**, and cannot be picked.
+- **Other plans** under it: the person's other plans (This Browser plans aside, and for a This Browser plan, no
+  other plans at all: a thread only this browser holds cannot reach another plan), filtered by the search. Opening
+  a plan reads its cards; one the person may only view says **You can only view this plan** and offers none.
+- Picking a card in this plan adds the thread at once ("Added to #12"). Picking one in another plan asks first, in
+  the dialog: **Share this thread into “Sprint 12”?** and "Everyone who can see #4 in Sprint 12 will be able to read
+  this thread. Participants and Editors there can reply and resolve it; Viewers can only read it.", with **Cancel**
+  and **Share Thread**. Once added, the thread's shared chip counts the new card on every card it is on.
+
+**On a card face**: the `comments` card field draws a speech bubble and the count of comments in the card's **open**
+threads (none drawn when there are none), labelled "5 comments in 2 open threads". Compact and Detailed cards,
+beside the votes; exports and thumbnails draw it too.
+
+**In the Inbox**: each thread is one Inbox item ([Inbox](../013-workspace/inbox.md) §2.5), titled with its title and
+placed on its card (its number and title, and the board that shows it), listed for the people in it, those it
+mentions, and the plan's owner, until it is resolved. A thread shared into two plans lists once for a reader of both.
+
+### Writes
+
+Every write is applied by the home plan to the thread as stored, so concurrent writes all land:
+
+| Write             | What it does                                                                          | Refusals                                                   |
+| ----------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **start**         | a new thread on a card, with its first comment and its automatic title                | `threads_full`, `item_not_found`                           |
+| **reply**         | adds a comment (text up to 2,000 characters, mentions); reopens a resolved thread     | `comments_full`, `thread_not_found`                        |
+| **edit**          | replaces one of the caller's own comments' text and mentions, marking it edited       | `comment_not_found`, 403 not theirs                        |
+| **delete**        | deletes a comment (own, or any for an Editor); the last one deletes the thread        | `comment_not_found`, 403                                   |
+| **resolve**       | resolves or reopens; already so changes nothing (an empty answer)                     | `thread_not_found`                                         |
+| **rename**        | sets the title (trimmed, 1 to 120 characters), or clears it back to the automatic one | `title_too_long`                                           |
+| **add to card**   | puts the thread on another card                                                       | `thread_on_card`, `threads_full`, `thread_cards_full`, 403 |
+| **delete thread** | removes it from every card                                                            | 403                                                        |
+
+- A comment's author name, colour and id, its `ai` flag and its token are stamped by the server from the caller.
+- A thread write is not a change to its cards: no card's `rev`, **Edited by** or change time moves.
+- **Author ids** never leave the api except to their author: every read and answer leaves them out of other people's
+  comments (and the thread's starter), and the room hears none.
+- **Live**: every write reaches everyone with any of the thread's cards open, in every plan it is on, at once.
+- **Not undoable**: thread writes are outside Undo, as comments always were.
+- **Mentions** reach people as a canvas mention does ([Comment mentions](../012-collaboration/comment-mentions.md)):
+  the email's button opens the card on that thread. `Comment · Mentioned` counts each mentioning comment.
+- **Timeline and email**: a new comment records on the home plan's timeline and emails its owner (when email is on
+  and the commenter is not the owner), as before; resolving records too.
+
+### Cards coming and going
+
+- **Trash and Archive** keep a card's threads; restoring brings them back as they were.
+- **Deleting a card for good** takes it off its threads; a thread on no other card is deleted with it. Undoing that
+  delete puts the card back on its threads (a thread it was alone on comes back whole, keeping author ids only on the
+  restorer's own comments).
+- **Copies**: a copied plan takes the threads its own cards hold (stored in it), on the copied cards; a thread
+  shared in from another plan stays that plan's and is not copied.
+- **Exports**: a tab's JSON export carries no comments (they name people), as before.
+- **Offline projects** (This Browser) keep their threads in their own record beside the items, with every rule
+  above minus the room and other plans; **Sync to cloud** sends them with the items; **Take offline** keeps the
+  threads the plan stores and leaves behind the ones shared in from other plans.
+
+### Existing comments
+
+A card's single thread from before threads becomes the card's **first thread**, with every comment, keeping its
+resolved state, titled automatically from its first comment's author and text. Plans in the cloud move once, when
+the plan is next opened (a step of its schema); a thread that arrives later in the old shape (an older copy, an
+import, a restore) is taken the same way as it lands. This Browser plans move as their record is read.
+
+### Telemetry
+
+`Comment · Added · Item` (a reply), `Comment · Changed · Item` (an edit), `Comment · Deleted · Item`,
+`Comment · Resolved · Item`, `Comment · Unresolved · Item`, and for threads `Comment · Created · Thread`,
+`Comment · Renamed · Thread`, `Comment · Linked · Thread` (added to another card; type `ThreadOtherPlan` when
+into another plan) and `Comment · Deleted · Thread`.
 
 ## New Card
 
@@ -360,7 +502,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
     `n-` ids instead of counting them as people it could not name), and **Only Mine** never matches them.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
   [Inbox](../013-workspace/inbox.md) (§2.4 there), in every project you can open; a row opens the card on its board.
-- **Comment** with participate access; delete your own comments, or any with edit access ([Comments](#comments)).
+- **Comment** with participate access; edit and delete your own comments, delete any with edit access, and delete a
+  thread you started, or any with edit access ([Comments](#comments)).
 - An agent token acts as its person, and a read-only token reads only.
 
 ## Live for everyone
@@ -377,17 +520,18 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   votes.
 - A tally is not undoable (a session vote's dots are taken back during the vote), matching comments and assigned
   actions. A card's
-  comments are not undoable either; undoing a card's delete brings its thread back with it.
+  threads are not undoable either; undoing a card's delete puts it back on its threads ([Comments](#comments)).
 - An undo writes the old value back, even over a later change someone else made to that field, as canvas undo
   does.
 
 ## Offline projects
 
 - An [offline project](../006-project/offline-mode.md) keeps its item store inside its own record, as an
-  `items` array beside its tabs. Every rule above holds, minus the room.
+  `items` array beside its tabs, and its threads as a `threads` array. Every rule above holds, minus the room.
 - Its writes pass the api's own checks (fields, places, what a move may set, a status the card's type leaves out,
   the size bounds) and are refused by the same names, so the record never holds what **Sync to cloud** would refuse.
-- **Sync to cloud** sends the items with the project; **Take offline** fetches every item first, all or nothing.
+- **Sync to cloud** sends the items and threads with the project; **Take offline** fetches every item and thread
+  first, all or nothing.
 
 ## Copies and exports
 
@@ -421,8 +565,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 
 - Up to 2,000 items per project; a create past it is refused with `items_full`.
 - Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
-  card's comment thread sits outside that budget: up to 200 comments and 128 KB per card; a comment past either is
-  refused with `comments_full`.
+  card's comment threads sit outside that budget: up to 50 threads a card, 20 cards a thread, and 200 comments and
+  128 KB a thread; a write past one is refused with `threads_full`, `thread_cards_full` or `comments_full`.
 - Item writes count against the write rate limit.
 
 ## Deleting a project

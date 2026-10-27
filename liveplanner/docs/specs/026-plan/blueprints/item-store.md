@@ -281,61 +281,179 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
 
 ## Comments
 
-A card's thread (spec items.md "Comments") is the canvas's `CommentThread` in `fields.comments`.
+A card's comment threads (spec items.md "Comments"). A thread is stored once, in its home plan's SQLite, and named
+on each card it is on by a link row in that card's plan.
 
-- **Ops** (`packages/project/src/comment-thread.ts`, pure, type-only imports): `threadWithComment(thread,
-comment, max)` (append unless present or full, `resolved: false`), `threadWithoutComment(thread, id)` (the last
-  takes the thread: `undefined`), `threadResolved(thread, resolved)`. Each returns the same thread when nothing
-  changes. `applyElementDelta`'s comment cases call them.
-- **Item writes** (`packages/project/src/item-comments.ts`; `@liveplanner/project` already reads items, the
-  reverse would cycle): `ItemCommentChange = add { comment } | remove { commentId } | resolve { resolved }`;
-  `applyItemComment(item, change, ctx)` returns `{ ok, item }` (rev + 1, `updatedAt/By`) or a refusal:
-  `comments_full` (count ≥ `ITEM_COMMENTS_MAX`, or the thread past `ITEM_COMMENTS_BYTES`), `comment_not_found`,
-  `unchanged`. `itemThread(item)` reads a valid thread or `undefined`.
-- **Redaction**: `itemForViewer(item, owner)` keeps `authorId`/`tokenId` on the viewer's own comments only;
-  `itemForRoom(item)` strips all; `keepOwnCommentAuthors(local, incoming)` carries our author ids onto a room copy.
-  `readRestoredThread(raw, owner)` validates a restore's thread: author id kept only when it is the caller's,
-  token ids dropped, mentions `sanitizeMentions`; `null` when not a thread.
-- **Items package**: `ItemFieldId` `comments`, kind `comments`; `validateFields` / `validateClear` refuse it;
-  `ItemCreate.comments` (restore) set by `makeItem`; `itemAsCreate` moves it out of `fields`; `itemCommentCount`;
-  `BUILT_IN_FIELD_IDS` (before votes); `tabsOf`'s default Overview ends with it; every built-in type offers it
-  last (`ITEM_TYPES` maps `BUILT_IN_TYPES`); card field `comments` (after checklist; Compact and Detailed; in
-  `DEFAULT_CARD_FIELDS` and the work presets).
-- **REST** (`apps/api/src/routes/item-comment-routes.ts`, dispatched by `handleItemRoutes` on
-  `segments[5] === 'comments'`; each is a `writeItem`, so rev-guarded and relayed):
+### Pure core (`packages/project/src/card-threads.ts`, type-only imports of `@liveplanner/items`)
 
-  | Method | Path                                 | Gate                      | Body                  | Answers                        |
-  | ------ | ------------------------------------ | ------------------------- | --------------------- | ------------------------------ |
-  | POST   | `/items/:itemId/comments`            | participate               | `{ text, mentions? }` | `ItemCommentAddResponse`       |
-  | DELETE | `/items/:itemId/comments/:commentId` | participate; own, or edit | none                  | `ItemResponse`                 |
-  | POST   | `/items/:itemId/comments/resolve`    | participate               | none                  | `ItemResponse`, 204 if already |
-  | POST   | `/items/:itemId/comments/reopen`     | participate               | none                  | `ItemResponse`, 204 if already |
+- **Types**: `CardRef = { projectId, itemId, key: number | null, projectName?: string }`; `ThreadPerson = { name,
+color, authorId? }`; `CardThread = { id, title, resolved, resolvedBy?: string, resolvedAt?: number, comments:
+Comment[], createdAt, createdBy: ThreadPerson, updatedAt, home, cards: CardRef[], rev }`. `Comment` gains `ai?:
+true` (comments.ts) and `editedAt?: number`.
+- **Constants**: `THREAD_COMMENTS_MAX` 200 and `THREAD_BYTES` 131,072 (the old per-card `ITEM_COMMENTS_MAX` /
+  `ITEM_COMMENTS_BYTES`), `CARD_THREADS_MAX` 50, `THREAD_CARDS_MAX` 20, `THREAD_TITLE_MAX` 120,
+  `THREAD_OPENING_MAX` 60, `THREAD_ID_PREFIX` `'th-'`.
+- **Titles**: `autoThreadTitle(name, text)` (`{name}: {opening}`, the first line cut at a word to
+  `THREAD_OPENING_MAX` with `…`, the whole cut to `THREAD_TITLE_MAX`); `threadTitle(thread)` (the stored title, or
+  the automatic one from `createdBy.name` and the first comment when it is `''`, as a migrated thread is).
+- **Ids**: `newThreadId(random)`; `isThreadId(s)` (`^th-[a-z0-9]{16}$`, or a migrated `c-<item id>`).
+- **Writes**: `ThreadChange = add { comment } | edit { commentId, text, mentions, now } | remove { commentId } |
+resolve { resolved, by } | rename { title } | addCard { card } | removeCard { projectId, itemId }`;
+  `applyThreadChange(thread, change, now)` answers `{ ok, thread }` (rev + 1, `updatedAt` now except for card
+  changes) or a refusal: `comments_full`, `comment_not_found`, `title_too_long`, `thread_on_card`,
+  `thread_cards_full`, `unchanged`. `startThread({ id, home, card, comment, title?, now })` makes one (title
+  `autoThreadTitle` unless given). Who may is the caller's (routes), never here.
+- **Reads**: `isCardThread(v)` (shape, caps), `openCommentCount(threads, projectId, itemId)` (the face count),
+  `threadsOnCard(threads, projectId, itemId)`, `sortedThreads(threads)` (open first by `updatedAt` desc, then
+  resolved by `resolvedAt` desc), `threadParticipants(thread)` (authors, first seen order).
+- **Redaction**: `threadForViewer(thread, viewer)` (author and token ids on the viewer's own comments and
+  `createdBy` only), `threadForRoom(thread)` (none), `keepOwnThreadAuthors(local, incoming)`,
+  `readRestoredThread(raw, owner, card)` (a restore's thread, cleaned as a posted comment is; `null` when not one).
+- **Legacy**: `legacyThreadOf(item, projectId)` reads an old `fields.comments` `CommentThread` into a `CardThread`
+  (`c-<item id>`, title `''`, resolved kept); `withoutLegacyThread(item)` drops the field.
+- `item-comments.ts` (the per-card `applyItemComment`, `itemThread`, `itemForViewer`, `itemForRoom`,
+  `keepOwnCommentAuthors`) goes: an item no longer holds a thread. `readRestoredThread` (old shape) is kept only
+  through `legacyThreadOf`.
 
-  The comment is made by `newComment` (comment-routes.ts: text trimmed, ≤ `COMMENT_TEXT_MAX`, author name,
-  colour and id from the caller, token id for an agent); a post answers `ItemCommentAddResponse` (`ItemResponse`
-  plus the new comment's `commentId`) and runs `afterCommentPosted(ctx, caller, comment, itemId)`: the owner's
-  new-comment email and, on a team plan, one email to each teammate it @-mentions (comment-mentions.md "The email"),
-  for a signed-in person's comment. A resolve records nothing beyond the item. Refusals: 400 text, 403 another's
-  comment, `404 comment_not_found`, `404 item_not_found`, `413 comments_full`, 409 `item_busy`.
+### Items package
 
-- **Every item answer** (list, create, bulk, patch, move, vote, comment) is `itemForViewer(item, caller.owner)`;
-  **every relay** is `itemForRoom`. A create's `comments` passes `readRestoredThread(raw, caller.owner)` (bad:
-  `field_value_invalid`).
-- **Editor**: `writeItemComment(scope, itemId, action, { ownerId, by })` in `lib/api/items.ts`
-  (`ItemCommentAction = add { text, mentions? } | delete { commentId } | resolve { resolved }`; 204 → `null`);
-  offline, `offlineWriteItemComment` applies `applyItemComment` to the record. `usePlanItems.comment(itemId,
-action)` tracks `Comment · Added|Deleted|Resolved|Unresolved · Item`, applies locally, sends, merges the answer;
-  a refusal toasts ("This card holds the most comments it can", else "Couldn't save that comment") and refetches.
-  An `add` with mentions that the api accepted then calls `opts.onMentioned(text, mentions, itemId)`, which the
-  editor wires to `useCommentMentions.notifyMentioned`: it tracks `Comment · Mentioned`; the email is the api's
-  (above), with `itemId`, so it opens the card.
-- **Activity**: none in liveplanner; a card's comment threads reach a person through the platform Inbox
-  ([Inbox](../../013-workspace/inbox.md)). `receive` runs `keepOwnCommentAuthors` before `mergeItemChanges`. `PlanContext.commentItem` and `ownerId`;
-  `PlanSheetsHost` hands `ItemPanel` `comments: { canComment: canVote, selfId: ownerId, onComment }`;
-  `ItemFieldEditor` draws `ItemComments` for `comments`, from the shared `comment-thread-parts.tsx`
-  (`CommentThreadList`, `CommentComposer`, `CommentResolveToggle`, also used by `CommentThreadPopover`).
-  `PlanCardFace` draws the count (`CommentIcon` and the number, label "n comments") when the field is shown and
-  the count is above 0.
+`comments` stays a built-in field id of kind `comments` (offered last in Overview, the card field after
+checklist), still refused by `validateFields` / `validateClear`. `ItemCreate.comments` (a restore's old thread)
+becomes `ItemCreate.threads` (restore: `unknown[]`, checked by the api); `itemCommentCount(item, counts?)` takes the
+face count from a `ReadonlyMap<itemId, number>` (an item carries none); `itemsWithCommentCounts` is not added: the
+renderers take the map.
+
+### Storage (plan schema step V7, `plan-room/plan-schema.ts`)
+
+```sql
+card_threads      (plan_id, id, title, resolved, resolved_by, resolved_at, comments JSON, created_at,
+                   created_by JSON, updated_at, rev, cards JSON)            PK (plan_id, id)   -- the home's
+card_thread_links (plan_id, item_id, thread_id, home, added_at, open_comments)
+                                                                            PK (plan_id, item_id, thread_id)
+                   INDEX (plan_id, thread_id)                                                  -- each card's
+```
+
+- `plan_id` is the home on `card_threads` and the card's plan on `card_thread_links` (`home` = `plan_id` for a
+  thread stored here). `open_comments` caches the thread's comment count while open (0 resolved), for faces drawn
+  without the thread (thumbnails, renders, agents' listings).
+- **Migration** in the step itself: every item whose `fields.comments.comments` is a non-empty array gets a thread
+  `c-<item id>` (title `''`, its comments, `resolved`, `created_at` / `created_by` from its first comment, `cards` the
+  card), a link, and `fields.comments` removed (`json_remove`), in the step's one transaction.
+- **Triggers**: `items_legacy_thread` (AFTER INSERT ON items WHEN `NEW.fields ->> '$.comments'` holds a thread): the
+  same, for a copy, an import or an old restore that lands later; `items_threads_gone` (AFTER DELETE ON items):
+  the card's links go (the threads are told by the route, below); `outbox_cards_threads` (AFTER INSERT, UPDATE or
+  DELETE on `card_thread_links`): the `~cards` key, so the Inbox push follows.
+- **`db/card-threads.ts`**: `readThreads(env, home, ids)`, `readThread`, `insertThread`, `updateThreadAtRev` (guarded
+  by `rev`; a lost race retried by the writer, `ITEM_WRITE_RETRIES`), `deleteThread`, `linksOfPlan(env, plan)`,
+  `linksOfItem`, `linksOfThread`, `insertLink`, `deleteLinks(env, plan, threadId, itemIds?)`,
+  `setOpenComments(env, plan, threadId, n)`, `threadCountsByItem(env, plan)` (`SUM(open_comments)` per card).
+
+### Across plans (`plan-room/card-thread-rooms.ts`, RPCs on `PlanRoom`, plan-client.ts)
+
+| RPC on the home            | Does                                                                                                      |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `threadsFor(ids, via)`     | the threads of `ids` that list a card of plan `via`, as stored                                            |
+| `threadWrite(id, op, via)` | one `ThreadOp` (below) on a thread listing a card of `via`; answers `{ thread }`, `{ gone }` or a refusal |
+
+| RPC on a plan holding a card | Does                                                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `threadLinked(link)`         | adds a link row for a card here (`thread_cards_full`, `threads_full`, `item_not_found` refused)       |
+| `threadsRelayed(op)`         | keeps the links' `open_comments`, drops links of removed threads, keys `~cards`, broadcasts `threads` |
+
+`ThreadOp = { change: ThreadChange | 'delete'; actor: { owner, editor, agent } }`. The home runs it through
+`writeThread(env, home, id, op, via)` (`card-thread-store.ts`), the same function a write on the home itself runs
+directly: the thread read, the actor's right checked against it (below), `applyThreadChange`, the guarded write,
+the links' counts here, then `relayThread`: `threadsRelayed` on every other plan in `cards` (in `waitUntil`, each
+failure logged `[threads] relay.failed`) and the home's own room. A plan that answers `gone` for a link is taken
+off `cards` (`[threads] card.gone`).
+
+Rights, against the thread as stored: a comment edit needs `authorId === owner` (and `ai` for an agent); a comment
+delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` or `createdBy.authorId === owner`
+(never an agent); `rename` and `addCard` never an agent. Refused: `403 forbidden`.
+
+### REST (`apps/api/src/routes/card-thread-routes.ts`, dispatched by `handleProjects` on `segments[3] ===
+
+'threads'`and by`handleItemRoutes`on`segments[5] === 'threads'`)
+
+| Method | Path                                          | Gate (on `:id`, the plan viewed)   | Body                          | Answers                                                 |
+| ------ | --------------------------------------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------- |
+| GET    | `/projects/:id/threads`                       | read                               | `?item=` narrows to one card  | `CardThreadsResponse`                                   |
+| POST   | `/projects/:id/items/:itemId/threads`         | participate                        | `{ text, mentions?, title? }` | 201 `CardThreadWriteResponse`                           |
+| POST   | `/projects/:id/threads/:threadId/comments`    | participate                        | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
+| PUT    | `/projects/:id/threads/:threadId/comments/:c` | participate; own                   | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId/comments/:c` | participate; own, or edit          | none                          | `CardThreadWriteResponse` (`thread: null` once it went) |
+| POST   | `/projects/:id/threads/:threadId/resolve`     | participate                        | none                          | `CardThreadWriteResponse`, 204 if already               |
+| POST   | `/projects/:id/threads/:threadId/reopen`      | participate                        | none                          | the same                                                |
+| PUT    | `/projects/:id/threads/:threadId/title`       | participate                        | `{ title }` (`''` automatic)  | `CardThreadWriteResponse`                               |
+| POST   | `/projects/:id/threads/:threadId/cards`       | participate here and on the target | `{ projectId?, itemId }`      | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId`             | participate; edit or starter       | none                          | 204                                                     |
+
+- The thread is reached through `:id`: a link row of the plan for a card the caller's scope holds, else
+  `404 thread_not_found`. Writes count against the write rate limit.
+- `GET /threads` reads the plan's links once, its own threads in one query, and each other home's in one
+  `threadsFor` per home (in parallel; a home that cannot answer is left out, `[threads] home.unreachable`).
+  `?item=` reads one card's.
+- A start, a reply, an edit: `newComment` (comment-routes.ts) stamps author, colour, id, token and `ai` (from
+  `ctx.token`); a start or reply then runs `afterCommentPosted(ctx, caller, comment, itemId, threadId)`.
+- **Add to card**: the target is `{ projectId: :id }` when `projectId` is left out; another plan's grant is
+  resolved for the caller (`resolvePlanGrant`) and must be participate, its card read (`threadLinked`), then the
+  home's `addCard`. Refusals: `404 item_not_found`, `409 thread_on_card`, `413 threads_full`,
+  `413 thread_cards_full`, `403`.
+- **Every answer** is `threadForViewer(thread, caller.owner)`; **every relay** `threadForRoom`.
+- **Card delete** (`DELETE /items/:itemId`): the card's links are read before the row goes; after it, each thread
+  takes a `removeCard` through its home (a thread left on no card is deleted there).
+- **Card restore** (`POST /items`, `/items/bulk`, an Editor's): `threads: CardThread[]` (each `readRestoredThread`;
+  bad: `field_value_invalid`): a thread this plan stores and still holds takes the card back (`addCard`); one it no
+  longer holds is inserted, on this card alone; another plan's is asked back through its home (`addCard`), and
+  dropped when that home no longer holds it. The old `comments` body (one `CommentThread`) is still read, as the
+  card's legacy thread (the trigger takes it).
+- The old `/items/:itemId/comments` routes are removed.
+
+Refusals, by name: `400` text missing or too long, `400 title_too_long`, `403 forbidden`, `404 thread_not_found`,
+`404 comment_not_found`, `404 item_not_found`, `409 thread_on_card`, `409 thread_busy`, `413 comments_full`,
+`413 threads_full`, `413 thread_cards_full`.
+
+### Room op
+
+`CardThreadsRoomOp = { kind: 'threads'; upserts: CardThread[]; removed: string[] }` (api-schema
+`card-threads.ts`), broadcast ordered with no store rev. A tab-scoped session (`room-scope.ts`) hears it with both
+lists empty and reads `GET /threads` again.
+
+### Copies and offline
+
+- `PlanCopy.threads`: the threads stored here on the copied cards (`threadForViewer` for `redactAuthorsFor`), each
+  re-homed into the copy with only its copied cards (`projectId` the copy's); `importPlanCopy` inserts them and their
+  links.
+- **This Browser**: `OfflineProjectRecord.threads?: CardThread[]`; `recordThreads(rec)` moves an old item's
+  `fields.comments` into it on read (`legacyThreadOf`); `offlineWriteThread(projectId, op)` applies
+  `applyThreadChange` (same rights) in `serializeOfflineWrite`. **Sync to cloud** sends `threads` with the create
+  (`POST /projects` `threads`, each read as a restore); **Take offline** fetches `GET /threads` and keeps those whose
+  `home` is the plan.
+
+### Inbox
+
+`plan-cards-push.ts` reads the plan's threads (`planThreads`: its own and the other homes', as `GET /threads`) and
+hands each card its threads (`InboxCardSource.threads`); `cardsCollabPush` pushes one Inbox thread per thread
+(`elementId` the thread id, `elementLabel` its title, `card` its first card here, with `card.id`), once however
+many of the plan's cards it is on.
+
+### Editor
+
+- `lib/api/card-threads.ts`: `fetchThreads(scope)`, `writeThread(scope, action)` (`ThreadAction = start { itemId,
+text, mentions? } | reply | edit | delete | resolve | rename | addToCard { projectId, itemId } | deleteThread`),
+  offline through `lib/offline/offline-threads.ts`.
+- `hooks/plan/useCardThreads.ts`: the plan's threads (`Map` by id), loaded with the items and again on a reconnect,
+  kept live by `receive(op)` (`keepOwnThreadAuthors`), `countsByItem` (memoised `openCommentCount` per card), and
+  `act(action)`: telemetry, applied now (a start shows at once under a temporary id), sent, settled on the answer;
+  a refusal toasts and reloads. Mention notices as before (`onMentioned`).
+- `components/plan/threads/`: `CardThreads.tsx` (the field: header, empty state, starter, list, Resolved
+  disclosure), `ThreadTile.tsx` (one thread: header, meta, menu, body), `ThreadStarter.tsx`, `ThreadTitleEditor.tsx`,
+  `ThreadSharedChip.tsx`, `AddThreadToCardDialog.tsx` (with `useThreadCardPicker.ts`: this plan's cards, the other
+  plans from `projectList`, each read on opening through `fetchItems` with its grant), `thread-words.ts` (counts,
+  titles, announcements). `comment-thread-parts.tsx`'s `CommentRow` draws **Generated by AI** and **Edited**, and
+  takes `onEdit`.
+- `PlanContext.threads` (`{ byItem, counts, act, selfId, canComment, canEdit }`); `CommentsPill` reads
+  `counts`; exports get the counts map; `collab-deep-link.ts` reads `thread`.
 
 ## Live: room op
 
