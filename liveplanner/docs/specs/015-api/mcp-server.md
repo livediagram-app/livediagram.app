@@ -601,9 +601,9 @@ Three behaviours cover the twenty-five tools, and each is a preset in
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                             |
 | --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                                           |
+| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_sheets`, `read_sheet`, `read_form`                           |
 | **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
-| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `change_items`, `change_card_types`, `change_sheet`, `change_form`                                                            |
+| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `change_items`, `change_threads`, `change_card_types`, `change_sheet`, `change_form`                                          |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -704,6 +704,8 @@ says why by its status (no such tab, view only, the last tab).
 | `restore_project`   | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                                                                            |
 | `list_items`        | `boards[]` of `{ title, tab, tabId, kind, takes, columns[] { name, status, wipLimit?, cards[] } }`, `notOnBoard[]`, `count`, `items[]` of `{ ref, id, type, status, column, title, fields }`, `types[]`, `hint?`, `url` |
 | `change_items`      | `applied[]` (one line per change, naming the column), `url`                                                                                                                                                             |
+| `list_threads`      | `threads[]` of `{ id, title, state, resolvedBy?, cards[], comments[] { id, author, at, text, ai?, edited? } }`, `count`, `url`                                                                                          |
+| `change_threads`    | `applied[]` (one line per change), `url`                                                                                                                                                                                |
 | `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |
 | `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `changesetId`, `rev`, `url`                                                                                                                  |
 | `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                          |

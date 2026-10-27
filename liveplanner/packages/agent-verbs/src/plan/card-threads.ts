@@ -10,7 +10,7 @@ import type {
   CardThreadsResponse,
   ItemsResponse,
 } from '@liveplanner/api-schema';
-import { itemSummary, resolveItem, type Item } from '@liveplanner/items';
+import { itemTitle, resolveItem, type Item } from '@liveplanner/items';
 import type { CardRef, CardThread, Comment } from '@liveplanner/project';
 import { apiRefusalOf } from './api-refusal';
 import { itemsPath } from '../verbs/shared';
@@ -59,7 +59,7 @@ function cardName(card: CardRef, projectId: string, items: ReadonlyMap<string, I
   const num = card.key !== null ? `#${card.key}` : 'a card';
   if (card.projectId !== projectId) return `${num} in ${card.projectName || 'another plan'}`;
   const item = items.get(card.itemId);
-  return item ? itemSummary(item).split(' (')[0]! : num;
+  return item ? `${num} ${itemTitle(item) || 'Untitled'}` : num;
 }
 
 export function listedComment(c: Comment): ListedComment {
@@ -189,6 +189,18 @@ function refusedBy(err: unknown): Stop | null {
   return apiRefusalOf(err);
 }
 
+// The comment an agent may edit or delete: one an agent wrote (the api refuses any other too, and says the same).
+function ownComment(ref: string, thread: CardThread): Comment {
+  const found = resolveComment(ref, thread);
+  if (!found.ok) return stop(found.code, found.message);
+  if (!found.value.ai)
+    return stop(
+      'forbidden',
+      `Comment ${found.value.id} by ${found.value.authorName} was written by a person: an agent edits and deletes only its own comments (those marked ai).`,
+    );
+  return found.value;
+}
+
 const threadPath = (projectId: string, id: string) =>
   `${threadsPath(projectId)}/${encodeURIComponent(id)}`;
 
@@ -239,25 +251,17 @@ export async function applyThreadChanges(
         case 'resolve':
         case 'reopen': {
           const t = thread(change.thread);
-          const res = await api.fetch(`${threadPath(projectId, t.id)}/${change.op}`, {
+          // Already so answers 204, nothing: the thread as it was.
+          const { body } = await api.text(`${threadPath(projectId, t.id)}/${change.op}`, {
             method: 'POST',
           });
-          if (!res.ok) {
-            const body = (await res.json().catch(() => ({}))) as { error?: string };
-            throw Object.assign(new Error(`thread ${change.op}`), {
-              status: res.status,
-              code: body.error,
-            });
-          }
-          if (res.status !== 204) keep(((await res.json()) as CardThreadWriteResponse).thread, t.id);
+          if (body) keep((JSON.parse(body) as CardThreadWriteResponse).thread, t.id);
           applied.push(`~ thread "${t.title}" ${change.op === 'resolve' ? 'resolved' : 'open'}`);
           break;
         }
         case 'edit': {
           const t = thread(change.thread);
-          const c = resolveComment(change.comment, t);
-          if (!c.ok) stop(c.code, c.message);
-          const id = (c as { value: Comment }).value.id;
+          const id = ownComment(change.comment, t).id;
           const out = await post(
             `${threadPath(projectId, t.id)}/comments/${encodeURIComponent(id)}`,
             { text: change.text },
@@ -269,16 +273,16 @@ export async function applyThreadChanges(
         }
         case 'delete': {
           const t = thread(change.thread);
-          const c = resolveComment(change.comment, t);
-          if (!c.ok) stop(c.code, c.message);
-          const id = (c as { value: Comment }).value.id;
+          const id = ownComment(change.comment, t).id;
           const out = await post(
             `${threadPath(projectId, t.id)}/comments/${encodeURIComponent(id)}`,
             undefined,
             'DELETE',
           );
           keep(out.thread, t.id);
-          applied.push(`- comment ${id} from "${t.title}"${out.thread ? '' : ' (its last: the thread went)'}`);
+          applied.push(
+            `- comment ${id} from "${t.title}"${out.thread ? '' : ' (its last: the thread went)'}`,
+          );
           break;
         }
       }
