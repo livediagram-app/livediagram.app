@@ -4,13 +4,13 @@
 import type { Item } from './item';
 import { itemTitle } from './item';
 import { isArchived, isTrashed, linkedCard } from './board';
-import type { ItemTypeDef } from './item-types';
+import { linkTypesOf, type ItemTypeDef } from './item-types';
 
-// A link field as a card's panel sees it: the field, its label, and the card type it points at.
+// A link field as a card's panel sees it: the field, its label, and the card types it points at.
 export interface LinkField {
   id: string;
   label: string;
-  linkType: string;
+  linkTypes: readonly string[];
 }
 
 // The link fields a type offers: its Card fields, in the type's field order.
@@ -18,18 +18,23 @@ export function linkFieldsOfType(type: ItemTypeDef): LinkField[] {
   const out: LinkField[] = [];
   for (const f of type.fields) {
     const c = type.custom?.find((x) => x.id === f);
-    if (c?.kind === 'card' && c.linkType)
-      out.push({ id: c.id, label: c.label, linkType: c.linkType });
+    const linkTypes = c?.kind === 'card' ? linkTypesOf(c) : [];
+    if (c && linkTypes.length) out.push({ id: c.id, label: c.label, linkTypes });
   }
   return out;
 }
 
-// The cards a link field may point at: live (not trashed or archived) cards of its type, in number order, never
-// the card itself.
-export function linkCandidates(items: Iterable<Item>, linkType: string, selfId?: string): Item[] {
+// The cards a link field may point at: live (not trashed or archived) cards of any of its types, in number order,
+// never the card itself.
+export function linkCandidates(
+  items: Iterable<Item>,
+  linkTypes: readonly string[],
+  selfId?: string,
+): Item[] {
   const out: Item[] = [];
   for (const it of items)
-    if (it.type === linkType && it.id !== selfId && !isTrashed(it) && !isArchived(it)) out.push(it);
+    if (linkTypes.includes(it.type) && it.id !== selfId && !isTrashed(it) && !isArchived(it))
+      out.push(it);
   return out.sort((a, b) => a.key - b.key);
 }
 
@@ -54,7 +59,8 @@ export function linkedCardsOf(
   const byField = new Map<string, LinkedGroup>();
   for (const t of types)
     for (const c of t.custom ?? []) {
-      if (c.kind !== 'card' || c.linkType !== target.type || !t.fields.includes(c.id)) continue;
+      if (c.kind !== 'card' || !linkTypesOf(c).includes(target.type) || !t.fields.includes(c.id))
+        continue;
       let g = byField.get(c.id);
       if (!g) {
         g = { fieldId: c.id, label: c.label, fromTypes: [], cards: [] };

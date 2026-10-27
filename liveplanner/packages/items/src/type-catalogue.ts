@@ -5,6 +5,7 @@
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import {
+  CARD_LINK_TYPES_MAX,
   CURRENCY_CODE,
   RATING_FIELD_SCALE_DEFAULT,
   RATING_FIELD_SCALE_MAX,
@@ -20,6 +21,8 @@ import {
   type ItemFieldId,
   type ItemTypeDef,
   type ItemTypeTab,
+  linkTypesOf,
+  withLinkTypes,
 } from './item-types';
 import { ITEM_STATUS_MAX, ITEM_TYPE_PATTERN } from './limits';
 import { cutSlug, slugText, uniqueSlug } from './slug';
@@ -277,7 +280,22 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     // The type it links to; one the catalogue lacks is kept (the type may come back), never refused.
     const linkType = input['linkType'];
     if (typeof linkType !== 'string' || !ITEM_TYPE_PATTERN.test(linkType)) return `${at}.linkType`;
-    field.linkType = linkType;
+    // Several types (docs/specs/026-plan/item-types.md "Card fields"): read as linkTypesOf reads them, stored as
+    // withLinkTypes stores them.
+    const many = input['linkTypes'];
+    if (many !== undefined) {
+      if (
+        !Array.isArray(many) ||
+        many.length < 1 ||
+        many.length > CARD_LINK_TYPES_MAX ||
+        many.some((t) => typeof t !== 'string' || !ITEM_TYPE_PATTERN.test(t))
+      )
+        return `${at}.linkTypes`;
+    }
+    Object.assign(
+      field,
+      withLinkTypes(field, linkTypesOf({ linkType, linkTypes: many as string[] | undefined })),
+    );
   }
   if (kind === 'currency' && input['currency'] !== undefined) {
     const code = input['currency'];
