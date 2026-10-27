@@ -29,6 +29,7 @@ import {
   boardAddTypes,
   newItemId,
   isTrashed,
+  boardSortFieldOf,
 } from '@liveplanner/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
@@ -266,7 +267,10 @@ export function PlanBoardView({
 
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
     if (!plan) return;
-    const action = planBoardKey(projection, item.id, e.key, e.shiftKey, canEditCards);
+    // A sorted board's first field, named when Shift+Up/Down cannot reorder.
+    const first = setup.sortBy?.[0]?.field;
+    const sortedBy = first ? (boardSortFieldOf(first, plan.types)?.label ?? first) : undefined;
+    const action = planBoardKey(projection, item.id, e.key, e.shiftKey, canEditCards, sortedBy);
     if (!action) return;
     e.preventDefault();
     e.stopPropagation();
@@ -281,6 +285,7 @@ export function PlanBoardView({
       plan.trashItem(item.id);
       plan.announce(`#${item.key} moved to the Trash`);
     } else if (action.kind === 'add') setAdding({ status: action.status, laneKey: action.laneKey });
+    else if (action.kind === 'refuse') plan.announce(action.announce);
     else {
       // A column whose status the card's type leaves out (docs/specs/026-plan/item-types.md "An item type").
       const refused = moveStatusRefusal(plan.types, item, action.move, columnName);
