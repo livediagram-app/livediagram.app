@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type CSSProperties } from 'react';
+import { memo, useRef, type CSSProperties } from 'react';
 import { PictureDisc } from '@liveworkspace/ui';
 import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { initialsOf } from '@liveworkspace/model-core/names';
@@ -28,7 +28,8 @@ const CURSOR_PICTURE_PX = 14;
 // Position is in canvas coords (so the cursor pans + zooms with the canvas), but the SVG + name pill are
 // counter-scaled so they keep their on-screen size at any zoom, the same trick the badges and plus buttons use.
 // It never takes a pointer: `pointer-events-none` lets every click through to what is beneath, faded or not.
-export function RemoteCursor({
+// Memoised: one cursor stepping aside re-renders that cursor, not the whole room.
+export const RemoteCursor = memo(function RemoteCursor({
   cursor,
   zoom,
   paint,
@@ -84,7 +85,7 @@ export function RemoteCursor({
       </span>
     </div>
   );
-}
+});
 
 // Every remote cursor on the active tab, drawn inside the canvas's panned + zoomed wrapper. It reads the zoom
 // itself (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas"), so the layer around it takes
