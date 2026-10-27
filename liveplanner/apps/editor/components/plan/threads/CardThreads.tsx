@@ -6,7 +6,7 @@
 // threads under a Resolved disclosure at the bottom. Drawn for about five threads, and for many more.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CommentIcon, lucideGlyph } from '@liveplanner/ui';
+import { CommentIcon, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideChevronDown, lucidePlus } from '@liveworkspace/icons/lucide';
 import { itemTitle, type Item } from '@liveplanner/items';
 import type { CardThread, CommentMention } from '@liveplanner/project';
@@ -115,28 +115,18 @@ export function CardThreads({ item }: { item: Item }) {
         <ThreadStarter self={ctx.self} onStart={start} onCancel={() => setStarting(false)} />
       ) : null}
       {threads.length === 0 && !starting ? (
-        canComment ? (
-          <div
-            data-card-threads-empty=""
-            className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-slate-200 px-4 py-5 text-center dark:border-slate-700"
-          >
-            <span
-              aria-hidden
-              className="flex size-8 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
-            >
-              <CommentIcon size={15} />
-            </span>
-            <p className="text-[13px] font-medium text-slate-800 dark:text-slate-100">
-              No threads yet
-            </p>
-            <p className="text-[12px] text-slate-500 dark:text-slate-400">
-              Start a thread to discuss this card.
-            </p>
-            <div className="mt-1">{newThread}</div>
-          </div>
-        ) : (
-          <p className="py-1 text-[13px] text-slate-500 dark:text-slate-400">No comments yet.</p>
-        )
+        <CompactEmptyState
+          size="small"
+          icon={<CommentIcon />}
+          title={canComment ? 'No threads yet' : 'No comments yet'}
+          description={
+            canComment
+              ? 'Start a thread to discuss this card.'
+              : 'No one has started a thread on this card.'
+          }
+          action={canComment ? newThread : undefined}
+          className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700"
+        />
       ) : null}
       {open.length > 0 ? (
         <ul aria-label="Open threads" className="flex flex-col gap-2">

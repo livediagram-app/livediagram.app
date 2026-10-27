@@ -11,7 +11,9 @@ export const commentCount = (n: number) => plural(n, 'comment');
 
 /** The header's quiet tally: "2 open · 1 resolved", "3 open", "1 resolved"; '' with none. */
 export function threadTally(open: number, resolved: number): string {
-  const parts = [open ? `${open} open` : '', resolved ? `${resolved} resolved` : ''].filter(Boolean);
+  const parts = [open ? `${open} open` : '', resolved ? `${resolved} resolved` : ''].filter(
+    Boolean,
+  );
   return parts.join(' · ');
 }
 
@@ -44,7 +46,10 @@ export function deleteThreadMessage(cards: number): string {
 }
 
 /** The warning before a thread is shared into another plan (#82, the owner's cross-plan rule). */
-export function shareWarning(cardNumber: number | null, planName: string): {
+export function shareWarning(
+  cardNumber: number | null,
+  planName: string,
+): {
   title: string;
   detail: string;
 } {

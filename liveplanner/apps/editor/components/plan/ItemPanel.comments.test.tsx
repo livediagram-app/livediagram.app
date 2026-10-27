@@ -3,9 +3,11 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { ItemPanel } from './ItemPanel';
+import { CardThreadsProvider } from './threads/CardThreadsContext';
+import { contextOf, fakeThreads, thread } from './threads/thread-test-kit';
 
-// docs/specs/026-plan/items.md "Comments": the thread ends the item panel's Overview tab, and a type that stops
-// offering comments keeps the thread stored, out of the panel.
+// docs/specs/026-plan/items.md "Comments": the card's threads end the item panel's Overview tab, and a type that
+// stops offering comments keeps its threads stored, out of the panel.
 
 afterEach(cleanup);
 
@@ -17,18 +19,6 @@ const card = (type = 'task'): Item => ({
   rank: 'i',
   fields: {
     title: 'A card',
-    comments: {
-      comments: [
-        {
-          id: 'c1',
-          text: 'First thoughts',
-          createdAt: 0,
-          authorName: 'Sam',
-          authorColor: '#2563eb',
-        },
-      ],
-      resolved: false,
-    },
   },
   rev: 1,
   createdAt: 0,
@@ -39,7 +29,22 @@ const card = (type = 'task'): Item => ({
 
 function panel(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES, withComments = true) {
   const noop = vi.fn();
-  render(
+  const threads = fakeThreads([
+    thread('th-a', {
+      title: 'Sam: First thoughts',
+      cards: [{ projectId: 'plan-a', itemId: 'item-one', key: 1 }],
+      comments: [
+        {
+          id: 'c1',
+          text: 'First thoughts',
+          createdAt: 0,
+          authorName: 'Sam',
+          authorColor: '#2563eb',
+        },
+      ],
+    }),
+  ]).threads;
+  const panelTree = (
     <ItemPanel
       item={item}
       types={types}
@@ -58,19 +63,24 @@ function panel(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES, withComme
       onClose={noop}
       trail={[item]}
       statusNames={new Map()}
-      {...(withComments
-        ? { comments: { canComment: true, selfId: 'owner-me', onComment: noop } }
-        : {})}
-    />,
+    />
+  );
+  render(
+    withComments ? (
+      <CardThreadsProvider value={contextOf(threads)}>{panelTree}</CardThreadsProvider>
+    ) : (
+      panelTree
+    ),
   );
 }
 
 describe('the item panel’s comments', () => {
-  it('ends the Overview tab with the thread and its composer', () => {
+  it('ends the Overview tab with the card’s threads, the latest open with its reply composer', () => {
     panel(card());
     expect(screen.getByText('Comments')).toBeTruthy();
     expect(screen.getByText('First thoughts')).toBeTruthy();
-    expect(screen.getByRole('textbox', { name: 'Add a comment' })).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Reply to “Sam: First thoughts”' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'New Thread' })).toBeTruthy();
   });
 
   it('draws nothing for the field without a comments context', () => {

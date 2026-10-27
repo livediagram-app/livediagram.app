@@ -27,9 +27,16 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Canvas·Changed',
   'Canvas·Zoomed',
   'Comment·Added',
+  // A card's comment threads (docs/specs/026-plan/items.md "Telemetry"): an edit ('Changed'), a thread started
+  // ('Created', type Thread), renamed ('Renamed') and added to another card ('Linked', type Thread or
+  // ThreadOtherPlan).
+  'Comment·Changed',
+  'Comment·Created',
   'Comment·Deleted',
+  'Comment·Linked',
   'Comment·Mentioned',
   'Comment·Opened',
+  'Comment·Renamed',
   'Comment·Resolved',
   'Comment·Unresolved',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new

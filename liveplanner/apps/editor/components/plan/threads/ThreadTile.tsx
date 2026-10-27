@@ -23,7 +23,7 @@ import {
   lucidePencil,
   lucideRotateCcw,
 } from '@liveworkspace/icons/lucide';
-import { threadParticipants, type CardThread } from '@liveplanner/project';
+import { threadParticipants, threadTitle, type CardThread } from '@liveplanner/project';
 import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
@@ -55,10 +55,10 @@ function Faces({ thread }: { thread: CardThread }) {
       {shown.map((p, i) => (
         <GlyphDisc
           key={`${p.name}-${p.color}`}
-          size={18}
+          size={20}
           as="span"
           style={identityVars(p.color)}
-          className={`text-[8px] font-semibold text-white ring-2 ring-white dark:ring-slate-900 ${IDENTITY_FILL} ${i ? '-ml-1.5' : ''}`}
+          className={`text-[8px] font-semibold tracking-tight text-white ring-2 ring-white dark:ring-slate-900 ${IDENTITY_FILL} ${i ? '-ml-1' : ''}`}
         >
           {initialsOf(p.name)}
         </GlyphDisc>
@@ -102,6 +102,8 @@ export function ThreadTile({
   const headerRef = useRef<HTMLButtonElement>(null);
   const { canComment, isEditor, selfId, threads, announce } = ctx;
   const resolved = thread.resolved;
+  // A title cleared back to the automatic one reads '' until the answer lands: worked out here meanwhile.
+  const title = threadTitle(thread);
   const mayDelete = isEditor || thread.createdBy.authorId === selfId;
   const at = resolved ? (thread.resolvedAt ?? thread.updatedAt) : thread.updatedAt;
   const when = new Date(at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -132,11 +134,11 @@ export function ThreadTile({
         {renaming ? (
           <div className="flex min-w-0 flex-1 items-center gap-2 px-1.5 py-1">
             <ThreadTitleEditor
-              title={thread.title}
+              title={threadTitle(thread)}
               onDone={(title) => {
                 setRenaming(false);
                 headerRef.current?.focus();
-                if (title === null || title === thread.title) return;
+                if (title === null || title === threadTitle(thread)) return;
                 void threads.act({ kind: 'rename', threadId: thread.id, title }).then((ok) => {
                   if (ok !== false) announce(ANNOUNCE.renamed);
                 });
@@ -169,7 +171,7 @@ export function ThreadTile({
               {resolved ? <CheckIcon size={11} /> : <CommentIcon size={11} />}
             </span>
             <span className="min-w-0 flex-1">
-              <Tooltip label={thread.title}>
+              <Tooltip label={title}>
                 <span
                   data-thread-title=""
                   className={`block truncate text-[13px] font-semibold leading-5 ${
@@ -178,14 +180,19 @@ export function ThreadTile({
                       : 'text-slate-900 dark:text-slate-50'
                   }`}
                 >
-                  {thread.title}
+                  {title}
                 </span>
               </Tooltip>
               <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400">
                 <Faces thread={thread} />
                 <span>{commentCount(thread.comments.length)}</span>
                 <span aria-hidden>·</span>
-                {resolved ? <span>{resolvedByLabel(thread.resolvedBy)}</span> : null}
+                {resolved ? (
+                  <>
+                    <span>{resolvedByLabel(thread.resolvedBy)}</span>
+                    <span aria-hidden>·</span>
+                  </>
+                ) : null}
                 <Tooltip label={when}>
                   <time dateTime={new Date(at).toISOString()}>
                     {formatRelativeTimeCompact(now - at)}
@@ -208,7 +215,7 @@ export function ThreadTile({
           {canComment ? (
             <EllipsisTriggerButton
               ref={setMenuButton}
-              label={`More for the thread “${thread.title}”`}
+              label={`More for the thread “${title}”`}
               expanded={menuOpen}
               onClick={() => setMenuOpen((v) => !v)}
             />
@@ -276,7 +283,8 @@ export function ThreadTile({
             density="comfortable"
             onDeleteComment={(commentId) =>
               void threads.act({ kind: 'delete', threadId: thread.id, commentId }).then((ok) => {
-                if (ok !== false) announce(ok === null ? ANNOUNCE.deleted : ANNOUNCE.commentDeleted);
+                if (ok !== false)
+                  announce(ok === null ? ANNOUNCE.deleted : ANNOUNCE.commentDeleted);
               })
             }
             onEditComment={(commentId, text, mentions) =>
@@ -309,7 +317,7 @@ export function ThreadTile({
                 density="comfortable"
                 self={ctx.self}
                 placeholder="Reply…"
-                fieldLabel={`Reply to “${thread.title}”`}
+                fieldLabel={`Reply to “${title}”`}
                 submitLabel="Reply"
                 onAddComment={(text, mentions) =>
                   void threads

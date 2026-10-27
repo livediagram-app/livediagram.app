@@ -5,7 +5,7 @@
 // each opened to its cards. A card in this plan takes the thread at once; one in another plan asks first, in the
 // dialog, saying who will be able to read it there and what they may do (#82, the owner's cross-plan rule).
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { Button, DialogCloseButton, lucideGlyph, useEscape } from '@liveplanner/ui';
 import {
@@ -14,7 +14,7 @@ import {
   lucideSearch,
   lucideTriangleAlert,
 } from '@liveworkspace/icons/lucide';
-import type { CardThread } from '@liveplanner/project';
+import { threadTitle, type CardThread } from '@liveplanner/project';
 import type { Item } from '@liveplanner/items';
 import { usePlan } from '../PlanContext';
 import { PlanTypeGlyph } from '../plan-type-glyph';
@@ -87,6 +87,11 @@ export function AddThreadToCardDialog({
   const [openPlans, setOpenPlans] = useState<ReadonlySet<string>>(() => new Set());
   const [confirming, setConfirming] = useState<{ card: PickCard; planName: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  // The search is focused on open with a mouse; on a touch screen the keyboard would cover the list.
+  useEffect(() => {
+    if (!window.matchMedia?.('(pointer: coarse)').matches) searchRef.current?.focus();
+  }, []);
   // Escape steps back from the warning before it closes the dialog.
   useEscape(() => (confirming ? setConfirming(null) : onClose()), {
     capture: true,
@@ -146,8 +151,9 @@ export function AddThreadToCardDialog({
           <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
             Add Thread to Card
           </h2>
-          <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-            “{thread.title}” shows on the card you pick too: one thread, on both.
+          <p className="mt-0.5 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">
+            Pick a card to show “{threadTitle(thread)}” on too. It stays one thread: a reply on
+            either card shows on both.
           </p>
         </div>
         <div className="-mt-1 flex shrink-0 items-center">
@@ -174,8 +180,7 @@ export function AddThreadToCardDialog({
               </span>
               <input
                 id={searchId}
-                // Focused on open with a mouse; a phone's keyboard would cover the list.
-                autoFocus={typeof window !== 'undefined' && !window.matchMedia?.('(pointer: coarse)').matches}
+                ref={searchRef}
                 value={picker.query}
                 onChange={(e) => picker.setQuery(e.target.value)}
                 placeholder="Search by number, title, type or plan…"
@@ -210,7 +215,8 @@ export function AddThreadToCardDialog({
                 ) : (
                   <ul aria-label="Other plans" className="flex flex-col gap-0.5">
                     {picker.shownPlans.map((p) => {
-                      const open = openPlans.has(p.id) || (!!picker.query.trim() && picker.picks.has(p.id));
+                      const open =
+                        openPlans.has(p.id) || (!!picker.query.trim() && picker.picks.has(p.id));
                       const pickState = picker.picks.get(p.id);
                       return (
                         <li key={p.id}>
@@ -226,12 +232,14 @@ export function AddThreadToCardDialog({
                             >
                               <Chevron />
                             </span>
-                            <span className="min-w-0 flex-1 truncate">{p.name || 'Untitled plan'}</span>
+                            <span className="min-w-0 flex-1 truncate">
+                              {p.name || 'Untitled plan'}
+                            </span>
                           </button>
                           {open ? (
                             <div className="pb-1 pl-6">
                               {!pickState || pickState.status === 'loading' ? (
-                                <p className="animate-pulse px-2 py-2 text-[12px] text-slate-400 motion-reduce:animate-none">
+                                <p className="animate-pulse px-2 py-2 text-[12px] text-slate-500 motion-reduce:animate-none dark:text-slate-400">
                                   Reading its cards…
                                 </p>
                               ) : pickState.status === 'view' ? (

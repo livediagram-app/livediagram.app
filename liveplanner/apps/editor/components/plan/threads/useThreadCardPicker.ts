@@ -120,7 +120,12 @@ export function useThreadCardPicker({
           if (!grant) return put({ status: 'error' });
           // Only a Participant or an Editor of the whole plan changes its cards.
           if (grant.level === 'view' || grant.tabId !== null) return put({ status: 'view' });
-          const store = await fetchItems({ ownerId, projectId: planId, shareCode: null, tabId: null });
+          const store = await fetchItems({
+            ownerId,
+            projectId: planId,
+            shareCode: null,
+            tabId: null,
+          });
           // Another plan's own card types are its own; the built-in ones name its cards well enough here.
           put({ status: 'ready', cards: pickCardsOf(store.items, planId, ITEM_TYPES, thread) });
         } catch (err) {
