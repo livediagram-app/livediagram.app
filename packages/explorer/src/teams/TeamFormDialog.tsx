@@ -87,7 +87,8 @@ export function TeamFormDialog({
               htmlFor={orgId}
               className="text-xs font-medium text-slate-700 dark:text-slate-300"
             >
-              Organisation <span className="font-normal text-slate-500">(optional)</span>
+              Organisation{' '}
+              <span className="font-normal text-slate-500 dark:text-slate-400">(optional)</span>
             </label>
             <input
               id={orgId}

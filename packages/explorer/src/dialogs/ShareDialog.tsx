@@ -263,7 +263,7 @@ export function ShareDialog({
               {active.length > 0 ? <CountBadge count={active.length} /> : null}
             </h3>
             {share.loading ? (
-              <p className="text-sm text-slate-500">Loading passes…</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Loading passes…</p>
             ) : share.error ? (
               <p className="text-sm text-rose-700 dark:text-rose-300">Couldn’t load the passes.</p>
             ) : active.length === 0 ? (

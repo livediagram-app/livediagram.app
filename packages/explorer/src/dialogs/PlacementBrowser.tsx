@@ -108,7 +108,7 @@ export function PlacementBrowser({
   if (space === null) {
     return (
       <div className="flex flex-col gap-1">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Choose a Space
         </p>
         {showPersonal ? (
