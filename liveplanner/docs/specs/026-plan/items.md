@@ -297,7 +297,7 @@ text. Editing an AI comment keeps the flag; a person cannot set or clear it.
 - **The header**: the label, then, quietly, how many are open and resolved ("2 open · 1 resolved"), and at its end
   **New Thread** (a plus and the word) for anyone who may start one.
 - **No threads**: a soft empty state: a speech-bubble glyph, **No threads yet**, and "Start a thread to discuss this
-  card." with **New Thread**; someone who may not comment reads **No comments yet.** alone.
+  card." with **New Thread**; someone who may not comment reads **No comments yet** and "No one has started a thread on this card.", with no button (the shared compact empty state).
 - **New Thread** opens the starter at the top of the list (sliding in; none with reduced motion): your avatar, a
   field with the placeholder **Start a thread…** that grows with its text, the title it will get shown live beneath it
   ("Titled “Gentle Falcon: Basket empties…”", muted), and **Cancel** and **Start Thread** (off until there is text).
@@ -308,8 +308,8 @@ text. Editing an AI comment keeps the flag; a person cannot set or clear it.
   - its title (one line, cut with an ellipsis, the whole title in a tooltip);
   - under it, the avatars of up to three people in it (then "+2"), "4 comments", and its last activity ("2h ago",
     the full date in a tooltip);
-  - a **shared chip** when it is on more than one card ("On 3 cards", a link glyph), which opens a small popover
-    listing the cards (#12 Title, and for another plan's card, its plan's name), each opening that card (one in this
+  - a **shared chip** when it is on more than one card (a link glyph and the count, named "On 3 cards"; amber when one of them is in another plan), which opens a small popover
+    listing the cards (#12 Title, and for another plan's card "#4 in Sprint 12"; the card being viewed tagged **This card**), each opening that card (one in this
     plan in the card panel, one in another plan in a new tab);
   - a chevron, and a **⋯** menu: **Rename**, **Add to Card…**, **Resolve** or **Reopen**, and **Delete Thread…**,
     each shown only to whoever may do it.

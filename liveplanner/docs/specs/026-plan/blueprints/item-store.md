@@ -348,7 +348,7 @@ card_thread_links (plan_id, item_id, thread_id, home, added_at, open_comments)
   `linksOfItem`, `linksOfThread`, `insertLink`, `deleteLinks(env, plan, threadId, itemIds?)`,
   `setOpenComments(env, plan, threadId, n)`, `threadCountsByItem(env, plan)` (`SUM(open_comments)` per card).
 
-### Across plans (`plan-room/card-thread-rooms.ts`, RPCs on `PlanRoom`, plan-client.ts)
+### Across plans (`plan-room/card-thread-store.ts`, RPCs on `PlanRoom`, plan-client.ts)
 
 | RPC on the home            | Does                                                                                                      |
 | -------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -580,13 +580,13 @@ include `fields` or comment text.
 | Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                                                                                                           |
 | Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                                                                                                                          |
 | Undo interleaving                              | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                          |
-| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                                                  |
+| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `agent-verbs/src/verbs/thread.test.ts`, `agent-verbs/src/plan/card-threads.test.ts`, `apps/mcp/src/output-schema.test.ts`                             |
 | Offline store                                  | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                             |
 | Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                                                                                                                 |
-| Thread ops, item writes, redaction, restore    | `packages/project/src/item-comments.test.ts`                                                                                                                                                |
-| Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                                                                                                           |
-| Editor comment writes, room merge, refusals    | `apps/editor/hooks/plan/usePlanItems.comments.test.ts`, `apps/editor/lib/api/items-comments.test.ts`                                                                                        |
-| Panel thread and card count                    | `apps/editor/components/plan/ItemComments.test.tsx`                                                                                                                                         |
+| Thread ops, titles, redaction, restore, legacy | `packages/project/src/card-threads.test.ts`, `apps/api/src/plan-room/card-thread-schema.test.ts`                                                                                            |
+| Thread routes: roles, agents, cross-plan, AI   | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                            |
+| Editor thread writes, room merge, refusals     | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                              |
+| Panel threads, Add to Card, shared chip, words | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                |
 | Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
 | Tab import: parse, plan, land, report          | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
