@@ -73,9 +73,7 @@ export function LinksToPicker({
           }
         }}
       >
-        <span
-          className={`min-w-0 flex-1 truncate ${value.length ? '' : 'text-slate-400 dark:text-slate-500'}`}
-        >
+        <span className={`min-w-0 flex-1 truncate ${value.length ? '' : 'text-slate-400'}`}>
           {linksToLabel(names)}
         </span>
         <ChevronDownIcon className="shrink-0 text-slate-400" />
