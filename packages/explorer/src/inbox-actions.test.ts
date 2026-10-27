@@ -100,20 +100,20 @@ describe('createInboxActions', () => {
     ]);
   });
 
-  it('replies and resolves a Plan card’s thread through the card’s routes', async () => {
+  it('replies and resolves a Plan card’s thread through the thread routes', async () => {
     const { api, calls } = fakeApi();
     const actions = createInboxActions({ api: () => api });
     const card = target({
       kind: 'CardThread',
       app: 'liveplanner',
       itemId: 'p1',
-      elementId: 'card-7',
+      elementId: 'th-card7',
     });
     await actions.reply!(card, 'On it');
     await actions.resolve!(card);
     expect(calls.map((c) => [c.method, c.path, c.body])).toEqual([
-      ['POST', '/projects/p1/items/card-7/comments', { text: 'On it' }],
-      ['POST', '/projects/p1/items/card-7/comments/resolve', undefined],
+      ['POST', '/projects/p1/threads/th-card7/comments', { text: 'On it' }],
+      ['POST', '/projects/p1/threads/th-card7/resolve', undefined],
     ]);
   });
 

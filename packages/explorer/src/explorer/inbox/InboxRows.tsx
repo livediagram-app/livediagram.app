@@ -110,14 +110,21 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         },
         who: mine ? 'You' : (author ?? 'A teammate'),
         needsYou: reason?.kind === 'mention' || reason?.kind === 'yours',
-        cardKey: card?.key ?? null,
-        title: card ? card.title || 'Card' : r.elementLabel || 'Comment',
+        // One of a card's threads (card.id set) is titled by the thread, and placed on its card; a row from before
+        // threads was the card's one conversation, titled by the card.
+        cardKey: card && !card.id ? card.key : null,
+        title: card?.id
+          ? r.elementLabel || 'Comment thread'
+          : card
+            ? card.title || 'Card'
+            : r.elementLabel || 'Comment',
         reason,
         item,
         where: card
-          ? card.board
-            ? [card.board.tabName, card.board.title].filter(Boolean)
-            : []
+          ? [
+              ...(card.board ? [card.board.tabName, card.board.title] : []),
+              ...(card.id ? [card.key !== null ? `#${card.key} ${card.title}` : card.title] : []),
+            ].filter(Boolean)
           : [r.tabName].filter(Boolean),
         cardType: card ? { type: card.type, label: card.typeLabel || 'Card' } : null,
         local,

@@ -30,6 +30,8 @@ export type ItemPlace = {
   elementId?: string | null;
   open?: 'action' | 'comments' | null;
   cardId?: string | null;
+  // One of the card's comment threads, opened on the card.
+  threadId?: string | null;
 };
 
 /** Where New should file the item, from the view it was pressed in. */

@@ -45,10 +45,14 @@ export function entryPlace(e: InboxEntry): ItemPlace {
     case 'Card':
     case 'CardThread': {
       const card = e.row.card!;
+      // A card's own thread row names the card by `card.id` and the thread by its element (one-explorer-contracts.md
+      // "What an item pushes"); a row from before threads named the card by its element.
+      const thread = e.kind === 'CardThread' && card.id ? e.row.elementId : null;
       return {
         tabId: card.board?.tabId ?? null,
         elementId: card.board?.elementId ?? null,
-        cardId: e.row.elementId,
+        cardId: card.id ?? e.row.elementId,
+        ...(thread ? { threadId: thread } : {}),
       };
     }
     case 'Action':

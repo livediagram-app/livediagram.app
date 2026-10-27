@@ -175,7 +175,26 @@ export function inboxEntries(s: InboxSections): InboxEntry[] {
     });
   for (const r of s.forMe) action(r, true);
   for (const r of s.byMe) action(r, false);
+  // A card thread shared between two plans reaches the reader through both: one row, the newer (its element is the
+  // thread's own id, unique across every item).
+  const cardThreads = new Map<string, number>();
   for (const r of s.threads) {
+    if (r.card?.id) {
+      const key = `${r.app}:${r.elementId}`;
+      const at = cardThreads.get(key);
+      if (at !== undefined) {
+        const held = out[at] as InboxThreadEntry;
+        if (held.at < r.latestAt)
+          out[at] = {
+            ...held,
+            key: `t:${r.app}:${r.itemId}:${r.tabId}:${r.elementId}`,
+            row: r,
+            at: r.latestAt,
+          };
+        continue;
+      }
+      cardThreads.set(key, out.length);
+    }
     out.push({
       key: `t:${r.app}:${r.itemId}:${r.tabId}:${r.elementId}`,
       kind: r.card ? 'CardThread' : 'Thread',

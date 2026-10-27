@@ -18,7 +18,7 @@ const card = async (
     updatedAt: 2,
     assignee: assigneeId ? { hash: await hashOf(assigneeId), name: 'Bob' } : null,
     changedBy: changedById ? { hash: await hashOf(changedById), name: 'Ada' } : null,
-    thread: null,
+    threads: [],
     ...rest,
   };
 };
@@ -52,32 +52,38 @@ describe('cardsCollabPush', () => {
     const cards = [
       await card('c1', {
         assigneeId: 'user_c',
-        thread: {
-          resolved: false,
-          comments: [
-            {
-              authorId: 'user_a',
-              authorName: 'Ada',
-              authorColor: '#f00',
-              text: 'hi',
-              createdAt: 5,
-            },
-            {
-              authorId: 'user_b',
-              authorName: 'Bob',
-              authorColor: '#0f0',
-              text: 'ping @Cat',
-              createdAt: 9,
-              mentionIds: ['user_c'],
-            },
-          ],
-        },
+        threads: [
+          {
+            id: 'th-1',
+            title: 'Ada: hi',
+            resolved: false,
+            comments: [
+              {
+                authorId: 'user_a',
+                authorName: 'Ada',
+                authorColor: '#f00',
+                text: 'hi',
+                createdAt: 5,
+              },
+              {
+                authorId: 'user_b',
+                authorName: 'Bob',
+                authorColor: '#0f0',
+                text: 'ping @Cat',
+                createdAt: 9,
+                mentionIds: ['user_c'],
+              },
+            ],
+          },
+        ],
       }),
     ];
     const { push } = await cardsCollabPush(cards, { people: [], hashOf, fallbackAssignerId: 'o' });
     expect(push.threads).toEqual([
       expect.objectContaining({
-        elementId: 'c1',
+        elementId: 'th-1',
+        elementLabel: 'Ada: hi',
+        card: { ...cards[0]!.card, id: 'c1' },
         commentCount: 2,
         participantIds: ['user_a', 'user_b'],
         mentionedIds: ['user_c'],
@@ -88,6 +94,20 @@ describe('cardsCollabPush', () => {
     ]);
     // Mentioned, so known: the card's assignee is matched, the owner named as assigner.
     expect(push.actions.map((a) => [a.assigneeId, a.assignerId])).toEqual([['user_c', 'o']]);
+  });
+
+  it('lists each thread once, on the first card naming it, and skips one with no comments', async () => {
+    const comment = { authorName: 'Ada', authorColor: '#f00', text: 'hi', createdAt: 5 };
+    const shared = { id: 'th-s', title: 'Shared', resolved: false, comments: [comment] };
+    const cards = [
+      await card('c1', { threads: [shared, { ...shared, id: 'th-e', comments: [] }] }),
+      await card('c2', { threads: [shared, { ...shared, id: 'th-2', title: 'Own' }] }),
+    ];
+    const { push } = await cardsCollabPush(cards, { people: [], hashOf, fallbackAssignerId: 'o' });
+    expect(push.threads.map((t) => [t.elementId, t.card?.id])).toEqual([
+      ['th-s', 'c1'],
+      ['th-2', 'c2'],
+    ]);
   });
 
   it('pushes 2,000 cards among 200 people within budget, capped as the index caps one push', async () => {

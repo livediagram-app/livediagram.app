@@ -1,5 +1,5 @@
 // An item's cards in the Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"): the open cards
-// assigned to someone, and every card's comment thread, pushed under COLLAB_CARDS_TAB
+// assigned to someone, and each of a card's comment threads, pushed under COLLAB_CARDS_TAB
 // (`PUT /app/items/:id/collab/~cards`) by the item's outbox drain, so the Inbox lists them however the card was
 // changed (the editor, an agent, a form response).
 //
@@ -40,7 +40,16 @@ export type InboxCardSource = {
   assignee: { hash: string; name: string | null } | null;
   // Who last changed it, as a hash: the row's assigner.
   changedBy: { hash: string; name: string | null } | null;
-  thread: { resolved: boolean; comments: readonly InboxCardComment[] } | null;
+  // Its comment threads, each its own Inbox row (elementId the thread's id, elementLabel its title). A thread on
+  // several of the item's cards is listed once, on the first card that names it.
+  threads: readonly InboxCardThread[];
+};
+
+export type InboxCardThread = {
+  id: string;
+  title: string;
+  resolved: boolean;
+  comments: readonly InboxCardComment[];
 };
 
 export type CardsPushOptions = {
@@ -54,42 +63,46 @@ export type CardsPushOptions = {
 
 export type CardsPush = { push: CollabPush; unmatched: number; people: number };
 
-/** The cards push for the Inbox: one action per open, assigned card whose assignee is known, and one thread per card
- *  with comments, newest first and capped as the index caps one push. */
+/** The cards push for the Inbox: one action per open, assigned card whose assignee is known, and one thread per comment
+ *  thread (on the first card naming it), newest first and capped as the index caps one push. */
 export async function cardsCollabPush(
   cards: readonly InboxCardSource[],
   opts: CardsPushOptions,
 ): Promise<CardsPush> {
   const people = new Set(opts.people);
   const threads: CollabThreadInput[] = [];
+  const pushed = new Set<string>();
   for (const c of cards) {
-    const comments = c.thread?.comments ?? [];
-    if (!c.thread || comments.length === 0) continue;
-    let first = comments[0]!;
-    let latest = comments[0]!;
-    const participants: string[] = [];
-    const mentioned: string[] = [];
-    for (const m of comments) {
-      if (m.createdAt < first.createdAt) first = m;
-      if (m.createdAt >= latest.createdAt) latest = m;
-      if (m.authorId && !participants.includes(m.authorId)) participants.push(m.authorId);
-      for (const id of m.mentionIds ?? []) if (!mentioned.includes(id)) mentioned.push(id);
+    for (const thread of c.threads) {
+      const comments = thread.comments;
+      if (comments.length === 0 || pushed.has(thread.id)) continue;
+      pushed.add(thread.id);
+      let first = comments[0]!;
+      let latest = comments[0]!;
+      const participants: string[] = [];
+      const mentioned: string[] = [];
+      for (const m of comments) {
+        if (m.createdAt < first.createdAt) first = m;
+        if (m.createdAt >= latest.createdAt) latest = m;
+        if (m.authorId && !participants.includes(m.authorId)) participants.push(m.authorId);
+        for (const id of m.mentionIds ?? []) if (!mentioned.includes(id)) mentioned.push(id);
+      }
+      for (const id of [...participants, ...mentioned]) people.add(id);
+      threads.push({
+        elementId: thread.id,
+        elementLabel: thread.title,
+        resolved: thread.resolved,
+        commentCount: comments.length,
+        participantIds: participants,
+        mentionedIds: mentioned,
+        latestText: latest.text,
+        latestAuthorName: latest.authorName,
+        latestAuthorColor: latest.authorColor,
+        firstAt: first.createdAt,
+        latestAt: latest.createdAt,
+        card: { ...c.card, id: c.id },
+      });
     }
-    for (const id of [...participants, ...mentioned]) people.add(id);
-    threads.push({
-      elementId: c.id,
-      elementLabel: c.card.title,
-      resolved: c.thread.resolved,
-      commentCount: comments.length,
-      participantIds: participants,
-      mentionedIds: mentioned,
-      latestText: latest.text,
-      latestAuthorName: latest.authorName,
-      latestAuthorColor: latest.authorColor,
-      firstAt: first.createdAt,
-      latestAt: latest.createdAt,
-      card: c.card,
-    });
   }
 
   // Each known person's hash, once.
