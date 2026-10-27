@@ -195,8 +195,9 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   `whiteboardDockPosition`; unset, or any value but `bottom`, is the top. A
   change applies at once, on every tab in Draw mode.
 - **At the top:**
-  - it keeps clear of the Explorer's menu button in the top-left corner: on
-    a phone or a tablet it starts to the button's right, so a tablet in
+  - it keeps clear of the Explorer's menu card in the top-left corner (the menu button and the editor mode
+    switch beside it, [Editor modes](../007-editor/editor-modes.md#the-mode-switch)): on
+    a phone or a tablet it starts 8 px to the card's right, whatever the card holds, so a tablet in
     portrait still shows the whole dock, and when it scrolls sideways its tools
     stay clear of the menu card rather than sliding under it; from 1024 px wide it is centred with
     the same clearance on both sides;
