@@ -54,6 +54,17 @@ describe('planBoardPatch', () => {
     expect(applyPlanBoardPatch(filled, { clear: ['fillTab'] }).fillTab).toBeUndefined();
   });
 
+  // docs/specs/026-plan/plan-board.md "The board set-up": Sort Cards travels to everyone on the board.
+  it('sets and clears Sort Cards', () => {
+    const sorted = { ...base, sortBy: [{ field: 'priority', dir: 'desc' as const }] };
+    expect(planBoardPatch(base, sorted)).toEqual({ set: { sortBy: sorted.sortBy } });
+    expect(applyPlanBoardPatch(base, { set: { sortBy: sorted.sortBy } }).sortBy).toEqual(
+      sorted.sortBy,
+    );
+    expect(planBoardPatch(sorted, base)).toEqual({ clear: ['sortBy'] });
+    expect(applyPlanBoardPatch(sorted, { clear: ['sortBy'] }).sortBy).toBeUndefined();
+  });
+
   it('carries an added column whole, a removed one by id, and the order when they move', () => {
     const added = { id: 'new', status: 'new~x', name: 'New' };
     const after = {

@@ -106,3 +106,22 @@ describe('planBoardKey', () => {
     });
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Keyboard": a sorted board is not reordered by hand.
+describe('planBoardKey on a sorted board', () => {
+  it('refuses Shift+Up/Down, naming the sort, and announces a column move without a position', () => {
+    const a = item('todo', 'A', 'a');
+    const b = item('todo', 'B', 'b');
+    const setup = { ...threeColumns(), sortBy: [{ field: 'priority', dir: 'desc' as const }] };
+    const p = projectBoard(setup, new Map([a, b].map((i) => [i.id, i])));
+    expect(p.sorted).toBe(true);
+    expect(planBoardKey(p, a.id, 'ArrowDown', true, true, 'Priority')).toEqual({
+      kind: 'refuse',
+      announce: 'Sorted by Priority: turn Sort Cards off to reorder by hand.',
+    });
+    expect(planBoardKey(p, a.id, 'ArrowRight', true, true, 'Priority')).toMatchObject({
+      kind: 'move',
+      announce: '#' + a.key + ' A moved to In progress',
+    });
+  });
+});

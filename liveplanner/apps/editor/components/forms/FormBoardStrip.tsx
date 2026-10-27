@@ -3,8 +3,7 @@
 // A board's Form strip (docs/specs/030-forms/forms.md "On the board"): leading the board's widgets, one pill for each
 // form sending its responses here, shown without anyone adding it: the form's name, whether it takes responses, the
 // count (new ones marked), Copy Link (an Editor's, once published) and Open Form. It reads the count without marking
-// anything seen: only opening the Form tab does. Not on a Dashboard, whose boards are simplified
-// (docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified").
+// anything seen: only opening the Form tab does.
 import { useState } from 'react';
 import { CheckIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideClipboardList, lucideCopy, lucideExternalLink } from '@liveworkspace/icons/lucide';
@@ -13,7 +12,6 @@ import { formUrlFor } from '@/lib/form-path';
 import { track } from '@/lib/telemetry';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { WIDGET_PILL } from '@/components/plan/widgets/BoardWidgetView';
-import { useInDashboard } from '@/components/plan/dashboard/dashboard-context';
 import { useFormBoard, type FormBoardValue, type FormFeedingBoard } from './form-board-context';
 
 const FormIcon = lucideGlyph(lucideClipboardList, 14);
@@ -22,8 +20,7 @@ const OpenIcon = lucideGlyph(lucideExternalLink, 13);
 
 export function FormBoardStrip({ palette }: { palette: PlanPalette }) {
   const board = useFormBoard();
-  const inDashboard = useInDashboard();
-  if (!board || board.forms.length === 0 || inDashboard) return null;
+  if (!board || board.forms.length === 0) return null;
   return (
     <span data-form-strip="" className="flex shrink-0 items-center gap-1.5 pr-1.5">
       {board.forms.map((f) => (

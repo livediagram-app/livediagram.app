@@ -55,12 +55,15 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) at its far right, after
   Maximise, for someone who may edit. It selects the board and opens its **element menu** under itself (the menu a
   right-click on the board opens, with the same rules: maximised or filling its tab, no Layer, Size, Rotation or
-  Animation; under Style, set apart by a separator, its own rows Board Setup, Columns, Swimlanes, Supported Cards and Card Layout; no Collaborate or
+  Animation; under Style, set apart by a separator, its own rows Board Setup, Columns, Swimlanes, Sort Cards, Supported Cards and Card Layout; no Collaborate or
   Resources, [Nothing attached to Plan items](plan-mode.md#nothing-attached-to-plan-items)); pressed again it
   closes it. A board a collaborator holds opens nothing. In a Dashboard slot, where the board is simplified
   ([Dashboard tab](plan-tabs.md#dashboard-tab) "A board in a slot is simplified"), the header ends with the slot's own
   cog (**Slot Settings**: the slot toolbar, with **Open Tab**, and its **Slot** section) and no board sections, for
-  everyone, maximised from the slot too; the board is set up on its own tab. Telemetry: `Plan` · `Opened` ·
+  everyone. Maximised from the slot, the board is whole again: for an Editor the cog opens **Board Settings** as a
+  popover (as a Sheet's and a chart's cogs do), Board Setup, Columns, Swimlanes, Sort Cards, Supported Cards and Card
+  Layout, then the slot's **Slot** section, one open at a time; someone who may not edit the board sees the slot's own
+  cog there. Telemetry: `Plan` · `Opened` ·
   `BoardSettings`.
 - **Swimlanes**: none, or grouped by assignee, type, priority, status, or **any field** the card types the board
   shows offer, Parent among them (see [Swimlanes by a field](#swimlanes-by-a-field)). A board's columns are its statuses, so rows by status would repeat them: Status is not a choice on a board
@@ -70,6 +73,30 @@ Stored on the element, shared by everyone, undone like any element edit:
   types offer: None always, Type when it shows more than one type, Assignee, Priority and each field when
   one of its types has it; a board stored grouping by `parent` reads as grouping by the Parent field; a grouping already in use stays listed (and pressed) even once its types no longer offer it.
   A Gantt chart's Swimlanes do the same for the card types it draws.
+- **Sort Cards**: off (cards in rank order, as placed by hand), or up to **two levels** of fields, each with a
+  direction, shared by everyone. Each column (and each cell, with swimlanes) orders its cards by the first field, then
+  the second where the first ties, then rank where both tie. The fields a board can sort by: **Priority**,
+  **Estimate**, **Start Date** and **Due Date**, then every custom **Number**, **Currency**, **Date**, **Rating** and
+  **Choice** field the card types the board shows offer (a Choice by its options' order). A card with no value for a
+  level (or whose type does not have the field) comes after those that have one, whichever way that level runs. The
+  directions read by kind: Priority **Highest First** or **Lowest First**; a number, currency, estimate or rating
+  **Lowest First** or **Highest First**; a date **Earliest First** or **Latest First**; a Choice **In Option Order**
+  or **Reverse Option Order**. A field picked starts on Highest First for Priority and Rating, else on the first.
+  A board sorted by a field its types no longer offer keeps it (listed and pressed, as Swimlanes keeps a grouping),
+  and its cards read as having no value for it. While a board is sorted, **reordering within a column is off**:
+  a card dropped back into its own cell stays where the sort puts it, and Shift+Up/Down announce "Sorted by {Field}:
+  turn Sort Cards off to reorder by hand." Dragging a card to another column, row or board still moves it, its
+  placeholder drawn where the sort will put it. Sort Cards off puts the hand order (rank) back as it was: sorting
+  never changes a card's rank.
+  - **Board Settings**' **Sort Cards** row (the element menu's and the cog's, after Swimlanes) opens with an info note
+    ("Order each column's cards by up to two fields. While sorted, cards are not reordered by hand."), then **Sort
+    By**: an [option list](#option-lists) of **None** then each sortable field (named by the field, drawn with its
+    kind's glyph), and under it, while a field is chosen, its two directions as a two-row option list. Then **Then
+    By**, the same for the second level, shown once Sort By has a field: None, then every sortable field but the
+    first. Choosing None for Sort By turns Sort Cards off (the second level goes with it). Each choice is one element
+    edit, undone like any other. Telemetry: `Plan` · `Changed` · `BoardSort`.
+  - The board's header shows nothing new; a sorted board's column headers carry no handle. Someone who may only view
+    sees the board sorted as everyone does.
 - **Card shows**: which fields a card face draws (key, type, assignee, priority, labels, estimate, due, votes,
   checklist progress). Title always shows.
 - **Voting** is not a board setting: a vote is the tab's session vote (Collaborate, Vote), cast on the cards the
@@ -334,7 +361,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   width, so a wide column suits a busy stage.
 - **Columns fill the board**: a board resized taller runs its columns to its bottom edge (on a board with
   swimlanes, the last open swimlane takes the spare height); a board shorter than its cards scrolls.
-- **Cards** in rank order, at the board's **card size**. A card is a rounded tile with a hairline border and a soft
+- **Cards** in rank order (or as the board's [Sort Cards](#the-board-set-up) orders them), at the board's **card size**. A card is a rounded tile with a hairline border and a soft
   shadow that lifts a little under the pointer (still under reduced motion, it does not move). Every card carries
   the item type's colour as the fill behind its **number** (white or near-black text, whichever reads better on it); a
   Minimal card, which shows no number, has a small dot of it before the title. A card being dragged or opened by
@@ -535,7 +562,8 @@ In Plan mode:
 ### Keyboard
 
 With focus on a card: arrow keys move focus between cards; Enter opens the item; **Shift+Left/Right** moves the
-card to the previous or next column; **Shift+Up/Down** moves it within the column; Delete moves it to the
+card to the previous or next column; **Shift+Up/Down** moves it within the column (on a sorted board it moves nothing
+and says why); Delete moves it to the
 Trash, focus going on to the next card in its cell (else the one before; a cell left empty hands it to the nearest card on the board, the next in reading order, else the one before); **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In Progress,
 position 2 of 4").
 
@@ -550,7 +578,8 @@ outside a menu one row is in the Tab order and ArrowUp / ArrowDown / Home / End 
 picks; inside a command menu the rows are its items (`menuitemradio`, `menuitemcheckbox`, `menuitem`) and the menu's
 own keys move between them. In the Setup Board and Setup Sheet dialogs it wears the app's colours (light or dark). It is used by:
 
-- the board menu and cog: **Swimlanes** (Group Rows By), **Supported Cards** (Card Types), **Card Layout** (Card
+- the board menu and cog: **Swimlanes** (Group Rows By), **Sort Cards** (Sort By, Then By and their directions),
+  **Supported Cards** (Card Types), **Card Layout** (Card
   Size), a Gantt chart's Card Types and Swimlanes;
 - **Setup Board**: Card Types, Use an Existing State, Suggested States, and the Layout step's Swimlanes and Card Display;
 - **Add a Card**'s card types; a card type's **States**; the **Card Types** panel's rows (each with its own Edit and

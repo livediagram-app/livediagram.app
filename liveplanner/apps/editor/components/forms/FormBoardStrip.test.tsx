@@ -6,10 +6,6 @@ import type { Tab } from '@liveplanner/project';
 import { formsFeeding } from '@/hooks/forms/forms-feeding';
 import { FormBoardStrip } from './FormBoardStrip';
 import { FormBoardContext, type FormBoardValue } from './form-board-context';
-import {
-  DashboardContext,
-  type DashboardContextValue,
-} from '@/components/plan/dashboard/dashboard-context';
 
 // A board's Form strip (docs/specs/030-forms/forms.md "On the board").
 
@@ -115,17 +111,5 @@ describe('FormBoardStrip', () => {
     );
     await screen.findByText(/3 responses/);
     expect(screen.queryByRole('button', { name: 'Copy form link' })).toBeNull();
-  });
-
-  it('draws nothing on a Dashboard, whose boards are simplified', () => {
-    render(
-      <DashboardContext.Provider value={{} as DashboardContextValue}>
-        <FormBoardContext.Provider value={value()}>
-          <FormBoardStrip palette={palette} />
-        </FormBoardContext.Provider>
-      </DashboardContext.Provider>,
-    );
-    expect(document.querySelector('[data-form-strip]')).toBeNull();
-    expect(fetch).not.toHaveBeenCalled();
   });
 });
