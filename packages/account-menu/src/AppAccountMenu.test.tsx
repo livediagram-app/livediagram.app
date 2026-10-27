@@ -115,7 +115,7 @@ describe('AppAccountMenu', () => {
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
       'SettingsProfile, emails, API tokens',
-      'Sign out',
+      'Sign OutEvery app in this browser',
     ]);
     // A marketing page has no Settings panel: the app's own Explorer on this address opens it, never liveworkspace.app.
     expect(items[0]!.getAttribute('href')).toBe('/explorer?settings=all');
@@ -266,7 +266,7 @@ describe('AccountMenu signed in', () => {
     expect(items.map((i) => i.textContent)).toEqual([
       'ExplorerYour work in every app',
       'SettingsProfile, emails, API tokens',
-      'Sign out',
+      'Sign OutEvery app in this browser',
     ]);
     expect(items[0]!.getAttribute('href')).toBe('/explorer');
     unmount();
@@ -371,21 +371,32 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
 });
 
 describe('appSignOut', () => {
-  it('signs out of the app and reloads as a visitor', async () => {
+  it('signs out of the app and comes back to this page as a visitor', async () => {
+    window.history.replaceState(null, '', '/pricing?x=1');
     fetchMock.mockResolvedValue(new Response('{}', { status: 200 }));
-    const reload = vi.fn();
-    expect(await appSignOut(reload)).toBe(true);
-    expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/sign-out');
+    const go = vi.fn();
+    expect(await appSignOut(go)).toBe(true);
+    expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/sign-out?return=%2Fpricing%3Fx%3D1');
     expect(fetchMock.mock.calls[0]![1]).toMatchObject({ method: 'POST' });
-    expect(reload).toHaveBeenCalledOnce();
+    expect(go).toHaveBeenCalledWith('/pricing?x=1');
+    window.history.replaceState(null, '', '/');
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Signing out".
+  it("goes through the accounts site's hop when the API answers one", async () => {
+    const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ signedIn: false, next: hop })));
+    const go = vi.fn();
+    expect(await appSignOut(go)).toBe(true);
+    expect(go).toHaveBeenCalledWith(hop);
   });
 
   it('leaves everything as it was when the API refuses or is unreachable', async () => {
-    const reload = vi.fn();
+    const go = vi.fn();
     fetchMock.mockResolvedValueOnce(new Response('{}', { status: 500 }));
-    expect(await appSignOut(reload)).toBe(false);
+    expect(await appSignOut(go)).toBe(false);
     fetchMock.mockRejectedValueOnce(new TypeError('offline'));
-    expect(await appSignOut(reload)).toBe(false);
-    expect(reload).not.toHaveBeenCalled();
+    expect(await appSignOut(go)).toBe(false);
+    expect(go).not.toHaveBeenCalled();
   });
 });

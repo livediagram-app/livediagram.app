@@ -19,6 +19,7 @@ export {
   isGuestHandoffState,
   randomState,
   refreshTokens,
+  signOutEverywhere,
   type AuthorizeUrlOptions,
   type ClientCredentials,
   type GuestHandoffOptions,

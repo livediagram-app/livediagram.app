@@ -97,7 +97,7 @@ const GUEST_COOKIE_ATTRIBUTES = (secure: boolean) =>
 type Client = { redirectUris: string[]; resources: string[] };
 
 // Straight from the OAuth provider's tables, as registered (clients.ts).
-async function findClient(db: D1Database, clientId: string): Promise<Client | null> {
+export async function findClient(db: D1Database, clientId: string): Promise<Client | null> {
   const [client, resources] = await db.batch<{ redirectUris?: string; resourceId?: string }>([
     db
       .prepare(

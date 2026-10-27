@@ -22,7 +22,7 @@ import { leaveAllTeams } from './teams.ts';
 
 export const DELETE_ACCOUNT_PATH = '/delete-account';
 
-function basicClientId(header: string | null): string | null {
+export function basicClientId(header: string | null): string | null {
   const encoded = header?.match(/^Basic\s+(.+)$/i)?.[1];
   if (!encoded) return null;
   try {

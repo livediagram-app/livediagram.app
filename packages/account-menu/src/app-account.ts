@@ -16,6 +16,7 @@ import {
   readAccountName,
   readAccountPicture,
 } from '@liveworkspace/auth-client/account-name';
+import { askSignOut } from '@liveworkspace/auth-client/sign-out';
 
 /** Signed out (or not known to be signed in), the name still on its way, or the person (`colour`: their presence
  *  colour, null for Automatic or a session from before the colour cookie; `picture`: their Google picture, null with
@@ -109,22 +110,17 @@ export function useAppAccount(hint: string): AppAccount {
   );
 }
 
-/** Signs out of the app this page is on (its API clears its cookies and remembers not to sign in silently), then
- *  reloads the page as a visitor. Resolves false when the API refused, leaving everything as it was. */
+/** Signs out of the app this page is on, and so of every liveworkspace app in this browser (its API clears its cookies,
+ *  remembers not to sign in silently, and ends the liveworkspace session; liveworkspace/docs/specs/003-accounts/
+ *  accounts.md "Signing out"), then goes through the accounts site's hop, or straight back to this page, as a visitor.
+ *  Resolves false when the API refused, leaving everything as it was. */
 export async function appSignOut(
-  reload: () => void = () => window.location.reload(),
+  go: (to: string) => void = (to) => window.location.assign(to),
 ): Promise<boolean> {
-  try {
-    const res = await fetch('/api/auth/sign-out', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) return false;
-  } catch {
-    return false;
-  }
-  reload();
+  const here = pageHere();
+  const { ok, next } = await askSignOut(here);
+  if (!ok) return false;
+  go(next ?? here);
   return true;
 }
 

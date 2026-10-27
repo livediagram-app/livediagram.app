@@ -3,11 +3,14 @@ import {
   authorizeUrl,
   closeAccount,
   createPkcePair,
+  endAccountsSession,
+  endSessionUrl,
   exchangeCode,
   guestHandoffUrl,
   isGuestHandoffState,
   randomState,
   refreshTokens,
+  signOutEverywhere,
 } from './oauth';
 
 const credentials = {
@@ -108,6 +111,22 @@ describe('guestHandoffUrl', () => {
       }),
     );
     expect(url.origin + url.pathname).toBe('http://127.0.0.1:3132/e2e/accounts/api/auth/guest');
+  });
+
+  it('drops any run of trailing slashes on the accounts URL, in linear time', () => {
+    const at = (accountsUrl: string) =>
+      new URL(
+        guestHandoffUrl({
+          accountsUrl,
+          clientId: 'client-1',
+          redirectUri: 'https://www.livediagram.app/auth/guest',
+          state: 'abcdefgh',
+          resource: 'https://api.livediagram.app',
+        }),
+      ).pathname;
+    expect(at('https://liveworkspace.app///')).toBe('/api/auth/guest');
+    // A pattern like /\/+$/ backtracks quadratically here; the scan finishes well inside the test's timeout.
+    expect(at(`https://liveworkspace.app/a${'/'.repeat(50_000)}`)).toBe('/a/api/auth/guest');
   });
 
   it('takes only a state shaped like one the editor makes', () => {
@@ -227,5 +246,82 @@ describe('closeAccount', () => {
     await expect(
       closeAccount(credentials, 'at', tokenResponse({ error: 'invalid_token' }, 401)),
     ).rejects.toThrow('closing the account failed (401)');
+  });
+});
+
+describe('signing out everywhere', () => {
+  it('ends the session with basic client auth and the refresh token, answering the ticket', async () => {
+    const fetchImpl = tokenResponse({ ended: true, ticket: 't1' });
+    expect(await endAccountsSession(credentials, 'rt', fetchImpl)).toBe('t1');
+    const [url, init] = fetchImpl.mock.calls[0]!;
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/end-session');
+    expect(init?.method).toBe('POST');
+    expect(new Headers(init?.headers).get('authorization')).toBe(
+      `Basic ${btoa('client-1:s3cret')}`,
+    );
+    expect(JSON.parse(String(init?.body))).toEqual({ token: 'rt' });
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('answers null for a refusal, a body without a ticket, or no answer at all', async () => {
+    expect(
+      await endAccountsSession(credentials, 'rt', tokenResponse({ error: 'invalid_token' }, 401)),
+    ).toBeNull();
+    expect(await endAccountsSession(credentials, 'rt', tokenResponse({ ended: false }))).toBeNull();
+    expect(await endAccountsSession(credentials, 'rt', tokenResponse({ ticket: '' }))).toBeNull();
+    const nullBody = vi.fn<typeof fetch>(async () => new Response('null'));
+    expect(await endAccountsSession(credentials, 'rt', nullBody)).toBeNull();
+    const down = vi.fn<typeof fetch>(async () => {
+      throw new TypeError('network');
+    });
+    expect(await endAccountsSession(credentials, 'rt', down)).toBeNull();
+  });
+
+  it('builds the hop under any path the accounts URL carries', () => {
+    const url = new URL(
+      endSessionUrl({
+        accountsUrl: 'http://localhost:3101/e2e/accounts/',
+        clientId: 'client-1',
+        postLogoutRedirectUri: 'https://livediagram.app/',
+        ticket: 'a.b+c',
+      }),
+    );
+    expect(url.origin + url.pathname).toBe(
+      'http://localhost:3101/e2e/accounts/api/auth/end-session',
+    );
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      client_id: 'client-1',
+      post_logout_redirect_uri: 'https://livediagram.app/',
+      ticket: 'a.b+c',
+    });
+  });
+
+  it('answers the hop once the session ended, and nothing without a refresh token or a ticket', async () => {
+    const back = 'https://livediagram.app/explorer';
+    const fetchImpl = tokenResponse({ ticket: 't1' });
+    const next = await signOutEverywhere(
+      credentials,
+      { refreshToken: 'rt', postLogoutRedirectUri: back },
+      fetchImpl,
+    );
+    expect(new URL(next!).searchParams.get('post_logout_redirect_uri')).toBe(back);
+    expect(new URL(next!).searchParams.get('ticket')).toBe('t1');
+
+    const unused = tokenResponse({ ticket: 't1' });
+    expect(
+      await signOutEverywhere(
+        credentials,
+        { refreshToken: null, postLogoutRedirectUri: back },
+        unused,
+      ),
+    ).toBeNull();
+    expect(unused).not.toHaveBeenCalled();
+    expect(
+      await signOutEverywhere(
+        credentials,
+        { refreshToken: 'rt', postLogoutRedirectUri: back },
+        tokenResponse({}, 502),
+      ),
+    ).toBeNull();
   });
 });
