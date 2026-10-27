@@ -863,7 +863,7 @@ through the ordinary `Element` / `Added` events.
 ## Help centre ([Help app](../018-help/help-app.md))
 
 One article, **Draw mode** (`/help/canvas/draw-mode/`; the old `/help/canvas/whiteboards/`
-redirects to it): choosing the mode on an empty tab's start (or Shift+D there), starting a
+redirects to it): choosing the mode from the switch beside the menu button, an empty tab's start or Shift+D, starting a
 drawing, the dock, pens, pen versus touch, the two erasers, shape recognition, backgrounds, light
 and dark and snapping custom colours. Registered per
 [Register a help article](../../instructions/register-a-help-article.md).
