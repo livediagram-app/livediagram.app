@@ -73,10 +73,10 @@ Each action has exactly one linked card, made of the **Action** type:
 | Assignee             | the action | No. The card shows who has it; the item panel says **Set on the action** under it |
 | Due, checklist, etc. | the card   | Yes. They are the board's, and the canvas does not show them                      |
 
-- **Status**, card to action: a column before the done column is **open**, the done column is **done**, a column
-  after it is **Won't Do**. Action to card: open goes to the board's first column (unless the card is already in an
-  open column, where it stays), done to the done column, Won't Do to the first column after Done (or Done, on a board
-  that has no column after it). A card already where its action would put it agrees with it, so on a board whose
+- **Status**, card to action: the board's first [done column](plan-board.md#done-columns) is **done**, any other
+  done column is **Won't Do**, and a column that is not done is **open**. Action to card: open goes to the board's
+  first open column (unless the card is already in an open column, where it stays), done to the first done column,
+  Won't Do to the next done column after it (or the first, on a board with only one). A card already where its action would put it agrees with it, so on a board whose
   first column is Done an open action's card stays in Done and is never rewritten.
 - A card in a status the Actions board does not show (moved there on another board, or in the Trash) does not change
   its action.

@@ -47,7 +47,8 @@ const BOARD = (types: string[] | null = null) => ({
   types,
   columns: [
     { status: 'todo~x', name: 'To Do', wipLimit: 2 },
-    { status: 'done~x', name: 'Done' },
+    // The plan route's outline marks a done column (planOutline).
+    { status: 'done~x', name: 'Done', done: true as const },
   ],
 });
 const STATUSES = [
@@ -153,7 +154,8 @@ describe('planListing', () => {
       takes: 'every type',
       columns: [
         { name: 'To Do', wipLimit: 2, cards: ['#2', '#1'] },
-        { name: 'Done', cards: ['#3'] },
+        // Done counts as done by its name (docs/specs/026-plan/plan-board.md "Done columns").
+        { name: 'Done', done: true, cards: ['#3'] },
       ],
     });
     expect(listing.notOnBoard).toEqual(['#4']);
@@ -706,6 +708,15 @@ describe('changeBoard', () => {
       swimlaneField: 'f-sev',
       cardSize: 'compact',
     });
+    expect(r.columns).toEqual([
+      { name: 'Ready', status: 'todo~x' },
+      { name: 'Done', status: 'done~x', done: true },
+    ]);
+    const picked = await changeBoard(a, D, { board: 'Sprint', doneColumns: ['To Do'] }, 'mcp');
+    expect(picked.ok && picked.columns).toEqual([
+      { name: 'To Do', status: 'todo~x', done: true },
+      { name: 'Done', status: 'done~x' },
+    ]);
     expect(await changeBoard(a, D, { board: 'Sprint', swimlanes: 'Mood' }, 'mcp')).toMatchObject({
       ok: false,
       code: 'board_invalid',

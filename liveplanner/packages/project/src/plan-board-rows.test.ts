@@ -35,6 +35,22 @@ describe('planBoardRowsFromElements', () => {
     ]);
   });
 
+  // docs/specs/026-plan/plan-board.md "Done columns": flagged columns, and unflagged ones by their names.
+  it('flags each column that counts as done', () => {
+    const rows = planBoardRowsFromElements([
+      board('b', {
+        title: 'Bugs',
+        columns: [
+          { id: 'a', status: 'new', name: 'New' },
+          { id: 'b', status: 'live', name: 'Live', done: true },
+          { id: 'c', status: 'parked', name: 'Parked' },
+          { id: 'd', status: 'cancelled', name: 'Cancelled' },
+        ],
+      }),
+    ]);
+    expect(rows.map((r) => r.done)).toEqual([false, true, false, true]);
+  });
+
   it('marks nothing Done on a board with no done column', () => {
     const rows = planBoardRowsFromElements([
       board('b', { title: 'Ideas', columns: columns('new', 'old') }),

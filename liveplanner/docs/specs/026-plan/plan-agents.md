@@ -114,8 +114,12 @@ Every write takes what a person would say, and stores the ids:
   display places them, and custom fields follow the display alone. The answer names both.
 - `swimlanes` sets its rows as the board's menu does: none, assignee, type, priority, status (or "column"), or a field
   by name ("Severity"), any field a row can group by; anything else is refused naming those there are.
-  `doneColumn` names the column whose cards count as done (Completion, and the Done phase the charts read), or null
-  for none.
+  `doneColumns` names the columns whose cards count as done ([Done columns](plan-board.md#done-columns): Completion,
+  Points and the Done phase the charts read), whole: the named ones count, every other does not, and `[]` makes
+  none count. The older `doneColumn` still works as it did, the named column and every one after it counting as
+  done (null for none); giving both is refused. A column `columns` adds counts as done by its name.
+  `list_items` marks each column that counts as done (`done: true`), and the CLI's `board set` takes
+  `--done "Done, Won't Do"` (`none` for no done column).
 - A built-in field shows on a card only when both the board's `cardFields` and the card type's display have it; the
   tool descriptions say so.
 - Card types are named as everywhere; `"every type"` (the CLI's `all`) shows every type again, and an empty list

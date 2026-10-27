@@ -97,3 +97,36 @@ describe('a board or chart changed', () => {
     expect(commitTabs.mock.calls[1]![0](viewTab())[0]?.name).toBe('Roadmap');
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Done columns": a board as written flags its columns, an older board's as it read.
+describe('a board written', () => {
+  it('flags its columns: kept ones as they counted, a new one by its name', () => {
+    const { context, commitTabs } = slice();
+    const col = (id: string, name: string) => ({ id, status: id, name });
+    const older = {
+      title: 'Bugs',
+      columns: [col('new', 'New'), col('fixed', 'Fixed'), col('later', 'Later')],
+      doneColumnId: 'fixed',
+      swimlaneBy: 'none',
+      cardFields: [],
+      hideWriting: false,
+    };
+    const tabs = [
+      {
+        id: 't1',
+        name: 'Bugs',
+        kind: 'board',
+        elements: [{ id: 'b', type: 'shape', shape: 'plan-board', planBoard: older }],
+      },
+    ] as unknown as Tab[];
+    context.updateBoard('b', {
+      ...older,
+      columns: [...older.columns, col('cancelled', 'Cancelled'), col('blocked', 'Blocked')],
+    } as PlanBoardSetup);
+    const written = (
+      commitTabs.mock.calls[0]![0](tabs)[0]!.elements[0] as { planBoard: PlanBoardSetup }
+    ).planBoard;
+    expect(written.columns.map((c) => c.done)).toEqual([undefined, true, true, true, undefined]);
+    expect(written.doneColumnId).toBe('fixed');
+  });
+});

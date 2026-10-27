@@ -3,6 +3,7 @@
 // Pure: the api's plan route builds it from tab bodies, and the editor names its statuses the same way.
 import type { PlanBoardSetup } from './board';
 import { normaliseBoardSetup } from './board';
+import { isDoneColumn } from './done-columns';
 import type { ItemTypeDef } from './item-types';
 import { typesOf, type ItemTypeCatalogue } from './type-catalogue';
 
@@ -12,6 +13,8 @@ export interface PlanColumnOutline {
   status: string;
   name: string;
   wipLimit?: number;
+  // Its cards count as done (docs/specs/026-plan/plan-board.md "Done columns").
+  done?: true;
 }
 
 export interface PlanBoardOutline {
@@ -98,6 +101,7 @@ export function planOutline(
           status: c.status,
           name: c.name,
           ...(c.wipLimit ? { wipLimit: c.wipLimit } : {}),
+          ...(isDoneColumn(setup, c) ? { done: true as const } : {}),
         })),
       });
     }

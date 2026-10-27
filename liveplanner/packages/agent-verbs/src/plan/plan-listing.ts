@@ -35,6 +35,8 @@ interface ListedColumn {
   name: string;
   status: string;
   wipLimit?: number;
+  // Its cards count as done (docs/specs/026-plan/plan-board.md "Done columns").
+  done?: true;
   cards: string[];
 }
 
@@ -232,6 +234,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
           name: c.name,
           status: c.status,
           ...(c.wipLimit ? { wipLimit: c.wipLimit } : {}),
+          ...(c.done ? { done: true as const } : {}),
           cards: cards.map(ref),
         };
       }),

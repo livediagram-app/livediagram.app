@@ -2,6 +2,7 @@ import {
   READY_MADE_CARD_TYPES,
   PLAN_BOARD_PRESET_IDS,
   isPlanViewId,
+  doneColumnsOf,
   normaliseBoardSetup,
   presetSetup,
 } from '@liveplanner/items';
@@ -104,6 +105,22 @@ describe('plan templates', () => {
           setup.columns.map((c) => c.id),
           label,
         ).toContain(setup.doneColumnId);
+    }
+  });
+
+  // docs/specs/026-plan/plan-board.md "Done columns": a template's done column and every one after it are flagged
+  // done, as they read before columns were flagged, and nothing else is, whatever its name.
+  it('flag the done columns their spec names, and only those', () => {
+    for (const { spec, label } of everyTab()) {
+      if (!spec.board) continue;
+      const merged = { ...presetSetup(spec.board.preset), ...spec.board.setup };
+      const at = merged.columns.findIndex((c) => c.id === merged.doneColumnId);
+      const setup = boardSetup(spec.board);
+      expect(
+        doneColumnsOf(setup).map((c) => c.id),
+        label,
+      ).toEqual(at < 0 ? [] : merged.columns.slice(at).map((c) => c.id));
+      expect(setup.doneColumnId, label).toBe(doneColumnsOf(setup)[0]?.id);
     }
   });
 

@@ -44,7 +44,8 @@ const SETUP_KEYS = new Set([
   // A linked board's kind (docs/specs/026-plan/linked-boards.md).
   'collects',
 ]);
-const COLUMN_KEYS = new Set(['status', 'name', 'wipLimit', 'color', 'width']);
+// `done`: Counts as Done (docs/specs/026-plan/plan-board.md "Done columns").
+const COLUMN_KEYS = new Set(['status', 'name', 'wipLimit', 'color', 'width', 'done']);
 // Bounds on one frame, well past any real board (PLAN_COLUMNS_MAX columns, a handful of fields).
 const PATCH_COLUMNS_MAX = 64;
 const ID_MAX = 40;

@@ -33,6 +33,7 @@ import {
   PLAN_WIP_MAX,
 } from './limits';
 import { HEX_COLOUR, isObj } from './validate';
+import { isDoneColumn } from './done-columns';
 
 export interface PlanColumn {
   id: string;
@@ -42,6 +43,9 @@ export interface PlanColumn {
   color?: string;
   // How many slots wide it is (docs/specs/026-plan/plan-board.md "The board set-up"); absent is 1.
   width?: ColumnWidth;
+  // Whether its cards count as done (docs/specs/026-plan/plan-board.md "Done columns"). Absent: by its name, or on
+  // an older board by its `doneColumnId` (isDoneColumn).
+  done?: boolean;
 }
 
 export const COLUMN_WIDTHS = [1, 2, 3] as const;
@@ -103,6 +107,8 @@ export function cardFieldsAt(
 export interface PlanBoardSetup {
   title: string;
   columns: PlanColumn[];
+  // An older board's one done column, every column after it done too; now written for older editors only, as the
+  // first done column (docs/specs/026-plan/plan-board.md "Done columns").
   doneColumnId?: string;
   swimlaneBy: SwimlaneBy;
   // The field a 'field' board lanes by: a built-in of LANE_FIELD_BUILT_INS or a custom field id.
@@ -136,15 +142,6 @@ export interface QuickDueWindow {
   from?: string;
   to: string;
   finished?: string[];
-}
-
-// The statuses a board counts as finished (docs/specs/026-plan/board-widgets.md "Not done"): its done column's and
-// those of every column after it (Won't Do). None without a done column, when every card is not done.
-export function finishedStatuses(
-  setup: Pick<PlanBoardSetup, 'columns' | 'doneColumnId'>,
-): string[] {
-  const at = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
-  return at < 0 ? [] : setup.columns.slice(at).map((c) => c.status);
 }
 
 export interface QuickFilter {
@@ -672,8 +669,8 @@ export function projectBoard(
 
   const { by, lanes, laneOfItem } = boardLanes(setup, scoped, items, types, statusNames);
 
+  // Cards in every done column (docs/specs/026-plan/plan-board.md "Done columns").
   let doneCount = 0;
-  const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
   const columns: ProjectedColumn[] = setup.columns.map((column) => {
     const all =
       archiveBoard || allBoard
@@ -681,7 +678,7 @@ export function projectBoard(
           ? scoped
           : []
         : scoped.filter((it) => itemStatus(it) === column.status);
-    if (column.status === doneStatus) doneCount = all.length;
+    if (isDoneColumn(setup, column)) doneCount += all.length;
     const shown = all.filter((it) => quickFilterMatches(quick, it));
     return {
       column,
@@ -739,6 +736,8 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     if (typeof color === 'string' && HEX_COLOUR.test(color)) col.color = color;
     const width = (c as { width?: unknown }).width;
     if (width === 2 || width === 3) col.width = width;
+    const done = (c as { done?: unknown }).done;
+    if (typeof done === 'boolean') col.done = done;
     columns.push(col);
   }
   // No columns is a board waiting for its first (docs/specs/026-plan/plan-board.md "The board set-up").

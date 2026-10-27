@@ -44,11 +44,14 @@ describe('board set-up edits', () => {
     expect(setWipLimit(board, first.id, 120).columns[0]).not.toHaveProperty('wipLimit');
   });
 
-  it('marks one done column, and clears it only from that column', () => {
+  // docs/specs/026-plan/plan-board.md "Done columns": any number, each turned on or off on its own.
+  it('turns a column on or off as done, leaving the others as they are', () => {
     const done = setDoneColumn(board, second.id, true);
+    expect(done.columns.map((c) => c.done)).toEqual([undefined, true, true]);
     expect(done.doneColumnId).toBe(second.id);
-    expect(setDoneColumn(done, first.id, false)).toBe(done);
-    expect(setDoneColumn(done, second.id, false)).not.toHaveProperty('doneColumnId');
+    const off = setDoneColumn(done, last.id, false);
+    expect(off.columns.map((c) => c.done)).toEqual([undefined, true, false]);
+    expect(setDoneColumn(off, second.id, false)).not.toHaveProperty('doneColumnId');
   });
 
   it('moves a column, never past the ends', () => {
@@ -108,6 +111,11 @@ describe('board set-up edits', () => {
     const removed = removeColumn(done, last.id);
     expect(removed.columns).toHaveLength(2);
     expect(removed).not.toHaveProperty('doneColumnId');
+    // The rest keep what they counted as: an older board's columns after its done column too.
+    const older = { ...board, doneColumnId: second.id };
+    const kept = removeColumn(older, second.id);
+    expect(kept.columns.map((c) => c.done)).toEqual([undefined, true]);
+    expect(kept.doneColumnId).toBe(last.id);
     const one = { ...board, columns: [first] };
     expect(removeColumn(one, first.id)).toBe(one);
   });

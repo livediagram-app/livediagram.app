@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ShapeElement } from '@liveplanner/project';
 import {
   PLAN_COLUMNS_MAX,
+  isDoneColumn,
   missingBoardStatuses,
   normaliseBoardSetup,
   type PlanBoardSetup,
@@ -30,15 +31,16 @@ export const ADDED_TINT_MS = 1600;
 const PILL =
   'shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide tabular-nums';
 
-// The column a new one goes after: the last, or the one before a done column that ends the board (null: the end).
+// The column a new one goes after: the last, or the one before the done columns that end the board (null: the end).
 export function columnsInsertAfter(
   setup: Pick<PlanBoardSetup, 'columns' | 'doneColumnId'>,
 ): string | null {
-  const { columns, doneColumnId } = setup;
+  const { columns } = setup;
   const last = columns[columns.length - 1];
   if (!last) return null;
-  if (last.id === doneColumnId && columns.length > 1) return columns[columns.length - 2]!.id;
-  return last.id;
+  let at = columns.length - 1;
+  while (at > 0 && isDoneColumn(setup, columns[at]!)) at -= 1;
+  return columns[at]!.id;
 }
 
 export function BoardColumnsSection({
@@ -137,7 +139,7 @@ export function BoardColumnsSection({
                   WIP {c.wipLimit}
                 </span>
               ) : null}
-              {setup.doneColumnId === c.id ? (
+              {isDoneColumn(setup, c) ? (
                 <span
                   className={`${PILL} bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300`}
                 >

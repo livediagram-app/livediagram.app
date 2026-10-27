@@ -127,7 +127,8 @@ describe('board set', () => {
         types: 'Task',
       }),
     );
-    expect(boardSet.text!(out)).toEqual(['~ board "Sprint": To Do · Done (takes Task)']);
+    // Done counts as done by its name (docs/specs/026-plan/plan-board.md "Done columns").
+    expect(boardSet.text!(out)).toEqual(['~ board "Sprint": To Do · Done ✓ (takes Task)']);
     expect(boardSet.quiet!(out)).toEqual(['b1']);
     expect(sent[0]).toMatchObject({ operations: [{ op: 'set', target: 'id:"b1"' }] });
     const every = await boardSet.run!(
@@ -138,6 +139,17 @@ describe('board set', () => {
     expect(boardSet.text!({ ...every, takes: [] })).toEqual([
       '~ board "S2": To Do (takes no type)',
     ]);
+    // --done names the done columns, whole; none turns them all off.
+    const done = await boardSet.run!(
+      ctx,
+      boardSet.input.parse({ project: DOC_A, board: 'b1', done: 'To Do' }),
+    );
+    expect(done.columns).toEqual([expect.objectContaining({ name: 'To Do', done: true })]);
+    const none = await boardSet.run!(
+      ctx,
+      boardSet.input.parse({ project: DOC_A, board: 'b1', done: 'none' }),
+    );
+    expect(none.columns[0]).not.toHaveProperty('done');
   });
 
   it('refuses a board it cannot find', async () => {

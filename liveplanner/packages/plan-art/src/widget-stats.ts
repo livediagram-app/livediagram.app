@@ -72,7 +72,7 @@ export function overWipColumns(projection: BoardProjection): number {
   return projection.columns.filter((c) => c.overLimit).length;
 }
 
-// Cards not yet done (before the done column, finishedStatuses) that are past due, and due within DUE_SOON_DAYS
+// Cards not yet done (in no done column, finishedStatuses) that are past due, and due within DUE_SOON_DAYS
 // (today included).
 export function dueCounts(
   setup: PlanBoardSetup,
@@ -93,16 +93,12 @@ export function dueCounts(
   return { overdue, soon };
 }
 
-function doneStatusOf(setup: PlanBoardSetup): string | undefined {
-  return setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
-}
-
-// Estimate points on the board, and those in its done column.
+// Estimate points on the board, and those in its done columns.
 export function boardPoints(
   setup: PlanBoardSetup,
   items: readonly Item[],
 ): { done: number; total: number; estimated: number } {
-  const doneStatus = doneStatusOf(setup);
+  const finished = new Set(finishedStatuses(setup));
   let done = 0;
   let total = 0;
   let estimated = 0;
@@ -111,7 +107,7 @@ export function boardPoints(
     if (typeof e !== 'number') continue;
     estimated += 1;
     total += e;
-    if (doneStatus && itemStatus(it) === doneStatus) done += e;
+    if (isFinished(finished, it)) done += e;
   }
   return { done, total, estimated };
 }
@@ -142,7 +138,7 @@ export function topVoted(items: readonly Item[]): { item: Item; votes: number } 
   return best;
 }
 
-// Cards not yet done (before the done column) that nobody has changed in STALE_DAYS, stalest first.
+// Cards not yet done (in no done column) that nobody has changed in STALE_DAYS, stalest first.
 export function staleItems(setup: PlanBoardSetup, items: readonly Item[], now: Date): Item[] {
   const finished = new Set(finishedStatuses(setup));
   const before = now.getTime() - STALE_DAYS * DAY_MS;
@@ -155,7 +151,7 @@ export function staleCount(setup: PlanBoardSetup, items: readonly Item[], now: D
   return staleItems(setup, items, now).length;
 }
 
-// Whether a card sits in the done column or one after it.
+// Whether a card sits in a done column.
 function isFinished(finished: ReadonlySet<string>, it: Item): boolean {
   const status = itemStatus(it);
   return status !== undefined && finished.has(status);
