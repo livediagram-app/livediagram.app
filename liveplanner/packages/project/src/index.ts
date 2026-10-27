@@ -382,7 +382,7 @@ export * from './collab-index-rows';
 export * from './plan-board-rows';
 export * from './cell-comments';
 export * from './comment-thread';
-export * from './item-comments';
+export * from './card-threads';
 // The whole-project `liveplanner.project` envelope and the per-tab JSON and Markdown export (the editor and the
 // CLI's pull files).
 export * from './project-envelope';

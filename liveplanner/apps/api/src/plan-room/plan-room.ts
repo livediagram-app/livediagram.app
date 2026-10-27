@@ -77,7 +77,19 @@ import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
 import { drawPlan } from '../thumbnail';
 import { planShares, type ShareAnswer, type ShareMessage, type SharedTabCopy } from './tab-shares';
-import { planRoom } from '../plan-client';
+import { planRoom, type ThreadLinkInput } from '../plan-client';
+import type { CardThread } from '@liveplanner/project';
+import {
+  linkThread,
+  threadsForVia,
+  threadsRelayed,
+  unlinkThread,
+  writeThread,
+  type ThreadLinked,
+  type ThreadOp,
+  type ThreadsRelay,
+  type ThreadWriteResult,
+} from './card-thread-store';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
 import {
   exportPlanCopy,
@@ -704,6 +716,55 @@ export class PlanRoom extends DurableObject<Env> {
       return messages.map(() => 'gone');
     this.bindPlan(planId);
     return planShares.receive(this.requireEnv(), planId, from, messages);
+  }
+
+  // ---------- RPC: a card's comment threads across plans (card-thread-store.ts) ------------------------------
+
+  // On the home: the threads of `ids` listing a card of `via`. A plan with nothing stored holds none.
+  async threadsFor(planId: string, ids: string[], via: string): Promise<CardThread[]> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return [];
+    this.bindPlan(planId);
+    return threadsForVia(this.requireEnv(), planId, ids, via);
+  }
+
+  // On the home: one write on a thread it stores, made through plan `via` (which checked the caller's role there).
+  async threadWrite(
+    planId: string,
+    threadId: string,
+    op: ThreadOp,
+    via: string,
+  ): Promise<ThreadWriteResult> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
+      return { ok: false, error: 'thread_not_found' };
+    this.bindPlan(planId);
+    return writeThread(this.requireEnv(), planId, threadId, op, via, (p) =>
+      this.state.waitUntil(p),
+    );
+  }
+
+  // On a plan holding the card: a link for a thread added to one of its cards, and one taken back.
+  async threadLinked(planId: string, link: ThreadLinkInput): Promise<ThreadLinked> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
+      return { ok: false, error: 'item_not_found' };
+    this.bindPlan(planId);
+    return linkThread(this.requireEnv(), planId, link);
+  }
+
+  async threadUnlinked(planId: string, threadId: string, itemId: string): Promise<void> {
+    this.bindPlan(planId);
+    await unlinkThread(this.requireEnv(), planId, threadId, itemId);
+  }
+
+  // Another plan's write on a thread on this plan's cards. A plan with nothing stored holds no link to any.
+  async threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
+      return relay.upserts.map((t) => t.id);
+    this.bindPlan(planId);
+    return threadsRelayed(this.requireEnv(), planId, relay);
   }
 
   // A plan going for good tells the other holders of its shared tabs it left, so their copies stop counting it.

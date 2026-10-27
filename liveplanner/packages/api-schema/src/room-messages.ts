@@ -85,6 +85,9 @@ export const SYSTEM_OP_KINDS = [
   // `sheets` (docs/specs/029-sheets/sheet-store.md "Live for everyone"): sheet writes the api made. Sheets change
   // only through the api, so a forged one would show people cells nobody wrote.
   'sheets',
+  // `threads` (docs/specs/026-plan/items.md "Comments"): card thread writes the api made, from any plan the thread
+  // is on. Threads change only through the api.
+  'threads',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these

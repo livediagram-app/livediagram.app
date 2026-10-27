@@ -20,6 +20,8 @@ import {
   migrateStoredTab,
   parseProjectEnvelope,
   projectToEnvelopeText,
+  threadForRoom,
+  type CardThread,
   type EnvelopeSheet,
   type EnvelopeTab,
   type Tab,
@@ -43,6 +45,8 @@ import { MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
 import type { PlanEnv } from '../types';
 import {
+  COPY_PLAN,
+  copiedThreads,
   importPlanCopy,
   initPlan,
   readContentTabRows,
@@ -77,10 +81,12 @@ export async function exportProjectFile(
   const { meta, savedAt, itemTypes } = await readPlanHead(env, planId);
   if (!meta) return { status: 'not_found' };
   if (ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
-  const [rows, items, sheets] = await Promise.all([
+  const [rows, items, sheets, threads] = await Promise.all([
     readContentTabRows(env, planId, null),
     listItems(env, planId),
     listSheets(env, planId),
+    // Its cards' threads, without author ids: the file travels.
+    copiedThreads(env, planId, null, null).then((all) => all.map(threadForRoom)),
   ]);
   // Cards in their key order, so the same store always writes the same bytes.
   items.sort((a, b) => a.key - b.key);
@@ -93,6 +99,7 @@ export async function exportProjectFile(
       items,
       itemTypes,
       sheets,
+      threads,
     ),
     contentType: PROJECT_FILE_FORMAT.mimeType,
     version: savedAt,
@@ -271,9 +278,26 @@ export function readProjectFile(text: string, now = Date.now()): ProjectFileRead
         tabs,
         items,
         ...sheets,
+        ...threadsOf(project.threads ?? [], items),
       },
     },
   };
+}
+
+// A file's threads on the file's own cards, as a copy carries them (each named on COPY_PLAN until it lands); a thread
+// on none of them is left behind.
+function threadsOf(
+  threads: readonly CardThread[],
+  items: readonly Record<string, unknown>[],
+): { threads?: CardThread[] } {
+  const ids = new Set(items.map((i) => i.id as string));
+  const kept = threads.flatMap((t) => {
+    const cards = t.cards
+      .filter((c) => ids.has(c.itemId))
+      .map((c) => ({ projectId: COPY_PLAN, itemId: c.itemId, key: c.key }));
+    return cards.length ? [{ ...threadForRoom(t), home: COPY_PLAN, cards }] : [];
+  });
+  return kept.length ? { threads: kept } : {};
 }
 
 export type ProjectFileImport = ProjectFileContent & { name: string; ownerId: string };

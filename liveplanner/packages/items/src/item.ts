@@ -32,6 +32,9 @@ export interface Item {
   updatedAt: number;
   createdBy: ItemPerson;
   updatedBy: ItemPerson;
+  // The comments in the card's open comment threads (docs/specs/026-plan/items.md "Comments"): worked out when the
+  // card is drawn from its threads (a render, an export), never stored. Absent everywhere else.
+  openComments?: number;
 }
 
 // Where an item goes: a status, and a neighbour within that status's column.
@@ -131,8 +134,10 @@ export function itemVoteTotal(item: Pick<Item, 'fields'>): number {
   return Object.values(itemVotes(item)).reduce((a, b) => a + b, 0);
 }
 
-// How many comments an open thread holds (0 when there is none, or it is resolved): the card's comment count.
-export function itemCommentCount(item: Pick<Item, 'fields'>): number {
+// The card's comment count: the comments in its open threads, as a render worked them out (`openComments`), else
+// (a card still holding its old single thread) that thread's while open; 0 with none.
+export function itemCommentCount(item: Pick<Item, 'fields' | 'openComments'>): number {
+  if (item.openComments !== undefined) return item.openComments;
   const t = item.fields['comments'];
   if (!t || typeof t !== 'object' || Array.isArray(t) || t['resolved'] === true) return 0;
   const comments = t['comments'];

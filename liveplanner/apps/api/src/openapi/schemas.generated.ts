@@ -1323,6 +1323,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "CardRef": {
+    "additionalProperties": false,
+    "description": "One card a thread is on: its plan and id, its number, and (a card in another plan) that plan's name when the thread was added there.",
+    "properties": {
+      "itemId": {
+        "type": "string"
+      },
+      "key": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "projectId": {
+        "type": "string"
+      },
+      "projectName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "projectId",
+      "itemId",
+      "key"
+    ],
+    "type": "object"
+  },
   "CardSearchFilter": {
     "additionalProperties": false,
     "properties": {
@@ -1403,6 +1430,169 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "cols",
       "rows",
       "type"
+    ],
+    "type": "object"
+  },
+  "CardThread": {
+    "additionalProperties": false,
+    "properties": {
+      "cards": {
+        "items": {
+          "$ref": "#/components/schemas/CardRef"
+        },
+        "type": "array"
+      },
+      "comments": {
+        "items": {
+          "$ref": "#/components/schemas/Comment"
+        },
+        "type": "array"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "createdBy": {
+        "$ref": "#/components/schemas/ThreadPerson"
+      },
+      "home": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "resolved": {
+        "type": "boolean"
+      },
+      "resolvedAt": {
+        "type": "number"
+      },
+      "resolvedBy": {
+        "type": "string"
+      },
+      "rev": {
+        "type": "number"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "resolved",
+      "comments",
+      "createdAt",
+      "createdBy",
+      "updatedAt",
+      "home",
+      "cards",
+      "rev"
+    ],
+    "type": "object"
+  },
+  "CardThreadAddCardRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "itemId": {
+        "type": "string"
+      },
+      "projectId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "itemId"
+    ],
+    "type": "object"
+  },
+  "CardThreadCommentRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "mentions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentMention"
+        },
+        "type": "array"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "type": "object"
+  },
+  "CardThreadRenameRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title"
+    ],
+    "type": "object"
+  },
+  "CardThreadStartRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "mentions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentMention"
+        },
+        "type": "array"
+      },
+      "text": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "type": "object"
+  },
+  "CardThreadWriteResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "commentId": {
+        "type": "string"
+      },
+      "thread": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CardThread"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "thread"
+    ],
+    "type": "object"
+  },
+  "CardThreadsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "threads": {
+        "items": {
+          "$ref": "#/components/schemas/CardThread"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "threads"
     ],
     "type": "object"
   },
@@ -1998,6 +2188,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Comment": {
     "additionalProperties": false,
     "properties": {
+      "ai": {
+        "const": true,
+        "type": "boolean"
+      },
       "authorColor": {
         "type": "string"
       },
@@ -2008,6 +2202,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "createdAt": {
+        "type": "number"
+      },
+      "editedAt": {
         "type": "number"
       },
       "id": {
@@ -4749,6 +4946,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "key": {
         "type": "number"
       },
+      "openComments": {
+        "type": "number"
+      },
       "rank": {
         "type": "string"
       },
@@ -7332,6 +7532,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "ai": {
+              "const": true,
+              "type": "boolean"
+            },
             "authorColor": {
               "type": "string"
             },
@@ -7342,6 +7546,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "type": "string"
             },
             "createdAt": {
+              "type": "number"
+            },
+            "editedAt": {
               "type": "number"
             },
             "id": {
@@ -10979,6 +11186,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wrap"
     ],
     "type": "string"
+  },
+  "ThreadPerson": {
+    "additionalProperties": false,
+    "description": "Who started a thread: their name and colour, and (to themselves alone) their owner id.",
+    "properties": {
+      "authorId": {
+        "type": "string"
+      },
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "color"
+    ],
+    "type": "object"
   },
   "TimerMode": {
     "enum": [

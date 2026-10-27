@@ -373,6 +373,15 @@ export function mentionQuote(text: string): string {
   return `${(space > MENTION_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }
 
+// A card's part as a mention names it: `<card>`, or `<card>/<thread>` for one of its threads (the editor's deep
+// link opens that thread, lib/collab-deep-link.ts). Card and thread ids never hold a slash.
+function cardHash(part: string): string {
+  const [card = '', thread] = part.split('/');
+  const hash = `item=${encodeURIComponent(card)}`;
+  // In an HTML attribute, so the ampersand is written as an entity.
+  return thread ? `${hash}&amp;thread=${encodeURIComponent(thread)}` : hash;
+}
+
 export function mentionedEmail(
   env: Env,
   authorName: string | null,
@@ -397,7 +406,7 @@ export function mentionedEmail(
       intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
       ctaText: itemId ? 'Open the card' : 'Open the plan',
-      ctaHref: itemId ? `${docHref}#item=${encodeURIComponent(itemId)}` : docHref,
+      ctaHref: itemId ? `${docHref}#${cardHash(itemId)}` : docHref,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate mentioned you in a comment.',

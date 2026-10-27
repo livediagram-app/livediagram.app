@@ -11,6 +11,7 @@
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
 import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
+import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -349,7 +350,11 @@ const V5 = tabSharesSchema();
 // own step, appended: every statement is IF NOT EXISTS.
 const V6 = migrationSchema();
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6];
+// A card's comment threads, and the move of each card's old single thread into its first one
+// (card-thread-schema.ts; docs/specs/026-plan/items.md "Comments"). Its own step, appended.
+const V7 = CARD_THREADS_SCHEMA;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
 
