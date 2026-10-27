@@ -80,6 +80,20 @@ export const defaultWrangler = (): string[] => [
 // What a wrangler run may see of the caller's environment: enough to find node and its cache, no credentials.
 const PASSED_THROUGH = ['PATH', 'HOME', 'TMPDIR', 'LANG', 'NODE_OPTIONS', 'XDG_CONFIG_HOME'];
 
+/** Throws unless `bytes` are the object `e` names. The old site stored a JPEG with its metadata stripped but kept the
+ *  hash of the file as picked (as the media service's `sha256` does), so an old JPEG is held to its size, and every
+ *  other object, the plan's own pictures among them, to its SHA-256. */
+export function checkCopiedBytes(e: R2Entry, bytes: Buffer): void {
+  if (e.contentType === 'image/jpeg' && !e.file) {
+    if (bytes.length !== e.byteSize)
+      throw new Error(`r2 ${e.key}: ${bytes.length} bytes read, not ${e.byteSize}`);
+    return;
+  }
+  const sha = createHash('sha256').update(bytes).digest('hex');
+  if (sha !== e.sha256)
+    throw new Error(`r2 ${e.key}: the bytes read have SHA-256 ${sha}, not ${e.sha256}`);
+}
+
 function need(vars: ApplyOptions['vars'], name: string, dryRun: boolean): string {
   const v = vars[name];
   if (v) return v;
@@ -375,11 +389,7 @@ export async function apply(o: ApplyOptions): Promise<ApplySummary> {
                 `r2 get ${e.key}`,
               );
             }
-            if (!o.dryRun) {
-              const sha = createHash('sha256').update(readFileSync(file)).digest('hex');
-              if (sha !== e.sha256)
-                throw new Error(`r2 ${e.key}: the bytes read have SHA-256 ${sha}, not ${e.sha256}`);
-            }
+            if (!o.dryRun) checkCopiedBytes(e, readFileSync(file));
             await run(
               r2PutCommand({
                 wrangler,

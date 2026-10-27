@@ -198,7 +198,9 @@ Each product needs the same migration import door as step 2, and its own writes 
    through the owner map (a guest's as the media service keys guests, `guest:` + SHA-256 of
    `livediagram.app\n<guest id>`), app `livediagram.app`, its size, type, dimensions, `sha256` and name, and its old
    `created_at`. Keeping the ids means no tab's image references change. The media service's upload door always
-   makes a new id, so this goes in as SQL and R2 puts, not through it.
+   makes a new id, so this goes in as SQL and R2 puts, not through it. Each copy is checked before it is put: by
+   its SHA-256, except a JPEG, which the old site stored with its metadata stripped while keeping the hash of the
+   file as picked (what the media service's `sha256` means too), so a JPEG is checked by its size.
 2. Give a split part an `image_grants` row for each image it places that its owner didn't upload, and send each
    app's references (`POST /refs` with `complete: true`) straight after, so the media service's sweep of
    unreferenced images never sees an imported image as unplaced.

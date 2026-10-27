@@ -1,10 +1,12 @@
 // apply with a fake Runner and Http: nothing here ever runs wrangler or reaches a network. The commands are checked
 // as built, the order, the credentials each side gets, the ledger after each unit, and a resumed run.
+import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   apply,
+  checkCopiedBytes,
   d1Command,
   r2GetCommand,
   type Command,
@@ -282,6 +284,29 @@ describe('apply', () => {
         log: () => {},
       }),
     ).rejects.toThrow(/SHA-256/);
+  });
+
+  it('holds an old JPEG to its size and everything else to its SHA-256', () => {
+    // The old site stripped a JPEG's metadata on the way in but kept the hash of the file as picked.
+    const picked = Buffer.from('jpeg as picked');
+    const stored = Buffer.from('jpeg as stored');
+    const sha = createHash('sha256').update(picked).digest('hex');
+    const jpeg = {
+      key: 'j',
+      contentType: 'image/jpeg',
+      byteSize: stored.length,
+      sha256: sha,
+      version: sha,
+    };
+    expect(() => checkCopiedBytes(jpeg, stored)).not.toThrow();
+    expect(() => checkCopiedBytes(jpeg, Buffer.from('cut short'))).toThrow(/9 bytes read, not 14/);
+    const png = { ...jpeg, key: 'p', contentType: 'image/png' };
+    expect(() => checkCopiedBytes(png, picked)).not.toThrow();
+    expect(() => checkCopiedBytes(png, stored)).toThrow(/SHA-256/);
+    // A picture the plan drew is its own file, so its bytes are exact whatever its type.
+    expect(() => checkCopiedBytes({ ...jpeg, file: 'r2/pictures/x.png' }, stored)).toThrow(
+      /SHA-256/,
+    );
   });
 
   it('builds each command against the right database, bucket and account', () => {
