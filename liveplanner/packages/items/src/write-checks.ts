@@ -19,6 +19,7 @@ import { ITEM_STATUS_MAX } from './limits';
 import { isObj } from './validate';
 import type { ItemTypeDef } from './item-types';
 import { typeAllowsStatus, typeIn } from './type-catalogue';
+import { missingRequiredFields, requiredCleared } from './required-fields';
 import type { ItemWrite } from './store';
 
 export function readItemPlace(raw: unknown): ItemPlace | ItemRejection {
@@ -113,7 +114,32 @@ export function statusExcluded(
   return !typeAllowsStatus(typeIn(types, next.type), status);
 }
 
-type ItemWriteRefusal = { error: ItemRejection; id?: string };
+type ItemWriteRefusal = { error: ItemRejection; id?: string; field?: string };
+
+// A new card missing a required custom field (docs/specs/026-plan/item-types.md "Required fields"): the first one,
+// or null. A create that restores a card (an undo, a sync or copy: it carries its number, votes or thread) is let
+// through, as the card it brings back was made before.
+export function createRefusal(
+  types: readonly ItemTypeDef[],
+  create: Pick<ItemCreate, 'type' | 'fields' | 'key' | 'votes' | 'comments'>,
+): { error: 'field_required'; field: string } | null {
+  if (create.key !== undefined || create.votes !== undefined || create.comments !== undefined)
+    return null;
+  const missing = missingRequiredFields(typeIn(types, create.type), create.fields)[0];
+  return missing ? { error: 'field_required', field: missing.id } : null;
+}
+
+// A change that empties a required field the item had a value for, its field id, or null; an undo or redo is never
+// refused.
+export function requiredClearedBy(
+  types: readonly ItemTypeDef[],
+  next: Item,
+  before: Item,
+  undo: boolean,
+): string | null {
+  if (undo) return null;
+  return requiredCleared(typeIn(types, next.type), before.fields, next.fields)?.id ?? null;
+}
 
 // `write` read as the api reads the request it is sent as: the write with its fields normalised as the api stores
 // them, or the refusal the api would answer.
@@ -150,20 +176,30 @@ export function readItemWrite(write: ItemWrite): ItemWrite | ItemWriteRefusal {
   }
 }
 
-// The items a patch, patches or move left, checked as the api checks them before it writes: a status the card's
-// type leaves out (statusExcluded), and the fields' size. Null when every one passes.
+// The items a write left, checked as the api checks them before it writes: a new card missing a required field
+// (createRefusal); for a patch, patches or move a status the card's type leaves out (statusExcluded), a required
+// field emptied (requiredClearedBy), and the fields' size. Null when every one passes.
 export function writtenItemsRefusal(
   write: ItemWrite,
   before: readonly Item[],
   upserts: readonly Item[],
   types: readonly ItemTypeDef[],
 ): ItemWriteRefusal | null {
+  if (write.kind === 'create') {
+    for (const c of write.creates) {
+      const refused = createRefusal(types, c);
+      if (refused) return { ...refused, ...(c.id ? { id: c.id } : {}) };
+    }
+    return null;
+  }
   if (write.kind !== 'patch' && write.kind !== 'patches' && write.kind !== 'move') return null;
   const had = new Map(before.map((i) => [i.id, i]));
   for (const next of upserts) {
     const was = had.get(next.id);
     if (was && statusExcluded(types, next, was, write.undo === true))
       return { error: 'status_excluded', id: next.id };
+    const cleared = was && requiredClearedBy(types, next, was, write.undo === true);
+    if (cleared) return { error: 'field_required', id: next.id, field: cleared };
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return { error: bound, id: next.id };
   }
