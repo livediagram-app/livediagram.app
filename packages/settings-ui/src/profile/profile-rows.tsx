@@ -68,7 +68,8 @@ function SignOutRow({ onSignOut }: { onSignOut: NonNullable<AccountSection['onSi
       row={{
         key: 'signOut',
         label: 'Sign Out',
-        description: 'Sign out of liveworkspace in this browser. Your work stays in your account.',
+        description:
+          'Sign out of every liveworkspace app in this browser. Your work stays in your account.',
       }}
       control={
         <button
@@ -174,7 +175,7 @@ export function profileRows(section: AccountSection): SettingsRow[] {
       kind: 'custom',
       key: 'signOut',
       label: 'Sign Out',
-      description: 'Sign out of liveworkspace in this browser.',
+      description: 'Sign out of every liveworkspace app in this browser.',
       keywords: 'sign out log out logout leave',
       section: PROFILE_SECTIONS.account,
       render: () => <SignOutRow onSignOut={onSignOut} />,

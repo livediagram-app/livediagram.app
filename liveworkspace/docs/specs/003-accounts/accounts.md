@@ -353,8 +353,9 @@ It never bounces:
 - with a session in the app already (its hint cookie, `<prefix>signed_in=1`);
 - after the person signed out of that app. Signing out sets `<prefix>signed_out=1` (readable, the
   whole site, 400 days), which the page and the route both respect, and the next sign-in to the app
-  clears it. Signing out of an app ends that app's session only, as before: the liveworkspace session
-  and the other apps stay signed in, so signing in to that app again is one click with no code;
+  clears it. Signing out also ends the liveworkspace session and every app's session in that browser
+  ([Signing out](#signing-out)), so a bounce from any app finds no session, and the next sign-in asks
+  for an email code or Google;
 - inside a frame (embeds, the workbench), for a crawler (by user agent), or for an automated browser
   (`navigator.webdriver`), which also keeps the apps' own end-to-end suites unbounced;
 - on the sign-in pages, the guest hand-off's way back, embeds, a share link (`?s=`) or liveplanner's
@@ -406,6 +407,70 @@ None holds a secret or authenticates anything. The marketing header's account me
 signed-in visitor sees their menu with no request, and a visitor makes none at all: they see the Guest button
 ([site.md](../010-site/site.md#the-header)), whose menu code is fetched only once the pointer or focus reaches it. Only a session from
 before the name cookie existed (the hint without the name) asks `POST /api/auth/token` once, which sets it.
+
+## Signing out
+
+Signing out anywhere signs the person out everywhere in that browser. Sign out in livediagram, liveplanner,
+livedocuments, livedesign or on liveworkspace.app itself ends the liveworkspace session on the accounts site and every
+app's session that came from it, so the next Sign in, in any app, asks for an email code or Google and the person can
+pick another account. Other browsers and devices stay signed in, and so do API tokens and AI tools' connections, which
+belong to the account rather than to a browser. The accounts side is `src/end-session.ts`; an app's side is
+`endAccountsSession` and `endSessionUrl` in `@liveworkspace/auth-client`.
+
+**In an app.** The page asks its app's API, `POST /api/auth/sign-out?return=<path>`, which:
+
+1. Asks the accounts Worker to end the session its refresh token came from: `POST /api/auth/end-session` from the
+   app's Worker, with its client credentials (Basic, as for the token endpoint) and `{ token: <refresh token> }`. The
+   accounts Worker checks both through the provider's introspection, so a token alone ends nothing. It deletes every
+   access and refresh token issued on that session, every app's, then the session, and answers a **ticket**: the
+   client and the account, signed with the Worker's secret, good for five minutes.
+2. Clears its own cookies and sets the signed-out mark, as it always has, and answers `{ signedIn: false, next }`.
+   `next` is the accounts site's
+   `GET /api/auth/end-session?client_id=…&post_logout_redirect_uri=<app origin><path>&ticket=…`, or null when there
+   was no refresh token to send or the accounts site didn't answer.
+3. The page goes to `next` (a full-page visit: the only way an app on another site reaches liveworkspace.app's
+   cookie), else straight to `<path>`.
+
+At `GET /api/auth/end-session` the accounts Worker:
+
+- refuses with a `400` that goes nowhere when the client is unknown or disabled, or `post_logout_redirect_uri` is not
+  an `http` or `https` address, with no user name or password, at most 2,000 characters, on the origin of one of the
+  client's registered redirect URIs. It never sends the browser anywhere else.
+- with a ticket that is valid, unexpired and this client's: ends the browser's own session when it belongs to the
+  ticket's account (its tokens for every app, then the session) and clears the session cookie. That catches a browser
+  whose liveworkspace session is newer than the one the app signed in with (the old one ran out and the person signed
+  in again elsewhere). A session already ended by step 1 just has its cookie cleared.
+- leaves a session alone without a valid ticket, or when it belongs to another account, so a link from another site
+  can't sign anyone out.
+- then answers `302` to `post_logout_redirect_uri`, `no-store`, `no-referrer`.
+
+The page lands back on the app with the signed-out mark set, so it never bounces, and is a guest. Should the hop
+fail (the accounts site down), step 1 has already ended the session in every app.
+
+**On liveworkspace.app.** Its Sign out (Better Auth's `POST /api/auth/sign-out`, same site) first deletes every app's
+tokens issued on the session, then Better Auth deletes the session and its cookie. Settings › Security's Sign Out of
+another device and Sign Out Others (Better Auth's `revoke-session`, `revoke-other-sessions`, and `revoke-sessions`)
+do the same for the sessions they end, so that device's apps are signed out with it.
+
+**Deleted, not revoked.** The tokens are deleted rather than marked revoked: the provider takes a revoked refresh
+token shown again as a stolen one and deletes every refresh token that app holds for the account, on every device. A
+deleted one is only unknown (`invalid_grant`).
+
+**Another app's open tab.** It keeps the access token it holds, which lasts an hour from its last refresh, so it goes
+on working until then; its next refresh is refused, and the app clears its cookies and shows the person signed out. A
+reload of that tab asks for a refresh at once, so it loads signed out, as a guest: its silent bounce finds no
+liveworkspace session. A second tab of the app signed out from shares its cookies, so it is the same, and the
+Explorer on liveworkspace.app gets a guest's token at its next ask (within 15 minutes, or at once on a reload).
+
+**Guests.** Signing out leaves the browser's guest (`lw_guest`) and each app's stored guest token as they are, so
+afterwards the browser is the guest it was before signing in.
+
+**What it costs.** Only a sign-out pays: one request from the app's Worker to the accounts Worker (an introspection,
+one read and one batch of deletes in D1) and one extra full-page hop through liveworkspace.app (a read of the
+client, the session lookup, one batch). No other request changes.
+
+**What it can't reach.** An app with no refresh token to send (it had already lapsed) gets no ticket, so only its
+own cookies go; and a browser whose liveworkspace session is another account's than the app's keeps that session.
 
 ## Signing in on the app's own address
 

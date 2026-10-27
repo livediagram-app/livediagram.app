@@ -11,6 +11,7 @@
 // first load of every route stays free of it; it publishes the same distilled
 // DeferredAuthState the app tree already consumes.
 
+import { askSignOut } from '@liveworkspace/auth-client/sign-out';
 import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
@@ -74,13 +75,14 @@ async function getToken(opts?: { skipCache?: boolean }): Promise<string | null> 
   return (await refresh())?.accessToken ?? null;
 }
 
-async function endSession(): Promise<void> {
+// Ends the session here and, with it, the liveworkspace one and every app's in this browser
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"). Resolves the accounts site's hop, coming
+// back to `returnTo`, or null when there is none to take.
+async function endSession(returnTo = '/'): Promise<string | null> {
   current = null;
   setOwnPicture(null);
   await forgetRecentDiagrams();
-  await fetch(`${API_BASE}/auth/sign-out`, { method: 'POST', credentials: 'same-origin' }).catch(
-    () => {},
-  );
+  return (await askSignOut(returnTo, { apiBase: API_BASE })).next;
 }
 
 // The name the app shows: the account's own, split at its first space, else the email's local part.
@@ -125,12 +127,14 @@ function stateOf(session: Session | null): DeferredAuthState {
     getToken,
     // A full load, so nothing keeps the old session.
     signOut: async (opts) => {
-      await endSession();
-      window.location.assign(opts?.redirectUrl ?? '/');
+      const to = opts?.redirectUrl ?? '/';
+      window.location.assign((await endSession(to)) ?? to);
     },
     // The api has already deleted this account's livedocuments data and closed its liveworkspace
     // account (DeleteAccountDialog); what is left is this tab's session.
-    deleteAccount: endSession,
+    deleteAccount: async () => {
+      await endSession();
+    },
   };
 }
 

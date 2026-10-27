@@ -16,6 +16,7 @@ Scope, by file:
 | `liveworkspace/apps/accounts/src/account-api.ts`                                | `verifiedClient`, `vouchedPerson`: client credentials and access tokens by introspection |
 | `liveworkspace/apps/accounts/scripts/register-client.ts`, `map-clients.ts`      | Registering a client; mapping existing ones to apps                                      |
 | `packages/auth-client/src/oauth.ts`, `silent.ts`, `verify.ts`, `return-path.ts` | Each app's side: PKCE code flow, `prompt=none`, offline verification, safe returns       |
+| `packages/auth-client/src/sign-out.ts`                                          | The page's side of signing out: `askSignOut`, the app API's answer and its hop           |
 | `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`         | The device grant each app's MCP server runs for CLIs                                     |
 
 ## Domain and naming
@@ -77,6 +78,9 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
   or after an explicit sign-out (remembered 400 days); a 120 s guard cookie stops loops; the PKCE verifier and return
   path ride in cookies for 600 s; a return longer than 1,500 characters is not bounced. `prompt=none` answers a code or
   `login_required` at once.
+- Signing out: `endAccountsSession` (`POST /api/auth/end-session` with the client secret and the refresh token, so it
+  runs in the app's Worker) answers the ticket, or null on any failure or after 5 s; `endSessionUrl` builds the browser's hop
+  (`client_id`, `post_logout_redirect_uri`, `ticket`) ([sessions-and-guests.md](sessions-and-guests.md#ending-a-session-end-sessionts)).
 - `safeReturnPath` passes only a path on the same site (no `//`, scheme, backslash or control character).
 - `verify.ts` checks access tokens offline against the published key set.
 
@@ -143,7 +147,8 @@ User codes are 8 characters of `BCDFGHJKLMNPQRSTVWXZ`.
 (`resources.ts`): production `https://livediagram.app/api`, `https://liveplanner.app/api`,
 `https://livedocuments.app/api`, `https://livedesign.app/api`; staging their `staging.` twins;
 development `http://localhost/api`. `SILENT_SESSION_KEY`, `SILENT_GUARD_MAX_AGE_SECONDS` 120,
-`SIGNED_OUT_MAX_AGE_SECONDS` 400 d, `SILENT_RETURN_MAX_LENGTH` 1,500, `GUEST_STATE_PATTERN`
+`SIGNED_OUT_MAX_AGE_SECONDS` 400 d, `SILENT_RETURN_MAX_LENGTH` 1,500, `GUEST_STATE_PATTERN`,
+`END_SESSION_TIMEOUT_MS` 5 s
 (`packages/auth-client`); `DEVICE_CODE_TTL_S` 600, `DEVICE_POLL_INTERVAL_S` 5, `DEVICE_SLOW_DOWN_S` 5,
 `USER_CODE_LENGTH` 8 (`packages/api-kit/src/oauth.ts`). Secret: `ADMIN_TOKEN`.
 

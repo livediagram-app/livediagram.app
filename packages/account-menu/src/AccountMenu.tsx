@@ -214,7 +214,14 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
                 <span className="flex size-8 shrink-0 items-center justify-center">
                   <SignOutIcon />
                 </span>
-                {leaving ? 'Signing out…' : 'Sign out'}
+                {/* Signing out anywhere signs out of every app in this browser
+                    (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"), so the item says so. */}
+                <span className="min-w-0">
+                  <span className="block">{leaving ? 'Signing out…' : 'Sign out'}</span>
+                  <span className="block text-xs text-slate-500 dark:text-slate-400">
+                    {SIGN_OUT_HINT}
+                  </span>
+                </span>
               </button>
             </>
           )}
@@ -223,6 +230,9 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
     </div>
   );
 }
+
+// Under Sign out: it ends the liveworkspace session, so every app in this browser signs out with it.
+const SIGN_OUT_HINT = 'Every app in this browser';
 
 const ITEM =
   'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm text-slate-700 outline-none transition-colors hover:bg-slate-100 focus-visible:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:hover:bg-slate-700/60 dark:focus-visible:bg-slate-700/60';

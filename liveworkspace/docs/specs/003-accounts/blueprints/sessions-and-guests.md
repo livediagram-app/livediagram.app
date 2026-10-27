@@ -12,6 +12,7 @@ Scope, by file:
 | ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/accounts/src/guests.ts`          | The `lw_guest` cookie, `GET /api/auth/guest`, the guest merge on sign-in and on authorize |
 | `liveworkspace/apps/accounts/src/workspace-token.ts` | `GET /api/auth/workspace-token`: liveworkspace.app's own token                            |
+| `liveworkspace/apps/accounts/src/end-session.ts`     | `POST` and `GET /api/auth/end-session`; every app's tokens on a session, at any sign-out  |
 | `liveworkspace/apps/accounts/src/bearer.ts`          | `bearerPerson`: an app API's access or guest token, checked against this Worker's keys    |
 | `liveworkspace/apps/accounts/src/legacy-guests.ts`   | `POST /api/account/internal/legacy-guests/claim`                                          |
 | `liveworkspace/apps/accounts/src/guest-sweep.ts`     | `noteGuestSeen`, `sweepIdleGuests`                                                        |
@@ -28,6 +29,7 @@ Scope, by file:
 | Workspace token | JWT `{ iss, aud: RESOURCES, azp: 'liveworkspace.app', sub, … }`       | liveworkspace.app's Explorer, 15 minutes                              |
 | Legacy guest    | `guest_<old uuid>`, `legacy_guest` row                                | Copied work of the old livediagram.app                                |
 | Seen            | `guest_seen (guest_id, seen_at)`                                      | When an id was last handed out                                        |
+| Sign-out ticket | `<base64url JSON { c: client, s: account, e: exp }>.<HMAC>`           | HMAC-SHA-256 of `end-session:<payload>`, base64url; five minutes      |
 
 ## Behaviour and state
 
@@ -36,6 +38,43 @@ Scope, by file:
 Better Auth's own: a `session` row and its cookie on liveworkspace.app, made by a code or Google sign-in or the
 hand-off. `GET /api/auth/get-session` answers Better Auth's body with `user.color` added (one primary-key read of
 `profile.color`); any other answer passes unchanged. The session's lifetime is Better Auth's default (not set here).
+
+### Ending a session (`end-session.ts`)
+
+`endSessionTokens(db, sessionId)` is one D1 batch: delete `oauthAccessToken` rows whose `sessionId` is the session's
+or whose `refreshId` is one of its refresh tokens, then its `oauthRefreshToken` rows, then the `session` row. Deleted,
+never `revoked`: a revoked refresh token presented again makes the provider delete that client's whole family for the
+account (`invalidateRefreshFamily`), on every device.
+
+`POST /api/auth/end-session` (an app's Worker):
+
+1. `Authorization: Basic` and a JSON `{ token }` (the refresh token): else `400 invalid_request`.
+2. The provider's `/oauth2/introspect` with `token_type_hint=refresh_token` and that header: `401` there is
+   `401 invalid_client`; not `active`, no `sub`, or another client's is `401 invalid_token`.
+3. The row by its stored form (`base64url(SHA-256(token))`, the provider's `hashed`): its `sessionId` gets
+   `endSessionTokens`; a row with no session left has itself and its access tokens deleted.
+4. `200 { ended, ticket }`, `no-store`: `ended` whether a session went; `ticket` signed for the client and `sub`,
+   `exp = now + 300 s`.
+
+`GET /api/auth/end-session?client_id=&post_logout_redirect_uri=[&ticket=]` (the browser):
+
+1. The client read from `oauthClient` (not disabled): none is `400 invalid_client`.
+2. `post_logout_redirect_uri` must parse, be `http:` or `https:`, carry no user info, be at most 2,000 characters, and
+   share its origin with one of the client's registered redirect URIs: else `400 invalid_redirect_uri`. Every `400`
+   is `no-store` and redirects nowhere.
+3. A ticket that verifies, is unexpired and names this client: the browser's session (`getSession`) is ended when it
+   is the ticket's account (`endSessionTokens` on its id: its tokens and the row), then Better Auth's `signOut` clears
+   the session cookie on the domain it was set on; with no session left, only the cookie is cleared. A session of
+   another account is left alone. A `signOut` that throws is logged (`[end-session] sign-out failed`) and the hop
+   still goes back.
+4. `302` to `post_logout_redirect_uri` as parsed (`URL.href`), `no-store`, `no-referrer`, with the cleared cookies.
+
+Better Auth's session-ending routes (`SESSION_ENDING_ROUTES`: `POST /sign-out`, `/revoke-session`,
+`/revoke-other-sessions`, `/revoke-sessions`): before the handler runs, `endSessionTokensOf(request, route, auth, db)`
+reads the caller's session (none: nothing) and deletes every app's tokens on the sessions the route ends: the
+caller's for `sign-out`; for `revoke-session`, the one whose `token` the body names, only when it is the caller's
+account's; every other session of the account, or every one, for the last two. Better Auth then deletes the sessions
+(and, for `sign-out`, the cookie). The deletes run `SESSIONS_PER_STATEMENT` (40) sessions to a statement, in one batch.
 
 ### The guest hand-off (`GET /api/auth/guest?client_id=&redirect_uri=&state=[&resource=]`)
 
@@ -117,35 +156,43 @@ delete. Their items stay in the index.
 
 ## Errors and edge cases
 
-| Case                                    | Answer                                         |
-| --------------------------------------- | ---------------------------------------------- |
-| A forged or another site's guest cookie | a new guest                                    |
-| A redirect URI not registered           | `400`, never a redirect                        |
-| The index down at sign-in               | signed in; the guest cookie kept for next time |
-| A cross-site workspace token request    | `403 cross_site`                               |
-| Two legacy claims at once               | one merges; the other `503` or `claimed`       |
+| Case                                     | Answer                                         |
+| ---------------------------------------- | ---------------------------------------------- |
+| A forged or another site's guest cookie  | a new guest                                    |
+| A redirect URI not registered            | `400`, never a redirect                        |
+| The index down at sign-in                | signed in; the guest cookie kept for next time |
+| A cross-site workspace token request     | `403 cross_site`                               |
+| A sign-out hop to an unregistered origin | `400 invalid_redirect_uri`, never a redirect   |
+| A sign-out hop with no or a bad ticket   | back to the app; no session ended              |
+| A sign-out hop for another account       | back to the app; that session kept             |
+| Two legacy claims at once                | one merges; the other `503` or `claimed`       |
 
 ## Security and trust
 
 - A guest id is only ever believed from the HMAC-signed cookie, so nobody claims another guest's items at sign-up.
 - Guest tokens are signed by the same keys as access tokens and addressed to one app's API.
 - The legacy claim checks possession before it reads the row, so a forged signature learns nothing.
+- Ending a session needs the app's client secret and a live refresh token of that client; the browser's hop ends a
+  session only with a ticket from that call, for the same account, so a link from another site signs nobody out and
+  can only send the browser to an origin the client registered.
 
 ## Testing
 
-| Test                                                          | Pins                                                                                                        |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/guests.test.ts` (20)         | the guest hand-off; signing in as a guest; signing in to an app with a session already there; `prompt=none` |
-| `liveworkspace/apps/accounts/src/workspace-token.test.ts` (4) | the workspace token for an account, a guest, cross-site, the limit                                          |
-| `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (14)  | claiming a returning guest of the old livediagram.app                                                       |
-| `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (4)     | noting a guest seen; sweeping guests who can never come back                                                |
-| `liveworkspace/apps/accounts/src/account-api.test.ts` (33)    | the people door and bearers among the rest                                                                  |
+| Test                                                          | Pins                                                                                                                                 |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `liveworkspace/apps/accounts/src/guests.test.ts` (20)         | the guest hand-off; signing in as a guest; signing in to an app with a session already there; `prompt=none`                          |
+| `liveworkspace/apps/accounts/src/workspace-token.test.ts` (4) | the workspace token for an account, a guest, cross-site, the limit                                                                   |
+| `liveworkspace/apps/accounts/src/end-session.test.ts` (17)    | ending a session from an app, the browser's hop, liveworkspace.app and Security: every app's tokens gone, tickets, redirects refused |
+| `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (14)  | claiming a returning guest of the old livediagram.app                                                                                |
+| `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (4)     | noting a guest seen; sweeping guests who can never come back                                                                         |
+| `liveworkspace/apps/accounts/src/account-api.test.ts` (33)    | the people door and bearers among the rest                                                                                           |
 
 ## Constants and configuration
 
 `GUEST_PATH` `/guest`, `GUEST_COOKIE` `lw_guest`, `GUEST_TOKEN_TTL_SECONDS` 365 d, `COOKIE_MAX_AGE_SECONDS` 10 years,
 `STATE_MAX_LENGTH` 200, `MERGE_TIMEOUT_MS` 5 s, `AUTHORIZE_PATH` `/oauth2/authorize` (`guests.ts`);
-`WORKSPACE_TOKEN_TTL_SECONDS` 900 (`workspace-token.ts`); `KEYS_TTL_MS` 5 min (`bearer.ts`); `LEGACY_CLAIM_HOLD_MS`
+`WORKSPACE_TOKEN_TTL_SECONDS` 900 (`workspace-token.ts`); `END_SESSION_PATH` `/end-session`, `TICKET_TTL_SECONDS` 300,
+`REDIRECT_MAX_LENGTH` 2,000, `SESSIONS_PER_STATEMENT` 40 (`end-session.ts`); `KEYS_TTL_MS` 5 min (`bearer.ts`); `LEGACY_CLAIM_HOLD_MS`
 60 s (`legacy-guests.ts`); `GUEST_IDLE_MS` 400 d, `GUEST_SWEEP_LIMIT` 500 (`guest-sweep.ts`); `MAX_PROFILE_IDS` 100.
 Rate limiters: `GUEST_LIMITER` `1003` (`2003`), 60 per 60 s; `TEAM_LINK_LIMITER` `1004` (`2004`), 20 per 60 s;
 `LEGACY_GUEST_LIMITER` `1105` (`2105`), 10 per 60 s.

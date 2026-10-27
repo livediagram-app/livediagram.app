@@ -110,13 +110,43 @@ describe('AccountsBridge', () => {
     fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false}'));
     await state.signOut({ redirectUrl: '/explorer' });
     expect(fetchMock).toHaveBeenLastCalledWith(
-      '/api/auth/sign-out',
+      '/api/auth/sign-out?return=%2Fexplorer',
       expect.objectContaining({ method: 'POST' }),
     );
     expect(assign).toHaveBeenCalledWith('/explorer');
     // The held token went with the session.
     fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false}', { status: 401 }));
     expect(await state.getToken()).toBeNull();
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Signing out".
+  it("takes the accounts site's hop when the api answers one, so every app is signed out", async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ signedIn: false, next: hop })));
+    await state.signOut();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/auth/sign-out?return=%2F',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(assign).toHaveBeenCalledWith(hop);
+  });
+
+  it('ends the session after the account is deleted, without leaving the page', async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false,"next":null}'));
+    await state.deleteAccount?.();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/auth/sign-out?return=%2F',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(assign).not.toHaveBeenCalled();
   });
 });
 

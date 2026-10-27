@@ -70,6 +70,13 @@ within the hour.
 Every app's own data for the account goes with the close: the closing app deletes its own first, and the
 index purges every app's items and tells each app what was purged ([accounts.md](accounts.md#closing-an-account)).
 
+## Signing out
+
+Signing out in any app, or on liveworkspace.app, ends the liveworkspace session and every app's session in that
+browser, so the next sign-in asks for a code or Google again. The app's Worker ends the session server to server
+(`POST /api/auth/end-session`), then the browser takes one hop through `GET /api/auth/end-session`, which clears the
+liveworkspace cookie and comes back to the app ([accounts.md](accounts.md#signing-out)).
+
 ## Deploys
 
 CI's deploy ships the accounts Worker ([docs/ci.md](../../../../docs/ci.md#deploys) at the repository root):
@@ -161,9 +168,6 @@ limit, start by checking which plugins are loaded.
 
 ## Known gaps
 
-- **Sign-out everywhere:** an app drops its own tokens and revokes them at `/api/auth/oauth2/revoke`;
-  ending the accounts session as well would need `enable_end_session` on the clients and a sign-out link to
-  the provider's end-session endpoint.
 - **Email change and closing from liveworkspace.app:** the Settings panel's Profile edits the name and colour,
   but there is no change-email flow, and closing an account goes through an app's server
   ([site.md](../010-site/site.md#settings)).
