@@ -188,7 +188,10 @@ ItemTrailCrumbs.tsx      the breadcrumb of earlier cards (visibleTrail, folded "
 item-trail.ts            pure: stepTrail / liveTrail / visibleTrail / childrenOf, ItemOpenVia, ITEM_TRAIL_MAX, ITEM_TRAIL_SHOWN*
 ItemDescription.tsx      the description: NoteRichTextEditor (note=false), saved DESCRIPTION_SAVE_MS (800 ms) after
                          typing, on blur and on close as one patch of description + descriptionRich
-item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
+item-field-editors.tsx   editors for text (debounced), priority, labels, number, date, checklist
+PersonPicker.tsx         the Assignee picker: No one, the plan's people, then + Custom Assignee (editable only), whose
+                         CustomAssigneePopover (AnchoredPopover, a Name TextInput of CUSTOM_ASSIGNEE_NAME_MAX, Cancel,
+                         Add) saves personNamed(name, people) and closes
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
 plan-palette.ts          re-exports planPalette from @liveplanner/project (shared with the SVG export) and
                          planOwnColours(element)
@@ -232,6 +235,17 @@ the items too.
 - **Input routing**: `PlanBoardView` receives `interactive = editorMode === 'plan' && !readOnly`. Interactive:
   card pointerdown stops propagation and starts `usePlanCardDrag`; header/border do not stop propagation (the
   generic box drag moves the board). Not interactive: nothing stops propagation; double-click on a card opens it.
+- **Assignable people** (`usePlanSlice` `people`): `planPeople(self, teamPeople, assigned)` from
+  `@liveplanner/items` (`plan-people.ts`): self, then team members, then every assignee a card holds
+  (`assignedPeople`), once each by id (the first source wins), sorted by name. The assigned list is recomputed when
+  the item map changes and the result is kept by a key of its ids and names, so a write that changes no assignee
+  hands the context the same array.
+- **Custom assignee**: `PersonPicker` adds a last `<option value="__custom__">+ Custom Assignee</option>` when not
+  disabled; picking it keeps the select's value and opens `CustomAssigneePopover` under the select. Add (or Enter,
+  the trimmed name non-empty) calls `onSave(personNamed(name, people))`; Escape, Cancel or a press outside close it
+  unsaved. `personNamed` matches an existing person by `statusKey` of the name before minting `n-<slug>`.
+- **Cards push**: `cardsPushOf` hands `cardsCollabPush` no assignee for an `n-` id (`isNamedPerson`), so a custom
+  assignee is neither listed nor counted in `unmatched`.
 - **Card drag states**: `idle → pressed` (pointerdown) `→ dragging` (`isDragTravel`, moved ≥ `PRESS_DRAG_SLOP_PX`) `→ dropped |
 cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without moving = open the item.
   - While dragging: a floating copy follows the pointer (screen space, transform only), a placeholder of the
@@ -487,6 +501,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Zoom off while the canvas is covered                        | `apps/editor/components/chrome/ZoomControls.test.tsx`                                                                                                       |
 | Five slots across a maximised board                         | `apps/editor/components/plan/plan-board-columns.test.ts`                                                                                                    |
 | Option list roles, keys, menu items                         | `apps/editor/components/plan/OptionRows.test.tsx`                                                                                                           |
+| Custom assignee: offered when editable, made, reused, roles | `apps/editor/components/plan/PersonPicker.test.tsx`, `packages/items/src/plan-people.test.ts`                                                               |
+| Cards push skips custom assignees                           | `apps/api/src/plan-room/plan-outbox.test.ts`                                                                                                                |
 | Edge auto-scroll math and drag wiring                       | `apps/editor/hooks/plan/edge-auto-scroll.test.ts`                                                                                                           |
 | Map hidden while covered                                    | `apps/editor/components/canvas/view-readers.minimap.test.tsx`                                                                                               |
 | Cover store: re-renders only on a change                    | `apps/editor/hooks/plan/plan-cover-store.test.tsx`                                                                                                          |
@@ -526,29 +542,30 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 
 ## Constants and configuration
 
-| Constant                 | Value              | Provenance / safe range                                                  |
-| ------------------------ | ------------------ | ------------------------------------------------------------------------ |
-| `CANVAS_LAYER_Z`         | `--z-panel` − 1    | Over the canvas, under its panels                                        |
-| `MAXIMISED_BOARD_SLOTS`  | 5                  | DEFAULTS; slots across a maximised board before it scrolls; 3-8          |
-| `PHONE_COLUMN_PEEK_PX`   | 48                 | DEFAULTS D44; the next column's peek on a phone, gap included; 32-80     |
-| `PHONE_END_CLEARANCE`    | 8.5rem + safe area | DEFAULTS D45; the phone's bottom controls over a covering board; 6-10rem |
-| `PHONE_COVER_PAD_PX`     | 8                  | CanvasCover's p-2 on a phone                                             |
-| `PHONE_ROW_MIN_PX`       | 160                | DEFAULTS D46; a short title and Restore and the cog; 120-220             |
-| `EDGE_SCROLL_ZONE_PX`    | 56                 | DEFAULTS; capped at a quarter of the viewport; 32-96                     |
-| `EDGE_SCROLL_MAX_PX`     | 18                 | DEFAULTS; px per frame at the edge; 8-30                                 |
-| `EDGE_SCROLL_REDUCED_PX` | 6                  | DEFAULTS; constant under reduced motion; 3-10                            |
-| `WIDE_PANEL_SHARE`       | 0.6                | Side panels are 18-24rem; a sheet spans most of a phone; 0.5-0.8         |
-| `MAX_INSET_SHARE`        | 0.45               | The element keeps at least 10% per axis; 0.3-0.45                        |
-| `PRESS_DRAG_SLOP_PX`     | 4                  | Shared, ../packages/workbench/src/lib/press-gestures.ts                  |
-| `PLAN_COLUMN_MIN_PX`     | 220                | A card's title reads in 3 lines; 180–320                                 |
-| `PLAN_COLUMNS_MAX`       | 12                 | Spec                                                                     |
-| `SUGGESTED_STATUSES_MAX` | 5                  | Spec ("up to five"); the list `SUGGESTED_STATUSES` holds exactly five    |
-| `ITEM_EDIT_DEBOUNCE_MS`  | 400                | One undo step per pause in typing                                        |
-| `ITEM_TRAIL_MAX`         | 8                  | Spec; bounds the trail's memory; 2–20                                    |
-| `ITEM_TRAIL_SHOWN`       | 3                  | Earlier crumbs that fit a 60rem header                                   |
-| `ITEM_TRAIL_SHOWN_PHONE` | 1                  | Spec                                                                     |
-| `FIT_GLIDE_MS`           | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`               |
-| `FOCUS_ZOOM_MAX`         | 1.5                | Spec (150%); `useEditorState.ts`                                         |
+| Constant                   | Value              | Provenance / safe range                                                  |
+| -------------------------- | ------------------ | ------------------------------------------------------------------------ |
+| `CANVAS_LAYER_Z`           | `--z-panel` − 1    | Over the canvas, under its panels                                        |
+| `MAXIMISED_BOARD_SLOTS`    | 5                  | DEFAULTS; slots across a maximised board before it scrolls; 3-8          |
+| `PHONE_COLUMN_PEEK_PX`     | 48                 | DEFAULTS D44; the next column's peek on a phone, gap included; 32-80     |
+| `PHONE_END_CLEARANCE`      | 8.5rem + safe area | DEFAULTS D45; the phone's bottom controls over a covering board; 6-10rem |
+| `PHONE_COVER_PAD_PX`       | 8                  | CanvasCover's p-2 on a phone                                             |
+| `PHONE_ROW_MIN_PX`         | 160                | DEFAULTS D46; a short title and Restore and the cog; 120-220             |
+| `EDGE_SCROLL_ZONE_PX`      | 56                 | DEFAULTS; capped at a quarter of the viewport; 32-96                     |
+| `EDGE_SCROLL_MAX_PX`       | 18                 | DEFAULTS; px per frame at the edge; 8-30                                 |
+| `EDGE_SCROLL_REDUCED_PX`   | 6                  | DEFAULTS; constant under reduced motion; 3-10                            |
+| `WIDE_PANEL_SHARE`         | 0.6                | Side panels are 18-24rem; a sheet spans most of a phone; 0.5-0.8         |
+| `MAX_INSET_SHARE`          | 0.45               | The element keeps at least 10% per axis; 0.3-0.45                        |
+| `PRESS_DRAG_SLOP_PX`       | 4                  | Shared, ../packages/workbench/src/lib/press-gestures.ts                  |
+| `PLAN_COLUMN_MIN_PX`       | 220                | A card's title reads in 3 lines; 180–320                                 |
+| `PLAN_COLUMNS_MAX`         | 12                 | Spec                                                                     |
+| `SUGGESTED_STATUSES_MAX`   | 5                  | Spec ("up to five"); the list `SUGGESTED_STATUSES` holds exactly five    |
+| `ITEM_EDIT_DEBOUNCE_MS`    | 400                | One undo step per pause in typing                                        |
+| `CUSTOM_ASSIGNEE_NAME_MAX` | 60                 | Spec; a name on one line of the picker; 30-120                           |
+| `ITEM_TRAIL_MAX`           | 8                  | Spec; bounds the trail's memory; 2–20                                    |
+| `ITEM_TRAIL_SHOWN`         | 3                  | Earlier crumbs that fit a 60rem header                                   |
+| `ITEM_TRAIL_SHOWN_PHONE`   | 1                  | Spec                                                                     |
+| `FIT_GLIDE_MS`             | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`               |
+| `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                         |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to
