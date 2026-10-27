@@ -4,9 +4,10 @@
 // and every Card field use this one control. One bordered field the full width of its row: the linked card's glyph
 // in its type's colour (and its own colour dot), its number as a quiet tag and its full title, a chevron to choose,
 // and an open arrow at the end, inside the same border, that opens the linked card. Choosing drops a list under
-// the field (in place, so the panel's focus trap keeps it): a filter, None, then the candidate cards, each with its
-// whole title (wrapping to three lines). Keys: Enter or Space opens it,
-// the arrows move, Enter picks, Escape closes.
+// the field, drawn over the page (AnchoredPopover) so the side column never squeezes it: at least LINK_LIST_MIN_PX
+// wide, wider with the field, kept on screen. A filter, None, then the candidate cards, each title on up to two
+// lines with the whole title in a tooltip. Keys: Enter or Space opens it, the arrows move, Enter picks, Escape
+// closes.
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   itemColourOf,
@@ -16,20 +17,17 @@ import {
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  NoMatches,
-  Tooltip,
-  useEscape,
-  useClickOutside,
-} from '@liveplanner/ui';
+import { ChevronDownIcon, ChevronRightIcon, NoMatches, Tooltip } from '@liveplanner/ui';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { planColourName } from './ColourSwatches';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 // More candidates than this and the list opens with a filter.
 export const LINK_FILTER_FROM = 8;
+// The list's least width (20rem): room for a card's number and a title of a few words on a line, however narrow
+// the field (docs/specs/026-plan/item-types.md "Card fields"). A wider field widens it; the window caps it.
+export const LINK_LIST_MIN_PX = 320;
 
 export function LinkedCardField({
   id,
@@ -63,6 +61,9 @@ export function LinkedCardField({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
+  // The list's width, taken from the field as it opens.
+  const [listWidth, setListWidth] = useState(LINK_LIST_MIN_PX);
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const linkedId = typeof value === 'string' && value ? value : undefined;
   // The linked card, from the project's cards, else from the candidates (a host that passes only those).
   const linked = linkedId
@@ -92,21 +93,17 @@ export function LinkedCardField({
     close();
   };
 
-  // Escape closes the list only, before the panel's own Escape (which would close the card).
-  useEscape(() => close(), { enabled: open, capture: true, stopPropagation: true });
-
   // Opened on the current link (set as it opens, not after), and the filter (or the list) takes the keys.
   const openList = () => {
     const at = options.findIndex((o) => o?.id === linkedId);
     setActive(at < 0 ? 0 : at);
+    setListWidth(Math.max(LINK_LIST_MIN_PX, boxRef.current?.offsetWidth ?? 0));
+    setAnchor(triggerRef.current);
     setOpen(true);
   };
   useEffect(() => {
     if (open) (filterRef.current ?? listRef.current)?.focus();
   }, [open]);
-
-  // A press outside the field closes the list.
-  useClickOutside(boxRef, () => close(false), open);
 
   const onListKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -196,85 +193,94 @@ export function LinkedCardField({
           </Tooltip>
         ) : null}
       </div>
-      {open ? (
-        // The field's width: the side column clips anything wider, and the list stays in place for the panel's focus
-        // trap. Long titles wrap instead (below).
-        <div className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
-          {candidates.length > LINK_FILTER_FROM ? (
-            <input
-              ref={filterRef}
-              type="text"
-              value={query}
-              placeholder="Find a card"
-              aria-label={`Find a card for ${label}`}
-              aria-controls={listId}
-              aria-activedescendant={`${listId}-${active}`}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setActive(0);
-              }}
-              onKeyDown={onListKey}
-              className="w-full border-b border-slate-200 bg-transparent px-2 py-1.5 text-[13px] outline-none dark:border-slate-700"
-            />
-          ) : null}
-          <ul
-            ref={listRef}
-            id={listId}
-            role="listbox"
-            aria-label={label}
-            tabIndex={-1}
-            aria-activedescendant={`${listId}-${active}`}
-            onKeyDown={onListKey}
-            className="max-h-60 overflow-y-auto py-1 outline-none"
-          >
-            {options.map((card, i) => {
-              const t = card ? typeIn(types, card.type) : undefined;
-              const selected = (card?.id ?? undefined) === linkedId;
-              return (
-                <li
-                  key={card?.id ?? 'none'}
-                  id={`${listId}-${i}`}
-                  role="option"
-                  aria-selected={selected}
-                  // The full number and title, whatever the clamp hides.
-                  aria-label={card ? `#${card.key} ${itemTitle(card)}` : 'None'}
-                  onPointerMove={() => setActive(i)}
-                  onClick={() => pick(card)}
-                  className={`flex cursor-pointer items-start gap-1.5 px-2 py-1.5 text-[13px] leading-snug max-sm:text-[16px] ${
-                    i === active ? 'bg-slate-100 dark:bg-slate-800' : ''
-                  } ${selected ? 'font-semibold' : ''}`}
-                >
-                  {card && t ? (
-                    <>
-                      {/* Glyph and number sit level with the title's first line. */}
-                      <span
-                        className={`mt-[2px] shrink-0 ${ACCENT_TEXT}`}
-                        style={accentVars(itemColourOf(card) ?? t.color)}
-                      >
-                        <PlanTypeGlyph glyph={t.glyph} size={14} />
-                      </span>
-                      <span className="mt-[2px] shrink-0 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
-                        #{card.key}
-                      </span>
-                      {/* The whole title, wrapping to three lines; a longer one ends in an ellipsis, and an unbroken
-                          string breaks rather than overflow. */}
-                      <span className="line-clamp-3 min-w-0 flex-1 [overflow-wrap:anywhere]">
-                        {itemTitle(card)}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-slate-500 dark:text-slate-400">None</span>
-                  )}
-                </li>
-              );
-            })}
-            {options.length === 1 && query ? (
-              <li role="presentation">
-                <NoMatches things="cards" query={query} />
-              </li>
+      {open && anchor ? (
+        // Over the page, so the side column never clips it. Escape and a press outside close it (AnchoredPopover,
+        // which takes Escape before the panel's own, so the card stays open).
+        <AnchoredPopover
+          anchor={anchor}
+          name={`Choose ${label}`}
+          width={listWidth}
+          onClose={() => close(false)}
+        >
+          <div className="overflow-hidden rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+            {candidates.length > LINK_FILTER_FROM ? (
+              <input
+                ref={filterRef}
+                type="text"
+                value={query}
+                placeholder="Find a card"
+                aria-label={`Find a card for ${label}`}
+                aria-controls={listId}
+                aria-activedescendant={`${listId}-${active}`}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setActive(0);
+                }}
+                onKeyDown={onListKey}
+                className="w-full border-b border-slate-200 bg-transparent px-2 py-1.5 text-[13px] outline-none dark:border-slate-700"
+              />
             ) : null}
-          </ul>
-        </div>
+            <ul
+              ref={listRef}
+              id={listId}
+              role="listbox"
+              aria-label={label}
+              tabIndex={-1}
+              aria-activedescendant={`${listId}-${active}`}
+              onKeyDown={onListKey}
+              className="max-h-60 overflow-y-auto py-1 outline-none"
+            >
+              {options.map((card, i) => {
+                const t = card ? typeIn(types, card.type) : undefined;
+                const selected = (card?.id ?? undefined) === linkedId;
+                return (
+                  <li
+                    key={card?.id ?? 'none'}
+                    id={`${listId}-${i}`}
+                    role="option"
+                    aria-selected={selected}
+                    // The full number and title, whatever the clamp hides.
+                    aria-label={card ? `#${card.key} ${itemTitle(card)}` : 'None'}
+                    onPointerMove={() => setActive(i)}
+                    onClick={() => pick(card)}
+                    className={`flex cursor-pointer items-start gap-1.5 px-2 py-1.5 text-[13px] leading-snug max-sm:text-[16px] ${
+                      i === active ? 'bg-slate-100 dark:bg-slate-800' : ''
+                    } ${selected ? 'font-semibold' : ''}`}
+                  >
+                    {card && t ? (
+                      <>
+                        {/* Glyph and number sit level with the title's first line. */}
+                        <span
+                          className={`mt-[2px] shrink-0 ${ACCENT_TEXT}`}
+                          style={accentVars(itemColourOf(card) ?? t.color)}
+                        >
+                          <PlanTypeGlyph glyph={t.glyph} size={14} />
+                        </span>
+                        <span className="mt-[2px] shrink-0 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                          #{card.key}
+                        </span>
+                        {/* The title on up to two lines; a longer one ends in an ellipsis (the whole title in the
+                          tooltip), and an unbroken string breaks rather than overflow. */}
+                        <Tooltip label={itemTitle(card)}>
+                          <span className="line-clamp-2 min-w-0 flex-1 [overflow-wrap:anywhere]">
+                            {itemTitle(card)}
+                          </span>
+                        </Tooltip>
+                      </>
+                    ) : (
+                      <span className="text-slate-500 dark:text-slate-400">None</span>
+                    )}
+                  </li>
+                );
+              })}
+              {options.length === 1 && query ? (
+                <li role="presentation">
+                  <NoMatches things="cards" query={query} />
+                </li>
+              ) : null}
+            </ul>
+          </div>
+        </AnchoredPopover>
       ) : null}
     </div>
   );
