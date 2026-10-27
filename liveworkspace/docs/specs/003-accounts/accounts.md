@@ -816,6 +816,22 @@ sign-off. The marks are transparent 64px PNGs at `/email/<name>-mark-64.png` on 
   sent at once count as one; and the password, email-verification and email-change flows, which nothing here uses)
   are off (`UNUSED_CODE_PATHS` in `src/auth-options.ts`) and answer `404`.
 - **The onboarding series** is liveworkspace's, whichever app it speaks for.
+- **The migration notice** (docs/migration.md at the repository root, step 8) is liveworkspace's, sent once to each
+  account moved from the old livediagram.app, from `NOTICE_FROM` (`liveworkspace <support@liveworkspace.app>`), not
+  `EMAIL_FROM`. Only `POST /api/auth/internal/migration-notice` sends it, with `Authorization: Bearer ADMIN_TOKEN`
+  (`401` without; the migrate tool's `notify` is the caller). The body is `{ recipients, dryRun? }`: 1 to 50
+  recipients, each `{ email, name, splitDocuments?, splitDocumentsTotal?, hasTokens?, hasTeams?, hasAiTool?,
+hadDrive? }`, where a split document is `{ name, parts: [{ app, title, url }] }` (1 to 4 parts, `app` one of the
+  four, `url` an `https` address on that app's domain), at most 50 a recipient. The email lists the first ten; with
+  more (`splitDocumentsTotal`, the person's whole count, or the list's length), it closes with "and N more". Every field is checked before anything is sent (`400` with the
+  first problem). Subject "livediagram is now part of liveworkspace", in liveworkspace's frame with an
+  **Open livediagram** button, and a plain-text part; each optional section appears only when its flag or list says
+  so, and everything a recipient carries is escaped. An address is claimed in `migration_notice` before its send,
+  so a re-run never sends it twice: `sent`, `skipped` (`already_sent`, or `no_account` when no account has the
+  address) or `failed` per address. A refused send releases its claim, so a later run tries again; one that timed out
+  keeps it (it may have gone), with the error, for a person to look at. With `dryRun: true` nothing is claimed or
+  sent: each answer carries the rendered `subject`, `html` and `text`, and what a real run would skip. Without
+  `NOTICE_FROM` a real send answers `503 not_configured`.
 
 ## Notification emails
 

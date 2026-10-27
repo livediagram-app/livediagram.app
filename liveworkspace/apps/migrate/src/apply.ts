@@ -39,7 +39,7 @@ export interface Runner {
 }
 
 export type HttpRequest = {
-  method: 'PUT';
+  method: 'PUT' | 'POST';
   url: string;
   headers: Record<string, string>;
   body: string;
