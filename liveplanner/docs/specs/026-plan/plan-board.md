@@ -57,10 +57,10 @@ Stored on the element, shared by everyone, undone like any element edit:
   right-click on the board opens, with the same rules: maximised or filling its tab, no Layer, Size, Rotation or
   Animation; under Style, set apart by a separator, its own rows Board Setup, Columns, Swimlanes, Supported Cards and Card Layout; no Collaborate or
   Resources, [Nothing attached to Plan items](plan-mode.md#nothing-attached-to-plan-items)); pressed again it
-  closes it. A board a collaborator holds opens nothing. In a Dashboard slot, which opens no element menu, the cog
-  opens **Board Settings** as a popover instead (as a Sheet's and a chart's cogs do): Board Setup, Columns, Swimlanes,
-  Supported Cards and Card Layout, then the slot's **Slot** section ([Dashboard tab](plan-tabs.md#dashboard-tab)),
-  one open at a time; someone who may not edit the board sees the slot's own cog there. Telemetry: `Plan` · `Opened` ·
+  closes it. A board a collaborator holds opens nothing. In a Dashboard slot, where the board is simplified
+  ([Dashboard tab](plan-tabs.md#dashboard-tab) "A board in a slot is simplified"), the header ends with the slot's own
+  cog (**Slot Settings**: the slot toolbar, with **Open Tab**, and its **Slot** section) and no board sections, for
+  everyone, maximised from the slot too; the board is set up on its own tab. Telemetry: `Plan` · `Opened` ·
   `BoardSettings`.
 - **Swimlanes**: none, or grouped by assignee, type, priority, status, or **any field** the card types the board
   shows offer, Parent among them (see [Swimlanes by a field](#swimlanes-by-a-field)). A board's columns are its statuses, so rows by status would repeat them: Status is not a choice on a board

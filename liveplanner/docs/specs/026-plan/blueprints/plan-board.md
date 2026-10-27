@@ -164,6 +164,13 @@ BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX
                          Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
 phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action) + shownQuick
+                         In a Dashboard (`useInDashboard`, dashboard-context.ts: DashboardContext present, in a
+                         slot or maximised from one) PlanBoardView is simplified: `setUpHere = canEdit &&
+                         !inDashboard` gates PlanBoardHeader's `canEdit` (widget zone read-only, no Set Done
+                         Column, no Reveal) and `canRename`, PlanColumnHeader's `canEdit` (no column cog, so no Add
+                         Column After) and Add New Card Type; the header's end is Maximise then `slot.cog` (none
+                         without slot settings); FormBoardStrip draws nothing. Cards, drag, Add card, the card
+                         menu, SetupBoardHost and counts keep `canEdit`/`canEditCards` as on a Board tab
 AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
 PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face (custom fields as chips where Display places them; its gathered votes read-only)
@@ -171,7 +178,7 @@ PlanCardView.tsx         the plan-card element body (themed; a lone card's fill 
 PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
-../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel: PLAN_BOARD_SECTIONS (Board Setup, Columns,
+../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows (and PlanBoardSectionsPanel, unused since the dashboard board is simplified): PLAN_BOARD_SECTIONS (Board Setup, Columns,
                          Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
                          Cards / Archive), each Body given `open` so it can defer work while shut
 ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column
@@ -553,6 +560,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Linked as rows, empty state, open                           | `apps/editor/components/plan/LinkedCards.test.tsx`                                                                                                          |
 | Breadcrumb crumbs, fold, step back                          | `apps/editor/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                      |
 | Phone look: Minimal, no widgets, columns, touch             | `apps/editor/components/plan/phone-board.test.ts`, `plan-board-columns.test.ts`                                                                             |
+| Simplified in a Dashboard slot: set-up off, cards on        | `apps/editor/components/plan/PlanBoardView.dashboard.test.tsx`, `apps/editor/components/forms/FormBoardStrip.test.tsx`                                      |
 | Phone's shared top row                                      | `apps/editor/lib/canvas-layer-insets.test.ts` (`phoneRow`)                                                                                                  |
 | Empty widget zone keeps its + in a band                     | `apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx`                                                                                              |
 | Dashboard Settings steps aside while maximised              | `apps/editor/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                          |

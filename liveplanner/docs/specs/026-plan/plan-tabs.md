@@ -1,6 +1,6 @@
 # Plan tabs
 
-Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the project's Board and Sheet tabs, plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
+Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the project's Board and Sheet tabs (a board simplified for working its cards: [A board in a slot is simplified](#dashboard-tab)), plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
 
 ## Domain language
 
@@ -139,6 +139,17 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   sits last among that header's controls; otherwise (a metric, a note, an empty slot) the Slot Settings cog floats at
   the slot's top right on hover.
   Each change is one undo step.
+- **A board in a slot is simplified**: a board shown in a slot (a Board tab, or a dashboard's own board) is drawn for
+  working its cards, not for setting the board up, always (no per-slot choice). It keeps its title, its cards and their
+  card faces, dragging cards between columns and within them, **Add card** (without **Add New Card Type**), opening a
+  card (and its right-click menu), each column's name, count and WIP limit, the board's saved widgets, read-only (they
+  count and filter as anywhere, but there is no **+**, no reordering and no × to take one off, and nothing in them
+  changes the board's set-up, such as a Done widget's Set Done Column), and **Maximise Board**, which stays simplified
+  while maximised. It drops **Focus**, the column cogs (and with them adding a column), the form strip (a form sending
+  its responses to the board), renaming the board from its title, **Reveal**, and the board-setup sections of its cog:
+  the cog is the slot's own (**Slot Settings**, with the slot toolbar's **Open Tab**), or none for someone with no
+  slot settings. Changes to the board are made on its own tab, through **Open Tab**. A board not set up yet still
+  offers **Set Up Board** there, so a new board can be started from its slot.
 - **A new slot settles into place**: a slot added (Add a Slot, a new Dashboard's rows, or by a collaborator)
   fades up from 8 px low at 96% scale, at the long motion token; a new row's slots cascade left to right, landing by
   the motion ceiling. The slots a Dashboard opens with, or shows on switching to another Dashboard, draw still, and

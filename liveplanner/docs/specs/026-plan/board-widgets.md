@@ -24,6 +24,9 @@ header; they are not in the palette.
   header stays clean. Maximised or filling its tab (where no selection shows), the widgets' place in the controls
   card keeps its **+** for someone who may edit, so the hairline before the cog never stands alone; someone who may not
   edit sees neither the zone nor its hairline there.
+- **Read-only in a Dashboard slot**: a board shown in a slot draws its saved widgets, which count and narrow as
+  anywhere, but offers no **+**, no hint, no reordering, no × and nothing that changes the board's set-up (Set Done
+  Column), for anyone ([Dashboard tab](plan-tabs.md#dashboard-tab) "A board in a slot is simplified").
 - **Not on a phone**: below 640 px the header shows no widgets and their narrowing stands down
   ([Plan board](plan-board.md#on-a-phone)).
 - The zone ends in a **+** (for someone who may edit, tooltip-free, named "Add a widget") that opens the widget
