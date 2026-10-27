@@ -7,6 +7,7 @@ import { ITEM_TYPES, presetSetup } from '@liveplanner/items';
 import {
   PlanBoardMenuSections,
   PlanBoardSectionsPanel,
+  PlanSortCardsSettings,
   PlanSupportedCardsSettings,
   PlanSwimlaneSettings,
 } from './PlanBoardMenuSection';
@@ -56,11 +57,18 @@ function show(overrides: Record<string, unknown>) {
 
 describe('PlanBoardMenuSections', () => {
   // One less click: the sections are rows of the menu itself, not of a Board flyout inside it.
-  it('puts Board Setup, Columns, Swimlanes, Supported Cards and Card Layout in the menu, no Board parent', () => {
+  it('puts Board Setup, Columns, Swimlanes, Sort Cards, Supported Cards and Card Layout in the menu, no Board parent', () => {
     show({ types: ITEM_TYPES });
     expect(
       [...document.querySelectorAll('[data-flyout]')].map((f) => f.getAttribute('data-flyout')),
-    ).toEqual(['Board Setup', 'Columns', 'Swimlanes', 'Supported Cards', 'Card Layout']);
+    ).toEqual([
+      'Board Setup',
+      'Columns',
+      'Swimlanes',
+      'Sort Cards',
+      'Supported Cards',
+      'Card Layout',
+    ]);
     expect(document.querySelector('[data-flyout="Board"]')).toBeNull();
     // Set apart from Style above them.
     expect(document.querySelector('[role="separator"]')).toBeTruthy();
@@ -139,6 +147,92 @@ describe('Swimlanes by a field', () => {
     const next: unknown = updateBoard.mock.calls[0]![1];
     expect(next).toMatchObject({ swimlaneBy: 'assignee' });
     expect(next).toEqual(expect.not.objectContaining({ swimlaneField: expect.anything() }));
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "The board set-up": Sort Cards, up to two fields.
+describe('Sort Cards', () => {
+  const types = [
+    {
+      ...ITEM_TYPES[1],
+      fields: [...ITEM_TYPES[1].fields, 'f-value'],
+      custom: [{ id: 'f-value', label: 'Value', kind: 'currency' as const }],
+    },
+  ];
+  const sortedBoard = (sortBy: unknown) =>
+    ({ ...board, planBoard: { ...presetSetup('kanban'), sortBy } }) as ShapeElement;
+  const showSort = (element: ShapeElement, overrides: Record<string, unknown> = {}) => {
+    const updateBoard = vi.fn();
+    for (const key of Object.keys(plan)) delete plan[key];
+    Object.assign(plan, { canEdit: true, updateBoard, announce: vi.fn(), types }, overrides);
+    render(<PlanSortCardsSettings element={element} />);
+    return updateBoard;
+  };
+  const sent = (update: ReturnType<typeof vi.fn>): unknown => update.mock.calls[0]![1];
+
+  it('offers None and the fields the board’s types can sort by, and sorts by the one pressed', () => {
+    const updateBoard = showSort(board);
+    const group = screen.getByRole('radiogroup', { name: 'Sort By' });
+    expect(group.getAttribute('aria-label')).toBe('Sort By');
+    expect(screen.getByRole('radio', { name: 'None' }).getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByRole('radio', { name: 'Value' })).toBeTruthy();
+    expect(screen.queryByRole('radiogroup', { name: 'Then By' })).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: 'Priority' }));
+    expect(sent(updateBoard)).toMatchObject({ sortBy: [{ field: 'priority', dir: 'desc' }] });
+  });
+
+  it('shows a sorted board’s directions and Then By, and changes each', () => {
+    const updateBoard = showSort(sortedBoard([{ field: 'priority', dir: 'desc' }]));
+    expect(screen.getByRole('radio', { name: 'Highest First' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    const thenBy = screen.getByRole('radiogroup', { name: 'Then By' });
+    // Then By never offers Sort By's field.
+    expect(thenBy.textContent).not.toContain('Priority');
+    fireEvent.click(screen.getByRole('radio', { name: 'Lowest First' }));
+    expect(sent(updateBoard)).toMatchObject({ sortBy: [{ field: 'priority', dir: 'asc' }] });
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Due Date' }).at(-1)!);
+    expect(updateBoard.mock.calls[1]![1]).toMatchObject({
+      sortBy: [
+        { field: 'priority', dir: 'desc' },
+        { field: 'due', dir: 'asc' },
+      ],
+    });
+  });
+
+  it('turns sorting off with None, storing no sort', () => {
+    const updateBoard = showSort(
+      sortedBoard([
+        { field: 'priority', dir: 'desc' },
+        { field: 'due', dir: 'asc' },
+      ]),
+    );
+    expect(screen.getByRole('radio', { name: 'Earliest First' })).toBeTruthy();
+    fireEvent.click(screen.getAllByRole('radio', { name: 'None' })[0]!);
+    expect(sent(updateBoard)).toEqual(expect.not.objectContaining({ sortBy: expect.anything() }));
+  });
+
+  it('keeps a field in use that the shown types no longer offer, by name or id', () => {
+    showSort(sortedBoard([{ field: 'f-value', dir: 'desc' }]), { types: ITEM_TYPES });
+    expect(screen.queryByRole('radio', { name: 'Value' })).toBeNull();
+    expect(screen.getByRole('radio', { name: 'f-value' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    cleanup();
+    showSort(sortedBoard([{ field: 'f-value', dir: 'desc' }]), {
+      types: [{ ...types[0], fields: ITEM_TYPES[1].fields }],
+    });
+    expect(screen.getByRole('radio', { name: 'Value' }).getAttribute('aria-checked')).toBe('true');
+  });
+
+  // docs/specs/013-workspace/share-roles.md: a board's settings are an Editor's.
+  it('shows nothing to someone who may not edit the board, nor without a plan’s types', () => {
+    showSort(board, { canEdit: false });
+    expect(screen.queryByRole('radiogroup', { name: 'Sort By' })).toBeNull();
+    cleanup();
+    showSort(board, { types: undefined });
+    expect(screen.getByRole('radio', { name: 'None' })).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: 'Priority' })).toBeNull();
   });
 });
 
