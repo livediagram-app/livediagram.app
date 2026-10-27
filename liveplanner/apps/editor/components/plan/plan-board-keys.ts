@@ -7,6 +7,8 @@ type PlanKeyAction =
   | { kind: 'focus'; itemId: string }
   | { kind: 'move'; move: ItemMove; announce: string }
   | { kind: 'open' }
+  // Shift+Up/Down on a sorted board: nothing moves, and the reason is announced.
+  | { kind: 'refuse'; announce: string }
   // `focusAfter`: the card that takes keyboard focus once this one has gone, the next in its cell, else the one
   // before it, so a run of Deletes works down a column; a cell left empty hands it to the nearest card on the
   // board in reading order (columns, then lanes); null only when the board is left with no card.
@@ -44,6 +46,8 @@ export function planBoardKey(
   key: string,
   shift: boolean,
   canEdit: boolean,
+  // A sorted board's first field ("Priority"), named when Shift+Up/Down cannot reorder.
+  sortedBy?: string,
 ): PlanKeyAction | null {
   const at = locate(p, itemId);
   if (!at) return null;
@@ -66,9 +70,17 @@ export function planBoardKey(
       return {
         kind: 'move',
         move: { status: target.column.status, before: null },
-        announce: `${title} moved to ${target.column.name}, position ${count} of ${count}`,
+        // A sorted board puts it where its sort does, not last.
+        announce: p.sorted
+          ? `${title} moved to ${target.column.name}`
+          : `${title} moved to ${target.column.name}, position ${count} of ${count}`,
       };
     }
+    if ((key === 'ArrowUp' || key === 'ArrowDown') && p.sorted && sortedBy)
+      return {
+        kind: 'refuse',
+        announce: `Sorted by ${sortedBy}: turn Sort Cards off to reorder by hand.`,
+      };
     if (key === 'ArrowUp' || key === 'ArrowDown') {
       const up = key === 'ArrowUp';
       const neighbour = items[at.index + (up ? -1 : 1)];

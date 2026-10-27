@@ -13,6 +13,7 @@ export * from './limits';
 export * from './rank';
 export * from './apply';
 export * from './board';
+export * from './board-sort';
 export * from './done-columns';
 export * from './card-source';
 export * from './board-card-types';

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES } from '@liveplanner/items';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
-import { boardAdd, boardSet } from './board';
+import { boardAdd, boardSet, sortLevels } from './board';
 import { typeApply, typeLs } from './card-type';
 
 // The board and card type verbs (docs/specs/026-plan/plan-agents.md; docs/specs/015-api/cli.md "Commands").
@@ -150,6 +150,41 @@ describe('board set', () => {
       boardSet.input.parse({ project: DOC_A, board: 'b1', done: 'none' }),
     );
     expect(none.columns[0]).not.toHaveProperty('done');
+  });
+
+  it('sorts the board from --sort, and prints the sort', async () => {
+    const { ctx, sent } = ctxWith();
+    const out = await boardSet.run!(
+      ctx,
+      boardSet.input.parse({ project: DOC_A, board: 'sprint', sort: 'Priority desc, Due Date' }),
+    );
+    expect(sent[0]).toMatchObject({
+      operations: [
+        {
+          fields: {
+            planBoard: {
+              sortBy: [
+                { field: 'priority', dir: 'desc' },
+                { field: 'due', dir: 'asc' },
+              ],
+            },
+          },
+        },
+      ],
+    });
+    expect(boardSet.text!(out)[0]).toContain(
+      ', sorted by Priority (Highest First), then Due Date (Earliest First)',
+    );
+  });
+
+  it('reads --sort levels, each direction optional, none as none', () => {
+    expect(sortLevels('Priority descending, Value ASC, Due Date')).toEqual([
+      { field: 'Priority', direction: 'descending' },
+      { field: 'Value', direction: 'ascending' },
+      { field: 'Due Date' },
+    ]);
+    expect(sortLevels(' None ')).toEqual([]);
+    expect(sortLevels(' , ')).toEqual([]);
   });
 
   it('refuses a board it cannot find', async () => {

@@ -37,7 +37,7 @@ never told a change worked when it shows on no board.
   board takes its card type ([Plan board](plan-board.md#the-board-set-up)).
 - **`list_items`** answers the plan with the items: each board with its columns in order, each column with its
   name, status and the numbers of the live cards in it in board order (`#3 #7`; a board that takes only some card
-  types lists only theirs), then the items, each with its column's name beside its status (`Trash` for a trashed
+  types lists only theirs; a sorted board lists them sorted, and names its `sortBy`), then the items, each with its column's name beside its status (`Trash` for a trashed
   card, none for a status no board names), then the card types. Live cards no board column shows are listed under
   **Not on a board**. This is the text `board` view [Plan mode](plan-mode.md#agents) named as a later step. A filter
   by card type or column names them exactly as `change_items` does (`in-progress` reads In Progress; `Trash` the
@@ -114,6 +114,11 @@ Every write takes what a person would say, and stores the ids:
   display places them, and custom fields follow the display alone. The answer names both.
 - `swimlanes` sets its rows as the board's menu does: none, assignee, type, priority, status (or "column"), or a field
   by name ("Severity"), any field a row can group by; anything else is refused naming those there are.
+  `sortBy` sets [Sort Cards](plan-board.md#the-board-set-up): up to two `{ field, direction }`, the field by name
+  ("Priority", "Due Date", a custom field such as "Value") or id, the direction `ascending` (lowest or earliest
+  first, a Choice in option order; the default) or `descending`; an empty list turns sorting off. A field the board
+  cannot sort by, the same field twice or more than two levels are refused naming the fields there are. The answer
+  names the sort. The CLI's `board set` takes it as `--sort "Priority descending, Due Date"` (`none` turns it off).
   `doneColumns` names the columns whose cards count as done ([Done columns](plan-board.md#done-columns): Completion,
   Points and the Done phase the charts read), whole: the named ones count, every other does not, and `[]` makes
   none count. The older `doneColumn` still works as it did, the named column and every one after it counting as

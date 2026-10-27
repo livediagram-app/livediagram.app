@@ -208,10 +208,13 @@ export function usePlanCardDrag(opts: {
       const otherSlot =
         other && accepts ? dropSlotAt(other.el, e.clientX, e.clientY, p.itemId) : null;
       if (dragRef.current?.target && dragRef.current.target.boardId !== other?.id) leaveTarget();
-      // The slot under the pointer, and whether the card's type refuses its status.
-      const rawSlot = outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, p.itemId);
-      const dragged = optsRef.current.item?.(p.itemId);
+      // The slot under the pointer (where a sorted board's sort puts the card), and whether the card's type refuses
+      // its status.
       const slotTarget = planBoardTarget(other ? other.id : optsRef.current.boardId);
+      const underPointer = outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, p.itemId);
+      const rawSlot =
+        underPointer && slotTarget?.place ? slotTarget.place(p.itemId, underPointer) : underPointer;
+      const dragged = optsRef.current.item?.(p.itemId);
       const refused =
         dragged && rawSlot && slotTarget ? slotTarget.refuseAt(dragged, rawSlot) : null;
       const slot = rawSlot && refused ? { ...rawSlot, beforeId: null } : rawSlot;

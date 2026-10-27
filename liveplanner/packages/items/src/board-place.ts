@@ -18,6 +18,7 @@ import { freshBoardSetup, isPlanBoardPresetId, PLAN_BOARD_PRESET_IDS } from './p
 import { statusKey, statusNamed } from './status-names';
 import { slugOf } from './type-catalogue';
 import { CARD_FIELD_LABELS } from './card-display';
+import type { BoardSortLevel } from './board-sort';
 import { settleDoneColumns } from './done-columns';
 
 // A placed board's width (blueprints/DEFAULTS.md D5; wider when its columns need it; its height is
@@ -172,6 +173,8 @@ export interface BoardChange {
   doneColumn?: string | null;
   // The built-in fields its cards show, by name ("Number", "Due Date") or id, whole; a type's Display places them.
   cardFields?: readonly string[];
+  // Sort Cards, resolved by the caller (boardSortNamed); an empty list turns it off.
+  sortBy?: readonly BoardSortLevel[];
 }
 
 // The ids of the columns a change makes done (`doneColumns`, or `doneColumn` and every column after it), undefined
@@ -294,6 +297,10 @@ export function reshapeBoard(
         ? { swimlaneField: change.swimlanes.field }
         : {}),
     };
+  }
+  if (change.sortBy) {
+    const { sortBy: _sort, ...rest } = next;
+    next = change.sortBy.length ? { ...rest, sortBy: [...change.sortBy] } : rest;
   }
   // Each column flagged as it counts: a kept column as it did (an older board's by its done column), a new one by its
   // name (docs/specs/026-plan/plan-board.md "Done columns").

@@ -2,6 +2,7 @@
 // tab then canvas order, the statuses they name (each once, the first board's name winning) and the card types.
 // Pure: the api's plan route builds it from tab bodies, and the editor names its statuses the same way.
 import type { PlanBoardSetup } from './board';
+import type { BoardSortLevel } from './board-sort';
 import { normaliseBoardSetup } from './board';
 import { isDoneColumn } from './done-columns';
 import type { ItemTypeDef } from './item-types';
@@ -27,6 +28,8 @@ export interface PlanBoardOutline {
   // turned off: the editor shows no card on it).
   types: string[] | null;
   columns: PlanColumnOutline[];
+  // Sort Cards (docs/specs/026-plan/plan-board.md "The board set-up"); absent is rank order.
+  sortBy?: BoardSortLevel[];
 }
 
 export interface PlanStatusName {
@@ -103,6 +106,7 @@ export function planOutline(
           ...(c.wipLimit ? { wipLimit: c.wipLimit } : {}),
           ...(isDoneColumn(setup, c) ? { done: true as const } : {}),
         })),
+        ...(setup.sortBy ? { sortBy: setup.sortBy } : {}),
       });
     }
   }

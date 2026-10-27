@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ShapeElement } from '@liveplanner/project';
 import {
   ARCHIVED_FIELD,
+  ITEM_TYPES,
   boardAddTypes,
   boardShowsType,
   isArchived,
@@ -18,7 +19,7 @@ import {
   newItemId,
 } from '@liveplanner/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
-import { boardMoveFor, cellStatus, laneMove } from '@/components/plan/plan-board-moves';
+import { boardMoveFor, cellStatus, laneMove, sortedSlot } from '@/components/plan/plan-board-moves';
 import { moveStatusRefusal } from './status-refusal';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerPlanBoardTarget, sameIncoming, type PlanIncoming } from './plan-board-targets';
@@ -147,6 +148,11 @@ export function usePlanBoardDrop(opts: {
       const column = setup.columns.find((c) => c.status === slot.status);
       plan.announce(`${def.label} added to ${column?.name ?? slot.status}`);
     },
+    // A sorted board puts the card where its sort does, so the placeholder shows where it lands.
+    place: (itemId: string, slot: PlanDropSlot) =>
+      setup && projection
+        ? sortedSlot(setup, projection, items.get(itemId), slot, plan?.types ?? ITEM_TYPES)
+        : slot,
     // The card's own status is never refused (it may be reordered there or change lanes); a swimlane by type
     // checks the lane's type, the one the card would have.
     refuseAt: (item: Pick<Item, 'type' | 'fields'>, slot: PlanDropSlot) => {
@@ -175,6 +181,7 @@ export function usePlanBoardDrop(opts: {
         acceptsType: (type) => target.current.acceptsType(type),
         addCard: (type, slot) => target.current.addCard(type, slot),
         refuseAt: (type, slot) => target.current.refuseAt(type, slot),
+        place: (id, slot) => target.current.place(id, slot),
       }),
     [element.id, target],
   );
