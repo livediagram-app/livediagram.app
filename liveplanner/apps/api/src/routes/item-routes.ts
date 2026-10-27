@@ -16,6 +16,7 @@ import {
   applyMove,
   itemPlacer,
   applyPatch,
+  createRefusal,
   fieldsWithinBounds,
   readItemCreate,
   readItemMove,
@@ -41,6 +42,7 @@ import {
 import { badRequest, conflict, forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { handleItemCommentRoutes } from './item-comment-routes';
 import {
+  clearedRequired,
   excludedStatus,
   forCaller,
   itemBusy,
@@ -160,7 +162,11 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   if (restores && !(await isItemEditor(ctx, caller))) return forbidden();
   // A create naming no status takes its type's Default State (docs/specs/026-plan/item-types.md "An item type");
   // the project is already read for the caller, so this costs no query.
-  const input = withDefaultStatuses([read], typesOf(caller.doc?.itemTypes))[0]!;
+  const types = typesOf(caller.doc?.itemTypes);
+  const input = withDefaultStatuses([read], types)[0]!;
+  // A required custom field left empty (docs/specs/026-plan/item-types.md "Required fields"); a restore passes.
+  const missing = createRefusal(types, input);
+  if (missing) return rejected(missing.error, missing.field);
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
@@ -179,9 +185,13 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
   if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > ITEM_BULK_MAX)
     return badRequest(`items must be 1 to ${ITEM_BULK_MAX} items`);
   const creates: ItemCreate[] = [];
+  const types = typesOf(caller.doc?.itemTypes);
   for (const raw of body.items) {
     const input = readCreate(raw, caller.owner);
     if (typeof input === 'string') return rejected(input);
+    // A new card missing a required field; a card carried across (a sync, a restore: its number) passes.
+    const missing = createRefusal(types, input);
+    if (missing) return rejected(missing.error, missing.field);
     creates.push(input);
   }
   const made = await createMany(ctx, caller, creates);
@@ -212,6 +222,8 @@ export async function writeItem(
     if (next instanceof Response) return next;
     if (excludedStatus(caller, next, item, opts.undo === true))
       return rejected('status_excluded', 'status');
+    const cleared = clearedRequired(caller, next, item, opts.undo === true);
+    if (cleared) return rejected('field_required', cleared);
     if (retiresItem(item, next) && !(await isItemEditor(ctx, caller))) return forbidden();
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return rejected(bound);
