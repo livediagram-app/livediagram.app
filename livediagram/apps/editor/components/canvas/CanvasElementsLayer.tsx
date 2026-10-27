@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { RemoteCursors } from '@liveworkspace/workbench/components/canvas/RemoteCursor';
+import { identityVars } from '@livediagram/ui';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
@@ -39,7 +41,7 @@ import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
-import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
+import { ZoomedLaserOverlay } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { type LaneGutterEdge, type LaneLike } from '@livediagram/document';
@@ -585,9 +587,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           above the elements, beneath the remote cursors. */}
         <AgentFocusOverlay elements={elements} />
 
-        {remoteCursors.map((c) => (
-          <ZoomedRemoteCursor key={c.id} cursor={c} />
-        ))}
+        <RemoteCursors cursors={remoteCursors} paint={identityVars} />
 
         {/* Laser overlay sits inside the viewport-transformed wrapper
             so trail coordinates (canvas-space) pan + zoom with
