@@ -121,7 +121,8 @@ the copy takes).
 6. Left behind: workbench pairings and sessions, and profile pictures (0002). Drive connections can't move (their
    tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has no
    Drive mirror of its own: Google Drive sync is liveworkspace's, for every app (liveworkspace/docs/specs/005-drive/drive.md), so a
-   person connects there once; step 8's email says Drive sync is paused, not that it needs reconnecting.
+   person connects there once, at `https://www.liveworkspace.app/drive/connect`; step 8's email tells everyone who had
+   connected Drive that it needs connecting again, once, and that nothing in their Drive was changed.
 
 ## 2. Copy documents into livediagram
 
@@ -279,17 +280,34 @@ are none to carry.) The rehearsal should include a browser with a real old local
 
 ## 8. Email everyone (once)
 
-Sent at the end of the migration, once step 9's checks have passed, from `hello@livediagram.app` once that domain is onboarded:
+Sent at the end of the migration, once step 9's checks have passed, from `liveworkspace <support@liveworkspace.app>`
+(liveworkspace.app is onboarded to Email Service on the account). One email per migrated account, liveworkspace's
+(its logo, band and frame, like the accounts Worker's other emails), subject "livediagram is now part of
+liveworkspace", with an **Open livediagram** button. Every person gets:
 
-- what changed: livediagram is part of liveworkspace, and sign-in is liveworkspace's, with the same email, by code
-  or Google; nothing to do to keep their work;
-- where their split documents went, as a short list of links built from `moved_parts`, for the people who had any;
-- their API tokens still work until they expire, and are managed in liveworkspace's Settings now; their teams
-  came across, managed in liveworkspace too;
-- connected AI tools (MCP) keep working, but some may need reconnecting, especially when their token comes up for
-  renewal: remove livediagram from the tool and add it again;
-- Google Drive sync is paused for now, and how they'll know when it is back;
-- the updated privacy page (Clerk is no longer a processor), and how to delete their account.
+- what changed: livediagram is part of liveworkspace, a set of apps that share one account; there's nothing to do,
+  their work is at the same address, and sign-in is with the same email, by code or Google;
+- the updated privacy page (we changed authentication provider, so Clerk no longer holds their details), and the
+  contact form for anything that looks wrong.
+
+And only where it applies to them:
+
+- **Split documents**: where their documents went, as a short list of links built from `moved_parts`, one line per
+  part outside livediagram (`<document>: <its tabs> in <app>`);
+- **API tokens** (a live old token): they still work until they expire, and are now at
+  `https://www.liveworkspace.app/account/tokens`;
+- **Teams** (a joined member of an old team): they came across with their members and roles, managed in
+  liveworkspace now;
+- **AI tools** (the person used livediagram from one): they may need to reconnect once (remove livediagram from the
+  tool and add it again), and they can now connect liveplanner, livedocuments and livedesign too;
+- **Google Drive** (a Drive connection on the old site): sync needs connecting again, once, at
+  `https://www.liveworkspace.app/drive/connect`, and it then syncs from every liveworkspace app; nothing in their
+  Drive was changed.
+
+The accounts Worker renders and sends it (`POST /api/auth/internal/migration-notice`, behind `ADMIN_TOKEN`,
+liveworkspace/docs/specs/003-accounts/accounts.md "Emails"), and claims each address before sending, so a re-run
+never emails anyone twice. `migrate notify` builds each person's sections from the bundles and the snapshot and
+calls it (Tooling).
 
 Cloudflare Email Service is for transactional mail and includes 3,000 a month, with a daily quota that starts low;
 step 0's account count decides whether this goes in daily batches. A notice about someone's own account and data
@@ -358,6 +376,12 @@ from a laptop. Nothing in it is deployed.
   ledger generation is refused.
 - `verify <bundle> --env … [--out <verify.json>]`: step 9's row counts, read back from each database (one
   wrangler call per 500 keys). It reads databases only, not the rooms.
+- `notify <bundle>… --snapshot <snapshot> --env staging|production [--clerk <users.csv>] [--preview <dir>]
+[--only <email>] [--send]`: step 8's email. One recipient per account the bundles imported (their `"user"` rows) or
+  merged onto (`owner-map.json`), deduplicated by address, with that account's sections read from the snapshot
+  through every old id that maps to it. Without `--send` it asks the accounts Worker to render each email without
+  sending (and writes them to `--preview`); with it, it sends in batches of 50. The Worker skips an address it has
+  already claimed and one with no account.
 
 What `plan` decides for you (all reported in `report.json`):
 

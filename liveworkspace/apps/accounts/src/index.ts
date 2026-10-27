@@ -9,6 +9,7 @@ import { appOriginOfProxy, signInOnAppAddress } from './handoff.ts';
 import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
+import { MIGRATION_NOTICE_PATH, migrationNotice } from './migration-notice.ts';
 import { disconnectDrive, driveDisconnectConfig } from './drive-disconnect.ts';
 import type { Env } from './env.ts';
 import { sweepIdleGuests } from './guest-sweep.ts';
@@ -99,6 +100,11 @@ export default {
 
     if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
       return benchAccounts(request, env);
+    }
+
+    // The migration notice (docs/migration.md step 8), behind ADMIN_TOKEN.
+    if (request.method === 'POST' && pathname === MIGRATION_NOTICE_PATH) {
+      return migrationNotice(request, env);
     }
 
     if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {

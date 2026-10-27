@@ -5,9 +5,12 @@
 //                [--oauth-kv <dump.json>] [--no-pictures] --out <bundle-dir>
 //   migrate apply <bundle> --env staging|production --ledger <ledger.sqlite> [--dry-run] [--concurrency <n>]
 //   migrate verify <bundle> --env staging|production [--out <verify.json>]
+//   migrate notify <bundle>… --snapshot <snapshot> --env staging|production [--clerk <users.csv>] [--preview <dir>]
+//                  [--only <email>] [--send]
 import { readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { apply, defaultWrangler } from './apply.ts';
+import { buildRecipients, notify, sectionCounts } from './notify.ts';
 import { createPictureDrawer } from './pictures.ts';
 import { plan } from './plan/index.ts';
 import { fetchHttp, processRunner } from './run.ts';
@@ -19,7 +22,8 @@ const USAGE = `usage:
   migrate snapshot <export.sql> <out.sqlite>
   migrate plan <snapshot> --clerk <users.csv> --accounts <existing-accounts.json> [--ledger <ledger.sqlite>] [--oauth-kv <dump.json>] [--no-pictures] --out <bundle-dir>
   migrate apply <bundle> --env staging|production --ledger <ledger.sqlite> [--dry-run] [--concurrency <n>]
-  migrate verify <bundle> --env staging|production [--out <verify.json>]`;
+  migrate verify <bundle> --env staging|production [--out <verify.json>]
+  migrate notify <bundle>... --snapshot <snapshot> --env staging|production [--clerk <users.csv>] [--preview <dir>] [--only <email>] [--send]`;
 
 function fail(message: string): never {
   console.error(message);
@@ -135,6 +139,51 @@ async function main(argv: string[]): Promise<void> {
     if (values.out) writeFileSync(values.out, `${text}\n`);
     console.log(text);
     if (tables.some((t) => t.missing > 0)) process.exitCode = 1;
+    return;
+  }
+  if (command === 'notify') {
+    const { values, positionals } = parseArgs({
+      args: rest,
+      allowPositionals: true,
+      options: {
+        snapshot: { type: 'string' },
+        env: { type: 'string' },
+        clerk: { type: 'string' },
+        preview: { type: 'string' },
+        only: { type: 'string' },
+        send: { type: 'boolean' },
+      },
+    });
+    if (positionals.length === 0 || !values.snapshot) {
+      fail('notify needs <bundle>... --snapshot --env');
+    }
+    const env = envOf(values.env);
+    const { db } = openSnapshot(values.snapshot);
+    try {
+      const built = buildRecipients({
+        bundleDirs: positionals,
+        snapshot: db,
+        env,
+        now: Date.now(),
+        clerkCsv: values.clerk ? readFileSync(values.clerk, 'utf8') : null,
+      });
+      for (const s of built.skipped) console.log(`no email for ${s.account}: ${s.reason}`);
+      const only = values.only?.trim().toLowerCase();
+      const recipients = only ? built.recipients.filter((r) => r.email === only) : built.recipients;
+      if (only && recipients.length === 0) fail(`${only} is not a migrated account's address`);
+      console.log(JSON.stringify(sectionCounts(recipients)));
+      const summary = await notify({
+        recipients,
+        env,
+        send: values.send ?? false,
+        http: fetchHttp,
+        vars: process.env,
+        preview: values.preview ?? null,
+      });
+      if (summary.failed > 0) process.exitCode = 1;
+    } finally {
+      db.close();
+    }
     return;
   }
   fail(command ? `unknown command ${command}` : 'no command');
