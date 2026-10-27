@@ -558,7 +558,8 @@ board settings, for switching back.
   read out), "3 responses · 1 new", **Copy Form Link** (an Editor's, once published; it reads "Copied") and **Open
   Form** (opens the Form tab). It reads the count without marking anything seen (only opening the Form tab does), and
   refreshes as the Form tab's status bar does. It is not a stored widget: it comes and goes with the form's
-  destination.
+  destination. The same board shown in a Dashboard slot has no strip, until it is maximised from the slot (a board there is simplified:
+  [Dashboard tab](../026-plan/plan-tabs.md#dashboard-tab) "A board in a slot is simplified").
 - **On the board**: a card made by a response shows a **New** dot (the brand colour, beside its flag, named "New
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
