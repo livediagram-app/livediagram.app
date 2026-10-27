@@ -1,6 +1,16 @@
 import { sendEmail as send } from '@liveworkspace/email';
 import type { AppSiteId } from '@liveworkspace/sites';
-import { emailBrand, frame, INK, paragraph, type EmailBrand } from './email-layout.ts';
+import {
+  button,
+  emailBrand,
+  escapeHtml,
+  frame,
+  INK,
+  list,
+  paragraph,
+  workspaceBrand,
+  type EmailBrand,
+} from './email-layout.ts';
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 import { reportServerEvent } from './telemetry.ts';
@@ -65,8 +75,6 @@ export async function sendCodeEmail(
   await sendEmail(env, { to: email, ...codeEmail(code, emailBrand(env, app)) });
 }
 
-const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-
 const origin = (baseUrl: string) => baseUrl.replace(/\/+$/, '');
 
 // The account's notification settings on liveworkspace.app (this deployment's BASE_URL): the Explorer with the Settings
@@ -108,12 +116,18 @@ export function teamInviteEmail(
     `Not for you? Decline it, no account needed: ${decline}`,
     'The team is the same in every liveworkspace app. An invitation nobody answers closes after 28 days.',
   ].join('\n');
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px">
-<p>${escapeHtml(lead)}</p>
-<p style="margin:24px 0"><a href="${link}" style="background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Answer the invitation</a></p>
-<p style="color:#555">Sign in with this email address to accept it. Not for you? <a href="${decline}" style="color:#555">Decline the invitation</a>, no account needed.</p>
-<p style="color:#555">The team is the same in every liveworkspace app. An invitation nobody answers closes after 28 days.</p>
-</body></html>`;
+  const accept = 'Sign in with this email address to accept it.';
+  const footer =
+    'The team is the same in every liveworkspace app. An invitation nobody answers closes after 28 days.';
+  const team = escapeHtml(teamName);
+  const html = frame(workspaceBrand({ BASE_URL: baseUrl }), {
+    preheader: escapeHtml(lead),
+    heading: reminder ? `A reminder about ${team}` : `You’re invited to ${team}`,
+    body: `${paragraph(escapeHtml(lead))}
+        ${button('Answer the invitation', escapeHtml(link))}
+        ${paragraph(`${accept} Not for you? <a href="${escapeHtml(decline)}" style="color:${INK};text-decoration:underline">Decline the invitation</a>, no account needed.`, 24)}`,
+    footer,
+  });
   return { subject, text, html };
 }
 
@@ -177,11 +191,15 @@ export function inviteResponseEmail(
     '',
     `You get this as one of the team's admins. Manage your notifications: ${unsubscribeUrl}`,
   ].join('\n');
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px">
-<p><strong>${escapeHtml(responder)}</strong> ${verb} the invitation to join <strong>${escapeHtml(teamName)}</strong> on liveworkspace.</p>
-<p style="margin:24px 0"><a href="${link}" style="background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">See the team</a></p>
-<p style="color:#555">You get this as one of the team's admins. <a href="${unsubscribeUrl}" style="color:#555">Manage your notifications</a> to turn these off.</p>
-</body></html>`;
+  const html = frame(workspaceBrand({ BASE_URL: baseUrl }), {
+    preheader: escapeHtml(
+      `${responder} ${verb} the invitation to join ${teamName} on liveworkspace.`,
+    ),
+    heading: accepted ? 'Invitation accepted' : 'Invitation declined',
+    body: `${paragraph(`<strong>${escapeHtml(responder)}</strong> ${verb} the invitation to join <strong>${escapeHtml(teamName)}</strong> on liveworkspace.`)}
+        ${button('See the team', escapeHtml(link))}`,
+    footer: `You get this as one of the team's admins. <a href="${escapeHtml(unsubscribeUrl)}" style="color:${INK};text-decoration:underline">Manage your notifications</a> to turn these off.`,
+  });
   return { subject, text, html, unsubscribeUrl };
 }
 
@@ -257,12 +275,14 @@ export function tokenExpiringEmail(baseUrl: string, tokenName: string, expiresAt
     outro,
     footer,
   ].join('\n');
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px">
-<p>${which(`<strong>${escapeHtml(name)}</strong>`)} ${rest}</p>
-<ol>${steps.map((s) => `<li>${s}</li>`).join('')}</ol>
-<p style="margin:24px 0"><a href="${link}" style="background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Manage your tokens</a></p>
-<p style="color:#555">${outro}</p>
-<p style="color:#555">${footer}</p>
-</body></html>`;
+  const html = frame(workspaceBrand({ BASE_URL: baseUrl }), {
+    preheader: escapeHtml(lead),
+    heading: 'Your API token expires soon',
+    body: `${paragraph(`${which(`<strong>${escapeHtml(name)}</strong>`)} ${rest}`)}
+        ${list(steps, true)}
+        ${button('Manage your tokens', escapeHtml(link))}
+        ${paragraph(outro, 24)}`,
+    footer,
+  });
   return { subject, text, html };
 }
