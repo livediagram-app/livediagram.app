@@ -4,7 +4,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import type { EditorModeState } from '@/hooks/editor/useEditorMode';
 
 // The editor's own resolved mode for the active tab (useEditorMode), for the surfaces that carry
-// the mode switch: the Toolbar layout's menu button and the Floating layout's Explorer panel
+// the mode switch: the chip beside the menu button (EditorModeSwitch) and a start panel's rail (StartModeSwitch)
 // (docs/specs/007-editor/editor-modes.md "The mode switch"). One resolution, read by all, so
 // a switch and the canvas cannot disagree. Null outside a provider (the Explorer page, /new, a
 // test that mounts a panel alone), where no switch renders.

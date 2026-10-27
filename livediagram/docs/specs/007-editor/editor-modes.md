@@ -53,6 +53,10 @@ where it is and changes only how the next mark is made.
 - **And on an empty tab's start.** The switch also leads every start panel's rail ([Template
   starts](start-diagramming.md) "Changing mode"), named and full width (`StartModeSwitch`), so a tab begun in the
   wrong mode changes before anything is made.
+- **The two always agree.** On an empty tab both show at once, the chip beside the menu button included (it shows on
+  every tab, empty or not). Both read and write the one source of truth, the tab's mode (`Tab.opensIn`, through the
+  editor's one `EditorModeState`), so a switch in either place updates the other, the palette and the tab pill's icon
+  in the same render.
 - **Nowhere else.** The tab menu holds no Mode section, and the tab bar and the Explorer offer none.
 - **A dropdown chip** (`ModeMenuChip`): on the start's rail a full-width row; beside the menu button a compact chip
   (`compact`). Both show the current mode's icon, its name (not on a phone beside the menu button) and a chevron, on

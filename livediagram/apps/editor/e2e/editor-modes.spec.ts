@@ -8,10 +8,10 @@ import {
   pageOwnerHeaders,
 } from './fixtures';
 
-// Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: a tab's mode is chosen on its
-// start while it is empty, never beside the menu button or in the tab menu; a tab with content keeps its mode (Shift+D
-// included) across a reload; a new tab opens in its maker's mode; and a switch reaches everyone at once, with Undo
-// switching it back. Synthesised content only.
+// Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the switch beside the menu button
+// changes any tab's mode, a tab with content included (Shift+D too), never in the tab menu; the mode holds across a
+// reload; a new tab opens in its maker's mode; and a switch reaches everyone at once, with Undo switching it back.
+// Synthesised content only.
 
 const CANVAS = '[data-canvas-a11y-root]';
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -39,8 +39,10 @@ async function savedOpensIn(page: Page): Promise<unknown> {
 const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
 // The open tab's editor mode, as the editor marks it.
 const mode = (page: Page) => page.locator('[data-editor-mode]');
-// The start's own switch, the one place a tab's mode is chosen.
+// The start's own switch, on an empty tab.
 const startSwitch = (page: Page) => page.getByRole('button', { name: /^Tab mode: / });
+// The switch beside the menu button, on every tab.
+const topSwitch = (page: Page) => page.getByRole('button', { name: /^Editor mode: / });
 const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /^Sketch/ });
 
 // A new document in a mode, on its start, in dark mode at a desktop size.
@@ -67,6 +69,11 @@ async function chooseOnStart(page: Page, name: 'Diagram' | 'Draw') {
   await page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click();
 }
 
+async function chooseBesideMenu(page: Page, name: 'Diagram' | 'Draw' | 'Workshop') {
+  await topSwitch(page).click();
+  await page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click();
+}
+
 // An empty tab offers each mode's start screen (docs/specs/007-editor/start-diagramming.md); its × starts from a
 // blank canvas, as a person drawing straight away would close it.
 async function closeStart(page: Page) {
@@ -88,8 +95,8 @@ async function drawWave(page: Page, from: { x: number; y: number }) {
 }
 
 test.describe('editor modes', () => {
-  // docs/specs/007-editor/editor-modes.md "The mode switch": only an empty tab's start offers one.
-  test('a tab offers no mode switch beside the menu button or in its tab menu', async ({
+  // docs/specs/007-editor/editor-modes.md "The mode switch": beside the menu button, in its card, on every tab.
+  test('a tab offers the mode switch beside the menu button, and none in its tab menu', async ({
     page,
     pageErrors,
   }) => {
@@ -97,7 +104,10 @@ test.describe('editor modes', () => {
     await expect(mode(page)).toHaveAttribute('data-editor-mode', 'diagram');
     await expect(startSwitch(page)).toHaveAccessibleName('Tab mode: Diagram');
     await closeStart(page);
-    await expect(page.getByRole('button', { name: /mode:/i })).toHaveCount(0);
+    const card = page.locator('[data-toolbar-menu]');
+    await expect(card.getByRole('button', { name: 'Explorer' })).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Editor mode: Diagram' })).toBeVisible();
+    await expect(topSwitch(page)).toHaveText('Diagram');
 
     await page.getByRole('button', { name: 'Tab menu' }).click();
     await expect(page.getByRole('button', { name: 'Organise in Tab Folder' })).toBeVisible();
@@ -106,7 +116,7 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test("the start's switch turns an empty tab to Draw, and once drawn on the tab keeps its mode", async ({
+  test('a drawn-on tab switches to Diagram beside the menu button, keeping its strokes, and back by Shift+D', async ({
     page,
     pageErrors,
   }) => {
@@ -120,8 +130,16 @@ test.describe('editor modes', () => {
     await drawWave(page, { x: 500, y: 600 });
     await expect(sketches(page)).toHaveCount(1);
 
-    // A tab with content keeps its mode: Shift+D does nothing.
+    // A tab with content switches beside the menu button: the palette replaces the dock, the stroke stays.
     await page.keyboard.press('Escape');
+    await chooseBesideMenu(page, 'Diagram');
+    await expect(mode(page)).toHaveAttribute('data-editor-mode', 'diagram');
+    await expect(dock(page)).toHaveCount(0);
+    await expect(sketches(page)).toHaveCount(1);
+    await expect.poll(() => savedOpensIn(page), { timeout: 15_000 }).toBe('diagram');
+
+    // Shift+D steps on from Diagram to Draw, content or not.
+    await page.locator(CANVAS).click({ position: { x: 1200, y: 300 } });
     await page.keyboard.press('Shift+D');
     await expect(mode(page)).toHaveAttribute('data-editor-mode', 'draw');
 
@@ -129,7 +147,25 @@ test.describe('editor modes', () => {
     await page.reload();
     await page.locator(CANVAS).waitFor();
     await expect(mode(page)).toHaveAttribute('data-editor-mode', 'draw');
+    await expect(topSwitch(page)).toHaveAccessibleName('Editor mode: Draw');
     await expect(sketches(page)).toHaveCount(1);
+    expectNoPageErrors(pageErrors);
+  });
+
+  // docs/specs/007-editor/editor-modes.md "The two always agree": an empty tab shows both switches over one mode.
+  test("on an empty tab the switch beside the menu button and the start's agree", async ({
+    page,
+    pageErrors,
+  }) => {
+    await openInMode(page, 'diagram');
+    await expect(topSwitch(page)).toHaveAccessibleName('Editor mode: Diagram');
+    await expect(startSwitch(page)).toHaveAccessibleName('Tab mode: Diagram');
+    await chooseBesideMenu(page, 'Draw');
+    await expect(mode(page)).toHaveAttribute('data-editor-mode', 'draw');
+    await expect(startSwitch(page)).toHaveAccessibleName('Tab mode: Draw');
+    await expect(page.getByRole('region', { name: 'Start Drawing' })).toBeVisible();
+    await chooseOnStart(page, 'Diagram');
+    await expect(topSwitch(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);
   });
 
