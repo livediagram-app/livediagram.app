@@ -9,7 +9,7 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 | ----------------- | ------------------------------------------------------------------------------------------------------------ |
 | item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`            |
 | type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)              |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, onCard? }`; kinds `CUSTOM_FIELD_KINDS`             |
+| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, onCard? }`; kinds `CUSTOM_FIELD_KINDS` |
 | glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                 |
 | card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`               |
 | Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover` |
@@ -33,7 +33,9 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `glyph` in the set; `custom` up to 12 (`customFieldCount`, which never counts Parent), ids
   `CUSTOM_FIELD_ID_PATTERN` (`f-` and a slug, or the reserved `parent`) and unique, labels 1 to 32, kind known,
   Choice 1 to 20 unique options of up to 100 characters; Card a `linkType` matching `ITEM_TYPE_PATTERN` (a type the
-  catalogue lacks is kept); `fields` only built-in or own custom ids, deduplicated (a stored type naming `parent` without defining it gains
+  catalogue lacks is kept) and optional `linkTypes`, 1 to `CARD_LINK_TYPES_MAX` (32) such ids, normalised by
+  `withLinkTypes` (deduplicated; kept only when longer than one; `linkType` set to its first) after `linkTypesOf`
+  reads the pair (`linkTypes` when it holds `linkType`, else `[linkType]`); `fields` only built-in or own custom ids, deduplicated (a stored type naming `parent` without defining it gains
   `PARENT_FIELD`),
   `title` and `status` put first, at most 24; `newTitle` defaults to "New <name>"; JSON at most
   `ITEM_TYPES_BYTES`. Answers `{ ok, catalogue }` (normalised) or `{ ok: false, reason }` naming the part.
@@ -95,17 +97,23 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   (`LEGACY_PARENT_GROUPING`, `swimlaneBy: 'parent'`) stays valid on boards, views and search filters and is read as
   the field: `normaliseBoardSetup`, and `legacy-parent.ts` (`readGrouping`, `readCardSearchFilter`: `e:{id}` keys to
   `f:"{id}"`, `readPlanViewSettings`, used by `PlanViewView` and `PlanViewMenuSection`).
-- Card fields: `card-links.ts` (packages/items) is the one reading of links: `linkFieldsOfType(type)`, `linkCandidates(items, linkType, selfId)` (live, not archived, number
-  order, never self), `linkText` ("Missing card"), and `linkedCardsOf(target, items, types)`: groups
-  `{ fieldId, label, fromTypes, cards }`, one per Card field whose `linkType` is the target's type (Parent for a
-  Project), trashed cards left out. `LinkedCardField` (apps/editor) is the shared control for every Card field
+- Card fields: `card-links.ts` (packages/items) is the one reading of links: `linkTypesOf(field)` (the field's card
+  types, read-compatible as above), `withLinkTypes(field, ids)` (the stored pair), `linkFieldsOfType(type)` (each
+  `{ id, label, linkTypes }`), `linkCandidates(items, linkTypes, selfId)` (live, not archived, of any of the types,
+  number order, never self), `linkText` ("Missing card"), and `linkedCardsOf(target, items, types)`: groups
+  `{ fieldId, label, fromTypes, cards }`, one per Card field whose types include the target's type (Parent for a
+  Project), trashed cards left out. `LinksToPicker` (apps/editor `LinksToPicker.tsx`, used by `ItemTypeFieldForms`) is the type editor's
+  multi-select: a `Select`-styled button (`linksToLabel`) opening an `AnchoredPopover` of `OptionRows`
+  `kind="multiple"`, the last ticked row disabled. `LinkedCardField` (apps/editor) is the shared control for every Card field
   (`ItemFieldEditor`), an in-place listbox (inside the panel's focus trap) with a filter past
   `LINK_FILTER_FROM` (8), Escape taken in the capture phase. `PlanSheetsHost` passes the groups as `linkedGroups`
   (`LinkedCardGroup` in LinkedCards.tsx, `New {Type}` via `addItem` with the link
   set, first status the type uses, tracked `('Plan', 'Added', 'LinkedCard')`). `customFieldText(field, value, items)`
   names a Card value; `LaneFieldKind` gains `card` (rows named by the linked card with its `itemColourOf` dot, number
-  order; the Swimlanes tile draws the linked type's glyph). `PlanCardFace` draws a Card field as a pill: the linked
-  card's colour dot when it has one, else its type's glyph.
+  order; the Swimlanes tile draws the linked type's glyph for a one-type field, else the card glyph; `LaneField`
+  carries `linkTypes`). `PlanCardFace` draws a Card field as a pill: the linked
+  card's colour dot when it has one, else the linked card's own type's glyph (the field's first type when the card
+  is missing).
 - Consumers: `PlanCardFace` (stripe, glyph, custom field chips via `custom-field-text.ts`), `ItemPanel` (the
   type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
   (projection), `PlanBoardCells`/`PlanCardView` names,
@@ -213,26 +221,28 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 
 ## Testing
 
-| Rule                                                      | Test                                                        |
-| --------------------------------------------------------- | ----------------------------------------------------------- |
-| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`                 |
-| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                         |
-| Glyph picker filters, empty state, picks                  | `apps/editor/components/plan/GlyphPicker.test.tsx`          |
-| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                   |
-| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                   |
-| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`          |
-| Editor: stale resend, failure drops one, undo keeps later | `apps/editor/hooks/plan/useItemTypes.test.ts`               |
-| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`         |
-| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                           |
-| Card tiles follow the catalogue                           | `apps/editor/components/palette/palette-plan-tiles.test.ts` |
-| Custom values on a card                                   | `apps/editor/components/plan/custom-field-text.test.ts`     |
-| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`                 |
-| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                   |
-| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`               |
-| Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`     |
-| Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`  |
-| Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`         |
-| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)         |
+| Rule                                                      | Test                                                                                                                            |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`                                                                                     |
+| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                                                                                             |
+| Card fields of several types: read, stored, linked, lanes | `packages/items/src/card-links.test.ts`, `packages/items/src/type-catalogue.test.ts`, `packages/items/src/type-changes.test.ts` |
+| Links To multi-select                                     | `apps/editor/components/plan/LinksToPicker.test.tsx`                                                                            |
+| Glyph picker filters, empty state, picks                  | `apps/editor/components/plan/GlyphPicker.test.tsx`                                                                              |
+| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                                                                                       |
+| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                                                                                       |
+| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`                                                                              |
+| Editor: stale resend, failure drops one, undo keeps later | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                   |
+| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                             |
+| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                                                                                               |
+| Card tiles follow the catalogue                           | `apps/editor/components/palette/palette-plan-tiles.test.ts`                                                                     |
+| Custom values on a card                                   | `apps/editor/components/plan/custom-field-text.test.ts`                                                                         |
+| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`                                                                                     |
+| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                                                                                       |
+| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                   |
+| Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                         |
+| Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                      |
+| Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                             |
+| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)                                                                             |
 
 ## Constants and configuration
 

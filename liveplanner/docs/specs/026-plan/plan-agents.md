@@ -161,16 +161,18 @@ Every write takes what a person would say, and stores the ids:
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
   - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, excludedStatuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
-    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, currency?, onCard? }]`
+    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, onCard? }]`
     (kinds `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `card`; a
     `currency` field's code, GBP when absent). A Currency value is written as a number, an Email value as the
-    address; `editCustom` also takes `currency`. Colour and glyph default
+    address; `editCustom` also takes `currency`. A `card` field links to `linkTypes`, the card types it may point at
+    by name or id (one or more), or to `linkType`, one; both given, they are merged, `linkType` first. Colour and glyph default
     as the type editor's Add Type does.
   - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,
 defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes
-    values. `editCustom` `[{ field, name?, options?, onCard? }]` edits a custom field in place, as the type editor's
-    field form does: a new name, a Choice field's options replaced whole (any other kind is refused), drawn on the
-    card or not; values on cards stay. A field ticked `onCard` (added or edited) on a type with a Display of its own
+    values. `editCustom` `[{ field, name?, options?, linkTypes?, onCard? }]` edits a custom field in place, as the
+    type editor's field form does: a new name, a Choice field's options replaced whole (any other kind is refused),
+    a Card field's card types replaced whole (any other kind is refused), drawn on the card or not; values on cards
+    stay. A field ticked `onCard` (added or edited) on a type with a Display of its own
     is placed at the end of its Detailed body, as without one the default layout shows it; unticked, it leaves that
     Display.
   - A type renamed earlier in the same call still answers to its former name, so a later change can name it either
@@ -216,7 +218,8 @@ The tool's descriptions carry what an agent needs to design a type well, as fact
 [MCP server](../015-api/mcp-server.md) §4.15): the built-in fields and what each holds, the custom field kinds and what
 each stores, every Plan glyph id, the card sizes with the slots each draws and the fields it can draw, the panel's
 tabs, and the limits (24 fields, 12 custom, 20 choice options, 6 tabs, 32 types). `list_items` lists each type with
-its Default State, its display per size and its tabs, so a change can build on what is there.
+its Default State, its display per size and its tabs, so a change can build on what is there; a Card field lists
+`linkTypes`, every card type it links to, beside `linkType`, the first.
 
 ## Errors that teach
 
