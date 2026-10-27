@@ -40,7 +40,7 @@ export function appUrl(env: Pick<Env, 'ENVIRONMENT'>, app: SiteId): string {
 }
 
 // liveworkspace's own: the slate prism of the site's icon (apps/site/app/icon.svg), on slate.
-function workspaceBrand(env: Pick<Env, 'BASE_URL'>): EmailBrand {
+export function workspaceBrand(env: Pick<Env, 'BASE_URL'>): EmailBrand {
   const home = origin(env.BASE_URL);
   return {
     word: 'workspace',
@@ -122,3 +122,27 @@ export function frame(brand: EmailBrand, content: Frame): string {
 /** A paragraph of body copy. */
 export const paragraph = (html: string, top = 0) =>
   `<p style="margin:${top}px 0 0;color:${MUTED};font-size:15px;line-height:1.6">${html}</p>`;
+
+/** A list of body copy, bulleted or numbered. Each item is already HTML. */
+export function list(items: readonly string[], ordered = false): string {
+  const tag = ordered ? 'ol' : 'ul';
+  const lines = items
+    .map(
+      (item) =>
+        `<li style="margin:0 0 10px;color:${MUTED};font-size:15px;line-height:1.6">${item}</li>`,
+    )
+    .join('');
+  return `<${tag} style="margin:18px 0 0;padding-left:20px">${lines}</${tag}>`;
+}
+
+/** The email's one button, in ink. `href` goes into an attribute as it is, so it must already be escaped. */
+export const button = (text: string, href: string) =>
+  `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0 0">
+          <tr><td style="border-radius:8px;background:${INK}">
+            <a href="${href}" style="display:inline-block;padding:12px 22px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px">${text}</a>
+          </td></tr>
+        </table>`;
+
+/** A value someone chose (a name, a team's name), made safe for HTML text or an attribute. */
+export const escapeHtml = (value: string) =>
+  value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);

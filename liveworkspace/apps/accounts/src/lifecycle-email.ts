@@ -5,7 +5,7 @@
 // inline-styled HTML that email clients keep; nothing a person wrote is ever in one.
 import { APP_SITES, type SiteId } from '@liveworkspace/sites';
 import { settingsUrl } from './email.ts';
-import { appUrl, emailBrand, frame, INK, MUTED, paragraph } from './email-layout.ts';
+import { appUrl, button, emailBrand, frame, list, paragraph } from './email-layout.ts';
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 
@@ -83,14 +83,7 @@ const plain = (html: string) => html.replace(/<[^>]*>/g, '');
 // In liveworkspace's frame (email-layout.ts), whichever app it speaks for: the series is liveworkspace's.
 function render(env: Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>, section: Section): LifecycleEmail {
   const points = section.points?.html ?? [];
-  const list = points.length
-    ? `<ul style="margin:18px 0 0;padding-left:20px">${points
-        .map(
-          (p) =>
-            `<li style="margin:0 0 10px;color:${MUTED};font-size:15px;line-height:1.6">${p}</li>`,
-        )
-        .join('')}</ul>`
-    : '';
+  const bullets = points.length ? list(points) : '';
   const outro = section.outro ? paragraph(section.outro, 20) : '';
   const footer = section.unsubscribeUrl
     ? `${TIPS_FOOTER} <a href="${section.unsubscribeUrl}" style="color:${SLATE};text-decoration:underline">Manage your notifications</a> to turn these off.`
@@ -99,13 +92,9 @@ function render(env: Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>, section: Section): L
     preheader: section.intro,
     heading: section.heading,
     body: `${paragraph(section.intro)}
-        ${list}
+        ${bullets}
         ${outro}
-        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0 0">
-          <tr><td style="border-radius:8px;background:${INK}">
-            <a href="${section.cta.href}" style="display:inline-block;padding:12px 22px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px">${section.cta.text}</a>
-          </td></tr>
-        </table>`,
+        ${button(section.cta.text, section.cta.href)}`,
     footer,
   });
   const text = [

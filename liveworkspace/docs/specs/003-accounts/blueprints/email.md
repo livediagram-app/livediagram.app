@@ -53,6 +53,20 @@ as `List-Unsubscribe`.
 The invitation's inviter name falls back to `Someone`. The code email says it works 10 minutes. Nothing a person
 wrote is ever in a series email.
 
+Every email is `frame(brand, { preheader, heading, body, footer })` with a `text` part. The code email takes the
+brand it came through; every other email takes `workspaceBrand({ BASE_URL })`. The team and token emails:
+
+| Email               | Heading                                                | Button                  | Sign-off under the rule                                                              |
+| ------------------- | ------------------------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------ |
+| Team invitation     | `You’re invited to <team>` (`A reminder about <team>`) | `Answer the invitation` | the team is the same in every app; an invitation nobody answers closes after 28 days |
+| Invitation response | `Invitation accepted\|declined`                        | `See the team`          | sent as one of the team's admins; `Manage your notifications` to turn these off      |
+| Token expiring      | `Your API token expires soon`                          | `Manage your tokens`    | sent because an API token on the account is nearing its expiry                       |
+
+`button(text, href)` and `list(items, ordered?)` in `email-layout.ts` draw the ink button and the bullet or numbered
+list the frame's emails share. `escapeHtml` escapes every person-chosen value in the HTML (names, team names,
+token names) and every link in an attribute; subjects and text parts are plain text, so they carry the values as
+they are.
+
 ### The onboarding series (`lifecycle.ts`)
 
 - A row (`startLifecycle`) is made by Better Auth's user-create hook with the sign-up's app: the `client_id` of the
@@ -106,14 +120,14 @@ the team's people.
 
 ## Testing
 
-| Test                                                                          | Pins                                                                |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/email.test.ts` (9)                           | `codeEmail`; `sendCodeEmail`; `inviteResponseEmail`                 |
-| `liveworkspace/apps/accounts/src/lifecycle.test.ts` (19)                      | starting the series; the welcome; the series; telemetry; the emails |
-| `liveworkspace/apps/accounts/src/account-apps.test.ts` (4)                    | sightings; milestones; emails                                       |
-| `liveworkspace/apps/accounts/src/notify.test.ts` (4)                          | `readNotifySettings`; `teamPeople`                                  |
-| `liveworkspace/apps/accounts/src/signup-app.test.ts` (4)                      | the app a sign-up came through                                      |
-| `packages/email/src/index.test.ts`, `packages/auth-client/src/notify.test.ts` | the binding wrapper; the apps' notify rules                         |
+| Test                                                                          | Pins                                                                                            |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/email.test.ts`                               | `codeEmail`; `sendCodeEmail`; each team and token email in the frame, escaped, with a text part |
+| `liveworkspace/apps/accounts/src/lifecycle.test.ts` (19)                      | starting the series; the welcome; the series; telemetry; the emails                             |
+| `liveworkspace/apps/accounts/src/account-apps.test.ts` (4)                    | sightings; milestones; emails                                                                   |
+| `liveworkspace/apps/accounts/src/notify.test.ts` (4)                          | `readNotifySettings`; `teamPeople`                                                              |
+| `liveworkspace/apps/accounts/src/signup-app.test.ts` (4)                      | the app a sign-up came through                                                                  |
+| `packages/email/src/index.test.ts`, `packages/auth-client/src/notify.test.ts` | the binding wrapper; the apps' notify rules                                                     |
 
 ## Constants and configuration
 

@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { codeEmail, inviteResponseEmail, sendCodeEmail } from './email.ts';
-import { emailBrand } from './email-layout.ts';
+import {
+  codeEmail,
+  inviteResponseEmail,
+  sendCodeEmail,
+  teamInviteEmail,
+  tokenExpiringEmail,
+} from './email.ts';
+import { emailBrand, escapeHtml, list } from './email-layout.ts';
 import type { Env } from './env.ts';
 
 const env = (over: Partial<Env>) =>
@@ -109,5 +115,94 @@ describe('inviteResponseEmail', () => {
       'team_1',
     );
     expect(email.html).toContain('href="https://liveworkspace.app/explorer/team?id=team_1"');
+  });
+});
+
+// What liveworkspace's frame always draws: its slate canvas, the prism band, and the mark beside the wordmark.
+function expectWorkspaceFrame(html: string) {
+  expect(html).toContain('background:#f1f5f9');
+  expect(html).toContain('linear-gradient(90deg,');
+  expect(html).toContain('<img src="https://liveworkspace.app/email/liveworkspace-mark-64.png"');
+  expect(html).toContain('>live</span>workspace<');
+}
+
+describe('teamInviteEmail', () => {
+  const base = 'https://liveworkspace.app/';
+
+  it('is drawn in liveworkspace’s frame, with a heading, a button and its sign-off', () => {
+    const email = teamInviteEmail(base, 'Design', 'Ada', 'tok_1');
+    expectWorkspaceFrame(email.html);
+    expect(email.html).toContain('>You’re invited to Design</h1>');
+    expect(email.html).toContain(
+      'href="https://liveworkspace.app/explorer/invites" style="display:inline-block',
+    );
+    expect(email.html).toContain('href="https://liveworkspace.app/join/decline?token=tok_1"');
+    expect(email.html).toContain('An invitation nobody answers closes after 28 days.</p>');
+  });
+
+  it('keeps its plain-text part, every link written out', () => {
+    const email = teamInviteEmail(base, 'Design', 'Ada', 'tok_1');
+    expect(email.subject).toBe('Ada invited you to Design on liveworkspace');
+    expect(email.text).toContain('Ada invited you to join the team Design on liveworkspace.');
+    expect(email.text).toContain('https://liveworkspace.app/explorer/invites');
+    expect(email.text).toContain('https://liveworkspace.app/join/decline?token=tok_1');
+  });
+
+  it('escapes the team’s and the inviter’s names everywhere in the HTML', () => {
+    const email = teamInviteEmail(base, '<b>Ops</b>', 'Eve "x" & co', 'a&b');
+    expect(email.html).not.toContain('<b>Ops</b>');
+    expect(email.html).toContain('You’re invited to &#60;b&#62;Ops&#60;/b&#62;</h1>');
+    expect(email.html).toContain('Eve &#34;x&#34; &#38; co invited you');
+    expect(email.html).toContain('href="https://liveworkspace.app/join/decline?token=a%26b"');
+  });
+
+  it('names a reminder in its heading and subject, and falls back to Someone', () => {
+    const email = teamInviteEmail(base, 'Design', '  ', 'tok_1', 2);
+    expect(email.subject).toBe('Reminder: Someone invited you to Design on liveworkspace');
+    expect(email.html).toContain('>A reminder about Design</h1>');
+    expect(email.text).toContain('A reminder: Someone invited you');
+  });
+});
+
+describe('inviteResponseEmail in the frame', () => {
+  it('heads an acceptance and a refusal, and escapes both names', () => {
+    const accepted = inviteResponseEmail('https://liveworkspace.app', '<Ops>', 'Bo & Co', true);
+    expectWorkspaceFrame(accepted.html);
+    expect(accepted.html).toContain('>Invitation accepted</h1>');
+    expect(accepted.html).toContain('<strong>Bo &#38; Co</strong> accepted');
+    expect(accepted.html).toContain('<strong>&#60;Ops&#62;</strong>');
+    expect(accepted.html).not.toContain('<Ops>');
+    expect(accepted.text).toContain(
+      'Bo & Co accepted the invitation to join <Ops> on liveworkspace.',
+    );
+
+    const declined = inviteResponseEmail('https://liveworkspace.app', 'Ops', 'Bo', false);
+    expect(declined.html).toContain('>Invitation declined</h1>');
+    expect(declined.subject).toBe('Bo declined your invitation to Ops');
+  });
+});
+
+describe('tokenExpiringEmail in the frame', () => {
+  it('numbers its steps under a heading, with its button and sign-off', () => {
+    const email = tokenExpiringEmail('https://liveworkspace.app', 'CI', Date.UTC(2026, 0, 5));
+    expectWorkspaceFrame(email.html);
+    expect(email.html).toContain('>Your API token expires soon</h1>');
+    expect(email.html).toContain('<ol style=');
+    expect(email.html).toContain('Revoke the old token once the switch is done.</li>');
+    expect(email.html).toContain('nearing its expiry.</p>');
+    expect(email.text).toContain('- Revoke the old token once the switch is done.');
+  });
+});
+
+describe('the frame’s pieces', () => {
+  it('draws a bulleted list by default and a numbered one when asked', () => {
+    expect(list(['a'])).toMatch(/^<ul style="[^"]+"><li style="[^"]+">a<\/li><\/ul>$/);
+    expect(list(['a', 'b'], true)).toMatch(/^<ol .*>b<\/li><\/ol>$/);
+  });
+
+  it('escapes every character that could break out of text or an attribute', () => {
+    expect(escapeHtml(`<a href="x">'&'</a>`)).toBe(
+      '&#60;a href=&#34;x&#34;&#62;&#39;&#38;&#39;&#60;/a&#62;',
+    );
   });
 });
