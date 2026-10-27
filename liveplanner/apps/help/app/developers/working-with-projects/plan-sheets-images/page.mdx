@@ -94,7 +94,9 @@ A move takes a `status` and `after` or `before` (`after` wins; neither puts the 
 
 `POST /projects/$DOC/items/tally` adds a session vote's dots to up to 200 cards, `{ "items": [ { "id": "…", "votes": { "<voter id>": 2 } } ] }`, as the editor does when a vote ends. A card deleted meanwhile is skipped.
 
-Refusals are `400` with a code such as `title_required`, `field_value_invalid`, `type_invalid`, `place_invalid` or `status_excluded` (the card's type leaves that status out), `404 item_not_found`, `409 item_busy` (try again) or `413 items_full`.
+A **Calculated** field (Child Count, Children Done (%)) holds no value of its own: `GET /projects/$DOC/items?include=calculated` adds `calculated`, each card's values by card id then field id (a count, a whole percentage, or `null` with no children). Giving one a value is refused.
+
+Refusals are `400` with a code such as `title_required`, `field_value_invalid`, `type_invalid`, `place_invalid`, `status_excluded` (the card's type leaves that status out) or `field_calculated` (a value given to a Calculated field), `404 item_not_found`, `409 item_busy` (try again) or `413 items_full`.
 
 ### Card Types
 
