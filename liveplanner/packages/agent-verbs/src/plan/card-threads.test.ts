@@ -314,4 +314,30 @@ describe('changing threads', () => {
       ),
     ).rejects.toThrow();
   });
+
+  it('words an answer with no comment id, a delete that kept the thread, and a refusal with no code', async () => {
+    const plain = writes(() => Response.json({ thread: T1 })).api;
+    const out = await applyThreadChanges(
+      plain,
+      P,
+      [
+        { op: 'reply', thread: T1.id, text: 'x' },
+        { op: 'delete', thread: T1.id, comment: 'cm-agent1' },
+      ],
+      STATE,
+    );
+    expect(out.applied).toEqual([
+      `+ comment on "${T1.title}"`,
+      `- comment cm-agent1 from "${T1.title}"`,
+    ]);
+    const bare = writes(() => new Response('nope', { status: 403 })).api;
+    const refused = await applyThreadChanges(bare, P, [{ op: 'resolve', thread: T1.id }], STATE);
+    expect(refused.refusal?.code).toBe('http_403');
+  });
+
+  it('names an untitled card as Untitled', () => {
+    const blank = { ...item(5, 'card5', ''), fields: { title: '' } };
+    const t = thread('th-u', { cards: [{ projectId: P, itemId: 'card5', key: 5 }] });
+    expect(listedThread(t, P, new Map([['card5', blank]])).cards).toEqual(['#5 Untitled']);
+  });
 });

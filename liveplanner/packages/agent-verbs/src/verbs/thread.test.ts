@@ -103,6 +103,11 @@ describe('thread ls', () => {
       threadLs.input.parse({ project: DOC_A, status: 'resolved', item: '#12' }),
     );
     expect(threadLs.text!(out)[0]).toMatch(/resolved by Bo/);
+    const unnamed = await threadLs.run!(
+      ctxWith([{ ...THREAD, resolved: true }]).ctx,
+      threadLs.input.parse({ project: DOC_A, status: 'all' }),
+    );
+    expect(threadLs.text!(unnamed)[0]).toMatch(/\sresolved\s+"/);
   });
 
   it('refuses a card it cannot find', async () => {

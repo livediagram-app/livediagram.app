@@ -339,6 +339,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "threadId": {
+        "type": "string"
+      },
+      "threadTitle": {
+        "type": "string"
+      },
       "title": {
         "type": "string"
       },
@@ -370,6 +376,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "projectName",
       "shareCode",
       "teamId",
+      "threadId",
+      "threadTitle",
       "title",
       "type",
       "via",
@@ -4996,6 +5004,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "place": {
         "$ref": "#/components/schemas/ItemPlace"
+      },
+      "threads": {
+        "items": {},
+        "type": "array"
       },
       "type": {
         "type": "string"
