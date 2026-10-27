@@ -15,6 +15,7 @@ import {
   isFlagged,
   itemTitle,
   ITEM_TITLE_MAX,
+  requiredCustomFieldsOf,
   tabsOf,
   typeIn,
   type Item,
@@ -276,6 +277,8 @@ function ItemPanelContent({
   );
 
   const meta = <ItemMeta item={item} now={now} />;
+  // Its required custom fields, marked after their names (docs/specs/026-plan/item-types.md "Required fields").
+  const requiredIds = new Set(requiredCustomFieldsOf(type).map((r) => r.id));
 
   // A Details row: label beside its control on a wide screen, above it in the phone's tab. A linked card's assignee
   // is its action's: shown, not picked here.
@@ -285,6 +288,7 @@ function ItemPanelContent({
       key={f}
       label={fieldLabel(type, f)}
       htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
+      required={requiredIds.has(f)}
     >
       {f === 'assignee' && lockedAssignee ? (
         <>
@@ -303,6 +307,7 @@ function ItemPanelContent({
       key={f}
       heading={fieldLabel(type, f)}
       htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
+      required={requiredIds.has(f)}
     >
       <ItemFieldEditor f={f} ctx={ctx} />
     </ItemPanelSection>

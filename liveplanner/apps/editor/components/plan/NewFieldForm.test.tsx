@@ -47,6 +47,26 @@ describe('New Custom Field', () => {
     expect(preview().getByText('S')).toBeTruthy();
   });
 
+  // docs/specs/026-plan/item-types.md "Required fields".
+  it('makes it required with a switch, which a checkbox field never offers', () => {
+    const onAddCustom = form();
+    fireEvent.change(screen.getByLabelText("New field's name"), { target: { value: 'Area' } });
+    const required = screen.getByRole('switch', { name: 'Required' });
+    expect(required.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(required);
+    expect(required.getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Add Custom Field' }));
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Area', kind: 'text', required: true }),
+    );
+    fireEvent.click(screen.getByRole('radio', { name: 'Checkbox' }));
+    expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Custom Field' }));
+    expect(onAddCustom).toHaveBeenLastCalledWith(
+      expect.objectContaining({ kind: 'checkbox', required: undefined }),
+    );
+  });
+
   it('adds the field with the picked kind', () => {
     const onAddCustom = form();
     fireEvent.change(screen.getByLabelText("New field's name"), { target: { value: 'Due' } });

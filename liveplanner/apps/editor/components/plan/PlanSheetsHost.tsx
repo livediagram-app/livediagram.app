@@ -10,6 +10,7 @@ import {
   itemLabels,
   linkedCardsOf,
   newItemId,
+  requiredFieldEmptied,
   typeIn,
 } from '@liveplanner/items';
 import { duplicateItem } from './duplicate-item';
@@ -21,6 +22,7 @@ import { toggleFlag } from './item-flag';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
+import { RequiredFieldsDialog } from './RequiredFieldsDialog';
 import { track } from '@/lib/telemetry';
 
 export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
@@ -44,6 +46,13 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     const open = openId ? ctx.items.get(openId) : undefined;
     return open ? linkedCardsOf(open, ctx.items, ctx.types) : [];
   }, [openId, ctx.items, ctx.types]);
+  // A new card waiting for its required fields comes first (docs/specs/026-plan/item-types.md "Required fields"):
+  // the panel of a card opened as it was asked for shows once it is made.
+  if (plan.requiredFields) {
+    return (
+      <RequiredFieldsDialog request={plan.requiredFields} onDone={plan.settleRequiredFields} />
+    );
+  }
   // The type editor (docs/specs/026-plan/item-types.md "Editing a type").
   const target = plan.editingType;
   if (target && ctx.canEdit) {
@@ -109,12 +118,22 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         labels={allLabels}
         canEdit={ctx.canEditCards}
         canRetire={ctx.canEdit}
-        onSave={(field, value) =>
-          ctx.patchItem(
+        onSave={(field, value) => {
+          // A required field is never emptied (docs/specs/026-plan/item-types.md "Required fields"): said by name,
+          // and the field goes back to its value.
+          const type = typeIn(ctx.types, item.type);
+          const emptied = requiredFieldEmptied(type, item.fields, field, value);
+          if (emptied) {
+            const message = `${emptied.label} is required on ${type.label} cards`;
+            ctx.notify?.(message);
+            ctx.announce(message);
+            return Promise.resolve(false);
+          }
+          return ctx.patchItem(
             item.id,
             value === undefined ? { clear: [field] } : { set: { [field]: value } },
-          )
-        }
+          );
+        }}
         onPatch={(patch) => void ctx.patchItem(item.id, patch)}
         onType={(type) => void ctx.patchItem(item.id, { type })}
         onOpenItem={(id, via) => ctx.openItem(id, via)}

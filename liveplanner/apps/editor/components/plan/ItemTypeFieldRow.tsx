@@ -6,6 +6,7 @@ import { HANDLE_TOUCH, type useHandleReorder } from '@/components/primitives/use
 import { LockIcon, PencilIcon, Tooltip } from '@liveplanner/ui';
 import { FieldMenu, GripIcon } from './ItemTypeFieldMenu';
 import { ICON_BUTTON } from './ItemTypeFieldForms';
+import { RequiredMark } from './ItemPanelLayout';
 import type { GroupId } from './item-type-layout';
 
 // One field: a drag handle (a field that moves), its kind's icon (the Add Field popover's, CustomFieldKindParts),
@@ -19,6 +20,7 @@ export function FieldRow({
   label,
   icon,
   removable,
+  required,
   editing,
   onEdit,
   moveTargets,
@@ -38,6 +40,8 @@ export function FieldRow({
   icon: { node: React.ReactNode; name: string };
   // False for a field that never comes off (Title, Status, a type's kept fields): no Remove, and a lock.
   removable: boolean;
+  // A required custom field (docs/specs/026-plan/item-types.md "Required fields"): marked after its name.
+  required?: boolean;
   editing: boolean;
   onEdit?: () => void;
   moveTargets: readonly { id: GroupId; label: string }[];
@@ -85,7 +89,10 @@ export function FieldRow({
               {icon.node}
             </span>
           </Tooltip>
-          <span className="truncate">{label}</span>
+          <span className="truncate">
+            {label}
+            {required ? <RequiredMark /> : null}
+          </span>
           {!removable ? (
             <Tooltip label={`${label} is always on this type`}>
               <span
