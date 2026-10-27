@@ -53,19 +53,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## An item type
 
-| Part               | Holds                                                                                                                                                                                                                                                             |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`               | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                   |
-| `label`            | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                               |
-| `color`            | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                       |
-| `icon`             | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                     |
-| `fields`           | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                               |
-| `custom`           | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; `required: true` for a [required field](#required-fields)) |
-| `tabs`             | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                   |
-| `detailsLabel`     | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                              |
-| `excludedStatuses` | The statuses (ids) cards of this type do not use, up to 64 (a project's boards may name more; the type editor stops at 64). Absent: every status. A status added later is open to every type                                                                      |
-| `defaultStatus`    | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                |
-| `display`          | What its cards show at each **card size**: `{ minimal?, compact?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default                                                               |
+| Part               | Holds                                                                                                                                                                                                                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`               | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                     |
+| `label`            | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                 |
+| `color`            | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                         |
+| `icon`             | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                       |
+| `fields`           | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                 |
+| `custom`           | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`; `required: true` for a [required field](#required-fields)) |
+| `tabs`             | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                     |
+| `detailsLabel`     | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                |
+| `excludedStatuses` | The statuses (ids) cards of this type do not use, up to 64 (a project's boards may name more; the type editor stops at 64). Absent: every status. A status added later is open to every type                                                                                                                        |
+| `defaultStatus`    | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                  |
+| `display`          | What its cards show at each **card size**: `{ minimal?, compact?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default                                                                                                                 |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
   Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are.
@@ -122,8 +122,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
   `https://` URL), Email, Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
-  options), Rating (a whole number from 1 to its scale, 3 to 10) and Card (a link to one card of another type,
-  below). An option holds up to 100 characters, so a form question's full answers (a Choice field's options are a
+  options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type,
+  below) and Calculated (a value worked out from the plan, below). An option holds up to 100 characters, so a form question's full answers (a Choice field's options are a
   question's) fit; a card shows a long one shortened, and its details whole. Multiple Choice and Rating came with [Forms](../030-forms/forms.md#new-card-field-kinds), which describes
   how they read and are edited.
   - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
@@ -140,7 +140,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     item store keeps for any field. People are assigned with the built-in Assignee field, so there is no custom
     person kind. Their values are ordinary entries in the item's `fields`, under the custom
     field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
-- **Required fields**: any custom field but a Checkbox (unticked reads as empty) can be marked **Required**. A
+- **Required fields**: any custom field but a Checkbox (unticked reads as empty) or a [Calculated](#calculated-fields) field (the plan
+  works it out) can be marked **Required**. A
   required field must have a value: empty is no value, an empty or all-space text and an empty Multiple Choice
   included. Stored as `required: true` on the field; absent is optional, so every field saved before reads as
   optional. The rule holds wherever a card is made or changed, as one shared check (`missingRequiredFields`):
@@ -161,7 +162,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     refused. A type change is never refused for it, nor a card restored, synced, copied or put back by an undo (the
     api's bulk writes that carry a card's number, votes or thread, and every write sent with `undo: true`).
   - **In the type editor** a custom field's form (and New Custom Field) has a **Required** switch (as a form
-    question's), absent for a Checkbox field; turning a field into a Checkbox is not possible, so it never needs clearing. A required field's
+    question's), absent for a Checkbox or Calculated field; turning a field into either is not possible, so it never needs clearing. A required field's
     row carries the same red asterisk after its name.
   - **Agents** see it: `list_items` lists `required: true` on each required custom field, `change_card_types`
     sets it (`required` on `custom`, `addCustom` and `editCustom`), and `change_items` refuses an `add` missing one,
@@ -214,6 +215,33 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - Deleting, trashing or archiving a linked card never clears the links: they read **Missing card** until the
     card is back or the link is changed. A Card field whose type is gone from the catalogue keeps it among its
     types, and an unticked type is never taken off a card already linked to one of its cards.
+- <a id="calculated-fields"></a>**Calculated fields**: a custom field of kind **Calculated** works its value out from the plan instead of holding
+  one. It is made like any custom field (Add Field's **Calculated** tile, or `change_card_types`), with one
+  **calculation** from a fixed menu, stored as `calculation` on the field:
+  - **Child Count**: how many children the card has.
+  - **Children Done (%)**: the share of its children that are done, a whole percentage ("40%"); nothing when it has
+    no children.
+
+  **Children** are the cards that link to the card through a Card field naming its type (the cards its panel lists
+  under **Linked as {Field}**, Parent included): every such field, each child once, an archived child included and a
+  trashed one left out. **Done** is the boards' rule ([Done columns](plan-board.md#done-columns)): a child is done
+  when its status is a done column's, the first board to name a status deciding, as a plan view's Done phase does.
+  - **Nothing is stored**: the value is worked out where it is read, from the same shared functions
+    (`calculated-fields.ts`), so it is always current and never conflicts. It updates as soon as a child is added,
+    moved, relinked or trashed.
+  - **Read-only everywhere**: the card panel shows the value as text after a calculator glyph, never an input (Children Done with a thin bar of the share done, a card without children "No linked cards"); the field's form in the type editor says it is worked out from the cards that link here; the card face draws it like any custom field when the
+    type's Display places it ("Children Done: 40%"). A write that gives a Calculated field a value is refused
+    (`field_calculated`, field: the field's id): the api (and This Browser projects, through the same check),
+    `change_items` and the CLI ("Progress is calculated: it can't be set"). Clearing an old value left under the
+    field's id is allowed.
+  - **Agents and the api read it**: `list_items` lists each Calculated field with `kind: "calculated"`, its
+    `calculation` and `readOnly: true`, and each card's value among its `fields`, by name; `GET /items` answers
+    `calculated` (by card id, then field id) when asked with `?include=calculated`.
+  - **Where it is left out**: a form can't ask it (no question maps to it), Import CSV skips its column and Export
+    CSV leaves it out, and a board can't sort or lay swimlanes by it.
+  - A field's kind never changes, so a Calculated field stays one; its calculation can be changed in its form (or
+    `editCustom`'s `calculation`), and every card's value follows at once.
+
 - **Tabs**: a type has up to **6 tabs**, each with a name of 1 to 24 characters, unique in the type ignoring
   case. A field sits in at most one tab. Title is never in a tab: it heads the panel. With one tab the panel shows
   its fields without a tab bar.

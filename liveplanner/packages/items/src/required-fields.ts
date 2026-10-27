@@ -4,8 +4,10 @@
 import type { ItemFields, ItemFieldValue } from './item';
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
 
-// Every kind but a Checkbox, which reads unticked as empty, so a required one could never be left unticked.
-export const canBeRequired = (kind: CustomFieldKind): boolean => kind !== 'checkbox';
+// Every kind but a Checkbox, which reads unticked as empty, so a required one could never be left unticked, and a
+// Calculated field, which nobody fills in (item-types.md "Calculated fields").
+export const canBeRequired = (kind: CustomFieldKind): boolean =>
+  kind !== 'checkbox' && kind !== 'calculated';
 
 // The required custom fields `type` still offers, in its order: one taken off the type is not enforced.
 export function requiredCustomFieldsOf(

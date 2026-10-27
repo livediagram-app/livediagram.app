@@ -1220,6 +1220,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "Calculation": {
+    "enum": [
+      "childCount",
+      "childrenDone"
+    ],
+    "type": "string"
+  },
   "CapabilitiesResponse": {
     "additionalProperties": false,
     "properties": {
@@ -2254,6 +2261,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CustomFieldDef": {
     "additionalProperties": false,
     "properties": {
+      "calculation": {
+        "$ref": "#/components/schemas/Calculation"
+      },
       "currency": {
         "type": "string"
       },
@@ -2311,7 +2321,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "choice",
       "multichoice",
       "rating",
-      "card"
+      "card",
+      "calculated"
     ],
     "type": "string"
   },
@@ -5335,6 +5346,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemsResponse": {
     "additionalProperties": false,
     "properties": {
+      "calculated": {
+        "additionalProperties": {
+          "additionalProperties": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "type": "object"
+        },
+        "description": "Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, or null), by card id then field id; only cards whose type has a Calculated field. Worked out as read, never stored.",
+        "type": "object"
+      },
       "items": {
         "items": {
           "$ref": "#/components/schemas/Item"

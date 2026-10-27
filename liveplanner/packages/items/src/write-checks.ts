@@ -18,6 +18,7 @@ import {
 import { ITEM_STATUS_MAX } from './limits';
 import { isObj } from './validate';
 import type { ItemTypeDef } from './item-types';
+import { calculatedFieldsOf } from './calculated-fields';
 import { typeAllowsStatus, typeIn } from './type-catalogue';
 import { missingRequiredFields, requiredCleared } from './required-fields';
 import type { ItemWrite } from './store';
@@ -114,6 +115,21 @@ export function statusExcluded(
   return !typeAllowsStatus(typeIn(types, next.type), status);
 }
 
+// A Calculated field given a value (docs/specs/026-plan/item-types.md "Calculated fields"): its id, else null. Only a
+// value that is new is refused: clearing an old one, or a change that leaves it as it was, passes.
+export function calculatedWritten(
+  types: readonly ItemTypeDef[],
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Pick<Item, 'fields'>,
+): string | null {
+  for (const f of calculatedFieldsOf(typeIn(types, next.type))) {
+    const v = next.fields[f.id];
+    if (v === undefined || v === null || v === '') continue;
+    if (!before || JSON.stringify(before.fields[f.id]) !== JSON.stringify(v)) return f.id;
+  }
+  return null;
+}
+
 type ItemWriteRefusal = { error: ItemRejection; id?: string; field?: string };
 
 // A new card missing a required custom field (docs/specs/026-plan/item-types.md "Required fields"): the first one,
@@ -177,8 +193,9 @@ export function readItemWrite(write: ItemWrite): ItemWrite | ItemWriteRefusal {
 }
 
 // The items a write left, checked as the api checks them before it writes: a new card missing a required field
-// (createRefusal); for a patch, patches or move a status the card's type leaves out (statusExcluded), a required
-// field emptied (requiredClearedBy), and the fields' size. Null when every one passes.
+// (createRefusal) or giving a Calculated field a value (calculatedWritten); for a patch, patches or move a status the
+// card's type leaves out (statusExcluded), a Calculated field given a value, a required field emptied
+// (requiredClearedBy), and the fields' size. Null when every one passes.
 export function writtenItemsRefusal(
   write: ItemWrite,
   before: readonly Item[],
@@ -189,6 +206,10 @@ export function writtenItemsRefusal(
     for (const c of write.creates) {
       const refused = createRefusal(types, c);
       if (refused) return { ...refused, ...(c.id ? { id: c.id } : {}) };
+      // A card put back (a restore or sync carries its number, votes or thread) holds only what it held.
+      if (c.key !== undefined || c.votes !== undefined || c.comments !== undefined) continue;
+      const field = calculatedWritten(types, c);
+      if (field) return { error: 'field_calculated', field, ...(c.id ? { id: c.id } : {}) };
     }
     return null;
   }
@@ -198,6 +219,8 @@ export function writtenItemsRefusal(
     const was = had.get(next.id);
     if (was && statusExcluded(types, next, was, write.undo === true))
       return { error: 'status_excluded', id: next.id };
+    const field = write.undo === true ? null : calculatedWritten(types, next, was);
+    if (field) return { error: 'field_calculated', id: next.id, field };
     const cleared = was && requiredClearedBy(types, next, was, write.undo === true);
     if (cleared) return { error: 'field_required', id: next.id, field: cleared };
     const bound = fieldsWithinBounds(next.fields);

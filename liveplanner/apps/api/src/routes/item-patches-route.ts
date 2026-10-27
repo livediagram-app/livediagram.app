@@ -17,6 +17,7 @@ import {
 import { badRequest, forbidden, json } from '../responses';
 import { readBody, type PlanRouteContext } from './context';
 import {
+  calculatedSet,
   clearedRequired,
   excludedStatus,
   forCaller,
@@ -76,6 +77,8 @@ export async function patches(ctx: PlanRouteContext, projectId: string): Promise
       for (const [id, next] of nexts) {
         if (excludedStatus(caller, next, stored.get(id)!, undo))
           return rejectedFor(id, 'status_excluded', 'status');
+        const calculated = calculatedSet(caller, next, stored.get(id), undo);
+        if (calculated) return rejectedFor(id, 'field_calculated', calculated);
         const cleared = clearedRequired(caller, next, stored.get(id)!, undo);
         if (cleared) return rejectedFor(id, 'field_required', cleared);
         if (retiresItem(stored.get(id)!, next) && !(await isItemEditor(ctx, caller)))

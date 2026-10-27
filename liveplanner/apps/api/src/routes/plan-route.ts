@@ -19,7 +19,7 @@ const asInput = (tab: { id: string; name: string; elements: unknown }): PlanTabI
   elements: Array.isArray(tab.elements) ? (tab.elements as unknown[]) : [],
 });
 
-async function planTabs(ctx: PlanRouteContext, projectId: string, tabId: string | null) {
+export async function planTabs(ctx: PlanRouteContext, projectId: string, tabId: string | null) {
   if (tabId !== null) {
     const tab = await getTab(ctx.env, projectId, tabId);
     return tab ? [asInput(tab)] : [];

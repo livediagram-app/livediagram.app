@@ -199,6 +199,23 @@ describe('the catalogue', () => {
       ok: false,
       message: '"Ok" is a checkbox: a checkbox can\'t be required.',
     });
+    // Nor a Calculated field, which nobody fills in (item-types.md "Calculated fields").
+    const calc = applyCardTypeChanges(
+      null,
+      [
+        {
+          op: 'add',
+          name: 'Epic',
+          custom: [{ name: 'Kids', kind: 'calculated', calculation: 'childCount', required: true }],
+        },
+      ],
+      [],
+    );
+    expect(calc).toMatchObject({
+      ok: false,
+      message: '"Kids" is calculated: the plan works it out, so it can\'t be required.',
+    });
+    expect(canBeRequired('calculated')).toBe(false);
     const boxEdit = applyCardTypeChanges(
       null,
       [

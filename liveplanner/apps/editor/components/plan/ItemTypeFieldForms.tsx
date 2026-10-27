@@ -7,6 +7,8 @@ import { useState } from 'react';
 import {
   COMMON_CURRENCIES,
   CURRENCY_DEFAULT,
+  CALCULATIONS,
+  CALCULATION_LABELS,
   CUSTOM_CHOICE_OPTIONS_MAX,
   CUSTOM_CHOICE_OPTION_MAX,
   CUSTOM_FIELD_KINDS,
@@ -15,6 +17,7 @@ import {
   RATING_FIELD_SCALE_DEFAULT,
   RATING_FIELD_SCALE_MAX,
   RATING_FIELD_SCALE_MIN,
+  type Calculation,
   canBeRequired,
   type CustomFieldDef,
   type CustomFieldKind,
@@ -67,6 +70,7 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   multichoice: 'Multiple Choice',
   rating: 'Rating',
   card: 'Link to Card',
+  calculated: 'Calculated',
 };
 
 // The kinds with options (docs/specs/030-forms/forms.md "New card field kinds").
@@ -155,8 +159,40 @@ function RatingScaleSelect({
   );
 }
 
+// A Calculated field's calculation (docs/specs/026-plan/item-types.md "Calculated fields"): the fixed menu, with what
+// it works out from under it.
+function CalculationSelect({
+  value,
+  onChange,
+}: {
+  value: Calculation | undefined;
+  onChange: (calculation: Calculation) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <Select
+        aria-label="Calculation"
+        className="w-full"
+        selectClassName="text-[13px]"
+        value={value ?? CALCULATIONS[0]}
+        onChange={(e) => onChange(e.target.value as Calculation)}
+      >
+        {CALCULATIONS.map((c) => (
+          <option key={c} value={c}>
+            {CALCULATION_LABELS[c]}
+          </option>
+        ))}
+      </Select>
+      <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        Worked out from the cards that link here with a Link to Card field. Done means in a done
+        column. It can&rsquo;t be typed.
+      </p>
+    </div>
+  );
+}
+
 // Required (docs/specs/026-plan/item-types.md "Required fields"): a switch, as a form question's; none for a
-// Checkbox, which reads unticked as empty.
+// Checkbox, which reads unticked as empty, or a Calculated field, which nobody fills in.
 function RequiredSwitch({
   field,
   onChange,
@@ -177,8 +213,8 @@ function RequiredSwitch({
   );
 }
 
-// A custom field's name, options (Choice) and the types it links to (Card); where it shows on a card is the
-// Display tab's.
+// A custom field's name, options (Choice), the types it links to (Card) and its calculation (Calculated); where it
+// shows on a card is the Display tab's.
 export function CustomFieldForm({
   field,
   onChange,
@@ -213,6 +249,12 @@ export function CustomFieldForm({
       ) : null}
       {field.kind === 'rating' ? (
         <RatingScaleSelect value={field.scale} onChange={(scale) => onChange({ scale })} />
+      ) : null}
+      {field.kind === 'calculated' ? (
+        <CalculationSelect
+          value={field.calculation}
+          onChange={(calculation) => onChange({ calculation })}
+        />
       ) : null}
       {hasOptions(field.kind) ? (
         <TextArea
@@ -290,8 +332,22 @@ export function NewFieldForm({
           <CustomFieldKindTiles
             kinds={CUSTOM_FIELD_KINDS}
             value={custom.kind}
-            onChange={(kind) => setCustom({ ...custom, kind })}
+            onChange={(kind) =>
+              setCustom({
+                ...custom,
+                kind,
+                ...(kind === 'calculated' && !custom.calculation
+                  ? { calculation: CALCULATIONS[0] }
+                  : {}),
+              })
+            }
           />
+          {custom.kind === 'calculated' ? (
+            <CalculationSelect
+              value={custom.calculation}
+              onChange={(calculation) => setCustom({ ...custom, calculation })}
+            />
+          ) : null}
           {custom.kind === 'rating' ? (
             <RatingScaleSelect
               value={custom.scale}
@@ -334,6 +390,7 @@ export function NewFieldForm({
             }
             currency={custom.currency}
             scale={custom.scale}
+            calculation={custom.calculation}
           />
         </div>
       ) : null}
@@ -354,6 +411,7 @@ export function NewFieldForm({
                 ...(custom.kind === 'rating' ? {} : { scale: undefined }),
                 ...(custom.kind === 'card' ? {} : { linkType: undefined, linkTypes: undefined }),
                 ...(custom.kind === 'currency' ? {} : { currency: undefined }),
+                ...(custom.kind === 'calculated' ? {} : { calculation: undefined }),
                 ...(custom.required && canBeRequired(custom.kind) ? {} : { required: undefined }),
               })
             }
