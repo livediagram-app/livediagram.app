@@ -88,7 +88,7 @@ export function ModeMenuChip({
         } ${TOOLBAR_TRIGGER_TONE}`}
       >
         <Icon aria-hidden />
-        {iconOnly ? null : <span className="flex-1 text-left">{label}</span>}
+        {iconOnly ? null : <span className="text-optical-line flex-1 text-left">{label}</span>}
         <ChevronDownIcon
           aria-hidden
           className={`transition-transform duration-micro motion-reduce:transition-none ${
