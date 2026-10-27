@@ -1,6 +1,7 @@
 # The site switcher
 
-Every app's headers carry one way to move between liveworkspace's sites: **hover the logo**. A card
+Every app's headers carry one way to move between liveworkspace's sites: **hover the logo** (on a
+touch screen, tap it). A card
 drops down from it, with **liveworkspace** at the top and one row for each app below it
 (livediagram, liveplanner, livedocuments, livedesign). Each row names the site without ".app", with
 its one-line pitch under it, and is one click to that site. The app you're on is marked.
@@ -20,10 +21,16 @@ liveworkspace.app.
 - **Pointer**: hovering the logo opens the card; a chevron fades in beside the logo to say so.
   Clicking the logo itself still goes to the app's home, as before.
 - **Touch**: there is no hover, so the chevron is always shown, and a tap on it opens the card.
-  A tap outside closes it.
+  A tap on the logo or the app's name opens the card too, rather than going home: the logo is the
+  biggest thing in the corner, and the 20px chevron beside it was hard to hit. Going home is then
+  two taps: the card marks the site you're on, and on a touch-opened card that row leads where the
+  logo does (the editor's to its Explorer, the Explorer's to liveworkspace.app's home). A second
+  tap on the logo while the card is open follows the logo. A tap outside closes it. A tap is a
+  touch pointer; when the browser doesn't say which pointer clicked, a screen whose main pointer
+  is coarse counts as touch. A mouse or trackpad on a touch screen keeps the pointer behaviour.
 - **Keyboard**: the chevron is a menu button. Tab reaches it after the logo; Enter, Space or an
   arrow opens the card with focus on the first site, arrows move between sites, Escape closes it
-  and returns focus to the chevron.
+  and returns focus to the chevron. Enter on the logo still goes home.
 - Sites are plain links to each site's own origin (`https://www.livediagram.app`, …; app links always use `www.`), since every site
   is a different origin.
 - On staging (a page on `staging.<site>`), every link goes to that site's
