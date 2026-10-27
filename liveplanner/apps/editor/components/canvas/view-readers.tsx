@@ -14,8 +14,6 @@ import {
   useSheetZoom,
 } from '@/hooks/sheets/sheet-zoom';
 import { useEffect, type ComponentProps } from 'react';
-import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { Minimap } from '@/components/canvas/Minimap';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
@@ -24,10 +22,6 @@ import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 const zoomOf = (v: View) => v.zoom;
 const SHEET_ZOOM_RANGE = { min: SHEET_ZOOM_MIN, max: SHEET_ZOOM_MAX };
 const wholeView = (v: View) => v;
-
-export function ZoomedRemoteCursor(props: Omit<ComponentProps<typeof RemoteCursor>, 'zoom'>) {
-  return <RemoteCursor {...props} zoom={useCanvasZoom()} />;
-}
 
 // The corner zoom controls. Only a Sheet zooms (docs/specs/029-sheets/sheet.md "Zoom"), its cells, Fit putting it back
 // to 100%; on a Board, Dashboard or Form tab the zoom buttons are hidden, leaving Zen when it applies.
