@@ -16,6 +16,7 @@ import {
   ITEM_UNKNOWN_STRING_MAX,
 } from './limits';
 import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogue';
+import { missingRequiredFields } from './required-fields';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
 const BOARD_CSV_FIELDS = [
@@ -234,8 +235,11 @@ type BoardCsvRefusal = 'no_title_column' | 'no_types' | 'archive';
 
 interface BoardCsvImport {
   creates: ItemCreate[];
-  // Rows with a cell in them that add no card: no title, no status their type allows, past the room left.
+  // Rows with a cell in them that add no card: no title, no status their type allows, past the room left, a required
+  // field empty.
   skipped: number;
+  // Of those, the rows skipped for a required field left empty (docs/specs/026-plan/item-types.md "Required fields").
+  missingRequired?: number;
   refusal?: BoardCsvRefusal;
 }
 
@@ -278,6 +282,7 @@ export function boardCsvImport(
 
   const creates: ItemCreate[] = [];
   let skipped = 0;
+  let missingRequired = 0;
   for (const row of rows.slice(1)) {
     if (row.every((cell) => cell.trim() === '')) continue;
     const cell = (id: string) => {
@@ -326,25 +331,38 @@ export function boardCsvImport(
       skipped++;
       continue;
     }
+    if (missingRequiredFields(type, valid.fields).length > 0) {
+      skipped++;
+      missingRequired++;
+      continue;
+    }
     creates.push({ type: type.id, fields: valid.fields, place: { status } });
   }
-  return { creates, skipped };
+  return { creates, skipped, ...(missingRequired ? { missingRequired } : {}) };
 }
 
 // What the board says once an import is done (docs/specs/026-plan/plan-board.md "CSV").
 export function boardCsvMessage(result: {
   added: number;
   skipped: number;
+  missingRequired?: number;
   refusal?: BoardCsvRefusal;
 }): string {
   if (result.refusal === 'no_title_column') return 'No Title column in the file';
   if (result.refusal === 'no_types') return 'This board takes no card types';
   if (result.refusal === 'archive') return 'Cards cannot be imported onto an Archive board';
   const rows = (n: number) => `${n} ${n === 1 ? 'row' : 'rows'}`;
-  if (result.added === 0)
-    return result.skipped ? `No cards added; skipped ${rows(result.skipped)}` : 'No cards to add';
+  // "skipped 3 rows" or, when some lacked a required field, "skipped 3 rows, 2 missing a required field".
+  const required = result.missingRequired ?? 0;
+  const skipped =
+    required === 0
+      ? `skipped ${rows(result.skipped)}`
+      : required === result.skipped
+        ? `skipped ${rows(result.skipped)} missing a required field`
+        : `skipped ${rows(result.skipped)}, ${required} missing a required field`;
+  if (result.added === 0) return result.skipped ? `No cards added; ${skipped}` : 'No cards to add';
   const added = `Added ${result.added} ${result.added === 1 ? 'card' : 'cards'}`;
-  return result.skipped ? `${added}; skipped ${rows(result.skipped)}` : added;
+  return result.skipped ? `${added}; ${skipped}` : added;
 }
 
 // Whether this board takes an import at all (not an Archive board).

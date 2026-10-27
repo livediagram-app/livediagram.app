@@ -52,7 +52,8 @@ export function LinkedCardField({
   types: readonly ItemTypeDef[];
   disabled: boolean;
   onSave: (next: string | undefined) => void;
-  onOpen: (itemId: string) => void;
+  // Opens the linked card; absent (a card not made yet, the New {Type} dialog), there is no open arrow.
+  onOpen?: (itemId: string) => void;
 }) {
   const listId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -182,7 +183,7 @@ export function LinkedCardField({
             </span>
           </button>
         </Tooltip>
-        {linked ? (
+        {linked && onOpen ? (
           <Tooltip label={openLabel}>
             <button
               type="button"

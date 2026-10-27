@@ -85,6 +85,8 @@ export function refusalMessage(code: string): string {
       return 'That card has too many fields to save';
     case 'status_excluded':
       return 'That card’s type doesn’t use that state';
+    case 'field_required':
+      return 'That field is required on this card type';
     case 'field_value_invalid':
       return 'That value is too long or isn’t one this field takes';
     default:
