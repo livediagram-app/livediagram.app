@@ -15,6 +15,8 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 const POPOVER_PX = 260;
+// A gone type's row draws the fallback glyph in slate.
+const GONE_COLOUR = '#64748b';
 
 // The linked types as a sample value reads them: "Project", "Project or Epic", "Project, Epic or Bug".
 export function linkTypeNames(names: readonly string[]): string {
@@ -46,8 +48,14 @@ export function LinksToPicker({
   const [open, setOpen] = useState(false);
   // Held in state so the popover anchors on its first render.
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
-  // A type gone from the catalogue keeps its id as its name (docs/specs/026-plan/item-types.md "Card fields").
+  // A type gone from the catalogue keeps its id as its name (docs/specs/026-plan/item-types.md "Card fields"), and a
+  // row after the plan's own, so it can still be unticked.
   const names = value.map((id) => types.find((t) => t.id === id)?.label ?? id);
+  const gone = value.filter((id) => !types.some((t) => t.id === id));
+  const rows: readonly Pick<ItemTypeDef, 'id' | 'label' | 'glyph' | 'color'>[] = [
+    ...types,
+    ...gone.map((id) => ({ id, label: id, glyph: 'item' as const, color: GONE_COLOUR })),
+  ];
   return (
     <>
       <button
@@ -87,7 +95,7 @@ export function LinksToPicker({
               label="Card types it links to"
               kind="multiple"
               selected={value}
-              rows={types.map((t) => ({
+              rows={rows.map((t) => ({
                 id: t.id,
                 label: t.label,
                 // The last ticked type stays: a Card field always links somewhere.

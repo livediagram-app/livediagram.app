@@ -104,7 +104,7 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   `{ fieldId, label, fromTypes, cards }`, one per Card field whose types include the target's type (Parent for a
   Project), trashed cards left out. `LinksToPicker` (apps/editor `LinksToPicker.tsx`, used by `ItemTypeFieldForms`) is the type editor's
   multi-select: a `Select`-styled button (`linksToLabel`) opening an `AnchoredPopover` of `OptionRows`
-  `kind="multiple"`, the last ticked row disabled. `LinkedCardField` (apps/editor) is the shared control for every Card field
+  `kind="multiple"`, a gone ticked type a row after the catalogue's, the last ticked row disabled. `LinkedCardField` (apps/editor) is the shared control for every Card field
   (`ItemFieldEditor`), an in-place listbox (inside the panel's focus trap) with a filter past
   `LINK_FILTER_FROM` (8), Escape taken in the capture phase. `PlanSheetsHost` passes the groups as `linkedGroups`
   (`LinkedCardGroup` in LinkedCards.tsx, `New {Type}` via `addItem` with the link

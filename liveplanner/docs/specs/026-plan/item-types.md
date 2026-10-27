@@ -353,7 +353,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     **Links To Project or Epic** (two), **Links To Project, Epic and 2 more** (more), or **Links To a Card Type…**
     (muted, none yet), with a chevron. Pressed, it opens a popover under it listing every card type (its glyph in its
     colour, its name), each a checkbox row: ticking adds the type, unticking takes it off, and the popover stays open
-    for more. The last ticked type cannot be unticked (its row is disabled), so a field always links somewhere.
+    for more. A ticked type the project no longer has keeps a row after the others, named by its id, so it can be
+    unticked. The last ticked type cannot be unticked (its row is disabled), so a field always links somewhere.
     Escape, a press outside or the field again close it. Its accessible name is "Links To". The field lands in that group
     (Votes always on the card). **Add Tab**, the same full-width dashed row under the groups, adds an unnamed tab.
   - **States**: every status the project's boards name, and any a card is in that no board names, grouped by the

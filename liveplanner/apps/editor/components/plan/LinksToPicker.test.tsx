@@ -53,8 +53,9 @@ describe('Links To', () => {
       'Links To Project or gone',
     );
     open();
-    fireEvent.click(row('Project'));
-    expect(onChange).toHaveBeenCalledWith(['gone']);
+    expect(row('gone').getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(row('gone'));
+    expect(onChange).toHaveBeenCalledWith(['project']);
   });
 
   it('opens from the keyboard', () => {
