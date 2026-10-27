@@ -58,7 +58,12 @@ export type NoticeResult = {
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-const origin = (url: string) => url.replace(/\/+$/, '');
+// Trailing slashes dropped by a scan, not /\/+$/, which is quadratic on a run of slashes.
+const origin = (url: string) => {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === '/') end--;
+  return url.slice(0, end);
+};
 
 // ---- Checking the body ------------------------------------------------------------------------------------------
 

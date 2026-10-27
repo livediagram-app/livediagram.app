@@ -228,6 +228,16 @@ describe('noticeEmail', () => {
     expect(html).toContain('x&#34;y@example.com');
   });
 
+  it('drops a base address’s trailing slashes, quickly even for a long run of them', () => {
+    const env = { ...BASE, BASE_URL: 'https://www.liveworkspace.app//' };
+    expect(noticeEmail(env, everything).text).toContain(
+      'https://www.liveworkspace.app/account/tokens',
+    );
+    // The old pattern took seconds on this; the scan is linear, inside the test's own timeout with room.
+    const long = noticeEmail({ ...BASE, BASE_URL: `https://x${'/'.repeat(50_000)}` }, everything);
+    expect(long.text).toContain('https://x/account/tokens');
+  });
+
   it('links staging’s addresses in staging', () => {
     const { text } = noticeEmail(
       { ENVIRONMENT: 'staging', BASE_URL: 'https://staging.liveworkspace.app' },
