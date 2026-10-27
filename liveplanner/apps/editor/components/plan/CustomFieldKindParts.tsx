@@ -1,6 +1,6 @@
 'use client';
 
-// New Custom Field's kind and preview (docs/specs/026-plan/item-types.md "Editing a type": Add Field): the twelve
+// New Custom Field's kind and preview (docs/specs/026-plan/item-types.md "Editing a type": Add Field): the thirteen
 // kinds as a grid of icon tiles, six to a row, one radio group, and a preview of the field as the card's panel will show it,
 // named as typed, with a sample value of its kind.
 import {
@@ -8,10 +8,12 @@ import {
   currencyText,
   ratingText,
   type CustomFieldDef,
+  type Calculation,
   type CustomFieldKind,
 } from '@liveplanner/items';
 import { CheckIcon, lucideGlyph } from '@liveplanner/ui';
 import {
+  lucideCalculator,
   lucideHash,
   lucideList,
   lucideListChecks,
@@ -27,6 +29,7 @@ const HashIcon = lucideGlyph(lucideHash, 16);
 const ListIcon = lucideGlyph(lucideList, 16);
 const LinkIcon = lucideGlyph(lucideLink, 16);
 const ListChecksIcon = lucideGlyph(lucideListChecks, 16);
+const CalculatorIcon = lucideGlyph(lucideCalculator, 16);
 
 // Each kind's icon: what its value looks like.
 export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
@@ -42,6 +45,7 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   multichoice: <ListChecksIcon />,
   rating: <PlanTypeGlyph glyph="star" size={16} />,
   card: <PlanTypeGlyph glyph="ticket" size={16} />,
+  calculated: <CalculatorIcon />,
 };
 
 // What a built-in field holds, as the custom kind closest to it, so every row of the type editor wears the Add
@@ -114,12 +118,14 @@ function SampleValue({
   linkLabel,
   currency,
   scale,
+  calculation,
 }: {
   kind: CustomFieldKind;
   options: readonly string[];
   linkLabel: string | undefined;
   currency: string | undefined;
   scale: number | undefined;
+  calculation: Calculation | undefined;
 }) {
   const box =
     'rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -185,6 +191,13 @@ function SampleValue({
           {linkLabel ? `A ${linkLabel} card` : 'A linked card'}
         </div>
       );
+    case 'calculated':
+      // A Calculated field's value, worked out and read-only (docs/specs/026-plan/item-types.md "Calculated fields").
+      return (
+        <span className="text-[13px] tabular-nums text-slate-700 dark:text-slate-200">
+          {calculation === 'childrenDone' ? '40%' : '3'}
+        </span>
+      );
   }
 }
 
@@ -195,6 +208,7 @@ export function CustomFieldPreview({
   linkLabel,
   currency,
   scale,
+  calculation,
 }: {
   label: string;
   kind: CustomFieldKind;
@@ -205,6 +219,8 @@ export function CustomFieldPreview({
   currency?: string | undefined;
   // A Rating field's scale.
   scale?: number | undefined;
+  // A Calculated field's calculation.
+  calculation?: Calculation | undefined;
 }) {
   return (
     <figure
@@ -222,6 +238,7 @@ export function CustomFieldPreview({
             linkLabel={linkLabel}
             currency={currency}
             scale={scale}
+            calculation={calculation}
           />
         </ItemDetailsRow>
       </div>

@@ -238,8 +238,10 @@ export function CustomFieldEditor({
         </div>
       );
     }
-    // A Card field is drawn by LinkedCardField (ItemFieldEditor), never here.
+    // A Card field is drawn by LinkedCardField and a Calculated field by CalculatedFieldValue (ItemFieldEditor),
+    // never here.
     case 'card':
+    case 'calculated':
       return null;
   }
 }

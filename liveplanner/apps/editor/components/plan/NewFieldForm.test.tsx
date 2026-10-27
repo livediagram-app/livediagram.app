@@ -47,6 +47,33 @@ describe('New Custom Field', () => {
     expect(preview().getByText('S')).toBeTruthy();
   });
 
+  // docs/specs/026-plan/item-types.md "Calculated fields".
+  it('makes a Calculated field with a calculation from the menu', () => {
+    const onAddCustom = form();
+    fireEvent.change(screen.getByLabelText("New field's name"), { target: { value: 'Progress' } });
+    expect(screen.queryByLabelText('Calculation')).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: 'Calculated' }));
+    const calc = screen.getByLabelText<HTMLSelectElement>('Calculation');
+    expect(calc.value).toBe('childCount');
+    expect(preview().getByText('3')).toBeTruthy();
+    fireEvent.change(calc, { target: { value: 'childrenDone' } });
+    expect(preview().getByText('40%')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Custom Field' }));
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({
+        label: 'Progress',
+        kind: 'calculated',
+        calculation: 'childrenDone',
+      }),
+    );
+    // Another kind drops it.
+    fireEvent.click(screen.getByRole('radio', { name: 'Number' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Custom Field' }));
+    expect(onAddCustom).toHaveBeenLastCalledWith(
+      expect.objectContaining({ kind: 'number', calculation: undefined }),
+    );
+  });
+
   it('adds the field with the picked kind', () => {
     const onAddCustom = form();
     fireEvent.change(screen.getByLabelText("New field's name"), { target: { value: 'Due' } });
