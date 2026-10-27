@@ -218,17 +218,31 @@ describe('verb edges', () => {
       label: 'Bug',
       custom: [
         { id: 'f-sev', label: 'Severity', kind: 'text' },
+        { id: 'f-area', label: 'Area', kind: 'text', required: true },
         { id: 'f-n', label: 'Subtasks', kind: 'calculated', calculation: 'childCount' },
       ],
-      fields: [...ITEM_TYPES[1].fields, 'f-sev', 'f-n'],
+      fields: [...ITEM_TYPES[1].fields, 'f-sev', 'f-area', 'f-n'],
     };
     const { ctx } = ctxWith('', {
       [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, custom] },
     });
     const ls = await typeLs.run!(ctx, { project: DOC_A });
-    expect(typeLs.text!(ls).at(-1)).toContain('Severity:text (f-sev)');
-    // A Calculated field names its calculation.
-    expect(typeLs.text!(ls).at(-1)).toContain('Subtasks:calculated=childCount (f-n)');
+    expect(typeLs.text!(ls).at(-1)).toContain(
+      'Severity:text (f-sev), Area*:text (f-area), Subtasks:calculated=childCount (f-n)',
+    );
+    // list_items and type ls mark a required field (docs/specs/026-plan/item-types.md "Required fields"), and a
+    // Calculated field names its calculation.
+    expect(ls.types.at(-1)!.custom).toEqual([
+      { id: 'f-sev', name: 'Severity', kind: 'text' },
+      { id: 'f-area', name: 'Area', kind: 'text', required: true },
+      {
+        id: 'f-n',
+        name: 'Subtasks',
+        kind: 'calculated',
+        calculation: 'childCount',
+        readOnly: true,
+      },
+    ]);
     const notJson = ctxWith('not json').ctx;
     await expect(typeApply.run!(notJson, { project: DOC_A, file: '-' })).rejects.toMatchObject({
       code: 'usage',

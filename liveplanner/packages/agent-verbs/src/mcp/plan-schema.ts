@@ -34,7 +34,7 @@ const fieldsArg = z
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
       '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
       '("Severity": "S2"; a Card field takes "#12"). A field the card type lacks is refused: add it with ' +
-      'change_card_types.',
+      'change_card_types. A new card must give every custom field list_items marks required.',
   );
 
 export const listItemsShape = {
@@ -267,6 +267,12 @@ const customField = z.object({
     .boolean()
     .optional()
     .describe('Draw it on the card face (placed on the type’s Display).'),
+  required: z
+    .boolean()
+    .optional()
+    .describe(
+      'Every new card of the type must give it a value, and no change may empty it (any kind but checkbox).',
+    ),
 });
 
 const colourArg = z
@@ -336,6 +342,10 @@ const customFieldEdit = z.object({
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
   calculation: calculationArg.optional(),
   onCard: z.boolean().optional(),
+  required: z
+    .boolean()
+    .optional()
+    .describe('true makes it required (any kind but checkbox), false optional again.'),
 });
 
 export const cardTypeChangeSchema = z.discriminatedUnion('op', [
@@ -448,6 +458,12 @@ const listedCustom = z.object({
     .optional()
     .describe('A calculated field: each card lists its value, and change_items can’t set it.'),
   onCard: z.boolean().optional().describe('Drawn on Detailed cards by default.'),
+  required: z
+    .boolean()
+    .optional()
+    .describe(
+      'Required: change_items refuses a new card of the type without it, or a set emptying it.',
+    ),
 });
 
 const listedType = z.object({

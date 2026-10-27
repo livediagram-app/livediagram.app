@@ -93,6 +93,9 @@ export type ItemRejection =
   | 'place_invalid'
   // A status the item's card type leaves out (docs/specs/026-plan/item-types.md "An item type").
   | 'status_excluded'
+  // A required custom field left empty by a new card, or emptied (docs/specs/026-plan/item-types.md "Required
+  // fields").
+  | 'field_required'
   // A value given to a Calculated field, which only the plan works out (docs/specs/026-plan/item-types.md
   // "Calculated fields").
   | 'field_calculated';

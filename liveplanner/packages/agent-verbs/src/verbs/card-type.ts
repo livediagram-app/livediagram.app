@@ -31,7 +31,8 @@ export const typeLs = defineVerb({
   id: 'type.ls',
   summary: 'The card types of a plan',
   description:
-    'Lists the card types its boards hold: id, name, built-in fields and custom fields with their ids.',
+    'Lists the card types its boards hold: id, name, built-in fields and custom fields with their ids; a ' +
+    'required custom field is marked with *.',
   behaviour: 'read',
   input: z.object({ project: projectArg }),
   output: z.object({ types: z.array(typeOut) }),
@@ -49,7 +50,8 @@ export const typeLs = defineVerb({
         [
           ...t.fields,
           ...t.custom.map(
-            (f) => `${f.name}:${f.kind}${f.calculation ? `=${f.calculation}` : ''} (${f.id})`,
+            (f) =>
+              `${f.name}${f.required ? '*' : ''}:${f.kind}${f.calculation ? `=${f.calculation}` : ''} (${f.id})`,
           ),
         ].join(', '),
       ]),
@@ -58,7 +60,7 @@ export const typeLs = defineVerb({
   cli: {
     positionals: ['project'],
     examples: ['liveplanner type ls "Sprint 14"', 'liveplanner type ls 3f9c --json'],
-    prints: 'one type a line: id, name, fields',
+    prints: 'one type a line: id, name, fields (a required custom field marked *)',
   },
 });
 

@@ -37,6 +37,7 @@ import {
   type ItemTypeCatalogue,
 } from './type-catalogue';
 import { defaultTypesToAdd } from './brought-types';
+import { canBeRequired } from './required-fields';
 import type { CardField } from './board';
 import type { CardLayout } from './card-display';
 import {
@@ -72,6 +73,8 @@ export interface CustomFieldInput {
   // A Calculated field's calculation, by id (`childCount`) or name ("Child Count").
   calculation?: string;
   onCard?: boolean;
+  // Required (docs/specs/026-plan/item-types.md "Required fields"); never a checkbox.
+  required?: boolean;
 }
 
 // An existing custom field edited in place: renamed, its options replaced (a Choice field), drawn on the card or not.
@@ -86,6 +89,8 @@ export interface CustomFieldEdit {
   // A Calculated field's calculation, by id or name.
   calculation?: string;
   onCard?: boolean;
+  // true makes it required, false optional again.
+  required?: boolean;
 }
 
 // A type's card face and panel (type-change-face.ts), as `add` and `set` take them.
@@ -232,6 +237,8 @@ function editedCustom(
   }
   if (edit.onCard === true) next.onCard = true;
   if (edit.onCard === false) delete next.onCard;
+  if (edit.required === true) next.required = requirable(field);
+  if (edit.required === false) delete next.required;
   const edited = { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
   // Unticked, it leaves a Detailed Display of the type's own too.
   return edit.onCard === false ? withoutOnDetailed(edited, key) : edited;
@@ -349,6 +356,7 @@ function customOf(
       `"${name}" is ${withArticle(known)} field: only a calculated field has a calculation.`,
     );
   if (input.onCard) field.onCard = true;
+  if (input.required) field.required = requirable(field);
   return field;
 }
 
@@ -364,6 +372,18 @@ function calculationNamed(field: string, named: string | undefined): Calculation
       `The calculated field "${field}" needs a calculation: ${CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`).join(' or ')}.`,
     );
   return found;
+}
+
+// `true`, for a field that can be required; a checkbox (unticked reads as empty) and a calculated field (the plan
+// works it out) are refused.
+function requirable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
+  if (!canBeRequired(field.kind))
+    throw invalid(
+      field.kind === 'checkbox'
+        ? `"${field.label}" is a checkbox: a checkbox can't be required.`
+        : `"${field.label}" is calculated: the plan works it out, so it can't be required.`,
+    );
+  return true;
 }
 
 // What a change's line adds when its Default State names a column no board has yet (docs/specs/026-plan/plan-agents.md

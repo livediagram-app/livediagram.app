@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { Tab } from '@livedesign/design';
 import { Button, DialogHeader, DialogCloseButton } from '@livedesign/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { HideCursorsSwitch } from '@liveworkspace/workbench/components/dialogs/HideCursorsSwitch';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -164,6 +165,11 @@ export function CollaboratorsDialog({
             </ul>
           </section>
         ))}
+      </div>
+      {/* Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md): the Settings switch,
+          one click away when a session gets busy. Outside the scroller, so it stays put however long the room gets. */}
+      <div className="border-t border-slate-100 px-4 py-2 dark:border-slate-800">
+        <HideCursorsSwitch />
       </div>
     </Dialog>
   );

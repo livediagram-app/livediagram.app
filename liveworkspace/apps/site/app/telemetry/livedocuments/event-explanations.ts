@@ -1143,6 +1143,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
+  'UI|Toggled|HideCursorsOff':
+    "Someone turned off Hide Participant Cursors, in Settings > Collaborate or the Collaborators window, so other people's cursors show on their screen again.",
+  'UI|Toggled|HideCursorsOn':
+    "Someone turned on Hide Participant Cursors, in Settings > Collaborate or the Collaborators window, so other people's cursors stop showing on their screen.",
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|SkipLocationStepOff':

@@ -881,6 +881,72 @@ describe('calculated fields', () => {
 });
 
 // docs/specs/026-plan/item-types.md "Storage and sync".
+// docs/specs/026-plan/item-types.md "Required fields".
+describe('required custom fields', () => {
+  const requiresSeverity = {
+    version: 1,
+    types: [
+      {
+        id: 'task',
+        label: 'Task',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['f-sev'],
+        custom: [{ id: 'f-sev', label: 'Severity', kind: 'text', required: true }],
+      },
+    ],
+  };
+  const setUp = () =>
+    call({ method: 'PUT', path: '/item-types', body: { itemTypes: requiresSeverity } });
+
+  it('refuses a new card without one, alone or in bulk, but not a restore', async () => {
+    expect((await setUp()).status).toBe(200);
+    expect((await add({ title: 'T' })).body).toEqual({ error: 'field_required', field: 'f-sev' });
+    expect((await add({ title: 'T', 'f-sev': '  ' })).status).toBe(400);
+    expect((await add({ title: 'T', 'f-sev': 'S1' })).status).toBe(201);
+    const bulk = await call({
+      path: '/items/bulk',
+      body: { items: [{ type: 'task', fields: { title: 'B' } }] },
+    });
+    expect(bulk.body).toEqual({ error: 'field_required', field: 'f-sev' });
+    // A card carried across with its number (a sync, an undo of a delete) is let through.
+    const restored = await call({
+      path: '/items/bulk',
+      body: { items: [{ type: 'task', fields: { title: 'Old' }, key: 40 }] },
+    });
+    expect(restored.status).toBe(201);
+    // Another type requires nothing.
+    expect((await add({ title: 'N' }, { type: 'note' })).status).toBe(201);
+  });
+
+  it('refuses a change emptying one, but leaves a card that was already empty alone', async () => {
+    await setUp();
+    const t = (await add({ title: 'T', 'f-sev': 'S1' })).body.item;
+    const cleared = await call({ path: `/items/${t.id}`, body: { clear: ['f-sev'] } });
+    expect(cleared.body).toEqual({ error: 'field_required', field: 'f-sev' });
+    const blanked = await call({ path: `/items/${t.id}`, body: { set: { 'f-sev': '' } } });
+    expect(blanked.status).toBe(400);
+    const items = [{ id: t.id, clear: ['f-sev'] }];
+    expect((await call({ path: '/items/patches', body: { items } })).body).toEqual({
+      error: 'field_required',
+      field: 'f-sev',
+      id: t.id,
+    });
+    // An undo is let through.
+    expect(
+      (await call({ path: `/items/${t.id}`, body: { clear: ['f-sev'], undo: true } })).status,
+    ).toBe(200);
+    // Now empty, it is moved and edited freely until someone fills it.
+    expect((await call({ path: `/items/${t.id}`, body: { set: { title: 'U' } } })).status).toBe(
+      200,
+    );
+    expect((await call({ path: `/items/${t.id}/move`, body: { status: 'done' } })).status).toBe(
+      200,
+    );
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Storage and sync".
 describe('the type catalogue', () => {
   const catalogue = {
     version: 1,

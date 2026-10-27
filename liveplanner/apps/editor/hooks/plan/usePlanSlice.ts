@@ -42,6 +42,7 @@ import type { ItemTypesSlice } from './useItemTypes';
 import { planBoardTarget } from './plan-board-targets';
 import { useTypeForBoard } from './useTypeForBoard';
 import { usePlanPeople } from './usePlanPeople';
+import { useRequiredFieldsGate } from './useRequiredFieldsGate';
 import { tabNamedForBoard, tabNamedForView } from '@/lib/tab-named-plan';
 import type { StatusBoard } from './usePlanStatusNames';
 
@@ -173,6 +174,10 @@ export function usePlanSlice(opts: {
 
   const write = planItems.write;
 
+  // A card whose type requires a field it lacks waits for the New {Type} dialog (docs/specs/026-plan/item-types.md
+  // "Required fields"); any other is written at once, as before.
+  const requiredGate = useRequiredFieldsGate(itemTypes.types);
+  const fillRequired = requiredGate.fill;
   const addItem = useCallback(
     (input: {
       type: string;
@@ -181,26 +186,32 @@ export function usePlanSlice(opts: {
       after: string | null;
       before?: string | null;
       id?: string;
-    }) => {
-      const made = write({
-        kind: 'create',
-        creates: [
-          {
-            ...(input.id ? { id: input.id } : {}),
-            type: input.type,
-            fields: input.fields,
-            place: {
-              status: input.status,
-              ...(input.after ? { after: input.after } : {}),
-              ...(input.before ? { before: input.before } : {}),
+    }): Promise<boolean> => {
+      const made = (fields: Item['fields']) => {
+        const done = write({
+          kind: 'create',
+          creates: [
+            {
+              ...(input.id ? { id: input.id } : {}),
+              type: input.type,
+              fields,
+              place: {
+                status: input.status,
+                ...(input.after ? { after: input.after } : {}),
+                ...(input.before ? { before: input.before } : {}),
+              },
             },
-          },
-        ],
-      });
-      track('Plan', 'Added', titleCaseType(input.type));
-      return made;
+          ],
+        });
+        track('Plan', 'Added', titleCaseType(input.type));
+        return done;
+      };
+      const fields = fillRequired(input.type, input.fields);
+      return fields instanceof Promise
+        ? fields.then((filled) => (filled ? made(filled) : false))
+        : made(fields);
     },
-    [write],
+    [write, fillRequired],
   );
 
   // Many new cards as one write and one undo step (a board's Import CSV, docs/specs/026-plan/plan-board.md "CSV").
@@ -605,6 +616,9 @@ export function usePlanSlice(opts: {
     // A write with no undo step, for the card the Plan tour makes and takes away itself.
     writeQuiet,
     editingType,
+    // A new card waiting for its required fields (RequiredFieldsDialog), and its answer.
+    requiredFields: requiredGate.request,
+    settleRequiredFields: requiredGate.settle,
     typeTemplateId,
     typeForBoard: forBoard.typeForBoard,
     addTypeToBoard: forBoard.addTypeToBoard,

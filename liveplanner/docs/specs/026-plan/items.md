@@ -322,12 +322,16 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   every card (a board or plan view on it); from any other tab the card would land on boards outside its reach, so
   the api refuses it (403), before it looks at any id the create names, so a taken id on another tab answers
   exactly as a free one does and never shows that the card exists.
-- **Who a card can be assigned to**: you, the joined members of the teams you are part of (by their profile
-  name, else their invite address's local part), fetched once a project has Plan content, and the plan's **custom
-  assignees**. A guest, who has no teams, can assign themselves and custom assignees, and the editor never asks for
-  a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them,
-  shown in its picker.
-- **Custom assignees**: a name for someone outside your teams (a contractor, a client, a person not on the plan),
+- **Who a card can be assigned to**: you, the joined members of **the plan's team** (the team whose library holds
+  it, and only when your sign-in names that team; by their profile name, else their invite address's local part),
+  fetched once a project has Plan content, and the plan's **custom assignees**. People from your other teams are
+  never offered: a plan in My Work, one shared with you from someone else's My Work, one in This Browser or a
+  guest's offers only you and custom assignees. A guest, who has no teams, never has its teams asked for (the
+  request could only fail). A card already assigned to someone outside that list keeps them, shown in its picker
+  (and, as a held assignee, in the plan's other pickers; see "Where the list comes from" below). Comment
+  @-mentions draw on the same team ([Comment mentions](../012-collaboration/comment-mentions.md)), so no name from
+  another team shows anywhere in the plan.
+- **Custom assignees**: a name for someone outside the plan's team (a contractor, a client, a person not on the plan),
   so their work can be tracked like anyone's. The Assignee picker ends with **+ Custom Assignee**; choosing it opens
   a small popover (**Custom Assignee**, a **Name** field of up to 60 characters, **Cancel** and **Add**, Add off
   while the name is blank) whose Add assigns the card to that name at once. A name already in the picker (a
@@ -342,6 +346,16 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
     included. A Viewer sees the picker disabled and no **+ Custom Assignee**.
   - **Everything that groups by person** (swimlanes, the Assignee filter, workload, the People tile) treats a custom
     assignee as a person: they get their own lane, filter option and bar.
+  - **Accounts are marked**: in the Assignee picker's open list, and only there, every person who is a
+    liveworkspace identity (a person id hashed from an account or guest id: you, the plan's team, and anyone the cards
+    hold who was assigned that way) carries a small liveworkspace mark to the left of their name: the prism glyph every app's logo is, in the
+    platform's slate, 12 px. It shows no tooltip on hover; a screen reader hears it as **liveworkspace account** (the row reads "Sam, liveworkspace account"). A custom assignee
+    and a template's example person carry nothing (an empty space of the same width, so the names line up). Nowhere else shows it: not the closed
+    field, card faces, the @-mention list or any other list of people. The picker is a list of its own rather than a
+    native select so a row can hold the mark: the closed field shows the current assignee (or **No one**) and a
+    chevron; opening it (a press, or Enter, Space, Up or Down) drops a list under the field, in place: **No one**, the
+    people, then **+ Custom Assignee** (for someone who may edit the card), the current choice in bold; Up and Down
+    move, Enter picks, Escape or a press outside closes it. One inline SVG a row, no image requests.
   - **Never a person to notify**: a custom assignee has no account, so no email, no Inbox row (the cards push skips
     `n-` ids instead of counting them as people it could not name), and **Only Mine** never matches them.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's

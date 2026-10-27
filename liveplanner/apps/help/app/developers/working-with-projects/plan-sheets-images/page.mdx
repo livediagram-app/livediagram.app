@@ -96,7 +96,7 @@ A move takes a `status` and `after` or `before` (`after` wins; neither puts the 
 
 A **Calculated** field (Child Count, Children Done (%)) holds no value of its own: `GET /projects/$DOC/items?include=calculated` adds `calculated`, each card's values by card id then field id (a count, a whole percentage, or `null` with no children). Giving one a value is refused.
 
-Refusals are `400` with a code such as `title_required`, `field_value_invalid`, `type_invalid`, `place_invalid`, `status_excluded` (the card's type leaves that status out) or `field_calculated` (a value given to a Calculated field), `404 item_not_found`, `409 item_busy` (try again) or `413 items_full`.
+Refusals are `400` with a code such as `title_required`, `field_value_invalid`, `type_invalid`, `place_invalid`, `status_excluded` (the card's type leaves that status out), `field_calculated` (a value given to a Calculated field) or `field_required` (a new card leaves a required custom field empty, or a change empties one; `field` names it), `404 item_not_found`, `409 item_busy` (try again) or `413 items_full`.
 
 ### Card Types
 
@@ -118,7 +118,7 @@ curl -X PUT https://www.liveplanner.app/api/projects/$DOC/item-types \
   }'
 ```
 
-Up to 32 types. A custom field's `kind` is `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `multichoice`, `rating` or `card`, and its id starts `f-`. `"itemTypes": null` goes back to the default types (Project, Task, Note, Idea, Action). If someone changed the types since you read them, the answer is `409 item_types_stale` with the stored catalogue and revision, to apply your change to again. This needs edit access to the whole plan.
+Up to 32 types. A custom field's `kind` is `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `multichoice`, `rating` or `card`, and its id starts `f-`. `"required": true` makes a field (any kind but `checkbox`) required: a new card must give it a value and no change may empty it, while a card restored or synced with its `key` is let through. `"itemTypes": null` goes back to the default types (Project, Task, Note, Idea, Action). If someone changed the types since you read them, the answer is `409 item_types_stale` with the stored catalogue and revision, to apply your change to again. This needs edit access to the whole plan.
 
 The [CLI](/help/developers/cli/) (`item add`, `item set`, `item move`, `type ls`) and the MCP server's `change_items` and `change_card_types` do all of this by column and type **names**, which is easier for an agent than status ids.
 

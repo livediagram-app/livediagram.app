@@ -9,6 +9,7 @@ import {
   tabShowsEveryCard,
   itemPersonId,
   calculatedWritten,
+  requiredClearedBy,
   statusExcluded,
   typesOf,
   type Item,
@@ -77,6 +78,15 @@ export function calculatedSet(
   return undo ? null : calculatedWritten(typesOf(caller.doc?.itemTypes), next, before);
 }
 
+// A required custom field the change empties (docs/specs/026-plan/item-types.md "Required fields"): its id, or null.
+export function clearedRequired(
+  caller: ItemCaller,
+  next: Item,
+  before: Item,
+  undo: boolean,
+): string | null {
+  return requiredClearedBy(typesOf(caller.doc?.itemTypes), next, before, undo);
+}
 // A Participant works with cards but never deletes one (docs/specs/013-workspace/share-roles.md "What a
 // Participant changes"): moving a card into or out of the Trash or the Archive, and restoring one whole (its votes,
 // thread and key, an Editor's undo), needs an Editor. Asked only when a write does that, so an ordinary card edit

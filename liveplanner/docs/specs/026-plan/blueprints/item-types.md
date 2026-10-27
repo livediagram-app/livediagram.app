@@ -5,15 +5,16 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                                                 |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                          |
-| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                            |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard? }`; kinds `CUSTOM_FIELD_KINDS` |
-| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                               |
-| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                             |
-| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`               |
-| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                              |
+| Spec term         | Identifier                                                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                     |
+| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                       |
+| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required? }`; kinds `CUSTOM_FIELD_KINDS` |
+| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)      |
+| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                          |
+| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                        |
+| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                          |
+| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                         |
 
 ## Package `@liveplanner/items`
 
@@ -24,6 +25,9 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
                        typesOf, typeIn, customFieldOf, isBuiltInFieldId, slugOf,
                        newItemTypeId, newCustomFieldId, defaultNewTitle, validateItemTypeCatalogue,
                        readItemTypeCatalogue, builtInCatalogue
+src/required-fields.ts canBeRequired, requiredCustomFieldsOf (a type's required custom fields it still offers),
+                       isEmptyFieldValue, missingRequiredFields(type, fields), requiredCleared(type, before, after),
+                       requiredFieldsMessage(type, fields)
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
                        @liveplanner/project's agent element ids)
 ```
@@ -39,6 +43,14 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `PARENT_FIELD`),
   `title` and `status` put first, at most 24; `newTitle` defaults to "New <name>"; JSON at most
   `ITEM_TYPES_BYTES`. Answers `{ ok, catalogue }` (normalised) or `{ ok: false, reason }` naming the part.
+- `readCustom` keeps `required` only as `true` on a kind `canBeRequired` allows (every kind but `checkbox` and `calculated`); any
+  other value, or `required` on a Checkbox, is dropped, never refused, so an older catalogue reads as before.
+- Required fields (spec "Required fields"): `requiredCustomFieldsOf(type)` lists the custom fields with `required` whose
+  ids are in `type.fields` (a field taken off the type is not enforced). `isEmptyFieldValue(v)`: `undefined`, `null`,
+  a string that trims empty, or an empty array. `missingRequiredFields(type, fields)` the required fields `fields`
+  leaves empty, in the type's order. `requiredCleared(type, before, after)` the first required field `before` holds a
+  value for and `after` leaves empty (so a card already empty is never refused). `requiredFieldsMessage(type, missing)`
+  "{Type} cards need {A}, {B} and {C}".
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
 - `projectBoard(setup, items, quick?, types = ITEM_TYPES)`, `itemAccessibleName(item, types?)`,
   `boardAddTypes(setup, types)`: the catalogue where they name or order types.
@@ -105,8 +117,10 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   Project), trashed cards left out. `LinksToPicker` (apps/editor `LinksToPicker.tsx`, used by `ItemTypeFieldForms`) is the type editor's
   multi-select: a `Select`-styled button (`linksToLabel`) opening an `AnchoredPopover` of `OptionRows`
   `kind="multiple"`, a gone ticked type a row after the catalogue's, the last ticked row disabled. `LinkedCardField` (apps/editor) is the shared control for every Card field
-  (`ItemFieldEditor`), an in-place listbox (inside the panel's focus trap) with a filter past
-  `LINK_FILTER_FROM` (8), Escape taken in the capture phase. `PlanSheetsHost` passes the groups as `linkedGroups`
+  (`ItemFieldEditor`), a listbox in an `AnchoredPopover` (portalled over the page, so the
+  side column never clips it; it takes Escape before the panel and closes on a press outside) of width
+  `max(LINK_LIST_MIN_PX (320), the field's width)`, capped by the window, with a filter past `LINK_FILTER_FROM` (8);
+  each title `line-clamp-2` in a `Tooltip` of the whole title. `PlanSheetsHost` passes the groups as `linkedGroups`
   (`LinkedCardGroup` in LinkedCards.tsx, `New {Type}` via `addItem` with the link
   set, first status the type uses, tracked `('Plan', 'Added', 'LinkedCard')`). `customFieldText(field, value, items)`
   names a Card value; `LaneFieldKind` gains `card` (rows named by the linked card with its `itemColourOf` dot, number
@@ -199,6 +213,21 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
   move body with `undo: true` (`writeItem`'s `{ undo }` option). The editor marks both sides of every undo step with
   `asUndoWrite` (`ItemWrite.undo`), which `lib/api/items.ts` sends as `undo: true`.
 
+- Required fields: `write-checks.ts` `createRefusal(types, create)` answers `{ error: 'field_required', field }`
+  for a create missing one unless it restores (carries `key`, `votes` or `comments`); `writtenItemsRefusal` also
+  refuses `field_required` for a patch, patches or move whose item `requiredCleared` unless `undo`. The api's single
+  create and bulk create run `createRefusal` per create (after the Default State), `writeItem` and the patches route
+  run `requiredCleared` beside `excludedStatus`; the refusal is 400 `{ error: 'field_required', field: <id> }`. The
+  offline store runs the same checks. The editor's `usePlanSlice.addItem` goes through `useRequiredFieldsGate`:
+  a create missing a required field opens `RequiredFieldsDialog` (PlanSheetsHost draws it first) and is written,
+  filled, only on Create; Cancel answers false. `refusalMessage('field_required')` reads "That field is required on
+  this card type". `boardCsvImport` counts a row missing one in `missingRequired` (also in `skipped`).
+  `publishProblems` adds `{ kind: 'required_unasked', fieldId, field, type }` per required field no required
+  question in an always-shown section maps to; `publishProblemText(p)` words every problem. Agents:
+  `listedType.custom[].required`, `CustomFieldInput.required` / `CustomFieldEdit.required` in `applyCardTypeChanges`
+  (a Checkbox refused), and `applyItemChanges` stops an `add` (`missingRequiredFields`) or a `set`
+  (`requiredCleared`) with `field_required` and `requiredFieldsMessage` before any write.
+
 ## Errors and edge cases
 
 | Case                               | Handling                                                     |
@@ -254,6 +283,10 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`                                                                                              |
 | Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
 | Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                            |
+| Required fields: read, missing, cleared, message          | `packages/items/src/required-fields.test.ts`                                                                                             |
+| Required fields: api refuses a create or a clear          | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
+| Required fields: agents list, set, refuse                 | `packages/agent-verbs/src/verbs/plan-verbs.test.ts`, `packages/items/src/type-changes.test.ts`                                           |
+| Required fields: New {Type} dialog, type editor switch    | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                         |
 | Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |
 | Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                               |
 | Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                                      |

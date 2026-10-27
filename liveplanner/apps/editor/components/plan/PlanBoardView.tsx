@@ -6,7 +6,7 @@
 // double-click opens a card. Everything the board changes goes through PlanContext.
 import { planFontStyle } from '@/lib/plan-font';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
-import { SlotBoardCog } from './SlotBoardCog';
+import { useInDashboard } from '@/components/plan/dashboard/dashboard-context';
 import { isCardVotableInVote } from '@liveplanner/project';
 import { useCardVote } from './CardVoteContext';
 import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
@@ -55,6 +55,7 @@ import { boardLook, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
+import { SlotBoardCog } from './SlotBoardCog';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
 import { usePlan } from './PlanContext';
@@ -145,6 +146,11 @@ export function PlanBoardView({
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.
   const { maximised, filled } = useBoardMaximised(element.id, interactive);
+  // In a Dashboard slot the board is simplified, for working its cards (docs/specs/026-plan/plan-tabs.md "A board in a
+  // slot is simplified"): its set-up (title, widgets, columns, Reveal, new card types, Board Settings, the Form strip)
+  // changes on its tab. Maximised from the slot it is the whole board again, and simplified once restored.
+  const simplified = useInDashboard() && !maximised;
+  const setUpHere = canEdit && !simplified;
   const slot = useSlotSettings();
   // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
   const tabCardVote = useCardVote();
@@ -256,7 +262,7 @@ export function PlanBoardView({
   // The Add a Card menu's Add New Card Type: a new type with only this board's statuses, added to it once saved
   // (docs/specs/026-plan/plan-board.md "Add New Card Type"), for an Editor while the catalogue has room.
   const createType =
-    plan && mayCreateCardType(plan)
+    plan && setUpHere && mayCreateCardType(plan)
       ? () =>
           plan.createTypeForBoard(
             element.id,
@@ -339,7 +345,7 @@ export function PlanBoardView({
         palette={palette}
         selected={selected}
         movable={!maximised && !filled}
-        canRename={canEdit && interactive}
+        canRename={setUpHere && interactive}
         onOpenItem={(id) => plan?.openItem(id)}
         onSetup={(next, part) => {
           plan?.updateBoard(element.id, next);
@@ -353,7 +359,8 @@ export function PlanBoardView({
         quick={quick}
         onQuick={setQuick}
         canFilterMine={self?.id ?? null}
-        canEdit={canEdit}
+        canEdit={setUpHere}
+        simplified={simplified}
         loadFailed={plan?.status === 'error'}
         onRetry={() => plan?.retry()}
         onReveal={() => {
@@ -378,10 +385,10 @@ export function PlanBoardView({
                 <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
               )}
               {/* The cog last, at the header's far right: the board's one menu (its element menu). In a Dashboard
-                  slot, Board Settings with the slot's own section folded in, or the slot's cog for someone who may
-                  not edit the board (slot-menu.ts). */}
+                  slot, the slot's own cog (slot-menu.ts), the board set up on its tab; maximised from the slot, an
+                  Editor's Board Settings with the slot's section after the board's. */}
               {slot ? (
-                canEdit ? (
+                setUpHere ? (
                   <SlotBoardCog element={element} palette={palette} slot={slot} />
                 ) : (
                   slot.cog
@@ -437,7 +444,7 @@ export function PlanBoardView({
                 col={col}
                 setup={setup}
                 palette={palette}
-                canEdit={canEdit}
+                canEdit={setUpHere}
                 onChange={(next, part) => {
                   if (part === 'ColumnReordered') columnMove.beforeMove(col.column.id);
                   plan?.updateBoard(element.id, next);

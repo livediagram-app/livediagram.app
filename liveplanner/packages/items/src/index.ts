@@ -55,6 +55,7 @@ export * from './rich-text-markdown';
 export * from './card-finder';
 export * from './slug';
 export * from './write-checks';
+export * from './required-fields';
 export * from './type-catalogue-change';
 export * from './linked-cards';
 export * from './calculated-fields';

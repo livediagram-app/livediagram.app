@@ -57,10 +57,13 @@ Stored on the element, shared by everyone, undone like any element edit:
   right-click on the board opens, with the same rules: maximised or filling its tab, no Layer, Size, Rotation or
   Animation; under Style, set apart by a separator, its own rows Board Setup, Columns, Swimlanes, Sort Cards, Supported Cards and Card Layout; no Collaborate or
   Resources, [Nothing attached to Plan items](plan-mode.md#nothing-attached-to-plan-items)); pressed again it
-  closes it. A board a collaborator holds opens nothing. In a Dashboard slot, which opens no element menu, the cog
-  opens **Board Settings** as a popover instead (as a Sheet's and a chart's cogs do): Board Setup, Columns, Swimlanes,
-  Sort Cards, Supported Cards and Card Layout, then the slot's **Slot** section ([Dashboard tab](plan-tabs.md#dashboard-tab)),
-  one open at a time; someone who may not edit the board sees the slot's own cog there. Telemetry: `Plan` · `Opened` ·
+  closes it. A board a collaborator holds opens nothing. In a Dashboard slot, where the board is simplified
+  ([Dashboard tab](plan-tabs.md#dashboard-tab) "A board in a slot is simplified"), the header ends with the slot's own
+  cog (**Slot Settings**: the slot toolbar, with **Open Tab**, and its **Slot** section) and no board sections, for
+  everyone. Maximised from the slot, the board is whole again: for an Editor the cog opens **Board Settings** as a
+  popover (as a Sheet's and a chart's cogs do), Board Setup, Columns, Swimlanes, Sort Cards, Supported Cards and Card
+  Layout, then the slot's **Slot** section, one open at a time; someone who may not edit the board sees the slot's own
+  cog there. Telemetry: `Plan` · `Opened` ·
   `BoardSettings`.
 - **Swimlanes**: none, or grouped by assignee, type, priority, status, or **any field** the card types the board
   shows offer, Parent among them (see [Swimlanes by a field](#swimlanes-by-a-field)). A board's columns are its statuses, so rows by status would repeat them: Status is not a choice on a board
@@ -812,7 +815,8 @@ to import. Import CSV reads files up to 5 MB." Each row after it becomes a new c
 
 The rows go in as **one write and one undo step**, each card at the end of its column in file order. At most as many
 as the project still has room for (its card limit) are added; the rest are skipped. The board then says what
-happened: "Added 12 cards", "Added 12 cards; skipped 3 rows", or why nothing was added ("No Title column in the
+happened: "Added 12 cards", "Added 12 cards; skipped 3 rows" (with ", 2 missing a required field" when rows lacked a
+[required field](item-types.md#required-fields), or "skipped 2 rows missing a required field" when all did), or why nothing was added ("No Title column in the
 file", "No cards to add"). Telemetry: `Plan` · `Imported` · `Csv` when a file is read, `Plan` · `Exported` · `Csv` on
 a download.
 

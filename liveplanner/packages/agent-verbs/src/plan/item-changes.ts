@@ -18,10 +18,13 @@ import {
   resolveStatus,
   resolveType,
   fieldKeyOf,
+  missingRequiredFields,
+  requiredCleared,
+  requiredFieldsMessage,
   typeIn,
   type Item,
-  type ItemTypeDef,
   type ItemFields,
+  type ItemTypeDef,
   type Named,
 } from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
@@ -59,6 +62,16 @@ class Stop extends Error {
     super(message);
     this.code = code;
   }
+}
+
+// A required custom field left empty (docs/specs/026-plan/item-types.md "Required fields"), stopped before the api
+// sees it so the refusal names the type and every field.
+function requiredStop(type: ItemTypeDef, missing: readonly { label: string }[]): Stop {
+  return new Stop(
+    'field_required',
+    `${requiredFieldsMessage(type, missing)}: give ${missing.length === 1 ? 'it' : 'them'} in fields, by name. ` +
+      'list_items marks each required field (required: true).',
+  );
 }
 
 function must<T extends object>(named: Named<T>): T {
@@ -203,6 +216,8 @@ export async function applyItemChanges(
         const status = c.status
           ? must(resolveStatus(c.status, state.plan.statuses)).status
           : undefined;
+        const missing = missingRequiredFields(type, fields as ItemFields);
+        if (missing.length) throw requiredStop(type, missing);
         const { item } = await post(base, {
           type: type.id,
           fields: { ...fields, title: c.title },
@@ -228,6 +243,17 @@ export async function applyItemChanges(
             ? [DESCRIPTION_RICH_FIELD]
             : []),
         ];
+        const after: Record<string, (typeof target.fields)[string]> = {
+          ...target.fields,
+          ...(set as typeof target.fields),
+        };
+        for (const k of clear) delete after[k];
+        const emptied = requiredCleared(type, target.fields, after);
+        if (emptied)
+          throw new Stop(
+            'field_required',
+            `${emptied.label} is required on ${type.label} cards: it can be changed, not emptied.`,
+          );
         const { item } = await post(`${base}/${encodeURIComponent(target.id)}`, {
           ...(Object.keys(set).length ? { set } : {}),
           ...(clear.length ? { clear } : {}),

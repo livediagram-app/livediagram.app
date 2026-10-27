@@ -107,6 +107,8 @@ export interface CustomFieldDef {
   calculation?: Calculation;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
+  // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.
+  required?: boolean;
 }
 
 // The most card types one Card field links to: every type the catalogue can hold (ITEM_TYPES_MAX).

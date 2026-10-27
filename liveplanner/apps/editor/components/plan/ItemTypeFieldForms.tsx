@@ -18,13 +18,22 @@ import {
   RATING_FIELD_SCALE_MAX,
   RATING_FIELD_SCALE_MIN,
   type Calculation,
+  canBeRequired,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
   linkTypesOf,
   withLinkTypes,
 } from '@liveplanner/items';
-import { Button, CloseIcon, PlusIcon, Select, TextArea, TextInput } from '@liveplanner/ui';
+import {
+  Button,
+  CloseIcon,
+  PlusIcon,
+  Select,
+  SwitchRow,
+  TextArea,
+  TextInput,
+} from '@liveplanner/ui';
 import { CustomFieldKindTiles, CustomFieldPreview } from './CustomFieldKindParts';
 import { usePlan } from './PlanContext';
 import { LinksToPicker, linkTypeNames } from './LinksToPicker';
@@ -182,8 +191,30 @@ function CalculationSelect({
   );
 }
 
-// A custom field's name, options (Choice), the types it links to (Card) and its calculation (Calculated); where it shows on a card is the
-// Display tab's.
+// Required (docs/specs/026-plan/item-types.md "Required fields"): a switch, as a form question's; none for a
+// Checkbox, which reads unticked as empty, or a Calculated field, which nobody fills in.
+function RequiredSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'required'>;
+  onChange: (required: boolean | undefined) => void;
+}) {
+  if (!canBeRequired(field.kind)) return null;
+  return (
+    <SwitchRow
+      checked={field.required === true}
+      onChange={() => onChange(field.required ? undefined : true)}
+      layout="flex min-h-8 items-center gap-2 rounded-md"
+      className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+    >
+      Required
+    </SwitchRow>
+  );
+}
+
+// A custom field's name, options (Choice), the types it links to (Card) and its calculation (Calculated); where it
+// shows on a card is the Display tab's.
 export function CustomFieldForm({
   field,
   onChange,
@@ -238,6 +269,7 @@ export function CustomFieldForm({
           }}
         />
       ) : null}
+      <RequiredSwitch field={field} onChange={(required) => onChange({ required })} />
       {/* Where it shows on a card is the Display tab's: drag it onto the card there. */}
     </div>
   );
@@ -343,6 +375,10 @@ export function NewFieldForm({
               onChange={(ids) => setCustom(withLinkTypes(custom, ids))}
             />
           ) : null}
+          <RequiredSwitch
+            field={custom}
+            onChange={(required) => setCustom({ ...custom, required })}
+          />
           <CustomFieldPreview
             label={custom.label}
             kind={custom.kind}
@@ -376,6 +412,7 @@ export function NewFieldForm({
                 ...(custom.kind === 'card' ? {} : { linkType: undefined, linkTypes: undefined }),
                 ...(custom.kind === 'currency' ? {} : { currency: undefined }),
                 ...(custom.kind === 'calculated' ? {} : { calculation: undefined }),
+                ...(custom.required && canBeRequired(custom.kind) ? {} : { required: undefined }),
               })
             }
           >
