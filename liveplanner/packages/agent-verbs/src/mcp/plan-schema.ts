@@ -3,6 +3,8 @@
 // column name, a card type's name, a custom field's name, a person's name, "#12"); the server resolves the ids.
 import { z } from 'zod';
 import {
+  CALCULATIONS,
+  CALCULATION_LABELS,
   CUSTOM_FIELD_KINDS,
   PLAN_BOARD_PRESET_IDS,
   PLAN_COLUMNS_MAX,
@@ -215,6 +217,15 @@ export const changeBoardShape = {
     ),
 };
 
+// A Calculated field's calculation (docs/specs/026-plan/item-types.md "Calculated fields").
+const calculationArg = z
+  .string()
+  .describe(
+    `A calculated field's calculation: ${CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`).join(', ')}. ` +
+      'Children are the cards linking to the card through a card field naming its type (Parent, for a Project); ' +
+      'done is a done column’s status. Children Done is a whole percentage, null with no children.',
+  );
+
 const customField = z.object({
   name: z.string().min(1).describe('The field’s name, as cards show it ("Severity").'),
   kind: z
@@ -223,7 +234,9 @@ const customField = z.object({
       'text (one line), longtext (paragraphs, in a panel tab), number, currency (an amount in the field’s ' +
         'currency, shown as "£12,500"), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
         'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
-        'whole number from 1 to its scale, drawn as stars) or card (one card of its linkTypes, as "#12").',
+        'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12") or ' +
+        'calculated (worked out from the cards linking to the card through a card field, by its calculation; ' +
+        'read-only, never given a value).',
     ),
   options: z
     .array(z.string())
@@ -249,6 +262,7 @@ const customField = z.object({
     .string()
     .optional()
     .describe('A currency field’s ISO 4217 code (GBP, USD, EUR...); GBP when left out.'),
+  calculation: calculationArg.optional(),
   onCard: z
     .boolean()
     .optional()
@@ -320,6 +334,7 @@ const customFieldEdit = z.object({
     .optional()
     .describe('A card field’s target card types, replaced whole (one or more).'),
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
+  calculation: calculationArg.optional(),
   onCard: z.boolean().optional(),
 });
 
@@ -413,7 +428,8 @@ const listedCustom = z.object({
   kind: z
     .string()
     .describe(
-      'text, longtext, number, currency, date, checkbox, link, email, choice, multichoice, rating or card.',
+      'text, longtext, number, currency, date, checkbox, link, email, choice, multichoice, rating, card or ' +
+        'calculated.',
     ),
   options: z.array(z.string()).optional().describe('A choice or multichoice field’s options.'),
   scale: z.number().optional().describe('A rating field’s top score.'),
@@ -423,6 +439,14 @@ const listedCustom = z.object({
     .optional()
     .describe('Every card type id a card field links to, linkType first.'),
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
+  calculation: z
+    .string()
+    .optional()
+    .describe('A calculated field’s calculation: childCount or childrenDone.'),
+  readOnly: z
+    .literal(true)
+    .optional()
+    .describe('A calculated field: each card lists its value, and change_items can’t set it.'),
   onCard: z.boolean().optional().describe('Drawn on Detailed cards by default.'),
 });
 
@@ -492,7 +516,8 @@ const listedItem = z.object({
   fields: z
     .record(z.string(), z.unknown())
     .describe(
-      'Every field, title and status included; custom fields by their names, as change_items takes them.',
+      'Every field, title and status included; custom fields by their names, as change_items takes them. A ' +
+        'calculated field’s value is worked out (a count, a whole percentage, or null) and read-only.',
     ),
 });
 

@@ -13,6 +13,7 @@ import {
   itemStatus,
   itemSummary,
   resolveFields,
+  calculatedWritten,
   resolveItem,
   resolveStatus,
   resolveType,
@@ -20,6 +21,7 @@ import {
   typeIn,
   type Item,
   type ItemTypeDef,
+  type ItemFields,
   type Named,
 } from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
@@ -178,8 +180,21 @@ export async function applyItemChanges(
   const naming = () => ({ statuses: state.plan.statuses, items });
   const post = (path: string, body: unknown) =>
     api.json<ItemResponse>(path, { method: 'POST', body: JSON.stringify(body) });
-  const fieldsFor = (input: Readonly<Record<string, unknown>> | undefined, type: ItemTypeDef) =>
-    input ? must(resolveFields(input, type, naming())).fields : {};
+  // A Calculated field is worked out, never given (docs/specs/026-plan/item-types.md "Calculated fields"): refused
+  // before the write, by name.
+  const fieldsFor = (input: Readonly<Record<string, unknown>> | undefined, type: ItemTypeDef) => {
+    const fields = input ? must(resolveFields(input, type, naming())).fields : {};
+    const calculated = calculatedWritten([type], { type: type.id, fields: fields as ItemFields });
+    if (calculated) {
+      // calculatedWritten names only a field the type has.
+      const label = type.custom!.find((f) => f.id === calculated)!.label;
+      throw new Stop(
+        'field_calculated',
+        `${label} is calculated: it can't be set. list_items lists its value, worked out from the cards linking here.`,
+      );
+    }
+    return fields;
+  };
   try {
     for (const c of changes) {
       if (c.op === 'add') {

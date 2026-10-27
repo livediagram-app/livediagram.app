@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item } from '@liveplanner/items';
+import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
+import { listedType } from '../plan/plan-listing';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { fieldsFromPairs, itemAdd, itemLs, itemMove, itemRm, itemSet } from './item';
@@ -326,6 +327,88 @@ describe('item edges after names', () => {
     }).ctx;
     await expect(itemRm.run!(refusing, { project: DOC_A, item: '#1' })).rejects.toMatchObject({
       code: 'forbidden',
+    });
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Calculated fields".
+describe('calculated fields', () => {
+  const EPIC = {
+    ...ITEM_TYPES[0],
+    id: 'epic',
+    label: 'Epic',
+    fields: ['title', 'status', 'f-kids', 'f-done'],
+    custom: [
+      { id: 'f-kids', label: 'Stories', kind: 'calculated', calculation: 'childCount' },
+      { id: 'f-done', label: 'Progress', kind: 'calculated', calculation: 'childrenDone' },
+    ],
+  };
+  const STORY = {
+    ...ITEM_TYPES[1],
+    id: 'story',
+    label: 'Story',
+    fields: ['title', 'status', 'f-epic'],
+    custom: [{ id: 'f-epic', label: 'Epic', kind: 'card', linkType: 'epic' }],
+  };
+  const items = [
+    item(1, 'itemepic01', { title: 'Checkout', status: 'doing' }, 'epic'),
+    item(2, 'itemstory1', { title: 'Pay', status: 'done', 'f-epic': 'itemepic01' }, 'story'),
+    item(3, 'itemstory2', { title: 'Ship', status: 'todo', 'f-epic': 'itemepic01' }, 'story'),
+    item(4, 'itemstory3', { title: 'Old', status: 'done', 'f-epic': 'itemepic01' }, 'story'),
+    item(5, 'itemstory4', { title: 'Gone', status: 'trash', 'f-epic': 'itemepic01' }, 'story'),
+  ];
+  const withCalc = () =>
+    api({
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, EPIC, STORY] },
+      [path]: (r: Request) =>
+        r.method === 'GET'
+          ? Response.json({ items, rev: 4 })
+          : Response.json({ item: items[0], rev: 5 }),
+    });
+
+  it('lists each card’s values by name, and the fields as read-only', async () => {
+    const { ctx } = withCalc();
+    const out = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
+    const epic = out.items.find((i) => i.id === 'itemepic01')!;
+    expect(epic.fields).toMatchObject({ Stories: 3, Progress: 67 });
+    const story = out.items.find((i) => i.id === 'itemstory2')!;
+    expect(story.fields).not.toHaveProperty('Stories');
+    expect(listedType(EPIC as ItemTypeDef).custom).toEqual([
+      expect.objectContaining({ name: 'Stories', calculation: 'childCount', readOnly: true }),
+      expect.objectContaining({ name: 'Progress', calculation: 'childrenDone', readOnly: true }),
+    ]);
+  });
+
+  it('refuses giving one a value, before writing, by name', async () => {
+    const { ctx, seen } = withCalc();
+    const added = await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ project: DOC_A, title: 'E', type: 'Epic', fields: ['progress=50'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(added).toMatchObject({
+      code: 'field_calculated',
+      message: expect.stringMatching(/^Progress is calculated: it can't be set/),
+    });
+    const set = await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['stories=9'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(set).toMatchObject({ code: 'field_calculated' });
+    expect(seen.filter((s) => s.method === 'POST')).toEqual([]);
+  });
+
+  it("words the api's own refusal", async () => {
+    const { ctx } = api({
+      [`${path}/itembbb111`]: () =>
+        Response.json({ error: 'field_calculated', field: 'f-x' }, { status: 400 }),
+    });
+    const refusal = await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['priority=low'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(refusal).toMatchObject({
+      code: 'field_calculated',
+      message: expect.stringMatching(/calculated field is worked out/),
     });
   });
 });

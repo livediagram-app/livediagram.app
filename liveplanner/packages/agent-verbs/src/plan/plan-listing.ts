@@ -27,6 +27,11 @@ import {
   boardSortText,
   sortCards,
   linkTypesOf,
+  calculatedValuesOf,
+  childIndexOf,
+  doneStatusesOf,
+  hasCalculatedFields,
+  typeIn,
 } from '@liveplanner/items';
 import type { PlanState } from './plan-state';
 
@@ -81,6 +86,10 @@ export interface ListedType {
     currency?: string;
     // A Rating field's top score.
     scale?: number;
+    // A Calculated field's calculation; such a field is read-only (docs/specs/026-plan/item-types.md "Calculated
+    // fields").
+    calculation?: string;
+    readOnly?: true;
     onCard?: boolean;
   }[];
   // The column a new card of it starts in, by name.
@@ -155,15 +164,17 @@ function columnName(status: string | undefined, state: PlanState): string | null
 
 // An item's fields with its custom fields under their names ("Severity"), as writes name them; a custom field its
 // type no longer has keeps its id. A card link (Parent, a Card field) reads as its card's number and title
-// ("#12 Fix login"), which writes take back.
+// ("#12 Fix login"), which writes take back. A Calculated field's value, worked out (`calculated`), is listed too.
 function namedFields(
   item: Item,
   types: readonly ItemTypeDef[],
   byId: ReadonlyMap<string, Item>,
+  calculated?: Record<string, number | null>,
 ): Record<string, unknown> {
   const custom = types.find((t) => t.id === item.type)?.custom ?? [];
   const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(item.fields)) {
+  const fields = calculated ? { ...item.fields, ...calculated } : item.fields;
+  for (const [key, value] of Object.entries(fields)) {
     const field = custom.find((f) => f.id === key);
     const label = field?.label;
     const linked =
@@ -171,7 +182,7 @@ function namedFields(
         ? byId.get(value)
         : undefined;
     // A name a built-in or another field already uses keeps the id, so nothing is overwritten.
-    out[label && !(label in item.fields) && !(label in out) ? label : key] = linked
+    out[label && !(label in fields) && !(label in out) ? label : key] = linked
       ? `#${linked.key} ${itemTitle(linked)}`
       : value;
   }
@@ -197,6 +208,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.linkType ? { linkType: f.linkType, linkTypes: linkTypesOf(f) } : {}),
       ...(f.kind === 'currency' ? { currency: f.currency ?? CURRENCY_DEFAULT } : {}),
       ...(f.kind === 'rating' ? { scale: ratingScaleOf(f) } : {}),
+      ...(f.kind === 'calculated' ? { calculation: f.calculation, readOnly: true as const } : {}),
       ...(f.onCard ? { onCard: true } : {}),
     })),
     ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),
@@ -253,6 +265,11 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
     };
   });
   const byId = new Map(state.items.map((i) => [i.id, i]));
+  // Calculated fields (docs/specs/026-plan/item-types.md "Calculated fields"), worked out from what was read, and only
+  // when a type has one.
+  const calc = hasCalculatedFields(plan.types)
+    ? { index: childIndexOf(state.items, plan.types), isDone: doneStatusesOf(plan.boards) }
+    : null;
   const items = [...state.items]
     .filter((i) => !filter.type || i.type === filter.type)
     .filter((i) => !filter.status || itemStatus(i) === filter.status)
@@ -264,7 +281,14 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
       status: itemStatus(i) ?? null,
       column: columnName(itemStatus(i), state),
       title: itemTitle(i),
-      fields: namedFields(i, plan.types, byId),
+      fields: namedFields(
+        i,
+        plan.types,
+        byId,
+        calc
+          ? calculatedValuesOf(i, typeIn(plan.types, i.type), calc.index, calc.isDone)
+          : undefined,
+      ),
     }));
   return {
     boards,

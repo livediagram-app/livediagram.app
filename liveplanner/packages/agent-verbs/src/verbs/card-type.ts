@@ -15,7 +15,16 @@ const typeOut = z.object({
   id: z.string(),
   name: z.string(),
   fields: z.array(z.string()),
-  custom: z.array(z.object({ id: z.string(), name: z.string(), kind: z.string() }).passthrough()),
+  custom: z.array(
+    z
+      .object({
+        id: z.string(),
+        name: z.string(),
+        kind: z.string(),
+        calculation: z.string().optional(),
+      })
+      .passthrough(),
+  ),
 });
 
 export const typeLs = defineVerb({
@@ -37,7 +46,12 @@ export const typeLs = defineVerb({
       types.map((t) => [
         t.id,
         JSON.stringify(t.name),
-        [...t.fields, ...t.custom.map((f) => `${f.name}:${f.kind} (${f.id})`)].join(', '),
+        [
+          ...t.fields,
+          ...t.custom.map(
+            (f) => `${f.name}:${f.kind}${f.calculation ? `=${f.calculation}` : ''} (${f.id})`,
+          ),
+        ].join(', '),
       ]),
     ),
   quiet: ({ types }) => types.map((t) => t.id),

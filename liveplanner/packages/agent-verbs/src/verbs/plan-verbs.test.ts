@@ -216,13 +216,19 @@ describe('verb edges', () => {
       ...ITEM_TYPES[1],
       id: 'bug',
       label: 'Bug',
-      custom: [{ id: 'f-sev', label: 'Severity', kind: 'text' }],
+      custom: [
+        { id: 'f-sev', label: 'Severity', kind: 'text' },
+        { id: 'f-n', label: 'Subtasks', kind: 'calculated', calculation: 'childCount' },
+      ],
+      fields: [...ITEM_TYPES[1].fields, 'f-sev', 'f-n'],
     };
     const { ctx } = ctxWith('', {
       [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, custom] },
     });
     const ls = await typeLs.run!(ctx, { project: DOC_A });
     expect(typeLs.text!(ls).at(-1)).toContain('Severity:text (f-sev)');
+    // A Calculated field names its calculation.
+    expect(typeLs.text!(ls).at(-1)).toContain('Subtasks:calculated=childCount (f-n)');
     const notJson = ctxWith('not json').ctx;
     await expect(typeApply.run!(notJson, { project: DOC_A, file: '-' })).rejects.toMatchObject({
       code: 'usage',
