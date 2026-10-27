@@ -25,7 +25,7 @@ export function CalculatedFieldValue({
       id={id}
       className="flex min-h-7 items-center gap-2 text-[13px] text-slate-700 dark:text-slate-200"
     >
-      <span className="flex shrink-0 text-slate-400 dark:text-slate-500" aria-hidden>
+      <span className="flex shrink-0 text-slate-400 dark:text-slate-400" aria-hidden>
         <CalculatorIcon />
       </span>
       {text ? (
