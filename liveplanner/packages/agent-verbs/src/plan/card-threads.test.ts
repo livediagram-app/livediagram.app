@@ -193,7 +193,7 @@ function writes(answer: (method: string, path: string) => Response) {
 describe('changing threads', () => {
   it('starts, replies, edits, resolves and reopens in order, each seeing the ones before', async () => {
     const made = thread('th-newnewnewnewnew1', { title: 'Priya: Started' });
-    const { api, sent } = writes((method, path) => {
+    const { api, sent } = writes((_method, path) => {
       if (path.endsWith('/items/card12/threads'))
         return Response.json({ thread: made, commentId: 'cm-1' });
       if (path.endsWith('/reopen')) return new Response(null, { status: 204 });
