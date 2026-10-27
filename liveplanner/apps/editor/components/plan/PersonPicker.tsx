@@ -6,7 +6,7 @@
 // disabled and has no custom row.
 import { Button, Select, TextInput } from '@liveplanner/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
-import { useRef, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import {
   CUSTOM_ASSIGNEE_NAME_MAX,
   isItemPerson,
@@ -34,15 +34,14 @@ export function PersonPicker({
   disabled: boolean;
   onSave: Save;
 }) {
-  const select = useRef<HTMLSelectElement>(null);
-  const [naming, setNaming] = useState(false);
+  // The select the Custom Assignee popover is open under, or null when it is shut.
+  const [naming, setNaming] = useState<HTMLSelectElement | null>(null);
   const current = isItemPerson(value) ? value : null;
   const options =
     current && !people.some((p) => p.id === current.id) ? [current, ...people] : people;
   return (
     <>
       <Select
-        ref={select}
         id={id}
         className="w-full"
         selectClassName="text-[13px]"
@@ -52,7 +51,7 @@ export function PersonPicker({
           if (e.target.value === CUSTOM_ASSIGNEE_OPTION) {
             // The select keeps showing who it is on until a name is added.
             e.target.value = current?.id ?? '';
-            setNaming(true);
+            setNaming(e.target);
             return;
           }
           const p = options.find((o) => o.id === e.target.value);
@@ -67,12 +66,12 @@ export function PersonPicker({
         ))}
         {disabled ? null : <option value={CUSTOM_ASSIGNEE_OPTION}>+ Custom Assignee</option>}
       </Select>
-      {naming && select.current ? (
+      {naming ? (
         <CustomAssigneePopover
-          anchor={select.current}
-          onClose={() => setNaming(false)}
+          anchor={naming}
+          onClose={() => setNaming(null)}
           onAdd={(name) => {
-            setNaming(false);
+            setNaming(null);
             track('Plan', 'Added', 'CustomAssignee');
             void onSave({ ...personNamed(name, options) });
           }}

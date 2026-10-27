@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import {
   assignedPeople,
   peopleKey,
@@ -17,11 +17,16 @@ export function usePlanPeople(
   teamPeople: readonly ItemPerson[],
   items: ReadonlyMap<string, Item>,
 ): readonly ItemPerson[] {
-  const kept = useRef<{ key: string; people: readonly ItemPerson[] } | null>(null);
-  return useMemo(() => {
-    const people = planPeople(self, teamPeople, assignedPeople([...items.values()]));
-    const key = peopleKey(people);
-    if (kept.current?.key !== key) kept.current = { key, people };
-    return kept.current.people;
-  }, [self, teamPeople, items]);
+  const fresh = useMemo(
+    () => planPeople(self, teamPeople, assignedPeople([...items.values()])),
+    [self, teamPeople, items],
+  );
+  const key = peopleKey(fresh);
+  // The list last handed on, kept until the people change (React's "storing information from previous renders").
+  const [kept, setKept] = useState({ key, people: fresh });
+  if (kept.key !== key) {
+    setKept({ key, people: fresh });
+    return fresh;
+  }
+  return kept.people;
 }
