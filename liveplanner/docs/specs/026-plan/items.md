@@ -346,6 +346,16 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
     included. A Viewer sees the picker disabled and no **+ Custom Assignee**.
   - **Everything that groups by person** (swimlanes, the Assignee filter, workload, the People tile) treats a custom
     assignee as a person: they get their own lane, filter option and bar.
+  - **Accounts are marked**: in the Assignee picker's open list, and only there, every person who is a
+    liveworkspace identity (anyone not `n-`: you, the plan's team, and anyone the cards hold who was assigned that
+    way) carries a small liveworkspace mark to the left of their name: the prism glyph every app's logo is, in the
+    platform's slate, 12 px, with the tooltip and accessible name **liveworkspace account**. A custom assignee
+    carries nothing (an empty space of the same width, so the names line up). Nowhere else shows it: not the closed
+    field, card faces, the @-mention list or any other list of people. The picker is a list of its own rather than a
+    native select so a row can hold the mark: the closed field shows the current assignee (or **No one**) and a
+    chevron; opening it (a press, or Enter, Space, Up or Down) drops a list under the field, in place: **No one**, the
+    people, then **+ Custom Assignee** (for someone who may edit the card), the current choice in bold; Up and Down
+    move, Enter picks, Escape or a press outside closes it. One inline SVG a row, no image requests.
   - **Never a person to notify**: a custom assignee has no account, so no email, no Inbox row (the cards push skips
     `n-` ids instead of counting them as people it could not name), and **Only Mine** never matches them.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's

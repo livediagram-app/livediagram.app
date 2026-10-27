@@ -263,8 +263,17 @@ the items too.
   (`assignedPeople`), once each by id (the first source wins), sorted by name. The assigned list is recomputed when
   the item map changes and the result is kept by a key of its ids and names, so a write that changes no assignee
   hands the context the same array.
-- **Custom assignee**: `PersonPicker` adds a last `<option value="__custom__">+ Custom Assignee</option>` when not
-  disabled; picking it keeps the select's value and opens `CustomAssigneePopover` under the select. Add (or Enter,
+- **Person list** (`PersonPicker`): a trigger button (`aria-haspopup="listbox"`, named `Assignee: <name>`, the
+  current person's name and a chevron, no mark) over an in-place `role="listbox"`
+  (`aria-activedescendant`): `None` (**No one**), the options (the current person first when not among the people,
+  then the people), then `CUSTOM_ASSIGNEE_OPTION` (**+ Custom Assignee**) when not disabled. Opens on press, Enter,
+  Space, ArrowUp/Down at the current choice; ArrowUp/Down move, Enter picks, Escape (capture, before the panel's)
+  and `useClickOutside` close, Tab closes without refocus. `AccountMark` (`components/plan/AccountMark.tsx`):
+  `BrandGlyph` from `@liveworkspace/brand` (re-exported by `@liveplanner/ui`) at 12 px in `text-slate-500 dark:text-slate-400`, `role="img"` named `ACCOUNT_MARK_LABEL` ("liveworkspace account") with that Tooltip;
+  drawn before the name in each list row whose person is not `isNamedPerson` (a same-width spacer otherwise), and
+  nowhere else.
+- **Custom assignee**: `PersonPicker`'s last row **+ Custom Assignee** when not disabled; picking it keeps the
+  current value and opens `CustomAssigneePopover` under the trigger. Add (or Enter,
   the trimmed name non-empty) calls `onSave(personNamed(name, people))`; Escape, Cancel or a press outside close it
   unsaved. `personNamed` matches an existing person by `statusKey` of the name before minting `n-<slug>`.
 - **Cards push**: `cardsPushOf` hands `cardsCollabPush` no assignee for an `n-` id (`isNamedPerson`), so a custom
@@ -526,6 +535,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Five slots across a maximised board                         | `apps/editor/components/plan/plan-board-columns.test.ts`                                                                                                    |
 | Option list roles, keys, menu items                         | `apps/editor/components/plan/OptionRows.test.tsx`                                                                                                           |
 | Custom assignee: offered when editable, made, reused, roles | `apps/editor/components/plan/PersonPicker.test.tsx`, `packages/items/src/plan-people.test.ts`                                                               |
+| Accounts marked in the picker's list only                   | `apps/editor/components/plan/PersonPicker.test.tsx`                                                                                                         |
 | Cards push skips custom assignees                           | `apps/api/src/plan-room/plan-outbox.test.ts`                                                                                                                |
 | Edge auto-scroll math and drag wiring                       | `apps/editor/hooks/plan/edge-auto-scroll.test.ts`                                                                                                           |
 | Map hidden while covered                                    | `apps/editor/components/canvas/view-readers.minimap.test.tsx`                                                                                               |
