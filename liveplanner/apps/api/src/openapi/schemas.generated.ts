@@ -2269,6 +2269,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "linkType": {
         "type": "string"
       },
+      "linkTypes": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "onCard": {
         "type": "boolean"
       },

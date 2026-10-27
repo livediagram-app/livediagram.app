@@ -26,6 +26,7 @@ import {
   type PlanBoardOutline,
   boardSortText,
   sortCards,
+  linkTypesOf,
 } from '@liveplanner/items';
 import type { PlanState } from './plan-state';
 
@@ -75,6 +76,8 @@ export interface ListedType {
     kind: string;
     options?: readonly string[];
     linkType?: string;
+    // Every card type a Card field links to, linkType first.
+    linkTypes?: readonly string[];
     currency?: string;
     // A Rating field's top score.
     scale?: number;
@@ -191,7 +194,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       name: f.label,
       kind: f.kind,
       ...(f.options ? { options: f.options } : {}),
-      ...(f.linkType ? { linkType: f.linkType } : {}),
+      ...(f.linkType ? { linkType: f.linkType, linkTypes: linkTypesOf(f) } : {}),
       ...(f.kind === 'currency' ? { currency: f.currency ?? CURRENCY_DEFAULT } : {}),
       ...(f.kind === 'rating' ? { scale: ratingScaleOf(f) } : {}),
       ...(f.onCard ? { onCard: true } : {}),

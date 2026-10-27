@@ -60,7 +60,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | `color`            | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                     |
 | `icon`             | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                   |
 | `fields`           | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                             |
-| `custom`           | Its custom fields: `{ id, label, kind, options?, linkType?, onCard? }` (`linkType`: a Card field's target card type id)                                                                                                                         |
+| `custom`           | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, onCard? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several)                                                     |
 | `tabs`             | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields |
 | `detailsLabel`     | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                            |
 | `excludedStatuses` | The statuses (ids) cards of this type do not use, up to 64 (a project's boards may name more; the type editor stops at 64). Absent: every status. A status added later is open to every type                                                    |
@@ -140,26 +140,31 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     item store keeps for any field. People are assigned with the built-in Assignee field, so there is no custom
     person kind. Their values are ordinary entries in the item's `fields`, under the custom
     field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
-- **Card fields** link a card to one other card, of the card type the field names (`linkType`): an Objective's
-  **Owner** links to a Person. The value is that card's id. **Parent** is one of them: Task (and the Bug and Story
-  [ready-made types](plan-templates.md#ready-made-card-types)) carries a Card field named **Parent**, linking to Projects, under the one custom id
-  without `f-`, `parent`, so every card made before keeps its parent. Like any custom field it can be renamed,
-  linked to another type or removed, and another type can add one. A project whose stored catalogue named
-  `parent` as a built-in field reads it as this Card field. Every Card field uses one control and one way of listing
-  what links where:
+- **Card fields** link a card to one other card, of any of the card types the field names: an Objective's
+  **Owner** links to a Person, and a Task's **Parent** may link to a Project or an Epic. The value is that card's id.
+  - **Its card types**: one or more (up to the catalogue's 32), in the order they were ticked. Stored as `linkType`,
+    the first, and, when there are several, `linkTypes`, all of them (the first included), so a field saved with one
+    type reads exactly as before and an older editor or agent reading a field of several still finds a type it can
+    link to. A field with no `linkTypes` (every field saved before) links to its `linkType` alone. Should the two
+    disagree (an older editor changed `linkType` alone), `linkType` wins: the field links to it alone. **Parent** is one of them: Task (and the Bug and Story
+    [ready-made types](plan-templates.md#ready-made-card-types)) carries a Card field named **Parent**, linking to Projects, under the one custom id
+    without `f-`, `parent`, so every card made before keeps its parent. Like any custom field it can be renamed,
+    linked to another type or removed, and another type can add one. A project whose stored catalogue named
+    `parent` as a built-in field reads it as this Card field. Every Card field uses one control and one way of listing
+    what links where:
   - **The control** (the card panel): one bordered field the width of its row, showing the linked card's type
     glyph in its colour, its own colour dot when it has one, its number as a quiet tag and its full title (cut only
     at the field's end, the whole "#1 Title" in a tooltip), a chevron, and an open arrow at its end (inside the
     same border, tooltip "Open #1 Title") that opens the linked card in the panel. Empty, it reads **None**,
     muted; a link whose card is gone reads **Missing card**. Pressing it (or Enter, Space or an arrow key) drops
-    a list under it: **None**, then the live cards of the linked type in number order (never the card itself, nor
+    a list under it: **None**, then the live cards of every linked type in number order (never the card itself, nor
     a trashed or archived card), each with its glyph, number and title; with more than 8 a filter leads the list
     (by number or title). The list is the field's width (the side column clips anything wider), and
     each card shows its whole title, wrapping onto up to three lines; a
     longer title ends in an ellipsis at the third, and a long unbroken word breaks rather than overflow. Each option's
     accessible name is its full number and title. The arrows move, Enter picks, Escape closes the list (not the card), and a press outside
     closes it. Its accessible name is the field's ("Parent", "Owner").
-  - **On the linked card**: for every Card field that links to the card's type (Parent included: a Project's
+  - **On the linked card**: for every Card field whose card types include the card's type (Parent included: a Project's
     "Linked as Parent" lists the cards under it), a **Linked as {Field}** section ("Linked as Owner") listing the cards
     pointing here (glyph, number, title, Archived, status, assignee; pressed, each opens), its count, an empty
     note ("No cards link here as Owner yet."), and **New {Type}** for each type whose field links here: it makes
@@ -170,12 +175,15 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     more than one, and a **State** menu ("All states", then each state it holds, "No status" last) when it holds
     more than one; both start at All, are each viewer's own and unsaved, and while one narrows the list "N of M"
     shows beside them. A filter matching nothing shows the shared empty state, "No cards match these filters", with **Clear Filters**.
-  - **On the card face**: a Card field placed by the type's Display reads its linked card's title with the linked
+  - **On the card face**: a Card field placed by the type's Display reads its linked card's title with that card's
     type's glyph, in its colour.
-  - **Boards** can lay their rows by a Card field (Swimlanes by a field): a row per linked card (named by its
-    title, in number order) and **No {Field}**; dropping a card into a row sets the link.
+  - **Boards** can lay their rows by a Card field (Swimlanes by a field): a row per linked card, of whichever of
+    its types (named by its title, in number order), and **No {Field}**; dropping a card into a row sets the link.
+    One field of several types is one set of rows, so a board needs no second field per type. The Swimlanes tile
+    draws the linked type's glyph when the field has one type, else the Link to Card glyph.
   - Deleting, trashing or archiving a linked card never clears the links: they read **Missing card** until the
-    card is back or the link is changed. A Card field whose type is gone from the catalogue keeps its `linkType`.
+    card is back or the link is changed. A Card field whose type is gone from the catalogue keeps it among its
+    types, and an unticked type is never taken off a card already linked to one of its cards.
 - **Tabs**: a type has up to **6 tabs**, each with a name of 1 to 24 characters, unique in the type ignoring
   case. A field sits in at most one tab. Title is never in a tab: it heads the panel. With one tab the panel shows
   its fields without a tab bar.
@@ -329,7 +337,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     within its group: the row follows the pointer, the rows it passes slide aside, release places it and Escape
     puts it back. Title, Status and Votes have no handle, and every row keeps its slot so the names line up.
     The row ends with a custom field's **Edit** (a pencil), which opens its name, its options (Choice), its
-    **Links To** (Card) in its row, and a **⋯** menu headed by the field's name: **Move
+    **Links To** (Card, below) in its row, and a **⋯** menu headed by the field's name: **Move
     Up** and **Move Down** (the keyboard's way to reorder), **Move to {group}** for each other group (Details
     first, then the tabs) and **Remove** (absent for a field the type always keeps). Title has no menu.
   - Each group ends with **Add Field**, a full-width dashed row (as **Add Type** in the panel), which opens a
@@ -338,9 +346,16 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Currency, Date, Checkbox, Link, Email, Choice, Multiple Choice, Rating, **Link to Card**; one radio group), then
     the options, one a line, for Choice and Multiple Choice, its **Scale** ("Out of 3" to "Out of 10", 5 first
     chosen) for Rating, its **Currency** (a select of the common codes, GBP first) for Currency, or for
-    Link to Card **Links To** a card type (required), and a **Preview** of the field as the card's panel will show it:
-    its name as typed ("Field name" until then) beside a sample value of its kind (Choice shows its first option,
-    Link to Card the linked type's name). The field lands in that group
+    Link to Card **Links To** its card types (at least one), and a **Preview** of the field as the card's panel will
+    show it: its name as typed ("Field name" until then) beside a sample value of its kind (Choice shows its first
+    option, Link to Card the linked types' names, "Project or Epic").
+  - **Links To** is a multi-select dropdown: a field the width of its row reading **Links To Project** (one type),
+    **Links To Project or Epic** (two), **Links To Project, Epic and 2 more** (more), or **Links To a Card Type…**
+    (muted, none yet), with a chevron. Pressed, it opens a popover under it listing every card type (its glyph in its
+    colour, its name), each a checkbox row: ticking adds the type, unticking takes it off, and the popover stays open
+    for more. A ticked type the project no longer has keeps a row after the others, named by its id, so it can be
+    unticked. The last ticked type cannot be unticked (its row is disabled), so a field always links somewhere.
+    Escape, a press outside or the field again close it. Its accessible name is "Links To". The field lands in that group
     (Votes always on the card). **Add Tab**, the same full-width dashed row under the groups, adds an unnamed tab.
   - **States**: every status the project's boards name, and any a card is in that no board names, grouped by the
     board that shows it: a group per board (All Cards and Archive boards aside), headed by the board's title as it

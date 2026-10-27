@@ -4,6 +4,7 @@ import { item } from './test-items';
 import { linkCandidates, linkFieldsOfType, linkText, linkedCardsOf } from './card-links';
 import { laneDropPatch, laneGroups } from './board';
 import { readItemTypeCatalogue } from './type-catalogue';
+import { linkTypesOf, withLinkTypes } from './item-types';
 
 // docs/specs/026-plan/item-types.md "Card fields": an Objective's Owner links to one Person.
 const person: ItemTypeDef = {
@@ -42,7 +43,7 @@ describe('card links', () => {
 
   it('lists a type’s link fields, Parent among them', () => {
     expect(linkFieldsOfType(objective)).toEqual([
-      { id: 'f-owner', label: 'Owner', linkType: 'person' },
+      { id: 'f-owner', label: 'Owner', linkTypes: ['person'] },
     ]);
     expect(linkFieldsOfType(ITEM_TYPES[1]).map((f) => f.id)).toContain('parent');
   });
@@ -51,14 +52,14 @@ describe('card links', () => {
     const sam = item({ title: 'Sam' }, { type: 'person' });
     const gone = item({ title: 'Gone', archived: true }, { type: 'person' });
     const goal = item({ title: 'Grow' }, { type: 'objective' });
-    expect(linkCandidates([sam, gone, goal], 'person').map((i) => i.id)).toEqual([sam.id]);
-    expect(linkCandidates([sam], 'person', sam.id)).toEqual([]);
+    expect(linkCandidates([sam, gone, goal], ['person']).map((i) => i.id)).toEqual([sam.id]);
+    expect(linkCandidates([sam], ['person'], sam.id)).toEqual([]);
   });
 
   it('lists the candidates in card number order', () => {
     const late = item({ title: 'Late' }, { type: 'person', key: 9 });
     const early = item({ title: 'Early' }, { type: 'person', key: 2 });
-    expect(linkCandidates([late, early], 'person').map((i) => i.key)).toEqual([2, 9]);
+    expect(linkCandidates([late, early], ['person']).map((i) => i.key)).toEqual([2, 9]);
   });
 
   it('groups the cards pointing at a card by the field they point through', () => {
@@ -117,5 +118,107 @@ describe('card links', () => {
     expect(linkText(items, ada.id)).toBe('Missing card');
     const back = { ...sam, fields: { title: 'Sam Reed', status: 'todo' } };
     expect(linkText(new Map([[back.id, back]]), back.id)).toBe('Sam Reed');
+  });
+
+  // docs/specs/026-plan/item-types.md "Card fields": one field, several card types.
+  describe('a Card field of several types', () => {
+    const team: ItemTypeDef = { ...person, id: 'team', label: 'Team', newTitle: 'New team' };
+    const multi: ItemTypeDef = {
+      ...objective,
+      custom: [
+        {
+          id: 'f-owner',
+          label: 'Owner',
+          kind: 'card',
+          linkType: 'person',
+          linkTypes: ['person', 'team'],
+        },
+      ],
+    };
+    const all = [...ITEM_TYPES, person, team, multi];
+
+    it('reads its types, and an older field as its one linkType', () => {
+      expect(linkTypesOf(multi.custom![0]!)).toEqual(['person', 'team']);
+      expect(linkTypesOf({ linkType: 'person' })).toEqual(['person']);
+      expect(linkTypesOf({})).toEqual([]);
+      // An older editor re-pointed linkType alone: linkType wins.
+      expect(linkTypesOf({ linkType: 'project', linkTypes: ['person', 'team'] })).toEqual([
+        'project',
+      ]);
+    });
+
+    it('stores linkType as the first and linkTypes only when there are several', () => {
+      const base = { id: 'f-x', label: 'X', kind: 'card' as const };
+      expect(withLinkTypes(base, ['team', 'person', 'team'])).toEqual({
+        ...base,
+        linkType: 'team',
+        linkTypes: ['team', 'person'],
+      });
+      expect(withLinkTypes({ ...base, linkTypes: ['a', 'b'] }, ['person'])).toEqual({
+        ...base,
+        linkType: 'person',
+      });
+      expect(withLinkTypes({ ...base, linkType: 'person' }, [])).toEqual(base);
+    });
+
+    it('reads and normalises a stored field of several types, refusing a bad list', () => {
+      const read = readItemTypeCatalogue({ version: 1, types: [person, team, multi] });
+      expect(read?.types[2]?.custom?.[0]).toMatchObject({
+        linkType: 'person',
+        linkTypes: ['person', 'team'],
+      });
+      const one = {
+        ...multi,
+        custom: [{ ...multi.custom![0]!, linkTypes: ['person', 'person'] }],
+      };
+      const readOne = readItemTypeCatalogue({ version: 1, types: [person, one] });
+      expect(readOne?.types[1]?.custom?.[0]).toEqual({
+        id: 'f-owner',
+        label: 'Owner',
+        kind: 'card',
+        linkType: 'person',
+      });
+      for (const bad of [
+        [],
+        'person',
+        ['Not A Type'],
+        Array.from({ length: 33 }, (_, i) => `t${i}`),
+      ]) {
+        const broken = { ...multi, custom: [{ ...multi.custom![0]!, linkTypes: bad }] };
+        expect(readItemTypeCatalogue({ version: 1, types: [person, broken] })).toBeNull();
+      }
+    });
+
+    it('offers cards of every type it links to, and lists both types', () => {
+      const sam = item({ title: 'Sam' }, { type: 'person', key: 3 });
+      const ops = item({ title: 'Ops' }, { type: 'team', key: 1 });
+      const goal = item({ title: 'Grow' }, { type: 'objective', key: 2 });
+      expect(linkCandidates([sam, ops, goal], ['person', 'team']).map((i) => i.key)).toEqual([
+        1, 3,
+      ]);
+      expect(linkFieldsOfType(multi)).toEqual([
+        { id: 'f-owner', label: 'Owner', linkTypes: ['person', 'team'] },
+      ]);
+    });
+
+    it('groups the cards pointing at a card of either type', () => {
+      const ops = item({ title: 'Ops' }, { type: 'team' });
+      const sam = item({ title: 'Sam' }, { type: 'person' });
+      const a = item({ title: 'Grow', 'f-owner': ops.id }, { type: 'objective' });
+      const b = item({ title: 'Hire', 'f-owner': sam.id }, { type: 'objective' });
+      const items = new Map([ops, sam, a, b].map((i) => [i.id, i]));
+      expect(linkedCardsOf(ops, items, all)[0]!.cards.map((c) => c.id)).toEqual([a.id]);
+      expect(linkedCardsOf(sam, items, all)[0]!.cards.map((c) => c.id)).toEqual([b.id]);
+    });
+
+    it('lanes a board by it, one row per linked card of either type', () => {
+      const ops = item({ title: 'Ops' }, { type: 'team', key: 1 });
+      const sam = item({ title: 'Sam' }, { type: 'person', key: 2 });
+      const a = item({ title: 'Grow', 'f-owner': ops.id }, { type: 'objective' });
+      const b = item({ title: 'Hire', 'f-owner': sam.id }, { type: 'objective' });
+      const items = new Map([ops, sam, a, b].map((i) => [i.id, i]));
+      const g = laneGroups('field', 'f-owner', [a, b], items, all);
+      expect(g.lanes.map((l) => l.label)).toEqual(['Ops', 'Sam']);
+    });
   });
 });

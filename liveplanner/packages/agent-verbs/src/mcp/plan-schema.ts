@@ -223,7 +223,7 @@ const customField = z.object({
       'text (one line), longtext (paragraphs, in a panel tab), number, currency (an amount in the field’s ' +
         'currency, shown as "£12,500"), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
         'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
-        'whole number from 1 to its scale, drawn as stars) or card (one card of linkType, as "#12").',
+        'whole number from 1 to its scale, drawn as stars) or card (one card of its linkTypes, as "#12").',
     ),
   options: z
     .array(z.string())
@@ -236,7 +236,15 @@ const customField = z.object({
     .max(10)
     .optional()
     .describe('A rating field’s top score, 3 to 10; 5 when left out.'),
-  linkType: typeArg.optional().describe('A card field’s target card type.'),
+  linkType: typeArg
+    .optional()
+    .describe('A card field’s target card type (one; or give linkTypes).'),
+  linkTypes: z
+    .array(typeArg)
+    .optional()
+    .describe(
+      'A card field’s target card types, one or more; merged after linkType when both are given.',
+    ),
   currency: z
     .string()
     .optional()
@@ -307,6 +315,10 @@ const customFieldEdit = z.object({
     .array(z.string())
     .optional()
     .describe('A choice or multichoice field’s options, replaced whole.'),
+  linkTypes: z
+    .array(typeArg)
+    .optional()
+    .describe('A card field’s target card types, replaced whole (one or more).'),
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
   onCard: z.boolean().optional(),
 });
@@ -405,7 +417,11 @@ const listedCustom = z.object({
     ),
   options: z.array(z.string()).optional().describe('A choice or multichoice field’s options.'),
   scale: z.number().optional().describe('A rating field’s top score.'),
-  linkType: z.string().optional().describe('A card field’s target card type id.'),
+  linkType: z.string().optional().describe('A card field’s first target card type id.'),
+  linkTypes: z
+    .array(z.string())
+    .optional()
+    .describe('Every card type id a card field links to, linkType first.'),
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
   onCard: z.boolean().optional().describe('Drawn on Detailed cards by default.'),
 });

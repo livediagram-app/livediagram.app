@@ -145,6 +145,103 @@ describe('applyCardTypeChanges: add', () => {
   });
 });
 
+// docs/specs/026-plan/plan-agents.md "Changing card types": a Card field of several card types.
+describe('applyCardTypeChanges: card fields of several types', () => {
+  it('adds one linking to every type named, linkType first, each once', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'add',
+            name: 'Risk',
+            custom: [
+              { name: 'Owner', kind: 'card', linkType: 'Project', linkTypes: ['task', 'Project'] },
+              { name: 'About', kind: 'card', linkTypes: ['Task'] },
+            ],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const risk = r.catalogue!.types.find((t) => t.id === 'risk')!;
+    expect(risk.custom).toEqual([
+      {
+        id: 'f-owner',
+        label: 'Owner',
+        kind: 'card',
+        linkType: 'project',
+        linkTypes: ['project', 'task'],
+      },
+      { id: 'f-about', label: 'About', kind: 'card', linkType: 'task' },
+    ]);
+    expect(validateItemTypeCatalogue(r.catalogue).ok).toBe(true);
+  });
+
+  it('replaces a Card field’s types in place, and refuses them on any other kind or empty', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'set',
+            type: 'Task',
+            editCustom: [{ field: 'Parent', linkTypes: ['Project', 'Task'] }],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const parent = r
+      .catalogue!.types.find((t) => t.id === 'task')!
+      .custom!.find((f) => f.id === 'parent');
+    expect(parent).toMatchObject({ linkType: 'project', linkTypes: ['project', 'task'] });
+    const back = ok(
+      applyCardTypeChanges(
+        r.catalogue,
+        [{ op: 'set', type: 'Task', editCustom: [{ field: 'Parent', linkTypes: ['Project'] }] }],
+        statuses,
+      ),
+    );
+    expect(
+      back.catalogue!.types.find((t) => t.id === 'task')!.custom!.find((f) => f.id === 'parent'),
+    ).toEqual({
+      id: 'parent',
+      label: 'Parent',
+      kind: 'card',
+      linkType: 'project',
+    });
+    const withText = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'add', name: 'Bug', custom: [{ name: 'Severity', kind: 'text' }] }],
+        statuses,
+      ),
+    ).catalogue;
+    expect(
+      applyCardTypeChanges(
+        withText,
+        [{ op: 'set', type: 'Bug', editCustom: [{ field: 'Severity', linkTypes: ['Task'] }] }],
+        statuses,
+      ),
+    ).toMatchObject({ ok: false, code: 'type_change_invalid' });
+    expect(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'Task', editCustom: [{ field: 'Parent', linkTypes: [] }] }],
+        statuses,
+      ),
+    ).toMatchObject({ ok: false, code: 'type_change_invalid' });
+    expect(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'Task', editCustom: [{ field: 'Parent', linkTypes: ['Epic'] }] }],
+        statuses,
+      ),
+    ).toMatchObject({ ok: false, code: 'type_unknown' });
+  });
+});
+
 describe('applyCardTypeChanges: set, delete, restore', () => {
   const withBug = ok(
     applyCardTypeChanges(

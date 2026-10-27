@@ -73,9 +73,33 @@ describe('listedType', () => {
     });
     expect(deal.custom).toEqual([
       { id: 'f-v', name: 'Value', kind: 'currency', currency: 'GBP' },
-      { id: 'f-c', name: 'Company', kind: 'card', linkType: 'project' },
+      { id: 'f-c', name: 'Company', kind: 'card', linkType: 'project', linkTypes: ['project'] },
       { id: 'f-r', name: 'Fit', kind: 'rating', scale: 5 },
       { id: 'f-n', name: 'Score', kind: 'rating', scale: 10 },
+    ]); // A Card field of several types lists them all (docs/specs/026-plan/plan-agents.md).
+    const risk = listedType({
+      ...ITEM_TYPES[1],
+      id: 'risk',
+      label: 'Risk',
+      fields: ['title', 'status', 'f-o'],
+      custom: [
+        {
+          id: 'f-o',
+          label: 'Owner',
+          kind: 'card',
+          linkType: 'project',
+          linkTypes: ['project', 'task'],
+        },
+      ],
+    });
+    expect(risk.custom).toEqual([
+      {
+        id: 'f-o',
+        name: 'Owner',
+        kind: 'card',
+        linkType: 'project',
+        linkTypes: ['project', 'task'],
+      },
     ]);
   });
 });

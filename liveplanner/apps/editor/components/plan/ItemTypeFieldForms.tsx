@@ -18,10 +18,13 @@ import {
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
+  linkTypesOf,
+  withLinkTypes,
 } from '@liveplanner/items';
 import { Button, CloseIcon, PlusIcon, Select, TextArea, TextInput } from '@liveplanner/ui';
 import { CustomFieldKindTiles, CustomFieldPreview } from './CustomFieldKindParts';
 import { usePlan } from './PlanContext';
+import { LinksToPicker, linkTypeNames } from './LinksToPicker';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   title: 'Title',
@@ -143,35 +146,7 @@ function RatingScaleSelect({
   );
 }
 
-function LinksToSelect({
-  value,
-  onChange,
-}: {
-  value: string | undefined;
-  onChange: (linkType: string) => void;
-}) {
-  const types = usePlan()?.types ?? ITEM_TYPES;
-  return (
-    <Select
-      aria-label="Links To"
-      className="w-full"
-      selectClassName="text-[13px]"
-      value={value ?? ''}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="" disabled>
-        Links To a Card Type…
-      </option>
-      {types.map((t) => (
-        <option key={t.id} value={t.id}>
-          Links To {t.label}
-        </option>
-      ))}
-    </Select>
-  );
-}
-
-// A custom field's name, options (Choice) and the type it links to (Card); where it shows on a card is the
+// A custom field's name, options (Choice) and the types it links to (Card); where it shows on a card is the
 // Display tab's.
 export function CustomFieldForm({
   field,
@@ -193,7 +168,14 @@ export function CustomFieldForm({
         onChange={(e) => onChange({ label: e.target.value })}
       />
       {field.kind === 'card' ? (
-        <LinksToSelect value={field.linkType} onChange={(linkType) => onChange({ linkType })} />
+        <LinksToPicker
+          value={linkTypesOf(field)}
+          onChange={(ids) => {
+            // Both keys always, so the patch clears a list a single type no longer needs.
+            const { linkType, linkTypes } = withLinkTypes(field, ids);
+            onChange({ linkType, linkTypes });
+          }}
+        />
       ) : null}
       {field.kind === 'currency' ? (
         <CurrencySelect value={field.currency} onChange={(currency) => onChange({ currency })} />
@@ -238,7 +220,7 @@ export function NewFieldForm({
   const ready =
     custom.label.trim().length > 0 &&
     (!hasOptions(custom.kind) || (custom.options?.length ?? 0) > 0) &&
-    (custom.kind !== 'card' || !!custom.linkType);
+    (custom.kind !== 'card' || linkTypesOf(custom).length > 0);
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-900">
       {missing.length > 0 ? (
@@ -300,16 +282,20 @@ export function NewFieldForm({
             />
           ) : null}
           {custom.kind === 'card' ? (
-            <LinksToSelect
-              value={custom.linkType}
-              onChange={(linkType) => setCustom({ ...custom, linkType })}
+            <LinksToPicker
+              value={linkTypesOf(custom)}
+              onChange={(ids) => setCustom(withLinkTypes(custom, ids))}
             />
           ) : null}
           <CustomFieldPreview
             label={custom.label}
             kind={custom.kind}
             options={custom.options ?? []}
-            linkLabel={types.find((t) => t.id === custom.linkType)?.label}
+            linkLabel={
+              linkTypeNames(
+                linkTypesOf(custom).map((id) => types.find((t) => t.id === id)?.label ?? id),
+              ) || undefined
+            }
             currency={custom.currency}
             scale={custom.scale}
           />
@@ -330,7 +316,7 @@ export function NewFieldForm({
                 label: custom.label.trim(),
                 ...(hasOptions(custom.kind) ? {} : { options: undefined }),
                 ...(custom.kind === 'rating' ? {} : { scale: undefined }),
-                ...(custom.kind === 'card' ? {} : { linkType: undefined }),
+                ...(custom.kind === 'card' ? {} : { linkType: undefined, linkTypes: undefined }),
                 ...(custom.kind === 'currency' ? {} : { currency: undefined }),
               })
             }
