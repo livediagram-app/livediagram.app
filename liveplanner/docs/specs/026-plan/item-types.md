@@ -159,9 +159,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     muted; a link whose card is gone reads **Missing card**. Pressing it (or Enter, Space or an arrow key) drops
     a list under it: **None**, then the live cards of every linked type in number order (never the card itself, nor
     a trashed or archived card), each with its glyph, number and title; with more than 8 a filter leads the list
-    (by number or title). The list is the field's width (the side column clips anything wider), and
-    each card shows its whole title, wrapping onto up to three lines; a
-    longer title ends in an ellipsis at the third, and a long unbroken word breaks rather than overflow. Each option's
+    (by number or title). The list is drawn over the page, never clipped by the side column: at least 20rem (320 px)
+    wide, wider when the field is, never wider than the window less a 8 px gutter each side (so on a phone it spans
+    the screen); it starts at the field's left edge, moving left to stay on screen, and opens below the field, or
+    above it when there is more room there, scrolling within the room it has. Each card shows its title on up to
+    two lines; a longer title ends in an ellipsis at the second (its full number and title in a tooltip), and a long
+    unbroken word breaks rather than overflow. Each option's
     accessible name is its full number and title. The arrows move, Enter picks, Escape closes the list (not the card), and a press outside
     closes it. Its accessible name is the field's ("Parent", "Owner").
   - **On the linked card**: for every Card field whose card types include the card's type (Parent included: a Project's
