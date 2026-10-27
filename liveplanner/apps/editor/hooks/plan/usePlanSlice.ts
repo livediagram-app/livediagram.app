@@ -40,6 +40,7 @@ import type { ItemCommentAction } from '@/lib/api/items';
 import type { ItemTypesSlice } from './useItemTypes';
 import { planBoardTarget } from './plan-board-targets';
 import { useTypeForBoard } from './useTypeForBoard';
+import { usePlanPeople } from './usePlanPeople';
 import { tabNamedForBoard, tabNamedForView } from '@/lib/tab-named-plan';
 import type { StatusBoard } from './usePlanStatusNames';
 
@@ -165,15 +166,9 @@ export function usePlanSlice(opts: {
     [setTypeForBoard],
   );
 
-  const people = useMemo(() => {
-    const byId = new Map<string, ItemPerson>();
-    const self = planItems.self;
-    if (self) byId.set(self.id, self);
-    // Your teams' members only (docs/specs/026-plan/items.md "Who may do what"); a card's current assignee
-    // who is not among them still shows in its own picker.
-    for (const p of opts.teamPeople) if (!byId.has(p.id)) byId.set(p.id, p);
-    return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
-  }, [planItems.self, opts.teamPeople]);
+  // You, your teams' members and the plan's custom assignees (usePlanPeople); a card's current assignee who is
+  // not among them still shows in its own picker.
+  const people = usePlanPeople(planItems.self, opts.teamPeople, planItems.items);
 
   const write = planItems.write;
 

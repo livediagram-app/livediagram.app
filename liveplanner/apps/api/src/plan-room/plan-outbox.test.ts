@@ -284,6 +284,26 @@ describe('the cards push', () => {
     expect(rows(db, 'SELECT person_id FROM known_people')).toEqual([{ person_id: 'user_b' }]);
   });
 
+  it('leaves a custom assignee out of the push, never counting them as unmatched', async () => {
+    const db = plan();
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    await insertItems(db.env, 'P', [
+      await card('c1', 1, {
+        status: 'new',
+        assignee: { id: 'n-casey', name: 'Casey', color: '#000' },
+      }),
+      await card('c2', 2, { status: 'new', assignee: await person('owner') }),
+    ]);
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    expect(info.mock.calls.some(([tag]) => tag === '[outbox] cards-unmatched')).toBe(false);
+    info.mockRestore();
+    const cards = index.collab.find((c) => c.tab === '~cards')!.push;
+    expect(cards.actions.map((a) => [a.actionId, a.assigneeId])).toEqual([['c2', 'owner']]);
+  });
+
   it('pushes 1,000 cards among 500 known people within budget', async () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);

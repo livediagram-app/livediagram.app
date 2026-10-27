@@ -12,6 +12,7 @@ import {
   itemPersonId,
   itemStatus,
   itemTitle,
+  isNamedPerson,
   typesOf,
   type Item,
   type ItemTypeCatalogue,
@@ -99,7 +100,10 @@ export async function cardsPushOf(env: PlanEnv, planId: string): Promise<CardsPu
     if (item.fields[ARCHIVED_FIELD] === true) continue;
     const status = itemStatus(item);
     if (status === 'trash') continue;
-    const assignee = itemAssignee(item);
+    // A custom assignee (an `n-` named person) is nobody the index could name: never listed, never counted as
+    // unmatched (docs/specs/026-plan/items.md "Custom assignees").
+    const held = itemAssignee(item);
+    const assignee = held && !isNamedPerson(held) ? held : undefined;
     const thread = threadOf(item);
     const comments = Array.isArray(thread?.comments) ? thread.comments : [];
     // Listed for its assignee while open; a linked card's action is listed already
