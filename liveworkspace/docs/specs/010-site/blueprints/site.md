@@ -51,7 +51,8 @@ link inside it, while the card is shut, is a tap when `isTouchTap(event)` says s
 (`detail === 0`), a `pointerType` of `touch` when the browser gives one, and otherwise
 `matchMedia('(pointer: coarse)')` (SITE4). A tap cancels the navigation, keeps the link's `href` and opens the card
 (`openMenu('checked')`, as a chevron click does). While that `href` is kept, the current site's row links to it in
-place of its usual address, so home is still reachable; a mouse- or keyboard-opened card is unchanged. With the card
+place of its usual address, so home is still reachable; until then (and always, with a mouse or the keyboard) every
+row is unchanged. With the card
 open, a tap on the logo is not intercepted and follows the link. Outside taps close it through `useClickOutside`, as
 before.
 

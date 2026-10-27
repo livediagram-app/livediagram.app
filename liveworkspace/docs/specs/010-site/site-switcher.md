@@ -23,8 +23,8 @@ liveworkspace.app.
 - **Touch**: there is no hover, so the chevron is always shown, and a tap on it opens the card.
   A tap on the logo or the app's name opens the card too, rather than going home: the logo is the
   biggest thing in the corner, and the 20px chevron beside it was hard to hit. Going home is then
-  two taps: the card marks the site you're on, and on a touch-opened card that row leads where the
-  logo does (the editor's to its Explorer, the Explorer's to liveworkspace.app's home). A second
+  two taps: the card marks the site you're on, and once a tap on the logo has opened the card, that
+  row leads where the logo does (the editor's to its Explorer, the Explorer's to liveworkspace.app's home). A second
   tap on the logo while the card is open follows the logo. A tap outside closes it. A tap is a
   touch pointer; when the browser doesn't say which pointer clicked, a screen whose main pointer
   is coarse counts as touch. A mouse or trackpad on a touch screen keeps the pointer behaviour.
