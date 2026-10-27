@@ -329,3 +329,83 @@ describe('item edges after names', () => {
     });
   });
 });
+
+describe('required fields (docs/specs/026-plan/item-types.md "Required fields")', () => {
+  const required = {
+    ...BUG,
+    fields: [...BUG.fields, 'f-severity', 'f-area'],
+    custom: [
+      { id: 'f-severity', label: 'Severity', kind: 'text', required: true },
+      { id: 'f-area', label: 'Area', kind: 'text', required: true },
+    ],
+  };
+  const withRequired = (extra: Record<string, unknown> = {}) =>
+    api({
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, required] },
+      ...extra,
+    });
+
+  it('refuses a new card without them before writing, naming each', async () => {
+    const { ctx, seen } = withRequired();
+    const refusal = await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ project: DOC_A, title: 'Crash', type: 'Bug', fields: ['area=UI'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(refusal).toMatchObject({ code: 'field_required' });
+    expect(refusal.message).toMatch(/^Bug cards need Severity: give it in fields, by name/);
+    expect(seen).toEqual([]);
+    const both = await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ project: DOC_A, title: 'Crash', type: 'Bug' }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(both.message).toMatch(/^Bug cards need Severity and Area: give them/);
+    await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({
+        project: DOC_A,
+        title: 'Crash',
+        type: 'Bug',
+        fields: ['severity=S1', 'area=UI'],
+      }),
+    );
+    expect(seen).toHaveLength(1);
+  });
+
+  it('refuses a change that empties one, and lets any other through', async () => {
+    const filled = item(
+      1,
+      'itembbb111',
+      { title: 'Fix login', status: 'doing', 'f-severity': 'S1', 'f-area': 'UI' },
+      'bug',
+    );
+    const { ctx, seen } = withRequired({
+      [path]: () => Response.json({ items: [filled], rev: 4 }),
+    });
+    const refusal = await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', clear: ['Severity'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(refusal).toMatchObject({ code: 'field_required' });
+    expect(refusal.message).toBe(
+      'Severity is required on Bug cards: it can be changed, not emptied.',
+    );
+    await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['severity=S2'] }),
+    );
+    expect(seen).toHaveLength(1);
+  });
+
+  it("words the api's own refusal", async () => {
+    const { ctx } = api({
+      [`${path}/itembbb111`]: () =>
+        Response.json({ error: 'field_required', field: 'f-severity' }, { status: 400 }),
+    });
+    const refusal = await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['priority=low'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(refusal).toMatchObject({ code: 'field_required' });
+    expect(refusal.message).toMatch(/required custom field would be left empty/);
+  });
+});

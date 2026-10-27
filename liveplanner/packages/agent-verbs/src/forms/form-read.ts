@@ -6,7 +6,7 @@ import {
   DEFAULT_CLOSED_MESSAGE,
   DEFAULT_CONFIRMATION,
   DESTINATION_PROBLEM_TEXT,
-  PUBLISH_PROBLEM_TEXT,
+  publishProblemText,
   QUESTION_TYPE_NAMES,
   closedReason,
   destinationProblem,
@@ -145,7 +145,7 @@ export function readFormOf(input: {
     ...(problem ? [`Responses have nowhere to go: ${DESTINATION_PROBLEM_TEXT[problem]}`] : []),
     // Each in Share Form's words, naming the question or section it is about.
     ...publishProblems(form, form.sheet ? undefined : type).map((p) => {
-      const text = PUBLISH_PROBLEM_TEXT[p.kind];
+      const text = publishProblemText(p);
       if ('questionId' in p) {
         const q = form.sections.flatMap((s) => s.questions).find((x) => x.id === p.questionId)!;
         return `${text} ("${promptOf(q)}", ${p.questionId})`;
