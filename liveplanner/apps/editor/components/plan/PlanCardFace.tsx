@@ -29,11 +29,13 @@ import {
   typeCardLayout,
   type CardSlot,
   isCustomCardField,
+  calculatedText,
 } from '@liveplanner/items';
 import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
+import { calculatedFieldValue } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
@@ -217,7 +219,14 @@ export function PlanCardFace({
       default: {
         // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
         const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
-        const text = def ? customFieldText(def, item.fields[def.id], plan?.items) : null;
+        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields").
+        const text = !def
+          ? null
+          : def.kind === 'calculated'
+            ? plan
+              ? calculatedText(def, calculatedFieldValue(plan, def, item))
+              : null
+            : customFieldText(def, item.fields[def.id], plan?.items);
         if (!def || !text) return null;
         // A linked card with its own Colour shows it (a Parent project's colour), else its own type's glyph (a field
         // may link to several types), the field's first type's while the card is missing.

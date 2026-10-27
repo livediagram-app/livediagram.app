@@ -22,6 +22,12 @@ import {
   readItemMove,
   readItemPatch,
   typesOf,
+  typeIn,
+  hasCalculatedFields,
+  planOutline,
+  doneStatusesOf,
+  childIndexOf,
+  calculatedValuesOf,
   withDefaultStatuses,
   makeItem,
   newItemId,
@@ -42,6 +48,7 @@ import {
 import { badRequest, conflict, forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { handleItemCommentRoutes } from './item-comment-routes';
 import {
+  calculatedSet,
   clearedRequired,
   excludedStatus,
   forCaller,
@@ -57,6 +64,7 @@ import {
   type ItemCaller,
 } from './item-route-kit';
 import { patches } from './item-patches-route';
+import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
 import { readBody, type PlanRouteContext } from './context';
 
@@ -80,7 +88,36 @@ async function list(ctx: PlanRouteContext, projectId: string): Promise<Response>
   ]);
   const shown = caller.scope ? items.filter((i) => caller.scope!.has(i.id)) : items;
   const body: ItemsResponse = { items: forCaller(caller, shown), rev };
+  if (ctx.url.searchParams.get('include') === 'calculated') {
+    const calculated = await calculatedFor(ctx, caller, shown);
+    if (calculated) body.calculated = calculated;
+  }
   return json(body);
+}
+
+// Each card's Calculated field values (docs/specs/026-plan/item-types.md "Calculated fields"), only when asked and
+// only when a type has one: the boards are read for their done columns as GET /plan reads them, a tab-scoped
+// caller's tab alone, and the cards counted are the ones the caller sees.
+async function calculatedFor(
+  ctx: PlanRouteContext,
+  caller: ItemCaller,
+  items: Item[],
+): Promise<Record<string, Record<string, number | null>> | null> {
+  const types = typesOf(caller.doc?.itemTypes);
+  if (!hasCalculatedFields(types)) return null;
+  const scopedTab = caller.scope ? ctx.url.searchParams.get('tabId') : null;
+  const { boards } = planOutline(
+    await planTabs(ctx, caller.projectId, scopedTab),
+    caller.doc?.itemTypes,
+  );
+  const isDone = doneStatusesOf(boards);
+  const index = childIndexOf(items, types);
+  const out: Record<string, Record<string, number | null>> = {};
+  for (const it of items) {
+    const values = calculatedValuesOf(it, typeIn(types, it.type), index, isDone);
+    if (values) out[it.id] = values;
+  }
+  return out;
 }
 
 // Creates `creates` in one batch. A named key (a restore, an offline sync, a copy) is kept while it is free, below
@@ -160,6 +197,9 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   const restores =
     read.votes !== undefined || read.comments !== undefined || read.key !== undefined;
   if (restores && !(await isItemEditor(ctx, caller))) return forbidden();
+  // A Calculated field is worked out, never given (docs/specs/026-plan/item-types.md "Calculated fields").
+  const calculated = restores ? null : calculatedSet(caller, read);
+  if (calculated) return rejected('field_calculated', calculated);
   // A create naming no status takes its type's Default State (docs/specs/026-plan/item-types.md "An item type");
   // the project is already read for the caller, so this costs no query.
   const types = typesOf(caller.doc?.itemTypes);
@@ -189,6 +229,11 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
   for (const raw of body.items) {
     const input = readCreate(raw, caller.owner);
     if (typeof input === 'string') return rejected(input);
+    // A card put back (its number, votes or thread) holds what it held; any other gives no Calculated field a value.
+    const restores =
+      input.key !== undefined || input.votes !== undefined || input.comments !== undefined;
+    const calculated = restores ? null : calculatedSet(caller, input);
+    if (calculated) return rejected('field_calculated', calculated);
     // A new card missing a required field; a card carried across (a sync, a restore: its number) passes.
     const missing = createRefusal(types, input);
     if (missing) return rejected(missing.error, missing.field);
@@ -222,6 +267,8 @@ export async function writeItem(
     if (next instanceof Response) return next;
     if (excludedStatus(caller, next, item, opts.undo === true))
       return rejected('status_excluded', 'status');
+    const calculated = calculatedSet(caller, next, item, opts.undo === true);
+    if (calculated) return rejected('field_calculated', calculated);
     const cleared = clearedRequired(caller, next, item, opts.undo === true);
     if (cleared) return rejected('field_required', cleared);
     if (retiresItem(item, next) && !(await isItemEditor(ctx, caller))) return forbidden();

@@ -786,10 +786,18 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Items',
     summary:
-      "The plan's items and the store's revision. A tab-scoped link passes tabId and gets the items that tab shows.",
+      "The plan's items and the store's revision. A tab-scoped link passes tabId and gets the items that tab shows. include=calculated adds each card's Calculated field values, worked out from the cards linking to it.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
+    query: [
+      ITEM_TAB_QUERY,
+      {
+        name: 'include',
+        required: false,
+        description:
+          "calculated: answer `calculated`, each card's Calculated field values (Child Count, Children Done (%)), read-only.",
+      },
+    ],
     responseSchema: 'ItemsResponse',
     statuses: [200, 400, 401, 403, 404, 410],
   },

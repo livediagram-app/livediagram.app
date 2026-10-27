@@ -2,12 +2,14 @@
 // delete and restore changes applied in order to a project's catalogue, the way the type editor makes them. The
 // whole result is checked by validateItemTypeCatalogue before anything is saved; any refusal saves nothing.
 import { withArticle } from './indefinite-article';
+import { CALCULATION_LABELS } from './calculated-fields';
 import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
 import {
   COMMON_CURRENCIES,
   CURRENCY_CODE,
   CURRENCY_DEFAULT,
+  CALCULATIONS,
   CUSTOM_FIELD_KINDS,
   RATING_FIELD_SCALE_DEFAULT,
   RATING_FIELD_SCALE_MAX,
@@ -15,6 +17,7 @@ import {
   type CustomFieldDef,
   type ItemTypeDef,
   withLinkTypes,
+  type Calculation,
 } from './item-types';
 import type { PlanStatusName } from './plan-outline';
 import { fieldKeyOf, resolveStatus, resolveType, type NameRefusal } from './plan-names';
@@ -67,6 +70,8 @@ export interface CustomFieldInput {
   linkTypes?: readonly string[];
   // A Currency field's ISO 4217 code; GBP when absent.
   currency?: string;
+  // A Calculated field's calculation, by id (`childCount`) or name ("Child Count").
+  calculation?: string;
   onCard?: boolean;
   // Required (docs/specs/026-plan/item-types.md "Required fields"); never a checkbox.
   required?: boolean;
@@ -81,6 +86,8 @@ export interface CustomFieldEdit {
   // A Card field's card types, replaced whole, by id or name.
   linkTypes?: readonly string[];
   currency?: string;
+  // A Calculated field's calculation, by id or name.
+  calculation?: string;
   onCard?: boolean;
   // true makes it required, false optional again.
   required?: boolean;
@@ -221,6 +228,13 @@ function editedCustom(
     if (code === CURRENCY_DEFAULT) delete next.currency;
     else next.currency = code;
   }
+  if (edit.calculation !== undefined) {
+    if (field.kind !== 'calculated')
+      throw invalid(
+        `"${field.label}" is ${withArticle(field.kind)} field: only a calculated field has a calculation.`,
+      );
+    next.calculation = calculationNamed(field.label, edit.calculation);
+  }
   if (edit.onCard === true) next.onCard = true;
   if (edit.onCard === false) delete next.onCard;
   if (edit.required === true) next.required = requirable(field);
@@ -336,15 +350,39 @@ function customOf(
     const code = currencyOf(input.currency);
     if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
+  if (known === 'calculated') field.calculation = calculationNamed(name, input.calculation);
+  else if (input.calculation !== undefined)
+    throw invalid(
+      `"${name}" is ${withArticle(known)} field: only a calculated field has a calculation.`,
+    );
   if (input.onCard) field.onCard = true;
   if (input.required) field.required = requirable(field);
   return field;
 }
 
-// `true`, for a field that can be required; a checkbox is refused (unticked reads as empty).
+// A calculation as an agent names it: its id (`childCount`) or its name ("Child Count"), any case or spacing.
+const calcKey = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
+function calculationNamed(field: string, named: string | undefined): Calculation {
+  const key = calcKey(named ?? '');
+  const found = CALCULATIONS.find(
+    (c) => calcKey(c) === key || calcKey(CALCULATION_LABELS[c]) === key,
+  );
+  if (!found)
+    throw invalid(
+      `The calculated field "${field}" needs a calculation: ${CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`).join(' or ')}.`,
+    );
+  return found;
+}
+
+// `true`, for a field that can be required; a checkbox (unticked reads as empty) and a calculated field (the plan
+// works it out) are refused.
 function requirable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
   if (!canBeRequired(field.kind))
-    throw invalid(`"${field.label}" is a checkbox: a checkbox can't be required.`);
+    throw invalid(
+      field.kind === 'checkbox'
+        ? `"${field.label}" is a checkbox: a checkbox can't be required.`
+        : `"${field.label}" is calculated: the plan works it out, so it can't be required.`,
+    );
   return true;
 }
 

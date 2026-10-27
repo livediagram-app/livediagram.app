@@ -51,6 +51,9 @@ export const CUSTOM_FIELD_KINDS = [
   'rating',
   // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
   'card',
+  // A value worked out from the plan by its `calculation`, never stored (docs/specs/026-plan/item-types.md
+  // "Calculated fields").
+  'calculated',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
 
@@ -81,6 +84,11 @@ export const EMAIL_MAX = 254;
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const isEmailAddress = (v: string) => v.length <= EMAIL_MAX && EMAIL_PATTERN.test(v);
 
+// A Calculated field's menu (docs/specs/026-plan/item-types.md "Calculated fields"), in the order it is offered:
+// how many children a card has, and the share of them that are done.
+export const CALCULATIONS = ['childCount', 'childrenDone'] as const;
+export type Calculation = (typeof CALCULATIONS)[number];
+
 export interface CustomFieldDef {
   id: string;
   label: string;
@@ -95,6 +103,8 @@ export interface CustomFieldDef {
   linkTypes?: readonly string[];
   // A Currency field's ISO 4217 code ("GBP"); CURRENCY_DEFAULT when absent.
   currency?: string;
+  // A Calculated field's calculation (calculated-fields.ts).
+  calculation?: Calculation;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
   // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.

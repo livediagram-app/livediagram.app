@@ -8,6 +8,7 @@ import {
   itemIdsShownOnTab,
   tabShowsEveryCard,
   itemPersonId,
+  calculatedWritten,
   requiredClearedBy,
   statusExcluded,
   typesOf,
@@ -66,6 +67,17 @@ export function excludedStatus(
 ): boolean {
   return statusExcluded(typesOf(caller.doc?.itemTypes), next, before, undo);
 }
+// A Calculated field given a value (docs/specs/026-plan/item-types.md "Calculated fields"): calculatedWritten
+// against the project's types, its id or null. An undo never is: it puts back what was there.
+export function calculatedSet(
+  caller: ItemCaller,
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Item,
+  undo = false,
+): string | null {
+  return undo ? null : calculatedWritten(typesOf(caller.doc?.itemTypes), next, before);
+}
+
 // A required custom field the change empties (docs/specs/026-plan/item-types.md "Required fields"): its id, or null.
 export function clearedRequired(
   caller: ItemCaller,

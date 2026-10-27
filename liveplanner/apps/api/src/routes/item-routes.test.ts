@@ -786,6 +786,101 @@ describe('statuses a type leaves out', () => {
   });
 });
 
+// docs/specs/026-plan/item-types.md "Calculated fields".
+describe('calculated fields', () => {
+  const withCalc = {
+    version: 1,
+    types: [
+      {
+        id: 'project',
+        label: 'Project',
+        color: '#18181b',
+        glyph: 'project',
+        fields: ['f-kids', 'f-done'],
+        custom: [
+          { id: 'f-kids', label: 'Tasks', kind: 'calculated', calculation: 'childCount' },
+          { id: 'f-done', label: 'Progress', kind: 'calculated', calculation: 'childrenDone' },
+        ],
+      },
+      {
+        id: 'task',
+        label: 'Task',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['parent'],
+        custom: [{ id: 'parent', label: 'Parent', kind: 'card', linkType: 'project' }],
+      },
+    ],
+  };
+  const columns = async () =>
+    (
+      await call<{ boards: { columns: { status: string; done?: true }[] }[] }>({
+        method: 'GET',
+        path: '/plan',
+      })
+    ).body.boards[0]!.columns;
+
+  it('answers the values when asked, worked out from the children and the done columns', async () => {
+    expect(
+      (await call({ method: 'PUT', path: '/item-types', body: { itemTypes: withCalc } })).status,
+    ).toBe(200);
+    const cols = await columns();
+    const doneStatus = cols.find((c) => c.done)!.status;
+    const openStatus = cols.find((c) => !c.done)!.status;
+    const p = (await add({ title: 'Launch' }, { type: 'project' })).body.item;
+    const empty = (await add({ title: 'Empty' }, { type: 'project' })).body.item;
+    await add({ title: 'A', status: doneStatus, parent: p.id });
+    await add({ title: 'B', status: openStatus, parent: p.id });
+    const plain = await call<ItemsResponse>({ method: 'GET', path: '/items' });
+    expect(plain.body.calculated).toBeUndefined();
+    const asked = await call<ItemsResponse>({ method: 'GET', path: '/items?include=calculated' });
+    expect(asked.body.calculated).toEqual({
+      [p.id]: { 'f-kids': 2, 'f-done': 50 },
+      [empty.id]: { 'f-kids': 0, 'f-done': null },
+    });
+  });
+
+  it('answers none when no type has one, without reading the boards', async () => {
+    await add({ title: 'A' });
+    const asked = await call<ItemsResponse>({ method: 'GET', path: '/items?include=calculated' });
+    expect(asked.body.calculated).toBeUndefined();
+  });
+
+  it('refuses a value given to one, made alone, in bulk, patched or patched many', async () => {
+    await call({ method: 'PUT', path: '/item-types', body: { itemTypes: withCalc } });
+    const made = await add({ title: 'P', 'f-kids': 3 }, { type: 'project' });
+    expect(made.status).toBe(400);
+    expect(made.body).toEqual({ error: 'field_calculated', field: 'f-kids' });
+    const bulk = await call({
+      path: '/items/bulk',
+      body: { items: [{ type: 'project', fields: { title: 'P', 'f-done': 10 } }] },
+    });
+    expect(bulk.body).toEqual({ error: 'field_calculated', field: 'f-done' });
+    // A card put back keeps what it held.
+    const restored = await call({
+      path: '/items/bulk',
+      body: { items: [{ type: 'project', key: 40, fields: { title: 'P', 'f-done': 10 } }] },
+    });
+    expect(restored.status).toBe(201);
+    const p = (await add({ title: 'P' }, { type: 'project' })).body.item;
+    const patched = await call({ path: `/items/${p.id}`, body: { set: { 'f-kids': 9 } } });
+    expect(patched.body).toEqual({ error: 'field_calculated', field: 'f-kids' });
+    const many = await call<{ error: string; id: string; field: string }>({
+      path: '/items/patches',
+      body: { items: [{ id: p.id, set: { 'f-kids': 9 } }] },
+    });
+    expect(many.body).toMatchObject({ error: 'field_calculated', id: p.id, field: 'f-kids' });
+    // Anything else, and an undo, passes.
+    expect((await call({ path: `/items/${p.id}`, body: { set: { title: 'Q' } } })).status).toBe(
+      200,
+    );
+    expect(
+      (await call({ path: `/items/${p.id}`, body: { set: { 'f-kids': 9 }, undo: true } })).status,
+    ).toBe(200);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Storage and sync".
 // docs/specs/026-plan/item-types.md "Required fields".
 describe('required custom fields', () => {
   const requiresSeverity = {

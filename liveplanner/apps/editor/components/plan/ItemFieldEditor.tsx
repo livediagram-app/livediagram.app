@@ -27,6 +27,8 @@ import {
 } from './item-field-editors';
 import { PersonPicker } from './PersonPicker';
 import { CustomFieldEditor } from './CustomFieldEditor';
+import { CalculatedFieldValue } from './CalculatedFieldValue';
+import { calculatedFieldValue } from './calculated-values';
 import { LinkedCardField } from './LinkedCardField';
 import { usePlan } from './PlanContext';
 import { isHexColour } from '@liveplanner/project';
@@ -112,6 +114,16 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         disabled={disabled}
         onSave={save}
         onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
+      />
+    );
+  }
+  // A Calculated field (docs/specs/026-plan/item-types.md "Calculated fields"): worked out, read-only.
+  if (custom?.kind === 'calculated') {
+    return (
+      <CalculatedFieldValue
+        id={id}
+        field={custom}
+        value={plan ? calculatedFieldValue(plan, custom, item) : null}
       />
     );
   }
