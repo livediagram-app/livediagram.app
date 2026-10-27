@@ -330,43 +330,43 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 
 **Production**
 
-| Setting                                  | Value                                                                                      |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Worker name                              | `liveworkspace-index`                                                                      |
-| Route                                    | `www.liveworkspace.app/api/index*`, `liveworkspace.app/api/index*`                         |
-| D1 `INDEX_DB`                            | `liveworkspace-index`, migrations `migrations`                                             |
-| Service `DRIVE`                          | `liveworkspace-drive`                                                                      |
-| Rate limit `MIGRATION_LIMITER`           | 60 per 60 s                                                                                |
-| Rate limit `SHARE_GUESS_VISITOR_LIMITER` | 10 per 60 s                                                                                |
-| Rate limit `SHARE_GUESS_ITEM_LIMITER`    | 30 per 60 s                                                                                |
-| Crons                                    | `23 4 * * *`, `*/15 * * * *`                                                               |
-| Var `ENVIRONMENT`                        | `production`                                                                               |
-| Var `ACCOUNTS_URL`                       | `https://www.liveworkspace.app`                                                            |
-| Var `INDEX_AUDIENCES`                    | `https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.…` |
-| Var `APP_ORIGIN_LIVEDIAGRAM`             | `https://livediagram-router.liveworkspace-easing509.workers.dev`                           |
-| Var `APP_ORIGIN_LIVEPLANNER`             | `https://www.liveplanner.app`                                                              |
-| Var `APP_ORIGIN_LIVEDOCUMENTS`           | `https://www.livedocuments.app`                                                            |
-| Var `APP_ORIGIN_LIVEDESIGN`              | `https://www.livedesign.app`                                                               |
+| Setting                                  | Value                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------ |
+| Worker name                              | `liveworkspace-index`                                              |
+| Route                                    | `www.liveworkspace.app/api/index*`, `liveworkspace.app/api/index*` |
+| D1 `INDEX_DB`                            | `liveworkspace-index`, migrations `migrations`                     |
+| Service `DRIVE`                          | `liveworkspace-drive`                                              |
+| Rate limit `MIGRATION_LIMITER`           | 60 per 60 s                                                        |
+| Rate limit `SHARE_GUESS_VISITOR_LIMITER` | 10 per 60 s                                                        |
+| Rate limit `SHARE_GUESS_ITEM_LIMITER`    | 30 per 60 s                                                        |
+| Crons                                    | `23 4 * * *`, `*/15 * * * *`                                       |
+| Var `ENVIRONMENT`                        | `production`                                                       |
+| Var `ACCOUNTS_URL`                       | `https://www.liveworkspace.app`                                    |
+| Var `INDEX_AUDIENCES`                    | `https://livediagram.app/api,https://liveplanner.…`                |
+| Var `APP_ORIGIN_LIVEDIAGRAM`             | `https://www.livediagram.app`                                      |
+| Var `APP_ORIGIN_LIVEPLANNER`             | `https://www.liveplanner.app`                                      |
+| Var `APP_ORIGIN_LIVEDOCUMENTS`           | `https://www.livedocuments.app`                                    |
+| Var `APP_ORIGIN_LIVEDESIGN`              | `https://www.livedesign.app`                                       |
 
 **`env.staging`**
 
-| Setting                                  | Value                                                                                      |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Worker name                              | `liveworkspace-index-staging`                                                              |
-| Route                                    | `staging.liveworkspace.app/api/index*`                                                     |
-| D1 `INDEX_DB`                            | `liveworkspace-index-staging`, migrations `migrations`                                     |
-| Service `DRIVE`                          | `liveworkspace-drive-staging`                                                              |
-| Rate limit `MIGRATION_LIMITER`           | 60 per 60 s                                                                                |
-| Rate limit `SHARE_GUESS_VISITOR_LIMITER` | 10 per 60 s                                                                                |
-| Rate limit `SHARE_GUESS_ITEM_LIMITER`    | 30 per 60 s                                                                                |
-| Crons                                    | `23 4 * * *`, `*/15 * * * *`                                                               |
-| Var `ENVIRONMENT`                        | `staging`                                                                                  |
-| Var `ACCOUNTS_URL`                       | `https://staging.liveworkspace.app`                                                        |
-| Var `INDEX_AUDIENCES`                    | `https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api,https://stag…` |
-| Var `APP_ORIGIN_LIVEDIAGRAM`             | `https://livediagram-router-staging.liveworkspace-easing509.workers.dev`                   |
-| Var `APP_ORIGIN_LIVEPLANNER`             | `https://staging.liveplanner.app`                                                          |
-| Var `APP_ORIGIN_LIVEDOCUMENTS`           | `https://staging.livedocuments.app`                                                        |
-| Var `APP_ORIGIN_LIVEDESIGN`              | `https://staging.livedesign.app`                                                           |
+| Setting                                  | Value                                                  |
+| ---------------------------------------- | ------------------------------------------------------ |
+| Worker name                              | `liveworkspace-index-staging`                          |
+| Route                                    | `staging.liveworkspace.app/api/index*`                 |
+| D1 `INDEX_DB`                            | `liveworkspace-index-staging`, migrations `migrations` |
+| Service `DRIVE`                          | `liveworkspace-drive-staging`                          |
+| Rate limit `MIGRATION_LIMITER`           | 60 per 60 s                                            |
+| Rate limit `SHARE_GUESS_VISITOR_LIMITER` | 10 per 60 s                                            |
+| Rate limit `SHARE_GUESS_ITEM_LIMITER`    | 30 per 60 s                                            |
+| Crons                                    | `23 4 * * *`, `*/15 * * * *`                           |
+| Var `ENVIRONMENT`                        | `staging`                                              |
+| Var `ACCOUNTS_URL`                       | `https://staging.liveworkspace.app`                    |
+| Var `INDEX_AUDIENCES`                    | `https://staging.livediagram.app/api,https://stag…`    |
+| Var `APP_ORIGIN_LIVEDIAGRAM`             | `https://staging.livediagram.app`                      |
+| Var `APP_ORIGIN_LIVEPLANNER`             | `https://staging.liveplanner.app`                      |
+| Var `APP_ORIGIN_LIVEDOCUMENTS`           | `https://staging.livedocuments.app`                    |
+| Var `APP_ORIGIN_LIVEDESIGN`              | `https://staging.livedesign.app`                       |
 
 Env fields (`env.ts`): `ACCOUNTS_URL`, `APP_ORIGIN_LIVEDESIGN`, `APP_ORIGIN_LIVEDIAGRAM`, `APP_ORIGIN_LIVEDOCUMENTS`, `APP_ORIGIN_LIVEPLANNER`, `DRIVE_KEY_INDEX`, `ENVIRONMENT`, `GRANT_SIGNING_KEY`, `INDEX_AUDIENCES`, `INDEX_ENABLED`, `INDEX_KEY_DRIVE`, `INDEX_KEY_LIVEDESIGN`, `INDEX_KEY_LIVEDIAGRAM`, `INDEX_KEY_LIVEDOCUMENTS`, `INDEX_KEY_LIVEPLANNER`, `MERGE_KEY`.
 

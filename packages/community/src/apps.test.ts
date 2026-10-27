@@ -16,7 +16,7 @@ describe('the apps a browser may write from', () => {
   it('are no one else', () => {
     for (const origin of [
       'https://evil.example',
-      'https://livediagram-router.liveworkspace-easing509.workers.dev.evil.example',
+      'https://www.livediagram.app.evil.example',
       'http://livediagram.app',
       'https://liveworkspace.app',
     ]) {

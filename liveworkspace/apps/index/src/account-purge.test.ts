@@ -189,16 +189,16 @@ describe('POST /internal/purge-person', () => {
         .map((c) => `${c.method} ${c.url}`)
         .sort(),
     ).toEqual([
-      'DELETE https://livediagram-router.liveworkspace-easing509.workers.dev/api/internal/items/ada-2',
       'DELETE https://liveplanner.app/api/internal/items/ada-1',
       'DELETE https://liveplanner.app/api/internal/items/ada-gone',
+      'DELETE https://www.livediagram.app/api/internal/items/ada-2',
     ]);
     expect(count('SELECT COUNT(*) AS n FROM purge_tombstones')).toBe(0);
     // Each app heard of her once, with the items of others that name her: her team plan (her own work in it
     // stays with the team) and Bea's, where she commented and was given and gave actions.
     const told = h.appCalls.filter((c) => c.url.includes('/api/internal/people/'));
     expect(told.map((c) => c.url)).toContain(
-      `https://livediagram-router.liveworkspace-easing509.workers.dev/api/internal/people/${ADA}/purge`,
+      `https://www.livediagram.app/api/internal/people/${ADA}/purge`,
     );
     expect(new Set(told.map((c) => c.url)).size).toBe(told.length);
     const planner = told.find((c) => c.url.startsWith('https://liveplanner.app'))!;

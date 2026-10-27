@@ -9,7 +9,7 @@ import { submitChangeset } from './write';
 
 // The shared verbs bound to livediagram (./agent-product.ts): the words its CLI and MCP print stay its own.
 
-const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+const HOST = 'https://www.livediagram.app';
 
 async function thrown(run: () => unknown): Promise<unknown> {
   try {

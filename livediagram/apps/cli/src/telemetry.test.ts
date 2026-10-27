@@ -42,9 +42,7 @@ describe('the usage count', () => {
       { category: 'Cli', action: 'Used', type: 'DocumentLs' },
       { category: 'Cli', action: 'Used', type: 'DocumentLs' },
     ]);
-    expect(io.err()).toBe(
-      `${telemetryNotice('https://livediagram-router.liveworkspace-easing509.workers.dev')}\n`,
-    );
+    expect(io.err()).toBe(`${telemetryNotice('https://www.livediagram.app')}\n`);
     expect(io.fileMap.get(STATE)?.mode).toBe(0o600);
   });
 

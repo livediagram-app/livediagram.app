@@ -17,31 +17,13 @@ export function appOrigins(site: AppSiteId, environment: AppEnvironment): string
     const port = LOCAL_PORTS[site];
     return [`http://localhost:${port}`, `http://127.0.0.1:${port}`];
   }
-  const standIn = STAND_INS[site];
-  if (environment === 'staging')
-    return standIn ? [`https://staging.${site}`, standIn.staging] : [`https://staging.${site}`];
-  return standIn
-    ? [`https://${site}`, `https://www.${site}`, standIn.production]
-    : [`https://${site}`, `https://www.${site}`];
+  if (environment === 'staging') return [`https://staging.${site}`];
+  return [`https://${site}`, `https://www.${site}`];
 }
 
-/** An app that answers on a workers.dev address while its domain is still on another Cloudflare account
- *  (livediagram/docs/specs/016-platform/stand-in-addresses.md): it answers there as well, until the domain moves. */
-export const STAND_INS: Partial<
-  Record<AppSiteId, { production: string; staging: string; mcp: string }>
-> = {
-  'livediagram.app': {
-    production: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    staging: 'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
-    // Its production MCP server's.
-    mcp: 'https://livediagram-mcp.liveworkspace-easing509.workers.dev',
-  },
-};
-
-/** `site`'s staging origin: `staging.<site>`, or its staging stand-in while it has one. */
+/** `site`'s staging origin: `staging.<site>`. */
 export function stagingOrigin(site: SiteId): string {
-  if (site === 'liveworkspace.app') return 'https://staging.liveworkspace.app';
-  return STAND_INS[site]?.staging ?? `https://staging.${site}`;
+  return `https://staging.${site}`;
 }
 
 /** A link to `site` (`href`, on its live origin `site.url`) as a page on `host` gives it: moved to the site's staging

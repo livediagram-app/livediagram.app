@@ -19,7 +19,6 @@
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
-    "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/status": "workspace:*"
   },
   "devDependencies": {

@@ -292,22 +292,22 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | `GALLERY_USAGE_DOCUMENTS_MAX`                | `200`                                                | `packages/media/src/usage.ts`      | the apps' gallery         |
 | `GALLERY_USAGE_READS_IN_FLIGHT`              | `8`                                                  | `usage.ts`                         | the apps' gallery         |
 
-| Setting                     | Production                                                                                | Staging                                                                  |
-| --------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Name                        | `liveworkspace-media`                                                                     | `liveworkspace-media-staging`                                            |
-| Routes                      | `www.liveworkspace.app/api/media*`, `/api/previews*`, and the same on `liveworkspace.app` | `staging.liveworkspace.app/api/media*`, `/api/previews*`                 |
-| D1 `MEDIA_DB`               | `liveworkspace-media`                                                                     | `liveworkspace-media-staging`                                            |
-| R2 `MEDIA`                  | `liveworkspace-media`                                                                     | `liveworkspace-media-staging`                                            |
-| Service `INDEX`             | `liveworkspace-index`                                                                     | `liveworkspace-index-staging`                                            |
-| Cron                        | `41 3 * * *`                                                                              | `41 3 * * *`                                                             |
-| `IMAGE_MAX_PER_OWNER`       | `100`                                                                                     | `100`                                                                    |
-| `IMAGE_MAX_BYTES_PER_OWNER` | `104857600`                                                                               | `104857600`                                                              |
-| `INDEX_URL`                 | `https://www.liveworkspace.app/api/index`                                                 | `https://staging.liveworkspace.app/api/index`                            |
-| `APP_ORIGIN_LIVEDIAGRAM`    | `https://livediagram-router.liveworkspace-easing509.workers.dev`                          | `https://livediagram-router-staging.liveworkspace-easing509.workers.dev` |
-| `APP_ORIGIN_LIVEPLANNER`    | `https://www.liveplanner.app`                                                             | `https://staging.liveplanner.app`                                        |
-| `APP_ORIGIN_LIVEDOCUMENTS`  | `https://www.livedocuments.app`                                                           | `https://staging.livedocuments.app`                                      |
-| `APP_ORIGIN_LIVEDESIGN`     | `https://www.livedesign.app`                                                              | `https://staging.livedesign.app`                                         |
-| Secrets                     | `MEDIA_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN`                  | the same                                                                 |
+| Setting                     | Production                                                                                | Staging                                                  |
+| --------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Name                        | `liveworkspace-media`                                                                     | `liveworkspace-media-staging`                            |
+| Routes                      | `www.liveworkspace.app/api/media*`, `/api/previews*`, and the same on `liveworkspace.app` | `staging.liveworkspace.app/api/media*`, `/api/previews*` |
+| D1 `MEDIA_DB`               | `liveworkspace-media`                                                                     | `liveworkspace-media-staging`                            |
+| R2 `MEDIA`                  | `liveworkspace-media`                                                                     | `liveworkspace-media-staging`                            |
+| Service `INDEX`             | `liveworkspace-index`                                                                     | `liveworkspace-index-staging`                            |
+| Cron                        | `41 3 * * *`                                                                              | `41 3 * * *`                                             |
+| `IMAGE_MAX_PER_OWNER`       | `100`                                                                                     | `100`                                                    |
+| `IMAGE_MAX_BYTES_PER_OWNER` | `104857600`                                                                               | `104857600`                                              |
+| `INDEX_URL`                 | `https://www.liveworkspace.app/api/index`                                                 | `https://staging.liveworkspace.app/api/index`            |
+| `APP_ORIGIN_LIVEDIAGRAM`    | `https://www.livediagram.app`                                                             | `https://staging.livediagram.app`                        |
+| `APP_ORIGIN_LIVEPLANNER`    | `https://www.liveplanner.app`                                                             | `https://staging.liveplanner.app`                        |
+| `APP_ORIGIN_LIVEDOCUMENTS`  | `https://www.livedocuments.app`                                                           | `https://staging.livedocuments.app`                      |
+| `APP_ORIGIN_LIVEDESIGN`     | `https://www.livedesign.app`                                                              | `https://staging.livedesign.app`                         |
+| Secrets                     | `MEDIA_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN`                  | the same                                                 |
 
 `[[rules]]` bundles `.ttf` and `.otf` as data (the card renderer's fonts). Locally (`.dev.vars.example`):
 `dev-<app>-media-key`, `INDEX_URL=http://localhost:8793/api/index`, the four app routers on 3100, 3200, 3300, 3400;

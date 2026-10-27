@@ -78,7 +78,7 @@ describe('document view', () => {
       [`/documents/${DOC_C}?view=overview`]: { text: 'document Shop' },
     });
     await documentView.run!(contextOf(api, codes), {
-      doc: 'https://livediagram-router.liveworkspace-easing509.workers.dev/document/shared?s=abc123',
+      doc: 'https://www.livediagram.app/document/shared?s=abc123',
     });
     expect(codes).toEqual(['abc123']);
   });

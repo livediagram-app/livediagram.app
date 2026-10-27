@@ -36,8 +36,7 @@ export const REPO_URL = 'https://github.com/livedesign-app/livedesign.app';
 // The public contact form, the one way to reach the team; no email address is published. livedesign has no
 // Forms, so it is the shared form hosted on livediagram. Linked from the help centre's contact page, the FAQ,
 // the status page and the Terms and Privacy Policy.
-export const CONTACT_FORM_URL =
-  'https://livediagram-router.liveworkspace-easing509.workers.dev/form/90Bgj5sY9eTpVrjhx9tTZj';
+export const CONTACT_FORM_URL = 'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj';
 
 // Favicon set for the apps that serve their pages from the origin root (or
 // reference the root's assets): the SVG mark, a raster PNG fallback for

@@ -224,8 +224,7 @@ export function buildOpenApiDocument(): OpenApiDocument {
     servers: [
       {
         url: '/api',
-        description:
-          'Same-origin API (e.g. https://livediagram-router.liveworkspace-easing509.workers.dev/api).',
+        description: 'Same-origin API (e.g. https://www.livediagram.app/api).',
       },
     ],
     tags: TAGS,

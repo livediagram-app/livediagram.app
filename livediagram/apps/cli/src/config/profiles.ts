@@ -1,6 +1,6 @@
 // Which host a command talks to (docs/specs/015-api/cli.md "Profiles", blueprint CLI7):
 // --host, else --profile, else LIVEDIAGRAM_HOST, else LIVEDIAGRAM_PROFILE, else the config's default profile,
-// else https://livediagram-router.liveworkspace-easing509.workers.dev. --host and --profile together are a usage error.
+// else https://www.livediagram.app. --host and --profile together are a usage error.
 
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -8,7 +8,7 @@ import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { parseConfig, type ConfigFile } from '@liveworkspace/cli-kit/config-file';
 import { configDir } from './paths';
 
-export const DEFAULT_HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+export const DEFAULT_HOST = 'https://www.livediagram.app';
 export const DEFAULT_PROFILE = 'default';
 
 export type ProfileSource = 'flag' | 'env' | 'config' | 'default';

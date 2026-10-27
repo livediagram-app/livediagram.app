@@ -13,7 +13,7 @@ liveplanner, livedocuments and livedesign have no data from before accounts move
 
 Related: [migrating-from-clerk.md](../liveworkspace/docs/specs/012-migrate/migrating-from-clerk.md),
 [livediagram/plans/0002-liveworkspace-accounts.md](../livediagram/plans/0002-liveworkspace-accounts.md),
-[stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md).
+[deployment.md](../livediagram/docs/specs/016-platform/deployment.md#custom-domain).
 
 ## Rules that hold throughout
 
@@ -24,7 +24,7 @@ Related: [migrating-from-clerk.md](../liveworkspace/docs/specs/012-migrate/migra
   saved. A migration that read old tabs through livediagram's parser would lose every page and board. The
   splitter reads the stored JSON and the Plan tables itself.
 - **Nothing made on either side before the switch is lost.** The old site keeps taking work until the freeze
-  (step 7), and the new account's apps (livediagram on its stand-in, liveplanner, livedocuments, livedesign) may
+  (step 7), and the new account's apps (livediagram, liveplanner, livedocuments, livedesign) may
   take work too. The migration only adds to the new account: it never deletes, never overwrites a row it didn't
   write, and the final catch-up run picks up what the old site took since the last run. An imported row that would
   land on an id the new side already uses is reported and skipped, never written over.
@@ -271,9 +271,9 @@ are none to carry.) The rehearsal should include a browser with a real old local
 2. **Freeze** the old site: a read-only banner, writes answer 503, at a quiet hour.
 3. **Final catch-up run** of steps 1–6 (only what changed since the last run, by `saved_at` and created times),
    then the checks in step 9.
-4. **Move the `livediagram.app` zone** to the liveworkspace account and run "When livediagram.app moves" in
-   [stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md), and the email domain
-   move in [email.md](../liveworkspace/docs/specs/003-accounts/email.md).
+4. **Move the `livediagram.app` zone** to the liveworkspace account, where the router and mcp Workers carry its
+   hostnames as custom domains ([deployment.md](../livediagram/docs/specs/016-platform/deployment.md#custom-domain)),
+   and the email domain move in [email.md](../liveworkspace/docs/specs/003-accounts/email.md).
 5. Point the Google clients' redirect URIs at the real hosts, and the MCP server's OAuth at liveworkspace sign-in.
 6. **Rollback** until step 10: point the zone back at the old account and lift the freeze. Nothing there changed.
 

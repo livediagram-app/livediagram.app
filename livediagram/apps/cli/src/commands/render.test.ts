@@ -7,7 +7,7 @@ import { svgSize } from '../render/png';
 // CLI31): real PNGs from the shared renderer, on a fake host.
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
-const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+const HOST = 'https://www.livediagram.app';
 const SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120"><rect width="240" height="120" fill="#fff"/><text x="20" y="60">Web app</text></svg>';
 const PNG = [0x89, 0x50, 0x4e, 0x47];

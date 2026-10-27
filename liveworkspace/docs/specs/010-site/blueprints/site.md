@@ -316,7 +316,7 @@ Every access is wrapped so a blocked storage reads as empty.
 | `PREVIEW_CONCURRENCY`         | `4`                                                             | `previews.tsx`              |
 | `WORKSPACE_TOKEN_URL`         | `'/api/auth/workspace-token'`                                   | `token.ts`                  |
 | `LEGAL_UPDATED`               | `'25 October 2026'`                                             | `legal.ts`                  |
-| `CONTACT_URL`                 | `'https://livediagram-router.liveworkspace-easing509.workers.…` | `legal.ts`                  |
+| `CONTACT_URL`                 | `'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj'`     | `legal.ts`                  |
 | `LICENCE_APPS`                | `(object or list, see file)`                                    | `apps.ts`                   |
 | `EMBEDDED_WORKS`              | `(object or list, see file)`                                    | `embedded-works.ts`         |
 | `OVERRIDES`                   | `(object or list, see file)`                                    | `overrides.ts`              |
@@ -327,7 +327,6 @@ Every access is wrapped so a blocked storage reads as empty.
 | `INVITES_PATH`                | `'/explorer/invites'`                                           | `teams.ts`                  |
 | `AVATAR_TONES`                | `(object or list, see file)`                                    | `teams.ts`                  |
 | `TURNSTILE_ORIGIN`            | `'https://challenges.cloudflare.com'`                           | `turnstile.ts`              |
-| `STAND_INS`                   | `(object or list, see file)`                                    | `app-origins.ts`            |
 | `LOCAL_PORTS`                 | `(object or list, see file)`                                    | `index.ts`                  |
 | `PLATFORM_SITE`               | `(object or list, see file)`                                    | `index.ts`                  |
 | `APP_SITES`                   | `(object or list, see file)`                                    | `index.ts`                  |

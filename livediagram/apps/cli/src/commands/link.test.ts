@@ -126,9 +126,7 @@ describe('link init', () => {
       });
       expect(await cli(io, 'link', 'init')).toMatchObject({
         code: 3,
-        err: expect.stringContaining(
-          'there are no folders in https://livediagram-router.liveworkspace-easing509.workers.dev to link',
-        ),
+        err: expect.stringContaining('there are no folders in https://www.livediagram.app to link'),
       });
     }
   });
@@ -182,7 +180,7 @@ describe('link status', () => {
         '1 in-step · 1 behind · 1 invalid · 1 ?',
         '',
       ].join('\n'),
-      err: '! "Busy": https://livediagram-router.liveworkspace-easing509.workers.dev failed (HTTP 503); files kept\n',
+      err: '! "Busy": https://www.livediagram.app failed (HTTP 503); files kept\n',
     });
     for (const [k, v] of before)
       if (k.startsWith('/work/')) expect(io.fileMap.get(k)?.data).toBe(v);
@@ -232,7 +230,7 @@ describe('link ls', () => {
       'aaaa  "Home screen"  personal  2026-10-05\n… 1 more; --limit 2, or narrow with a query\n',
     );
     expect(result.err).toBe(
-      'ffff6666-0000-4000-8000-000000000006: https://livediagram-router.liveworkspace-easing509.workers.dev is rate limiting this token\nunreadable: gone-0000\n',
+      'ffff6666-0000-4000-8000-000000000006: https://www.livediagram.app is rate limiting this token\nunreadable: gone-0000\n',
     );
     expect(
       (

@@ -26,8 +26,8 @@ liveworkspace.app.
   and returns focus to the chevron.
 - Sites are plain links to each site's own origin (`https://www.livediagram.app`, …; app links always use `www.`), since every site
   is a different origin.
-- On staging (a page on `staging.<site>`, or on a staging stand-in on `workers.dev`), every link goes to that site's
-  staging origin instead (`https://staging.liveplanner.app`, the stand-in's own while a site has one), so staging
+- On staging (a page on `staging.<site>`), every link goes to that site's
+  staging origin instead (`https://staging.liveplanner.app`), so staging
   never sends you to production. `siteHrefFrom(site, href, host)` in `@liveworkspace/sites` does it, after the page
   has loaded (the pages are static, built once for both).
 

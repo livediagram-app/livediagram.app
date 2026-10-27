@@ -33,7 +33,7 @@ const file = (tabs: Tab[] = [tab()]): PullFile => ({
   exportedAt: 1,
   document: { id: 'd1', name: 'Shop', presentation: null, tabs },
   livediagramSync: {
-    host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    host: 'https://www.livediagram.app',
     pulledAt: 1,
     tabs: { t1: { rev: 4, hash: 'h', settingsHash: 's' } },
   },
@@ -77,7 +77,7 @@ describe('pullFileText and parsePullFile', () => {
     const text = pullFileText(file());
     expect(JSON.parse(text)).toMatchObject({
       kind: 'livediagram.document',
-      livediagramSync: { host: 'https://livediagram-router.liveworkspace-easing509.workers.dev' },
+      livediagramSync: { host: 'https://www.livediagram.app' },
     });
     expect(parsePullFile(text)).toEqual({ ok: true, file: file() });
   });

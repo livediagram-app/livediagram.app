@@ -135,9 +135,7 @@ No-op unless `TELEMETRY_ENABLED === 'true'`, `TELEMETRY_KEY` set and events non-
 | other methods on `/summary`       |                                                                       |                                                          | `405`, `Allow: GET`                                                                                                                    |
 | any other path                    |                                                                       |                                                          | `404 Not found` (the old `/telemetry/api/events` too)                                                                                  |
 
-The browser origins per app are `TELEMETRY_APP_ORIGINS` (production, `www.` and staging for liveplanner,
-livedocuments and livedesign). livediagram's entry lists its router's `workers.dev` address twice and its staging
-router's once, not `livediagram.app` (see [Errors and edge cases](#errors-and-edge-cases)).
+The browser origins per app are `TELEMETRY_APP_ORIGINS` (production, `www.` and staging for each app).
 
 ## Data and persistence
 
@@ -163,19 +161,18 @@ SELECT date(ts / 1000, 'unixepoch') AS day, app, category, action, type, COUNT(*
 
 ## Errors and edge cases
 
-| Case                                                                                                         | Answer                                                                                                                                                                                                                                      |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Telemetry off                                                                                                | ingest `204`, nothing stored; summary `{ enabled: false }`                                                                                                                                                                                  |
-| Body over 64 KiB (header or text), not JSON, wrong shape                                                     | `204`, nothing stored                                                                                                                                                                                                                       |
-| A key for `liveworkspace.app`, a wrong key, an unset key                                                     | `204`, nothing stored                                                                                                                                                                                                                       |
-| An app page naming another app; a foreign origin                                                             | `204`, nothing stored                                                                                                                                                                                                                       |
-| A localhost page outside development                                                                         | `204`, nothing stored                                                                                                                                                                                                                       |
-| Over the per-network limit                                                                                   | `204`, nothing stored (Workers are never limited)                                                                                                                                                                                           |
-| Events outside the vocabulary; server-only from a browser; non-Explorer, non-settings from liveworkspace.app | dropped, the rest stored                                                                                                                                                                                                                    |
-| More than 100 valid events                                                                                   | the first 100 stored                                                                                                                                                                                                                        |
-| D1 throws on insert                                                                                          | `204`, the batch lost                                                                                                                                                                                                                       |
-| Edge-cached summary (immutable headers)                                                                      | copied before the CORS header is set                                                                                                                                                                                                        |
-| livediagram's origins (`TELEMETRY_APP_ORIGINS`)                                                              | the list repeats `https://livediagram-router.liveworkspace-easing509.workers.dev` and has no `https://livediagram.app`; a page on `livediagram.app` is refused unless that is its router's origin. The spec does not say which is intended. |
+| Case                                                                                                         | Answer                                                     |
+| ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| Telemetry off                                                                                                | ingest `204`, nothing stored; summary `{ enabled: false }` |
+| Body over 64 KiB (header or text), not JSON, wrong shape                                                     | `204`, nothing stored                                      |
+| A key for `liveworkspace.app`, a wrong key, an unset key                                                     | `204`, nothing stored                                      |
+| An app page naming another app; a foreign origin                                                             | `204`, nothing stored                                      |
+| A localhost page outside development                                                                         | `204`, nothing stored                                      |
+| Over the per-network limit                                                                                   | `204`, nothing stored (Workers are never limited)          |
+| Events outside the vocabulary; server-only from a browser; non-Explorer, non-settings from liveworkspace.app | dropped, the rest stored                                   |
+| More than 100 valid events                                                                                   | the first 100 stored                                       |
+| D1 throws on insert                                                                                          | `204`, the batch lost                                      |
+| Edge-cached summary (immutable headers)                                                                      | copied before the CORS header is set                       |
 
 ## Security and trust
 

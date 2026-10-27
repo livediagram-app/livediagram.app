@@ -22,7 +22,7 @@ describe('wwwTwin', () => {
     }
   });
 
-  it('gives no twin to staging, local, stand-in, other schemes, ports or lookalikes', () => {
+  it('gives no twin to staging, local, workers.dev, other schemes, ports or lookalikes', () => {
     for (const url of [
       'https://staging.liveworkspace.app/api/auth',
       'http://localhost:3000/api/auth',

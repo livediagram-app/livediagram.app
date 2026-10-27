@@ -7,7 +7,7 @@ import { headerFactsOf, overviewView } from '@livediagram/document-views';
 import { transport } from '../transport';
 import { NOW, TOKEN, type FakeIo, type Route } from './fake-io';
 
-export const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+export const HOST = 'https://www.livediagram.app';
 
 export type HostTab = {
   id: string;

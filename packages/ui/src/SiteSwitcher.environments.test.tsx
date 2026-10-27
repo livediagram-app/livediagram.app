@@ -23,14 +23,14 @@ function linksOn(pageUrl: string, hrefFor?: Parameters<typeof SiteSwitcher>[0]['
 
 const PRODUCTION = [
   'https://www.liveworkspace.app',
-  'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  'https://www.livediagram.app',
   'https://www.liveplanner.app',
   'https://www.livedocuments.app',
   'https://www.livedesign.app',
 ];
 const STAGING = [
   'https://staging.liveworkspace.app',
-  'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
+  'https://staging.livediagram.app',
   'https://staging.liveplanner.app',
   'https://staging.livedocuments.app',
   'https://staging.livedesign.app',
@@ -43,7 +43,7 @@ describe("the site switcher's links in each environment", () => {
     'https://www.liveplanner.app/new',
     'https://liveplanner.app/',
     'https://liveworkspace.app/dashboard',
-    'https://livediagram-router.liveworkspace-easing509.workers.dev/',
+    'https://www.livediagram.app/',
   ])('links every live site from a production page (%s)', (page) => {
     expect(linksOn(page)).toEqual(PRODUCTION);
   });
@@ -51,7 +51,7 @@ describe("the site switcher's links in each environment", () => {
   it.each([
     'https://staging.liveplanner.app/new',
     'https://staging.liveworkspace.app/dashboard',
-    'https://livediagram-router-staging.liveworkspace-easing509.workers.dev/',
+    'https://staging.livediagram.app/',
   ])('links every staging site from a staging page (%s), never production', (page) => {
     const links = linksOn(page);
     expect(links).toEqual(STAGING);

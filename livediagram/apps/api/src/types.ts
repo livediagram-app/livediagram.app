@@ -47,7 +47,7 @@ export type Env = {
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
   // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
   // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
-  // what this API was registered as, e.g. `https://livediagram-router.liveworkspace-easing509.workers.dev/api`, and every access token must
+  // what this API was registered as, e.g. `https://livediagram.app/api`, and every access token must
   // name it as its audience, as must a guest's token (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"). With either unset
   // no caller has an identity: only share-link visitors are served.
   ACCOUNTS_URL?: string;
@@ -130,7 +130,7 @@ export type Env = {
   // "livediagram <hello@livediagram.app>". Its domain must be onboarded to Email Service on this account.
   EMAIL_FROM?: string;
   // Public origin used to build links in emails (optional). Defaults to
-  // "https://livediagram-router.liveworkspace-easing509.workers.dev".
+  // "https://www.livediagram.app".
   APP_BASE_URL?: string;
   // WHOSE model reads sticky notes from a photo, and where
   // (docs/specs/021-event-storming/note-reader.md). The PROVIDER is inferred
@@ -167,7 +167,7 @@ export type Env = {
   // behaviour so upgrades don't break. Hosted
   // livediagram.app sets this in apps/api/wrangler.toml [vars] (NOT the
   // dashboard, which a deploy wipes) to BOTH
-  // "https://livediagram-router.liveworkspace-easing509.workers.dev" and "https://livediagram-router.liveworkspace-easing509.workers.dev" — `www`
+  // "https://www.livediagram.app" and "https://livediagram.app", `www`
   // first because the apex 301s to it, so `www` is what a browser sends.
   // This comment previously named the apex alone, which as an actual
   // value would 403 every request the editor makes.

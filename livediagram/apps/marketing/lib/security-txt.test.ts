@@ -27,13 +27,9 @@ describe('securityTxt', () => {
   });
 
   it('links the policy, language and canonical URL', () => {
-    expect(fields.Policy).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/help/policies/report-a-vulnerability/',
-    );
+    expect(fields.Policy).toBe('https://www.livediagram.app/help/policies/report-a-vulnerability/');
     expect(fields['Preferred-Languages']).toBe('en');
-    expect(fields.Canonical).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/.well-known/security.txt',
-    );
+    expect(fields.Canonical).toBe('https://www.livediagram.app/.well-known/security.txt');
   });
 
   it('carries exactly the specified fields and ends with a newline', () => {

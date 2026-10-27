@@ -21,20 +21,20 @@ describe('truthArmed', () => {
   it('is armed by a query parameter, and STAYS armed across the navigation', () => {
     // The editor is reached from /new, so a parameter on the first URL is gone
     // by the time the review opens. Arming writes the flag and the flag lasts.
-    armTruthFromUrl('https://livediagram-router.liveworkspace-easing509.workers.dev/new/?truth=1');
+    armTruthFromUrl('https://www.livediagram.app/new/?truth=1');
     expect(localStorage.getItem(TRUTH_ARMED_KEY)).toBe('1');
     expect(truthArmed()).toBe(true);
   });
 
   it('is disarmed by the same parameter set to nothing', () => {
     localStorage.setItem(TRUTH_ARMED_KEY, '1');
-    armTruthFromUrl('https://livediagram-router.liveworkspace-easing509.workers.dev/new/?truth=0');
+    armTruthFromUrl('https://www.livediagram.app/new/?truth=0');
     expect(truthArmed()).toBe(false);
   });
 
   it('leaves the flag alone when the URL says nothing about it', () => {
     localStorage.setItem(TRUTH_ARMED_KEY, '1');
-    armTruthFromUrl('https://livediagram-router.liveworkspace-easing509.workers.dev/document/abc/');
+    armTruthFromUrl('https://www.livediagram.app/document/abc/');
     expect(truthArmed()).toBe(true);
   });
 

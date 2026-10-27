@@ -14,16 +14,11 @@ describe("each app's origins", () => {
       'https://liveplanner.app',
       'https://www.liveplanner.app',
     ]);
-    // livediagram answers on its stand-in too until livediagram.app moves (stand-in-addresses.md).
     expect(appOrigins('livediagram.app', 'production')).toEqual([
       'https://livediagram.app',
       'https://www.livediagram.app',
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
     ]);
-    expect(appOrigins('livediagram.app', 'staging')).toEqual([
-      'https://staging.livediagram.app',
-      'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
-    ]);
+    expect(appOrigins('livediagram.app', 'staging')).toEqual(['https://staging.livediagram.app']);
     expect(appOrigins('liveplanner.app', 'staging')).toEqual(['https://staging.liveplanner.app']);
     expect(appOrigins('livedesign.app', 'development')).toContain('http://localhost:3400');
   });
@@ -34,17 +29,10 @@ describe("each app's origins", () => {
       'livedocuments.app',
     );
     expect(appOfOrigin('http://localhost:3100', 'production')).toBeNull();
+    expect(appOfOrigin('https://staging.livediagram.app', 'production')).toBeNull();
+    expect(appOfOrigin('https://livediagram.app.evil.example', 'production')).toBeNull();
     expect(
-      appOfOrigin(
-        'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
-        'production',
-      ),
-    ).toBeNull();
-    expect(
-      appOfOrigin(
-        'https://livediagram-router.liveworkspace-easing509.workers.dev.evil.example',
-        'production',
-      ),
+      appOfOrigin('https://livediagram-router.liveworkspace-easing509.workers.dev', 'production'),
     ).toBeNull();
     expect(appOfOrigin('https://evil.livediagram.app', 'production')).toBeNull();
     expect(appOfOrigin('http://livediagram.app', 'production')).toBeNull();
@@ -59,16 +47,14 @@ describe('a link to a site from a staging page', () => {
   const planner = APP_SITES.find((s) => s.id === 'liveplanner.app')!;
   const diagram = APP_SITES.find((s) => s.id === 'livediagram.app')!;
 
-  it("goes to that site's staging origin, the stand-in's while it has one", () => {
+  it("goes to that site's staging origin", () => {
     expect(stagingOrigin('liveworkspace.app')).toBe('https://staging.liveworkspace.app');
     expect(stagingOrigin('liveplanner.app')).toBe('https://staging.liveplanner.app');
-    expect(stagingOrigin('livediagram.app')).toBe(
-      'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
-    );
+    expect(stagingOrigin('livediagram.app')).toBe('https://staging.livediagram.app');
     for (const host of [
       'staging.liveworkspace.app',
       'staging.livedesign.app',
-      'livediagram-router-staging.liveworkspace-easing509.workers.dev',
+      'staging.livediagram.app',
     ]) {
       expect(siteHrefFrom(planner, planner.url, host)).toBe('https://staging.liveplanner.app');
       expect(siteHrefFrom(PLATFORM_SITE, PLATFORM_SITE.url, host)).toBe(
@@ -80,9 +66,7 @@ describe('a link to a site from a staging page', () => {
   it("keeps the path and query of a link (the Explorer's)", () => {
     expect(
       siteHrefFrom(diagram, `${diagram.url}/explorer/timeline?id=t1`, 'staging.liveplanner.app'),
-    ).toBe(
-      'https://livediagram-router-staging.liveworkspace-easing509.workers.dev/explorer/timeline?id=t1',
-    );
+    ).toBe('https://staging.livediagram.app/explorer/timeline?id=t1');
   });
 
   it('leaves every link alone off staging, and before the host is known', () => {

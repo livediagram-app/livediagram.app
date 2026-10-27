@@ -22,15 +22,7 @@ function originsOf(app: CommunityApp): readonly string[] {
 }
 
 export const COMMUNITY_APP_ORIGINS: Record<CommunityApp, readonly string[]> = {
-  // livediagram's site is its workers.dev stand-in until livediagram.app moves, and its staging stand-in is not
-  // `staging.` + that host (livediagram/docs/specs/016-platform/stand-in-addresses.md).
-  'livediagram.app': [
-    'https://livediagram.app',
-    'https://www.livediagram.app',
-    'https://staging.livediagram.app',
-    'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
-  ],
+  'livediagram.app': originsOf('livediagram.app'),
   'liveplanner.app': originsOf('liveplanner.app'),
 };
 

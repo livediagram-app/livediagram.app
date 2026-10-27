@@ -24,9 +24,7 @@ describe('SiteSwitcher', () => {
       .filter(Boolean);
     expect(hrefs).toEqual(SITES.map((site) => site.url));
     expect(hrefs[0]).toBe('https://www.liveworkspace.app');
-    expect(html).toMatch(
-      /href="https:\/\/livediagram-router\.liveworkspace-easing509\.workers\.dev"[^>]*aria-current="page"/,
-    );
+    expect(html).toMatch(/href="https:\/\/www\.livediagram\.app"[^>]*aria-current="page"/);
     expect(html.match(/aria-current="page"/g)).toHaveLength(1);
   });
 
@@ -54,7 +52,7 @@ describe('SiteSwitcher on an Explorer page', () => {
     );
     expect(hrefs(html)).toEqual([
       'https://www.liveworkspace.app/explorer/folder?id=f1',
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/explorer/folder?id=f1',
+      'https://www.livediagram.app/explorer/folder?id=f1',
       'https://www.liveplanner.app/explorer/folder?id=f1',
       'https://www.livedocuments.app/explorer/folder?id=f1',
       'https://www.livedesign.app/explorer/folder?id=f1',

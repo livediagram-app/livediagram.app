@@ -15,7 +15,7 @@ import { allServices, statusGroups, type Probe } from '@liveworkspace/status';
 const READ: Probe = { kind: 'read', url: '/x', method: 'GET', ok: [200], json: true };
 const REACH: Probe = {
   kind: 'reach',
-  url: 'https://livediagram-router.liveworkspace-easing509.workers.dev/robots.txt',
+  url: 'https://www.livediagram.app/robots.txt',
   method: 'HEAD',
 };
 

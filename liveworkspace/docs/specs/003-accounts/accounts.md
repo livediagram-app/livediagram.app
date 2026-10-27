@@ -525,7 +525,7 @@ against this Worker's own keys, the bare issuer, an app audience, the asking cli
 named a host; CLI logins and MCP connectors, which hold those, keep working untouched.
 
 **Audiences stay as registered.** An audience is a name, not an address: each app's client is bound to its resource
-(`https://liveplanner.app/api`, and livediagram's stand-in), and every refresh token to the resources it was
+(`https://liveplanner.app/api`, `https://livediagram.app/api`), and every refresh token to the resources it was
 granted for. Asking for a `www.` resource with one of those refresh tokens is refused, which would sign everyone
 out, so `RESOURCES` and each app's `API_RESOURCE` stay as they are. Verification already accepts the `www.` twin, so
 a later move needs only the clients' resources re-bound.

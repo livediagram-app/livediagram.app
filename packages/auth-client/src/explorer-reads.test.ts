@@ -3,14 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { appApiResources, audiencesFor, isExplorerRead } from './explorer-reads';
 
 const get = (path: string, method = 'GET') =>
-  new Request(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`, { method });
+  new Request(`https://www.livediagram.app${path}`, { method });
 
 describe('appApiResources', () => {
   it('gives every app’s production API for a production resource', () => {
-    expect(
-      appApiResources('https://livediagram-router.liveworkspace-easing509.workers.dev/api'),
-    ).toEqual([
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+    expect(appApiResources('https://livediagram.app/api')).toEqual([
+      'https://livediagram.app/api',
       'https://liveplanner.app/api',
       'https://livedocuments.app/api',
       'https://livedesign.app/api',
@@ -19,7 +17,7 @@ describe('appApiResources', () => {
 
   it('stays in staging for a staging resource', () => {
     expect(appApiResources('https://staging.liveplanner.app/api')).toEqual([
-      'https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api',
+      'https://staging.livediagram.app/api',
       'https://staging.liveplanner.app/api',
       'https://staging.livedocuments.app/api',
       'https://staging.livedesign.app/api',
@@ -29,11 +27,9 @@ describe('appApiResources', () => {
   it('keeps any other resource alone: local development’s, or a stranger’s', () => {
     expect(appApiResources('http://localhost/api')).toEqual(['http://localhost/api']);
     expect(appApiResources('https://evil.example/api')).toEqual(['https://evil.example/api']);
-    expect(
-      appApiResources(
-        'https://livediagram-router.liveworkspace-easing509.workers.dev.evil.example/api',
-      ),
-    ).toEqual(['https://livediagram-router.liveworkspace-easing509.workers.dev.evil.example/api']);
+    expect(appApiResources('https://www.livediagram.app.evil.example/api')).toEqual([
+      'https://www.livediagram.app.evil.example/api',
+    ]);
     expect(appApiResources('not a url')).toEqual(['not a url']);
   });
 });
@@ -57,7 +53,7 @@ describe('isExplorerRead', () => {
 
 describe('audiencesFor', () => {
   it('widens the audience for the Explorer’s reads only', () => {
-    const resource = 'https://livediagram-router.liveworkspace-easing509.workers.dev/api';
+    const resource = 'https://livediagram.app/api';
     expect(audiencesFor(get('/api/documents/abc/tabs'), resource, 'documents')).toHaveLength(4);
     expect(audiencesFor(get('/api/documents/abc'), resource, 'documents')).toBe(resource);
   });

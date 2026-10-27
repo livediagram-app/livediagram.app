@@ -430,7 +430,7 @@ describe('My Shares', () => {
       method: 'PUT',
       headers: {
         'X-Community-Key': KEY,
-        Origin: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        Origin: 'https://www.livediagram.app',
       },
     });
 

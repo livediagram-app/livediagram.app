@@ -11,7 +11,7 @@ import { reportServerEvent } from '../server-telemetry';
 import type { EmailKind } from './templates';
 
 const DEFAULT_FROM = 'livediagram <hello@livediagram.app>';
-const DEFAULT_BASE_URL = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+const DEFAULT_BASE_URL = 'https://www.livediagram.app';
 
 export function emailEnabled(env: Env): boolean {
   return env.EMAIL !== undefined && env.EMAIL !== null;

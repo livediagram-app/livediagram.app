@@ -63,9 +63,7 @@ describe('the status page’s services', () => {
       else
         expect(
           probe.url.startsWith('/') ||
-            /\/api\/capabilities$|^https:\/\/(mcp\.[a-z]+\.app|livediagram-mcp\.liveworkspace-easing509\.workers\.dev)\/health$/.test(
-              probe.url,
-            ),
+            /\/api\/capabilities$|^https:\/\/mcp\.[a-z]+\.app\/health$/.test(probe.url),
           s.id,
         ).toBe(true);
     }
@@ -76,16 +74,10 @@ describe('the status page’s services', () => {
     expect(environmentOf('liveworkspace.app')).toBe('production');
     expect(environmentOf('staging.liveworkspace.app')).toBe('staging');
     expect(environmentOf('localhost:3000')).toBe('development');
-    expect(appOrigin(site, 'production')).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    );
-    expect(appOrigin(site, 'staging')).toBe(
-      'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
-    );
+    expect(appOrigin(site, 'production')).toBe('https://www.livediagram.app');
+    expect(appOrigin(site, 'staging')).toBe('https://staging.livediagram.app');
     expect(appOrigin(site, 'development')).toBe('http://localhost:3100');
-    expect(mcpOrigin(site, 'production')).toBe(
-      'https://livediagram-mcp.liveworkspace-easing509.workers.dev',
-    );
+    expect(mcpOrigin(site, 'production')).toBe('https://mcp.livediagram.app');
     expect(mcpOrigin(site, 'staging')).toBeNull();
     const staging = statusGroups('staging')[1]!.services.find((s) => s.name === 'MCP server');
     expect(staging?.check.mode).toBe('skipped');
@@ -99,7 +91,7 @@ describe('the status page’s services', () => {
     );
     expect(api!.id).toBe('livediagram:api');
     expect(resolveProbeUrl(api!.check.probe, 'https://lw.example')).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/capabilities',
+      'https://www.livediagram.app/api/capabilities',
     );
   });
 
