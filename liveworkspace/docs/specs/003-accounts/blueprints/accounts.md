@@ -40,12 +40,15 @@ Workbench pairings, tickets and sessions run in this Worker too; they are bluepr
 1. No `BETTER_AUTH_SECRET`: every request `503 { error: 'not_configured' }` (logged). Shorter than 32 characters,
    `getAuth` throws.
 2. `GET`: `/api/auth/sign-in-options`; `/api/auth/guest` (first `GUEST_LIMITER` keyed `ip:<network>`, `429 {
-error: 'rate_limited' }`); `/api/auth/workspace-token`; the two discovery documents at the root.
+error: 'rate_limited' }`); `/api/auth/workspace-token`; `/api/auth/end-session` (the browser's hop); the two
+   discovery documents at the root.
 3. `/api/account` and below: `handleAccountApi`; after it, the request's telemetry events and Timeline events are
    flushed in `waitUntil`.
-4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account`.
+4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account`;
+   `POST /api/auth/end-session` (an app's Worker).
 5. Anything else under `/api/auth`: the code routes are limited first (below), then Better Auth's handler (for
-   Google on an app's address, an instance built for that origin), then three rewrites of the answer: `GET
+   Google on an app's address, an instance built for that origin; before `POST /sign-out` and Security's `revoke-*`, every
+   app's tokens on the sessions they end are deleted, `endSessionTokensOf`), then three rewrites of the answer: `GET
 /get-session` gains the presence colour; `GET /oauth2/authorize` may move the sign-in page to the app's address,
    and may merge a guest into a session already there. Welcomes queued by a sign-up go after the answer.
 6. Else `404 Not found`.
@@ -110,7 +113,7 @@ Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined
 | Path                                                                                                                                                                                                                                    | Blueprint                                                    |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `GET /api/auth/sign-in-options`, `POST /api/auth/email-otp/send-verification-otp`, `POST /api/auth/sign-in/email-otp`, `/api/auth/sign-in/social`, `/api/auth/callback/google`, `POST /api/auth/handoff/start`, `GET /api/auth/handoff` | [sign-in.md](sign-in.md)                                     |
-| `GET /api/auth/get-session`, `GET /api/auth/guest`, `GET /api/auth/workspace-token`, `POST /api/account/internal/legacy-guests/claim`, `GET /api/account/people`                                                                        | [sessions-and-guests.md](sessions-and-guests.md)             |
+| `GET /api/auth/get-session`, `GET /api/auth/guest`, `GET /api/auth/workspace-token`, `POST`/`GET /api/auth/end-session`, `POST /api/auth/sign-out`, `POST /api/account/internal/legacy-guests/claim`, `GET /api/account/people`         | [sessions-and-guests.md](sessions-and-guests.md)             |
 | `/api/account/teams…`, `/api/account/invitations…`, `/api/account/join/:token`, `/api/account/internal/{teams,teams/of,teams/members,teams/changes,invitations}`, `POST /api/account/index/teams`                                       | [teams.md](teams.md)                                         |
 | `/api/account/tokens…`, `/api/account/internal/tokens{,/verify,/revoke,/live}`, `POST /api/auth/internal/bench-accounts`                                                                                                                | [tokens.md](tokens.md)                                       |
 | `/api/auth/oauth2/*`, `/api/auth/jwks`, `/.well-known/*`, `POST /api/auth/internal/clients`, an app's `/oauth/device*`                                                                                                                  | [oauth.md](oauth.md)                                         |
@@ -222,6 +225,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/accounts/src/drive-disconnect.ts`         | Closing an account disconnects its Google Drive mirror too (liveworkspace/docs/specs/005-drive/drive.md "Disconnecting and account deletion"): the Drive service revokes the grant and for…                        |
 | `liveworkspace/apps/accounts/src/email-layout.ts`             | The frame every accounts email is drawn in (liveworkspace/docs/specs/003-accounts/accounts.md "Emails"), the same as the apps' own (each product's docs/specs/014-identity/transactional-emai…                     |
 | `liveworkspace/apps/accounts/src/email.ts`                    |                                                                                                                                                                                                                    |
+| `liveworkspace/apps/accounts/src/end-session.ts`              | Signing out everywhere (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"): an app's Worker ends the session its refresh token came from, and the browser's hop ends its own                         |
 | `liveworkspace/apps/accounts/src/env.ts`                      |                                                                                                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/guest-sweep.ts`              | Guests who can never come back (liveworkspace/docs/specs/003-accounts/accounts.md "Guests who never come back")                                                                                                    |
 | `liveworkspace/apps/accounts/src/guests.ts`                   | Guests: one identity across every app (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests").                                                                                                     |

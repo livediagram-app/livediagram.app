@@ -10,6 +10,13 @@ import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import { disconnectDrive, driveDisconnectConfig } from './drive-disconnect.ts';
+import {
+  END_SESSION_PATH,
+  endSessionFromApp,
+  endSessionInBrowser,
+  endSessionTokensOf,
+  SESSION_ENDING_ROUTES,
+} from './end-session.ts';
 import type { Env } from './env.ts';
 import { sweepIdleGuests } from './guest-sweep.ts';
 import {
@@ -72,6 +79,10 @@ export default {
       if (pathname === `${AUTH_BASE_PATH}${WORKSPACE_TOKEN_PATH}`) {
         return workspaceToken(request, env, getAuth(env));
       }
+      // Signing out everywhere: the browser's hop through here, back to the app (end-session.ts).
+      if (pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
+        return endSessionInBrowser(request, env, getAuth(env));
+      }
       // Discovery at the root as well as under the issuer path, for clients that only look
       // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).
       if (pathname === '/.well-known/openid-configuration') {
@@ -95,6 +106,11 @@ export default {
 
     if (request.method === 'POST' && pathname === CLIENTS_PATH) {
       return registerClient(request, env, getAuth(env));
+    }
+
+    // Signing out everywhere, from an app's Worker: the session its refresh token came from ends (end-session.ts).
+    if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
+      return endSessionFromApp(request, env, getAuth(env));
     }
 
     if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
@@ -133,6 +149,11 @@ export default {
           ? appOriginOfProxy(request, env.ENVIRONMENT)
           : null;
       const auth = googleOrigin ? getGoogleAuthFor(env, googleOrigin) : getAuth(env);
+      // liveworkspace.app's own Sign out, and Settings › Security's, end every app's session from the sessions they
+      // end too (end-session.ts).
+      if (request.method === 'POST' && SESSION_ENDING_ROUTES.has(route)) {
+        await endSessionTokensOf(request, route, auth, env.AUTH_DB);
+      }
       let response = await auth.handler(request);
       // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
       if (request.method === 'GET' && route === GET_SESSION_PATH) {

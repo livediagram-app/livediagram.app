@@ -1,6 +1,7 @@
 // The app's own session, for the Explorer shown on that app's address (page-app.ts): its signed-in account from
 // the app's API, its sign-in and sign-out, and its guest token. On liveworkspace.app none of this is asked.
 
+import { appSignOut as signOutOfApp } from '@liveworkspace/account-menu';
 import { accountColourOf, accountPictureOf } from '@liveworkspace/auth-client/account-name';
 import { createGuestTokens, type GuestTokens } from '@liveworkspace/index-client/browser';
 import { SIGNED_IN_HINT_COOKIE as DIAGRAM_HINT } from '@livediagram/api-schema';
@@ -187,20 +188,13 @@ export function forgetAppAccount() {
   accountPending = null;
 }
 
-/** Signs out of the app (its API clears its cookies, and remembers not to sign in silently again). */
-export async function appSignOut(): Promise<boolean> {
-  try {
-    const res = await fetch('/api/auth/sign-out', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) return false;
-  } catch {
-    return false;
-  }
-  account = null;
-  return true;
+/** Signs out of the app, and so of every liveworkspace app in this browser (liveworkspace/docs/specs/003-accounts/
+ *  accounts.md "Signing out"), then goes through the accounts site's hop, or straight back to this page, as a visitor
+ *  (the account menu's own sign-out, `@liveworkspace/account-menu`). Resolves false when the API refused. */
+export async function appSignOut(go?: (to: string) => void): Promise<boolean> {
+  const left = await signOutOfApp(go);
+  if (left) account = null;
+  return left;
 }
 
 /** The app's own sign-in, and its registration page, coming back to `here` (the account menu's, one for every

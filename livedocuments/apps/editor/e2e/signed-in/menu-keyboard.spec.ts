@@ -26,7 +26,7 @@ test('the account menu walks by keyboard and returns focus', async ({ page, page
   await expect(trigger).toHaveAttribute('aria-controls', (await menu.getAttribute('id'))!);
   await expect(menu.getByRole('menuitem', { name: 'Account' })).toBeFocused();
   await page.keyboard.press('s');
-  await expect(menu.getByRole('menuitem', { name: 'Sign out' })).toBeFocused();
+  await expect(menu.getByRole('menuitem', { name: 'Sign Out' })).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(menu).toHaveCount(0);
   await expect(trigger).toBeFocused();

@@ -64,9 +64,10 @@ shareable as it is, and the device's own setting applies through System.
   name (or full name, or email; the name hides on a phone), opening a menu
   (`components/AccountControl.tsx`): the name again over "Your account", **Explorer** (this site's own
   `/explorer`, every app's work at once, [The Explorer](#the-explorer-explorer)), **Settings**, which opens the
-  Settings panel ([below](#settings)) in place over whatever page this is, without leaving it, and **Sign out**,
-  which ends the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
-  tokens. API tokens are a category of the panel, not a menu item.
+  Settings panel ([below](#settings)) in place over whatever page this is, without leaving it, and **Sign Out**
+  (its hint under it: "Every app in this browser"), which ends the liveworkspace session here and with it every
+  app's session in this browser ([accounts.md](../003-accounts/accounts.md#signing-out)). API tokens are a category
+  of the panel, not a menu item.
 
 The site is static, so the control asks the accounts API (`GET /api/auth/get-session`, on this
 origin, with the session cookie) once the page is up. Until it hears, it keeps the Guest button's place, invisible,
@@ -84,7 +85,7 @@ wherever the surface has the panel: this site's header (its own lazily loaded pa
 an app's address (the Explorer's panel). A surface with no panel of its own, an app's marketing page, links instead
 to that app's own Explorer on the same address with the panel open (`/explorer?settings=all`, `settingsHref`). Only
 liveworkspace.app's header adds **Explorer** (`explorerHref`): on an app's address the app's own Explorer is a click
-away already. On an app's own pages Sign out is the app's. A marketing page learns who is signed in from the app's readable cookies,
+away already. On an app's own pages Sign out is the app's, and it signs out of every app in the browser just the same, through the accounts site's hop. A marketing page learns who is signed in from the app's readable cookies,
 `<prefix>signed_in` and `<prefix>account` (the name), and makes no request for it
 ([accounts.md](../003-accounts/accounts.md#an-apps-signed-in-cookies)). There a guest's Sign in is the app's own
 (`/api/auth/sign-in?return_to=<the page>`) and Create account the same with `&screen=sign-up`, and the Guest button
@@ -547,6 +548,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     **Where You're Signed In** (each session's browser and system, when it was last active, **This device** for the
     current one, **Sign Out** of any other and **Sign Out Everywhere Else**), from Better Auth's own
     `/list-sessions`, `/revoke-session`, `/revoke-other-sessions`, `/list-accounts` and `/link-social` on this origin.
+    Signing another device out signs its apps out too ([accounts.md](../003-accounts/accounts.md#signing-out)).
     Either section that can't be read says so with **Try again**.
     On an app's address and in an editor, a link to the same section on liveworkspace.app.
   - **Your Account**: **Sign Out** where the host can sign out (`AccountHost.onSignOut`), and, in an editor's All, the
