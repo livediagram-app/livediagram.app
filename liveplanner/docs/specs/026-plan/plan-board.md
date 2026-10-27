@@ -812,7 +812,8 @@ to import. Import CSV reads files up to 5 MB." Each row after it becomes a new c
 
 The rows go in as **one write and one undo step**, each card at the end of its column in file order. At most as many
 as the project still has room for (its card limit) are added; the rest are skipped. The board then says what
-happened: "Added 12 cards", "Added 12 cards; skipped 3 rows", or why nothing was added ("No Title column in the
+happened: "Added 12 cards", "Added 12 cards; skipped 3 rows" (with ", 2 missing a required field" when rows lacked a
+[required field](item-types.md#required-fields), or "skipped 2 rows missing a required field" when all did), or why nothing was added ("No Title column in the
 file", "No cards to add"). Telemetry: `Plan` · `Imported` · `Csv` when a file is read, `Plan` · `Exported` · `Csv` on
 a download.
 

@@ -170,7 +170,7 @@ Every write takes what a person would say, and stores the ids:
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
   - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, excludedStatuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
-    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, onCard? }]`
+    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, onCard?, required? }]`
     (kinds `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `card`; a
     `currency` field's code, GBP when absent). A Currency value is written as a number, an Email value as the
     address; `editCustom` also takes `currency`. A `card` field links to `linkTypes`, the card types it may point at
@@ -178,12 +178,17 @@ Every write takes what a person would say, and stores the ids:
     as the type editor's Add Type does.
   - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,
 defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes
-    values. `editCustom` `[{ field, name?, options?, linkTypes?, onCard? }]` edits a custom field in place, as the
+    values. `editCustom` `[{ field, name?, options?, linkTypes?, onCard?, required? }]` edits a custom field in place, as the
     type editor's field form does: a new name, a Choice field's options replaced whole (any other kind is refused),
     a Card field's card types replaced whole (any other kind is refused), drawn on the card or not; values on cards
     stay. A field ticked `onCard` (added or edited) on a type with a Display of its own
     is placed at the end of its Detailed body, as without one the default layout shows it; unticked, it leaves that
     Display.
+  - `required: true` makes a custom field [required](item-types.md#required-fields) (`false` makes it optional
+    again); a Checkbox field cannot be, and is refused. `list_items` lists `required: true` on each required
+    custom field, and `change_items` refuses an `add` that leaves one empty, or a `set` that clears one, before
+    writing, with `field_required` naming the type and every missing field ("Bug cards need Severity: give it in
+    fields, by name").
   - A type renamed earlier in the same call still answers to its former name, so a later change can name it either
     way.
   - A `defaultStatus` naming a column no board has yet leaves the type without a Default State instead of refusing
