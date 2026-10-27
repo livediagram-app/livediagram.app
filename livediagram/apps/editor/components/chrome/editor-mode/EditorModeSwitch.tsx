@@ -10,19 +10,15 @@ import { ModeMenuChip } from './ModeMenuChip';
 // Renders nothing where no switch is offered: outside an editor, for a Participant or a Viewer (canEdit is an
 // Editor's alone), on a locked tab or an event-storming board (canSwitch).
 //
-// Zero layout shift: a fixed width whatever the mode, wide enough for the longest name (Workshop). `iconOnly` (a
-// phone) drops the name to save room in the strip's row; the chip keeps its accessible name.
+// The chip takes only the width its content needs, so a short name (Draw) leaves no empty space. `iconOnly` (a phone)
+// drops the name to save room in the strip's row; the chip keeps its accessible name.
 const SLOT = 'flex shrink-0';
-const WIDTH = { named: 'w-[7.5rem]', iconOnly: 'w-12' };
 
 export function EditorModeSwitch({ iconOnly = false }: { iconOnly?: boolean }) {
   const editorMode = useEditorModeState();
   if (!editorMode?.canEdit || !editorMode.canSwitch) return null;
   return (
-    <div
-      data-editor-mode-switch=""
-      className={`${SLOT} ${iconOnly ? WIDTH.iconOnly : WIDTH.named}`}
-    >
+    <div data-editor-mode-switch="" className={SLOT}>
       <ModeMenuChip
         mode={editorMode.mode}
         onChange={editorMode.setMode}

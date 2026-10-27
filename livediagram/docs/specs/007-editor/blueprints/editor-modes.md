@@ -304,8 +304,8 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 - `EditorModeSwitch`: rendered by `ToolbarExplorerButton` right after the menu button's `HoverCard` and before
   `TabNameInBox`, in the same `ToolbarMenuCard` (so it follows the card into the strip's row on a phone and into the
-  corner on a Draw tab or for a read-only visitor). Nothing unless `canEdit && canSwitch`. A fixed-width slot
-  (`data-editor-mode-switch`): `w-[7.5rem]` named, `w-12` with `iconOnly` (`useIsMobileViewport() || inline`).
+  corner on a Draw tab or for a read-only visitor). Nothing unless `canEdit && canSwitch`. A content-width slot
+  (`data-editor-mode-switch`), the name dropped with `iconOnly` (`useIsMobileViewport() || inline`).
   Its chip is `ModeMenuChip compact`: `h-9 rounded-md px-2 gap-1.5`, the icon, the name unless `iconOnly`, the
   chevron, on `TOOLBAR_TRIGGER_TONE` with `MODE_SWITCH_FOCUS`; its menu opens with `fill={false}`.
 - The start's chip (`ModeMenuChip`): a full-bleed `h-12` row at the top of the rail, the mode's icon, its name and a chevron
@@ -334,8 +334,9 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Web Experience
 
-- CLS: the switch fills its row on the start's rail, and beside the menu button it has a fixed width per form
-  (`w-[7.5rem]` / `w-12`), so nothing beside either moves on a switch.
+- CLS: the switch fills its row on the start's rail; beside the menu button it takes its content's width, so the tab
+  name shifts a little on a switch (a user action, so it is not counted as layout shift). The Draw dock re-measures
+  the card through its ResizeObserver.
 - INP: a switch is one commit; no fetch, no remount of the canvas.
 - LCP: unaffected; the mode resolves synchronously on first render from the tab.
 

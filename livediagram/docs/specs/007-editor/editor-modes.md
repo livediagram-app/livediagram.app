@@ -100,8 +100,8 @@ where it is and changes only how the next mark is made.
   everyone on a locked tab, sees no switch and sees the tab in its mode; Shift+D does nothing for them.
 - **Not on event-storming boards:** the tab kind keeps its own tools and
   notation, and shows no switch.
-- **Zero layout shift:** the start's switch fills its row; the top chrome's chip has a fixed width whatever the
-  mode (wide enough for the longest name, Workshop), so nothing next to it moves when the mode changes.
+- **Width:** the start's switch fills its row; the top chrome's chip takes only the width its content needs, so a
+  short name (Draw) leaves no empty space. The tab name beside it moves a little on a switch, which is the user's choice.
 - **Shift+D** moves the tab to the next mode, wrapping round through all three, shown in the switch's preview,
   `aria-keyshortcuts` and Settings › Keyboard; a switch by key is announced politely ("Draw mode"). It works wherever
   the switch is offered, on a tab with content as on an empty one. It obeys the character-key shortcuts setting.
