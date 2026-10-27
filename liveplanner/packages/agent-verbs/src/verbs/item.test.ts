@@ -41,7 +41,7 @@ const PLAN = {
       columns: [
         { status: 'todo', name: 'To Do' },
         { status: 'doing', name: 'Doing' },
-        { status: 'done', name: 'Done' },
+        { status: 'done', name: 'Done', done: true },
       ],
     },
   ],
@@ -81,7 +81,7 @@ describe('item ls', () => {
     const { ctx } = api();
     const all = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(itemLs.text!(all)).toEqual([
-      'Sprint: To Do 1 · Doing 1 · Done 0',
+      'Sprint: To Do 1 · Doing 1 · Done ✓ 0',
       '#1  bug   Doing  "Fix login"',
       '#2  task  To Do  "Docs"',
     ]);
@@ -234,7 +234,7 @@ describe('item edges', () => {
     const out = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(out.items[0]!.status).toBeNull();
     expect(itemLs.text!(out)).toEqual([
-      'Sprint: To Do 0 · Doing 0 · Done 0',
+      'Sprint: To Do 0 · Doing 0 · Done ✓ 0',
       '#5  task  -  "Loose"',
     ]);
   });

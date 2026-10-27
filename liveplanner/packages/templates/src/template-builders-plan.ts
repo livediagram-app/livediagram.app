@@ -12,7 +12,12 @@ import {
   type ShapeElement,
   type Tab,
 } from '@liveplanner/project';
-import { CARD_FIELDS, presetSetup, type PlanBoardSetup } from '@liveplanner/items';
+import {
+  CARD_FIELDS,
+  presetSetup,
+  settleDoneColumns,
+  type PlanBoardSetup,
+} from '@liveplanner/items';
 import { dashboardLayoutOf, dashboardViewElements } from './dashboard-builder';
 import {
   PLAN_TEMPLATE_KINDS,
@@ -35,9 +40,16 @@ export function boardSetup(spec: BoardSpec): PlanBoardSetup {
     ...structuredClone(spec.setup ?? {}),
     title: spec.title,
   };
-  // A spec may take its preset's done column away (`doneColumnId: undefined`): drop the key.
-  if (setup.doneColumnId === undefined) delete setup.doneColumnId;
-  return { ...setup, cardFields: CARD_FIELDS.filter((f) => setup.cardFields.includes(f)) };
+  // A spec names its done column as an older board does (that column and every one after it), or takes its preset's
+  // away (`doneColumnId: undefined`, none done whatever the names): each column is flagged so
+  // (docs/specs/026-plan/plan-board.md "Done columns").
+  const done = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
+  const { doneColumnId: _done, ...rest } = setup;
+  const flagged = settleDoneColumns(undefined, {
+    ...rest,
+    columns: setup.columns.map((c, i) => ({ ...c, done: done >= 0 && i >= done })),
+  });
+  return { ...flagged, cardFields: CARD_FIELDS.filter((f) => setup.cardFields.includes(f)) };
 }
 
 // A template's board fills its Board tab, so it draws its cards Detailed, whatever its preset's size on a canvas

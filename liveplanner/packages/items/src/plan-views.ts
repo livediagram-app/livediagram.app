@@ -18,6 +18,7 @@ import {
 import { GANTT_NAMES_MAX_PX, GANTT_NAMES_MIN_PX } from './plan-view-gantt';
 import { isGanttRowOrder } from './gantt-row-order';
 import { ITEM_TYPE_PATTERN } from './limits';
+import { doneColumnsOf } from './done-columns';
 import { ITEM_TYPES, LEGACY_PARENT_GROUPING, type ItemTypeDef } from './item-types';
 import { isCardSearchFilters } from './card-search';
 import { isPlanViewStatuses } from './plan-view-statuses';
@@ -273,10 +274,10 @@ export function statusPhasesOf(boards: Iterable<unknown>): Map<string, StatusPha
   for (const raw of boards) {
     const setup = normaliseBoardSetup(raw);
     if (!setup || setup.allCards || setup.archive) continue;
-    const doneAt = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
+    const done = doneColumnsOf(setup);
     setup.columns.forEach((c, i) => {
       if (out.has(c.status)) return;
-      const phase: StatusPhase = doneAt >= 0 && i >= doneAt ? 'done' : i === 0 ? 'todo' : 'doing';
+      const phase: StatusPhase = done.includes(c) ? 'done' : i === 0 ? 'todo' : 'doing';
       out.set(c.status, phase);
     });
   }
@@ -301,10 +302,12 @@ export function metricBoard(
   const hasDone = [...phases.values()].includes('done');
   const setup: PlanBoardSetup = {
     title: 'All Cards',
+    // Only the Done phase counts as done, and only when some status is Done (its name alone would make it so).
     columns: STATUS_PHASES.map((p) => ({
       id: p,
       name: STATUS_PHASE_LABELS[p],
       status: PHASE_STATUS(p),
+      done: p === 'done' && hasDone,
     })),
     ...(hasDone ? { doneColumnId: 'done' } : {}),
     swimlaneBy: 'none',

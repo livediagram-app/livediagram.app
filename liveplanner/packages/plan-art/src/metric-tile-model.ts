@@ -11,6 +11,7 @@ import {
   type ItemTypeDef,
   type MetricKind,
   type PlanBoardSetup,
+  doneColumnsOf,
 } from '@liveplanner/items';
 import { PRIORITY_COLOURS } from '@liveplanner/project';
 import { OVERDUE_RED, PHASE_COLOURS } from './phase-colours';
@@ -117,7 +118,7 @@ export function metricModel(
         visual: total ? { kind: 'split', parts: phaseSplit(projection), total } : null,
       };
     case 'progress': {
-      if (setup.doneColumnId === undefined)
+      if (doneColumnsOf(setup).length === 0)
         return { hero: '–', line: 'No board has a done column yet', visual: null };
       const pct = percentDone(projection.doneCount, total);
       return {

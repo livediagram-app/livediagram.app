@@ -18,6 +18,7 @@ import { freshBoardSetup, isPlanBoardPresetId, PLAN_BOARD_PRESET_IDS } from './p
 import { statusKey, statusNamed } from './status-names';
 import { slugOf } from './type-catalogue';
 import { CARD_FIELD_LABELS } from './card-display';
+import { settleDoneColumns } from './done-columns';
 
 // A placed board's width (blueprints/DEFAULTS.md D5; wider when its columns need it; its height is
 // planBoardHeightFor) and its gap from what the tab holds.
@@ -120,9 +121,9 @@ export function placeBoard(
     const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
     const columns = namedColumns(request.columns, existing, suffix);
     if (typeof columns === 'string') return { ok: false, code: 'board_invalid', message: columns };
-    // The preset's done column is gone with its columns.
+    // The preset's done columns are gone with its columns: the new ones count as done by their names.
     const { doneColumnId: _done, ...rest } = setup;
-    setup = { ...rest, columns };
+    setup = settleDoneColumns(undefined, { ...rest, columns });
   }
   if (request.title !== undefined) {
     const title = request.title.trim();
@@ -164,10 +165,40 @@ export interface BoardChange {
   cardSize?: CardSize;
   // Its swimlanes: none, by a built-in grouping, or by a field (its id, resolved by the caller).
   swimlanes?: { by: SwimlaneBy; field?: string };
-  // The column whose cards count as done (Completion, the phases charts read), by name; null for none.
+  // The columns whose cards count as done (docs/specs/026-plan/plan-board.md "Done columns"), by name, whole; [] for
+  // none.
+  doneColumns?: readonly string[];
+  // The older way: the column whose cards count as done, and every one after it; null for none.
   doneColumn?: string | null;
   // The built-in fields its cards show, by name ("Number", "Due Date") or id, whole; a type's Display places them.
   cardFields?: readonly string[];
+}
+
+// The ids of the columns a change makes done (`doneColumns`, or `doneColumn` and every column after it), undefined
+// when it names none, or the refusal.
+function doneColumnsNamed(
+  setup: PlanBoardSetup,
+  change: BoardChange,
+): Set<string> | undefined | string {
+  if (change.doneColumns !== undefined && change.doneColumn !== undefined)
+    return 'Give doneColumns or doneColumn, not both.';
+  const names =
+    change.doneColumns ??
+    (change.doneColumn === undefined
+      ? undefined
+      : change.doneColumn === null
+        ? []
+        : [change.doneColumn]);
+  if (!names) return undefined;
+  const ids = new Set<string>();
+  for (const name of names) {
+    const at = setup.columns.findIndex((c) => statusKey(c.name) === statusKey(name));
+    if (at < 0)
+      return `"${setup.title}" has no column "${name}". Columns: ${setup.columns.map((c) => c.name).join(', ')}.`;
+    for (const c of change.doneColumns ? [setup.columns[at]!] : setup.columns.slice(at))
+      ids.add(c.id);
+  }
+  return ids;
 }
 
 // A built-in card field by its name or id ("Due Date", "due"), case and spaces aside.
@@ -252,9 +283,7 @@ export function reshapeBoard(
       made.map((c) => base.columns.find((o) => o.status === c.status) ?? c),
       new Set(base.columns),
     );
-    const done = columns.some((c) => c.id === setup.doneColumnId) ? setup.doneColumnId : undefined;
-    const { doneColumnId: _done, ...rest } = next;
-    next = { ...rest, columns, ...(done ? { doneColumnId: done } : {}) };
+    next = { ...next, columns };
   }
   if (change.swimlanes) {
     const { swimlaneField: _field, ...rest } = next;
@@ -266,20 +295,17 @@ export function reshapeBoard(
         : {}),
     };
   }
-  if (change.doneColumn !== undefined) {
-    const { doneColumnId: _done, ...rest } = next;
-    if (change.doneColumn === null) next = rest;
-    else {
-      const column = next.columns.find((c) => statusKey(c.name) === statusKey(change.doneColumn!));
-      if (!column)
-        return {
-          ok: false,
-          code: 'board_invalid',
-          message: `"${next.title}" has no column "${change.doneColumn}". Columns: ${next.columns.map((c) => c.name).join(', ')}.`,
-        };
-      next = { ...rest, doneColumnId: column.id };
-    }
-  }
+  // Each column flagged as it counts: a kept column as it did (an older board's by its done column), a new one by its
+  // name (docs/specs/026-plan/plan-board.md "Done columns").
+  const { doneColumnId: _done, ...unflagged } = next;
+  next = settleDoneColumns(setup, unflagged);
+  const done = doneColumnsNamed(next, change);
+  if (typeof done === 'string') return { ok: false, code: 'board_invalid', message: done };
+  if (done)
+    next = settleDoneColumns(undefined, {
+      ...next,
+      columns: next.columns.map((c) => ({ ...c, done: done.has(c.id) })),
+    });
   if (change.cardSize) {
     const { cardSize: _size, ...rest } = next;
     next = change.cardSize === 'detailed' ? rest : { ...rest, cardSize: change.cardSize };

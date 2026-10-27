@@ -59,11 +59,12 @@ describe('placeBoard', () => {
     if (!r.ok) throw new Error(r.message);
     expect(r.board).toMatchObject({ x: 0, y: 0 });
     expect(r.board.planBoard).toMatchObject({ title: 'Roadmap', addTypes: ['project'] });
-    expect(r.board.planBoard.doneColumnId).toBeUndefined();
+    // Done columns by their names (docs/specs/026-plan/plan-board.md "Done columns").
+    expect(r.board.planBoard.doneColumnId).toBe('done');
     expect(r.board.planBoard.columns).toEqual([
       { id: 'ideas', status: 'ideas~iiii', name: 'Ideas' },
-      { id: 'done', status: 'done~old1', name: 'done' },
-      { id: 'shipped', status: 'shipped~iiii', name: 'Shipped' },
+      { id: 'done', status: 'done~old1', name: 'done', done: true },
+      { id: 'shipped', status: 'shipped~iiii', name: 'Shipped', done: true },
     ]);
   });
 
@@ -98,7 +99,7 @@ describe('reshapeBoard', () => {
       { id: 'todo', status: 'todo~b', name: 'To Do', wipLimit: 4 },
       { id: 'review', status: 'review~z', name: 'Review' },
       { id: 'qa', status: 'qa~iiii', name: 'QA' },
-      { id: 'done', status: 'done~b', name: 'Done' },
+      { id: 'done', status: 'done~b', name: 'Done', done: true },
     ]);
     expect(r.setup.doneColumnId).toBe('done');
     const dropped = reshapeBoard(setup, { columns: ['To Do'] }, others, fixed);
@@ -114,7 +115,7 @@ describe('reshapeBoard', () => {
     );
     if (!r.ok) throw new Error(r.message);
     expect(r.setup.columns).toEqual([
-      { id: 'done', status: 'done~b', name: 'Shipped' },
+      { id: 'done', status: 'done~b', name: 'Shipped', done: true },
       { id: 'todo', status: 'todo~b', name: 'Backlog', wipLimit: 4 },
     ]);
     expect(r.setup.doneColumnId).toBe('done');
@@ -165,6 +166,35 @@ describe('reshapeBoard', () => {
     expect(reshapeBoard(setup, { doneColumn: 'Shipped' }, others)).toMatchObject({ ok: false });
   });
 
+  // docs/specs/026-plan/plan-agents.md "Changing a board": doneColumns, whole.
+  it('sets the done columns by name, whole, and none with an empty list', () => {
+    const wide = reshapeBoard(
+      setup,
+      { columns: ['To Do', 'Done', 'Cancelled', 'Later'] },
+      others,
+      fixed,
+    );
+    if (!wide.ok) throw new Error(wide.message);
+    // An older board's kept done column stays done; a new column counts by its name.
+    expect(wide.setup.columns.map((c) => c.done)).toEqual([undefined, true, true, undefined]);
+    const picked = reshapeBoard(wide.setup, { doneColumns: ['later', 'Done'] }, others);
+    if (!picked.ok) throw new Error(picked.message);
+    expect(picked.setup.columns.map((c) => c.done)).toEqual([undefined, true, false, true]);
+    expect(picked.setup.doneColumnId).toBe('done');
+    const none = reshapeBoard(picked.setup, { doneColumns: [] }, others);
+    expect(none.ok && none.setup.doneColumnId).toBeUndefined();
+    expect(reshapeBoard(setup, { doneColumns: ['Shipped'] }, others)).toMatchObject({
+      ok: false,
+      message: expect.stringContaining('Columns: To Do, Done'),
+    });
+    expect(
+      reshapeBoard(setup, { doneColumns: ['Done'], doneColumn: 'Done' }, others),
+    ).toMatchObject({
+      ok: false,
+      message: 'Give doneColumns or doneColumn, not both.',
+    });
+  });
+
   it('never gives two columns one id, a kept column keeping its own', () => {
     // Kanban's "In Progress" has the id `doing`; a new "Doing" column slugs to the same id.
     const kanban = presetSetup('kanban');
@@ -172,7 +202,7 @@ describe('reshapeBoard', () => {
     if (!r.ok) throw new Error(r.message);
     const ids = r.setup.columns.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(r.setup.columns[0]).toBe(kanban.columns.find((c) => c.name === 'In Progress'));
+    expect(r.setup.columns[0]).toEqual(kanban.columns.find((c) => c.name === 'In Progress'));
     expect(ids).toEqual(['doing', 'doing-2', 'doing-2-2']);
   });
 

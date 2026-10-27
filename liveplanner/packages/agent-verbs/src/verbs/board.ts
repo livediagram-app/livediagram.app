@@ -98,17 +98,26 @@ export const boardSet = defineVerb({
       .string()
       .optional()
       .describe('The card types it takes, comma separated; "all" for every type'),
+    done: z
+      .string()
+      .optional()
+      .describe(
+        'The columns whose cards count as done, comma separated; "none" for no done column',
+      ),
   }),
   output: z.object({
     elementId: z.string(),
     title: z.string(),
-    columns: z.array(z.object({ name: z.string(), status: z.string() })),
+    columns: z.array(
+      z.object({ name: z.string(), status: z.string(), done: z.literal(true).optional() }),
+    ),
     takes: z.union([z.array(z.string()), z.literal('every type')]),
   }),
   run: async (ctx, input) => {
     const project = await projectOf(ctx, input.project);
     const columns = csv(input.columns);
     const types = input.types?.trim().toLowerCase() === 'all' ? EVERY_TYPE : csv(input.types);
+    const doneColumns = input.done?.trim().toLowerCase() === 'none' ? [] : csv(input.done);
     const result = await changeBoard(
       ctx.api,
       project.id,
@@ -117,6 +126,7 @@ export const boardSet = defineVerb({
         ...(input.title ? { title: input.title } : {}),
         ...(columns ? { columns } : {}),
         ...(types ? { types } : {}),
+        ...(doneColumns ? { doneColumns } : {}),
       },
       'cli',
     );
@@ -135,7 +145,7 @@ export const boardSet = defineVerb({
     };
   },
   text: ({ title, columns, takes }) => [
-    `~ board ${JSON.stringify(title)}: ${columns.map((c) => c.name).join(' · ')} (takes ${
+    `~ board ${JSON.stringify(title)}: ${columns.map((c) => `${c.name}${c.done ? ' ✓' : ''}`).join(' · ')} (takes ${
       takes === 'every type' ? takes : takes.length ? takes.join(', ') : 'no type'
     })`,
   ],
@@ -144,9 +154,9 @@ export const boardSet = defineVerb({
     positionals: ['project', 'board'],
     examples: [
       'liveplanner board set "Sprint 14" Kanban --types Task,Bug',
-      'liveplanner board set 3f9c Roadmap --columns "Now,Next,Later,Done" --title "Roadmap 2027"',
+      'liveplanner board set 3f9c Roadmap --columns "Now,Next,Later,Done" --done "Done, Later"',
     ],
-    prints: '~ board "<title>": <column> · <column> ... (takes <types>)',
+    prints: '~ board "<title>": <column> · <done column> ✓ ... (takes <types>)',
   },
 });
 
