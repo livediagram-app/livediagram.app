@@ -44,6 +44,18 @@ The app the person came from: `?from=<app>`, else the referrer's site, else none
 kept in `localStorage` (`liveworkspace:explorer-app`): what New makes and whose welcome Home shows in no app; it never
 filters the lists. On an app's address the app is the host's. Settings opens through `?settings=<section>`.
 
+### The site switcher's logo tap (`packages/ui/src/SiteSwitcher.tsx`, `packages/ui/src/touch-tap.ts`)
+
+The switcher wraps the header's logo in a `display: contents` span with a capture-phase click handler. A click on a
+link inside it, while the card is shut, is a tap when `isTouchTap(event)` says so: never a keyboard click
+(`detail === 0`), a `pointerType` of `touch` when the browser gives one, and otherwise
+`matchMedia('(pointer: coarse)')` (SITE4). A tap cancels the navigation, keeps the link's `href` and opens the card
+(`openMenu('checked')`, as a chevron click does). While that `href` is kept, the current site's row links to it in
+place of its usual address, so home is still reachable; until then (and always, with a mouse or the keyboard) every
+row is unchanged. With the card
+open, a tap on the logo is not intercepted and follows the link. Outside taps close it through `useClickOutside`, as
+before.
+
 ### Old addresses
 
 `/account`, `/account/settings…` and `/account/tokens` send the browser to `/explorer?settings=<section>`, the anchor
@@ -535,3 +547,4 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `SITE1`: a sign-in's `return` path is honoured only when it is a path on this site; anything else goes home.
 - `SITE2`: the site asks who is signed in once per page load.
 - `SITE3`: the last app a browser came from picks what New makes, never what the lists show.
+- `SITE4`: a click is a touch tap on a `touch` pointer, or on a coarse primary pointer when the click names none; a keyboard click never is.
