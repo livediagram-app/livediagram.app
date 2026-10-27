@@ -103,3 +103,37 @@ person who just wants to read or work without the movement had no way to turn th
   modal's row). The editors' four copies of `RemoteCursor.tsx` are gone.
 - Settings: a `hideCursors` row (its own kind, like `shortcuts`) in the Collaborate category.
 - Telemetry: `UI` / `Toggled` / `HideCursorsOn` / `HideCursorsOff`, sent before the write, from either place.
+
+## 3. Cursors Step Aside
+
+### The problem
+
+Another person's cursor and name pill can sit right over the thing you want to read or click. The cursor never
+took the click (it has always let pointer events through), but you could not see what you were aiming at
+until they moved.
+
+### The behaviour
+
+- **Over or near a cursor, it fades out.** When your pointer comes within 8 px of another person's arrow or name
+  pill, that cursor fades away (a short opacity fade, none with reduced motion) and stays faded while your pointer
+  is there. Move away and it comes back at its latest position. Only the cursors near your pointer fade; the rest
+  stay.
+- **It works both ways round:** a cursor that moves under your still pointer steps aside too, and one that moves
+  away comes back.
+- **Never steals a click.** Cursors stay `pointer-events: none`, faded or not, so a click lands on whatever is
+  beneath.
+- **Mouse and pen only.** A touch screen has no hover, so nothing fades there; a touch clears anything a pen
+  left faded. Leaving the window or the page brings every cursor back.
+- **Every role** (Editor, Participant, Viewer) gets it: it changes only what this screen draws.
+
+### Implementation notes
+
+- `@liveworkspace/workbench`: `lib/cursor-hover` (the hit test: each cursor's box on screen from its canvas
+  point, the zoom and the canvas origin, its pill's width estimated from the name's length, so no layout is read
+  per cursor), `hooks/canvas/useCursorsNearPointer` (one passive `pointermove` listener while any cursor is drawn,
+  at most one check per animation frame, one rect read per check: a zero-size anchor at canvas (0, 0)), and
+  `components/canvas/RemoteCursor`, whose `RemoteCursors` layer fades the cursors the hook names.
+- It renders only when the set of cursors near the pointer changes, never per pointer move.
+- The fade lives in the shared `RemoteCursors` layer (moved into the workbench by
+  [Hide Participant Cursors](#2-hide-participant-cursors)), so all four editors get it; each draws the layer with its
+  own identity fill (`identityVars`).

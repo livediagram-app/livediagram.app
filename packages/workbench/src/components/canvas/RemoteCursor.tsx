@@ -1,9 +1,10 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { memo, useRef, type CSSProperties } from 'react';
 import { PictureDisc } from '@liveworkspace/ui';
 import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { initialsOf } from '@liveworkspace/model-core/names';
+import { useCursorsNearPointer } from '../../hooks/canvas/useCursorsNearPointer';
 import { useHideCursors } from '../../hooks/collab/useHideCursors';
 import { useCanvasZoom } from './CanvasZoomContext';
 
@@ -27,19 +28,27 @@ const CURSOR_PICTURE_PX = 14;
 
 // Position is in canvas coords (so the cursor pans + zooms with the canvas), but the SVG + name pill are
 // counter-scaled so they keep their on-screen size at any zoom, the same trick the badges and plus buttons use.
-export function RemoteCursor({
+// It never takes a pointer: `pointer-events-none` lets every click through to what is beneath, faded or not.
+// Memoised: one cursor stepping aside re-renders that cursor, not the whole room.
+export const RemoteCursor = memo(function RemoteCursor({
   cursor,
   zoom,
   paint,
+  faded = false,
 }: {
   cursor: RemoteCursorRow;
   zoom: number;
   paint: PaintIdentity;
+  // Stepping aside for this screen's pointer (docs/specs/012-collaboration/collaborator-enhancements.md
+  // "Cursors Step Aside").
+  faded?: boolean;
 }) {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute"
+      data-remote-cursor={cursor.id}
+      data-faded={faded || undefined}
+      className={`pointer-events-none absolute motion-safe:transition-opacity motion-safe:duration-micro ${faded ? 'opacity-0' : ''}`}
       style={{
         left: cursor.x,
         top: cursor.y,
@@ -77,12 +86,16 @@ export function RemoteCursor({
       </span>
     </div>
   );
-}
+});
 
 // Every remote cursor on the active tab, drawn inside the canvas's panned + zoomed wrapper. It reads the zoom
 // itself (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas"), so the layer around it takes
 // no view, and it draws nothing while this screen hides participant cursors
-// (docs/specs/012-collaboration/collaborator-enhancements.md "Hide Participant Cursors").
+// (docs/specs/012-collaboration/collaborator-enhancements.md "Hide Participant Cursors"). A cursor under or near
+// this screen's own pointer fades out of the way until the pointer leaves ("Cursors Step Aside"); the anchor, a
+// point at canvas (0, 0), is where the hit test reads the canvas's place on screen.
+const NO_CURSORS: readonly RemoteCursorRow[] = [];
+
 export function RemoteCursors({
   cursors,
   paint,
@@ -92,6 +105,17 @@ export function RemoteCursors({
 }) {
   const zoom = useCanvasZoom();
   const { hidden } = useHideCursors();
-  if (hidden) return null;
-  return cursors.map((c) => <RemoteCursor key={c.id} cursor={c} zoom={zoom} paint={paint} />);
+  // Hidden draws no cursor, so the hook gets none and attaches no listener.
+  const drawn = hidden ? NO_CURSORS : cursors;
+  const anchor = useRef<HTMLDivElement>(null);
+  const near = useCursorsNearPointer(drawn, zoom, anchor);
+  if (drawn.length === 0) return null;
+  return (
+    <>
+      <div ref={anchor} aria-hidden className="pointer-events-none absolute left-0 top-0 size-0" />
+      {drawn.map((c) => (
+        <RemoteCursor key={c.id} cursor={c} zoom={zoom} paint={paint} faded={near.has(c.id)} />
+      ))}
+    </>
+  );
 }

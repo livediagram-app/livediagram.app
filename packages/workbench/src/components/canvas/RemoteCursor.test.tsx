@@ -22,6 +22,7 @@ describe('RemoteCursor', () => {
     const root = container.firstElementChild as HTMLElement;
     expect(root.getAttribute('aria-hidden')).toBe('true');
     expect(root.className).toContain('pointer-events-none');
+    expect(root.className).not.toContain('opacity-0');
     expect(root.style.left).toBe('120px');
     expect(root.style.top).toBe('40px');
     expect(root.style.transform).toBe('scale(0.5)');
@@ -42,6 +43,14 @@ describe('RemoteCursor', () => {
     // The initials always render under the picture, so the pill is the same size loaded or not.
     expect(container.textContent).toBe('ALAda Lovelace');
   });
+
+  it('fades out, still letting clicks through, while it steps aside', () => {
+    const { container } = render(<RemoteCursor cursor={ada} zoom={1} paint={paint} faded />);
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.className).toContain('opacity-0');
+    expect(root.className).toContain('pointer-events-none');
+    expect(root.className).toContain('motion-safe:transition-opacity');
+  });
 });
 
 describe('RemoteCursors', () => {
@@ -52,7 +61,7 @@ describe('RemoteCursors', () => {
         <RemoteCursors cursors={[ada, bo]} paint={paint} />
       </CanvasZoomProvider>,
     );
-    const roots = [...container.children] as HTMLElement[];
+    const roots = [...container.querySelectorAll<HTMLElement>('[data-remote-cursor]')];
     expect(roots.map((r) => r.textContent)).toEqual(['Ada Lovelace', 'Bo']);
     expect(roots[0]!.style.transform).toBe('scale(0.25)');
   });
@@ -60,10 +69,11 @@ describe('RemoteCursors', () => {
   it('draws none while this screen hides participant cursors, and all again when it stops', () => {
     configureWorkbench(testBindings({ hideCursorsKey: 'test:layer-b' }));
     const { container } = render(<RemoteCursors cursors={[ada, bo]} paint={paint} />);
-    expect(container.children).toHaveLength(2);
+    const drawn = () => container.querySelectorAll('[data-remote-cursor]').length;
+    expect(drawn()).toBe(2);
     act(() => writeLocalStorageValue('test:layer-b', 'true'));
-    expect(container.children).toHaveLength(0);
+    expect(drawn()).toBe(0);
     act(() => writeLocalStorageValue('test:layer-b', 'false'));
-    expect(container.children).toHaveLength(2);
+    expect(drawn()).toBe(2);
   });
 });
