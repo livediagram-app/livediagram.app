@@ -22,7 +22,7 @@ a card is never dropped into one.
 - **Status phases** come from the project's boards, the open tab's first and then every other tab's in tab
   order (not All Cards or Archive boards), so a dashboard tab with no board reads the phases of the boards
   beside it ([Plan templates](plan-templates.md#hand-offs)): a board's first column is
-  Not Started, its done column and every column after it are Done, and the columns between are In Progress.
+  Not Started, its [done columns](plan-board.md#done-columns) are Done, and the rest are In Progress.
   A board without a done column has no Done. A status two boards name takes the phase the first board gives
   it. A card with no status, or one no board names, is Not Started.
 - **Done** is the Done phase: what a board would count as done.

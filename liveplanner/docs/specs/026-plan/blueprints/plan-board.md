@@ -14,6 +14,7 @@ editor views.
 | swimlane           | `SwimlaneBy` (+ `swimlaneField` for `'field'`) + projected `lanes`, `swimlanes`                                                                          |
 | lane field         | `LaneField` (`laneFieldsOf`, `laneFieldOf`); a drop's patch is `laneDropPatch`                                                                           |
 | WIP limit          | `PlanColumn.wipLimit`                                                                                                                                    |
+| done column        | `PlanColumn.done` (a flag); `isDoneColumn`, `doneColumnsOf`, `finishedStatuses`, `isDoneName` (`@liveplanner/items` `done-columns.ts`)                   |
 | unplaced           | projection `unplaced`                                                                                                                                    |
 | quick filter       | `QuickFilter` (per person, React state, never stored)                                                                                                    |
 | face-down          | `cardIsFaceDown(item, setup, viewerId)`                                                                                                                  |
@@ -212,6 +213,24 @@ under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (t
 (`{ id, kind: 'Board' | 'View' } | null`, `maximisePlanElement` / `restorePlanElement` / `releasePlanElement` /
 `useMaximisedPlanId`; `kind` names the telemetry), drawn in the canvas area (no zen chrome; the editor's chrome stays). `PlanProvider` wraps the editor view, so the export dialog reads
 the items too.
+
+## Done columns (`packages/items/src/done-columns.ts`)
+
+- `DONE_NAMES`: the done-like names of plan-board.md "Done columns". `isDoneName(name)` compares `doneNameKey(name)`
+  (lower case, curly apostrophes straight, anything but letters, digits and apostrophes a space, spaces collapsed,
+  "wont" read as "won't") against them, whole names only.
+- `isDoneColumn(setup, column)`: `column.done` when set; else, on a board where no column has `done` and
+  `doneColumnId` names a column (an older board), whether the column is that one or after it; else
+  `isDoneName(column.name)`. `doneColumnsOf(setup)` lists them left to right; `finishedStatuses(setup)` their
+  statuses; `firstDoneColumn(setup)` the first.
+- `settleDoneColumns(before, after)`: the set-up as written. Each column of `after` without `done` keeps what it
+  counted as on `before` when `before` is an older board that has it (or `after` is one), else its name decides.
+  Then a column stores `done: true` when done, `done: false` when its name is done-like but it is not, and nothing
+  otherwise; `doneColumnId` becomes the first done column's id (for older editors), or goes. Pure, idempotent.
+- `setColumnDone(setup, id, on)`: settles, then sets that column's `done` (Counts as Done) and settles again.
+- Writers settle: the editor's `updateBoard` (`settleDoneColumns(before, setup)`), the agents' `placeBoard` and
+  `reshapeBoard`. Presets flag their done columns (`statusColumn(..., { done: true })`) and keep `doneColumnId`.
+- `normaliseBoardSetup` keeps a boolean `done` on a column; `plan-board-patch.ts` carries `done` as a column field.
 
 ## Card sizes
 
@@ -490,6 +509,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 
 | Rule                                                        | Test                                                                                                                                                        |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Done columns: names, flags, older boards, settling          | `packages/items/src/done-columns.test.ts`                                                                                                                   |
 | Set-up edits                                                | `apps/editor/components/plan/board-setup-edits.test.ts`                                                                                                     |
 | Column picker statuses, counts, boards                      | `packages/items/src/board-status-picks.test.ts`                                                                                                             |
 | Fill Tab: which board, deletion, copy                       | `apps/editor/components/plan/fill-tab.test.ts`                                                                                                              |

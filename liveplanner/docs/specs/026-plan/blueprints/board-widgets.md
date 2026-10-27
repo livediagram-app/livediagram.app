@@ -49,15 +49,16 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
   narrows to exactly the cards it counts) and `priority`; `quickFilterMatches` applies each.
   `toggle(quick, key, value)` sets one or clears it when equal (compared by value).
 - Item Count while `narrowed(quick)`: a button "`shown` of `total` · Show all" that sets `{}`.
-- Completion with no `doneColumnId` and `canEdit`: "Set Done Column" sets the last column's id (`DoneColumn`).
+- Completion with no done column (`doneColumnsOf(setup)` empty) and `canEdit`: "Set Done Column" flags the last
+  column (`setColumnDone`, `DoneColumn`).
 - Reorder captures the pointer only once a press passes `REORDER_THRESHOLD_PX`, so a still press is a click on
   the widget's control.
 - The + toggles `BoardWidgetPicker` (a `PortalMenu`, `below-start`, wide) offering `BOARD_WIDGET_KINDS` minus the
   board's; a pick calls `onChange(placeWidget(widgets, kind, widgets.length))` and closes it.
 - New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
-  `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount` over `staleItems`, `STALE_DAYS` 14); `dueCounts`, `staleItems` and the Due Soon narrowing (`QuickDueWindow.finished`) leave out `finishedStatuses(setup)`, the done column's status and every later column's. Presets
+  `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount` over `staleItems`, `STALE_DAYS` 14); `dueCounts`, `staleItems` and the Due Soon narrowing (`QuickDueWindow.finished`) leave out `finishedStatuses(setup)`, every done column's status (`isDoneColumn`); `boardPoints` counts points in any of them as done. Presets
   carry their own `widgets` (presets.ts), Blank included, per board-widgets.md "Defaults"; a guard test keeps
-  Completion off any preset or template board without `doneColumnId` and WIP Alerts off any without a `wipLimit`.
+  Completion off any preset or template board without a done column and WIP Alerts off any without a `wipLimit`.
 - Counts render through `CountBadge` from `@liveplanner/ui` at `size="md"` (an 18 px pill with
   `text-optical-centre`) painted with the board's `background`/`color`, shared with column heads.
 

@@ -36,8 +36,20 @@ Stored on the element, shared by everyone, undone like any element edit:
   renames no board.
 - **Columns**: each a **status** value and a display name, an optional **WIP limit** and an optional colour. A board
   has 1 to 12 columns. A column's status is read trimmed, as a card's status is, so a card moved into it lands in it. The first column is where new items land when no column is chosen.
-- **Done column**: optionally one column is marked done: its cards draw muted and count as finished in the
-  header's progress.
+- <a id="done-columns"></a>**Done columns**: any of a board's columns can **count as done** (Done, Won't Do and
+  Cancelled all close a card). Their cards draw muted, count as finished in the header's progress, Completion,
+  Points and the dashboards, and are never overdue or stale. A board may have none, one or several.
+  - **Found by name**: a column added or set up with a done-like name counts as done without anyone saying so:
+    **Done**, **Won't Do**, **Won't Fix**, **Cancelled** (or Canceled), **Completed**, **Complete**, **Closed**,
+    **Resolved**, **Shipped**, **Fixed**, **Released**, **Published**, **Delivered**, **Finished**, **Rejected**,
+    **Declined**, **Abandoned**, **Dropped**, **Merged** and **Deployed**. Names are compared as statuses are
+    (case, spacing, curly or straight apostrophes, "Wont Do"), whole names only: "Not Done" and "Done Soon" are not
+    done.
+  - **Set by hand**: **Counts as Done** in a column's own settings turns it on or off for that column, whatever its
+    name, and that choice is kept (a later rename does not undo it).
+  - **Older boards**: a board saved before columns were flagged keeps reading as it did, its one done column and
+    every column after it counting as done, until its columns are next changed, when each column keeps what it
+    counted as and is flagged so. A board with neither reads its columns' names.
 - **The header's controls** run Focus, Maximise, then the cog. There is no ⋯: the cog is the board's menu.
   Maximised or filling its tab, the board has no Focus. A board has no Add to Slides button in its header.
 - **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) at its far right, after
@@ -96,7 +108,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   phone the sheet stays put. Under it: its **name**, **colour** (a row like the WIP limit's: "Colour" over
   its effect, or "No colour", and the colour's swatch at the row's end; pressed, the
   [colour picker](../004-interface-design/colour-picker.md) opens in its own popover beside it, No colour or any
-  colour, the column popover staying open), **WIP limit**, **Width**, **Counts as Done**, then, one to a row, **+ Add Column
+  colour, the column popover staying open), **WIP limit**, **Width**, **Counts as Done** (a switch, on for a
+  [done column](#done-columns) found by its name too), then, one to a row, **+ Add Column
   After** and **Delete Status**. The two ways to take it away: **Remove Column** (the toolbar's) takes it off this board only, at once: the
   state and its cards stay, so another board's column for it still shows them (where none does, the cards read
   as No status, as any card of a state no board names). **Delete Status** (a bin) deletes the state: when it
@@ -125,10 +138,10 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **The Columns section** (the cog's and the element menu's): an info note ("The board's columns, left to right. Press
   one to open its settings."), then **On This Board** (a small uppercase heading with a count badge) over an
   [option list](#option-lists) of the board's columns left to right, a row each: its position number, its colour
-  swatch (a hollow ring for none), its name, a **WIP n** pill when it has a limit, a green **Done** pill on the done
-  column, and a chevron. Pressing a row closes the menu and opens that column's own settings, anchored to its cog
+  swatch (a hollow ring for none), its name, a **WIP n** pill when it has a limit, a green **Done** pill on each
+  [done column](#done-columns), and a chevron. Pressing a row closes the menu and opens that column's own settings, anchored to its cog
   (above). Under a hairline, the **column picker** (below) inline, its button reading **Add** (still named Add
-  Column): a column it adds goes at the end, or before the done column when the board ends with it, and the section
+  Column): a column it adds goes at the end, or before the done columns when the board ends with them, and the section
   stays open so several can be added in a row; the row just added is tinted in the brand colour for a moment
   (1.6 s) as it fades in. At 12 columns the picker gives way to "A board holds up to 12 columns." The project's
   statuses are worked out only while the section is open. Each add is one board change, one undo step, with the
@@ -274,8 +287,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   column usually ends it. A suggestion is left out once its name (as names compare) is a column the board has (or
   Setup Board has chosen) or a status the project already has, so a suggestion never makes a near-duplicate. Each
   is an [option list](#option-lists) row of actions: a plus glyph, its name, its quiet line, named "Add {Name}". Added,
-  a suggestion is a new status of its own (its name and a short suffix), as a typed name is; it marks no done
-  column. Only someone who may edit the board sees them, as only they set up a board or add its columns: a
+  a suggestion is a new status of its own (its name and a short suffix), as a typed name is; **Done** counts as done
+  by its name, as any [done-like name](#done-columns) does. Only someone who may edit the board sees them, as only they set up a board or add its columns: a
   Participant and a Viewer never do (a Viewer reads the placeholder's "Someone who can edit it will set it up.").
   Telemetry: `Plan` · `Changed` · `ColumnAddedSuggested`, once a press (Add All too), in Setup Board and the column
   picker alike.
@@ -305,7 +318,7 @@ Where each is set, so a setting lives with what it changes, never in one central
 
 ## What the board shows
 
-- **Header**: title, the count of items shown, a progress bar (done of all, when a done column is set), the
+- **Header**: title, the count of items shown, a progress bar (cards in its done columns of all, when it has one), the
   avatars of people on the board and the quick filter.
 - **Renaming in place**: in Plan mode, someone who may edit double-clicks the board's title (or the header's
   empty space) and the title becomes a text field, its text selected. **Enter** or leaving the field saves the

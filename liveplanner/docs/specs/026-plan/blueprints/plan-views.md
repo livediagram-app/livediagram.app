@@ -45,9 +45,9 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
 
 ## Behaviour and state
 
-- `statusPhasesOf(boards)`: per board (not All Cards or Archive), first column `todo`, the done column and later
-  `done`, the rest `doing`; first board wins. `phaseOf` reads `todo` for a missing or unknown status.
-- `metricBoard(items, phases, types)`: three phase columns (`phase-todo` ...), the done one `doneColumnId` when any
+- `statusPhasesOf(boards)`: per board (not All Cards or Archive), each done column (`isDoneColumn`) `done`, else the
+  first column `todo`, the rest `doing`; first board wins. `phaseOf` reads `todo` for a missing or unknown status.
+- `metricBoard(items, phases, types)`: three phase columns (`phase-todo` ...), the done one flagged `done` (and `doneColumnId`) when any
   phase is done; live cards copied with their status mapped; `projectBoard` over them. `MetricView` builds a
   `WidgetContext` with no quick filter, `canEdit: false` and no-op set-up, and draws `BoardWidgetView`.
 - `ganttModel`: rows of live items of the chart's types, `mark` `bar | due | start | none`; a bar's ends are the min and max of
