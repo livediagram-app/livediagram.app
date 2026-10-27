@@ -317,7 +317,6 @@ export function usePlanSlice(opts: {
     })();
   }, [planItems.items, writeQuiet]);
 
-
   const updateBoard = useCallback(
     (boardId: string, setup: PlanBoardSetup) => {
       // The board's title before this change: only a change of title renames the tab, so any other setting (a column,

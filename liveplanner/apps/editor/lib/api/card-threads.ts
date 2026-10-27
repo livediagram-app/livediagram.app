@@ -3,10 +3,7 @@
 // Browser plan's apply the same pure writes to its own record (../offline/offline-threads.ts). A session on a
 // tab-scoped link names its tab on every call.
 
-import type {
-  CardThreadWriteResponse,
-  CardThreadsResponse,
-} from '@liveplanner/api-schema';
+import type { CardThreadWriteResponse, CardThreadsResponse } from '@liveplanner/api-schema';
 import type { ItemPerson } from '@liveplanner/items';
 import type { CardThread, CommentMention } from '@liveplanner/project';
 import { isOfflineId } from '../offline/offline-store';
@@ -32,9 +29,7 @@ export type ThreadAction =
 
 // What a write changed: the thread as stored (null: it went), the comment a start, reply or edit wrote, or nothing
 // at all (`unchanged`: a resolve already so, an edit that changed nothing).
-export type ThreadAnswer =
-  | { thread: CardThread | null; commentId?: string }
-  | { unchanged: true };
+export type ThreadAnswer = { thread: CardThread | null; commentId?: string } | { unchanged: true };
 
 // Who is writing: their owner id (the author id the api stamps) and how items name them.
 export type ThreadWriter = { ownerId: string; by: ItemPerson };
@@ -69,11 +64,19 @@ function requestOf(action: ThreadAction): { method: string; path: string; body?:
   });
   switch (action.kind) {
     case 'start':
-      return { method: 'POST', path: `/items/${enc(action.itemId)}/threads`, body: comment(action) };
+      return {
+        method: 'POST',
+        path: `/items/${enc(action.itemId)}/threads`,
+        body: comment(action),
+      };
     case 'reply':
       return { method: 'POST', path: `${t}/comments`, body: comment(action) };
     case 'edit':
-      return { method: 'PUT', path: `${t}/comments/${enc(action.commentId)}`, body: comment(action) };
+      return {
+        method: 'PUT',
+        path: `${t}/comments/${enc(action.commentId)}`,
+        body: comment(action),
+      };
     case 'delete':
       return { method: 'DELETE', path: `${t}/comments/${enc(action.commentId)}` };
     case 'resolve':
@@ -84,7 +87,10 @@ function requestOf(action: ThreadAction): { method: string; path: string; body?:
       return {
         method: 'POST',
         path: `${t}/cards`,
-        body: { itemId: action.itemId, ...(action.projectId ? { projectId: action.projectId } : {}) },
+        body: {
+          itemId: action.itemId,
+          ...(action.projectId ? { projectId: action.projectId } : {}),
+        },
       };
     case 'deleteThread':
       return { method: 'DELETE', path: t };

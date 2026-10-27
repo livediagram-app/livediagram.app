@@ -283,7 +283,8 @@ export function useCardThreads(opts: {
       }
       try {
         const answer = await writeThread(s, action, who);
-        if ('unchanged' in answer) return before.get('threadId' in action ? action.threadId : '') ?? null;
+        if ('unchanged' in answer)
+          return before.get('threadId' in action ? action.threadId : '') ?? null;
         const id = 'threadId' in action ? action.threadId : (answer.thread?.id ?? pendingId!);
         settle(id, answer.thread, pendingId ?? undefined);
         // Only once it has landed, so a refused comment never notifies anyone.

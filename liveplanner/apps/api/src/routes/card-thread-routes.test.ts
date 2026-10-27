@@ -468,18 +468,16 @@ describe('Add Thread to Card', () => {
   });
 
   it('takes the link back when the thread is on as many cards as it may be', async () => {
-    sql.sql
-      .prepare(`UPDATE card_threads SET cards = ? WHERE id = ?`)
-      .run(
-        JSON.stringify(
-          Array.from({ length: 20 }, (_, i) => ({
-            projectId: 'p1',
-            itemId: i ? `x${i}` : a.id,
-            key: i,
-          })),
-        ),
-        t.id,
-      );
+    sql.sql.prepare(`UPDATE card_threads SET cards = ? WHERE id = ?`).run(
+      JSON.stringify(
+        Array.from({ length: 20 }, (_, i) => ({
+          projectId: 'p1',
+          itemId: i ? `x${i}` : a.id,
+          key: i,
+        })),
+      ),
+      t.id,
+    );
     const res = await add({ itemId: b.id });
     expect(res.status).toBe(413);
     expect(res.body).toEqual({ error: 'thread_cards_full' });

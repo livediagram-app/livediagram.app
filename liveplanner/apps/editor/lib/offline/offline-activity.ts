@@ -78,7 +78,6 @@ function placeOf(rec: OfflineProjectRecord): Place {
   return { projectId: rec.id, projectName: rec.name, teamId: null, via: 'own', shareCode: null };
 }
 
-
 // Neither archived nor in the Trash: the cards the page may list at all.
 function isLive(item: Item): boolean {
   return item.fields[ARCHIVED_FIELD] !== true && itemStatus(item) !== 'trash';

@@ -103,13 +103,13 @@ async function downloadAndRemoveCloudCopy(
   const sheets = await fetchAllSheets({ ownerId, projectId, shareCode, tabId: null });
   // And the comment threads the plan stores (docs/specs/026-plan/items.md "Cards coming and going"), on its own cards:
   // a thread shared in from another plan stays that plan's.
-  const threads = (
-    await fetchCloudThreads({ ownerId, projectId, shareCode, tabId: null })
-  ).flatMap((t) => {
-    if (t.home !== projectId) return [];
-    const cards = t.cards.filter((c) => c.projectId === projectId);
-    return cards.length ? [{ ...t, cards }] : [];
-  });
+  const threads = (await fetchCloudThreads({ ownerId, projectId, shareCode, tabId: null })).flatMap(
+    (t) => {
+      if (t.home !== projectId) return [];
+      const cards = t.cards.filter((c) => c.projectId === projectId);
+      return cards.length ? [{ ...t, cards }] : [];
+    },
+  );
   const tabs = fetchedTabs;
 
   // The person's star is the index's, on the plan's item, which the server delete below takes too; carry it onto

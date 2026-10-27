@@ -53,17 +53,25 @@ describe('offline threads', () => {
     await writeThread(scope, { kind: 'edit', threadId: t.id, commentId: id, text: 'Fixed' }, who);
     await writeThread(scope, { kind: 'resolve', threadId: t.id, resolved: true }, who);
     // Already resolved: nothing.
-    expect(await writeThread(scope, { kind: 'resolve', threadId: t.id, resolved: true }, who)).toEqual(
-      { unchanged: true },
-    );
+    expect(
+      await writeThread(scope, { kind: 'resolve', threadId: t.id, resolved: true }, who),
+    ).toEqual({ unchanged: true });
     await writeThread(scope, { kind: 'rename', threadId: t.id, title: 'Basket bug' }, who);
     await writeThread(scope, { kind: 'addToCard', threadId: t.id, itemId: B }, who);
     const [held] = await fetchThreads(scope);
-    expect(held).toMatchObject({ title: 'Basket bug', resolved: true, resolvedBy: 'Gentle Falcon' });
+    expect(held).toMatchObject({
+      title: 'Basket bug',
+      resolved: true,
+      resolvedBy: 'Gentle Falcon',
+    });
     expect(held!.comments.map((c) => c.text)).toEqual(['Fixed', 'Again']);
     expect(held!.cards.map((c) => c.itemId)).toEqual([A, B]);
     // The last comment takes the thread.
-    await writeThread(scope, { kind: 'delete', threadId: t.id, commentId: held!.comments[1]!.id }, who);
+    await writeThread(
+      scope,
+      { kind: 'delete', threadId: t.id, commentId: held!.comments[1]!.id },
+      who,
+    );
     const last = await writeThread(scope, { kind: 'delete', threadId: t.id, commentId: id }, who);
     expect(last).toEqual({ thread: null });
     expect(await fetchThreads(scope)).toEqual([]);
@@ -76,7 +84,9 @@ describe('offline threads', () => {
   it('refuses as the api does', async () => {
     await withCards(A);
     const t = await started(A, 'Hi');
-    await expect(writeThread(scope, { kind: 'start', itemId: 'nope', text: 'x' }, who)).rejects.toMatchObject({
+    await expect(
+      writeThread(scope, { kind: 'start', itemId: 'nope', text: 'x' }, who),
+    ).rejects.toMatchObject({
       status: 404,
       code: 'item_not_found',
     });
@@ -117,9 +127,14 @@ describe('offline threads', () => {
     await withCards(A);
     const rec = (await offlineGetRecord('d1'))!;
     const one = await started(A, 'one');
-    rec.threads = Array.from({ length: 50 }, (_, i): CardThread => ({ ...one, id: `th-${String(i).padStart(16, '0')}` }));
+    rec.threads = Array.from({ length: 50 }, (_, i): CardThread => ({
+      ...one,
+      id: `th-${String(i).padStart(16, '0')}`,
+    }));
     await offlinePutRecord(rec);
-    await expect(writeThread(scope, { kind: 'start', itemId: A, text: 'x' }, who)).rejects.toMatchObject({
+    await expect(
+      writeThread(scope, { kind: 'start', itemId: A, text: 'x' }, who),
+    ).rejects.toMatchObject({
       code: 'threads_full',
     });
     await expect(
@@ -130,7 +145,9 @@ describe('offline threads', () => {
   it('reads a card’s old single thread as its first thread, and moves it on the next write', async () => {
     __setOfflineBackend(memBackend());
     const old = {
-      comments: [{ id: 'c1', text: 'Old words', createdAt: 3, authorName: 'Ada', authorColor: '#111111' }],
+      comments: [
+        { id: 'c1', text: 'Old words', createdAt: 3, authorName: 'Ada', authorColor: '#111111' },
+      ],
       resolved: true,
     };
     await offlinePutRecord(
@@ -187,8 +204,8 @@ describe('offline threads', () => {
       [lone.id, [A]],
     ]);
     // A write that touches no card leaves them as they are.
-    expect(threadsAfterItemWrite(back, { kind: 'move', id: A, move: { status: 'x' } }, 'd1', [])).toEqual(
-      back,
-    );
+    expect(
+      threadsAfterItemWrite(back, { kind: 'move', id: A, move: { status: 'x' } }, 'd1', []),
+    ).toEqual(back);
   });
 });

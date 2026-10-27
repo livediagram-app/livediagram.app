@@ -32,7 +32,9 @@ import {
 } from './offline-store';
 
 /** The record's threads: those it stores, and (a record from before threads) each card's old single thread. */
-export function recordThreads(rec: Pick<OfflineProjectRecord, 'id' | 'items' | 'threads'>): CardThread[] {
+export function recordThreads(
+  rec: Pick<OfflineProjectRecord, 'id' | 'items' | 'threads'>,
+): CardThread[] {
   const stored = rec.threads ?? [];
   const held = new Set(stored.map((t) => t.id));
   const legacy = (rec.items ?? []).flatMap((item) => {
@@ -218,8 +220,7 @@ export function threadsAfterItemWrite(
         continue;
       }
       const result = applyThreadChange(held, { kind: 'addCard', card }, Date.now());
-      if (result.ok && result.thread)
-        out = out.map((t) => (t.id === held.id ? result.thread! : t));
+      if (result.ok && result.thread) out = out.map((t) => (t.id === held.id ? result.thread! : t));
     }
   }
   return out;
