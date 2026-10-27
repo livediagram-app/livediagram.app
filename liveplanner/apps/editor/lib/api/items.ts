@@ -2,7 +2,7 @@
 // Each call dispatches an offline project to its local store (../offline/offline-items) and a
 // cloud project to the api. A session on a tab-scoped link names its tab on every call.
 
-import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
+import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import {
   ITEM_BULK_MAX,
   type Item,
@@ -10,13 +10,8 @@ import {
   type ItemStoreState,
   type ItemWrite,
 } from '@liveplanner/items';
-import { createComment, type CommentMention } from '@liveplanner/project';
 import { isOfflineId } from '../offline/offline-store';
-import {
-  offlineFetchItems,
-  offlineWriteItem,
-  offlineWriteItemComment,
-} from '../offline/offline-items';
+import { offlineFetchItems, offlineWriteItem } from '../offline/offline-items';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
@@ -205,64 +200,4 @@ export async function writeItem(
       return { upserts: [], removed: [write.id], rev: -1 };
     }
   }
-}
-
-// A card's comment change, as the editor asks for it (docs/specs/026-plan/items.md "Comments").
-export type ItemCommentAction =
-  | { kind: 'add'; text: string; mentions?: CommentMention[] }
-  | { kind: 'delete'; commentId: string }
-  | { kind: 'resolve'; resolved: boolean };
-
-// Who is commenting: their owner id (the author id the api stamps) and how items name them.
-type ItemCommenter = { ownerId: string; by: ItemPerson };
-
-// Sends one comment change: the item as stored, or null when it changed nothing. An offline project applies it
-// to its record; a cloud one sends it to the api, which stamps the author itself.
-export async function writeItemComment(
-  scope: ItemsScope,
-  itemId: string,
-  action: ItemCommentAction,
-  who: ItemCommenter,
-): Promise<(ItemWriteAnswer & { commentId?: string }) | null> {
-  if (await isOfflineId(scope.projectId)) {
-    const change =
-      action.kind === 'add'
-        ? {
-            kind: 'add' as const,
-            comment: createComment(
-              action.text,
-              { id: who.ownerId, name: who.by.name, color: who.by.color },
-              action.mentions,
-            ),
-          }
-        : action.kind === 'delete'
-          ? { kind: 'remove' as const, commentId: action.commentId }
-          : action;
-    return offlineWriteItemComment(scope.projectId, itemId, change, who.by);
-  }
-  const base = `/${encodeURIComponent(itemId)}/comments`;
-  if (action.kind === 'add') {
-    const body = {
-      text: action.text,
-      ...(action.mentions?.length ? { mentions: action.mentions } : {}),
-    };
-    // The api names the comment it wrote, for the mention email (docs/specs/012-collaboration/comment-mentions.md).
-    const added = await post<ItemCommentAddResponse>(scope, base, body, 'item comment');
-    return { ...one(added), commentId: added.commentId };
-  }
-  const res = await apiFetch(
-    itemsUrl(
-      scope,
-      action.kind === 'delete'
-        ? `${base}/${encodeURIComponent(action.commentId)}`
-        : `${base}/${action.resolved ? 'resolve' : 'reopen'}`,
-    ),
-    {
-      method: action.kind === 'delete' ? 'DELETE' : 'POST',
-      headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
-    },
-  );
-  // A resolve that changed nothing answers 204.
-  if (res.status === 204) return null;
-  return one(await expectOk<ItemResponse>(res, 'item comment'));
 }

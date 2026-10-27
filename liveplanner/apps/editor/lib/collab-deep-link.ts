@@ -5,6 +5,7 @@
 //   /project/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
 //   /project/<id>[?s=<code>]#t=<tabId>&el=<boardId>&item=<itemId>   (a Plan card, §2.4)
 //   /project/<id>[?s=<code>]#item=<itemId>                           (a card no board shows)
+//   ...&item=<itemId>&thread=<threadId>                               (one of the card's comment threads)
 //
 // `t` is the tab pin the editor already writes on every tab switch
 // (docs/specs/006-project/per-tab-storage.md, useTabEntryEffects); `el` and `open` ride beside it and are
@@ -18,6 +19,8 @@ export type CollabDeepLink = {
   at: { tabId: string; elementId: string } | null;
   open: CollabPopover | null;
   itemId: string | null;
+  // One of the card's comment threads, opened on the card (docs/specs/026-plan/items.md "Where it shows").
+  threadId?: string | null;
 };
 
 // Null unless the fragment names a tab AND an element, or a card: a plain
@@ -34,9 +37,11 @@ export function parseCollabDeepLink(hash: string): CollabDeepLink | null {
   const at = tabId && elementId ? { tabId, elementId } : null;
   if (!at && !itemId) return null;
   const open = params.get('open');
+  const threadId = itemId ? params.get('thread') || null : null;
   return {
     at,
     open: open === 'action' || open === 'comments' ? open : null,
     itemId,
+    ...(threadId ? { threadId } : {}),
   };
 }

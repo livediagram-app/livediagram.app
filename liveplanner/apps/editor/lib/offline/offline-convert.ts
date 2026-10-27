@@ -7,6 +7,7 @@
 // every other device), so the UI gates it behind a confirmation.
 
 import { fetchItems } from '../api/items';
+import { fetchCloudThreads } from '../api/card-threads';
 import { apiLoadProject, apiLoadTab } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
@@ -100,6 +101,15 @@ async function downloadAndRemoveCloudCopy(
   const itemStore = await fetchItems({ ownerId, projectId, shareCode, tabId: null });
   // And the sheet store, all or nothing (docs/specs/029-sheets/sheet-store.md "Offline projects").
   const sheets = await fetchAllSheets({ ownerId, projectId, shareCode, tabId: null });
+  // And the comment threads the plan stores (docs/specs/026-plan/items.md "Cards coming and going"), on its own cards:
+  // a thread shared in from another plan stays that plan's.
+  const threads = (
+    await fetchCloudThreads({ ownerId, projectId, shareCode, tabId: null })
+  ).flatMap((t) => {
+    if (t.home !== projectId) return [];
+    const cards = t.cards.filter((c) => c.projectId === projectId);
+    return cards.length ? [{ ...t, cards }] : [];
+  });
   const tabs = fetchedTabs;
 
   // The person's star is the index's, on the plan's item, which the server delete below takes too; carry it onto
@@ -124,6 +134,7 @@ async function downloadAndRemoveCloudCopy(
       ? { items: itemStore.items, itemsRev: itemStore.rev, itemsNextKey: itemStore.nextKey }
       : {}),
     ...(sheets.length ? { sheets } : {}),
+    ...(threads.length ? { threads } : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching

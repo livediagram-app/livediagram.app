@@ -37,7 +37,6 @@ import type {
 } from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
-import type { ItemCommentAction } from '@/lib/api/items';
 import type { ItemTypesSlice } from './useItemTypes';
 import { planBoardTarget } from './plan-board-targets';
 import { useTypeForBoard } from './useTypeForBoard';
@@ -318,11 +317,6 @@ export function usePlanSlice(opts: {
     })();
   }, [planItems.items, writeQuiet]);
 
-  const commentFn = planItems.comment;
-  const commentItem = useCallback(
-    (itemId: string, action: ItemCommentAction) => void commentFn(itemId, action),
-    [commentFn],
-  );
 
   const updateBoard = useCallback(
     (boardId: string, setup: PlanBoardSetup) => {
@@ -532,7 +526,6 @@ export function usePlanSlice(opts: {
       moveItem,
       patchItem,
       deleteItem,
-      commentItem,
       notify,
       ownerId: planItems.ownerId,
       updateBoard,
@@ -576,7 +569,6 @@ export function usePlanSlice(opts: {
       moveItem,
       patchItem,
       deleteItem,
-      commentItem,
       notify,
       planItems.ownerId,
       updateBoard,

@@ -24,6 +24,12 @@ import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/us
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
+import {
+  CardThreadsProvider,
+  ThreadCountsProvider,
+} from '@/components/plan/threads/CardThreadsContext';
+import { useCardThreadsValue } from '@/components/plan/threads/useCardThreadsValue';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { FormBoardContext } from '@/components/forms/form-board-context';
 import { useFormBoardValue } from '@/hooks/forms/useFormBoardValue';
 import { SheetsProviders } from '@/hooks/sheets/sheet-comments-context';
@@ -100,6 +106,25 @@ export function EditorView() {
   // Offline Mode (docs/specs/006-project/offline-mode.md): a project saved only in this browser. Drives the
   // "This Browser" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineProject(ctx.projectId);
+  // A card's comment threads (docs/specs/026-plan/items.md "Comments"): their own context, so a thread write
+  // re-renders the open card panel alone, and the faces' counts through the thread store.
+  const cloudPlans = useMemo(
+    () => ctx.cardThreadsAccess.projectList.filter((p) => p.ownerId !== OFFLINE_OWNER_ID),
+    [ctx.cardThreadsAccess.projectList],
+  );
+  const cardThreadsValue = useCardThreadsValue({
+    threads: ctx.cardThreads,
+    projectId: ctx.projectId,
+    projectName: ctx.projectName,
+    ownerId: ctx.selfParticipant.id,
+    self: ctx.plan.context.self,
+    canComment: ctx.cardThreadsAccess.canComment,
+    isEditor: ctx.cardThreadsAccess.isEditor,
+    offline: isOffline,
+    projectList: cloudPlans,
+    openCard: ctx.plan.context.openItem,
+    announce: ctx.plan.context.announce,
+  });
   // A full page load the app starts itself (a stale build, a chunk recovery) waits for these edits
   // to be saved (docs/specs/016-platform/stale-builds.md).
   const { hasUnsavedChanges } = ctx;
@@ -409,6 +434,8 @@ export function EditorView() {
               {/* Plan boards and cards, and the dialogs that draw them (exports), read the items and
               their actions here (docs/specs/026-plan/plan-board.md). */}
               <PlanProvider value={ctx.plan.context}>
+                <ThreadCountsProvider value={ctx.cardThreads.store}>
+                <CardThreadsProvider value={cardThreadsValue}>
                 <FormBoardContext.Provider value={formBoard}>
                   {/* The sheets bridge, and cell comments (docs/specs/029-sheets/sheet.md "Cell comments"): every Sheet
                 opens its cells' threads through the editor's one comment popover. */}
@@ -545,6 +572,8 @@ export function EditorView() {
                     </CanvasFocusProvider>
                   </SheetsProviders>
                 </FormBoardContext.Provider>
+                </CardThreadsProvider>
+                </ThreadCountsProvider>
               </PlanProvider>
             </CanvasFinishProvider>
           </CanvasPatternContext.Provider>

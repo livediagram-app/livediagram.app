@@ -7,7 +7,6 @@
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
 import { createContext, useContext } from 'react';
-import type { ItemCommentAction } from '@/lib/api/items';
 import type { PlanCardRef, PlanViewRef } from '@liveplanner/project';
 import type {
   BoardStatusTypes,
@@ -88,8 +87,6 @@ export type PlanContextValue = {
   // Whether the change landed (false: refused, and the store put back).
   patchItem: (itemId: string, patch: ItemPatch) => Promise<boolean>;
   deleteItem: (itemId: string) => void;
-  // A card's comment change (docs/specs/026-plan/items.md "Comments"); comments need participate access.
-  commentItem: (itemId: string, action: ItemCommentAction) => void;
   // This person's owner id: the author id on their own comments, for the delete-own control.
   ownerId: string;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;

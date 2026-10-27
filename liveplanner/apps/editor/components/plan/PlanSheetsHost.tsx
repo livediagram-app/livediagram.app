@@ -176,11 +176,6 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           plan.closeItem();
           ctx.editType({ id: item.type });
         }}
-        comments={{
-          canComment: ctx.canVote,
-          selfId: ctx.ownerId,
-          onComment: (action) => ctx.commentItem(item.id, action),
-        }}
       />
     );
   }

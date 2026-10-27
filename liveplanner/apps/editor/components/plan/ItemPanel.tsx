@@ -38,7 +38,6 @@ import { ItemTrailCrumbs } from './ItemTrailCrumbs';
 import { ItemKeyTag, ItemTypePill } from './ItemPanelHeaderParts';
 import type { ItemOpenVia } from './item-trail';
 import { FLAG_COLOUR } from './item-flag';
-import type { ItemCommentsContext } from './ItemComments';
 import {
   ItemFieldEditor,
   fieldId,
@@ -82,8 +81,6 @@ type ItemPanelProps = {
   onClose: () => void;
   // Edit Card Type in the ⋯ menu: closes the panel and opens the card's type in the type editor.
   onEditType?: (() => void) | undefined;
-  // The card's comments (docs/specs/026-plan/items.md "Comments").
-  comments?: ItemCommentsContext;
   // The cards opened before this one from inside the panel, ending on it (docs/specs/026-plan/plan-board.md
   // "Breadcrumb").
   trail: readonly Item[];
@@ -160,7 +157,6 @@ function ItemPanelContent({
   onArchive,
   onClose,
   onEditType,
-  comments,
   trail,
   linkedGroups = NO_GROUPS,
   fresh = false,
@@ -205,7 +201,6 @@ function ItemPanelContent({
     onSave,
     onPatch,
     onOpenItem,
-    ...(comments ? { comments } : {}),
   };
 
   // The Linked as sections sit on the type's first tab, before Comments, even with no cards in them.

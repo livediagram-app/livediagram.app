@@ -5,13 +5,6 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ItemsRoomOp } from '@liveplanner/api-schema';
 import {
-  applyItemComment,
-  createComment,
-  keepOwnCommentAuthors,
-  type CommentMention,
-  type ItemCommentChange,
-} from '@liveplanner/project';
-import {
   EMPTY_ITEM_STORE,
   ITEM_TITLE_MAX,
   applyItemWrite,
@@ -28,15 +21,7 @@ import {
   type ItemStoreState,
   type ItemWrite,
 } from '@liveplanner/items';
-import {
-  fetchItems,
-  writeItem,
-  writeItemComment,
-  type ItemCommentAction,
-  type ItemWriteAnswer,
-  type ItemsScope,
-} from '@/lib/api/items';
-import { track } from '@/lib/telemetry';
+import { fetchItems, writeItem, type ItemWriteAnswer, type ItemsScope } from '@/lib/api/items';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { ItemUndoStep } from './item-undo-journal';
 
@@ -60,9 +45,6 @@ export type PlanItems = {
   writeQuiet: (write: ItemWrite, opts?: { silent?: boolean }) => Promise<boolean>;
   receive: (op: ItemsRoomOp) => void;
   refetch: () => void;
-  // A card's comment change (docs/specs/026-plan/items.md "Comments"): applied now, sent, settled on the
-  // answer. Outside Undo, as the canvas's comments are.
-  comment: (itemId: string, action: ItemCommentAction) => Promise<boolean>;
   // This person's owner id: the author id their own comments carry (the delete-own check).
   ownerId: string;
 };
@@ -94,6 +76,25 @@ export function refusalMessage(code: string): string {
   }
 }
 
+// The undo of a card's delete carries the threads the card was on, as they were when it went.
+function withThreads(
+  undoes: ItemWrite[],
+  threadsOf: ((itemId: string) => readonly unknown[]) | undefined,
+): ItemWrite[] {
+  if (!threadsOf) return undoes;
+  return undoes.map((back) => {
+    if (back.kind !== 'create') return back;
+    let changed = false;
+    const creates = back.creates.map((c) => {
+      const threads = c.id ? threadsOf(c.id) : [];
+      if (threads.length === 0) return c;
+      changed = true;
+      return { ...c, threads };
+    });
+    return changed ? { ...back, creates } : back;
+  });
+}
+
 export function usePlanItems(opts: {
   projectId: string | null;
   // Loads once the project has hydrated.
@@ -105,15 +106,9 @@ export function usePlanItems(opts: {
   tabScope: string | null;
   pushUndo: (step: ItemUndoStep) => void;
   onError: (message: string) => void;
-  // A card comment with mentions has landed: notify the mentioned people, as a canvas comment does
-  // (docs/specs/012-collaboration/comment-mentions.md "The email").
-  // `commentId` names the stored comment the mention email quotes (absent offline, where no email goes).
-  onMentioned?: (
-    text: string,
-    mentions: CommentMention[],
-    itemId: string,
-    commentId?: string,
-  ) => void;
+  // The comment threads a card is on, as the editor holds them: an undo of the card's delete carries them, so the
+  // card goes back on them (docs/specs/026-plan/items.md "Cards coming and going").
+  threadsOf?: (itemId: string) => readonly unknown[];
   // A person's own undoable write, with the store it applies to (docs/specs/026-plan/linked-boards.md "The link").
   onOwnWrite?: (write: ItemWrite, before: ItemStoreState) => void;
 }): PlanItems {
@@ -122,7 +117,7 @@ export function usePlanItems(opts: {
   const callbacks = useLatest({
     pushUndo: opts.pushUndo,
     onError: opts.onError,
-    onMentioned: opts.onMentioned,
+    threadsOf: opts.threadsOf,
     onOwnWrite: opts.onOwnWrite,
   });
   const [store, setStore] = useState<ItemStoreState>(EMPTY_ITEM_STORE);
@@ -214,12 +209,7 @@ export function usePlanItems(opts: {
     (op: ItemsRoomOp) => {
       const gap = op.rev > serverRevRef.current + 1;
       serverRevRef.current = Math.max(serverRevRef.current, op.rev);
-      setStore((prev) => {
-        // The room's copy carries no comment author ids; ours keep the ones the api answered us with.
-        const byId = new Map(prev.items.map((i) => [i.id, i]));
-        const upserts = op.upserts.map((u) => keepOwnCommentAuthors(byId.get(u.id), u));
-        return mergeItemChanges(prev, upserts, op.removed, op.rev);
-      });
+      setStore((prev) => mergeItemChanges(prev, op.upserts, op.removed, op.rev));
       // A tab-scoped session hears the rev without the items; anyone may have missed one.
       if (gap || (op.upserts.length === 0 && op.removed.length === 0)) {
         debugLog('[items] items.refetch.gap', { rev: op.rev });
@@ -295,9 +285,10 @@ export function usePlanItems(opts: {
       if (!inverse) return result.ok;
       // Refused after part of it landed: the part that landed is still one undo step.
       const landedIds = new Set(result.made.map((m) => m.id));
-      const undoes = result.ok
-        ? inverse
-        : inverse.flatMap((back) => writeLimitedTo(back, landedIds) ?? []);
+      const undoes = withThreads(
+        result.ok ? inverse : inverse.flatMap((back) => writeLimitedTo(back, landedIds) ?? []),
+        callbacks.current.threadsOf,
+      );
       const done = result.ok ? w : writeLimitedTo(w, landedIds);
       if (!done || undoes.length === 0) return result.ok;
       // A redo makes the same items again, keys included.
@@ -329,62 +320,7 @@ export function usePlanItems(opts: {
     [send],
   );
 
-  const comment = useCallback(
-    async (itemId: string, action: ItemCommentAction): Promise<boolean> => {
-      const s = scopeRef.current;
-      const by = selfRef.current;
-      if (!s || !by) return false;
-      // Literal pairs, so the telemetry manifest test sees each one.
-      if (action.kind === 'add') track('Comment', 'Added', 'Item');
-      else if (action.kind === 'delete') track('Comment', 'Deleted', 'Item');
-      else if (action.resolved) track('Comment', 'Resolved', 'Item');
-      else track('Comment', 'Unresolved', 'Item');
-      // Shown at once; the api's answer (its own comment id, its stamp) replaces it.
-      const item = storeRef.current.items.find((i) => i.id === itemId);
-      const change: ItemCommentChange =
-        action.kind === 'add'
-          ? {
-              kind: 'add',
-              comment: createComment(action.text, { id: ownerId, name, color }, action.mentions),
-            }
-          : action.kind === 'delete'
-            ? { kind: 'remove', commentId: action.commentId }
-            : action;
-      const local = item ? applyItemComment(item, change, { now: Date.now(), by }) : null;
-      if (local?.ok) {
-        const next = {
-          ...storeRef.current,
-          items: storeRef.current.items.map((i) => (i.id === itemId ? local.item : i)),
-        };
-        storeRef.current = next;
-        setStore(next);
-      }
-      try {
-        const answer = await writeItemComment(s, itemId, action, { ownerId, by });
-        if (answer) {
-          if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
-          setStore((prev) => mergeItemChanges(prev, answer.upserts, answer.removed, answer.rev));
-        }
-        // Only once the comment has landed, so a refused comment never emails anyone.
-        if (action.kind === 'add' && action.mentions?.length) {
-          callbacks.current.onMentioned?.(action.text, action.mentions, itemId, answer?.commentId);
-        }
-        return true;
-      } catch (err) {
-        console.warn('[items] items.comment.failed', { kind: action.kind, error: String(err) });
-        callbacks.current.onError(
-          (err as { code?: string }).code === 'comments_full'
-            ? 'This card holds the most comments it can'
-            : "Couldn't save that comment",
-        );
-        void load();
-        return false;
-      }
-    },
-    [load, callbacks, scopeRef, selfRef, ownerId, name, color],
-  );
-
   const items = useMemo(() => new Map(store.items.map((i) => [i.id, i])), [store.items]);
 
-  return { store, items, status, self, write, writeQuiet, receive, refetch, comment, ownerId };
+  return { store, items, status, self, write, writeQuiet, receive, refetch, ownerId };
 }

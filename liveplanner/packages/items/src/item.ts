@@ -58,6 +58,9 @@ export interface ItemCreate {
   // The same for its comment thread (a CommentThread, docs/specs/026-plan/items.md "Comments"), which is
   // otherwise written by the comment writes alone. The api checks it before it is kept.
   comments?: ItemFieldValue;
+  // The comment threads a restored card goes back on (docs/specs/026-plan/items.md "Cards coming and going"): the
+  // threads as the editor held them when the card was deleted. Checked by the api, never stored on the item.
+  threads?: readonly unknown[];
 }
 
 export interface ItemPatch {

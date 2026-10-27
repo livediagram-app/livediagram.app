@@ -11,7 +11,13 @@ import {
   type ActivityCardThread,
   type ActivityThread,
 } from '@liveplanner/api-schema';
-import { cardPlacesOf, collabIndexRowsFromElements, type Comment } from '@liveplanner/project';
+import {
+  cardPlacesOf,
+  collabIndexRowsFromElements,
+  threadTitle,
+  type CardThread,
+} from '@liveplanner/project';
+import { recordThreads } from './offline-threads';
 import {
   ARCHIVED_FIELD,
   itemAssignee,
@@ -72,12 +78,6 @@ function placeOf(rec: OfflineProjectRecord): Place {
   return { projectId: rec.id, projectName: rec.name, teamId: null, via: 'own', shareCode: null };
 }
 
-type Thread = { comments?: Comment[]; resolved?: boolean };
-
-function threadOf(item: Item): Thread | null {
-  const t = item.fields['comments'];
-  return t && typeof t === 'object' && !Array.isArray(t) ? t : null;
-}
 
 // Neither archived nor in the Trash: the cards the page may list at all.
 function isLive(item: Item): boolean {
@@ -153,6 +153,13 @@ function collector(reader: OfflineReader) {
     });
     const items = rec.items ?? [];
     if (items.length === 0) return;
+    // Each card's open threads, a thread listed once, on its first card (docs/specs/026-plan/items.md "Comments").
+    const threadsOf = new Map<string, CardThread[]>();
+    for (const t of recordThreads(rec)) {
+      const first = t.cards.find((c) => c.projectId === rec.id);
+      if (t.resolved || !first) continue;
+      threadsOf.set(first.itemId, [...(threadsOf.get(first.itemId) ?? []), t]);
+    }
     // Where each card opens, and which statuses are done (@liveplanner/project cardPlacesOf).
     const places = cardPlacesOf(rec.tabs.map((t) => ({ ...t, elements: t.elements ?? [] })));
     for (const item of items) {
@@ -177,12 +184,13 @@ function collector(reader: OfflineReader) {
       ) {
         out.cards.push({ ...card(), status: status ?? null, updatedAt: item.updatedAt });
       }
-      const thread = threadOf(item);
-      const comments = Array.isArray(thread?.comments) ? thread.comments : [];
-      if (thread && thread.resolved !== true && comments.length > 0) {
+      for (const thread of threadsOf.get(item.id) ?? []) {
+        const comments = thread.comments;
         const latest = comments[comments.length - 1]!;
         out.cardThreads.push({
           ...card(),
+          threadId: thread.id,
+          threadTitle: threadTitle(thread),
           commentCount: comments.length,
           latest: {
             text: latest.text ?? '',

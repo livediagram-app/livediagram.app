@@ -127,13 +127,14 @@ export function localInboxRows(local: OfflineActivity, me: string): InboxLocalRo
     card: null,
     ...facts(t),
   });
+  // One of a card's threads: its element is the thread, its card named by id (as the index's rows).
   const cardThread = (t: ActivityCardThread): InboxThread => ({
     ...itemOf(t),
     tabId: COLLAB_CARDS_TAB,
     tabName: '',
-    elementId: t.id,
-    elementLabel: t.title,
-    card: cardOf(t),
+    elementId: t.threadId,
+    elementLabel: t.threadTitle,
+    card: { ...cardOf(t), id: t.id },
     ...facts(t),
   });
   return {

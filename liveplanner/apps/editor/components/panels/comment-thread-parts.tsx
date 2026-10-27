@@ -4,7 +4,7 @@
 // "Comments", "On Plan cards"): the list of comments, the composer with @-mentions, and the Resolve / Reopen
 // control. The canvas's comment popover and a Plan card's item panel both compose them; the panel draws them
 // `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
-import { useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
 import {
   Button,
@@ -15,7 +15,9 @@ import {
   TrashIcon,
   Tooltip,
   identityVars,
+  lucideGlyph,
 } from '@liveplanner/ui';
+import { lucidePencil, lucideSparkles } from '@liveworkspace/icons/lucide';
 import type { Comment, CommentMention, CommentThread } from '@liveplanner/project';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
 import { MentionText } from '@/components/primitives/MentionText';
@@ -87,19 +89,26 @@ export function CommentThreadList({
   readOnly,
   selfId,
   onDeleteComment,
+  onEditComment,
   density = 'compact',
   className = 'max-h-72 overflow-y-auto px-3 py-1',
   canComment = true,
+  emptyText,
 }: {
-  thread: CommentThread | undefined;
+  thread: Pick<CommentThread, 'comments' | 'resolved'> | undefined;
   readOnly: boolean;
   // Whether this session may write a comment: only then is it invited to start the conversation (a Viewer only
   // looks, docs/specs/013-workspace/share-roles.md).
   canComment?: boolean;
   selfId: string;
   onDeleteComment: (commentId: string) => void;
+  // Edit on this person's own comments (a card's threads, docs/specs/026-plan/items.md "Where it shows"); absent, no
+  // comment offers it.
+  onEditComment?: (commentId: string, text: string, mentions: CommentMention[]) => void;
   density?: CommentDensity;
   className?: string;
+  // What an empty list says, when its host has its own words.
+  emptyText?: string;
 }) {
   const resolved = thread?.resolved ?? false;
   const comments = thread?.comments ?? [];
@@ -108,7 +117,8 @@ export function CommentThreadList({
       <p
         className={`${density === 'comfortable' ? 'py-1 text-[13px]' : 'px-3 py-3 text-xs'} text-slate-500 dark:text-slate-400`}
       >
-        {canComment ? 'No comments yet. Start the conversation.' : 'No comments yet.'}
+        {emptyText ??
+          (canComment ? 'No comments yet. Start the conversation.' : 'No comments yet.')}
       </p>
     );
   return (
@@ -122,6 +132,11 @@ export function CommentThreadList({
           onDelete={
             !readOnly || (c.authorId !== undefined && c.authorId === selfId)
               ? () => onDeleteComment(c.id)
+              : undefined
+          }
+          onEdit={
+            onEditComment && canComment && c.authorId !== undefined && c.authorId === selfId
+              ? (text, mentions) => onEditComment(c.id, text, mentions)
               : undefined
           }
         />
@@ -139,6 +154,12 @@ export function CommentComposer({
   density = 'compact',
   self,
   className,
+  placeholder = 'Add a comment…',
+  fieldLabel = 'Add a comment',
+  submitLabel = 'Comment',
+  onCancel,
+  onDraft,
+  below,
 }: {
   onAddComment: (text: string, mentions: CommentMention[]) => void;
   // Lets the host focus the field (the popover does, once placed, on desktop).
@@ -146,6 +167,16 @@ export function CommentComposer({
   density?: CommentDensity;
   self?: { name: string; color: string } | null;
   className?: string;
+  // A card thread's starter and reply say their own words (docs/specs/026-plan/items.md "Where it shows").
+  placeholder?: string;
+  fieldLabel?: string;
+  submitLabel?: string;
+  // A Cancel beside the send button, which Escape presses too (the thread starter).
+  onCancel?: () => void;
+  // The draft as it is typed (the starter's title preview).
+  onDraft?: (text: string) => void;
+  // A line under the field (the starter's title preview).
+  below?: React.ReactNode;
 }) {
   const [draft, setDraft] = useState('');
   const [focused, setFocused] = useState(false);
@@ -168,6 +199,7 @@ export function CommentComposer({
     if (!text) return;
     onAddComment(text, mention.take(text));
     setDraft('');
+    onDraft?.('');
   };
   return (
     <footer
@@ -204,6 +236,7 @@ export function CommentComposer({
           value={draft}
           onChange={(e) => {
             setDraft(e.target.value);
+            onDraft?.(e.target.value);
             mention.onType(e);
           }}
           {...mention.bind}
@@ -212,19 +245,26 @@ export function CommentComposer({
           onKeyDown={(e) => {
             // The @-mention list, while open, owns Enter / Tab / arrows / Esc.
             if (mention.onKeyDown(e)) return;
+            if (onCancel && e.key === 'Escape') {
+              e.preventDefault();
+              e.stopPropagation();
+              onCancel();
+              return;
+            }
             if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
               e.preventDefault();
               submit();
             }
           }}
-          placeholder="Add a comment…"
-          aria-label="Add a comment"
+          placeholder={placeholder}
+          aria-label={fieldLabel}
           rows={comfortable ? 1 : 2}
           style={{ maxHeight: COMPOSER_MAX_PX }}
           className={`block w-full resize-none rounded-lg border border-slate-200 bg-white text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-400/30 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 ${
             comfortable ? 'px-3 py-2 text-[13px] leading-relaxed' : 'px-2 py-1.5 text-xs'
           }`}
         />
+        {below}
         <div className="mt-1.5 flex min-h-6 items-center justify-between gap-2">
           {/* A key combination, so only where there is a keyboard to press it: a touch screen sends with Comment. */}
           <p
@@ -233,35 +273,55 @@ export function CommentComposer({
           >
             {focused ? sendShortcutLabel() : ''}
           </p>
-          <Button
-            size="xs"
-            onClick={submit}
-            disabled={!draft.trim()}
-            // Keeps the compact density: overrides append after the size scale, so they win.
-            className="px-3 py-1 text-[11px]"
-          >
-            Comment
-          </Button>
+          <span className="flex items-center gap-1.5">
+            {onCancel ? (
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={onCancel}
+                className="px-3 py-1 text-[11px] pointer-coarse:py-2"
+              >
+                Cancel
+              </Button>
+            ) : null}
+            <Button
+              size="xs"
+              onClick={submit}
+              disabled={!draft.trim()}
+              // Keeps the compact density: overrides append after the size scale, so they win.
+              className="px-3 py-1 text-[11px] pointer-coarse:py-2"
+            >
+              {submitLabel}
+            </Button>
+          </span>
         </div>
       </div>
     </footer>
   );
 }
 
+// The quiet mark above an agent's comment (docs/specs/026-plan/items.md "Generated by AI").
+const AiIcon = lucideGlyph(lucideSparkles, 11);
+const EditIcon = lucideGlyph(lucidePencil, 12);
+
 function CommentRow({
   comment,
   resolved,
   density,
   onDelete,
+  onEdit,
 }: {
   comment: Comment;
   resolved: boolean;
   density: CommentDensity;
   // Undefined when this session may not delete it, so the row never renders a delete affordance.
   onDelete?: () => void;
+  // The same for an edit: only on this person's own comment, where its host offers editing.
+  onEdit?: (text: string, mentions: CommentMention[]) => void;
 }) {
   const now = useRelativeNow();
   const comfortable = density === 'comfortable';
+  const [editing, setEditing] = useState(false);
   const when = new Date(comment.createdAt).toLocaleString(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -298,31 +358,148 @@ function CommentRow({
               {formatRelativeTimeCompact(now - comment.createdAt)}
             </time>
           </Tooltip>
+          {comment.editedAt ? (
+            <span
+              data-comment-edited=""
+              className="shrink-0 text-[11px] text-slate-500 dark:text-slate-400"
+            >
+              · Edited
+            </span>
+          ) : null}
         </div>
-        <p
-          className={`mt-0.5 whitespace-pre-wrap break-words text-slate-700 dark:text-slate-200 ${
-            comfortable ? 'text-[13px] leading-relaxed' : 'text-xs'
-          }`}
-        >
-          <MentionText
-            text={comment.text}
-            mentions={comment.mentions}
-            chipClassName="bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
-          />
-        </p>
-      </div>
-      {!resolved && onDelete ? (
-        <Tooltip label="Delete comment">
-          <button
-            type="button"
-            aria-label="Delete comment"
-            onClick={onDelete}
-            className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center self-start rounded-md text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:opacity-100 group-hover:opacity-100 motion-reduce:transition-none dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white [@media(hover:none)]:opacity-100"
+        {comment.ai ? (
+          <p
+            data-comment-ai=""
+            className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-violet-50 px-1.5 py-px text-[10px] font-medium text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
           >
-            <TrashIcon size={12} />
-          </button>
-        </Tooltip>
+            <AiIcon aria-hidden />
+            Generated by AI
+          </p>
+        ) : null}
+        {editing && onEdit ? (
+          <CommentEditField
+            initial={comment.text}
+            mentions={comment.mentions ?? []}
+            comfortable={comfortable}
+            onCancel={() => setEditing(false)}
+            onSave={(text, mentions) => {
+              setEditing(false);
+              if (text !== comment.text) onEdit(text, mentions);
+            }}
+          />
+        ) : (
+          <p
+            className={`mt-0.5 whitespace-pre-wrap break-words text-slate-700 dark:text-slate-200 ${
+              comfortable ? 'text-[13px] leading-relaxed' : 'text-xs'
+            }`}
+          >
+            <MentionText
+              text={comment.text}
+              mentions={comment.mentions}
+              chipClassName="bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+            />
+          </p>
+        )}
+      </div>
+      {!resolved && !editing && (onEdit || onDelete) ? (
+        <div className="flex shrink-0 gap-0.5 self-start opacity-0 transition focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100">
+          {onEdit ? (
+            <Tooltip label="Edit comment">
+              <button
+                type="button"
+                aria-label="Edit comment"
+                onClick={() => setEditing(true)}
+                className={ROW_ACTION}
+              >
+                <EditIcon aria-hidden />
+              </button>
+            </Tooltip>
+          ) : null}
+          {onDelete ? (
+            <Tooltip label="Delete comment">
+              <button
+                type="button"
+                aria-label="Delete comment"
+                onClick={onDelete}
+                className={ROW_ACTION}
+              >
+                <TrashIcon size={12} />
+              </button>
+            </Tooltip>
+          ) : null}
+        </div>
       ) : null}
     </li>
+  );
+}
+
+// A row's Edit and Delete: at least 32 px on a touch screen (docs/specs/026-plan/items.md "Keyboard and screen
+// readers"), quiet until hovered or focused with a mouse.
+const ROW_ACTION =
+  'flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none pointer-coarse:h-8 pointer-coarse:w-8 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white';
+
+// A comment's text, edited in place: Save (or Cmd/Ctrl+Enter) keeps it, Cancel (or Escape) leaves it as it was. The
+// comment's mentions stay while their handles are still in the text.
+function CommentEditField({
+  initial,
+  mentions,
+  comfortable,
+  onSave,
+  onCancel,
+}: {
+  initial: string;
+  mentions: readonly CommentMention[];
+  comfortable: boolean;
+  onSave: (text: string, mentions: CommentMention[]) => void;
+  onCancel: () => void;
+}) {
+  const [draft, setDraft] = useState(initial);
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useAutoHeight(ref, draft, COMPOSER_MAX);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, []);
+  const save = () => {
+    const text = draft.trim();
+    if (!text) return;
+    onSave(
+      text,
+      mentions.filter((m) => text.includes(`@${m.handle}`)),
+    );
+  };
+  return (
+    <div className="mt-1">
+      <textarea
+        ref={ref}
+        value={draft}
+        aria-label="Edit comment"
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            onCancel();
+          } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+            e.preventDefault();
+            save();
+          }
+        }}
+        style={{ maxHeight: COMPOSER_MAX_PX }}
+        className={`block w-full resize-none rounded-lg border border-slate-200 bg-white text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-400/30 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 ${
+          comfortable ? 'px-3 py-2 text-[13px] leading-relaxed' : 'px-2 py-1.5 text-xs'
+        }`}
+      />
+      <div className="mt-1.5 flex justify-end gap-1.5">
+        <Button size="xs" variant="ghost" onClick={onCancel} className="px-3 py-1 text-[11px]">
+          Cancel
+        </Button>
+        <Button size="xs" onClick={save} disabled={!draft.trim()} className="px-3 py-1 text-[11px]">
+          Save
+        </Button>
+      </div>
+    </div>
   );
 }

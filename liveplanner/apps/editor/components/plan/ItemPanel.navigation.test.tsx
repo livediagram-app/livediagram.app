@@ -51,7 +51,6 @@ function panel(open: Item, trail: Item[], linked: Item[], fresh = false) {
       onFlag={noop}
       onArchive={noop}
       onClose={noop}
-      comments={{ canComment: true, selfId: 'me', onComment: noop }}
       trail={trail}
       linkedGroups={
         linked.length > 0

@@ -4,6 +4,7 @@ import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
+import type { CardThreadsRoomOp } from './card-threads';
 import type { SheetsRoomOp } from './sheets';
 
 // ---------------------------------------------------------------------
@@ -359,6 +360,9 @@ export type RoomOp =
   // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). Worker-originated
   // through an ordered /broadcast; a session scoped to one tab hears only its tab's.
   | SheetsRoomOp
+  // A card comment thread's write (docs/specs/026-plan/items.md "Comments"), from any plan the thread is on.
+  // Worker-originated through an ordered /broadcast; a session scoped to one tab hears it without its threads.
+  | CardThreadsRoomOp
   // The project went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

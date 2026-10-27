@@ -36,7 +36,7 @@ import { ColourSelect } from './ColourSwatches';
 import { PHASE_COLOURS } from './views/view-frame';
 import { track } from '@/lib/telemetry';
 import { ItemDescription } from './ItemDescription';
-import { ItemComments, type ItemCommentsContext } from './ItemComments';
+import { CardThreads } from './threads/CardThreads';
 import type { ItemOpenVia } from './item-trail';
 
 const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
@@ -81,8 +81,6 @@ export type ItemFieldContext = {
   onPatch: (patch: ItemPatch) => void;
   // Opens another item in the panel (the parent), stepping the panel's card trail.
   onOpenItem: (itemId: string, via: ItemOpenVia) => void;
-  // The card's comments (docs/specs/026-plan/items.md "Comments"); absent, the field draws nothing.
-  comments?: ItemCommentsContext;
 };
 
 export const fieldId = (item: Item, f: string) => `item-${item.id}-${f}`;
@@ -231,9 +229,8 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     case 'comments':
-      return ctx.comments ? (
-        <ItemComments item={item} canEdit={canEdit} comments={ctx.comments} />
-      ) : null;
+      // The card's comment threads (docs/specs/026-plan/items.md "Comments"), from their own context.
+      return <CardThreads item={item} />;
     default:
       return null;
   }

@@ -21,6 +21,20 @@ describe('parseCollabDeepLink', () => {
     });
     expect(parseCollabDeepLink('#item=it%261')).toEqual({ at: null, open: null, itemId: 'it&1' });
   });
+
+  it('reads one of a card’s threads, and no thread without a card', () => {
+    expect(parseCollabDeepLink('#item=it1&thread=th-1')).toEqual({
+      at: null,
+      open: null,
+      itemId: 'it1',
+      threadId: 'th-1',
+    });
+    expect(parseCollabDeepLink('#t=a&el=b&thread=th-1')).toEqual({
+      at: { tabId: 'a', elementId: 'b' },
+      open: null,
+      itemId: null,
+    });
+  });
 });
 
 describe('parseCollabDeepLink', () => {

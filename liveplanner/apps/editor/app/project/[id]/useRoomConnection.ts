@@ -15,6 +15,7 @@ import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@liveplanner/project';
 import {
   type AgentPresence,
+  type CardThreadsRoomOp,
   type ChangesetRoomOp,
   type ItemsRoomOp,
   type ItemTypesRoomOp,
@@ -124,6 +125,8 @@ export function useRoomConnection(opts: {
   receiveChangeset: (op: ChangesetRoomOp) => void;
   // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). System-only.
   receiveItems: (op: ItemsRoomOp) => void;
+  // A card comment thread's write (docs/specs/026-plan/items.md "Comments"), from any plan the thread is on.
+  receiveThreads: (op: CardThreadsRoomOp) => void;
   // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"). System-only.
   receiveItemTypes: (op: ItemTypesRoomOp) => void;
   // A peer's hands on a Plan card (docs/specs/026-plan/plan-board.md). Presence.
@@ -174,6 +177,7 @@ export function useRoomConnection(opts: {
     resyncFromServer,
     receiveChangeset,
     receiveItems,
+    receiveThreads,
     receiveItemTypes,
     receivePlanPresence,
     receiveSheets,
@@ -424,6 +428,10 @@ export function useRoomConnection(opts: {
         // Item writes (docs/specs/026-plan/items.md). System-only: items change only through the api,
         // and the room refuses this op from a client socket.
         if (from === 'system') receiveItems(op);
+      } else if (op.kind === 'threads') {
+        // Card comment threads (docs/specs/026-plan/items.md "Comments"). System-only: threads change only
+        // through the api.
+        if (from === 'system') receiveThreads(op);
       } else if (op.kind === 'item-types') {
         // The type catalogue (docs/specs/026-plan/item-types.md). System-only: it changes only through
         // the api.
