@@ -254,6 +254,10 @@ the items too.
 - **Input routing**: `PlanBoardView` receives `interactive = editorMode === 'plan' && !readOnly`. Interactive:
   card pointerdown stops propagation and starts `usePlanCardDrag`; header/border do not stop propagation (the
   generic box drag moves the board). Not interactive: nothing stops propagation; double-click on a card opens it.
+- **Team people** (`useTeamPeople(ownerId, enabled, signedIn, teams, projectTeamId)`, `useEditorState`): the
+  token's team whose id is `projectTeamId` (`editor-realtime.ts`, the plan's `team_id`), else none, so a personal,
+  This Browser, shared-from-My-Work or guest plan asks for nobody. One `apiTeamMembers` request for that team,
+  joined members only (`teamMemberPerson`). The mention list (`useCommentMentions`) picks the same team.
 - **Assignable people** (`usePlanSlice` `people`): `planPeople(self, teamPeople, assigned)` from
   `@liveplanner/items` (`plan-people.ts`): self, then team members, then every assignee a card holds
   (`assignedPeople`), once each by id (the first source wins), sorted by name. The assigned list is recomputed when
