@@ -115,7 +115,8 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await expect(row(page, 'Roadmap')).toBeHidden();
   await showView(page, 'Trash');
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeVisible();
-  await rowAction(page, 'Roadmap', 'Restore');
+  // A Trash row has its own Restore button, no row menu.
+  await page.locator('main').getByRole('button', { name: 'Restore Roadmap', exact: true }).click();
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeHidden();
   await openView(page, 'recent', 'Recent');
   await expect(row(page, 'Roadmap')).toBeVisible();
