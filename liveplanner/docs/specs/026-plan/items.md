@@ -347,10 +347,10 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   - **Everything that groups by person** (swimlanes, the Assignee filter, workload, the People tile) treats a custom
     assignee as a person: they get their own lane, filter option and bar.
   - **Accounts are marked**: in the Assignee picker's open list, and only there, every person who is a
-    liveworkspace identity (anyone not `n-`: you, the plan's team, and anyone the cards hold who was assigned that
-    way) carries a small liveworkspace mark to the left of their name: the prism glyph every app's logo is, in the
-    platform's slate, 12 px, with the tooltip and accessible name **liveworkspace account**. A custom assignee
-    carries nothing (an empty space of the same width, so the names line up). Nowhere else shows it: not the closed
+    liveworkspace identity (a person id hashed from an account or guest id: you, the plan's team, and anyone the cards
+    hold who was assigned that way) carries a small liveworkspace mark to the left of their name: the prism glyph every app's logo is, in the
+    platform's slate, 12 px, with the tooltip **liveworkspace account** (the row reads "Sam, liveworkspace account"). A custom assignee
+    and a template's example person carry nothing (an empty space of the same width, so the names line up). Nowhere else shows it: not the closed
     field, card faces, the @-mention list or any other list of people. The picker is a list of its own rather than a
     native select so a row can hold the mark: the closed field shows the current assignee (or **No one**) and a
     chevron; opening it (a press, or Enter, Space, Up or Down) drops a list under the field, in place: **No one**, the

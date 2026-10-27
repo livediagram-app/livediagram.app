@@ -270,8 +270,9 @@ the items too.
   Space, ArrowUp/Down at the current choice; ArrowUp/Down move, Enter picks, Escape (capture, before the panel's)
   and `useClickOutside` close, Tab closes without refocus. `AccountMark` (`components/plan/AccountMark.tsx`):
   `BrandGlyph` from `@liveworkspace/brand` (re-exported by `@liveplanner/ui`) at 12 px in `text-slate-500 dark:text-slate-400`, `role="img"` named `ACCOUNT_MARK_LABEL` ("liveworkspace account") with that Tooltip;
-  drawn before the name in each list row whose person is not `isNamedPerson` (a same-width spacer otherwise), and
-  nowhere else.
+  drawn before the name in each list row whose person id passes `isIdentityPersonId` (`@liveplanner/items`
+  person.ts: 24 hex characters, as `itemPersonId` makes; a same-width spacer otherwise), the row's `aria-label`
+  then `<name>, liveworkspace account`; nowhere else.
 - **Custom assignee**: `PersonPicker`'s last row **+ Custom Assignee** when not disabled; picking it keeps the
   current value and opens `CustomAssigneePopover` under the trigger. Add (or Enter,
   the trimmed name non-empty) calls `onSave(personNamed(name, people))`; Escape, Cancel or a press outside close it

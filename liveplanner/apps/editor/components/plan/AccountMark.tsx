@@ -5,7 +5,7 @@
 // real liveworkspace identity rather than a custom assignee, who gets nothing. One inline SVG (the stateless glyph),
 // so a long list pays for a few paths a row and no image requests.
 import { BrandGlyph, Tooltip } from '@liveplanner/ui';
-import { isNamedPerson } from '@liveplanner/items';
+import { isIdentityPersonId } from '@liveplanner/items';
 
 export const ACCOUNT_MARK_LABEL = 'liveworkspace account';
 
@@ -24,5 +24,6 @@ export function AccountMark() {
   );
 }
 
-// Whether a person carries the mark: anyone but a custom (named) assignee.
-export const hasAccountMark = (person: { id: string }): boolean => !isNamedPerson(person);
+// Whether a person carries the mark: a liveworkspace identity (a hashed person id), never a custom assignee (`n-`)
+// or a template's example person (`example-`).
+export const hasAccountMark = (person: { id: string }): boolean => isIdentityPersonId(person.id);

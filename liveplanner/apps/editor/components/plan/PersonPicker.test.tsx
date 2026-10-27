@@ -14,9 +14,10 @@ afterEach(() => {
   vi.mocked(track).mockReset();
 });
 
-const ME: ItemPerson = { id: 'abc123', name: 'Me', color: '#2563eb' };
-const SAM: ItemPerson = { id: 'def456', name: 'Sam', color: '#16a34a' };
+const ME: ItemPerson = { id: 'abc123abc123abc123abc123', name: 'Me', color: '#2563eb' };
+const SAM: ItemPerson = { id: 'def456def456def456def456', name: 'Sam', color: '#16a34a' };
 const CASEY: ItemPerson = { id: 'n-casey', name: 'Casey', color: '#000' };
+const MAYA: ItemPerson = { id: 'example-maya', name: 'Maya', color: '#7c3aed' };
 
 const picker = (opts: { disabled?: boolean; value?: ItemPerson; people?: ItemPerson[] } = {}) => {
   const onSave = vi.fn();
@@ -123,7 +124,7 @@ describe('PersonPicker', () => {
   });
 
   it("marks real people's accounts left of their name in the list only, never a custom assignee", () => {
-    const { field } = picker({ value: SAM, people: [ME, SAM, CASEY] });
+    const { field } = picker({ value: SAM, people: [ME, SAM, CASEY, MAYA] });
     // The closed field shows no mark.
     expect(within(field).queryByRole('img')).toBeNull();
     const list = openList(field);
@@ -135,6 +136,7 @@ describe('PersonPicker', () => {
     }
     expect(row(list, 'Sam').getAttribute('aria-label')).toBe(`Sam, ${ACCOUNT_MARK_LABEL}`);
     expect(within(row(list, 'Casey')).queryByRole('img')).toBeNull();
+    expect(within(row(list, 'Maya')).queryByRole('img')).toBeNull();
     expect(row(list, 'Casey').getAttribute('aria-label')).toBe('Casey');
     expect(within(row(list, 'No one')).queryByRole('img')).toBeNull();
     expect(within(row(list, '+ Custom Assignee')).queryByRole('img')).toBeNull();
