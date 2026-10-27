@@ -8,6 +8,7 @@ import {
   itemIdsShownOnTab,
   tabShowsEveryCard,
   itemPersonId,
+  calculatedWritten,
   statusExcluded,
   typesOf,
   type Item,
@@ -65,6 +66,17 @@ export function excludedStatus(
 ): boolean {
   return statusExcluded(typesOf(caller.doc?.itemTypes), next, before, undo);
 }
+// A Calculated field given a value (docs/specs/026-plan/item-types.md "Calculated fields"): calculatedWritten
+// against the project's types, its id or null. An undo never is: it puts back what was there.
+export function calculatedSet(
+  caller: ItemCaller,
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Item,
+  undo = false,
+): string | null {
+  return undo ? null : calculatedWritten(typesOf(caller.doc?.itemTypes), next, before);
+}
+
 // A Participant works with cards but never deletes one (docs/specs/013-workspace/share-roles.md "What a
 // Participant changes"): moving a card into or out of the Trash or the Archive, and restoring one whole (its votes,
 // thread and key, an Editor's undo), needs an Editor. Asked only when a write does that, so an ordinary card edit

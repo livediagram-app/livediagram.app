@@ -32,8 +32,14 @@ export type {
   PlanStatusName,
 } from '@liveplanner/items';
 
-// GET /api/projects/:id/items[?tabId=]: the store, or the items one tab shows.
-export type ItemsResponse = { items: Item[]; rev: number };
+// GET /api/projects/:id/items[?tabId=][&include=calculated]: the store, or the items one tab shows.
+export type ItemsResponse = {
+  items: Item[];
+  rev: number;
+  /** Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, or null),
+   *  by card id then field id; only cards whose type has a Calculated field. Worked out as read, never stored. */
+  calculated?: Record<string, Record<string, number | null>>;
+};
 
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.
 export type ItemResponse = { item: Item; rev: number };
