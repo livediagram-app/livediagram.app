@@ -881,6 +881,12 @@ sign-off. The marks are transparent 64px PNGs at `/email/<name>-mark-64.png` on 
   sent at once count as one; and the password, email-verification and email-change flows, which nothing here uses)
   are off (`UNUSED_CODE_PATHS` in `src/auth-options.ts`) and answer `404`.
 - **The onboarding series** is liveworkspace's, whichever app it speaks for.
+- **The team emails and the token reminder** (an invitation and its reminders, an answer to an invitation, a token
+  about to expire) are liveworkspace's: they are about the account and its teams, which are the same in every app,
+  and their links go to liveworkspace.app. Each has a short heading over its own wording, its button in ink, and its
+  sign-off under the rule (why it came, and where to turn it off when it can be).
+- **Every email has a plain-text part** beside its HTML, with the same words and each link written out. Every value
+  a person chose (a name, a team's name, a token's name) is escaped wherever it lands in the HTML.
 
 ## Notification emails
 
