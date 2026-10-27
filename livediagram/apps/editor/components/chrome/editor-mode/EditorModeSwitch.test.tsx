@@ -83,22 +83,71 @@ describe('EditorModeSwitch chip', () => {
   });
 });
 
-describe('EditorModeSwitch slot', () => {
-  it.each([false, true])('keeps one width across the modes (iconOnly %s)', (iconOnly) => {
-    const widths = new Set<string>();
-    for (const mode of EDITOR_MODES) {
-      widths.add(slot(renderSwitch(mode, {}, { iconOnly }).container)!.className);
-      cleanup();
-    }
-    expect(widths.size).toBe(1);
+describe('EditorModeSwitch menu placement', () => {
+  const rect = (left: number, bottom: number) =>
+    ({
+      left,
+      right: left + 48,
+      top: bottom - 36,
+      bottom,
+      width: 48,
+      height: 36,
+      x: left,
+      y: bottom - 36,
+    }) as DOMRect;
+
+  function openAt(left: number, menuWidth: number, viewport = 390) {
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(viewport);
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(menuWidth);
+    const view = renderSwitch('draw', {}, { iconOnly: true });
+    vi.spyOn(chip(), 'getBoundingClientRect').mockReturnValue(rect(left, 100));
+    fireEvent.click(chip());
+    return { ...view, menu: screen.getByRole('menu') };
+  }
+
+  it('mounts in the page, out of the menu card, below the chip', () => {
+    const { container, menu } = openAt(60, 200);
+    expect(container.contains(menu)).toBe(false);
+    expect(menu.className).toMatch(/\bfixed\b/);
+    expect(menu.style.top).toBe('106px');
+    expect(menu.style.left).toBe('60px');
+    expect(menu.style.visibility).toBe('');
   });
 
-  it('is narrower on a phone', () => {
-    const named = slot(renderSwitch('diagram').container)!.className;
+  it('stays inside the viewport on a phone', () => {
+    const { menu } = openAt(60, 340);
+    expect(menu.style.left).toBe(`${390 - 340 - 8}px`);
+  });
+
+  it('follows a resize', () => {
+    const { menu } = openAt(60, 340);
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(800);
+    fireEvent(window, new Event('resize'));
+    expect(menu.style.left).toBe('60px');
+  });
+
+  it('counts a press on the portalled menu as inside', () => {
+    const { setMode } = openAt(60, 200);
+    const row = screen.getByRole('menuitemradio', { name: /^Workshop/ });
+    fireEvent.pointerDown(row);
+    expect(screen.queryByRole('menu')).not.toBeNull();
+    fireEvent.click(row);
+    expect(setMode).toHaveBeenCalledWith('workshop');
+  });
+});
+
+describe('EditorModeSwitch slot', () => {
+  it('takes only the width its content needs', () => {
+    const named = slot(renderSwitch('draw').container)!;
+    expect(named.className).not.toMatch(/\bw-/);
     cleanup();
-    const iconOnly = slot(renderSwitch('diagram', {}, { iconOnly: true }).container)!.className;
-    expect(iconOnly).not.toBe(named);
-    expect(iconOnly).toMatch(/\bw-12\b/);
+    const iconOnly = slot(renderSwitch('draw', {}, { iconOnly: true }).container)!;
+    expect(iconOnly.className).not.toMatch(/\bw-/);
+  });
+
+  it('drops the name on a phone', () => {
+    renderSwitch('workshop', {}, { iconOnly: true });
+    expect(chip().textContent).not.toContain(editorModeLabel('workshop'));
   });
 
   it('renders nothing outside an editor', () => {

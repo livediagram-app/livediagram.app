@@ -56,7 +56,8 @@ export function ModeMenuChip({
     if (chip) setHostZoom(effectiveZoom(chip));
   };
 
-  useClickOutside(root, close, open);
+  // The top chrome's menu is portalled out of `root`; a press on it is still inside.
+  useClickOutside(root, close, open, '[data-mode-menu]');
 
   return (
     <div ref={root} className="relative w-full">
