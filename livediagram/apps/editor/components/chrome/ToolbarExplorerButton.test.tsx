@@ -3,6 +3,8 @@
 // hands itself over as the popover's anchor.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ReactNode } from 'react';
+import type { EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
 
@@ -58,16 +60,35 @@ describe('ToolbarExplorerButton', () => {
     ).not.toBeNull();
   });
 
-  // docs/specs/007-editor/editor-modes.md "The mode switch": a tab's mode is chosen on its start, never
-  // beside the menu button, on any screen.
-  it.each([false, true])('carries no mode switch (inline %s)', (inline) => {
+  // docs/specs/007-editor/editor-modes.md "The mode switch": the switch rides right of the menu button, in its card,
+  // named on a computer and its icon alone on a phone (inline, the strip's row).
+  const withEditor = (ui: ReactNode, over: Partial<EditorModeState> = {}) =>
     render(
       <EditorModeProvider
-        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
+        value={{ mode: 'draw', setMode: vi.fn(), canSwitch: true, canEdit: true, ...over }}
       >
-        <ToolbarExplorerButton open={false} onToggle={vi.fn()} inline={inline} />
+        {ui}
       </EditorModeProvider>,
     );
+
+  it('carries the mode switch right of the menu button, in the same card', () => {
+    withEditor(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
+    const menu = screen.getByRole('button', { name: 'Explorer' });
+    const mode = screen.getByRole('button', { name: 'Editor mode: Draw' });
+    const card = menu.closest('[data-toolbar-menu]');
+    expect(card).not.toBeNull();
+    expect(mode.closest('[data-toolbar-menu]')).toBe(card);
+    expect(menu.compareDocumentPosition(mode) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(mode.textContent).toBe('Draw');
+  });
+
+  it('drops the label on a phone (inline in the strip)', () => {
+    withEditor(<ToolbarExplorerButton open={false} onToggle={vi.fn()} inline />);
+    expect(screen.getByRole('button', { name: 'Editor mode: Draw' }).textContent).toBe('');
+  });
+
+  it('carries no switch for a session that cannot edit', () => {
+    withEditor(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />, { canEdit: false });
     expect(screen.getByRole('button', { name: 'Explorer' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /mode:/ })).toBeNull();
   });
