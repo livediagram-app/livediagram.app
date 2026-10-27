@@ -63,10 +63,11 @@ const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
   text: 'note',
 };
 
-// A field lane's tile glyph: a Card field draws the type it links to (Parent, a project), any other its kind's.
+// A field lane's tile glyph: a Card field of one type draws that type (Parent, a project), one of several types
+// and any other field its kind's.
 function laneGlyph(f: LaneField, types: readonly ItemTypeDef[]): string {
-  const linked =
-    f.kind === 'card' && f.linkType ? types.find((t) => t.id === f.linkType) : undefined;
+  const only = f.kind === 'card' && f.linkTypes?.length === 1 ? f.linkTypes[0] : undefined;
+  const linked = only ? types.find((t) => t.id === only) : undefined;
   return linked?.glyph ?? LANE_KIND_GLYPHS[f.kind];
 }
 

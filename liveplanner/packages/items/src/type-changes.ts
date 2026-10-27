@@ -14,6 +14,7 @@ import {
   RATING_FIELD_SCALE_MIN,
   type CustomFieldDef,
   type ItemTypeDef,
+  withLinkTypes,
 } from './item-types';
 import type { PlanStatusName } from './plan-outline';
 import { fieldKeyOf, resolveStatus, resolveType, type NameRefusal } from './plan-names';
@@ -60,6 +61,9 @@ export interface CustomFieldInput {
   scale?: number;
   // A Card field's target card type, by id or name.
   linkType?: string;
+  // A Card field's target card types, by id or name (docs/specs/026-plan/item-types.md "Card fields"); merged after
+  // `linkType` when both are given.
+  linkTypes?: readonly string[];
   // A Currency field's ISO 4217 code; GBP when absent.
   currency?: string;
   onCard?: boolean;
@@ -71,6 +75,8 @@ export interface CustomFieldEdit {
   field: string;
   name?: string;
   options?: readonly string[];
+  // A Card field's card types, replaced whole, by id or name.
+  linkTypes?: readonly string[];
   currency?: string;
   onCard?: boolean;
 }
@@ -161,7 +167,17 @@ function withFace(type: ItemTypeDef, c: FaceInput): ItemTypeDef {
   return next;
 }
 
-function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
+// Card types named by id or name, as ids, each once: never more than the catalogue holds, so never past
+// CARD_LINK_TYPES_MAX.
+function cardTypeIds(names: readonly string[], types: readonly ItemTypeDef[]): string[] {
+  return [...new Set(names.map((n) => must(resolveType(n, types)).type.id))];
+}
+
+function editedCustom(
+  type: ItemTypeDef,
+  edit: CustomFieldEdit,
+  types: readonly ItemTypeDef[],
+): ItemTypeDef {
   const key = must(fieldKeyOf(edit.field, type)).key;
   const field = (type.custom ?? []).find((f) => f.id === key);
   if (!field)
@@ -179,6 +195,17 @@ function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
         `"${field.label}" is ${withArticle(field.kind)} field: only a choice or multichoice field has options.`,
       );
     next.options = edit.options.map((o) => o.trim());
+  }
+  if (edit.linkTypes) {
+    if (field.kind !== 'card')
+      throw invalid(
+        `"${field.label}" is ${withArticle(field.kind)} field: only a card field links to card types.`,
+      );
+    if (edit.linkTypes.length === 0)
+      throw invalid(`"${field.label}" needs at least one card type to link to.`);
+    // Replaced whole: a list of one drops the stored list.
+    delete next.linkTypes;
+    Object.assign(next, withLinkTypes(next, cardTypeIds(edit.linkTypes, types)));
   }
   if (edit.currency) {
     if (field.kind !== 'currency')
@@ -291,9 +318,12 @@ function customOf(
     if (input.scale !== RATING_FIELD_SCALE_DEFAULT) field.scale = input.scale;
   }
   if (known === 'card') {
-    if (!input.linkType)
-      throw invalid(`The Card field "${name}" needs linkType: the card type it links to.`);
-    field.linkType = must(resolveType(input.linkType, types)).type.id;
+    const named = [...(input.linkType ? [input.linkType] : []), ...(input.linkTypes ?? [])];
+    if (named.length === 0)
+      throw invalid(
+        `The Card field "${name}" needs linkTypes: the card types it links to (or linkType, one).`,
+      );
+    Object.assign(field, withLinkTypes(field, cardTypeIds(named, types)));
   }
   if (known === 'currency' && input.currency) {
     const code = currencyOf(input.currency);
@@ -417,7 +447,7 @@ export function applyCardTypeChanges(
         }
         for (const edit of c.editCustom ?? []) {
           if (edit.onCard === true) ticked.push(must(fieldKeyOf(edit.field, type)).key);
-          type = editedCustom(type, edit);
+          type = editedCustom(type, edit, types);
         }
         for (const name of c.removeCustom ?? []) {
           const key = must(fieldKeyOf(name, type)).key;

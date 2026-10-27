@@ -89,12 +89,44 @@ export interface CustomFieldDef {
   options?: readonly string[];
   // A Rating's top score, RATING_FIELD_SCALE_MIN..MAX; RATING_FIELD_SCALE_DEFAULT when absent.
   scale?: number;
-  // A Card field's target card type id: its value is the id of one card of that type.
+  // A Card field's first target card type id: its value is the id of one card of that type (or of `linkTypes`).
   linkType?: string;
+  // Every card type a Card field may link to, `linkType` first, when there is more than one (linkTypesOf).
+  linkTypes?: readonly string[];
   // A Currency field's ISO 4217 code ("GBP"); CURRENCY_DEFAULT when absent.
   currency?: string;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
+}
+
+// The most card types one Card field links to: every type the catalogue can hold (ITEM_TYPES_MAX).
+export const CARD_LINK_TYPES_MAX = 32;
+
+// The card types a Card field links to (docs/specs/026-plan/item-types.md "Card fields"): `linkTypes` when it holds
+// `linkType`, else `linkType` alone, so a field saved before (no `linkTypes`), or one an older editor re-pointed by
+// changing `linkType` alone, reads as its `linkType`. None for a field that is no Card field.
+export function linkTypesOf(
+  field: Pick<CustomFieldDef, 'linkType' | 'linkTypes'>,
+): readonly string[] {
+  const first = field.linkType;
+  if (!first) return [];
+  return field.linkTypes && field.linkTypes.includes(first) ? field.linkTypes : [first];
+}
+
+// A Card field's types as stored: `linkType` the first, `linkTypes` only when there are several (deduplicated, in
+// order), so a one-type field is stored exactly as before.
+export function withLinkTypes<T extends CustomFieldDef | Omit<CustomFieldDef, 'id'>>(
+  field: T,
+  ids: readonly string[],
+): T {
+  const unique = [...new Set(ids)];
+  const { linkTypes: _old, linkType: _first, ...rest } = field;
+  if (unique.length === 0) return rest as T;
+  return {
+    ...rest,
+    linkType: unique[0],
+    ...(unique.length > 1 ? { linkTypes: unique } : {}),
+  } as T;
 }
 
 // A tab of an item type's panel (docs/specs/026-plan/item-types.md "An item type"): the fields it shows.

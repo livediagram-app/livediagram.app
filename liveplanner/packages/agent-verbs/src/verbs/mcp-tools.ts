@@ -252,8 +252,8 @@ export const mcpChangeCardTypes = mcpTool('change_card_types', {
   description:
     'Add, edit or delete a plan’s card types (the kinds of card its boards hold, like Task ' +
     'or Bug), with custom fields by name: add {name, color, glyph, fields, custom, defaultStatus, ' +
-    'excludedStatuses, display, tabs, detailsLabel}, set {type, ...; editCustom renames a field or replaces a ' +
-    'choice field’s options in place}, delete {type} (its cards go to the Trash), add_default_types ' +
+    'excludedStatuses, display, tabs, detailsLabel}, set {type, ...; editCustom renames a field, replaces a ' +
+    'choice field’s options or a card field’s linkTypes in place}, delete {type} (its cards go to the Trash), add_default_types ' +
     '(any of Project, Task, Note, Idea and Action it lacks). ' +
     'A type is a name, a colour, a glyph, built-in fields (Title and Status always), up to 12 custom fields, ' +
     'a card face per size (display: Minimal is one line, Compact a title over one row, Detailed a header, the ' +

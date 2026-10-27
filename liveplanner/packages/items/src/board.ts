@@ -21,6 +21,7 @@ import {
   ITEM_TYPES,
   LEGACY_PARENT_GROUPING,
   PARENT_FIELD_ID,
+  linkTypesOf,
   type ItemTypeDef,
 } from './item-types';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, type Priority } from './fields';
@@ -214,8 +215,9 @@ export interface LaneField {
   label: string;
   kind: LaneFieldKind;
   options?: readonly string[];
-  // A Card field's target type: a row per linked card (docs/specs/026-plan/item-types.md "Card fields").
-  linkType?: string;
+  // A Card field's target types: a row per linked card, of any of them (docs/specs/026-plan/item-types.md "Card
+  // fields").
+  linkTypes?: readonly string[];
 }
 
 const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
@@ -248,7 +250,7 @@ function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
         label: c.label,
         kind: c.kind as LaneFieldKind,
         ...(c.options ? { options: c.options } : {}),
-        ...(c.linkType ? { linkType: c.linkType } : {}),
+        ...(c.kind === 'card' ? { linkTypes: linkTypesOf(c) } : {}),
       });
     }
   return out;
