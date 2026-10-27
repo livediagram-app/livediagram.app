@@ -293,8 +293,10 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 - The mode resolves per render from the tab (`opensInOf`): no store, no subscription, no storage
   read. The resolved state is memoised, so the two switches (context consumers) re-render on a switch or a role
-  change, not on every edit of the tab. The switch adds no dependency: `ModeMenu` and `ModeMenuChip` were already in
-  the editor bundle for the start's switch.
+  change, not on every edit of the tab. The switch adds no dependency, but it brings `ModeMenu` and its preview art
+  into the document page's first load: measured on the static export, first-load JS went from 3,958,639 to
+  3,968,623 bytes (1,369,987 to 1,375,064 gzipped, +5.0 KB, +0.37%). Should that budget tighten, `ModeMenu` can load
+  on demand, preloaded when the pointer reaches the chip.
 - A switch is one commit. The sync is one small `tab-meta` op (`opensIn`).
 - Migration returns the same tab and element objects when nothing changes (identity-preserving).
 
