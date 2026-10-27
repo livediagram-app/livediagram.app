@@ -21,18 +21,11 @@ const item = (over: Partial<Item>): Item => ({ id: 'p1', app: 'liveplanner', ...
 
 describe('which app the person came from', () => {
   it('reads ?from= first, then the referrer; from anywhere else (liveworkspace.app itself) it is in no app', () => {
-    expect(
-      arrival(
-        '?from=livedesign',
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/x',
-      ),
-    ).toEqual({
+    expect(arrival('?from=livedesign', 'https://www.livediagram.app/x')).toEqual({
       app: 'livedesign',
       via: 'from',
     });
-    expect(
-      arrival('', 'https://livediagram-router.liveworkspace-easing509.workers.dev/document/1'),
-    ).toEqual({
+    expect(arrival('', 'https://www.livediagram.app/document/1')).toEqual({
       app: 'livediagram',
       via: 'referrer',
     });
@@ -58,7 +51,7 @@ describe("every app's addresses", () => {
   it("opens an item in its own app, with its share code and the Inbox's pin", () => {
     expect(itemHref(item({ id: 'p 1' }))).toBe('https://www.liveplanner.app/project/p%201');
     expect(itemHref(item({ app: 'livediagram', id: 'd1', sharedVia: 'abc' }))).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/document/d1?s=abc',
+      'https://www.livediagram.app/document/d1?s=abc',
     );
     expect(itemHref(item({}), { tabId: 't1', elementId: 'e1' })).toMatch(/#t=t1&el=e1$/);
     // An Inbox row's popover and a card ride in the same deep link.
@@ -83,7 +76,7 @@ describe("every app's addresses", () => {
       'https://www.liveplanner.app/help/explorer/home/',
     );
     expect(helpHrefFor('livediagram')({ kind: 'home' })).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/help/explorer/explorer-page/',
+      'https://www.livediagram.app/help/explorer/explorer-page/',
     );
     expect(offlineHref('liveplanner')).toBe('https://www.liveplanner.app/explorer/offline');
   });

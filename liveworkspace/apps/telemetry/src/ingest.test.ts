@@ -19,10 +19,7 @@ describe('ingest', () => {
   it('stores a page’s events under the app it names, with a server time', async () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
     const res = await handleIngest(
-      post(
-        { app: 'livediagram.app', events: [created] },
-        fromPage('https://livediagram-router.liveworkspace-easing509.workers.dev'),
-      ),
+      post({ app: 'livediagram.app', events: [created] }, fromPage('https://www.livediagram.app')),
       env,
     );
     expect(res.status).toBe(204);
@@ -49,10 +46,7 @@ describe('ingest', () => {
   it('refuses a page speaking for another app', async () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
     await handleIngest(
-      post(
-        { app: 'liveplanner.app', events: [created] },
-        fromPage('https://livediagram-router.liveworkspace-easing509.workers.dev'),
-      ),
+      post({ app: 'liveplanner.app', events: [created] }, fromPage('https://www.livediagram.app')),
       env,
     );
     await handleIngest(
@@ -135,10 +129,7 @@ describe('ingest', () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
     const view = { category: 'UI', action: 'Toggled', type: 'ExplorerViewCard' };
     await handleIngest(
-      post(
-        { app: 'liveworkspace.app', events: [view] },
-        fromPage('https://livediagram-router.liveworkspace-easing509.workers.dev'),
-      ),
+      post({ app: 'liveworkspace.app', events: [view] }, fromPage('https://www.livediagram.app')),
       env,
     );
     await handleIngest(
@@ -181,7 +172,7 @@ describe('ingest', () => {
             { category: 'Session', action: 'SignedUp' },
           ],
         },
-        fromPage('https://livediagram-router.liveworkspace-easing509.workers.dev'),
+        fromPage('https://www.livediagram.app'),
       ),
       env,
     );
@@ -190,7 +181,7 @@ describe('ingest', () => {
 
   it('caps a batch, and answers 204 to anything malformed', async () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
-    const headers = fromPage('https://livediagram-router.liveworkspace-easing509.workers.dev');
+    const headers = fromPage('https://www.livediagram.app');
     await handleIngest(
       post({ app: 'livediagram.app', events: Array(150).fill(created) }, headers),
       env,

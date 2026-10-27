@@ -4,8 +4,8 @@ account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Better Auth reads AsyncLocalStorage from node:async_hooks.
-# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
+# global_fetch_strictly_public: a fetch() to another Worker's route on this zone (liveworkspace.app) isn't routed to
+# that Worker without it (docs/specs/009-status/status.md "Where the checks go").
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 # The accounts API on liveworkspace.app: /api/auth/*, /api/account/* and the two discovery documents, on www. (its
 # address, BASE_URL) and on the bare domain for clients from before the move (liveworkspace/docs/specs/003-accounts/accounts.md "The move

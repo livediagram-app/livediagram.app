@@ -27,7 +27,7 @@ async function tracked(tabs: Tab[] = [tab('t1', 'A'), tab('t2', 'B')]) {
     schemaVersion: 1,
     document: { id: 'd1', name: 'Home', presentation: null, tabs },
     livediagramSync: {
-      host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+      host: 'https://www.livediagram.app',
       tabs: recorded,
     },
   };

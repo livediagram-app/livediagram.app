@@ -55,9 +55,7 @@ describe('routeToPreviews', () => {
 
   it('sends an old live image address to the service, query and all', async () => {
     const { seen, doFetch } = capture();
-    const request = new Request(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/share/ABC/image.svg?tab=T1',
-    );
+    const request = new Request('https://www.livediagram.app/api/share/ABC/image.svg?tab=T1');
     await routeToPreviews(request, 'http://127.0.0.1:8792', doFetch);
     expect(seen[0]!.url).toBe('http://127.0.0.1:8792/api/previews/share/ABC/image.svg?tab=T1');
   });
@@ -65,11 +63,7 @@ describe('routeToPreviews', () => {
   it('leaves every other path to the router, and refuses to forward to itself', async () => {
     const { doFetch } = capture();
     expect(
-      routeToPreviews(
-        new Request('https://livediagram-router.liveworkspace-easing509.workers.dev/api/documents'),
-        undefined,
-        doFetch,
-      ),
+      routeToPreviews(new Request('https://www.livediagram.app/api/documents'), undefined, doFetch),
     ).toBeNull();
     const self = await routeToPreviews(
       new Request('https://www.liveworkspace.app/api/previews/items/I1'),

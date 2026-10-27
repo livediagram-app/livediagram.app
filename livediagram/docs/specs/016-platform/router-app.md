@@ -16,7 +16,7 @@ callback and live rooms from an older page, a CLI or an MCP client keep working,
 lost to a cross-origin redirect. It is always one hop: `/status` and `/telemetry` go straight to liveworkspace, and a
 help path missing its `/help` goes straight to `www.livediagram.app/help/…`. Only production's router does it (no
 `DEPLOY_ENV`; `wrangler dev` hands a local router its production host), and `www.`, `staging.` and local hosts never
-redirect, so there is no loop and neither staging nor local development leads to production. livediagram.app is not on this account yet ([stand-in addresses](stand-in-addresses.md)), so this takes effect when the router answers there.
+redirect, so there is no loop and neither staging nor local development leads to production.
 
 ## Routing table
 

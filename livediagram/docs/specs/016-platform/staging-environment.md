@@ -20,9 +20,6 @@ reaches people's documents.
 | Index        | `liveworkspace.app`                             | `staging.liveworkspace.app`                |
 | Indexable    | Yes                                             | **No**: `X-Robots-Tag: noindex, nofollow`  |
 
-While the `livediagram.app` zone is on the previous account, each host answers on its worker's
-`workers.dev` address ([Stand-in addresses](stand-in-addresses.md)).
-
 ### "live" is a path, not an environment
 
 Worth stating once, because the two readings collide: **`/live` is where the editor is
@@ -223,9 +220,8 @@ reader.
 - `staging.livediagram.app` → `livediagram-router-staging`
 - `mcp-staging.livediagram.app` → `livediagram-mcp-staging`
 
-While the `livediagram.app` zone is on the previous account, both answer on their
-`workers.dev` addresses instead ([Stand-in addresses](stand-in-addresses.md)); once it
-moves, each is declared in its worker's `[env.staging]` block and attached by the deploy.
+Each is declared as a custom domain in its worker's `[env.staging]` block and attached by
+the deploy ([Deployment](deployment.md#custom-domain)).
 The other five are reached exclusively over the router's service bindings and never
 touch DNS, exactly as in production.
 

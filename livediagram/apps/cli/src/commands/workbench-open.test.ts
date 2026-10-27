@@ -7,7 +7,7 @@ import { capabilities, fakeIo, NOW, TOKEN, type FakeIo } from '../testing/fake-i
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
 const ORIGIN = 'https://127.0.0.1:5175';
-const URL_OUT = `https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench?d=${DOC}#ticket=${'t'.repeat(22)}`;
+const URL_OUT = `https://www.livediagram.app/embed/workbench?d=${DOC}#ticket=${'t'.repeat(22)}`;
 
 function host(mint: Response, env: Record<string, string> = {}) {
   const events: unknown[] = [];
@@ -81,7 +81,7 @@ describe('workbench open', () => {
         [
           'workbench',
           'open',
-          'https://livediagram-router.liveworkspace-easing509.workers.dev/document/shared?s=x',
+          'https://www.livediagram.app/document/shared?s=x',
           '--origin',
           ORIGIN,
         ],
@@ -102,7 +102,7 @@ describe('workbench open', () => {
 });
 
 describe('workbench open --workspace', () => {
-  const WORKSPACE_URL = `https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench/explorer#ticket=${'t'.repeat(22)}`;
+  const WORKSPACE_URL = `https://www.livediagram.app/embed/workbench/explorer#ticket=${'t'.repeat(22)}`;
   const workspace = (...more: string[]) => [
     'workbench',
     'open',

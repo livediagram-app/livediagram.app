@@ -1,11 +1,8 @@
 name = "livediagram-editor"
-# The liveworkspace Cloudflare account, which will also host livediagram.app, so a deploy can never land on another one.
+# The liveworkspace Cloudflare account, which also hosts livediagram.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/worker.ts"
 compatibility_date = "2026-05-29"
-# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
-compatibility_flags = ["global_fetch_strictly_public"]
 
 # The worker fronts the static-export `./out` directory via an assets
 # binding so it can rewrite `/document/<id>` paths onto the single

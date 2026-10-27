@@ -16,7 +16,6 @@ import {
   type StatusEnvironment,
   statusGroups,
 } from '@liveworkspace/status';
-import { STAND_INS } from '@liveworkspace/sites';
 import { RETENTION_DAYS } from './config';
 import type { Env } from './env';
 import { type Incident, stepIncidents } from './incidents';
@@ -30,33 +29,15 @@ export function environmentOfWorker(env: Env): StatusEnvironment {
     : 'production';
 }
 
-// The workers.dev stand-ins on this account (STAND_INS), each origin with the binding that reaches it.
-function standInFetches(env: Env): Map<string, Fetch> {
-  const bound = new Map<string, Fetch>();
-  if (environmentOfWorker(env) === 'development') return bound;
-  const add = (origin: string | undefined, binding: Fetcher | undefined) => {
-    if (origin && binding) bound.set(origin, (request) => binding.fetch(request));
-  };
-  const livediagram = STAND_INS['livediagram.app'];
-  add(livediagram?.production, env.LIVEDIAGRAM_ROUTER);
-  add(livediagram?.staging, env.LIVEDIAGRAM_ROUTER);
-  add(livediagram?.mcp, env.LIVEDIAGRAM_MCP);
-  return bound;
-}
-
 /** Every address one run checks, with the fetch that reaches it. */
 export function probeTargets(env: Env, fetchImpl: Fetch): ProbeTarget[] {
   const groups = statusGroups(environmentOfWorker(env));
-  const standIns = standInFetches(env);
-  return probedServices(groups).map((s) => {
-    const url = resolveProbeUrl(s.check.probe, env.PLATFORM_ORIGIN);
-    return {
-      id: s.id,
-      probe: s.check.probe,
-      url,
-      fetch: standIns.get(new URL(url).origin) ?? fetchImpl,
-    };
-  });
+  return probedServices(groups).map((s) => ({
+    id: s.id,
+    probe: s.check.probe,
+    url: resolveProbeUrl(s.check.probe, env.PLATFORM_ORIGIN),
+    fetch: fetchImpl,
+  }));
 }
 
 export type RunReport = {

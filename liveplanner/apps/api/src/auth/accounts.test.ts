@@ -167,7 +167,7 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
     await getPersonIdentity(LIVE, at('/api/projects/x1/tabs'));
     const audiences = createVerifierMock.mock.calls.map(([o]) => o.audience);
     expect(audiences).toContainEqual([
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      'https://livediagram.app/api',
       'https://liveplanner.app/api',
       'https://livedocuments.app/api',
       'https://livedesign.app/api',

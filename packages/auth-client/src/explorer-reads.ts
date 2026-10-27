@@ -5,16 +5,11 @@
 // token may read is unchanged: the route still checks the person may read the item. Previews are no app's any more:
 // they are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md), behind the index, which takes every app's token.
 
-import { APP_SITES, STAND_INS, type AppSiteId } from '@liveworkspace/sites';
+import { APP_SITES } from '@liveworkspace/sites';
 
-// Each app's API host per environment, from the sites registry: `livediagram.app` and `staging.livediagram.app`, or
-// the app's workers.dev stand-ins while its domain is elsewhere (livediagram/docs/specs/016-platform/stand-in-addresses.md).
+// Each app's API host per environment, from the sites registry: `livediagram.app` and `staging.livediagram.app`.
 const APP_API_HOSTS = (['production', 'staging'] as const).map((environment) =>
-  APP_SITES.map((site) => {
-    const standIn = STAND_INS[site.id as AppSiteId];
-    if (standIn) return new URL(standIn[environment]).host;
-    return environment === 'staging' ? `staging.${site.id}` : site.id;
-  }),
+  APP_SITES.map((site) => (environment === 'staging' ? `staging.${site.id}` : site.id)),
 );
 
 /**

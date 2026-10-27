@@ -7,11 +7,11 @@ describe('breadcrumbJsonLd', () => {
       breadcrumbJsonLd([
         {
           name: 'Help',
-          url: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/',
+          url: 'https://www.livediagram.app/help/',
         },
         {
           name: 'Canvas',
-          url: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/canvas/',
+          url: 'https://www.livediagram.app/help/canvas/',
         },
         { name: 'Themes' },
       ]),
@@ -23,13 +23,13 @@ describe('breadcrumbJsonLd', () => {
           '@type': 'ListItem',
           position: 1,
           name: 'Help',
-          item: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/',
+          item: 'https://www.livediagram.app/help/',
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'Canvas',
-          item: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/canvas/',
+          item: 'https://www.livediagram.app/help/canvas/',
         },
         { '@type': 'ListItem', position: 3, name: 'Themes' },
       ],

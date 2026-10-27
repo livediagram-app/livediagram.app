@@ -58,20 +58,16 @@ export function workspaceOriginFor(host: string): string {
   return isStagingHost(host) ? 'https://staging.liveworkspace.app' : PLATFORM_SITE.url;
 }
 
-/** Whether `host` is a staging deployment's: `staging.<site>`, or a staging stand-in on workers.dev
- *  (`livediagram-router-staging.….workers.dev`). */
+/** Whether `host` is a staging deployment's: `staging.<site>`. */
 export function isStagingHost(host: string): boolean {
-  return /^staging\.|^[^.]+-staging\.[^.]+\.workers\.dev$/i.test(host);
+  return /^staging\./i.test(host);
 }
 
 export const APP_SITES: readonly Site[] = [
   {
     id: 'livediagram.app',
     name: 'livediagram',
-    url: siteUrl(
-      'livediagram.app',
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    ),
+    url: siteUrl('livediagram.app', 'https://www.livediagram.app'),
     pitch: 'Diagram and draw together',
     accent: '#0ea5e9',
     deep: '#0369a1',
@@ -346,7 +342,6 @@ export {
   appOfOrigin,
   appOrigins,
   siteHrefFrom,
-  STAND_INS,
   stagingOrigin,
   type AppEnvironment,
   type AppSiteId,

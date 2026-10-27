@@ -42,22 +42,22 @@ describe('authorizeUrl', () => {
       authorizeUrl({
         accountsUrl: credentials.accountsUrl,
         clientId: 'client-1',
-        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+        redirectUri: 'https://www.livediagram.app/auth/callback',
         state: 'st',
         codeChallenge: 'ch',
-        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+        resource: 'https://livediagram.app/api',
       }),
     );
     expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/oauth2/authorize');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       response_type: 'code',
       client_id: 'client-1',
-      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+      redirect_uri: 'https://www.livediagram.app/auth/callback',
       scope: 'openid email profile offline_access',
       state: 'st',
       code_challenge: 'ch',
       code_challenge_method: 'S256',
-      resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      resource: 'https://livediagram.app/api',
     });
   });
 
@@ -66,10 +66,10 @@ describe('authorizeUrl', () => {
       authorizeUrl({
         accountsUrl: credentials.accountsUrl,
         clientId: 'client-1',
-        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+        redirectUri: 'https://www.livediagram.app/auth/callback',
         state: 'st',
         codeChallenge: 'ch',
-        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+        resource: 'https://livediagram.app/api',
         prompt: 'create',
       }),
     );
@@ -83,7 +83,7 @@ describe('guestHandoffUrl', () => {
       guestHandoffUrl({
         accountsUrl: 'https://liveworkspace.app/',
         clientId: 'client-1',
-        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/guest',
+        redirectUri: 'https://www.livediagram.app/auth/guest',
         state: 'abcdefgh',
         resource: 'https://api.livediagram.app',
       }),
@@ -91,7 +91,7 @@ describe('guestHandoffUrl', () => {
     expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/guest');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       client_id: 'client-1',
-      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/guest',
+      redirect_uri: 'https://www.livediagram.app/auth/guest',
       state: 'abcdefgh',
       resource: 'https://api.livediagram.app',
     });
@@ -133,9 +133,9 @@ describe('exchangeCode', () => {
       credentials,
       {
         code: 'c',
-        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+        redirectUri: 'https://www.livediagram.app/auth/callback',
         codeVerifier: 'v',
-        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+        resource: 'https://livediagram.app/api',
       },
       fetchImpl,
     );
@@ -154,9 +154,9 @@ describe('exchangeCode', () => {
     expect(Object.fromEntries(new URLSearchParams(String(init?.body)))).toEqual({
       grant_type: 'authorization_code',
       code: 'c',
-      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+      redirect_uri: 'https://www.livediagram.app/auth/callback',
       code_verifier: 'v',
-      resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      resource: 'https://livediagram.app/api',
     });
   });
 
@@ -198,7 +198,7 @@ describe('refreshTokens', () => {
       credentials,
       {
         refreshToken: 'rt',
-        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+        resource: 'https://livediagram.app/api',
       },
       fetchImpl,
     );

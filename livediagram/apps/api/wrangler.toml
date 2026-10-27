@@ -1,11 +1,8 @@
 name = "livediagram-api"
-# The liveworkspace Cloudflare account, which will also host livediagram.app, so a deploy can never land on another one.
+# The liveworkspace Cloudflare account, which also hosts livediagram.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
-# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
-compatibility_flags = ["global_fetch_strictly_public"]
 
 # Local dev port, off wrangler's 8787 default, which the liveworkspace accounts Worker holds, so
 # livediagram's stack runs beside it (the router's API_ORIGIN and the docs name the same port).
@@ -52,12 +49,12 @@ EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 # presence alone, so requiring sign-in would leave guests a visible panel that
 # 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
 # per IP) remains the only other control.
-AI_ALLOWED_ORIGINS = "https://livediagram-router.liveworkspace-easing509.workers.dev,https://livediagram-router.liveworkspace-easing509.workers.dev"
+AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
 # from an older CLI.
-OAUTH_ISSUER = "https://livediagram-mcp.liveworkspace-easing509.workers.dev"
+OAUTH_ISSUER = "https://mcp.livediagram.app"
 
 # No bucket: images are liveworkspace's media service's (MEDIA_KEY below), and snapshots and share cards
 # its previews (liveworkspace/docs/specs/006-media/previews.md). The bytes uploaded before that move are still in the previous
@@ -194,7 +191,7 @@ simple = { limit = 120, period = 60 }
 #   - EMAIL_FROM: [vars] From identity. Its domain must be onboarded to Email Service on this account;
 #     livediagram.app isn't yet, so it sends from liveplanner.app until that domain moves.
 #   - APP_BASE_URL: optional [vars] public origin for links in emails (hosted-vars.json per environment).
-#     Defaults to "https://livediagram-router.liveworkspace-easing509.workers.dev".
+#     Defaults to "https://www.livediagram.app".
 [[send_email]]
 name = "EMAIL"
 
@@ -205,7 +202,7 @@ name = "EMAIL"
 #   ACCOUNTS_URL            the accounts Worker's origin
 #                           (https://www.liveworkspace.app)
 #   API_RESOURCE            this API's registered resource, the access
-#                           token's audience (https://livediagram-router.liveworkspace-easing509.workers.dev/api)
+#                           token's audience (https://livediagram.app/api)
 #   ACCOUNTS_CLIENT_ID      this app's OAuth client id
 #   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
@@ -309,10 +306,10 @@ EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 # equivalent in the top-level [vars] above, for the same reason: the
 # environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
 # edge".
-AI_ALLOWED_ORIGINS = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev"
+AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
-OAUTH_ISSUER = "https://livediagram-mcp-staging.liveworkspace-easing509.workers.dev"
+OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
 # No AI_REQUIRE_SIGN_IN, matching production: the editor offers AI to guests, so
 # requiring sign-in here made staging refuse what production allows (the photo
 # reader stopped with "sign in required"), which is drift, not a staging test.

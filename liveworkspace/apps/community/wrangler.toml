@@ -3,8 +3,8 @@ name = "liveworkspace-community"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
-# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
+# global_fetch_strictly_public: a fetch() to another Worker's route on this zone (liveworkspace.app) isn't routed to
+# that Worker without it (docs/specs/009-status/status.md "Where the checks go").
 compatibility_flags = ["global_fetch_strictly_public"]
 # Only its API, /api/community, on liveworkspace.app (liveworkspace/docs/specs/007-community/community.md). liveworkspace.app
 # hosts no Community pages: each app serves its own, which read from here.

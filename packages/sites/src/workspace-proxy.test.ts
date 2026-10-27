@@ -89,13 +89,10 @@ describe('which paths go to liveworkspace', () => {
       }),
     ).toBeNull();
     expect(
-      routeToWorkspace(
-        new Request('https://livediagram-router.liveworkspace-easing509.workers.dev/document/d1'),
-        {
-          app: 'livediagram',
-          fetch: doFetch,
-        },
-      ),
+      routeToWorkspace(new Request('https://www.livediagram.app/document/d1'), {
+        app: 'livediagram',
+        fetch: doFetch,
+      }),
     ).toBeNull();
     expect(doFetch).not.toHaveBeenCalled();
   });
@@ -264,39 +261,18 @@ describe("signing in on the app's own address", () => {
   const routes = workspaceRoutes('livediagram');
 
   it.each([
-    [
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/sign-in?client_id=c&sig=s',
-      '/sign-in',
-    ],
-    [
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/sign-up?client_id=c&prompt=create&sig=s',
-      '/sign-up',
-    ],
-    ['https://livediagram-router.liveworkspace-easing509.workers.dev/consent?sig=s', '/consent'],
-    [
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/workspace/auth/sign-in/email-otp',
-      '/api/workspace/auth',
-    ],
+    ['https://www.livediagram.app/sign-in?client_id=c&sig=s', '/sign-in'],
+    ['https://www.livediagram.app/sign-up?client_id=c&prompt=create&sig=s', '/sign-up'],
+    ['https://www.livediagram.app/consent?sig=s', '/consent'],
+    ['https://www.livediagram.app/api/workspace/auth/sign-in/email-otp', '/api/workspace/auth'],
     // The app's own sign-in hand-off page, and its own auth routes, stay the app's.
-    [
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/sign-in/?redirect_url=%2Fexplorer',
-      null,
-    ],
-    ['https://livediagram-router.liveworkspace-easing509.workers.dev/sign-in', null],
-    ['https://livediagram-router.liveworkspace-easing509.workers.dev/sign-in.txt', null],
-    [
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/auth/callback?code=c&state=s',
-      null,
-    ],
-    ['https://livediagram-router.liveworkspace-easing509.workers.dev/get-started/', null],
-    [
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/_liveworkspace/_next/static/chunks/a.js',
-      '/_liveworkspace',
-    ],
-    [
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/_next/static/chunks/a.js',
-      null,
-    ],
+    ['https://www.livediagram.app/sign-in/?redirect_url=%2Fexplorer', null],
+    ['https://www.livediagram.app/sign-in', null],
+    ['https://www.livediagram.app/sign-in.txt', null],
+    ['https://www.livediagram.app/api/auth/callback?code=c&state=s', null],
+    ['https://www.livediagram.app/get-started/', null],
+    ['https://www.livediagram.app/_liveworkspace/_next/static/chunks/a.js', '/_liveworkspace'],
+    ['https://www.livediagram.app/_next/static/chunks/a.js', null],
   ])('%s', (address, prefix) => {
     const url = new URL(address);
     expect(workspaceRouteFor(url.pathname, routes, url)?.prefix ?? null).toBe(prefix);
@@ -305,15 +281,12 @@ describe("signing in on the app's own address", () => {
   it("sends liveworkspace only the sign-in's own cookies, under their own names", async () => {
     const doFetch = upstream(new Response('{}'));
     await routeToWorkspace(
-      new Request(
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/api/workspace/auth/get-session',
-        {
-          headers: {
-            Cookie:
-              'ld_refresh=secret; lw_flow.__Secure-better-auth.session_token=tok.sig; ld_signed_in=1',
-          },
+      new Request('https://www.livediagram.app/api/workspace/auth/get-session', {
+        headers: {
+          Cookie:
+            'ld_refresh=secret; lw_flow.__Secure-better-auth.session_token=tok.sig; ld_signed_in=1',
         },
-      ),
+      }),
       { app: 'livediagram', fetch: doFetch },
     );
     const sent = doFetch.mock.calls[0]![0] as Request;
@@ -321,12 +294,9 @@ describe("signing in on the app's own address", () => {
     expect(sent.headers.get('Cookie')).toBe('__Secure-better-auth.session_token=tok.sig');
 
     await routeToWorkspace(
-      new Request(
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/api/workspace/auth/get-session',
-        {
-          headers: { Cookie: 'ld_refresh=secret' },
-        },
-      ),
+      new Request('https://www.livediagram.app/api/workspace/auth/get-session', {
+        headers: { Cookie: 'ld_refresh=secret' },
+      }),
       { app: 'livediagram', fetch: doFetch },
     );
     expect((doFetch.mock.calls[1]![0] as Request).headers.has('Cookie')).toBe(false);
@@ -341,12 +311,9 @@ describe("signing in on the app's own address", () => {
     headers.append('Set-Cookie', 'lw_guest=g; Domain=liveworkspace.app; Path=/; Max-Age=0');
     const doFetch = upstream(new Response('{}', { headers }));
     const response = await routeToWorkspace(
-      new Request(
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/api/workspace/auth/sign-in/email-otp',
-        {
-          method: 'POST',
-        },
-      ),
+      new Request('https://www.livediagram.app/api/workspace/auth/sign-in/email-otp', {
+        method: 'POST',
+      }),
       { app: 'livediagram', fetch: doFetch },
     )!;
     expect(response.headers.getSetCookie()).toEqual([
@@ -369,24 +336,18 @@ describe("signing in on the app's own address", () => {
   it("names the visitor's network, and never one the visitor made up", async () => {
     const doFetch = upstream(new Response('{}'));
     await routeToWorkspace(
-      new Request(
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/api/workspace/auth/sign-in/email-otp',
-        {
-          headers: { 'CF-Connecting-IP': '203.0.113.9' },
-        },
-      ),
+      new Request('https://www.livediagram.app/api/workspace/auth/sign-in/email-otp', {
+        headers: { 'CF-Connecting-IP': '203.0.113.9' },
+      }),
       { app: 'livediagram', fetch: doFetch },
     );
     expect((doFetch.mock.calls[0]![0] as Request).headers.get(WORKSPACE_CLIENT_IP_HEADER)).toBe(
       '203.0.113.9',
     );
     await routeToWorkspace(
-      new Request(
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/api/workspace/auth/sign-in/email-otp',
-        {
-          headers: { [WORKSPACE_CLIENT_IP_HEADER]: '198.51.100.1' },
-        },
-      ),
+      new Request('https://www.livediagram.app/api/workspace/auth/sign-in/email-otp', {
+        headers: { [WORKSPACE_CLIENT_IP_HEADER]: '198.51.100.1' },
+      }),
       { app: 'livediagram', fetch: doFetch },
     );
     expect((doFetch.mock.calls[1]![0] as Request).headers.has(WORKSPACE_CLIENT_IP_HEADER)).toBe(
@@ -397,7 +358,7 @@ describe("signing in on the app's own address", () => {
   it("passes the pages' cookies neither way", async () => {
     const doFetch = upstream(new Response('<html>', { headers: { 'Set-Cookie': 'x=1; Path=/' } }));
     const response = await routeToWorkspace(
-      new Request('https://livediagram-router.liveworkspace-easing509.workers.dev/sign-in?sig=s', {
+      new Request('https://www.livediagram.app/sign-in?sig=s', {
         headers: { Cookie: 'ld_refresh=r' },
       }),
       { app: 'livediagram', fetch: doFetch },
@@ -426,18 +387,15 @@ describe('forwardToIndex', () => {
       seen.push(input as Request);
       return new Response('ok');
     }) as typeof fetch;
-    const request = new Request(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/index/items?app=livediagram',
-      {
-        method: 'POST',
-        body: '{}',
-        headers: {
-          Authorization: 'Bearer t',
-          Cookie: 'session=1',
-          'CF-Connecting-IP': '198.51.100.7',
-        },
+    const request = new Request('https://www.livediagram.app/api/index/items?app=livediagram', {
+      method: 'POST',
+      body: '{}',
+      headers: {
+        Authorization: 'Bearer t',
+        Cookie: 'session=1',
+        'CF-Connecting-IP': '198.51.100.7',
       },
-    );
+    });
     await forwardToIndex(request, new URL(request.url), PRODUCTION_INDEX_ORIGIN, doFetch);
     expect(seen[0]!.url).toBe('https://www.liveworkspace.app/api/index/items?app=livediagram');
     expect(seen[0]!.method).toBe('POST');
@@ -445,25 +403,20 @@ describe('forwardToIndex', () => {
     expect(seen[0]!.headers.has('Cookie')).toBe(false);
     expect(seen[0]!.headers.get(WORKSPACE_CLIENT_IP_HEADER)).toBe('198.51.100.7');
     // A caller's own claim to an address never goes along.
-    const spoofed = new Request(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/index/items',
-      {
-        headers: { [WORKSPACE_CLIENT_IP_HEADER]: '203.0.113.1' },
-      },
-    );
+    const spoofed = new Request('https://www.livediagram.app/api/index/items', {
+      headers: { [WORKSPACE_CLIENT_IP_HEADER]: '203.0.113.1' },
+    });
     await forwardToIndex(spoofed, new URL(spoofed.url), 'https://index.test', doFetch);
     expect(seen[1]!.headers.has(WORKSPACE_CLIENT_IP_HEADER)).toBe(false);
   });
 
   it('refuses to forward to its own site, rather than loop', async () => {
     const doFetch = upstream(new Response('ok'));
-    const request = new Request(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/index/items',
-    );
+    const request = new Request('https://www.livediagram.app/api/index/items');
     const res = await forwardToIndex(
       request,
       new URL(request.url),
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
+      'https://www.livediagram.app',
       doFetch,
     );
     expect(res.status).toBe(508);

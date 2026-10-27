@@ -140,8 +140,8 @@ User codes are 8 characters of `BCDFGHJKLMNPQRSTVWXZ`.
 
 `CLIENTS_PATH` `/api/auth/internal/clients`, `REGISTRAR_EMAIL` (`clients.ts`); `ADMIN_HEADER`
 `x-liveworkspace-admin` (`secrets.ts`); `CLIENT_CHECK_TTL_MS` 5 min (`account-api.ts`); `RESOURCES`
-(`resources.ts`): production livediagram's router `workers.dev` API, `https://liveplanner.app/api`,
-`https://livedocuments.app/api`, `https://livedesign.app/api`; staging their `staging.` and router stand-ins;
+(`resources.ts`): production `https://livediagram.app/api`, `https://liveplanner.app/api`,
+`https://livedocuments.app/api`, `https://livedesign.app/api`; staging their `staging.` twins;
 development `http://localhost/api`. `SILENT_SESSION_KEY`, `SILENT_GUARD_MAX_AGE_SECONDS` 120,
 `SIGNED_OUT_MAX_AGE_SECONDS` 400 d, `SILENT_RETURN_MAX_LENGTH` 1,500, `GUEST_STATE_PATTERN`
 (`packages/auth-client`); `DEVICE_CODE_TTL_S` 600, `DEVICE_POLL_INTERVAL_S` 5, `DEVICE_SLOW_DOWN_S` 5,

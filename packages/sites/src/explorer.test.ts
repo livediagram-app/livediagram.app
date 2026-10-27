@@ -65,8 +65,7 @@ describe("the site switcher's links on an Explorer page", () => {
   it("opens each site's Explorer at the same view, keeping the query", () => {
     expect(links('/explorer/timeline')).toEqual({
       liveworkspace: 'https://www.liveworkspace.app/explorer/timeline',
-      livediagram:
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/explorer/timeline',
+      livediagram: 'https://www.livediagram.app/explorer/timeline',
       liveplanner: 'https://www.liveplanner.app/explorer/timeline',
       livedocuments: 'https://www.livedocuments.app/explorer/timeline',
       livedesign: 'https://www.livedesign.app/explorer/timeline',
@@ -104,14 +103,13 @@ describe("the site switcher's links on an Explorer page", () => {
     // The Library is where the app keeps one (liveworkspace.app shows the last app's).
     expect(links('/explorer/images')).toEqual({
       liveworkspace: 'https://www.liveworkspace.app/explorer/images',
-      livediagram: 'https://livediagram-router.liveworkspace-easing509.workers.dev/explorer/images',
+      livediagram: 'https://www.livediagram.app/explorer/images',
       liveplanner: 'https://www.liveplanner.app/explorer',
       livedocuments: 'https://www.livedocuments.app/explorer/images',
       livedesign: 'https://www.livedesign.app/explorer/images',
     });
     expect(links('/explorer/shape-libraries')).toMatchObject({
-      livediagram:
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/explorer/shape-libraries',
+      livediagram: 'https://www.livediagram.app/explorer/shape-libraries',
       liveplanner: 'https://www.liveplanner.app/explorer',
     });
   });

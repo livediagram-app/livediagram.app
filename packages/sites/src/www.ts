@@ -38,7 +38,7 @@ export function bareAndWwwOrigins(domain: string): [bare: string, www: string] {
 }
 
 // `https://` then the host, up to the end, a path, a query or a fragment. No port, no other scheme: staging, local and
-// stand-in addresses have no twin.
+// workers.dev addresses have no twin.
 const HTTPS_HOST = /^https:\/\/([^/?#:@]+)(?=$|[/?#])/i;
 
 /** The same URL on the other host of its domain (`https://liveworkspace.app/api/auth` ↔

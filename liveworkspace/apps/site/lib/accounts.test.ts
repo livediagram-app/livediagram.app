@@ -102,9 +102,7 @@ describe("on an app's own address", () => {
   }
 
   it('knows an app’s address from liveworkspace.app’s, staging’s and the local one', () => {
-    expect(onAppAddress('https://livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
-      true,
-    );
+    expect(onAppAddress('https://www.livediagram.app')).toBe(true);
     expect(onAppAddress('https://staging.liveplanner.app')).toBe(true);
     expect(onAppAddress('http://localhost:3300')).toBe(true);
     expect(onAppAddress('https://liveworkspace.app')).toBe(false);
@@ -113,9 +111,7 @@ describe("on an app's own address", () => {
   });
 
   it('reaches the accounts API through the app’s router there, and directly here', () => {
-    expect(accountsApi('https://livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
-      '/api/workspace/auth',
-    );
+    expect(accountsApi('https://www.livediagram.app')).toBe('/api/workspace/auth');
     expect(accountsApi('https://liveworkspace.app')).toBe('/api/auth');
   });
 
@@ -129,7 +125,7 @@ describe("on an app's own address", () => {
   });
 
   it('keeps the hand-off’s binding for the tab, and only one that looks like a hash', () => {
-    at('https://livediagram-router.liveworkspace-easing509.workers.dev');
+    at('https://www.livediagram.app');
     expect(handoffBind(`?handoff=${BIND}`)).toBe(BIND);
     expect(handoffBind('?sig=s')).toBe(BIND);
     expect(handoffBind('?handoff=short')).toBe(BIND);
@@ -137,12 +133,8 @@ describe("on an app's own address", () => {
 
   it('goes back by way of liveworkspace.app’s hand-off, or straight back when it can’t be made', async () => {
     const hop = 'https://liveworkspace.app/api/auth/handoff?token=t';
-    const fetched = at(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
-      Response.json({ url: hop }),
-    );
-    const next =
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/auth/callback?code=c&state=s';
+    const fetched = at('https://www.livediagram.app', Response.json({ url: hop }));
+    const next = 'https://www.livediagram.app/api/auth/callback?code=c&state=s';
     expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(hop);
     expect(fetched).toHaveBeenCalledWith('/api/workspace/auth/handoff/start', expect.anything());
     expect(
@@ -151,10 +143,10 @@ describe("on an app's own address", () => {
       return: next,
       bind: BIND,
     });
-    at('https://livediagram-router.liveworkspace-easing509.workers.dev');
+    at('https://www.livediagram.app');
     expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(next);
     // No binding: straight back.
-    const none = at('https://livediagram-router.liveworkspace-easing509.workers.dev');
+    const none = at('https://www.livediagram.app');
     expect(await afterSignIn(next, '')).toBe(next);
     expect(none).not.toHaveBeenCalled();
     // A consent step still to come keeps the session where it is.

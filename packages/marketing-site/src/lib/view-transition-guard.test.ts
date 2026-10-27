@@ -3,7 +3,7 @@ import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 
 import { viewTransitionGuardScript } from './view-transition-guard';
 
-const ORIGIN = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+const ORIGIN = 'https://www.livediagram.app';
 // A product's other apps, by first path segment (each product's api schema holds its own).
 const SCRIPT = viewTransitionGuardScript(['new', 'document', 'explorer', 'help', 'telemetry']);
 

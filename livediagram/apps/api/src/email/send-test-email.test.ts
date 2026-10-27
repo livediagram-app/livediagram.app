@@ -67,8 +67,7 @@ const previewBinding = {
 const env = {
   EMAIL: previewBinding,
   EMAIL_FROM: vars.EMAIL_FROM ?? 'livediagram <hello@liveplanner.app>',
-  APP_BASE_URL:
-    vars.APP_BASE_URL ?? 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  APP_BASE_URL: vars.APP_BASE_URL ?? 'https://www.livediagram.app',
 } as unknown as Env;
 
 describe.skipIf(!ENABLED)('email preview (manual harness)', () => {

@@ -10,7 +10,7 @@ import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io'
 // E18 to E20), on a fake host whose tabs move on with each write.
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
-const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+const HOST = 'https://www.livediagram.app';
 const square = (id: string, label: string, x = 0): ShapeElement => ({
   id,
   type: 'shape',

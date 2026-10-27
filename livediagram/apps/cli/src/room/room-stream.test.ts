@@ -11,7 +11,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 function setUp(tickets: Route) {
   const io = fakeIo({ routes: [tickets] });
   const api = createApiClient({
-    baseUrl: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+    baseUrl: 'https://www.livediagram.app/api',
     headers: () => ({}),
     fetch: io.fetch,
   });
@@ -22,7 +22,7 @@ function setUp(tickets: Route) {
   const stream = openRoomStream({
     io,
     api,
-    apiBase: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+    apiBase: 'https://www.livediagram.app/api',
     documentId: 'd 1',
     log: (l) => void logs.push(l),
     notice: (l) => void notices.push(l),
@@ -44,7 +44,7 @@ describe('openRoomStream', () => {
     await tick();
     const socket = io.sockets[0]!;
     expect(socket.url).toMatch(
-      /^wss:\/\/livediagram-router\.liveworkspace-easing509\.workers\.dev\/api\/documents\/d%201\/ws\?t=t\d+$/,
+      /^wss:\/\/www\.livediagram\.app\/api\/documents\/d%201\/ws\?t=t\d+$/,
     );
     socket.open();
     socket.send({ kind: 'presence', participants: [] });
