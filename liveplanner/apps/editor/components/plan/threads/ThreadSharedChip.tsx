@@ -57,9 +57,9 @@ export function ThreadSharedChip({
         </button>
       </Tooltip>
       {open ? (
-        <PortalMenu anchor={button} placement="below" onClose={() => setOpen(false)}>
+        <PortalMenu anchor={button} placement="below" wide onClose={() => setOpen(false)}>
           <MenuHeader title={sharedLabel(thread.cards.length)} />
-          <div className="w-72 max-w-[calc(100vw-2rem)] pb-1">
+          <div className="pb-1">
             {thread.cards.map((card) => (
               <SharedCardRow
                 key={`${card.projectId}:${card.itemId}`}
@@ -107,10 +107,10 @@ function SharedCardRow({
     <button
       type="button"
       {...itemProps}
-      disabled={current}
-      onClick={onOpen}
+      // aria-disabled (from the menu) rather than disabled, so the row stays a stop of the menu's keys.
+      onClick={current ? undefined : onOpen}
       aria-label={`${num} ${here ? name : `in ${name}`}${current ? ', this card' : here ? '' : ', opens in a new tab'}`}
-      className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition hover:bg-slate-100 disabled:cursor-default disabled:hover:bg-transparent motion-reduce:transition-none pointer-coarse:py-3 dark:hover:bg-slate-800"
+      className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition hover:bg-slate-100 aria-disabled:cursor-default aria-disabled:hover:bg-transparent motion-reduce:transition-none pointer-coarse:py-3 dark:hover:bg-slate-800"
     >
       <span aria-hidden className="shrink-0 text-slate-400">
         {here ? <LinkIcon /> : <OutIcon />}
