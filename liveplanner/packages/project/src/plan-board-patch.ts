@@ -31,6 +31,8 @@ const SETUP_KEYS = new Set([
   'title',
   'doneColumnId',
   'swimlaneBy',
+  // Sort Cards (docs/specs/026-plan/plan-board.md "The board set-up").
+  'sortBy',
   'cardFields',
   'cardSize',
   'archive',
