@@ -20,9 +20,7 @@ import {
   ESTIMATE_POINTS,
   PRIORITIES,
   PRIORITY_LABELS,
-  isItemPerson,
   type ItemFieldValue,
-  type ItemPerson,
 } from '@liveplanner/items';
 
 // One undo step per pause in typing (blueprint DEFAULTS D8).
@@ -172,44 +170,6 @@ export function DebouncedText({
     </div>
   ) : (
     field
-  );
-}
-
-export function PersonPicker({
-  id,
-  value,
-  people,
-  disabled,
-  onSave,
-}: {
-  id: string;
-  value: ItemFieldValue | undefined;
-  people: readonly ItemPerson[];
-  disabled: boolean;
-  onSave: Save;
-}) {
-  const current = isItemPerson(value) ? value : null;
-  const options =
-    current && !people.some((p) => p.id === current.id) ? [current, ...people] : people;
-  return (
-    <Select
-      id={id}
-      className="w-full"
-      selectClassName="text-[13px]"
-      disabled={disabled}
-      value={current?.id ?? ''}
-      onChange={(e) => {
-        const p = options.find((o) => o.id === e.target.value);
-        void onSave(p ? { ...p } : undefined);
-      }}
-    >
-      <option value="">No one</option>
-      {options.map((p) => (
-        <option key={p.id} value={p.id}>
-          {p.name}
-        </option>
-      ))}
-    </Select>
   );
 }
 

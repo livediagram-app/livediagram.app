@@ -17,6 +17,8 @@ export const ITEM_NUMBER_MAX = 999;
 export const ITEM_BULK_MAX = 200;
 export const ITEM_VOTERS_MAX = 500;
 export const ITEM_VOTES_PER_PERSON_MAX = 99;
+// A custom assignee's name as the card panel takes it (docs/specs/026-plan/items.md "Custom assignees").
+export const CUSTOM_ASSIGNEE_NAME_MAX = 60;
 export const ITEM_WRITE_RETRIES = 3;
 // The highest key a create may name (a restore, sync or copy keeps its keys); past it the next key is given.
 export const ITEM_KEY_MAX = 1_000_000;

@@ -22,9 +22,9 @@ import {
   DateField,
   LabelsEditor,
   EstimateSelect,
-  PersonPicker,
   PriorityPicker,
 } from './item-field-editors';
+import { PersonPicker } from './PersonPicker';
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { LinkedCardField } from './LinkedCardField';
 import { usePlan } from './PlanContext';

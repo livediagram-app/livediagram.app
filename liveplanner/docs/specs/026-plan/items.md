@@ -322,10 +322,28 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   every card (a board or plan view on it); from any other tab the card would land on boards outside its reach, so
   the api refuses it (403), before it looks at any id the create names, so a taken id on another tab answers
   exactly as a free one does and never shows that the card exists.
-- **Who a card can be assigned to**: you and the joined members of the teams you are part of (by their profile
-  name, else their invite address's local part), fetched once a project has Plan content. A guest, who has no
-  teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its
-  picker.
+- **Who a card can be assigned to**: you, the joined members of the teams you are part of (by their profile
+  name, else their invite address's local part), fetched once a project has Plan content, and the plan's **custom
+  assignees**. A guest, who has no teams, can assign themselves and custom assignees, and the editor never asks for
+  a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them,
+  shown in its picker.
+- **Custom assignees**: a name for someone outside your teams (a contractor, a client, a person not on the plan),
+  so their work can be tracked like anyone's. The Assignee picker ends with **+ Custom Assignee**; choosing it opens
+  a small popover (**Custom Assignee**, a **Name** field of up to 60 characters, **Cancel** and **Add**, Add off
+  while the name is blank) whose Add assigns the card to that name at once. A name already in the picker (a
+  teammate's or an earlier custom assignee's, case and spacing aside) picks that person rather than making a second
+  one. A custom assignee is the same named person agents and the CLI make (`n-` and a slug of the name, a Plan
+  swatch; [Plan agents](plan-agents.md) "Naming things as people do"), so a name made either way is one person.
+  - **Where the list comes from**: the cards. Every assignee a card in the plan holds is offered in every card's
+    picker, so a custom assignee exists in the whole plan as soon as one card has them, and leaves the picker once
+    no card does. Nothing else is stored: no list on the plan, no migration.
+  - **Who may add one**: anyone who may edit the card, an Editor or a Participant (assigning is editing a card's
+    fields, [Share roles](../013-workspace/share-roles.md#what-a-participant-changes)), a guest and a link editor
+    included. A Viewer sees the picker disabled and no **+ Custom Assignee**.
+  - **Everything that groups by person** (swimlanes, the Assignee filter, workload, the People tile) treats a custom
+    assignee as a person: they get their own lane, filter option and bar.
+  - **Never a person to notify**: a custom assignee has no account, so no email, no Inbox row (the cards push skips
+    `n-` ids instead of counting them as people it could not name), and **Only Mine** never matches them.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
   [Inbox](../013-workspace/inbox.md) (§2.4 there), in every project you can open; a row opens the card on its board.
 - **Comment** with participate access; delete your own comments, or any with edit access ([Comments](#comments)).
