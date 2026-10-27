@@ -27,8 +27,7 @@ workers_dev = false
 # Secrets (wrangler secret put, or .dev.vars locally; see .dev.vars.example):
 #   BETTER_AUTH_SECRET    signs cookies and the OAuth query; 32+ random bytes
 #   TURNSTILE_SECRET_KEY  Turnstile on "send code"
-#   ADMIN_TOKEN           guards POST /api/auth/internal/clients (registering an app) and
-#                         POST /api/auth/internal/migration-notice (the migration notice, docs/migration.md step 8)
+#   ADMIN_TOKEN           guards POST /api/auth/internal/clients (registering an app)
 #   GOOGLE_CLIENT_ID      "Continue with Google"; optional, the button only shows with both
 #   GOOGLE_CLIENT_SECRET
 #   INDEX_MERGE_KEY       accounts' key on the index: POST /internal/merge when a guest signs in, and
@@ -55,9 +54,6 @@ BASE_URL = "https://www.liveworkspace.app"
 INDEX_URL = "https://www.liveworkspace.app/api/index"
 # On liveplanner.app until liveworkspace.app is on this account and onboarded to Email Service (docs/specs/003-accounts/email.md).
 EMAIL_FROM = "sign-in@liveplanner.app"
-# The one migration notice to everyone moved from the old livediagram.app (src/migration-notice.ts, docs/migration.md
-# step 8), on liveworkspace.app, which is onboarded to Email Service.
-NOTICE_FROM = "liveworkspace <support@liveworkspace.app>"
 TURNSTILE_SITE_KEY = "0x4AAAAAAFlfZFYIdJsaQor8"
 # The telemetry service (src/telemetry.ts), reached through the TELEMETRY service binding below.
 TELEMETRY_URL = "https://www.liveworkspace.app/api/telemetry"
@@ -164,8 +160,6 @@ BASE_URL = "https://staging.liveworkspace.app"
 INDEX_URL = "https://staging.liveworkspace.app/api/index"
 # On liveplanner.app until liveworkspace.app is on this account and onboarded to Email Service (docs/specs/003-accounts/email.md).
 EMAIL_FROM = "sign-in@liveplanner.app"
-# The migration notice's sender: the same onboarded domain (staging.liveworkspace.app is not a sending domain of its own).
-NOTICE_FROM = "liveworkspace <support@liveworkspace.app>"
 TURNSTILE_SITE_KEY = "0x4AAAAAAFlfZFYIdJsaQor8"
 TELEMETRY_URL = "https://staging.liveworkspace.app/api/telemetry"
 SIGN_IN_ON_APP_ORIGINS = "true"

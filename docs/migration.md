@@ -121,7 +121,7 @@ the copy takes).
 6. Left behind: workbench pairings and sessions, and profile pictures (0002). Drive connections can't move (their
    tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has no
    Drive mirror of its own: Google Drive sync is liveworkspace's, for every app (liveworkspace/docs/specs/005-drive/drive.md), so a
-   person connects there once, at `https://www.liveworkspace.app/drive/connect`; step 8's email tells everyone who had
+   person connects there once, at `https://www.liveworkspace.app/drive/connect`; step 8's email told everyone who had
    connected Drive that it needs connecting again, once, and that nothing in their Drive was changed.
 
 ## 2. Copy documents into livediagram
@@ -280,39 +280,16 @@ are none to carry.) The rehearsal should include a browser with a real old local
 
 ## 8. Email everyone (once)
 
-Sent at the end of the migration, once step 9's checks have passed, from `liveworkspace <support@liveworkspace.app>`
-(liveworkspace.app is onboarded to Email Service on the account). One email per migrated account, liveworkspace's
-(its logo, band and frame, like the accounts Worker's other emails), subject "livediagram is now part of
-liveworkspace", with an **Open livediagram** button. Every person gets:
+Sent on 2026-10-27, after step 9's checks had passed, to all 73 migrated accounts, from
+`liveworkspace <support@liveworkspace.app>`: one email per account, in liveworkspace's frame, subject "livediagram is
+now part of liveworkspace", with an **Open livediagram** button. Every person got what changed (livediagram is part
+of liveworkspace, nothing to do, same address and same sign-in) and the updated privacy page with the contact form.
+Only where it applied to them, it also had sections on their split documents (links built from `moved_parts`), their
+API tokens, their teams, reconnecting AI tools, and reconnecting Google Drive.
 
-- what changed: livediagram is part of liveworkspace, a set of apps that share one account; there's nothing to do,
-  their work is at the same address, and sign-in is with the same email, by code or Google;
-- the updated privacy page (we changed authentication provider, so Clerk no longer holds their details), and the
-  contact form for anything that looks wrong.
-
-And only where it applies to them:
-
-- **Split documents**: where their documents went, as a short list of links built from `moved_parts`, one line per
-  part outside livediagram (`<document>: <its tabs> in <app>`), for the first ten documents only; with more, a
-  closing line says how many others there are and that each opens in livediagram and links to its parts;
-- **API tokens** (a live old token): they still work until they expire, and are now at
-  `https://www.liveworkspace.app/account/tokens`;
-- **Teams** (a joined member of an old team): they came across with their members and roles, managed in
-  liveworkspace now;
-- **AI tools** (the person used livediagram from one): they may need to reconnect once (remove livediagram from the
-  tool and add it again), and they can now connect liveplanner, livedocuments and livedesign too;
-- **Google Drive** (a Drive connection on the old site): sync needs connecting again, once, at
-  `https://www.liveworkspace.app/drive/connect`, and it then syncs from every liveworkspace app; nothing in their
-  Drive was changed.
-
-The accounts Worker renders and sends it (`POST /api/auth/internal/migration-notice`, behind `ADMIN_TOKEN`,
-liveworkspace/docs/specs/003-accounts/accounts.md "Emails"), and claims each address before sending, so a re-run
-never emails anyone twice. `migrate notify` builds each person's sections from the bundles and the snapshot and
-calls it (Tooling).
-
-Cloudflare Email Service is for transactional mail and includes 3,000 a month, with a daily quota that starts low;
-step 0's account count decides whether this goes in daily batches. A notice about someone's own account and data
-is a service message, so it goes to everyone, unsubscribed or not.
+It was a one-off: the accounts Worker's route that rendered and sent it, its sender, the `migrate notify` command,
+and the `migration_notice` table that kept each address so a re-run never emailed anyone twice were all removed after
+the send (the table by the accounts migration `0015_drop_migration_notice.sql`).
 
 ## 9. Check
 
@@ -377,12 +354,6 @@ from a laptop. Nothing in it is deployed.
   ledger generation is refused.
 - `verify <bundle> --env … [--out <verify.json>]`: step 9's row counts, read back from each database (one
   wrangler call per 500 keys). It reads databases only, not the rooms.
-- `notify <bundle>… --snapshot <snapshot> --env staging|production [--clerk <users.csv>] [--preview <dir>]
-[--only <email>] [--send]`: step 8's email. One recipient per account the bundles imported (their `"user"` rows) or
-  merged onto (`owner-map.json`), deduplicated by address, with that account's sections read from the snapshot
-  through every old id that maps to it. Without `--send` it asks the accounts Worker to render each email without
-  sending (and writes them to `--preview`); with it, it sends in batches of 50. The Worker skips an address it has
-  already claimed and one with no account.
 
 What `plan` decides for you (all reported in `report.json`):
 
