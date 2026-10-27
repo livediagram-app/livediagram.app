@@ -1490,8 +1490,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     () => ({ placeOf: linkedActions.placeOf, showOnCanvas: linkedActions.showOnCanvas }),
     [linkedActions.placeOf, linkedActions.showOnCanvas],
   );
-  // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!accountUserId, teams);
+  // Assignees: the members of the plan's team, never your other teams (docs/specs/026-plan/items.md "Who may do what").
+  const teamPeople = useTeamPeople(
+    selfParticipant.id,
+    !workbenchMode,
+    !!accountUserId,
+    teams,
+    projectTeamId,
+  );
   // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.
   const planCover = usePlanCoverWiring({ activeTab, tabs });
   // Board, Sheet and Dashboard tabs (docs/specs/026-plan/plan-tabs.md).
