@@ -5,6 +5,7 @@ import { z } from 'zod';
 import {
   CUSTOM_FIELD_KINDS,
   PLAN_BOARD_PRESET_IDS,
+  PLAN_COLUMNS_MAX,
   PLAN_GLYPH_IDS,
   PLAN_TYPE_COLOURS,
 } from '@liveplanner/items';
@@ -182,12 +183,21 @@ export const changeBoardShape = {
       'Sort Cards: each column orders its cards by up to two fields, then by hand order; [] turns it off. ' +
         'While sorted, people cannot reorder cards within a column.',
     ),
+  doneColumns: z
+    .array(z.string())
+    .max(PLAN_COLUMNS_MAX)
+    .optional()
+    .describe(
+      'The columns whose cards count as done (Completion, Points, and the Done phase charts read), by name, ' +
+        'whole: the named ones count and no other does; [] for none. A column added without it counts as done ' +
+        'when its name is a closing one (Done, Won’t Do, Cancelled, Closed, Shipped ...).',
+    ),
   doneColumn: z
     .string()
     .nullable()
     .optional()
     .describe(
-      'The column whose cards count as done (Completion, and the Done phase charts read), by name; null for none.',
+      'Older: the column whose cards count as done, and every column after it; null for none. Not with doneColumns.',
     ),
   renameColumns: z
     .record(z.string(), z.string())
@@ -446,6 +456,7 @@ const listedBoard = z.object({
         name: z.string().describe('The column name: what status takes.'),
         status: z.string().describe('The status id items store.'),
         wipLimit: z.number().optional().describe('The most cards the column should hold.'),
+        done: z.literal(true).optional().describe('Its cards count as done.'),
         cards: z.array(z.string()).describe('The cards in it, top to bottom ("#3").'),
       }),
     )
@@ -521,6 +532,7 @@ export const changeBoardOutput = {
       z.object({
         name: z.string().describe('The column name: what change_items takes.'),
         status: z.string().describe('The status id items store.'),
+        done: z.literal(true).optional().describe('Its cards count as done.'),
       }),
     )
     .describe('Its columns now, left to right.'),

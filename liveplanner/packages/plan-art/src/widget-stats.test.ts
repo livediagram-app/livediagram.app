@@ -115,8 +115,8 @@ describe('more widget stats', () => {
     expect(staleCount(setup, [old, oldDone, fresh], now)).toBe(1);
   });
 
-  // A column after Done (Won't Do) is finished too: only a card before Done is not done.
-  it('never counts a card after Done as overdue or stale', () => {
+  // Every done column is finished (docs/specs/026-plan/plan-board.md "Done columns"): Won't Do, found by its name, too.
+  it('never counts a card in any done column as overdue or stale', () => {
     const board: PlanBoardSetup = {
       ...setup,
       columns: [...setup.columns, { id: 'wont', status: 'wont-do', name: "Won't Do" }],
@@ -126,8 +126,11 @@ describe('more widget stats', () => {
     const open = { ...item({ status: 'todo', due: '2026-10-01' }), updatedAt: 0 };
     expect(dueCounts(board, [after, open], now)).toEqual({ overdue: 1, soon: 0 });
     expect(staleCount(board, [after, open], now)).toBe(1);
+    // Its points count as done too.
+    const pointed = { ...after, fields: { ...after.fields, estimate: 3 } };
+    expect(boardPoints(board, [pointed, open])).toMatchObject({ done: 3, total: 3 });
     // No done column: every card is not done.
-    const { doneColumnId: _done, ...noDone } = board;
+    const noDone = { ...board, columns: board.columns.map((c) => ({ ...c, done: false })) };
     expect(staleCount(noDone, [after, open], now)).toBe(2);
   });
 });

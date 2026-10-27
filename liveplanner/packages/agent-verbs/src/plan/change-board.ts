@@ -18,6 +18,7 @@ import {
   laneFieldsOf,
   type ItemTypeDef,
   normaliseBoardSetup,
+  isDoneColumn,
   planBoardWidthFor,
   reshapeBoard,
   resolveType,
@@ -52,7 +53,7 @@ type ChangeBoardResult =
       tabId: string;
       elementId: string;
       title: string;
-      columns: { name: string; status: string }[];
+      columns: { name: string; status: string; done?: true }[];
       takes: string[] | 'every type';
       cardSize: CardSize;
       cardFields: string[];
@@ -163,6 +164,7 @@ export async function changeBoard(
         ...(input.cardSize ? { cardSize: input.cardSize } : {}),
         ...(swimlanes ? { swimlanes } : {}),
         ...(input.doneColumn !== undefined ? { doneColumn: input.doneColumn } : {}),
+        ...(input.doneColumns ? { doneColumns: input.doneColumns } : {}),
         ...(input.cardFields ? { cardFields: input.cardFields } : {}),
         ...(sortBy ? { sortBy } : {}),
         ...(input.columns ? { columns: input.columns } : {}),
@@ -194,7 +196,11 @@ export async function changeBoard(
       tabId,
       elementId,
       title: reshaped.setup.title,
-      columns: reshaped.setup.columns.map((c) => ({ name: c.name, status: c.status })),
+      columns: reshaped.setup.columns.map((c) => ({
+        name: c.name,
+        status: c.status,
+        ...(isDoneColumn(reshaped.setup, c) ? { done: true as const } : {}),
+      })),
       takes: reshaped.setup.addTypes ? reshaped.setup.addTypes.map(label) : 'every type',
       cardSize: reshaped.setup.cardSize ?? 'detailed',
       // A board's card fields are built-in fields only (normaliseBoardSetup keeps CARD_FIELDS alone).

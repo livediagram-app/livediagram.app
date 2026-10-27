@@ -23,6 +23,18 @@ describe('planBoardPatch', () => {
     });
   });
 
+  // docs/specs/026-plan/plan-board.md "Done columns": Counts as Done travels as a column field.
+  it('carries a column’s done flag', () => {
+    const flagged = {
+      ...base,
+      columns: base.columns.map((c) => (c.id === ids[0] ? { ...c, done: true } : c)),
+    };
+    expect(planBoardPatch(base, flagged)).toEqual({
+      columns: { [ids[0]!]: { set: { done: true } } },
+    });
+    expect(applyPlanBoardPatch(base, planBoardPatch(base, flagged)!).columns[0]!.done).toBe(true);
+  });
+
   it('names top-level fields set and cleared', () => {
     const after = { ...base, title: 'Sprint', swimlaneBy: 'assignee' as const };
     expect(planBoardPatch(base, after)).toEqual({

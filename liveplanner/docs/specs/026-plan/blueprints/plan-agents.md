@@ -64,7 +64,7 @@ trashedFrom }` on each live card of a deleted type, as the editor's `trashItems`
   (`isCardTypesStale`) reads the plan again and applies the changes again, up to `CARD_TYPES_SAVE_ATTEMPTS` (3), then
   answers the refusal; `bringBoardCardTypes` does the same with the project's `itemTypesRev` (`KnownCardTypes.rev`).
 - `placeBoard`: preset through `freshBoardSetup`; columns by name reuse a status `statusNamed` finds (each status
-  once), else `<slug>~<4 chars>`; a preset's `doneColumnId` is dropped with its columns; placed right of the tab's
+  once), else `<slug>~<4 chars>`; a preset's done flags go with its columns and the new ones are settled by name (`settleDoneColumns`); placed right of the tab's
   elements' bounding box by `PLACED_BOARD_GAP`, tops aligned, origin on an empty tab.
 - `addBoard`: tab = given, else first tab with a board, else lowest `orderIndex`; one changeset
   `{ operations: [{ op: 'add', element }], base: { rev, elements: {} } }` with the client header (`mcp` or `cli`).

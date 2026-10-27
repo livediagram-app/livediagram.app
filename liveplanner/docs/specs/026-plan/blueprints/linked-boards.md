@@ -49,10 +49,11 @@ apps/editor/components/dialogs/AssignActionDialog.tsx  the Status row when editi
 
 ## Behaviour and state
 
-- **Status mapping** (`recordStatusOf`, `cardStatusFor`): with `d` the done column's index, a column before `d` is
-  `open`, `d` is `done`, after `d` is `wont-do`; a status no column holds, or a board with no done column, reads
-  `null` and changes nothing. Open to a card: its current status if that reads open, else the first column's. Won't Do
-  to a card: column `d + 1`, else `d`. `statusAgrees` treats Won't Do in Done as agreeing when nothing follows Done.
+- **Status mapping** (`recordStatusOf`, `cardStatusFor`): with `d` the first done column (`firstDoneColumn`), a
+  column that is not done (`isDoneColumn`) is `open`, `d` is `done`, any other done column `wont-do`; a status no
+  column holds, or a board with no done column, reads `null` and changes nothing. Open to a card: its current status
+  if that reads open, else the first open column's (the first column's when every one is done). Won't Do to a card:
+  the first done column after `d`, else any other done column, else `d`. `statusAgrees` treats Won't Do in Done as agreeing when nothing follows Done.
 - **Create** (`linkedCardCreate`): id fixed by the action id; fields title (clipped to `ITEM_TITLE_MAX`, `'Action'`
   when empty), description when non-empty, status, assignee when known, `linked`, `linkedAt = action.updatedAt`,
   `linkedRev = 1` (a new item's rev).

@@ -143,7 +143,7 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 
 - `PlanBoardSetup = { title; columns: PlanColumn[]; doneColumnId?; swimlaneBy: SwimlaneBy;
 cardFields: CardField[]; hideWriting: boolean }` (a stored `voting` is read past: a vote is the tab's session vote).
-- `PlanColumn = { id; status; name; wipLimit?; color? }`; `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'status' | 'field'` (a stored
+- `PlanColumn = { id; status; name; wipLimit?; color?; width?; done? }` (`done`: counts as done, plan-board.md "Done columns"); `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'status' | 'field'` (a stored
   `'parent'` reads as `'field'` with `swimlaneField: 'parent'`).
 - No scope: a `scope` an older board stored is read past. Types are the one filter: the types `boardAddTypes(setup, types)`
   resolves (every type when `addTypes` is absent or names none still in the catalogue) drops an item of a type the board does not show, before columns, lanes,
@@ -151,7 +151,7 @@ cardFields: CardField[]; hideWriting: boolean }` (a stored `voting` is read past
   drop target refuses such a card (`accepts`) and such a palette type (`acceptsType`), refusal "This board shows
   <types> cards".
 - Output: `{ columns: { column, count, overLimit, lanes: { laneKey, items[] }[] }[], lanes: LaneHead[],
-unplaced: Item[], doneCount, total }`. Items sorted by `compareRank`, then `key`. Lanes ordered: assignee by
+unplaced: Item[], doneCount, total }` (`doneCount`: cards in every done column, `isDoneColumn`). Items sorted by `compareRank`, then `key`. Lanes ordered: assignee by
   name, type by catalogue order, priority by `PRIORITIES`, a Card field (Parent among them) by the linked card's key,
   any other field by `fieldLaneOrder`; the empty group last.
 - `quick = { text?: string; mine?: string }` narrows (title/key/labels substring; `mine` = assignee id).

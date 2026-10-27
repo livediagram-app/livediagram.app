@@ -145,7 +145,12 @@ describe('BoardWidgetView', () => {
   });
 
   it('sets the last column as done from a board without one', () => {
-    const setup = { ...presetSetup('kanban'), voting: { on: false } };
+    const kanban = presetSetup('kanban');
+    const setup = {
+      ...kanban,
+      columns: kanban.columns.map((c) => ({ ...c, done: false })),
+      voting: { on: false },
+    };
     delete (setup as { doneColumnId?: string }).doneColumnId;
     const c = ctx({ setup });
     draw('progress', c);
@@ -154,6 +159,8 @@ describe('BoardWidgetView', () => {
       expect.objectContaining({ doneColumnId: setup.columns.at(-1)!.id }),
       'DoneColumn',
     );
+    const sent = (c.onSetup as ReturnType<typeof vi.fn>).mock.calls[0]![0] as typeof setup;
+    expect(sent.columns.at(-1)!.done).toBe(true);
   });
 
   it('filters by priority and the unassigned, and opens the top-voted card', () => {

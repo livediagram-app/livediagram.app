@@ -6797,6 +6797,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "type": "string"
       },
+      "done": {
+        "type": "boolean"
+      },
       "id": {
         "type": "string"
       },
@@ -6823,6 +6826,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PlanColumnOutline": {
     "additionalProperties": false,
     "properties": {
+      "done": {
+        "const": true,
+        "type": "boolean"
+      },
       "name": {
         "type": "string"
       },

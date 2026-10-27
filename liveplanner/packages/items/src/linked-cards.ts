@@ -18,6 +18,7 @@ import {
   type ItemPerson,
 } from './item';
 import { ITEM_DESCRIPTION_MAX, ITEM_TITLE_MAX } from './limits';
+import { doneColumnsOf } from './done-columns';
 import type { ItemPatchOf, ItemStoreState, ItemWrite } from './store';
 
 // The card's link field: `<kind>/<tab id>/<element id>/<record id>`.
@@ -100,34 +101,38 @@ export function collectingBoard<T extends { setup: PlanBoardSetup }>(
   return undefined;
 }
 
-// A card's status read as a record's (docs/specs/026-plan/linked-boards.md "The link"): a column before the done
-// column is open, the done column done, a column after it Won't Do. Null for a status the board does not show (or a
-// board with no done column), which changes nothing.
+// A card's status read as a record's (docs/specs/026-plan/linked-boards.md "The link"): the first done column is
+// done, any other done column Won't Do, a column that is not done open. Null for a status the board does not show
+// (or a board with no done column), which changes nothing.
 export function recordStatusOf(
   setup: PlanBoardSetup,
   status: string | undefined,
 ): LinkedRecordStatus | null {
-  const at = setup.columns.findIndex((c) => c.status === status);
-  const done = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
-  if (at < 0 || done < 0) return null;
-  return at < done ? 'open' : at === done ? 'done' : 'wont-do';
+  const column = setup.columns.find((c) => c.status === status);
+  const done = doneColumnsOf(setup);
+  if (!column || done.length === 0) return null;
+  return column === done[0] ? 'done' : done.includes(column) ? 'wont-do' : 'open';
 }
 
-// The status a card takes for a record's status: open to the first column (unless it is in an open column already),
-// done to the done column, Won't Do to the first column after Done (Done itself when there is none). Undefined when
-// the board cannot hold it (no columns, or no done column).
+// The status a card takes for a record's status: open to the first open column (unless it is in an open column
+// already; the first column when every one is done), done to the first done column, Won't Do to the next done column
+// after it (else any other, else the first). Undefined when the board has no done column.
 export function cardStatusFor(
   setup: PlanBoardSetup,
   status: LinkedRecordStatus,
   current: string | undefined,
 ): string | undefined {
-  const done = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
-  if (done < 0) return undefined;
+  const done = doneColumnsOf(setup);
+  const first = done[0];
+  if (!first) return undefined;
   if (status === 'open') {
-    return recordStatusOf(setup, current) === 'open' ? current : setup.columns[0]?.status;
+    if (recordStatusOf(setup, current) === 'open') return current;
+    return (setup.columns.find((c) => !done.includes(c)) ?? setup.columns[0])!.status;
   }
-  if (status === 'done') return setup.columns[done]!.status;
-  return (setup.columns[done + 1] ?? setup.columns[done])!.status;
+  if (status === 'done') return first.status;
+  const at = setup.columns.indexOf(first);
+  const later = done.find((c) => setup.columns.indexOf(c) > at);
+  return (later ?? done[1] ?? first).status;
 }
 
 // Whether a card's status and a record's agree. A card already where the record would put it agrees: a board with

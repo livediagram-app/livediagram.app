@@ -9,6 +9,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   COLUMN_WIDTHS,
+  isDoneColumn,
   isTrashed,
   missingBoardStatuses,
   type PlanBoardSetup,
@@ -157,7 +158,8 @@ export function PlanColumnPopover({
   const [renameClash, setRenameClash] = useState<string | null>(null);
   const others = setup.columns.filter((c) => c.id !== column.id);
   const at = setup.columns.findIndex((c) => c.id === column.id);
-  const done = setup.doneColumnId === column.id;
+  // Counts as Done: its flag, or its name (docs/specs/026-plan/plan-board.md "Done columns").
+  const done = isDoneColumn(setup, column);
 
   useLayoutEffect(() => {
     const a = getAnchor()?.getBoundingClientRect();

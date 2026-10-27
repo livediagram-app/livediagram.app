@@ -119,11 +119,19 @@ export const boardSet = defineVerb({
       .describe(
         'Sort Cards: up to two fields, comma separated, each optionally followed by ascending or descending ("Priority descending, Due Date"); "none" turns it off',
       ),
+    done: z
+      .string()
+      .optional()
+      .describe(
+        'The columns whose cards count as done, comma separated; "none" for no done column',
+      ),
   }),
   output: z.object({
     elementId: z.string(),
     title: z.string(),
-    columns: z.array(z.object({ name: z.string(), status: z.string() })),
+    columns: z.array(
+      z.object({ name: z.string(), status: z.string(), done: z.literal(true).optional() }),
+    ),
     takes: z.union([z.array(z.string()), z.literal('every type')]),
     sortBy: z.array(z.string()),
   }),
@@ -131,6 +139,7 @@ export const boardSet = defineVerb({
     const project = await projectOf(ctx, input.project);
     const columns = csv(input.columns);
     const types = input.types?.trim().toLowerCase() === 'all' ? EVERY_TYPE : csv(input.types);
+    const doneColumns = input.done?.trim().toLowerCase() === 'none' ? [] : csv(input.done);
     const result = await changeBoard(
       ctx.api,
       project.id,
@@ -140,6 +149,7 @@ export const boardSet = defineVerb({
         ...(columns ? { columns } : {}),
         ...(types ? { types } : {}),
         ...(input.sort !== undefined ? { sortBy: sortLevels(input.sort) } : {}),
+        ...(doneColumns ? { doneColumns } : {}),
       },
       'cli',
     );
@@ -159,7 +169,7 @@ export const boardSet = defineVerb({
     };
   },
   text: ({ title, columns, takes, sortBy }) => [
-    `~ board ${JSON.stringify(title)}: ${columns.map((c) => c.name).join(' · ')} (takes ${
+    `~ board ${JSON.stringify(title)}: ${columns.map((c) => `${c.name}${c.done ? ' ✓' : ''}`).join(' · ')} (takes ${
       takes === 'every type' ? takes : takes.length ? takes.join(', ') : 'no type'
     })${sortBy.length ? `, sorted by ${sortBy.join(', then ')}` : ''}`,
   ],
@@ -168,10 +178,10 @@ export const boardSet = defineVerb({
     positionals: ['project', 'board'],
     examples: [
       'liveplanner board set "Sprint 14" Kanban --types Task,Bug',
-      'liveplanner board set 3f9c Roadmap --columns "Now,Next,Later,Done" --sort "Priority descending, Due Date"',
+      'liveplanner board set 3f9c Roadmap --columns "Now,Next,Later,Done" --done "Done" --sort "Priority descending, Due Date"',
     ],
     prints:
-      '~ board "<title>": <column> · <column> ... (takes <types>)[, sorted by <field> (<direction>)]',
+      '~ board "<title>": <column> · <done column> ✓ ... (takes <types>)[, sorted by <field> (<direction>)]',
   },
 });
 
