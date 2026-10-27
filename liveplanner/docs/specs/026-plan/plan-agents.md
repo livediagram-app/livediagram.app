@@ -142,9 +142,11 @@ Every write takes what a person would say, and stores the ids:
     call), or `"every"` for each Board and Sheet tab in order; two to a row.
   - `metrics`: metric tiles, four to a row: `count` (cards), `progress` (percent done), `people`, `types`,
     `priorities`, `due` (overdue and due soon), `unassigned`, `points` (estimates), `top-voted`, `stale`.
-  - `charts`: `{ view, groupBy?, types? }`, two to a row and a Gantt a row of its own: `gantt`, `calendar` (by due
-    date), `start-calendar`, `workload` (Cards by a field: `groupBy` assignee, type, priority, status or a field by
-    name), `priority-matrix` (Priority by Status), `search`; `types` narrows a chart to card types by name.
+  - `charts`: `{ view, groupBy?, types?, name? }`, two to a row and a Gantt a row of its own: `gantt`, `calendar` (by
+    due date), `start-calendar`, `workload` (Cards by a field: `groupBy` assignee, type, priority, status or a field by
+    name), `priority-matrix` (Priority by Status), `search`; `types` narrows a chart to card types by name; `name` is
+    the slot's own name in place of the generated heading ([A slot's name](plan-tabs.md#dashboard-tab)), trimmed, up
+    to 80 characters, an empty one ignored.
   - `notes`: `{ title, text }`, three to a row.
   - Rows run in that order (tabs, metrics, Gantts, other charts, notes), up to the Dashboard's 12 rows; anything past
     them is left off and the answer says so.
