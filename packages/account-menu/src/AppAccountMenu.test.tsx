@@ -115,7 +115,7 @@ describe('AppAccountMenu', () => {
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
       'SettingsProfile, emails, API tokens',
-      'Sign outEvery app in this browser',
+      'Sign OutEvery app in this browser',
     ]);
     // A marketing page has no Settings panel: the app's own Explorer on this address opens it, never liveworkspace.app.
     expect(items[0]!.getAttribute('href')).toBe('/explorer?settings=all');
@@ -266,7 +266,7 @@ describe('AccountMenu signed in', () => {
     expect(items.map((i) => i.textContent)).toEqual([
       'ExplorerYour work in every app',
       'SettingsProfile, emails, API tokens',
-      'Sign outEvery app in this browser',
+      'Sign OutEvery app in this browser',
     ]);
     expect(items[0]!.getAttribute('href')).toBe('/explorer');
     unmount();

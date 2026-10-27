@@ -64,7 +64,7 @@ shareable as it is, and the device's own setting applies through System.
   name (or full name, or email; the name hides on a phone), opening a menu
   (`components/AccountControl.tsx`): the name again over "Your account", **Explorer** (this site's own
   `/explorer`, every app's work at once, [The Explorer](#the-explorer-explorer)), **Settings**, which opens the
-  Settings panel ([below](#settings)) in place over whatever page this is, without leaving it, and **Sign out**
+  Settings panel ([below](#settings)) in place over whatever page this is, without leaving it, and **Sign Out**
   (its hint under it: "Every app in this browser"), which ends the liveworkspace session here and with it every
   app's session in this browser ([accounts.md](../003-accounts/accounts.md#signing-out)). API tokens are a category
   of the panel, not a menu item.

@@ -217,7 +217,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
                 {/* Signing out anywhere signs out of every app in this browser
                     (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"), so the item says so. */}
                 <span className="min-w-0">
-                  <span className="block">{leaving ? 'Signing out…' : 'Sign out'}</span>
+                  <span className="block">{leaving ? 'Signing Out…' : 'Sign Out'}</span>
                   <span className="block text-xs text-slate-500 dark:text-slate-400">
                     {SIGN_OUT_HINT}
                   </span>
