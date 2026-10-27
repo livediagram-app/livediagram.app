@@ -232,3 +232,65 @@ describe('planBoardLayout swimlanes', () => {
     expect(planBoardLayout(el, new Map(), ITEM_TYPES)!.lanes).toEqual([]);
   });
 });
+
+// docs/specs/026-plan/item-types.md "Calculated fields": worked out from the cards in hand.
+describe('a Calculated field in an export', () => {
+  const epic: ItemTypeDef = {
+    ...task,
+    id: 'epic',
+    label: 'Epic',
+    custom: [
+      { id: 'f-kids', label: 'Stories', kind: 'calculated', calculation: 'childCount' },
+      { id: 'f-done', label: 'Progress', kind: 'calculated', calculation: 'childrenDone' },
+    ],
+    fields: ['title', 'status', 'f-kids', 'f-done'],
+    display: { detailed: { body: ['f-kids', 'f-done'] } },
+  };
+  const story: ItemTypeDef = {
+    ...task,
+    id: 'story',
+    label: 'Story',
+    custom: [{ id: 'f-epic', label: 'Epic', kind: 'card', linkType: 'epic' }],
+    fields: ['title', 'status', 'f-epic'],
+  };
+  const all = [...ITEM_TYPES, epic, story];
+  const e = item('epic1', { title: 'Checkout', status: 'todo' }, { type: 'epic' });
+  const items = new Map(
+    [
+      e,
+      item('s1', { title: 'Pay', status: 'done', 'f-epic': 'epic1' }, { type: 'story' }),
+      item('s2', { title: 'Ship', status: 'todo', 'f-epic': 'epic1' }, { type: 'story' }),
+    ].map((i) => [i.id, i]),
+  );
+
+  it('draws both with a board’s done columns', () => {
+    const face = planCardFace(e, 0, 0, 240, {
+      palette,
+      types: all,
+      items,
+      isDone: (s) => s === 'done',
+    });
+    expect(face.svg).toContain('Stories: 2');
+    expect(face.svg).toContain('Progress: 50%');
+  });
+
+  it('draws Child Count alone without them, and neither without the cards', () => {
+    const lone = planCardFace(e, 0, 0, 240, { palette, types: all, items });
+    expect(lone.svg).toContain('Stories: 2');
+    expect(lone.svg).not.toContain('Progress');
+    const bare = planCardFace(e, 0, 0, 240, { palette, types: all });
+    expect(bare.svg).not.toContain('Stories');
+  });
+
+  it('reads a board’s own done columns', () => {
+    const board = {
+      ...createShape('plan-board', 0, 0),
+      width: 1600,
+      height: 900,
+      planBoard: { ...presetSetup('kanban'), addTypes: ['epic', 'story'] },
+    } as BoxedElement;
+    const svg = svgBoxed(board, { items, itemTypes: all });
+    expect(svg).toContain('Stories: 2');
+    expect(svg).toContain('Progress: 50%');
+  });
+});

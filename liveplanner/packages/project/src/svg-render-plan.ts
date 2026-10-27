@@ -7,6 +7,7 @@
 import { planOwnColoursOf, planPalette } from './plan-palette';
 import {
   normaliseBoardSetup,
+  finishedStatuses,
   ITEM_TYPES,
   planViewMetric,
   PLAN_VISUALISATION_LABELS,
@@ -50,6 +51,12 @@ const countRoom = (count: string) => count.length * 12 * 0.56 + 28;
 // `s` on one line that fits `width`, ending in an ellipsis when it runs on.
 const fit = (s: string, width: number, size: number) => wrapLines(s, width, size, 1)[0] ?? '';
 
+// Whether a status is one of the board's done columns'.
+function finishedOf(setup: Parameters<typeof finishedStatuses>[0]) {
+  const finished = new Set(finishedStatuses(setup));
+  return (status: string | undefined) => status !== undefined && finished.has(status);
+}
+
 // A board's card faces: each card as tall as its type's Display needs at the board's card size.
 function boardFaceCtx(
   el: Shape,
@@ -61,7 +68,14 @@ function boardFaceCtx(
   return {
     palette: planPalette(surface, ownColours(el)),
     types,
-    ...(setupOf ? { boardFields: setupOf.cardFields, size: setupOf.cardSize ?? 'detailed' } : {}),
+    ...(setupOf
+      ? {
+          boardFields: setupOf.cardFields,
+          size: setupOf.cardSize ?? 'detailed',
+          // Its own done columns, for a Calculated field's Children Done.
+          isDone: finishedOf(setupOf),
+        }
+      : {}),
     ...(items ? { items } : {}),
   };
 }

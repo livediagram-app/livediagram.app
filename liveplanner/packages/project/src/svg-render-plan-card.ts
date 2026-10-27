@@ -26,6 +26,12 @@ import {
   type CardSlot,
   type Item,
   type ItemTypeDef,
+  type CustomFieldDef,
+  type IsDoneStatus,
+  calculatedText,
+  calculatedValue,
+  calculationOf,
+  childIndexFor,
 } from '@liveplanner/items';
 import { FLAG_COLOUR, PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -67,6 +73,9 @@ export type CardFaceContext = {
   boardFields?: readonly CardField[];
   size?: CardSize;
   items?: ReadonlyMap<string, Item>;
+  // The board's done columns, for a Calculated field's Children Done (docs/specs/026-plan/item-types.md "Calculated
+  // fields"); a lone card element has none in hand, so it draws Child Count alone.
+  isDone?: IsDoneStatus;
   // A standalone card element's own height: its frame keeps the element's bounds rather than its measured need.
   height?: number;
 };
@@ -134,12 +143,29 @@ function bitOf(
       // A custom field: its name and its value, a linked card's title for a Card field.
       if (!isCustomCardField(f)) return null;
       const def = (type.custom ?? []).find((c) => c.id === f);
-      const value = def ? customFieldText(def, item.fields[def.id], ctx.items) : null;
+      const value = !def
+        ? null
+        : def.kind === 'calculated'
+          ? calculatedBit(def, item, ctx, ctx.types ?? ITEM_TYPES)
+          : customFieldText(def, item.fields[def.id], ctx.items);
       return def && value
         ? { kind: 'text', text: `${def.label}: ${value}`, color: p.text, pill: true }
         : null;
     }
   }
+}
+
+// A Calculated field's value as text, worked out from the cards in hand: null without them, and Children Done only
+// with the board's done columns.
+function calculatedBit(
+  def: CustomFieldDef,
+  item: Item,
+  ctx: CardFaceContext,
+  types: readonly ItemTypeDef[],
+): string | null {
+  if (!ctx.items || (calculationOf(def) === 'childrenDone' && !ctx.isDone)) return null;
+  const isDone = ctx.isDone ?? (() => false);
+  return calculatedText(def, calculatedValue(def, item, childIndexFor(ctx.items, types), isDone));
 }
 
 // The face, drawn at (x, y) `w` wide, with the height it took. `measureOnly` skips the markup.
