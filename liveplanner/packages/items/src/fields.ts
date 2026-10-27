@@ -92,7 +92,10 @@ export type ItemRejection =
   | 'id_invalid'
   | 'place_invalid'
   // A status the item's card type leaves out (docs/specs/026-plan/item-types.md "An item type").
-  | 'status_excluded';
+  | 'status_excluded'
+  // A value given to a Calculated field, which only the plan works out (docs/specs/026-plan/item-types.md
+  // "Calculated fields").
+  | 'field_calculated';
 
 type FieldsResult =
   { ok: true; fields: ItemFields } | { ok: false; error: ItemRejection; field?: string };

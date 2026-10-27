@@ -18,6 +18,7 @@ import {
 import { ITEM_STATUS_MAX } from './limits';
 import { isObj } from './validate';
 import type { ItemTypeDef } from './item-types';
+import { calculatedFieldsOf } from './calculated-fields';
 import { typeAllowsStatus, typeIn } from './type-catalogue';
 import type { ItemWrite } from './store';
 
@@ -113,7 +114,22 @@ export function statusExcluded(
   return !typeAllowsStatus(typeIn(types, next.type), status);
 }
 
-type ItemWriteRefusal = { error: ItemRejection; id?: string };
+// A Calculated field given a value (docs/specs/026-plan/item-types.md "Calculated fields"): its id, else null. Only a
+// value that is new is refused: clearing an old one, or a change that leaves it as it was, passes.
+export function calculatedWritten(
+  types: readonly ItemTypeDef[],
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Pick<Item, 'fields'>,
+): string | null {
+  for (const f of calculatedFieldsOf(typeIn(types, next.type))) {
+    const v = next.fields[f.id];
+    if (v === undefined || v === null || v === '') continue;
+    if (!before || JSON.stringify(before.fields[f.id]) !== JSON.stringify(v)) return f.id;
+  }
+  return null;
+}
+
+type ItemWriteRefusal = { error: ItemRejection; id?: string; field?: string };
 
 // `write` read as the api reads the request it is sent as: the write with its fields normalised as the api stores
 // them, or the refusal the api would answer.
@@ -150,20 +166,32 @@ export function readItemWrite(write: ItemWrite): ItemWrite | ItemWriteRefusal {
   }
 }
 
-// The items a patch, patches or move left, checked as the api checks them before it writes: a status the card's
-// type leaves out (statusExcluded), and the fields' size. Null when every one passes.
+// The items a write left, checked as the api checks them before it writes: a new card's Calculated fields
+// (calculatedWritten), and for a patch, patches or move a status the card's type leaves out (statusExcluded), a
+// Calculated field given a value, and the fields' size. Null when every one passes.
 export function writtenItemsRefusal(
   write: ItemWrite,
   before: readonly Item[],
   upserts: readonly Item[],
   types: readonly ItemTypeDef[],
 ): ItemWriteRefusal | null {
+  if (write.kind === 'create') {
+    // A card put back (a restore or sync carries its number, votes or thread) holds only what it held.
+    for (const c of write.creates) {
+      if (c.key !== undefined || c.votes !== undefined || c.comments !== undefined) continue;
+      const field = calculatedWritten(types, c);
+      if (field) return { error: 'field_calculated', field, ...(c.id ? { id: c.id } : {}) };
+    }
+    return null;
+  }
   if (write.kind !== 'patch' && write.kind !== 'patches' && write.kind !== 'move') return null;
   const had = new Map(before.map((i) => [i.id, i]));
   for (const next of upserts) {
     const was = had.get(next.id);
     if (was && statusExcluded(types, next, was, write.undo === true))
       return { error: 'status_excluded', id: next.id };
+    const field = write.undo === true ? null : calculatedWritten(types, next, was);
+    if (field) return { error: 'field_calculated', id: next.id, field };
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return { error: bound, id: next.id };
   }

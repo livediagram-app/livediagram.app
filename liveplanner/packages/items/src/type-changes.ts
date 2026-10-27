@@ -2,12 +2,14 @@
 // delete and restore changes applied in order to a project's catalogue, the way the type editor makes them. The
 // whole result is checked by validateItemTypeCatalogue before anything is saved; any refusal saves nothing.
 import { withArticle } from './indefinite-article';
+import { CALCULATION_LABELS } from './calculated-fields';
 import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
 import {
   COMMON_CURRENCIES,
   CURRENCY_CODE,
   CURRENCY_DEFAULT,
+  CALCULATIONS,
   CUSTOM_FIELD_KINDS,
   RATING_FIELD_SCALE_DEFAULT,
   RATING_FIELD_SCALE_MAX,
@@ -15,6 +17,7 @@ import {
   type CustomFieldDef,
   type ItemTypeDef,
   withLinkTypes,
+  type Calculation,
 } from './item-types';
 import type { PlanStatusName } from './plan-outline';
 import { fieldKeyOf, resolveStatus, resolveType, type NameRefusal } from './plan-names';
@@ -66,6 +69,8 @@ export interface CustomFieldInput {
   linkTypes?: readonly string[];
   // A Currency field's ISO 4217 code; GBP when absent.
   currency?: string;
+  // A Calculated field's calculation, by id (`childCount`) or name ("Child Count").
+  calculation?: string;
   onCard?: boolean;
 }
 
@@ -78,6 +83,8 @@ export interface CustomFieldEdit {
   // A Card field's card types, replaced whole, by id or name.
   linkTypes?: readonly string[];
   currency?: string;
+  // A Calculated field's calculation, by id or name.
+  calculation?: string;
   onCard?: boolean;
 }
 
@@ -216,6 +223,13 @@ function editedCustom(
     if (code === CURRENCY_DEFAULT) delete next.currency;
     else next.currency = code;
   }
+  if (edit.calculation !== undefined) {
+    if (field.kind !== 'calculated')
+      throw invalid(
+        `"${field.label}" is ${withArticle(field.kind)} field: only a calculated field has a calculation.`,
+      );
+    next.calculation = calculationNamed(field.label, edit.calculation);
+  }
   if (edit.onCard === true) next.onCard = true;
   if (edit.onCard === false) delete next.onCard;
   const edited = { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
@@ -329,8 +343,27 @@ function customOf(
     const code = currencyOf(input.currency);
     if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
+  if (known === 'calculated') field.calculation = calculationNamed(name, input.calculation);
+  else if (input.calculation !== undefined)
+    throw invalid(
+      `"${name}" is ${withArticle(known)} field: only a calculated field has a calculation.`,
+    );
   if (input.onCard) field.onCard = true;
   return field;
+}
+
+// A calculation as an agent names it: its id (`childCount`) or its name ("Child Count"), any case or spacing.
+const calcKey = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
+function calculationNamed(field: string, named: string | undefined): Calculation {
+  const key = calcKey(named ?? '');
+  const found = CALCULATIONS.find(
+    (c) => calcKey(c) === key || calcKey(CALCULATION_LABELS[c]) === key,
+  );
+  if (!found)
+    throw invalid(
+      `The calculated field "${field}" needs a calculation: ${CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`).join(' or ')}.`,
+    );
+  return found;
 }
 
 // What a change's line adds when its Default State names a column no board has yet (docs/specs/026-plan/plan-agents.md

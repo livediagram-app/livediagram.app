@@ -4,6 +4,7 @@
 // saves is one the api keeps.
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
+import { isCalculation } from './calculated-fields';
 import {
   CARD_LINK_TYPES_MAX,
   CURRENCY_CODE,
@@ -301,6 +302,12 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     const code = input['currency'];
     if (typeof code !== 'string' || !CURRENCY_CODE.test(code)) return `${at}.currency`;
     if (code !== CURRENCY_DEFAULT) field.currency = code;
+  }
+  if (kind === 'calculated') {
+    // From the fixed menu (calculated-fields.ts): one this reader does not know is refused, as an unknown kind is.
+    const calculation = input['calculation'];
+    if (!isCalculation(calculation)) return `${at}.calculation`;
+    field.calculation = calculation;
   }
   if (input['onCard'] === true) field.onCard = true;
   return field;

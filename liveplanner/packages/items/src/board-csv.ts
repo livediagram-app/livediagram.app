@@ -37,11 +37,13 @@ export function boardCsvFileName(title: string): string {
 
 const lower = (s: string) => s.trim().toLowerCase();
 
-// The custom fields of the board's types, one per label (the first type naming it wins), in catalogue order.
+// The custom fields of the board's types, one per label (the first type naming it wins), in catalogue order. A
+// Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields").
 function customColumns(types: readonly ItemTypeDef[]): string[] {
   const out = new Map<string, string>();
   for (const t of types)
-    for (const f of t.custom ?? []) if (!out.has(lower(f.label))) out.set(lower(f.label), f.label);
+    for (const f of t.custom ?? [])
+      if (f.kind !== 'calculated' && !out.has(lower(f.label))) out.set(lower(f.label), f.label);
   return [...out.values()];
 }
 
@@ -168,7 +170,9 @@ const TRUE_TEXT = new Set(['yes', 'y', 'true', '1', 'x', '✓', '✔']);
 
 function customValue(f: CustomFieldDef, text: string): ItemFieldValue | undefined {
   switch (f.kind) {
+    // Never read from a file: a Card field names a card by id, a Calculated field is worked out.
     case 'card':
+    case 'calculated':
       return undefined;
     case 'number': {
       const n = Number(text);
