@@ -156,8 +156,9 @@ its number, title, description and every comment **verbatim**, with author and d
 - **Commits:** small logical commits, each ending with the Co-Authored-By trailer. Never use em dashes in
   anything you write. Don't commit pnpm-lock.yaml unless the change needs it.
 - **One PR, one push.** Push the branch once, when everything above passes, then open a ready PR (never draft)
-  against `main`. Add `not-ready` only for high-risk changes (schema or wire format, auth, sharing, user data,
-  worker bindings), and say why. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
+  against `main`. Add `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
+  permissions, deleting or migrating user data, worker bindings or deploy config, or a change to what existing
+  data shows people), and say why. A stored-shape change that only adds and still reads old data needs no label. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
   to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. The repo is private, so
   `raw.githubusercontent.com` links 404. The description: one calm paragraph of context, then what it solves, then what was done, then
   **Answers** (one line per Question: "#24: <the answer, short> → <how it was built>"), Decisions, Performance
