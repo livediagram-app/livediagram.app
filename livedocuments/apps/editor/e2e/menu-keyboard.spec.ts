@@ -96,7 +96,10 @@ test.describe('menus by keyboard', () => {
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'Tab menu' });
     await expect(dialog).toBeVisible();
-    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    // The menu moves focus in over the next frames (useMenu), so this waits for it rather than checking once.
+    await expect
+      .poll(() => dialog.evaluate((el) => el.contains(document.activeElement)))
+      .toBe(true);
     await shot(page, 'after-tab-menu-focus');
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
@@ -110,7 +113,10 @@ test.describe('menus by keyboard', () => {
     const presets = page.getByRole('menu', { name: 'Zoom level' });
     await expect(presets).toBeVisible();
     // A blank page opens fitted, between the preset levels: focus lands inside the menu.
-    expect(await presets.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    // The menu moves focus in over the next frames (useMenu), so this waits for it rather than checking once.
+    await expect
+      .poll(() => presets.evaluate((el) => el.contains(document.activeElement)))
+      .toBe(true);
     await page.keyboard.press('End');
     await expect(presets.getByRole('menuitem', { name: 'Fit to screen' })).toBeFocused();
     await shot(page, 'after-zoom-menu-focus');
