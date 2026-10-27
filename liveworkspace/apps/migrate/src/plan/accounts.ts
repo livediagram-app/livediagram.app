@@ -108,6 +108,8 @@ export function writeTeams(ctx: PlanContext): void {
     `SELECT * FROM team_members
       ORDER BY team_id, CASE status WHEN 'joined' THEN 0 ELSE 1 END, created_at, id`,
   );
+  // Old accounts merged into one each held their own row in a team: the account keeps one membership per team.
+  const memberships = new Set<string>();
   for (const m of members.iterate() as Iterable<Row>) {
     const id = String(m.id);
     const oldUser = s(m.user_id);
@@ -122,8 +124,29 @@ export function writeTeams(ctx: PlanContext): void {
       ctx.report.skip('team_member', id, `joined member ${oldUser ?? '(none)'} has no account`);
       continue;
     }
-    // The old creator row may have no email (the old column allowed null): it takes the account's.
-    const email = (s(m.email) ?? account?.email ?? '').trim().toLowerCase();
+    if (account) {
+      const membership = `${String(m.team_id)}|${userId}`;
+      if (memberships.has(membership)) {
+        ctx.report.skip(
+          'team_member',
+          id,
+          `account ${userId} is already a member of team ${String(m.team_id)}`,
+        );
+        continue;
+      }
+      memberships.add(membership);
+    }
+    // A joined member carries its account's email (a merged account's old rows hold the old addresses); an
+    // invitation keeps the address it was sent to. The old creator row may have no email (the old column allowed
+    // null): it takes the account's.
+    const email = (
+      (status === 'joined' ? account?.email : undefined) ??
+      s(m.email) ??
+      account?.email ??
+      ''
+    )
+      .trim()
+      .toLowerCase();
     if (!email) {
       ctx.report.skip('team_member', id, 'no email, and no account to take one from');
       continue;

@@ -31,6 +31,7 @@ export async function planScenario(
     drawPicture?: PictureDrawer | null;
     split?: SplitFn;
     oauthKvPath?: string;
+    clerkCsv?: string;
   } = {},
 ) {
   const outDir = options.out ?? join(tempDir('bundle'), 'b');
@@ -41,7 +42,7 @@ export async function planScenario(
       level: '0099_workbench_workspace.sql',
       snapshotAt: NOW,
     },
-    clerkCsv: CLERK,
+    clerkCsv: options.clerkCsv ?? CLERK,
     existingAccounts: EXISTING,
     ledgerPath: options.ledgerPath ?? null,
     oauthKvPath: options.oauthKvPath ?? null,

@@ -90,7 +90,10 @@ the copy takes).
    reminder the old site had sent, and expires the invitation 28 days after its clock started, as the old site would
    have. A catch-up run leaves the stamps as the first run wrote them (the sweep's own stamps don't move `updatedAt`,
    so a rewrite could undo one). An old creator row may have no `email` (the old table allowed null, the new
-   `team_member.email` doesn't), so it takes the account's email. This replaces 0002's "teams are managed
+   `team_member.email` doesn't), so it takes the account's email. Old accounts merged into one (owner map, Clerk
+   matches) each held their own member row: the account keeps one membership per team, its first joined row, and
+   the report counts the rest as skipped. A joined member carries its account's email, which a merged account's old
+   rows don't. This replaces 0002's "teams are managed
    separately". Recreating writes no `team_*` Timeline events and sends no
    invitation emails at import time.
 5. **Carry over API tokens**, so scripts, the CLI and connected AI tools keep working (this replaces 0002's "old

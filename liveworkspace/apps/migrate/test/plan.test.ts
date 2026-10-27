@@ -9,7 +9,7 @@ import { verifySharePassword } from '../../index/src/password-hash.ts';
 import { mediaGuestOwnerSync } from '../src/ids.ts';
 import type { R2Entry } from '../src/plan/files.ts';
 import { bundleKeys, verify, verifyQueries } from '../src/verify.ts';
-import { DAY, GUEST_A, NOW, newDatabases, put } from './fixture.ts';
+import { clerkCsv, DAY, GUEST_A, NOW, newDatabases, put } from './fixture.ts';
 import { all, planScenario, recordApplied, runSql, tempDir } from './helpers.ts';
 import { scenario } from './scenario.ts';
 
@@ -40,6 +40,52 @@ function filesOf(dir: string): Record<string, string> {
   walk(dir);
   return out;
 }
+
+describe('plan, old accounts merged into one', () => {
+  it('keeps one membership per team, with the account email', async () => {
+    // Bo had two old accounts, both landing on user_newbo; each was a member of team9.
+    const snapshot = scenario();
+    put(snapshot, 'teams', {
+      id: 'team9',
+      name: 'Shared',
+      created_at: NOW - 10 * DAY,
+      updated_at: NOW - 10 * DAY,
+    });
+    for (const [id, user, email, age] of [
+      ['m6', 'user_bo2', 'bo.old@example.com', 9],
+      ['m7', 'user_bo', 'bo@example.com', 8],
+    ] as const) {
+      put(snapshot, 'team_members', {
+        id,
+        team_id: 'team9',
+        user_id: user,
+        email,
+        role: 'admin',
+        created_at: NOW - age * DAY,
+        updated_at: NOW - age * DAY,
+        status: 'joined',
+      });
+    }
+    const clerk = clerkCsv([
+      { id: 'user_ali', email: 'ali@example.com', first: 'Ali', last: 'Khan' },
+      { id: 'user_bo', email: 'Bo@Example.com', first: 'Bo', last: 'Li' },
+      { id: 'user_bo2', email: 'bo@example.com', first: 'Bo', last: 'Li' },
+      { id: 'user_cy', email: 'cy@example.com', first: 'Cy' },
+    ]);
+    const { outDir, manifest } = await planScenario(snapshot, { clerkCsv: clerk });
+    const dbs = seedNewSide();
+    runSql(outDir, manifest, dbs);
+    expect(
+      all(dbs.accounts, "SELECT id, userId, email FROM team_member WHERE teamId = 'team9'"),
+    ).toEqual([{ id: 'm6', userId: 'user_newbo', email: 'bo@example.com' }]);
+    const report = JSON.parse(readFileSync(join(outDir, 'report.json'), 'utf8')) as {
+      skipped: { items: { what: string; id: string }[] };
+    };
+    expect(report.skipped.items).toContainEqual(
+      expect.objectContaining({ what: 'team_member', id: 'm7' }),
+    );
+  });
+});
 
 describe('plan, first run', async () => {
   const { manifest, outDir } = await planScenario(scenario());
