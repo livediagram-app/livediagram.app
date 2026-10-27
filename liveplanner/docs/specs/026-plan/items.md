@@ -349,7 +349,7 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   - **Accounts are marked**: in the Assignee picker's open list, and only there, every person who is a
     liveworkspace identity (a person id hashed from an account or guest id: you, the plan's team, and anyone the cards
     hold who was assigned that way) carries a small liveworkspace mark to the left of their name: the prism glyph every app's logo is, in the
-    platform's slate, 12 px, with the tooltip **liveworkspace account** (the row reads "Sam, liveworkspace account"). A custom assignee
+    platform's slate, 12 px. It shows no tooltip on hover; a screen reader hears it as **liveworkspace account** (the row reads "Sam, liveworkspace account"). A custom assignee
     and a template's example person carry nothing (an empty space of the same width, so the names line up). Nowhere else shows it: not the closed
     field, card faces, the @-mention list or any other list of people. The picker is a list of its own rather than a
     native select so a row can hold the mark: the closed field shows the current assignee (or **No one**) and a

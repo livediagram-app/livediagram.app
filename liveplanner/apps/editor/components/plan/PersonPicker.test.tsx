@@ -131,8 +131,13 @@ describe('PersonPicker', () => {
     for (const name of ['Me', 'Sam']) {
       const mark = within(row(list, name)).getByRole('img', { name: ACCOUNT_MARK_LABEL });
       // Left of the name: the row's first child.
-      expect(row(list, name).firstElementChild?.contains(mark)).toBe(true);
+      expect(row(list, name).firstElementChild).toBe(mark);
       expect(mark.querySelector('svg')).not.toBeNull();
+      // No visible tooltip: the mark is bare (no Tooltip wrapper, no native title); its label is for screen readers.
+      expect(mark.hasAttribute('title')).toBe(false);
+      fireEvent.pointerEnter(mark);
+      fireEvent.mouseEnter(mark);
+      expect(screen.queryByRole('tooltip')).toBeNull();
     }
     expect(row(list, 'Sam').getAttribute('aria-label')).toBe(`Sam, ${ACCOUNT_MARK_LABEL}`);
     expect(within(row(list, 'Casey')).queryByRole('img')).toBeNull();
