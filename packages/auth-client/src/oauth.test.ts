@@ -113,6 +113,22 @@ describe('guestHandoffUrl', () => {
     expect(url.origin + url.pathname).toBe('http://127.0.0.1:3132/e2e/accounts/api/auth/guest');
   });
 
+  it('drops any run of trailing slashes on the accounts URL, in linear time', () => {
+    const at = (accountsUrl: string) =>
+      new URL(
+        guestHandoffUrl({
+          accountsUrl,
+          clientId: 'client-1',
+          redirectUri: 'https://www.livediagram.app/auth/guest',
+          state: 'abcdefgh',
+          resource: 'https://api.livediagram.app',
+        }),
+      ).pathname;
+    expect(at('https://liveworkspace.app///')).toBe('/api/auth/guest');
+    // A pattern like /\/+$/ backtracks quadratically here; the scan finishes well inside the test's timeout.
+    expect(at(`https://liveworkspace.app/a${'/'.repeat(50_000)}`)).toBe('/a/api/auth/guest');
+  });
+
   it('takes only a state shaped like one the editor makes', () => {
     expect(isGuestHandoffState(randomState())).toBe(true);
     expect(isGuestHandoffState('short')).toBe(false);

@@ -11,8 +11,12 @@ const AUTH_PATH = '/api/auth/oauth2';
 
 // A route of the accounts service, kept under any path its URL carries (a stand-in served at /e2e/accounts, say):
 // `new URL('/api/…', base)` would drop that path.
-const accountsRoute = (accountsUrl: string, route: string): URL =>
-  new URL(`${accountsUrl.replace(/\/+$/, '')}${route}`);
+// Trailing slashes dropped by a scan, not /\/+$/, which is quadratic on a long run of slashes.
+const accountsRoute = (accountsUrl: string, route: string): URL => {
+  let end = accountsUrl.length;
+  while (end > 0 && accountsUrl[end - 1] === '/') end--;
+  return new URL(`${accountsUrl.slice(0, end)}${route}`);
+};
 
 export interface PkcePair {
   verifier: string;
