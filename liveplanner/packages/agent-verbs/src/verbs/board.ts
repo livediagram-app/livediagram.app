@@ -83,6 +83,21 @@ export const boardAdd = defineVerb({
   },
 });
 
+// "Priority descending, Due Date" as Sort Cards levels; "none" (or nothing) is none.
+export function sortLevels(
+  text: string,
+): { field: string; direction?: 'ascending' | 'descending' }[] {
+  if (text.trim().toLowerCase() === 'none') return [];
+  return csv(text)!.map((part) => {
+    const m = /^(.*?)\s+(ascending|descending|asc|desc)$/i.exec(part);
+    if (!m) return { field: part };
+    return {
+      field: m[1]!.trim(),
+      direction: m[2]!.toLowerCase().startsWith('desc') ? 'descending' : 'ascending',
+    };
+  });
+}
+
 export const boardSet = defineVerb({
   id: 'board.set',
   summary: 'Change a Plan board',
@@ -98,12 +113,19 @@ export const boardSet = defineVerb({
       .string()
       .optional()
       .describe('The card types it takes, comma separated; "all" for every type'),
+    sort: z
+      .string()
+      .optional()
+      .describe(
+        'Sort Cards: up to two fields, comma separated, each optionally followed by ascending or descending ("Priority descending, Due Date"); "none" turns it off',
+      ),
   }),
   output: z.object({
     elementId: z.string(),
     title: z.string(),
     columns: z.array(z.object({ name: z.string(), status: z.string() })),
     takes: z.union([z.array(z.string()), z.literal('every type')]),
+    sortBy: z.array(z.string()),
   }),
   run: async (ctx, input) => {
     const project = await projectOf(ctx, input.project);
@@ -117,6 +139,7 @@ export const boardSet = defineVerb({
         ...(input.title ? { title: input.title } : {}),
         ...(columns ? { columns } : {}),
         ...(types ? { types } : {}),
+        ...(input.sort !== undefined ? { sortBy: sortLevels(input.sort) } : {}),
       },
       'cli',
     );
@@ -132,21 +155,23 @@ export const boardSet = defineVerb({
       title: result.title,
       columns: result.columns,
       takes: result.takes,
+      sortBy: result.sortBy,
     };
   },
-  text: ({ title, columns, takes }) => [
+  text: ({ title, columns, takes, sortBy }) => [
     `~ board ${JSON.stringify(title)}: ${columns.map((c) => c.name).join(' · ')} (takes ${
       takes === 'every type' ? takes : takes.length ? takes.join(', ') : 'no type'
-    })`,
+    })${sortBy.length ? `, sorted by ${sortBy.join(', then ')}` : ''}`,
   ],
   quiet: ({ elementId }) => [elementId],
   cli: {
     positionals: ['project', 'board'],
     examples: [
       'liveplanner board set "Sprint 14" Kanban --types Task,Bug',
-      'liveplanner board set 3f9c Roadmap --columns "Now,Next,Later,Done" --title "Roadmap 2027"',
+      'liveplanner board set 3f9c Roadmap --columns "Now,Next,Later,Done" --sort "Priority descending, Due Date"',
     ],
-    prints: '~ board "<title>": <column> · <column> ... (takes <types>)',
+    prints:
+      '~ board "<title>": <column> · <column> ... (takes <types>)[, sorted by <field> (<direction>)]',
   },
 });
 

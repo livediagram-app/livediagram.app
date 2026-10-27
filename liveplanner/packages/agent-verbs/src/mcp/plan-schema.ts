@@ -159,6 +159,29 @@ export const changeBoardShape = {
       'Its rows: none, assignee, type, priority, status, or a field by name ("Severity", "Role"): a row per ' +
         'value, across every column.',
     ),
+  sortBy: z
+    .array(
+      z.object({
+        field: z
+          .string()
+          .describe(
+            'A field by name or id: Priority, Estimate, Start Date, Due Date, or a number, currency, date, ' +
+              'rating or choice field ("Value").',
+          ),
+        direction: z
+          .enum(['ascending', 'descending'])
+          .optional()
+          .describe(
+            'ascending (lowest or earliest first, a choice in option order; the default) or descending.',
+          ),
+      }),
+    )
+    .max(2)
+    .optional()
+    .describe(
+      'Sort Cards: each column orders its cards by up to two fields, then by hand order; [] turns it off. ' +
+        'While sorted, people cannot reorder cards within a column.',
+    ),
   doneColumn: z
     .string()
     .nullable()
@@ -411,6 +434,12 @@ const listedBoard = z.object({
   takes: z
     .union([z.array(z.string()), z.literal('every type')])
     .describe('The card types it shows.'),
+  sortBy: z
+    .array(z.string())
+    .optional()
+    .describe(
+      'Sort Cards, as "Priority (Highest First)": its columns list their cards in that order.',
+    ),
   columns: z
     .array(
       z.object({
@@ -500,6 +529,9 @@ export const changeBoardOutput = {
     .describe('The card types it shows now.'),
   cardSize: z.enum(['minimal', 'compact', 'detailed']).describe('How much of each card it draws.'),
   cardFields: z.array(z.string()).describe('The built-in fields its cards show, by name.'),
+  sortBy: z
+    .array(z.string())
+    .describe('Sort Cards now, as "Priority (Highest First)"; empty for hand order.'),
   changesetId: z.string().nullable().describe('The changeset that changed it (revertible).'),
   rev: z.number().nullable().describe('The tab revision after it.'),
   url,

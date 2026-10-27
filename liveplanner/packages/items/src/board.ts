@@ -17,6 +17,7 @@ import {
 } from './item';
 import type { ItemMove } from './item';
 import { CUSTOM_FIELD_ID_PATTERN } from './type-catalogue';
+import { boardSortComparator, normaliseBoardSort, type BoardSortLevel } from './board-sort';
 import {
   ITEM_TYPES,
   LEGACY_PARENT_GROUPING,
@@ -107,6 +108,9 @@ export interface PlanBoardSetup {
   swimlaneBy: SwimlaneBy;
   // The field a 'field' board lanes by: a built-in of LANE_FIELD_BUILT_INS or a custom field id.
   swimlaneField?: string;
+  // Sort Cards (docs/specs/026-plan/plan-board.md "The board set-up"): up to two levels, rank breaking ties. Absent is
+  // rank order.
+  sortBy?: BoardSortLevel[];
   cardFields: CardField[];
   cardSize?: CardSize;
   // An Archive board (docs/specs/026-plan/items.md "Archive"): it shows only archived items.
@@ -324,6 +328,8 @@ export interface BoardProjection {
   unplaced: Item[];
   doneCount: number;
   total: number;
+  // Sort Cards orders its cards: a card is not reordered by hand in its own cell.
+  sorted?: boolean;
 }
 
 export const NO_LANE = '';
@@ -668,6 +674,9 @@ export function projectBoard(
     else scoped.push(it);
   }
   scoped.sort(byRank);
+  // Sort Cards: stable, so rank still orders the cards each level ties.
+  const sorted = !!setup.sortBy?.length;
+  if (sorted) scoped.sort(boardSortComparator(setup.sortBy!, types));
   unplaced.sort((a, b) => a.key - b.key);
 
   const { by, lanes, laneOfItem } = boardLanes(setup, scoped, items, types, statusNames);
@@ -693,7 +702,15 @@ export function projectBoard(
       })),
     };
   });
-  return { columns, lanes, swimlanes: by !== 'none', unplaced, doneCount, total: scoped.length };
+  return {
+    columns,
+    lanes,
+    swimlanes: by !== 'none',
+    unplaced,
+    doneCount,
+    total: scoped.length,
+    ...(sorted ? { sorted } : {}),
+  };
 }
 
 // Face-down while the board hides writing and the viewer did not write it.
@@ -767,6 +784,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
   // every status) groups by status (docs/specs/026-plan/plan-board.md "Swimlanes"). Another board stored grouping by
   // status reads as no grouping.
   if (swimlaneBy === 'status' && input['allCards'] !== true) swimlaneBy = 'none';
+  const sortBy = normaliseBoardSort(input['sortBy']);
   const cardFields = Array.isArray(input['cardFields'])
     ? CARD_FIELDS.filter((f) => (input['cardFields'] as unknown[]).includes(f))
     : [...DEFAULT_CARD_FIELDS];
@@ -780,6 +798,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(doneColumnId ? { doneColumnId } : {}),
     swimlaneBy,
     ...(swimlaneField ? { swimlaneField } : {}),
+    ...(sortBy ? { sortBy } : {}),
     cardFields,
     ...(readBoardWidgets(input['widgets']) ? { widgets: readBoardWidgets(input['widgets']) } : {}),
     ...(input['archive'] === true ? { archive: true } : {}),

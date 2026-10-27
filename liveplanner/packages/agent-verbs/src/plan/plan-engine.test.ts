@@ -165,6 +165,26 @@ describe('planListing', () => {
     expect(listing.hint).toBeUndefined();
   });
 
+  it('lists a sorted board’s cards in its sort, naming it', async () => {
+    const sorted = { ...BOARD(), sortBy: [{ field: 'f-sev', dir: 'desc' as const }] };
+    const cards = [
+      item(1, 'aaa111', { title: 'Low', status: 'todo~x', 'f-sev': 'S1' }, 'bug', 'a'),
+      item(2, 'bbb222', { title: 'High', status: 'todo~x', 'f-sev': 'S2' }, 'bug', 'b'),
+    ];
+    const { api: a } = api(
+      { [`/projects/${D}/items`]: { items: cards, rev: 1 } },
+      { boards: [sorted], statuses: STATUSES, types: [...ITEM_TYPES, BUG] },
+    );
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.boards[0]).toMatchObject({
+      sortBy: ['Severity (Reverse Option Order)'],
+      columns: [
+        { name: 'To Do', cards: ['#2', '#1'] },
+        { name: 'Done', cards: [] },
+      ],
+    });
+  });
+
   it('shows no card on a board that takes no type', async () => {
     const { api: a } = api({}, { boards: [BOARD([])], statuses: STATUSES, types: ITEM_TYPES });
     const listing = planListing(await readPlanState(a, D));
@@ -710,6 +730,35 @@ describe('changeBoard', () => {
       ok: false,
       code: 'board_invalid',
     });
+  });
+
+  it('sorts its cards by fields by name, an empty list turning it off', async () => {
+    const { api: a, seen } = api();
+    const r = await changeBoard(
+      a,
+      D,
+      {
+        board: 'Sprint',
+        sortBy: [{ field: 'Priority', direction: 'descending' }, { field: 'severity' }],
+      },
+      'mcp',
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.sortBy).toEqual(['Priority (Highest First)', 'Severity (In Option Order)']);
+    const setup = (
+      seen[0]!.body as { operations: { fields: { planBoard: Record<string, unknown> } }[] }
+    ).operations[0]!.fields.planBoard;
+    expect(setup['sortBy']).toEqual([
+      { field: 'priority', dir: 'desc' },
+      { field: 'f-sev', dir: 'asc' },
+    ]);
+    expect(await changeBoard(a, D, { board: 'Sprint', sortBy: [] }, 'mcp')).toMatchObject({
+      ok: true,
+      sortBy: [],
+    });
+    expect(
+      await changeBoard(a, D, { board: 'Sprint', sortBy: [{ field: 'Title' }] }, 'mcp'),
+    ).toMatchObject({ ok: false, code: 'board_invalid' });
   });
 
   it('refuses an unknown or ambiguous board, type or column list', async () => {
