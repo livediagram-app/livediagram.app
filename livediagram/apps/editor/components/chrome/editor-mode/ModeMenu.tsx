@@ -1,9 +1,12 @@
-import { useId, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { editorModeDescription, editorModeLabel } from '@livediagram/document';
 import {
   CheckIcon,
   EDITOR_MODE_ICONS,
   MENU_PANEL,
+  POPOVER_VIEWPORT_MARGIN,
+  Portal,
+  clampIntoRange,
   useMenu,
   type MenuInitialFocus,
 } from '@livediagram/ui';
@@ -24,6 +27,12 @@ type Mode = EditorModeSwitchProps['mode'];
 // Under 640px the preview is left out and the list stands alone, each row showing its description.
 //
 // Opened by ModeMenuChip, in the top chrome and on every start panel's rail, so both show the same menu.
+//
+// The top chrome's menu (not `fill`) mounts in a Portal, fixed below the chip and kept POPOVER_VIEWPORT_MARGIN inside
+// the viewport: inside the menu card it sat under the canvas's own overlays (the empty tab's tray) and ran off a
+// phone's right edge. It is placed once it has a size, and again on a resize; hidden until then so it never flashes.
+// A Portal is not scaled by the toolbar's UI scale, so it needs no zoom undoing. `data-mode-menu` lets the chip's
+// outside-press check count a press on the menu as inside.
 export function ModeMenu({
   mode,
   modes,
@@ -63,13 +72,47 @@ export function ModeMenu({
     if (actionOf(option) === 'switch') onChange(option);
   };
 
-  return (
+  const panel = useRef<HTMLDivElement | null>(null);
+  const [place, setPlace] = useState<{ top: number; left: number } | null>(null);
+  useLayoutEffect(() => {
+    if (fill || !chip) return;
+    const measure = () => {
+      const rect = chip.getBoundingClientRect();
+      const width = panel.current?.offsetWidth ?? 0;
+      const max = window.innerWidth - width - POPOVER_VIEWPORT_MARGIN;
+      setPlace({
+        top: rect.bottom + 6,
+        left: clampIntoRange(rect.left, POPOVER_VIEWPORT_MARGIN, max),
+      });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [fill, chip]);
+
+  const floating = !fill;
+  const style: CSSProperties | undefined = floating
+    ? place
+      ? { top: place.top, left: place.left }
+      : { top: 0, left: 0, visibility: 'hidden' }
+    : hostZoom === 1
+      ? undefined
+      : { zoom: 1 / hostZoom };
+  const position = floating
+    ? 'fixed z-(--z-popover) w-max min-w-56 max-w-[calc(100vw-1rem)]'
+    : 'absolute left-0 top-full z-(--z-popover) mt-1.5 w-max min-w-56 max-w-[calc(100vw-2rem)] max-sm:inset-x-2 max-sm:w-auto';
+
+  const menu = (
     <div
-      ref={attach}
+      ref={(node) => {
+        panel.current = node;
+        attach(node);
+      }}
       {...surfaceProps}
       data-tour-id="editor-mode-menu"
-      style={hostZoom === 1 ? undefined : { zoom: 1 / hostZoom }}
-      className={`absolute left-0 top-full z-(--z-popover) mt-1.5 w-max min-w-56 max-w-[calc(100vw-2rem)] outline-none sm:flex-row sm:p-0 ${fill ? 'max-sm:inset-x-2 max-sm:w-auto' : ''} ${MENU_PANEL}`}
+      data-mode-menu=""
+      style={style}
+      className={`${position} outline-none sm:flex-row sm:p-0 ${MENU_PANEL}`}
     >
       <div className="flex flex-col gap-px max-sm:gap-0.5 sm:w-48 sm:shrink-0 sm:border-r sm:border-slate-200 sm:p-1.5 dark:sm:border-slate-700">
         {modes.map((option) => {
@@ -128,6 +171,7 @@ export function ModeMenu({
       <ModePreview mode={shown} keyLeads={shown === keyLeadsTo} />
     </div>
   );
+  return floating ? <Portal>{menu}</Portal> : menu;
 }
 
 // The preview pane: hidden under 640px, and from assistive technology (the rows carry its words).

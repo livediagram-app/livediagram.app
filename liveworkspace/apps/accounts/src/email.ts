@@ -19,12 +19,18 @@ type Email = {
 };
 
 export async function sendEmail(env: Env, email: Email): Promise<void> {
+  await sendEmailAs(env, email, `liveworkspace <${env.EMAIL_FROM}>`);
+}
+
+// The same, from another sender (`Name <address>`, the migration notice's NOTICE_FROM). Answers the message id, or
+// null when development only logged it.
+export async function sendEmailAs(env: Env, email: Email, from: string): Promise<string | null> {
   if (!env.EMAIL) {
     if (env.ENVIRONMENT !== 'development') throw new Error('the EMAIL binding is not set');
     console.log(`[email] To: ${email.to} Subject: ${email.subject}`);
-    return;
+    return null;
   }
-  await send(env.EMAIL, { from: `liveworkspace <${env.EMAIL_FROM}>`, ...email });
+  return send(env.EMAIL, { from, ...email });
 }
 
 // The sign-in code, in the frame of the app it was asked for through (null: liveworkspace's own sign-in page), so

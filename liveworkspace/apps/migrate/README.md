@@ -1,7 +1,7 @@
 # @liveworkspace/migrate
 
 The one-off move from the historical livediagram.app onto liveworkspace (`docs/migration.md` at the repository
-root, "Tooling"). It runs from a laptop on Node 22.13 or later and is never deployed. Four commands, each reading
+root, "Tooling"). It runs from a laptop on Node 22.13 or later and is never deployed. Five commands, each reading
 what the one before wrote:
 
 ```sh
@@ -11,10 +11,12 @@ corepack pnpm migrate plan <snapshot.sqlite> --clerk <users.csv> --accounts <exi
   [--ledger <ledger.sqlite>] [--oauth-kv <oauth-kv.json>] [--no-pictures] --out <bundle-dir>
 corepack pnpm migrate apply <bundle-dir> --env staging|production --ledger <ledger.sqlite> [--dry-run] [--concurrency 8]
 corepack pnpm migrate verify <bundle-dir> --env staging|production [--out verify.json]
+corepack pnpm migrate notify <bundle-dir>... --snapshot <snapshot.sqlite> --env staging|production \
+  [--clerk <users.csv>] [--preview <dir>] [--only <email>] [--send]
 ```
 
-`snapshot` and `plan` only ever read local files. `apply` is the only command that writes anywhere, and `verify` only
-runs single `SELECT`s.
+`snapshot` and `plan` only ever read local files. `apply` is the only command that writes anywhere, `verify` only
+runs single `SELECT`s, and `notify` only sends email (and only with `--send`).
 
 ## Before you start
 
@@ -78,6 +80,8 @@ wrote, and `apply` prints the parts whose tabs were edited on the new side and l
 | `MIGRATE_ORIGIN_<APP>` (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`) | Each app api's origin for `PUT /api/internal/items/:id/migration` (and livediagram's for `PUT /api/internal/people/:id/migration`).                |
 | `MIGRATION_KEY_<APP>`                                                                | The `MIGRATION_KEY` secret set on that api for the migration.                                                                                      |
 | `MIGRATE_WRANGLER` (optional)                                                        | Another wrangler command; the default is the repository's own.                                                                                     |
+| `MIGRATE_ADMIN_TOKEN`                                                                | `notify`: the accounts Worker's `ADMIN_TOKEN` for that environment. Never printed.                                                                 |
+| `MIGRATE_ACCOUNTS_ORIGIN` (optional)                                                 | `notify`: the accounts Worker's origin; the default is `https://www.liveworkspace.app` (`https://staging.liveworkspace.app` for staging).          |
 
 ## Runbook
 
@@ -93,6 +97,29 @@ wrote, and `apply` prints the parts whose tabs were edited on the new side and l
 6. **Catch-up.** Up to the switch, each new export is planned with `--ledger production-ledger.sqlite` into a new
    bundle folder, then applied with the same ledger. A bundle applies only on the ledger generation it was planned
    at, so plan again if another bundle was applied in between.
+
+7. **Email everyone (once)**, after the switch and step 9's checks (docs/migration.md step 8). Pass every bundle
+   applied, oldest first (a catch-up bundle holds only the accounts new since the one before), and the latest
+   snapshot:
+
+   ```sh
+   corepack pnpm migrate notify bundles/001 bundles/002 --snapshot snapshot.sqlite --env production \
+     --clerk users.csv --preview notice-preview
+   ```
+
+   Without `--send` this is a dry run: the accounts Worker renders each email and sends nothing, `--preview` writes
+   each one's HTML and text to the folder, and it prints how many get each section and anyone a real run would skip
+   (`already_sent`, `no_account`). Read a few previews. Then send one to yourself with `--only <your address> --send`,
+   check it in your inbox, and send the rest with `--send`. It sends 50 addresses a request; the Worker claims each
+   address before sending, so running it again (after a stop, or a refused send) never emails anyone twice. Mind Email
+   Service's daily quota: if a run starts failing on it, stop and run again the next day.
+
+   Who gets what: one email per account the bundles imported or merged onto (by address); the split documents are
+   the person's own live documents in `moved-parts.json`, one line per part outside livediagram, named by its tabs;
+   tokens are old `api_tokens` still live now; teams are joined old `team_members` rows; AI tools are documents the
+   old MCP made (`source` 'mcp') or changes made with a token (`agent_changesets.token_id`, which the old site kept
+   30 days); Drive is an old `drive_connections` row. `--clerk` names accounts the import merged onto (they have no
+   `"user"` row of the bundle's own); without it they get "Hi,".
 
 A stopped `apply` (a failed file, a door down) resumes where it stopped when run again with the same bundle and
 ledger. It never repeats a finished file, object or room. It won't start another bundle until that one has

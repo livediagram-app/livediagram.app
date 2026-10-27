@@ -107,8 +107,8 @@ tray read the same key and follow each other as it changes.
 ## Changing mode
 
 The rail is led by the editor's mode switch, named and full width (`StartModeSwitch`, `ModeMenuChip`), so a tab
-begun in the wrong mode changes before anything is made. It is the only switch: once a tab has content it keeps its
-mode, and the top chrome and the tab menu offer none. Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
+begun in the wrong mode changes before anything is made. It is the same switch as the one beside the menu button,
+which stays the way to change mode once the tab has content. Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
 phone its menu spans the row it opens from, each mode a roomy row with its description across the full width.
 
 A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content

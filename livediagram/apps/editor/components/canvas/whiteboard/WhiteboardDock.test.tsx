@@ -426,13 +426,13 @@ describe('WhiteboardDock position', () => {
     const cls = dock().className.split(' ');
     expect(cls).toEqual(
       expect.arrayContaining([
-        'left-[7.5rem]',
-        'max-w-[calc(100%-8.25rem)]',
-        'phone:left-[4.125rem]',
-        'phone:max-w-[calc(100%-4.875rem)]',
+        'left-[var(--dock-clear,7.5rem)]',
+        'max-w-[calc(100%-var(--dock-clear,7.5rem)-0.75rem)]',
+        'phone:left-[var(--dock-clear,4.125rem)]',
+        'phone:max-w-[calc(100%-var(--dock-clear,4.125rem)-0.75rem)]',
         'lg:left-1/2',
         'lg:-translate-x-1/2',
-        'lg:max-w-[calc(100%-15rem)]',
+        'lg:max-w-[calc(100%-2*var(--dock-clear,7.5rem))]',
       ]),
     );
   });

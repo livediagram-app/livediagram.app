@@ -44,8 +44,9 @@ error: 'rate_limited' }`); `/api/auth/workspace-token`; `/api/auth/end-session` 
    discovery documents at the root.
 3. `/api/account` and below: `handleAccountApi`; after it, the request's telemetry events and Timeline events are
    flushed in `waitUntil`.
-4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account`;
-   `POST /api/auth/end-session` (an app's Worker).
+4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`;
+   `POST /api/auth/internal/migration-notice`; `POST /api/auth/delete-account`; `POST /api/auth/end-session` (an
+   app's Worker).
 5. Anything else under `/api/auth`: the code routes are limited first (below), then Better Auth's handler (for
    Google on an app's address, an instance built for that origin; before `POST /sign-out` and Security's `revoke-*`, every
    app's tokens on the sessions they end are deleted, `endSessionTokensOf`), then three rewrites of the answer: `GET
@@ -118,7 +119,7 @@ Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined
 | `/api/account/tokens…`, `/api/account/internal/tokens{,/verify,/revoke,/live}`, `POST /api/auth/internal/bench-accounts`                                                                                                                | [tokens.md](tokens.md)                                       |
 | `/api/auth/oauth2/*`, `/api/auth/jwks`, `/.well-known/*`, `POST /api/auth/internal/clients`, an app's `/oauth/device*`                                                                                                                  | [oauth.md](oauth.md)                                         |
 | `/api/account/settings…`, `/api/account/profile`, `/api/account/internal/{settings/read,settings/write,profiles/read,profiles/write}`                                                                                                   | [settings-and-profiles.md](settings-and-profiles.md)         |
-| `/api/account/internal/{sightings,milestones/claim,activity,emails,settings/notify}`                                                                                                                                                    | [email.md](email.md)                                         |
+| `/api/account/internal/{sightings,milestones/claim,activity,emails,settings/notify}`, `POST /api/auth/internal/migration-notice`                                                                                                        | [email.md](email.md)                                         |
 | `POST /api/auth/delete-account`                                                                                                                                                                                                         | this file                                                    |
 | `/api/account/workbench/*`, `/api/account/internal/workbench/*`, `/api/account/internal/allowance`                                                                                                                                      | [011-workbench](../../011-workbench/blueprints/workbench.md) |
 
@@ -237,6 +238,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/accounts/src/internal-invitations.ts`     | The invitations waiting for an account, for an app's server (liveworkspace/docs/specs/003-accounts/accounts.md "The API"): `POST /api/account/internal/invitations` `{ userId }`                                   |
 | `liveworkspace/apps/accounts/src/legacy-guests.ts`            | Returning guests of the old livediagram.app (liveworkspace/docs/specs/003-accounts/accounts.md "Returning guests of the old livediagram.app", docs/migration.md step 6)                                            |
 | `liveworkspace/apps/accounts/src/lifecycle-email.ts`          | The onboarding series' emails (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"): a welcome, the Explorer at a week, teams at two weeks, a nudge for someone who hasn't …                     |
+| `liveworkspace/apps/accounts/src/migration-notice.ts`         | The migration notice to everyone moved from the old livediagram.app (liveworkspace/docs/specs/003-accounts/accounts.md "Emails", docs/migration.md step 8)                                                         |
 | `liveworkspace/apps/accounts/src/lifecycle.ts`                | The onboarding series (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"): one per account, not one per app, so a person who uses all four apps hears it once                                  |
 | `liveworkspace/apps/accounts/src/notify.ts`                   | What an app's notification emails need from accounts (liveworkspace/docs/specs/003-accounts/accounts.md "Notification emails"), beside the addresses (account-apps.ts `verifiedEmails`): whet…                     |
 | `liveworkspace/apps/accounts/src/profiles.ts`                 | A person's display name and presence colour (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): what collaborators see on their cursor, their comments and the presence list, the…                     |
@@ -317,6 +319,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Var `BASE_URL`                    | `https://www.liveworkspace.app`                                                                                              |
 | Var `INDEX_URL`                   | `https://www.liveworkspace.app/api/index`                                                                                    |
 | Var `EMAIL_FROM`                  | `sign-in@liveplanner.app`                                                                                                    |
+| Var `NOTICE_FROM`                 | `liveworkspace <support@liveworkspace.app>`                                                                                  |
 | Var `TURNSTILE_SITE_KEY`          | `0x4AAAAAAFlfZFYIdJsaQor8`                                                                                                   |
 | Var `TELEMETRY_URL`               | `https://www.liveworkspace.app/api/telemetry`                                                                                |
 | Var `SIGN_IN_ON_APP_ORIGINS`      | `true`                                                                                                                       |
@@ -348,12 +351,13 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Var `BASE_URL`                    | `https://staging.liveworkspace.app`                                 |
 | Var `INDEX_URL`                   | `https://staging.liveworkspace.app/api/index`                       |
 | Var `EMAIL_FROM`                  | `sign-in@liveplanner.app`                                           |
+| Var `NOTICE_FROM`                 | `liveworkspace <support@liveworkspace.app>`                         |
 | Var `TURNSTILE_SITE_KEY`          | `0x4AAAAAAFlfZFYIdJsaQor8`                                          |
 | Var `TELEMETRY_URL`               | `https://staging.liveworkspace.app/api/telemetry`                   |
 | Var `SIGN_IN_ON_APP_ORIGINS`      | `true`                                                              |
 | Var `GOOGLE_ON_APP_ORIGINS`       | `false`                                                             |
 
-Env fields (`env.ts`): `ADMIN_TOKEN`, `BASE_URL`, `BETTER_AUTH_SECRET`, `DRIVE_KEY_ACCOUNTS`, `EMAIL_FROM`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_ON_APP_ORIGINS`, `INDEX_MERGE_KEY`, `INDEX_URL`, `LEGACY_GUEST_ID_HMAC_SECRET`, `SIGN_IN_ON_APP_ORIGINS`, `TELEMETRY_KEY_LIVEDESIGN`, `TELEMETRY_KEY_LIVEDIAGRAM`, `TELEMETRY_KEY_LIVEDOCUMENTS`, `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_URL`, `TURNSTILE_SECRET_KEY`, `TURNSTILE_SITE_KEY`.
+Env fields (`env.ts`): `ADMIN_TOKEN`, `BASE_URL`, `BETTER_AUTH_SECRET`, `DRIVE_KEY_ACCOUNTS`, `EMAIL_FROM`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_ON_APP_ORIGINS`, `INDEX_MERGE_KEY`, `INDEX_URL`, `LEGACY_GUEST_ID_HMAC_SECRET`, `NOTICE_FROM`, `SIGN_IN_ON_APP_ORIGINS`, `TELEMETRY_KEY_LIVEDESIGN`, `TELEMETRY_KEY_LIVEDIAGRAM`, `TELEMETRY_KEY_LIVEDOCUMENTS`, `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_URL`, `TURNSTILE_SECRET_KEY`, `TURNSTILE_SITE_KEY`.
 
 ## Data and persistence
 
@@ -361,7 +365,7 @@ One D1 database (`AUTH_DB`). Each table's indexes, and what writes and reads it,
 owns it: Better Auth's own tables and `sign_in_handoff` in [sign-in.md](sign-in.md) and [oauth.md](oauth.md); `guest_seen`,
 `legacy_guest` in [sessions-and-guests.md](sessions-and-guests.md); `team`, `team_member`, `team_seq` in [teams.md](teams.md);
 `api_token` in [tokens.md](tokens.md); `settings`, `profile` in [settings-and-profiles.md](settings-and-profiles.md);
-`email_lifecycle`, `account_app` in [email.md](email.md). `pending_purges` (`pending_purges_due (lastAttemptAt)`) and
+`email_lifecycle`, `account_app`, `migration_notice` in [email.md](email.md). `pending_purges` (`pending_purges_due (lastAttemptAt)`) and
 `index_timeline_outbox` (`index_timeline_outbox_order (createdAt)`) are written and read as above.
 
 Migrations, in order:
@@ -379,6 +383,7 @@ Migrations, in order:
 - `0011_legacy_guest.sql`
 - `0012_profile_picture.sql`
 - `0013_legacy_guest_claiming.sql`
+- `0014_migration_notice.sql`
 
 | Table                   | Columns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Created in                  |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
@@ -390,6 +395,7 @@ Migrations, in order:
 | `index_timeline_outbox` | `id`, `body`, `createdAt`, `attempts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `0004_pending_purges.sql`   |
 | `jwks`                  | `id`, `publicKey`, `privateKey`, `createdAt`, `expiresAt`, `alg`, `crv`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `0001_better_auth.sql`      |
 | `legacy_guest`          | `id`, `firstSeenAt`, `claimedAt`, `claimedBy`, `claimingBy (0013)`, `claimingUntil (0013)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | `0011_legacy_guest.sql`     |
+| `migration_notice`      | `email`, `claimedAt`, `sentAt`, `messageId`, `error`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `0014_migration_notice.sql` |
 | `oauthAccessToken`      | `id`, `token`, `clientId`, `sessionId`, `userId`, `referenceId`, `authorizationCodeId`, `resources`, `requestedUserInfoClaims`, `refreshId`, `expiresAt`, `createdAt`, `revoked`, `confirmation`, `scopes`                                                                                                                                                                                                                                                                                                                                                                      | `0001_better_auth.sql`      |
 | `oauthClient`           | `id`, `clientId`, `clientSecret`, `clientDiscoveryId`, `disabled`, `skipConsent`, `enableEndSession`, `subjectType`, `scopes`, `clientCredentialsScopes`, `userId`, `createdAt`, `updatedAt`, `name`, `uri`, `icon`, `contacts`, `tos`, `policy`, `softwareId`, `softwareVersion`, `softwareStatement`, `redirectUris`, `postLogoutRedirectUris`, `backchannelLogoutUri`, `backchannelLogoutSessionRequired`, `tokenEndpointAuthMethod`, `applicationType`, `jwks`, `jwksUri`, `grantTypes`, `responseTypes`, `requirePKCE`, `dpopBoundAccessTokens`, `referenceId`, `metadata` | `0001_better_auth.sql`      |
 | `oauthClientAssertion`  | `id`, `expiresAt`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `0001_better_auth.sql`      |
@@ -411,142 +417,148 @@ Migrations, in order:
 
 ## Constants and configuration: named constants
 
-| Constant                            | Value                                                                    | File                 |
-| ----------------------------------- | ------------------------------------------------------------------------ | -------------------- |
-| `ACCOUNT_API_PATH`                  | `'/api/account'`                                                         | `account-api.ts`     |
-| `MAX_EMAIL_IDS`                     | `100`                                                                    | `account-apps.ts`    |
-| `AUTH_BASE_PATH`                    | `'/api/auth'`                                                            | `auth-options.ts`    |
-| `SEND_CODE_PATH`                    | `'/email-otp/send-verification-otp'`                                     | `auth-options.ts`    |
-| `SIGN_IN_CODE_PATH`                 | `'/sign-in/email-otp'`                                                   | `auth-options.ts`    |
-| `UNUSED_CODE_PATHS`                 | `(object or list, see file)`                                             | `auth-options.ts`    |
-| `NAME_MAX_LENGTH`                   | `80`                                                                     | `auth-options.ts`    |
-| `BENCH_ACCOUNTS_PATH`               | `${AUTH_BASE_PATH}/internal/bench-accounts`                              | `bench-accounts.ts`  |
-| `BENCH_ACCOUNTS_MAX`                | `200`                                                                    | `bench-accounts.ts`  |
-| `CLIENTS_PATH`                      | `${AUTH_BASE_PATH}/internal/clients`                                     | `clients.ts`         |
-| `DELETE_ACCOUNT_PATH`               | `'/delete-account'`                                                      | `delete-account.ts`  |
-| `INK`                               | `'#0f172a'`                                                              | `email-layout.ts`    |
-| `MUTED`                             | `'#475569'`                                                              | `email-layout.ts`    |
-| `GUEST_IDLE_MS`                     | `400 * DAY_MS`                                                           | `guest-sweep.ts`     |
-| `GUEST_SWEEP_LIMIT`                 | `500`                                                                    | `guest-sweep.ts`     |
-| `GUEST_PATH`                        | `'/guest'`                                                               | `guests.ts`          |
-| `GUEST_COOKIE`                      | `'lw_guest'`                                                             | `guests.ts`          |
-| `GUEST_TOKEN_TTL_SECONDS`           | `365 * 24 * 60 * 60`                                                     | `guests.ts`          |
-| `AUTHORIZE_PATH`                    | `'/oauth2/authorize'`                                                    | `guests.ts`          |
-| `HANDOFF_PATH`                      | `'/handoff'`                                                             | `handoff.ts`         |
-| `HANDOFF_START_PATH`                | `'/handoff/start'`                                                       | `handoff.ts`         |
-| `HANDOFF_NONCE_COOKIE`              | `'lw_handoff'`                                                           | `handoff.ts`         |
-| `HANDOFF_BIND_PARAM`                | `'handoff'`                                                              | `handoff.ts`         |
-| `HANDOFF_TTL_SECONDS`               | `60`                                                                     | `handoff.ts`         |
-| `HANDOFF_NONCE_MAX_AGE_SECONDS`     | `900`                                                                    | `handoff.ts`         |
-| `GUEST_ID`                          | `/^guest_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/` | `ids.ts`             |
-| `USER_ID`                           | `/^user_[A-Za-z0-9]{1,64}$/`                                             | `ids.ts`             |
-| `PURGE_RETRY_CRON`                  | `'*/15 * * * *'`                                                         | `index-purge.ts`     |
-| `PURGES_PER_RUN`                    | `25`                                                                     | `index-purge.ts`     |
-| `TIMELINE_BATCH`                    | `100`                                                                    | `index-timeline.ts`  |
-| `TIMELINE_SCOPES_MAX`               | `250`                                                                    | `index-timeline.ts`  |
-| `TIMELINE_CALLS_PER_RUN`            | `10`                                                                     | `index-timeline.ts`  |
-| `TIMELINE_MAX_ATTEMPTS`             | `96`                                                                     | `index-timeline.ts`  |
-| `TIMELINE_OUTBOX_MAX`               | `5_000`                                                                  | `index-timeline.ts`  |
-| `LEGACY_CLAIM_HOLD_MS`              | `60_000`                                                                 | `legacy-guests.ts`   |
-| `ACTIVATION_DELAY_MS`               | `3 * DAY_MS`                                                             | `lifecycle.ts`       |
-| `WINBACK_QUIET_MS`                  | `4 * WEEK_MS`                                                            | `lifecycle.ts`       |
-| `SWEEP_LIMIT`                       | `100`                                                                    | `lifecycle.ts`       |
-| `MAX_SEND_ATTEMPTS`                 | `3`                                                                      | `lifecycle.ts`       |
-| `STAGE_ORDER`                       | `['welcome', 'activation', 'week1', 'week2', 'winback']`                 | `lifecycle.ts`       |
-| `MAX_NOTIFY_OWNERS`                 | `100`                                                                    | `notify.ts`          |
-| `MAX_NOTIFY_KEYS`                   | `8`                                                                      | `notify.ts`          |
-| `MAX_PROFILE_IDS`                   | `100`                                                                    | `profiles.ts`        |
-| `PROFILE_NAME_MAX`                  | `120`                                                                    | `profiles.ts`        |
-| `PROFILE_COLOR_MAX`                 | `64`                                                                     | `profiles.ts`        |
-| `RESOURCES`                         | `(object or list, see file)`                                             | `resources.ts`       |
-| `ADMIN_HEADER`                      | `'x-liveworkspace-admin'`                                                | `secrets.ts`         |
-| `SETTINGS_MAX_BYTES`                | `16_384`                                                                 | `settings.ts`        |
-| `SIGN_IN_OPTIONS_PATH`              | `'/sign-in-options'`                                                     | `sign-in-options.ts` |
-| `TEAM_NAME_MAX_LENGTH`              | `80`                                                                     | `teams.ts`           |
-| `MAX_TEAMS_PER_ACCOUNT`             | `50`                                                                     | `teams.ts`           |
-| `MAX_MEMBERS_PER_TEAM`              | `200`                                                                    | `teams.ts`           |
-| `ORGANISATION_MAX_LENGTH`           | `80`                                                                     | `teams.ts`           |
-| `INVITE_LINK_TTL_MS`                | `7 * 24 * 60 * 60 * 1000`                                                | `teams.ts`           |
-| `REMINDER_AGES_MS`                  | `[1 * DAY_MS, 7 * DAY_MS, 21 * DAY_MS] as const`                         | `teams.ts`           |
-| `INVITATION_TTL_MS`                 | `28 * DAY_MS`                                                            | `teams.ts`           |
-| `EXPIRE_BATCH`                      | `500`                                                                    | `teams.ts`           |
-| `REMINDER_BATCH`                    | `100`                                                                    | `teams.ts`           |
-| `MAX_REMINDER_ATTEMPTS`             | `3`                                                                      | `teams.ts`           |
-| `LIST_PREVIEW_MEMBERS`              | `4`                                                                      | `teams.ts`           |
-| `DELETED_MEMBER_EMAIL`              | `'Deleted account'`                                                      | `teams.ts`           |
-| `CHANGES_PAGE_SIZE`                 | `500`                                                                    | `teams.ts`           |
-| `TELEMETRY_TIMEOUT_MS`              | `2_000`                                                                  | `telemetry.ts`       |
-| `TOKEN_EXPIRY_WARNING_MS`           | `7 * DAY_MS`                                                             | `token-expiry.ts`    |
-| `TOKEN_EXPIRY_SWEEP_LIMIT`          | `100`                                                                    | `token-expiry.ts`    |
-| `TOKEN_EXPIRY_NOTE_LIMIT`           | `500`                                                                    | `token-expiry.ts`    |
-| `API_TOKEN_PREFIX`                  | `'lwt_'`                                                                 | `tokens.ts`          |
-| `LEGACY_API_TOKEN_PREFIX`           | `'lvd_'`                                                                 | `tokens.ts`          |
-| `MAX_API_TOKENS_PER_ACCOUNT`        | `20`                                                                     | `tokens.ts`          |
-| `TOKEN_NAME_MAX_LENGTH`             | `80`                                                                     | `tokens.ts`          |
-| `LAST_USED_STAMP_WINDOW_MS`         | `60_000`                                                                 | `tokens.ts`          |
-| `MAX_LIVE_TOKEN_IDS`                | `100`                                                                    | `tokens.ts`          |
-| `WORKBENCH_TICKET_TTL_MS`           | `60_000`                                                                 | `routes.ts`          |
-| `WORKBENCH_SESSION_TTL_MS`          | `8 * 60 * 60 * 1000`                                                     | `routes.ts`          |
-| `WORKBENCH_TICKETS_PER_MINUTE`      | `30`                                                                     | `routes.ts`          |
-| `WORKBENCH_NAME_MAX_LENGTH`         | `40`                                                                     | `routes.ts`          |
-| `WORKBENCH_ORIGIN_MAX_LENGTH`       | `255`                                                                    | `routes.ts`          |
-| `WORKBENCH_POLL_INTERVAL_S`         | `5`                                                                      | `routes.ts`          |
-| `WORKBENCH_SESSION_PREFIX`          | `'lvw_'`                                                                 | `store.ts`           |
-| `WORKBENCH_TICKET_BYTES`            | `16`                                                                     | `store.ts`           |
-| `WORKBENCH_PAIRING_CODE_BYTES`      | `16`                                                                     | `store.ts`           |
-| `WORKBENCH_SESSION_SECRET_BYTES`    | `32`                                                                     | `store.ts`           |
-| `WORKBENCH_PAIRING_TTL_MS`          | `10 * 60 * 1000`                                                         | `store.ts`           |
-| `WORKBENCH_SESSION_GRACE_MS`        | `24 * 60 * 60 * 1000`                                                    | `store.ts`           |
-| `WORKBENCH_QUOTA_MAX`               | `1_000`                                                                  | `store.ts`           |
-| `WORKBENCH_SESSION_ROOMS_MAX`       | `500`                                                                    | `store.ts`           |
-| `WORKBENCH_TICKET_PATTERN`          | `/^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/`                                    | `store.ts`           |
-| `WORKBENCH_SESSION_PATTERN`         | `/^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/`                                | `store.ts`           |
-| `WORKBENCH_CODE_PATTERN`            | `/^[A-Za-z0-9_-]{22}$/`                                                  | `store.ts`           |
-| `WORKSPACE_TOKEN_PATH`              | `'/workspace-token'`                                                     | `workspace-token.ts` |
-| `WORKSPACE_TOKEN_TTL_SECONDS`       | `15 * 60`                                                                | `workspace-token.ts` |
-| `ACCOUNT_NAME_MAX_LENGTH`           | `64`                                                                     | `account-name.ts`    |
-| `ACCOUNT_COLOUR_MAX_LENGTH`         | `64`                                                                     | `account-name.ts`    |
-| `TOKEN_VALID_FOR_MS`                | `60_000`                                                                 | `account.ts`         |
-| `TOKEN_INVALID_FOR_MS`              | `10_000`                                                                 | `account.ts`         |
-| `MAX_LIVE_TOKEN_IDS`                | `100`                                                                    | `account.ts`         |
-| `MAX_PROFILE_IDS`                   | `100`                                                                    | `account.ts`         |
-| `MAX_EMAIL_IDS`                     | `100`                                                                    | `account.ts`         |
-| `MAX_NOTIFY_OWNERS`                 | `100`                                                                    | `account.ts`         |
-| `INVITATIONS_TTL_MS`                | `30_000`                                                                 | `invitations.ts`     |
-| `INVITATIONS_CACHE_MAX`             | `500`                                                                    | `invitations.ts`     |
-| `MILESTONE_ITEM_COUNTS`             | `[10]`                                                                   | `notify.ts`          |
-| `JOIN_NOTIFY_THROTTLE_MS`           | `15 * 60 * 1000`                                                         | `notify.ts`          |
-| `NOTIFY_EMAIL_DEDUPE_MS`            | `24 * 60 * 60 * 1000`                                                    | `notify.ts`          |
-| `NOTIFY_EMAILS_PER_SENDER_PER_HOUR` | `60`                                                                     | `notify.ts`          |
-| `NOTIFY_RATE_WINDOW_MS`             | `60 * 60 * 1000`                                                         | `notify.ts`          |
-| `GUEST_STATE_PATTERN`               | `/^[A-Za-z0-9_-]{8,200}$/`                                               | `oauth.ts`           |
-| `SILENT_SESSION_KEY`                | `'liveworkspace:silent-sign-in'`                                         | `silent.ts`          |
-| `SILENT_GUARD_MAX_AGE_SECONDS`      | `120`                                                                    | `silent.ts`          |
-| `SIGNED_OUT_MAX_AGE_SECONDS`        | `400 * 24 * 3600`                                                        | `silent.ts`          |
-| `SILENT_RETURN_MAX_LENGTH`          | `1500`                                                                   | `silent.ts`          |
-| `WORKBENCH_SESSION_VALID_FOR_MS`    | `60_000`                                                                 | `workbench.ts`       |
-| `WORKBENCH_SESSION_INVALID_FOR_MS`  | `10_000`                                                                 | `workbench.ts`       |
-| `WORKBENCH_SESSION_CACHE_MAX`       | `1_000`                                                                  | `workbench.ts`       |
-| `EMAIL_SEND_TIMEOUT_MS`             | `10_000`                                                                 | `index.ts`           |
-| `NOTIFICATION_ROWS`                 | `(object or list, see file)`                                             | `account.ts`         |
-| `IN_APP_ROWS`                       | `(object or list, see file)`                                             | `account.ts`         |
-| `PRIVACY_ROWS`                      | `(object or list, see file)`                                             | `account.ts`         |
-| `ACCESSIBILITY_ROWS`                | `(object or list, see file)`                                             | `account.ts`         |
-| `ACCOUNT_TOGGLES`                   | `(object or list, see file)`                                             | `account.ts`         |
-| `ACCOUNT_KEYS`                      | `new Set(ACCOUNT_TOGGLES.map((row) => row.key))`                         | `account.ts`         |
-| `EDITOR_ONLY_KEYS`                  | `(object or list, see file)`                                             | `account.ts`         |
-| `CATALOGUE`                         | `${JSON.stringify(catalogue, null, 2)}`                                  | `catalogue.ts`       |
-| `CATALOGUE`                         | `(object or list, see file)`                                             | `livedesign.ts`      |
-| `CATALOGUE`                         | `(object or list, see file)`                                             | `livediagram.ts`     |
-| `CATALOGUE`                         | `(object or list, see file)`                                             | `livedocuments.ts`   |
-| `CATALOGUE`                         | `(object or list, see file)`                                             | `liveplanner.ts`     |
-| `PLATFORM_PLACES`                   | `(object or list, see file)`                                             | `common.ts`          |
-| `DEVICE_PREFERENCES`                | `(object or list, see file)`                                             | `device.ts`          |
-| `COMMON_SETTING_KEYS`               | `(object or list, see file)`                                             | `index.ts`           |
-| `ALL_SETTING_KEYS`                  | `(object or list, see file)`                                             | `index.ts`           |
-| `PRESENCE_COLOURS`                  | `(object or list, see file)`                                             | `presence.ts`        |
-| `PRESENCE_COLOUR_VALUES`            | `PRESENCE_COLOURS.map((c) => c.value)`                                   | `presence.ts`        |
-| `PROFILE_NAME_MAX`                  | `120`                                                                    | `presence.ts`        |
+| Constant                            | Value                                                                    | File                  |
+| ----------------------------------- | ------------------------------------------------------------------------ | --------------------- |
+| `ACCOUNT_API_PATH`                  | `'/api/account'`                                                         | `account-api.ts`      |
+| `MAX_EMAIL_IDS`                     | `100`                                                                    | `account-apps.ts`     |
+| `AUTH_BASE_PATH`                    | `'/api/auth'`                                                            | `auth-options.ts`     |
+| `SEND_CODE_PATH`                    | `'/email-otp/send-verification-otp'`                                     | `auth-options.ts`     |
+| `SIGN_IN_CODE_PATH`                 | `'/sign-in/email-otp'`                                                   | `auth-options.ts`     |
+| `UNUSED_CODE_PATHS`                 | `(object or list, see file)`                                             | `auth-options.ts`     |
+| `NAME_MAX_LENGTH`                   | `80`                                                                     | `auth-options.ts`     |
+| `BENCH_ACCOUNTS_PATH`               | `${AUTH_BASE_PATH}/internal/bench-accounts`                              | `bench-accounts.ts`   |
+| `BENCH_ACCOUNTS_MAX`                | `200`                                                                    | `bench-accounts.ts`   |
+| `CLIENTS_PATH`                      | `${AUTH_BASE_PATH}/internal/clients`                                     | `clients.ts`          |
+| `DELETE_ACCOUNT_PATH`               | `'/delete-account'`                                                      | `delete-account.ts`   |
+| `INK`                               | `'#0f172a'`                                                              | `email-layout.ts`     |
+| `MUTED`                             | `'#475569'`                                                              | `email-layout.ts`     |
+| `GUEST_IDLE_MS`                     | `400 * DAY_MS`                                                           | `guest-sweep.ts`      |
+| `GUEST_SWEEP_LIMIT`                 | `500`                                                                    | `guest-sweep.ts`      |
+| `GUEST_PATH`                        | `'/guest'`                                                               | `guests.ts`           |
+| `GUEST_COOKIE`                      | `'lw_guest'`                                                             | `guests.ts`           |
+| `GUEST_TOKEN_TTL_SECONDS`           | `365 * 24 * 60 * 60`                                                     | `guests.ts`           |
+| `AUTHORIZE_PATH`                    | `'/oauth2/authorize'`                                                    | `guests.ts`           |
+| `HANDOFF_PATH`                      | `'/handoff'`                                                             | `handoff.ts`          |
+| `HANDOFF_START_PATH`                | `'/handoff/start'`                                                       | `handoff.ts`          |
+| `HANDOFF_NONCE_COOKIE`              | `'lw_handoff'`                                                           | `handoff.ts`          |
+| `HANDOFF_BIND_PARAM`                | `'handoff'`                                                              | `handoff.ts`          |
+| `HANDOFF_TTL_SECONDS`               | `60`                                                                     | `handoff.ts`          |
+| `HANDOFF_NONCE_MAX_AGE_SECONDS`     | `900`                                                                    | `handoff.ts`          |
+| `GUEST_ID`                          | `/^guest_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/` | `ids.ts`              |
+| `USER_ID`                           | `/^user_[A-Za-z0-9]{1,64}$/`                                             | `ids.ts`              |
+| `PURGE_RETRY_CRON`                  | `'*/15 * * * *'`                                                         | `index-purge.ts`      |
+| `PURGES_PER_RUN`                    | `25`                                                                     | `index-purge.ts`      |
+| `TIMELINE_BATCH`                    | `100`                                                                    | `index-timeline.ts`   |
+| `TIMELINE_SCOPES_MAX`               | `250`                                                                    | `index-timeline.ts`   |
+| `TIMELINE_CALLS_PER_RUN`            | `10`                                                                     | `index-timeline.ts`   |
+| `TIMELINE_MAX_ATTEMPTS`             | `96`                                                                     | `index-timeline.ts`   |
+| `TIMELINE_OUTBOX_MAX`               | `5_000`                                                                  | `index-timeline.ts`   |
+| `LEGACY_CLAIM_HOLD_MS`              | `60_000`                                                                 | `legacy-guests.ts`    |
+| `ACTIVATION_DELAY_MS`               | `3 * DAY_MS`                                                             | `lifecycle.ts`        |
+| `WINBACK_QUIET_MS`                  | `4 * WEEK_MS`                                                            | `lifecycle.ts`        |
+| `SWEEP_LIMIT`                       | `100`                                                                    | `lifecycle.ts`        |
+| `MAX_SEND_ATTEMPTS`                 | `3`                                                                      | `lifecycle.ts`        |
+| `STAGE_ORDER`                       | `['welcome', 'activation', 'week1', 'week2', 'winback']`                 | `lifecycle.ts`        |
+| `MIGRATION_NOTICE_PATH`             | `${AUTH_BASE_PATH}/internal/migration-notice`                            | `migration-notice.ts` |
+| `NOTICE_BATCH_MAX`                  | `50`                                                                     | `migration-notice.ts` |
+| `NOTICE_DOCUMENTS_MAX`              | `50`                                                                     | `migration-notice.ts` |
+| `NOTICE_PARTS_MAX`                  | `4`                                                                      | `migration-notice.ts` |
+| `NOTICE_NAME_MAX`                   | `120`                                                                    | `migration-notice.ts` |
+| `NOTICE_TEXT_MAX`                   | `200`                                                                    | `migration-notice.ts` |
+| `MAX_NOTIFY_OWNERS`                 | `100`                                                                    | `notify.ts`           |
+| `MAX_NOTIFY_KEYS`                   | `8`                                                                      | `notify.ts`           |
+| `MAX_PROFILE_IDS`                   | `100`                                                                    | `profiles.ts`         |
+| `PROFILE_NAME_MAX`                  | `120`                                                                    | `profiles.ts`         |
+| `PROFILE_COLOR_MAX`                 | `64`                                                                     | `profiles.ts`         |
+| `RESOURCES`                         | `(object or list, see file)`                                             | `resources.ts`        |
+| `ADMIN_HEADER`                      | `'x-liveworkspace-admin'`                                                | `secrets.ts`          |
+| `SETTINGS_MAX_BYTES`                | `16_384`                                                                 | `settings.ts`         |
+| `SIGN_IN_OPTIONS_PATH`              | `'/sign-in-options'`                                                     | `sign-in-options.ts`  |
+| `TEAM_NAME_MAX_LENGTH`              | `80`                                                                     | `teams.ts`            |
+| `MAX_TEAMS_PER_ACCOUNT`             | `50`                                                                     | `teams.ts`            |
+| `MAX_MEMBERS_PER_TEAM`              | `200`                                                                    | `teams.ts`            |
+| `ORGANISATION_MAX_LENGTH`           | `80`                                                                     | `teams.ts`            |
+| `INVITE_LINK_TTL_MS`                | `7 * 24 * 60 * 60 * 1000`                                                | `teams.ts`            |
+| `REMINDER_AGES_MS`                  | `[1 * DAY_MS, 7 * DAY_MS, 21 * DAY_MS] as const`                         | `teams.ts`            |
+| `INVITATION_TTL_MS`                 | `28 * DAY_MS`                                                            | `teams.ts`            |
+| `EXPIRE_BATCH`                      | `500`                                                                    | `teams.ts`            |
+| `REMINDER_BATCH`                    | `100`                                                                    | `teams.ts`            |
+| `MAX_REMINDER_ATTEMPTS`             | `3`                                                                      | `teams.ts`            |
+| `LIST_PREVIEW_MEMBERS`              | `4`                                                                      | `teams.ts`            |
+| `DELETED_MEMBER_EMAIL`              | `'Deleted account'`                                                      | `teams.ts`            |
+| `CHANGES_PAGE_SIZE`                 | `500`                                                                    | `teams.ts`            |
+| `TELEMETRY_TIMEOUT_MS`              | `2_000`                                                                  | `telemetry.ts`        |
+| `TOKEN_EXPIRY_WARNING_MS`           | `7 * DAY_MS`                                                             | `token-expiry.ts`     |
+| `TOKEN_EXPIRY_SWEEP_LIMIT`          | `100`                                                                    | `token-expiry.ts`     |
+| `TOKEN_EXPIRY_NOTE_LIMIT`           | `500`                                                                    | `token-expiry.ts`     |
+| `API_TOKEN_PREFIX`                  | `'lwt_'`                                                                 | `tokens.ts`           |
+| `LEGACY_API_TOKEN_PREFIX`           | `'lvd_'`                                                                 | `tokens.ts`           |
+| `MAX_API_TOKENS_PER_ACCOUNT`        | `20`                                                                     | `tokens.ts`           |
+| `TOKEN_NAME_MAX_LENGTH`             | `80`                                                                     | `tokens.ts`           |
+| `LAST_USED_STAMP_WINDOW_MS`         | `60_000`                                                                 | `tokens.ts`           |
+| `MAX_LIVE_TOKEN_IDS`                | `100`                                                                    | `tokens.ts`           |
+| `WORKBENCH_TICKET_TTL_MS`           | `60_000`                                                                 | `routes.ts`           |
+| `WORKBENCH_SESSION_TTL_MS`          | `8 * 60 * 60 * 1000`                                                     | `routes.ts`           |
+| `WORKBENCH_TICKETS_PER_MINUTE`      | `30`                                                                     | `routes.ts`           |
+| `WORKBENCH_NAME_MAX_LENGTH`         | `40`                                                                     | `routes.ts`           |
+| `WORKBENCH_ORIGIN_MAX_LENGTH`       | `255`                                                                    | `routes.ts`           |
+| `WORKBENCH_POLL_INTERVAL_S`         | `5`                                                                      | `routes.ts`           |
+| `WORKBENCH_SESSION_PREFIX`          | `'lvw_'`                                                                 | `store.ts`            |
+| `WORKBENCH_TICKET_BYTES`            | `16`                                                                     | `store.ts`            |
+| `WORKBENCH_PAIRING_CODE_BYTES`      | `16`                                                                     | `store.ts`            |
+| `WORKBENCH_SESSION_SECRET_BYTES`    | `32`                                                                     | `store.ts`            |
+| `WORKBENCH_PAIRING_TTL_MS`          | `10 * 60 * 1000`                                                         | `store.ts`            |
+| `WORKBENCH_SESSION_GRACE_MS`        | `24 * 60 * 60 * 1000`                                                    | `store.ts`            |
+| `WORKBENCH_QUOTA_MAX`               | `1_000`                                                                  | `store.ts`            |
+| `WORKBENCH_SESSION_ROOMS_MAX`       | `500`                                                                    | `store.ts`            |
+| `WORKBENCH_TICKET_PATTERN`          | `/^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/`                                    | `store.ts`            |
+| `WORKBENCH_SESSION_PATTERN`         | `/^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/`                                | `store.ts`            |
+| `WORKBENCH_CODE_PATTERN`            | `/^[A-Za-z0-9_-]{22}$/`                                                  | `store.ts`            |
+| `WORKSPACE_TOKEN_PATH`              | `'/workspace-token'`                                                     | `workspace-token.ts`  |
+| `WORKSPACE_TOKEN_TTL_SECONDS`       | `15 * 60`                                                                | `workspace-token.ts`  |
+| `ACCOUNT_NAME_MAX_LENGTH`           | `64`                                                                     | `account-name.ts`     |
+| `ACCOUNT_COLOUR_MAX_LENGTH`         | `64`                                                                     | `account-name.ts`     |
+| `TOKEN_VALID_FOR_MS`                | `60_000`                                                                 | `account.ts`          |
+| `TOKEN_INVALID_FOR_MS`              | `10_000`                                                                 | `account.ts`          |
+| `MAX_LIVE_TOKEN_IDS`                | `100`                                                                    | `account.ts`          |
+| `MAX_PROFILE_IDS`                   | `100`                                                                    | `account.ts`          |
+| `MAX_EMAIL_IDS`                     | `100`                                                                    | `account.ts`          |
+| `MAX_NOTIFY_OWNERS`                 | `100`                                                                    | `account.ts`          |
+| `INVITATIONS_TTL_MS`                | `30_000`                                                                 | `invitations.ts`      |
+| `INVITATIONS_CACHE_MAX`             | `500`                                                                    | `invitations.ts`      |
+| `MILESTONE_ITEM_COUNTS`             | `[10]`                                                                   | `notify.ts`           |
+| `JOIN_NOTIFY_THROTTLE_MS`           | `15 * 60 * 1000`                                                         | `notify.ts`           |
+| `NOTIFY_EMAIL_DEDUPE_MS`            | `24 * 60 * 60 * 1000`                                                    | `notify.ts`           |
+| `NOTIFY_EMAILS_PER_SENDER_PER_HOUR` | `60`                                                                     | `notify.ts`           |
+| `NOTIFY_RATE_WINDOW_MS`             | `60 * 60 * 1000`                                                         | `notify.ts`           |
+| `GUEST_STATE_PATTERN`               | `/^[A-Za-z0-9_-]{8,200}$/`                                               | `oauth.ts`            |
+| `SILENT_SESSION_KEY`                | `'liveworkspace:silent-sign-in'`                                         | `silent.ts`           |
+| `SILENT_GUARD_MAX_AGE_SECONDS`      | `120`                                                                    | `silent.ts`           |
+| `SIGNED_OUT_MAX_AGE_SECONDS`        | `400 * 24 * 3600`                                                        | `silent.ts`           |
+| `SILENT_RETURN_MAX_LENGTH`          | `1500`                                                                   | `silent.ts`           |
+| `WORKBENCH_SESSION_VALID_FOR_MS`    | `60_000`                                                                 | `workbench.ts`        |
+| `WORKBENCH_SESSION_INVALID_FOR_MS`  | `10_000`                                                                 | `workbench.ts`        |
+| `WORKBENCH_SESSION_CACHE_MAX`       | `1_000`                                                                  | `workbench.ts`        |
+| `EMAIL_SEND_TIMEOUT_MS`             | `10_000`                                                                 | `index.ts`            |
+| `NOTIFICATION_ROWS`                 | `(object or list, see file)`                                             | `account.ts`          |
+| `IN_APP_ROWS`                       | `(object or list, see file)`                                             | `account.ts`          |
+| `PRIVACY_ROWS`                      | `(object or list, see file)`                                             | `account.ts`          |
+| `ACCESSIBILITY_ROWS`                | `(object or list, see file)`                                             | `account.ts`          |
+| `ACCOUNT_TOGGLES`                   | `(object or list, see file)`                                             | `account.ts`          |
+| `ACCOUNT_KEYS`                      | `new Set(ACCOUNT_TOGGLES.map((row) => row.key))`                         | `account.ts`          |
+| `EDITOR_ONLY_KEYS`                  | `(object or list, see file)`                                             | `account.ts`          |
+| `CATALOGUE`                         | `${JSON.stringify(catalogue, null, 2)}`                                  | `catalogue.ts`        |
+| `CATALOGUE`                         | `(object or list, see file)`                                             | `livedesign.ts`       |
+| `CATALOGUE`                         | `(object or list, see file)`                                             | `livediagram.ts`      |
+| `CATALOGUE`                         | `(object or list, see file)`                                             | `livedocuments.ts`    |
+| `CATALOGUE`                         | `(object or list, see file)`                                             | `liveplanner.ts`      |
+| `PLATFORM_PLACES`                   | `(object or list, see file)`                                             | `common.ts`           |
+| `DEVICE_PREFERENCES`                | `(object or list, see file)`                                             | `device.ts`           |
+| `COMMON_SETTING_KEYS`               | `(object or list, see file)`                                             | `index.ts`            |
+| `ALL_SETTING_KEYS`                  | `(object or list, see file)`                                             | `index.ts`            |
+| `PRESENCE_COLOURS`                  | `(object or list, see file)`                                             | `presence.ts`         |
+| `PRESENCE_COLOUR_VALUES`            | `PRESENCE_COLOURS.map((c) => c.value)`                                   | `presence.ts`         |
+| `PROFILE_NAME_MAX`                  | `120`                                                                    | `presence.ts`         |
 
 ## Testing
 
@@ -560,6 +572,7 @@ Worker as a whole:
 | `liveworkspace/apps/accounts/src/drive-disconnect.test.ts` (4)        | `disconnectDrive`: done, skipped, failed, a `404`                                                                                                                            |
 | `liveworkspace/apps/accounts/src/telemetry.test.ts` (7)               | server events: held, bounded, one batch per app, keys                                                                                                                        |
 | `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16)         | API token and team events; sending to the index; the outbox's bound                                                                                                          |
+| `liveworkspace/apps/accounts/src/migration-notice.test.ts`            | the migration notice: the admin token, every field checked, the copy and its sections, escaping, a dry run, the claim                                                        |
 | `liveworkspace/apps/accounts/src/ids.test.ts` (1)                     | account ids keep the `user_` shape                                                                                                                                           |
 | `liveworkspace/apps/accounts/scripts/import-clerk-users.test.ts`      | the Clerk import ([012-migrate](../../012-migrate/blueprints/migrate.md))                                                                                                    |
 | `packages/auth-client/src/*.test.ts`                                  | each app's side: OAuth, silent sign-in, return paths, verification, the account API client, invitations, notify rules, account names, the workbench client, the e2e stand-in |
