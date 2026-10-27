@@ -6,9 +6,6 @@ export interface Env {
   BASE_URL: string;
   // The From address, on a domain onboarded to Cloudflare Email Service (liveworkspace/docs/specs/003-accounts/email.md).
   EMAIL_FROM: string;
-  // The migration notice's sender (`Name <address>`, src/migration-notice.ts): liveworkspace.app's, not EMAIL_FROM's.
-  // Unset, the notice can only be previewed.
-  NOTICE_FROM?: string;
   TURNSTILE_SITE_KEY: string;
 
   BETTER_AUTH_SECRET: string;

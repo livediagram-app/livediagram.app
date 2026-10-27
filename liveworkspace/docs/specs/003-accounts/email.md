@@ -38,10 +38,6 @@ repository root, step 7):
 | livedocuments' api | `livedocuments <hello@livedocuments.app>`                   |
 | livedesign's api   | `livedesign <hello@livedesign.app>`                         |
 
-accounts also has a second sender, `NOTICE_FROM` (`liveworkspace <support@liveworkspace.app>`, production and staging),
-for the one migration notice to everyone moved from the old livediagram.app ([accounts.md](accounts.md#emails));
-liveworkspace.app is onboarded to Email Service for it.
-
 To move a sender to its own domain, onboard the domain to Email Service, change `EMAIL_FROM` in that Worker's
 `wrangler.toml` (production and staging), and let CI's deploy ship it.
 
