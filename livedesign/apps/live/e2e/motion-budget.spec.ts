@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
+import { expect, test, expectNoPageErrors, openStartBlank, paletteTile } from './fixtures';
 
 // The runtime motion guard (docs/specs/004-interface-design/motion.md "Enforcement").
 //
@@ -57,10 +57,10 @@ const transitions = (all: MotionRecord[]) =>
   all.filter((m) => Number.isFinite(m.active) && m.iterations < 2);
 
 async function startBlank(page: Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
-  await page.locator('[data-canvas-a11y-root]').waitFor();
-  await dismissQuickTour(page);
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank), made on livedesign (openStartBlank). A
+  // guest's own /new keeps it in This Browser, which the index holds no item for, so the Explorer panel would show
+  // no Current Design card and no Design menu to open.
+  await openStartBlank(page);
 }
 
 /** Open a chrome surface, let its motion play out, and close it again. `shown` is the surface
@@ -99,7 +99,7 @@ async function tourTheChrome(page: Page): Promise<void> {
   await toggle(page, 'Selection mode');
   // A category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
   await openAndClose(page, () =>
-    page.locator('[data-category-bar-button][aria-label="Layout"]').click(),
+    page.locator('[data-category-bar-button][aria-label="Shapes"]').click(),
   );
   await toggle(page, 'Fit to screen');
   // The Explorer popover, and the Design menu on its Current Design card.

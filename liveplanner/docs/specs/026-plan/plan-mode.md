@@ -128,7 +128,8 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   - **A card**: a large picture (112 px tall) on a soft panel of the tab's column colour, then its name with a small
     badge of its kind (**Board**, **Sheet**, **Dashboard**, **Template**) where the grid mixes kinds (Recommended, a search), its line
     (two lines at most), and for a board the card types it takes, as chips with each type's colour (up to three, then
-    "+2"; a Blank board says **You Choose**, All Cards **Every Card**). On hover or focus it lifts and its border takes the
+    "+2"; a Blank board says **You Choose**, All Cards **Every Card**). A colour too dark to show on a dark card (a
+    Project's black) is lifted to 3:1, as a card face lifts it ([Item types](item-types.md#an-item-type)). On hover or focus it lifts and its border takes the
     brand colour. Choosing one acts at once: a board is placed, empty,
     in the middle of the view; a sheet as above; a layout makes the tab a Dashboard of it. Each choice makes the tab
     its kind ([Plan tabs](plan-tabs.md)).

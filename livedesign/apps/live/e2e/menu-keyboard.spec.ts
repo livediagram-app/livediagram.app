@@ -7,6 +7,7 @@ import {
   startBlankDesign,
   test,
   paletteTile,
+  untilHydrated,
 } from './fixtures';
 
 // Menus by keyboard alone (docs/specs/004-interface-design/menus.md): a command menu is a `menu` of
@@ -110,11 +111,10 @@ test.describe('menus by keyboard', () => {
     await page.keyboard.press('ArrowDown');
     const presets = page.getByRole('menu', { name: 'Zoom level' });
     await expect(presets).toBeVisible();
-    await expect(presets.getByRole('menuitemradio', { name: '100%' })).toBeFocused();
-    await expect(presets.getByRole('menuitemradio', { name: '100%' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    // A blank page opens fitted, between the preset levels (none checked): focus lands inside the menu, on its
+    // first item (docs/specs/004-interface-design/menus.md).
+    await expect(presets.getByRole('menuitemradio', { checked: true })).toHaveCount(0);
+    await expect(presets.getByRole('menuitemradio').first()).toBeFocused();
     await page.keyboard.press('End');
     await expect(presets.getByRole('menuitem', { name: 'Fit to screen' })).toBeFocused();
     await shot(page, 'after-zoom-menu-focus');
@@ -124,16 +124,18 @@ test.describe('menus by keyboard', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the product switcher opens from the keyboard, not on focus alone', async ({
+  // The header's site switcher (@liveworkspace/ui SiteSwitcher): the product switcher it replaced is gone.
+  test('the site switcher opens from the keyboard, not on focus alone', async ({
     page,
     pageErrors,
   }) => {
-    await page.goto('/explorer');
-    const switcher = page.getByRole('button', { name: /^Switch section/ });
+    await startBlankDesign(page);
+    const switcher = page.getByRole('button', { name: 'Switch site' });
+    await untilHydrated(switcher);
     await switcher.focus();
     await expect(page.getByRole('menu')).toHaveCount(0);
     await page.keyboard.press('Enter');
-    const menu = page.getByRole('menu', { name: /^Switch section/ });
+    const menu = page.getByRole('menu', { name: 'liveworkspace sites' });
     await expect(menu).toBeVisible();
     await expect(menu.getByRole('menuitem').first()).toBeFocused();
     await page.keyboard.press('ArrowDown');

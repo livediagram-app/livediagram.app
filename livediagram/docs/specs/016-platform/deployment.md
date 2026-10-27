@@ -51,7 +51,7 @@ The root `e2e.yml` runs livediagram's six smoke shards, its sites audit and its 
 
 The root `canvas-perf.yml` runs the canvas performance probe nightly against `main` ([Canvas performance](../008-canvas/canvas-performance.md)), skipping a night `main` has not moved. It never blocks anything: the budget table goes to the job summary, traces and screenshots to a 14-day artefact, and a miss opens or comments on one issue, **Canvas performance budget: livediagram**, which the first all-pass run closes. It needs no secrets, only `issues: write`.
 
-CI runs no CodeQL scan ([docs/ci.md](../../../../docs/ci.md) says why).
+The root `codeql.yml` scans the whole repository with CodeQL on every pull request, every push to `main` and weekly ([docs/ci.md](../../../../docs/ci.md)).
 
 **Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files. Most workspaces are opted in (`pnpm turbo run test --dry` lists them); a workspace mirrors the pattern when it adds its first test.
 

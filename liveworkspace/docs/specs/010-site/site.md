@@ -463,7 +463,8 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   [accounts.md](../003-accounts/accounts.md#scopes)): the account's and the shared settings shape that app as much as its own do,
   so they are never hidden behind All. Only the other apps' groups are left out. It is drawn in the app's own Settings
   view: its rail with category tiles and nested sub-categories, panes, sections, collapsed sections, section notes,
-  search, the phone's push layout and back bar. An editor's own rows draw at once and the rest join them when read.
+  search, the phone's push layout and back bar. An editor's own rows draw at once and the rest join them when read. A read that fails leaves the editor's own rows in place,
+  with a note and Try again for the rest.
   A guest's side is the app's settings alone. The footer only says where settings are saved: it has no link into the
   app's own Settings (a "More in <app> Settings" link was removed on 25 October 2026); what only makes sense inside
   the editor (appearance, shortcuts, the editors' shared chrome such as UI scale) is in the editor's own Settings.

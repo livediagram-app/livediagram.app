@@ -2,9 +2,9 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
-// Making a document is a use (docs/specs/013-workspace/explorer-home.md "Making a document";
-// docs/specs/015-api/api.md "Marking a document used"), signed in, against the signed-in export:
-// a document an API client makes is in Jump Back In unopened; one it makes with markUsed: false is not.
+// Making a document is a use (docs/specs/015-api/api.md "Marking a document used"), signed in, against the
+// signed-in export: the api records an API client's create as its open, so the document is in Jump Back In
+// unopened; one it makes with markUsed: false is not.
 // Jump Back In is the shared Explorer's (liveworkspace's, not served here), so this asks the index for
 // what it reads: Recent's first page with its Most Used beside it.
 

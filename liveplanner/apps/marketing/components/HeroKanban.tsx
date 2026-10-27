@@ -85,8 +85,10 @@ export function HeroKanban() {
               className="absolute left-4 top-4 hidden items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-brand-700 md:flex dark:text-brand-400"
             >
               {lane.name}
-              <span className="rounded-full bg-brand-500/15 px-1.5 py-px font-medium normal-case tracking-normal text-(--hero-ink)">
-                {/* The count centres on its cap band, keeping the pill one line tall (optical-alignment.md). */}
+              <span className="flex rounded-full bg-brand-500/15 px-1.5 py-px font-medium normal-case tracking-normal text-(--hero-ink)">
+                {/* The count centres on its cap band, keeping the pill one line tall (optical-alignment.md). The pill
+                    is a flex box so the count is its only content: in a line box, the pill's own strut (its face's
+                    ascent and descent) would stretch the line past the count and set the band 0.5px high. */}
                 <span className="text-optical-line">{lane.count}</span>
               </span>
             </p>

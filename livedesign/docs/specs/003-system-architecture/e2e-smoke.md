@@ -37,11 +37,11 @@ A new push to a pull request cancels its run in flight (`concurrency`); on `main
 It runs **every** spec file in `apps/live/e2e/` (bar the opt-in perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                   | Runs                                                                                                    |
-| ------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Smoke shard i/6** | live                                     | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
-| **Sites audit**     | live, help, then marketing               | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
-| **Signed-in specs** | live with sign-in on (`build:signed-in`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
+| Job                 | Builds                                                                           | Runs                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Smoke shard i/6** | live, and liveworkspace's site (the Explorer)                                    | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
+| **Sites audit**     | live, help, then marketing                                                       | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
+| **Signed-in specs** | live with sign-in on (`build:signed-in`), and liveworkspace's site (`build:e2e`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
 
 Only the sites audit opens help and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
@@ -73,9 +73,15 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
 - **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-design/save-locations.md#the-default-depends-on-who-is-creating)),
   and the index holds no item for it, so its grant request answers 404. A spec that needs its new design on the
   server (it seeds it through the api with `seedTab`, watches the api's saves, or shares it) opens `/new` through
-  `serverNewUrl`, which keeps the page's adopted guest (or adopts a minted one) and adds a `?folder=` of theirs, the
-  placement that makes `/new` create on livedesign whoever is creating. `openStartBlank` and `startBlankDesign` do
-  it for every caller; a spec that means the guest's own create opens `/new` itself. `e2e/server-new.test.ts` holds
+  `serverNewUrl`, which keeps the page's adopted guest or signed-in account (`installSession` adopts the account, so
+  a signed-in spec's folder is never a minted guest's) or adopts a minted guest, and adds a `?folder=` of theirs, the
+  placement that makes `/new` create on livedesign whoever is creating. `openStartBlank`, `startBlankDesign` and
+  `openBlankPage` do it for every caller; a spec that means the guest's own create opens `/new` itself.
+- **Elements go on a page.** A press off every page places nothing ([Pages mode](../007-editor/pages-mode.md) "The
+  pages"), and a blank tab's unchosen page is covered by its What Is This Page For? card at a laptop-sized window. A
+  spec that places an element by hand opens its design with `openBlankPage` (the page chosen a Logo, its autosave
+  awaited) and clicks at `onPage(page, fx, fy)`, a point on the first page (`pagePoint`, the same point in window
+  coordinates, for a spec that draws with `page.mouse`). `e2e/server-new.test.ts` holds
   every spec that seeds through the api to it.
 - **Sharded** (`--shard=i/6`, the matrix in `e2e-product.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
@@ -131,9 +137,8 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
    events pipe).
 2. **live**: the static `apps/live/out` served by a minimal Node
-   server that reproduces the three things the production router +
-   live worker do (so clean routes and the design placeholder resolve
-   identically to prod):
+   server that reproduces what the production router + live worker do
+   (so clean routes and the design placeholder resolve identically to prod):
    - strip the `/live` `assetPrefix` so `/live/_next/*` resolves to
      `out/_next/*`;
    - rewrite every `/design/<id>` to the single placeholder
@@ -141,6 +146,11 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
+   - serve liveworkspace's Explorer at `/explorer/*` and its assets at `/_liveworkspace/*` from
+     `liveworkspace/apps/site/out` when that site is built, as the router's `routeToWorkspace`
+     (`@liveworkspace/sites/workspace-proxy`) does; the live app has no Explorer pages of its own. Without the build
+     they answer a logged 404, so only the specs that open the Explorer page need it (CI builds it for the smoke
+     shards);
    - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
@@ -175,6 +185,8 @@ source scanner already skips it), built by `pnpm build:signed-in` with sign-in o
 `NEXT_PUBLIC_E2E_AUTH=1`, which swaps the accounts bridge for the test-only `E2EAuthBridge`. Each
 spec puts a session in `localStorage` (`installSession` in `e2e/signed-in/session.ts`) before the
 page loads, so a chosen user (name, email) is signed in with no accounts Worker, secret or network.
+
+The Explorer at `/explorer` is liveworkspace's site, a separate export, so it needs the same switch: `pnpm --filter @liveworkspace/site build:e2e` builds it into `liveworkspace/apps/site/.next/out-e2e/` (never `out/`) with `NEXT_PUBLIC_E2E_AUTH=1`, and on livedesign's address it then reads the spec's session (`livedesign:e2e:session`, the same key) as the account instead of asking the api for a cookie the stack never sets. The signed-in project serves it with `E2E_WORKSPACE_SITE_OUT=.next/out-e2e`; unbuilt, `/explorer` answers the logged 404. A production build inlines the flag as false and never reads the key.
 
 `pnpm --filter @livedesign/live test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_LIVE_OUT=.next/out-signed-in` on its own ports
@@ -221,7 +233,7 @@ One spec file per feature, each linking the spec it proves:
 
 | File                              | What only a browser can show                                                                                                                                                                                                                                                                                                                                                 | Spec                                                                                                          |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `smoke.spec.ts`                   | `/new` makes a design and opens on its start, with no apps menu in the header; `/explorer` renders for a guest; create a blank design, add a shape, label it, and it survives a reload                                                                                                                                                                                       | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)                            |
+| `smoke.spec.ts`                   | `/new` makes a design and opens on its start, with no apps menu in the header; `/explorer` (liveworkspace's Explorer) renders for a guest; create a blank design, choose its page a Logo, add a shape on the page, and it survives a reload                                                                                                                                  | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)                            |
 | `save-failure.spec.ts`            | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                               | [Per-tab storage](../006-design/per-tab-storage.md)                                                           |
 | `realtime-peers.spec.ts`          | an owner and an edit-link visitor see each other, edit live, keep both people's edits across a reload                                                                                                                                                                                                                                                                        | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
 | `realtime-same-element.spec.ts`   | two peers dragging the same element at once end on the same position on both screens                                                                                                                                                                                                                                                                                         | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
@@ -245,9 +257,9 @@ One spec file per feature, each linking the spec it proves:
 | `optical-audit-sites.spec.ts`     | the same audit on the help centre and the marketing site                                                                                                                                                                                                                                                                                                                     | [Optical alignment](../004-interface-design/optical-alignment.md)                                             |
 | `marketing-header-fit.spec.ts`    | the marketing header fits a 320, 360, 390 and 430px phone: no sideways scroll, the CTA keeps its 16px gutter (in the `sites` project, which builds marketing)                                                                                                                                                                                                                | [Marketing site](../019-marketing/marketing-site.md)                                                          |
 | `optical-clip.spec.ts`            | a trimmed label that also truncates keeps its descenders, proven in pixels across the label's own columns                                                                                                                                                                                                                                                                    | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)                        |
-| `shape-stroke-inside.spec.ts`     | every shape drawn to its box edge paints no stroke outside it, in pixels                                                                                                                                                                                                                                                                                                     | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                     |
-| `explorer.spec.ts`                | the shared Explorer at `/explorer`, through `/api/index` on this origin: make, rename, open, find in Recent, star and file a design ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md))                                                                                                                                                         |
-| `legacy-offline-store.spec.ts`    | offline designs saved in the older IndexedDB store move to `designs` and stay listed and openable ([Offline mode](../006-design/offline-mode.md))                                                                                                                                                                                                                            |
+| `shape-stroke-inside.spec.ts`     | every shape drawn to its box edge on the page, at 100%, paints no stroke outside it, in pixels (the ring starts at the first whole pixel outside the box)                                                                                                                                                                                                                    | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                     |
+| `explorer.spec.ts`                | the shared Explorer at `/explorer`, through `/api/index` on this origin: a guest makes a design (in This Browser), syncs it to livedesign, renames, opens, finds in Recent, stars, files, deletes and restores it; the Explorer offers every app's items, designs first ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md))                     |
+| `legacy-offline-store.spec.ts`    | offline designs saved in the older IndexedDB store move to `designs` and stay openable (in the editor) and listed (This Browser in the Explorer) ([Offline mode](../006-design/offline-mode.md))                                                                                                                                                                             |
 | `select-clicks.spec.ts`           | only Shift adds to a selection; a plain click on a member selects it alone; a drag still moves and a double-click still edits                                                                                                                                                                                                                                                |
 | `selection-chrome.spec.ts`        | the selection chrome follows the selection store through select, select-all, a free arrow, delete and undo ([Canvas performance](../008-canvas/canvas-performance.md))                                                                                                                                                                                                       |
 | `canvas-still.spec.ts`            | a still canvas with a selection asks for no animation frames, counted not timed ([Canvas performance](../008-canvas/canvas-performance.md))                                                                                                                                                                                                                                  |
@@ -259,8 +271,8 @@ One spec file per feature, each linking the spec it proves:
 | `optical-snap.spec.ts`            | the browser paints text baselines where the optical audit's snap guard says ([Optical alignment](../004-interface-design/optical-alignment.md))                                                                                                                                                                                                                              |
 | `photo-gpu-parity.spec.ts`        | the photo compositor draws on the GPU what the export draws on the CPU ([Photo engine](../031-photo/blueprints/photo-engine.md))                                                                                                                                                                                                                                             |
 | `new-version-prompt.spec.ts`      | a newer server's format number offers a reload, only once the edits are saved ([New version prompt](../016-platform/new-version-prompt.md))                                                                                                                                                                                                                                  |
-| `stale-builds.spec.ts`            | after a simulated deploy, missing chunks and a newer build id recover with a reload ([Stale builds](../016-platform/stale-builds.md))                                                                                                                                                                                                                                        |
-| `stale-html.spec.ts`              | back to a cached Explorer page after a deploy loads the current build ([Stale builds](../016-platform/stale-builds.md))                                                                                                                                                                                                                                                      |
+| `stale-builds.spec.ts`            | once a newer build id is live, opening another design and going back are full page loads, never the crash page ([Stale builds](../016-platform/stale-builds.md))                                                                                                                                                                                                             |
+| `stale-html.spec.ts`              | a simulated deploy is one browser context's alone; pressing Back from a design to `/join` after a deploy never shows a white screen from a cached page naming removed chunks ([Stale builds](../016-platform/stale-builds.md))                                                                                                                                               |
 | `workbench-embed.spec.ts`         | opt-in (`E2E_WORKBENCH=1`): a fake workbench frames the editor through pairing and a ticket ([Workbench embeds](../013-workspace/workbench-embeds.md))                                                                                                                                                                                                                       |
 | `workbench-workspace.spec.ts`     | opt-in (`E2E_WORKBENCH=1`): the workspace scope's own approval, and the Explorer in the frame                                                                                                                                                                                                                                                                                |
 
@@ -276,9 +288,9 @@ tests where it's cheap.
   `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
   which `vitest.config.ts` runs and Playwright never loads.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
-  shared flows (`openStartBlank`, `startBlankDesign`, `seedTab`, `dismissQuickTour`).
+  shared flows (`openStartBlank`, `startBlankDesign`, `openBlankPage`, `onPage`, `seedTab`, `dismissQuickTour`).
 - `apps/live/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
-- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, marketing).
+- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, marketing, liveworkspace's Explorer).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
   the root `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/live/package.json`; `build:signed-in`

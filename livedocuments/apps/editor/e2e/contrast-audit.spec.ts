@@ -46,8 +46,13 @@ test.describe('Contrast audit, dark mode', () => {
     expectAA(await auditContrast(page), 'Settings dialog');
     await page.keyboard.press('Escape');
 
-    await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Document' }).waitFor();
+    // The shared Share dialog (`@liveworkspace/explorer`, ShareDialog.test.tsx) is named "Share <the document>" and
+    // headed "Share This Document".
+    await page.getByRole('button', { name: /^Shared?$/ }).click();
+    await page
+      .getByRole('dialog', { name: /^Share / })
+      .getByRole('heading', { name: 'Share This Document' })
+      .waitFor();
     expectAA(await auditContrast(page), 'Share dialog');
     await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);

@@ -112,7 +112,7 @@ import {
   type SharedTabCopy,
 } from './tab-shares';
 import { documentRoom } from '../document-client';
-import { answerDocumentRequest, type RouteIdentity } from './document-route';
+import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -603,16 +603,19 @@ export class DocumentRoom extends DurableObject<Env> {
       community,
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
+    // the create, the canvas's making (isDocumentCreate).
     if (response.ok && identity.owner && this.writes > writesBefore) {
-      const sql = this.state.storage.sql;
-      recordItemEditor(
-        (q, ...b) => sql.exec(q, ...b),
-        DOCUMENT_OUTBOX,
-        documentId,
-        identity.owner,
-        Date.now(),
-      );
+      if (!isDocumentCreate(request)) {
+        const sql = this.state.storage.sql;
+        recordItemEditor(
+          (q, ...b) => sql.exec(q, ...b),
+          DOCUMENT_OUTBOX,
+          documentId,
+          identity.owner,
+          Date.now(),
+        );
+      }
       this.noteWrite();
     }
     // A post published or removed by this request starts or stops its checks.

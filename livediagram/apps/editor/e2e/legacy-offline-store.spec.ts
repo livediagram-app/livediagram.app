@@ -1,4 +1,4 @@
-import { test, expect, expectNoPageErrors } from './fixtures';
+import { adoptGuest, expect, expectNoPageErrors, mintGuest, test } from './fixtures';
 
 // A browser that saved offline documents before the container became a document holds them in
 // version 1 of IndexedDB, in the `diagrams` object store (docs/specs/006-document/offline-mode.md,
@@ -7,6 +7,8 @@ test('offline documents saved before the rename survive the store upgrade', asyn
   page,
   pageErrors,
 }) => {
+  // A guest, as the canvas page opens for one without leaving for the guest hand-off.
+  await adoptGuest(page, await mintGuest(page.request));
   // Seed from a static file on the same origin: the app, once loaded, opens (and upgrades) the store
   // itself, and would race the seed between its delete and its version-1 open.
   await page.goto('/icon.svg');
@@ -38,8 +40,11 @@ test('offline documents saved before the rename survive the store upgrade', asyn
         };
       }),
   );
-  // Opening the app upgrades the store, and its This Browser list (the Explorer's, in localStorage) names it.
-  await page.goto('/new');
+  // Opening the canvas upgrades the store and reads it whole (the offline id cache, once per page load), which
+  // rebuilds This Browser's list (the Explorer's, in localStorage) with it. /new alone never reads the store: a
+  // guest's wizard has no offline id to ask about.
+  await page.goto('/document/offline-legacy-1');
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await expect
     .poll(() =>
       page.evaluate(() => localStorage.getItem('liveworkspace:this-browser:livediagram') ?? ''),
@@ -55,6 +60,7 @@ test('offline documents saved before the rename survive the store upgrade', asyn
         };
       }),
   );
-  expect(stores).toEqual(['documents']);
+  // `diagrams` is gone; version 3's `retired-parts` sits beside `documents` (offline-mode.md "Retired parts set aside").
+  expect([...stores].sort()).toEqual(['documents', 'retired-parts']);
   expectNoPageErrors(pageErrors);
 });

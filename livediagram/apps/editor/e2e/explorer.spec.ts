@@ -138,9 +138,11 @@ test('This Browser lists the canvases kept here, opens one, and deletes one afte
   await page.waitForURL(/\/document\/offline-this-browser-1/);
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
 
-  // Nothing else holds it, so Delete asks first, then removes it for good, and the section goes with it.
-  await openExplorerPanel(page);
+  // Nothing else holds it, so Delete asks first, then removes it for good, and the section goes with it. The index
+  // never holds a canvas kept here, so the panel shows no Current canvas card for it: only the rail.
+  await page.getByRole('button', { name: 'Explorer', exact: true }).click();
   await rail.getByRole('button', { name: 'This Browser (1)' }).click();
+  await expect(page.getByRole('region', { name: 'Current canvas' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Delete Kept on this laptop' }).click();
   const confirm = page.getByRole('dialog', { name: 'Delete this canvas?' });
   await expect(confirm).toBeVisible();

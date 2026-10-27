@@ -17,6 +17,8 @@ carries an identity (`plan-room.ts`, `recordItemEditor` from `@liveworkspace/ind
 save, so a burst of saves is one row. The outbox drains them with the plan's other index reports, up to
 `APP_EVENTS_MAX` a batch, as `PUT /app/items/:id/events`. The index keeps one `edited` event per person, plan and
 UTC day, moving its time forward, and records a use day for that person, so editing a plan counts toward Most Used.
+The create (`POST /api/projects`) is not an edit: the index records the making as `created`, and whether making it is
+a use is the create's `markUsed` ([Marking a project used](../015-api/api.md#marking-a-project-used)).
 Writes from a WebSocket participant carry no account and are not attributed.
 
 ## 2. Who sees what

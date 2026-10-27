@@ -1,3 +1,4 @@
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 
@@ -119,7 +120,8 @@ function Page({ x, y }: { x: number; y: number }) {
         />
         <text
           x={chart.x + chart.w - 4}
-          y={chart.y - 3.5}
+          // The letters centre on their cap band (optical-alignment.md "SVG text centres on its cap band too").
+          y={capBandBaselineY(chart.y - 6, 7.5)}
           textAnchor="middle"
           fontFamily={FONT}
           fontSize="7.5"
@@ -134,7 +136,8 @@ function Page({ x, y }: { x: number; y: number }) {
         <circle cx={chart.x + chart.w + 4} cy={chart.y + 18} r="9" fill={TEAMMATE} />
         <text
           x={chart.x + chart.w + 4}
-          y={chart.y + 21.5}
+          // The numeral centres on its cap band (optical-alignment.md "SVG text centres on its cap band too").
+          y={capBandBaselineY(chart.y + 18, 9)}
           textAnchor="middle"
           fontFamily={FONT}
           fontSize="9"
@@ -171,7 +174,8 @@ function Message({
       <circle cx={x + 9} cy={y + 9} r="9" fill={colour} />
       <text
         x={x + 9}
-        y={y + 12}
+        // The letters centre on their cap band (optical-alignment.md "SVG text centres on its cap band too").
+        y={capBandBaselineY(y + 9, 7.5)}
         textAnchor="middle"
         fontFamily={FONT}
         fontSize="7.5"

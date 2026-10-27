@@ -95,6 +95,8 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
   let renamedTo: string | null = null;
   // Where the index filed an API client's create, for its answer.
   let filed: { folderId: string | null; teamId: string | null } | null = null;
+  // An API client's create that is a use of the design (docs/specs/015-api/api.md "Marking a design used").
+  let marksUse = false;
   if (segments.length === 2) {
     if (request.method !== 'POST') return notFound();
     const read = await readBody({ ...ctx, request: request.clone() });
@@ -126,7 +128,12 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
       );
       if (made instanceof Response) return made;
       grant = made?.grant ?? null;
-      if (made?.item) filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+      // The index made the item now: a making (an id it already held is a re-commit, which is none).
+      if (made?.item) {
+        filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+        const making = readMarkUsed(read.markUsed);
+        marksUse = making.ok && making.markUsed;
+      }
     }
   } else {
     if (!designId || designId.length > MAX_DESIGN_ID) return notFound();
@@ -139,6 +146,17 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
   }
   if (grant instanceof Response) return grant;
   const res = await designRoom(ctx.env, designId).route(request, identityOf({ ...ctx, grant }));
+  // Making it is a use for the caller, recorded at the index beside the create as the editor records its own; never
+  // waited on. The room's 400 for a markUsed that is not a boolean made nothing, so it records nothing.
+  if (marksUse && res.status === 201) {
+    const client = indexFor(ctx.env, grantCallerOf(ctx));
+    if (client)
+      ctx.waitUntil?.(
+        client.recordOpen(designId, null).catch((err: unknown) => {
+          console.warn('[designs] use not recorded', { designId, error: String(err) });
+        }),
+      );
+  }
   if (renamedTo !== null && res.ok) {
     const title = capStoredName(renamedTo, null, 'design');
     const client = indexFor(ctx.env, grantCallerOf(ctx));

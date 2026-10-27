@@ -218,9 +218,10 @@ jobs:
       - name: Build editor app with sign-in on
         run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} build:signed-in
 
+      # Its e2e export (.next/out-e2e, which the signed-in stack serves), reading the specs' session as the account.
       - name: Build liveworkspace's site (the Explorer)
         if: inputs.signed-in-explorer
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build:e2e
 
       - name: Run signed-in specs
         run: pnpm --filter ${{ inputs.editor }} test:e2e:signed-in

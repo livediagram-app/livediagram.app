@@ -38,7 +38,9 @@ test('offline designs saved before the rename survive the store upgrade', async 
         };
       }),
   );
-  await page.goto('/explorer/offline');
+  // Openable: the editor opens the store (version 2, which runs the upgrade) and the design from it.
+  await page.goto('/design/offline-legacy-1');
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await expect(page.getByText('Kept through the rename').first()).toBeVisible();
   const stores = await page.evaluate(
     () =>
@@ -51,5 +53,11 @@ test('offline designs saved before the rename survive the store upgrade', async 
       }),
   );
   expect(stores).toEqual(['designs']);
+  // Listed: This Browser in the Explorer (liveworkspace's, on this origin) reads the list the editor rebuilt from the
+  // store as it opened (lib/offline/offline-ids.ts).
+  await page.goto('/explorer/offline');
+  await expect(page.locator('[data-this-browser-row="offline-legacy-1"]')).toContainText(
+    'Kept through the rename',
+  );
   expectNoPageErrors(pageErrors);
 });

@@ -1,5 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
+import {
+  expect,
+  test,
+  dismissQuickTour,
+  expectNoPageErrors,
+  paletteTile,
+  serverNewUrl,
+} from './fixtures';
 
 // The runtime motion guard (docs/specs/004-interface-design/motion.md "Enforcement").
 //
@@ -57,8 +64,9 @@ const transitions = (all: MotionRecord[]) =>
   all.filter((m) => Number.isFinite(m.active) && m.iterations < 2);
 
 async function startBlank(page: Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank), made on livedocuments (serverNewUrl). A guest's
+  // own /new keeps it in This Browser, where the Explorer shows no Current Document card and so no Document menu.
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 }

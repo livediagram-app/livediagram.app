@@ -6,6 +6,10 @@ import { HoverCard, lucideGlyph } from '@liveworkspace/ui';
 import { useTourOffer } from './tour-offer';
 
 const PlayGlyph = lucideGlyph(lucidePlay, 10);
+// The play triangle inks 0.4px right of its viewBox centre at 10px: moved back by a transform, which lands on the
+// device-pixel grid, where padding moves the glyph by whole CSS px (the browser snaps an svg's layout box), so a
+// 1px pad left it up to 1.4px off (optical-alignment.md; the guard is in TourOfferButton.test.tsx).
+export const PLAY_GLYPH_SHIFT_PX = -0.4;
 
 // Offers already counted as shown in this page load, so each host's telemetry says so once.
 const counted = new Set<string>();
@@ -42,9 +46,9 @@ export function TourOfferButton({ labelled = true }: { labelled?: boolean }) {
       >
         <span
           aria-hidden
-          className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-brand-700 pl-px text-white dark:bg-brand-600"
+          className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white dark:bg-brand-600"
         >
-          <PlayGlyph />
+          <PlayGlyph style={{ translate: `${PLAY_GLYPH_SHIFT_PX}px 0` }} />
         </span>
         {labelled ? (
           <span className="hidden whitespace-nowrap text-xs font-medium sm:inline">{label}</span>

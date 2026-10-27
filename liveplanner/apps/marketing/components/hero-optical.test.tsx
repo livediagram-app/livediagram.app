@@ -1,6 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { capBandBaselineY } from '@liveworkspace/icons';
+import { HeroKanban } from './HeroKanban';
+import { Avatar as CanvasAvatar } from './feature-art/canvas-parts';
+import { Avatar as ModeAvatar } from './feature-art/mode-parts';
 import { Avatar } from './hero-plan-card';
 import { TogetherBoard } from './hero-together-board';
 
@@ -25,5 +28,34 @@ describe('the hero’s initials discs', () => {
     );
     const y = Number(/<text[^>]* y="([\d.]+)"/.exec(svg)![1]);
     expect(y).toBeCloseTo(capBandBaselineY(20, 6 * 0.9), 5);
+  });
+
+  it('centres the feature art’s avatars the same way', () => {
+    const textY = (svg: string) => Number(/<text[^>]* y="([\d.]+)"/.exec(svg)![1]);
+    const canvas = renderToStaticMarkup(
+      <svg>
+        <CanvasAvatar cx={10} cy={20} r={6} color="#10b981" initials="TM" />
+      </svg>,
+    );
+    expect(textY(canvas)).toBeCloseTo(capBandBaselineY(20, 6 * 0.95), 5);
+    const mode = renderToStaticMarkup(
+      <svg>
+        <ModeAvatar x={10} y={30} r={4} colour="#10b981" initials="TM" />
+      </svg>,
+    );
+    expect(textY(mode)).toBeCloseTo(capBandBaselineY(30, 4 * 0.95), 5);
+  });
+});
+
+describe('the kanban wall’s lane counts', () => {
+  // The audit read "2/3" 0.52px high: as inline content the pill's own strut stretched its line past the
+  // trimmed count. A flex pill holds the count alone, so the count's cap band is the pill's middle.
+  it('holds each count as the only item of a flex pill', () => {
+    const html = renderToStaticMarkup(<HeroKanban />);
+    const pills = [
+      ...html.matchAll(/<span class="([^"]*rounded-full[^"]*)"><span class="text-optical-line">/g),
+    ];
+    expect(pills).toHaveLength(5);
+    for (const [, cls] of pills) expect(cls!.split(' ')).toContain('flex');
   });
 });

@@ -93,7 +93,7 @@ import { PLAN_OUTBOX, drainOutbox } from './plan-outbox';
 import { exportProjectFile, importProjectFile, type ProjectFileImport } from './project-file';
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
-import { answerPlanRequest, type RouteIdentity } from './plan-route';
+import { answerPlanRequest, isPlanCreate, type RouteIdentity } from './plan-route';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -521,16 +521,19 @@ export class PlanRoom extends DurableObject<Env> {
       this.state.waitUntil(p),
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
+    // the create, the plan's making (isPlanCreate).
     if (response.ok && identity.owner && this.writes > writesBefore) {
-      const sql = this.state.storage.sql;
-      recordItemEditor(
-        (q, ...b) => sql.exec(q, ...b),
-        PLAN_OUTBOX,
-        planId,
-        identity.owner,
-        Date.now(),
-      );
+      if (!isPlanCreate(request)) {
+        const sql = this.state.storage.sql;
+        recordItemEditor(
+          (q, ...b) => sql.exec(q, ...b),
+          PLAN_OUTBOX,
+          planId,
+          identity.owner,
+          Date.now(),
+        );
+      }
       this.noteWrite();
     }
     return response;

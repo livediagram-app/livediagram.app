@@ -220,6 +220,17 @@ describe('AppAccountMenu', () => {
 describe('AccountMenu signed in', () => {
   const signedIn = { name: 'Ada', onSignOut: async () => true };
 
+  it('gives focus back to its button on Escape, as every menu does', () => {
+    render(<AccountMenu {...signedIn} onOpenSettings={() => {}} />);
+    const trigger = screen.getByRole('button', { name: 'Ada, account menu' });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(screen.getAllByRole('menuitem')[0]);
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it('opens Settings in place where the surface has the panel: preparing on approach, opening as the menu closes', () => {
     const onOpenSettings = vi.fn();
     const onPrepareSettings = vi.fn();

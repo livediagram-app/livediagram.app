@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { AppCatalogue, CatalogueRow } from '@liveworkspace/settings/catalogue';
 import { commonCatalogue } from '@liveworkspace/settings/common';
 import { APPS_GROUP, panelModel } from './CatalogueSettingsView';
@@ -182,13 +183,14 @@ describe('mergeAppCategories', () => {
     const sources = ['a.app', 'b.app', 'c.app', 'd.app'].map(source);
     // Warm up, then time: 40,000 rows across 1,600 categories.
     mergeAppCategories(sources, APPS_GROUP);
-    const start = performance.now();
-    const merged = mergeAppCategories(sources, APPS_GROUP);
-    const took = performance.now() - start;
+    let merged: SettingsCategory[] = [];
+    const took = cpuMsOf(() => {
+      merged = mergeAppCategories(sources, APPS_GROUP);
+    });
     expect(merged).toHaveLength(CATEGORIES);
     // Each category: 13 shared rows once, then 12 own rows for each of the 4 apps.
     expect(merged[0]!.rows).toHaveLength(13 + 12 * 4);
-    expect(took).toBeLessThan(250);
+    expect(took).toBeLessThan(cpuBudgetMs(250));
   });
 });
 

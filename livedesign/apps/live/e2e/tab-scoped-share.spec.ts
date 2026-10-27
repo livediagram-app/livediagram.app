@@ -12,6 +12,11 @@ import {
 // link to one tab in the Share dialog; a visitor on it sees that tab, the rest
 // as "Not shared" pills, and not one byte of the other tabs in any response or
 // realtime frame; rescoping to All tabs reloads the visitor into every tab.
+//
+// The Share dialog is the shared one, `@liveworkspace/explorer`'s ShareDialog (its roles and labels are pinned by
+// packages/explorer/src/dialogs/ShareDialog.test.tsx): the composer's "Tabs this link opens" select and Create
+// Pass, then each pass in the "Passes" region (an `li[data-share-link]`) with its "<Level> pass link" field and
+// its "Tabs this pass opens" select, whose every-tab option reads "All tabs".
 
 const SECRET = 'TOP SECRET PRICING';
 
@@ -53,14 +58,20 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
   await page.addInitScript(() => localStorage.setItem('livedesign:v2:name-confirmed', '1'));
   await page.goto(`/design/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
-  const dialog = page.getByRole('dialog', { name: 'Share This Design' });
+  // Named "Share <the design>", headed "Share This Design".
+  const dialog = page.getByRole('dialog', { name: 'Share Launch plan' });
   await dialog
+    .getByRole('region', { name: 'Issue a pass' })
     .getByRole('combobox', { name: 'Tabs this link opens' })
     .selectOption({ label: 'Roadmap' });
-  await dialog.getByRole('button', { name: /create/i }).click();
-  const scopeSelect = dialog.getByRole('combobox', { name: /^Tabs link .+ opens$/ });
+  await dialog.getByRole('button', { name: 'Create Pass' }).click();
+  const link = dialog
+    .getByRole('region', { name: /^Passes/ })
+    .locator('[data-share-link]')
+    .first();
+  const scopeSelect = link.getByRole('combobox', { name: 'Tabs this pass opens' });
   await expect(scopeSelect).toHaveValue(roadmap);
-  const url = await dialog.locator('ul input[readonly]').first().inputValue();
+  const url = (await link.getByRole('textbox', { name: /pass link$/ }).inputValue()).trim();
 
   // A visitor opens it, with every response and frame watched.
   const visitorContext = await browser.newContext();
