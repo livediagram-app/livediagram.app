@@ -23,7 +23,12 @@ import {
   lucidePencil,
   lucideRotateCcw,
 } from '@liveworkspace/icons/lucide';
-import { threadParticipants, threadTitle, type CardThread } from '@liveplanner/project';
+import {
+  threadOnlyBy,
+  threadParticipants,
+  threadTitle,
+  type CardThread,
+} from '@liveplanner/project';
 import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
@@ -42,6 +47,9 @@ const Chevron = lucideGlyph(lucideChevronDown, 14);
 const RenameIcon = lucideGlyph(lucidePencil, 14);
 const AddIcon = lucideGlyph(lucideLink, 14);
 const ReopenIcon = lucideGlyph(lucideRotateCcw, 14);
+
+// Why Delete Thread… is greyed: someone else's comment is in it, so it is resolved instead.
+export const DELETE_REASON = 'Others have commented: resolve it instead.';
 
 // The avatars of up to three people in a thread, then how many more.
 const FACES = 3;
@@ -104,7 +112,9 @@ export function ThreadTile({
   const resolved = thread.resolved;
   // A title cleared back to the automatic one reads '' until the answer lands: worked out here meanwhile.
   const title = threadTitle(thread);
-  const mayDelete = isEditor || thread.createdBy.authorId === selfId;
+  // Only a thread made of this person's own comments is deleted, Editors' alike; with anyone else's in it, it is
+  // resolved instead (docs/specs/026-plan/items.md "Deleting a thread").
+  const mayDelete = threadOnlyBy(thread, selfId);
   const at = resolved ? (thread.resolvedAt ?? thread.updatedAt) : thread.updatedAt;
   const when = new Date(at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
   const run = (fn: () => void) => () => {
@@ -242,17 +252,23 @@ export function ThreadTile({
             icon={resolved ? <ReopenIcon /> : <CheckIcon size={14} />}
             onClick={run(() => resolve(!resolved))}
           />
-          {mayDelete ? (
-            <>
-              <MenuGroupSeparator />
-              <MenuActionRow
-                plain
-                label="Delete Thread…"
-                icon={<TrashIcon />}
-                onClick={run(() => setConfirming(true))}
-              />
-            </>
-          ) : null}
+          <MenuGroupSeparator />
+          <MenuActionRow
+            plain
+            disabled={!mayDelete}
+            label="Delete Thread…"
+            icon={<TrashIcon />}
+            onClick={run(() => setConfirming(true))}
+          />
+          {mayDelete ? null : (
+            <p
+              role="none"
+              data-thread-delete-reason=""
+              className="max-w-56 px-3 pb-2 pl-[2.625rem] text-[11px] leading-snug text-slate-500 dark:text-slate-400"
+            >
+              {DELETE_REASON}
+            </p>
+          )}
         </PortalMenu>
       ) : null}
       {confirming && menuButton ? (
@@ -309,30 +325,27 @@ export function ThreadTile({
               </div>
             ) : null
           ) : canComment ? (
-            <>
-              <div className="flex justify-end">
-                <ResolveButton resolved={false} onClick={() => resolve(true)} />
-              </div>
-              <CommentComposer
-                density="comfortable"
-                self={ctx.self}
-                placeholder="Reply…"
-                fieldLabel={`Reply to “${title}”`}
-                submitLabel="Reply"
-                onAddComment={(text, mentions) =>
-                  void threads
-                    .act({
-                      kind: 'reply',
-                      threadId: thread.id,
-                      text,
-                      ...(mentions.length ? { mentions } : {}),
-                    })
-                    .then((ok) => {
-                      if (ok !== false) announce(ANNOUNCE.replied);
-                    })
-                }
-              />
-            </>
+            <CommentComposer
+              density="comfortable"
+              self={ctx.self}
+              placeholder="Reply…"
+              fieldLabel={`Reply to “${title}”`}
+              submitLabel="Reply"
+              // Resolve sits on the composer's row, left of Reply: whoever may reply may resolve.
+              secondary={<ResolveButton resolved={false} onClick={() => resolve(true)} />}
+              onAddComment={(text, mentions) =>
+                void threads
+                  .act({
+                    kind: 'reply',
+                    threadId: thread.id,
+                    text,
+                    ...(mentions.length ? { mentions } : {}),
+                  })
+                  .then((ok) => {
+                    if (ok !== false) announce(ANNOUNCE.replied);
+                  })
+              }
+            />
           ) : null}
         </div>
       ) : null}

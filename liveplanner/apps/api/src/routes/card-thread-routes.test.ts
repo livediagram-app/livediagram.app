@@ -336,38 +336,52 @@ describe('the writes on a thread', () => {
     ).toBe(403);
   });
 
-  it('deletes a thread: an Editor, or its starter; never a Participant who did not start it, nor an agent', async () => {
-    expect(
-      (
-        await call('p1', 'DELETE', `/threads/${t.id}`, undefined, {
-          owner: 'visitor',
-          code: 'PART',
-        })
-      ).status,
-    ).toBe(403);
-    expect(
-      (await call('p1', 'DELETE', `/threads/${t.id}`, undefined, { agent: true })).status,
-    ).toBe(403);
+  // items.md "Deleting a thread": only when every comment is the caller's own, Editors included; never an agent.
+  it('deletes a thread only when every comment in it is the caller’s own, Editors included; never an agent', async () => {
+    const del = (id: string, who: Who = {}) =>
+      call<{ error?: string }>('p1', 'DELETE', `/threads/${id}`, undefined, who);
+    // The owner's thread: a Participant and an Editor who wrote none of it are refused; so is an agent.
+    expect(await del(t.id, { owner: 'visitor', code: 'PART' })).toEqual({
+      status: 409,
+      body: { error: 'thread_has_others' },
+    });
+    expect((await del(t.id, { owner: 'visitor', code: 'EDIT' })).body).toEqual({
+      error: 'thread_has_others',
+    });
+    expect((await del(t.id, { agent: true })).status).toBe(403);
+    // A Participant deletes a thread made only of their own comments.
     const theirs = (await start('p1', b.id, 'Mine', { owner: 'visitor', code: 'PART' })).body
       .thread!;
+    expect((await del(theirs.id, { owner: 'visitor', code: 'PART' })).status).toBe(204);
+    // Its starter, an Editor too, may not once someone else has replied; resolving is the way on.
+    await reply('Me too', { owner: 'visitor', code: 'PART' });
+    expect(await del(t.id)).toEqual({ status: 409, body: { error: 'thread_has_others' } });
+    expect((await call('p1', 'POST', `/threads/${t.id}/resolve`)).status).toBe(200);
+    // With the other comment gone, every comment is theirs again.
+    const other = (await threads('p1'))[0]!.comments[1]!.id;
     expect(
       (
-        await call('p1', 'DELETE', `/threads/${theirs.id}`, undefined, {
+        await call('p1', 'DELETE', `/threads/${t.id}/comments/${other}`, undefined, {
           owner: 'visitor',
           code: 'PART',
         })
       ).status,
-    ).toBe(204);
-    expect(
-      (
-        await call('p1', 'DELETE', `/threads/${t.id}`, undefined, {
-          owner: 'visitor',
-          code: 'EDIT',
-        })
-      ).status,
-    ).toBe(204);
+    ).toBe(200);
+    expect((await del(t.id)).status).toBe(204);
     expect(await threads('p1')).toEqual([]);
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM card_thread_links').get()!.n).toBe(0);
+  });
+
+  it('counts a comment an agent posted with the person’s own token as theirs', async () => {
+    const own = (await start('p1', b.id, 'Mine')).body.thread!;
+    await call(
+      'p1',
+      'POST',
+      `/threads/${own.id}/comments`,
+      { text: 'From my agent' },
+      { agent: true },
+    );
+    expect((await call('p1', 'DELETE', `/threads/${own.id}`)).status).toBe(204);
   });
 
   it('rejects verbs it does not take', async () => {
@@ -462,7 +476,21 @@ describe('Add Thread to Card', () => {
         )
       ).status,
     ).toBe(403);
-    // Deleting it from p1 takes it off p2's card too.
+    // Another plan's reply is someone else's comment: the thread is not deleted, through p2 or through its home.
+    expect(await call('p2', 'DELETE', `/threads/${t.id}`, undefined, { owner: 'other' })).toEqual({
+      status: 409,
+      body: { error: 'thread_has_others' },
+    });
+    expect((await call('p1', 'DELETE', `/threads/${t.id}`)).status).toBe(409);
+    // Once it is all theirs again, deleting it from p1 takes it off p2's card too.
+    const fromP2 = r.body.thread!.comments[1]!.id;
+    expect(
+      (
+        await call('p2', 'DELETE', `/threads/${t.id}/comments/${fromP2}`, undefined, {
+          owner: 'other',
+        })
+      ).status,
+    ).toBe(200);
     expect((await call('p1', 'DELETE', `/threads/${t.id}`)).status).toBe(204);
     expect(await threads('p2', { owner: 'other' })).toEqual([]);
   });

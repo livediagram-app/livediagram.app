@@ -1,8 +1,8 @@
 'use client';
 
-// New Custom Field's kind and preview (docs/specs/026-plan/item-types.md "Editing a type": Add Field): the thirteen
-// kinds as a grid of icon tiles, six to a row, one radio group, and a preview of the field as the card's panel will show it,
-// named as typed, with a sample value of its kind.
+// Each custom field kind's icon, and Add Field's preview (docs/specs/026-plan/item-types.md "Fields and Tabs": Add
+// Field): a small card holding the field as the card's panel will show it, named as typed, with a sample value of its
+// kind.
 import {
   RATING_FIELD_SCALE_DEFAULT,
   currencyText,
@@ -74,41 +74,6 @@ export function fieldIconOf(
     return { node: <PlanTypeGlyph glyph="person" size={16} />, name: 'Person' };
   const kind = custom?.kind ?? BUILT_IN_KINDS[id] ?? 'text';
   return { node: CUSTOM_KIND_ICONS[kind], name: CUSTOM_KIND_LABELS[kind] };
-}
-
-export function CustomFieldKindTiles({
-  kinds,
-  value,
-  onChange,
-}: {
-  kinds: readonly CustomFieldKind[];
-  value: CustomFieldKind;
-  onChange: (kind: CustomFieldKind) => void;
-}) {
-  return (
-    <div role="radiogroup" aria-label="New field's kind" className="grid grid-cols-6 gap-1">
-      {kinds.map((k) => {
-        const on = k === value;
-        return (
-          <button
-            key={k}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            className={`flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1 py-1.5 text-center text-[11px] font-medium leading-tight transition ${
-              on
-                ? 'border-brand-400 bg-brand-50 text-brand-800 dark:border-brand-500/60 dark:bg-brand-500/10 dark:text-brand-100'
-                : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800'
-            }`}
-            onClick={() => onChange(k)}
-          >
-            {CUSTOM_KIND_ICONS[k]}
-            {CUSTOM_KIND_LABELS[k]}
-          </button>
-        );
-      })}
-    </div>
-  );
 }
 
 // A sample of each kind, drawn as the card's panel draws a value (quietly: it is only a picture).
@@ -209,6 +174,7 @@ export function CustomFieldPreview({
   currency,
   scale,
   calculation,
+  required,
 }: {
   label: string;
   kind: CustomFieldKind;
@@ -221,17 +187,26 @@ export function CustomFieldPreview({
   scale?: number | undefined;
   // A Calculated field's calculation.
   calculation?: Calculation | undefined;
+  // Drawn with the required mark.
+  required?: boolean | undefined;
 }) {
   return (
     <figure
       aria-label="Preview"
-      className="rounded-lg bg-slate-50 px-3 py-1.5 dark:bg-slate-800/50"
+      className="flex flex-col gap-1.5 rounded-xl bg-slate-100/80 p-2.5 dark:bg-slate-800/60"
     >
-      <figcaption className="pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <figcaption className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Preview
       </figcaption>
-      <div className="pointer-events-none" aria-hidden>
-        <ItemDetailsRow label={label.trim() || 'Field name'}>
+      {/* A card as a board's panel draws it: only a picture, so nothing in it takes a press or focus. */}
+      <div
+        className="pointer-events-none rounded-lg border border-slate-200 bg-white px-3 pb-1.5 pt-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+        aria-hidden
+      >
+        <p className="mb-1 text-[13px] font-semibold text-slate-900 dark:text-slate-50">
+          Example card
+        </p>
+        <ItemDetailsRow label={label.trim() || 'Field name'} required={required === true}>
           <SampleValue
             kind={kind}
             options={options}

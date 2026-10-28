@@ -18,6 +18,13 @@ import {
 afterEach(cleanup);
 
 const flush = () => act(async () => {});
+// Every thread is closed when the card opens: its header opens it.
+const openThread = (title: string | RegExp) =>
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: typeof title === 'string' ? new RegExp(`^${title}`) : title,
+    }),
+  );
 
 function renderLive(threads = [thread('th-a')], extra = {}, opts = {}) {
   const live = liveThreads(threads, extra, opts);
@@ -99,7 +106,7 @@ describe('the list', () => {
     }),
   ];
 
-  it('puts open threads first, the most recent open, and resolved ones under a closed disclosure', () => {
+  it('puts open threads first, every one closed, and resolved ones under a closed disclosure', () => {
     renderLive(THREADS);
     expect(screen.getByText('2 open · 1 resolved')).toBeTruthy();
     const open = screen
@@ -107,7 +114,7 @@ describe('the list', () => {
       .querySelectorAll('[data-thread]');
     expect([...open].map((li) => li.getAttribute('data-thread'))).toEqual(['th-new', 'th-old']);
     expect(screen.getByRole('button', { name: /^Newest open/ }).getAttribute('aria-expanded')).toBe(
-      'true',
+      'false',
     );
     expect(screen.getByRole('button', { name: /^Older open/ }).getAttribute('aria-expanded')).toBe(
       'false',
@@ -129,8 +136,47 @@ describe('the list', () => {
     expect(older.getAttribute('aria-expanded')).toBe('false');
   });
 
+  it('closes every thread again when the card is opened afresh', () => {
+    const { threads } = fakeThreads(THREADS);
+    const { rerender } = render(
+      <Provide value={contextOf(threads)}>
+        <CardThreads item={card()} />
+      </Provide>,
+    );
+    openThread('Older open');
+    expect(screen.getByRole('button', { name: /^Older open/ }).getAttribute('aria-expanded')).toBe(
+      'true',
+    );
+    rerender(
+      <Provide value={contextOf(threads)}>
+        <CardThreads item={card('card-2', 2)} />
+      </Provide>,
+    );
+    rerender(
+      <Provide value={contextOf(threads)}>
+        <CardThreads item={card()} />
+      </Provide>,
+    );
+    expect(screen.getByRole('button', { name: /^Older open/ }).getAttribute('aria-expanded')).toBe(
+      'false',
+    );
+  });
+
+  it('puts Resolve on the reply composer’s row, left of Reply, with no row of its own', () => {
+    renderLive([THREADS[1]!]);
+    openThread('Newest open');
+    const resolve = screen.getByRole('button', { name: 'Resolve' });
+    const reply = screen.getByRole('button', { name: 'Reply' });
+    expect(resolve.parentElement).toBe(reply.parentElement);
+    expect(resolve.compareDocumentPosition(reply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(resolve.closest('footer')).toBe(
+      screen.getByRole('textbox', { name: /^Reply to/ }).closest('footer'),
+    );
+  });
+
   it('resolves a thread, moving it under Resolved, and reopens it', async () => {
     const live = renderLive([THREADS[1]!]);
+    openThread('Newest open');
     fireEvent.click(screen.getByRole('button', { name: 'Resolve' }));
     await flush();
     expect(live.acts.at(-1)).toEqual({ kind: 'resolve', threadId: 'th-new', resolved: true });
@@ -138,7 +184,10 @@ describe('the list', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Resolved · 1' }));
     // A resolved thread takes no reply.
     expect(screen.queryByRole('textbox', { name: /^Reply to/ })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /^Newest open/ }));
+    // Still open where it now sits, Reopen under its comments.
+    expect(screen.getByRole('button', { name: /^Newest open/ }).getAttribute('aria-expanded')).toBe(
+      'true',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
     await flush();
     expect(live.acts.at(-1)).toEqual({ kind: 'resolve', threadId: 'th-new', resolved: false });
@@ -170,6 +219,7 @@ describe('the list', () => {
 describe('replying and comments', () => {
   it('posts a reply', async () => {
     const live = renderLive();
+    openThread('Title of th-a');
     const field = screen.getByRole('textbox', { name: 'Reply to “Title of th-a”' });
     fireEvent.change(field, { target: { value: 'On it' } });
     fireEvent.click(screen.getByRole('button', { name: 'Reply' }));
@@ -177,6 +227,10 @@ describe('replying and comments', () => {
     expect(live.acts).toEqual([{ kind: 'reply', threadId: 'th-a', text: 'On it' }]);
     expect(screen.getByText('On it')).toBeTruthy();
     expect(screen.getByText('2 comments')).toBeTruthy();
+    // Replying keeps it open.
+    expect(
+      screen.getByRole('button', { name: /^Title of th-a/ }).getAttribute('aria-expanded'),
+    ).toBe('true');
   });
 
   it('marks an agent’s comment and an edited one', () => {
@@ -185,6 +239,7 @@ describe('replying and comments', () => {
         comments: [comment('c1', { ai: true, editedAt: 5 })],
       }),
     ]);
+    openThread('Title of th-a');
     expect(screen.getByText('Generated by AI')).toBeTruthy();
     expect(screen.getByText('· Edited')).toBeTruthy();
   });
@@ -194,6 +249,7 @@ describe('replying and comments', () => {
       comments: [comment('c1'), comment('c2', { authorId: ME, text: 'Mine' })],
     });
     const live = renderLive([mine], { isEditor: false });
+    openThread('Title of th-a');
     // Edit and Delete on their own comment only.
     expect(screen.getAllByRole('button', { name: 'Edit comment' })).toHaveLength(1);
     expect(screen.getAllByRole('button', { name: 'Delete comment' })).toHaveLength(1);
@@ -213,11 +269,13 @@ describe('replying and comments', () => {
     expect(live.acts.at(-1)).toEqual({ kind: 'delete', threadId: 'th-a', commentId: 'c2' });
     cleanup();
     renderLive([mine], { isEditor: true });
+    openThread('Title of th-a');
     expect(screen.getAllByRole('button', { name: 'Delete comment' })).toHaveLength(2);
   });
 
   it('gives a Viewer no composer, no Resolve and no menu', () => {
     renderLive([thread('th-a')], { canComment: false, isEditor: false });
+    openThread('Title of th-a');
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Resolve' })).toBeNull();
     expect(screen.queryByRole('button', { name: /^More for the thread/ })).toBeNull();
@@ -252,8 +310,9 @@ describe('the ⋯ menu', () => {
     expect(screen.getByRole('textbox', { name: 'Thread title' })).toBeTruthy();
   });
 
-  it('deletes a thread after a confirmation that counts its cards', async () => {
+  it('deletes a thread of their own comments after a confirmation that counts its cards', async () => {
     const shared = thread('th-a', {
+      comments: [comment('c1', { authorId: ME })],
       cards: [
         { projectId: PLAN, itemId: 'card-1', key: 1 },
         { projectId: PLAN, itemId: 'card-2', key: 2 },
@@ -271,16 +330,29 @@ describe('the ⋯ menu', () => {
     expect(screen.getByText('No threads yet')).toBeTruthy();
   });
 
-  it('offers Delete Thread to a Participant only on a thread they started', () => {
-    renderLive([thread('th-a')], { isEditor: false });
-    openMenu();
-    expect(screen.queryByRole('menuitem', { name: 'Delete Thread…' })).toBeNull();
-    cleanup();
-    renderLive([thread('th-a', { createdBy: { name: 'Sam', color: '#000', authorId: ME } })], {
+  // items.md "Deleting a thread": only a thread of one's own comments, Editors alike; else it is resolved.
+  it('greys Delete Thread, saying to resolve, once anyone else has commented, for an Editor too', () => {
+    for (const isEditor of [true, false]) {
+      renderLive([thread('th-a', { createdBy: { name: 'Sam', color: '#000', authorId: ME } })], {
+        isEditor,
+      });
+      openMenu();
+      const row = screen.getByRole('menuitem', { name: 'Delete Thread…' });
+      expect(row.getAttribute('aria-disabled')).toBe('true');
+      fireEvent.click(row);
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+      expect(screen.getByText('Others have commented: resolve it instead.')).toBeTruthy();
+      expect(screen.getByRole('menuitem', { name: 'Resolve' })).toBeTruthy();
+      cleanup();
+    }
+    renderLive([thread('th-a', { comments: [comment('c1', { authorId: ME })] })], {
       isEditor: false,
     });
     openMenu();
-    expect(screen.getByRole('menuitem', { name: 'Delete Thread…' })).toBeTruthy();
+    expect(
+      screen.getByRole('menuitem', { name: 'Delete Thread…' }).getAttribute('aria-disabled'),
+    ).toBeNull();
+    expect(screen.queryByText('Others have commented: resolve it instead.')).toBeNull();
   });
 
   it('opens Add Thread to Card', () => {
@@ -292,6 +364,7 @@ describe('the ⋯ menu', () => {
 
   it('keeps what was shown when a write is refused', async () => {
     const live = renderLive([thread('th-a')], {}, { refuse: true });
+    openThread('Title of th-a');
     fireEvent.click(screen.getByRole('button', { name: 'Resolve' }));
     await flush();
     expect(live.acts).toHaveLength(1);

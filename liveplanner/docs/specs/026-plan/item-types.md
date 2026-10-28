@@ -161,7 +161,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     type, keeps working (moved, edited, archived) until someone fills the field; only emptying a value it has is
     refused. A type change is never refused for it, nor a card restored, synced, copied or put back by an undo (the
     api's bulk writes that carry a card's number, votes or thread, and every write sent with `undo: true`).
-  - **In the type editor** a custom field's form (and New Custom Field) has a **Required** switch (as a form
+  - **In the type editor** a custom field's form (and Add Field's Shape step) has a **Required** switch (as a form
     question's), absent for a Checkbox or Calculated field; turning a field into either is not possible, so it never needs clearing. A required field's
     row carries the same red asterisk after its name.
   - **Agents** see it: `list_items` lists `required: true` on each required custom field, `change_card_types`
@@ -216,7 +216,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     card is back or the link is changed. A Card field whose type is gone from the catalogue keeps it among its
     types, and an unticked type is never taken off a card already linked to one of its cards.
 - <a id="calculated-fields"></a>**Calculated fields**: a custom field of kind **Calculated** works its value out from the plan instead of holding
-  one. It is made like any custom field (Add Field's **Calculated** tile, or `change_card_types`), with one
+  one. It is made like any custom field (Add Field's **Calculated** kind, or `change_card_types`), with one
   **calculation** from a fixed menu, stored as `calculation` on the field:
   - **Child Count**: how many children the card has.
   - **Children Done (%)**: the share of its children that are done, a whole percentage ("40%"); nothing when it has
@@ -348,7 +348,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     While it runs, Escape belongs to the tour (it never closes the editor). Telemetry: `UI` · `Started` ·
     `CardTypeTour`, and `UI` · `Ended` · `CardTypeTourCompleted` or `CardTypeTourSkipped`. Every
     button carries an icon: Save a tick, Cancel and the cross a cross, Delete a bin, Duplicate the copy
-    icon, Back a left chevron, Add Field, Add Tab and Add Custom Field a plus.
+    icon, Back a left chevron, Add Field, Add Tab and Add {Name} a plus.
   - **Configuration**: one scrolling panel of two sections: **General**, then **Fields**, set off by a rule. General
     opens the panel without a visible heading (its Name field says what it is; the heading is kept for screen
     readers and the tour); Fields shows its heading (Title Case, a size above the row labels). Each holds every
@@ -384,7 +384,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - Field rows alternate white and a light grey within their group, so a long list reads row by row. Each field
     row leads with a **drag handle** (a grip), then an icon of what it holds, then its name, and a lock beside the
     name for a field the type always keeps (Title and Status, and a Project's Start and Due; its tooltip says "{Name}
-    is always on this type"). The icon is the Add Field kind tiles' own (a custom field's kind: Link to Card a card;
+    is always on this type"). The icon is the Add Field kinds' own (a custom field's kind: Link to Card a card;
     a built-in field the kind closest to it: Due Date a calendar, Estimate a #, Checklist a checkbox, Status,
     Priority, Colour and Labels a list, Title text, Description and Comments long text, Votes a #), the Assignee a
     person; its tooltip and accessible name name the kind ("Link to Card", "Date", "Person"). Dragging the handle (mouse, pen or touch alike) moves the field
@@ -395,22 +395,71 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Up** and **Move Down** (the keyboard's way to reorder), **Move to {group}** for each other group (Details
     first, then the tabs) and **Remove** (absent for a field the type always keeps). Title has no menu.
   - Each group ends with **Add Field**, a full-width dashed row (as **Add Type** in the panel), which opens a
-    popover anchored to it (24 rem wide, over the editor, so it is never squeezed by the Details column), which offers the built-in fields the type lacks as chips, and **New
-    Custom Field**: a name, then its kind as a grid of twelve icon tiles, six to a row (Text, Long Text, Number,
-    Currency, Date, Checkbox, Link, Email, Choice, Multiple Choice, Rating, **Link to Card**; one radio group), then
-    the options, one a line, for Choice and Multiple Choice, its **Scale** ("Out of 3" to "Out of 10", 5 first
-    chosen) for Rating, its **Currency** (a select of the common codes, GBP first) for Currency, or for
-    Link to Card **Links To** its card types (at least one), and a **Preview** of the field as the card's panel will
-    show it: its name as typed ("Field name" until then) beside a sample value of its kind (Choice shows its first
-    option, Link to Card the linked types' names, "Project or Epic").
+    popover anchored to it (24 rem wide, over the editor, so it is never squeezed by the Details column; on a phone
+    the window's width less its margins; never taller than the room on its side, scrolling inside). It works in two
+    steps, **pick, then shape**, in the same popover (named "Add Field"); the field lands in that group (Votes
+    always on the card). (The owner's pick, 2026-10-28, from the design canvas's "B · Pick, then shape".)
+    - **Pick** (step 1), top to bottom:
+      - **Search fields** at the very top (a search field with a magnifier, its placeholder "Search fields, like
+        money or date", and a close cross at its end, which closes the popover). It takes focus on opening under a
+        mouse or a pen, never on a touch screen (no keyboard flies up); it stays at the top while the rest scrolls.
+        Typing filters both sections at once: a built-in by its name, a kind by its name, its line, and a few
+        everyday words for it (**money**, **price**, **budget** find Currency; **stars**, **score** Rating;
+        **yes/no**, **tick**, **toggle** Checkbox; **parent**, **epic**, **relation** Link to Card; **percent**,
+        **progress**, **formula** Calculated; **url**, **website** Link; **dropdown**, **select**, **option**
+        Choice; **tags**, **multi-select** Multiple Choice; **notes**, **paragraph** Long Text; **deadline**,
+        **day** Date; **count**, **points** Number; **mail** Email). With nothing matching it says **No matches for
+        “…”** with "Try a word like money, date or parent." under it. How many match is announced.
+      - **Ready-made**: the built-in fields the type does not have yet, each a tile with its icon (the type
+        editor's rows' own) and name, three to a row (two on a narrow window); one press adds it at once and closes
+        the popover. Hidden when the type has them all (or, searching, when none matches).
+      - **Your own field**: the thirteen kinds, each a row with its icon on a soft tile, its name, and a one-line
+        description in plain words, in four groups as an **accordion**, one group open at a time (opening one closes
+        the other; pressing the open one closes it; the first open to start): **Text & links** (Text "A short line
+        of text", Long Text "Paragraphs of notes", Link "A web address", Email "An address that opens your mail
+        app"), **Numbers & dates** (Number "Points, counts and sizes", Currency "An amount, like £12,500", Rating
+        "Stars out of 3 to 10", Date "A day on the calendar"), **Choices** (Choice "One option from a list",
+        Multiple Choice "Several options from a list", Checkbox "Yes or no, ticked or not") and **Linked cards**
+        (Link to Card "Another card, like a parent or an epic", Calculated "Worked out from the cards linked
+        here"). Each group's header is a button (`aria-expanded`) with the group's name, how many kinds it holds and
+        a chevron. While a search is typed the accordion steps aside: every group with a match shows open, listing
+        only its matches (its count then the matches'), and a group with none is hidden; clearing the search brings
+        the accordion back as it was.
+      - When the type holds the most custom fields it can (12), "Your own field" says "This type holds the most
+        custom fields it can (12). Remove one to add another." in place of the groups; Ready-made still works.
+      - **Keyboard**: ↓ from the search moves to the first result; ↑ and ↓ move through every result in order (the
+        Ready-made tiles, the group headers, the kinds), Home and End to the first and last, ↑ from the first back
+        to the search; Enter or Space presses the one focused; Enter in the search, with a search typed, picks the
+        first match. Escape in the search clears a typed search first, then closes the popover.
+    - **Shape** (step 2, after a kind is picked): a header with **All kinds** (a left chevron; back to Pick with
+      the search as it was, focus on the kind that was picked) and the kind as a pill (its icon and name, read as
+      "Kind: Choice"); then **Name** (a labelled field, focused, "Field name" as its placeholder); then only what
+      that kind needs: for Choice and Multiple Choice **Options**, a list of option rows (each a field named "Option
+      1", "Option 2", … with a remove cross; one empty row to start), **Add an option** (a dashed row, "or paste a
+      list" beside it), Enter in a row adding a row after it, Backspace in an empty row removing it, and pasting
+      several lines into a row adding one option a line (blanks dropped, at most 20); for Rating **Scale** ("Out of
+      3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for
+      Link to Card **Links To** its card types (at least one); for Calculated **Calculation** (the menu below, the
+      first chosen); then **Required** (where the kind may be required: never Checkbox or Calculated); then
+      **Preview**: a small card as a board's card panel draws it, "Example card" over the field's row: its name as
+      typed ("Field name" until then, with the required mark when Required) beside a sample value of its kind
+      (Choice its first option, Multiple Choice its first two, Link to Card the linked types' names, "Project or
+      Epic", Rating stars out of its scale, Currency in its currency, Calculated "3" or "40%"); updating as you
+      type. Last, one full-width primary button **Add {Name}** ("Add {Kind} Field" until named), off until the
+      field is ready: a name, at least one option for Choice and Multiple Choice, at least one type for Link to
+      Card. While it is off, a quiet line under it says what is missing ("Name the field to add it.", "Add at
+      least one option.", "Pick a card type it links to."). Enter in Name (or anywhere but an option row, a menu or
+      a button) adds it when ready. Escape goes back to Pick (and from Pick closes the popover). Adding closes the
+      popover; the button stays in view at the foot while the rest scrolls.
+    - On a touch screen every control in it is at least 44 px tall. Moving between the steps slides in gently,
+      not at all with reduced motion. Dark mode throughout.
   - **Links To** is a multi-select dropdown: a field the width of its row reading **Links To Project** (one type),
     **Links To Project or Epic** (two), **Links To Project, Epic and 2 more** (more), or **Links To a Card Type…**
     (muted, none yet), with a chevron. Pressed, it opens a popover under it listing every card type (its glyph in its
     colour, its name), each a checkbox row: ticking adds the type, unticking takes it off, and the popover stays open
     for more. A ticked type the project no longer has keeps a row after the others, named by its id, so it can be
     unticked. The last ticked type cannot be unticked (its row is disabled), so a field always links somewhere.
-    Escape, a press outside or the field again close it. Its accessible name is "Links To". The field lands in that group
-    (Votes always on the card). **Add Tab**, the same full-width dashed row under the groups, adds an unnamed tab.
+    Escape, a press outside or the field again close it. Its accessible name is "Links To". **Add Tab**, the same full-width dashed row under the groups, adds an unnamed tab.
   - **States**: every status the project's boards name, and any a card is in that no board names, grouped by the
     board that shows it: a group per board (All Cards and Archive boards aside), headed by the board's title as it
     is now (so a renamed board reads its new name) with "N of M states on", holding its statuses in column order (a status

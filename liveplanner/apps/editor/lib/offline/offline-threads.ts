@@ -14,6 +14,7 @@ import {
   newThreadId,
   readThreadTitle,
   startThread,
+  threadOnlyBy,
   threadTitle,
   threadsOnCard,
   withoutLegacyThread,
@@ -70,6 +71,7 @@ const STATUS: Record<string, number> = {
   thread_cards_full: 413,
   title_too_long: 400,
   forbidden: 403,
+  thread_has_others: 409,
 };
 
 const refused = (code: string) => new ApiError('thread write', STATUS[code] ?? 400, code);
@@ -156,6 +158,8 @@ export async function offlineWriteThread(
       const thread = threads.find((t) => t.id === action.threadId);
       if (!thread) throw refused('thread_not_found');
       if (action.kind === 'deleteThread') {
+        // Only a thread made of this person's own comments, as on the api.
+        if (!threadOnlyBy(thread, who.ownerId)) throw refused('thread_has_others');
         answer = { thread: null };
         return { ...rec, threads: threads.filter((t) => t.id !== thread.id) };
       }

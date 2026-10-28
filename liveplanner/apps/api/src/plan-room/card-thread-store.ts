@@ -15,6 +15,7 @@ import {
   type CardThread,
   type ThreadChange,
   type ThreadRefusal,
+  threadOnlyBy,
 } from '@liveplanner/project';
 import {
   deleteLinksStatement,
@@ -43,7 +44,11 @@ export type ThreadOp =
   | { kind: 'delete'; actor: ThreadActor };
 
 export type ThreadError =
-  Exclude<ThreadRefusal, 'unchanged'> | 'thread_not_found' | 'forbidden' | 'thread_busy';
+  | Exclude<ThreadRefusal, 'unchanged'>
+  | 'thread_not_found'
+  | 'forbidden'
+  | 'thread_busy'
+  | 'thread_has_others';
 
 export type ThreadWriteResult =
   { ok: true; thread: CardThread | null } | { ok: false; error: ThreadError | 'unchanged' };
@@ -55,12 +60,16 @@ export const LINK_GRACE_MS = 120_000;
 const THREAD_WRITE_RETRIES = 4;
 
 // What `actor` may not do to `thread` (null: they may): the rules items.md "Who may do what" gives each write.
-export function threadRightRefusal(thread: CardThread, op: ThreadOp): 'forbidden' | null {
+// A thread is deleted only by someone every comment in it is theirs, Editors included; an agent never.
+export function threadRightRefusal(
+  thread: CardThread,
+  op: ThreadOp,
+): 'forbidden' | 'thread_has_others' | null {
   const { actor } = op;
-  if (op.kind === 'delete')
-    return !actor.agent && (actor.editor || thread.createdBy.authorId === actor.owner)
-      ? null
-      : 'forbidden';
+  if (op.kind === 'delete') {
+    if (actor.agent) return 'forbidden';
+    return threadOnlyBy(thread, actor.owner) ? null : 'thread_has_others';
+  }
   const change = op.change;
   const own = (commentId: string) => {
     const c = thread.comments.find((x) => x.id === commentId);
@@ -99,7 +108,11 @@ export async function writeThread(
       return { ok: false, error: 'thread_not_found' };
     const refused = threadRightRefusal(thread, op);
     if (refused) {
-      console.info('[threads] write.refused', { kind: opKind(op), agent: op.actor.agent });
+      console.info('[threads] write.refused', {
+        kind: opKind(op),
+        agent: op.actor.agent,
+        error: refused,
+      });
       return { ok: false, error: refused };
     }
     let next: CardThread | null;

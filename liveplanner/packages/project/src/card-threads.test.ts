@@ -21,6 +21,7 @@ import {
   startThread,
   threadForRoom,
   threadForViewer,
+  threadOnlyBy,
   threadParticipants,
   threadTitle,
   threadsOnCard,
@@ -486,5 +487,20 @@ describe('the old single thread', () => {
     expect(withoutLegacyThread(it).fields).toEqual({ title: 'A' });
     const bare = item({ title: 'A' });
     expect(withoutLegacyThread(bare)).toBe(bare);
+  });
+});
+
+// items.md "Deleting a thread": only a thread every comment in which is the person's own.
+describe('threadOnlyBy', () => {
+  it('is true only when every comment is theirs, an agent’s for them among them', () => {
+    const t = thread();
+    expect(threadOnlyBy(t, 'owner-ada')).toBe(true);
+    const withAgent = { ...t, comments: [...t.comments, comment('c2', { ai: true })] };
+    expect(threadOnlyBy(withAgent, 'owner-ada')).toBe(true);
+    const withOther = { ...t, comments: [...t.comments, comment('c3', { authorId: 'owner-bo' })] };
+    expect(threadOnlyBy(withOther, 'owner-ada')).toBe(false);
+    // A viewer's copy withholds others' ids: such a comment reads as someone else's.
+    expect(threadOnlyBy(threadForViewer(withOther, 'owner-bo'), 'owner-bo')).toBe(false);
+    expect(threadOnlyBy(t, null)).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { ItemPanel } from './ItemPanel';
@@ -75,9 +75,11 @@ function panel(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES, withComme
 }
 
 describe('the item panel’s comments', () => {
-  it('ends the Overview tab with the card’s threads, the latest open with its reply composer', () => {
+  it('ends the Overview tab with the card’s threads, each closed until opened', () => {
     panel(card());
     expect(screen.getByText('Comments')).toBeTruthy();
+    expect(screen.queryByRole('textbox', { name: 'Reply to “Sam: First thoughts”' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /^Sam: First thoughts/ }));
     expect(screen.getByText('First thoughts')).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Reply to “Sam: First thoughts”' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'New Thread' })).toBeTruthy();
@@ -85,13 +87,13 @@ describe('the item panel’s comments', () => {
 
   it('draws nothing for the field without a comments context', () => {
     panel(card(), ITEM_TYPES, false);
-    expect(screen.queryByText('First thoughts')).toBeNull();
+    expect(screen.queryByText('Sam: First thoughts')).toBeNull();
   });
 
   it('keeps a thread a type no longer offers out of the panel', () => {
     const plain: ItemTypeDef = { ...ITEM_TYPES[1], fields: ['title', 'status', 'description'] };
     panel(card(), [plain]);
-    expect(screen.queryByText('First thoughts')).toBeNull();
+    expect(screen.queryByText('Sam: First thoughts')).toBeNull();
     expect(screen.queryByText('Comments')).toBeNull();
   });
 });
