@@ -101,7 +101,9 @@ describe('the retired Compact size', () => {
   });
 
   it('drops a stored Compact layout on read, never refusing it nor merging it into Detailed', () => {
-    expect(readCardDisplay({ compact: { row: ['key'], trail: ['assignee'] } }, 'task')).toBeUndefined();
+    expect(
+      readCardDisplay({ compact: { row: ['key'], trail: ['assignee'] } }, 'task'),
+    ).toBeUndefined();
     expect(readCardDisplay({ compact: { nowhere: [] } }, 'task')).toBeUndefined();
     expect(
       readCardDisplay({ compact: { row: ['key'] }, minimal: { trail: ['due'] } }, 'task'),

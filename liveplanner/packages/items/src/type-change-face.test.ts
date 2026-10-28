@@ -66,7 +66,9 @@ describe('display', () => {
     ]);
     const bug = typeIn(r, 'Bug');
     expect(bug.display).toEqual({ minimal: { trail: ['assignee'] } });
-    expect(typeCardLayout(bug, 'detailed')).toEqual(typeCardLayout({ ...bug, display: {} }, 'detailed'));
+    expect(typeCardLayout(bug, 'detailed')).toEqual(
+      typeCardLayout({ ...bug, display: {} }, 'detailed'),
+    );
   });
 
   it('keeps a size left out as it was', () => {

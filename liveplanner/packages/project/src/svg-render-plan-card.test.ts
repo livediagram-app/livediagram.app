@@ -85,7 +85,11 @@ describe('planCardFace', () => {
 
   it("gates a built-in field by the board's card fields", () => {
     const voted = item('a', { title: 'Idea', votes: { p: 2 } }, { type: 'idea' });
-    const on = planCardFace(voted, 0, 0, 240, { palette, boardFields: ['votes'], size: 'detailed' });
+    const on = planCardFace(voted, 0, 0, 240, {
+      palette,
+      boardFields: ['votes'],
+      size: 'detailed',
+    });
     const off = planCardFace(voted, 0, 0, 240, { palette, boardFields: [], size: 'detailed' });
     expect(off.svg).not.toContain('▲');
     expect(on.svg).toContain('▲ 2');
