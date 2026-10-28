@@ -321,8 +321,11 @@ text. Editing an AI comment keeps the flag; a person cannot set or clear it.
   **Reply** (primary, on the right), the same height, with no row of its own between the comments and the composer.
   Resolve shows only to those who may resolve, who are those who may reply. Your own comment offers **Edit**
   (in place: the text becomes a field, **Save** and **Cancel**, ⌘/Ctrl Enter saves, Escape cancels) and **Delete**; an
-  Editor's row offers Delete on anyone's. The most recently active open thread is expanded when the panel opens;
-  the others are closed, and each remembers being opened while the panel stays on the card.
+  Editor's row offers Delete on anyone's. Every thread is **closed when the card opens** (its header only: title,
+  avatars, count, last activity). A thread opens when its header is pressed, when a link names it (below), or when
+  the person has just started it with Start Thread (it lands open, so they see what they posted and can go on);
+  replying keeps an opened thread open. What is open is remembered only while the panel stays on the card:
+  closing the card, or opening another, and coming back finds every thread closed again; nothing is stored.
 - **Resolved threads** sit at the bottom under a **Resolved · 2** disclosure, closed by default. Each is drawn
   quieter: a green check before its title, "Resolved by Ada · 3d ago" in its meta line, its comments dimmed when
   opened, and **Reopen** on its own row at the right under the comments (a resolved thread has no composer). Resolving a thread moves it there (smoothly; at once with

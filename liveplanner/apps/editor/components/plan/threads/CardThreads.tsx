@@ -2,8 +2,9 @@
 
 // A card's comment threads in the card panel (docs/specs/026-plan/items.md "Where it shows"): the `comments` field,
 // last in the Overview tab. A quiet tally and New Thread over the list; no threads, a soft empty state; the starter at
-// the top when New Thread is pressed; open threads most recently active first, the latest of them open; resolved
-// threads under a Resolved disclosure at the bottom. Drawn for about five threads, and for many more.
+// the top when New Thread is pressed; open threads most recently active first, every one closed when the card opens
+// (a thread just started, or one a link names, opens); resolved threads under a Resolved disclosure at the bottom.
+// Drawn for about five threads, and for many more.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CommentIcon, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
@@ -20,7 +21,12 @@ import { ANNOUNCE, threadTally } from './thread-words';
 const PlusIcon = lucideGlyph(lucidePlus, 13);
 const Chevron = lucideGlyph(lucideChevronDown, 13);
 
+// Keyed by the card, so opening another card (or this one again) starts with every thread closed.
 export function CardThreads({ item }: { item: Item }) {
+  return <CardThreadsOf key={item.id} item={item} />;
+}
+
+function CardThreadsOf({ item }: { item: Item }) {
   const ctx = useCardThreadsContext();
   const plan = usePlan();
   const threads = useMemo(() => ctx?.threads.threadsOf(item.id) ?? [], [ctx?.threads, item.id]);
@@ -29,9 +35,9 @@ export function CardThreads({ item }: { item: Item }) {
   const [starting, setStarting] = useState(false);
   const [showResolved, setShowResolved] = useState(false);
   const [adding, setAdding] = useState<CardThread | null>(null);
-  // Which threads are open: until someone opens or closes one, the most recently active open thread.
-  const [chosen, setExpanded] = useState<ReadonlySet<string> | null>(null);
-  const expanded: ReadonlySet<string> = chosen ?? new Set(open[0] ? [open[0].id] : []);
+  // Which threads are open: none when the card opens; one opens when its header is pressed, a link names it or it
+  // has just been started here. Kept only while the panel stays on this card.
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const tiles = useRef(new Map<string, HTMLElement>());
 
   // A link to one of this card's threads (#item=…&thread=…): open it (the Resolved list too), bring it into view.
@@ -42,7 +48,7 @@ export function CardThreads({ item }: { item: Item }) {
     // A one-shot request from outside the panel (the link), taken once and let go: keeping the thread open past it
     // is this panel's own state.
     // oxlint-disable-next-line react/set-state-in-effect
-    setExpanded((prev) => new Set([...(prev ?? []), focusedThread.id]));
+    setExpanded((prev) => new Set([...prev, focusedThread.id]));
     if (focusedThread.resolved) setShowResolved(true);
     const id = focusedThread.id;
     const frame = requestAnimationFrame(() =>
@@ -59,8 +65,8 @@ export function CardThreads({ item }: { item: Item }) {
     return it ? itemTitle(it) || 'Untitled' : null;
   };
   const toggle = (id: string) =>
-    setExpanded(() => {
-      const next = new Set(expanded);
+    setExpanded((prev) => {
+      const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
@@ -87,7 +93,7 @@ export function CardThreads({ item }: { item: Item }) {
       .act({ kind: 'start', itemId: item.id, text, ...(mentions.length ? { mentions } : {}) })
       .then((made) => {
         if (!made) return;
-        setExpanded(new Set([...expanded, made.id]));
+        setExpanded((prev) => new Set([...prev, made.id]));
         ctx.announce(ANNOUNCE.started);
       });
   };
