@@ -103,6 +103,42 @@ async function get(path: string, headers: Record<string, string> = {}) {
 const asPerson = { Authorization: 'Bearer person' };
 
 describe('an item preview', () => {
+  it('draws the reader’s appearance on its own key, asking the app for that half', async () => {
+    people.set('I1', { item: item(), tabId: null, publicCode: null });
+    door = (url) =>
+      new Response(svg(url.searchParams.get('appearance') ?? 'stored'), {
+        headers: { ETag: '"150"', 'Content-Type': 'image/svg+xml' },
+      });
+    const dark = await get('/items/I1?v=100&appearance=dark', asPerson);
+    expect(await dark.text()).toBe(svg('dark'));
+    expect(new URL(doorCalls[0]!.url).searchParams.get('appearance')).toBe('dark');
+    expect(db.objects.has('previews/liveplanner/I1/full-first-dark.svg')).toBe(true);
+    // The other half is its own drawing, and asking with none draws as stored.
+    expect(await (await get('/items/I1?v=100&appearance=light', asPerson)).text()).toBe(
+      svg('light'),
+    );
+    expect(await (await get('/items/I1?v=100', asPerson)).text()).toBe(svg('stored'));
+    expect(new URL(doorCalls[2]!.url).searchParams.has('appearance')).toBe(false);
+    // Fresh halves are served from the bucket: no more calls.
+    await get('/items/I1?v=100&appearance=dark', asPerson);
+    expect(doorCalls).toHaveLength(3);
+  });
+
+  it('refuses an appearance that is neither light nor dark, before asking the index', async () => {
+    people.set('I1', { item: item(), tabId: null, publicCode: null });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await get('/items/I1?v=100&appearance=sepia', asPerson);
+    expect(res.status).toBe(400);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(indexCalls).toHaveLength(0);
+    expect(doorCalls).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith('[previews] appearance refused', {
+      itemId: 'I1',
+      appearance: 'sepia',
+    });
+    warn.mockRestore();
+  });
+
   it('draws on a miss through the app door, then serves from the bucket while fresh', async () => {
     people.set('I1', { item: item(), tabId: null, publicCode: null });
     const first = await get('/items/I1?v=100', asPerson);

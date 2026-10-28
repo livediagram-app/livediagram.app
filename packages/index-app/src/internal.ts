@@ -18,7 +18,7 @@
 //                                                            returning guest of the old livediagram.app claiming
 //                                                            its migrated work, docs/migration.md step 6) `into` may
 //                                                            be a guest too
-//   GET    /api/internal/items/:id/export?format=svg[&tab=][&code=]   the item drawn as a file, for liveworkspace's
+//   GET    /api/internal/items/:id/export?format=svg[&tab=][&code=][&appearance=]   the item drawn as a file, for liveworkspace's
 //                                                            previews (liveworkspace/docs/specs/006-media/previews.md). Also takes the
 //                                                            app's MEDIA_KEY (`exportKey`) and DRIVE_KEY (`driveKey`).
 //   GET    /api/internal/items/:id/export?format=file       the item's whole-item envelope, the Drive mirror's file
@@ -80,6 +80,14 @@ export type CopyOutcome = { tabs: number; items: number } | 'not_found' | 'confl
 export const EXPORT_FORMATS = ['svg', 'file'] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
+// The reader's appearance a drawing is asked for (previews.md "The export door"), for an app whose drawing depends
+// on one. The browser address names the same two (@liveworkspace/media PREVIEW_APPEARANCES).
+export const EXPORT_APPEARANCES = ['light', 'dark'] as const;
+export type ExportAppearance = (typeof EXPORT_APPEARANCES)[number];
+
+const isExportAppearance = (value: unknown): value is ExportAppearance =>
+  typeof value === 'string' && (EXPORT_APPEARANCES as readonly string[]).includes(value);
+
 export type ExportQuery = {
   format: ExportFormat;
   // One tab, or null for the first.
@@ -87,6 +95,8 @@ export type ExportQuery = {
   // The public link (a Community post's) the reader came in by: the app draws what that link may show, or refuses
   // (`not_found`) when it shows nothing now. Null for everyone else.
   code: string | null;
+  // The reader's appearance (`svg` only): null draws as the app does with no reader.
+  appearance: ExportAppearance | null;
   // The version the caller already holds (`If-None-Match`): `unchanged` when it is still the content's, undrawn.
   ifVersion: number | null;
 };
@@ -267,10 +277,15 @@ async function exportItem(
   if ((tab !== null && !validId(tab)) || (code !== null && !validId(code))) {
     return badRequest('invalid tab or code');
   }
+  const appearance = url.searchParams.get('appearance');
+  if (appearance !== null && !isExportAppearance(appearance)) {
+    return badRequest('appearance must be light or dark');
+  }
   const result = await run(id, {
     format,
     tabId: tab,
     code,
+    appearance,
     ifVersion: etagVersion(request.headers.get('If-None-Match')),
   });
   if (result.status === 'not_found') return notFound();

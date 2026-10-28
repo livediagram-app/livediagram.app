@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PEN_INK, penColourHex } from '@livediagram/document';
+import {
+  DARK_CANVAS_BACKGROUND_COLOR,
+  DEFAULT_BACKGROUND_COLOR,
+  PEN_INK,
+  penColourHex,
+} from '@livediagram/document';
 import type { DocumentDTO, DocumentEnv, Env } from './types';
 
 // A canvas drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the platform stores and serves it, so
@@ -331,6 +336,40 @@ describe('a drawing of named stock colours', () => {
     const out = await draw(liveDoc());
     expect(out).toContain(penColourHex('blue', 'light'));
     expect(out).toContain(PEN_INK.light);
+  });
+});
+
+// docs/specs/006-document/document-snapshots.md "In the viewer's half": the preview the Explorer asks for is the tab
+// as a person in their appearance sees it, whichever half the last save stored.
+describe('a drawing in the reader’s appearance', () => {
+  const ink = {
+    id: 'e1',
+    type: 'shape',
+    shape: 'square',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 80,
+    penColour: 'ink',
+  };
+
+  it('draws a Default tab stored light on the dark canvas in dark', async () => {
+    db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [ink] })));
+    const out = await drawDocument(ENV, liveDoc(), null, { appearance: 'dark' });
+    expect(out).toContain(`fill="${DARK_CANVAS_BACKGROUND_COLOR}"`);
+    expect(out).toContain(PEN_INK.dark);
+  });
+
+  it('draws a Default tab stored dark on the light canvas in light, and as stored with none', async () => {
+    db.getTabBody.mockResolvedValue(
+      stored(JSON.stringify({ backgroundColor: DARK_CANVAS_BACKGROUND_COLOR, elements: [ink] })),
+    );
+    const light = await drawDocument(ENV, liveDoc(), null, { appearance: 'light' });
+    expect(light).toContain(`fill="${DEFAULT_BACKGROUND_COLOR}"`);
+    expect(light).toContain(PEN_INK.light);
+    expect(await drawDocument(ENV, liveDoc(), null, {})).toContain(
+      `fill="${DARK_CANVAS_BACKGROUND_COLOR}"`,
+    );
   });
 });
 

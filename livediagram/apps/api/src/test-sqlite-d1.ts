@@ -339,7 +339,12 @@ function testDocumentRooms(
         ),
       exportImage: async (
         documentId: string,
-        query: { tabId: string | null; code: string | null; ifVersion: number | null },
+        query: {
+          tabId: string | null;
+          code: string | null;
+          appearance: 'light' | 'dark' | null;
+          ifVersion: number | null;
+        },
       ) => {
         const content = await import('./document-room/document-content');
         const { meta, savedAt } = await content.readDocumentHead(env, documentId);
@@ -357,7 +362,13 @@ function testDocumentRooms(
         }
         const svg = await (
           await import('./thumbnail')
-        ).drawDocument(env, { id: documentId, name: meta.name }, query.tabId, {}, onPost);
+        ).drawDocument(
+          env,
+          { id: documentId, name: meta.name },
+          query.tabId,
+          { appearance: query.appearance },
+          onPost,
+        );
         return svg === null
           ? { status: 'empty', version: savedAt }
           : {

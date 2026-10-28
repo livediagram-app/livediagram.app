@@ -1,7 +1,8 @@
 // /api/previews (liveworkspace/docs/specs/006-media/previews.md "The addresses"): every app's item pictures, for browsers, on
 // liveworkspace.app and (forwarded by each app's router) on every app's own origin.
 //
-//   GET /api/previews/items/:id?v=              the Explorer's preview, for whoever the index lets read the item
+//   GET /api/previews/items/:id?v=&appearance=  the Explorer's preview, for whoever the index lets read the item,
+//                                               in the reader's appearance
 //   GET /api/previews/share/:code/image.svg     the live image, the code its only credential
 //   GET /api/previews/share/:code/image.png     the share card
 //   GET /api/previews/share/:code/card          { name }, for the app's share page head
@@ -9,6 +10,7 @@
 import {
   BRAND_CARD_PATH,
   BRAND_CARD_REDIRECT_CACHE,
+  isPreviewAppearance,
   isSharePreviewDoor,
   PREVIEW_DENIED_CACHE,
   PREVIEW_ITEM_CACHE,
@@ -16,6 +18,7 @@ import {
   PUBLIC_LINK_CACHE,
   SHARE_CARD_CACHE,
   SHARE_IMAGE_CACHE,
+  type PreviewAppearance,
   type SharePreviewCard,
   type SharePreviewDoor,
 } from '@liveworkspace/media';
@@ -68,17 +71,32 @@ function svgResponse(
   });
 }
 
-const subjectOf = (item: PreviewItem, tabId: string | null): Subject => ({
+const subjectOf = (
+  item: PreviewItem,
+  tabId: string | null,
+  appearance: PreviewAppearance | null = null,
+): Subject => ({
   app: item.app,
   itemId: item.id,
   version: item.updatedAt,
   tabId,
   code: item.publicCode,
+  appearance,
 });
 
 // ---------- The Explorer's preview -------------------------------------------------------------------------------
 
-async function itemPreview(request: Request, env: Env, id: string, defer: Defer) {
+async function itemPreview(request: Request, env: Env, url: URL, id: string, defer: Defer) {
+  // The reader's appearance (previews.md): anything but light or dark is refused before the index is asked.
+  const asked = url.searchParams.get('appearance');
+  if (asked !== null && !isPreviewAppearance(asked)) {
+    console.warn('[previews] appearance refused', { itemId: id, appearance: asked.slice(0, 32) });
+    return new Response(JSON.stringify({ error: 'invalid_appearance' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': PREVIEW_DENIED_CACHE },
+    });
+  }
+  const appearance = asked;
   const item = await reachItem(env, request, id);
   if (item === 'unavailable') return unavailable();
   if (item === 'denied') return denied();
@@ -86,7 +104,7 @@ async function itemPreview(request: Request, env: Env, id: string, defer: Defer)
   const cache = item.publicCode ? PREVIEW_PUBLIC_ITEM_CACHE : PREVIEW_ITEM_CACHE;
   // The summary already says the first tab has nothing to draw: no call at all.
   if (item.empty && item.tabId === null) return answer(404, cache);
-  const d = await drawing(env, subjectOf(item, item.tabId), defer);
+  const d = await drawing(env, subjectOf(item, item.tabId, appearance), defer);
   if (d.kind === 'svg') return svgResponse(d, cache);
   if (d.kind === 'empty') return answer(404, cache);
   if (d.kind === 'missing') return denied();
@@ -214,7 +232,7 @@ export async function handlePreviews(
   }
   const [head, key, door] = segments;
   if (head === 'items' && key && segments.length === 2)
-    return itemPreview(request, env, key, defer);
+    return itemPreview(request, env, url, key, defer);
   if (head === 'share' && key && segments.length === 3 && isSharePreviewDoor(door)) {
     return shareDoor(url, env, key, door, defer);
   }

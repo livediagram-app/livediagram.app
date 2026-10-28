@@ -707,7 +707,7 @@ export class DocumentRoom extends DurableObject<Env> {
       env,
       { id: documentId, name: meta.name },
       query.tabId,
-      { defer: (p) => this.state.waitUntil(p) },
+      { defer: (p) => this.state.waitUntil(p), appearance: query.appearance },
       community,
     );
     return svg === null

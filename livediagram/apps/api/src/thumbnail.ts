@@ -5,7 +5,14 @@
 // on request means a canvas nobody looks at never costs a render.
 
 import { embedTabImages } from '@livediagram/api-schema';
-import { drawnCount, migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/document';
+import {
+  drawnCount,
+  migrateStoredTab,
+  renderElementsToSvg,
+  tabAsSeen,
+  type Appearance,
+  type Tab,
+} from '@livediagram/document';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the preview / live image instead of
 // the renderer's box-with-label fallback.
@@ -35,7 +42,12 @@ const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 export type DrawSubject = { id: string; name: string };
 
 // `defer` hands the count stamp (below) to a waitUntil, so the drawing goes out as soon as it is drawn.
-export type DrawOptions = { defer?: (write: Promise<unknown>) => void };
+// `appearance` is the reader's (docs/specs/006-document/document-snapshots.md "In the viewer's half"): the tab is drawn
+// as a person in it sees it on opening it. Absent, it is drawn as stored (the live image, the share card).
+export type DrawOptions = {
+  defer?: (write: Promise<unknown>) => void;
+  appearance?: Appearance | null;
+};
 
 // The first tab (or `tabId`) drawn, or null when there is nothing to draw: no tab, an empty or unparseable one.
 // `community`: a Community visitor's drawing (docs/specs/025-community/community.md "Viewing a post's document"),
@@ -122,7 +134,8 @@ async function renderTabBodyToSvg(
   // the parsed body.
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
   const stored = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
-  const tab = community ? redactTabForCommunity(stored) : stored;
+  const readable = community ? redactTabForCommunity(stored) : stored;
+  const tab = opts.appearance ? tabAsSeen(readable, opts.appearance) : readable;
   // Inline referenced image bitmaps (from the media service) so the preview / live
   // image renders the actual photos, matching the in-app PNG/SVG export.
   const images = await loadEmbeddedImages(env, liveDoc.id, tab);

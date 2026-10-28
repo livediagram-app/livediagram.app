@@ -33,31 +33,37 @@ Rendering on save would draw on every autosave of every item, viewed or not; ren
 once per change, and only if someone looks. The apps had already measured this ([the old snapshot spec][old]), and
 the platform keeps it.
 
-[old]: ../../livediagram/docs/specs/006-document/document-snapshots.md
+[old]: ../../../../livediagram/docs/specs/006-document/document-snapshots.md
 
 ## The addresses
 
 All under `/api/previews` on liveworkspace.app. Each app's router forwards the same paths on its own origin, so a
 browser always calls its own origin (no CORS, no preflight), and the old share addresses keep working:
 
-| On any origin                | Forwarded to                          | Who                          |
-| ---------------------------- | ------------------------------------- | ---------------------------- |
-| `/api/previews/items/:id?v=` | `/api/previews/items/:id`             | person or link (the index's) |
-| `/api/share/:code/image.svg` | `/api/previews/share/:code/image.svg` | anyone with the code         |
-| `/api/share/:code/image.png` | `/api/previews/share/:code/image.png` | anyone with the code         |
-| `/api/share/:code/card`      | `/api/previews/share/:code/card`      | anyone with the code         |
+| On any origin                            | Forwarded to                          | Who                          |
+| ---------------------------------------- | ------------------------------------- | ---------------------------- |
+| `/api/previews/items/:id?v=&appearance=` | `/api/previews/items/:id`             | person or link (the index's) |
+| `/api/share/:code/image.svg`             | `/api/previews/share/:code/image.svg` | anyone with the code         |
+| `/api/share/:code/image.png`             | `/api/previews/share/:code/image.png` | anyone with the code         |
+| `/api/share/:code/card`                  | `/api/previews/share/:code/card`      | anyone with the code         |
 
 `@liveworkspace/sites/workspace-proxy` (`previewsTargetFor`, `routeToPreviews`) holds the mapping, so the four
 routers can't drift. Each router names its environment's origin in `PREVIEWS_ORIGIN` (local `http://127.0.0.1:8792`,
 staging `https://staging.liveworkspace.app`, production by default). `/api/share/:code` itself (what a link opens)
 stays the app's.
 
-### `GET /api/previews/items/:id?v=<updatedAt>`
+### `GET /api/previews/items/:id?v=<updatedAt>[&appearance=light|dark]`
 
 The Explorer's preview, for any app's item. The caller sends what the index takes (`Authorization: Bearer` with an
 access or guest token, `X-Share-Code` and `X-Share-Password` for an item reached through a link). The platform asks
 the index `GET /items/:id` with the same headers, so the preview is never more visible than the item: the same rule,
 the same answer, in one indexed read. `v` only keys the browser's cache.
+
+`appearance` is the viewer's (`light` or `dark`): the item is drawn as a person in that appearance sees it on
+opening it, so a preview is right before anyone in that appearance has opened and saved the item. An app whose
+drawing does not depend on it draws the same either way. Any other value is a `400`, before the index is asked.
+Absent, the item is drawn as its app draws it with no viewer (as stored). Each appearance is its own stored preview
+and its own browser cache entry, so switching appearance shows the other half without a stale picture first.
 
 - `200 image/svg+xml`, `Cache-Control: private, max-age=86400`: the URL changes when the item does. Reached
   through a public link (a Community post's), `private, max-age=30`, so the picture can't outlive the post.
@@ -106,7 +112,8 @@ ids never contain a slash, so the two never meet. The only listing is an item's 
 the item's previews (`deleteItemPreviews`).
 
 ```
-previews/<app>/<itemId>/<view>-<tab>.svg   view: full | public; tab: first | <tabId>
+previews/<app>/<itemId>/<view>-<tab>[-<appearance>].svg   view: full | public; tab: first | <tabId>;
+                                                       appearance: light | dark, when the reader asked for one
 previews/<app>/<itemId>/<view>-<tab>.png   the share card drawn from the SVG beside it
 ```
 
@@ -137,7 +144,7 @@ list and its pictures always agree.
 Each app answers one door in the shared kit (`@liveworkspace/index-app`, `handleInternalItems`):
 
 ```
-GET <app>/api/internal/items/:id/export?format=svg[&tab=<tabId>][&code=<public link code>]
+GET <app>/api/internal/items/:id/export?format=svg[&tab=<tabId>][&code=<public link code>][&appearance=light|dark]
 GET <app>/api/internal/items/:id/export?format=file
 Authorization: Bearer <INDEX_KEY, MEDIA_KEY or DRIVE_KEY>
 If-None-Match: "<version>"            optional
@@ -155,14 +162,16 @@ If-None-Match: "<version>"            optional
 | `304`  | `If-None-Match` is the current version: unchanged, not drawn                              |
 | `404`  | no such item or tab, or a link the app shows nothing through                              |
 
-The app supplies `handlers.export(itemId, { format, tabId, code, ifVersion })`. It is answered in the item's Durable
+The app supplies `handlers.export(itemId, { format, tabId, code, appearance, ifVersion })`. `appearance` is the
+reader's (`null` when none was asked, and for `file`); any other value is a `400`. It is answered in the item's Durable
 Object, where the content is: no cache, no bucket, no card. It takes the app's `INDEX_KEY` (the index), `MEDIA_KEY`
 (this service) or `DRIVE_KEY` (the Drive mirror, which also opens the import door and nothing else,
 [drive.md](../005-drive/drive.md#the-apps)); a door with no handler is a `404`. `format` is `svg` (the default) or `file`, the
 item's whole-item envelope (`{ kind, schemaVersion, exportedAt, <item> }`, built from the same read a copy makes, with
 `exportedAt` the content's last save, so unchanged content is byte-identical and the mirror can skip it by ETag).
 
-Each app's door draws as its old snapshot did: the first tab (or the asked one) with its own DOM-free renderer, its
+Each app's door draws as its old snapshot did, in the reader's appearance where its drawing depends on one
+(livediagram: the tab as `tabAsSeen` draws it, [Document snapshots][old] "In the viewer's half"): the first tab (or the asked one) with its own DOM-free renderer, its
 images inlined from the media service under a 3 MB budget, icons as their glyphs. livediagram's draws a Community
 post's link from the redacted tab and refuses one whose post is hidden.
 
