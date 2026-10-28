@@ -588,7 +588,7 @@ own keys move between them. In the Setup Board and Setup Sheet dialogs it wears 
 
 Left as they are: the board preset gallery (PlanBoardPicker: large visual previews to compare), the glyph palette
 (GlyphPicker: an icon grid, where a row each would be far too long) and a type's Display size switch (ItemTypeDisplay:
-a three-way segmented control, not a list of options), and the palette's Plan tiles (cards and views to drag onto the
+a two-way segmented control, not a list of options), and the palette's Plan tiles (cards and views to drag onto the
 canvas, part of the palette's catalogue, not a setting).
 
 ## Focus
