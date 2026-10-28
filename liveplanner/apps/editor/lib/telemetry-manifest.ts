@@ -28,8 +28,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Canvas·Zoomed',
   'Comment·Added',
   // A card's comment threads (docs/specs/026-plan/items.md "Telemetry"): an edit ('Changed'), a thread started
-  // ('Created', type Thread), renamed ('Renamed') and added to another card ('Linked', type Thread or
-  // ThreadOtherPlan).
+  // ('Created', type Thread), renamed ('Renamed') and added to another card of the plan ('Linked', type Thread).
   'Comment·Changed',
   'Comment·Created',
   'Comment·Deleted',

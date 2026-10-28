@@ -29,7 +29,6 @@ import {
   ThreadCountsProvider,
 } from '@/components/plan/threads/CardThreadsContext';
 import { useCardThreadsValue } from '@/components/plan/threads/useCardThreadsValue';
-import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { FormBoardContext } from '@/components/forms/form-board-context';
 import { useFormBoardValue } from '@/hooks/forms/useFormBoardValue';
 import { SheetsProviders } from '@/hooks/sheets/sheet-comments-context';
@@ -108,10 +107,6 @@ export function EditorView() {
   const isOffline = useIsOfflineProject(ctx.projectId);
   // A card's comment threads (docs/specs/026-plan/items.md "Comments"): their own context, so a thread write
   // re-renders the open card panel alone, and the faces' counts through the thread store.
-  const cloudPlans = useMemo(
-    () => ctx.cardThreadsAccess.projectList.filter((p) => p.ownerId !== OFFLINE_OWNER_ID),
-    [ctx.cardThreadsAccess.projectList],
-  );
   const cardThreadsValue = useCardThreadsValue({
     threads: ctx.cardThreads,
     projectId: ctx.projectId,
@@ -120,8 +115,6 @@ export function EditorView() {
     self: ctx.plan.context.self,
     canComment: ctx.cardThreadsAccess.canComment,
     isEditor: ctx.cardThreadsAccess.isEditor,
-    offline: isOffline,
-    projectList: cloudPlans,
     openCard: ctx.plan.context.openItem,
     announce: ctx.plan.context.announce,
   });

@@ -87,12 +87,6 @@ describe('the thread routes', () => {
         '/threads/th/cards',
         { itemId: 'c2' },
       ],
-      [
-        { kind: 'addToCard', threadId: 'th', itemId: 'c2', projectId: 'q' },
-        'POST',
-        '/threads/th/cards',
-        { itemId: 'c2', projectId: 'q' },
-      ],
       [{ kind: 'deleteThread', threadId: 'th' }, 'DELETE', '/threads/th', undefined],
     ];
     for (const [action, method, path, body] of cases) {

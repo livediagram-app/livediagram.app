@@ -7,7 +7,6 @@ import {
   resolvedByLabel,
   sharedBeyond,
   sharedLabel,
-  shareWarning,
   threadTally,
   titlePreview,
 } from './thread-words';
@@ -45,15 +44,6 @@ describe('thread words', () => {
     expect(deleteThreadMessage(1)).toBe(
       "Delete this thread? Its comments go with it. This can't be undone.",
     );
-  });
-
-  it('warns before sharing into another plan, saying who may do what there', () => {
-    expect(shareWarning(4, 'Sprint 12')).toEqual({
-      title: 'Share this thread into “Sprint 12”?',
-      detail:
-        'Everyone who can see #4 in Sprint 12 will be able to read this thread. Participants and Editors there can reply and resolve it; Viewers can only read it.',
-    });
-    expect(shareWarning(null, '').detail).toMatch(/^Everyone who can see that card in that plan/);
   });
 
   it('previews the title, names who resolved, and announces', () => {

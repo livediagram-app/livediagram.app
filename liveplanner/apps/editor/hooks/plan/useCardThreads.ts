@@ -81,7 +81,7 @@ export function threadRefusalMessage(code: string | null): string {
 }
 
 // Literal pairs, so the telemetry manifest's coverage test sees each one (docs/specs/017-telemetry/telemetry.md).
-function trackAction(action: ThreadAction, here: string | null): void {
+function trackAction(action: ThreadAction): void {
   switch (action.kind) {
     case 'start':
       return track('Comment', 'Created', 'Thread');
@@ -98,16 +98,14 @@ function trackAction(action: ThreadAction, here: string | null): void {
     case 'rename':
       return track('Comment', 'Renamed', 'Thread');
     case 'addToCard':
-      return action.projectId && action.projectId !== here
-        ? track('Comment', 'Linked', 'ThreadOtherPlan')
-        : track('Comment', 'Linked', 'Thread');
+      return track('Comment', 'Linked', 'Thread');
     case 'deleteThread':
       return track('Comment', 'Deleted', 'Thread');
   }
 }
 
 // The change an action makes to a held thread, for showing it at once: null for one shown only once it lands (a
-// delete, a card added in another plan, which the answer brings).
+// delete, or a card added, whose number the answer brings).
 function localChange(
   action: Exclude<ThreadAction, { kind: 'start' }>,
   who: { ownerId: string; by: ItemPerson },
@@ -253,7 +251,7 @@ export function useCardThreads(opts: {
       const s = scopeRef.current;
       const by = selfRef.current;
       if (!s || !by) return false;
-      trackAction(action, s.projectId);
+      trackAction(action);
       const who = { ownerId, by };
       const before = threadsRef.current;
       // Shown at once, as this person wrote it; the answer replaces it.

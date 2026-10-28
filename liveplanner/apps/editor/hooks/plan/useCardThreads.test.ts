@@ -210,21 +210,14 @@ describe('writing', () => {
     expect(out).toMatchObject({ id: 'th-a' });
   });
 
-  it('counts a card added in another plan as its own telemetry type', async () => {
+  it('counts a card added as a Linked thread', async () => {
     vi.mocked(fetchThreads).mockResolvedValue([thread('th-a')]);
     vi.mocked(writeThread).mockResolvedValue({ thread: thread('th-a') });
     const { result } = hook();
     await waitFor(() => expect(result.current.status).toBe('ready'));
     await act(async () => {
-      await result.current.act({
-        kind: 'addToCard',
-        threadId: 'th-a',
-        itemId: 'x',
-        projectId: 'plan-b',
-      });
       await result.current.act({ kind: 'addToCard', threadId: 'th-a', itemId: 'y' });
     });
-    expect(track).toHaveBeenCalledWith('Comment', 'Linked', 'ThreadOtherPlan');
     expect(track).toHaveBeenCalledWith('Comment', 'Linked', 'Thread');
   });
 });

@@ -77,15 +77,12 @@ import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
 import { drawPlan } from '../thumbnail';
 import { planShares, type ShareAnswer, type ShareMessage, type SharedTabCopy } from './tab-shares';
-import { planRoom, type ThreadLinkInput } from '../plan-client';
+import { planRoom } from '../plan-client';
 import type { CardThread } from '@liveplanner/project';
 import {
-  linkThread,
   threadsForVia,
   threadsRelayed,
-  unlinkThread,
   writeThread,
-  type ThreadLinked,
   type ThreadOp,
   type ThreadsRelay,
   type ThreadWriteResult,
@@ -742,20 +739,6 @@ export class PlanRoom extends DurableObject<Env> {
     return writeThread(this.requireEnv(), planId, threadId, op, via, (p) =>
       this.state.waitUntil(p),
     );
-  }
-
-  // On a plan holding the card: a link for a thread added to one of its cards, and one taken back.
-  async threadLinked(planId: string, link: ThreadLinkInput): Promise<ThreadLinked> {
-    const sql = this.state.storage.sql;
-    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
-      return { ok: false, error: 'item_not_found' };
-    this.bindPlan(planId);
-    return linkThread(this.requireEnv(), planId, link);
-  }
-
-  async threadUnlinked(planId: string, threadId: string, itemId: string): Promise<void> {
-    this.bindPlan(planId);
-    await unlinkThread(this.requireEnv(), planId, threadId, itemId);
   }
 
   // Another plan's write on a thread on this plan's cards. A plan with nothing stored holds no link to any.

@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react';
 import type { CardThreads } from '@/hooks/plan/useCardThreads';
-import type { CardThreadsContextValue, ThreadPlanChoice } from './CardThreadsContext';
+import type { CardThreadsContextValue } from './CardThreadsContext';
 
 export function useCardThreadsValue(input: {
   threads: CardThreads;
@@ -15,8 +15,6 @@ export function useCardThreadsValue(input: {
   self: { name: string; color: string } | null;
   canComment: boolean;
   isEditor: boolean;
-  offline: boolean;
-  projectList: readonly ThreadPlanChoice[];
   openCard: (itemId: string) => void;
   announce: (message: string) => void;
 }): CardThreadsContextValue | undefined {
@@ -28,8 +26,6 @@ export function useCardThreadsValue(input: {
     self,
     canComment,
     isEditor,
-    offline,
-    projectList,
     openCard,
     announce,
   } = input;
@@ -45,25 +41,10 @@ export function useCardThreadsValue(input: {
             self,
             canComment,
             isEditor,
-            offline,
-            // A thread is shared only into cloud plans; This Browser plans are listed by the offline store.
-            otherPlans: offline ? [] : projectList.filter((p) => p.id !== projectId),
             openCard,
             announce,
           }
         : undefined,
-    [
-      threads,
-      projectId,
-      projectName,
-      ownerId,
-      self,
-      canComment,
-      isEditor,
-      offline,
-      projectList,
-      openCard,
-      announce,
-    ],
+    [threads, projectId, projectName, ownerId, self, canComment, isEditor, openCard, announce],
   );
 }

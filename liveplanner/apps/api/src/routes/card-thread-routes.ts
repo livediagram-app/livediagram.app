@@ -29,7 +29,7 @@ import {
   threadCountOfItem,
   type ThreadLink,
 } from '../db/card-threads';
-import { getProjectMeta, readItem } from '../db';
+import { readItem } from '../db';
 import { getParticipant } from '../person/profiles';
 import { planRoom } from '../plan-client';
 import {
@@ -42,11 +42,10 @@ import {
   type ThreadOp,
   type ThreadWriteResult,
 } from '../plan-room/card-thread-store';
-import { badRequest, forbidden, json, methodNotAllowed, noContent } from '../responses';
+import { badRequest, json, methodNotAllowed, noContent } from '../responses';
 import { afterCommentPosted, newComment } from './comment-routes';
-import { gateEdit, grantOn, readBody, type PlanRouteContext } from './context';
+import { gateEdit, readBody, type PlanRouteContext } from './context';
 import { itemCaller, itemNotFound, type ItemCaller } from './item-route-kit';
-import { resolvePlanGrant } from './plan-grant';
 
 const threadNotFound = () => json({ error: 'thread_not_found' }, { status: 404 });
 
@@ -62,6 +61,7 @@ const REFUSALS: Record<string, number> = {
   title_too_long: 400,
   thread_on_card: 409,
   thread_busy: 409,
+  thread_other_plan: 400,
 };
 
 function refusal(error: string): Response {
@@ -322,9 +322,9 @@ async function currentThread(
   return t ?? null;
 }
 
-// Add Thread to Card: a card here, or in another plan the caller may change cards in (a Participant or an Editor
-// there, by a grant on the whole plan). The target takes the link first, then the home lists the card; a home that
-// refuses has the link taken back.
+// Add Thread to Card: another card of this plan, never one in another plan (docs/specs/026-plan/items.md "Stored
+// once, on every card"). The card takes the link first, then the home lists it; a home that refuses has the link
+// taken back. A thread shared in before that rule has another home, which is asked as for any other write.
 async function addToCard(ctx: PlanRouteContext, r: Reached, threadId: string): Promise<Response> {
   if (ctx.token) return refusal('forbidden');
   const body = await readBody(ctx);
@@ -333,20 +333,8 @@ async function addToCard(ctx: PlanRouteContext, r: Reached, threadId: string): P
   if (!itemId) return badRequest('missing itemId');
   const here = r.caller.projectId;
   const named = body.projectId;
-  const target = typeof named === 'string' && named ? named : here;
-  let projectName: string | undefined;
-  if (target === here) {
-    if (r.caller.scope && !r.caller.scope.has(itemId)) return itemNotFound();
-  } else {
-    const grant = await resolvePlanGrant(ctx, target);
-    if (grant instanceof Response) return grant;
-    const access = grantOn({ ...ctx, grant }, target);
-    if (!access || access.tabScope !== null || access.role === 'view') {
-      console.info('[threads] add.refused', { reason: access ? 'role' : 'no_grant' });
-      return forbidden();
-    }
-    projectName = (await getProjectMeta(ctx.env, target))?.name || undefined;
-  }
+  if (typeof named === 'string' && named && named !== here) return refusal('thread_other_plan');
+  if (r.caller.scope && !r.caller.scope.has(itemId)) return itemNotFound();
   const thread = await currentThread(ctx, r, threadId);
   if (!thread) return threadNotFound();
   const link = {
@@ -355,17 +343,9 @@ async function addToCard(ctx: PlanRouteContext, r: Reached, threadId: string): P
     itemId,
     openComments: thread.resolved ? 0 : thread.comments.length,
   };
-  const linked =
-    target === here
-      ? await linkThread(ctx.env, here, link)
-      : await planRoom(ctx.env, target).threadLinked(link);
+  const linked = await linkThread(ctx.env, here, link);
   if (!linked.ok) return refusal(linked.error);
-  const card: CardRef = {
-    projectId: target,
-    itemId,
-    key: linked.key,
-    ...(projectName ? { projectName } : {}),
-  };
+  const card: CardRef = { projectId: here, itemId, key: linked.key };
   const actor = await actorOf(ctx, r.caller, false);
   const out = await throughHome(ctx, r, threadId, {
     kind: 'change',
@@ -373,12 +353,10 @@ async function addToCard(ctx: PlanRouteContext, r: Reached, threadId: string): P
     actor,
   });
   if (!out.ok) {
-    await (target === here
-      ? unlinkThread(ctx.env, here, threadId, itemId)
-      : planRoom(ctx.env, target).threadUnlinked(threadId, itemId));
+    await unlinkThread(ctx.env, here, threadId, itemId);
     return refusal(out.error);
   }
-  console.info('[threads] added to card', { otherPlan: target !== here });
+  console.info('[threads] added to card');
   return answer(r.caller, out.thread);
 }
 

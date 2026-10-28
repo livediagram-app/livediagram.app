@@ -24,7 +24,7 @@ export type ThreadAction =
   | { kind: 'delete'; threadId: string; commentId: string }
   | { kind: 'resolve'; threadId: string; resolved: boolean }
   | { kind: 'rename'; threadId: string; title: string }
-  | { kind: 'addToCard'; threadId: string; itemId: string; projectId?: string }
+  | { kind: 'addToCard'; threadId: string; itemId: string }
   | { kind: 'deleteThread'; threadId: string };
 
 // What a write changed: the thread as stored (null: it went), the comment a start, reply or edit wrote, or nothing
@@ -87,10 +87,7 @@ function requestOf(action: ThreadAction): { method: string; path: string; body?:
       return {
         method: 'POST',
         path: `${t}/cards`,
-        body: {
-          itemId: action.itemId,
-          ...(action.projectId ? { projectId: action.projectId } : {}),
-        },
+        body: { itemId: action.itemId },
       };
     case 'deleteThread':
       return { method: 'DELETE', path: t };
