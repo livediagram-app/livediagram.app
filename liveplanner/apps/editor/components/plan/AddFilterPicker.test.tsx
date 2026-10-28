@@ -34,7 +34,7 @@ describe('Add Filter', () => {
     fireEvent.change(screen.getByLabelText('Find a field'), { target: { value: '7' } });
     expect(screen.getAllByRole('button', { name: /^Field/ })).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'Field 7' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Back to the fields' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Filter by/ }));
     expect(screen.getByText('Filter by')).toBeTruthy();
   });
 

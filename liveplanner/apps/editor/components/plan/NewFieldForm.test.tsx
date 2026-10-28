@@ -213,7 +213,7 @@ describe('Shape', () => {
     expect(document.activeElement).toBe(kind('Currency'));
     type('');
     pick('Rating', 'Numbers & dates');
-    fireEvent.click(screen.getByRole('button', { name: 'All kinds' }));
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
     expect(header('Numbers & dates').getAttribute('aria-expanded')).toBe('true');
     expect(document.activeElement).toBe(kind('Rating'));
   });
@@ -222,7 +222,7 @@ describe('Shape', () => {
     open();
     pick('Text');
     fireEvent.change(name(), { target: { value: 'Size' } });
-    fireEvent.click(screen.getByRole('button', { name: 'All kinds' }));
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
     pick('Number', 'Numbers & dates');
     expect((name() as HTMLInputElement).value).toBe('Size');
     expect(preview().getByText('42')).toBeTruthy();
@@ -329,7 +329,7 @@ describe('Shape', () => {
     expect(onAddCustom).toHaveBeenLastCalledWith(
       expect.objectContaining({ kind: 'email', required: true }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'All kinds' }));
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
     pick('Checkbox', 'Choices');
     expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
     fireEvent.click(addButton());

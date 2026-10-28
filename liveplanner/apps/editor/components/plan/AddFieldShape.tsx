@@ -13,11 +13,10 @@ import {
   type CustomFieldKind,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { Button, PlusIcon, TextInput, lucideGlyph } from '@liveplanner/ui';
-import { lucideChevronLeft } from '@liveworkspace/icons/lucide';
+import { BackBar, Button, PlusIcon, TextInput } from '@liveplanner/ui';
 import { hasOptions, kindReadiness, READINESS_HINT } from './add-field-kinds';
 import { ChoiceOptionsEditor } from './ChoiceOptionsEditor';
-import { CUSTOM_KIND_ICONS, CustomFieldPreview } from './CustomFieldKindParts';
+import { CustomFieldPreview } from './CustomFieldKindParts';
 import {
   CUSTOM_KIND_LABELS,
   CalculationSelect,
@@ -26,8 +25,6 @@ import {
   RequiredSwitch,
 } from './ItemTypeFieldForms';
 import { LinksToPicker, linkTypeNames } from './LinksToPicker';
-
-const BackIcon = lucideGlyph(lucideChevronLeft, 14);
 
 export type NewField = Omit<CustomFieldDef, 'id'>;
 
@@ -76,22 +73,8 @@ export function AddFieldShape({
         if (!missing) onAdd(addedField(field));
       }}
     >
-      <div className="flex items-center gap-2 border-b border-slate-100 px-2 py-2 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex min-h-8 cursor-pointer items-center gap-1 rounded-md px-1.5 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none pointer-coarse:min-h-11 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-        >
-          <BackIcon aria-hidden />
-          All kinds
-        </button>
-        <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-brand-50 py-0.5 pl-1.5 pr-2.5 text-[12px] font-medium text-brand-800 dark:bg-brand-500/15 dark:text-brand-100">
-          <span aria-hidden className="[&_svg]:size-3.5">
-            {CUSTOM_KIND_ICONS[kind]}
-          </span>
-          <span className="sr-only">Kind: </span>
-          {kindLabel}
-        </span>
+      <div className="px-2 pt-2">
+        <BackBar label="All kinds" current={kindLabel} onClick={onBack} gap="tight" />
       </div>
       <div className="flex flex-col gap-3.5 px-3.5 pb-3 pt-3">
         <div className="flex flex-col gap-1">

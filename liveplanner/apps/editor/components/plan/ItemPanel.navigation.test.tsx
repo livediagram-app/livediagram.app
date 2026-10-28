@@ -113,7 +113,7 @@ describe('the item panel’s navigation', () => {
     const project = item('p', 1, 'project');
     const task = item('t', 2, 'task', { parent: 'p' });
     const onOpenItem = panel(task, [project, task], []);
-    fireEvent.click(screen.getByRole('button', { name: 'Back to #1 Card 1' }));
+    fireEvent.click(screen.getByRole('button', { name: /^#1 Card 1/ }));
     expect(onOpenItem).toHaveBeenCalledWith('p', 'Breadcrumb');
   });
 
@@ -123,12 +123,12 @@ describe('the item panel’s navigation', () => {
     expect(screen.queryByRole('navigation', { name: 'Card trail' })).toBeNull();
   });
 
-  it('gives the breadcrumb a row of its own on a phone, above the header', () => {
+  it('gives the breadcrumb a row of its own on a phone too, above the header', () => {
     viewport.mobile = true;
     const project = item('p', 1, 'project');
     const task = item('t', 2, 'task', { parent: 'p' });
     const onOpenItem = panel(task, [project, task], []);
-    const back = screen.getByRole('button', { name: 'Back to #1 Card 1' });
+    const back = screen.getByRole('button', { name: /^#1 Card 1/ });
     const typePicker = screen.getByRole('combobox', { name: 'Card Type' });
     expect(
       back.compareDocumentPosition(typePicker) & Node.DOCUMENT_POSITION_FOLLOWING,

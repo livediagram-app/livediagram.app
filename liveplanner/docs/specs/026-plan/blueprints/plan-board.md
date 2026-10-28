@@ -194,9 +194,9 @@ ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG 
 ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
 LinkedCards.tsx          LinkedCardGroup (a Linked as {Field} section) and FilteredCards rows (glyph, #key, title,
                          status, Archived chip)
-ItemTrailCrumbs.tsx      the breadcrumb of earlier cards (visibleTrail, folded "…"): in the header on a wide screen,
-                         a row above it on a phone (a back chevron, no trailing separator)
-item-trail.ts            pure: stepTrail / liveTrail / visibleTrail / childrenOf, ItemOpenVia, ITEM_TRAIL_MAX, ITEM_TRAIL_SHOWN*
+ItemTrailCrumbs.tsx      the breadcrumb: the shared BackBar to the card before (its "#key title"), this card's "#key"
+                         as the chip, in a row above the header
+item-trail.ts            pure: stepTrail / liveTrail / childrenOf, ItemOpenVia, ITEM_TRAIL_MAX
 ItemDescription.tsx      the description: NoteRichTextEditor (note=false), saved DESCRIPTION_SAVE_MS (800 ms) after
                          typing, on blur and on close as one patch of description + descriptionRich
 item-field-editors.tsx   editors for text (debounced), priority, labels, number, date, checklist
@@ -496,8 +496,8 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
   Escape (closes only the picker), Tab reaches Add Column then Add All.
 - Suggested statuses: a `group` of buttons named by its heading (`OptionRows` kind=action, roving tabindex,
   ArrowUp/ArrowDown/Home/End); each button is named "Add {Name}" and its hint is visible text in it.
-- Breadcrumb: `nav aria-label="Card trail"` holding an `ol`; each crumb a `button` named "Back to #12 Website
-  relaunch"; separators and the fold are `aria-hidden` except the fold's sr-only "3 earlier cards". Linked as: a
+- Breadcrumb: `nav aria-label="Card trail"` holding the BackBar, a `button` reading "#12 Website relaunch" then
+  its chip "#13". Linked as: a
   `section` labelled by its heading, an `ul` of `button` rows named "Open #14 Write tests, In Progress".
 
 ## Web Experience
@@ -595,7 +595,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Plan templates' boards                                         | `apps/editor/lib/template-boards.test.ts`                                                                                                                   |
 | Card trail steps, cut-back, cap; children                      | `apps/editor/components/plan/item-trail.test.ts`                                                                                                            |
 | Linked as rows, empty state, open                              | `apps/editor/components/plan/LinkedCards.test.tsx`                                                                                                          |
-| Breadcrumb crumbs, fold, step back                             | `apps/editor/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                      |
+| Breadcrumb back bar, step back                                 | `apps/editor/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                      |
 | Phone look: Minimal, no widgets, columns, touch                | `apps/editor/components/plan/phone-board.test.ts`, `plan-board-columns.test.ts`                                                                             |
 | Simplified in a Dashboard slot, whole maximised, restored      | `apps/editor/components/plan/PlanBoardView.dashboard.test.tsx`                                                                                              |
 | Phone's shared top row                                         | `apps/editor/lib/canvas-layer-insets.test.ts` (`phoneRow`)                                                                                                  |
@@ -628,8 +628,6 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `ITEM_EDIT_DEBOUNCE_MS`    | 400                | One undo step per pause in typing                                        |
 | `CUSTOM_ASSIGNEE_NAME_MAX` | 60                 | Spec; a name on one line of the picker; 30-120                           |
 | `ITEM_TRAIL_MAX`           | 8                  | Spec; bounds the trail's memory; 2–20                                    |
-| `ITEM_TRAIL_SHOWN`         | 3                  | Earlier crumbs that fit a 60rem header                                   |
-| `ITEM_TRAIL_SHOWN_PHONE`   | 1                  | Spec                                                                     |
 | `FIT_GLIDE_MS`             | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`               |
 | `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                         |
 

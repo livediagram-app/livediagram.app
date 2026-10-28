@@ -505,17 +505,15 @@ In Plan mode:
   - **Parent** is a Card field (item-types.md "Card fields"): its control's open arrow opens the parent, and a
     Project lists the cards under it in its **Linked as Parent** section, as any Card field's linked card does.
   - **Breadcrumb**: the panel remembers the cards opened from inside it (a Parent's Open, a child row, a crumb).
-    Once it holds more than one, the header starts with a breadcrumb of the earlier ones. A crumb opens its card and
-    drops the crumbs after it, and opening a card already in the trail goes back to it rather than repeating it.
-    Opening a card any other way (from a board, the Cards finder, a link) starts a new trail. It holds at most 8
-    cards, dropping the oldest; a card trashed or deleted meanwhile leaves it. The header shows the 3 crumbs nearest
-    the current card (1 on a phone); earlier ones fold into a **…** button that names how many and opens a menu of
-    them, each a step back. On a phone the breadcrumb takes a row of its own above the header, its crumb pointing
-    back, so the type picker keeps its room.
+    Once it holds more than one, a row of its own above the header holds the breadcrumb: the shared
+    [back bar](../004-interface-design/back-bar.md), naming the card opened before this one (**#1 Website relaunch**)
+    with this card's number as its chip (**#2**). It opens that card and drops this one from the trail, so a longer
+    trail is walked back one card at a time; opening a card already in the trail goes back to it rather than
+    repeating it. Opening a card any other way (from a board, the Cards finder, a link) starts a new trail. It holds
+    at most 8 cards, dropping the oldest; a card trashed or deleted meanwhile leaves it. The row is the same on a
+    phone and a wide screen, so the type picker keeps its room.
   - **The header reads part by part**, each looking like what it does:
-    - a **crumb** is a link: its type glyph in its type colour and its title (cut to fit; the full "Back to #3
-      Title" on hover and to assistive technology), muted, darkening with a soft background and an underline on
-      hover; crumbs are parted by a muted chevron.
+    - the **breadcrumb** above it is the back bar: the earlier card's number and title, cut to fit.
     - the **current card** ends the trail and is not a link: its **Card Type** picker, a bordered pill with the
       type's glyph and a chevron (a plain label for someone who may not edit), then its number as a quiet
       monospace **#12** tag; pressing the tag copies "#12" and its tooltip says **Copied**.
