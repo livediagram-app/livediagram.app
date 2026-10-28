@@ -25,7 +25,7 @@ describe('New Team in the Move dialog', () => {
     const onCreateTeam = vi.fn(async (name: string) => ({ id: 't9', name }));
     const onPick = open(onCreateTeam);
     // With no teams yet, the spaces still show, so New Team is there to make one.
-    fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Choose a Space/ }));
     fireEvent.click(screen.getByRole('button', { name: /New Team/ }));
     fireEvent.change(screen.getByRole('textbox', { name: 'New team name' }), {
       target: { value: '  Design  ' },
@@ -39,7 +39,7 @@ describe('New Team in the Move dialog', () => {
 
   it('says so when the team could not be made, and keeps the name', async () => {
     open(async () => null);
-    fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Choose a Space/ }));
     fireEvent.click(screen.getByRole('button', { name: /New Team/ }));
     fireEvent.change(screen.getByRole('textbox', { name: 'New team name' }), {
       target: { value: 'Design' },
@@ -53,7 +53,7 @@ describe('New Team in the Move dialog', () => {
 
   it('is not offered without a host that makes teams', () => {
     open();
-    expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Choose a Space/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /New Team/ })).toBeNull();
   });
 });

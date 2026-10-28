@@ -457,7 +457,8 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
 
 - **The app's name.** Opened for an app, the header's title reads as that app's: its logo and wordmark ("live" in
   the app's accent), then **Settings** ("liveplanner Settings"), on the front screen of either side of the switch. A
-  pushed pane's back bar takes its place. Opened for no app, the title is **Settings** alone.
+  pushed pane's name takes its place, and the pane opens under the shared back bar (`BackBar`, `@liveworkspace/ui`) to
+  the screen that pushed it, the pane's name as its chip. Opened for no app, the title is **Settings** alone.
 - **The switch.** Opened for an app, the header has the Explorer's switch: the app's logo and name, and **All** with
   liveworkspace's logo. The app's side shows, signed in, the **Account** group and the **Common** settings that app
   has (below), then the app's own group, from its plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`,

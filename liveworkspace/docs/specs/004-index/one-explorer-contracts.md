@@ -585,7 +585,7 @@ component on the page and in every editor's panel:
   opens the pane (where it stands in for the list), r replies, e resolves or marks done, Esc returns from the pane.
   The keys show on the buttons, except on a touch screen.
 - **Narrow.** Under 768 px, and always in the editor's panel, the list stands alone; choosing a row opens the pane in
-  its place (on a phone, full screen) with **Back to Inbox**. The browser's Back (Android's, an iPhone's swipe) and
+  its place (on a phone, full screen) under the shared back bar to **Inbox** (`BackBar`, `@liveworkspace/ui`). The browser's Back (Android's, an iPhone's swipe) and
   Esc return to the list: opening the pane adds one history entry, keeping the page's history state as it was. If the
   open row disappears (done elsewhere, gone from a re-read), the pane closes and steps back off that entry, so the
   next Back leaves the list; opening a row while the pane's entry is still on top replaces it rather than adding

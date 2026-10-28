@@ -1,13 +1,13 @@
 'use client';
 
-// The pane header (livediagram's PaneHeader): the title and breadcrumbs on the left; on the right the
+// The pane header (livediagram's PaneHeader): the title and the breadcrumb (the shared back bar) on the left; on the right the
 // section's own actions, the This app / All filter, the List / Card / Details toggle, Help (where the host
 // has an article for the view), and Create (New <kind> and New Folder as two tiles in one menu where both
 // apply, else the one button).
 
 import type { App } from '@liveworkspace/index-client';
 import { useState, type ReactNode } from 'react';
-import { Button } from '@liveworkspace/ui';
+import { BackBar, Button } from '@liveworkspace/ui';
 import { PortalMenu } from '../ui/Menu';
 import {
   CaretDownIcon,
@@ -167,38 +167,15 @@ export function PaneHeader({
         </div>
       </div>
       {crumbs.length >= 2 ? (
-        <nav
-          aria-label="Breadcrumb"
-          className="flex flex-wrap items-center rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-        >
-          {crumbs.map((c, i) => {
-            const last = i === crumbs.length - 1;
-            return (
-              <span key={`${c.name}-${i}`} className="flex items-center">
-                {i > 0 ? (
-                  <span aria-hidden className="px-1 text-slate-300 dark:text-slate-600">
-                    ›
-                  </span>
-                ) : null}
-                {c.onClick && !last ? (
-                  <button
-                    type="button"
-                    onClick={c.onClick}
-                    className="rounded px-1.5 py-0.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                  >
-                    {c.name}
-                  </button>
-                ) : (
-                  <span
-                    aria-current={last ? 'page' : undefined}
-                    className="rounded px-1.5 py-0.5 font-medium text-slate-900 dark:text-slate-100"
-                  >
-                    {c.name}
-                  </span>
-                )}
-              </span>
-            );
-          })}
+        // The shared back bar (docs/specs/004-interface-design/back-bar.md): the level above as where Back goes,
+        // the open one as its chip.
+        <nav aria-label="Breadcrumb">
+          <BackBar
+            label={crumbs[crumbs.length - 2]!.name}
+            current={crumbs[crumbs.length - 1]!.name}
+            onClick={crumbs[crumbs.length - 2]!.onClick}
+            gap="tight"
+          />
         </nav>
       ) : null}
     </div>
