@@ -3,11 +3,16 @@
 // A Plan board's rows and cards (docs/specs/026-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
+import { useEffect, useRef } from 'react';
 import { itemVoteKey } from '@liveplanner/project';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import type { CardVote } from './CardVoteContext';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
-import { usePlanDragPointer, type PlanDragPointerStore } from '@/hooks/plan/usePlanCardDrag';
+import {
+  holdCardTouch,
+  usePlanDragPointer,
+  type PlanDragPointerStore,
+} from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
 import {
   ITEM_TYPES,
@@ -109,6 +114,7 @@ export function PlanBoardCard({
   done,
   setupFields,
   cardSize,
+  touch = 'touch-none',
   faceDown,
   presence,
   interactive,
@@ -126,6 +132,8 @@ export function PlanBoardCard({
   done: boolean;
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
   cardSize: Parameters<typeof PlanCardFace>[0]['size'];
+  // The card's touch-action (phone-board.ts cardTouch): touch-none but on a phone board one column a screen.
+  touch?: string;
   faceDown: boolean;
   presence: Parameters<typeof PlanCardFace>[0]['presence'];
   interactive: boolean;
@@ -142,18 +150,30 @@ export function PlanBoardCard({
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
   const hold = useLongPress((x, y) => onLongPress?.(item, { x, y }));
+  // A card that takes a finger as a scroll is picked up by a hold: past it, its finger stops scrolling
+  // (usePlanCardDrag holdCardTouch). Non-passive from the start, so the browser waits on it.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const scrolls = touch !== 'touch-none';
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el || !scrolls) return;
+    el.addEventListener('touchmove', holdCardTouch, { passive: false });
+    return () => el.removeEventListener('touchmove', holdCardTouch);
+  }, [scrolls]);
   return (
     <>
       {placeholderBefore !== undefined ? (
         <DropGap height={placeholderBefore} palette={palette} />
       ) : null}
       <div
+        ref={cardRef}
         role="listitem"
         tabIndex={0}
         data-plan-card={item.id}
         aria-label={faceDown ? 'Hidden card' : itemAccessibleName(item, types)}
-        // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls).
-        className="relative touch-none rounded-lg outline-none transition-opacity focus-visible:ring-2"
+        // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls); on a
+        // phone board one column a screen it scrolls, and a card held still is carried (phone-board.ts).
+        className={`relative ${touch} rounded-lg outline-none transition-opacity focus-visible:ring-2`}
         style={{
           opacity: lifted ? 0.35 : 1,
           cursor: interactive ? 'grab' : undefined,

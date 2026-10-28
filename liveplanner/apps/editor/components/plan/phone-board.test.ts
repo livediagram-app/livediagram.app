@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { PHONE_END_CLEARANCE, boardLook, shownQuick, type BoardPlace } from './phone-board';
+import {
+  CARD_HOLD_TO_DRAG_MS,
+  PHONE_END_CLEARANCE,
+  boardLook,
+  holdPhase,
+  shownQuick,
+  type BoardPlace,
+} from './phone-board';
 
 // docs/specs/026-plan/plan-board.md "On a phone", "Maximised board".
 const place = (over: Partial<BoardPlace>): BoardPlace => ({
@@ -19,6 +26,8 @@ describe('boardLook', () => {
       widgets: true,
       container: false,
       touch: 'touch-none',
+      cardTouch: 'touch-none',
+      holdToDrag: false,
       snap: false,
       overscroll: '',
       endClearance: '',
@@ -75,6 +84,23 @@ describe('boardLook', () => {
     expect(boardLook(place({ covering: true }), undefined).overscroll).toBe('');
   });
 
+  it('lets a finger on a phone board card scroll, the card picked up by a hold, and only there', () => {
+    expect(boardLook(place({ phone: true, covering: true }), undefined)).toMatchObject({
+      cardTouch: 'touch-pan-x touch-pan-y',
+      holdToDrag: true,
+    });
+    for (const where of [
+      { phone: true },
+      { covering: true },
+      { phone: true, covering: true, interactive: false },
+    ]) {
+      expect(boardLook(place(where), undefined)).toMatchObject({
+        cardTouch: 'touch-none',
+        holdToDrag: false,
+      });
+    }
+  });
+
   it('stops snapping while a card is carried, so the edge scroll moves the columns freely', () => {
     expect(boardLook(place({ phone: true, covering: true, dragging: true }), undefined).snap).toBe(
       false,
@@ -91,5 +117,20 @@ describe('shownQuick', () => {
     const quick = { text: 'bug', mine: 'me' };
     expect(shownQuick(quick, false)).toBe(quick);
     expect(shownQuick(quick, true)).toEqual({});
+  });
+});
+
+describe('holdPhase', () => {
+  it('waits while the finger holds still, then carries once the hold is up', () => {
+    expect(holdPhase(CARD_HOLD_TO_DRAG_MS, 100, false)).toBe('wait');
+    expect(holdPhase(CARD_HOLD_TO_DRAG_MS, CARD_HOLD_TO_DRAG_MS, true)).toBe('carry');
+  });
+
+  it('takes a finger that moves before the hold is up as a scroll', () => {
+    expect(holdPhase(CARD_HOLD_TO_DRAG_MS, 100, true)).toBe('scroll');
+  });
+
+  it('holds for less than the long press that opens the menu', () => {
+    expect(CARD_HOLD_TO_DRAG_MS).toBeLessThan(500);
   });
 });

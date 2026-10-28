@@ -28,6 +28,11 @@ type BoardLook = {
   container: boolean;
   // The body's touch-action classes.
   touch: string;
+  // A card's touch-action classes: touch-none, so a finger on it drags it, except on a phone board that shows one
+  // column a screen, where a column is mostly cards: there a finger on a card scrolls the board like empty space, and
+  // a card is picked up by holding it still for CARD_HOLD_TO_DRAG_MS first (holdToDrag).
+  cardTouch: string;
+  holdToDrag: boolean;
   // The columns snap to the centre as they scroll sideways (each column's full-height marker, never its sticky head).
   snap: boolean;
   // The body's overscroll-behavior class: covering, its scroll stays its own; in a Dashboard slot only sideways, so
@@ -55,6 +60,8 @@ export function boardLook(place: BoardPlace, cardSize: CardSize | undefined): Bo
     widgets: !phone,
     container: covering || oneAScreen,
     touch: interactive ? (scrolls ? 'touch-pan-x touch-pan-y' : 'touch-none') : '',
+    cardTouch: oneAScreen && interactive ? 'touch-pan-x touch-pan-y' : 'touch-none',
+    holdToDrag: oneAScreen && interactive,
     snap: oneAScreen && !dragging,
     overscroll: oneAScreen ? (covering ? 'overscroll-contain' : 'overscroll-x-contain') : '',
     endClearance: phone && covering ? PHONE_END_CLEARANCE : '',
@@ -65,6 +72,22 @@ export function boardLook(place: BoardPlace, cardSize: CardSize | undefined): Bo
 // a wider screen never hides cards with nothing on screen to say so.
 export function shownQuick(quick: QuickFilter, phone: boolean): QuickFilter {
   return phone ? NO_QUICK : quick;
+}
+
+// How long a finger holds a card still, on a phone board that shows one column a screen, before it may carry it
+// (blueprint DEFAULTS): shorter than the long press that opens its menu (LONG_PRESS_MS, 500 ms), long enough that a
+// swipe starting on a card scrolls.
+export const CARD_HOLD_TO_DRAG_MS = 250;
+
+// Where a held-to-drag press on a card stands as the finger moves: still within its hold ('wait'), moved off before
+// the hold was up so it is a scroll, never a drag or a click ('scroll'), or held long enough to carry ('carry').
+export function holdPhase(
+  holdUntil: number,
+  now: number,
+  moved: boolean,
+): 'wait' | 'scroll' | 'carry' {
+  if (now >= holdUntil) return 'carry';
+  return moved ? 'scroll' : 'wait';
 }
 
 // What keeps its own tap on a board: a card, and any control.

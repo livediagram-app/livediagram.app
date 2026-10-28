@@ -183,7 +183,7 @@ export function PlanBoardView({
   // A press on a card in Plan mode without edit rights still opens it.
   const onCardPress = (id: string, e: React.PointerEvent<HTMLElement>) => {
     if (!interactive) return;
-    if (canEditCards) drag.onCardPointerDown(id, e);
+    if (canEditCards) drag.onCardPointerDown(id, e, look.holdToDrag);
     else {
       stop(e);
       plan?.openItem(id);
@@ -586,6 +586,7 @@ export function PlanBoardView({
                                   // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
                                   setupFields={CARD_FIELDS}
                                   cardSize={look.cardSize}
+                                  touch={look.cardTouch}
                                   faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
                                   presence={plan?.presence.get(item.id)}
                                   interactive={interactive}
