@@ -147,7 +147,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 - An ordinary board leaves archived items out altogether: not in its columns, its counts, its widgets or its
   "not on this board" list.
 - An **Archive board** (the Boards category's Archive tile) shows only archived items, every one in its single
-  **Archived** column, in Compact cards. It takes no new cards (no Add Card, and palette cards are refused).
+  **Archived** column, in Detailed cards. It takes no new cards (no Add Card, and palette cards are refused).
 - Archive and Restore send `Plan · Moved · Archive` and `Plan · Restored · Card`.
 
 ## Flags
@@ -344,7 +344,7 @@ text. Editing an AI comment keeps the flag; a person cannot set or clear it.
   on every card it is on.
 
 **On a card face**: the `comments` card field draws a speech bubble and the count of comments in the card's **open**
-threads (none drawn when there are none), labelled "5 comments in 2 open threads". Compact and Detailed cards,
+threads (none drawn when there are none), labelled "5 comments in 2 open threads". Detailed cards,
 beside the votes; exports and thumbnails draw it too.
 
 **In the Inbox**: each thread is one Inbox item ([Inbox](../013-workspace/inbox.md) §2.5), titled with its title and
@@ -436,7 +436,7 @@ added into another plan, is no longer sent) and `Comment · Deleted · Thread`.
   filter leaves nothing. Every filter must match; Backspace in an empty box takes the last off, and the box's
   **Clear Search** clears the words and the filters. They are the person's own while the panel is open, never saved. Filters matching nothing: **No cards match these filters** (below).
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
-- Each row is the card as a board draws it at **Compact** size, laid out as its type's Display says, so a card
+- Each row is the card as a board draws it at **Detailed** size, laid out as its type's Display says, so a card
   looks the same in the panel as on a board (named for assistive technology "Open {Title}, {Type} #{n}"). Its state is not shown: a state filter
   narrows by it. Choosing one closes the popover and
   opens the card in the item panel.

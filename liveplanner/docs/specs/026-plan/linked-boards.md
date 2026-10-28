@@ -30,7 +30,7 @@ action, so nobody re-types it and neither place lies.
 ## The Actions board
 
 - A Board tab named **Actions**, holding one board titled **Actions** with three columns in this order: **New**,
-  **Done** (the done column) and **Won't Do**. Its cards are **Compact**, showing the card number, who has it and when
+  **Done** (the done column) and **Won't Do**. Its cards are **Detailed**, showing the card number, who has it and when
   it is due; it takes the **Action** card type only, and its header shows the Completion and Due Soon widgets.
 - It is in the theme of the tab the first action was made on.
 - Columns reuse the project's states of the same name ([One name, one state](plan-board.md#one-name-one-state)), so

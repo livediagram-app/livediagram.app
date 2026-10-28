@@ -159,8 +159,10 @@ Where each is set, so a setting lives with what it changes, never in one central
   **Swimlanes** (**Group Rows By**, one grid: None, Assignee,
   Type, Priority (Status only on an All Cards board), then a row per groupable field, in one [option list](#option-lists), named by the field and drawn with its kind's glyph),
   **Supported Cards** (**Card Types**, below; left out on an Archive board) and **Card Layout** (**Card Size**:
-  Minimal, Compact or Detailed; what a card shows at each size is its type's Display, [Card
-  display](item-types.md#card-display)). Group Rows By, Card Types and Card Size each open with a one-line info note
+  Minimal or Detailed; what a card shows at each size is its type's Display, [Card
+  display](item-types.md#card-display)). There is no Compact size: it differed too little from Detailed to be worth
+  a choice. A board stored with the retired `cardSize: 'compact'` reads as Detailed; nothing is rewritten in
+  place, and the board's next change saves it as Detailed (no `cardSize`). Group Rows By, Card Types and Card Size each open with a one-line info note
   (an "i" in a circle) saying what it does.
 - **The Columns section** (the cog's and the element menu's): an info note ("The board's columns, left to right. Press
   one to open its settings."), then **On This Board** (a small uppercase heading with a count badge) over an
@@ -185,8 +187,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   Defaults: Retro, Note and Idea (an action is tracked on a board of its own); Sprint, Task and Action; Bug Triage, Task; Roadmap, Project; Kanban and
   Week, Task, Action and Note; To-do List, Action; Blank and All Cards, every type.
 - **The To-do List board** (preset `todo`, after Kanban in the lists): two columns, **To Do** and **Done** (the done
-  column), for Action cards only, Compact cards showing who has each action and when it is due (a to-do list is a
-  dense list of short items, so Compact; its checklist is in the card), and the Completion and Due Soon widgets.
+  column), for Action cards only, Detailed cards showing who has each action and when it is due (its checklist
+  progress in the card's footer), and the Completion and Due Soon widgets.
 - **Setup Board**: a board with no columns (the Blank board starts so, and starts taller than a set-up board: 880 px
   against 640, blueprint DEFAULTS D5) is **not set up yet**.
   - **On the canvas** it shows, in place of its columns, a calm **placeholder**, centred: a board glyph, the board's
@@ -247,8 +249,8 @@ Where each is set, so a setting lives with what it changes, never in one central
      board is laid out. It starts as the board is now; every choice can change later from its cog." Then
      **Swimlanes** (its line "Rows across the board, one for each value of the field you pick." and the same option list
      as the board menu's Swimlanes, offering what the card types chosen in step 1 offer), **Card Display** (its line
-     "How much of each card shows. Each card type's Display sets what shows at each size." and the same Minimal,
-     Compact and Detailed rows as the menu's Card Layout). No Fill Tab: a board fills a tab by being a Board tab's
+     "How much of each card shows. Each card type's Display sets what shows at each size." and the same Minimal
+     and Detailed rows as the menu's Card Layout). No Fill Tab: a board fills a tab by being a Board tab's
      ([Fill Tab](#fill-tab)). **Back** returns to Columns with nothing lost.
      **Create Board** (**Save Board** on a board run again; the Layout step's only, needs a column) writes the columns (an existing state keeps its
      status, so its cards show; a new one has a status of its own), the card types (every type is no `addTypes`; a
@@ -367,9 +369,6 @@ Where each is set, so a setting lives with what it changes, never in one central
   Minimal card, which shows no number, has a small dot of it before the title. A card being dragged or opened by
   someone else carries their colour ring and name. Of the fields the set-up shows:
   - **Minimal**: the title (two lines at most) and nothing else, but a session vote's stepper during a vote.
-  - **Compact**: the type's glyph on a tint of its colour and the number, top left, beside the title (two lines at
-    most), over one row of the priority's signal bars, the start and due dates, votes, comments and the assignee's
-    avatar.
   - **Detailed** (the default): a header of the **type chip** (its glyph and name on a tint of its colour), the
     number on its type's colour, the item's own colour dot (when it has one) and, at the end, the **priority** as signal bars with its name (Low one bar, Medium two, High three,
     Urgent three in its red); the title (three lines); the project it sits under; two lines of its description;
@@ -379,8 +378,7 @@ Where each is set, so a setting lives with what it changes, never in one central
     assignee's avatar at the end.
   - **Due date pill**: "Due 10 Oct" (as the start pill reads "From 8 Oct"), red once past (unless the card is done), amber when due within two days, otherwise quiet.
   - The fields are Number, Type, Assignee, Priority, Labels, Estimate, Start Date, Due Date, Votes, Checklist,
-    Description and Project; Compact draws Number, Type, Assignee, Priority, Start Date, Due Date and Votes. A
-    start date reads "From 1 Oct", muted.
+    Description and Project. A start date reads "From 1 Oct", muted.
 - **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph, a project's
   [Colour](items.md#colour) dot before its name), "No assignee" last.
   Each swimlane collapses on its own, per person.
@@ -842,7 +840,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 ## The Plan card
 
 - Draws one item's card face at the element's size, with the item type's colour; resizes like a box.
-- Has its own **Card Size** (Minimal, Compact or Detailed, the board's three; Detailed when unset), set from the
+- Has its own **Card Size** (Minimal or Detailed, the board's two; Detailed when unset, and when stored as the
+  retired `compact`), set from the
   **Card** flyout of its element menu (a collapsible **Card Size** row, closed until opened, as every menu row is), one undoable element edit (`planCard.size`, Detailed stored as absent). Its
   card type's Display decides what shows at each size, as on a board. Exports and images draw its face as they do
   today, whatever its size. Telemetry: `Plan` · `Changed` · `PlanCardSize`.
@@ -913,7 +912,7 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 - In exports, thumbnails and api or MCP images the board draws its header, columns and card faces from the
   project's items, without the interactive controls.
   - Each card face follows its type's Display at the board's card size, as the canvas does
-    ([Item types](item-types.md) "Card display"): Minimal one line, Compact a title over one row, Detailed a header,
+    ([Item types](item-types.md) "Card display"): Minimal one line, Detailed a header,
     the title on up to three lines, what sits under it and a footer. A built-in field shows only when the board's card
     fields list it; a custom field shows as its name and value ("Severity: S1"). A field with no value is left out.
   - Each card is as tall as its face needs, so cards in a column stack at their own heights. A column whose cards do

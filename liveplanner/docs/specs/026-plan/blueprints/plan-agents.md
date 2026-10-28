@@ -40,8 +40,8 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   chosen, given nothing but those, stays null. The whole result goes through `validateItemTypeCatalogue`.
   `add` and `set` apply `display`, `tabs` and `detailsLabel` last (`withFace`), through
   `packages/items/src/type-change-face.ts`: `displayFrom` maps `DISPLAY_SLOT_NAMES` (minimal beforeTitle/afterTitle →
-  lead/trail; compact besideTitle/belowTitle/bottomRight → lead/row/trail; detailed header/headerEnd/underTitle/
-  footer/bottomRight → head/headEnd/body/foot/footEnd) and field names (`CARD_FIELD_LABELS`, "Number"/"#" → key,
+  lead/trail; detailed header/headerEnd/underTitle/footer/bottomRight → head/headEnd/body/foot/footEnd; a
+  `compact` size is skipped, never refused) and field names (`CARD_FIELD_LABELS`, "Number"/"#" → key,
   else `fieldKeyOf`) into a layout per given size, checked by `typeOffersCardField` and `cardSlotFits`, stored
   through `readCardDisplay` (defaults dropped); a refusal is `display_invalid`. `tabsFrom` builds whole tabs (≤
   `ITEM_TYPE_TABS_MAX`), refusing Title, Votes, a field the type lacks or one in two tabs, keeping a same-named tab's

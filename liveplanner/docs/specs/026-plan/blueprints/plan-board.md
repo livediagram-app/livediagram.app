@@ -30,7 +30,7 @@ editor views.
 - `shape-factory.ts`: `SHAPE_DEFAULT_SIZE` board 1120×640, card 240×120; `createShape('plan-board')` seeds the
   `blank` preset set-up; `createShape('plan-card')` seeds `planCard: { itemId: '' }` (the caller sets it).
 - `validate-shape.ts`: `planBoard` valid when `normaliseBoardSetup` (items package) reads it (1..12 columns, unique ids and
-  statuses, names ≤ 40, wip 1..99, cardFields known, `cardSize` minimal or compact (absent is detailed), budget
+  statuses, names ≤ 40, wip 1..99, cardFields known, `cardSize` minimal (absent is detailed; the retired `compact` and anything else read as absent, `readCardSize`), budget
   1..99); `planCard.itemId` by `ITEM_ID_PATTERN` or empty.
 - Predicates: `isSelfDrawingShape` (both), `SELF_PAINTING_SHAPES` (both: board paints its own surfaces; card its
   type colour), `isSvgRenderedShape` exclusion (both), `SHAPE_LABELS` ("Plan board", "Plan card"), not markers,
@@ -40,9 +40,9 @@ editor views.
   and `itemTypes?`. Without items, columns draw
   with names and empty bodies; a card draws "Item".
 - Card faces: `svg-render-plan-card.ts` `planCardFace(item, x, y, w, ctx, measureOnly)` draws from `typeCardLayout` at
-  the board's `cardSize` (slots lead/trail, lead/row/trail, head/headEnd/body/foot/footEnd), gating built-ins by
+  the board's `cardSize` (slots lead/trail, head/headEnd/body/foot/footEnd), gating built-ins by
   `cardFieldsAt(size, cardFields)`; custom fields as `Label: value` pills via `customFieldText`; the title wraps to 2
-  (Minimal, Compact) or 3 (Detailed) lines; returns `{ svg, height }`. `ctx.height` pins a Plan card element's frame.
+  (Minimal) or 3 (Detailed) lines; returns `{ svg, height }`. `ctx.height` pins a Plan card element's frame.
   Card values (`dayLabel`, `customFieldText`, `checklistProgress`) live in `@liveplanner/items` `card-text.ts`.
 - Board layout: `plan-board-layout.ts` `planBoardLayout(el, items, types, cardHeight?)` stacks cards at
   `cardHeight(item, width)` (absent: `PLAN_CARD_H`) and, with swimlanes, returns `lanes: PlanLaneSlot[]`, each a
@@ -244,15 +244,16 @@ the items too.
 
 ## Card sizes
 
-- `CARD_SIZE_FIELDS`: minimal `[]`; compact key, type, assignee, priority, due, votes; detailed every field.
+- `CARD_SIZES` is `['minimal', 'detailed']`; `readCardSize(v)` reads `'minimal'` as Minimal and anything else (the
+  retired `'compact'` among them) as Detailed, for set-ups, Plan card elements and agent input alike.
+- `CARD_SIZE_FIELDS`: minimal key, priority, due, assignee; detailed every field.
   `cardFieldsAt(size, fields)` is what a face draws. `CARD_FIELDS` adds `description` (two lines); Parent is a custom
   card field (`CustomCardField` admits `parent`), placed by the type's Display (Task: detailed `body`). The Cards flyout dims a field tile outside the size's set (`disabled`), its setting kept.
 - `PlanCardFace` lays out the parts in `plan-card-parts.tsx`: frame `rounded-xl` with a hairline border, rest shadow
   `0 1px 2px / 0 1px 3px` slate at 6 % / 4 %, hover `shadow-md` and `-translate-y-px` (150 ms; none under reduced
   motion); no stripe: the type colour fills `KeyTag` (the #key, text white or `#18181b`, whichever
   `contrastRatio` favours: `keyTextOn`), and Minimal draws `TypeDot` before the title. Minimal: title 13 px semibold, two lines.
-  Compact: `TypeChip` (glyph only) beside a two-line title, over an 11 px row (#key, `PrioritySignal`,
-  `StartPill`, `DuePill`, votes, `CommentsPill`, avatar right). Detailed: header (`TypeChip`, `KeyTag`, `ColourDot` when the item has its own colour,
+  Detailed: header (`TypeChip`, `KeyTag`, `ColourDot` when the item has its own colour,
   `PrioritySignal` with its name at the end), title 14 px three lines, parent, description two lines, custom
   fields as a name/value grid, `LabelChips` (≤ 4, `labelColour` tints, "+n"), then a footer of `MetaPill`s
   (start, due, estimate, `ChecklistPill`, comments, votes) with the avatar at the end. `DuePill`: `LATE_COLOUR`
