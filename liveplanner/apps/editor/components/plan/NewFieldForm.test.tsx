@@ -188,7 +188,7 @@ describe('Shape', () => {
     const { onAddCustom } = open();
     pick('Text');
     expect(screen.getByRole('form', { name: 'New Text field' })).toBeTruthy();
-    expect(screen.getByText('Kind:')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^All kinds/ }).textContent).toBe('All kindsText');
     expect(document.activeElement).toBe(name());
     expect(addButton().textContent).toBe('Add Text Field');
     expect(addButton()).toHaveProperty('disabled', true);
