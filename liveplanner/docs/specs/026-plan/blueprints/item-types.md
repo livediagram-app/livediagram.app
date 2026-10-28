@@ -122,7 +122,18 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   `max(LINK_LIST_MIN_PX (320), the field's width)`, capped by the window, with a filter past `LINK_FILTER_FROM` (8);
   each title `line-clamp-2` in a `Tooltip` of the whole title. `PlanSheetsHost` passes the groups as `linkedGroups`
   (`LinkedCardGroup` in LinkedCards.tsx, `New {Type}` via `addItem` with the link
-  set, first status the type uses, tracked `('Plan', 'Added', 'LinkedCard')`). `customFieldText(field, value, items)`
+  set, first status the type uses, tracked `('Plan', 'Added', 'LinkedCard')`). **Link Existing** (`LinkedCardGroup`'s last button, `aria-label`
+  "Link an existing card as {Field}", shown with `canAdd` (the session's `can.planCards`) and a `target`) opens
+  `LinkExistingCardDialog`: rows from `linkableCards(target, group, items)` (card-links.ts: the group's `fromTypes`,
+  not trashed or archived, never the target nor a card whose field already holds it, each with `elsewhere`, the
+  other card id its field holds) through `linkExistingRows` (newest change first, note "Linked to #3 Website" or
+  "Linked to a missing card"), drawn by the shared `CardPickerDialog` (apps/editor `CardPickerDialog.tsx` +
+  `card-picker.ts`: `pickCardOf`, `matchesPick`, `useCardPickerSearch`, `PICK_CARDS_SHOWN` 50; Add Thread to Card
+  draws it too) with `showType` when the field is on several types. A row with `elsewhere` opens the workbench
+  `ConfirmDialog` ("Move #12 {Title}?", Move Here / Cancel; the picker's Escape is off while it shows). The write is
+  `linkExistingCard(ctx, target, group, cardId, moved)` (`link-existing.ts`): `patchItem(cardId, { set: { [fieldId]:
+target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked', 'LinkedCard' |
+'LinkedCardMoved')`; false (gone card, the target itself, a refused write) keeps the dialog open. `customFieldText(field, value, items)`
   names a Card value; `LaneFieldKind` gains `card` (rows named by the linked card with its `itemColourOf` dot, number
   order; the Swimlanes tile draws the linked type's glyph for a one-type field, else the card glyph; `LaneField`
   carries `linkTypes`). `PlanCardFace` draws a Card field as a pill: the linked
