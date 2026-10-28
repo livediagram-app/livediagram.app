@@ -291,7 +291,7 @@ export function MetricPicker({
             <div className="border-b border-slate-100 p-1.5 dark:border-slate-800">
               <BackBar
                 label={path.length > 1 ? path[path.length - 2]! : 'All categories'}
-                current={path[path.length - 1]!}
+                current={path[path.length - 1]}
                 onClick={back}
                 keepFocus
                 gap="none"
