@@ -14,6 +14,9 @@ export const PLAN_COLUMN_GAP_PX = 12;
 // How much of its neighbours a phone shows beside the centred column, both gaps included (blueprint DEFAULTS).
 export const PHONE_COLUMN_PEEK_PX = 64;
 
+// A phone column's width (the body is the size container), whatever the column's own width: also its snap marker's.
+export const PHONE_COLUMN_WIDTH = `max(${PLAN_COLUMN_MIN_PX}px, calc(100cqw - ${PHONE_COLUMN_PEEK_PX}px))`;
+
 // How a board lays its columns out: sharing the canvas element's width, five slots across while it covers the canvas,
 // or one a screen on a phone.
 export type BoardColumnLayout = 'canvas' | 'maximised' | 'phone';
@@ -22,10 +25,7 @@ export function boardColumnTemplate(
   columns: readonly Pick<PlanColumn, 'width'>[],
   layout: BoardColumnLayout,
 ): string {
-  if (layout === 'phone') {
-    const one = `max(${PLAN_COLUMN_MIN_PX}px, calc(100cqw - ${PHONE_COLUMN_PEEK_PX}px))`;
-    return columns.map(() => one).join(' ');
-  }
+  if (layout === 'phone') return columns.map(() => PHONE_COLUMN_WIDTH).join(' ');
   const maximised = layout === 'maximised';
   const gaps = (MAXIMISED_BOARD_SLOTS - 1) * PLAN_COLUMN_GAP_PX;
   return columns

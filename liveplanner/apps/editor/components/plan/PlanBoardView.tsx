@@ -50,7 +50,7 @@ import { SetupBoardHost } from './SetupBoardHost';
 import { pickableStatuses } from './column-status-picks';
 import { boardItems } from '@liveplanner/plan-art';
 import { trackSetup } from './track-board-setup';
-import { boardColumnTemplate } from './plan-board-columns';
+import { PHONE_COLUMN_WIDTH, boardColumnTemplate } from './plan-board-columns';
 import { boardLook, centreTappedColumn, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
@@ -492,8 +492,10 @@ export function PlanBoardView({
                     key={`snap-${col.column.id}`}
                     aria-hidden
                     data-plan-snap
-                    className="pointer-events-none absolute inset-0 snap-center snap-always"
-                    style={{ gridColumn: i + 1, gridRow: '1 / -1' }}
+                    className="pointer-events-none absolute inset-y-0 left-0 snap-center snap-always"
+                    // Its own width: an absolute item's right edge would reach only the grid's own box, not its
+                    // column's, since the columns run past it.
+                    style={{ gridColumn: i + 1, gridRow: '1 / -1', width: PHONE_COLUMN_WIDTH }}
                   />
                 ))
               : null}
