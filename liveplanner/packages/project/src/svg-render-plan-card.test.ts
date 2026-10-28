@@ -85,8 +85,8 @@ describe('planCardFace', () => {
 
   it("gates a built-in field by the board's card fields", () => {
     const voted = item('a', { title: 'Idea', votes: { p: 2 } }, { type: 'idea' });
-    const on = planCardFace(voted, 0, 0, 240, { palette, boardFields: ['votes'], size: 'compact' });
-    const off = planCardFace(voted, 0, 0, 240, { palette, boardFields: [], size: 'compact' });
+    const on = planCardFace(voted, 0, 0, 240, { palette, boardFields: ['votes'], size: 'detailed' });
+    const off = planCardFace(voted, 0, 0, 240, { palette, boardFields: [], size: 'detailed' });
     expect(off.svg).not.toContain('▲');
     expect(on.svg).toContain('▲ 2');
   });
@@ -94,11 +94,9 @@ describe('planCardFace', () => {
   it('draws every card size, Minimal the shortest', () => {
     const it0 = item('a', { title: 'Ship it', priority: 'high' });
     const min = planCardFace(it0, 0, 0, 240, { palette, size: 'minimal' });
-    const compact = planCardFace(it0, 0, 0, 240, { palette, size: 'compact' });
     const detailed = planCardFace(it0, 0, 0, 240, { palette, size: 'detailed' });
-    expect(min.height).toBeLessThanOrEqual(compact.height);
-    expect(compact.height).toBeLessThanOrEqual(detailed.height);
-    for (const f of [min, compact, detailed]) expect(f.svg).toContain('Ship it');
+    expect(min.height).toBeLessThan(detailed.height);
+    for (const f of [min, detailed]) expect(f.svg).toContain('Ship it');
   });
 
   it('gives the header end a row of its own on a narrow card, so nothing overlaps', () => {

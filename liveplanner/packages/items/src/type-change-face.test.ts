@@ -39,7 +39,7 @@ describe('display', () => {
             underTitle: ['Severity'],
             bottomRight: ['Assignee'],
           },
-          compact: { besideTitle: ['Number'], belowTitle: ['Priority', 'Due Date'] },
+          minimal: { beforeTitle: ['Number'], afterTitle: ['Priority', 'Due Date'] },
         },
       },
     ]);
@@ -50,16 +50,32 @@ describe('display', () => {
       body: [sev],
       footEnd: ['assignee'],
     });
-    expect(typeCardLayout(bug, 'compact')).toEqual({ lead: ['key'], row: ['priority', 'due'] });
+    expect(typeCardLayout(bug, 'minimal')).toEqual({ lead: ['key'], trail: ['priority', 'due'] });
+  });
+
+  // docs/specs/026-plan/plan-agents.md "Changing card types": an older prompt's Compact layout is skipped.
+  it('skips a layout for the retired Compact size, never refusing it', () => {
+    const r = run([
+      {
+        ...BUG,
+        display: {
+          compact: { besideTitle: ['Number'], belowTitle: ['Priority'] },
+          minimal: { afterTitle: ['Assignee'] },
+        },
+      },
+    ]);
+    const bug = typeIn(r, 'Bug');
+    expect(bug.display).toEqual({ minimal: { trail: ['assignee'] } });
+    expect(typeCardLayout(bug, 'detailed')).toEqual(typeCardLayout({ ...bug, display: {} }, 'detailed'));
   });
 
   it('keeps a size left out as it was', () => {
     const r = run([
-      { ...BUG, display: { compact: { besideTitle: ['Number'] } } },
+      { ...BUG, display: { detailed: { header: ['Number'] } } },
       { op: 'set', type: 'Bug', display: { minimal: { afterTitle: ['Assignee'] } } },
     ]);
     const bug = typeIn(r, 'Bug');
-    expect(typeCardLayout(bug, 'compact')).toEqual({ lead: ['key'] });
+    expect(typeCardLayout(bug, 'detailed')).toEqual({ head: ['key'] });
     expect(typeCardLayout(bug, 'minimal')).toEqual({ trail: ['assignee'] });
   });
 

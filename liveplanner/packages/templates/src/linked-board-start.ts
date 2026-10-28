@@ -1,5 +1,5 @@
 // The Actions board (docs/specs/026-plan/linked-boards.md "The Actions board"): the Board tab made the first time a
-// project gets an action. New, Done and Won't Do, Compact Action cards showing who has each and when it is due.
+// project gets an action. New, Done and Won't Do, Detailed Action cards showing who has each and when it is due.
 // Pure: the editor commits it.
 import { SHAPE_DEFAULT_SIZE, createShape, type Element, type Tab } from '@liveplanner/project';
 import {
@@ -27,7 +27,6 @@ export function actionsBoardSetup(
       doneColumnId: 'done',
       swimlaneBy: 'none',
       cardFields: ['key', 'assignee', 'due', 'checklist', 'comments'],
-      cardSize: 'compact',
       widgets: ['progress', 'due'],
       addTypes: ['action'],
       hideWriting: false,

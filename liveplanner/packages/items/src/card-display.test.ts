@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CARD_SLOTS,
   typeCardLayout,
   customCardFields,
   cardDisplayFields,
@@ -20,10 +21,11 @@ const task = ITEM_TYPES.find((t) => t.id === 'task')!;
 
 describe('card display', () => {
   it('gives the built-in types their own defaults, and any other type the generic one', () => {
-    expect(cardLayoutFields('compact', defaultCardLayout('note', 'compact'))).toEqual([
+    expect(cardLayoutFields('detailed', defaultCardLayout('note', 'detailed'))).toEqual([
       'type',
-      'votes',
+      'description',
       'comments',
+      'votes',
     ]);
     expect(defaultCardLayout('task', 'minimal')).toEqual({});
     expect(cardLayoutFields('detailed', defaultCardLayout('bug', 'detailed'))).toContain(
@@ -35,8 +37,8 @@ describe('card display', () => {
     expect(
       typeCardDisplay({ ...task, display: { minimal: { trail: ['due'] } } }, 'minimal'),
     ).toEqual(['due']);
-    expect(typeCardDisplay(task, 'compact')).toEqual(
-      cardLayoutFields('compact', defaultCardLayout('task', 'compact')),
+    expect(typeCardDisplay(task, 'detailed')).toEqual(
+      cardLayoutFields('detailed', defaultCardLayout('task', 'detailed')),
     );
   });
 
@@ -48,13 +50,13 @@ describe('card display', () => {
     expect(readCardDisplay({ minimal: { trail: ['labels'] } }, 'task')).toBeNull();
     expect(readCardDisplay({ minimal: { lead: ['description'] } }, 'task')).toBeNull();
     expect(readCardDisplay({ detailed: { head: ['key'], foot: ['key'] } }, 'task')).toBeNull();
-    expect(readCardDisplay({ compact: { nowhere: [] } }, 'task')).toBeNull();
+    expect(readCardDisplay({ detailed: { nowhere: [] } }, 'task')).toBeNull();
     expect(readCardDisplay({ huge: {} }, 'task')).toBeNull();
     const ok = validateItemTypeCatalogue({
       version: 1,
-      types: [{ ...task, display: { compact: { row: ['key'] } } }],
+      types: [{ ...task, display: { detailed: { foot: ['key'] } } }],
     });
-    expect(ok.ok && ok.catalogue.types[0]!.display).toEqual({ compact: { row: ['key'] } });
+    expect(ok.ok && ok.catalogue.types[0]!.display).toEqual({ detailed: { foot: ['key'] } });
   });
 
   it('places a default where a board drew it, and says what each size can draw', () => {
@@ -65,7 +67,7 @@ describe('card display', () => {
     });
     expect(cardDisplayFields('minimal')).toEqual(['key', 'priority', 'due', 'assignee']);
     expect(cardSlotFits('detailed', 'foot', 'description')).toBe(true);
-    expect(cardSlotFits('compact', 'row', 'description')).toBe(false);
+    expect(cardSlotFits('minimal', 'trail', 'description')).toBe(false);
   });
 
   it('says which fields a type can show', () => {
@@ -75,20 +77,43 @@ describe('card display', () => {
   });
 
   it('compares layouts slot by slot, order included', () => {
-    expect(sameCardLayout('compact', { row: ['due', 'votes'] }, { row: ['due', 'votes'] })).toBe(
+    expect(sameCardLayout('detailed', { foot: ['due', 'votes'] }, { foot: ['due', 'votes'] })).toBe(
       true,
     );
-    expect(sameCardLayout('compact', { row: ['due', 'votes'] }, { row: ['votes', 'due'] })).toBe(
+    expect(sameCardLayout('detailed', { foot: ['due', 'votes'] }, { foot: ['votes', 'due'] })).toBe(
       false,
     );
   });
 });
 
-describe('Compact’s bottom right', () => {
-  it('holds the assignee by default, and takes any compact field', () => {
-    expect(defaultCardLayout('task', 'compact').trail).toEqual(['assignee']);
-    expect(defaultCardLayout('task', 'compact').row).not.toContain('assignee');
-    expect(cardSlotFits('compact', 'trail', 'due')).toBe(true);
+describe('Detailed’s bottom right', () => {
+  it('holds the assignee by default, and takes any field', () => {
+    expect(defaultCardLayout('task', 'detailed').footEnd).toEqual(['assignee']);
+    expect(defaultCardLayout('task', 'detailed').foot).not.toContain('assignee');
+    expect(cardSlotFits('detailed', 'footEnd', 'due')).toBe(true);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Card display": there is no Compact size any more.
+describe('the retired Compact size', () => {
+  it('offers only Minimal and Detailed slots', () => {
+    expect(Object.keys(CARD_SLOTS)).toEqual(['minimal', 'detailed']);
+  });
+
+  it('drops a stored Compact layout on read, never refusing it nor merging it into Detailed', () => {
+    expect(readCardDisplay({ compact: { row: ['key'], trail: ['assignee'] } }, 'task')).toBeUndefined();
+    expect(readCardDisplay({ compact: { nowhere: [] } }, 'task')).toBeUndefined();
+    expect(
+      readCardDisplay({ compact: { row: ['key'] }, minimal: { trail: ['due'] } }, 'task'),
+    ).toEqual({ minimal: { trail: ['due'] } });
+    const ok = validateItemTypeCatalogue({
+      version: 1,
+      types: [{ ...task, display: { compact: { row: ['key'] } } }],
+    });
+    expect(ok.ok && ok.catalogue.types[0]!.display).toBeUndefined();
+    expect(ok.ok && typeCardLayout(ok.catalogue.types[0]!, 'detailed')).toEqual(
+      defaultCardLayout('task', 'detailed'),
+    );
   });
 });
 
@@ -113,7 +138,7 @@ describe('custom fields on the card', () => {
 
   it('keeps a field ticked Show on card Under the Title on Detailed, until Detailed is set', () => {
     expect(typeCardLayout(type, 'detailed').body?.at(-1)).toBe('f-old');
-    expect(typeCardLayout(type, 'compact').body).toBeUndefined();
+    expect(typeCardLayout(type, 'minimal').body).toBeUndefined();
     expect(
       typeCardLayout({ ...type, display: { detailed: { foot: ['f-person'] } } }, 'detailed'),
     ).toEqual({
@@ -122,10 +147,10 @@ describe('custom fields on the card', () => {
   });
 
   it('reads a stored Display holding a custom field, and refuses a malformed id', () => {
-    expect(readCardDisplay({ compact: { trail: ['f-person'] } }, 'pet')).toEqual({
-      compact: { trail: ['f-person'] },
+    expect(readCardDisplay({ minimal: { trail: ['f-person'] } }, 'pet')).toEqual({
+      minimal: { trail: ['f-person'] },
     });
-    expect(readCardDisplay({ compact: { trail: ['f-Bad!'] } }, 'pet')).toBeNull();
+    expect(readCardDisplay({ minimal: { trail: ['f-Bad!'] } }, 'pet')).toBeNull();
   });
 });
 
@@ -141,7 +166,7 @@ describe('a layout of the fields a type has', () => {
   } as const;
 
   it('gives a new type’s default only its own fields', () => {
-    for (const size of ['compact', 'detailed'] as const) {
+    for (const size of ['detailed'] as const) {
       const shown = cardLayoutFields(size, typeCardLayout(fresh, size));
       expect(shown.every((f) => ['key', 'type', 'description', 'assignee'].includes(f))).toBe(true);
       expect(shown).toContain('assignee');
@@ -152,9 +177,9 @@ describe('a layout of the fields a type has', () => {
   it('drops a placed field once the type no longer has it', () => {
     const placed = {
       ...fresh,
-      display: { compact: { row: ['priority', 'due'], trail: ['assignee'] } },
+      display: { detailed: { foot: ['priority', 'due'], footEnd: ['assignee'] } },
     };
-    expect(typeCardLayout(placed as never, 'compact')).toEqual({ trail: ['assignee'] });
+    expect(typeCardLayout(placed as never, 'detailed')).toEqual({ footEnd: ['assignee'] });
   });
 });
 
