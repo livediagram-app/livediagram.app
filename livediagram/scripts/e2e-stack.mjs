@@ -15,7 +15,8 @@
 //      in the stack's media.
 //   4. live — a static file server for `out/` that reproduces what production
 //      does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
-//      rewrite `/document/*` to the single placeholder, forward `/api/index/*` to the index, serve
+//      rewrite `/document/*` to the single placeholder, forward `/api/index/*` to the index and
+//      `/api/previews/*` to media, serve
 //      liveworkspace's Explorer at `/explorer` when its site is built, and proxy the rest of
 //      `/api/*` (WebSocket upgrades included) to the api worker so the app is same-origin.
 //
