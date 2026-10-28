@@ -185,8 +185,13 @@ function CardFinderBody({
                     aria-label={`Open ${itemTitle(it) || 'Untitled'}, ${type.label} #${it.key}`}
                     className="min-w-0 flex-1 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                   >
-                    {/* The card as a board draws it at Compact size, laid out as its type's Display says. */}
-                    <PlanCardFace item={it} palette={palette} fields={CARD_FIELDS} size="compact" />
+                    {/* The card as a board draws it at Detailed size, laid out as its type's Display says. */}
+                    <PlanCardFace
+                      item={it}
+                      palette={palette}
+                      fields={CARD_FIELDS}
+                      size="detailed"
+                    />
                   </button>
                   {plan.canEdit ? (
                     <Tooltip label="Move to Trash">

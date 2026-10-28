@@ -27,8 +27,8 @@ const CARD: Item = {
 };
 const PALETTE = { text: '#000', muted: '#666', surface: '#fff' } as unknown as PlanPalette;
 
-// docs/specs/026-plan/plan-views.md "Due Calendar": a day with room draws its cards at Minimal size, never Compact
-// or Detailed; a small day draws a dot and the title.
+// docs/specs/026-plan/plan-views.md "Due Calendar": a day with room draws its cards at Minimal size, never
+// Detailed; a small day draws a dot and the title.
 describe('CalendarEntryFace', () => {
   it('draws a card at Minimal size where the day has room for cards', () => {
     render(<CalendarEntryFace item={CARD} done={false} asCards palette={PALETTE} colour="#f00" />);

@@ -200,11 +200,10 @@ export function InfoNote({ children }: { children: ReactNode }) {
 
 const SIZE_LABELS: Record<CardSize, string> = {
   minimal: 'Minimal',
-  compact: 'Compact',
   detailed: 'Detailed',
 };
 
-// A board's Card Size as three rows (absent is Detailed): its Card Layout and Setup Board's Layout step both set it.
+// A board's Card Size as two rows (absent is Detailed): its Card Layout and Setup Board's Layout step both set it.
 export function CardSizeOptions({
   size,
   palette,

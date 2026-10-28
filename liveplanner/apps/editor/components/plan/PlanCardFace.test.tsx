@@ -44,7 +44,7 @@ const ALL = [
   'assignee',
 ] as const;
 
-function face(item: Item, size?: 'compact' | 'detailed', muted?: boolean) {
+function face(item: Item, size?: 'minimal' | 'detailed', muted?: boolean) {
   render(
     <PlanCardFace
       item={item}
@@ -96,13 +96,10 @@ describe('the card face', () => {
     expect(document.querySelector('span[aria-label]:not([role])')).toBeNull();
   });
 
-  it('puts an item’s own colour beside its type, on Detailed and Compact cards', () => {
+  it('puts an item’s own colour beside its type on a Detailed card', () => {
     face(card({ color: '#0d9488' }, 'project'));
     expect(screen.getByRole('img', { name: 'Teal colour' })).toBeTruthy();
     expect(screen.getByText('Project')).toBeTruthy();
-    cleanup();
-    face(card({ color: '#0d9488' }, 'project'), 'compact');
-    expect(screen.getByRole('img', { name: 'Teal colour' })).toBeTruthy();
     cleanup();
     face(card({ color: 'not-a-swatch' }, 'project'));
     expect(screen.queryByRole('img', { name: /colour$/ })).toBeNull();

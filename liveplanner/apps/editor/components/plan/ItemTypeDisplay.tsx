@@ -58,7 +58,6 @@ export type CardDisplayDraft = CardDisplay;
 
 const SIZE_LABELS: Record<CardSize, string> = {
   minimal: 'Minimal',
-  compact: 'Compact',
   detailed: 'Detailed',
 };
 // The card's width in the editor (wider than a board's 300, so a long title has room), and how much larger it is
@@ -178,7 +177,7 @@ export function ItemTypeDisplay({
   display: CardDisplayDraft;
   onChange: (next: CardDisplayDraft) => void;
 }) {
-  const [size, setSize] = useState<CardSize>('compact');
+  const [size, setSize] = useState<CardSize>('detailed');
   const drafted = useMemo(() => ({ ...type, display }), [type, display]);
   const layout = typeCardLayout(drafted, size);
   const placed = cardLayoutFields(size, layout);
@@ -258,9 +257,7 @@ export function ItemTypeDisplay({
           aria-label={label}
           className={`flex flex-wrap items-center gap-1 rounded-md border border-dashed px-1 py-0.5 transition ${
             bits.length === 0 ? 'min-h-6 min-w-10' : 'min-h-7'
-          } ${
-            slot === 'head' || slot === 'body' || slot === 'foot' || slot === 'row' ? 'flex-1' : ''
-          } ${
+          } ${slot === 'head' || slot === 'body' || slot === 'foot' ? 'flex-1' : ''} ${
             lit
               ? 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/15'
               : takes
@@ -319,7 +316,7 @@ export function ItemTypeDisplay({
       <div
         role="radiogroup"
         aria-label="Card size"
-        className="relative grid grid-cols-3 self-start rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
+        className="relative grid grid-cols-2 self-start rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
       >
         {/* The selection slides to the picked size, as the Share dialog's Valid does. */}
         <SegmentSlider

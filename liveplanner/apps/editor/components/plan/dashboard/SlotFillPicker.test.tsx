@@ -171,7 +171,7 @@ describe('starting a Board tab', () => {
                 id: 'b',
                 type: 'shape',
                 shape: 'plan-board',
-                planBoard: { title: 'Bug Tracker', cardSize: 'compact' },
+                planBoard: { title: 'Bug Tracker', cardSize: 'minimal' },
               } as unknown as Tab['elements'][number],
             ],
           })),

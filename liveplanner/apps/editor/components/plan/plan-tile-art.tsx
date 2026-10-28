@@ -149,20 +149,13 @@ export function PlanCardTileArt({
   );
 }
 
-// A card at each size, drawn small (the board's Card Size tiles): a title bar alone, one line led by a
-// dot, or a title over a line and two chips.
+// A card at each size, drawn small (the board's Card Size tiles): a title bar alone, or a title over a line and
+// two chips.
 const SIZE_ART: Record<CardSize, React.ReactNode> = {
   minimal: (
     <>
       <rect x="2" y="4" width="18" height="14" rx="2.5" />
       <path d="M6 11h10" />
-    </>
-  ),
-  compact: (
-    <>
-      <rect x="2" y="4" width="18" height="14" rx="2.5" />
-      <circle cx="6.5" cy="11" r="1" />
-      <path d="M10 11h6" />
     </>
   ),
   detailed: (
