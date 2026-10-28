@@ -19,6 +19,7 @@ import { newCardStatus } from './new-card-status';
 import { newTypeForBoard } from '@/hooks/plan/useTypeForBoard';
 import { liveTrail } from './item-trail';
 import { toggleFlag } from './item-flag';
+import { linkExistingCard } from './link-existing';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
@@ -156,6 +157,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           ctx.openNewItem(id, 'ChildCard');
           track('Plan', 'Added', 'LinkedCard');
         }}
+        onLinkExisting={(group, cardId, moved) => linkExistingCard(ctx, item, group, cardId, moved)}
         statusNames={ctx.statusNames}
         {...(ctx.linkedActions ? { linkedActions: ctx.linkedActions } : {})}
         onTrash={() => {

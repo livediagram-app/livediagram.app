@@ -88,6 +88,9 @@ type ItemPanelProps = {
   linkedGroups?: readonly LinkedGroup[];
   // Make a new card of `typeId` already linked here through the group's field.
   onAddLinked?: (group: LinkedGroup, typeId: string) => void;
+  // Link an existing card here through the group's field (docs/specs/026-plan/item-types.md "Link Existing"):
+  // sets that card's field to this one; false: refused. `moved`: it linked to another card before.
+  onLinkExisting?: (group: LinkedGroup, cardId: string, moved: boolean) => Promise<boolean>;
   // Each status's column name, for a child row's status.
   statusNames: ReadonlyMap<string, string>;
   // The card was just made by this person (openNewItem): its title is selected so typing names it.
@@ -161,6 +164,7 @@ function ItemPanelContent({
   linkedGroups = NO_GROUPS,
   fresh = false,
   onAddLinked,
+  onLinkExisting,
   statusNames,
   linkedActions,
 }: ItemPanelProps) {
@@ -217,6 +221,13 @@ function ItemPanelContent({
           canAdd={canEdit && !!onAddLinked}
           onOpen={(id) => onOpenItem(id, 'ChildCard')}
           onAdd={(typeId) => onAddLinked?.(g, typeId)}
+          target={item}
+          {...(onLinkExisting
+            ? {
+                onLinkExisting: (cardId: string, moved: boolean) =>
+                  onLinkExisting(g, cardId, moved),
+              }
+            : {})}
         />
       ))}
     </div>
