@@ -160,6 +160,7 @@ export function CommentComposer({
   onCancel,
   onDraft,
   below,
+  secondary,
 }: {
   onAddComment: (text: string, mentions: CommentMention[]) => void;
   // Lets the host focus the field (the popover does, once placed, on desktop).
@@ -177,6 +178,8 @@ export function CommentComposer({
   onDraft?: (text: string) => void;
   // A line under the field (the starter's title preview).
   below?: React.ReactNode;
+  // A quieter action on the bottom row, left of the send button (a card thread's Resolve).
+  secondary?: React.ReactNode;
 }) {
   const [draft, setDraft] = useState('');
   const [focused, setFocused] = useState(false);
@@ -274,6 +277,7 @@ export function CommentComposer({
             {focused ? sendShortcutLabel() : ''}
           </p>
           <span className="flex items-center gap-1.5">
+            {secondary}
             {onCancel ? (
               <Button
                 size="xs"

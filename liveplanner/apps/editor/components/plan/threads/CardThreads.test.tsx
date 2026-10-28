@@ -129,6 +129,17 @@ describe('the list', () => {
     expect(older.getAttribute('aria-expanded')).toBe('false');
   });
 
+  it('puts Resolve on the reply composer’s row, left of Reply, with no row of its own', () => {
+    renderLive([THREADS[1]!]);
+    const resolve = screen.getByRole('button', { name: 'Resolve' });
+    const reply = screen.getByRole('button', { name: 'Reply' });
+    expect(resolve.parentElement).toBe(reply.parentElement);
+    expect(resolve.compareDocumentPosition(reply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(resolve.closest('footer')).toBe(
+      screen.getByRole('textbox', { name: /^Reply to/ }).closest('footer'),
+    );
+  });
+
   it('resolves a thread, moving it under Resolved, and reopens it', async () => {
     const live = renderLive([THREADS[1]!]);
     fireEvent.click(screen.getByRole('button', { name: 'Resolve' }));

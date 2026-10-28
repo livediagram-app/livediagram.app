@@ -43,7 +43,8 @@ export function ThreadStarter({
         below={
           <p
             aria-live="polite"
-            className="mt-1 min-h-4 truncate text-[11px] text-slate-500 dark:text-slate-400"
+            // No room taken until there is a title to show, so the row sits close under the field, as a reply's does.
+            className="mt-1 truncate text-[11px] text-slate-500 empty:mt-0 dark:text-slate-400"
           >
             {preview ? titlePreview(preview) : ''}
           </p>

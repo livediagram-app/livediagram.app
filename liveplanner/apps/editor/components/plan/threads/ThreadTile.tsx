@@ -309,30 +309,27 @@ export function ThreadTile({
               </div>
             ) : null
           ) : canComment ? (
-            <>
-              <div className="flex justify-end">
-                <ResolveButton resolved={false} onClick={() => resolve(true)} />
-              </div>
-              <CommentComposer
-                density="comfortable"
-                self={ctx.self}
-                placeholder="Reply…"
-                fieldLabel={`Reply to “${title}”`}
-                submitLabel="Reply"
-                onAddComment={(text, mentions) =>
-                  void threads
-                    .act({
-                      kind: 'reply',
-                      threadId: thread.id,
-                      text,
-                      ...(mentions.length ? { mentions } : {}),
-                    })
-                    .then((ok) => {
-                      if (ok !== false) announce(ANNOUNCE.replied);
-                    })
-                }
-              />
-            </>
+            <CommentComposer
+              density="comfortable"
+              self={ctx.self}
+              placeholder="Reply…"
+              fieldLabel={`Reply to “${title}”`}
+              submitLabel="Reply"
+              // Resolve sits on the composer's row, left of Reply: whoever may reply may resolve.
+              secondary={<ResolveButton resolved={false} onClick={() => resolve(true)} />}
+              onAddComment={(text, mentions) =>
+                void threads
+                  .act({
+                    kind: 'reply',
+                    threadId: thread.id,
+                    text,
+                    ...(mentions.length ? { mentions } : {}),
+                  })
+                  .then((ok) => {
+                    if (ok !== false) announce(ANNOUNCE.replied);
+                  })
+              }
+            />
           ) : null}
         </div>
       ) : null}
