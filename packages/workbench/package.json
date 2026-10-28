@@ -117,6 +117,7 @@
     "./components/primitives/OptionRows": "./src/components/primitives/OptionRows.tsx",
     "./components/primitives/PagedCarousel": "./src/components/primitives/PagedCarousel.tsx",
     "./components/primitives/PlayIcon": "./src/components/primitives/PlayIcon.tsx",
+    "./components/primitives/PopoverScrim": "./src/components/primitives/PopoverScrim.tsx",
     "./components/primitives/PortalMenu": "./src/components/primitives/PortalMenu.tsx",
     "./components/primitives/PreviewSliderRow": "./src/components/primitives/PreviewSliderRow.tsx",
     "./components/primitives/ResetPositionGlyph": "./src/components/primitives/ResetPositionGlyph.tsx",

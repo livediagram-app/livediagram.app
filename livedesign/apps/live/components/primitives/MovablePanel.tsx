@@ -21,6 +21,7 @@ import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { cornerInsetStyle } from './movable-panel-scale';
+import { PopoverScrim } from '@liveworkspace/workbench/components/primitives/PopoverScrim';
 
 export type { MovablePanelDockProps };
 
@@ -48,6 +49,8 @@ export function MovablePanel({
   asPopover = false,
   popoverWidth = 'w-64',
   popoverSheet = false,
+  popoverHeight,
+  popoverScrim = false,
   dismissOnOutside = false,
   onPopoverClose,
   popoverAnchor,
@@ -139,8 +142,9 @@ export function MovablePanel({
     // explaining, so tapping its Next button must not dismiss that panel out
     // from under the highlight. A popover's own portalled menus and confirms
     // (a layer's row menu, Delete's confirm) are inside too, or choosing
-    // from one would close the popover under it.
-    '[data-dock-button],[data-tour-popover],[data-menu-surface],[role="dialog"]',
+    // from one would close the popover under it. The scrim behind it closes it
+    // itself, on the click, so the press never reaches the canvas under it.
+    '[data-dock-button],[data-tour-popover],[data-menu-surface],[role="dialog"],[data-popover-scrim]',
   );
 
   // Clamp a persisted free position back into the live viewport: a
@@ -207,79 +211,88 @@ export function MovablePanel({
   if (popoverShown) {
     const anchor = popoverAnchor;
     const sheet = popoverSheet && anchor !== undefined && anchor.bottom === undefined;
+    // A popover given a height fills it, clamped to the canvas below its button; its body then fills it too.
+    const fill =
+      !sheet && popoverHeight !== undefined && anchor !== undefined && anchor.bottom === undefined;
     return (
-      <div
-        ref={ref}
-        data-floating-panel=""
-        data-tour-id={dataTourId}
-        // Panel opacity reaches every panel (docs/specs/007-editor/user-preferences.md), the
-        // popovers included, unless it is `opaque`. The buttons that open them are not panels and
-        // stay opaque.
-        data-panel-translucent={opaque ? undefined : ''}
-        onPointerDown={(e) => e.stopPropagation()}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        style={{
-          ...uiScaleStyle(scale),
-          ...(sheet && anchor
-            ? { top: px(anchor.top + 12), left: 0, right: 0, bottom: 0 }
-            : anchor?.bottom !== undefined
-              ? {
-                  bottom: px(anchor.bottom + 12),
-                  left: px(anchor.left),
-                  maxHeight: `calc(100% - ${px(anchor.bottom + 12 + topClear)}px)`,
-                }
-              : anchor
+      <>
+        {popoverScrim ? <PopoverScrim onClose={onPopoverClose} /> : null}
+        <div
+          ref={ref}
+          data-floating-panel=""
+          data-tour-id={dataTourId}
+          // Panel opacity reaches every panel (docs/specs/007-editor/user-preferences.md), the
+          // popovers included, unless it is `opaque`. The buttons that open them are not panels and
+          // stay opaque.
+          data-panel-translucent={opaque ? undefined : ''}
+          onPointerDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          style={{
+            ...uiScaleStyle(scale),
+            ...(sheet && anchor
+              ? { top: px(anchor.top + 12), left: 0, right: 0, bottom: 0 }
+              : anchor?.bottom !== undefined
                 ? {
-                    top: px(anchor.top + 12),
+                    bottom: px(anchor.bottom + 12),
                     left: px(anchor.left),
-                    // Kept on the canvas below its button, as the one above it is: a short canvas
-                    // (a phone in landscape, 286px) otherwise ran the Explorer under the tab bar.
-                    maxHeight: `calc(100% - ${px(anchor.top + 24)}px)`,
+                    maxHeight: `calc(100% - ${px(anchor.bottom + 12 + topClear)}px)`,
                   }
-                : { top: px(56), right: px(12) }),
-        }}
-        className={`pointer-events-auto absolute z-[var(--z-toolbar)] flex ${sheet ? 'rounded-t-lg border-x-0 border-b-0' : `${popoverWidth} max-w-[calc(100vw-2rem)] rounded-lg border`} cursor-default flex-col border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
-      >
-        {anchor ? (
-          <div
-            // A sheet starts at the canvas's edge, so the arrow is measured from there.
-            style={{ left: px((sheet ? anchor.left : 0) + anchor.arrowOffset) - 7 }}
-            // Under the panel's contents (over its own background): a positioned arrow otherwise paints over
-            // whatever sits at the panel's edge, as the Photo panel's New Layer button did.
-            className={`pointer-events-none absolute -z-10 h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
-              anchor.bottom !== undefined
-                ? '-bottom-[7px] rounded-br-sm border-b border-r'
-                : '-top-[7px] rounded-tl-sm border-l border-t'
-            }`}
-          />
-        ) : null}
-        {/* The popover has no draggable title row, so render a slim header
+                : anchor
+                  ? {
+                      top: px(anchor.top + 12),
+                      left: px(anchor.left),
+                      // Kept on the canvas below its button, as the one above it is: a short canvas
+                      // (a phone in landscape, 286px) otherwise ran the Explorer under the tab bar.
+                      maxHeight: `calc(100% - ${px(anchor.top + 24)}px)`,
+                      ...(fill
+                        ? { height: `min(${popoverHeight}, calc(100% - ${px(anchor.top + 24)}px))` }
+                        : {}),
+                    }
+                  : { top: px(56), right: px(12) }),
+          }}
+          className={`pointer-events-auto absolute z-[var(--z-toolbar)] flex ${sheet ? 'rounded-t-lg border-x-0 border-b-0' : `${popoverWidth} max-w-[calc(100vw-2rem)] rounded-lg border`} cursor-default flex-col border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
+        >
+          {anchor ? (
+            <div
+              // A sheet starts at the canvas's edge, so the arrow is measured from there.
+              style={{ left: px((sheet ? anchor.left : 0) + anchor.arrowOffset) - 7 }}
+              // Under the panel's contents (over its own background): a positioned arrow otherwise paints over
+              // whatever sits at the panel's edge, as the Photo panel's New Layer button did.
+              className={`pointer-events-none absolute -z-10 h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
+                anchor.bottom !== undefined
+                  ? '-bottom-[7px] rounded-br-sm border-b border-r'
+                  : '-top-[7px] rounded-tl-sm border-l border-t'
+              }`}
+            />
+          ) : null}
+          {/* The popover has no draggable title row, so render a slim header
             band to keep the header options (panel title, headerExtra, and
             headerActions like the Explorer's "New" button) reachable.
             Reset-position / drag affordances are intentionally omitted:
             a popover doesn't drag. */}
-        <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
-          <span className="flex min-w-0 items-center gap-1.5">
-            <PanelTitle title={title} />
-            {titleAdornment}
-          </span>
-          {headerExtra || headerActions || (helpArticle && !minimalChrome) ? (
-            <div className="ml-auto flex items-center gap-1">
-              {headerExtra}
-              {headerActions}
-              {helpArticle && !minimalChrome ? <HelpArticleLink article={helpArticle} /> : null}
-            </div>
-          ) : null}
+          <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
+            <span className="flex min-w-0 items-center gap-1.5">
+              <PanelTitle title={title} />
+              {titleAdornment}
+            </span>
+            {headerExtra || headerActions || (helpArticle && !minimalChrome) ? (
+              <div className="ml-auto flex items-center gap-1">
+                {headerExtra}
+                {headerActions}
+                {helpArticle && !minimalChrome ? <HelpArticleLink article={helpArticle} /> : null}
+              </div>
+            ) : null}
+          </div>
+          <div
+            className={`min-h-0 overflow-y-auto overflow-x-hidden ${sheet || fill ? 'flex flex-1 flex-col' : ''} ${flushTop ? '' : 'pt-2'}`}
+          >
+            {children}
+          </div>
         </div>
-        <div
-          className={`min-h-0 overflow-y-auto overflow-x-hidden ${sheet ? 'flex flex-1 flex-col' : ''} ${flushTop ? '' : 'pt-2'}`}
-        >
-          {children}
-        </div>
-      </div>
+      </>
     );
   }
 

@@ -107,7 +107,8 @@ async function tourTheChrome(page: Page): Promise<void> {
   await explorer.click();
   await page.waitForTimeout(400);
   await openAndClose(page, () => page.getByRole('button', { name: 'Design menu' }).click());
-  await explorer.click();
+  // The scrim sits over the Explorer button while the panel is open; Escape closes it.
+  await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());
   await openAndClose(page, () => square.click({ button: 'right' }));

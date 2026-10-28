@@ -282,6 +282,29 @@ in full, never cut short, beside quiet glyphs: **New Folder** (New Subfolder ins
 **Members**, each named by its label and tooltip, and the app switch (the app's logo and name, All with
 liveworkspace's). There is no Open Page: the full Explorer is the menu button's own link and Home's See all.
 
+**The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **60rem** (960 px) wide, kept 1rem
+inside the window, and up to **56rem** (896 px) tall, kept on the canvas below its button and 24 px short of the
+canvas's bottom edge; the rail and pane fill what the card and footer leave, never shorter than 18rem, and the pane's
+preview cards (Jump Back In, folders) run three across once it is wide enough (42rem), the Library's pictures five and
+its shapes six. On a phone it stays the sheet it was. On every screen size a **scrim** sits behind it: translucent
+slate (lighter in light mode, deeper in dark), fading in where motion is allowed, over the canvas and its chrome but
+under the panel and everything the panel opens (its menus, dialogs and legends); the editor's header keeps its own
+layer above, its menus live. A press on the scrim closes the panel, as a press outside always did, and never reaches
+the canvas under it; Esc still closes it; either way focus goes back to the menu button.
+
+**New <Kind>**, first on the rail, is the panel's control height: 36 px under a mouse, 44 px on a touch screen, the
+rail's full width, never squeezed when the rail scrolls, its words and plus centred on the cap height. On a phone's
+chip row it reads **New**, 36 px to the eye with a 44 px tap, as the chips are. It wears the app's brand fill (700,
+600 in dark) in every app.
+
+**The Current card** shows the item open in the editor on top of the panel whenever there is one. The index's copy
+draws it when the index has the item. An item kept only in This Browser, which the index never holds, is drawn from
+This Browser's list instead: its title, the app's picture of a local item (`LocalPreview`), the **This Browser** pill
+and "Updated <relative time>". Its name renames it through the editor's own rename (the app's offline store, which
+writes This Browser's list), and its ⋯ menu and right-click are This Browser's (**Open**, **Sync <Kind>** signed in,
+**Delete <Kind>** asked first, for good). Nothing about it is sent to the index. The editors read the index's copy
+through the package's `useOpenItem`.
+
 #### Teams are run in the Explorer
 
 A team is the account's, the same in every app ([accounts.md](../003-accounts/accounts.md#teams)), and the Explorer is the one

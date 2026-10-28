@@ -22,8 +22,8 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   slides: 420,
   // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
   contents: 380,
-  // The Explorer's `w-[38rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
-  explorer: 608,
+  // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
+  explorer: 960,
 };
 
 // 'slides': the Slide Deck panel over its cluster button in Pages mode.
