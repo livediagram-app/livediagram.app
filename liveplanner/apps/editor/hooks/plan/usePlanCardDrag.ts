@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
 import type { Item } from '@liveplanner/items';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
+import { CARD_HOLD_TO_DRAG_MS, holdPhase } from '@/components/plan/phone-board';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type PlanDropSlot = {
@@ -112,7 +113,20 @@ type Pressed = {
   startX: number;
   startY: number;
   rect: DOMRect;
+  // A touch press on a phone board's card is carried only once held still this long (performance.now()); null
+  // carries it on its first travel past the slop (components/plan/phone-board.ts holdPhase).
+  holdUntil: number | null;
 };
+
+// When the held-to-drag press under the finger may be carried (performance.now()), or null: one finger carries one
+// card, so one for every board.
+let heldUntil: number | null = null;
+
+// A phone board's card's own non-passive touchmove (a listener there from the start, so the browser waits on it):
+// once the card's hold is up its finger carries the card, so the board's own scroll under it is stopped.
+export function holdCardTouch(e: TouchEvent): void {
+  if (heldUntil !== null && e.cancelable && performance.now() >= heldUntil) e.preventDefault();
+}
 
 // The slot under a screen point, inside the board `boardEl`.
 export function dropSlotAt(
@@ -181,6 +195,7 @@ export function usePlanCardDrag(opts: {
     pointer.set(null);
     leaveTarget();
     pressedRef.current = null;
+    heldUntil = null;
     dragRef.current = null;
     setDrag(null);
     optsRef.current.onDragging(null);
@@ -191,8 +206,19 @@ export function usePlanCardDrag(opts: {
       const p = pressedRef.current;
       const board = boardRef.current;
       if (!p || e.pointerId !== p.pointerId || !board) return;
+      const travelled = isDragTravel(e.clientX - p.startX, e.clientY - p.startY);
+      if (!dragRef.current && p.holdUntil !== null) {
+        const phase = holdPhase(p.holdUntil, performance.now(), travelled);
+        // Moved before the hold was up: the finger is scrolling the board, so the press is neither drag nor click.
+        if (phase === 'scroll') {
+          pressedRef.current = null;
+          heldUntil = null;
+          return;
+        }
+        if (phase === 'wait') return;
+      }
       // A press that has not travelled the shared slop is still a click.
-      if (!dragRef.current && !isDragTravel(e.clientX - p.startX, e.clientY - p.startY)) return;
+      if (!dragRef.current && !travelled) return;
       if (!dragRef.current) optsRef.current.onDragging(p.itemId);
       const { outside, overTrash } = dragPlace(
         e.clientX,
@@ -299,7 +325,7 @@ export function usePlanCardDrag(opts: {
 
   // A press on a card: taken from the canvas (no board drag, no selection change).
   const onCardPointerDown = useCallback(
-    (itemId: string, e: React.PointerEvent<HTMLElement>) => {
+    (itemId: string, e: React.PointerEvent<HTMLElement>, holdToDrag = false) => {
       if (!enabled || e.button !== 0) return;
       e.stopPropagation();
       pressedRef.current = {
@@ -308,7 +334,10 @@ export function usePlanCardDrag(opts: {
         startX: e.clientX,
         startY: e.clientY,
         rect: e.currentTarget.getBoundingClientRect(),
+        holdUntil:
+          holdToDrag && e.pointerType === 'touch' ? performance.now() + CARD_HOLD_TO_DRAG_MS : null,
       };
+      heldUntil = pressedRef.current.holdUntil;
     },
     [enabled],
   );
