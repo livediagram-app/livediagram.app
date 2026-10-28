@@ -111,6 +111,12 @@ export type MovablePanelProps = {
   // A phone's popover that opens down from its button as a sheet: the canvas's full width, edge to edge, down to
   // its bottom edge (the tab bar), its body filling the height. `popoverWidth` is ignored.
   popoverSheet?: boolean;
+  // A popover hung down from its button that fills this height (a CSS length, e.g. '56rem'), clamped to the canvas
+  // below its button, its body filling it: the Explorer panel. None: as tall as its contents, up to that clamp.
+  popoverHeight?: string;
+  // A dimmed scrim behind the shown popover (PopoverScrim): a press on it closes the popover and focus goes back to
+  // its button. The Explorer panel's, on every screen size.
+  popoverScrim?: boolean;
   // Whether the button that owns this popover has it open.
   popoverOpen?: boolean;
   // Close the popover on any press outside it, as a menu does. The button
