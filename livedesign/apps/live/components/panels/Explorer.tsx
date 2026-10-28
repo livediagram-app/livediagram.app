@@ -1,8 +1,13 @@
 'use client';
 
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ExplorerPanel, explorerPath, type RenderAppLogo } from '@liveworkspace/explorer';
+import { memo, useCallback, useEffect, useMemo } from 'react';
+import {
+  ExplorerPanel,
+  explorerPath,
+  useOpenItem,
+  type RenderAppLogo,
+} from '@liveworkspace/explorer';
 import { trackOrganise } from '@/lib/explorer-organise';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
@@ -87,21 +92,14 @@ function ExplorerImpl({
   const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);
 
   // The open design as the index has it (its title, place and star), for the card on top.
-  const [current, setCurrent] = useState<Item | null>(null);
-  useEffect(() => {
-    if (!currentDesignId) return;
-    let live = true;
-    const share = currentShareCode
-      ? { code: currentShareCode, password: getSessionSharePassword() }
-      : null;
-    indexClient.getItem(currentDesignId, share).then(
-      ({ item }) => live && setCurrent(item),
-      () => live && setCurrent(null),
-    );
-    return () => {
-      live = false;
-    };
-  }, [currentDesignId, currentShareCode]);
+  // Null when the index has none for it (kept only in this browser): the panel then draws its card from This
+  // Browser's list (@liveworkspace/explorer ExplorerPanel).
+  const current = useOpenItem(
+    indexClient,
+    currentDesignId,
+    currentShareCode,
+    getSessionSharePassword,
+  );
 
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
   const shown = popoverOpen === true;
@@ -127,7 +125,11 @@ function ExplorerImpl({
       // Only ever the menu button's popover: never placed in a corner or dragged.
       position={null}
       defaultCorner="top-left"
-      popoverWidth="w-[38rem]"
+      // Roomy on a desktop or tablet: up to 60rem wide (kept 1rem inside the window) and 56rem tall (kept on the
+      // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size.
+      popoverWidth="w-[60rem]"
+      popoverHeight="56rem"
+      popoverScrim
       // On a phone it opens as a sheet: edge to edge, down to the tab bar.
       popoverSheet={sheet}
       onMoveTo={NO_MOVE}

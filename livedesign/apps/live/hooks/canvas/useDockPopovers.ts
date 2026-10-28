@@ -22,8 +22,8 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   contents: 380,
   // The Photo panel's 280 px (docs/specs/031-photo/photo-pages.md "The Photo panel").
   'photo-panel': 280,
-  // The Explorer's `w-[38rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
-  explorer: 608,
+  // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
+  explorer: 960,
 };
 
 export type DockPanel =
