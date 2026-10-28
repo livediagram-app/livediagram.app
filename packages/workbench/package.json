@@ -100,7 +100,6 @@
     "./components/primitives/AccordionSection": "./src/components/primitives/AccordionSection.tsx",
     "./components/primitives/AnchoredPopover": "./src/components/primitives/AnchoredPopover.tsx",
     "./components/primitives/AnimatedHeightBox": "./src/components/primitives/AnimatedHeightBox.tsx",
-    "./components/primitives/BackBar": "./src/components/primitives/BackBar.tsx",
     "./components/primitives/BottomSheet": "./src/components/primitives/BottomSheet.tsx",
     "./components/primitives/ChartReadout": "./src/components/primitives/ChartReadout.tsx",
     "./components/primitives/ChevronIcon": "./src/components/primitives/ChevronIcon.tsx",

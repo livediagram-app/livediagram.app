@@ -6,8 +6,7 @@
 // it the images it has loaded for previews.
 import { useState } from 'react';
 import type { LaidOutPage, Tab } from '@livedesign/design';
-import { Button, Select } from '@livedesign/ui';
-import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
+import { Button, Select, BackBar } from '@livedesign/ui';
 import { exportLogoKit, LOGO_KIT_PNG_SIZES, logoKitFileName } from '@/lib/export-logo-kit';
 import { exportPageLabel } from '@/lib/export-pages';
 import { downloadBlob, loadTabImages, renderTabToSvg } from '@/lib/export-tab';

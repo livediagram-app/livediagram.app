@@ -48,7 +48,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
-│  ├─ ui                       the design system: buttons, fields, dialogs, menus, hints, optical primitives, hooks,
+│  ├─ ui                       the design system: buttons, fields, dialogs, menus, the back bar, hints, optical primitives, hooks,
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell

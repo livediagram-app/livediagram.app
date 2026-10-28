@@ -27,10 +27,10 @@ import {
   SheetHandle,
   safeInset,
   useSheetDrag,
+  BackBar,
 } from '@livedocuments/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 import { AnimatedHeightBox } from '@liveworkspace/workbench/components/primitives/AnimatedHeightBox';
 import {
   TabStyleShowMeButton,
