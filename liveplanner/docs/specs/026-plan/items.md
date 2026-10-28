@@ -256,8 +256,8 @@ A thread is **stored once**, in its home plan, and **shown on every card it is o
 or a deleted comment made from any of them changes it everywhere at once. Nothing is copied.
 
 - **Add Thread to Card** puts an existing thread on another card **in the same plan**, never on a card in another
-  plan (`400 thread_other_plan`). The card it is added to must be one the person may change. (Owner, 2026-10-28:
-  "only the cards in the current document not other files".)
+  plan (`400 thread_other_plan`). The card it is added to must be one the person may change. (The owner's decision,
+  2026-10-28: a thread is added only to cards in the plan it is viewed in.)
 - **Anyone who can see one of its cards can read it.** A thread shared into another plan before that rule (the
   first release offered other plans) stays on both and keeps working: someone who reaches it only through a card in
   another plan acts by their role **on the card they are viewing**: a Participant or an Editor there may reply,
