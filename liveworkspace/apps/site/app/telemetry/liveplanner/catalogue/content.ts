@@ -664,6 +664,14 @@ export const PLAN_ITEMS_MOVED = chart(
   'A card moved to another column, row or place on a Plan board, or to the archive (Archive).',
 );
 
+export const PLAN_CARDS_LINKED = chart(
+  'Plan',
+  'Linked',
+  'Cards Linked',
+  'An existing card linked to this one from a Linked as section (Link Existing), whether newly linked or moved from another card.',
+  { types: ['LinkedCard', 'LinkedCardMoved'] },
+);
+
 export const PLAN_ITEMS_RESTORED = chart(
   'Plan',
   'Restored',
@@ -1024,6 +1032,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_TABS_CREATED,
   PLAN_ITEMS_ADDED,
   PLAN_ITEMS_MOVED,
+  PLAN_CARDS_LINKED,
   PLAN_ITEMS_OPENED,
   PLAN_ITEMS_DELETED,
   PLAN_ITEMS_RESTORED,
