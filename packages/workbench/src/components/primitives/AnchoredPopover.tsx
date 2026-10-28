@@ -82,6 +82,7 @@ export function AnchoredPopover({
   onEscape,
   beside,
   keepOpenWithin,
+  initialFocus = 'first',
   children,
 }: {
   anchor: HTMLElement;
@@ -96,6 +97,9 @@ export function AnchoredPopover({
   // A press inside what this selector matches (a menu's flyout, a picker it opened, portalled elsewhere) is not a
   // press outside.
   keepOpenWithin?: string;
+  // What opening focuses: its first control (the default), or the panel itself, so a touch screen opens one whose
+  // first control is a text field without raising a keyboard, focus still inside it.
+  initialFocus?: 'first' | 'panel';
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -144,7 +148,10 @@ export function AnchoredPopover({
   }, [anchor, width, beside]);
 
   useEffect(() => {
-    panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    if (initialFocus === 'panel') panel.current?.focus();
+    else panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    // Opening only.
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
 
   // Escape closes this panel only, before the dialog's own Escape, and only while it is the top popover
@@ -173,9 +180,10 @@ export function AnchoredPopover({
         aria-label={name}
         // A host popover's outside-press check leaves this one alone.
         data-anchored-popover
+        tabIndex={initialFocus === 'panel' ? -1 : undefined}
         // Over its dialog, over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
         // menu opened mid-tour is never dimmed, and over a menu's flyout (z-popover) it opens from.
-        className="fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg"
+        className="fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none"
         style={{
           width: `min(${width}px, calc(100vw - ${2 * EDGE}px))`,
           left: pos?.left ?? -9999,
