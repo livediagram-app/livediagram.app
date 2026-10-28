@@ -130,7 +130,13 @@ export type ThemeDefinition = {
 
 // Which chrome a viewer is looking at (docs/specs/007-editor/editor-app.md). Every scheme reads it: each viewer sees a
 // tab in the half of its scheme that matches their appearance (docs/specs/011-theme/light-and-dark.md).
-export type Appearance = 'light' | 'dark';
+export const APPEARANCES = ['light', 'dark'] as const;
+export type Appearance = (typeof APPEARANCES)[number];
+
+/** Whether a value read from outside (a query parameter) names an appearance. */
+export function isAppearance(value: unknown): value is Appearance {
+  return (APPEARANCES as readonly unknown[]).includes(value);
+}
 
 // The id of the Default colour scheme. Stays 'brand' — it is the value saved
 // documents carry, not a label.
