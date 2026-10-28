@@ -227,7 +227,7 @@ function LibraryCard({
       {open ? (
         <ul
           aria-label={`Shapes in ${library.name}`}
-          className={`mt-3 grid gap-2 ${compact ? 'grid-cols-4' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6'}`}
+          className={`mt-3 grid gap-2 ${compact ? 'grid-cols-4 @2xl:grid-cols-6' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6'}`}
         >
           {library.items.map((shape, i) => (
             <li

@@ -4,6 +4,7 @@
 
 export { Explorer, type ExplorerProps } from './explorer/Explorer';
 export { ExplorerPanel, type ExplorerPanelProps, type PanelLayout } from './panel/ExplorerPanel';
+export { useOpenItem } from './panel/useOpenItem';
 export { MoveToFolderDialog, type MoveToFolderDialogProps } from './dialogs/MoveToFolderDialog';
 export type { PickerFolder, PickerTeam, Destination } from './dialogs/PlacementBrowser';
 export {

@@ -1,7 +1,13 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
-import { ExplorerPanel, type ExplorerPanelProps } from './ExplorerPanel';
+import {
+  ExplorerPanel,
+  NEW_BUTTON_CHIP,
+  NEW_BUTTON_RAIL,
+  PANEL_BODY,
+  type ExplorerPanelProps,
+} from './ExplorerPanel';
 import { panelSectionStorageKey } from './sections';
 import type { ThisBrowserHost } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
@@ -42,6 +48,36 @@ describe('<ExplorerPanel>', () => {
     ]);
     for (const name of ['Home', 'Inbox', 'Shared With Me', 'My Work', 'Design', 'Trash'])
       expect(nav.getByRole('button', { name })).toBeTruthy();
+  });
+
+  it('gives New the control height, never squeezed: 36 px, 44 px on touch; a chip on a phone', () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    const desk = within(rail()).getByRole('button', { name: /New Plan/ });
+    for (const c of ['shrink-0', 'h-9', 'min-h-9', 'pointer-coarse:h-11', 'w-full'])
+      expect(desk.className.split(' ')).toContain(c);
+    expect(NEW_BUTTON_RAIL).toContain('pointer-coarse:h-11');
+    cleanup();
+    renderPanel(createFakeIndex({ items: [] }), { layout: 'sheet', open: true });
+    const chip = within(rail()).getByRole('button', { name: 'New' });
+    for (const c of ['shrink-0', ...NEW_BUTTON_CHIP.split(' ')])
+      expect(chip.className.split(' ')).toContain(c);
+    expect(chip.className).not.toContain('w-full');
+  });
+
+  it('fills the popover beside a desktop rail, and a phone sheet, never under 18rem', () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    const side = document.querySelector<HTMLElement>('[data-panel-body="side"]')!;
+    expect(side.className).toContain(PANEL_BODY.side);
+    expect(PANEL_BODY.side).toContain('flex-1');
+    expect(PANEL_BODY.side).toContain('min-h-[18rem]');
+    // No fixed cap of its own any more: the host's popover sizes it.
+    expect(side.className).not.toMatch(/h-\[min\(/);
+    expect(document.querySelector('[data-explorer-panel]')!.className).toContain('flex-1');
+    cleanup();
+    renderPanel(createFakeIndex({ items: [] }), { layout: 'sheet', open: true });
+    expect(document.querySelector('[data-panel-body="sheet"]')!.className).toContain(
+      PANEL_BODY.sheet,
+    );
   });
 
   it('draws group lines instead of titles in Minimal chrome', () => {
@@ -249,5 +285,64 @@ describe("the panel's This Browser", () => {
     fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
     expect(screen.queryByRole('button', { name: /^Sync/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
+  });
+
+  it('draws the Current card from This Browser when the index has none for the open item', () => {
+    const index = createFakeIndex({ items: [] });
+    renderPanel(index, { thisBrowser: host(), current: null, currentId: 'l1' });
+    const card = screen.getByRole('region', { name: 'Current plan' });
+    expect(card.getAttribute('data-current-item')).toBe('this-browser');
+    expect(within(card).getByText('Kept here')).toBeTruthy();
+    expect(within(card).getByText('This Browser')).toBeTruthy();
+    expect(within(card).getByText(/^Updated /)).toBeTruthy();
+  });
+
+  it("prefers the index's copy, and draws no card for an item neither holds", () => {
+    const item = makeItem(1);
+    renderPanel(createFakeIndex({ items: [item] }), {
+      thisBrowser: host(),
+      current: item,
+      currentId: item.id,
+    });
+    expect(
+      screen.getByRole('region', { name: 'Current plan' }).getAttribute('data-current-item'),
+    ).toBe('index');
+    cleanup();
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host(), currentId: 'nowhere' });
+    expect(screen.queryByRole('region', { name: 'Current plan' })).toBeNull();
+    cleanup();
+    // A trashed one is not open-able: no card.
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host(), currentId: 'l3' });
+    expect(screen.queryByRole('region', { name: 'Current plan' })).toBeNull();
+  });
+
+  it("renames a This Browser item through the editor's own rename, never the index", () => {
+    const index = createFakeIndex({ items: [] });
+    const onRenameCurrent = vi.fn();
+    renderPanel(index, { thisBrowser: host(), currentId: 'l1', onRenameCurrent });
+    const card = screen.getByRole('region', { name: 'Current plan' });
+    fireEvent.click(within(card).getByRole('button', { name: 'Rename Kept here' }));
+    const input = within(card).getByRole('textbox', { name: 'Rename Kept here' });
+    fireEvent.change(input, { target: { value: 'Kept and renamed' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onRenameCurrent).toHaveBeenCalledWith('Kept and renamed');
+    expect(index.count('updateItem')).toBe(0);
+  });
+
+  it("gives a This Browser item This Browser's menu: Sync in place, Delete after asking", async () => {
+    const sync = vi.fn();
+    const remove = vi.fn();
+    const index = createFakeIndex({ items: [] });
+    renderPanel(index, { thisBrowser: host({ sync, remove }), currentId: 'l1' });
+    const card = screen.getByRole('region', { name: 'Current plan' });
+    fireEvent.click(within(card).getByRole('button', { name: 'Plan menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Sync Plan/ }));
+    expect(sync).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
+    fireEvent.click(within(card).getByRole('button', { name: 'Plan menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Delete Plan/ }));
+    const dialog = await screen.findByRole('dialog', { name: /Delete this plan/ });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
+    expect(index.count('deleteItem')).toBe(0);
   });
 });

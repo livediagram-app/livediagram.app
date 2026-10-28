@@ -41,7 +41,14 @@ import { InboxPane } from '../explorer/InboxPane';
 import { BrowserIcon, HostExtrasProvider, type ExplorerHostExtras } from '../explorer/host';
 import { PeopleProvider } from '../explorer/extras';
 import type { ExplorerAccounts } from '../data/accounts';
-import { useThisBrowserItems, type ThisBrowserHost } from '../explorer/ThisBrowser';
+import {
+  LocalPreview,
+  ThisBrowserItemMenu,
+  ThisBrowserPill,
+  useThisBrowserItems,
+  type ThisBrowserHost,
+} from '../explorer/ThisBrowser';
+import type { ThisBrowserItem } from '../this-browser';
 import { PanelThisBrowser } from './PanelThisBrowser';
 import { ConfirmDialog, Tooltip } from '@liveworkspace/ui';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
@@ -139,6 +146,17 @@ import { useDriveMarks, type ExplorerDriveHost } from '../drive/useDriveMarks';
  * scrolling with the pane.
  */
 export type PanelLayout = 'side' | 'stacked' | 'sheet';
+
+/**
+ * The rail and pane's box per layout. `side` (a desktop or tablet popover) fills the popover, which the host sizes
+ * (the editors' popover: up to 60rem by 56rem, kept inside the window), never shorter than 18rem; `sheet` fills a
+ * phone's sheet, never shorter than 18rem; `stacked` (a narrow corner panel) is capped to leave the canvas room.
+ */
+export const PANEL_BODY: Record<PanelLayout, string> = {
+  side: 'min-h-[18rem] flex-1',
+  stacked: 'max-h-[max(14rem,calc(100dvh-30rem))] flex-col',
+  sheet: 'min-h-[18rem] flex-1 flex-col',
+};
 
 export type ExplorerPanelProps = {
   app: App;
@@ -277,7 +295,11 @@ function PanelInner({
   const stacked = layout !== 'side';
   const { gallery, shapeLibraries } = useLibraryHost();
   const library = Boolean(gallery || shapeLibraries);
-  const offlineCount = useThisBrowserItems().live.length;
+  const thisBrowserLive = useThisBrowserItems().live;
+  const offlineCount = thisBrowserLive.length;
+  // The open item when the index has none for it (kept only in this browser): its card comes from This Browser.
+  const localCurrent =
+    !current && currentId ? (thisBrowserLive.find((i) => i.id === currentId) ?? null) : null;
   const groups = useMemo(
     () => panelSectionGroups(teams, { library, thisBrowser: offlineCount > 0 }),
     [teams, library, offlineCount],
@@ -355,7 +377,10 @@ function PanelInner({
       inboxHost={inboxHost}
       onOrganise={onOrganise}
     >
-      <div data-explorer-panel="" className={`flex min-h-0 flex-col ${sheet ? 'flex-1' : ''}`}>
+      <div
+        data-explorer-panel=""
+        className={`flex min-h-0 flex-col ${stacked && !sheet ? '' : 'flex-1'}`}
+      >
         {/* On a phone's sheet the card and the rail and pane scroll as one, over the pinned footer. Elsewhere this
             box is `contents`, adding nothing to the layout. */}
         <div
@@ -367,17 +392,16 @@ function PanelInner({
           }
         >
           <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1 empty:hidden">
-            {current ? <CurrentItem item={current} /> : null}
+            {current ? (
+              <CurrentItem item={current} />
+            ) : localCurrent ? (
+              <LocalCurrentItem item={localCurrent} onRename={onRenameCurrent} />
+            ) : null}
             {notice}
           </div>
           <div
-            className={`flex border-t border-slate-200 dark:border-slate-700/70 ${
-              sheet
-                ? 'min-h-[18rem] flex-1 flex-col'
-                : stacked
-                  ? 'max-h-[max(14rem,calc(100dvh-30rem))] flex-col'
-                  : 'h-[min(30rem,62vh)]'
-            }`}
+            data-panel-body={layout}
+            className={`flex border-t border-slate-200 dark:border-slate-700/70 ${PANEL_BODY[layout]}`}
           >
             <Rail
               groups={groups}
@@ -449,9 +473,10 @@ function sectionOfView(
 
 // ---- The current item's card ----------------------------------------------------------------------------
 
+// The open item as the index has it: its picture, visibility badge and the Explorer's item menu, renamed through
+// the index (the editor's title follows, onItemRenamed).
 function CurrentItem({ item: base }: { item: Item }) {
-  const { overlay, kind, renderThumbnail, actions, openItem, renamingId, setRenamingId } =
-    useExplorer();
+  const { overlay, renderThumbnail, actions, openItem, renamingId, setRenamingId } = useExplorer();
   const item = overlay.apply(base);
   // Its pencil, or Rename on its menu (which names it for renaming, as every row's does).
   const [pencil, setPencil] = useState(false);
@@ -461,33 +486,116 @@ function CurrentItem({ item: base }: { item: Item }) {
     if (!on && renamingId === item.id) setRenamingId(null);
   };
   const menu = useRowMenu({ disabled: editing });
+  return (
+    <CurrentCard
+      title={item.title}
+      updatedAt={item.updatedAt}
+      canRename={item.access === 'edit'}
+      editing={editing}
+      setEditing={setEditing}
+      onRename={(title) => void actions.rename(item, title)}
+      onOpen={() => openItem(item)}
+      thumbnail={renderThumbnail ? renderThumbnail(item, 'card') : <ItemIcon size={18} />}
+      badge={<VisibilityBadge item={item} />}
+      menu={menu}
+    >
+      {menu.open ? (
+        <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
+      ) : null}
+    </CurrentCard>
+  );
+}
+
+// The open item when it lives only in this browser (the index never holds it): drawn from This Browser's list, with
+// the app's picture of a local item, the This Browser pill and This Browser's own menu (Open, Sync, Delete). Renaming
+// it is the editor's own rename (`onRenameCurrent`), which writes this browser's store; nothing goes to the index.
+function LocalCurrentItem({
+  item,
+  onRename,
+}: {
+  item: ThisBrowserItem;
+  onRename?: (title: string) => void;
+}) {
+  const { app } = useExplorer();
+  const [editing, setEditing] = useState(false);
+  const menu = useRowMenu({ disabled: editing });
+  return (
+    <CurrentCard
+      local
+      title={item.title}
+      updatedAt={item.updatedAt}
+      canRename={Boolean(onRename)}
+      editing={editing}
+      setEditing={setEditing}
+      onRename={(title) => onRename?.(title)}
+      thumbnail={<LocalPreview app={app} iconSize={18} className="h-14 w-20 shrink-0" />}
+      badge={<ThisBrowserPill />}
+      menu={menu}
+    >
+      {menu.open ? (
+        <ThisBrowserItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
+      ) : null}
+    </CurrentCard>
+  );
+}
+
+// The card both draw: the picture, the label "Current <Kind>" with the place's badge, the name (click to rename, for
+// someone who may), "Updated <relative time>" and the ⋯ menu.
+function CurrentCard({
+  local = false,
+  title,
+  updatedAt,
+  canRename,
+  editing,
+  setEditing,
+  onRename,
+  onOpen,
+  thumbnail,
+  badge,
+  menu,
+  children,
+}: {
+  local?: boolean;
+  title: string;
+  updatedAt: number;
+  canRename: boolean;
+  editing: boolean;
+  setEditing: (on: boolean) => void;
+  onRename: (title: string) => void;
+  onOpen?: () => void;
+  thumbnail: ReactNode;
+  badge: ReactNode;
+  menu: ReturnType<typeof useRowMenu>;
+  children?: ReactNode;
+}) {
+  const { kind } = useExplorer();
   const now = useNow();
-  const name = item.title || `Untitled ${kind.lowerOne}`;
-  const canRename = item.access === 'edit';
+  const name = title || `Untitled ${kind.lowerOne}`;
   const commit = (next: string) => {
     const trimmed = next.trim();
-    if (trimmed && trimmed !== item.title) void actions.rename(item, trimmed);
+    if (trimmed && trimmed !== title) onRename(trimmed);
     setEditing(false);
   };
   return (
     <section
       aria-label={`Current ${kind.lowerOne}`}
+      data-current-item={local ? 'this-browser' : 'index'}
       onContextMenu={menu.onContextMenu}
       className="flex items-center gap-3 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/70 dark:bg-slate-800/50 dark:ring-slate-700/60"
     >
       <span className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white text-slate-300 dark:border-slate-700 dark:bg-slate-900 [&>*]:!h-14 [&>*]:!w-20">
-        {renderThumbnail ? renderThumbnail(item, 'card') : <ItemIcon size={18} />}
+        {thumbnail}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex min-h-5 items-center justify-between gap-2">
           <span className="truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Current {kind.one}
           </span>
-          <VisibilityBadge item={item} />
+          {badge}
         </span>
         {editing ? (
           <InlineRenameInput
-            initial={item.title}
+            initial={title}
             ariaLabel={`Rename ${name}`}
             onCommit={commit}
             onCancel={() => setEditing(false)}
@@ -514,7 +622,7 @@ function CurrentItem({ item: base }: { item: Item }) {
         ) : (
           <button
             type="button"
-            onClick={() => openItem(item)}
+            onClick={onOpen}
             aria-current="true"
             className="min-w-0 self-start truncate text-left text-[15px] font-semibold text-slate-900 dark:text-slate-50"
           >
@@ -523,7 +631,7 @@ function CurrentItem({ item: base }: { item: Item }) {
         )}
         <span className="flex min-h-5 items-center justify-between gap-2">
           <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-            Updated {relativeSince(item.updatedAt, now || Date.now())}
+            Updated {relativeSince(updatedAt, now || Date.now())}
           </span>
           {!editing ? (
             <EllipsisTriggerButton
@@ -535,14 +643,17 @@ function CurrentItem({ item: base }: { item: Item }) {
           ) : null}
         </span>
       </span>
-      {menu.open ? (
-        <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
-      ) : null}
+      {children}
     </section>
   );
 }
 
 // ---- The rail -------------------------------------------------------------------------------------------
+
+// The New button's sizes: in the rail, the panel's control height (h-9, 36 px; 44 px on a touch screen), full width;
+// on a phone's chip row, a chip's (36 px to the eye, its tap reaching 44 px).
+export const NEW_BUTTON_RAIL = 'mb-3 h-9 min-h-9 w-full px-3 pointer-coarse:h-11';
+export const NEW_BUTTON_CHIP = 'relative h-9 min-h-9 touch-target-y px-3';
 
 function SectionIcon({ kind }: { kind: PanelSection['kind'] }) {
   switch (kind) {
@@ -612,20 +723,20 @@ function Rail({
     e.preventDefault();
     entries[(at + (e.key === keys[1] ? 1 : -1) + entries.length) % entries.length]?.focus();
   };
+  // New, first in the rail: never squeezed by the rail's column (shrink-0), 36 px under a mouse and 44 px on touch;
+  // on a phone's chip row 36 px to the eye with a 44 px tap, as the chips are. The words sit on the cap height's
+  // centre, so they line up with the plus.
   const newItem = (
     <button
       type="button"
+      data-panel-new=""
       onClick={() => onCreate({ folderId: null, teamId: null })}
-      className={`flex cursor-pointer items-center justify-center gap-1.5 bg-brand-700 font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:bg-brand-600 dark:hover:bg-brand-500 ${
-        phone
-          ? 'relative h-9 shrink-0 touch-target-y whitespace-nowrap rounded-lg px-3 text-[13px]'
-          : 'mb-3 h-9 w-full rounded-lg text-xs'
+      className={`flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-brand-700 text-[13px] font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:bg-brand-600 dark:hover:bg-brand-500 ${
+        phone ? NEW_BUTTON_CHIP : NEW_BUTTON_RAIL
       }`}
     >
-      <PlusIcon size={13} />
-      <span className={phone ? 'text-optical-centre' : ''}>
-        {phone ? 'New' : `New ${kind.one}`}
-      </span>
+      <PlusIcon size={14} />
+      <span className="text-optical-centre">{phone ? 'New' : `New ${kind.one}`}</span>
     </button>
   );
   const newTeamEntry = canRunTeams ? (
@@ -940,7 +1051,7 @@ function Pane({
       </div>
       <div
         data-explorer-pane=""
-        className="scrollbar-slim min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1"
+        className="scrollbar-slim @container min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1"
       >
         {/* Keyed by section: a pick slides the new section in (a fade alone under reduced motion). */}
         <div key={sectionKey(section)} className="animate-view-forward">
