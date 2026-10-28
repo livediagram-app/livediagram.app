@@ -91,7 +91,7 @@ export function ChoiceOptionsEditor({
               placeholder={`Option ${i + 1}`}
               value={row}
               maxLength={CUSTOM_CHOICE_OPTION_MAX}
-              className="min-w-0 flex-1 bg-transparent py-1 text-[13px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-50 dark:placeholder:text-slate-500"
+              className="min-w-0 flex-1 bg-transparent py-1 text-[13px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-50 dark:placeholder:text-slate-400"
               onChange={(e) => set(rows.map((r, j) => (j === i ? e.target.value : r)))}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -131,7 +131,7 @@ export function ChoiceOptionsEditor({
       >
         <PlusIcon size={12} />
         Add an option
-        <span className="text-slate-400 dark:text-slate-500">or paste a list</span>
+        <span className="text-slate-500 dark:text-slate-400">or paste a list</span>
       </button>
     </div>
   );

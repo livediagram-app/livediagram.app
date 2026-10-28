@@ -114,7 +114,7 @@ export function AddFieldPicker({
             onChange={(e) => onQuery(e.target.value)}
             placeholder="Search fields, like money or date"
             aria-describedby={`${ids}-count`}
-            className="min-w-0 flex-1 bg-transparent py-2 text-[13px] text-slate-800 outline-none placeholder:text-slate-400 pointer-coarse:min-h-11 dark:text-slate-100 dark:placeholder:text-slate-500 [&::-webkit-search-cancel-button]:hidden"
+            className="min-w-0 flex-1 bg-transparent py-2 text-[13px] text-slate-800 outline-none placeholder:text-slate-400 pointer-coarse:min-h-11 dark:text-slate-100 dark:placeholder:text-slate-400 [&::-webkit-search-cancel-button]:hidden"
           />
         </div>
         <button
