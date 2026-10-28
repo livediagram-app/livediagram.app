@@ -96,10 +96,6 @@ describe('offline threads', () => {
     await expect(
       writeThread(scope, { kind: 'rename', threadId: t.id, title: 'x'.repeat(121) }, who),
     ).rejects.toMatchObject({ code: 'title_too_long' });
-    // A thread only this browser holds reaches no other plan.
-    await expect(
-      writeThread(scope, { kind: 'addToCard', threadId: t.id, itemId: A, projectId: 'p9' }, who),
-    ).rejects.toMatchObject({ status: 403 });
     await expect(
       writeThread(scope, { kind: 'addToCard', threadId: t.id, itemId: 'zz' }, who),
     ).rejects.toMatchObject({ code: 'item_not_found' });

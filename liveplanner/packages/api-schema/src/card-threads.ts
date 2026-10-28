@@ -21,8 +21,8 @@ export type CardThreadCommentRequest = { text: string; mentions?: CommentMention
 // PUT /api/projects/:id/threads/:threadId/title: '' goes back to the automatic title.
 export type CardThreadRenameRequest = { title: string };
 
-// POST /api/projects/:id/threads/:threadId/cards: the card to add the thread to, in this plan or (projectId)
-// another the caller may edit cards in.
+// POST /api/projects/:id/threads/:threadId/cards: the card of this plan to add the thread to. A projectId naming
+// another plan is refused (thread_other_plan); it is still read so an older client's request answers that.
 export type CardThreadAddCardRequest = { itemId: string; projectId?: string };
 
 // Every write's answer: the thread as stored (null once a comment delete took its last comment), and the comment

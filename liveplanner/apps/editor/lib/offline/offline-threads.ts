@@ -112,8 +112,6 @@ function changeOf(
       return { kind: 'rename', title };
     }
     case 'addToCard': {
-      // A thread only this browser holds reaches no other plan.
-      if (action.projectId && action.projectId !== rec.id) throw refused('forbidden');
       const item = (rec.items ?? []).find((i) => i.id === action.itemId);
       if (!item) throw refused('item_not_found');
       return { kind: 'addCard', card: { projectId: rec.id, itemId: item.id, key: item.key } };

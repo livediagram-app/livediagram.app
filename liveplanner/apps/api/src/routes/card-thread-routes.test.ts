@@ -404,23 +404,36 @@ describe('Add Thread to Card', () => {
     expect((await add({ itemId: b.id }, { agent: true })).status).toBe(403);
   });
 
-  it('shares it into another plan the caller may change cards in, read and written from there by role', async () => {
+  it('refuses a card in another plan, whatever the caller may do there, and links nothing', async () => {
     const other = await card('p2', 'Over there', { owner: 'other' });
-    // The caller's grant on p2 is a Participant link's.
-    const res = await add({ projectId: 'p2', itemId: other.id }, { targetCode: 'P2PART' });
-    expect(res.status).toBe(200);
-    expect(res.body.thread?.cards.at(-1)).toEqual({
-      projectId: 'p2',
-      itemId: other.id,
-      key: other.key,
-      projectName: 'Sprint 12',
-    });
-    // Both plans' rooms hear it.
+    for (const who of [{ targetCode: 'P2PART' }, { targetCode: 'P2LOOK' }, {}] as Who[]) {
+      const res = await add({ projectId: 'p2', itemId: other.id }, who);
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: 'thread_other_plan' });
+    }
+    // Naming this plan is the same as naming none.
+    expect((await add({ projectId: 'p1', itemId: b.id })).status).toBe(200);
     expect(
-      threadRelays()
-        .map((r) => r.room)
-        .sort(),
-    ).toEqual(['p1', 'p2']);
+      sql.sql.prepare(`SELECT COUNT(*) AS n FROM card_thread_links WHERE plan_id = 'p2'`).get()!.n,
+    ).toBe(0);
+  });
+
+  it('keeps a thread shared into another plan before the rule: read and written from there by role', async () => {
+    const other = await card('p2', 'Over there', { owner: 'other' });
+    // As the first release left it: p2's card holds a link to p1's thread, and the thread lists that card.
+    sql.sql
+      .prepare(
+        `INSERT INTO card_thread_links (plan_id, item_id, thread_id, home, added_at, open_comments)
+         VALUES ('p2', ?, ?, 'p1', 1, 1)`,
+      )
+      .run(other.id, t.id);
+    const cards = [
+      ...t.cards,
+      { projectId: 'p2', itemId: other.id, key: other.key, projectName: 'Sprint 12' },
+    ];
+    sql.sql
+      .prepare(`UPDATE card_threads SET cards = ? WHERE plan_id = 'p1' AND id = ?`)
+      .run(JSON.stringify(cards), t.id);
     // p2's owner reads it through their own card, and replies from there; p1 holds it once.
     const seen = await threads('p2', { owner: 'other' });
     expect(seen.map((x) => x.id)).toEqual([t.id]);
@@ -429,9 +442,7 @@ describe('Add Thread to Card', () => {
       'POST',
       `/threads/${t.id}/comments`,
       { text: 'From p2' },
-      {
-        owner: 'other',
-      },
+      { owner: 'other' },
     );
     expect(r.status).toBe(200);
     expect((await threads('p1'))[0]!.comments.map((c) => c.text)).toEqual([
@@ -454,17 +465,6 @@ describe('Add Thread to Card', () => {
     // Deleting it from p1 takes it off p2's card too.
     expect((await call('p1', 'DELETE', `/threads/${t.id}`)).status).toBe(204);
     expect(await threads('p2', { owner: 'other' })).toEqual([]);
-  });
-
-  it('refuses another plan the caller may only view, or cannot reach', async () => {
-    const other = await card('p2', 'Over there', { owner: 'other' });
-    expect(
-      (await add({ projectId: 'p2', itemId: other.id }, { targetCode: 'P2LOOK' })).status,
-    ).toBe(403);
-    expect((await add({ projectId: 'p2', itemId: other.id })).status).toBe(403);
-    expect(
-      sql.sql.prepare(`SELECT COUNT(*) AS n FROM card_thread_links WHERE plan_id = 'p2'`).get()!.n,
-    ).toBe(0);
   });
 
   it('takes the link back when the thread is on as many cards as it may be', async () => {

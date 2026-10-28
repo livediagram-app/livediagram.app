@@ -7,12 +7,7 @@
 
 import type { Item } from '@liveplanner/items';
 import type { CardThread } from '@liveplanner/project';
-import type {
-  ThreadLinked,
-  ThreadOp,
-  ThreadsRelay,
-  ThreadWriteResult,
-} from './plan-room/card-thread-store';
+import type { ThreadOp, ThreadsRelay, ThreadWriteResult } from './plan-room/card-thread-store';
 import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { ProjectFileImport } from './plan-room/project-file';
@@ -62,20 +57,11 @@ export type PlanRoomClient = {
   shareJoined(tabId: string, member: string, seenUpdatedAt: number): Promise<boolean>;
   receiveShares(from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
   // A card's comment threads across plans (plan-room/card-thread-store.ts): on the home, the threads of `ids` that
-  // list a card of plan `via`, and one write on one made through `via`; on a plan holding a card, a link taken for it,
-  // a link taken back, and another plan's write relayed (answering the threads it holds no link to).
+  // list a card of plan `via`, and one write on one made through `via`; on a plan holding a card, another plan's
+  // write relayed (answering the threads it holds no link to).
   threadsFor(ids: string[], via: string): Promise<CardThread[]>;
   threadWrite(threadId: string, op: ThreadOp, via: string): Promise<ThreadWriteResult>;
-  threadLinked(link: ThreadLinkInput): Promise<ThreadLinked>;
-  threadUnlinked(threadId: string, itemId: string): Promise<void>;
   threadsRelayed(relay: ThreadsRelay): Promise<string[]>;
-};
-
-export type ThreadLinkInput = {
-  threadId: string;
-  home: string;
-  itemId: string;
-  openComments: number;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -103,8 +89,6 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     receiveShares: (from, messages) => room.receiveShares(planId, from, messages),
     threadsFor: (ids, via) => room.threadsFor(planId, ids, via),
     threadWrite: (threadId, op, via) => room.threadWrite(planId, threadId, op, via),
-    threadLinked: (link) => room.threadLinked(planId, link),
-    threadUnlinked: (threadId, itemId) => room.threadUnlinked(planId, threadId, itemId),
     threadsRelayed: (relay) => room.threadsRelayed(planId, relay),
   };
 }
@@ -144,8 +128,6 @@ export type PlanRoomRpc = {
     op: ThreadOp,
     via: string,
   ): Promise<ThreadWriteResult>;
-  threadLinked(planId: string, link: ThreadLinkInput): Promise<ThreadLinked>;
-  threadUnlinked(planId: string, threadId: string, itemId: string): Promise<void>;
   threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]>;
   fetch(request: Request): Promise<Response>;
 };

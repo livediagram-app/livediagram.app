@@ -45,22 +45,6 @@ export function deleteThreadMessage(cards: number): string {
     : "Delete this thread? Its comments go with it. This can't be undone.";
 }
 
-/** The warning before a thread is shared into another plan (#82, the owner's cross-plan rule). */
-export function shareWarning(
-  cardNumber: number | null,
-  planName: string,
-): {
-  title: string;
-  detail: string;
-} {
-  const card = cardNumber !== null ? `#${cardNumber}` : 'that card';
-  const plan = planName || 'that plan';
-  return {
-    title: `Share this thread into “${plan}”?`,
-    detail: `Everyone who can see ${card} in ${plan} will be able to read this thread. Participants and Editors there can reply and resolve it; Viewers can only read it.`,
-  };
-}
-
 /** The live title a new thread will get, shown under the starter. */
 export const titlePreview = (title: string) => `Titled “${title}”`;
 

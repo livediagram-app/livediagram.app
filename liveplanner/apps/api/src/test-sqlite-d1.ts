@@ -338,10 +338,6 @@ function testPlanRooms(
         await Promise.all(relays);
         return result;
       },
-      threadLinked: async (planId: string, link: never) =>
-        (await import('./plan-room/card-thread-store')).linkThread(env, planId, link),
-      threadUnlinked: async (planId: string, threadId: string, itemId: string) =>
-        (await import('./plan-room/card-thread-store')).unlinkThread(env, planId, threadId, itemId),
       threadsRelayed: async (planId: string, relay: never) =>
         (await import('./plan-room/card-thread-store')).threadsRelayed(env, planId, relay),
     }),

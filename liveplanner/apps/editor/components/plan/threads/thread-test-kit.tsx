@@ -93,10 +93,7 @@ export function fakeThreads(initial: CardThread[], opts: { refuse?: boolean } = 
       if (action.kind === 'addToCard') {
         const next = {
           ...t,
-          cards: [
-            ...t.cards,
-            { projectId: action.projectId ?? PLAN, itemId: action.itemId, key: 9 },
-          ],
+          cards: [...t.cards, { projectId: PLAN, itemId: action.itemId, key: 9 }],
         };
         held = new Map(held).set(t.id, next);
         return next;
@@ -146,8 +143,6 @@ export function contextOf(
     self: { name: 'Sam', color: '#2563eb' },
     canComment: true,
     isEditor: true,
-    offline: false,
-    otherPlans: [],
     openCard: vi.fn(),
     announce: vi.fn(),
     ...extra,

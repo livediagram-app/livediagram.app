@@ -1008,7 +1008,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Items',
     summary:
-      "Add a thread to another card: in this plan, or (`projectId`) another plan the caller may change cards in. The thread stays one, shown on both. 409 thread_on_card, 413 threads_full or thread_cards_full. Not an agent's.",
+      "Add a thread to another card of this plan. The thread stays one, shown on both. A `projectId` naming another plan is refused 400 thread_other_plan. 409 thread_on_card, 413 threads_full or thread_cards_full. Not an agent's.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [ITEM_TAB_QUERY],

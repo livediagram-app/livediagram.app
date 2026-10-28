@@ -1,16 +1,13 @@
 'use client';
 
 // What a card's comment threads read (docs/specs/026-plan/items.md "Comments"): the plan's threads and their writes,
-// who is looking and what they may do, and the plans a thread may be shared into. Its own context beside the Plan's
+// who is looking and what they may do. Its own context beside the Plan's
 // (PlanContext.tsx), so a thread write re-renders the open card panel, never every card on a board: card faces read
 // their comment count from the thread store alone (`ThreadCountsProvider`, hooks/plan/thread-store.ts).
 
 import { createContext, useContext } from 'react';
 import type { CardThreads } from '@/hooks/plan/useCardThreads';
 import type { ThreadStore } from '@/hooks/plan/thread-store';
-
-/** A plan the person might share a thread into (Add Thread to Card), from their plan list. */
-export type ThreadPlanChoice = { id: string; name: string; savedAt?: number };
 
 export type CardThreadsContextValue = {
   threads: CardThreads;
@@ -24,10 +21,6 @@ export type CardThreadsContextValue = {
   canComment: boolean;
   // Deleting anyone's comment or any thread: an Editor's.
   isEditor: boolean;
-  // A This Browser plan: its threads reach no other plan.
-  offline: boolean;
-  // The person's other plans, for Add Thread to Card.
-  otherPlans: readonly ThreadPlanChoice[];
   ownerId: string;
   // Opens a card of this plan in the card panel.
   openCard: (itemId: string) => void;

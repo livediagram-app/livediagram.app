@@ -2532,7 +2532,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cardThreadsAccess: {
       canComment: hydrated && participant.can.takePart,
       isEditor: hydrated && participant.can.level === 'edit' && !isReadOnly,
-      projectList,
     },
     // The sheet store's bridge, provided to Sheet elements (components/sheets).
     sheetsBridge: sheets.bridge,
