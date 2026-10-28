@@ -670,9 +670,10 @@ A board can be maximised to work on it without the rest of the canvas around it.
   when it applies, and goes when it does not.
 - **Five slots across**: maximised (or filling its tab), a column slot is a fifth of the board's body
   (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot); a column
-  set wider takes its slots and the gaps between them. On a phone a column takes the board's width less 48 px whatever
-  its width (one column a screen, the next peeking in), and the columns snap into view by their heads as they scroll
-  sideways, except while a card is carried (the edge scroll moves them freely then). A board of five slots or fewer fills the width as on the
+  set wider takes its slots and the gaps between them. On a phone a column takes the board's width less 64 px whatever
+  its width (one column a screen, its neighbours peeking in at both edges), and the columns snap one at a time to
+  the centre as they scroll sideways, except while a card is carried (the edge scroll moves them freely then). See
+  "On a phone" for how the snapping keeps scrolling down smooth. A board of five slots or fewer fills the width as on the
   canvas; one of more scrolls its columns (and their swimlanes with them) sideways under a fixed header, by
   scrollbar, trackpad or Shift and the wheel. A card dragged (mouse, pen or finger) near the left or right edge of the
   columns scrolls them sideways, faster the nearer the edge, stopping at the ends; a pointer that only hovers never
@@ -870,6 +871,17 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 - A board that scrolls on its own (maximised, filling its tab, or in a Dashboard slot) shows one column a screen (see
   "Five slots across"); covering the canvas, its body ends 8.5 rem (and the home indicator's safe area) past its last
   cards, so they scroll up clear of the bottom controls that run across a phone's screen.
+- **One column in focus**: as that board scrolls sideways its columns snap so one sits centred, its neighbours
+  peeking in on either side, and a fling moves one column, never several (mandatory snapping, each column a stop).
+  The snapping is sideways only: it never moves the board up or down, and scrolling down a column glides freely,
+  never pulled back to the top. Each column's snap point is a plain marker spanning the column's full height, not its
+  sticky header, so scrolling down moves no snap point and the browser has nothing to re-snap mid-scroll. The body
+  keeps its scroll to itself (overscroll contained) while it covers the canvas, so reaching its end never drags the
+  page under it; in a Dashboard slot only its sideways scroll is contained, so scrolling down past its end still
+  scrolls the Dashboard.
+- **A tap on a column's empty space** (its background, between and below its cards, or its header outside the cog) on
+  that board glides the column to the centre, as a tap on a page does in Pages; across only, never up or down.
+  Cards, buttons, fields and links keep their own taps. Under reduced motion it jumps there instead of gliding.
 - A finger on a board's empty space (between and below cards, column backgrounds) pans the canvas, as it does
   anywhere else, whatever the tool: it never selects or moves the board, and holding it opens no menu. Only the
   board's header moves the board, as with a mouse. A finger on a card picks the card up, and buttons and fields
