@@ -22,7 +22,7 @@ Follow the references below only as needed; never upfront.
 - ./optical-alignment.md - when a letter, numeral, initials, caps label or icon sits in a circle, chip, badge or tile, or icons stack over labels in a row
 - ./counts.md - when a label shows how many of something: a count is a badge (CountBadge, or AccentBar's count on the canvas), never a number in brackets
 - ./touch-targets.md - when adding a small control: the 44px tap area on touch screens, `touch-target` / `touch-target-y`, and which shared controls carry it
-- ./back-bar.md - when building a drill-in (a level with a way back): the shared back bar, sticky and flush at the top of its scroller
+- ./back-bar.md - when building a drill-in (a level with a way back) or a breadcrumb: the shared back bar every app draws, sticky and flush at the top of its scroller
 - ./forced-colors.md - when a control shows its state with a fill, or a surface is painted with a gradient or shows real colours: how every app reads under Windows contrast themes (`forced-colors: active`)
 - ./scrollbars.md - when anything scrolls: the themed scrollbar is the default everywhere, one slim variant, and the thumb contrast rule
 - ./date-fields.md - when adding, styling or saving a date or time input: it fits its column on phones and iPads, saves only a whole date (`DateInput`), a dropdown opens the picker, and how a card's date reads

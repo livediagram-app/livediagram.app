@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
-import { Button, trustedHtml, Switch } from '@liveplanner/ui';
+import { Button, trustedHtml, Switch, BackBar } from '@liveplanner/ui';
 import { track } from '@/lib/telemetry';
 
 // The options-and-download second screen for an image export format

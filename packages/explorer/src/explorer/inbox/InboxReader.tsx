@@ -19,17 +19,10 @@ import {
   useState,
 } from 'react';
 import { APP_KINDS } from '@liveworkspace/index-client';
+import { BackBar } from '@liveworkspace/ui';
 import type { InboxComment, InboxTarget, InboxVerb, ItemPlace } from '../../types';
 import { relativeSince, useNow } from '../../time';
-import {
-  ArrowLeftIcon,
-  CheckIcon,
-  CommentIcon,
-  OpenIcon,
-  ReplyIcon,
-  SendIcon,
-  TeamIcon,
-} from '../../ui/icons';
+import { CheckIcon, CommentIcon, OpenIcon, ReplyIcon, SendIcon, TeamIcon } from '../../ui/icons';
 import { kindWords, siteOf } from '../../words';
 import { AppMark } from '../badges';
 import { useExplorer } from '../context';
@@ -266,17 +259,8 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
       data-inbox-reader={entry.kind}
       className="flex min-h-0 min-w-0 flex-col gap-4"
     >
-      {onBack ? (
-        <button
-          type="button"
-          onClick={onBack}
-          data-inbox-back=""
-          className="-ml-2 inline-flex min-h-11 w-fit items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-slate-600 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50"
-        >
-          <ArrowLeftIcon size={16} />
-          Back to Inbox
-        </button>
-      ) : null}
+      {/* The shared back bar (docs/specs/004-interface-design/back-bar.md), on a phone and in the panel. */}
+      {onBack ? <BackBar label="Inbox" onClick={onBack} gap="tight" /> : null}
       <nav
         aria-label="Where it is"
         className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-slate-500 dark:text-slate-400"

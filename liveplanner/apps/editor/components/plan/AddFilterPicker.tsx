@@ -6,7 +6,7 @@
 // so a picker on the zoomed canvas reads at its own size, as menus do.
 import { useState } from 'react';
 import {
-  ChevronLeftIcon,
+  BackBar,
   ChevronRightIcon,
   NoMatches,
   PlusIcon,
@@ -76,24 +76,21 @@ export function AddFilterPicker({
             className="flex max-h-80 flex-col gap-1 rounded-lg border border-slate-200 bg-white p-1.5 dark:border-slate-700 dark:bg-slate-900"
             onPointerDown={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-1 px-1 pb-1 pt-0.5">
-              {field ? (
-                <button
-                  type="button"
-                  aria-label="Back to the fields"
-                  className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-                  onClick={() => {
-                    setField(null);
-                    setQuery('');
-                  }}
-                >
-                  <ChevronLeftIcon size={14} />
-                </button>
-              ) : null}
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                {field ? `${field.label} is` : 'Filter by'}
+            {field ? (
+              <BackBar
+                label="Filter by"
+                current={`${field.label} is`}
+                onClick={() => {
+                  setField(null);
+                  setQuery('');
+                }}
+                gap="tight"
+              />
+            ) : (
+              <span className="px-1 pb-1 pt-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Filter by
               </span>
-            </div>
+            )}
             {long ? (
               <div className="relative px-1 pb-1">
                 <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">

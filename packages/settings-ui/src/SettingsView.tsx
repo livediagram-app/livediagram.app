@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
-import { NavChevron } from './glyphs';
+import { BackBar } from '@liveworkspace/ui';
 import { useSettingsUiKit } from './kit';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
 import { SettingsCategoryList, SettingsSubcategoryLinks } from './SettingsCategoryList';
@@ -153,7 +153,7 @@ export function SettingsView({
   );
 
   // The phone shows the root list until a category is picked; desktop always shows the split.
-  // Only the phone's pushed pane gets a back control, and a sub-category's goes back to its
+  // Only the phone's pushed pane gets a back bar, and a sub-category's goes back to its
   // parent's pane, the screen that pushed it.
   const showBack = isMobile && selected !== null && !placeholder;
   const backTo = categories.find((c) => c.id === selected?.parent) ?? null;
@@ -161,18 +161,7 @@ export function SettingsView({
   return (
     <>
       <header className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-        {showBack ? (
-          <button
-            type="button"
-            onClick={() => setSelectedId(backTo?.id ?? null)}
-            className="-ml-1.5 flex items-center gap-0.5 rounded-md py-1 pr-2 pl-1 text-sm font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
-          >
-            <NavChevron direction="back" />
-            {backTo?.label ?? title}
-          </button>
-        ) : (
-          leading
-        )}
+        {showBack ? null : leading}
         <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
           {showBack ? selected?.label : title}
         </h2>
@@ -241,6 +230,15 @@ export function SettingsView({
               data-settings-pane
               className="min-w-0 flex-1 overflow-y-auto px-4 py-4"
             >
+              {/* The phone's way back: the shared back bar (docs/specs/004-interface-design/back-bar.md) at the
+                  top of the pushed pane, naming the screen it returns to, the open one as its chip. */}
+              {showBack ? (
+                <BackBar
+                  label={backTo?.label ?? title}
+                  current={selected.label}
+                  onClick={() => setSelectedId(backTo?.id ?? null)}
+                />
+              ) : null}
               <SettingsCategoryPane
                 category={selected}
                 isMobile={isMobile}

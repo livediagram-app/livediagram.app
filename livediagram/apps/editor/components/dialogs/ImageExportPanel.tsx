@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
-import { Button, trustedHtml, Switch } from '@livediagram/ui';
+import { Button, trustedHtml, Switch, BackBar } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
 

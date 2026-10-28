@@ -162,7 +162,7 @@ describe('the Details table', () => {
         'Not counted yet',
       ).length,
     ).toBeGreaterThan(0);
-    expect(prefetch).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(prefetch).toHaveBeenCalledTimes(2));
     fireEvent.click(screen.getByRole('button', { name: 'Menu for folder Specs' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
     const input = await screen.findByRole('textbox', { name: 'Rename Specs' });

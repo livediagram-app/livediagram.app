@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { BackBar } from '../primitives/BackBar';
-import { Button } from '@liveworkspace/ui';
+import { Button, BackBar } from '@liveworkspace/ui';
 import { useCopiedFlash } from '@liveworkspace/ui';
 
 // The view/edit/copy sub-view for a text export format (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md):

@@ -38,7 +38,7 @@ exhaustive; each file lands in the bucket that owns its concern):
 - `palette/`: palette + context-menu tiles/rows.
 - `chrome/`: header, toolbars, docks, tab bar.
 - `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.
-- `primitives/`: local leaves (`PortalMenu`, `BackBar`, chart leaves) not
+- `primitives/`: local leaves (`PortalMenu`, chart leaves) not
   promoted to `@livedesign/ui` or `@liveworkspace/ui` (which holds `Portal`).
 
 `apps/live/hooks/`

@@ -3,19 +3,13 @@
 import type { ReactNode } from 'react';
 import { useSettingsUiKit } from './kit';
 
-// The navigation chevron: points the way a tap will take you. `forward` for a row that pushes a
-// screen, `back` for the control that returns from one.
-export function NavChevron({
-  direction = 'forward',
-  className,
-}: {
-  direction?: 'forward' | 'back';
-  className?: string;
-}) {
+// The navigation chevron of a row that pushes a screen: points the way a tap will take you. The way
+// back from one is the shared back bar (SettingsView.tsx).
+export function NavChevron({ className }: { className?: string }) {
   const { Glyph } = useSettingsUiKit();
   return (
     <Glyph size={14} units={12} className={`shrink-0${className ? ` ${className}` : ''}`}>
-      <path d={direction === 'forward' ? 'M4.5 2.5 8 6l-3.5 3.5' : 'M7.5 2.5 4 6l3.5 3.5'} />
+      <path d="M4.5 2.5 8 6l-3.5 3.5" />
     </Glyph>
   );
 }

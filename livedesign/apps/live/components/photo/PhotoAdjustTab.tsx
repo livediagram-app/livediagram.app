@@ -7,8 +7,8 @@
 // place under a header (its picture, name, Reset, and All Adjustments back to the tiles); a change shows at once
 // and commits once it rests.
 import { useState } from 'react';
-import { lucideChevronLeft, lucideRotateCcw } from '@liveworkspace/icons/lucide';
-import { HoverCard, lucideGlyph } from '@livedesign/ui';
+import { lucideRotateCcw } from '@liveworkspace/icons/lucide';
+import { BackBar, HoverCard, lucideGlyph } from '@livedesign/ui';
 import {
   ADJUSTMENTS,
   LAYER_ADJUSTMENT_IDS,
@@ -27,7 +27,6 @@ import { useRestingCommit } from './PhotoLayersTab';
 import { useAdjustmentPreviews, type AdjustPreviews } from './useAdjustmentPreviews';
 import { usePhotoHistogram } from './usePhotoHistogram';
 
-const Back = lucideGlyph(lucideChevronLeft, 14);
 const ResetIcon = lucideGlyph(lucideRotateCcw, 13);
 
 const pascal = (id: string) => id.replace(/(^|-)(\w)/g, (_m, _d, c: string) => c.toUpperCase());
@@ -139,14 +138,12 @@ export function PhotoAdjustTab({ photo }: { photo: PhotoEditorView }) {
     return (
       <div className="flex flex-col gap-3 px-3 pb-2" data-photo-adjust="">
         {photo.canEdit ? (
-          <button
-            type="button"
+          <BackBar
+            label="All Adjustments"
+            current={adjustmentName(id)}
             onClick={() => setBrowsingFrom(settings.id)}
-            className="flex w-fit items-center gap-1 rounded-md px-1 py-0.5 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-          >
-            <Back />
-            All Adjustments
-          </button>
+            gap="tight"
+          />
         ) : null}
         <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/80 dark:bg-slate-800/50 dark:ring-slate-700">
           <span className="block h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-200 dark:bg-slate-700 dark:ring-slate-600">

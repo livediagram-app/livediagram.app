@@ -233,26 +233,17 @@ function ItemPanelContent({
     </div>
   );
 
-  // The breadcrumb leads the header on a wide screen; on a phone it takes a row of its own above it, so neither
-  // it nor the type picker is squeezed.
-  const crumbs = (
-    <ItemTrailCrumbs
-      trail={trail}
-      types={types}
-      mobile={mobile}
-      onBack={(id) => onOpenItem(id, 'Breadcrumb')}
-    />
-  );
+  // The breadcrumb, the shared back bar, takes a row of its own above the header, so neither it nor the type picker
+  // is squeezed.
   const trailRow =
     trail.length > 1 ? (
-      <div className="flex min-w-0 items-center border-b border-slate-200 px-3 py-1.5 dark:border-slate-700">
-        {crumbs}
+      <div className="border-b border-slate-200 px-3 pt-1.5 dark:border-slate-700">
+        <ItemTrailCrumbs trail={trail} onBack={(id) => onOpenItem(id, 'Breadcrumb')} />
       </div>
     ) : null;
 
   const header = (
     <div className="flex min-h-12 items-center gap-2 px-4 py-2 sm:px-6">
-      {mobile ? null : crumbs}
       {/* The current card: its type picker and number, the trail's end (not a link). */}
       <ItemTypePill type={type} value={item.type} types={types} canEdit={canEdit} onType={onType} />
       <ItemKeyTag itemKey={item.key} />
@@ -345,7 +336,7 @@ function ItemPanelContent({
   return (
     <>
       <ItemTypeBand colour={type.color} />
-      {mobile ? trailRow : null}
+      {trailRow}
       {header}
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 pt-2 sm:px-8">

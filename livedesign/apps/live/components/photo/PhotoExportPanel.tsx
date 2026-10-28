@@ -5,7 +5,7 @@
 // (layers kept) or Layers as Files (a .zip of each visible layer). PNG, JPEG and WebP draw the
 // elements on the page over the photo while Include Elements is on.
 import { useContext, useState } from 'react';
-import { Button } from '@livedesign/ui';
+import { BackBar, Button } from '@livedesign/ui';
 import type { LaidOutPage, Tab } from '@livedesign/design';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { loadTabImages } from '@/lib/export-tab-images';
@@ -75,17 +75,13 @@ export function PhotoExportPanel({
         flat && withElements
           ? await elementsImage(tab, page, await loadTabImages(tab, scope).catch(() => undefined))
           : null;
-      const file = await photoFile(
-        session,
-        `${designName || 'Photo'} - ${page.name ?? 'Photo'}`,
-        {
-          format,
-          quality,
-          lossless,
-          matte: matte === 'white' ? '#ffffff' : '#000000',
-          elements,
-        },
-      );
+      const file = await photoFile(session, `${designName || 'Photo'} - ${page.name ?? 'Photo'}`, {
+        format,
+        quality,
+        lossless,
+        matte: matte === 'white' ? '#ffffff' : '#000000',
+        elements,
+      });
       done();
       download(file.blob, file.name);
       track('Document', 'Exported', `Photo${format === 'layers' ? 'Layers' : pascal(format)}`);
@@ -98,13 +94,7 @@ export function PhotoExportPanel({
   };
   return (
     <div className="flex flex-col gap-4">
-      <button
-        type="button"
-        onClick={onBack}
-        className="self-start text-xs font-medium text-slate-500 hover:underline"
-      >
-        ← All formats
-      </button>
+      <BackBar label="All formats" current="Photo" onClick={onBack} disabled={busy} />
       {photoPages.length > 1 ? (
         <OptionChoice
           label="Photo Page"

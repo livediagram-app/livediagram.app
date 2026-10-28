@@ -50,7 +50,7 @@ import {
 } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { PanelThisBrowser } from './PanelThisBrowser';
-import { ConfirmDialog, Tooltip } from '@liveworkspace/ui';
+import { ConfirmDialog, Tooltip, BackBar } from '@liveworkspace/ui';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
 import {
   TRASH_BIN,
@@ -62,7 +62,6 @@ import {
   useTrashTarget,
   type DropPlace,
 } from '../drag/drag';
-import { BackBar } from '../ui/BackBar';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ToastProvider } from '../ui/Toasts';

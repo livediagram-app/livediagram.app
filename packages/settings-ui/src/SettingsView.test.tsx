@@ -120,7 +120,7 @@ describe('SettingsView on a phone', () => {
     expect(document.querySelector('[data-settings-pane]')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /^Editor/ }));
     expect(screen.getByRole('heading', { name: 'Editor' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Settings/ }));
     expect(document.querySelector('[data-settings-pane]')).toBeNull();
   });
 
@@ -139,7 +139,7 @@ describe('SettingsView on a phone', () => {
     fireEvent.click(within(links).getByRole('button', { name: /^Map/ }));
     expect(screen.getByRole('heading', { name: 'Map' })).toBeTruthy();
     // A sub-category's back bar goes back to its parent.
-    expect(screen.getByRole('button', { name: 'Panels' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'PanelsMap' })).toBeTruthy();
   });
 });
 

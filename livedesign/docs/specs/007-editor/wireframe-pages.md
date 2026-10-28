@@ -87,7 +87,7 @@ case with dashes>` on a named one, so naming the page names the screen.
 - **Adding one**: the first page's choice offers a card, **Wireframe**: "A screen to wireframe,
   framed as a phone, tablet, laptop or browser." Choosing it turns the choice to **Choose a Device**:
   a tile per device, each a miniature of its frame over its name and screen size, grouped **Phones**,
-  **Tablets**, **Computers** and **Watch**, with **Back** to the kinds. The device last chosen in this
+  **Tablets**, **Computers** and **Watch**, under the [back bar](../004-interface-design/back-bar.md) to the kinds (**All kinds** then **Wireframe**). The device last chosen in this
   browser is ringed and focused first (the iPhone the first time). A tile shows the device's shorter
   name where it has one (**Android** under Phones and under Tablets). Arrow keys move between the
   tiles, Enter or a press makes the page that device's screen; Escape goes back to the kinds.

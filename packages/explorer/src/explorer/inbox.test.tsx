@@ -421,7 +421,7 @@ describe('on a phone', () => {
     // The pane's title takes focus, so a screen reader starts there.
     expect(document.activeElement).toBe(within(pane()).getByRole('heading', { level: 2 }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Back to Inbox' }));
+    fireEvent.click(within(pane()).getByRole('button', { name: 'Inbox' }));
     expect(screen.getByRole('listbox')).toBeTruthy();
     expect(back).toHaveBeenCalledTimes(1);
 

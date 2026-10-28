@@ -566,7 +566,7 @@ function Arrow2({ from, to }: { from: [number, number]; to: [number, number] }) 
   );
 }
 
-/** The card panel: a breadcrumb back to the project, the type and number, the ⋯ menu and close;
+/** The card panel: the back bar to the card before, then the type and number, the ⋯ menu and close;
  *  the title over the type's tabs and description; Linked as Parent; Details on the right. */
 export function PlanCardPanelScene() {
   return (
@@ -580,29 +580,43 @@ export function PlanCardPanelScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={2}
       />
-      {/* Header. */}
-      <rect x={20} y={20} width={8} height={14} rx={2} className={STRIPE.project} />
-      <Label x={32} y={28} size={10} tone="body">
+      {/* The breadcrumb: the back bar to the card before, this card's number as its chip. */}
+      <rect
+        x={18}
+        y={14}
+        width={384}
+        height={20}
+        rx={5}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      <rect x={22} y={17} width={14} height={14} rx={3} className="fill-slate-100" />
+      <Label x={29} y={25} size={10} anchor="middle" weight={700} tone="muted">
+        ‹
+      </Label>
+      <Label x={42} y={25} size={10} weight={700} tone="body">
         #2 Launch
       </Label>
-      <Label x={88} y={28} size={11} tone="muted">
-        ›
+      <rect x={370} y={17} width={28} height={14} rx={3} className="fill-slate-100" />
+      <Label x={384} y={25} size={9} anchor="middle" weight={700} tone="muted">
+        #11
       </Label>
-      <rect x={98} y={21} width={4} height={14} rx={1.5} className={STRIPE.task} />
-      <Label x={106} y={28} size={11} weight={700} tone="strong">
+      {/* Header. */}
+      <rect x={20} y={38} width={4} height={12} rx={1.5} className={STRIPE.task} />
+      <Label x={28} y={45} size={11} weight={700} tone="strong">
         Task
       </Label>
-      <Label x={136} y={28} size={11} tone="muted">
+      <Label x={58} y={45} size={11} tone="muted">
         #11
       </Label>
       {/* Help lives inside the ⋯ menu, not on the header. */}
-      <Label x={368} y={27} size={13} anchor="middle" weight={700} tone="muted">
+      <Label x={368} y={44} size={13} anchor="middle" weight={700} tone="muted">
         ⋯
       </Label>
-      <Label x={394} y={28} size={12} anchor="middle" tone="muted">
+      <Label x={394} y={45} size={12} anchor="middle" tone="muted">
         ✕
       </Label>
-      <line x1={10} y1={44} x2={410} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={10} y1={53} x2={410} y2={53} className="stroke-slate-200" strokeWidth={1.5} />
 
       {/* Main column. */}
       <Label x={24} y={62} size={14} weight={700} tone="strong">

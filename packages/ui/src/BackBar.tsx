@@ -1,11 +1,12 @@
 'use client';
 
-import { Glyph } from '@liveworkspace/ui';
+import { Glyph } from './icons/Glyph';
 
 // A full-width "go back to the overview" bar. Far more obvious than a small
-// pill in the corner: the whole row is the target. One bar for every
-// two-level browse (themes, templates, folder
-// placement) so they all read the same. When it mounts it eases into place
+// pill in the corner: the whole row is the target. The one way back (and the
+// one breadcrumb) in every app, the shape the tab's Import and Export screens
+// set: the label names where it goes back to, the chip where you are
+// (docs/specs/004-interface-design/back-bar.md). Nothing hand-rolls another. When it mounts it eases into place
 // (slide-row-in: fade, a short slide, and height from zero) rather than
 // popping in and shoving the rows beneath it down.
 //
@@ -23,6 +24,7 @@ import { Glyph } from '@liveworkspace/ui';
 
 const SHELL =
   'sticky top-0 z-10 flex w-full animate-slide-row-in items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100';
+const GAP = { default: 'mb-3', tight: 'mb-1.5', none: '' } as const;
 const WELL =
   'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-200';
 
@@ -32,6 +34,7 @@ export function BackBar({
   onClick,
   gap = 'default',
   disabled = false,
+  keepFocus = false,
 }: {
   label: string;
   // The category the user has drilled into, shown as a chip on the right
@@ -40,17 +43,22 @@ export function BackBar({
   // Absent = the static heading form.
   onClick?: () => void;
   // Space below the bar. `tight` for a list of rows directly under it (the
-  // placement browser), where the default read as a gap in the list.
-  gap?: 'default' | 'tight';
+  // placement browser), where the default read as a gap in the list; `none`
+  // where the host spaces it (a row of its own, a list's head).
+  gap?: 'default' | 'tight' | 'none';
   // Greys the bar out and stops it firing, for a step that is mid-flight
   // (the import panel while an import runs). It stays the button form rather
   // than falling back to the static heading, so the row does not swap glyph
   // and shape for the second the work takes.
   disabled?: boolean;
+  // Leaves focus where it is when pressed, for a bar inside a combobox's
+  // list (the telemetry metric picker), whose input closes the list on blur.
+  keepFocus?: boolean;
 }) {
-  const shell = `${gap === 'tight' ? 'mb-1.5' : 'mb-3'} ${SHELL}`;
+  const shell = `${GAP[gap]} ${SHELL}`;
+  // A long label (a card's title, a deep folder's name) cuts to fit with an ellipsis; the chip keeps its width.
   const chip = current ? (
-    <span className="ml-auto rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+    <span className="ml-auto shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
       {current}
     </span>
   ) : null;
@@ -60,7 +68,7 @@ export function BackBar({
         <span className={WELL}>
           <DotsGlyph />
         </span>
-        {label}
+        <span className="min-w-0 truncate">{label}</span>
         {chip}
       </div>
     );
@@ -70,6 +78,7 @@ export function BackBar({
       ref={stickToScrollerEdge}
       type="button"
       onClick={onClick}
+      onMouseDown={keepFocus ? (e) => e.preventDefault() : undefined}
       disabled={disabled}
       className={`group ${shell} transition disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:border-brand-300 enabled:hover:bg-brand-50/50 enabled:hover:text-brand-700 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-slate-800/80 dark:enabled:hover:text-brand-200`}
     >
@@ -78,7 +87,7 @@ export function BackBar({
       >
         <ChevronGlyph />
       </span>
-      {label}
+      <span className="min-w-0 truncate">{label}</span>
       {chip}
     </button>
   );

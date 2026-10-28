@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
-import { Button } from '@livedesign/ui';
+import { Button, BackBar } from '@livedesign/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;

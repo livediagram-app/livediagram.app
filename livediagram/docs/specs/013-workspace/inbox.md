@@ -26,7 +26,7 @@ The Inbox is a list and a reading pane, drawn by one shared component (`packages
 - **The list**: every row newest first under Today, Earlier This Week and Older, three lines each: who (semibold when it asks something of you) and its age; what it is; why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your canvas**, **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism and the item, and the teal **This Browser** pill for a canvas only this browser holds.
 - **The filter bar** over it: All, My Actions, Assigned by Me, Comments and Form Responses, each with its count, kept per viewer on this device, beside the header's app filter.
 - **The reading pane**: where it is, the title, who and why, the verbs with their keys, the canvas's thumbnail, then the thread, the action's note or the form's responses, and a reply field where Reply is offered.
-- **On a phone and in the editor's panel** the pane takes the list's place, with Back to Inbox; the browser's Back and Esc return to the list.
+- **On a phone and in the editor's panel** the pane takes the list's place, under the [back bar](../004-interface-design/back-bar.md) to **Inbox**; the browser's Back and Esc return to the list.
 
 What the pane can do for livediagram's rows, through this app's own code (`apps/editor/lib/explorer-inbox-host`, over `@liveworkspace/explorer/inbox-actions`):
 
