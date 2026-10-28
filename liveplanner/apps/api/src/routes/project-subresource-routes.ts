@@ -16,6 +16,7 @@ import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import { handleItemRoutes } from './item-routes';
+import { handleThreadRoutes } from './card-thread-routes';
 import { handleSheetRoutes } from './sheet-routes';
 import { handleItemTypeRoutes } from './item-type-routes';
 import { handlePlanRoute } from './plan-route';
@@ -165,6 +166,9 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   // The item store (docs/specs/026-plan/items.md).
   const items = await handleItemRoutes(ctx);
   if (items) return items;
+  // A card's comment threads (docs/specs/026-plan/items.md "Comments").
+  const threads = await handleThreadRoutes(ctx);
+  if (threads) return threads;
   // The sheet store (docs/specs/029-sheets/sheet-store.md).
   const sheets = await handleSheetRoutes(ctx);
   if (sheets) return sheets;

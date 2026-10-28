@@ -884,3 +884,112 @@ export function PlanItemTwoBoardsScene() {
     </Scene>
   );
 }
+
+/** A card's comment threads (ItemPanel's Comments, CardThreads): the tally and New Thread, an open thread with its
+ *  people, comment count, last activity and the link chip of a thread on three cards, another open thread, and the
+ *  Resolved disclosure under them. */
+export function PlanCardThreadsScene() {
+  const faces = (x: number, y: number, fills: string[]) =>
+    fills.map((fill, i) => (
+      <circle
+        key={i}
+        cx={x + i * 9}
+        cy={y}
+        r={5.5}
+        className={`${fill} stroke-white`}
+        strokeWidth={1.5}
+      />
+    ));
+  const tile = (
+    y: number,
+    title: string,
+    meta: string,
+    fills: string[],
+    opts: { shared?: boolean; open?: boolean } = {},
+  ) => (
+    <g>
+      <rect
+        x={20}
+        y={y}
+        width={380}
+        height={opts.open ? 104 : 42}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      <circle cx={36} cy={y + 15} r={7} className="fill-brand-50" />
+      <rect x={32} y={y + 11} width={8} height={7} rx={2} className="fill-brand-500" />
+      <Label x={50} y={y + 16} size={10.5} weight={700} tone="strong">
+        {title}
+      </Label>
+      {faces(54, y + 30, fills)}
+      <Label x={58 + fills.length * 9} y={y + 31} size={9} tone="muted">
+        {meta}
+      </Label>
+      {opts.shared ? (
+        <g>
+          <rect x={318} y={y + 7} width={42} height={16} rx={8} className="fill-amber-50" />
+          <Label x={339} y={y + 16} size={9} anchor="middle" weight={600} tone="body">
+            3 cards
+          </Label>
+        </g>
+      ) : null}
+      <Label x={386} y={y + 16} size={11} anchor="middle" tone="muted">
+        ⋯
+      </Label>
+      {opts.open ? (
+        <g>
+          <line x1={20} y1={y + 44} x2={400} y2={y + 44} className="stroke-slate-100" />
+          <circle cx={38} cy={y + 60} r={7} className="fill-orange-500" />
+          <Label x={52} y={y + 58} size={9} weight={600} tone="strong">
+            Ada King
+          </Label>
+          <TextBar x={52} y={y + 64} w={230} />
+          <rect
+            x={40}
+            y={y + 78}
+            width={290}
+            height={18}
+            rx={5}
+            className="fill-white stroke-slate-200"
+          />
+          <Label x={48} y={y + 88} size={9} tone="muted">
+            Reply…
+          </Label>
+          <Label x={390} y={y + 88} size={9} anchor="end" weight={600} tone="accent">
+            ✓ Resolve
+          </Label>
+        </g>
+      ) : null}
+    </g>
+  );
+  return (
+    <Scene w={420} h={248}>
+      <Label x={20} y={22} size={12} weight={700} tone="strong">
+        Comments
+      </Label>
+      <Label x={20} y={40} size={10} tone="muted">
+        2 open · 1 resolved
+      </Label>
+      <Label x={400} y={40} size={10} anchor="end" weight={600} tone="accent">
+        + New Thread
+      </Label>
+      {tile(
+        52,
+        'Promo code vs free items',
+        '4 comments · 2h ago',
+        ['fill-emerald-500', 'fill-orange-500', 'fill-violet-500'],
+        {
+          shared: true,
+          open: true,
+        },
+      )}
+      {tile(164, 'Bo Lindqvist: Copy for the empty basket…', '2 comments · 1d ago', [
+        'fill-green-600',
+      ])}
+      <Label x={20} y={230} size={10} weight={600} tone="muted">
+        › Resolved · 1
+      </Label>
+    </Scene>
+  );
+}

@@ -59,14 +59,19 @@ describe('useCollabDeepLink', () => {
   it('lands on a card’s board and opens the card', () => {
     const { calls } = arrive({ at: { tabId: 't1', elementId: 'b1' }, open: null, itemId: 'it1' });
     expect(calls.select).toHaveBeenCalledWith('b1');
-    expect(calls.openItem).toHaveBeenCalledWith('it1');
+    expect(calls.openItem).toHaveBeenCalledWith('it1', undefined);
     expect(calls.openActionPopover).not.toHaveBeenCalled();
     expect(calls.openComments).not.toHaveBeenCalled();
   });
 
+  it('opens a card on one of its comment threads (docs/specs/026-plan/items.md "Where it shows")', () => {
+    const { calls } = arrive({ at: null, open: null, itemId: 'it1', threadId: 'th-1' });
+    expect(calls.openItem).toHaveBeenCalledWith('it1', 'th-1');
+  });
+
   it('opens a card with no board on whichever tab the project opens on', () => {
     const { calls } = arrive({ at: null, open: null, itemId: 'it1' }, { activeId: 'other' });
-    expect(calls.openItem).toHaveBeenCalledWith('it1');
+    expect(calls.openItem).toHaveBeenCalledWith('it1', undefined);
     expect(calls.select).not.toHaveBeenCalled();
   });
 

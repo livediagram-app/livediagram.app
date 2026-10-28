@@ -15,6 +15,7 @@ import {
 } from '@liveplanner/project';
 import { readForm } from '@liveplanner/forms';
 import { formArt } from '@liveplanner/plan-art';
+import { openCommentCountsOfPlan } from './db/card-threads';
 import { cardSourceOf, itemIdsShownOnTab, typesOf, type Item } from '@liveplanner/items';
 import { renderModelsForTab, sheetFramesOf } from '@liveplanner/sheets';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
@@ -162,7 +163,25 @@ async function renderTabBodyToSvg(
   const [items, catalogue] =
     plan || sheetCards
       ? await Promise.all([
-          listItems(env, liveDoc.id).then((all) => new Map(all.map((i) => [i.id, i]))),
+          // Each card's comment count, from its threads' links (no thread is read): its face draws it.
+          Promise.all([
+            listItems(env, liveDoc.id),
+            // A count that cannot be read leaves the faces without it rather than the image undrawn.
+            Promise.resolve()
+              .then(() => openCommentCountsOfPlan(env, liveDoc.id))
+              .catch((err: unknown) => {
+                console.warn('[thumbnail] comment.counts.failed', { error: String(err) });
+                return new Map<string, number>();
+              }),
+          ]).then(
+            ([all, counts]) =>
+              new Map(
+                all.map((i) => [
+                  i.id,
+                  counts.has(i.id) ? { ...i, openComments: counts.get(i.id) } : i,
+                ]),
+              ),
+          ),
           liveDoc.itemTypes !== undefined ? liveDoc.itemTypes : getPlanItemTypes(env, liveDoc.id),
         ])
       : [undefined, null];

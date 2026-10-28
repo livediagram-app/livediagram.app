@@ -20,6 +20,7 @@ import { planHidesCursors } from '@/lib/plan-cursors';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import { useCardThreads, type CardThreads } from '@/hooks/plan/useCardThreads';
 import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinkedActionCards';
 import { actionsBoardIn } from '@/hooks/plan/linked-actions';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
@@ -838,11 +839,29 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabScope: sessionTabScope,
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
-    // A card comment's mentions reach people as a canvas comment's do (docs/specs/026-plan/items.md "Comments").
+    // An undo of a card's delete puts it back on its threads (docs/specs/026-plan/items.md "Cards coming and going").
+    threadsOf: (itemId) => cardThreadsRef.current?.threadsOf(itemId) ?? [],
+    onOwnWrite: (write, before) => {
+      linkedActionsRef.current?.noteOwnWrite(write, before);
+      // A card deleted, or put back, changes the threads it was on: read them again once it has landed.
+      if (write.kind === 'delete' || write.kind === 'create') cardThreadsRef.current?.refetch();
+    },
+  });
+  // The plan's card comment threads (docs/specs/026-plan/items.md "Comments"), read once its cards are.
+  const cardThreadsRef = useRef<CardThreads | null>(null);
+  const cardThreads = useCardThreads({
+    projectId,
+    ready: planItems.status === 'ready',
+    ownerId: selfParticipant.id,
+    self: planItems.self,
+    shareCode: sessionShareCode,
+    tabScope: sessionTabScope,
+    onError: (message) => toast.error(message),
+    // A thread comment's mentions reach people as a canvas comment's do (docs/specs/026-plan/items.md "Comments").
     onMentioned: (text, mentions, itemId, commentId) =>
       mentionNotifyRef.current(text, mentions, itemId, commentId),
-    onOwnWrite: (write, before) => linkedActionsRef.current?.noteOwnWrite(write, before),
   });
+  useAssignRef(cardThreadsRef, cardThreads);
 
   // The project's item types (docs/specs/026-plan/item-types.md): what cards, panels and the palette's
   // Cards category draw from, and the Card Types panel changes.
@@ -932,11 +951,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveProjectTrashed: () => projectTrashed.setProjectTrashed(true),
     resyncFromServer: async () => {
       planItems.refetch();
+      cardThreads.refetch();
       sheets.resync();
       await resyncFromServer();
     },
     receiveChangeset: changesetFeed.receiveChangeset,
     receiveItems: planItems.receive,
+    receiveThreads: cardThreads.receive,
     receiveItemTypes: itemTypes.receive,
     receivePlanPresence: planPresence.receive,
     receiveSheets: sheets.receiveSheets,
@@ -945,6 +966,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       roomFullNotice.joined();
       void changesetFeed.checkSinceLoad();
       planItems.refetch();
+      cardThreads.refetch();
       sheets.resync();
       sheets.reannounce();
       // A rejoined connection has a new presence id, which carries no hold until it is said again.
@@ -1321,7 +1343,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openActionPopover,
     openComments,
     // Read when the link lands, after this render has made the Plan slice below.
-    openItem: (itemId) => plan.context.openItem(itemId),
+    openItem: (itemId, threadId) => {
+      plan.context.openItem(itemId);
+      // The thread a link names opens on the card (docs/specs/026-plan/items.md "Where it shows").
+      if (threadId) cardThreads.focus(threadId);
+    },
   });
 
   const commit = (mapElements: (els: Element[]) => Element[]) => {
@@ -2501,6 +2527,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // What the agents present name in focus on the active tab, for the focus rings.
     agentFocusByElement,
     plan,
+    // The plan's card comment threads, and what this person may do with them (components/plan/threads).
+    cardThreads,
+    cardThreadsAccess: {
+      canComment: hydrated && participant.can.takePart,
+      isEditor: hydrated && participant.can.level === 'edit' && !isReadOnly,
+      projectList,
+    },
     // The sheet store's bridge, provided to Sheet elements (components/sheets).
     sheetsBridge: sheets.bridge,
     // A Dashboard slot's Clear or Remove deleting its Sheet's cells too (plan-tabs.md).

@@ -128,6 +128,9 @@ export type CollabThreadInput = {
 /** A card in an item (a Plan card), as the Inbox lists it: its number, type and title, and the board that shows
  *  it, where its row opens it (null: no board shows it, and the row opens the item at the card). */
 export type CollabCard = {
+  // The card's id, when the row's `elementId` is not the card's own: one of its comment threads, whose element is the
+  // thread (one-explorer-contracts.md "What an item pushes").
+  id?: string;
   key: number | null;
   // The card type's id, and its name as the app shows it ("Task").
   type: string;

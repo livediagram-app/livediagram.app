@@ -6,6 +6,8 @@
 import { PRIORITY_LABELS, itemCommentCount, type Item, type Priority } from '@liveplanner/items';
 import { contrastRatio } from '@liveplanner/project';
 import { CommentIcon } from '@liveplanner/ui';
+import { useThreadCount } from '@/hooks/plan/thread-store';
+import { useThreadStore } from './threads/CardThreadsContext';
 import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { FLAG_COLOUR } from './item-flag';
@@ -124,8 +126,11 @@ export function ChecklistPill({
   );
 }
 
+// The comments in the card's open threads (docs/specs/026-plan/items.md "Comments"), read from the thread store by
+// this card alone, so a thread write re-renders only the faces whose count it moved; an export's item carries its own.
 export function CommentsPill({ item, palette }: { item: Item; palette: PlanPalette }) {
-  const n = itemCommentCount(item);
+  const live = useThreadCount(useThreadStore(), item.id);
+  const n = live || itemCommentCount(item);
   if (n === 0) return null;
   return (
     <MetaPill palette={palette} label={n === 1 ? '1 comment' : `${n} comments`}>

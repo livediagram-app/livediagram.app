@@ -280,7 +280,9 @@ describe('the cards push', () => {
       title: 'Card 1',
       board: { tabId: 't1', elementId: 'b1', tabName: 'Sprint' },
     });
-    expect(cards.threads.map((t) => [t.elementId, t.participantIds])).toEqual([['c3', ['user_c']]]);
+    expect(cards.threads.map((t) => [t.elementId, t.participantIds])).toEqual([
+      ['c-c3', ['user_c']],
+    ]);
     expect(rows(db, 'SELECT person_id FROM known_people')).toEqual([{ person_id: 'user_b' }]);
   });
 

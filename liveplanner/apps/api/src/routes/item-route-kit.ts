@@ -1,7 +1,7 @@
 // The item routes' shared parts (item-routes.ts, item-patches-route.ts, item-comment-routes.ts): who the caller is
 // and what they reach, the refusals, the writer's signature and the room relay. A body is read by @liveplanner/items'
 // write checks (write-checks.ts), which an offline project runs too.
-import { isSafeColourValue, itemForRoom, itemForViewer } from '@liveplanner/project';
+import { isSafeColourValue, withoutLegacyThread } from '@liveplanner/project';
 import {
   isArchived,
   isTrashed,
@@ -175,13 +175,13 @@ export function relay(
   ctx.waitUntil?.(
     relayItems(ctx.env, projectId, {
       kind: 'items',
-      upserts: upserts.map(itemForRoom),
+      upserts: upserts.map(withoutLegacyThread),
       removed,
       rev,
     }),
   );
 }
 
-// What a caller is answered with: their own comment author ids, nobody else's.
-export const forCaller = (caller: ItemCaller, items: Item[]) =>
-  items.map((i) => itemForViewer(i, caller.owner));
+// What a caller is answered with. A card holds no comments (its threads are their own, card-thread-routes.ts); an old
+// single thread a row still carried (moved by the plan's schema, plan-room/card-thread-schema.ts) never leaves.
+export const forCaller = (_caller: ItemCaller, items: Item[]) => items.map(withoutLegacyThread);

@@ -1,0 +1,358 @@
+'use client';
+
+// One comment thread on a card (docs/specs/026-plan/items.md "Where it shows"): a rounded tile whose header opens and
+// closes it (its title, the people in it, how many comments and when it was last active, the shared chip and the ⋯
+// menu), and, open, its comments, Resolve or Reopen, and a reply composer. A resolved thread is drawn quieter, with
+// who resolved it. Rename edits the title in place.
+
+import { useId, useRef, useState } from 'react';
+import {
+  CheckIcon,
+  CommentIcon,
+  ConfirmPopover,
+  GlyphDisc,
+  IDENTITY_FILL,
+  TrashIcon,
+  Tooltip,
+  identityVars,
+  lucideGlyph,
+} from '@liveplanner/ui';
+import {
+  lucideChevronDown,
+  lucideLink,
+  lucidePencil,
+  lucideRotateCcw,
+} from '@liveworkspace/icons/lucide';
+import { threadParticipants, threadTitle, type CardThread } from '@liveplanner/project';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  PortalMenu,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { CommentComposer, CommentThreadList } from '@/components/panels/comment-thread-parts';
+import { initialsOf } from '@/lib/identity';
+import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
+import { ThreadSharedChip } from './ThreadSharedChip';
+import { ThreadTitleEditor } from './ThreadTitleEditor';
+import { ANNOUNCE, commentCount, deleteThreadMessage, resolvedByLabel } from './thread-words';
+import type { CardThreadsContextValue } from './CardThreadsContext';
+
+const Chevron = lucideGlyph(lucideChevronDown, 14);
+const RenameIcon = lucideGlyph(lucidePencil, 14);
+const AddIcon = lucideGlyph(lucideLink, 14);
+const ReopenIcon = lucideGlyph(lucideRotateCcw, 14);
+
+// The avatars of up to three people in a thread, then how many more.
+const FACES = 3;
+
+function Faces({ thread }: { thread: CardThread }) {
+  const people = threadParticipants(thread);
+  const shown = people.slice(0, FACES);
+  const more = people.length - shown.length;
+  return (
+    <span className="flex items-center" aria-hidden>
+      {shown.map((p, i) => (
+        <GlyphDisc
+          key={`${p.name}-${p.color}`}
+          size={20}
+          as="span"
+          style={identityVars(p.color)}
+          className={`text-[8px] font-semibold tracking-tight text-white ring-2 ring-white dark:ring-slate-900 ${IDENTITY_FILL} ${i ? '-ml-1' : ''}`}
+        >
+          {initialsOf(p.name)}
+        </GlyphDisc>
+      ))}
+      {more > 0 ? (
+        <span className="ml-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          +{more}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+export function ThreadTile({
+  thread,
+  itemId,
+  expanded,
+  onToggle,
+  ctx,
+  titleOf,
+  onAddToCard,
+  tileRef,
+}: {
+  thread: CardThread;
+  // The card it is viewed on.
+  itemId: string;
+  expanded: boolean;
+  onToggle: () => void;
+  ctx: CardThreadsContextValue;
+  // A card of this plan's title, for the shared chip's list.
+  titleOf: (itemId: string) => string | null;
+  onAddToCard: (thread: CardThread) => void;
+  tileRef?: (el: HTMLElement | null) => void;
+}) {
+  const bodyId = useId();
+  const now = useRelativeNow();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuButton, setMenuButton] = useState<HTMLButtonElement | null>(null);
+  const [renaming, setRenaming] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const headerRef = useRef<HTMLButtonElement>(null);
+  const { canComment, isEditor, selfId, threads, announce } = ctx;
+  const resolved = thread.resolved;
+  // A title cleared back to the automatic one reads '' until the answer lands: worked out here meanwhile.
+  const title = threadTitle(thread);
+  const mayDelete = isEditor || thread.createdBy.authorId === selfId;
+  const at = resolved ? (thread.resolvedAt ?? thread.updatedAt) : thread.updatedAt;
+  const when = new Date(at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const run = (fn: () => void) => () => {
+    setMenuOpen(false);
+    fn();
+  };
+  const resolve = (value: boolean) => {
+    void threads.act({ kind: 'resolve', threadId: thread.id, resolved: value }).then((ok) => {
+      if (ok !== false) announce(value ? ANNOUNCE.resolved : ANNOUNCE.reopened);
+    });
+  };
+
+  return (
+    <li
+      ref={tileRef}
+      data-thread={thread.id}
+      data-thread-resolved={resolved ? '' : undefined}
+      className={`rounded-xl border transition-colors motion-reduce:transition-none ${
+        resolved
+          ? 'border-slate-200/70 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40'
+          : expanded
+            ? 'border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'
+            : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700'
+      }`}
+    >
+      <div className="flex items-start gap-1 py-1.5 pl-1.5 pr-1">
+        {renaming ? (
+          <div className="flex min-w-0 flex-1 items-center gap-2 px-1.5 py-1">
+            <ThreadTitleEditor
+              title={threadTitle(thread)}
+              onDone={(title) => {
+                setRenaming(false);
+                headerRef.current?.focus();
+                if (title === null || title === threadTitle(thread)) return;
+                void threads.act({ kind: 'rename', threadId: thread.id, title }).then((ok) => {
+                  if (ok !== false) announce(ANNOUNCE.renamed);
+                });
+              }}
+            />
+          </div>
+        ) : (
+          <button
+            ref={headerRef}
+            type="button"
+            aria-expanded={expanded}
+            aria-controls={bodyId}
+            onClick={onToggle}
+            onKeyDown={(e) => {
+              if (e.key === 'F2' && canComment) {
+                e.preventDefault();
+                setRenaming(true);
+              }
+            }}
+            className="flex min-w-0 flex-1 cursor-pointer items-start gap-2 rounded-lg px-1.5 py-1 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-brand-400/60 motion-reduce:transition-none pointer-coarse:py-2"
+          >
+            <span
+              aria-hidden
+              className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full ${
+                resolved
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                  : 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
+              }`}
+            >
+              {resolved ? <CheckIcon size={11} /> : <CommentIcon size={11} />}
+            </span>
+            <span className="min-w-0 flex-1">
+              <Tooltip label={title}>
+                <span
+                  data-thread-title=""
+                  className={`block truncate text-[13px] font-semibold leading-5 ${
+                    resolved
+                      ? 'text-slate-600 dark:text-slate-300'
+                      : 'text-slate-900 dark:text-slate-50'
+                  }`}
+                >
+                  {title}
+                </span>
+              </Tooltip>
+              <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <Faces thread={thread} />
+                <span>{commentCount(thread.comments.length)}</span>
+                <span aria-hidden>·</span>
+                {resolved ? (
+                  <>
+                    <span>{resolvedByLabel(thread.resolvedBy)}</span>
+                    <span aria-hidden>·</span>
+                  </>
+                ) : null}
+                <Tooltip label={when}>
+                  <time dateTime={new Date(at).toISOString()}>
+                    {formatRelativeTimeCompact(now - at)}
+                  </time>
+                </Tooltip>
+              </span>
+            </span>
+            <span
+              aria-hidden
+              className={`mt-1 shrink-0 text-slate-400 transition-transform motion-reduce:transition-none ${expanded ? 'rotate-180' : ''}`}
+            >
+              <Chevron />
+            </span>
+          </button>
+        )}
+        <div className="flex shrink-0 items-center gap-0.5 pt-0.5">
+          {thread.cards.length > 1 ? (
+            <ThreadSharedChip thread={thread} ctx={ctx} itemId={itemId} titleOf={titleOf} />
+          ) : null}
+          {canComment ? (
+            <EllipsisTriggerButton
+              ref={setMenuButton}
+              label={`More for the thread “${title}”`}
+              expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+            />
+          ) : null}
+        </div>
+      </div>
+      {menuOpen ? (
+        <PortalMenu anchor={menuButton} placement="below" onClose={() => setMenuOpen(false)}>
+          <MenuActionRow
+            plain
+            label="Rename"
+            icon={<RenameIcon />}
+            onClick={run(() => setRenaming(true))}
+          />
+          <MenuActionRow
+            plain
+            label="Add to Card…"
+            icon={<AddIcon />}
+            onClick={run(() => onAddToCard(thread))}
+          />
+          <MenuActionRow
+            plain
+            label={resolved ? 'Reopen' : 'Resolve'}
+            icon={resolved ? <ReopenIcon /> : <CheckIcon size={14} />}
+            onClick={run(() => resolve(!resolved))}
+          />
+          {mayDelete ? (
+            <>
+              <MenuGroupSeparator />
+              <MenuActionRow
+                plain
+                label="Delete Thread…"
+                icon={<TrashIcon />}
+                onClick={run(() => setConfirming(true))}
+              />
+            </>
+          ) : null}
+        </PortalMenu>
+      ) : null}
+      {confirming && menuButton ? (
+        <ConfirmPopover
+          anchor={menuButton}
+          message={deleteThreadMessage(thread.cards.length)}
+          confirmLabel="Delete Thread"
+          onCancel={() => setConfirming(false)}
+          onConfirm={() => {
+            setConfirming(false);
+            void threads.act({ kind: 'deleteThread', threadId: thread.id }).then((ok) => {
+              if (ok !== false) announce(ANNOUNCE.deleted);
+            });
+          }}
+        />
+      ) : null}
+      {expanded ? (
+        <div
+          id={bodyId}
+          data-thread-body=""
+          className="animate-card-rise border-t border-slate-100 px-3 pb-3 pt-1 motion-reduce:animate-none dark:border-slate-800"
+        >
+          <CommentThreadList
+            thread={thread}
+            readOnly={!isEditor}
+            canComment={canComment}
+            selfId={selfId}
+            density="comfortable"
+            onDeleteComment={(commentId) =>
+              void threads.act({ kind: 'delete', threadId: thread.id, commentId }).then((ok) => {
+                if (ok !== false)
+                  announce(ok === null ? ANNOUNCE.deleted : ANNOUNCE.commentDeleted);
+              })
+            }
+            onEditComment={(commentId, text, mentions) =>
+              void threads
+                .act({
+                  kind: 'edit',
+                  threadId: thread.id,
+                  commentId,
+                  text,
+                  ...(mentions.length ? { mentions } : {}),
+                })
+                .then((ok) => {
+                  if (ok !== false) announce(ANNOUNCE.commentEdited);
+                })
+            }
+            className="max-h-96 divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800"
+          />
+          {resolved ? (
+            canComment ? (
+              <div className="mt-1 flex justify-end">
+                <ResolveButton resolved onClick={() => resolve(false)} />
+              </div>
+            ) : null
+          ) : canComment ? (
+            <>
+              <div className="flex justify-end">
+                <ResolveButton resolved={false} onClick={() => resolve(true)} />
+              </div>
+              <CommentComposer
+                density="comfortable"
+                self={ctx.self}
+                placeholder="Reply…"
+                fieldLabel={`Reply to “${title}”`}
+                submitLabel="Reply"
+                onAddComment={(text, mentions) =>
+                  void threads
+                    .act({
+                      kind: 'reply',
+                      threadId: thread.id,
+                      text,
+                      ...(mentions.length ? { mentions } : {}),
+                    })
+                    .then((ok) => {
+                      if (ok !== false) announce(ANNOUNCE.replied);
+                    })
+                }
+              />
+            </>
+          ) : null}
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
+function ResolveButton({ resolved, onClick }: { resolved: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition motion-reduce:transition-none pointer-coarse:py-2 ${
+        resolved
+          ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+          : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-500/10'
+      }`}
+    >
+      {resolved ? <ReopenIcon aria-hidden /> : <CheckIcon size={12} />}
+      {resolved ? 'Reopen' : 'Resolve'}
+    </button>
+  );
+}

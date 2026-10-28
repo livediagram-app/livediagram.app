@@ -4,8 +4,9 @@
 // - `api(app)`: a way to call that app's api as the person, or null where this page's token can't write that app's
 //   items. With it, an element's thread replies and resolves through the app's comment routes
 //   (`POST /<items>/:id/tabs/:tabId/comments`, `…/comments/:commentId/resolve`, the thread named by its first
-//   comment, read from `GET /<items>/:id/comments?status=all`), and a Plan card's thread through its card's
-//   (`POST /projects/:id/items/:cardId/comments`, `…/comments/resolve`). The same read gives the pane the thread.
+//   comment, read from `GET /<items>/:id/comments?status=all`), and a Plan card's thread through the thread routes
+//   (`POST /projects/:id/threads/:threadId/comments`, `…/threads/:threadId/resolve`). The same read gives the pane
+//   the thread.
 // - `openAction`: the item and tab the editor has open, and its own Mark Done. An element's action has no route of
 //   its own (an action's status is the people's to change, in the editor), so it is offered only there.
 //
@@ -117,7 +118,10 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
       if (!c) throw new Error('inbox action: not here');
       if (t.kind === 'CardThread') {
         await c
-          .call(`${c.base}/items/${enc(t.elementId)}/comments`, { method: 'POST', body: { text } })
+          .call(`${c.base}/threads/${enc(t.elementId)}/comments`, {
+            method: 'POST',
+            body: { text },
+          })
           .then(ok);
       } else {
         await c
@@ -133,9 +137,7 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
       const c = caller(t);
       if (!c) throw new Error('inbox action: not here');
       if (t.kind === 'CardThread') {
-        await c
-          .call(`${c.base}/items/${enc(t.elementId)}/comments/resolve`, { method: 'POST' })
-          .then(ok);
+        await c.call(`${c.base}/threads/${enc(t.elementId)}/resolve`, { method: 'POST' }).then(ok);
       } else {
         // A thread is named by its first comment.
         const first = (await threadOf(t))?.comments[0]?.id;

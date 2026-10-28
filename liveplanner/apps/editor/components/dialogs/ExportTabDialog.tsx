@@ -1,3 +1,5 @@
+import { useThreadStore } from '@/components/plan/threads/CardThreadsContext';
+import { itemsWithCounts } from '@/hooks/plan/thread-store';
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -169,7 +171,14 @@ export function ExportTabDialog({
   // Plan boards and cards export with their items (docs/specs/026-plan/plan-board.md).
   const plan = usePlan();
   // Keyed on the items and types alone: the context value also changes with presence and the open item.
-  const planItems = plan?.items;
+  // Each card with its comment count, which its threads hold (docs/specs/026-plan/items.md "Comments").
+  const threadStore = useThreadStore();
+  const storedItems = plan?.items;
+  const planItems = useMemo(
+    () =>
+      storedItems && threadStore ? itemsWithCounts(storedItems, threadStore.counts()) : storedItems,
+    [storedItems, threadStore],
+  );
   const planTypes = plan?.types;
   const planCatalogue = plan?.itemTypes.catalogue ?? null;
   const planOpts = useMemo(

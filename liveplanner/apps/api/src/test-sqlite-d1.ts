@@ -326,6 +326,24 @@ function testPlanRooms(
         }
       },
       revokeCodes: async () => 0,
+      // A card's comment threads across plans (plan-room/card-thread-store.ts), against the shared tables.
+      threadsFor: async (planId: string, ids: string[], via: string) =>
+        (await import('./plan-room/card-thread-store')).threadsForVia(env, planId, ids, via),
+      // Its relays are awaited before it answers, so a test sees every plan told.
+      threadWrite: async (planId: string, threadId: string, op: never, via: string) => {
+        const relays: Promise<unknown>[] = [];
+        const result = await (
+          await import('./plan-room/card-thread-store')
+        ).writeThread(env, planId, threadId, op, via, (p) => void relays.push(p));
+        await Promise.all(relays);
+        return result;
+      },
+      threadLinked: async (planId: string, link: never) =>
+        (await import('./plan-room/card-thread-store')).linkThread(env, planId, link),
+      threadUnlinked: async (planId: string, threadId: string, itemId: string) =>
+        (await import('./plan-room/card-thread-store')).unlinkThread(env, planId, threadId, itemId),
+      threadsRelayed: async (planId: string, relay: never) =>
+        (await import('./plan-room/card-thread-store')).threadsRelayed(env, planId, relay),
     }),
   };
   return ns as unknown as DurableObjectNamespace;

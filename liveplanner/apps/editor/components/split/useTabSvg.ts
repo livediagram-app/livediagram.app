@@ -1,5 +1,7 @@
 'use client';
 
+import { useThreadStore } from '@/components/plan/threads/CardThreadsContext';
+import { itemsWithCounts } from '@/hooks/plan/thread-store';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { canvasSurface, tabWindowNames, type Tab } from '@liveplanner/project';
 import { tabAsSeen } from '@/lib/export-as-seen';
@@ -49,6 +51,7 @@ export function useTabSvg(
   // oxlint-disable-next-line react/exhaustive-deps
   const windowNames = useMemo(() => tabWindowNames(tabs), [nameKey]);
   const plan = usePlan();
+  const threadStore = useThreadStore();
   const { appearance } = useAppearance();
   const deferredTab = useDeferredValue(tab);
   const [iconsReady, setIconsReady] = useState(false);
@@ -70,7 +73,13 @@ export function useTabSvg(
       pattern: false,
       motion: motionFor?.(canvasSurface(seen.backgroundColor)),
       resolveTabWindow: windowNames,
-      ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
+      // Each card with its comment count, which its threads hold (docs/specs/026-plan/items.md "Comments").
+      ...(plan
+        ? {
+            items: threadStore ? itemsWithCounts(plan.items, threadStore.counts()) : plan.items,
+            itemTypes: plan.types,
+          }
+        : {}),
       ...planOpts,
     });
     return {
@@ -78,5 +87,5 @@ export function useTabSvg(
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, plan, iconsReady, windowNames, motionFor, planOpts]);
+  }, [deferredTab, appearance, plan, threadStore, iconsReady, windowNames, motionFor, planOpts]);
 }

@@ -17,6 +17,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   restore_project: 'project restore',
   list_items: 'item ls',
   change_items: 'item set',
+  list_threads: 'thread ls',
+  change_threads: 'thread reply',
   add_board: 'board add',
   change_board: 'board set',
   change_card_types: 'type apply',

@@ -369,9 +369,12 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
   is cut to length rather than refused.
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
-  action whose `elementId` is the card's id, and each card's thread a thread, both with `card: {key, type,
+  action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
+  thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,
 typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is where the row opens it; null
-  when no board shows it). An app whose cards name people by a hash matches it to a person id before pushing
+  when no board shows it; `id` the card's id, given when the row's `elementId` is not the card's: a thread's). A
+  thread on several of an item's cards is pushed once, on the first; a thread shared between items (a card thread on
+  cards in two plans) is pushed by each, and the Inbox lists it once (below). An app whose cards name people by a hash matches it to a person id before pushing
   (`@liveworkspace/index-app` `cardsCollabPush`); a card whose assignee it cannot name is left out.
 - `PUT /app/items/:id/forms/:tabId`: `{form: {heading, boardTabId, responses, latestAt, code?} | null}`: a form's
   heading, the tab its responses land on, how many it has taken and when the last came; `null` takes it off the
@@ -539,9 +542,11 @@ The Explorer shows it as a list and a reading pane (`packages/explorer/src/explo
 component on the page and in every editor's panel:
 
 - **The list.** Every row newest first, under **Today**, **Earlier This Week** (the six days before) and **Older**.
+  A card thread read through two items (shared between plans) is one row: its newest copy.
   Each row is three lines: who is behind it (who assigned it, who it waits on, who wrote last; semibold when it asks
   something of me: mine to do, a mention, a thread on my item, new responses), with its age ("12m", "3h", "2d", then
-  the date); what it is (the action, the card's number and title, the element a thread is on, the form's heading);
+  the date); what it is (the action, the card's number and title, a card thread's title, the element a thread is
+  on, the form's heading);
   and why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your plan**,
   **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism (in the All filter) and
   the item's name, and the teal **This Browser** pill for an item only this browser holds. The chosen row has a
@@ -558,13 +563,14 @@ component on the page and in every editor's panel:
   the index once the choice has rested 200 ms and kept, at most 64), then the thread, the action's note or the
   form's responses, and a reply field where Reply is offered.
 - **The verbs.** Open in the app (↵) is always there, through the host's `itemHref` with an `ItemPlace`: the tab and
-  element, `open: 'action' | 'comments'` for the popover, and `cardId` for a card (`Activity·Selected`, by row kind).
+  element, `open: 'action' | 'comments'` for the popover, `cardId` for a card, and `threadId` for a card's thread
+  (`Activity·Selected`, by row kind).
   The rest come from the host's `InboxHost.actions` (`@liveworkspace/explorer/inbox-actions`), asked per row, so no
   page shows a verb it can't carry out:
   - **Reply** (r) and **Resolve** (e) on a thread, through the owning app's comment routes: an element's thread by
     `POST /api/<items>/:id/tabs/:tabId/comments` and `…/comments/:firstCommentId/resolve` (the thread named by its
     first comment, read from `GET /api/<items>/:id/comments?status=all`, which also gives the pane the whole thread),
-    a card's by `POST /api/projects/:id/items/:cardId/comments` and `…/comments/resolve`. On liveworkspace.app every
+    a card thread's by `POST /api/projects/:id/threads/:threadId/comments` and `…/threads/:threadId/resolve`. On liveworkspace.app every
     app's threads (the workspace token's audience is every app's api); on an app's own address and in its editor's
     panel that app's threads only (their token is their own api's). `Activity·Added` (`Reply`) and
     `Activity·Resolved` (`Thread`).

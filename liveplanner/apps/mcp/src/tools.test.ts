@@ -160,6 +160,7 @@ function okResponse(request: Request): Response {
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   if (/^\/projects\/[^/]+$/.test(path)) return json({ project: LIVE_DOC });
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [], rev: 0 });
+  if (path.endsWith('/threads') && request.method === 'GET') return json({ threads: [] });
   if (path.endsWith('/plan')) return json(PLAN);
   return json({});
 }
@@ -234,7 +235,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-five documented tools, each with a description', () => {
+  it('registers the twenty-seven documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered;
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -247,12 +248,14 @@ describe('registerTools', () => {
       'change_form',
       'change_items',
       'change_sheet',
+      'change_threads',
       'create_project',
       'delete_project',
       'find_projects',
       'list_items',
       'list_sheets',
       'list_templates',
+      'list_threads',
       'list_trash',
       'read_form',
       'read_project',
@@ -370,6 +373,9 @@ describe('tool annotations', () => {
     // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
     list_items: 'read',
     change_items: 'destructive',
+    // docs/specs/026-plan/plan-agents.md "Comment threads": change_threads deletes the agent's own comments.
+    list_threads: 'read',
+    change_threads: 'destructive',
     // docs/specs/026-plan/plan-agents.md: a board is added; deleting a card type trashes its cards.
     add_board: 'write',
     change_board: 'write',
@@ -427,6 +433,7 @@ describe('tool annotations', () => {
       'list_items',
       'list_sheets',
       'list_templates',
+      'list_threads',
       'list_trash',
       'read_form',
       'read_project',
@@ -452,6 +459,7 @@ describe('tool annotations', () => {
       'change_form',
       'change_items',
       'change_sheet',
+      'change_threads',
       'delete_project',
       'update_project',
     ]);

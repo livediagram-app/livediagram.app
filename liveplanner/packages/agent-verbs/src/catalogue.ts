@@ -43,6 +43,7 @@ import {
 } from './verbs/lifecycle';
 import { tabLs, tabView } from './verbs/tab';
 import { itemVerbs } from './verbs/item';
+import { threadVerbs } from './verbs/thread';
 import { boardVerbs } from './verbs/board';
 import { cardTypeVerbs } from './verbs/card-type';
 import { sheetVerbs } from './verbs/sheet';
@@ -67,6 +68,7 @@ export const VERBS: readonly Verb[] = [
   tabRm,
   ...elementVerbs,
   ...itemVerbs,
+  ...threadVerbs,
   ...boardVerbs,
   ...cardTypeVerbs,
   ...sheetVerbs,
@@ -114,12 +116,13 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'tab', summary: 'Tabs: their views and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'item', summary: 'Items: the work Plan boards show' },
+  { name: 'thread', summary: 'Comment threads on cards' },
   { name: 'board', summary: 'Plan boards: add one' },
   { name: 'type', summary: 'Card types and their fields' },
   { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
   { name: 'form', summary: 'Forms: build, read and publish one' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
-  { name: 'comment', summary: 'Comment threads' },
+  { name: 'comment', summary: 'Comment threads on elements and Sheet cells' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   {
     name: 'workbench',

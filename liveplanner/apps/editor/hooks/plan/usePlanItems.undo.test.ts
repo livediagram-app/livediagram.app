@@ -10,7 +10,6 @@ import type { ItemUndoStep } from './item-undo-journal';
 const api = vi.hoisted(() => ({
   fetchItems: vi.fn(),
   writeItem: vi.fn(),
-  writeItemComment: vi.fn(),
 }));
 vi.mock('@/lib/api/items', () => api);
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -51,7 +50,6 @@ describe('usePlanItems undo', () => {
         tabScope: null,
         pushUndo: (step) => steps.push(step),
         onError: vi.fn(),
-        onMentioned: vi.fn(),
       }),
     );
     await waitFor(() => expect(result.current.items.size).toBe(1));
@@ -95,7 +93,6 @@ describe('usePlanItems undo', () => {
         tabScope: null,
         pushUndo: (step) => steps.push(step),
         onError,
-        onMentioned: vi.fn(),
       }),
     );
     await waitFor(() => expect(result.current.items.size).toBe(2));

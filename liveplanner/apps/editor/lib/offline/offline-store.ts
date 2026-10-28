@@ -15,7 +15,7 @@ import type { SheetJson } from '@liveplanner/sheets';
 import type { Project, ProjectSummary, RecordedIntent, TabSummary } from '@liveplanner/api-schema';
 import { utcDay } from '@liveplanner/api-schema';
 import { drawnCount, migrateStoredTab, stampTabKind } from '@liveplanner/project';
-import type { Tab } from '@liveplanner/project';
+import type { CardThread, Tab } from '@liveplanner/project';
 import {
   legacyCatalogue,
   readItemTypeCatalogue,
@@ -72,6 +72,10 @@ export type OfflineProjectRecord = {
   // The project's sheet store (docs/specs/029-sheets/sheet-store.md "Offline projects"): every sheet, cells
   // included. Optional: a record without it has none.
   sheets?: SheetJson[];
+  // The cards' comment threads (docs/specs/026-plan/items.md "Comments", "Offline projects"), each stored once here
+  // and on this plan's cards alone. Optional: a record without them has none, or (written before threads) holds each
+  // card's old single thread in its `fields.comments`, read as its first thread (offline-threads.ts).
+  threads?: CardThread[];
 };
 
 // A local project's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md

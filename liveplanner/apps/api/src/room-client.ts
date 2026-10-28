@@ -13,7 +13,12 @@ import {
   type RoomOp,
 } from '@liveplanner/api-schema';
 import type { AgentPresenceWrite } from '@liveworkspace/api-kit/room-agent-presence';
-import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@liveplanner/api-schema';
+import type {
+  CardThreadsRoomOp,
+  ItemsRoomOp,
+  ItemTypesRoomOp,
+  SheetsRoomOp,
+} from '@liveplanner/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a project's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -474,6 +479,16 @@ export async function relayItemTypes(
 // broadcasts: the stored write is the change, and a client that missed it refetches on a rev gap.
 export async function relayItems(env: Env, projectId: string, op: ItemsRoomOp): Promise<void> {
   await broadcastOp(env, projectId, op, 'items', true);
+}
+
+// A card thread write (docs/specs/026-plan/items.md "Comments"), in the stream items ride in, to one plan the thread
+// is on. It carries no store rev: a session that missed one reads the threads again on its reconnect.
+export async function relayThreads(
+  env: Env,
+  projectId: string,
+  op: CardThreadsRoomOp,
+): Promise<void> {
+  await broadcastOp(env, projectId, op, 'threads', true);
 }
 
 // A sheet write the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"), ordered like items.

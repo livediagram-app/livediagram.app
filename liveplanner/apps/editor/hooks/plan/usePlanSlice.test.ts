@@ -91,12 +91,11 @@ describe('usePlanSlice', () => {
     expect(applied).toEqual([{ ...card, planCard: { itemId: 'a', size: 'minimal' } }, other]);
   });
 
-  // docs/specs/026-plan/items.md "Comments": a card's comment change goes to the item store.
-  it('hands a comment change and the owner id to the item store', () => {
-    const comment = vi.fn(async () => true);
+  // docs/specs/026-plan/items.md "Comments": the card panel's threads read the owner id off the slice.
+  it('hands on the owner id the threads mark this person’s own comments by', () => {
     const { result } = renderHook(() =>
       usePlanSlice({
-        planItems: { ...(planItems as object), comment, ownerId: 'owner-me' } as never,
+        planItems: { ...(planItems as object), ownerId: 'owner-me' } as never,
         itemTypes,
         canEdit: true,
         canVote: true,
@@ -108,8 +107,6 @@ describe('usePlanSlice', () => {
         announce: () => {},
       }),
     );
-    result.current.context.commentItem('item-one', { kind: 'add', text: 'Hi' });
-    expect(comment).toHaveBeenCalledWith('item-one', { kind: 'add', text: 'Hi' });
     expect(result.current.context.ownerId).toBe('owner-me');
   });
 

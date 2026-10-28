@@ -355,6 +355,7 @@ export * from '@liveworkspace/api-kit/api-token';
 export * from './project-source';
 export * from '@liveworkspace/api-schema/catalogues';
 export * from './comment-threads';
+export * from './card-threads';
 export * from '@liveworkspace/api-schema/agent-presence';
 export * from '@liveworkspace/api-schema/http-errors';
 export * from './oauth-clients';

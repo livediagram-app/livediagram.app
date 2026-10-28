@@ -101,6 +101,30 @@ const ITEM = {
   createdBy: { id: 'p', name: 'P', color: '#000000' },
   updatedBy: { id: 'p', name: 'P', color: '#000000' },
 };
+// A comment thread on ITEM, with a person's comment and an agent's (docs/specs/026-plan/plan-agents.md "Comment
+// threads").
+const THREAD = {
+  id: 'th-abcd1234abcd1234',
+  title: 'P: Login fails',
+  resolved: false,
+  comments: [
+    { id: 'cm-1', text: 'Login fails', createdAt: 1, authorName: 'P', authorColor: '#000000' },
+    {
+      id: 'cm-2',
+      text: 'Token expiry',
+      createdAt: 2,
+      authorName: 'P',
+      authorColor: '#000000',
+      ai: true,
+    },
+  ],
+  createdAt: 1,
+  createdBy: { name: 'P', color: '#000000' },
+  updatedAt: 2,
+  home: 'd1',
+  cards: [{ projectId: 'd1', itemId: 'item123abc', key: 12 }],
+  rev: 1,
+};
 const LIVE_DOC = {
   id: 'd1',
   name: 'Roadmap',
@@ -197,6 +221,8 @@ const PLAN = {
 async function api(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname.replace(/^\/api/, '');
+  if (request.method === 'DELETE' && path.includes('/threads/'))
+    return Response.json({ thread: null });
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
   // A project view: text with the tab revision as its ETag, as the api answers it.
@@ -237,6 +263,9 @@ async function api(request: Request): Promise<Response> {
     });
   }
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [ITEM], rev: 1 });
+  if (path.endsWith('/threads') && request.method === 'GET') return json({ threads: [THREAD] });
+  if (path.endsWith('/reopen')) return new Response(null, { status: 204 });
+  if (path.includes('/threads')) return json({ thread: THREAD, commentId: 'cm-3' });
   if (path.endsWith('/plan')) return json(PLAN);
   if (path.endsWith('/item-types')) return json({ itemTypes: null });
   if (/\/items(\/[^/]+(\/move)?)?$/.test(path)) return json({ item: ITEM, rev: 2 });
@@ -341,6 +370,27 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
         { op: 'move', item: '#12', status: 'Done' },
         { op: 'set', item: '12', fields: { priority: 'high' } },
         { op: 'delete', item: 'item123' },
+      ],
+    },
+  },
+  { tool: 'list_threads', output: 'listThreadsOutput', args: { projectId: 'd1' } },
+  {
+    tool: 'list_threads',
+    output: 'listThreadsOutput',
+    args: { projectId: 'd1', item: '#12', status: 'all' },
+  },
+  {
+    tool: 'change_threads',
+    output: 'changeThreadsOutput',
+    args: {
+      projectId: 'd1',
+      changes: [
+        { op: 'start', item: '#12', text: 'Still failing' },
+        { op: 'reply', thread: 'P: Login fails', text: 'Retried' },
+        { op: 'resolve', thread: 'th-abcd' },
+        { op: 'reopen', thread: 'th-abcd' },
+        { op: 'edit', thread: 'th-abcd', comment: 'cm-2', text: 'Token expiry, fixed' },
+        { op: 'delete', thread: 'th-abcd', comment: 'cm-2' },
       ],
     },
   },

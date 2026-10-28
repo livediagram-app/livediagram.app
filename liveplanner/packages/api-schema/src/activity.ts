@@ -75,9 +75,12 @@ export type ActivityCard = {
   updatedAt: number;
 };
 
-// A Plan card's unresolved comment thread the reader is in (docs/specs/013-workspace/inbox.md §2.5):
+// One of a Plan card's unresolved comment threads the reader is in (docs/specs/013-workspace/inbox.md §2.5):
 // the card's identity and place, and the thread's facts as ActivityThread has them. Author ids never travel.
 export type ActivityCardThread = Omit<ActivityCard, 'status' | 'updatedAt'> & {
+  // The thread itself (docs/specs/026-plan/items.md "Comments"): its id and title; `id` and `title` are its card's.
+  threadId: string;
+  threadTitle: string;
   commentCount: number;
   latest: { text: string; authorName: string; authorColor: string; at: number };
   firstAt: number;

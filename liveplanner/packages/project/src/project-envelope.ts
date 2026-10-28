@@ -6,6 +6,7 @@
 
 import type { Tab } from './index';
 import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@liveplanner/items';
+import { isCardThread, type CardThread } from './card-threads';
 
 export const PROJECT_ENVELOPE_KIND = 'liveplanner.project';
 export const PROJECT_SCHEMA_VERSION = 1;
@@ -28,6 +29,9 @@ export type ProjectEnvelope = {
     // The sheet store (docs/specs/029-sheets/sheet-store.md "Copies and exports"), the same way. The sheets'
     // shape is the sheets engine's SheetJson; the api validates them on import.
     sheets?: EnvelopeSheet[];
+    // The cards' comment threads the plan stores (docs/specs/026-plan/items.md "Comments"), the same way, without
+    // author ids. Each names its cards by id; a file read into a new plan puts them on that plan's cards.
+    threads?: CardThread[];
   };
 };
 
@@ -42,6 +46,7 @@ export function projectToEnvelopeText(
   items: Item[] = [],
   itemTypes: ItemTypeCatalogue | null = null,
   sheets: readonly EnvelopeSheet[] = [],
+  threads: readonly CardThread[] = [],
 ): string {
   const envelope: ProjectEnvelope = {
     kind: PROJECT_ENVELOPE_KIND,
@@ -54,6 +59,7 @@ export function projectToEnvelopeText(
       ...(items.length ? { items } : {}),
       ...(itemTypes ? { itemTypes } : {}),
       ...(sheets.length ? { sheets: [...sheets] } : {}),
+      ...(threads.length ? { threads: [...threads] } : {}),
     },
   };
   return JSON.stringify(envelope, null, 2);
@@ -128,6 +134,8 @@ export function parseProjectEnvelope(
         // Items that do not look like items are left behind; the api validates the rest.
         ...(Array.isArray(d.items) ? { items: d.items.filter(isItemLike) } : {}),
         ...(Array.isArray(d.sheets) ? { sheets: d.sheets.filter(isSheetLike) } : {}),
+        // A thread that is not one is left behind, as an item is.
+        ...(Array.isArray(d.threads) ? { threads: d.threads.filter(isCardThread) } : {}),
         // A catalogue that does not read back is left behind: the built-in types stand.
         ...(itemTypes ? { itemTypes } : {}),
       },

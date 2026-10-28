@@ -10,5 +10,8 @@ describe('placeHash', () => {
     );
     expect(placeHash({ tabId: 't1', elementId: 'b1', cardId: 'c1' })).toBe('#t=t1&el=b1&item=c1');
     expect(placeHash({ cardId: 'c1', open: 'action' })).toBe('#item=c1');
+    // One of a card's threads opens on the card; a thread with no card names nothing.
+    expect(placeHash({ cardId: 'c1', threadId: 'th-1' })).toBe('#item=c1&thread=th-1');
+    expect(placeHash({ threadId: 'th-1' })).toBe('');
   });
 });

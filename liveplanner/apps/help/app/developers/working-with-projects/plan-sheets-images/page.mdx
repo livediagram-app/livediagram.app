@@ -69,7 +69,7 @@ curl -X POST https://www.liveplanner.app/api/projects/$DOC/items \
 
 It answers `201` with `{ "item": …, "rev": 42 }`. `POST /projects/$DOC/items/bulk` makes up to 200 in one write, in order: `{ "items": [ { "type": "task", "fields": { "title": "One" } }, … ] }`. A plan holds up to 2,000 items.
 
-The fields every card understands are `title`, `description`, `status`, `assignee` (a person `{ "id", "name", "color" }`), `priority` (`urgent`, `high`, `medium` or `low`), `color`, `labels` (up to 12), `estimate` (0 to 999), `start` and `due` (`YYYY-MM-DD`), `checklist`, `archived` and `flagged`. A card type's custom fields go under their ids, such as `f-severity`. `votes` and `comments` are written only by voting and by the [comment endpoints](/help/developers/agent-comments-presence/#comments-on-plan-cards).
+The fields every card understands are `title`, `description`, `status`, `assignee` (a person `{ "id", "name", "color" }`), `priority` (`urgent`, `high`, `medium` or `low`), `color`, `labels` (up to 12), `estimate` (0 to 999), `start` and `due` (`YYYY-MM-DD`), `checklist`, `archived` and `flagged`. A card type's custom fields go under their ids, such as `f-severity`. `votes` are written only by voting, and a card's comments live in its [comment threads](/help/developers/agent-comments-presence/#comment-threads-on-plan-cards), never in its fields.
 
 ### Change and Move Cards
 
