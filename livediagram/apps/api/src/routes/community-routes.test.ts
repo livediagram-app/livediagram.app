@@ -274,6 +274,7 @@ const drawnFor = async (code: string) =>
       format: 'svg',
       tabId: null,
       code,
+      appearance: null,
       ifVersion: null,
     })
   ).status;

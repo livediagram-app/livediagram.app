@@ -34,8 +34,25 @@ describe('the export door', () => {
       format: 'svg',
       tabId: 'T1',
       code: null,
+      appearance: null,
       ifVersion: null,
     });
+  });
+
+  it('hands the reader’s appearance to the app, and refuses any other', async () => {
+    const run = vi.fn(async () => ({ status: 'empty' as const, version: 7 }));
+    const opts = { key: 'k', handlers: handlers(run) };
+    await handleInternalItems(
+      exportRequest('/api/internal/items/A/export?appearance=dark', 'k'),
+      opts,
+    );
+    expect(run).toHaveBeenCalledWith('A', expect.objectContaining({ appearance: 'dark' }));
+    const bad = await handleInternalItems(
+      exportRequest('/api/internal/items/A/export?appearance=sepia', 'k'),
+      opts,
+    );
+    expect(bad.status).toBe(400);
+    expect(run).toHaveBeenCalledOnce();
   });
 
   it('opens no other door to the media key', async () => {
@@ -81,6 +98,7 @@ describe('the export door', () => {
       format: 'svg',
       tabId: null,
       code: 'POST',
+      appearance: null,
       ifVersion: 9,
     });
     const hidden = await handleInternalItems(

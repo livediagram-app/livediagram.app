@@ -15,7 +15,8 @@
 //      in the stack's media.
 //   4. live — a static file server for `out/` that reproduces what production
 //      does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
-//      rewrite `/document/*` to the single placeholder, forward `/api/index/*` to the index, serve
+//      rewrite `/document/*` to the single placeholder, forward `/api/index/*` to the index and
+//      `/api/previews/*` to media, serve
 //      liveworkspace's Explorer at `/explorer` when its site is built, and proxy the rest of
 //      `/api/*` (WebSocket upgrades included) to the api worker so the app is same-origin.
 //
@@ -117,6 +118,12 @@ const MERGE_KEY = 'e2e-merge-key';
 const INDEX_DIR = path.resolve(ROOT, '..', 'liveworkspace', 'apps', 'index');
 // The index's local D1 for this stack, apart from a developer's `wrangler dev` state.
 const INDEX_STATE = path.join(INDEX_DIR, '.wrangler', 'e2e-state');
+// The stack's own wrangler dev registry, so a service binding (media's INDEX) reaches this stack's Workers, never a
+// developer's or another stack's registered under the same name. Every wrangler the stack starts inherits it. Fresh
+// each run: a previous run's entries point at Workers that are gone, and a binding to one loses its connection.
+const WRANGLER_REGISTRY = path.join(INDEX_DIR, '.wrangler', `e2e-registry-${MEDIA_PORT}`);
+rmSync(WRANGLER_REGISTRY, { recursive: true, force: true });
+process.env.WRANGLER_REGISTRY_PATH = WRANGLER_REGISTRY;
 // liveworkspace's site, whose Explorer production serves at livediagram's own /explorer (the router's
 // routeToWorkspace, @liveworkspace/sites/workspace-proxy): its static export, when built.
 // E2E_WORKSPACE_SITE_OUT serves another export of it: the signed-in specs' `.next/out-e2e`
@@ -702,22 +709,27 @@ function resolveIn(dir, p) {
   return null;
 }
 
-// The router's forward (apps/router/src/index.ts): `/api/index/*` is the index's, the same request at its origin
-// minus this site's cookies.
+// The router's forwards (apps/router/src/index.ts): `/api/index/*` is the index's, and `/api/previews/*`
+// liveworkspace's previews in the media service (routeToPreviews), each the same request at its origin minus this
+// site's cookies.
 const isIndexPath = (pathname) => pathname === '/api/index' || pathname.startsWith('/api/index/');
+const isPreviewsPath = (pathname) =>
+  pathname === '/api/previews' || pathname.startsWith('/api/previews/');
 
 function proxyApi(req, res) {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   const toIndex = isIndexPath(pathname);
+  const toPreviews = isPreviewsPath(pathname);
+  const port = toIndex ? INDEX_PORT : toPreviews ? MEDIA_PORT : API_PORT;
   const headers = { ...req.headers };
-  if (toIndex) {
+  if (toIndex || toPreviews) {
     delete headers.cookie;
-    headers.host = `127.0.0.1:${INDEX_PORT}`;
+    headers.host = `127.0.0.1:${port}`;
   }
   const proxyReq = http.request(
     {
       host: '127.0.0.1',
-      port: toIndex ? INDEX_PORT : API_PORT,
+      port,
       method: req.method,
       path: req.url,
       headers,
@@ -729,7 +741,15 @@ function proxyApi(req, res) {
   );
   proxyReq.on('error', () => {
     res.writeHead(502, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: toIndex ? 'index_unreachable' : 'api_unreachable' }));
+    res.end(
+      JSON.stringify({
+        error: toIndex
+          ? 'index_unreachable'
+          : toPreviews
+            ? 'previews_unreachable'
+            : 'api_unreachable',
+      }),
+    );
   });
   req.pipe(proxyReq);
 }
@@ -965,6 +985,9 @@ async function main() {
     port: MEDIA_PORT,
     state: MEDIA_STATE,
     apps: [MEDIA_APP],
+    // Previews end to end: the stack's index decides who sees one, this api's export door draws it.
+    indexUrl: `http://127.0.0.1:${INDEX_PORT}/api/index`,
+    appOrigins: { [MEDIA_APP]: `http://127.0.0.1:${API_PORT}` },
   });
   console.log('[e2e] starting api worker…');
   run(

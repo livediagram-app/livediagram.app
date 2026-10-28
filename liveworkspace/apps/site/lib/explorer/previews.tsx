@@ -12,12 +12,15 @@
 // used out (each URL revoked as it goes). A preview whose box is mounted is never the one to go: the cache grows to
 // hold every mounted box (up to PREVIEW_CACHE_CEILING), so a grid of more than PREVIEW_CACHE_MAX cards does not evict
 // and refetch its own pictures in a loop, and shrinks back as boxes unmount. The answer is `private, max-age=86400` keyed by `?v=<updatedAt>`, so a
-// reload reads from the browser's cache. Same-origin, so no CORS preflight per item.
+// reload reads from the browser's cache. Same-origin, so no CORS preflight per item. Each is drawn in the reader's
+// appearance (previews.md "GET /api/previews/items/:id"), part of its address, so switching appearance asks for the
+// other half and never shows the old one meanwhile.
 
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { RenderThumbnail } from '@liveworkspace/explorer';
 import { PREVIEWS_PATH } from '@liveworkspace/sites/workspace-proxy';
+import { getResolvedAppearance, useAppearance, type Appearance } from '@livediagram/ui';
 import { workspaceToken } from './token';
 
 export const PREVIEW_CACHE_MAX = 200;
@@ -29,9 +32,12 @@ const ROOT_MARGIN = '200px';
 
 type Entry = { status: 'ready'; src: string } | { status: 'none' };
 
-/** The preview's address for an item, whatever its app: on this page's own origin. */
-export function previewUrl(item: Pick<Item, 'id' | 'updatedAt'>): string {
-  return `${PREVIEWS_PATH}/items/${encodeURIComponent(item.id)}?v=${item.updatedAt}`;
+/** The preview's address for an item, whatever its app, in the reader's appearance: on this page's own origin. */
+export function previewUrl(
+  item: Pick<Item, 'id' | 'updatedAt'>,
+  appearance: Appearance = getResolvedAppearance(),
+): string {
+  return `${PREVIEWS_PATH}/items/${encodeURIComponent(item.id)}?v=${item.updatedAt}&appearance=${appearance}`;
 }
 
 const isEmpty = (item: Item) => (item.summary as { empty?: boolean } | null)?.empty === true;
@@ -182,6 +188,8 @@ export function resetPreviews() {
 // ---------- Drawing one ---------------------------------------------------------------------------------------
 
 function Preview({ item }: { item: Item }) {
+  // Redrawn when the reader switches appearance: its key (the address) names the other half then.
+  useAppearance();
   useSyncExternalStore(
     subscribe,
     () => version,

@@ -4,6 +4,7 @@
 
 import { etagVersion, exportEtag } from '@liveworkspace/index-app';
 import type { App } from '@liveworkspace/index-client';
+import type { PreviewAppearance } from '@liveworkspace/media';
 import { appDoor, type Env } from '../env';
 
 export type DoorQuery = {
@@ -11,6 +12,8 @@ export type DoorQuery = {
   tabId: string | null;
   // The public link the reader came by, so the app draws what it may show.
   code: string | null;
+  // The reader's appearance, for an app whose drawing depends on it.
+  appearance: PreviewAppearance | null;
   // The app's version the caller holds (`If-None-Match`).
   ifVersion: number | null;
 };
@@ -32,6 +35,7 @@ export async function callDoor(env: Env, app: App, query: DoorQuery): Promise<Do
   const params = new URLSearchParams({ format: 'svg' });
   if (query.tabId) params.set('tab', query.tabId);
   if (query.code) params.set('code', query.code);
+  if (query.appearance) params.set('appearance', query.appearance);
   const headers = new Headers({ Authorization: `Bearer ${door.key}` });
   if (query.ifVersion !== null) headers.set('If-None-Match', exportEtag(query.ifVersion));
   let res: Response;

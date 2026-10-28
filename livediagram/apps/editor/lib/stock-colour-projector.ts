@@ -8,23 +8,13 @@
 // drawn canvas, a label that redraw sank into what is behind it is drawn in an ink that reads there ("A theme never
 // sinks a label into what is behind it").
 import {
-  resolveStockColours,
-  viewElementInTheme,
+  elementAsSeen,
   withReadableLabelInks,
   type CanvasSurface,
   type Element,
 } from '@livediagram/document';
 
 const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
-
-/** One element as drawn on the canvas's surface. */
-export function elementAsSeen(
-  el: Element,
-  surface: CanvasSurface,
-  themeMap: ReadonlyMap<string, string>,
-): Element {
-  return resolveStockColours(viewElementInTheme(el, themeMap), surface);
-}
 
 export function createStockColourProjector(): (
   elements: Element[],

@@ -37,10 +37,12 @@ beforeEach(() => {
 
 describe('previews on liveworkspace.app', () => {
   it('asks one address on the page’s own origin for every app, cache-busted by its version', () => {
-    expect(previewUrl(item())).toBe('/api/previews/items/p1?v=5');
+    expect(previewUrl(item())).toBe('/api/previews/items/p1?v=5&appearance=light');
     expect(previewUrl(item({ app: 'livedocuments', id: 'd 1' }))).toBe(
-      '/api/previews/items/d%201?v=5',
+      '/api/previews/items/d%201?v=5&appearance=light',
     );
+    // In the reader’s appearance (previews.md): the other half is its own address.
+    expect(previewUrl(item(), 'dark')).toBe('/api/previews/items/p1?v=5&appearance=dark');
     expect(renderPreview(item({ app: 'livedocuments' }), 'card')).not.toBeNull();
     expect(renderPreview(item({ summary: { empty: true } }), 'card')).toBeNull();
     expect(loadPreview(item({ summary: { empty: true } }))).toBeNull();

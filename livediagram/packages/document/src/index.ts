@@ -552,6 +552,8 @@ export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
 export * from './label-backdrop';
+// A tab as one appearance sees it, for exports and the Explorer's previews.
+export * from './tab-as-seen';
 export * from './theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
