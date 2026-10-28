@@ -80,9 +80,8 @@ describe('the comments field', () => {
     expect(itemAsCreate(item({ title: 'B' })).comments).toBeUndefined();
   });
 
-  it('is a card field: on new boards, on Compact and Detailed cards', () => {
+  it('is a card field: on new boards, on Detailed cards', () => {
     expect(DEFAULT_CARD_FIELDS).toContain('comments');
-    expect(CARD_SIZE_FIELDS.compact).toContain('comments');
     expect(CARD_SIZE_FIELDS.detailed).toContain('comments');
     expect(CARD_SIZE_FIELDS.minimal).not.toContain('comments');
   });

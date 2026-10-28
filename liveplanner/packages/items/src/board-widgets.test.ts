@@ -64,7 +64,7 @@ describe('card sizes', () => {
   it('draw only the fields their size can', async () => {
     const { cardFieldsAt } = await import('./board');
     expect(cardFieldsAt('minimal', ['key', 'labels', 'due'])).toEqual(['key', 'due']);
-    expect(cardFieldsAt('compact', ['key', 'labels', 'due'])).toEqual(['key', 'due']);
+    expect(cardFieldsAt('detailed', ['key', 'labels', 'due'])).toEqual(['key', 'labels', 'due']);
     expect(cardFieldsAt(undefined, ['labels', 'description'])).toEqual(['labels', 'description']);
   });
 });

@@ -267,7 +267,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   and **Today** comes back. Today's day is ringed.
 - Each day lists its due cards as **minimal cards**, as a board draws them at Minimal size (the title, up to
   two lines, between its type dot and its fields; done ones faded), where a day has room for one (50 px: a maximised calendar, a
-  Visualisation tab, a tall slot); a calendar is a dense grid of narrow days, so it never draws Compact or Detailed
+  Visualisation tab, a tall slot); a calendar is a dense grid of narrow days, so it never draws Detailed
   faces. On a small calendar, as a
   type-coloured dot and title, done ones muted and struck through. As many as fit and then **+N more**; pressing one
   opens it.
@@ -344,7 +344,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 - A filter bar along its top, then the matching cards in the project's order, each drawn as a board draws it at
   **Detailed** size, in a grid of as many columns at least 240 px wide as fit, 12 px apart, scrolling down. In a slot
-  too narrow for a 240 px column, or under 260 px tall, the cards are **Compact** (columns at least 200 px wide).
+  too narrow for a 240 px column but at least 200 px wide, one Detailed column fills it. Under 200 px wide, or
+  under 260 px tall (too short for a Detailed card), the cards are **Minimal** (columns at least 200 px wide).
   A done card is faded, as on a board. At most 200 are drawn, then "Showing 200 of 340. Add a filter to narrow the
   search." Pressing a card opens it as any view's entry does. The header counts them:
   `12 cards`.

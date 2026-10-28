@@ -36,7 +36,7 @@ describe('listedType', () => {
           name: 'Bug',
           custom: [{ name: 'Severity', kind: 'choice', options: ['S1'], onCard: true }],
           defaultStatus: 'To Do',
-          display: { compact: { belowTitle: ['Severity'] } },
+          display: { minimal: { afterTitle: ['Severity'] } },
           tabs: [{ name: 'Triage', fields: ['Severity'] }],
           detailsLabel: 'Facts',
         },
@@ -51,7 +51,8 @@ describe('listedType', () => {
       tabs: [{ name: 'Triage', fields: ['Severity'] }],
     });
     expect(bug.custom[0]).toMatchObject({ name: 'Severity', onCard: true });
-    expect(bug.display['compact']).toEqual({ belowTitle: ['Severity'] });
+    expect(bug.display['minimal']).toEqual({ afterTitle: ['Severity'] });
+    expect(Object.keys(bug.display)).toEqual(['minimal', 'detailed']);
     expect(bug.fields).not.toContain(bug.custom[0]!.id);
     // A Default State no board names reads as its status; a link field names its target; a currency its code; a
     // Rating its top score.

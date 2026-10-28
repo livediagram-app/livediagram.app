@@ -136,11 +136,11 @@ describe('reshapeBoard', () => {
   it('sets the card size and the card fields by name', () => {
     const r = reshapeBoard(
       setup,
-      { cardSize: 'compact', cardFields: ['Due Date', 'number', 'Priority'] },
+      { cardSize: 'minimal', cardFields: ['Due Date', 'number', 'Priority'] },
       others,
     );
     if (!r.ok) throw new Error(r.message);
-    expect(r.setup.cardSize).toBe('compact');
+    expect(r.setup.cardSize).toBe('minimal');
     expect(r.setup.cardFields).toEqual(['key', 'priority', 'due']);
     const back = reshapeBoard(r.setup, { cardSize: 'detailed' }, others);
     expect(back.ok && back.setup.cardSize).toBeUndefined();

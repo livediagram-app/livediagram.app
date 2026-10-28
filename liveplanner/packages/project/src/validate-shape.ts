@@ -70,10 +70,13 @@ import {
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions.
 const MAX_DATA_ARRAY = 5_000;
-// A Plan card's sizes (PlanCardRef.size): the same three as @liveplanner/items' CARD_SIZES, written out because
+// A Plan card's sizes (PlanCardRef.size): the same two as @liveplanner/items' CARD_SIZES, written out because
 // that package imports this one and its binding may be uninitialised at module load; plan-shapes.test.ts keeps
 // the two equal.
-export const PLAN_CARD_SIZES: readonly string[] = ['minimal', 'compact', 'detailed'];
+export const PLAN_CARD_SIZES: readonly string[] = ['minimal', 'detailed'];
+// The retired Compact size, still stored on older cards and sent by older prompts: valid, never refused, and read as
+// Detailed (docs/specs/026-plan/plan-board.md "The Plan card").
+const PLAN_CARD_RETIRED_SIZES: readonly string[] = ['compact'];
 
 const isStrUpTo = (max: number) => (v: unknown) => typeof v === 'string' && v.length <= max;
 // A web component's row text (docs/specs/009-elements/web-components-and-no-groups.md).
@@ -422,8 +425,9 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
       ((v as { itemId: string }).itemId === '' ||
         isValidItemId((v as { itemId: string }).itemId)) &&
       ((v as { size?: unknown }).size === undefined ||
-        PLAN_CARD_SIZES.includes((v as { size: string }).size)),
-    rule: 'an object { itemId, size? } naming an item, size minimal, compact or detailed',
+        PLAN_CARD_SIZES.includes((v as { size: string }).size) ||
+        PLAN_CARD_RETIRED_SIZES.includes((v as { size: string }).size)),
+    rule: 'an object { itemId, size? } naming an item, size minimal or detailed',
   },
   {
     field: 'planView',

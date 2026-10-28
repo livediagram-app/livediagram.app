@@ -4,6 +4,7 @@
 // holding a collapsible Card Size row, closed until opened as every menu row is, with the same choice a board makes
 // for its cards (CardSizeOptions). One element edit, through PlanContext; absent is Detailed.
 import type { ComponentProps } from 'react';
+import { readCardSize } from '@liveplanner/items';
 import type { ShapeElement } from '@liveplanner/project';
 import { PlanIcon } from '@liveplanner/ui';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
@@ -29,20 +30,22 @@ export function PlanCardMenuSection({
   const plan = usePlan();
   const ref = element.planCard;
   if (!plan || !plan.canEdit || !ref) return null;
+  // An older card's retired Compact size reads as Detailed.
+  const current = readCardSize(ref.size);
   return (
     <MenuFlyoutSection title="Card" icon={<PlanIcon size={16} />} {...flyoutProps}>
       <MenuAccordionSection
         title="Card Size"
-        icon={<CardSizeArt size={ref.size ?? 'detailed'} />}
+        icon={<CardSizeArt size={current} />}
         {...sectionProps('plan-card-size')}
       >
         <InfoNote>
           How much of the card shows. Its card type’s Display sets what shows at each size.
         </InfoNote>
         <CardSizeOptions
-          size={ref.size}
+          size={current}
           onPick={(size) => {
-            if ((ref.size ?? 'detailed') === size) return;
+            if (current === size) return;
             const { size: _drop, ...rest } = ref;
             plan.updateCard(element.id, size === 'detailed' ? rest : { ...rest, size });
             trackSetup('PlanCardSize');

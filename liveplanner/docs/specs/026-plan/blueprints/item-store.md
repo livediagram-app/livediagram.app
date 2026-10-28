@@ -188,7 +188,7 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
   removes the key. `isArchived(item)`.
 - `projectBoard` skips archived items on an ordinary board (columns, unplaced, counts); with `setup.archive`
   it takes only archived items, all into `columns[0]`. `normaliseBoardSetup` keeps `archive: true` only.
-- Preset `archive`: one column `archived` "Archived", Compact cards, widgets count, types, filter.
+- Preset `archive`: one column `archived` "Archived", Detailed cards, widgets count, types, filter.
 - Board drop: onto an Archive board patches `{ set: { archived: true } }` (status kept; its own cards do not
   reorder); off one onto another board is one move carrying `clear: ['archived']` (one write, one undo step). An Archive board refuses
   palette cards and has no Add Card.

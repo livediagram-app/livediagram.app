@@ -109,7 +109,8 @@ Every write takes what a person would say, and stores the ids:
 - `renameColumns` (`{ "To Do": "Backlog" }`) renames columns in place, before `columns` is read: each keeps its
   status, WIP limit, colour, done mark and cards. A name the board lacks, an empty name or one another column has is
   refused.
-- `cardSize` (minimal, compact, detailed) and `cardFields` (the built-in fields its cards show, by the names the
+- `cardSize` (minimal or detailed; `compact`, a retired size an older prompt may still send, is read as detailed,
+  so the answer names detailed) and `cardFields` (the built-in fields its cards show, by the names the
   Cards menu gives them, whole) set what each card draws, as the board's element menu does; each card type's
   display places them, and custom fields follow the display alone. The answer names both.
 - `swimlanes` sets its rows as the board's menu does: none, assignee, type, priority, status (or "column"), or a field
@@ -207,12 +208,11 @@ column "Applied" yet; set it once one does`), and a later `set` gives it one. A 
   - `add` and `set` also take the type's **card face and panel**, as the type editor's Display and Configuration
     tabs set them, every field named as people say it:
     - `display`: per card size, which fields sit in which slot, in order: `{ minimal: { beforeTitle, afterTitle },
-compact: { besideTitle, belowTitle, bottomRight }, detailed: { header, headerEnd, underTitle, footer,
-bottomRight } }`, each a list of card fields (Number, Type, Assignee, Priority, Labels, Estimate, Start, Due,
+detailed: { header, headerEnd, underTitle, footer, bottomRight } }`, each a list of card fields (Number, Type, Assignee, Priority, Labels, Estimate, Start, Due,
       Votes, Checklist, Comments, Description, or a custom field by name). A size given replaces that size's layout;
-      a size left out keeps its own. A field a size cannot draw (Minimal draws Number, Priority, Due and Assignee;
-      Compact also Type, Start, Votes and Comments; Detailed every field) or the type lacks is refused naming what
-      the size draws (`display_invalid`).
+      a size left out keeps its own. A `compact` size (retired) is ignored, as a stored one is. A field a size
+      cannot draw (Minimal draws Number, Priority, Due and Assignee; Detailed every field) or the type lacks is
+      refused naming what the size draws (`display_invalid`).
     - `tabs`: the item panel's tabs, `[{ name, fields }]`, up to 6, fields by name (Title never, it heads the
       panel); `detailsLabel`: what the panel calls Details. `set` replaces them whole when given.
   - `delete` `{ type }`: as the type editor's Delete Type: the type goes and its cards (out of the Trash) move to the

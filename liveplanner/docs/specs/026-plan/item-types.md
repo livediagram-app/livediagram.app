@@ -65,7 +65,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | `detailsLabel`     | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                |
 | `excludedStatuses` | The statuses (ids) cards of this type do not use, up to 64 (a project's boards may name more; the type editor stops at 64). Absent: every status. A status added later is open to every type                                                                                                                        |
 | `defaultStatus`    | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                  |
-| `display`          | What its cards show at each **card size**: `{ minimal?, compact?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default                                                                                                                 |
+| `display`          | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                   |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
   Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are.
@@ -291,7 +291,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## Card display
 
-- A card face is drawn at its board's **card size** (Minimal, Compact or Detailed; [Plan board](plan-board.md#the-board-set-up)).
+- A card face is drawn at its board's **card size** (Minimal or Detailed; [Plan board](plan-board.md#the-board-set-up)).
   What it shows at that size, and where, is its **type's Display** for that size, each field only when the card has
   a value for it. A board has no say over the fields (its old Show on Cards setting, kept in stored set-ups, is
   ignored).
@@ -302,30 +302,26 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Minimal**: **Before the Title** and **After the Title**, on its one line; it can draw Number, Priority, Due Date
     and Assignee. A default type's Minimal card shows none of them by default; a type of the person's own starts
     with its Number Before the Title and its Assignee After the Title (when it has one).
-  - **Compact**: **Beside the Title** (before it), **Below the Title** (one row) and **Bottom Right** (that row's
-    far end); it can draw Number, Type,
-    Assignee, Priority, Start Date, Due Date, Votes and Comments.
   - **Detailed**: **Header** and **Header End** (one row above the title, at its start and its end), **Under the
     Title** (its own lines), **Footer** (one row at the foot) and **Bottom Right** (the footer's far end); it can
     draw every card field. Any field goes in any
     part of a size that draws it; the person chooses where.
-    A type's Display is, per size, which fields sit in which slot (`display: { compact: { lead: ['key'], row: ['due']
+    A type's Display is, per size, which fields sit in which slot (`display: { detailed: { head: ['key'], foot: ['due']
 } }`); a field in no slot is not shown.
 - **Defaults**, for a size a type has not set:
 
-  | Type                                        | Minimal    | Compact                                                       | Detailed                                                                                          |
-  | ------------------------------------------- | ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-  | Project                                     | title only | Number, Type, Assignee, Priority, Start, Due, Comments        | Number, Type, Assignee, Priority, Labels, Start, Due, Checklist, Comments, Description            |
-  | Task                                        | title only | Number, Type, Assignee, Priority, Due, Comments               | Number, Type, Assignee, Priority, Labels, Estimate, Due, Checklist, Comments, Description, Parent |
-  | Note                                        | title only | Type, Votes, Comments                                         | Type, Votes, Comments, Description                                                                |
-  | Idea                                        | title only | Type, Votes, Comments                                         | Type, Labels, Votes, Comments, Description                                                        |
-  | Action                                      | title only | Number, Type, Assignee, Due, Comments                         | Number, Type, Assignee, Due, Checklist, Comments, Description                                     |
-  | Any other (Bug, Story, a type someone adds) | title only | Number, Type, Assignee, Priority, Start, Due, Votes, Comments | every card field                                                                                  |
+  | Type                                        | Minimal    | Detailed                                                                                          |
+  | ------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------- |
+  | Project                                     | title only | Number, Type, Assignee, Priority, Labels, Start, Due, Checklist, Comments, Description            |
+  | Task                                        | title only | Number, Type, Assignee, Priority, Labels, Estimate, Due, Checklist, Comments, Description, Parent |
+  | Note                                        | title only | Type, Votes, Comments, Description                                                                |
+  | Idea                                        | title only | Type, Labels, Votes, Comments, Description                                                        |
+  | Action                                      | title only | Number, Type, Assignee, Due, Checklist, Comments, Description                                     |
+  | Any other (Bug, Story, a type someone adds) | title only | every card field                                                                                  |
 
-  Each default places its fields where they read best: Number and Type at the start (Beside the Title, or the
-  Header), Priority at the Header End, Parent, Description and Labels Under the Title, the Assignee at the
-  **Bottom Right** (Compact and Detailed; last After the Title on Minimal), the rest Below the Title or in the
-  Footer. A built-in
+  Each default places its fields where they read best: Number and Type in the Header, Priority at the Header End,
+  Parent, Description and Labels Under the Title, the Assignee at the **Bottom Right** (last After the Title on
+  Minimal), the rest in the Footer. A built-in
   type's defaults are read from code by its id, so a project that stored its catalogue before Display
   existed gets them too.
 
@@ -431,7 +427,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     after **None** (left out for a ready-made type whose named state the project has: that state shows picked until
     another is chosen, and a pick is saved as picked), with a line saying
     "Cards made outside a board start here; a card added to a board takes that column's state."
-  - **Display**: the card sizes as a segmented control (**Minimal**, **Compact**, **Detailed**; Compact to start; its
+  - **Display**: the card sizes as a segmented control (**Minimal**, **Detailed**; Detailed to start; its
     pill slides to the chosen size, as the Share dialog's Valid does),
     then the card itself, editable in place: a real card of this type at that size, drawn large (1.4 times, and
     wider than, a board's: 360 wide, so a long title has room) as a board draws it, across the tab, from a sample card (its title "Example {Name}", a person, High priority, due in

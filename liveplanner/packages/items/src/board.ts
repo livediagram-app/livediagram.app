@@ -83,17 +83,22 @@ export function isCustomCardField(field: string): field is CustomCardField {
   return CUSTOM_FIELD_ID_PATTERN.test(field);
 }
 
-// How much of each card a board draws (docs/specs/026-plan/plan-board.md "The board set-up"): the title
-// only, one line, or every field it shows. Absent is Detailed.
-export const CARD_SIZES = ['minimal', 'compact', 'detailed'] as const;
+// How much of each card a board draws (docs/specs/026-plan/plan-board.md "The board set-up"): one line, or
+// every field it shows. Absent is Detailed.
+export const CARD_SIZES = ['minimal', 'detailed'] as const;
 export type CardSize = (typeof CARD_SIZES)[number];
+
+// A stored or sent card size as it reads now: Minimal, else Detailed. The retired Compact size (`'compact'`, still
+// in older boards, Plan card elements and agent prompts) reads as Detailed, as does anything unknown.
+export function readCardSize(input: unknown): CardSize {
+  return input === 'minimal' ? 'minimal' : 'detailed';
+}
 
 // The fields each card size can draw (docs/specs/026-plan/plan-board.md "The board set-up"): a field the
 // board shows outside its size's set is kept but not drawn, and its tile in the Cards menu says so.
 export const CARD_SIZE_FIELDS: Readonly<Record<CardSize, readonly CardField[]>> = {
   // Minimal's one line can carry these beside the title (a type's Display picks them; none by default).
   minimal: ['key', 'priority', 'due', 'assignee'],
-  compact: ['key', 'type', 'assignee', 'priority', 'start', 'due', 'votes', 'comments'],
   detailed: CARD_FIELDS,
 };
 
@@ -805,9 +810,8 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(input['archive'] === true ? { archive: true } : {}),
     ...(input['allCards'] === true ? { allCards: true } : {}),
     ...(readAddTypes(input['addTypes']) ? { addTypes: readAddTypes(input['addTypes']) } : {}),
-    ...(input['cardSize'] === 'minimal' || input['cardSize'] === 'compact'
-      ? { cardSize: input['cardSize'] }
-      : {}),
+    // Detailed is stored as absent; a retired Compact board reads as Detailed.
+    ...(readCardSize(input['cardSize']) === 'minimal' ? { cardSize: 'minimal' as const } : {}),
     hideWriting: input['hideWriting'] === true,
     ...(input['fillTab'] === true ? { fillTab: true } : {}),
     ...((LINKED_RECORD_KINDS as readonly unknown[]).includes(input['collects'])

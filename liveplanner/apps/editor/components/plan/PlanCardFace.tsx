@@ -2,9 +2,9 @@
 
 import type { ReactNode } from 'react';
 // One item's card face (docs/specs/026-plan/plan-board.md "What the board shows"), shared by the board's
-// cards and the Plan card element, at the board's card size: Minimal (the title), Compact (the type's glyph and
-// title over one row of pills) or Detailed (the type chip, number and priority signal; the title; the project;
-// the description; custom fields; label chips; then a footer of pills and who has it). The type's colour fills
+// cards and the Plan card element, at the board's card size: Minimal (the title) or Detailed (the type chip,
+// number and priority signal; the title; the project; the description; custom fields; label chips; then a footer
+// of pills and who has it). The type's colour fills
 // the card's number (a dot on Minimal, which shows none); the card lifts a little under the pointer. Face-down while its board hides writing;
 // ringed in someone's colour while they drag or read it. The parts live in plan-card-parts.tsx.
 import { NewResponseMark } from '@/components/forms/NewResponseMark';
@@ -77,10 +77,6 @@ export type CardFaceEdit = {
   slot: (slot: CardSlot, bits: ReactNode[]) => ReactNode;
   bit: (field: CardField, node: ReactNode) => ReactNode;
 };
-
-// How far the Display editor's dotted box (1 px border, 2 px padding) and chip (2 px padding) lower a chip's
-// middle: a Compact title beside them drops as much, so its first line stays level with them.
-const EDIT_CHIP_INSET_PX = 5;
 
 // The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
 const FRAME =
@@ -270,17 +266,10 @@ export function PlanCardFace({
       .filter(Boolean);
   // A slot as drawn: its bits, or, in the editor, its dotted box (drawn even when empty).
   const zone = (slot: CardSlot, bits: ReactNode[]) => (edit ? edit.slot(slot, bits) : bits);
-  // `lineHeight` matches the 20 px chips beside a Compact title, so its first line shares their middle; `inset`
-  // lowers it by as much as the editor's dotted box and chip padding raise the chips (EDIT_CHIP_INSET_PX).
-  const titleText = (lines: 2 | 3, px: number, lineHeight?: number, inset = 0) => (
+  const titleText = (lines: 2 | 3, px: number) => (
     <span
-      className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold ${lineHeight ? '' : 'leading-snug'}`}
-      style={{
-        color: palette.text,
-        fontSize: px,
-        ...(lineHeight ? { lineHeight: `${lineHeight}px` } : {}),
-        ...(inset ? { paddingTop: inset } : {}),
-      }}
+      className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold leading-snug`}
+      style={{ color: palette.text, fontSize: px }}
     >
       {title}
     </span>
@@ -301,41 +290,6 @@ export function PlanCardFace({
         >
           {zone('trail', slotBits('trail'))}
         </span>
-      </div>
-    );
-  }
-
-  // Compact: the title with its Beside slot, over one row (Below the Title).
-  if (size === 'compact') {
-    const row = slotBits('row');
-    // The Bottom Right slot: the row's far end (the assignee, by default).
-    const trail = slotBits('trail');
-    return (
-      <div className={`${FRAME} flex-col gap-1.5 px-3 py-2`} style={frame}>
-        {presenceTag}
-        <div className="flex items-start gap-1.5">
-          {edit
-            ? zone('lead', slotBits('lead'))
-            : slotBits('lead').map((bit, i) => (
-                <span key={i} className="flex">
-                  {bit}
-                </span>
-              ))}
-          {ownColour ? <ColourDot colour={ownColour} className="mt-1.5" /> : null}
-          {titleText(2, 13, 20, edit ? EDIT_CHIP_INSET_PX : 0)}
-          {flag}
-        </div>
-        {row.length || trail.length || edit ? (
-          <div
-            className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium"
-            style={{ color: palette.muted }}
-          >
-            {zone('row', row)}
-            {trail.length || edit ? (
-              <span className="ml-auto flex items-center gap-1.5">{zone('trail', trail)}</span>
-            ) : null}
-          </div>
-        ) : null}
       </div>
     );
   }

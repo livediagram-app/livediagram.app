@@ -223,7 +223,13 @@ describe('the Display tab', () => {
       />,
     );
     fireEvent.click(screen.getByRole('tab', { name: 'Display' }));
-    expect(screen.getByRole('group', { name: 'Compact card' })).toBeTruthy();
+    // Detailed to start, and only Minimal and Detailed to pick (docs/specs/026-plan/item-types.md "Editing a type").
+    expect(screen.getByRole('group', { name: 'Detailed card' })).toBeTruthy();
+    expect(
+      screen
+        .getAllByRole('radio', { name: /^(Minimal|Compact|Detailed)$/ })
+        .map((r) => r.textContent),
+    ).toEqual(['Minimal', 'Detailed']);
     fireEvent.click(screen.getByRole('radio', { name: 'Minimal' }));
     // An available field, pressed, asks where it goes.
     fireEvent.keyDown(screen.getByRole('button', { name: 'Due Date' }), { key: 'Enter' });

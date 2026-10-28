@@ -1,6 +1,6 @@
 // A Plan card face in exports and api or MCP images (docs/specs/026-plan/plan-board.md "Both elements everywhere"),
 // drawn from its type's Display at the board's card size as the canvas draws it (docs/specs/026-plan/item-types.md
-// "Card display"): Minimal one line, Compact a title over one row, Detailed a header, the title on up to three lines,
+// "Card display"): Minimal one line, Detailed a header, the title on up to three lines,
 // what sits under it (custom fields, labels, the description) and a footer. A field shows only when the card has a
 // value for it. The face measures itself, so a board stacks cards as tall as they need.
 
@@ -259,26 +259,6 @@ export function planCardFace(
     });
     rightRow(trail, x + w - PAD, y + 8);
     h = Math.max(36, 16 + lines.length * TITLE_LINE);
-  } else if (size === 'compact') {
-    const lead = bits('lead');
-    const leadW = lead.reduce((s, b) => s + bitWidth(b) + BIT_GAP, 0);
-    row(lead, x + PAD, y + 9, x + PAD + leadW);
-    const lines = titleLines(2, w - PAD * 2 - leadW);
-    lines.forEach((line, i) => {
-      if (!measureOnly)
-        out.push(
-          faceText(x + PAD + leadW, y + 23 + i * TITLE_LINE, line, {
-            size: TITLE_PX,
-            color: p.text,
-            weight: 600,
-          }),
-        );
-    });
-    let cy = y + 10 + lines.length * TITLE_LINE + 4;
-    const trail = bits('trail');
-    const trailW = rightRow(trail, x + w - PAD, cy);
-    cy += Math.max(row(bits('row'), x + PAD, cy, x + w - PAD - trailW), trail.length ? ROW_H : 0);
-    h = cy - y + 8;
   } else {
     let cy = y + 9;
     const headEnd = bits('headEnd');

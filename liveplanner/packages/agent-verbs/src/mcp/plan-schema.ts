@@ -5,12 +5,21 @@ import { z } from 'zod';
 import {
   CALCULATIONS,
   CALCULATION_LABELS,
+  CARD_SIZES,
   CUSTOM_FIELD_KINDS,
   PLAN_BOARD_PRESET_IDS,
   PLAN_COLUMNS_MAX,
   PLAN_GLYPH_IDS,
   PLAN_TYPE_COLOURS,
+  readCardSize,
 } from '@liveplanner/items';
+
+// A board's card size: Minimal or Detailed. The retired `compact`, which older prompts still send, reads as detailed
+// (docs/specs/026-plan/plan-agents.md "Changing a board"); the schema offers only the two.
+const cardSizeArg = z.preprocess(
+  (v) => (typeof v === 'string' && v.trim().toLowerCase() === 'compact' ? readCardSize(v) : v),
+  z.enum(CARD_SIZES),
+);
 
 const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
 const projectId = z.string().describe('The plan (from find_projects).');
@@ -140,12 +149,11 @@ export const changeBoardShape = {
         'boards use shares their column; any other name is a new, empty column. A column left out leaves its ' +
         'cards off this board.',
     ),
-  cardSize: z
-    .enum(['minimal', 'compact', 'detailed'])
+  cardSize: cardSizeArg
     .optional()
     .describe(
-      'How much of each card it draws: minimal (one line), compact (a title over one row), detailed (every ' +
-        'field, the title on up to three lines).',
+      'How much of each card it draws: minimal (one line) or detailed (every field, the title on up to three ' +
+        'lines).',
     ),
   cardFields: z
     .array(z.string())
@@ -293,16 +301,6 @@ const displayArg = z
       .object({ beforeTitle: fieldList.optional(), afterTitle: fieldList.optional() })
       .optional()
       .describe('One line: Number, Priority, Due Date and Assignee can sit beside the title.'),
-    compact: z
-      .object({
-        besideTitle: fieldList.optional(),
-        belowTitle: fieldList.optional(),
-        bottomRight: fieldList.optional(),
-      })
-      .optional()
-      .describe(
-        'The title over one row: Number, Type, Assignee, Priority, Start Date, Due Date, Votes, Comments.',
-      ),
     detailed: z
       .object({
         header: fieldList.optional(),
@@ -596,7 +594,7 @@ export const changeBoardOutput = {
   takes: z
     .union([z.array(z.string()), z.literal('every type')])
     .describe('The card types it shows now.'),
-  cardSize: z.enum(['minimal', 'compact', 'detailed']).describe('How much of each card it draws.'),
+  cardSize: z.enum(CARD_SIZES).describe('How much of each card it draws.'),
   cardFields: z.array(z.string()).describe('The built-in fields its cards show, by name.'),
   sortBy: z
     .array(z.string())

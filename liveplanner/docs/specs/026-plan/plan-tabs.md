@@ -34,8 +34,8 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   Tab switch anywhere (not on Setup Board, Board Setup or Sheet Settings; a flag stored on an old board or Sheet still
   reads), no Maximise or Restore, no Focus and no Add to Slides, and Escape restores nothing. Its header holds the
   top row where there is room ([The header holds the top row](plan-board.md#maximised-board)).
-- A Board tab's board fills the screen, so it starts with its cards **Detailed**, whatever its preset uses on a canvas
-  (a Kanban's Compact): from Start Planning and from a template alike. Card Layout changes it as ever.
+- A Board tab's board fills the screen, so it starts with its cards **Detailed**, whatever its preset uses on a canvas:
+  from Start Planning and from a template alike. Card Layout changes it as ever.
 - A Board, Sheet or Dashboard tab shows no palette, as nothing in Plan does ([No palette](plan-mode.md#no-palette)); a
   Sheet tab's toolbar sits in the top row beside the menu box, in a card of its own
   ([Sheet](../029-sheets/sheet.md#sheet-tab)).

@@ -75,8 +75,8 @@ export const PLAN_BOARD_PRESETS: Readonly<
       hideWriting: false,
     },
   },
-  // A to-do list of Actions (docs/specs/026-plan/plan-board.md "The To-do List board"): To Do and Done, Compact
-  // cards (a dense list of short items) showing who has each and when it is due.
+  // A to-do list of Actions (docs/specs/026-plan/plan-board.md "The To-do List board"): To Do and Done, Detailed
+  // cards showing who has each, when it is due and its checklist.
   todo: {
     label: 'To-do List',
     setup: {
@@ -85,7 +85,6 @@ export const PLAN_BOARD_PRESETS: Readonly<
       doneColumnId: 'done',
       swimlaneBy: 'none',
       cardFields: ['assignee', 'due', 'checklist'],
-      cardSize: 'compact',
       widgets: ['progress', 'due'],
       addTypes: ['action'],
       hideWriting: false,
@@ -188,7 +187,6 @@ export const PLAN_BOARD_PRESETS: Readonly<
       columns: [statusColumn('all', 'All Cards')],
       swimlaneBy: 'status',
       cardFields: ['key', 'type', 'assignee', 'priority', 'due'],
-      cardSize: 'compact',
       allCards: true,
       widgets: ['count', 'types', 'filter'],
       hideWriting: false,
@@ -202,7 +200,6 @@ export const PLAN_BOARD_PRESETS: Readonly<
       columns: [statusColumn('archived', 'Archived')],
       swimlaneBy: 'none',
       cardFields: ['key', 'type', 'assignee', 'labels'],
-      cardSize: 'compact',
       archive: true,
       widgets: ['count', 'filter'],
       hideWriting: false,

@@ -1380,7 +1380,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CardSize": {
     "enum": [
       "minimal",
-      "compact",
       "detailed"
     ],
     "type": "string"
@@ -5217,60 +5216,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "display": {
         "additionalProperties": false,
         "properties": {
-          "compact": {
-            "additionalProperties": false,
-            "properties": {
-              "body": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "foot": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "footEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "head": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "headEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "lead": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "row": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "trail": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              }
-            },
-            "type": "object"
-          },
           "detailed": {
             "additionalProperties": false,
             "properties": {
@@ -5305,12 +5250,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "type": "array"
               },
               "lead": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "row": {
                 "items": {
                   "$ref": "#/components/schemas/CardField"
                 },
@@ -5359,12 +5298,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "type": "array"
               },
               "lead": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "row": {
                 "items": {
                   "$ref": "#/components/schemas/CardField"
                 },
@@ -7025,7 +6958,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "size": {
         "enum": [
           "minimal",
-          "compact",
           "detailed"
         ],
         "type": "string"

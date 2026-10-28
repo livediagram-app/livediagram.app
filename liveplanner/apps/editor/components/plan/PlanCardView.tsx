@@ -10,7 +10,7 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { usePlan } from './PlanContext';
 import { PlanCardFace } from './PlanCardFace';
 import { planOwnColours, planPalette } from './plan-palette';
-import { DEFAULT_CARD_FIELDS, itemAccessibleName } from '@liveplanner/items';
+import { DEFAULT_CARD_FIELDS, itemAccessibleName, readCardSize } from '@liveplanner/items';
 
 export function PlanCardView({
   element,
@@ -79,7 +79,7 @@ export function PlanCardView({
         item={item}
         palette={palette}
         fields={DEFAULT_CARD_FIELDS}
-        size={element.planCard?.size}
+        size={readCardSize(element.planCard?.size)}
         presence={plan?.presence.get(item.id)}
       />
     </div>

@@ -317,7 +317,7 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
     ).toEqual([`+ Y (y); ${DEFAULT_STATUS_PENDING('Doing')}`]);
   });
 
-  // The benchmark's P4: "A compact Post card cannot show "Owner". It can show: … Owner".
+  // The benchmark's P4: "A Post card cannot show "Owner". It can show: … Owner".
   it('shows a custom field named Owner on the card, not the Assignee', () => {
     const r = ok(
       applyCardTypeChanges(
@@ -327,7 +327,7 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
             op: 'add',
             name: 'Post',
             custom: [{ name: 'Owner', kind: 'text', onCard: true }],
-            display: { compact: { besideTitle: ['Type'], belowTitle: ['Owner'] } },
+            display: { detailed: { header: ['Type'], underTitle: ['Owner'] } },
           },
         ],
         statuses,

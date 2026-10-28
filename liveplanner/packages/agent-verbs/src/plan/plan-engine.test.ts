@@ -711,7 +711,7 @@ describe('changeBoard', () => {
       {
         board: 'Sprint',
         swimlanes: 'Severity',
-        cardSize: 'compact',
+        cardSize: 'minimal',
         cardFields: ['Number'],
         doneColumn: 'Done',
         renameColumns: { 'To Do': 'Ready' },
@@ -719,14 +719,14 @@ describe('changeBoard', () => {
       'mcp',
     );
     if (!r.ok) throw new Error(r.message);
-    expect(r).toMatchObject({ cardSize: 'compact', cardFields: ['Number'] });
+    expect(r).toMatchObject({ cardSize: 'minimal', cardFields: ['Number'] });
     const setup = (
       seen[0]!.body as { operations: { fields: { planBoard: Record<string, unknown> } }[] }
     ).operations[0]!.fields.planBoard;
     expect(setup).toMatchObject({
       swimlaneBy: 'field',
       swimlaneField: 'f-sev',
-      cardSize: 'compact',
+      cardSize: 'minimal',
     });
     expect(r.columns).toEqual([
       { name: 'Ready', status: 'todo~x' },

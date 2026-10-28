@@ -33,7 +33,7 @@ describe('boardLook', () => {
   });
 
   it('gives a covering desktop board five slots and a body that scrolls under a finger', () => {
-    const look = boardLook(place({ covering: true }), 'compact');
+    const look = boardLook(place({ covering: true }), 'minimal');
     expect(look).toMatchObject({ columns: 'maximised', container: true, snap: false });
     expect(look.touch).toBe('touch-pan-x touch-pan-y');
   });

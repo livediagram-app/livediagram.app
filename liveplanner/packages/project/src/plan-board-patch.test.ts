@@ -40,9 +40,9 @@ describe('planBoardPatch', () => {
     expect(planBoardPatch(base, after)).toEqual({
       set: { title: 'Sprint', swimlaneBy: 'assignee' },
     });
-    const compact = { ...base, cardSize: 'compact' as const };
+    const minimal = { ...base, cardSize: 'minimal' as const };
     expect(base.cardSize).toBeUndefined();
-    expect(planBoardPatch(compact, base)).toEqual({ clear: ['cardSize'] });
+    expect(planBoardPatch(minimal, base)).toEqual({ clear: ['cardSize'] });
   });
 
   // docs/specs/026-plan/plan-board.md "Fill Tab": the setting travels as a set-up field like any other.

@@ -135,19 +135,19 @@ describe('the Layout step', () => {
     const out = withSetupLayout(kanban, {
       swimlaneBy: 'field',
       swimlaneField: 'labels',
-      cardSize: 'compact',
+      cardSize: 'minimal',
       fillTab: true,
     });
     expect(out).toMatchObject({
       swimlaneBy: 'field',
       swimlaneField: 'labels',
-      cardSize: 'compact',
+      cardSize: 'minimal',
       fillTab: true,
     });
     expect(setupLayoutOf(out)).toEqual({
       swimlaneBy: 'field',
       swimlaneField: 'labels',
-      cardSize: 'compact',
+      cardSize: 'minimal',
       fillTab: true,
     });
     const back = withSetupLayout(out, { swimlaneBy: 'none', cardSize: 'detailed', fillTab: false });
