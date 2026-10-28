@@ -274,6 +274,11 @@ Top to bottom:
      design); hovering the name underlines it (dotted) and shows a pencil, the name's own width, never a block of
      fill. The name becomes a text field in place: Enter or leaving it saves, Escape keeps the old name, an empty name
      keeps the old one. For anyone else it is plain text.
+   - **A design kept only in this browser** (the index never holds it) still has its card, drawn from This
+     Browser's list: livedesign's picture of a local design, the **This Browser** pill, "Updated <relative time>",
+     its name renamed by the editor's own rename (this browser's store; nothing goes to the index), and This
+     Browser's menu (Open, Sync Design signed in, Delete Design asked first)
+     ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address) "The Explorer on each app's address": the editors' panel).
 3. **The rail and the pane**, side by side on a desktop: the rail on the left lists the sections, the pane on the right
    shows the picked one.
 4. **The footer**: the product's surfaces as links, one row: **Home** (the landing page), **Explorer** (the Explorer
@@ -282,6 +287,13 @@ Top to bottom:
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Design card ("Keep your work. A free
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
    line), dismissible as the sign-in notice is. Minimal chrome drops it.
+
+**Size and scrim.** On a desktop or tablet the panel is up to **60rem** wide (kept 1rem inside the window) and
+**56rem** tall (kept on the canvas below the menu button, 24 px short of its bottom), the rail and pane filling the
+rest; the pane's preview cards run three across once it is 42rem wide. A dimmed **scrim** (translucent slate, a fade
+where motion is allowed) sits behind it on every screen size, over the canvas and its chrome and under the panel and
+its menus and dialogs; a press on it closes the panel and focus goes back to the menu button, as Esc does. The rail's
+**New Design** is 36 px tall (44 px on touch), never squeezed.
 
 While the panel is open, the trays that hang from the palette strip (a tab's "is empty" tray, the mode banners) step
 aside: the panel reaches under the strip and they would cover its header.
