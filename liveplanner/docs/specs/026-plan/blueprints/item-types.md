@@ -162,6 +162,58 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   then **Fields** (`data-tour-id="card-type-fields"`, set off by a top border: the lead line, then
   `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
   problem or a custom field problem flag `configuration`; a left-out status problem flags `statuses`.
+- **Add Field** (spec "Fields and Tabs": Add Field). `ItemTypeLayoutEditor` opens it in an `AnchoredPopover`
+  (`ADD_FIELD_POPOVER_PX` 384, `name="Add Field"`, `initialFocus` `'panel'` under `(pointer: coarse)` else
+  `'first'`, `onEscape` handed to the form), holding `NewFieldForm` (`NewFieldForm.tsx`), which keeps the step
+  (`{ step: 'pick' } | { step: 'shape', kind }`), the search text (kept across the steps) and the open group, and
+  answers Escape (`escape()`: shape → pick, then a typed search cleared, then false so the popover closes).
+  - Pure data and matching in `add-field-kinds.ts`: `KIND_GROUPS` (`{ id, label, kinds }[]`: `text` "Text & links"
+    text, longtext, link, email; `numbers` "Numbers & dates" number, currency, rating, date; `choices` "Choices"
+    choice, multichoice, checkbox; `cards` "Linked cards" card, calculated; every `CUSTOM_FIELD_KINDS` member once,
+    test-locked), `KIND_DESCRIPTIONS` and `KIND_ALIASES` (`Record<CustomFieldKind, …>`, the spec's words),
+    `searchKey(q)` (trimmed, lower-cased, runs of spaces one), `kindMatches(kind, q)` (the whole query a substring of
+    the label, the description or an alias, else every word of it a substring of one of them), `builtInMatches(id,
+q)` (its `BUILT_IN_FIELD_LABELS` name holds the query) and `kindReadiness(field)` (`null` when ready, else
+    `'name' | 'options' | 'links'`, in that order) with `READINESS_HINT`.
+  - Step 1 is `AddFieldPicker.tsx`: a `sticky top-0` header (search `type="search"`, `aria-label="Search fields"`, a
+    close `IconButton` "Close" calling `onCancel`), then `section`s headed by `h3` **Ready-made**
+    (`data-ready-made`, a `grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))]` of tile buttons, icon from
+    `fieldIconOf(id, undefined)`) and **Your own field**. Each group is an `h4` holding the header button
+    (`aria-expanded`, `aria-controls` its list's id, its name, a count pill, a chevron rotating 180° when open,
+    `motion-safe:transition`), and the list a `ul` of kind buttons (`aria-label` the kind's name, `aria-describedby`
+    its description, `data-kind`). Searching (`searchKey(q)` non-empty), every group with a match renders open and
+    the headers are not toggles (`aria-expanded` true, `aria-disabled`); a group with none is not rendered. No
+    match at all: the empty state, `role="status"`. A visually hidden `aria-live="polite"` line says "N fields match"
+    while searching. Arrow keys: the root's `onKeyDown` takes ↑ ↓ Home End over its `[data-nav]` elements in DOM
+    order (the search, the tiles, the headers, the kinds), `preventDefault`, focusing the next; Enter in the search
+    with a query presses the first `[data-pick]`. `canAddCustom` false renders `CUSTOM_MAX_NOTE` in place of the
+    groups.
+  - Step 2 is `AddFieldShape.tsx`, a `<form>` (`aria-label` "New {Kind} field"; `onSubmit` adds when ready, so Enter
+    in Name submits; option rows and selects take their own Enter): a header with the back button (`ChevronLeft`,
+    "All kinds") and the pill (`<span><span class="sr-only">Kind: </span>{label}</span>` with its icon); `TextInput`
+    labelled "Name" (`autoFocus`, `maxLength={CUSTOM_FIELD_LABEL_MAX}`); the kind's controls (`ChoiceOptionsEditor`,
+    `RatingScaleSelect`, `CurrencySelect`, `LinksToPicker`, `CalculationSelect`, each with a visible label);
+    `RequiredSwitch`; `CustomFieldPreview`; then a `sticky bottom-0` footer: the submit `Button` (full width,
+    `PlusIcon`, "Add {name}" truncated, else "Add {Kind} Field", `disabled` until `kindReadiness` is null,
+    `aria-describedby` the hint line under it). What it hands `onAddCustom` is today's: the trimmed label, and the
+    kind's own settings only (options, scale, link types, currency, calculation, required where `canBeRequired`).
+    Back focuses `[data-kind="<kind>"]` once step 1 renders (its group opened when not searching).
+  - `ChoiceOptionsEditor.tsx`: rows held as strings (one `''` to start), handed up cleaned by `optionsFrom(rows)`
+    (trimmed to `CUSTOM_CHOICE_OPTION_MAX`, blanks and case-insensitive repeats dropped, at most
+    `CUSTOM_CHOICE_OPTIONS_MAX`). Row inputs `aria-label="Option {n}"`; remove `IconButton` "Remove option {n}"
+    (the last row is cleared, not removed); Enter inserts a row after and focuses it (`preventDefault`); Backspace
+    in an empty row (not the only one) removes it and focuses the one before; a paste whose text holds a line break
+    is taken (`preventDefault`) and split into lines (blank ones dropped): an empty row takes the first, the rest
+    are inserted after, capped at `CUSTOM_CHOICE_OPTIONS_MAX` rows. **Add an option** is disabled at the cap.
+    `CustomFieldForm` (editing an existing field) keeps its textarea.
+  - `CustomFieldPreview` (`CustomFieldKindParts.tsx`) draws a card: `figure` "Preview" (caption), over a white
+    rounded bordered card ("Example card", `text-[13px] font-medium`) holding the `ItemDetailsRow` (its `required`
+    mark when Required).
+  - `CustomFieldKindTiles` is removed (nothing else used it).
+  - Touch: every button and field in it carries `pointer-coarse:min-h-11`. Steps enter with `motion-safe:animate-card-rise`.
+  - `AnchoredPopover` (`@liveworkspace/workbench`) gains `initialFocus?: 'first' | 'panel'` (default `'first'`, as
+    before): `'panel'` focuses the panel itself (`tabIndex={-1}`, no ring), so a touch screen opens it without a
+    keyboard while focus is still inside the dialog.
 - Show Me steps (`card-type-tour-steps.ts`): `general` shows `configuration` and focuses the Name input (focus
   scrolls it into view); `fields` shows `configuration` and asks for `card-type-fields` at the panel's top
   (`revealAt: 'start'`: the tour engine's `revealInScrollers` from `tour-reveal.ts` scrolls it there, instant under
@@ -254,7 +306,12 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 - Panel rows are focusable list items named "<Name>, N items"; Enter or Space opens the editor. Swatches and
   glyphs are radio groups with names ("Cyan", "Chat glyph"). The editor's problems are named in text beside
   Save. Copy: "Card Types", "+ Add Type", "Add Default Types", its confirm "Add {list} to this project’s card types? They go after the ones you have, and nothing you have changes." with "Add Types", "New Card Type", "Edit Card Type",
-  "+ Add Field", "Built-In Fields", "New Custom Field", "Add Custom Field", "Show on card", "Delete",
+  "+ Add Field", "Search fields", "Search fields, like money or date", "Ready-made", "Your own field", the four
+  group names, the thirteen descriptions, "No matches for “…”", "Try a word like money, date or parent.",
+  "This type holds the most custom fields it can (12). Remove one to add another.", "All kinds", "Kind: {Kind}",
+  "Name", "Field name", "Options", "Add an option", "or paste a list", "Option {n}", "Remove option {n}", "Scale",
+  "Currency", "Calculation", "Required", "Preview", "Example card", "Add {Name}", "Add {Kind} Field", "Name the
+  field to add it.", "Add at least one option.", "Pick a card type it links to.", "Show on card", "Delete",
   "Keep as Item".
 
 ## Observability
@@ -287,6 +344,10 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | Required fields: api refuses a create or a clear          | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
 | Required fields: agents list, set, refuse                 | `packages/agent-verbs/src/verbs/plan-verbs.test.ts`, `packages/items/src/type-changes.test.ts`                                           |
 | Required fields: New {Type} dialog, type editor switch    | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                         |
+| Add Field: groups, descriptions, aliases, readiness       | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                    |
+| Add Field: search, accordion, Ready-made, keys, shape     | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                      |
+| Add Field: option rows, Enter, Backspace, paste           | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                               |
+| Add Field: opened from a group, lands there               | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                         |
 | Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |
 | Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                               |
 | Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                                      |
@@ -306,6 +367,7 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | `ITEM_TYPES_SAVE_ATTEMPTS`, `CARD_TYPES_SAVE_ATTEMPTS` | 3      | Spec "Storage and sync": a change made again a few times, then refused; 1 to 5 |
 | `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Far more than a board's columns; keeps the catalogue small                     |
 | `PLAN_TYPE_COLOURS`                                    | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
+| `ADD_FIELD_POPOVER_PX`                                 | 384    | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
 
 ## Default and ready-made types
 
