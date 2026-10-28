@@ -875,10 +875,17 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   peeking in on either side, and a fling moves one column, never several (mandatory snapping, each column a stop).
   The snapping is sideways only: it never moves the board up or down, and scrolling down a column glides freely,
   never pulled back to the top. Each column's snap point is a plain marker spanning the column's full height, not its
-  sticky header, so scrolling down moves no snap point and the browser has nothing to re-snap mid-scroll. The body
+  sticky header, so scrolling down moves no snap point and the browser has nothing to re-snap mid-scroll. (The jank
+  this replaces had two causes, both fixed at the root: the snap points were the sticky headers, and every card was
+  `touch-none`, so on a column that is mostly cards a finger could scroll only in the gaps between them.) The body
   keeps its scroll to itself (overscroll contained) while it covers the canvas, so reaching its end never drags the
   page under it; in a Dashboard slot only its sideways scroll is contained, so scrolling down past its end still
   scrolls the Dashboard.
+- **A finger on a card scrolls** that board as empty space does (across and down); held still for
+  `CARD_HOLD_TO_DRAG_MS` first, it picks the card up and carries it, the board no longer scrolling under it. A finger
+  that moves before the hold is up is a scroll: the card neither moves nor opens. A tap still opens the card, and held
+  still for `LONG_PRESS_MS` it opens the card's menu. Elsewhere (a desktop, a tablet, a board on a phone's canvas) a
+  finger on a card picks it up at once, as below.
 - **A tap on a column's empty space** (its background, between and below its cards, or its header outside the cog) on
   that board glides the column to the centre, as a tap on a page does in Pages; across only, never up or down.
   Cards, buttons, fields and links keep their own taps. Under reduced motion it jumps there instead of gliding.
