@@ -6,7 +6,7 @@
 // its group by its handle (or Move Up and Move Down in its ⋯ menu), to another group and off from that menu;
 // Title and Status stay. Each
 // group adds a field into itself. Edits a draft; the type editor saves it.
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { FieldRow } from './ItemTypeFieldRow';
@@ -31,8 +31,8 @@ import {
   CustomFieldForm,
   DASHED_ADD_BUTTON,
   ICON_BUTTON,
-  NewFieldForm,
 } from './ItemTypeFieldForms';
+import { NewFieldForm } from './NewFieldForm';
 import {
   addField,
   addTab,
@@ -50,8 +50,12 @@ import {
   type LayoutDraft,
 } from './item-type-layout';
 
-// The Add Field popover: wide enough for a name and a kind side by side, whatever column it opens from.
+// The Add Field popover (24 rem): a kind's name and its line, and the Shape step's controls, whatever column it opens
+// from; on a phone, the window's width less its margins.
 const ADD_FIELD_POPOVER_PX = 384;
+// A touch screen opens it without focusing the search, so no keyboard flies up over the list.
+const coarsePointer = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true;
 const NAME_INPUT =
   'min-w-0 flex-1 rounded-md border bg-transparent px-1.5 py-0.5 text-[13px] font-semibold text-slate-900 placeholder:font-normal placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-500 focus:bg-white focus:outline-none dark:text-slate-50 dark:hover:border-slate-600 dark:focus:bg-slate-900';
 const isRequired = (f: string) => (REQUIRED_TYPE_FIELDS as readonly string[]).includes(f);
@@ -76,7 +80,13 @@ export function ItemTypeLayoutEditor({
 }) {
   // The group whose Add Field form is open (Details is `null`), and the custom field being edited.
   // The group whose Add Field popover is open, and the button it hangs from.
-  const [adding, setAdding] = useState<{ group: GroupId; anchor: HTMLElement } | null>(null);
+  const [adding, setAdding] = useState<{
+    group: GroupId;
+    anchor: HTMLElement;
+    touch: boolean;
+  } | null>(null);
+  // The open Add Field's own Escape (a step back, a search cleared), asked before the popover closes.
+  const addEscape = useRef<(() => boolean) | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const fields = orderedFields(draft.fields);
   const kept = requiredFieldsOf(typeId);
@@ -157,7 +167,9 @@ export function ItemTypeLayoutEditor({
         className={`${DASHED_ADD_BUTTON} bg-white/60 dark:bg-slate-900/40`}
         onClick={(e) => {
           const anchor = e.currentTarget;
-          setAdding((open) => (open?.group === group ? null : { group, anchor }));
+          setAdding((open) =>
+            open?.group === group ? null : { group, anchor, touch: coarsePointer() },
+          );
         }}
       >
         <PlusIcon size={13} />
@@ -168,9 +180,12 @@ export function ItemTypeLayoutEditor({
           anchor={adding.anchor}
           name="Add Field"
           width={ADD_FIELD_POPOVER_PX}
+          initialFocus={adding.touch ? 'panel' : 'first'}
+          onEscape={() => addEscape.current?.() ?? false}
           onClose={() => setAdding(null)}
         >
           <NewFieldForm
+            escapeRef={addEscape}
             missing={BUILT_IN_FIELD_IDS.filter((f) => !fields.includes(f))}
             canAddCustom={customFieldCount(draft.custom) < ITEM_TYPE_CUSTOM_MAX}
             onAddBuiltIn={(id) => {

@@ -96,3 +96,60 @@ describe('a field row', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field, opened from each group, adds into that group.
+describe('Add Field', () => {
+  const addFrom = (i: number) =>
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add Field' })[i]!);
+  const popover = () => within(screen.getByRole('dialog', { name: 'Add Field' }));
+
+  it('adds a Ready-made field into the group it opened from, Details or a tab', () => {
+    const onChange = editor();
+    addFrom(0);
+    fireEvent.click(popover().getByRole('button', { name: 'Due Date' }));
+    expect(detailFields(onChange.mock.lastCall![0])).toContain('due');
+    expect(screen.queryByRole('dialog', { name: 'Add Field' })).toBeNull();
+    addFrom(1);
+    fireEvent.click(popover().getByRole('button', { name: 'Labels' }));
+    expect(onChange.mock.lastCall![0].tabs[0]?.fields).toEqual(['description', 'labels']);
+  });
+
+  it('adds a custom field with its own id, into the tab it opened from', () => {
+    const onChange = editor();
+    addFrom(1);
+    fireEvent.click(popover().getByRole('button', { name: /^Numbers & dates/ }));
+    fireEvent.click(popover().getByRole('button', { name: 'Number' }));
+    fireEvent.change(popover().getByRole('textbox', { name: 'Name' }), {
+      target: { value: 'Story Points' },
+    });
+    fireEvent.click(popover().getByRole('button', { name: 'Add Story Points' }));
+    const next = onChange.mock.lastCall![0];
+    expect(next.custom).toEqual([
+      expect.objectContaining({ label: 'Story Points', kind: 'number' }),
+    ]);
+    expect(next.tabs[0]?.fields).toEqual(['description', next.custom[0]!.id]);
+  });
+
+  it('steps back on Escape, then closes, focus back on Add Field', () => {
+    editor();
+    addFrom(0);
+    fireEvent.click(popover().getByRole('button', { name: 'Text' }));
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(popover().getByRole('searchbox', { name: 'Search fields' })).toBeTruthy();
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'Add Field' })).toBeNull();
+    expect(document.activeElement).toBe(screen.getAllByRole('button', { name: 'Add Field' })[0]);
+  });
+
+  it('opens on a touch screen without focusing the search', () => {
+    const was = window.matchMedia;
+    window.matchMedia = ((q: string) => ({ matches: q === '(pointer: coarse)' })) as never;
+    try {
+      editor();
+      addFrom(0);
+      expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Add Field' }));
+    } finally {
+      window.matchMedia = was;
+    }
+  });
+});
