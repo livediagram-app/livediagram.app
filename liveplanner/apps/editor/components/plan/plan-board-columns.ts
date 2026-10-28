@@ -4,15 +4,15 @@
 // its columns; the floor still wins on a narrow screen. A column `width` wide takes that many slots and the gaps
 // between them. On a phone ("On a phone") a board that scrolls on its own (maximised, filling its tab or in a Dashboard
 // slot) gives each column the body's width less PHONE_COLUMN_PEEK_PX, whatever its width, so one column reads at a time
-// and the next peeks in at the edge. Pure.
+// and, centred, its neighbours peek in at both edges. Pure.
 import { PLAN_COLUMN_MIN_PX, type PlanColumn } from '@liveplanner/items';
 
 // How many column slots a maximised board shows across its body before it scrolls (blueprint DEFAULTS).
 export const MAXIMISED_BOARD_SLOTS = 5;
 // The gap between columns (the grid's `gap-3`).
 export const PLAN_COLUMN_GAP_PX = 12;
-// How much of the next column a phone shows beside the one in view, gap included (blueprint DEFAULTS).
-export const PHONE_COLUMN_PEEK_PX = 48;
+// How much of its neighbours a phone shows beside the centred column, both gaps included (blueprint DEFAULTS).
+export const PHONE_COLUMN_PEEK_PX = 64;
 
 // How a board lays its columns out: sharing the canvas element's width, five slots across while it covers the canvas,
 // or one a screen on a phone.

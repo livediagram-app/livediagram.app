@@ -1,7 +1,7 @@
 // How a board is drawn for where it is (docs/specs/026-plan/plan-board.md "On a phone", "Maximised board"): on a phone
 // its cards are Minimal and its widgets stand aside, and a board that scrolls on its own (maximised, filling its tab
-// or in a Dashboard slot) shows one column a screen, snapping to each, its empty space taking a finger as a scroll.
-// Pure.
+// or in a Dashboard slot) shows one column a screen, snapping each to the centre, its empty space taking a finger as a
+// scroll, and a tap on a column's empty space gliding that column to the centre. Pure but for the tap's scroll.
 import type { CardSize, QuickFilter } from '@liveplanner/items';
 import type { BoardColumnLayout } from './plan-board-columns';
 
@@ -28,8 +28,11 @@ type BoardLook = {
   container: boolean;
   // The body's touch-action classes.
   touch: string;
-  // The columns snap into view as they scroll sideways.
+  // The columns snap to the centre as they scroll sideways (each column's full-height marker, never its sticky head).
   snap: boolean;
+  // The body's overscroll-behavior class: covering, its scroll stays its own; in a Dashboard slot only sideways, so
+  // scrolling down past its end still scrolls the Dashboard.
+  overscroll: string;
   // The body's bottom padding class, when it needs more than its own: a phone's covering board runs under the
   // bottom-right controls (two rows across the screen there), so its last cards scroll up clear of them.
   endClearance: string;
@@ -53,6 +56,7 @@ export function boardLook(place: BoardPlace, cardSize: CardSize | undefined): Bo
     container: covering || oneAScreen,
     touch: interactive ? (scrolls ? 'touch-pan-x touch-pan-y' : 'touch-none') : '',
     snap: oneAScreen && !dragging,
+    overscroll: oneAScreen ? (covering ? 'overscroll-contain' : 'overscroll-x-contain') : '',
     endClearance: phone && covering ? PHONE_END_CLEARANCE : '',
   };
 }
@@ -61,4 +65,55 @@ export function boardLook(place: BoardPlace, cardSize: CardSize | undefined): Bo
 // a wider screen never hides cards with nothing on screen to say so.
 export function shownQuick(quick: QuickFilter, phone: boolean): QuickFilter {
   return phone ? NO_QUICK : quick;
+}
+
+// What keeps its own tap on a board: a card, and any control.
+const OWN_TAP =
+  '[data-plan-card], button, a, input, select, textarea, label, [role="button"], [role="dialog"], [contenteditable]';
+
+// The column a tap on a phone board's empty space lands in (its cell background, between and below its cards, or its
+// header outside the cog), or null when the tap is on a card or a control, or outside every column.
+export function tappedColumn(target: Element | null, columnAttr: string): string | null {
+  if (!target || target.closest(OWN_TAP)) return null;
+  return target.closest(`[${columnAttr}]`)?.getAttribute(columnAttr) ?? null;
+}
+
+// The body's scrollLeft that puts a column's centre at the centre of the body's view; never past either end.
+export function centredScrollLeft(
+  body: { left: number; scrollLeft: number; clientWidth: number; scrollWidth: number },
+  column: { left: number; width: number },
+): number {
+  const want =
+    body.scrollLeft + column.left + column.width / 2 - (body.left + body.clientWidth / 2);
+  return Math.max(0, Math.min(Math.round(want), body.scrollWidth - body.clientWidth));
+}
+
+// A tap on a column's empty space glides that column to the centre: across only (no top given, so the board never
+// moves up or down), and a jump under reduced motion.
+export function centreTappedColumn(
+  target: Element | null,
+  body: HTMLElement,
+  columnAttr: string,
+): boolean {
+  const id = tappedColumn(target, columnAttr);
+  if (id === null) return false;
+  const head = body.querySelector(`[${columnAttr}="${CSS.escape(id)}"]`);
+  if (!head) return false;
+  const b = body.getBoundingClientRect();
+  const c = head.getBoundingClientRect();
+  const left = centredScrollLeft(
+    {
+      left: b.left + body.clientLeft,
+      scrollLeft: body.scrollLeft,
+      clientWidth: body.clientWidth,
+      scrollWidth: body.scrollWidth,
+    },
+    { left: c.left, width: c.width },
+  );
+  if (left === body.scrollLeft) return true;
+  const reduce =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  body.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
+  return true;
 }

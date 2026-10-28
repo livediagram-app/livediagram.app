@@ -57,8 +57,7 @@ export function PlanColumnHeader({
   return (
     <div
       {...{ [COLUMN_ATTR]: column.id }}
-      // snap-start: on a phone the columns snap into view by their heads (phone-board.ts).
-      className="group sticky top-0 z-[1] snap-start rounded-t-lg px-3 pb-1.5 pt-2"
+      className="group sticky top-0 z-[1] rounded-t-lg px-3 pb-1.5 pt-2"
       style={{ backgroundColor: palette.column }}
       onClick={
         onFrame

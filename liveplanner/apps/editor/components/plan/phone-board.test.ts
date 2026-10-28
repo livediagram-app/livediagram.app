@@ -20,6 +20,7 @@ describe('boardLook', () => {
       container: false,
       touch: 'touch-none',
       snap: false,
+      overscroll: '',
       endClearance: '',
     });
   });
@@ -62,6 +63,16 @@ describe('boardLook', () => {
         touch: 'touch-pan-x touch-pan-y',
       });
     }
+  });
+
+  it('keeps a phone board scroll to itself: all of it covering, only sideways in a Dashboard slot', () => {
+    expect(boardLook(place({ phone: true, covering: true }), undefined).overscroll).toBe(
+      'overscroll-contain',
+    );
+    expect(boardLook(place({ phone: true, inSlot: true }), undefined).overscroll).toBe(
+      'overscroll-x-contain',
+    );
+    expect(boardLook(place({ covering: true }), undefined).overscroll).toBe('');
   });
 
   it('stops snapping while a card is carried, so the edge scroll moves the columns freely', () => {

@@ -51,7 +51,7 @@ import { pickableStatuses } from './column-status-picks';
 import { boardItems } from '@liveplanner/plan-art';
 import { trackSetup } from './track-board-setup';
 import { boardColumnTemplate } from './plan-board-columns';
-import { boardLook, shownQuick } from './phone-board';
+import { boardLook, centreTappedColumn, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
@@ -410,11 +410,20 @@ export function PlanBoardView({
         // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, filling
         // its tab or in a Dashboard slot, nothing under the board pans, so a finger on empty board scrolls the board
         // (and past its end, the Dashboard's page); each card is touch-none on its own, so a finger on one still
-        // picks it up. On a phone its columns snap into view one at a time (phone-board.ts).
-        className={`min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${
-          look.snap ? 'snap-x snap-mandatory scroll-px-3' : ''
+        // picks it up. On a phone its columns snap
+        // centred, one at a time (phone-board.ts), and a tap on a column's empty space glides it to the centre.
+        className={`min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
+          look.snap ? 'snap-x snap-mandatory' : ''
         }`}
         onPointerDown={interactive ? keepBoardPress : undefined}
+        onClick={
+          interactive && look.columns === 'phone'
+            ? (e) => {
+                if (bodyRef.current)
+                  centreTappedColumn(e.target as Element, bodyRef.current, COLUMN_ATTR);
+              }
+            : undefined
+        }
       >
         {/* Not set up yet: the placeholder; and Setup Board's dialog, for this person only, when open (new, or Board
             Setup's Setup Board run again over a set-up board). */}
@@ -428,7 +437,7 @@ export function PlanBoardView({
         {setup.columns.length === 0 ? null : (
           <div
             ref={gridRef}
-            className="grid min-h-full gap-3"
+            className="relative grid min-h-full gap-3"
             style={{
               gridTemplateColumns: columnTemplate,
               gridTemplateRows: boardRowTemplate(
@@ -474,6 +483,20 @@ export function PlanBoardView({
                 }}
               />
             ))}
+            {/* One column a screen, each column's snap point: a marker over its full height, out of the grid's
+                flow, rather than its sticky header, so scrolling down moves no snap point and nothing re-snaps
+                mid-scroll (docs/specs/026-plan/plan-board.md "On a phone"). */}
+            {look.columns === 'phone'
+              ? projection.columns.map((col, i) => (
+                  <div
+                    key={`snap-${col.column.id}`}
+                    aria-hidden
+                    data-plan-snap
+                    className="pointer-events-none absolute inset-0 snap-center snap-always"
+                    style={{ gridColumn: i + 1, gridRow: '1 / -1' }}
+                  />
+                ))
+              : null}
             {lanes.map((lane, laneIndex) => {
               const shut = collapsed.has(lane.key);
               return (

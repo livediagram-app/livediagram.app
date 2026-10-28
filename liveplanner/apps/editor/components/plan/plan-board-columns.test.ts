@@ -22,9 +22,9 @@ describe('boardColumnTemplate', () => {
   });
 
   it('gives every column on a phone the body less a peek of the next, whatever its width', () => {
-    expect(PHONE_COLUMN_PEEK_PX).toBe(48);
+    expect(PHONE_COLUMN_PEEK_PX).toBe(64);
     expect(boardColumnTemplate([{}, { width: 3 }], 'phone')).toBe(
-      'max(220px, calc(100cqw - 48px)) max(220px, calc(100cqw - 48px))',
+      'max(220px, calc(100cqw - 64px)) max(220px, calc(100cqw - 64px))',
     );
   });
 });
