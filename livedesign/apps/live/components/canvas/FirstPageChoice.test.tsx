@@ -32,7 +32,7 @@ describe('FirstPageChoice', () => {
     render(<FirstPageChoice zoom={1} onChoose={onChoose} />);
     fireEvent.click(screen.getByRole('button', { name: /Wireframe/ }));
     expect(screen.getByText('Choose a Device')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+    fireEvent.click(screen.getByRole('button', { name: /All kinds/ }));
     expect(screen.getByText('What Is This Page For?')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Wireframe/ }));
     fireEvent.click(document.querySelector('[data-device-tile="android"]')!);
