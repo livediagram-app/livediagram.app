@@ -61,6 +61,8 @@ const REFUSALS: Record<string, number> = {
   title_too_long: 400,
   thread_on_card: 409,
   thread_busy: 409,
+  // A thread holding anyone else's comment is resolved, never deleted (items.md "Deleting a thread").
+  thread_has_others: 409,
   thread_other_plan: 400,
 };
 

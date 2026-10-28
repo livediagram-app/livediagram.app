@@ -1022,7 +1022,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Items',
     summary:
-      "Delete a thread from every card it is on: an Editor, or the person who started it. Not an agent's.",
+      "Delete a thread from every card it is on: only when every comment in it is the caller's own, Editors included; a thread holding anyone else's comment is refused 409 thread_has_others (resolve it instead). Not an agent's.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [ITEM_TAB_QUERY],

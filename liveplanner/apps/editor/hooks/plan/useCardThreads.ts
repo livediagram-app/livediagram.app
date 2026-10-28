@@ -75,6 +75,8 @@ export function threadRefusalMessage(code: string | null): string {
       return 'That card is gone';
     case 'forbidden':
       return 'You can’t do that here';
+    case 'thread_has_others':
+      return 'Others have commented on this thread: resolve it instead';
     default:
       return "Couldn't save that comment";
   }

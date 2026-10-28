@@ -348,6 +348,13 @@ export function sortedThreads<T extends Pick<CardThread, 'resolved' | 'updatedAt
   });
 }
 
+/** Whether every comment in a thread is `owner`'s (docs/specs/026-plan/items.md "Deleting a thread"): their own,
+ *  an agent's posted with their token among them. Only then may they delete it; a thread holding anyone else's
+ *  comment is only resolved. A comment whose author id is withheld (a viewer's copy) reads as someone else's. */
+export function threadOnlyBy(thread: Pick<CardThread, 'comments'>, owner: string | null): boolean {
+  return owner !== null && thread.comments.every((c) => c.authorId === owner);
+}
+
 /** Everyone who wrote in a thread, in the order they first did: name and colour. */
 export function threadParticipants(
   thread: Pick<CardThread, 'comments'>,

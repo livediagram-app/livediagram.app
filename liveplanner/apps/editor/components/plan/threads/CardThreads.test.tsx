@@ -310,8 +310,9 @@ describe('the ⋯ menu', () => {
     expect(screen.getByRole('textbox', { name: 'Thread title' })).toBeTruthy();
   });
 
-  it('deletes a thread after a confirmation that counts its cards', async () => {
+  it('deletes a thread of their own comments after a confirmation that counts its cards', async () => {
     const shared = thread('th-a', {
+      comments: [comment('c1', { authorId: ME })],
       cards: [
         { projectId: PLAN, itemId: 'card-1', key: 1 },
         { projectId: PLAN, itemId: 'card-2', key: 2 },
@@ -329,16 +330,29 @@ describe('the ⋯ menu', () => {
     expect(screen.getByText('No threads yet')).toBeTruthy();
   });
 
-  it('offers Delete Thread to a Participant only on a thread they started', () => {
-    renderLive([thread('th-a')], { isEditor: false });
-    openMenu();
-    expect(screen.queryByRole('menuitem', { name: 'Delete Thread…' })).toBeNull();
-    cleanup();
-    renderLive([thread('th-a', { createdBy: { name: 'Sam', color: '#000', authorId: ME } })], {
+  // items.md "Deleting a thread": only a thread of one's own comments, Editors alike; else it is resolved.
+  it('greys Delete Thread, saying to resolve, once anyone else has commented, for an Editor too', () => {
+    for (const isEditor of [true, false]) {
+      renderLive([thread('th-a', { createdBy: { name: 'Sam', color: '#000', authorId: ME } })], {
+        isEditor,
+      });
+      openMenu();
+      const row = screen.getByRole('menuitem', { name: 'Delete Thread…' });
+      expect(row.getAttribute('aria-disabled')).toBe('true');
+      fireEvent.click(row);
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+      expect(screen.getByText('Others have commented: resolve it instead.')).toBeTruthy();
+      expect(screen.getByRole('menuitem', { name: 'Resolve' })).toBeTruthy();
+      cleanup();
+    }
+    renderLive([thread('th-a', { comments: [comment('c1', { authorId: ME })] })], {
       isEditor: false,
     });
     openMenu();
-    expect(screen.getByRole('menuitem', { name: 'Delete Thread…' })).toBeTruthy();
+    expect(
+      screen.getByRole('menuitem', { name: 'Delete Thread…' }).getAttribute('aria-disabled'),
+    ).toBeNull();
+    expect(screen.queryByText('Others have commented: resolve it instead.')).toBeNull();
   });
 
   it('opens Add Thread to Card', () => {

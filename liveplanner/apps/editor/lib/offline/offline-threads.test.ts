@@ -113,6 +113,10 @@ describe('offline threads', () => {
         who,
       ),
     ).rejects.toMatchObject({ status: 403 });
+    // A thread holding someone else's comment is resolved, never deleted.
+    await expect(
+      writeThread(scope, { kind: 'deleteThread', threadId: t.id }, who),
+    ).rejects.toMatchObject({ status: 409, code: 'thread_has_others' });
     await offlinePutRecord(testRecord({ id: 'd2', trashedAt: 5 }));
     await expect(
       writeThread({ ...scope, projectId: 'd2' }, { kind: 'start', itemId: A, text: 'x' }, who),

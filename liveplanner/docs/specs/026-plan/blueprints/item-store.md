@@ -386,7 +386,7 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
 | POST   | `/projects/:id/threads/:threadId/reopen`      | participate                        | none                          | the same                                                |
 | PUT    | `/projects/:id/threads/:threadId/title`       | participate                        | `{ title }` (`''` automatic)  | `CardThreadWriteResponse`                               |
 | POST   | `/projects/:id/threads/:threadId/cards`       | participate here and on the target | `{ projectId?, itemId }`      | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId`             | participate; edit or starter       | none                          | 204                                                     |
+| DELETE | `/projects/:id/threads/:threadId`             | participate; every comment own     | none                          | 204                                                     |
 
 - The thread is reached through `:id`: a link row of the plan for a card the caller's scope holds, else
   `404 thread_not_found`. Writes count against the write rate limit.
@@ -411,8 +411,17 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
 - The old `/items/:itemId/comments` routes are removed.
 
 Refusals, by name: `400` text missing or too long, `400 title_too_long`, `403 forbidden`, `404 thread_not_found`,
-`404 comment_not_found`, `404 item_not_found`, `409 thread_on_card`, `409 thread_busy`, `413 comments_full`,
-`413 threads_full`, `413 thread_cards_full`.
+`404 comment_not_found`, `404 item_not_found`, `409 thread_on_card`, `409 thread_busy`, `409 thread_has_others`,
+`413 comments_full`, `413 threads_full`, `413 thread_cards_full`.
+
+- **Thread delete**: the home's `threadRightRefusal` (card-thread-store.ts) refuses an agent `403 forbidden`, and
+  anyone else `409 thread_has_others` unless `threadOnlyBy(thread, actor.owner)` (`@liveplanner/project`: every
+  stored comment's `authorId` is the actor's; an empty thread passes), read from the thread as stored on each try,
+  so a delete made through another plan is checked in the home the same way. 409, not 403: the person may delete
+  threads; this one's content stands in the way, and resolving is the way on. The editor's This Browser path
+  (`offline-threads.ts`) refuses the same; the ⋯ menu shows Delete Thread… greyed, with the reason, when
+  `threadOnlyBy(thread, selfId)` is false (the viewer's copy keeps only their own author ids, so another's comment
+  reads as not theirs).
 
 ### Room op
 
