@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { item } from './test-items';
-import { linkCandidates, linkFieldsOfType, linkText, linkedCardsOf } from './card-links';
+import {
+  linkCandidates,
+  linkFieldsOfType,
+  linkText,
+  linkableCards,
+  linkedCardsOf,
+} from './card-links';
+import { TRASH_STATUS } from './board';
 import { laneDropPatch, laneGroups } from './board';
 import { readItemTypeCatalogue } from './type-catalogue';
 import { linkTypesOf, withLinkTypes } from './item-types';
@@ -60,6 +67,37 @@ describe('card links', () => {
     const late = item({ title: 'Late' }, { type: 'person', key: 9 });
     const early = item({ title: 'Early' }, { type: 'person', key: 2 });
     expect(linkCandidates([late, early], ['person']).map((i) => i.key)).toEqual([2, 9]);
+  });
+
+  // docs/specs/026-plan/item-types.md "Link Existing".
+  it('offers Link Existing the live cards of the field’s types not linked here yet', () => {
+    const sam = item({ title: 'Sam' }, { type: 'person' });
+    const lee = item({ title: 'Lee' }, { type: 'person' });
+    const mine = item({ title: 'Grow', 'f-owner': sam.id }, { type: 'objective' });
+    const theirs = item({ title: 'Hire', 'f-owner': lee.id }, { type: 'objective' });
+    const orphan = item({ title: 'Ship', 'f-owner': 'gone-card' }, { type: 'objective' });
+    const free = item({ title: 'Plan' }, { type: 'objective' });
+    const archived = item({ title: 'Old', archived: true }, { type: 'objective' });
+    const trashed = item({ title: 'Bin', status: TRASH_STATUS }, { type: 'objective' });
+    const task = item({ title: 'Not linkable' }, { type: 'task' });
+    const all = [sam, lee, mine, theirs, orphan, free, archived, trashed, task];
+    const group = { fieldId: 'f-owner', fromTypes: ['objective'] };
+    expect(linkableCards(sam, group, all).map((l) => [l.card.fields.title, l.elsewhere])).toEqual([
+      ['Hire', lee.id],
+      ['Ship', 'gone-card'],
+      ['Plan', null],
+    ]);
+  });
+
+  it('lists every type of a field on several types, and never the card itself', () => {
+    const epic = item({ title: 'Epic' }, { type: 'epic' });
+    const story = item({ title: 'Story' }, { type: 'story' });
+    const bug = item({ title: 'Bug' }, { type: 'bug' });
+    const group = { fieldId: 'parent', fromTypes: ['story', 'bug', 'epic'] };
+    expect(linkableCards(epic, group, [epic, story, bug]).map((l) => l.card.id)).toEqual([
+      story.id,
+      bug.id,
+    ]);
   });
 
   it('groups the cards pointing at a card by the field they point through', () => {

@@ -42,6 +42,36 @@ describe('offline items', () => {
     expect((await offlineGetRecord('d1'))?.items).toEqual([]);
   });
 
+  // docs/specs/026-plan/item-types.md "Link Existing": linking an existing card is one patch on it, offline alike.
+  it('links an existing card through its Parent field, moving it from another card', async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(testRecord());
+    const scope = { ownerId: 'o', projectId: 'd1', shareCode: null, tabId: null };
+    await writeItem(
+      scope,
+      {
+        kind: 'create',
+        creates: [
+          { id: 'plan-a', type: 'project', fields: { title: 'A', status: 'todo' } },
+          { id: 'plan-b', type: 'project', fields: { title: 'B', status: 'todo' } },
+          {
+            id: 'task-1',
+            type: 'task',
+            fields: { title: 'One', status: 'todo', parent: 'plan-a' },
+          },
+        ],
+      },
+      ME,
+    );
+    await writeItem(
+      scope,
+      { kind: 'patch', id: 'task-1', patch: { set: { parent: 'plan-b' } } },
+      ME,
+    );
+    const rec = await offlineGetRecord('d1');
+    expect(rec?.items?.find((i) => i.id === 'task-1')?.fields['parent']).toBe('plan-b');
+  });
+
   it('refuses as the api does', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(testRecord());

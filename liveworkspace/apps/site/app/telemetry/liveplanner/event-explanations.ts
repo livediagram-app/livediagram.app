@@ -696,6 +696,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
   'Sheet|Searched|Function':
     'Someone searched the functions a Sheet formula can use, from the toolbar’s function picker.',
+  'Plan|Linked|LinkedCard':
+    'Someone linked an existing card to this one from a Linked as section (Link Existing).',
+  'Plan|Linked|LinkedCardMoved':
+    'Someone moved an existing card’s link to this one from a Linked as section (Link Existing), after confirming the move.',
   'Plan|Created|BoardTab':
     'Someone started a Board tab from Start Planning: one board filling the tab.',
   'Plan|Created|SheetTab':
@@ -2393,6 +2397,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Ended': 'Someone ended a live activity on a tab, such as a poll or a timer.',
   'Tab|Imported': 'Someone imported a tab from a file.',
   'Tab|Linked': 'A tab was linked into another project.',
+  'Plan|Linked': 'An existing card was linked to another card from its Linked as section.',
   'Tab|Loaded':
     "A tab's content was fetched for viewing (the first tab when a project opens, then each tab switched to).",
   'Tab|Locked': 'A tab was locked (read-only).',

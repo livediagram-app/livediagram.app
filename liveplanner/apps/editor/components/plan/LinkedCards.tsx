@@ -2,7 +2,8 @@
 
 // The cards that point at the open card (docs/specs/026-plan/item-types.md "Card fields"): a section per Card field
 // that links here ("Linked as Owner"; a Project's "Linked as Parent" lists the cards under it), each row opening
-// that card in the panel, with a button to make a new one already linked. The host computes
+// that card in the panel, with a button to make a new one already linked and one to link an existing one (Link
+// Existing, LinkExistingCardDialog). The host computes
 // the groups (linkedCardsOf in packages/items), so this only draws them.
 import { useId, useState } from 'react';
 import {
@@ -14,11 +15,19 @@ import {
   type ItemTypeDef,
   namedStatus,
 } from '@liveplanner/items';
-import { ChevronRightIcon, NoMatches, PlusIcon, Select } from '@liveplanner/ui';
+import { ChevronRightIcon, NoMatches, PlusIcon, Select, lucideGlyph } from '@liveplanner/ui';
+import { lucideLink } from '@liveworkspace/icons/lucide';
 import type { LinkedGroup } from '@liveplanner/items';
 import { PersonDisc } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
+import { usePlan } from './PlanContext';
+import { LinkExistingCardDialog } from './LinkExistingCardDialog';
+
+const LinkGlyph = lucideGlyph(lucideLink, 12);
+const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
+const ADD_BUTTON =
+  'inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 pointer-coarse:py-2 dark:text-brand-300 dark:hover:bg-brand-500/10';
 
 const CHIP =
   'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ring-1 ring-inset whitespace-nowrap';
@@ -180,24 +189,32 @@ function ChildRow({
   );
 }
 
-// A Card field's section on the card it links to: "Linked as Owner", its cards, and "+ New Objective" (one button
-// per type whose field links here) making one already linked.
+// A Card field's section on the card it links to: "Linked as Owner", its cards, "+ New Objective" (one button
+// per type whose field links here) making one already linked, and Link Existing linking one already made.
 export function LinkedCardGroup({
   group,
+  target,
   types,
   statusNames,
   canAdd,
   onOpen,
   onAdd,
+  onLinkExisting,
 }: {
   group: LinkedGroup;
+  // The card the section is on (what Link Existing links to); absent, there is no Link Existing.
+  target?: Item;
   types: readonly ItemTypeDef[];
   statusNames: ReadonlyMap<string, string>;
   canAdd: boolean;
   onOpen: (itemId: string) => void;
   onAdd: (typeId: string) => void;
+  // Sets the picked card's field to the target (docs/specs/026-plan/item-types.md "Link Existing"); false: refused.
+  onLinkExisting?: (cardId: string, moved: boolean) => Promise<boolean> | boolean;
 }) {
   const headingId = useId();
+  const plan = usePlan();
+  const [linking, setLinking] = useState(false);
   return (
     <section aria-labelledby={headingId} className="mb-8">
       <h3
@@ -231,14 +248,36 @@ export function LinkedCardGroup({
                 key={typeId}
                 type="button"
                 onClick={() => onAdd(typeId)}
-                className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
+                className={ADD_BUTTON}
               >
                 <PlusIcon size={12} />
                 New {type.label}
               </button>
             );
           })}
+          {target && onLinkExisting ? (
+            <button
+              type="button"
+              aria-label={`Link an existing card as ${group.label}`}
+              aria-haspopup="dialog"
+              onClick={() => setLinking(true)}
+              className={ADD_BUTTON}
+            >
+              <LinkGlyph />
+              Link Existing
+            </button>
+          ) : null}
         </div>
+      ) : null}
+      {linking && target && onLinkExisting ? (
+        <LinkExistingCardDialog
+          target={target}
+          group={group}
+          items={plan?.items ?? NO_ITEMS}
+          types={types}
+          onLink={onLinkExisting}
+          onClose={() => setLinking(false)}
+        />
       ) : null}
     </section>
   );

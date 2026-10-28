@@ -200,7 +200,28 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     pointing here (glyph, number, title, Archived, status, assignee; pressed, each opens), its count, an empty
     note ("No cards link here as Owner yet."), and **New {Type}** for each type whose field links here: it makes
     a card of that type already linked, in its type's Default State (else the first status its type uses), and
-    opens it. These sit on the type's first tab, before Comments.
+    opens it, then **Link Existing**, which links a card already made. These sit on the type's first tab, before
+    Comments.
+  - <a id="link-existing"></a>**Link Existing**: one button per section, after its New {Type} buttons (a link glyph,
+    accessible name "Link an existing card as {Field}"). It opens a dialog, **Link Existing Card**, saying "Pick a
+    card to link to #{n} {Title} as {Field}.", drawn as Add Thread to Card's is (the same card picker,
+    [Items](items.md#where-it-shows)): a search (focused on open with a mouse, never on a touch screen) matching a
+    card's number (`12`, `#12`), title or type, then the cards it offers, newest change first, at most 50 until a
+    search narrows them.
+    - **What it offers**: this plan's cards of every type the field is on (the section's types; a field on several
+      types lists them all, each row naming its type), never this card, a card already linked here through this
+      field, nor an archived or trashed card. None left reads "No other {Type} cards to link." (the types' names
+      joined "or" when several), a search matching nothing "No cards match.".
+    - **Already linked elsewhere**: a card whose field points at another card says so on its row ("Linked to #3
+      Website"; "Linked to a missing card" when that card is gone). Picking it asks first: **Move #12 {Title}?**,
+      "It is linked as {Field} to #3 Website. Linking it here moves it, and it leaves #3 Website's Linked as
+      {Field}.", with **Move Here** and **Cancel** (Cancel goes back to the list).
+    - **The write**: picking (or Move Here) sets the picked card's field to this card, one ordinary card write
+      (the same as choosing it in that card's own field), so it undoes, syncs live, keeps to the plan's permissions
+      and works the same in a This Browser plan. The dialog closes, the card joins the section and "Linked #12 as
+      {Field}" is announced. A refused write keeps the dialog open.
+    - **Who sees it**: an Editor and a Participant (who add and edit cards); a Viewer sees neither New {Type} nor
+      Link Existing.
   - **Filtering them**: a Linked as section whose cards hold more than one card type or state has a
     filter row above its list: a **Card Type** menu ("All card types", then each type the list holds) when it holds
     more than one, and a **State** menu ("All states", then each state it holds, "No status" last) when it holds
@@ -565,3 +586,5 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 - `Plan` · `Opened` · `CardTypes` when the panel opens; `Plan` · `Changed` · `CardType` when a type is saved, `Plan` · `Added` · `CardType` when one is added,
   `Plan` · `Duplicated` · `CardType` when a duplicate is saved and `Plan` · `Deleted` · `CardType` when one is deleted. Never names, ids or field names.
+- `Plan` · `Added` · `LinkedCard` when New {Type} makes a card already linked, and `Plan` · `Linked` · `LinkedCard`
+  when Link Existing links one (`LinkedCardMoved` when it moved from another card).

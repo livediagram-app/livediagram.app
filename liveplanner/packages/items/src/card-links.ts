@@ -79,6 +79,31 @@ export function linkedCardsOf(
   return groups;
 }
 
+// What Link Existing offers for a group (docs/specs/026-plan/item-types.md "Link Existing"): the live (not trashed or
+// archived) cards of the group's types, never the target itself nor a card already linked to it through the
+// group's field. Each says where it links now: `elsewhere` is the card id its field holds when that is another
+// card (gone or not), so picking it moves the link.
+export interface LinkableCard {
+  card: Item;
+  elsewhere: string | null;
+}
+
+export function linkableCards(
+  target: Item,
+  group: Pick<LinkedGroup, 'fieldId' | 'fromTypes'>,
+  items: Iterable<Item>,
+): LinkableCard[] {
+  const out: LinkableCard[] = [];
+  for (const it of items) {
+    if (it.id === target.id || !group.fromTypes.includes(it.type)) continue;
+    if (isTrashed(it) || isArchived(it)) continue;
+    const value = it.fields[group.fieldId];
+    if (value === target.id) continue;
+    out.push({ card: it, elsewhere: typeof value === 'string' && value ? value : null });
+  }
+  return out;
+}
+
 // A linked card as one line ("#3 Sam Reed"), or "Missing card" for a value whose card is gone.
 export function linkText(items: ReadonlyMap<string, Item>, value: unknown): string | null {
   if (typeof value !== 'string' || !value) return null;
