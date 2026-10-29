@@ -127,8 +127,9 @@ window, newest first, at most `INCIDENTS_MAX` (50), as `[service, started, ended
 4. Cache key `<origin><path>[?days=<n>]`. Outside development a `caches.default` hit answers (a HEAD gets its headers
    only).
 5. `READ_RATE_LIMITER` on a miss, keyed by `clientRateKey`: over it, `429 { error: 'rate_limited' }`, `Retry-After: 60`.
-6. One row: `SELECT body FROM snapshots WHERE key = ?`. A read error (no table yet) logs `status snapshot read failed`
-   and counts as no row.
+6. One row: `SELECT body FROM snapshots WHERE key = ?`. D1 itself down (`storageOutageOf`) is rethrown to the
+   request-failure guard: `503 storage_unavailable`, nothing cached. Any other read error (no table yet) logs
+   `status snapshot read failed` and counts as no row.
 7. `latest`: the stored text, or `{ v: 1, at: null, services: {} }`. `history`: the stored text when it parses and
    holds exactly `days`, else `sliceHistory(stored ?? emptyHistory(now), days)`.
 8. `Cache-Control: public, max-age=120`; a GET is put in the edge cache in `waitUntil` (failure logs `status cache
@@ -164,16 +165,17 @@ Indexes: `incidents_open_idx ON incidents (service) WHERE ended_at IS NULL`; `in
 
 ## Errors and edge cases
 
-| Case                                           | Behaviour                                                                                    |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| No run yet                                     | `latest` with `at: null`; an empty 90-day `history`                                          |
-| Stored snapshot not JSON or wrong shape        | rebuilt from `emptyHistory` (or the stored history, sliced); never a 500                     |
-| No `snapshots` table (fresh local DB)          | logged, treated as no row                                                                    |
-| A probe hangs or ignores its signal            | the timer ends the wait at 10 s: `down`, `timeout`                                           |
-| A service missing from a run                   | its open incident stays open                                                                 |
-| A derived service whose sources have no result | no result stored for it this run                                                             |
-| The write batch fails                          | nothing written; the run logs `status run failed`; the next run starts from the stored state |
-| Midnight UTC                                   | yesterday's `daily` row is never rewritten; today starts from this run alone                 |
+| Case                                           | Behaviour                                                                                            |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| No run yet                                     | `latest` with `at: null`; an empty 90-day `history`                                                  |
+| Stored snapshot not JSON or wrong shape        | rebuilt from `emptyHistory` (or the stored history, sliced); never a 500                             |
+| No `snapshots` table (fresh local DB)          | logged, treated as no row                                                                            |
+| D1 down on a read                              | `503 storage_unavailable`, `Retry-After: 5`, logged `[d1] unavailable route=Get.Status…`; not cached |
+| A probe hangs or ignores its signal            | the timer ends the wait at 10 s: `down`, `timeout`                                                   |
+| A service missing from a run                   | its open incident stays open                                                                         |
+| A derived service whose sources have no result | no result stored for it this run                                                                     |
+| The write batch fails                          | nothing written; the run logs `status run failed`; the next run starts from the stored state         |
+| Midnight UTC                                   | yesterday's `daily` row is never rewritten; today starts from this run alone                         |
 
 ## Security and trust
 
@@ -190,12 +192,13 @@ gzipped (`api.test.ts`); `rollup.test.ts` rolls a worst-case day (24 checks for 
 
 ## Observability
 
-| Level   | Line                           | Where      |
-| ------- | ------------------------------ | ---------- |
-| `log`   | `{"run":"status", …RunReport}` | `index.ts` |
-| `error` | `status run failed`            | `index.ts` |
-| `error` | `status snapshot read failed`  | `api.ts`   |
-| `error` | `status cache put failed`      | `api.ts`   |
+| Level   | Line                             | Where                                  |
+| ------- | -------------------------------- | -------------------------------------- |
+| `log`   | `{"run":"status", …RunReport}`   | `index.ts`                             |
+| `error` | `status run failed`              | `index.ts`                             |
+| `error` | `status snapshot read failed`    | `api.ts`                               |
+| `error` | `[d1] unavailable route=<route>` | `index.ts` (the request-failure guard) |
+| `error` | `status cache put failed`        | `api.ts`                               |
 
 Probes send `User-Agent: liveworkspace-status/1 (+https://www.liveworkspace.app/status)`, so a service's own logs can tell
 them apart.

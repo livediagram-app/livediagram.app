@@ -400,6 +400,8 @@ last uploaded, the liveworkspace name it mirrors, the notice). Its alarm runs pa
   32 MB, the most an import can take.
 - Open and import answer `502 google_failed` for any failure they have no named answer for: Google erroring once the
   client stops retrying, Google's token endpoint down, the index erroring, or a door timing out. Never a bare 500.
+  The person's own mirror out of reach is no upstream's failure: any route answers it `503 storage_unavailable`
+  ([When a request fails](../002-architecture/architecture.md#when-a-request-fails)).
 - Marks cover the mirrored rows and failed writes. An item not yet mirrored carries no mark until its first pass.
 - The Durable Object's RPC for consent is `connectGoogle` (`connect` is the runtime's own name).
 - Locally the service runs on port 3011 (`corepack pnpm dev:drive`). The site's dev server and each router's

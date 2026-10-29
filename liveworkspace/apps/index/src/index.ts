@@ -24,6 +24,8 @@ import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountTimeline, handleTimeline } from './timeline';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 import { under } from '@liveworkspace/index-app/worker-http';
+import { guardRequest } from '@liveworkspace/api-kit/request-failure';
+import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 
 function splitPath(path: string): string[] | null {
   try {
@@ -87,50 +89,102 @@ async function route(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
+// The route words a failure is logged under (`Get.Index.Items.Share`), never an id or a share code.
+const routeLabel = createApiRouteLabel(
+  new Set(['index']),
+  new Set([
+    'app',
+    'internal',
+    'merge',
+    'timeline',
+    'purge-person',
+    'workbench-close',
+    'jwks',
+    'items',
+    'share',
+    'share-password',
+    'folders',
+    'favourites',
+    'recent-hidden',
+    'placement-defaults',
+    'shared',
+    'inbox',
+    'trash',
+    'restore',
+    'copy',
+    'open',
+    'seen',
+    'dismiss',
+    'extend',
+    'all',
+    'recent',
+    'unsorted',
+    'search',
+    'summary',
+    'previews',
+    'collab',
+    'forms',
+    'grant',
+    'events',
+    'people',
+    'drive',
+    'migration',
+    'handoff',
+  ]),
+);
+
+async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const url = new URL(request.url);
+  if (!under(url.pathname, API_PATH)) return new Response('Not found', { status: 404 });
+  if (!indexEnabled(env)) return notFound();
+  const segments = splitPath(url.pathname.slice(API_PATH.length));
+  if (!segments) return notFound();
+  const waitUntil = (promise: Promise<unknown>) => ctx.waitUntil(promise);
+  // Server to server: an app's pushes, the Drive mirror's flag, and accounts' merge. No person, no browser.
+  if (segments[0] === 'app') return handleApp(request, env, segments, waitUntil);
+  if (segments[0] === 'internal' && segments[1] === 'merge' && segments.length === 2) {
+    return handleMerge(request, env, waitUntil);
+  }
+  // Accounts' team and API token events for the Timeline.
+  if (segments[0] === 'internal' && segments[1] === 'timeline' && segments.length === 2) {
+    return handleAccountTimeline(request, env);
+  }
+  if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
+    return handlePersonPurge(request, env, waitUntil);
+  }
+  // Accounts' workbench service closing the rooms a pairing's sessions joined.
+  if (segments[0] === 'internal' && segments[1] === 'workbench-close' && segments.length === 2) {
+    return handleWorkbenchClose(request, env);
+  }
+  const caller = await callerOf(request, env);
+  if (caller === 'guest') return forbidden();
+  if (!caller) return unauthorized();
+  // An app acting for a person reaches that app's items only: its lists are that app's. The Drive mirror's
+  // lists are every app's (an `app` or `apps` filter it sends still applies), its reach narrowed instead.
+  const delegate = caller.person?.app;
+  if (delegate && LISTS.has(segments[0] ?? '') && segments.length === 1) {
+    url.searchParams.set('app', delegate);
+  }
+  if (caller.person?.drive) {
+    const share = segments[2] === 'share' || segments[2] === 'share-password';
+    if (!DRIVE_ROUTES.has(segments[0] ?? '') || (segments[0] === 'items' && share)) {
+      return notFound();
+    }
+  }
+  const drive: DriveTouched = new Set();
+  const response = await route({ request, env, url, segments, caller, waitUntil, drive });
+  // After the answer: the Drive mirror hears of its people's changes (nothing without its binding).
+  if (drive.size > 0 && env.DRIVE) ctx.waitUntil(sendDriveSignals(env, drive));
+  return response;
+}
+
 const worker = {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-    if (!under(url.pathname, API_PATH)) return new Response('Not found', { status: 404 });
-    if (!indexEnabled(env)) return notFound();
-    const segments = splitPath(url.pathname.slice(API_PATH.length));
-    if (!segments) return notFound();
-    const waitUntil = (promise: Promise<unknown>) => ctx.waitUntil(promise);
-    // Server to server: an app's pushes, the Drive mirror's flag, and accounts' merge. No person, no browser.
-    if (segments[0] === 'app') return handleApp(request, env, segments, waitUntil);
-    if (segments[0] === 'internal' && segments[1] === 'merge' && segments.length === 2) {
-      return handleMerge(request, env, waitUntil);
-    }
-    // Accounts' team and API token events for the Timeline.
-    if (segments[0] === 'internal' && segments[1] === 'timeline' && segments.length === 2) {
-      return handleAccountTimeline(request, env);
-    }
-    if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
-      return handlePersonPurge(request, env, waitUntil);
-    }
-    // Accounts' workbench service closing the rooms a pairing's sessions joined.
-    if (segments[0] === 'internal' && segments[1] === 'workbench-close' && segments.length === 2) {
-      return handleWorkbenchClose(request, env);
-    }
-    const caller = await callerOf(request, env);
-    if (caller === 'guest') return forbidden();
-    if (!caller) return unauthorized();
-    // An app acting for a person reaches that app's items only: its lists are that app's. The Drive mirror's
-    // lists are every app's (an `app` or `apps` filter it sends still applies), its reach narrowed instead.
-    const delegate = caller.person?.app;
-    if (delegate && LISTS.has(segments[0] ?? '') && segments.length === 1) {
-      url.searchParams.set('app', delegate);
-    }
-    if (caller.person?.drive) {
-      const share = segments[2] === 'share' || segments[2] === 'share-password';
-      if (!DRIVE_ROUTES.has(segments[0] ?? '') || (segments[0] === 'items' && share)) {
-        return notFound();
-      }
-    }
-    const drive: DriveTouched = new Set();
-    const response = await route({ request, env, url, segments, caller, waitUntil, drive });
-    // After the answer: the Drive mirror hears of its people's changes (nothing without its binding).
-    if (drive.size > 0 && env.DRIVE) ctx.waitUntil(sendDriveSignals(env, drive));
-    return response;
+  // One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    return guardRequest(
+      () => serve(request, env, ctx),
+      () => ({ route: routeLabel(request.method, request.url), json }),
+    );
   },
 
   // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests

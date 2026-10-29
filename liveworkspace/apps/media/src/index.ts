@@ -8,24 +8,40 @@
 
 import { API_PATH, PREVIEWS_PATH, UNUSED_IMAGE_AGE_MS } from './config';
 import { mediaEnabled, type Env } from './env';
-import { notFound } from './http';
+import { json, notFound } from './http';
 import { sweepUnusedImages } from './retention';
 import { handlePreviews } from './previews/routes';
 import { handleApp } from './routes';
 import { under } from '@liveworkspace/index-app/worker-http';
+import { guardRequest } from '@liveworkspace/api-kit/request-failure';
+import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
+
+// The route words a failure is logged under (`Get.Media.App.Images.Bytes`), never an id.
+const routeLabel = createApiRouteLabel(
+  new Set(['media', 'previews']),
+  new Set(['app', 'images', 'bytes', 'previews', 'usage', 'refs', 'owners', 'merge']),
+);
+
+async function serve(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
+  const url = new URL(request.url);
+  if (under(url.pathname, PREVIEWS_PATH)) {
+    if (!mediaEnabled(env)) return notFound();
+    const defer = (work: Promise<unknown>) => (ctx ? ctx.waitUntil(work) : void work);
+    return handlePreviews(request, env, url, url.pathname.slice(PREVIEWS_PATH.length), defer);
+  }
+  if (!under(url.pathname, API_PATH)) return new Response('Not found', { status: 404 });
+  const path = url.pathname.slice(API_PATH.length);
+  if (!mediaEnabled(env) || !under(path, '/app')) return notFound();
+  return handleApp(request, env, url, path.slice('/app'.length));
+}
 
 const worker = {
-  async fetch(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-    if (under(url.pathname, PREVIEWS_PATH)) {
-      if (!mediaEnabled(env)) return notFound();
-      const defer = (work: Promise<unknown>) => (ctx ? ctx.waitUntil(work) : void work);
-      return handlePreviews(request, env, url, url.pathname.slice(PREVIEWS_PATH.length), defer);
-    }
-    if (!under(url.pathname, API_PATH)) return new Response('Not found', { status: 404 });
-    const path = url.pathname.slice(API_PATH.length);
-    if (!mediaEnabled(env) || !under(path, '/app')) return notFound();
-    return handleApp(request, env, url, path.slice('/app'.length));
+  // One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+  fetch(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
+    return guardRequest(
+      () => serve(request, env, ctx),
+      () => ({ route: routeLabel(request.method, request.url), json }),
+    );
   },
 
   // Once a day: the unused-image sweep.

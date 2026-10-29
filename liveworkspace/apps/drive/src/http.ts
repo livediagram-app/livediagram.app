@@ -25,6 +25,8 @@ export const STATUS_OF: Record<DriveErrorCode, number> = {
   not_found: 404,
   file_too_large: 413,
   google_failed: 502,
+  storage_unavailable: 503,
+  internal_error: 500,
 };
 
 export const fail = (error: DriveErrorCode, status = STATUS_OF[error]) =>

@@ -4,14 +4,39 @@ Derived from [architecture.md](../architecture.md) and [integrating-an-app.md](.
 
 ## Domain and naming
 
-| Term             | Identifier                             | Meaning                                                                   |
-| ---------------- | -------------------------------------- | ------------------------------------------------------------------------- |
-| Origin           | `https://www.liveworkspace.app`        | Production; staging is `https://staging.liveworkspace.app`                |
-| Path route       | `routes` in `wrangler.toml`            | A Worker on a path of the zone; wins over the site's custom domain        |
-| Router           | `<app>/apps/router`                    | An app's front Worker; forwards the platform's paths on the app's address |
-| Workspace proxy  | `@liveworkspace/sites/workspace-proxy` | The routers' one shared forwarding table                                  |
-| Workspace origin | `WORKSPACE_ORIGIN`                     | Which platform a router forwards to                                       |
-| Service binding  | `[[services]]`                         | A direct Worker-to-Worker call, inside the account                        |
+| Term             | Identifier                                                      | Meaning                                                                   |
+| ---------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Origin           | `https://www.liveworkspace.app`                                 | Production; staging is `https://staging.liveworkspace.app`                |
+| Path route       | `routes` in `wrangler.toml`                                     | A Worker on a path of the zone; wins over the site's custom domain        |
+| Router           | `<app>/apps/router`                                             | An app's front Worker; forwards the platform's paths on the app's address |
+| Workspace proxy  | `@liveworkspace/sites/workspace-proxy`                          | The routers' one shared forwarding table                                  |
+| Workspace origin | `WORKSPACE_ORIGIN`                                              | Which platform a router forwards to                                       |
+| Service binding  | `[[services]]`                                                  | A direct Worker-to-Worker call, inside the account                        |
+| Request guard    | `@liveworkspace/api-kit/request-failure`                        | `guardRequest`: every storage-owning Worker's one answer to a throw       |
+| Storage outage   | `storageOutageOf(err)`                                          | `'d1'`, `'durable-object'` or null: the storage failing on its own side   |
+| Route words      | `createApiRouteLabel` (`@liveworkspace/telemetry/error-tokens`) | Method and known path words (`Get.Index.Items.Share`), never an id        |
+
+### When a request fails
+
+Each storage-owning Worker's `fetch` is `guardRequest(run, answer)`: an app's api around `routeApiRequest`, each
+service around its own dispatch (`serve` in accounts, index, media, community, telemetry and status; `handle` in
+Drive's `dispatch.ts`). `answer` is built only when `run` threw: the route words, the Worker's own `json` (so CORS and
+caching headers are its usual ones: community adds CORS on public routes only, telemetry `*`, index and Drive
+`private, no-store`, accounts `no-store`), and, in an app's api only, `reportCrash`, its `Error·Api·Internal.<Route>`
+emit (kept in `apps/api/src/index.ts`, where the telemetry emitter scan reads it). `failedRequestResponse`:
+
+1. `storageOutageOf(err)`: `'d1'` when the message matches D1's own failures (`D1_ERROR: internal error`, `network
+connection lost`, `D1 DB is overloaded`, `cannot resolve D1 DB due to transient issue`, `D1 DB storage operation
+exceeded timeout`, `internal error while starting up D1 DB storage`, `D1 DB reset because its code was updated`);
+   else `'durable-object'` when the error carries `retryable === true` or `overloaded === true`; else null.
+2. An outage: `console.error('[<outage>] unavailable route=<route>', err)`, then `503 { error: 'storage_unavailable' }`
+   with `Retry-After: 5`. No crash is reported.
+3. Anything else: `console.error('api error route=<route>', err)`, `reportCrash()` (a throw there logs
+   `[telemetry] crash report failed` and is swallowed), then `500 { error: 'internal_error' }`.
+
+A handler that catches broadly and would turn an outage into another answer rethrows it first: status's snapshot read
+(else an empty status, edge-cached), accounts' session read (else `401 signed_out`) and Drive's open and import (else
+`502 google_failed`).
 
 ## Behaviour and state
 
@@ -70,6 +95,8 @@ One origin means no CORS preflight for the site's own calls. Each service's blue
 
 ## Observability
 
+Every storage-owning Worker logs a request that threw as `[d1] unavailable route=<route>`, `[durable-object]
+unavailable route=<route>` or `api error route=<route>`, with the error; the route never carries an id.
 Each Worker's own logs are in its blueprint. The status service checks every service hourly
 ([009-status](../../009-status/README.md)).
 
@@ -146,19 +173,25 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
 
 ## Errors and edge cases
 
-| Case                                          | Answer                                      |
-| --------------------------------------------- | ------------------------------------------- |
-| A forward that arrives at a router again      | `508 router: already forwarded once`        |
-| `WORKSPACE_ORIGIN` naming the app itself      | `508 router: WORKSPACE_ORIGIN is this site` |
-| A redirect leaving the forwarded routes       | passed through as it is                     |
-| A malformed `Set-Cookie` name on a flow route | dropped                                     |
+| Case                                            | Answer                                                |
+| ----------------------------------------------- | ----------------------------------------------------- |
+| A forward that arrives at a router again        | `508 router: already forwarded once`                  |
+| `WORKSPACE_ORIGIN` naming the app itself        | `508 router: WORKSPACE_ORIGIN is this site`           |
+| A redirect leaving the forwarded routes         | passed through as it is                               |
+| A malformed `Set-Cookie` name on a flow route   | dropped                                               |
+| A storage-owning Worker's D1 down               | `503 storage_unavailable`, `Retry-After: 5`           |
+| A Durable Object marked retryable or overloaded | `503 storage_unavailable`, `Retry-After: 5`           |
+| Anything else a request throws                  | `500 internal_error`; the body never echoes the error |
 
 ## Testing
 
-| Test                                              | Pins                                                                                              |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `packages/sites/src/workspace-proxy.test.ts` (22) | every router's forwards: routes, cookies, loop guard, visitor address, redirects, the status page |
-| `packages/sites/src/previews-proxy.test.ts` (3)   | the previews forward and the share link's picture doors                                           |
+| Test                                                                                         | Pins                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/sites/src/workspace-proxy.test.ts` (22)                                            | every router's forwards: routes, cookies, loop guard, visitor address, redirects, the status page                                                      |
+| `packages/sites/src/previews-proxy.test.ts` (3)                                              | the previews forward and the share link's picture doors                                                                                                |
+| `packages/api-kit/src/request-failure.test.ts` (23)                                          | D1 and Durable Object outages named, bugs left to the 500, the answers and their logs, the guard (held at 100%)                                        |
+| `<app>/apps/api/src/request-failure.test.ts` (4 each)                                        | an outage and a bug before any route (the token lookup) and inside one, CORS and the release on the answer                                             |
+| each service's `request-failure.test.ts`, `index.test.ts`, `api.test.ts` or `routes.test.ts` | its D1 or mirror outage answered 503 with its own headers and route words, through `unavailableD1()` (`@liveworkspace/api-kit/testing/unavailable-d1`) |
 
 Each service's own tests are in its blueprint.
 
@@ -169,7 +202,9 @@ Each service's own tests are in its blueprint.
 `X-Liveworkspace-Client-IP`; `ACCOUNTS_ON_APP_PATH` `/api/workspace/auth`; `FLOW_COOKIE_PREFIX` `lw_flow.`;
 `FLOW_COOKIE_MAX_AGE_SECONDS` 900; `SITE_ASSET_PREFIX` `/_liveworkspace`; `DRIVE_PATH` `/api/drive`; `PREVIEWS_PATH`
 `/api/previews`; `STATUS_PATH` `/status`; `LOOP_DETECTED` 508 (`packages/sites/src/workspace-proxy.ts`). Each router's
-`WORKSPACE_ORIGIN` and `INDEX_ORIGIN` vars.
+`WORKSPACE_ORIGIN` and `INDEX_ORIGIN` vars. `UNAVAILABLE_RETRY_AFTER_SECONDS` 5
+(`packages/api-kit/src/request-failure.ts`): the `Retry-After` of every storage and accounts outage; long enough for a
+short D1 or Durable Object reset, short enough that a caller's retry lands soon after one; safe from 1 to 60.
 
 ## Defaults ledger
 

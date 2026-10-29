@@ -142,7 +142,9 @@ envelope's `kind`, and calls the app's import door with `{ owner, folderId: null
 Every answer is JSON with `Cache-Control: private, no-store`; errors are `{ error: DriveErrorCode }` with
 `STATUS_OF`: `drive_not_configured` 503, `unauthorised` 401, `not_connected` 404, `needs_reconnect` 409,
 `invalid_request` 400, `invalid_state` 400, `rate_limited` 429, `not_found` 404, `file_too_large` 413,
-`google_failed` 502. Bodies over 16 KiB or not a JSON object are `invalid_request`.
+`google_failed` 502, `storage_unavailable` 503 (with `Retry-After: 5`), `internal_error` 500. Bodies over 16 KiB or not a
+JSON object are `invalid_request`. `handle` (`dispatch.ts`) runs every request inside `guardRequest`; its route words
+name an app door under Drive's path (`Delete.Drive.App.People`), never an id.
 
 ### Browser routes (`/api/drive/<route>`, an account access token)
 
@@ -201,20 +203,22 @@ person id as additional data. The consent `state` and the channel token are HMAC
 
 ## Errors and edge cases
 
-| Case                                       | Behaviour                                                      |
-| ------------------------------------------ | -------------------------------------------------------------- |
-| `DRIVE_TOKEN_KEY` set but not 32 bytes     | not configured; `drive: key-invalid` once per isolate          |
-| A row naming another person                | refused, `person-mismatch`                                     |
-| The index list longer than 100 pages       | the pass throws; nothing binned                                |
-| Page token rejected                        | restart from now and adopt                                     |
-| Root deleted in Drive                      | rows cleared; a new root next batch                            |
-| A file deleted in Drive the mirror updates | re-created where it belongs                                    |
-| A folder move making a cycle               | refused by the index; Drive put back                           |
-| Item moved into a team or purged           | its file to Drive's bin, row kept (the index can't tell which) |
-| A push with a bad token                    | `200`, logged `push-refused`                                   |
-| A pass past 800 subrequests                | stops cleanly, continues in 1 s                                |
-| Index flag write fails                     | logged; the fallback check covers it                           |
-| A switch never answered                    | revoked on the next alarm past 30 min                          |
+| Case                                       | Behaviour                                                                                   |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `DRIVE_TOKEN_KEY` set but not 32 bytes     | not configured; `drive: key-invalid` once per isolate                                       |
+| A row naming another person                | refused, `person-mismatch`                                                                  |
+| The index list longer than 100 pages       | the pass throws; nothing binned                                                             |
+| Page token rejected                        | restart from now and adopt                                                                  |
+| Root deleted in Drive                      | rows cleared; a new root next batch                                                         |
+| A file deleted in Drive the mirror updates | re-created where it belongs                                                                 |
+| A folder move making a cycle               | refused by the index; Drive put back                                                        |
+| Item moved into a team or purged           | its file to Drive's bin, row kept (the index can't tell which)                              |
+| A push with a bad token                    | `200`, logged `push-refused`                                                                |
+| A pass past 800 subrequests                | stops cleanly, continues in 1 s                                                             |
+| Index flag write fails                     | logged; the fallback check covers it                                                        |
+| The mirror's Durable Object out of reach   | `503 storage_unavailable`, never `502 google_failed`; logged `[durable-object] unavailable` |
+| Anything else a route throws               | `500 internal_error`, logged `api error route=<route words>`                                |
+| A switch never answered                    | revoked on the next alarm past 30 min                                                       |
 
 ## Security and trust
 

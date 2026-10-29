@@ -2,6 +2,7 @@
 // anonymous and cacheable. Each is one stored row, built by the last run; before any run, an empty answer.
 
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { storageOutageOf } from '@liveworkspace/api-kit/request-failure';
 import {
   emptyHistory,
   HISTORY_DAYS,
@@ -46,6 +47,9 @@ async function readSnapshot(env: Env, key: Read): Promise<string | null> {
       .first<{ body: string }>();
     return row?.body ?? null;
   } catch (err) {
+    // D1 itself down is no answer at all: the request-failure guard answers it 503, rather than an empty status
+    // that the edge would then cache as the truth.
+    if (storageOutageOf(err)) throw err;
     // No table yet (a fresh local database before its migration): the same as no run yet.
     console.error('status snapshot read failed', err);
     return null;

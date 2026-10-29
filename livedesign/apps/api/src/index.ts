@@ -18,6 +18,10 @@ import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited }
 import { handleEvents } from './routes/events';
 import { handleImages } from './routes/images';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import {
+  guardRequest,
+  UNAVAILABLE_RETRY_AFTER_SECONDS,
+} from '@liveworkspace/api-kit/request-failure';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { PHOTO_BATCH_BYTES } from '@livedesign/photo-engine';
 import { handleAccount } from './routes/account';
@@ -121,10 +125,7 @@ async function routeApiRequest(
         tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
       } catch (err) {
         if (!(err instanceof AccountsUnavailable)) throw err;
-        return json(
-          { error: 'accounts_unavailable' },
-          { status: 503, headers: { 'Retry-After': '5' } },
-        );
+        return accountsUnavailable();
       }
       // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
       // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
@@ -161,10 +162,7 @@ async function routeApiRequest(
           : { ok: false, reason: 'malformed', sessionPrefix: '' };
       } catch (err) {
         if (!(err instanceof AccountsUnavailable)) throw err;
-        return json(
-          { error: 'accounts_unavailable' },
-          { status: 503, headers: { 'Retry-After': '5' } },
-        );
+        return accountsUnavailable();
       }
       if (!resolved.ok) {
         console.warn('[workbench] bearer-refused', {
@@ -308,67 +306,79 @@ async function routeApiRequest(
     bearer: person ? bearerTokenOf(request.headers.get('Authorization')) : null,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
-  try {
-    switch (segments[1]) {
-      case 'capabilities':
-        return handleCapabilities(ctx);
-      case 'templates':
-      case 'icons':
-      case 'schema':
-        return handleCatalogues(ctx);
-      case 'openapi.json':
-        return handleOpenapi(ctx);
-      case 'unfurl':
-        return await handleUnfurl(ctx);
-      case 'events':
-        return await handleEvents(ctx);
-      case 'share':
-        return await handleShare(ctx);
-      case 'images':
-        return await handleImages(ctx);
-      case 'designs':
-        return await handleDesigns(ctx);
-      case 'folders':
-        return await handleFolders(ctx);
-      case 'teams':
-        return await handleTeams(ctx);
-      case 'tokens':
-        return await handleTokens(ctx);
-      case 'oauth':
-        return await handleOauthExchange(ctx);
-      case 'account':
-        return await handleAccount(ctx);
-      case 'trash':
-        return await handleTrash(ctx);
-      case 'preferences':
-        return await handlePreferences(ctx);
-      case 'participants':
-        return await handleParticipants(ctx);
-    }
-  } catch (err) {
-    // Log the real error server-side, but don't echo its message to the
-    // client — internal error text can leak implementation details (table
-    // names, stack hints). Return a generic body instead.
-    console.error('api error', err);
-    // Self-report the crash (docs/specs/017-telemetry/telemetry.md 'Error' category), so a
-    // server-side exception counts even when no client survives to report it.
-    // Off the response's critical path (waitUntil), and its own failure is
-    // swallowed — the 500 must still go out. The type names the endpoint by its
-    // route words only (`Internal.Put.Designs.Tabs`), never an id.
-    if (telemetryEnabled(env)) {
-      const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
-      executionCtx?.waitUntil?.(reportServerEvent(env, 'Error', 'Api', type));
-    }
-    return json({ error: 'internal_error' }, { status: 500 });
+  switch (segments[1]) {
+    case 'capabilities':
+      return handleCapabilities(ctx);
+    case 'templates':
+    case 'icons':
+    case 'schema':
+      return handleCatalogues(ctx);
+    case 'openapi.json':
+      return handleOpenapi(ctx);
+    case 'unfurl':
+      return await handleUnfurl(ctx);
+    case 'events':
+      return await handleEvents(ctx);
+    case 'share':
+      return await handleShare(ctx);
+    case 'images':
+      return await handleImages(ctx);
+    case 'designs':
+      return await handleDesigns(ctx);
+    case 'folders':
+      return await handleFolders(ctx);
+    case 'teams':
+      return await handleTeams(ctx);
+    case 'tokens':
+      return await handleTokens(ctx);
+    case 'oauth':
+      return await handleOauthExchange(ctx);
+    case 'account':
+      return await handleAccount(ctx);
+    case 'trash':
+      return await handleTrash(ctx);
+    case 'preferences':
+      return await handlePreferences(ctx);
+    case 'participants':
+      return await handleParticipants(ctx);
   }
 
   return notFound();
 }
 
+// liveworkspace can't say whether a credential is good: neither good nor bad, so a client retries rather than drops it.
+const accountsUnavailable = (): Response =>
+  json(
+    { error: 'accounts_unavailable' },
+    { status: 503, headers: { 'Retry-After': String(UNAVAILABLE_RETRY_AFTER_SECONDS) } },
+  );
+
 const worker = {
   // Every response carries the server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
-    return withServerRelease(await routeApiRequest(request, env, executionCtx), env.BUILD_ID);
+    // One guard for the whole request, identity resolution included (docs/specs/015-api/api.md "When a request
+    // fails"): nothing that throws is left to the runtime's bare error page.
+    const response = await guardRequest(
+      () => routeApiRequest(request, env, executionCtx),
+      () => {
+        // The route by its words only (`Put.Designs.Tabs`), never an id.
+        const route = apiRouteLabel(request.method, request.url);
+        return {
+          route,
+          json,
+          // Self-report the crash (docs/specs/017-telemetry/telemetry.md 'Error' category), so a server-side
+          // exception counts even when no client survives to report it. Off the response's critical path
+          // (waitUntil); the send swallows its own failure, so the 500 still goes out.
+          reportCrash: () => {
+            if (telemetryEnabled(env))
+              executionCtx?.waitUntil?.(
+                reportServerEvent(env, 'Error', 'Api', errorTypeToken('Internal', route)),
+              );
+          },
+        };
+      },
+    );
+    return withServerRelease(response, env.BUILD_ID);
   },
 
   // Scheduled handler (wrangler.toml's one cron). The Trash, its purge and the empty-design sweep are the index's

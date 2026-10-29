@@ -161,18 +161,19 @@ SELECT date(ts / 1000, 'unixepoch') AS day, app, category, action, type, COUNT(*
 
 ## Errors and edge cases
 
-| Case                                                                                                         | Answer                                                     |
-| ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| Telemetry off                                                                                                | ingest `204`, nothing stored; summary `{ enabled: false }` |
-| Body over 64 KiB (header or text), not JSON, wrong shape                                                     | `204`, nothing stored                                      |
-| A key for `liveworkspace.app`, a wrong key, an unset key                                                     | `204`, nothing stored                                      |
-| An app page naming another app; a foreign origin                                                             | `204`, nothing stored                                      |
-| A localhost page outside development                                                                         | `204`, nothing stored                                      |
-| Over the per-network limit                                                                                   | `204`, nothing stored (Workers are never limited)          |
-| Events outside the vocabulary; server-only from a browser; non-Explorer, non-settings from liveworkspace.app | dropped, the rest stored                                   |
-| More than 100 valid events                                                                                   | the first 100 stored                                       |
-| D1 throws on insert                                                                                          | `204`, the batch lost                                      |
-| Edge-cached summary (immutable headers)                                                                      | copied before the CORS header is set                       |
+| Case                                                                                                         | Answer                                                       |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Telemetry off                                                                                                | ingest `204`, nothing stored; summary `{ enabled: false }`   |
+| Body over 64 KiB (header or text), not JSON, wrong shape                                                     | `204`, nothing stored                                        |
+| A key for `liveworkspace.app`, a wrong key, an unset key                                                     | `204`, nothing stored                                        |
+| An app page naming another app; a foreign origin                                                             | `204`, nothing stored                                        |
+| A localhost page outside development                                                                         | `204`, nothing stored                                        |
+| Over the per-network limit                                                                                   | `204`, nothing stored (Workers are never limited)            |
+| Events outside the vocabulary; server-only from a browser; non-Explorer, non-settings from liveworkspace.app | dropped, the rest stored                                     |
+| More than 100 valid events                                                                                   | the first 100 stored                                         |
+| D1 throws on insert                                                                                          | `204`, the batch lost, logged `[telemetry] batch lost`       |
+| D1 down on the summary                                                                                       | `503 storage_unavailable` with `Retry-After: 5` and CORS `*` |
+| Edge-cached summary (immutable headers)                                                                      | copied before the CORS header is set                         |
 
 ## Security and trust
 
@@ -192,13 +193,15 @@ SELECT date(ts / 1000, 'unixepoch') AS day, app, category, action, type, COUNT(*
 
 ## Observability
 
-| Level   | Line                            | Where        |
-| ------- | ------------------------------- | ------------ |
-| `log`   | `{"sweep":"events","rows":<n>}` | `index.ts`   |
-| `error` | `events sweep failed`           | `index.ts`   |
-| `error` | `summary cache put failed`      | `summary.ts` |
+| Level   | Line                             | Where                                  |
+| ------- | -------------------------------- | -------------------------------------- |
+| `log`   | `{"sweep":"events","rows":<n>}`  | `index.ts`                             |
+| `error` | `events sweep failed`            | `index.ts`                             |
+| `error` | `summary cache put failed`       | `summary.ts`                           |
+| `error` | `[telemetry] batch lost`         | `ingest.ts`                            |
+| `error` | `[d1] unavailable route=<route>` | `index.ts` (the request-failure guard) |
 
-Ingest logs nothing, by design: every refusal is silent.
+Ingest logs no refusal, by design: every refusal is silent. A batch D1 failed to store is no refusal, so it is logged.
 
 ## Testing
 
@@ -256,6 +259,6 @@ None beyond D1, the rate-limit binding and `caches.default`.
 
 ## Defaults ledger
 
-- `TEL1`: a D1 error on insert is swallowed and the batch lost; ingest still answers `204`.
+- `TEL1`: a D1 error on insert loses the batch, logged `[telemetry] batch lost`; ingest still answers `204`.
 - `TEL2`: every refusal answers `204` with nothing stored, so a sender learns nothing from the answer.
 - `TEL3`: of more than 100 valid events in one batch, the first 100 are stored.

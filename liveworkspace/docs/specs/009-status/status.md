@@ -47,7 +47,9 @@ Nothing alerts anyone. That may come later; the incidents table is where it woul
 ## The read API
 
 Both are `GET` only, public and anonymous, cached for 2 minutes (`Cache-Control: public, max-age=120`, and the
-Worker's edge cache), and read one stored row. The page is on the same origin, so there is no CORS.
+Worker's edge cache), and read one stored row. The page is on the same origin, so there is no CORS. With the
+database itself down they answer `503 storage_unavailable`, never an empty status that would then be cached as the
+truth ([When a request fails](../002-architecture/architecture.md#when-a-request-fails)).
 
 **`GET /api/status`**: the latest run.
 

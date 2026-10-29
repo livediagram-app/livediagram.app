@@ -254,6 +254,10 @@ export const INDEX_ERRORS = [
   'rate_limited',
   'payload_too_large',
   'migration_failed',
+  // Any request that threw (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails"): the
+  // database failing on its side (503 with Retry-After), or anything else (500).
+  'storage_unavailable',
+  'internal_error',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
 
