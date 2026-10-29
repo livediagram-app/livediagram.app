@@ -4712,6 +4712,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
       better-auth:
         specifier: 1.7.12
         version: 1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
@@ -4752,6 +4755,9 @@ importers:
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
@@ -4777,6 +4783,9 @@ importers:
 
   liveworkspace/apps/drive:
     dependencies:
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -4795,13 +4804,13 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@liveworkspace/api-kit':
-        specifier: workspace:^
-        version: link:../../../packages/api-kit
       '@liveworkspace/fake-google':
         specifier: workspace:*
         version: link:../../../packages/fake-google
@@ -4844,6 +4853,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:^
         version: link:../../../packages/sites
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
       jose:
         specifier: ^6.2.12
         version: 6.2.13
@@ -4884,6 +4896,9 @@ importers:
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
@@ -5173,6 +5188,9 @@ importers:
       '@liveworkspace/status':
         specifier: workspace:*
         version: link:../../packages/status
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1

@@ -14,7 +14,9 @@ const INDEX = readFileSync(fileURLToPath(new URL('./index.ts', import.meta.url).
 describe('error route labels', () => {
   it('know every resource the worker dispatches on', () => {
     const dispatch = INDEX.slice(INDEX.indexOf('switch (segments[1])'));
-    const cases = [...dispatch.slice(0, dispatch.indexOf('} catch')).matchAll(/case '([^']+)':/g)]
+    const cases = [
+      ...dispatch.slice(0, dispatch.indexOf('return notFound();\n}')).matchAll(/case '([^']+)':/g),
+    ]
       .map((m) => m[1])
       .sort();
     expect(cases.length).toBeGreaterThan(15);

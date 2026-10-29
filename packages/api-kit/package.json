@@ -17,11 +17,13 @@
     "./refusal-log": "./src/refusal-log.ts",
     "./request-auth": "./src/request-auth.ts",
     "./request-body": "./src/request-body.ts",
+    "./request-failure": "./src/request-failure.ts",
     "./responses": "./src/responses.ts",
     "./room-access": "./src/room-access.ts",
     "./room-agent-presence": "./src/room-agent-presence.ts",
     "./room-follows": "./src/room-follows.ts",
     "./room-multiplayer": "./src/room-multiplayer.ts",
+    "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",
     "./unfurl": "./src/unfurl.ts",
     "./unfurl-fetch": "./src/unfurl-fetch.ts"
   },

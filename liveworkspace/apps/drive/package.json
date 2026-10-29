@@ -15,16 +15,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
-    "@liveworkspace/sites": "workspace:*"
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",
-    "@liveworkspace/api-kit": "workspace:^",
     "@liveworkspace/fake-google": "workspace:*",
     "@types/node": "^26.6.4",
     "jose": "^6.2.12",

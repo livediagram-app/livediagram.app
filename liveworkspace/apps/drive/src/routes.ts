@@ -2,6 +2,7 @@
 // on each app's through its router. Every route but `config` needs a configured deployment (503 otherwise) and an
 // account access token (401 otherwise); each answers from the person's object, by account id.
 
+import { storageOutageOf } from '@liveworkspace/api-kit/request-failure';
 import {
   isDriveId,
   type DriveConfigAnswer,
@@ -60,7 +61,9 @@ const refused = (answer: object): answer is Refusal => 'refused' in answer;
 
 // Open and import reach Google, the index and an app's door: a failure none of them names (a Google 5xx once the
 // client stops retrying, a token endpoint outage, an index error, a door timeout) is `502 google_failed`, never a 500.
+// The person's own mirror out of reach is no upstream's failure: it goes on to the request-failure guard, a 503.
 function unexpected(route: string, err: unknown, person: string): Response {
+  if (storageOutageOf(err)) throw err;
   driveWarn(`${route}-failed`, { person, error: errorKind(err) });
   return fail('google_failed');
 }

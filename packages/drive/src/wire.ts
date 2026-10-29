@@ -99,4 +99,8 @@ export type DriveErrorCode =
   | 'not_found'
   // Import as a copy: the file is larger than DRIVE_IMPORT_MAX_BYTES (413).
   | 'file_too_large'
-  | 'google_failed';
+  | 'google_failed'
+  // Any request that threw (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails"): a
+  // mirror's storage failing on its side (503 with Retry-After), or anything else (500).
+  | 'storage_unavailable'
+  | 'internal_error';

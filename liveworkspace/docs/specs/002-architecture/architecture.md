@@ -44,6 +44,23 @@ and forwards carry the visitor's address in `X-Liveworkspace-Client-IP`. Each ro
 - **The index and Drive call an app back** at the app's internal routes (`/api/internal/items/…`): the index with the
   app's `INDEX_KEY` to copy and purge, Drive with the app's `DRIVE_KEY` to export and import.
 
+## When a request fails
+
+Every Worker that owns storage (each service above but the site, and each app's api) answers a request that throws
+itself, at any step from resolving who is calling to the route's own work, never leaving it to the runtime's bare
+error page. One shared guard does it, `@liveworkspace/api-kit/request-failure`.
+
+- **The storage is unavailable: `503 storage_unavailable`** with `Retry-After: 5`. It is the storage failing on its
+  own side, not the request: D1 (an internal error, a lost connection, an overloaded or reset database, a storage
+  timeout), or a Durable Object's infrastructure (an error it marks retryable or overloaded). The same call succeeds
+  once the storage recovers, so the caller retries. Logged as `[d1] unavailable route=<route words>` or
+  `[durable-object] unavailable route=<route words>` with the error.
+- **Anything else: `500 internal_error`**, logged as `api error route=<route words>` with the error. A D1 error that
+  names the query (a constraint, a type, SQL) and an error a Durable Object's own code threw are bugs, so they land
+  here too. An app's api also counts it as a crash in its telemetry; the services only log it.
+- Neither body echoes the error's text. The route words are the method and the path's known words, never an id.
+- The answer carries the Worker's usual headers, CORS included where its routes have them.
+
 ## Environments and the account
 
 Two environments, production and staging, each a `wrangler.toml` environment with its own Worker name (`-staging`),

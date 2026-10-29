@@ -5,7 +5,8 @@ import {
   type StatusHistory,
   statusGroups,
 } from '@liveworkspace/status';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { parseDays } from './api';
 import type { Env } from './env';
 import worker from './index';
@@ -150,5 +151,25 @@ describe('the read API', () => {
     console.log(JSON.stringify({ worstCaseBytes: text.length, gzipBytes: gzipSync(text).length }));
     expect(text.length).toBeLessThan(24_000);
     expect(gzipSync(text).length).toBeLessThan(4_000);
+  });
+});
+
+// A D1 outage (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+describe('the read API when D1 is unavailable', () => {
+  it('answers 503 storage_unavailable, and never caches an empty status as the truth', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const env = testEnv({ STATUS_DB: unavailableD1() });
+
+    const res = await get(env, '/api/status/history');
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('5');
+    expect(await res.json()).toEqual({ error: 'storage_unavailable' });
+    expect(error).toHaveBeenCalledWith(
+      '[d1] unavailable route=Get.Status.History',
+      expect.any(Error),
+    );
+    expect(store.size).toBe(0);
+    error.mockRestore();
   });
 });

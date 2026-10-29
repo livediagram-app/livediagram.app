@@ -124,15 +124,17 @@ Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined
 
 ## Errors and edge cases
 
-| Case                        | Answer                                                  |
-| --------------------------- | ------------------------------------------------------- |
-| No secret                   | `503 not_configured` on every route                     |
-| A write from another origin | `403 cross_origin`                                      |
-| No session                  | `401 signed_out`                                        |
-| Wrong client credentials    | `401 invalid_client`                                    |
-| The index down when closing | the account closes; the purge waits in `pending_purges` |
-| Drive down when closing     | logged, not retried                                     |
-| A cron step throws          | logged; later steps run                                 |
+| Case                        | Answer                                                       |
+| --------------------------- | ------------------------------------------------------------ |
+| No secret                   | `503 not_configured` on every route                          |
+| A write from another origin | `403 cross_origin`                                           |
+| No session                  | `401 signed_out`                                             |
+| D1 down reading the session | `503 storage_unavailable`, never `401 signed_out`            |
+| Anything else that throws   | `500 internal_error`, logged `api error route=<route words>` |
+| Wrong client credentials    | `401 invalid_client`                                         |
+| The index down when closing | the account closes; the purge waits in `pending_purges`      |
+| Drive down when closing     | logged, not retried                                          |
+| A cron step throws          | logged; later steps run                                      |
 
 ## Security and trust
 

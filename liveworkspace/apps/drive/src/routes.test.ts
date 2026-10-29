@@ -362,3 +362,55 @@ describe('the index’s and accounts’ calls', () => {
     expect(h.google.requests.some((r) => r.path === '/revoke')).toBe(true);
   });
 });
+
+// A mirror's Durable Object out of reach (liveworkspace/docs/specs/002-architecture/architecture.md "When a request
+// fails"): a retryable 503, never a Google failure.
+describe('when the mirror is unavailable', () => {
+  const outage = () =>
+    Object.assign(new Error('Durable Object reset because its code was updated.'), {
+      retryable: true,
+    });
+
+  it('answers open 503 storage_unavailable, not 502 google_failed', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await h.connect();
+    const object = asObject();
+    deps = { ...deps, mirrors: () => ({ ...object, open: async () => Promise.reject(outage()) }) };
+
+    const res = await call('/api/drive/open', {
+      method: 'POST',
+      bearer: await token(PERSON),
+      body: { fileId: 'file_1' },
+    });
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('5');
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+    expect(await res.json()).toEqual({ error: 'storage_unavailable' });
+    expect(error).toHaveBeenCalledWith(
+      '[durable-object] unavailable route=Post.Drive.Open',
+      expect.any(Error),
+    );
+  });
+
+  it("names an app door under Drive's path, never with the person's id", async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const object = asObject();
+    deps = {
+      ...deps,
+      mirrors: () => ({ ...object, disconnect: async () => Promise.reject(outage()) }),
+    };
+
+    const res = await call('/app/people/user_secret_7', {
+      method: 'DELETE',
+      bearer: 'accounts-key',
+    });
+
+    expect(res.status).toBe(503);
+    expect(error).toHaveBeenCalledWith(
+      '[durable-object] unavailable route=Delete.Drive.App.People',
+      expect.any(Error),
+    );
+    for (const [line] of error.mock.calls) expect(String(line)).not.toContain('user_secret_7');
+  });
+});

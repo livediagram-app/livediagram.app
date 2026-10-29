@@ -249,6 +249,22 @@ share-link visitor who once saw a project deleted would keep seeing it after the
 it. Not `no-store`: the browser's cache drains a stored answer's body, and without it an answer
 whose caller never reads the body holds its request open. The tab render sets its own policy.
 
+## When a request fails
+
+A request that throws, at any step from resolving who is calling to the route's own work, is answered by the worker,
+never left to the runtime's bare error page. The rule is the platform's, one shared guard for every Worker that owns
+storage ([When a request fails](../../../../liveworkspace/docs/specs/002-architecture/architecture.md#when-a-request-fails)):
+
+- **The storage is unavailable: `503 storage_unavailable`** with `Retry-After: 5`. Here that is a project's
+  Durable Object failing on its own side (an error its infrastructure marks retryable or overloaded), logged as
+  `[durable-object] unavailable route=<route words>`. The same call succeeds once it recovers, so the caller retries.
+- **Anything else: `500 internal_error`**, logged as `api error route=<route words>` with the error, and counted as
+  an `Error·Api·Internal.<Route words>` telemetry row (`Internal.Put.Projects.Tabs`) when `TELEMETRY_ENABLED` is on.
+- liveworkspace out of reach while checking a token or a workbench session stays `503 accounts_unavailable`, with
+  the same `Retry-After`.
+- Neither body echoes the error's text. The route words never carry an id. Every answer carries the CORS headers and
+  the server release signal, as any other does.
+
 ## Rate limiting
 
 Five limiters, each a Cloudflare Workers Rate Limiting binding declared under `[[unsafe.bindings]]` in `apps/api/wrangler.toml` (where the ceilings live). Over-limit requests get `429` with `{ "error": "rate_limited" }`, except the telemetry ingest, which answers with its usual no-op `204` so a throttled beacon never surfaces as an error.

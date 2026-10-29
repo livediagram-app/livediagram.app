@@ -1,5 +1,6 @@
 import type { TelemetrySummary } from '@liveworkspace/telemetry';
-import { describe, expect, it } from 'vitest';
+import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
+import { describe, expect, it, vi } from 'vitest';
 import { RETENTION_MS } from './config';
 import worker from './index';
 import { testEnv } from './test-env';
@@ -152,5 +153,47 @@ describe('telemetry worker', () => {
     } as unknown as ExecutionContext);
     await Promise.all(waits);
     expect(env.rows).toHaveLength(1);
+  });
+});
+
+// A D1 outage (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+describe('telemetry worker when D1 is unavailable', () => {
+  it('answers the summary 503 storage_unavailable, readable by any page', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const env = testEnv({ TELEMETRY_DB: unavailableD1() });
+
+    const res = await worker.fetch(get('/api/telemetry/summary?app=all'), env, ctx);
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('5');
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(await res.json()).toEqual({ error: 'storage_unavailable' });
+    expect(error).toHaveBeenCalledWith(
+      '[d1] unavailable route=Get.Telemetry.Summary',
+      expect.any(Error),
+    );
+    error.mockRestore();
+  });
+
+  it('still answers a batch 204, and logs the batch it lost', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const env = testEnv({ TELEMETRY_DB: unavailableD1() });
+
+    const res = await worker.fetch(
+      new Request('https://liveworkspace.app/api/telemetry/events', {
+        method: 'POST',
+        headers: { Origin: 'http://localhost:3100' },
+        body: JSON.stringify({
+          app: 'livediagram.app',
+          events: [{ category: 'Document', action: 'Created' }],
+        }),
+      }),
+      env,
+      ctx,
+    );
+
+    expect(res.status).toBe(204);
+    expect(error).toHaveBeenCalledWith('[telemetry] batch lost', expect.any(Error));
+    error.mockRestore();
   });
 });

@@ -50,7 +50,9 @@ comma-separated, ≤ 50>`. Every person route then answers as that account, but 
   a team or make one there (403). Folders are the account's own tree. `X-Index-Teams` and `X-Share-Code` are
   ignored. A guest id is refused 403; a wrong key, a link or a malformed person 401.
 
-Errors are `{ "error": "<code>" }` with a 4xx status. Lists are paged with `limit` (≤ 200) and an opaque
+Errors are `{ "error": "<code>" }` with a 4xx status, save a request that threw: `503 storage_unavailable` (with
+`Retry-After: 5`) when the index's database is down, `500 internal_error` otherwise
+([When a request fails](../002-architecture/architecture.md#when-a-request-fails)). Lists are paged with `limit` (≤ 200) and an opaque
 `cursor`; a response carries `nextCursor` when there is more.
 
 ## Guests

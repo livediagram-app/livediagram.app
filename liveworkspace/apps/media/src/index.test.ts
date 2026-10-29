@@ -7,7 +7,8 @@ import type {
   MediaUploadResponse,
   MediaUsageResponse,
 } from '@liveworkspace/media';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import type { Env } from './env';
 import { testDb, type TestDb } from './test-sqlite-d1';
@@ -334,5 +335,27 @@ describe('a guest signing up', () => {
     });
     const list = (await (await asApp('/app/images?owner=user_1')).json()) as MediaListResponse;
     expect(list.images.map((i) => i.id).sort()).toEqual([shared.image.id, fresh.image.id].sort());
+  });
+});
+
+// A D1 outage (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+describe('when D1 is unavailable', () => {
+  it('answers 503 storage_unavailable, naming the route by its words only', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await call(
+      '/app/images/img_123/bytes',
+      { headers: { Authorization: 'Bearer ld-key', 'X-Media-App': 'livediagram.app' } },
+      { ...db.env, MEDIA_DB: unavailableD1() },
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('5');
+    expect(await res.json()).toEqual({ error: 'storage_unavailable' });
+    expect(error).toHaveBeenCalledWith(
+      '[d1] unavailable route=Get.Media.App.Images.Bytes',
+      expect.any(Error),
+    );
+    error.mockRestore();
   });
 });

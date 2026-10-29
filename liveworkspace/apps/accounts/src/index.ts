@@ -18,6 +18,8 @@ import {
   SESSION_ENDING_ROUTES,
 } from './end-session.ts';
 import type { Env } from './env.ts';
+import { guardRequest } from '@liveworkspace/api-kit/request-failure';
+import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 import { sweepIdleGuests } from './guest-sweep.ts';
 import {
   AUTHORIZE_PATH,
@@ -53,144 +55,205 @@ export { WorkbenchStore } from './workbench/durable-object.ts';
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
 // (liveworkspace/apps/site), on the same origin.
-export default {
-  async fetch(incoming: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(incoming.url);
-    const { pathname } = url;
-    // Nothing is served without the secret: a key minted under Better Auth's default would break every sign-in
-    // once the real one is set (auth.ts getAuth).
-    if (!env.BETTER_AUTH_SECRET) {
-      console.error('[accounts] BETTER_AUTH_SECRET unset; refusing to serve');
-      return Response.json({ error: 'not_configured' }, { status: 503 });
-    }
-    // A cookie of ours that comes twice (production's on the domain beside staging's own, or a bare host-only copy
-    // from before the move to www.) is narrowed to the copy signed here, before anything reads it (own-cookies.ts).
-    const request = await withOwnCookies(incoming, env.BETTER_AUTH_SECRET);
+// The route words a failure is logged under (`Get.Account.Teams.Members`), never an id, a code or an email.
+const routeLabel = createApiRouteLabel(
+  new Set(['auth', 'account']),
+  new Set([
+    'guest',
+    'workspace-token',
+    'end-session',
+    'sign-in-options',
+    'get-session',
+    'sign-in',
+    'sign-out',
+    'sign-up',
+    'email-otp',
+    'send-verification-otp',
+    'social',
+    'callback',
+    'google',
+    'oauth2',
+    'authorize',
+    'consent',
+    'token',
+    'userinfo',
+    'jwks',
+    'handoff',
+    'start',
+    'delete-account',
+    'internal',
+    'bench-accounts',
+    'clients',
+    'teams',
+    'tokens',
+    'current',
+    'members',
+    'invitations',
+    'invite-link',
+    'team-link',
+    'join',
+    'accept',
+    'decline',
+    'profile',
+    'settings',
+    'people',
+    'workbench',
+    'index',
+    'legacy-guests',
+    'claim',
+  ]),
+);
 
-    if (request.method === 'GET') {
-      if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
-      if (pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
-        if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
-          return Response.json({ error: 'rate_limited' }, { status: 429 });
-        }
-        return guestHandoff(request, env, getAuth(env));
+// A failure's answer, never cached, as every account answer is.
+function failureJson(body: unknown, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers);
+  headers.set('Cache-Control', 'no-store');
+  return Response.json(body, { ...init, headers });
+}
+
+async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const url = new URL(incoming.url);
+  const { pathname } = url;
+  // Nothing is served without the secret: a key minted under Better Auth's default would break every sign-in
+  // once the real one is set (auth.ts getAuth).
+  if (!env.BETTER_AUTH_SECRET) {
+    console.error('[accounts] BETTER_AUTH_SECRET unset; refusing to serve');
+    return Response.json({ error: 'not_configured' }, { status: 503 });
+  }
+  // A cookie of ours that comes twice (production's on the domain beside staging's own, or a bare host-only copy
+  // from before the move to www.) is narrowed to the copy signed here, before anything reads it (own-cookies.ts).
+  const request = await withOwnCookies(incoming, env.BETTER_AUTH_SECRET);
+
+  if (request.method === 'GET') {
+    if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
+    if (pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
+      if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
+        return Response.json({ error: 'rate_limited' }, { status: 429 });
       }
-      // liveworkspace.app's own Explorer: a short-lived token for the session's account or the browser's guest.
-      if (pathname === `${AUTH_BASE_PATH}${WORKSPACE_TOKEN_PATH}`) {
-        return workspaceToken(request, env, getAuth(env));
-      }
-      // Signing out everywhere: the browser's hop through here, back to the app (end-session.ts).
-      if (pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
-        return endSessionInBrowser(request, env, getAuth(env));
-      }
-      // Discovery at the root as well as under the issuer path, for clients that only look
-      // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).
-      if (pathname === '/.well-known/openid-configuration') {
-        return oauthProviderOpenIdConfigMetadata(getAuth(env))(request);
-      }
-      if (pathname === '/.well-known/oauth-authorization-server') {
-        return oauthProviderAuthServerMetadata(getAuth(env))(request);
-      }
+      return guestHandoff(request, env, getAuth(env));
     }
-
-    if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
-      const response = await handleAccountApi(request, env, getAuth(env), (promise) =>
-        ctx.waitUntil(promise),
-      );
-      // The team emails it sent are counted after the response (telemetry.ts), and the team and token
-      // events it made go to the Timeline (index-timeline.ts).
-      flushServerEventsAfter(env, ctx);
-      flushTimelineAfter(env, ctx);
-      return response;
+    // liveworkspace.app's own Explorer: a short-lived token for the session's account or the browser's guest.
+    if (pathname === `${AUTH_BASE_PATH}${WORKSPACE_TOKEN_PATH}`) {
+      return workspaceToken(request, env, getAuth(env));
     }
-
-    if (request.method === 'POST' && pathname === CLIENTS_PATH) {
-      return registerClient(request, env, getAuth(env));
+    // Signing out everywhere: the browser's hop through here, back to the app (end-session.ts).
+    if (pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
+      return endSessionInBrowser(request, env, getAuth(env));
     }
-
-    // Signing out everywhere, from an app's Worker: the session its refresh token came from ends (end-session.ts).
-    if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
-      return endSessionFromApp(request, env, getAuth(env));
+    // Discovery at the root as well as under the issuer path, for clients that only look
+    // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).
+    if (pathname === '/.well-known/openid-configuration') {
+      return oauthProviderOpenIdConfigMetadata(getAuth(env))(request);
     }
-
-    if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
-      return benchAccounts(request, env);
+    if (pathname === '/.well-known/oauth-authorization-server') {
+      return oauthProviderAuthServerMetadata(getAuth(env))(request);
     }
+  }
 
-    if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
-      return deleteAccount(
+  if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
+    const response = await handleAccountApi(request, env, getAuth(env), (promise) =>
+      ctx.waitUntil(promise),
+    );
+    // The team emails it sent are counted after the response (telemetry.ts), and the team and token
+    // events it made go to the Timeline (index-timeline.ts).
+    flushServerEventsAfter(env, ctx);
+    flushTimelineAfter(env, ctx);
+    return response;
+  }
+
+  if (request.method === 'POST' && pathname === CLIENTS_PATH) {
+    return registerClient(request, env, getAuth(env));
+  }
+
+  // Signing out everywhere, from an app's Worker: the session its refresh token came from ends (end-session.ts).
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
+    return endSessionFromApp(request, env, getAuth(env));
+  }
+
+  if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
+    return benchAccounts(request, env);
+  }
+
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
+    return deleteAccount(
+      request,
+      getAuth(env),
+      env.AUTH_DB,
+      indexPurgeConfig(env),
+      (userId) => closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
+      // After the answer: Google's revoke never holds the close up.
+      (userId) => ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
+      env,
+    );
+  }
+
+  if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {
+    const route = pathname.slice(AUTH_BASE_PATH.length);
+    if (
+      request.method === 'POST' &&
+      (route === SEND_CODE_PATH || route === SIGN_IN_CODE_PATH) &&
+      (await overCodeLimit(request, env, route === SEND_CODE_PATH))
+    ) {
+      return Response.json({ code: 'RATE_LIMITED', message: 'Too many requests' }, { status: 429 });
+    }
+    // Google on an app's own address (GOOGLE_ON_APP_ORIGINS): Google sends the browser back to the app's address.
+    const googleOrigin =
+      env.GOOGLE_ON_APP_ORIGINS === 'true' &&
+      (route === '/sign-in/social' || route.startsWith('/callback/google'))
+        ? appOriginOfProxy(request, env.ENVIRONMENT)
+        : null;
+    const auth = googleOrigin ? getGoogleAuthFor(env, googleOrigin) : getAuth(env);
+    // liveworkspace.app's own Sign out, and Settings › Security's, end every app's session from the sessions they
+    // end too (end-session.ts).
+    if (request.method === 'POST' && SESSION_ENDING_ROUTES.has(route)) {
+      await endSessionTokensOf(request, route, auth, env.AUTH_DB);
+    }
+    let response = await auth.handler(request);
+    // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
+    if (request.method === 'GET' && route === GET_SESSION_PATH) {
+      response = await withSessionColour(response, env.AUTH_DB);
+    }
+    // Someone not signed in here yet signs in on the app's own address (handoff.ts).
+    if (request.method === 'GET' && route === AUTHORIZE_PATH) {
+      response = await signInOnAppAddress(request, response, {
+        environment: env.ENVIRONMENT,
+        baseUrl: env.BASE_URL,
+        enabled: env.SIGN_IN_ON_APP_ORIGINS === 'true',
+        db: env.AUTH_DB,
+      });
+    }
+    // A sign-in that found a session already here still takes a guest's things (guests.ts).
+    if (request.method === 'GET' && route === AUTHORIZE_PATH) {
+      response = await mergeGuestOnAuthorize(
         request,
-        getAuth(env),
-        env.AUTH_DB,
-        indexPurgeConfig(env),
-        (userId) => closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
-        // After the answer: Google's revoke never holds the close up.
-        (userId) => ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
-        env,
+        response,
+        guestMergeConfig(env),
+        async (headers) => (await auth.api.getSession({ headers }))?.user.id ?? null,
       );
     }
-
-    if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {
-      const route = pathname.slice(AUTH_BASE_PATH.length);
-      if (
-        request.method === 'POST' &&
-        (route === SEND_CODE_PATH || route === SIGN_IN_CODE_PATH) &&
-        (await overCodeLimit(request, env, route === SEND_CODE_PATH))
-      ) {
-        return Response.json(
-          { code: 'RATE_LIMITED', message: 'Too many requests' },
-          { status: 429 },
-        );
-      }
-      // Google on an app's own address (GOOGLE_ON_APP_ORIGINS): Google sends the browser back to the app's address.
-      const googleOrigin =
-        env.GOOGLE_ON_APP_ORIGINS === 'true' &&
-        (route === '/sign-in/social' || route.startsWith('/callback/google'))
-          ? appOriginOfProxy(request, env.ENVIRONMENT)
-          : null;
-      const auth = googleOrigin ? getGoogleAuthFor(env, googleOrigin) : getAuth(env);
-      // liveworkspace.app's own Sign out, and Settings › Security's, end every app's session from the sessions they
-      // end too (end-session.ts).
-      if (request.method === 'POST' && SESSION_ENDING_ROUTES.has(route)) {
-        await endSessionTokensOf(request, route, auth, env.AUTH_DB);
-      }
-      let response = await auth.handler(request);
-      // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
-      if (request.method === 'GET' && route === GET_SESSION_PATH) {
-        response = await withSessionColour(response, env.AUTH_DB);
-      }
-      // Someone not signed in here yet signs in on the app's own address (handoff.ts).
-      if (request.method === 'GET' && route === AUTHORIZE_PATH) {
-        response = await signInOnAppAddress(request, response, {
-          environment: env.ENVIRONMENT,
-          baseUrl: env.BASE_URL,
-          enabled: env.SIGN_IN_ON_APP_ORIGINS === 'true',
-          db: env.AUTH_DB,
-        });
-      }
-      // A sign-in that found a session already here still takes a guest's things (guests.ts).
-      if (request.method === 'GET' && route === AUTHORIZE_PATH) {
-        response = await mergeGuestOnAuthorize(
-          request,
-          response,
-          guestMergeConfig(env),
-          async (headers) => (await auth.api.getSession({ headers }))?.user.id ?? null,
-        );
-      }
-      // An account made by this request (or another in this isolate) hears its welcome now, after the
-      // response, rather than holding the sign-up on the email (lifecycle.ts).
-      const welcomes = takeWelcomes();
-      if (welcomes.length > 0) {
-        ctx.waitUntil(
-          sendWelcomes(env.AUTH_DB, env, lifecycleSender(env), welcomes).catch((error: unknown) =>
-            console.error('[lifecycle] welcome failed', error),
-          ),
-        );
-      }
-      return response;
+    // An account made by this request (or another in this isolate) hears its welcome now, after the
+    // response, rather than holding the sign-up on the email (lifecycle.ts).
+    const welcomes = takeWelcomes();
+    if (welcomes.length > 0) {
+      ctx.waitUntil(
+        sendWelcomes(env.AUTH_DB, env, lifecycleSender(env), welcomes).catch((error: unknown) =>
+          console.error('[lifecycle] welcome failed', error),
+        ),
+      );
     }
+    return response;
+  }
 
-    return new Response('Not found', { status: 404 });
+  return new Response('Not found', { status: 404 });
+}
+
+export default {
+  // One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    return guardRequest(
+      () => serve(request, env, ctx),
+      () => ({ route: routeLabel(request.method, request.url), json: failureJson }),
+    );
   },
 
   // Every 15 minutes (wrangler.toml): closed accounts' purges the index hasn't taken yet are sent

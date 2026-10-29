@@ -8,7 +8,8 @@ import {
   type CommunityMineResponse,
   type CommunityPostResponse,
 } from '@liveworkspace/community';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { testDb, type TestDb } from './test-sqlite-d1';
 import type { Env } from './env';
@@ -370,5 +371,42 @@ describe('the public routes', () => {
       const res = await worker.fetch(new Request(`https://liveworkspace.app${path}`), db.env, ctx);
       expect(res.status).toBe(404);
     }
+  });
+});
+
+// A D1 outage (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+describe('when D1 is unavailable', () => {
+  it('answers a public read 503 storage_unavailable, with its CORS', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await call(
+      '/posts?app=livediagram.app',
+      { headers: { Origin: 'https://x.example' } },
+      { ...db.env, COMMUNITY_DB: unavailableD1() },
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('5');
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(await res.json()).toEqual({ error: 'storage_unavailable' });
+    expect(error).toHaveBeenCalledWith(
+      '[d1] unavailable route=Get.Community.Posts',
+      expect.any(Error),
+    );
+    error.mockRestore();
+  });
+
+  it('answers an app route 503 storage_unavailable, with no CORS', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await call(
+      '/app/hidden',
+      { headers: { Authorization: 'Bearer ld-key', 'X-Community-App': 'livediagram.app' } },
+      { ...db.env, COMMUNITY_DB: unavailableD1() },
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    error.mockRestore();
   });
 });

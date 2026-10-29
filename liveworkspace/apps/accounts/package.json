@@ -24,6 +24,7 @@
     "@liveworkspace/index-client": "workspace:^",
     "@liveworkspace/migration": "workspace:^",
     "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*",
     "better-auth": "1.7.12",
     "jose": "^6.2.12"
   },

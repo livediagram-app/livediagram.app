@@ -9,6 +9,7 @@
 //     api, a returning guest of the old livediagram.app claimed (legacy-guests.ts).
 //   - workbenches, for every app (/api/account/workbench/*, workbench/routes.ts), and the apps' servers' checks of
 //     their sessions (workbench/internal.ts).
+import { storageOutageOf } from '@liveworkspace/api-kit/request-failure';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import { sameSiteOrigin } from '@liveworkspace/sites/www';
 import { introspectWithLegacy } from './legacy-issuer.ts';
@@ -154,7 +155,12 @@ async function sessionActor(
   request: Request,
   auth: Auth,
 ): Promise<(Actor & { name: string }) | null> {
-  const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
+  // No session is someone signed out; the database itself down is no answer at all, so it goes on to the request-failure
+  // guard (a 503) rather than read as signed out.
+  const session = await auth.api.getSession({ headers: request.headers }).catch((err: unknown) => {
+    if (storageOutageOf(err)) throw err;
+    return null;
+  });
   if (!session) return null;
   const { user } = session;
   return {
