@@ -14,7 +14,7 @@
 //     counts recounted as a sheet write keeps them (db/sheets.ts recountStatement).
 //   - `sheet_refs` for every Sheet element on a tab written (db/sheet-refs.ts sheetRefIds), added, never removed.
 //   - Form links inserted under their code, never updated: their counters and suspension are the new side's.
-// The payload's image owners and grants (an old document's canvas pictures) have nowhere to go: a plan keeps only
+// The payload's image owners and grants (an old plan's canvas pictures) have nowhere to go: a plan keeps only
 // the grants of its Image fields' pictures (image-grants.ts), recorded as each is uploaded for it.
 
 import {
