@@ -8,8 +8,8 @@
 /* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
 @source '../../../../packages/ui/src';
 @source '../../../../packages/brand/src';
-/* The Community's cards and Share tab, every app's (@liveworkspace/community-ui). */
-@source '../../../../packages/community-ui/src';
+/* The Community's cards (@liveworkspace/community-ui's tile); its Share tab is not on these pages. */
+@source '../../../../packages/community-ui/src/tile';
 
 html,
 body {

@@ -12,10 +12,7 @@ import type {
   ShareHost,
   ShareTelemetry,
 } from '@liveworkspace/explorer';
-import { COMMUNITY_UNKNOWN_AUTHOR } from '@livediagram/api-schema';
-import { authHrefWithReturn } from '@/components/chrome/auth-shared';
 import { apiLoadDocument } from './api/documents';
-import { livediagramCommunityHost } from './community-share-host';
 import { embedUrlFor } from '@liveworkspace/workbench/lib/embed';
 import { helpArticleHref, type HelpArticleKey } from './help-articles';
 import { liveImageUrlFor } from '@liveworkspace/workbench/lib/live-image';
@@ -55,35 +52,10 @@ export const trackShare: ShareTelemetry = (action, type) => {
   }
 };
 
-/** The Explorer's Share: a canvas's tabs read when the dialog opens, its embed and live image, Help, telemetry, and
- *  its Community tab (docs/specs/025-community/community.md "Publishing") for a signed-in account's canvases while
- *  the Community is on. `account` is the signed-in person, null for a guest. */
-export function explorerShareHost(
-  ownerId: string | null,
-  account: { id: string; name: string | null } | null = null,
-  communityOn = false,
-): ShareHost {
+/** The Explorer's Share: a canvas's tabs read when the dialog opens, its embed and live image, Help and telemetry.
+ *  The Community tab is added beside it (lib/explorer-community-host.ts). */
+export function explorerShareHost(ownerId: string | null): ShareHost {
   return {
-    community: (item) => {
-      if (item.app !== 'livediagram' || !account || !communityOn || item.ownerId !== account.id) {
-        return undefined;
-      }
-      return {
-        // The snapshot's version is the canvas's last change, so the card preview is read once per change.
-        host: livediagramCommunityHost({
-          ownerId: account.id,
-          documentId: item.id,
-          version: item.updatedAt,
-        }),
-        ownerId: account.id,
-        documentName: item.title,
-        signedIn: true,
-        communityOn,
-        signInHref: authHrefWithReturn('/sign-in/', `/document/${item.id}`),
-        // The Explorer has no participant colour to hand; the listing takes the account's own on publish.
-        author: { name: account.name || 'You', color: COMMUNITY_UNKNOWN_AUTHOR.color },
-      };
-    },
     loadTabs: async (item) => {
       if (item.app !== 'livediagram' || !ownerId) return [];
       const document = await apiLoadDocument(ownerId, item.id);

@@ -7,13 +7,8 @@ import { lucideExternalLink, lucideGlobe } from '@liveworkspace/icons/lucide';
 import { communityPlural } from '../tile/CommunityCounts';
 import { communityCodeMessage, communityErrorMessage } from './community-errors';
 import { communitySectionState } from './community-section-state';
+import { COMMUNITY_PUBLIC_BADGE, COMMUNITY_PUBLIC_LABEL } from './badge';
 import { useCommunityShareHost } from './host';
-
-// The Public pill, pink as the editor header's and the Explorer's (docs/specs/025-community/community.md "In the
-// editor").
-export const COMMUNITY_PUBLIC_LABEL = 'Public';
-export const COMMUNITY_PUBLIC_BADGE =
-  'bg-pink-50 px-2 text-[10px] font-semibold text-pink-700 ring-1 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30';
 
 const GlobeIcon = lucideGlyph(lucideGlobe, 16);
 const OpenIcon = lucideGlyph(lucideExternalLink, 12);

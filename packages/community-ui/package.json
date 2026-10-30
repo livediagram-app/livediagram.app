@@ -6,7 +6,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./share": "./src/share/index.ts"
+    "./share": "./src/share/index.ts",
+    "./badge": "./src/share/badge.ts"
   },
   "scripts": {
     "lint": "oxlint",

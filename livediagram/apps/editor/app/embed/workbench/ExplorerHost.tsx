@@ -30,6 +30,7 @@ import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { useCommunityEnabled } from '@livediagram/ui';
 import { API_BASE } from '@/lib/api-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
@@ -105,12 +106,13 @@ export function ExplorerHost({
   const viewerId = accountUserId ?? guestId;
   const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
   const shareHost = useMemo(
-    () =>
-      explorerShareHost(
-        viewerId ?? null,
+    () => ({
+      ...explorerShareHost(viewerId ?? null),
+      community: explorerCommunity(
         accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
         communityOn,
       ),
+    }),
     [viewerId, accountUserId, accountDisplayName, communityOn],
   );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);

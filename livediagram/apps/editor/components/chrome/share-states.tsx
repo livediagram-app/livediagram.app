@@ -2,7 +2,7 @@
 
 import { PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
-import { COMMUNITY_PUBLIC_BADGE, COMMUNITY_PUBLIC_LABEL } from '@liveworkspace/community-ui/share';
+import { COMMUNITY_PUBLIC_BADGE, COMMUNITY_PUBLIC_LABEL } from '@liveworkspace/community-ui/badge';
 import {
   THIS_BROWSER_DESCRIPTION,
   THIS_BROWSER_LABEL,

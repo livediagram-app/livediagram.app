@@ -28,6 +28,7 @@ import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-h
 import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { API_BASE } from '@/lib/api-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
 import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
@@ -72,12 +73,13 @@ function ExplorerImpl({
   const thisBrowser = useThisBrowserHost(accountUserId ?? guestId, !!accountUserId);
   const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
   const shareHost = useMemo(
-    () =>
-      explorerShareHost(
-        accountUserId ?? null,
+    () => ({
+      ...explorerShareHost(accountUserId ?? null),
+      community: explorerCommunity(
         accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
         communityOn,
       ),
+    }),
     [accountUserId, accountDisplayName, communityOn],
   );
   // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).

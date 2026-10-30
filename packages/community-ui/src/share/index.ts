@@ -12,11 +12,8 @@ export {
 export { COMMUNITY_APP_WORDS } from './words';
 export { communityOwnerClient, communityPopularTags } from './owner-client';
 export { communityCodeMessage, communityErrorMessage } from './community-errors';
-export {
-  COMMUNITY_PUBLIC_BADGE,
-  COMMUNITY_PUBLIC_LABEL,
-  CommunityPublicBadge,
-} from './CommunitySection';
+export { COMMUNITY_PUBLIC_BADGE, COMMUNITY_PUBLIC_LABEL } from './badge';
+export { CommunityPublicBadge } from './CommunitySection';
 export {
   COMMUNITY_PUBLIC_NOTE,
   useCommunityShareTab,
