@@ -35,7 +35,8 @@ import { LinkedCardGroup } from './LinkedCards';
 import { LinkedActionBanner } from './LinkedActionBanner';
 import type { PlanContextValue } from './PlanContext';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
-import { ItemKeyTag, ItemTypePill } from './ItemPanelHeaderParts';
+import { ItemKeyTag, ItemMaximiseButton, ItemTypePill } from './ItemPanelHeaderParts';
+import { panelSizeClass } from './item-panel-size';
 import type { ItemOpenVia } from './item-trail';
 import { FLAG_COLOUR } from './item-flag';
 import {
@@ -100,6 +101,10 @@ type ItemPanelProps = {
   // The Actions board's links (docs/specs/026-plan/linked-boards.md "On the board"): a linked card shows where its
   // action is and the way to it, and its assignee (the action's) reads only.
   linkedActions?: PlanContextValue['linkedActions'];
+  // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): this person's preference, and the way to change
+  // it. Absent onMaximise, no button; a phone never maximises whatever `maximised` says.
+  maximised?: boolean;
+  onMaximise?: ((on: boolean) => void) | undefined;
 };
 
 // On a desktop, the title takes focus as a card opens (each card: the content is keyed by it): the caret at its
@@ -126,6 +131,8 @@ export function ItemPanel(props: ItemPanelProps) {
   const { item, onClose } = props;
   // A response's card stops showing New once opened (docs/specs/030-forms/forms.md "Hearing about responses").
   useEffect(() => markResponseOpened(item), [item]);
+  const mobile = useIsMobileViewport();
+  const maximised = !!props.maximised && !mobile;
   return (
     <Dialog
       open
@@ -137,9 +144,9 @@ export function ItemPanel(props: ItemPanelProps) {
       // to change); on a desktop the title then takes focus (useTitleFocus), on a phone it stays on the panel so
       // no keyboard rises (docs/specs/026-plan/plan-board.md "Open an item").
       initialFocus="container"
-      className="h-[min(46rem,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] overflow-hidden max-sm:h-[85dvh]"
+      className={panelSizeClass(maximised)}
     >
-      <ItemPanelContent key={item.id} {...props} />
+      <ItemPanelContent key={item.id} {...props} maximised={maximised} />
     </Dialog>
   );
 }
@@ -170,6 +177,8 @@ function ItemPanelContent({
   onLinkExisting,
   statusNames,
   linkedActions,
+  maximised = false,
+  onMaximise,
 }: ItemPanelProps) {
   const linkedPlace = linkedActions?.placeOf(item) ?? null;
   const mobile = useIsMobileViewport();
@@ -273,6 +282,9 @@ function ItemPanelContent({
         onEditType={onEditType}
         onCopyLink={onCopyLink}
       />
+      {onMaximise && !mobile ? (
+        <ItemMaximiseButton maximised={maximised} onToggle={onMaximise} />
+      ) : null}
       <DialogCloseButton compact onClick={onClose} />
     </div>
   );
@@ -290,6 +302,7 @@ function ItemPanelContent({
       label={fieldLabel(type, f)}
       htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
       required={requiredIds.has(f)}
+      wide={maximised}
     >
       {f === 'assignee' && lockedAssignee ? (
         <>
@@ -343,81 +356,86 @@ function ItemPanelContent({
       {trailRow}
       {header}
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 pt-2 sm:px-8">
-          {linkedPlace && linkedActions ? (
-            <LinkedActionBanner
-              tabName={linkedPlace.tabName}
-              // Closes the panel and goes to the action.
-              onShowOnCanvas={() => {
-                onClose();
-                linkedActions.showOnCanvas(item);
-              }}
+        <div
+          className={`min-w-0 flex-1 overflow-y-auto px-4 pb-8 pt-2 sm:px-8 ${maximised ? 'lg:px-12' : ''}`}
+        >
+          {/* Maximised, the column keeps a reading width, centred in the room beside Details. */}
+          <div className={maximised ? 'mx-auto max-w-[52rem]' : undefined}>
+            {linkedPlace && linkedActions ? (
+              <LinkedActionBanner
+                tabName={linkedPlace.tabName}
+                // Closes the panel and goes to the action.
+                onShowOnCanvas={() => {
+                  onClose();
+                  linkedActions.showOnCanvas(item);
+                }}
+              />
+            ) : null}
+            <DebouncedText
+              id={fieldId(item, 'title')}
+              label="Title"
+              value={itemTitle(item)}
+              maxLength={ITEM_TITLE_MAX}
+              // Enter saves the title and closes the card.
+              onEnter={onClose}
+              // A long title wraps to three lines, then scrolls; a short one keeps to one (plan-board.md "Look").
+              wrapLines={3}
+              required
+              placeholder="Title"
+              disabled={!canEdit}
+              onSave={(v) => onSave('title', v)}
+              className={`-mx-2 mb-5 w-[calc(100%+1rem)] rounded-lg border border-transparent bg-transparent px-2 py-1 ${maximised ? 'text-[26px]' : 'text-[22px]'} font-semibold leading-snug tracking-tight text-slate-900 outline-none transition hover:bg-slate-50 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:text-slate-50 dark:hover:bg-slate-800/50 dark:focus:bg-slate-950`}
             />
-          ) : null}
-          <DebouncedText
-            id={fieldId(item, 'title')}
-            label="Title"
-            value={itemTitle(item)}
-            maxLength={ITEM_TITLE_MAX}
-            // Enter saves the title and closes the card.
-            onEnter={onClose}
-            // A long title wraps to three lines, then scrolls; a short one keeps to one (plan-board.md "Look").
-            wrapLines={3}
-            required
-            placeholder="Title"
-            disabled={!canEdit}
-            onSave={(v) => onSave('title', v)}
-            className="-mx-2 mb-5 w-[calc(100%+1rem)] rounded-lg border border-transparent bg-transparent px-2 py-1 text-[22px] font-semibold leading-snug tracking-tight text-slate-900 outline-none transition hover:bg-slate-50 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:text-slate-50 dark:hover:bg-slate-800/50 dark:focus:bg-slate-950"
-          />
-          {shownTabs.length > 1 ? (
-            <div
-              role="tablist"
-              aria-label="Item sections"
-              className="mb-6 flex gap-5 overflow-x-auto overflow-y-hidden border-b border-slate-200 dark:border-slate-700"
-              onKeyDown={(e) => {
-                if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-                e.preventDefault();
-                const i = shownTabs.findIndex((t) => t.id === current?.id);
-                const next =
-                  shownTabs[
-                    (i + (e.key === 'ArrowRight' ? 1 : -1) + shownTabs.length) % shownTabs.length
-                  ]!;
-                setPicked(next.id);
-                document.getElementById(`item-${item.id}-tab-${next.id}`)?.focus();
-              }}
-            >
-              {shownTabs.map((t) => {
-                const on = t.id === current?.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    role="tab"
-                    id={`item-${item.id}-tab-${t.id}`}
-                    aria-selected={on}
-                    aria-controls={`item-${item.id}-panel-${t.id}`}
-                    tabIndex={on ? 0 : -1}
-                    onClick={() => setPicked(t.id)}
-                    className={`${TAB_CLASS} ${on ? '' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'}`}
-                  >
-                    {t.label}
-                    {on ? (
-                      <span
-                        aria-hidden
-                        className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-brand-600 dark:bg-brand-400"
-                      />
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
-          {tabPanel}
+            {shownTabs.length > 1 ? (
+              <div
+                role="tablist"
+                aria-label="Item sections"
+                className="mb-6 flex gap-5 overflow-x-auto overflow-y-hidden border-b border-slate-200 dark:border-slate-700"
+                onKeyDown={(e) => {
+                  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+                  e.preventDefault();
+                  const i = shownTabs.findIndex((t) => t.id === current?.id);
+                  const next =
+                    shownTabs[
+                      (i + (e.key === 'ArrowRight' ? 1 : -1) + shownTabs.length) % shownTabs.length
+                    ]!;
+                  setPicked(next.id);
+                  document.getElementById(`item-${item.id}-tab-${next.id}`)?.focus();
+                }}
+              >
+                {shownTabs.map((t) => {
+                  const on = t.id === current?.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      role="tab"
+                      id={`item-${item.id}-tab-${t.id}`}
+                      aria-selected={on}
+                      aria-controls={`item-${item.id}-panel-${t.id}`}
+                      tabIndex={on ? 0 : -1}
+                      onClick={() => setPicked(t.id)}
+                      className={`${TAB_CLASS} ${on ? '' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'}`}
+                    >
+                      {t.label}
+                      {on ? (
+                        <span
+                          aria-hidden
+                          className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-brand-600 dark:bg-brand-400"
+                        />
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+            {tabPanel}
+          </div>
         </div>
         {mobile ? null : (
           <aside
             aria-label={detailsLabelOf(type)}
-            className="m-3 ml-0 w-80 shrink-0 overflow-y-auto rounded-xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200/70 dark:bg-slate-800/40 dark:ring-slate-700/60"
+            className={`m-3 ml-0 shrink-0 ${maximised ? 'w-96 px-5 2xl:w-[28rem]' : 'w-80 px-4'} overflow-y-auto rounded-xl bg-slate-50 py-4 ring-1 ring-slate-200/70 dark:bg-slate-800/40 dark:ring-slate-700/60`}
           >
             <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {detailsLabelOf(type)}

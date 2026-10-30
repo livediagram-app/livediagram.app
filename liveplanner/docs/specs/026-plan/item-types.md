@@ -138,7 +138,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - the api refuses an item moved or edited into such a status (`status_excluded`, field `status`), so an agent or
     the CLI is told "the item's card type does not use that status"; making one in it is allowed. Putting a change
     back is never refused: a card restored from the Trash to the status it was trashed from, and an undo or redo
-    (sent with `undo: true`, which the editor's undo and redo always set).
+    (sent with `undo: true`, which the editor's undo and redo always set). Nor is moving a card to the Trash: the
+    Trash is no type's status, so a type's list never refuses it.
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an

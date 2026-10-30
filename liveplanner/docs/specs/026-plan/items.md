@@ -438,7 +438,9 @@ added into another plan, is no longer sent) and `Comment · Deleted · Thread`.
   a phone) with a list 32 rem tall (less on a short screen) whatever it holds, so the panel keeps its size as a search
   narrows it, of every card type the catalogue has (custom types
   included, each drawn with its own glyph and colour) and of a type it has lost (drawn as the fallback "Item"),
-  newest change first.
+  newest change first. On a phone, where the strip folds into **More Card Tools**, its **Find a Card** row opens
+  the same popover (a press on a row of that menu reaches only the menu, never the canvas under it, which used
+  to take the focus and shut the menu before the row could act, so none of its three rows opened anything).
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title,
   description or card type name ("person" finds every Person card), ignoring case.
 - **All Cards** (the wider: all the room **Not on a Board**, on one line at its own width, leaves) and **Not on a Board** switch between every card and the cards no board in the project shows,
@@ -452,13 +454,20 @@ added into another plan, is no longer sent) and `Comment · Deleted · Thread`.
   listed cards' types offer (Card Type always among them), then one of its values among them with its count, so no
   filter leaves nothing. Every filter must match; Backspace in an empty box takes the last off, and the box's
   **Clear Search** clears the words and the filters. They are the person's own while the panel is open, never saved. Filters matching nothing: **No cards match these filters** (below).
-- At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
-- Each row is the card as a board draws it at **Detailed** size, laid out as its type's Display says, so a card
-  looks the same in the panel as on a board (named for assistive technology "Open {Title}, {Type} #{n}"). Its state is not shown: a state filter
-  narrows by it. Choosing one closes the popover and
-  opens the card in the item panel.
-- Someone who can edit sees a bin beside each row (on hover with a mouse, always on a phone): **Move to Trash**
-  puts that card in the Trash (restorable from there) without leaving the list.
+- At most 200 tiles are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
+- The cards sit in a **grid of tiles**, two across on a desktop (one on a phone), 8 px apart, so the panel shows
+  about twice as many as a list of full-width rows did and no row is a long, mostly empty strip. Tiles in a row
+  share its height. Each tile is the card as a board draws it at **Detailed** size, laid out as its type's
+  Display says, so a card looks the same in the panel as on a board (named for assistive technology "Open
+  {Title}, {Type} #{n}"). Its state is not shown: a state filter narrows by it. Choosing a tile (anywhere but
+  its ⋯) closes the popover and opens the card in the item panel.
+- **The tile's ⋯** sits inside the card, at the end of its header row (after the priority), never beside the
+  card: with a mouse it shows while the pointer is over the tile or the ⋯ has focus, and stays while its menu is
+  open; on a touch screen it always shows. It opens the card's menu (the shared anchored menu, icon-left rows):
+  **Open** and, where the plan has an address to give, **Copy Card Link** (as the item panel's ⋯), then, for
+  someone who may retire cards (an Editor, as the panel's Trash), a separator and **Move to Trash**, which puts
+  that card in the Trash (restorable from there, and announced "#{n} moved to the Trash") without leaving the
+  list. A Participant or Viewer gets Open and Copy Card Link only.
 - Empty: the shared empty state (as the Trash's: an icon badge, a title and a line), filling the list's height:
   **No cards yet** ("Add one from a board, or drag one in from the palette."); a search matching nothing, **No cards
   match “<words>”** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these
