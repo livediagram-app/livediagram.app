@@ -7,7 +7,9 @@
 import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livedocuments/api-schema';
 import {
   diffToElementOps,
+  guardFlashcards,
   invertElementOps,
+  pagesOf,
   type ElementId,
   type Tab,
 } from '@livedocuments/document';
@@ -24,7 +26,7 @@ import { applyUnwrap } from './operations/unwrap';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
-import { tabLocked, tooLarge } from './rejections';
+import { tabLocked, textOnly, tooLarge } from './rejections';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { createState, type EditState } from './state';
 import type { ApplyOptions, ApplyOutcome, ApplyRejection, EditLog, EditOperation } from './types';
@@ -142,6 +144,9 @@ export function applyEditOperations(
   }
   const next = finalise(state, log);
   if ('code' in next) return rejected(log, next, operations);
+  // Flashcards hold text only (docs/specs/007-editor/flashcards.md "Text only").
+  if (guardFlashcards(tab.elements, next.elements, pagesOf(next)).blocked)
+    return rejected(log, textOnly(), operations);
   const elementOps = diffToElementOps(tab.elements, next.elements);
   const results = buildResultLines({ ...state, beforeElements: tab.elements }, next.elements);
   const present = new Set<ElementId>(next.elements.map((el) => el.id));

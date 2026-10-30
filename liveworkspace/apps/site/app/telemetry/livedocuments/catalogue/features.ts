@@ -145,16 +145,18 @@ export const PAGES = chart(
   'Tab',
   'Changed',
   'Pages Added and Deleted',
-  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
+  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, a slide or a flashcard), or deleted from its settings.',
   {
     types: [
       'PageAdded',
       'ArticleAdded',
       'SlidePageAdded',
+      'FlashcardAdded',
       'PageRemoved',
       'PageKindInfographic',
       'PageKindArticle',
       'PageKindSlide',
+      'PageKindFlashcard',
       'PageAddedLikeLast',
     ],
   },
@@ -203,6 +205,15 @@ export const PAGE_SWIPES = chart(
   { types: ['PageSwipe'], rising: 'neutral' },
 );
 
+// A flashcard turned over to its other side (docs/specs/007-editor/flashcards.md).
+export const FLASHCARD_FLIPS = chart(
+  'UI',
+  'Used',
+  'Flashcard Flips',
+  'A flashcard turned over to show its other side.',
+  { types: ['FlashcardFlip'], rising: 'neutral' },
+);
+
 // Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
 export const TAB_WINDOW_USE = chart(
   'UI',
@@ -217,7 +228,7 @@ export const PAGE_BUILDING = chart(
   'Tab',
   'Changed',
   'Pages Built',
-  'A layout put onto a page, a page duplicated, moved or split, or a board put onto a page.',
+  'A layout put onto a page, a page duplicated, moved or split (a flashcard too long for its card included), or a board put onto a page.',
   {
     types: [
       'PageLayout',
@@ -226,6 +237,7 @@ export const PAGE_BUILDING = chart(
       'PageMoved',
       'PagesLaidOut',
       'PageFitToContent',
+      'FlashcardSplit',
     ],
   },
 );
@@ -314,6 +326,7 @@ export const PAGE_WORK: MetricStack = {
     PAGE_BUILDING,
     PAGE_CONTENTS_JUMPS,
     PAGE_SWIPES,
+    FLASHCARD_FLIPS,
     TAB_WINDOW_USE,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,

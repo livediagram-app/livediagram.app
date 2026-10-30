@@ -21,7 +21,7 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livedocuments/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 23;
+export const TEMPLATE_COUNT = 27;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 2;
 // The slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
@@ -56,7 +56,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start and choose what you are making: an article, a slide deck or an infographic. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start and choose what you are making: an article, a slide deck, an infographic or flashcards. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',

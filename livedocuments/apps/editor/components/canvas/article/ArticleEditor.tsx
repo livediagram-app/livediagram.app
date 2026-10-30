@@ -49,6 +49,10 @@ import {
 } from '@/lib/article/article-editor-store';
 import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
+import { publishCardOverflow } from '@/lib/flashcard-overflow-store';
+import { announceTextOnly } from '@/lib/flashcard-guard';
+import { FlashcardTooLong } from './FlashcardTooLong';
+import type { CardSplit } from '@/lib/flashcard-split';
 import { articleStyleVars, type ArticleInk } from '@/lib/article/article-style-vars';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import {
@@ -102,6 +106,11 @@ export type ArticleEditorProps = {
   // The tab holds as many pages as it can (MAX_PAGES): no page is added for writing that
   // runs past the last.
   atPageLimit?: boolean;
+  // A flashcard (docs/specs/007-editor/flashcards.md): text only, laid out on its one card and
+  // never grown; writing past its foot is cut off there and said so.
+  card?: boolean;
+  // Split Onto a New Card from the Too long marker: given to someone who may change the pages.
+  split?: CardSplit | undefined;
   doc: ArticleFlow;
   editable: boolean;
   // Whether the writer may reshape the article too (the slash menu's inserts): an Editor. A Participant writes
@@ -190,7 +199,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     at: { left: number; top: number; bottom: number };
   } | null>(null);
   const [slashIndex, setSlashIndex] = useState(0);
-  const slashItems = slash && props.reshape !== false ? filterSlashItems(slash.query) : [];
+  const slashItems =
+    slash && props.reshape !== false ? filterSlashItems(slash.query, props.card === true) : [];
   const slashLive = useRef({ items: slashItems, index: slashIndex, open: false });
   useLayoutEffect(() => {
     const open = !!slash && slashItems.length > 0;
@@ -261,9 +271,14 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         right = Math.max(right, (r.left - root.left) / z + 1);
       }
     }
-    const pagesNeeded = columnAt(frame, Math.max(0, right - 2)) + 1;
+    const reached = columnAt(frame, Math.max(0, right - 2)) + 1;
+    // A card never grows: what runs past its foot waits unseen, and the first block that does not
+    // fit whole is where a split would start (docs/specs/007-editor/flashcards.md "Never flows").
+    const pagesNeeded = p.card ? 1 : reached;
+    if (p.card)
+      publishCardOverflow(p.flow, reached > 1 ? firstBlockPastFoot(view, frame, root, z) : null);
     // At the tab's page limit the writing past the last page waits unseen: say so on that page.
-    const cut = p.atPageLimit === true && pagesNeeded > p.pages.length;
+    const cut = (p.atPageLimit === true || p.card === true) && reached > p.pages.length;
     setCutOff((was) => (was === cut ? was : cut));
     const zones: FlowLayout['zones'] = [];
     view.dom.querySelectorAll<HTMLElement>('.article-zone').forEach((el) => {
@@ -335,6 +350,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       const p = latest.current;
       if (!v || !p.editable || !v.hasFocus() || !p.onRevealCaret) return;
       const rect = caretCanvasRect(v, p);
+      // A card never flows: a caret past its foot is in writing kept but hidden (the Too long
+      // marker says so), and the view stays on the card rather than following it off.
+      const card = p.card ? p.pages[0] : undefined;
+      if (card && rect && rect.x >= card.rect.x + card.rect.width) return;
       if (rect) p.onRevealCaret(rect);
     });
   };
@@ -494,7 +513,16 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       handleDOMEvents: {
         // An image, or elements copied from a canvas: not the writing's to take. Left alone (no
         // preventDefault), the paste reaches the canvas, which puts it into the writing as a zone.
-        paste: (_v, e) => articlePasteIsCanvas(e.clipboardData),
+        paste: (_v, e) => {
+          if (!articlePasteIsCanvas(e.clipboardData)) return false;
+          // A card holds text only: a picture or canvas elements pasted on it are dropped
+          // (docs/specs/007-editor/flashcards.md "Text only").
+          if (latest.current.card) {
+            e.preventDefault();
+            announceTextOnly();
+          }
+          return true;
+        },
         click: (_v, e) => {
           // A plain click on a margin note's text opens what it carries; a drag that selects
           // does not.
@@ -569,6 +597,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       view.destroy();
       viewRef.current = null;
       clearActiveArticle(latest.current.flow);
+      if (latest.current.card) publishCardOverflow(latest.current.flow, null);
       setLocalArticleCaret(latest.current.flow, null);
     };
     // Created once per article: everything it reads is read through refs.
@@ -640,7 +669,11 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   return (
     <>
       {linkCard}
-      {cutOff ? <PageLimitNotice page={props.pages[props.pages.length - 1]!} /> : null}
+      {cutOff && props.card ? (
+        <FlashcardTooLong page={props.pages[0]!} zoom={props.zoom} split={props.split} />
+      ) : cutOff ? (
+        <PageLimitNotice page={props.pages[props.pages.length - 1]!} />
+      ) : null}
       {slash && props.editable && props.reshape !== false ? (
         <SlashMenu
           at={slash.at}
@@ -697,6 +730,25 @@ function replaceContent(
     tr.setSelection(TextSelection.near(tr.doc.resolve(at), -1));
   }
   view.dispatch(tr);
+}
+
+// The id of the first top-level block that does not fit whole on the first page (a box of it in a
+// later column), or null.
+function firstBlockPastFoot(
+  view: EditorView,
+  frame: ReturnType<typeof flowFrame>,
+  root: DOMRect,
+  z: number,
+): string | null {
+  for (const child of Array.from(view.dom.children)) {
+    const id = (child as HTMLElement).dataset.blockId;
+    if (!id) continue;
+    for (const r of Array.from(child.getClientRects())) {
+      if (r.width === 0 && r.height === 0) continue;
+      if (columnAt(frame, Math.max(0, (r.right - root.left) / z - 2)) >= 1) return id;
+    }
+  }
+  return null;
 }
 
 // The foot of an article's last page when the tab is at its page limit and the writing runs past it

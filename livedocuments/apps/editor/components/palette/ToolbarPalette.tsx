@@ -32,7 +32,7 @@ import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';
 import { ArticleDockSlot } from './ArticleDockSlot';
-import { usePaletteKind } from '@/lib/palette-kind';
+import { docksPageToolbar, usePaletteKind } from '@/lib/palette-kind';
 
 // The Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the top centre of the
 // canvas, the way Excalidraw's tool bar works. The selection mode on the left, then the category bar (each
@@ -124,9 +124,12 @@ export function ToolbarPalette(props: Props) {
       bar.popover.setOpen(false);
     },
   });
-  // With the palette's kind Article, the strip holds the article's formatting in place of the bar.
+  // With the palette's kind Article or Flashcard, the strip holds the page's formatting in place of
+  // the bar; a card's strip has no Search either, whose tiles would place elements on a card
+  // (docs/specs/007-editor/flashcards.md "Text only").
   const paletteKind = usePaletteKind();
-  const articleDock = paletteKind === 'article';
+  const articleDock = docksPageToolbar(paletteKind);
+  const textOnly = paletteKind === 'flashcard';
   // A change of kind cascades its categories in (usePaletteKindMotion).
   usePaletteKindMotion(paletteKind, rootRef);
   // The bar's categories (bar-categories): one-word names.
@@ -263,10 +266,14 @@ export function ToolbarPalette(props: Props) {
                   {/* Search, last: any element type (docs/specs/007-editor/toolbar-layout.md
                       "Search: every element type"). The bar ends on its last category; Search brings its own
                       divider. */}
-                  <Divider />
-                  <div ref={searchButtonRef} className="flex">
-                    <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
-                  </div>
+                  {textOnly ? null : (
+                    <>
+                      <Divider />
+                      <div ref={searchButtonRef} className="flex">
+                        <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardWidth>
             </StripRow>
@@ -278,7 +285,7 @@ export function ToolbarPalette(props: Props) {
               isMobile={isMobile}
               scale={scale}
             />
-            {search.open ? (
+            {search.open && !textOnly ? (
               <StripPopover
                 right={search.right}
                 isMobile={isMobile}

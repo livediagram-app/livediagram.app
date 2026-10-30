@@ -341,9 +341,12 @@ export type MoreAction = 'strike' | 'code' | 'sup' | 'sub' | 'clear' | 'style';
 export function MorePanel({
   selection,
   onAction,
+  card = false,
 }: {
   selection: ArticleSelectionState;
   onAction: (action: MoreAction) => void;
+  // On a flashcard the style is the card's (docs/specs/007-editor/flashcards.md "Text only").
+  card?: boolean;
 }) {
   return (
     <div role="menu" aria-label="More Formatting" className="flex flex-col">
@@ -380,7 +383,11 @@ export function MorePanel({
         keys="Mod-\\"
         onPick={() => onAction('clear')}
       />
-      <Row label="Article style" icon={<PanelIcons.style />} onPick={() => onAction('style')} />
+      <Row
+        label={card ? 'Card style' : 'Article style'}
+        icon={<PanelIcons.style />}
+        onPick={() => onAction('style')}
+      />
     </div>
   );
 }

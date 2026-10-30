@@ -95,6 +95,7 @@ export const EDIT_REJECTION_CODES = [
   'arrow_exists',
   'not_connected',
   'element_locked',
+  'text_only',
   'test_failed',
   'changeset_conflict',
   'elements_held',

@@ -51,18 +51,22 @@ Up to **50** page changes, applied in order, each to the tab as the ones before 
 edit. A refused change stops the batch and nothing is written; the answer names the change and why, and what the
 changes before it would have done.
 
-| Change                    | Fields                                                                                         | Does                                                                                                                                                                                                                                |
-| ------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `add`                     | `kind` (infographic, slide), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
-| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                             | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
-| `layout`                  | `page`, `layout`                                                                               | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                                                                                 |
-| `move`                    | `page`, `to`                                                                                   | Moves the page (an article page: its whole article) to place `to`, its content with it                                                                                                                                              |
-| `duplicate`               | `page`                                                                                         | A copy after it, content and all (an article: the whole article and its writing)                                                                                                                                                    |
-| `delete`                  | `page`                                                                                         | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
-| `apply_background_to_all` | `page`                                                                                         | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                                                                             |
+| Change                    | Fields                                                                                                    | Does                                                                                                                                                                                                                                |
+| ------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add`                     | `kind` (infographic, slide, flashcard), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
+| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                        | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
+| `layout`                  | `page`, `layout`                                                                                          | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                                                                                 |
+| `move`                    | `page`, `to`                                                                                              | Moves the page (an article page: its whole article) to place `to`, its content with it                                                                                                                                              |
+| `duplicate`               | `page`                                                                                                    | A copy after it, content and all (an article: the whole article and its writing)                                                                                                                                                    |
+| `delete`                  | `page`                                                                                                    | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
+| `apply_background_to_all` | `page`                                                                                                    | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                                                                             |
 
 - **Article pages are made by `write_article`**, never by `add`: an `add` of kind `article` is refused
   (`article_by_write`) with that hint.
+- **Flashcards** ([Flashcards](../007-editor/flashcards.md)): an `add` of kind `flashcard` adds a card after the last,
+  in the `card` size, its own writing empty; a stack whose only card is empty (unnamed, no words) has that card filled
+  instead, as a blank slide is. A `layout` on a card is refused (`layout_unknown`, "A flashcard takes no layout:
+  write it with write_article"). A card's text is written with `write_article`.
 - **One kind a tab** ([Pages](../007-editor/pages-mode.md#one-kind-a-tab)): an `add` of a kind other than the tab's
   (its first page's) is refused (`kind_not_offered`), naming the tab's kind and pointing to a tab of its own
   (`add_tab`). The first page's choice, below, is how an unchosen tab takes its kind.
@@ -140,6 +144,11 @@ Writes an article's text from **Markdown**.
   them the call is refused (`article_too_large`) saying which. The tab's own byte cap has the last word
   (`tab_too_large`).
 - **Locked** article pages refuse it (`page_locked`).
+- **On a stack of flashcards** each card is an article of its own: `article` names a card by flow id or title (an
+  unknown or ambiguous name is refused saying "cards"), `new: true` adds a card after the last, a size other than
+  `card` or a portrait orientation is refused (`size_not_offered`), and the blocks go through `flashcardBlocks`: page
+  breaks and zones are left out and a table is written as a list, the answer saying so. A card never flows: writing
+  past its foot is kept, and the editor marks it Too long.
 - **The answer**: the article's flow id, title, pages, block count and words, and the page count it reaches is
   settled in the editor (below), said plainly: "Written: 42 blocks, 1,830 words. The article flows onto more pages
   as it is laid out in the editor."

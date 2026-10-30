@@ -120,6 +120,9 @@ export const PALETTE_LAYOUTS: Readonly<Record<PaletteKind, PaletteLayout>> = {
   slide: PAGES_SLIDE,
   // An article's strip is its formatting (the docked page toolbar); its Search keeps Pages'.
   article: PAGES,
+  // A card holds text only (docs/specs/007-editor/flashcards.md "Text only"): its strip is its
+  // formatting alone, with no Search, so it offers no category at all.
+  flashcard: { categories: [] },
 };
 
 /** The layout the palette shows, for its kind. */

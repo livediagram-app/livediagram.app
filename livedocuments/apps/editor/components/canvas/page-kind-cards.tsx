@@ -1,6 +1,6 @@
 'use client';
 
-// The three kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
+// The kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
 // miniature of the page above its name and a line on what it is for: the first page's own choice,
 // which sets the tab's kind ("One kind a tab").
 import type { PageKind } from '@livedocuments/document';
@@ -8,7 +8,7 @@ import type { KeyboardEvent, Ref } from 'react';
 
 type PageKindChoice = { kind: PageKind; name: string; line: string };
 
-// The cards sit two by two, the last across both columns.
+// The cards sit two by two; an odd last card goes across both columns.
 const KIND_COLUMNS = 2;
 
 /** Arrow keys between the cards (the popover and the first page's choice alike): Left / Right
@@ -45,7 +45,17 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     name: 'Slide',
     line: 'A slide for a deck: widescreen, ready to present.',
   },
+  {
+    kind: 'flashcard',
+    name: 'Flashcards',
+    line: 'Cards to speak from: a title and a few lines each, flipped one at a time.',
+  },
 ];
+
+/** Whether the card at `i` goes across both columns: the last of an odd number. */
+export function kindCardIsWide(i: number, count = PAGE_KINDS.length): boolean {
+  return count % 2 === 1 && i === count - 1;
+}
 
 export function PageKindCard({
   choice,
@@ -55,7 +65,7 @@ export function PageKindCard({
 }: {
   choice: PageKindChoice;
   onChoose: () => void;
-  // Across both columns, its miniature beside its words (the last card of the three).
+  // Across both columns, its miniature beside its words (an odd last card).
   wide?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
@@ -77,6 +87,8 @@ export function PageKindCard({
           <ArticleMiniature />
         ) : choice.kind === 'slide' ? (
           <SlideMiniature />
+        ) : choice.kind === 'flashcard' ? (
+          <FlashcardMiniature />
         ) : (
           <InfographicMiniature />
         )}
@@ -206,6 +218,32 @@ function SlideMiniature() {
         rx="2"
         className="fill-brand-100 dark:fill-brand-500/25"
       />
+    </svg>
+  );
+}
+
+// A stack of cards: the card in front with a title and two lines, two more peeking out below it,
+// and its number in the corner.
+function FlashcardMiniature() {
+  const line = 'fill-slate-300 dark:fill-slate-500';
+  const behind = 'fill-white stroke-slate-200 dark:fill-slate-700 dark:stroke-slate-600';
+  return (
+    <svg width="80" height="58" viewBox="0 0 80 58" aria-hidden className="drop-shadow-sm">
+      <rect x="9" y="12" width="62" height="40" rx="3" strokeWidth="0.75" className={behind} />
+      <rect x="5" y="8" width="70" height="42" rx="3" strokeWidth="0.75" className={behind} />
+      <rect x="1" y="2" width="78" height="46" rx="3" className="fill-white dark:fill-slate-700" />
+      <rect
+        x="8"
+        y="9"
+        width="32"
+        height="5"
+        rx="2"
+        className="fill-slate-700 dark:fill-slate-200"
+      />
+      <rect x="8" y="19" width="56" height="2.5" rx="1.25" className={line} />
+      <rect x="8" y="24" width="50" height="2.5" rx="1.25" className={line} />
+      <rect x="8" y="29" width="38" height="2.5" rx="1.25" className={line} />
+      <rect x="56" y="40" width="16" height="2.2" rx="1.1" className="fill-brand-500" />
     </svg>
   );
 }

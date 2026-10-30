@@ -34,6 +34,7 @@ const EYEBROW: Record<PageKind, string> = {
   slide: 'Slides tour',
   infographic: 'Infographic tour',
   article: 'Article tour',
+  flashcard: 'Flashcards tour',
 };
 
 // Orchestrates the Pages tour (docs/specs/007-editor/pages-tour.md). Mounted once in EditorView beside TourHost.

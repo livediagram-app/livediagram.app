@@ -43,6 +43,8 @@ import { lastPageKey } from '@/lib/last-page';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
 import { useLastPage } from './useLastPage';
 import { usePageSnap } from './usePageSnap';
+import { cardInFrontOf, cardStageOf, type CardStack, type CardStage } from '@/lib/flashcard-stack';
+import { flipCard, pictureCard, type CardPicture } from '@/lib/flashcard-flip';
 
 export type { PageEdits };
 
@@ -83,6 +85,11 @@ export type PagesModeView = {
   deck?: PageDeckControls;
   // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
   letterbox?: boolean;
+  // A tab of flashcards: the card in front, for the world layers to draw alone (flashcardStage,
+  // docs/specs/007-editor/flashcards.md "The stack").
+  cardStage?: CardStage;
+  // Set by flashcardStage on the view the world layers draw: the card in front's place in the stack.
+  cardStack?: CardStack;
 };
 
 export type PageDeckControls = {
@@ -164,13 +171,17 @@ export function usePagesMode(deps: {
       offset: deps.setViewportOffset,
     });
   };
-  const frame = (page?: LaidOutPage, read = false, glides = false) => {
+  // `lands`: the frame on landing on the tab, which never flips a card.
+  const frame = (page?: LaidOutPage, read = false, glides = false, lands = false) => {
     const m = measure();
     if (!m) return;
+    // In a stack of flashcards the view stays where it is and the card in front changes, by a flip.
+    const flips = page?.kind === 'flashcard';
+    if (flips) toCard(page, !lands);
     const { zoom, offset } = frameFor(m, page, read);
     glide.current?.();
     glide.current = null;
-    if (glides) {
+    if (glides && !flips) {
       glideTo({ zoom, offset });
     } else {
       deps.setViewportZoom(zoom);
@@ -194,6 +205,33 @@ export function usePagesMode(deps: {
     [storedPages, legacyOrientation],
   );
   const pages = useMemo(() => layOutPages(current), [current]);
+  // A tab of flashcards shows one card at a time, the card in front (docs/specs/007-editor/
+  // flashcards.md "The stack"): the one gone to on this tab, else the first.
+  const [wantedCard, setWantedCard] = useState<{ tabId: string; id: string } | null>(null);
+  const cardId = cardInFrontOf(pages, wantedCard?.tabId === tabId ? wantedCard.id : null);
+  const cardStage = useMemo(() => cardStageOf(pages, cardId), [pages, cardId]);
+  // The card that was in front, pictured as it went, flipped away once its successor is drawn.
+  const flipFrom = useRef<{ picture: CardPicture | null; forward: boolean } | null>(null);
+  const toCard = (page: LaidOutPage, flips: boolean) => {
+    if (page.id === cardId) return;
+    const from = pages.findIndex((p) => p.id === cardId);
+    flipFrom.current =
+      flips && from >= 0
+        ? {
+            picture: pictureCard(pages[from]!),
+            forward: pages.findIndex((p) => p.id === page.id) > from,
+          }
+        : null;
+    setWantedCard({ tabId, id: page.id });
+  };
+  const flipTo = cardStage?.pages[0];
+  useLayoutEffect(() => {
+    const pending = flipFrom.current;
+    flipFrom.current = null;
+    if (pending && flipTo) flipCard(pending.picture, flipTo, pending.forward);
+    // Once per change of the card in front, drawn.
+    // oxlint-disable-next-line react/exhaustive-deps
+  }, [flipTo?.id]);
   // The view rests on a page once a pan or a zoom lets go (docs/specs/007-editor/pages-mode.md
   // "Getting around the pages").
   usePageSnap({
@@ -217,7 +255,12 @@ export function usePagesMode(deps: {
       const m = measure();
       return m ? frameFor(m, page) : deps.getViewport();
     },
-    glideTo,
+    glideTo: (to, pageId) => {
+      // Let go toward another card of a stack: a flip to it, not a glide.
+      const card = cardStage ? pages.find((p) => p.id === pageId) : undefined;
+      if (card && card.id !== cardId) frame(card);
+      else glideTo(to);
+    },
     cancelGlide: () => {
       glide.current?.();
       glide.current = null;
@@ -236,7 +279,7 @@ export function usePagesMode(deps: {
   // The landing frame: the page you were last on, else the first.
   const frameLanding = () => {
     const row = layOutPages(pagesOf(activeTab));
-    frame(last.remembered(row) ?? row[0]);
+    frame(last.remembered(row) ?? row[0], false, false, true);
     last.arm();
   };
   // Centred on the page after the tab's own first fit (a frame later), so the page wins.
@@ -358,12 +401,12 @@ export function usePagesMode(deps: {
     elements: activeTab.elements,
     layoutPreview,
     setLayoutPreview,
+    ...(cardStage ? { cardStage } : {}),
   };
   if (!canEdit || activeTab.locked === true) return shared;
   return {
     ...shared,
     // mayEdit reads a ref, but only when an edit commits (in a handler), never during render.
-    // oxlint-disable-next-line react/refs
     edit: pageEdits({
       tabId,
       tab: activeTab,

@@ -5,6 +5,7 @@ import {
   pagesOf,
   layOutPages,
   MAX_PAGES,
+  newFlashcardPage,
   type Element,
   type Page,
   type Tab,
@@ -190,6 +191,27 @@ describe('adding', () => {
     expect(refusal(withArticle, [{ op: 'layout', page: 1, layout: 'title' }]).message).toContain(
       'write_article',
     );
+  });
+
+  // docs/specs/007-editor/flashcards.md "Agents".
+  it('adds a card to a stack, each its own writing, and refuses a layout on one', () => {
+    const stackOf = (text: string) =>
+      tabOf({
+        pages: [newFlashcardPage('c1', 'card-1')],
+        articles: {
+          'card-1': { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text }] }] },
+        },
+      });
+    const stack = stackOf('Opening');
+    const out = run(stack, [{ op: 'add', kind: 'flashcard', name: 'Close' }]);
+    expect(pagesOf(out.tab)[1]).toMatchObject({ id: 'pg-1', kind: 'flashcard', flow: 'art-1' });
+    expect(articlesOf(out.tab)['art-1']).toBeDefined();
+    // The Blank Flashcards' one empty card becomes the card asked for.
+    expect(pagesOf(run(stackOf(' '), [{ op: 'add', kind: 'flashcard' }]).tab)).toHaveLength(1);
+    expect(kinds(run(tabOf(), [{ op: 'add', kind: 'flashcard' }]).tab)).toEqual(['flashcard']);
+    const r = refusal(stack, [{ op: 'add', kind: 'flashcard', layout: 'title' }]);
+    expect(r).toMatchObject({ code: 'layout_unknown', change: 0 });
+    expect(r.message).toBe('A flashcard takes no layout: write it with write_article.');
   });
 
   it('refuses past the page limit', () => {

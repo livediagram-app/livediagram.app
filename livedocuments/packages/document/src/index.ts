@@ -263,6 +263,8 @@ export * from './paginate';
 export * from './article-flow';
 export * from './article-flow-ops';
 export * from './article-pages';
+export * from './flashcards';
+export * from './flashcard-guard';
 export * from './article-style';
 export * from './article-zones';
 export * from './article-notes';
