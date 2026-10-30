@@ -5,7 +5,7 @@ import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { heroGreeting, kindWords } from '../words';
 import { Explorer, type ExplorerProps } from './Explorer';
-import { heroPills } from './HomeHero';
+import { heroPills, spacesView } from './HomeHero';
 
 // Home's hero (ported from liveplanner's HomeHero tests): the greeting is the page's heading, the pills count
 // what the Explorer reads and open their views, New sits inside the large field, the host's art and words
@@ -54,7 +54,7 @@ describe('heroGreeting', () => {
 
 describe('heroPills', () => {
   const plan = kindWords('liveplanner');
-  it('counts My Work in the app’s words and says how the Inbox stands', () => {
+  it('counts every space in the app’s words and says how the Inbox stands', () => {
     expect(heroPills({ items: { count: 1, more: false }, inbox: 0 }, plan)).toMatchObject([
       { id: 'items', label: '1 plan', tone: 'emerald', view: { kind: 'all' } },
       { id: 'inbox', label: 'Inbox is clear', tone: 'sky', view: { kind: 'inbox' } },
@@ -65,6 +65,18 @@ describe('heroPills', () => {
     expect(heroPills({ items: { count: 0, more: false }, inbox: 1 }, plan)[0]!.label).toBe(
       '0 plans',
     );
+  });
+
+  it('opens My Work for someone in no team, and Search narrowed to every space for someone in teams', () => {
+    expect(spacesView([])).toEqual({ kind: 'all' });
+    expect(spacesView([{ id: 'a' }, { id: 'b' }])).toEqual({
+      kind: 'search',
+      q: 'space:mine,team:a,team:b',
+    });
+    expect(
+      heroPills({ items: { count: 4, more: false }, inbox: undefined }, plan, [{ id: 'a' }])[0]!
+        .view,
+    ).toEqual({ kind: 'search', q: 'space:mine,team:a' });
   });
 
   it('says a full page is more, rather than paging on to count', () => {
@@ -122,19 +134,19 @@ describe('Home’s hero', () => {
       updatedAt: 1,
       lastAuthorId: 'user_you',
     } as never);
-    const { onNavigate } = renderHome(index);
-    // Team items are not My Work's.
-    const mine = await screen.findByRole('link', { name: '2 plans' });
-    expect(mine.getAttribute('href')).toBe('/explorer/all');
+    const { onNavigate } = renderHome(index, { teams: [{ id: 'team-1', name: 'Design' }] });
+    // Every space: My Work's and the team's, each once; it opens Search narrowed to those spaces.
+    const mine = await screen.findByRole('link', { name: '3 plans' });
+    const spaces = { kind: 'search', q: 'space:mine,team:team-1' };
     fireEvent.click(mine);
-    expect(onNavigate).toHaveBeenLastCalledWith({ kind: 'all' }, '/explorer/all');
+    expect(onNavigate).toHaveBeenLastCalledWith(spaces, mine.getAttribute('href'));
     fireEvent.click(screen.getByRole('link', { name: '1 open in your Inbox' }));
     expect(onNavigate).toHaveBeenLastCalledWith({ kind: 'inbox' }, '/explorer/inbox');
-    // No request of its own: My Work's count, up to a page, rides on Jump Back In's read, in this app.
+    // No request of its own: the count, up to a page, rides on Jump Back In's read, in this app.
     expect(countCalls(index)).toHaveLength(1);
     expect(countCalls(index)[0]!.args[0]).toMatchObject({
       view: 'recent',
-      used: 4,
+      used: 8,
       mine: LIST_LIMIT_MAX,
       app: 'liveplanner',
     });

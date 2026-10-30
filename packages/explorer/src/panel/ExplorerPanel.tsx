@@ -21,12 +21,7 @@ import {
 import { type App, type Folder, type IndexClient, type Item } from '@liveworkspace/index-client';
 import { useFolderPreviews } from '../data/useFolderPreviews';
 import { useItemList } from '../data/useItemList';
-import {
-  JUMP_BACK_IN_PER_GROUP,
-  jumpBackInLine,
-  jumpBackInLoader,
-  viewList,
-} from '../data/viewLists';
+import { jumpBackInLine, jumpBackInLoader, viewList } from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
 import { inboxCount } from '../data/useInbox';
 import { ExplorerProvider, useExplorer } from '../explorer/context';
@@ -1126,8 +1121,9 @@ function FilterToggle() {
 
 // ---- Home -----------------------------------------------------------------------------------------------
 
-// How many items Home's Jump Back In lists in the pane.
+// How many items Home's Jump Back In lists in the pane, from this many of each group (fewer than Home's page).
 const JUMP_BACK_IN_ROWS = 6;
+const PANEL_PER_GROUP = 4;
 const live = (i: ShownItem) => i.trashedAt === null;
 const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
 
@@ -1141,7 +1137,7 @@ function HomeSection({
   const { client, app, filter, overlay, epoch, words } = useExplorer();
   // Most used then recent (one request), one more than the pane lists, so leaving out the open item still fills it.
   const load = useMemo(
-    () => jumpBackInLoader(client, app, filter, JUMP_BACK_IN_PER_GROUP, 1),
+    () => jumpBackInLoader(client, app, filter, PANEL_PER_GROUP, 1),
     [client, app, filter],
   );
   const list = useItemList({

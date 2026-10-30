@@ -178,6 +178,8 @@ export function createFakeIndex(
     let out = items.filter((i) => i.trashedAt === null);
     if (q.app) out = out.filter((i) => i.app === q.app);
     if (q.view === 'unsorted') out = out.filter((i) => i.folderId === null);
+    // My Work and the teams' libraries: what a link reaches lives in another's space.
+    if (q.view === 'all' && !q.folder) out = out.filter((i) => !i.sharedVia);
     if (q.view === 'favourites') out = out.filter((i) => i.favourite);
     if (q.view === 'recent') {
       out = out.filter((i) => i.lastOpenedAt !== null && !i.hiddenFromRecent);
@@ -201,8 +203,8 @@ export function createFakeIndex(
     listItems: (query: ItemListQuery = {}, options: { signal?: AbortSignal } = {}) =>
       answer('listItems', [query], options.signal, () => {
         const { slice, next } = page(select(query), query.limit, query.cursor);
-        // A seeded item's `useDays` is the index's use_days for it: only Most Used carries it.
-        const bare = ({ useDays: _days, ...i }: Item) => i;
+        // A seeded item's `useDays` and `useOpens` are the index's use_days for it: only Most Used carries them.
+        const bare = ({ useDays: _days, useOpens: _opens, ...i }: Item) => i;
         const result: {
           items: Item[];
           nextCursor: string | null;
@@ -213,18 +215,21 @@ export function createFakeIndex(
           items: slice.map(bare),
           nextCursor: next,
         };
-        // Home's reads beside a first page: My Work's count (yours, in no team) and whether anything opens.
+        // Home's reads beside a first page: every space's count (yours and your teams', not links') and whether
+        // anything opens.
         if (query.mine && !query.cursor) {
-          const own = select({ view: 'all', team: 'personal', app: query.app }).length;
+          const own = select({ view: 'all', app: query.app }).length;
           result.mine = { count: Math.min(own, query.mine), more: own > query.mine };
         }
         if (query.any && !query.cursor)
           result.any = select({ view: 'search', app: query.app }).length > 0;
         if (query.used && query.view === 'recent' && !query.cursor) {
           result.mostUsed = select(query)
-            .filter((i) => (i.useDays ?? 0) > 0)
+            .filter((i) => (i.useOpens ?? i.useDays ?? 0) > 0)
             .sort(
-              (a, b) => b.useDays! - a.useDays! || (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0),
+              (a, b) =>
+                (b.useOpens ?? b.useDays!) - (a.useOpens ?? a.useDays!) ||
+                (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0),
             )
             .slice(0, query.used)
             .map((i) => ({ ...i }));
