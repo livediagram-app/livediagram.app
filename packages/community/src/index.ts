@@ -2,6 +2,7 @@
 // grammar and wire shapes the service, every app's Workers and every app's pages agree on.
 export * from './apps';
 export * from './authors';
+export * from './categories';
 export * from './network';
 export * from './post';
 export * from './query';

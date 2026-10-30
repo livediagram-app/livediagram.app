@@ -17,6 +17,8 @@ workers_dev = false
 # Secrets (wrangler secret put): each app's Worker key, sent as a bearer token on the app routes.
 #   COMMUNITY_KEY_LIVEDIAGRAM   shared with livediagram's api Worker as COMMUNITY_KEY
 #   COMMUNITY_KEY_LIVEPLANNER   shared with liveplanner's api Worker as COMMUNITY_KEY
+#   COMMUNITY_KEY_LIVEDOCUMENTS shared with livedocuments' api Worker as COMMUNITY_KEY
+#   COMMUNITY_KEY_LIVEDESIGN    shared with livedesign's api Worker as COMMUNITY_KEY
 [vars]
 ENVIRONMENT = "production"
 

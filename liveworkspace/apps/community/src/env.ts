@@ -15,10 +15,20 @@ export interface Env {
   // Worker. Unset means that app can't publish, sync or read My Shares.
   COMMUNITY_KEY_LIVEDIAGRAM?: string;
   COMMUNITY_KEY_LIVEPLANNER?: string;
+  COMMUNITY_KEY_LIVEDOCUMENTS?: string;
+  COMMUNITY_KEY_LIVEDESIGN?: string;
 }
 
+// Each app's key by name, exhaustive over the apps, so a new app can never fall through to another's key.
+const APP_KEY = {
+  'livediagram.app': 'COMMUNITY_KEY_LIVEDIAGRAM',
+  'liveplanner.app': 'COMMUNITY_KEY_LIVEPLANNER',
+  'livedocuments.app': 'COMMUNITY_KEY_LIVEDOCUMENTS',
+  'livedesign.app': 'COMMUNITY_KEY_LIVEDESIGN',
+} as const satisfies Record<CommunityApp, keyof Env>;
+
 export function appKey(env: Env, app: CommunityApp): string | undefined {
-  return app === 'livediagram.app' ? env.COMMUNITY_KEY_LIVEDIAGRAM : env.COMMUNITY_KEY_LIVEPLANNER;
+  return env[APP_KEY[app]];
 }
 
 const OFF = new Set(['false', '0', 'off']);

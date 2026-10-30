@@ -165,7 +165,7 @@ async function publish(
 ): Promise<Response> {
   const body = (await readJson(request)) as Record<string, unknown> | null;
   if (!body) return badRequest('invalid_body');
-  const parsed = validateCommunityPostInput(body.input);
+  const parsed = validateCommunityPostInput(body.input, app);
   if (!parsed.ok) return badRequest(parsed.error);
   const author = parseAuthor(body.author);
   if (

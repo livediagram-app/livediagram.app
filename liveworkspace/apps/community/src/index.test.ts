@@ -131,6 +131,36 @@ describe('the app routes', () => {
     expect(badAuthor.status).toBe(400);
   });
 
+  it("take only a category of the publishing app's own", async () => {
+    const theirs = await asApp('/app/documents/d1', {
+      method: 'PUT',
+      ...body(publishing({ input: { ...publishing().input, category: 'logos' } })),
+    });
+    expect(theirs.status).toBe(400);
+    expect(await theirs.json()).toEqual({ error: 'invalid_category' });
+    const own = await asApp(
+      '/app/documents/d1',
+      {
+        method: 'PUT',
+        ...body(publishing({ input: { ...publishing().input, category: 'logos' } })),
+      },
+      'livedesign.app',
+      'ls-key',
+    );
+    expect(own.status).toBe(201);
+  });
+
+  it('speak for livedocuments and livedesign with their own keys only', async () => {
+    expect((await asApp('/app/hidden?since=0', {}, 'livedocuments.app', 'lc-key')).status).toBe(
+      200,
+    );
+    expect((await asApp('/app/hidden?since=0', {}, 'livedesign.app', 'ls-key')).status).toBe(200);
+    expect((await asApp('/app/hidden?since=0', {}, 'livedesign.app', 'lc-key')).status).toBe(401);
+    expect((await asApp('/app/hidden?since=0', {}, 'livedocuments.app', 'ld-key')).status).toBe(
+      401,
+    );
+  });
+
   it("keep a post's author's picture only when it is an https address", async () => {
     const { post } = await publish('d1', {
       author: { name: 'Ada', color: '#f97316', picture: 'javascript:alert(1)' },

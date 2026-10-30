@@ -14,6 +14,7 @@ import {
 } from '@livediagram/api-schema';
 import { communityEnabled } from '../community-enabled';
 import {
+  COMMUNITY_APP,
   communityServiceConfigured,
   getServicePost,
   publishServicePost,
@@ -103,7 +104,7 @@ export async function handleCommunityOwnerRoutes(
   if (!ctx.accountUserId || ctx.accountUserId !== doc.ownerId)
     return reject(signInRequired(), 'sign_in_required');
   if (doc.teamId) return reject(conflict('team_document'), 'team_document');
-  const parsed = validateCommunityPostInput(await request.json().catch(() => null));
+  const parsed = validateCommunityPostInput(await request.json().catch(() => null), COMMUNITY_APP);
   if (!parsed.ok) return reject(json({ error: parsed.error }, { status: 400 }), parsed.error);
   // G2: a share password and a post exclude each other.
   const sharing = await client.listShareLinks(id);

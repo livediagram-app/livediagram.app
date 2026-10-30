@@ -4,7 +4,12 @@
 
 import { APP_SITES } from '@liveworkspace/sites';
 
-export const COMMUNITY_APPS = ['livediagram.app', 'liveplanner.app'] as const;
+export const COMMUNITY_APPS = [
+  'livediagram.app',
+  'liveplanner.app',
+  'livedocuments.app',
+  'livedesign.app',
+] as const;
 
 export type CommunityApp = (typeof COMMUNITY_APPS)[number];
 
@@ -24,6 +29,8 @@ function originsOf(app: CommunityApp): readonly string[] {
 export const COMMUNITY_APP_ORIGINS: Record<CommunityApp, readonly string[]> = {
   'livediagram.app': originsOf('livediagram.app'),
   'liveplanner.app': originsOf('liveplanner.app'),
+  'livedocuments.app': originsOf('livedocuments.app'),
+  'livedesign.app': originsOf('livedesign.app'),
 };
 
 // The app an origin belongs to, or null for one no app serves.

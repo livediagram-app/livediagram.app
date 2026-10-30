@@ -9,10 +9,9 @@ import {
   COMMUNITY_SEARCH_TERMS_MAX,
   COMMUNITY_SEARCH_TERM_MAX,
   COMMUNITY_TAGS_MAX,
-  isCommunityCategory,
   normaliseCommunityTag,
-  type CommunityCategory,
 } from './post';
+import { isCommunityCategory, type CommunityCategory } from './categories';
 
 // ---------------------------------------------------------------------
 // List query

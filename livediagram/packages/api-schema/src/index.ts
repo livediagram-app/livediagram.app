@@ -331,6 +331,7 @@ export * from '@liveworkspace/api-schema/agent-presence';
 // The Community's shared contract is liveworkspace's (liveworkspace/docs/specs/007-community/community.md); re-exported so the
 // editor, the Community pages and the api read it from here as before.
 export * from '@liveworkspace/community';
+export * from './community-categories';
 export * from './community-paths';
 export * from './document-paths';
 export * from '@liveworkspace/api-schema/http-errors';
