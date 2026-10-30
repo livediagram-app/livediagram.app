@@ -3,6 +3,7 @@ import { PLAN_COLUMN_MIN_PX } from '@liveplanner/items';
 import {
   MAXIMISED_BOARD_SLOTS,
   PHONE_COLUMN_PEEK_PX,
+  SLOT_COLUMN_MIN_PX,
   boardColumnTemplate,
 } from './plan-board-columns';
 
@@ -19,6 +20,14 @@ describe('boardColumnTemplate', () => {
     const [one, two] = boardColumnTemplate([{}, { width: 2 }], 'maximised').split(') minmax');
     expect(one).toBe('minmax(max(220px, calc((100cqw - 48px) / 5 * 1 + 0px)), 1fr');
     expect(two).toBe('(max(440px, calc((100cqw - 48px) / 5 * 2 + 12px)), 2fr)');
+  });
+
+  // docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified": compact, before slot-board.ts measures it.
+  it('gives a slot board compact shares, a wide column its units', () => {
+    expect(SLOT_COLUMN_MIN_PX).toBe(160);
+    expect(boardColumnTemplate([{}, { width: 2 }], 'slot')).toBe(
+      'minmax(160px, 1fr) minmax(320px, 2fr)',
+    );
   });
 
   it('gives every column on a phone the body less a peek of the next, whatever its width', () => {

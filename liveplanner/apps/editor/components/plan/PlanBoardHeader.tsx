@@ -43,7 +43,6 @@ export function PlanBoardHeader({
   onQuick,
   canFilterMine,
   canEdit,
-  simplified = false,
   loadFailed,
   selected = false,
   movable = true,
@@ -67,8 +66,6 @@ export function PlanBoardHeader({
   onQuick: (q: QuickFilter) => void;
   canFilterMine: string | null;
   canEdit: boolean;
-  // A board simplified in a Dashboard slot (plan-tabs.md "A board in a slot is simplified"): no Form strip.
-  simplified?: boolean;
   loadFailed: boolean;
   // The board is selected: the header shows its move handle.
   selected?: boolean;
@@ -118,7 +115,7 @@ export function PlanBoardHeader({
   // sending its responses here leads them (FormBoardStrip), with no one adding it.
   const widgetZone = (
     <>
-      {simplified ? null : <FormBoardStrip palette={palette} />}
+      <FormBoardStrip palette={palette} />
       <BoardWidgetZone
         widgets={widgets}
         canEdit={canEdit}

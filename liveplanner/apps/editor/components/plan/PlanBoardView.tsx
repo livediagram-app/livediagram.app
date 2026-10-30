@@ -25,6 +25,7 @@ import {
   normaliseBoardSetup,
   projectBoard,
   type Item,
+  type LaneHead,
   type QuickFilter,
   boardAddTypes,
   newItemId,
@@ -60,6 +61,11 @@ import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
+import { SLOT_BOARD_GROUP, SlotBoardHeader } from './SlotBoardHeader';
+import { SlotColumnHeader } from './SlotColumnHeader';
+import { slotCardSize, slotColumnTemplate, slotColumnUnit, slotSetup } from './slot-board';
+import type { NewCard } from './AddCardPopover';
+import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { ExampleCardsNotice } from './ExampleCardsNotice';
 import { AddCardButton } from './AddCardButton';
 import { planBoardKey } from './plan-board-keys';
@@ -103,13 +109,27 @@ export function PlanBoardView({
   const palette = planPalette(surface, planOwnColours(element));
   const radius = `${cornerRadiusPx(element.borderRadius, element.width, element.height, PLAN_BOARD_RADIUS_PX)}px`;
   const types = plan?.types ?? ITEM_TYPES;
-  const setup = useMemo(() => normaliseBoardSetup(element.planBoard), [element.planBoard]);
+  // The board's set-up as saved: what Setup Board, the CSV and every set-up change start from.
+  const fullSetup = useMemo(() => normaliseBoardSetup(element.planBoard), [element.planBoard]);
   // Its Board tab's Import CSV… and Download CSV (docs/specs/026-plan/plan-board.md "CSV").
-  useBoardCsv(element.id, setup);
+  useBoardCsv(element.id, fullSetup);
+  // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
+  // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.
+  const interactive = !!plan;
+  const { maximised, filled } = useBoardMaximised(element.id, interactive);
+  // In a Dashboard slot the board is a compact one for working its cards (docs/specs/026-plan/plan-tabs.md "A board in
+  // a slot is simplified"): nothing on it sets the board up, its swimlanes are not drawn (slot-board.ts) and no widget
+  // narrows it. Maximised from the slot it is the whole board again, and simplified once restored.
+  const simplified = useInDashboard() && !maximised;
+  // The set-up the board is drawn and worked from: a slot board's without its swimlanes.
+  const setup = useMemo(
+    () => (fullSetup && simplified ? slotSetup(fullSetup) : fullSetup),
+    [fullSetup, simplified],
+  );
   const [quick, setQuick] = useState<QuickFilter>({});
-  // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either.
+  // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either; nor does a slot board.
   const phone = useIsMobileViewport();
-  const applied = shownQuick(quick, phone);
+  const applied = shownQuick(quick, phone || simplified);
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
   const closeAdding = useCallback(() => setAdding(null), []);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
@@ -135,7 +155,6 @@ export function PlanBoardView({
     () => (setup ? boardItems(projectBoard(setup, items, undefined, types, statusNames)) : []),
     [setup, items, types, statusNames],
   );
-  const interactive = !!plan;
   // Selected (alone or with others): the header shows its move handle.
   const selected = useSelectionOf(
     (s) => s.selectedId === element.id || s.multiSelectedIds.has(element.id),
@@ -143,13 +162,6 @@ export function PlanBoardView({
   const canEdit = !!plan?.canEdit;
   // Cards move, open for editing and are added by an Editor or a Participant (docs/specs/013-workspace/share-roles.md).
   const canEditCards = !!plan?.canEditCards;
-  // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
-  // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.
-  const { maximised, filled } = useBoardMaximised(element.id, interactive);
-  // In a Dashboard slot the board is simplified, for working its cards (docs/specs/026-plan/plan-tabs.md "A board in a
-  // slot is simplified"): its set-up (title, widgets, columns, Reveal, new card types, Board Settings, the Form strip)
-  // changes on its tab. Maximised from the slot it is the whole board again, and simplified once restored.
-  const simplified = useInDashboard() && !maximised;
   const setUpHere = canEdit && !simplified;
   const slot = useSlotSettings();
   // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
@@ -230,12 +242,12 @@ export function PlanBoardView({
   const gridRef = useRef<HTMLDivElement>(null);
   const columnMove = useColumnMoveFlip(gridRef, setup?.columns.map((c) => c.id).join('|') ?? '');
   usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null, columnMove.isMoving);
-  // Maximised (or filling its tab, or a phone's Dashboard slot, one column a screen), a card dragged near the columns'
-  // left or right edge scrolls them sideways.
-  useEdgeAutoScroll(
-    bodyRef,
-    (maximised || filled || (phone && !!slot)) && (!!drag.drag || !!incoming),
-  );
+  // Maximised (or filling its tab, or in a Dashboard slot, whose columns scroll sideways when it is narrow), a card
+  // dragged near the columns' left or right edge scrolls them sideways.
+  useEdgeAutoScroll(bodyRef, (maximised || filled || simplified) && (!!drag.drag || !!incoming));
+  // A slot board's width, read only there (and not on a phone, whose cards are Minimal anyway): its cards turn Minimal
+  // when its columns are narrow (slot-board.ts slotCardSize).
+  const bodySize = useObservedSize(bodyRef, simplified && !phone);
 
   if (!setup || !projection) {
     return (
@@ -316,10 +328,37 @@ export function PlanBoardView({
       inSlot: !!slot,
       interactive,
       dragging: !!dragging || !!incoming,
+      simple: simplified,
     },
     setup.cardSize,
   );
-  const columnTemplate = boardColumnTemplate(setup.columns, look.columns);
+  // A slot board sizes its columns from its measured width (slot-board.ts), its cards Minimal when they are narrow.
+  const slotBoard = look.columns === 'slot';
+  const slotUnit = slotBoard ? slotColumnUnit(bodySize?.width ?? null, setup.columns) : null;
+  const columnTemplate = slotBoard
+    ? slotColumnTemplate(bodySize?.width ?? null, setup.columns)
+    : boardColumnTemplate(setup.columns, look.columns);
+  const cardSize = slotBoard ? slotCardSize(look.cardSize, slotUnit) : look.cardSize;
+  // A slot board's column + (its head's, the cards' Add card row otherwise; rows keep their own rows' buttons, an All
+  // Cards board's rows by status being the one kind a slot board keeps).
+  const addInHead = simplified && !withLanes;
+  // Add card is offered: someone who may add, once loaded, on a board that takes new cards and some type to add.
+  const mayAdd =
+    canEditCards && !loading && !setup.archive && (addTypes.length > 0 || !!createType);
+  // A new card at the foot of a cell, opened at once to be named (plan-board.md "Open an item").
+  const addInto =
+    (status: string, lane: LaneHead | undefined, cell: readonly Item[]) =>
+    ({ type, fields }: NewCard) => {
+      const id = newItemId();
+      void plan?.addItem({
+        id,
+        type,
+        fields: { ...fields, ...(withLanes ? laneMove(lane).set : {}) },
+        status: cellStatus(setup, status, lane),
+        after: cell[cell.length - 1]?.id ?? null,
+      });
+      plan?.openNewItem(id);
+    };
 
   const board = (
     <div
@@ -328,7 +367,7 @@ export function PlanBoardView({
       role="region"
       aria-label={setup.title}
       // `isolate`: the sticky column heads stack inside the board, never over another element.
-      className="absolute inset-0 isolate flex flex-col overflow-hidden border"
+      className={`absolute inset-0 isolate flex flex-col overflow-hidden border ${simplified ? SLOT_BOARD_GROUP : ''}`}
       style={{
         backgroundColor: palette.surface,
         borderColor: palette.border,
@@ -337,71 +376,90 @@ export function PlanBoardView({
         ...planFontStyle(fontFamily),
       }}
     >
-      <PlanBoardHeader
-        setup={setup}
-        projection={projection}
-        items={shownItems}
-        types={types}
-        palette={palette}
-        selected={selected}
-        movable={!maximised && !filled}
-        canRename={setUpHere && interactive}
-        onOpenItem={(id) => plan?.openItem(id)}
-        onSetup={(next, part) => {
-          plan?.updateBoard(element.id, next);
-          trackSetup(part);
-        }}
-        showWidgets={look.widgets}
-        onWidgets={(next) => {
-          plan?.updateBoard(element.id, { ...setup, widgets: next });
-          trackSetup('Widgets');
-        }}
-        quick={quick}
-        onQuick={setQuick}
-        canFilterMine={self?.id ?? null}
-        canEdit={setUpHere}
-        simplified={simplified}
-        loadFailed={plan?.status === 'error'}
-        onRetry={() => plan?.retry()}
-        onReveal={() => {
-          plan?.updateBoard(element.id, { ...setup, hideWriting: false });
-          plan?.announce('Every card turned face up');
-          track('Plan', 'Revealed', 'Board');
-        }}
-        onMoveUnplaced={(item, status) => {
-          if (!plan) return;
-          const refused = typeStatusRefusal(plan.types, item.type, status, columnName);
-          if (refused) plan.announce(refused);
-          else plan.moveItem(item.id, { status, before: null });
-        }}
-        end={
-          interactive ? (
-            <>
-              {/* Focus glides the view to fit the board; not while it fills the view. */}
-              {maximised || filled ? null : (
-                <FocusElementButton bounds={element} kind="Board" palette={palette} />
-              )}
-              {filled ? null : (
-                <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
-              )}
-              {/* The cog last, at the header's far right: the board's one menu (its element menu). In a Dashboard
+      {simplified ? (
+        <SlotBoardHeader
+          title={setup.title}
+          count={shownItems.length}
+          palette={palette}
+          loadFailed={plan?.status === 'error'}
+          onRetry={() => plan?.retry()}
+          controls={
+            interactive ? (
+              <>
+                <MaximisePlanButton id={element.id} maximised={false} palette={palette} />
+                {/* The slot's own cog (slot-menu.ts): the board is set up on its tab. */}
+                {slot ? slot.cog : null}
+              </>
+            ) : null
+          }
+        />
+      ) : (
+        <PlanBoardHeader
+          setup={setup}
+          projection={projection}
+          items={shownItems}
+          types={types}
+          palette={palette}
+          selected={selected}
+          movable={!maximised && !filled}
+          canRename={setUpHere && interactive}
+          onOpenItem={(id) => plan?.openItem(id)}
+          onSetup={(next, part) => {
+            plan?.updateBoard(element.id, next);
+            trackSetup(part);
+          }}
+          showWidgets={look.widgets}
+          onWidgets={(next) => {
+            plan?.updateBoard(element.id, { ...setup, widgets: next });
+            trackSetup('Widgets');
+          }}
+          quick={quick}
+          onQuick={setQuick}
+          canFilterMine={self?.id ?? null}
+          canEdit={setUpHere}
+          loadFailed={plan?.status === 'error'}
+          onRetry={() => plan?.retry()}
+          onReveal={() => {
+            plan?.updateBoard(element.id, { ...setup, hideWriting: false });
+            plan?.announce('Every card turned face up');
+            track('Plan', 'Revealed', 'Board');
+          }}
+          onMoveUnplaced={(item, status) => {
+            if (!plan) return;
+            const refused = typeStatusRefusal(plan.types, item.type, status, columnName);
+            if (refused) plan.announce(refused);
+            else plan.moveItem(item.id, { status, before: null });
+          }}
+          end={
+            interactive ? (
+              <>
+                {/* Focus glides the view to fit the board; not while it fills the view. */}
+                {maximised || filled ? null : (
+                  <FocusElementButton bounds={element} kind="Board" palette={palette} />
+                )}
+                {filled ? null : (
+                  <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
+                )}
+                {/* The cog last, at the header's far right: the board's one menu (its element menu). In a Dashboard
                   slot, the slot's own cog (slot-menu.ts), the board set up on its tab; maximised from the slot, an
                   Editor's Board Settings with the slot's section after the board's. */}
-              {slot ? (
-                setUpHere ? (
-                  <SlotBoardCog element={element} palette={palette} slot={slot} />
-                ) : (
-                  slot.cog
-                )
-              ) : canEdit ? (
-                <BoardSettingsButton element={element} palette={palette} />
-              ) : null}
-            </>
-          ) : null
-        }
-      />
-      {/* A template's example cards: Clear Example Cards or Keep Them, for an Editor (ExampleCardsNotice). */}
-      {interactive && plan ? (
+                {slot ? (
+                  setUpHere ? (
+                    <SlotBoardCog element={element} palette={palette} slot={slot} />
+                  ) : (
+                    slot.cog
+                  )
+                ) : canEdit ? (
+                  <BoardSettingsButton element={element} palette={palette} />
+                ) : null}
+              </>
+            ) : null
+          }
+        />
+      )}
+      {/* A template's example cards: Clear Example Cards or Keep Them, for an Editor (ExampleCardsNotice); left on the
+          board's tab by a slot board. */}
+      {interactive && plan && !simplified ? (
         <ExampleCardsNotice shown={shownItems} plan={plan} palette={palette} />
       ) : null}
       <div
@@ -414,7 +472,7 @@ export function PlanBoardView({
         // centred, one at a time (phone-board.ts), and a tap on a column's empty space glides it to the centre.
         className={`min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
           look.snap ? 'snap-x snap-mandatory' : ''
-        }`}
+        } ${slotBoard ? 'scroll-edge-fade' : ''}`}
         onPointerDown={interactive ? keepBoardPress : undefined}
         onClick={
           interactive && look.columns === 'phone'
@@ -429,7 +487,7 @@ export function PlanBoardView({
             Setup's Setup Board run again over a set-up board). */}
         <SetupBoardHost
           elementId={element.id}
-          setup={setup}
+          setup={fullSetup ?? setup}
           palette={palette}
           canEdit={canEdit}
           pickable={pickable}
@@ -437,7 +495,7 @@ export function PlanBoardView({
         {setup.columns.length === 0 ? null : (
           <div
             ref={gridRef}
-            className="relative grid min-h-full gap-3"
+            className={`relative grid min-h-full ${slotBoard ? 'gap-2' : 'gap-3'}`}
             style={{
               gridTemplateColumns: columnTemplate,
               gridTemplateRows: boardRowTemplate(
@@ -447,42 +505,70 @@ export function PlanBoardView({
               ),
             }}
           >
-            {projection.columns.map((col) => (
-              <PlanColumnHeader
-                key={col.column.id}
-                col={col}
-                setup={setup}
-                palette={palette}
-                canEdit={setUpHere}
-                onChange={(next, part) => {
-                  if (part === 'ColumnReordered') columnMove.beforeMove(col.column.id);
-                  plan?.updateBoard(element.id, next);
-                  trackSetup(part);
-                }}
-                onMoveCards={(from, to) => {
-                  if (!plan) return;
-                  const moving = [...items.values()].filter((it) => itemStatus(it) === from);
-                  const stay = cardsMovingRefused(moving, plan.types, to);
-                  for (const it of moving)
-                    if (!stay.has(it.id)) plan.moveItem(it.id, { status: to, before: null });
-                  // One announcement for the cards whose type leaves the status out, never one each.
-                  if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
-                }}
-                onFrame={frameColumn ?? undefined}
-                onDeleteStatus={(status) => plan?.removeStatusColumns(status, element.id)}
-                onTrashCards={(status) => {
-                  if (!plan) return;
-                  // Every card in the state, whatever board shows it (the column's removal moves them all).
-                  const went = plan.trashItems(
-                    [...plan.items.values()]
-                      .filter((it) => itemStatus(it) === status && !isTrashed(it))
-                      .map((it) => it.id),
-                  );
-                  if (went)
-                    plan.announce(`${went === 1 ? 'Card' : `${went} cards`} moved to the Trash`);
-                }}
-              />
-            ))}
+            {projection.columns.map((col) =>
+              simplified ? (
+                <SlotColumnHeader
+                  key={col.column.id}
+                  col={col}
+                  palette={palette}
+                  onFrame={frameColumn ?? undefined}
+                  add={
+                    addInHead && mayAdd ? (
+                      <AddCardButton
+                        compact
+                        palette={palette}
+                        types={addTypes}
+                        label={`Add a card to ${col.column.name}`}
+                        open={
+                          adding?.status === col.column.status && adding.laneKey === lanes[0]?.key
+                        }
+                        onClosed={closeAdding}
+                        onAdd={addInto(
+                          col.column.status,
+                          lanes[0],
+                          col.lanes.find((l) => l.laneKey === lanes[0]?.key)?.items ?? [],
+                        )}
+                      />
+                    ) : null
+                  }
+                />
+              ) : (
+                <PlanColumnHeader
+                  key={col.column.id}
+                  col={col}
+                  setup={setup}
+                  palette={palette}
+                  canEdit={setUpHere}
+                  onChange={(next, part) => {
+                    if (part === 'ColumnReordered') columnMove.beforeMove(col.column.id);
+                    plan?.updateBoard(element.id, next);
+                    trackSetup(part);
+                  }}
+                  onMoveCards={(from, to) => {
+                    if (!plan) return;
+                    const moving = [...items.values()].filter((it) => itemStatus(it) === from);
+                    const stay = cardsMovingRefused(moving, plan.types, to);
+                    for (const it of moving)
+                      if (!stay.has(it.id)) plan.moveItem(it.id, { status: to, before: null });
+                    // One announcement for the cards whose type leaves the status out, never one each.
+                    if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
+                  }}
+                  onFrame={frameColumn ?? undefined}
+                  onDeleteStatus={(status) => plan?.removeStatusColumns(status, element.id)}
+                  onTrashCards={(status) => {
+                    if (!plan) return;
+                    // Every card in the state, whatever board shows it (the column's removal moves them all).
+                    const went = plan.trashItems(
+                      [...plan.items.values()]
+                        .filter((it) => itemStatus(it) === status && !isTrashed(it))
+                        .map((it) => it.id),
+                    );
+                    if (went)
+                      plan.announce(`${went === 1 ? 'Card' : `${went} cards`} moved to the Trash`);
+                  }}
+                />
+              ),
+            )}
             {/* One column a screen, each column's snap point: a marker over its full height, out of the grid's
                 flow, rather than its sticky header, so scrolling down moves no snap point and nothing re-snaps
                 mid-scroll (docs/specs/026-plan/plan-board.md "On a phone"). */}
@@ -553,7 +639,11 @@ export function PlanBoardView({
                             {...{ [COLUMN_ATTR]: col.column.id }}
                             data-plan-status={col.column.status}
                             data-plan-lane={lane.key}
-                            className="flex min-h-16 flex-col gap-2 rounded-b-lg px-2 pb-2 pt-1"
+                            className={`flex flex-col rounded-b-lg ${
+                              simplified
+                                ? 'min-h-12 gap-1.5 px-1.5 pb-1.5'
+                                : 'min-h-16 gap-2 px-2 pb-2 pt-1'
+                            }`}
                             style={{ backgroundColor: palette.column }}
                           >
                             {/* The cards are the list; the column's Add card button follows it rather than sitting in it,
@@ -562,7 +652,7 @@ export function PlanBoardView({
                             <div
                               role="list"
                               aria-label={`${col.column.name}${withLanes && lane.label ? `, ${lane.label}` : ''}, ${cell.length} ${cell.length === 1 ? 'item' : 'items'}`}
-                              className="flex flex-col gap-2 empty:hidden"
+                              className={`flex flex-col ${simplified ? 'gap-1.5' : 'gap-2'} empty:hidden`}
                             >
                               {loading
                                 ? [0, 1].map((k) => (
@@ -587,7 +677,8 @@ export function PlanBoardView({
                                   done={done}
                                   // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
                                   setupFields={CARD_FIELDS}
-                                  cardSize={look.cardSize}
+                                  cardSize={cardSize}
+                                  stacked={slotBoard}
                                   touch={look.cardTouch}
                                   faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
                                   presence={plan?.presence.get(item.id)}
@@ -616,10 +707,7 @@ export function PlanBoardView({
                                 />
                               ) : null}
                             </div>
-                            {canEditCards &&
-                            !loading &&
-                            !setup.archive &&
-                            (cellTypes.length || createType) ? (
+                            {mayAdd && !addInHead ? (
                               <AddCardButton
                                 palette={palette}
                                 types={cellTypes}
@@ -627,21 +715,7 @@ export function PlanBoardView({
                                 open={isAdding}
                                 onClosed={closeAdding}
                                 onCreateType={createType}
-                                onAdd={({ type, fields }) => {
-                                  // Opened at once to be named (plan-board.md "Open an item").
-                                  const id = newItemId();
-                                  void plan?.addItem({
-                                    id,
-                                    type,
-                                    fields: {
-                                      ...fields,
-                                      ...(withLanes ? laneMove(lane).set : {}),
-                                    },
-                                    status: cellStatus(setup, col.column.status, lane),
-                                    after: cell[cell.length - 1]?.id ?? null,
-                                  });
-                                  plan?.openNewItem(id);
-                                }}
+                                onAdd={addInto(col.column.status, lane, cell)}
                               />
                             ) : null}
                           </div>
@@ -668,7 +742,8 @@ export function PlanBoardView({
         <PlanDragGhost
           drag={dragging}
           pointer={drag.pointer}
-          size={look.cardSize}
+          size={cardSize}
+          stacked={slotBoard}
           item={items.get(dragging.itemId)!}
           palette={palette}
           fields={CARD_FIELDS}

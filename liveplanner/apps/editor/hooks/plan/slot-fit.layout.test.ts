@@ -69,9 +69,9 @@ describe('keeping content looking good as the layout changes', () => {
   });
 
   it('floors a row’s height and a slot’s width at what their content needs', () => {
-    expect(rowHeightFloor(layout.rows[0]!, fitOf)).toBe(440);
+    expect(rowHeightFloor(layout.rows[0]!, fitOf)).toBe(260);
     expect(rowHeightFloor(layout.rows[1]!, fitOf)).toBe(0);
-    expect(slotWidthFloor(layout.rows[0]!.slots[0]!, fitOf)).toBe(480);
+    expect(slotWidthFloor(layout.rows[0]!.slots[0]!, fitOf)).toBe(280);
   });
 });
 

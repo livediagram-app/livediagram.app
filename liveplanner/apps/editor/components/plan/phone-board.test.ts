@@ -54,6 +54,20 @@ describe('boardLook', () => {
     expect(look.touch).toBe('touch-pan-x touch-pan-y');
   });
 
+  it('draws a simplified slot board in compact columns with no widgets, one a screen on a phone', () => {
+    const look = boardLook(place({ simple: true }), 'detailed');
+    expect(look).toMatchObject({ columns: 'slot', widgets: false, cardSize: 'detailed' });
+    expect(look.touch).toBe('touch-pan-x touch-pan-y');
+    expect(boardLook(place({ simple: true, phone: true }), 'detailed')).toMatchObject({
+      columns: 'phone',
+      cardSize: 'minimal',
+    });
+    // Maximised from the slot, it is the whole board again.
+    expect(boardLook(place({ simple: true, covering: true }), 'detailed').columns).toBe(
+      'maximised',
+    );
+  });
+
   it('draws Minimal cards and no widgets on a phone, even on the canvas', () => {
     expect(boardLook(place({ phone: true }), 'detailed')).toMatchObject({
       columns: 'canvas',

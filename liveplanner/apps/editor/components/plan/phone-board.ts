@@ -16,6 +16,9 @@ export type BoardPlace = {
   interactive: boolean;
   // A card is being carried: the columns stop snapping so the edge scroll can move them freely.
   dragging: boolean;
+  // Simplified in a Dashboard slot, not maximised (docs/specs/026-plan/plan-tabs.md "A board in a slot is
+  // simplified"), for anyone: compact columns rather than the canvas's, except on a phone (one a screen there).
+  simple?: boolean;
 };
 
 type BoardLook = {
@@ -50,14 +53,14 @@ export const PHONE_END_CLEARANCE = 'pb-[calc(8.5rem+env(safe-area-inset-bottom))
 const NO_QUICK: QuickFilter = {};
 
 export function boardLook(place: BoardPlace, cardSize: CardSize | undefined): BoardLook {
-  const { phone, covering, inSlot, interactive, dragging } = place;
+  const { phone, covering, inSlot, interactive, dragging, simple = false } = place;
   // Scrolls on its own: nothing under it to pan, so its body scrolls under a finger (each card stays touch-none).
-  const scrolls = covering || inSlot;
+  const scrolls = covering || inSlot || simple;
   const oneAScreen = phone && scrolls;
   return {
-    columns: oneAScreen ? 'phone' : covering ? 'maximised' : 'canvas',
+    columns: oneAScreen ? 'phone' : covering ? 'maximised' : simple ? 'slot' : 'canvas',
     cardSize: phone ? 'minimal' : cardSize,
-    widgets: !phone,
+    widgets: !phone && !simple,
     container: covering || oneAScreen,
     touch: interactive ? (scrolls ? 'touch-pan-x touch-pan-y' : 'touch-none') : '',
     cardTouch: oneAScreen && interactive ? 'touch-pan-x touch-pan-y' : 'touch-none',

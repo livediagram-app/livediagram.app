@@ -71,6 +71,9 @@ type PlanCardFaceProps = {
   // editor. Each slot is drawn even when empty, through `slot` (a dotted box to drop into), and each field's bit
   // through `bit` (a chip that drags and comes off).
   edit?: CardFaceEdit;
+  // A slot board's narrow column (docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified"): a Minimal card's
+  // title on its own lines, full width, and its bits in a row under it rather than beside it.
+  stacked?: boolean;
 };
 
 export type CardFaceEdit = {
@@ -93,6 +96,7 @@ export function PlanCardFace({
   presence,
   typeOverride,
   edit,
+  stacked = false,
 }: PlanCardFaceProps) {
   const plan = usePlan();
   const faceFinish = useFaceFinish();
@@ -275,7 +279,31 @@ export function PlanCardFace({
     </span>
   );
 
-  // Minimal: one line, the title between its Before and After slots.
+  // Minimal: one line, the title between its Before and After slots; stacked, the title first and its bits under it.
+  if (size === 'minimal' && stacked) {
+    const bits = [...slotBits('lead'), ...slotBits('trail')];
+    return (
+      <div className={`${FRAME} flex-col gap-1.5 px-2.5 py-2`} style={frame}>
+        {presenceTag}
+        <div className="flex items-start gap-1.5">
+          <span className="mt-[5px] flex shrink-0">
+            <TypeDot accent={accent} />
+          </span>
+          {titleText(2, 12.5)}
+          {flag}
+        </div>
+        {bits.length ? (
+          <div
+            data-card-bits
+            className="flex min-w-0 flex-wrap items-center gap-1.5 pl-3 text-[11px] font-medium"
+            style={{ color: palette.muted }}
+          >
+            {bits}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
   if (size === 'minimal') {
     return (
       <div className={`${FRAME} items-center gap-2 px-3 py-2.5`} style={frame}>
