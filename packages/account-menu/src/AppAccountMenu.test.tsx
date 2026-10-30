@@ -228,6 +228,30 @@ describe('AppAccountMenu', () => {
     expect(screen.getByRole('button', { name: 'Ada, account menu' })).toBeTruthy();
   });
 
+  it('drops a check scheduled before a reset, so it never fires into what comes after', async () => {
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (fn: () => void) => void idle.push(fn));
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    const { unmount } = render(<AppAccountMenu hint={HINT} />);
+    unmount();
+    resetAppAccount();
+    await act(async () => idle.shift()!());
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('skips the check when the menu is gone by the idle moment, and schedules it again on the next', async () => {
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (fn: () => void) => void idle.push(fn));
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    fetchMock.mockResolvedValue(new Response('{"signedIn":true}', { status: 200 }));
+    render(<AppAccountMenu hint={HINT} />).unmount();
+    await act(async () => idle.shift()!());
+    expect(fetchMock).not.toHaveBeenCalled();
+    render(<AppAccountMenu hint={HINT} />);
+    await act(async () => idle.shift()!());
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('turns to Guest when the token says the session is gone', async () => {
     setCookies('lp_signed_in=1');
     fetchMock.mockImplementation(async () => {

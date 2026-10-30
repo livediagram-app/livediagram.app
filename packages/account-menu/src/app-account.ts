@@ -98,15 +98,23 @@ function askOnce(): void {
     });
 }
 
-// The check for a hint with a name: after the page's own work, off its first paint.
+// The check for a hint with a name: after the page's own work, off its first paint. A reset since it was scheduled
+// drops it, and so does a menu gone by then (nothing left to show the answer); the next subscribe schedules again.
 let checking = false;
+let generation = 0;
 function checkWhenIdle(): void {
   if (checking || asked || asking) return;
   checking = true;
+  const mine = generation;
+  const run = () => {
+    if (mine !== generation) return;
+    checking = false;
+    if (listeners.size > 0) askOnce();
+  };
   const idle = (globalThis as { requestIdleCallback?: (fn: () => void) => void })
     .requestIdleCallback;
-  if (idle) idle(askOnce);
-  else setTimeout(askOnce, 200);
+  if (idle) idle(run);
+  else setTimeout(run, 200);
 }
 
 /** Who is signed in on this app's page; 'out' in the static HTML and until hydration, so the server and the first
@@ -158,6 +166,7 @@ export function resetAppAccount() {
   asked = false;
   asking = null;
   checking = false;
+  generation += 1;
   last = null;
   listeners.clear();
 }
