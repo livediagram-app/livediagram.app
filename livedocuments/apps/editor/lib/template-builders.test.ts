@@ -47,6 +47,10 @@ const ALL_KINDS = [
   'quarterly-review',
   'team-welcome',
   'workshop-kickoff',
+  'blank-flashcards',
+  'talk-flashcards',
+  'wedding-toast',
+  'pitch-flashcards',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from

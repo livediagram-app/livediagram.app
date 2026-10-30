@@ -29,6 +29,7 @@ export const KIND_PAGES: Record<PageKind, { one: string; many: string }> = {
   slide: { one: 'slide', many: 'Slides' },
   infographic: { one: 'infographic page', many: 'Infographic Pages' },
   article: { one: 'article page', many: 'Article Pages' },
+  flashcard: { one: 'card', many: 'Cards' },
 };
 
 /** What Apply to All says it did: "Background applied to 35 slides." and the locked it skipped. */

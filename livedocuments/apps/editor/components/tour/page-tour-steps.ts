@@ -3,6 +3,7 @@
 // so the copy stays out of the editor's first load.
 import type { PageKind } from '@livedocuments/document';
 import { articleTourSteps } from './article-tour-steps';
+import { flashcardTourSteps } from './flashcard-tour-steps';
 import { infographicTourSteps } from './infographic-tour-steps';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { slideTourSteps } from './slide-tour-steps';
@@ -18,6 +19,8 @@ export function pageTourSteps(kind: PageKind): PageTourStep[] {
       return slideTourSteps();
     case 'article':
       return articleTourSteps();
+    case 'flashcard':
+      return flashcardTourSteps();
     default:
       return infographicTourSteps();
   }
