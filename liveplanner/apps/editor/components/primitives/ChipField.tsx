@@ -6,6 +6,7 @@ import {
   useImperativeHandle,
   useRef,
   type CSSProperties,
+  type KeyboardEvent,
   type ReactNode,
 } from 'react';
 import { CloseIcon, FIELD_INVALID } from '@liveplanner/ui';
@@ -46,6 +47,13 @@ type ChipFieldProps = {
   ariaDescribedBy?: string;
   // A datalist of suggestions, rendered as `children`.
   list?: string;
+  // The field as a combobox over a list of suggestions it drives (Plan's label menu): its state for assistive tech.
+  combobox?: { expanded: boolean; controls: string; activeId?: string | undefined };
+  // Keys the host takes first (a suggestion list's arrows and Enter); one it prevents is not the field's.
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: () => void;
+  // The most characters one chip's text may be.
+  maxLength?: number;
   // Shown in place of the field when it is read-only and holds no chips.
   emptyText?: string;
   children?: ReactNode;
@@ -70,6 +78,10 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
     ariaLabel,
     ariaDescribedBy,
     list,
+    combobox,
+    onKeyDown,
+    onFocus,
+    maxLength,
     emptyText,
     children,
   },
@@ -149,6 +161,8 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
           disabled={disabled}
           onChange={(e) => onDraftChange(e.target.value)}
           onKeyDown={(e) => {
+            onKeyDown?.(e);
+            if (e.defaultPrevented) return;
             if (e.key === 'Enter') {
               // Never submits a surrounding form: Enter here means "add this chip".
               e.preventDefault();
@@ -159,6 +173,17 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
             }
           }}
           onBlur={onBlur}
+          onFocus={onFocus}
+          maxLength={maxLength}
+          {...(combobox
+            ? {
+                role: 'combobox',
+                'aria-expanded': combobox.expanded,
+                'aria-controls': combobox.controls,
+                'aria-autocomplete': 'list' as const,
+                'aria-activedescendant': combobox.activeId,
+              }
+            : {})}
           placeholder={placeholder}
           aria-label={ariaLabel}
           aria-describedby={ariaDescribedBy}

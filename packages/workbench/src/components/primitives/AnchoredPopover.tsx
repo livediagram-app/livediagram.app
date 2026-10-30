@@ -98,8 +98,9 @@ export function AnchoredPopover({
   // press outside.
   keepOpenWithin?: string;
   // What opening focuses: its first control (the default), or the panel itself, so a touch screen opens one whose
-  // first control is a text field without raising a keyboard, focus still inside it.
-  initialFocus?: 'first' | 'panel';
+  // first control is a text field without raising a keyboard, focus still inside it; or nothing, for a list a
+  // field drives as it is typed in (a combobox), focus staying in the field.
+  initialFocus?: 'first' | 'panel' | 'none';
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -148,6 +149,7 @@ export function AnchoredPopover({
   }, [anchor, width, beside]);
 
   useEffect(() => {
+    if (initialFocus === 'none') return;
     if (initialFocus === 'panel') panel.current?.focus();
     else panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
     // Opening only.
