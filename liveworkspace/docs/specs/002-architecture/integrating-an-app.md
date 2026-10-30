@@ -114,25 +114,28 @@ same answer for 30 seconds.
 ## Deleting an account
 
 An app's Delete Account closes the person's liveworkspace account, for every app, not just
-the app's own data. In the app's Worker, delete the app's data first, then close the account
-with the access token the request came with:
+the app's own data. Being signed in is not enough: the account needs the 6-digit code emailed to
+it ([sign-in.md](../003-accounts/sign-in.md#closing-an-account)). The app's Worker has two routes,
+and `@liveworkspace/auth-client` makes their answers, so every app answers the same:
 
 ```ts
-import { closeAccount } from '@liveworkspace/auth-client';
+import { closeAccount, deletionCodeRefusal, requestDeletionCode } from '@liveworkspace/auth-client';
 
+// POST /api/account/deletion-code: the code is emailed to the account.
+const sent = await requestDeletionCode(credentials, accessToken);
+return Response.json(sent.body, { status: sent.status });
+
+// DELETE /api/account { code }: checked before anything is deleted.
+const refusal = await deletionCodeRefusal(credentials, accessToken, body.code);
+if (refusal) return Response.json(refusal.body, { status: refusal.status });
 await deleteAppData(env, userId);
-await closeAccount(
-  {
-    accountsUrl: env.ACCOUNTS_URL,
-    clientId: env.ACCOUNTS_CLIENT_ID,
-    clientSecret: env.ACCOUNTS_CLIENT_SECRET,
-  },
-  accessToken,
-);
+await closeAccount(credentials, accessToken, body.code);
 // then clear the refresh cookie: the refresh token died with the account
 ```
 
-In that order, a failure on the second step leaves a signed-in person who can try again; the
+`credentials` is `{ accountsUrl: env.ACCOUNTS_URL, clientId: env.ACCOUNTS_CLIENT_ID, clientSecret:
+env.ACCOUNTS_CLIENT_SECRET }`, or null where sign-in isn't set up (both routes then refuse). In that
+order, a failure on the last step leaves a signed-in person who can try again with the same code; the
 other way round, the app's data would be left with no account to reach it. The accounts Worker
 needs the app's client secret as well as the token, so it runs in the Worker.
 
