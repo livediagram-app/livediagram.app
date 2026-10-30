@@ -740,6 +740,18 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
 7. **Settings**: rows from the settings catalogue (`lib/settings-search-items.ts`), matched on title and keywords (non-empty query only). Picking one opens the Settings dialog on that row.
 8. **Help**: help-centre articles (`lib/help-search.ts`), matched on title and keywords (non-empty query only), listed last so navigation and edit results keep the default Enter.
 
+**Every App** (Work Tracker #63). Typing also asks liveworkspace's index (`GET /api/index/items?view=search&q=…`,
+every app, up to 24, once the typing pauses for 200 ms, the request before cancelled) for everything the person can
+open: their own work, their teams' and what a live share link reaches, exactly as the index decides, never more. The
+results this panel already lists from its own lists (plans of this app's, shared and team ones) are left out, and up
+to 8 of the rest form an **Every App** group after Teams, in the index's order. Each row wears its app's logo in the
+app's colour (`AppMark`) and ends in the app's name in that colour (its deep shade on light, its accent on dark), so a
+plan, a canvas, a document and a design read apart at a glance. Picking one of this app's opens it here (with its
+share code when a link is how the person reaches it); picking another app's opens it in that app, at its own address.
+A failed or offline index read shows no group and no error: the panel's own groups still work. The hook and the
+helpers are shared (`@liveworkspace/explorer/item-search`: `useItemSearch`, `everyAppResults`, `AppMark`,
+`appLabel`), so the four editors' panels behave alike.
+
 Out of scope (deliberate): element text in **other** projects (issue #13: needs a server-side index), a board's column names, a sheet's cells, a form's questions, comments, notes, element links, and participant names.
 
 ## Comments
