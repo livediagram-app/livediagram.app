@@ -17,9 +17,10 @@ const tinted: ItemTypeDef = {
 describe('ItemTypeCardColour', () => {
   it('lists the built-in Colour, then the type’s own Colour fields', () => {
     expect(cardColourOptions(tinted).map((o) => o.label)).toEqual(['Colour', 'Tint']);
-    expect(cardColourOptions({ ...tinted, fields: ['title', 'f-tint'] }).map((o) => o.id)).toEqual([
-      'f-tint',
-    ]);
+    // Without the built-in, its row reads No Colour, so a pick can always be undone.
+    expect(
+      cardColourOptions({ ...tinted, fields: ['title', 'f-tint'] }).map((o) => o.label),
+    ).toEqual(['No Colour', 'Tint']);
   });
 
   it('shows nothing while the type has no Colour field of its own', () => {

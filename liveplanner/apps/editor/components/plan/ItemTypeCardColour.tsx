@@ -9,11 +9,12 @@ import { SheetRow } from './PlanModal';
 
 const BUILT_IN = 'color';
 
-// The Colour fields a type can tint its cards by: the built-in while it offers it, then its own.
+// The Colour fields a type can tint its cards by: the built-in (No Colour when the type does not offer it, so a pick
+// can always be undone), then its own.
 export function cardColourOptions(type: ItemTypeDef): { id: string; label: string }[] {
   const own = (type.custom ?? []).filter((c) => c.kind === 'colour' && type.fields.includes(c.id));
   return [
-    ...(type.fields.includes(BUILT_IN) ? [{ id: BUILT_IN, label: 'Colour' }] : []),
+    { id: BUILT_IN, label: type.fields.includes(BUILT_IN) ? 'Colour' : 'No Colour' },
     ...own.map((c) => ({ id: c.id, label: c.label || 'Untitled field' })),
   ];
 }
@@ -48,7 +49,20 @@ export function ItemTypeCardColour({
         kind="single"
         label="Card Colour"
         selected={colourFieldOf(type)}
-        rows={options.map((o) => ({ id: o.id, label: o.label, icon: <Swatch /> }))}
+        rows={options.map((o) => ({
+          id: o.id,
+          label: o.label,
+          // No Colour reads as an empty ring, not a colour.
+          icon:
+            o.id === BUILT_IN && !type.fields.includes(BUILT_IN) ? (
+              <span
+                aria-hidden
+                className="h-3.5 w-3.5 shrink-0 rounded-full border border-dashed border-slate-400 dark:border-slate-500"
+              />
+            ) : (
+              <Swatch />
+            ),
+        }))}
         onPick={(id) => onChange(id === BUILT_IN ? undefined : id)}
       />
     </SheetRow>
