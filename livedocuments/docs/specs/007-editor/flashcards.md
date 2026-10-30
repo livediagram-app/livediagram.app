@@ -52,7 +52,7 @@ alignment. Nothing else can be put on it.
   the page toolbar, docked, as on an article page, and nothing else: no category bar, no tiles, no **Search** (whose
   tiles would place elements). Moving onto a card turns the strip to it as any kind does.
 - **The page toolbar** on a card has no **Insert** menu, no **Comment** and no **Assign Action** (a margin note is an
-  element in the card's margin), and **More Formatting**'s last entry reads **Card Style**.
+  element in the card's margin), and **More Formatting**'s last entry reads **Card style** (sentence case, as its neighbours).
 - **The slash menu** offers the text blocks only: **Text**, **Title**, **Subtitle**, **Heading 1** to **3**,
   **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code** and **Divider**. Never a page break, an
   image, a table, a chart, a drawing, a callout or a sticky note.
@@ -62,9 +62,12 @@ alignment. Nothing else can be put on it.
   and one moved onto it goes back, with a short notice, "Flashcards hold text only.", shown at most once every few
   seconds (as a locked page's is). An element already on a card (made before this rule, or by an agent) stays where it
   is, drawn and movable off the card.
-- **Agents** add text to a card only: `write_article` writes a card's writing as it writes an article's (Markdown
-  read as blocks, any picture, table or chart in it left out), and an element added onto a card's area is refused
-  (`text_only`).
+- **Agents** add text to a card only ([Pages for agents](../024-agents/pages-for-agents.md)): `change_pages` adds
+  a card (kind `flashcard`, filling a stack's only card while it is empty) and refuses a layout on one;
+  `write_article` writes a card's writing as it writes an article's, naming the card by flow id or title, `new: true`
+  adding a card after the last, in the `card` size only, its page breaks and zones left out and a table written as
+  a list; and a changeset that adds an element onto a card's area, or moves one onto it, is refused (`text_only`,
+  [Edit operations](../024-agents/edit-operations.md)).
 
 ## Never flows
 
@@ -106,8 +109,8 @@ Every way of going to a page goes to a card by flipping, never by gliding the vi
 go toward a neighbour, a new card, a duplicate, a split and a delete. The view stays where it is (the card in front
 framed); the card changes.
 
-- **Forward** (to a card later in the stack): the card in front lifts and turns over its top edge, away from the
-  reader, and fades as it goes, uncovering the card behind it, which is now in front. **420 ms**
+- **Forward** (to a card later in the stack): the card in front lifts toward the reader and turns up over its top
+  edge, as a cue card does, and fades as it goes, uncovering the card behind it, which is now in front. **420 ms**
   (`FLASHCARD_FLIP_MS`), ease in-out, in perspective.
 - **Back** (to an earlier card): that card comes back over the top edge and settles onto the stack in front, over the
   card that was in front. The same 420 ms, mirrored.

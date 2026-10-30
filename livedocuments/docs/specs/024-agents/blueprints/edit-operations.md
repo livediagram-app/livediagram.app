@@ -123,7 +123,8 @@ logs the count and the code that stopped the read (`none` when none did):
    `element_locked`.
 5. **Finalise** ([Finalise](#finalise)).
 6. **Validate** every touched element with `elementValidationIssue`, then the whole tab with `isValidTab`; the
-   first issue is `invalid_result`.
+   first issue is `invalid_result`. A result that `guardFlashcards` holds back (an element added or moved onto a
+   flashcard, `@livedocuments/document`) is `text_only`.
 7. **Diff.** `elementOps = diffToElementOps(tab.elements, next.elements)`;
    `inverse = diffToElementOps(next.elements, tab.elements)`.
 8. **Results.** `buildResultLines(before, after, state)`; `targets` and `createdIds` in first-resolution and
@@ -635,6 +636,7 @@ and by the api for the tab byte cap.
 | `id_taken`          | `id "<id>" is taken by <kind> "<label>"`                                                                    | `use id=<free>`                                                        |
 | `arrow_exists`      | `<a>→<b> already has an arrow:` and it as `ref  from→to "label"`                                            | `add again for a second arrow, or set the existing one`                |
 | `element_locked`    | `the tab is locked`, or `locked:` and each element as `ref  kind "label"` and why (element, layer "<name>") | `unlock it in the editor, or leave it out of the changeset`            |
+| `text_only`         | `a flashcard holds text only: an element cannot be added or moved onto a card`                              | `write on the card with write_article, or place it off the cards`      |
 | `not_connected`     | `no arrow <a>→<b>`; the arrows touching a and b as `ref  from→to "label"`                                   | `connect <a> -> <b> first, or insert between the ends of one of these` |
 | `test_failed`       | `<ref> <key>: expected <value>, actual <value>`                                                             | `re-read <ref>: it changed since you read it`                          |
 | `invalid_result`    | `<ref> <field>: <rule>` from `elementValidationIssue`                                                       | `see the format: livedocuments schema <kind>`                          |
