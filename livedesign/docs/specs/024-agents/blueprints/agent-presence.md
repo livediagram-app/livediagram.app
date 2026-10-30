@@ -423,7 +423,8 @@ setAt, expiresAt }`.
 - Read stamp: one in-memory map lookup per token read of a tab; at most one room call per agent, design and tab
   per `AGENT_PRESENCE_STAMP_MS` per isolate, off the response path, and at most one storage write per entry per
   stamp in the room (PR38). The map holds at most `AGENT_PRESENCE_STAMPS_MAX` agents per isolate. Measured: 100,000
-  stamps against a full map in about 30 ms, and 50 refreshes inside one stamp write storage once.
+  stamps of distinct agents against a full map in 65 to 70 ms (under 1 µs each); 100,000 reads of one agent on one
+  tab over 100 seconds stamp 4 times; 10,000 refreshes of one entry over 100 seconds write storage 4 times.
 - Comment verbs: one tab read, one compare-and-swap write (two of each on a lost race) and one relay.
 - The list: one `instr` query naming the tabs that hold a thread, then one read per such tab, one tab in memory
   at a time (each at most `MAX_TAB_BYTES`). A design with T threaded tabs costs 1 + T queries.
