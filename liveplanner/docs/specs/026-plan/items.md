@@ -40,24 +40,24 @@ fields people usually want, and any item may carry other fields. The store never
 
 The fields the shipped types use. Each has a **field kind** that validates and draws it.
 
-| Field             | Kind      | Holds                                                                                                                                                                     |
-| ----------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`           | text      | One line, required, up to 500 characters                                                                                                                                  |
-| `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                                      |
-| `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror         |
-| `status`          | status    | A status value, matched against a board's columns                                                                                                                         |
-| `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                                |
-| `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                                       |
-| `labels`          | labels    | Up to 12 short strings                                                                                                                                                    |
-| `estimate`        | number    | Story points, 0 to 999; the card panel picks it from a dropdown of None, 1, 2, 3, 5, 8, 13 and 21 (`ESTIMATE_POINTS`), keeping any other value a card holds               |
-| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#gantt-chart))                                                     |
-| `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                             |
-| `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                    |
-| `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                            |
-| `attachments`     | attachments | Up to 20 pictures on the card, `{ id, name, size, type, cover? }` each ([Attachments](#attachments))                                                                  |
-| `parent`          | card link | Another item's id (a Project): the Card field named Parent that Task carries (item-types.md "Card fields"), under its reserved id                                         |
-| `votes`           | votes     | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                                   |
-| `comments`        | comments  | The card's comment threads: stored apart from the card, in the plan's thread store, never in `fields`, and written only through the thread writes ([Comments](#comments)) |
+| Field             | Kind        | Holds                                                                                                                                                                     |
+| ----------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`           | text        | One line, required, up to 500 characters                                                                                                                                  |
+| `description`     | long text   | Plain text with line breaks, up to 10,000 characters                                                                                                                      |
+| `descriptionRich` | rich text   | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror         |
+| `status`          | status      | A status value, matched against a board's columns                                                                                                                         |
+| `assignee`        | person      | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                                |
+| `priority`        | priority    | `urgent`, `high`, `medium` or `low`                                                                                                                                       |
+| `labels`          | labels      | Up to 12 short strings                                                                                                                                                    |
+| `estimate`        | number      | Story points, 0 to 999; the card panel picks it from a dropdown of None, 1, 2, 3, 5, 8, 13 and 21 (`ESTIMATE_POINTS`), keeping any other value a card holds               |
+| `start`           | date        | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#gantt-chart))                                                     |
+| `due`             | date        | A calendar date, `YYYY-MM-DD`                                                                                                                                             |
+| `color`           | colour      | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                    |
+| `checklist`       | checklist   | Up to 50 `{ text, done }` rows                                                                                                                                            |
+| `attachments`     | attachments | Up to 20 pictures on the card, `{ id, name, size, type, cover? }` each ([Attachments](#attachments))                                                                      |
+| `parent`          | card link   | Another item's id (a Project): the Card field named Parent that Task carries (item-types.md "Card fields"), under its reserved id                                         |
+| `votes`           | votes       | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                                   |
+| `comments`        | comments    | The card's comment threads: stored apart from the card, in the plan's thread store, never in `fields`, and written only through the thread writes ([Comments](#comments)) |
 
 A card's type may leave statuses out ([Item types](item-types.md#an-item-type)): an item made or moved into one is
 refused (`status_excluded`), from the editor, the api and agents alike. A card already in one is never moved out
@@ -79,8 +79,9 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   dashed **Add Images** zone ("PNG, JPEG, WebP or GIF, up to 10 MB · or paste"). Pressing it opens the file picker
   (several files at once); files dropped on it, or on the list above it, upload; and an image pasted while
   the panel is open, outside a text field, uploads too. A file **dropped on a card** on a board uploads into that
-  card's Attachments when its type offers them (the card rings in the brand colour while a file is over it; a card
-  whose type has no Attachments, or a reader who can't edit it, takes no drop). Each upload goes through
+  card's Attachments when its type offers them (the card rings in the brand colour and reads **Drop to Attach** while a
+  file is over it, then **Uploading…**; a refusal is a toast; a card whose type has no Attachments, or a reader who
+  can't edit it, takes no drop). Each upload goes through
   `POST /api/images?p=` as an Image field's does, then joins the end of the list in one write. Several files upload
   one after another; a file past the card's 20, or one the media service refuses, is skipped and said under the
   zone ("That image is over 10 MB.", "A card holds up to 20 images."), the rest still land.
@@ -94,7 +95,7 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
 - **The cover**: **Set as Cover** makes that picture the card's cover (the one before stops being it). On a
   Detailed card whose type's Display holds **Cover Image** ([Card display](item-types.md#card-display)), the cover
   is drawn across the top of the card, edge to edge, 120 px tall and cropped to fill. Removing the cover's picture
-  leaves the card without one.
+  leaves the card without one. A Plan card on the canvas keeps its fixed size and draws no cover.
 - **On the card face**: the **Attachments** card field is a paperclip and how many pictures the card holds
   ("Attachments: 3"); with none it is not drawn.
 - **Loading**: thumbnails and covers are fetched only as the card or row scrolls into view, at the size they are
@@ -114,10 +115,10 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   pictures and the sweep would take them. The zone reads "Save this plan to your account to add images." and
   takes no file; a card that came in with attachments (a plan taken offline) keeps them and shows them to their
   uploader.
-- **Agents and the api read it**: `list_items` lists each card's attachments by name; an agent may clear the field
+- **Agents and the api read it**: `list_items` lists each card's attachments as stored (name, size, type, id); an agent may clear the field
   but never set it ("Attachments are added in the card panel"). A form can't ask it, and Import CSV and Export CSV
   leave it out, as an Image field's.
-- Telemetry: `Plan · Added · CardAttachment`, `Plan · Removed · CardAttachment`, `Plan · Set · CardCover`.
+- Telemetry: `Plan · Added · CardAttachment`, `Plan · Removed · CardAttachment`, `Plan · Changed · CardCover`.
 
 ### Images in use
 

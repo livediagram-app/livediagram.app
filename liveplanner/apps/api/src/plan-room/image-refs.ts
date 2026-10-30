@@ -51,11 +51,8 @@ INSERT OR IGNORE INTO outbox (plan_id, kind, key)
   SELECT plan_id, 'images', '' FROM card_image_grants LIMIT 1;
 `;
 
-// The pictures the plan's cards hold now, sorted: each Attachments entry's id (only cards whose JSON names the field
-// are parsed), and each text field value the plan holds a grant for (read only when it holds any).
-export async function placedImageIds(env: PlanEnv, planId: string): Promise<string[]> {
-  const rows = await env.PLAN_DB.prepare(
-    `SELECT id FROM (
+// The query: ?1 the plan.
+export const PLACED_IMAGES_SQL = `SELECT id FROM (
        SELECT json_extract(a.value, '$.id') AS id
          FROM items, json_each(items.fields, '$.attachments') AS a
         WHERE items.plan_id = ?1 AND items.fields LIKE '%"attachments"%'
@@ -66,10 +63,12 @@ export async function placedImageIds(env: PlanEnv, planId: string): Promise<stri
           AND EXISTS (SELECT 1 FROM card_image_grants WHERE plan_id = ?1)
           AND f.type = 'text'
           AND f.value IN (SELECT image_id FROM card_image_grants WHERE plan_id = ?1)
-     ) WHERE typeof(id) = 'text' ORDER BY id`,
-  )
-    .bind(planId)
-    .all<{ id: string }>();
+     ) WHERE typeof(id) = 'text' ORDER BY id`;
+
+// The pictures the plan's cards hold now, sorted: each Attachments entry's id (only cards whose JSON names the field
+// are parsed), and each text field value the plan holds a grant for (read only when it holds any).
+export async function placedImageIds(env: PlanEnv, planId: string): Promise<string[]> {
+  const rows = await env.PLAN_DB.prepare(PLACED_IMAGES_SQL).bind(planId).all<{ id: string }>();
   return rows.results.map((r) => r.id);
 }
 

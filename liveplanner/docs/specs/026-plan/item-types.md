@@ -462,6 +462,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   Minimal), the rest in the Footer. A built-in
   type's defaults are read from code by its id, so a project that stored its catalogue before Display
   existed gets them too.
+
 - **Attachments and Cover Image** (a type that offers [Attachments](items.md#attachments)): Detailed draws two card
   fields of them. **Attachments** is a paperclip and the card's count, placed in the Footer by default.
   **Cover Image** is the card's cover picture across the top of the card, edge to edge, 120 px tall and cropped to

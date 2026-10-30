@@ -610,13 +610,13 @@ export class PlanRoom extends DurableObject<Env> {
 
   // The pictures last reported for this plan (image-refs.ts `media_refs`), null when none were or it has no schema.
   private lastSentImages(): string | null {
-    const sql = this.state.storage.sql;
-    if (!this.schemaReady && !hasPlanSchema((q) => sql.exec(q))) return null;
     try {
+      const sql = this.state.storage.sql;
+      if (!this.schemaReady && !hasPlanSchema((q) => sql.exec(q))) return null;
       const row = sql.exec('SELECT images FROM media_refs LIMIT 1').toArray()[0];
       return typeof row?.images === 'string' ? row.images : null;
     } catch {
-      // A plan whose schema predates media_refs reported nothing.
+      // A plan whose schema predates media_refs, or storage without SQLite, reported nothing.
       return null;
     }
   }

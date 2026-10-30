@@ -199,6 +199,9 @@ export function resolveFields(
     const named = fieldKeyOf(rawKey, type);
     if (!named.ok) return named;
     const key = named.key;
+    // Pictures are uploaded in the card panel, never named (docs/specs/026-plan/items.md "Attachments").
+    if (key === 'attachments')
+      return refuse('value_invalid', 'Attachments are added in the card panel.');
     if (isBuiltInFieldId(key)) {
       const v = builtInValue(key, value, naming);
       if (!v.ok) return v;

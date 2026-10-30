@@ -21,9 +21,12 @@ const task = ITEM_TYPES.find((t) => t.id === 'task')!;
 
 describe('card display', () => {
   it('gives the built-in types their own defaults, and any other type the generic one', () => {
+    // Cover Image and Attachments sit in every default, drawn only once the type offers Attachments.
     expect(cardLayoutFields('detailed', defaultCardLayout('note', 'detailed'))).toEqual([
+      'cover',
       'type',
       'description',
+      'attachments',
       'comments',
       'votes',
     ]);
@@ -38,7 +41,7 @@ describe('card display', () => {
       typeCardDisplay({ ...task, display: { minimal: { trail: ['due'] } } }, 'minimal'),
     ).toEqual(['due']);
     expect(typeCardDisplay(task, 'detailed')).toEqual(
-      cardLayoutFields('detailed', defaultCardLayout('task', 'detailed')),
+      cardLayoutFields('detailed', typeDefaultCardLayout(task, 'detailed')),
     );
   });
 
@@ -61,7 +64,7 @@ describe('card display', () => {
 
   it('places a default where a board drew it, and says what each size can draw', () => {
     expect(defaultCardLayout('task', 'detailed')).toMatchObject({
-      head: ['type', 'key'],
+      head: ['cover', 'type', 'key'],
       headEnd: ['priority'],
       body: ['parent', 'description', 'labels'],
     });
@@ -83,6 +86,23 @@ describe('card display', () => {
     expect(sameCardLayout('detailed', { foot: ['due', 'votes'] }, { foot: ['votes', 'due'] })).toBe(
       false,
     );
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Card display": a type's Attachments draw a chip and a cover.
+describe('Attachments and Cover Image', () => {
+  it('are drawn only while the type offers Attachments, the cover in the Header alone', () => {
+    expect(typeOffersCardField(task, 'cover')).toBe(false);
+    expect(typeOffersCardField(task, 'attachments')).toBe(false);
+    expect(typeCardDisplay(task, 'detailed')).not.toContain('cover');
+    const withFiles = { ...task, fields: [...task.fields, 'attachments'] };
+    expect(typeOffersCardField(withFiles, 'cover')).toBe(true);
+    expect(typeCardLayout(withFiles, 'detailed').head).toEqual(['cover', 'type', 'key']);
+    expect(typeCardLayout(withFiles, 'detailed').foot).toContain('attachments');
+    expect(cardSlotFits('detailed', 'head', 'cover')).toBe(true);
+    expect(cardSlotFits('detailed', 'foot', 'cover')).toBe(false);
+    expect(cardSlotFits('minimal', 'lead', 'cover')).toBe(false);
+    expect(readCardDisplay({ detailed: { foot: ['cover'] } }, 'task')).toBeNull();
   });
 });
 
@@ -114,7 +134,7 @@ describe('the retired Compact size', () => {
     });
     expect(ok.ok && ok.catalogue.types[0]!.display).toBeUndefined();
     expect(ok.ok && typeCardLayout(ok.catalogue.types[0]!, 'detailed')).toEqual(
-      defaultCardLayout('task', 'detailed'),
+      typeDefaultCardLayout(task, 'detailed'),
     );
   });
 });
