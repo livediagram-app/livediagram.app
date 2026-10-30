@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
-// The tab's shape (docs/specs/007-editor/editor-app.md "How a tab looks"): the active tab rises from the screen's
-// bottom edge, open at its foot, with an accent bar along its top; the others sit flat on the bar. No type icon.
+// The tab's look (docs/specs/007-editor/editor-app.md "How a tab looks"): the open tab is a card that joins the screen's
+// bottom edge, its name in the tab theme's accent, with nothing along its top; the others are quiet. No type icon.
 
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@liveplanner/project';
 import { TabPill, type TabPillCtx } from './TabPill';
@@ -22,6 +22,7 @@ function ctx(over: Partial<TabPillCtx> = {}): TabPillCtx {
     reorderDrag: {
       caretFor: () => null,
       handlersFor: () => ({}),
+      isDragging: () => false,
     } as unknown as TabPillCtx['reorderDrag'],
     participantsByTab: new Map(),
     selfId: 'me',
@@ -37,33 +38,40 @@ afterEach(cleanup);
 
 const root = (container: HTMLElement) => container.querySelector('[data-tab]') as HTMLElement;
 
-describe('TabPill shape', () => {
-  it('raises the active tab from the bottom edge, rounded on top, with an accent bar along its top', () => {
+describe('TabPill look', () => {
+  it('shows the open tab as a card with its name in the accent, and no bar along its top', () => {
     const { container } = render(<TabPill tab={tab('t1', 'Roadmap')} ctx={ctx()} />);
     const el = root(container);
     expect(el.hasAttribute('data-active')).toBe(true);
-    expect(el.className).toMatch(/\bbg-white\b/);
-    expect(el.className).toMatch(/\brounded-t-lg\b/);
-    // Its name takes the tab theme's accent, and the bar along its top the same colour.
+    expect(el.className).toMatch(/\bbefore:opacity-100\b/);
+    expect(el.className).toMatch(/\brounded-t-\[10px\]/);
     expect(el.style.color).not.toBe('');
-    const bar = el.querySelector('span[aria-hidden].absolute') as HTMLElement;
-    expect(bar.style.backgroundColor).not.toBe('');
+    expect(el.querySelector('span[aria-hidden].absolute')).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Roadmap' }).getAttribute('aria-selected')).toBe('true');
   });
 
-  it('keeps the other tabs flat on the bar, in neutral ink, with no accent', () => {
+  it('keeps the other tabs quiet, in neutral ink', () => {
     const { container } = render(<TabPill tab={tab('t2', 'Notes')} ctx={ctx()} />);
     const el = root(container);
     expect(el.hasAttribute('data-active')).toBe(false);
-    expect(el.className).toMatch(/\bborder-transparent\b/);
-    expect(el.className).not.toMatch(/\bbg-white\b/);
+    expect(el.className).toMatch(/\bbefore:opacity-0\b/);
     expect(el.style.color).toBe('');
   });
-  it('shows no type icon before the name, active or not', () => {
+
+  it('dims the tab being dragged', () => {
+    const drag = {
+      caretFor: () => 'after' as const,
+      handlersFor: () => ({}),
+      isDragging: () => true,
+    } as unknown as TabPillCtx['reorderDrag'];
+    const { container } = render(<TabPill tab={tab('t2', 'Notes')} ctx={ctx({ reorderDrag: drag })} />);
+    expect(root(container).className).toMatch(/\bopacity-50\b/);
+  });
+
+  it('shows no type icon before the name, open or not', () => {
     for (const id of ['t1', 't2']) {
-      const { container, unmount } = render(<TabPill tab={tab(id, 'Notes')} ctx={ctx()} />);
-      expect(
-        container.querySelector('button[aria-current], [data-tab] > button')?.querySelector('svg'),
-      ).toBeNull();
+      const { unmount } = render(<TabPill tab={tab(id, 'Notes')} ctx={ctx()} />);
+      expect(screen.getByRole('tab', { name: 'Notes' }).querySelector('svg')).toBeNull();
       unmount();
     }
   });

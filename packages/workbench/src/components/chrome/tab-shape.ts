@@ -79,4 +79,4 @@ export const TAB_DASHED_CLASS =
 
 // Add tab: a quiet `+` after the last tab, with the tabs' inset wash on hover.
 export const TAB_ADD_CLASS =
-  'relative mb-1.5 ml-1 flex size-7 shrink-0 cursor-pointer touch-target items-center justify-center rounded-lg text-lg leading-none text-slate-500 transition-colors duration-150 hover:bg-slate-400/20 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:bg-slate-400/15 dark:hover:text-slate-100 motion-reduce:transition-none';
+  'relative mb-1.5 ml-1 flex size-7 shrink-0 cursor-pointer touch-target items-center justify-center rounded-lg text-lg leading-none text-slate-500 transition-colors duration-150 hover:bg-slate-400/[0.16] hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:bg-slate-400/[0.08] dark:hover:text-slate-100 motion-reduce:transition-none';
