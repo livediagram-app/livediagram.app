@@ -14,7 +14,8 @@ header; they are not in the palette.
 
 ## The header
 
-- The header holds, left to right: the board's **title**, the **widget zone**, then the controls a board needs
+- The header holds, left to right: the board's **title**, its **card type chips** (for someone who may add cards,
+  [Plan board](plan-board.md#card-type-chips)), the **widget zone**, then the controls a board needs
   whatever its widgets are (**Reveal** on a hide-writing board, **Retry** when items failed to load).
 - The widget zone is one row. Widgets keep their order; when they do not fit, the zone scrolls sideways.
 - Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours,

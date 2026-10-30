@@ -190,7 +190,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     collaborateEl,
     cardTypesPopoverEl,
     trashPopoverEl,
-    newCardPopoverEl,
     cardFinderPopoverEl,
     sessionPopoverEl,
   } = useCanvasChromePanels({
@@ -295,7 +294,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : collaborateEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
-      {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
@@ -400,15 +398,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 typesButtonRef={cardTypesButtonRef}
                 folded={planStripFolded}
                 // The Trash leads the strip for an editor, off a phone or in its folded menu (docs/specs/026-plan/items.md "Trash").
-                // A Participant adds cards too (docs/specs/013-workspace/share-roles.md); the Trash stays an Editor's.
-                newCard={
-                  !readOnly || !!props.participantPalette
-                    ? {
-                        open: activeDockPanel === 'plan-new-card',
-                        onToggle: (button) => handleDockButtonClick('plan-new-card', button, true),
-                      }
-                    : undefined
-                }
                 trash={
                   !readOnly && (!isMobile || planStripFolded)
                     ? {
