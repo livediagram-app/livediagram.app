@@ -29,6 +29,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
 - ./020-import-export/README.md - when working on export (PNG, SVG, PDF, Markdown, CSV, JSON) and its fidelity, or the JSON import back
 - ./024-agents/README.md - when an agent reads, writes or comments on projects: the MCP and CLI front doors, changesets, presence, views, edit operations
+- ./025-community/README.md - when working on the Community: publishing a plan, the gallery, the community link, likes, reports, My Shares and the landing page's featured six
 - ./026-plan/README.md - when working on Plan mode, Board and Dashboard tabs, cards and card types, items and the item store, plan views, templates, the Plan tour
 - ./029-sheets/README.md - when working on Sheets: the Sheet element (a spreadsheet tab placed from Plan mode), its formulas, or the sheet store
 - ./030-forms/README.md - when working on Form tabs: building forms, the public form link and its page, responses that become cards on a board

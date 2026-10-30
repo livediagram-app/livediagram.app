@@ -30,8 +30,10 @@ says why; this says what. A feature outside the **In** list needs this spec chan
 - Settings and preferences, theming, the command palette, power user mode and Offline Mode
   ([Editor](../007-editor/README.md), [Theme](../011-theme/README.md)).
 - Export of a tab as PNG, SVG, PDF, Markdown, CSV or JSON ([Export fidelity](../020-import-export/export-fidelity.md)).
+- The Community: publishing a plan to the public gallery, the gallery itself and the landing page's From the
+  Community section, on liveworkspace's Community service ([Community](../025-community/community.md)).
 
-**Apps**: api, cli, editor, help, marketing, mcp and router ([Architecture](../../development/architecture.md)).
+**Apps**: api, cli, community, editor, help, marketing, mcp and router ([Architecture](../../development/architecture.md)).
 Telemetry, its dashboard and the status page are liveworkspace's.
 
 **Plan's infrastructure**: the canvas host, selection, viewport, history and element sync
@@ -51,7 +53,6 @@ These are livediagram's and not liveplanner's; bringing one in is a scope change
   repositories; animation and GIF export; photo and sticky-note vision; shape libraries; image search and image
   uploads.
 - **Facilitation**: the Q&A board, live polls, quizzes, avatars, laser and spotlight, and presentation mode.
-- **Distribution**: the community gallery.
 
 ## Technical constraints
 

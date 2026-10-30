@@ -29,6 +29,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
 - ./020-import-export/README.md - when working on Markdown import and export, imported images, the animated GIF export, or export fidelity
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
+- ./025-community/README.md - when working on the Community: publishing a document, the gallery, the community link, likes, reports, My Shares and the landing page's featured six
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
 
 ## Workflow

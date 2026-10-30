@@ -76,7 +76,8 @@ A post shows every tab of the document. A document that is empty (its first tab 
   nothing on it, the Community section holds **Share to Community** and says why beside it, in the refusal's own words
   ("Add something to your first tab before sharing: it is the picture on your Community card."), as it does for a
   share password. Another first tab is not loaded, so for it the server's refusal stays the only word.
-- **Where**: the editor's Share is the shared Share dialog ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)) with livediagram's **Community** tab beside Passes (its `appTab`; `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`, `CommunitySection.tsx`). It is offered for a signed-in owner's personal canvas while the Community is on; a team canvas's band says team library documents can't be shared to the Community. Unpublished, it invites the owner
+- **Where**: the editor's Share is the shared Share dialog ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)) with livediagram's **Community** tab beside Passes (its `appTab`; `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`, `CommunitySection.tsx`). It is offered for a signed-in owner's personal canvas while the Community is on; a team canvas's band says team library documents can't be shared to the Community. The same tab opens from the Explorer's Share, in livediagram's Explorer and in the Explorer on
+  liveworkspace.app ([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#the-share-dialogs-community-tab)). Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.
 - **The Publish dialog** asks for:
