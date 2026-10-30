@@ -62,6 +62,8 @@ import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
 import { ExampleCardsNotice } from './ExampleCardsNotice';
 import { AddCardButton } from './AddCardButton';
+import { BoardCardTypeChips } from './BoardCardTypeChips';
+import { chipsShown } from './card-type-chips';
 import { planBoardKey } from './plan-board-keys';
 import { planBandTint, planOwnColours, planPalette } from './plan-palette';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
@@ -368,6 +370,19 @@ export function PlanBoardView({
           plan?.announce('Every card turned face up');
           track('Plan', 'Revealed', 'Board');
         }}
+        chips={
+          chipsShown({ interactive, canEditCards, phone, simplified, setup, types: addTypes })
+            ? (inBox) => (
+                <BoardCardTypeChips
+                  setup={setup}
+                  projection={projection}
+                  types={addTypes}
+                  palette={palette}
+                  inBox={inBox}
+                />
+              )
+            : undefined
+        }
         onMoveUnplaced={(item, status) => {
           if (!plan) return;
           const refused = typeStatusRefusal(plan.types, item.type, status, columnName);
