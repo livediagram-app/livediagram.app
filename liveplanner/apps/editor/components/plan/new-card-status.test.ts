@@ -5,7 +5,7 @@ import { newCardStatus } from './new-card-status';
 // docs/specs/026-plan/item-types.md "An item type": a card made off a board starts in its type's Default State, else
 // the first status its type uses, in the type's order, that the boards name.
 describe('newCardStatus', () => {
-  const custom = { ...ITEM_TYPES[1]!, id: 'lead', label: 'Lead' };
+  const custom = { ...ITEM_TYPES[1], id: 'lead', label: 'Lead' };
   const names = new Map([
     ['todo', 'Backlog'],
     ['doing', 'Doing'],

@@ -478,6 +478,9 @@ const listedType = z.object({
   fields: z.array(z.string()).describe('Its built-in fields.'),
   custom: z.array(listedCustom).describe('Its custom fields.'),
   defaultStatus: z.string().optional().describe('The column a new card of it starts in.'),
+  statuses: z
+    .array(z.string())
+    .describe('The columns its cards may move into, by name, in the order its Status list shows.'),
   display: z
     .record(z.string(), z.record(z.string(), z.array(z.string())))
     .describe(

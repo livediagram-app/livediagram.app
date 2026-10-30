@@ -268,16 +268,16 @@ describe('the States tab saves the ordered list', () => {
   }
 
   it('saves a legacy type in the new shape: every status less what it left out', () => {
-    const onSave = vi.fn();
-    open({ ...ITEM_TYPES[1]!, excludedStatuses: ['doing'] }, onSave);
+    const onSave = vi.fn<(t: ItemTypeDef) => void>();
+    open({ ...ITEM_TYPES[1], excludedStatuses: ['doing'] }, onSave);
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(onSave.mock.lastCall![0].statuses).toEqual(['todo', 'done']);
     expect(onSave.mock.lastCall![0].excludedStatuses).toBeUndefined();
   });
 
   it('saves a state moved up, and clears a Default State turned off', () => {
-    const onSave = vi.fn();
-    open({ ...ITEM_TYPES[1]!, statuses: ['todo', 'doing', 'done'], defaultStatus: 'todo' }, onSave);
+    const onSave = vi.fn<(t: ItemTypeDef) => void>();
+    open({ ...ITEM_TYPES[1], statuses: ['todo', 'doing', 'done'], defaultStatus: 'todo' }, onSave);
     fireEvent.keyDown(screen.getByRole('button', { name: 'Move Done' }), {
       key: 'ArrowUp',
       altKey: true,

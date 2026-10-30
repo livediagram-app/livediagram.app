@@ -177,7 +177,7 @@ describe('the catalogue boards leave', () => {
   // docs/specs/026-plan/item-types.md "The statuses a type uses": a brought type starts with its boards' statuses.
   it('gives each brought type only the statuses of the boards that bring it', () => {
     const triage = preset('bug-triage');
-    const kept = { version: 1, types: [{ ...ITEM_TYPES[1]!, statuses: ['todo'] }] };
+    const kept = { version: 1, types: [{ ...ITEM_TYPES[1], statuses: ['todo'] }] };
     const next = catalogueWithBoardTypes(kept, [triage, preset('roadmap')])!;
     const statusesOf = (id: string) => next.types.find((t) => t.id === id)?.statuses;
     expect(statusesOf('bug')).toEqual(presetSetup('bug-triage').columns.map((c) => c.status));

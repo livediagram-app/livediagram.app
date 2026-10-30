@@ -101,7 +101,7 @@ describe('statusJoinsNow', () => {
 
 describe('useTypeStatusJoins', () => {
   const def = (id: string, more: Partial<ItemTypeDef> = {}): ItemTypeDef => ({
-    ...ITEM_TYPES[1]!,
+    ...ITEM_TYPES[1],
     id,
     label: id,
     ...more,
@@ -113,7 +113,8 @@ describe('useTypeStatusJoins', () => {
     loaded: string[],
     enabled = true,
   ) => {
-    const quietChange = vi.fn();
+    const quietChange =
+      vi.fn<(remake: (c: ItemTypeCatalogue | null) => ItemTypeCatalogue | null) => void>();
     const hook = renderHook(
       (p: { tabs: Tab[]; loaded: Set<string> }) =>
         useTypeStatusJoins({

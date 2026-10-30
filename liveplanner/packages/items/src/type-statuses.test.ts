@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES } from './item-types';
+import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import {
   ITEM_TYPE_STATUSES_MAX,
   typeAllowsStatus,
@@ -22,7 +22,7 @@ const board = (statuses: string[], addTypes?: string[], more: object = {}) => ({
 });
 const task = ITEM_TYPES.find((t) => t.id === 'task')!;
 const note = ITEM_TYPES.find((t) => t.id === 'note')!;
-const catalogue = (...types: (typeof task)[]): ItemTypeCatalogue => ({ version: 1, types });
+const catalogue = (...types: ItemTypeDef[]): ItemTypeCatalogue => ({ version: 1, types });
 
 // docs/specs/026-plan/item-types.md "The statuses a type uses".
 describe('typeStatusesOf', () => {

@@ -121,7 +121,8 @@ export async function bringBoardCardTypes(
 }
 
 // A board's statuses join the types it takes once change_board has changed it (`before` to `after`, set-ups):
-// whether anything was saved. `planStatuses`: every status the boards named before the change.
+// whether anything was saved. `planStatuses`: every status the boards named before the change. The board is changed
+// already, so a refusal (the card types unreadable or not this caller's to change) leaves it so and answers false.
 export async function joinBoardStatuses(
   api: ApiClient,
   projectId: string,
@@ -129,10 +130,15 @@ export async function joinBoardStatuses(
   after: unknown,
   planStatuses: readonly string[],
 ): Promise<boolean> {
-  const done = await savedChange(api, projectId, (stored) =>
-    joined(stored, [before], [after], planStatuses),
-  );
-  return done !== null;
+  try {
+    const done = await savedChange(api, projectId, (stored) =>
+      joined(stored, [before], [after], planStatuses),
+    );
+    return done !== null;
+  } catch (err) {
+    if (!apiRefusalOf(err)) throw err;
+    return false;
+  }
 }
 
 // The ids the project gained.

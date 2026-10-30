@@ -158,6 +158,15 @@ describe('board statuses joining card types', () => {
     expect(saved).toEqual({ task: ['todo', 'qa'], note: ['todo', 'qa'] });
   });
 
+  it('leaves a changed board as it is when the card types are refused, and lets a failure throw', async () => {
+    const refused = fakeApi({
+      [`/projects/${D}`]: () => Response.json({ error: 'forbidden' }, { status: 403 }),
+    });
+    expect(await joinBoardStatuses(refused, D, taking([]), taking(['qa']), [])).toBe(false);
+    const down = fakeApi({ [`/projects/${D}`]: () => new Response('down', { status: 503 }) });
+    await expect(joinBoardStatuses(down, D, taking([]), taking(['qa']), [])).rejects.toThrow();
+  });
+
   it('joins a column change_board adds, and writes nothing when nothing joins', async () => {
     let saved: Record<string, string[] | undefined> = {};
     const { api: a, calls } = api(
