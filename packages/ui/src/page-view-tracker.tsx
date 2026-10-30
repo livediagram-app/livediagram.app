@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { isSilentReturn } from './silent-return';
 
 // Page view telemetry (docs/specs/017-telemetry/page-view-telemetry.md in each product): one `Page·View·<path>`
 // per path change, shared by every frontend. Mounted once in each app's root layout through a small client
@@ -24,7 +25,11 @@ export function createPageViewTracker(pageViewPath: (pathname: string) => string
   function reportPageView(track: PageViewTrack, pathname: string): void {
     const path = pageViewPath(pathname);
     if (path === null || path === lastReported) return;
+    // The first view of a load that is the way back from a deferred silent sign-in: the page it left was this one,
+    // already counted.
+    const counted = lastReported === null && isSilentReturn();
     lastReported = path;
+    if (counted) return;
     try {
       track('Page', 'View', path);
     } catch {
