@@ -171,7 +171,7 @@ function ReadyToUse({
               </span>
               <span
                 aria-hidden
-                className="flex size-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition group-hover:bg-brand-600 group-hover:text-white motion-reduce:transition-none"
+                className="flex size-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition group-hover:bg-brand-700 group-hover:text-white motion-reduce:transition-none"
               >
                 <PlusIcon size={12} />
               </span>
