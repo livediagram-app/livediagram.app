@@ -8,13 +8,20 @@ import {
   type MetricKind,
   type PlanVisualisation,
 } from '@liveplanner/items';
+import { readSlotName } from '@liveplanner/project';
 import type { DashboardSpec } from '@liveplanner/templates';
 import { swimlanesNamed } from './change-board';
 
 export type DashboardInput = {
   tabs?: readonly string[] | 'every';
   metrics?: readonly MetricKind[];
-  charts?: readonly { view: PlanVisualisation; groupBy?: string; types?: readonly string[] }[];
+  charts?: readonly {
+    view: PlanVisualisation;
+    groupBy?: string;
+    types?: readonly string[];
+    // The slot's own name (plan-tabs.md "A slot's name").
+    name?: string;
+  }[];
   notes?: readonly { title: string; text: string }[];
 };
 
@@ -60,9 +67,11 @@ export function resolveDashboardInput(
       settings.swimlaneBy = lanes.value.by;
       if (lanes.value.field) settings.swimlaneField = lanes.value.field;
     }
+    const name = readSlotName(c.name);
     charts.push({
       view: c.view,
       ...(Object.keys(settings).length ? { settings: settings as never } : {}),
+      ...(name ? { name } : {}),
     });
   }
   return {

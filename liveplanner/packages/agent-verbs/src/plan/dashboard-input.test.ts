@@ -51,6 +51,23 @@ describe('resolveDashboardInput', () => {
     expect(resolveDashboardInput({}, TABS, types)).toEqual({ ok: true, spec: {} });
   });
 
+  it('passes a chart’s slot name on trimmed, and drops an empty one (plan-tabs.md "A slot’s name")', () => {
+    const r = resolveDashboardInput(
+      {
+        charts: [
+          { view: 'calendar', name: ' Launch dates ' },
+          { view: 'gantt', name: '  ' },
+        ],
+      },
+      TABS,
+      types,
+    );
+    expect(r.ok && r.spec.charts).toEqual([
+      { view: 'calendar', name: 'Launch dates' },
+      { view: 'gantt' },
+    ]);
+  });
+
   it('groups by a built-in grouping with no field', () => {
     const r = resolveDashboardInput(
       { charts: [{ view: 'workload', groupBy: 'priority' }] },

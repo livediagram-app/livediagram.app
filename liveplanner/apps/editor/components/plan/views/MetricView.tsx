@@ -22,7 +22,12 @@ export function MetricView({
   fontFamily,
   width,
   height,
-}: PlanViewProps & { kind: MetricKind }) {
+  title,
+}: PlanViewProps & {
+  kind: MetricKind;
+  // A Dashboard slot's own name in place of the metric's label (plan-tabs.md "A slot's name").
+  title?: string;
+}) {
   const types = plan?.types ?? ITEM_TYPES;
   const phases = plan?.statusPhases ?? NO_PHASES;
   const board = useMemo(() => metricBoard(items.values(), phases, types), [items, phases, types]);
@@ -46,7 +51,7 @@ export function MetricView({
     onSetup: noop,
     onOpenItem: openItem,
   };
-  const label = BOARD_WIDGET_INFO[kind].label;
+  const label = title ?? BOARD_WIDGET_INFO[kind].label;
   // With room (a Dashboard slot, or sized up on the canvas), a tile; at its small canvas size, the header widget.
   const tier = metricTier(width, height);
   const model = useMemo(() => metricModel(kind, board, types, now), [kind, board, types, now]);

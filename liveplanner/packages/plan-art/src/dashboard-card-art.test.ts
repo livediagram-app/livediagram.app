@@ -86,6 +86,26 @@ describe('a Dashboard card’s picture', () => {
     );
   });
 
+  it('names a figure by its slot’s own name where it has one (plan-tabs.md "A slot’s name")', () => {
+    const named = cardArt(
+      { type: 'sheet-metric', metric: 'figure', sheetId: 's', name: 'Budget left' },
+      { ...input, metric: { label: 'Total', hero: '£2,375.00', line: 'Budget · C13' } },
+    );
+    expect(named).toContain('Budget left');
+    expect(named).not.toContain('Total');
+    expect(
+      cardArt({ type: 'sheet-metric', metric: 'summary', sheetId: '', name: 'Spend' }, input),
+    ).toContain('Spend');
+    const form = cardArt(
+      { type: 'form-metric', metric: 'responses', formTabId: 'f', name: 'Sign-ups' },
+      input,
+    );
+    expect(form).toContain('Sign-ups');
+    expect(
+      cardArt({ type: 'form-metric', metric: 'responses', formTabId: 'f' }, input),
+    ).not.toContain('Sign-ups');
+  });
+
   it('centres a slot’s quiet line', () => {
     expect(slotMessageArt(input.rect, input.p, 'Empty Slot', true)).toContain(
       'text-anchor="middle"',

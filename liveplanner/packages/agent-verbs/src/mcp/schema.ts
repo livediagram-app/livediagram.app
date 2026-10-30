@@ -173,6 +173,12 @@ const dashboardField = z
               'workload only: assignee (default), type, priority, status, or a field by name.',
             ),
           types: z.array(z.string()).optional().describe('Only these card types, by name.'),
+          name: z
+            .string()
+            .optional()
+            .describe(
+              "The slot's own name, shown in place of the chart's generated heading (up to 80 characters).",
+            ),
         }),
       )
       .optional()

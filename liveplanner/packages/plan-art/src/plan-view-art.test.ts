@@ -75,6 +75,14 @@ describe('a plan view’s picture', () => {
     const svg = planViewArt({ ...view('metric:count'), width: 300, height: 200 }, data, 'light');
     expect(svg).toContain('Item Count');
     expect(svg).toContain('>4<');
+    // A Dashboard slot's name, given as its title, in place of its label.
+    const named = planViewArt(
+      { ...view('metric:count', { title: 'Open work' }), width: 300, height: 200 },
+      data,
+      'light',
+    );
+    expect(named).toContain('Open work');
+    expect(named).not.toContain('Item Count');
   });
 
   it('uses the view’s own title, and an empty state with no cards', () => {

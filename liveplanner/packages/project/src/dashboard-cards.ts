@@ -22,7 +22,13 @@ export type DashboardStatus = (typeof DASHBOARD_STATUSES)[number];
 // or its link to copy. An empty tab id is one not chosen yet (the project's only form is chosen as it is placed).
 export const FORM_METRICS = ['responses', 'new', 'status', 'limit', 'closes', 'link'] as const;
 export type FormMetricKind = (typeof FORM_METRICS)[number];
-export type FormMetricContent = { type: 'form-metric'; metric: FormMetricKind; formTabId: string };
+// `name`: the slot's own name in place of the figure's (slot-name.ts).
+export type FormMetricContent = {
+  type: 'form-metric';
+  metric: FormMetricKind;
+  formTabId: string;
+  name?: string;
+};
 // A tab id as stored: any short string (ids are minted by the editor and checked against the tabs when read).
 const TAB_ID_MAX = 80;
 
@@ -48,6 +54,8 @@ export type SheetMetricContent = {
   target?: SheetMetricCell;
   col?: string;
   stat?: SheetMetricStat;
+  // The slot's own name in place of the figure's label (slot-name.ts).
+  name?: string;
 };
 
 export type DashboardCardContent =

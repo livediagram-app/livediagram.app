@@ -141,7 +141,12 @@ export function dashboardExportTab(input: DashboardExportInput): DashboardExport
         shape.shape === 'plan-view'
       ) {
         card(slotId, rect);
-        place(shape, rect, `export-el-${slotId}`);
+        // A named slot's view draws the name as its title (plan-tabs.md "A slot's name"), on a copy.
+        const named =
+          shape.shape === 'plan-view' && shape.planView && content.name
+            ? { ...shape, planView: { ...shape.planView, title: content.name } }
+            : shape;
+        place(named, rect, `export-el-${slotId}`);
       } else if (isChartShape(shape.shape)) {
         // A chart from a Sheet draws on the slot's card, inset as the slot insets it.
         card(slotId, rect);

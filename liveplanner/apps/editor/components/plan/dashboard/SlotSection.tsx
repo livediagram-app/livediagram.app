@@ -3,7 +3,8 @@
 // A Dashboard slot's **Slot** section (docs/specs/026-plan/plan-tabs.md "Editing"), in the item's one cog: its own
 // Slot Settings, or folded into the Board, Sheet or Chart Settings of what the slot shows. An Editor's: **Add a Slot**
 // (the slot drawn small, a side to add on), then **Change Chart** or **Change Source** for a chart or figure from a
-// Sheet. Open Tab, Duplicate, Clear and Remove are the cog's toolbar above its sections (SlotToolbar.tsx).
+// Sheet, and a **Name** for a slot whose heading is made for it (SlotNameField). Open Tab, Duplicate, Clear and
+// Remove are the cog's toolbar above its sections (SlotToolbar.tsx).
 import { useState } from 'react';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideLayoutGrid, lucidePencil } from '@liveworkspace/icons/lucide';
@@ -14,6 +15,7 @@ import { useDashboard } from './dashboard-context';
 import { AddSlotSides } from './AddSlotSides';
 import { SheetChartSource } from './SheetChartSource';
 import { SheetMetricSource } from './SheetMetricSource';
+import { SlotNameField, generatedSlotName } from './SlotNameField';
 
 const SlotGlyph = lucideGlyph(lucideLayoutGrid, 14);
 const ChangeGlyph = lucideGlyph(lucidePencil, 18);
@@ -52,11 +54,23 @@ export function SlotSection({
   const chartSheetId = el?.chartSource?.sheetId;
   const metric = content?.type === 'sheet-metric' && content.sheetId ? content : null;
   const [changeAt, setChangeAt] = useState<HTMLElement | null>(null);
+  // A slot whose heading is made for it takes a name of its own (plan-tabs.md "A slot's name").
+  const generated = generatedSlotName(
+    content,
+    content?.type === 'element' ? elements.get(content.elementId) : undefined,
+  );
   // Open Tab, Duplicate, Clear and Remove are the cog's toolbar (SlotToolbar); the section is an Editor's.
   if (!canEdit) return null;
   return (
     <BoardSettingsSection title="Slot" icon={<SlotGlyph />} open={open} onToggle={onToggle}>
       <AddSlotSides rowId={rowId} at={at} onAdded={onClose} />
+      {content && generated !== null ? (
+        <SlotNameField
+          content={content}
+          placeholder={generated}
+          onSave={(next) => actions.setSlotContent(slot.id, next)}
+        />
+      ) : null}
       {chartSheetId !== undefined || metric ? (
         <SettingsBody>
           <div className="flex flex-wrap gap-1.5">
