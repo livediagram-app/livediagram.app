@@ -10,7 +10,14 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { track } from '@/lib/telemetry';
 
-export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } = {}) {
+export function useCanvasTool({
+  defaultPan = false,
+  tabId,
+}: {
+  defaultPan?: boolean;
+  /** The active tab. Avatar mode is left when it changes (docs/specs/008-canvas/avatar-mode.md "Changing tab"). */
+  tabId?: string;
+} = {}) {
   // Default to Hand (pan) on a touch / mobile viewport, Select on
   // desktop: on a small touchscreen a drag-on-empty far more often
   // means "scroll the canvas" than "marquee-select", and pinch-zoom
@@ -31,7 +38,7 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   // The tool that was active before Avatar mode (docs/specs/008-canvas/avatar-mode.md) took over, so
   // picking a palette tile can put the user back exactly where they were
   // rather than guessing Select. Same idea as useFormatTool's preFormatToolRef.
-  const preAvatarToolRef = useRef<CanvasTool>('select');
+  const [preAvatarTool, setPreAvatarTool] = useState<CanvasTool>('select');
   // The general form of the same idea: whatever tool you were in before the
   // current one, for any mode. A Selection Mode button (docs/specs/009-elements/mode-button.md) presses back
   // out of its own mode with this, so a button that switches you in is never a
@@ -39,7 +46,7 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   const priorToolRef = useRef<CanvasTool>('select');
   const selectCanvasTool = (tool: CanvasTool) => {
     if (tool !== canvasTool) priorToolRef.current = canvasTool;
-    if (tool === 'avatar' && canvasTool !== 'avatar') preAvatarToolRef.current = canvasTool;
+    if (tool === 'avatar' && canvasTool !== 'avatar') setPreAvatarTool(canvasTool);
     if (tool === 'laser' && canvasTool !== 'laser') track('Canvas', 'Used', 'Laser');
     if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
     if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
@@ -62,9 +69,21 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   // change INTO the mode), but guard anyway so a stale ref can't trap the user.
   const exitAvatarTool = () => {
     if (canvasTool !== 'avatar') return;
-    const back = preAvatarToolRef.current;
+    const back = preAvatarTool;
     setCanvasTool(back === 'avatar' ? 'select' : back);
   };
+  // Changing tab leaves Avatar mode for the tool you were in before it (docs/specs/008-canvas/avatar-mode.md
+  // "Changing tab"): the character stands at a point of the tab you left, which on the new tab can be inside a
+  // fence it was meant to be kept out of. Done while rendering, as the tab changes, so the new tab never draws
+  // (or publishes to peers) the character even once; leaving the mode is also what tells peers to drop it.
+  const [lastTabId, setLastTabId] = useState(tabId);
+  if (tabId !== lastTabId) {
+    setLastTabId(tabId);
+    if (canvasTool === 'avatar') {
+      const back = preAvatarTool;
+      setCanvasTool(back === 'avatar' ? 'select' : back);
+    }
+  }
   // Where "go back" leads: the tool before the current one, never the current
   // one itself (a stale ref must not trap the user in the mode they're leaving).
   const toolBeforeCurrent = (): CanvasTool =>
