@@ -136,39 +136,39 @@ every one is minted as a UUID, a `user_` or `guest_` id, a Clerk id or a hex has
 as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an element, an action) are any 1 to
 128 characters, because the apps' documents take any non-empty id there.
 
-| Call                           | Who                 | Does                                                                          |
-| ------------------------------ | ------------------- | ----------------------------------------------------------------------------- |
-| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                 |
-|                                |                     | `shared`, `trash`, `unsorted` (no folder: My Work's and a team's roots; the   |
-|                                |                     | Explorer has no Unsorted view), `search`: every live item the person can      |
-|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`        |
-|                                |                     | and the lens's (below). Sorted by `updatedAt`, or by                          |
-|                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first           |
-|                                |                     | page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by    |
+| Call                           | Who                 | Does                                                                         |
+| ------------------------------ | ------------------- | ---------------------------------------------------------------------------- |
+| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                |
+|                                |                     | `shared`, `trash`, `unsorted` (no folder: My Work's and a team's roots; the  |
+|                                |                     | Explorer has no Unsorted view), `search`: every live item the person can     |
+|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`       |
+|                                |                     | and the lens's (below). Sorted by `updatedAt`, or by                         |
+|                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first          |
+|                                |                     | page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by   |
 |                                |                     | how many times (ties: opened last first), each with `useOpens` (and          |
-|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,           |
-|                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in    |
+|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,          |
+|                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in   |
 |                                |                     | every space the person is in (their own and each team's; each item once)     |
 |                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether               |
-|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.      |
-| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201              |
-|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it    |
-|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object              |
-|                                |                     | starts empty the first time it is opened with a grant.                        |
-| `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the   |
-|                                |                     | public link's code when that is their only way in (previews.md)               |
-| `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a            |
-|                                |                     | team needs joined membership.                                                 |
-| `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                               |
-| `POST /items/:id/restore`      | owner / team        | `{item}`                                                                      |
-| `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the             |
-|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`).  |
-| `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used      |
-|                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute       |
-|                                |                     | per person and item.                                                          |
-| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                    |
-|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                             |
-| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                |
+|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.     |
+| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201             |
+|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it   |
+|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object             |
+|                                |                     | starts empty the first time it is opened with a grant.                       |
+| `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the  |
+|                                |                     | public link's code when that is their only way in (previews.md)              |
+| `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a           |
+|                                |                     | team needs joined membership.                                                |
+| `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                              |
+| `POST /items/:id/restore`      | owner / team        | `{item}`                                                                     |
+| `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the            |
+|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`). |
+| `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used     |
+|                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute      |
+|                                |                     | per person and item.                                                         |
+| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                   |
+|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                            |
+| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).               |
 
 **The lens's filters**, on `GET /items` and `GET /shared` (the Explorer's filter field and chips): `q`, words
 (at most 16), each in the title or the item's folder's name, taken literally; `apps`, the apps the items open in
