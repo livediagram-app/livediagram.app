@@ -219,9 +219,7 @@ describe('agent presence in the room (docs/specs/024-agents/blueprints/agent-pre
     ];
     const { env, stubFetch } = envWith(async () => answers.shift()!);
     expect(await putAgentPresence(env, write)).toEqual({ ok: true, expiresAt: 5, created: true });
-    expect(JSON.parse(stubFetch.mock.calls[0]![1]!.body as string)).not.toHaveProperty(
-      'designId',
-    );
+    expect(JSON.parse(stubFetch.mock.calls[0]![1]!.body as string)).not.toHaveProperty('designId');
     expect(await putAgentPresence(env, write)).toEqual({ ok: false, error: 'agent_presence_full' });
     await expect(putAgentPresence(env, write)).rejects.toBeInstanceOf(RoomUnavailableError);
     const down = envWith(async () => {
@@ -261,7 +259,7 @@ describe('agent presence in the room (docs/specs/024-agents/blueprints/agent-pre
     await refreshAgentPresence(env, refresh);
     expect(JSON.parse(stubFetch.mock.calls[0]![1]!.body as string)).toMatchObject({
       mode: 'refresh',
-      ttlMs: 30_000,
+      ttlMs: 180_000,
       status: null,
       focus: [],
     });

@@ -55,7 +55,7 @@ where it is and changes only how the next mark is made.
   wrong mode changes before anything is made.
 - **The two always agree.** On an empty tab both show at once, the chip beside the menu button included (it shows on
   every tab, empty or not). Both read and write the one source of truth, the tab's mode (`Tab.opensIn`, through the
-  editor's one `EditorModeState`), so a switch in either place updates the other, the palette and the tab pill's icon
+  editor's one `EditorModeState`), so a switch in either place updates the other and the palette
   in the same render.
 - **Nowhere else.** The tab menu holds no Mode section, and the tab bar and the Explorer offer none.
 - **A dropdown chip** (`ModeMenuChip`): on the start's rail a full-width row; beside the menu button a compact chip
@@ -151,9 +151,9 @@ where it is and changes only how the next mark is made.
   sets its own mode wins.
 - **No Mode in the tab menu.** The tab menu offers no mode choice: the switch beside the menu button is the one
   place a tab with content changes mode (above).
-- **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same
-  glyph the mode switch uses), tinted with the tab's theme accent. An
-  event-storming board is always Diagram, so it shows the Diagram icon.
+- **The tab pill shows no mode icon.** A footer tab shows its name alone ([Editor app](editor-app.md#how-a-tab-looks));
+  the mode shows on the switch beside the menu button, and on a split view's chip. An event-storming board is always
+  Diagram.
 
 ## One look
 
@@ -228,8 +228,7 @@ element in the same colour.
   and Stickers categories, which Diagram does not offer) and the Session strip's three tools
   ([Workshop mode](../012-collaboration/workshop-mode.md)).
 - **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
-  Workshop a flipchart on an easel; the same glyph on the switch and the tab pill.
-  The tab pill's icon follows a switch at once, as the palette does.
+  Workshop a flipchart on an easel; the same glyph on the switch and the split view's chip.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,

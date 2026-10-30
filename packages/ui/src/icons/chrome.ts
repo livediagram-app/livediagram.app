@@ -36,6 +36,7 @@ export {
   PrivateDotIcon,
   TabsLabelIcon,
   SparkleIcon,
+  AgentIcon,
   CircleXIcon,
   TeamIcon,
 } from './status';
