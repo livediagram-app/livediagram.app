@@ -160,7 +160,8 @@ For each agent, when its turn comes:
 Keep your own context light: read the agents' reports, not their transcripts.
 
 **Brief** (fill in the card's number, title, Type, full description, and the readiness findings, marked as
-data describing the work; then an **Answers** section with every thread on the card, open and resolved: its
+data describing the work; then a **Start here** list: the files step 2 found (or the review threads cited) and
+where each part of the work lives, so the agent reads those first instead of exploring the repo; then an **Answers** section with every thread on the card, open and resolved: its
 title, its state, and every comment **verbatim**, with author and date and whether it is `ai`, oldest first):
 
 - Branch `work/<number>-<short-slug>` from `origin/main` (a Large card's part: `work/<number>-<short-slug>-p<k>`),
@@ -178,13 +179,25 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   the share roles (Editor, Participant, Viewer) the spec sets, with role tests.
 - **Build it fully**, everywhere it applies: every app a shared change reaches, every kind and variant it covers.
   Shared code goes in `packages/` (AGENTS.md and docs/structure.md set the order).
-- **Tests:** cover every new branch. In each touched package, run typecheck, oxlint, `prettier --check` on
-  changed files, and `test:coverage` where it has thresholds. Before each round of checks, read the
+- **Shared turbo cache:** run every `turbo` command with
+  `TURBO_CACHE_DIR="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.turbo/shared-cache"`, so
+  checks of packages another agent already ran on the same code are replayed. Turbo keys the cache by content, so a hit is
+  the same result.
+- **Tests:** cover every new branch. In each touched package, run typecheck, oxlint and `prettier --check` on
+  changed files. For coverage, run locally only the tests related to your changes, with coverage of the changed
+  source files at the package's threshold:
+  `vitest related <changed files> --run --coverage --coverage.include=<changed source files>`. CI runs every
+  package's full `test:coverage` on the PR. Before each round of checks, read the
   load: when `uptime`'s one-minute load is under half of `sysctl -n hw.ncpu`, run the touched packages in
   parallel (`corepack pnpm turbo run <task> --filter <pkg>...`) with default workers; otherwise run one package
   at a time with `--maxWorkers=2`, because several agents share this machine and a starved CPU makes timing tests
   fail for no real reason. Build a Next app only when you changed its pages, MDX or build
   config; CI builds the rest.
+- **Push before the browser checks**, so CI runs while you verify. Once the code, spec, the performance review (below) and the checks above pass,
+  push and open the PR with the `not-ready` label and "Verifying in the browser" at the top of the description,
+  so the pr-loop can't merge it yet. After verification, update the description with the screenshots and remove
+  the label (keep it, with the reason, for a high-risk change, below). If verification finds a bug, fix it, rerun
+  the checks and push once more, gated on the PR being OPEN. Push at most twice.
 - **Verify in a real browser** for anything visible, following the `verify` skill. Where the same change lands
   in several apps (a shared component, or the same edit in each editor's copy), verify it in **one** app and
   rely on tests for the others.
@@ -198,8 +211,8 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   cheap, fix what you find in the same change, and name any risk you can't rule out.
 - **Commits:** small logical commits, each ending with the Co-Authored-By trailer. Never use em dashes in
   anything you write. Don't commit pnpm-lock.yaml unless the change needs it.
-- **One PR, one push.** (On rework, push once to the open PR instead, gated as above.) Push the branch once, when everything above passes, then open a ready PR (never draft)
-  against `main`. Add `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
+- **One PR, at most two pushes** (above). (On rework, push to the open PR instead, gated as above.) The PR is
+  ready (never draft), against `main`. Once verified, keep `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
   permissions, deleting or migrating user data, worker bindings or deploy config, or a change to what existing
   data shows people), and say why. A stored-shape change that only adds and still reads old data needs no label. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
   to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. The repo is private, so
@@ -208,7 +221,7 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   and the screenshots. It names the card ("Work Tracker #12") and ends with
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
-  open no PR, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
+  close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.
 - **Clean up:** remove your build output and stop only the PIDs you started.
 - **Report:** `DONE <PR url>` or `FAILED`, then each answer and how it was built, a few lines on what was
@@ -262,7 +275,9 @@ If the MCP refuses a change, report it and carry on with the other cards.
 - One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
   it has merged. Never open a PR for anything that isn't a selected card. Merging is the
   pr-loop's job.
-- Remove every worktree this pass made before it ends.
+- Remove every worktree this pass made before it ends. At the end of a pass with no agents running, prune the
+  shared turbo cache: delete its entries untouched for 7 days
+  (`find <repo>/.turbo/shared-cache -type f -mtime +7 -delete`), so it stays bounded.
 
 ## 6. Report
 
