@@ -3,16 +3,20 @@
 // A board header's widget zone (docs/specs/026-plan/board-widgets.md "Placing and arranging widgets"):
 // the board's widgets in order, one row that scrolls sideways when full. Someone who may edit drags a
 // widget left or right to reorder it (a bar shows where it lands), moves a focused one with Alt+← and
-// Alt+→, and takes one off with its × (shown only while the board is selected) or Delete. The + at the zone's end opens
-// the widgets the board does not have yet (BoardWidgetPicker); one picked is added at the end.
+// Alt+→, and takes one off with its × (shown on every widget while the zone is in edit mode, which Edit Widgets after
+// the + turns on) or Delete. The + at the zone's end opens the widgets the board does not have yet (BoardWidgetPicker);
+// one picked is added at the end.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { placeWidget, removeWidget, nudgeWidget, type BoardWidgetKind } from '@liveplanner/items';
-import { CloseIcon, PlusIcon } from '@liveplanner/ui';
+import { CheckIcon, CloseIcon, PlusIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucidePencil } from '@liveworkspace/icons/lucide';
 import type { PlanPalette } from '../plan-palette';
 import { BOARD_WIDGET_INFO } from '@liveplanner/plan-art';
 import { InfoArt } from '../plan-tile-art';
 import { widgetSlotAt } from '@/hooks/plan/widget-slot';
 import { BoardWidgetPicker } from './BoardWidgetPicker';
+
+const PencilIcon = lucideGlyph(lucidePencil, 14);
 
 // Pixels a press travels before it is a reorder rather than a click.
 const REORDER_THRESHOLD_PX = 4;
@@ -30,7 +34,7 @@ export function BoardWidgetZone({
 }: {
   widgets: readonly BoardWidgetKind[];
   canEdit: boolean;
-  // The board is selected: only then do the widgets show their ×, and an empty zone its hint.
+  // The board is selected: only then does an empty zone show its hint.
   selected?: boolean;
   // An empty zone shows its + to someone who may edit even while the board is not selected (in a header band, where
   // the board is maximised or fills its tab and no selection shows), the hint still waiting for a selection.
@@ -41,18 +45,18 @@ export function BoardWidgetZone({
 }) {
   const zone = useRef<HTMLDivElement>(null);
   const [reorder, setReorder] = useState<Reorder | null>(null);
-  // The widget a touch tapped, showing its × until another is tapped, it goes, a tap lands outside the zone or Escape
-  // is pressed (no hover on a touch screen).
-  const [armed, setArmed] = useState<BoardWidgetKind | null>(null);
-  // A tap anywhere outside the zone, or Escape, puts the tapped widget's × away again. Listening only while one is
-  // armed, in the capture phase so a press that stops its own propagation still counts.
+  // Edit mode: every widget shows its ×. This person's alone, never saved; it ends on Done, Escape, a press outside the
+  // zone, or the last widget going.
+  const [editing, setEditing] = useState(false);
+  const active = editing && canEdit && widgets.length > 0;
+  // Listening only while editing, in the capture phase so a press that stops its own propagation still counts.
   useEffect(() => {
-    if (!armed) return;
+    if (!active) return;
     const onDown = (e: PointerEvent) => {
-      if (!zone.current?.contains(e.target as Node)) setArmed(null);
+      if (!zone.current?.contains(e.target as Node)) setEditing(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setArmed(null);
+      if (e.key === 'Escape') setEditing(false);
     };
     document.addEventListener('pointerdown', onDown, true);
     document.addEventListener('keydown', onKey, true);
@@ -60,10 +64,10 @@ export function BoardWidgetZone({
       document.removeEventListener('pointerdown', onDown, true);
       document.removeEventListener('keydown', onKey, true);
     };
-  }, [armed]);
-  // Takes a widget off, leaving nothing of it selected: no tapped widget, no focus left on it.
+  }, [active]);
+  // Takes a widget off, leaving no focus on it. Edit mode stays on for the next, unless that was the last.
   const remove = (kind: BoardWidgetKind) => {
-    setArmed(null);
+    if (widgets.length === 1) setEditing(false);
     (document.activeElement as HTMLElement | null)?.blur();
     onChange(removeWidget(widgets, kind));
   };
@@ -102,7 +106,6 @@ export function BoardWidgetZone({
 
   const onPointerDown = (kind: BoardWidgetKind) => (e: React.PointerEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    if (e.pointerType === 'touch') setArmed(kind);
     if (!canEdit || e.button !== 0) return;
     // Typing in the Filter box is not a drag.
     if ((e.target as HTMLElement).closest('input, select, textarea')) return;
@@ -191,7 +194,7 @@ export function BoardWidgetZone({
               tabIndex={canEdit ? 0 : undefined}
               aria-label={canEdit ? `${BOARD_WIDGET_INFO[kind].label} widget` : undefined}
               aria-keyshortcuts={canEdit ? 'Alt+ArrowLeft Alt+ArrowRight Delete' : undefined}
-              className={`group/widget relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
+              className={`relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
                 canEdit ? 'cursor-grab active:cursor-grabbing' : ''
               }`}
               style={{
@@ -224,16 +227,11 @@ export function BoardWidgetZone({
               }}
             >
               {render(kind)}
-              {canEdit && selected ? (
+              {active ? (
                 <button
                   type="button"
                   aria-label={`Remove ${BOARD_WIDGET_INFO[kind].label}`}
-                  // Shown on hover or keyboard focus, or once a touch has tapped the widget; never all the time.
-                  className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border shadow-sm transition-opacity duration-micro motion-reduce:transition-none ${
-                    armed === kind
-                      ? 'opacity-100'
-                      : 'pointer-events-none opacity-0 group-focus-within/widget:pointer-events-auto group-focus-within/widget:opacity-100 group-hover/widget:pointer-events-auto group-hover/widget:opacity-100'
-                  }`}
+                  className="absolute -right-1 -top-1 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border shadow-sm"
                   style={{
                     backgroundColor: palette.card,
                     borderColor: palette.border,
@@ -254,6 +252,31 @@ export function BoardWidgetZone({
         {barAt === widgets.length ? bar('bar-end') : null}
       </div>
       {canEdit ? addButton('md') : null}
+      {canEdit ? (
+        <Tooltip label={active ? 'Done Editing Widgets' : 'Edit Widgets'}>
+          <button
+            type="button"
+            aria-label={active ? 'Done Editing Widgets' : 'Edit Widgets'}
+            aria-pressed={active}
+            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10"
+            style={
+              active
+                ? {
+                    color: palette.focus,
+                    backgroundColor: `color-mix(in srgb, ${palette.focus} 14%, transparent)`,
+                  }
+                : { color: palette.muted }
+            }
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditing(!active);
+            }}
+          >
+            {active ? <CheckIcon size={14} /> : <PencilIcon />}
+          </button>
+        </Tooltip>
+      ) : null}
       {picker}
     </div>
   );

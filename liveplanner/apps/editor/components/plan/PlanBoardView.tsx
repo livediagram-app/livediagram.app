@@ -4,6 +4,7 @@
 // its set-up projected over the project's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { planBoardBodyCursor } from './board-cursors';
 import { planFontStyle } from '@/lib/plan-font';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { useInDashboard } from '@/components/plan/dashboard/dashboard-context';
@@ -415,6 +416,8 @@ export function PlanBoardView({
         className={`min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
           look.snap ? 'snap-x snap-mandatory' : ''
         }`}
+        // A press here never pans or moves the board, so no hand (board-cursors.ts).
+        style={{ cursor: planBoardBodyCursor(interactive) }}
         onPointerDown={interactive ? keepBoardPress : undefined}
         onClick={
           interactive && look.columns === 'phone'
@@ -592,6 +595,7 @@ export function PlanBoardView({
                                   faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
                                   presence={plan?.presence.get(item.id)}
                                   interactive={interactive}
+                                  canMove={canEditCards}
                                   onPress={onCardPress}
                                   onOpen={() => plan?.openItem(item.id)}
                                   onKey={onCardKey}
