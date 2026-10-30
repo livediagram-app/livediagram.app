@@ -46,7 +46,8 @@ export function usePageSnap(deps: {
   measure: () => SnapMeasure | null;
   // A page's own fit, as its label frames it.
   fitOf: (page: LaidOutPage) => SnapFrame;
-  glideTo: (frame: SnapFrame) => void;
+  // `pageId`: the page the view rests on (a stack of flashcards flips to it instead).
+  glideTo: (frame: SnapFrame, pageId: string) => void;
   cancelGlide: () => void;
   // Following someone or presenting: the view is not this person's to move.
   suspended: () => boolean;
@@ -99,7 +100,7 @@ export function usePageSnap(deps: {
         from: view.zoom,
         to: result.frame.zoom,
       });
-      d.glideTo(result.frame);
+      d.glideTo(result.frame, result.pageId);
     };
     const settleSoon = () => {
       clearTimeout(timer);

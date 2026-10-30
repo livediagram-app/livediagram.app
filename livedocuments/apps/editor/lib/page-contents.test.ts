@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, type Page } from '@livedocuments/document';
+import { layOutPages, newFlashcardPage, type Page } from '@livedocuments/document';
 import { contentsRows, filterContents, pageInView } from './page-contents';
 import { contentsDropUnit } from './page-contents';
 
@@ -10,6 +10,29 @@ const pages = layOutPages([
   { id: 'c', orientation: 'portrait', kind: 'article', flow: 'f1', locked: true },
   { id: 'd', orientation: 'portrait', kind: 'slide', size: 'slide-classic' },
 ] as Page[]);
+
+// docs/specs/007-editor/flashcards.md "Contents": each card's row says its speaking time.
+describe('a stack in Contents', () => {
+  it('names each card and says its title and how long it takes to say', () => {
+    const stack = layOutPages([newFlashcardPage('a', 'f1'), newFlashcardPage('b', 'f2')]);
+    const words = Array.from({ length: 130 }, () => 'word').join(' ');
+    const rows = contentsRows(stack, {
+      articles: {
+        f1: {
+          blocks: [
+            { type: 'paragraph', style: 'title', runs: [{ text: 'Opening' }] },
+            { type: 'paragraph', runs: [{ text: words }] },
+          ],
+        } as never,
+        f2: { blocks: [] },
+      },
+    });
+    expect(rows.map((r) => [r.name, r.line])).toEqual([
+      ['Card 1', 'Flashcard · Opening · 1 min'],
+      ['Card 2', 'Flashcard · Untitled'],
+    ]);
+  });
+});
 
 describe('the Contents list', () => {
   const rows = contentsRows(pages, {

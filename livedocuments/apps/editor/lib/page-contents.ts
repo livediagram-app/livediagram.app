@@ -3,6 +3,8 @@
 // narrowing. Pure: pages and the view in, rows out.
 import {
   articleTitleOf,
+  flashcardSpeakingSeconds,
+  speakingTimeLabel,
   pageHasOrientation,
   pageKindOf,
   pageSizeLabel,
@@ -37,6 +39,7 @@ const KIND_NAME = {
   infographic: 'Infographic',
   slide: 'Slide',
   article: 'Article',
+  flashcard: 'Flashcard',
 } as const;
 
 export function contentsRows(
@@ -56,15 +59,20 @@ export function contentsRows(
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
     } else if (kind === 'slide' && opts.inDeck) {
       line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
-    } else if (kind === 'article' && p.flow) {
+    } else if ((kind === 'article' || kind === 'flashcard') && p.flow) {
       const flow = opts.articles?.[p.flow];
       const title = flow ? articleTitleOf(flow).trim() : '';
       if (title) line += ` · ${title}`;
+      // A card says how long it takes to say (docs/specs/007-editor/flashcards.md "Card number and
+      // speaking time").
+      const time =
+        kind === 'flashcard' && flow ? speakingTimeLabel(flashcardSpeakingSeconds(flow)) : null;
+      if (time) line += ` · ${time}`;
     }
     return {
       id: p.id,
       number: i + 1,
-      name: p.name?.trim() || `Page ${i + 1}`,
+      name: p.name?.trim() || `${kind === 'flashcard' ? 'Card' : 'Page'} ${i + 1}`,
       line,
       locked: p.locked === true,
       aspect: p.rect.width / p.rect.height,

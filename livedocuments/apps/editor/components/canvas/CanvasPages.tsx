@@ -54,6 +54,8 @@ import {
 } from '@/components/tour/PageTour';
 import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { AddPageButton } from './AddPageButton';
+import { FlashcardFooter, FlashcardStackSheets } from './FlashcardStack';
+import { FLASHCARD_STACK_MAX } from '@/lib/flashcard-stack';
 import { ArticleStyleSection } from './article/ArticleStyleSection';
 import { useStylePanelRequest } from '@/lib/article/article-editor-store';
 import {
@@ -118,6 +120,8 @@ export function CanvasPages({
       : undefined;
   // An article page's number, in its bottom margin, when its article has them.
   const pageNumberOf = (page: LaidOutPage) => {
+    // A card says its place in the stack instead (FlashcardFooter).
+    if (page.kind === 'flashcard') return null;
     if (!page.flow || !articles?.flows[page.flow]) return null;
     const style = resolveArticleStyle(articleStyleOf(page));
     if (!style.pageNumbers) return null;
@@ -208,10 +212,11 @@ export function CanvasPages({
     ? pages.find((p) => p.id === view.layoutPreview!.pageId)
     : undefined;
   // An article's Style or Text sections (ArticleStyleSection), for the buttons beside an article page's cog.
-  const articleSection = (flow: string, part: 'style' | 'text') =>
+  const articleSection = (flow: string, part: 'style' | 'text', card: boolean) =>
     articles?.flows[flow] ? (
       <ArticleStyleSection
         part={part}
+        card={card}
         style={articles.flows[flow].style}
         themeAccent={view.themeAccent}
         onChange={(change) => articles.setStyle(flow, change)}
@@ -219,8 +224,17 @@ export function CanvasPages({
       />
     ) : null;
   const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
+  // A stack of flashcards: the card in front's place, and the cards still to come behind it.
+  const stack = view.cardStack;
+  const row = view.rowPages ?? pages;
   return (
     <>
+      {stack && pages[0] ? (
+        <FlashcardStackSheets
+          card={pages[0]}
+          behind={row.slice(stack.index + 1, stack.index + 1 + FLASHCARD_STACK_MAX)}
+        />
+      ) : null}
       {pages.map((page) => {
         const background = previewedBackground(page, pages, preview);
         // No "Page n": the page navigator under the page says which it is.
@@ -364,7 +378,7 @@ export function CanvasPages({
                   <PageArticleButtons
                     labelled={labelled}
                     styleRequest={styleRequestFor(page.id)}
-                    section={(part) => articleSection(page.flow!, part)}
+                    section={(part) => articleSection(page.flow!, part, page.kind === 'flashcard')}
                   />
                 ) : null}
                 {/* An infographic or slide page's Layouts (PageLayoutsButton). */}
@@ -434,6 +448,15 @@ export function CanvasPages({
               >
                 {number.n}
               </span>
+            ) : null}
+            {stack && page.flow ? (
+              <FlashcardFooter
+                card={page}
+                stack={stack}
+                flow={articles?.flows[page.flow]}
+                margin={articleMarginPx(articleStyleOf(page))}
+                font={resolveFontStack(resolveArticleStyle(articleStyleOf(page)).bodyFont)}
+              />
             ) : null}
           </div>
         );
