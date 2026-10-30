@@ -76,7 +76,7 @@ export const CARD_FIELDS = [
   'comments',
   // A Detailed card's extra: two lines of its description.
   'description',
-  // A card's Attachments (docs/specs/026-plan/items.md "Attachments"): a paperclip and how many it holds.
+  // A card's Attachments (docs/specs/026-plan/items.md "Attachments"): a picture glyph and how many it holds.
   'attachments',
   // Its cover picture across the top of a Detailed card, placed only in the Header (docs/specs/026-plan/item-types.md
   // "Card display").

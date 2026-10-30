@@ -214,7 +214,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
 - Attachments (items.md "Attachments"): the pure value and edits in `packages/items/src/attachments.ts`
   (`normaliseAttachments`, `itemAttachments`, `attachmentCover`, `withAttachmentsAdded`, `withCover`,
   `withoutAttachment`, `attachmentSizeText`; caps in `limits.ts`), checked by `validateFields`' `attachments` kind. The
-  panel's `AttachmentsField.tsx` (rows, ⋯ menu from `PortalMenu`, the Add Images zone, the document paste listener);
+  panel's `AttachmentsField.tsx` (rows, ⋯ menu from `PortalMenu`, the Add Images zone, the page's paste listener);
   uploads through `use-attachment-upload.ts` (`useAttachmentUpload`: one upload at a time, one `patchItem` of the
   whole list read from the card as it is then); a board card's drop through `card-file-drop.ts` (`useCardFileDrop`,
   in `PlanBoardCard`); the cover and the count chip in `CardCover.tsx`, drawn by `PlanCardFace` when the type's

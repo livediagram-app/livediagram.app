@@ -464,7 +464,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   existed gets them too.
 
 - **Attachments and Cover Image** (a type that offers [Attachments](items.md#attachments)): Detailed draws two card
-  fields of them. **Attachments** is a paperclip and the card's count, placed in the Footer by default.
+  fields of them. **Attachments** is a picture glyph and the card's count, placed in the Footer by default.
   **Cover Image** is the card's cover picture across the top of the card, edge to edge, 120 px tall and cropped to
   fill, above the Header; it is the Display's **option** for covers: it sits only in the **Header** (that is where
   it is dragged to and listed), and taking it off the card turns covers off for the type. Both are in every type's

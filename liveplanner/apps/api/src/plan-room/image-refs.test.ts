@@ -16,6 +16,12 @@ import { planNamespace } from './test-plan-namespace';
 const PLAN = 'plan-1';
 const MEDIA_URL = 'https://media.test/api/media';
 
+// The pictures the `at`th report named for the plan.
+const imagesSent = (at: number) => {
+  const { documents: sent } = synced.at(at)!;
+  return sent[0]!.images;
+};
+
 let synced: { documents: { document: string; images: string[] }[]; complete?: boolean }[];
 let refuse: boolean;
 
@@ -124,11 +130,11 @@ describe('the pictures a plan reports', () => {
     expect(p.queued()).toBe(false);
     p.edit('a', { attachments: [pic('one'), pic('two')] });
     await p.flush();
-    expect(synced.at(-1)!.documents[0]!.images).toEqual(['one', 'two']);
+    expect(imagesSent(-1)).toEqual(['one', 'two']);
     // A card deleted for good no longer places them: the sweep may take them.
     p.sql.prepare('DELETE FROM items WHERE id = ?').run('a');
     await p.flush();
-    expect(synced.at(-1)!.documents[0]!.images).toEqual([]);
+    expect(imagesSent(-1)).toEqual([]);
   });
 
   it('sends at most what one sync carries, and says so', async () => {
@@ -138,7 +144,7 @@ describe('the pictures a plan reports', () => {
       p.card(`c${c}`, { attachments: Array.from({ length: 20 }, (_, i) => pic(`p${c}-${i}`)) });
     }
     await p.flush();
-    expect(synced[0]!.documents[0]!.images).toHaveLength(500);
+    expect(imagesSent(0)).toHaveLength(500);
     expect(error).toHaveBeenCalledWith(
       '[media] a plan holds more pictures than one sync carries',
       expect.objectContaining({ images: 520 }),

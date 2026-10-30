@@ -96,7 +96,7 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   Detailed card whose type's Display holds **Cover Image** ([Card display](item-types.md#card-display)), the cover
   is drawn across the top of the card, edge to edge, 120 px tall and cropped to fill. Removing the cover's picture
   leaves the card without one. A Plan card on the canvas keeps its fixed size and draws no cover.
-- **On the card face**: the **Attachments** card field is a paperclip and how many pictures the card holds
+- **On the card face**: the **Attachments** card field is a picture glyph and how many pictures the card holds
   ("Attachments: 3"); with none it is not drawn.
 - **Loading**: thumbnails and covers are fetched only as the card or row scrolls into view, at the size they are
   drawn (a cover at most 640 px on its longest side, a row's thumbnail 160 px), never the original; each size is
@@ -106,7 +106,7 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   ([api.md](../015-api/api.md) "Images").
 - **The Trash and deleting for good**: a trashed card keeps its pictures (Restore brings them back as they were). A
   card deleted for good, or a plan purged, no longer places them: the plan reports the pictures its cards hold to
-  the media service ("Images in use", below), and the service's daily sweep deletes a picture no document in any
+  the media service ("Images in use", below), and the service's daily sweep deletes a picture nothing in any
   app has placed for 30 days.
 - **Copies**: duplicating a card, or a whole plan, carries the attachment ids: no bytes are copied. In the same
   plan the copy shows them to everyone; a copied plan shows them to their uploader, and to its other readers once
@@ -127,7 +127,7 @@ use and can take one no card holds any more ([media.md](../../../../liveworkspac
 "References"). The set is every picture a card's Attachments hold, and every Image field value the plan holds a grant
 for. A card write that could change it (made, changed or deleted while the plan holds a grant or a card holds
 attachments) and each upload's grant queue an `images` key in the plan's outbox; the outbox's drain, at most once a
-minute, works the set out and sends it (`POST /app/refs`, the plan as the document, `complete: true`) only when it
+minute, works the set out and sends it (`POST /app/refs`, under the plan's id, `complete: true`) only when it
 differs from the last one sent. A purged plan sends an empty set. A plan reports on its first wake after this ships
 when it holds a grant, so pictures uploaded before are counted.
 

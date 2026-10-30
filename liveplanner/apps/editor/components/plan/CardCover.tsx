@@ -5,7 +5,7 @@
 // fetched only once the card nears the screen and at most IMAGE_COVER_EDGE on its longest side, never the original.
 import type { ItemAttachment } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideImage, lucidePaperclip } from '@liveworkspace/icons/lucide';
+import { lucideImage } from '@liveworkspace/icons/lucide';
 import { IMAGE_COVER_EDGE } from '@/lib/api/images';
 import { usePlan } from './PlanContext';
 import { MetaPill } from './plan-card-parts';
@@ -13,7 +13,7 @@ import type { PlanPalette } from './plan-palette';
 import { useImageUrl, useSeen } from './use-image-url';
 
 const BrokenIcon = lucideGlyph(lucideImage, 18);
-const ClipIcon = lucideGlyph(lucidePaperclip, 11);
+const PicturesIcon = lucideGlyph(lucideImage, 11);
 
 // The cover's height, and how far it reaches past the card's padding to its edges (px-3 py-2.5).
 const COVER =
@@ -66,12 +66,12 @@ export function CardCover({
   );
 }
 
-/** How many pictures a card holds: a paperclip and the count, "Attachments: 3" to assistive technology. */
+/** How many pictures a card holds: a picture glyph and the count, "Attachments: 3" to assistive technology. */
 export function AttachmentsPill({ count, palette }: { count: number; palette: PlanPalette }) {
   return (
     <MetaPill palette={palette} label={`Attachments: ${count}`}>
       <span className="flex">
-        <ClipIcon />
+        <PicturesIcon />
       </span>
       <span aria-hidden>{count}</span>
     </MetaPill>

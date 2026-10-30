@@ -42,7 +42,7 @@ import {
   type ItemTypeDef,
 } from '@liveplanner/items';
 import { Button, CloseIcon, PlusIcon, lucideGlyph } from '@liveplanner/ui';
-import { lucidePaperclip } from '@liveworkspace/icons/lucide';
+import { lucideImage } from '@liveworkspace/icons/lucide';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
@@ -60,7 +60,7 @@ import { fieldCountKey } from '@liveplanner/project';
 import { createThreadStore, type ThreadStore } from '@/hooks/plan/thread-store';
 import { ThreadCountsProvider } from './threads/CardThreadsContext';
 
-const ClipGlyph = lucideGlyph(lucidePaperclip, 14);
+const PicturesGlyph = lucideGlyph(lucideImage, 14);
 
 export type CardDisplayDraft = CardDisplay;
 
@@ -204,11 +204,11 @@ const fieldIcon = (type: ItemTypeDef, f: CardField, size = 14) => {
         <span className="flex [&_svg]:h-full [&_svg]:w-full">{CUSTOM_KIND_ICONS[custom.kind]}</span>
       </span>
     );
-  // Attachments draws its paperclip, as on the card.
+  // Attachments draws its picture glyph, as on the card.
   if (f === 'attachments')
     return (
       <span className="flex [&_svg]:h-full [&_svg]:w-full" style={{ width: size, height: size }}>
-        <ClipGlyph />
+        <PicturesGlyph />
       </span>
     );
   return f === 'key' ? (
