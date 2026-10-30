@@ -29,6 +29,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
+import { flashcardStage } from '@/lib/flashcard-stack';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { canvasGestureNow } from '@/lib/canvas-gesture';
@@ -202,6 +203,10 @@ function CanvasView(props: CanvasProps) {
   // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
   // selection derivation applies, so the canvas itself still doesn't read the selection.
   const articlePages = props.pagesMode?.pages;
+  // A stack of flashcards draws its card in front alone (docs/specs/007-editor/flashcards.md
+  // "The stack"); the chrome, the snap and the Contents keep the whole row.
+  const pagesMode = props.pagesMode;
+  const staged = useMemo(() => (pagesMode ? flashcardStage(pagesMode) : undefined), [pagesMode]);
   const plusBlocked = useMemo(
     () => articlePlusBlocked(articlePages, elements),
     [articlePages, elements],
@@ -446,14 +451,14 @@ function CanvasView(props: CanvasProps) {
             }}
           >
             {/* Pages mode's A4 pages, under every element (CanvasPages). */}
-            {props.pagesMode ? (
+            {staged ? (
               // The image store's access, for the pages' pictures (page-image-access).
               <PageImageAccessProvider access={props.imageContext}>
                 <CanvasPages
                   // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
                   // tab's own: page ids repeat across tabs.
                   key={props.activeTabId}
-                  view={props.pagesMode}
+                  view={staged}
                   zoom={viewportZoom}
                   // Zen and presenting show the sheets alone: no labels, cogs, layout invites or add
                   // button.
@@ -465,9 +470,9 @@ function CanvasView(props: CanvasProps) {
             ) : null}
             {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
             zone's elements sit in the room the writing leaves them. */}
-            {props.pagesMode?.articles ? (
+            {staged?.articles ? (
               <ArticleFlows
-                view={props.pagesMode}
+                view={staged}
                 zoom={viewportZoom}
                 interactive={!pendingDraw && canvasTool !== 'spotlight'}
                 elements={elements}

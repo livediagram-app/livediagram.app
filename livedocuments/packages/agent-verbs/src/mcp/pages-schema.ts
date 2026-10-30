@@ -30,7 +30,7 @@ const size = z
   .enum(PAGE_SIZE_IDS as [PageSizeId, ...PageSizeId[]])
   .describe(
     'Page size: a4, letter, a3, square, social (4:5), wide (9:16, or 16:9 turned) for infographic and article ' +
-      'pages; slide (16:9) or slide-classic (4:3) for slides. fit is never chosen.',
+      'pages; slide (16:9) or slide-classic (4:3) for slides; card for flashcards. fit is never chosen.',
   );
 const orientation = z
   .enum(['portrait', 'landscape'])
@@ -76,9 +76,9 @@ const pageChange = z
       .object({
         op: z.literal('add').describe('Add a page.'),
         kind: z
-          .enum(['infographic', 'slide'])
+          .enum(['infographic', 'slide', 'flashcard'])
           .describe(
-            "What the page is for: the tab's own kind (its first page's), as every page of a tab is one kind. Article pages are made by write_article.",
+            "What the page is for: the tab's own kind (its first page's), as every page of a tab is one kind. Article pages are made by write_article. A flashcard is a card of text, added empty and written with write_article (name the card as the article).",
           ),
         size: size.optional(),
         orientation: orientation.optional(),
@@ -151,7 +151,7 @@ const pageOut = z
     place: z.number().describe('Its place in the row, 1 first.'),
     id: z.string().describe('The page id.'),
     name: z.string().nullable().describe('Its name, or null.'),
-    kind: z.string().describe('infographic, article or slide.'),
+    kind: z.string().describe('infographic, article, slide or flashcard.'),
     size: z.string().describe('Its size id.'),
     orientation: z.string().nullable().describe('portrait, landscape, or null for none.'),
     rect: canvasRect.describe(
@@ -210,9 +210,12 @@ export const writeArticleShape = {
     .string()
     .optional()
     .describe(
-      'Which article, by id or title. Absent: the tab’s only one, or a new one if it has none.',
+      'Which article, by id or title; on a tab of flashcards, which card. Absent: the tab’s only one, or a new one if it has none.',
     ),
-  new: z.boolean().optional().describe('Always start a new article.'),
+  new: z
+    .boolean()
+    .optional()
+    .describe('Always start a new article (on a tab of flashcards, a new card after the last).'),
   mode: z
     .enum(['replace', 'append'])
     .optional()

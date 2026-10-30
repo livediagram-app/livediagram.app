@@ -224,7 +224,8 @@ popover hanging under it, and closed again. It starts closed on every page and i
 reopened from a remembered state; pressing the button is the only thing that opens it. A press
 outside, Esc, the button again or opening an item closes it. The status screens (deleted,
 couldn't load, not found) have no menu button and no Explorer. The popover hangs from the
-button's left edge (`computeDockAnchor(..., 'button')`).
+button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover card: it
+got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
 Collaborate and Contents open as **popovers over their bottom-row
 buttons** ([Live app](live-app.md)): they are not corner panels. Every

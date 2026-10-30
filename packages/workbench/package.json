@@ -54,6 +54,7 @@
     "./components/chrome/FloatingTitle": "./src/components/chrome/FloatingTitle.tsx",
     "./components/chrome/NotFound": "./src/components/chrome/NotFound.tsx",
     "./components/chrome/PaletteTray": "./src/components/chrome/PaletteTray.tsx",
+    "./components/chrome/TabNameInBox": "./src/components/chrome/TabNameInBox.tsx",
     "./components/chrome/TrashedCard": "./src/components/chrome/TrashedCard.tsx",
     "./components/chrome/auth-lines": "./src/components/chrome/auth-lines.ts",
     "./components/chrome/chrome-button": "./src/components/chrome/chrome-button.tsx",

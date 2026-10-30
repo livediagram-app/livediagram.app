@@ -1145,6 +1145,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 18.5h13" />
     </Glyph>
   ),
+  // A stack of cards: the one in front with a title and a line, two behind it.
+  flashcards: (
+    <Glyph>
+      <path d="M6 18.5v1.5h12v-1.5" />
+      <path d="M4.5 16.5v1.5h15v-1.5" />
+      <rect x="3" y="4" width="18" height="12" rx="1.5" />
+      <path d="M6 8h7M6 11.5h10" />
+    </Glyph>
+  ),
   'slide-pages': (
     <Glyph>
       <rect x="2.5" y="5" width="19" height="13" rx="1.5" />

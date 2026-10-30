@@ -41,6 +41,21 @@ describe('the tracks', () => {
     expect(ids(pageTourSteps('article'))).toEqual(['write', 'toolbar', 'style', 'text', 'outro']);
   });
 
+  // docs/specs/007-editor/flashcards.md: a card, its toolbar, another card, its style.
+  it('Flashcards: the card, its toolbar, another card, its style', () => {
+    const steps = pageTourSteps('flashcard');
+    expect(ids(steps)).toEqual(['write', 'toolbar', 'add-card', 'style', 'outro']);
+    const toolbar = steps.find((s) => s.id === 'toolbar')!;
+    expect(toolbar.requires?.(api)).toContain('"p1"');
+    void toolbar.prepare?.(api);
+    expect(readPinnedPageToolbar()).toBe('p1');
+    toolbar.cleanup?.(api);
+    expect(readPinnedPageToolbar()).toBeNull();
+    expect(steps.find((s) => s.id === 'add-card')!.selector?.(api)).toBe(
+      '[data-tour-id="add-page"]',
+    );
+  });
+
   it('holds the article toolbar up on the tour page through its step', () => {
     const toolbar = pageTourSteps('article').find((s) => s.id === 'toolbar')!;
     expect(toolbar.selector?.(api)).toBe('[role="toolbar"][aria-label="Article Formatting"]');
@@ -51,7 +66,7 @@ describe('the tracks', () => {
   });
 
   it('holds every control to the tour page, never the first page', () => {
-    for (const kind of ['slide', 'infographic', 'article'] as const) {
+    for (const kind of ['slide', 'infographic', 'article', 'flashcard'] as const) {
       for (const step of pageTourSteps(kind)) {
         const selectors = [step.requires?.(api), step.selector?.(api)].filter(Boolean) as string[];
         for (const sel of selectors) {

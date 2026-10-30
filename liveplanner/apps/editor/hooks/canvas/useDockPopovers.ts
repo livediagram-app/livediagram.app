@@ -23,8 +23,6 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-cards': 704,
   // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
   'card-types': 544,
-  // NewCardPanel's `w-72`.
-  'plan-new-card': 288,
   // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
   'session-timer': 288,
   'session-vote': 288,
@@ -42,7 +40,6 @@ export type DockPanel =
   | 'card-types'
   | 'plan-trash'
   | 'plan-cards'
-  | 'plan-new-card'
   // The Session strip's Timer and Vote (docs/specs/012-collaboration/session-tools.md "The Session strip").
   | 'session-timer'
   | 'session-vote'

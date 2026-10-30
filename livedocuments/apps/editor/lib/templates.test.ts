@@ -54,6 +54,10 @@ describe('TEMPLATES catalogue', () => {
     'quarterly-review',
     'team-welcome',
     'workshop-kickoff',
+    'blank-flashcards',
+    'talk-flashcards',
+    'wedding-toast',
+    'pitch-flashcards',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
@@ -61,15 +65,15 @@ describe('TEMPLATES catalogue', () => {
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 23 templates (1 default + 22 extra)', () => {
-    expect(listed).toHaveLength(23);
+  it('lists exactly 27 templates (1 default + 26 extra)', () => {
+    expect(listed).toHaveLength(27);
   });
 
-  it('splits cleanly into 1 default + 22 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 26 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(22);
+    expect(extras).toHaveLength(26);
   });
 
   it('ships no hidden templates', () => {
@@ -105,7 +109,12 @@ describe('TEMPLATES catalogue', () => {
       // Illustration are one empty page that asks what it is for, a blank of a page kind one empty page of its kind.
       // An article's writing is tab data, not elements (templateCanvasOverrides). Every other kind seeds content.
       // Either way the switch must handle the union member.
-      const empty = isBlankTemplate(kind) || kind === 'article' || kind === 'working-backwards';
+      // A stack of flashcards is writing too (docs/specs/007-editor/flashcards.md).
+      const empty =
+        isBlankTemplate(kind) ||
+        kind === 'article' ||
+        kind === 'working-backwards' ||
+        ['talk-flashcards', 'wedding-toast', 'pitch-flashcards'].includes(kind);
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });

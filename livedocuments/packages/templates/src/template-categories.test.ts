@@ -44,7 +44,7 @@ describe('template categories', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
       design: 2,
-      presentations: 16,
+      presentations: 19,
     });
   });
 

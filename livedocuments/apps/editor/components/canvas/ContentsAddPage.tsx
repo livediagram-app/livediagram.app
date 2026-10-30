@@ -23,10 +23,13 @@ export function ContentsAddPage({ contents }: { contents: PageContents }) {
   if (!canAdd) return null;
   const another = lastPage ? addAnotherLabel(lastPage) : 'Add Page';
   const limit = `A tab holds up to ${MAX_PAGES} pages`;
+  // A stack says what it adds outright (docs/specs/007-editor/flashcards.md "Contents").
+  const card = lastPage?.kind === 'flashcard';
   return (
     <div className="flex items-center gap-2 border-t border-slate-100 p-3 dark:border-slate-800">
       <Tooltip label={full ? limit : another}>
-        {/* Reads Add Page, with the add icon; what it adds (another page like the last) is its tooltip. */}
+        {/* Reads Add Page (on a stack, Add Another Card), with the add icon; what it adds (another page
+            like the last) is its tooltip. */}
         <button
           type="button"
           disabled={full || !(addLike ?? add)}
@@ -35,7 +38,7 @@ export function ContentsAddPage({ contents }: { contents: PageContents }) {
           className={`${BUTTON} ${IDLE} min-w-0 flex-1 px-3 py-2`}
         >
           <AddIcon />
-          <span className="truncate">Add Page</span>
+          <span className="truncate">{card ? 'Add Another Card' : 'Add Page'}</span>
         </button>
       </Tooltip>
     </div>

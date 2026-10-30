@@ -41,10 +41,11 @@ describe('the Pages template start', () => {
 });
 
 describe('Start Making Pages', () => {
-  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Design', () => {
+  it('groups by what is made: Slides, Flashcards, Infographics, Articles, Posters and Social, Design', () => {
     expect(TEMPLATE_START.groups.map((g) => g.name)).toEqual([
       'Recommended',
       'Slides',
+      'Flashcards',
       'Infographics',
       'Articles',
       'Posters and Social',
@@ -64,6 +65,7 @@ describe('Start Making Pages', () => {
       slides: 'blank-slide-deck',
       infographics: 'blank-infographic',
       articles: 'blank-article',
+      flashcards: 'blank-flashcards',
     });
     // Recommended leads with Blank Infographic and Blank Article, then Blank Slide Deck in the Slide Deck's place;
     // Blank Illustration and the Project Brief template are left out of it.

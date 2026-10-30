@@ -1,9 +1,10 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { HoverCard, Glyph } from '@livedesign/ui';
+import { Glyph } from '@livedesign/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { TabNameInBox } from '@/components/chrome/tab-name-in-box';
+import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
+import { NAME_MAX_LENGTH } from '@livedesign/design';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -50,13 +51,10 @@ export function ToolbarExplorerButton({
   );
   return (
     <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
-      {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
-          button keeps its focus as the panel opens. */}
-      <HoverCard title="Explorer" description="Your designs, folders and teams." disabled={open}>
-        {button}
-      </HoverCard>
+      {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
+      {button}
       {/* The open tab's name (not on a phone). */}
-      {phone || inline ? null : <TabNameInBox />}
+      {phone || inline ? null : <TabNameInBox maxLength={NAME_MAX_LENGTH} />}
     </ToolbarMenuCard>
   );
 }

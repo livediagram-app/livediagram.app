@@ -92,6 +92,7 @@ export const HELP_ARTICLES = {
   slidePages: 'pages/slide-pages',
   infographicLayouts: 'pages/infographic-layouts',
   articlePages: 'pages/articles',
+  flashcards: 'pages/flashcards',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -323,6 +324,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   articlePages: {
     title: 'Learn about articles',
     description: 'Writing, the page toolbar, article style and how pages flow.',
+  },
+  flashcards: {
+    title: 'Learn about flashcards',
+    description: 'Writing cards to speak from, the stack, flipping and splitting a long card.',
   },
   livePresence: {
     title: 'Learn about live presence',

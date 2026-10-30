@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CHANGESET_MAX_OPERATIONS } from '@livedocuments/api-schema';
-import { MAX_ELEMENTS_PER_TAB, applyElementOps, type Element, type Tab } from '@livedocuments/document';
+import {
+  MAX_ELEMENTS_PER_TAB,
+  applyElementOps,
+  layOutPages,
+  newFlashcardPage,
+  pagesOf,
+  type Element,
+  type Tab,
+} from '@livedocuments/document';
 import { applyEditOperations } from './apply';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { parseEditOperations } from './parse';
@@ -55,6 +63,31 @@ describe('applyEditOperations', () => {
       ['[edit-ops] locked', { operation: 0, op: 'none', scope: 'tab' }],
       ['[edit-ops] rejected', { code: 'element_locked', operation: 0, op: 'none' }],
     ]);
+  });
+
+  // docs/specs/007-editor/flashcards.md "Text only".
+  describe('flashcards', () => {
+    const stack = (): Tab => ({ ...checkoutFlow(), pages: [newFlashcardPage('c1', 'f1')] });
+    const card = () => layOutPages(pagesOf(stack()))[0]!.rect;
+
+    it('refuses an element added onto a card as text_only', () => {
+      const r = card();
+      const onCard = { x: r.x + 100, y: r.y + 100, width: 140, height: 60 };
+      const rejection = refused(
+        run([add({ id: 'pic', type: 'shape', shape: 'square', ...onCard })], stack()),
+      );
+      expect(rejection).toEqual({
+        code: 'text_only',
+        details: ['a flashcard holds text only: an element cannot be added or moved onto a card'],
+        hint: 'write on the card with write_article, or place it off the cards',
+      });
+    });
+
+    it('applies an element added off the cards', () => {
+      const r = card();
+      const off = { x: r.x + r.width + 400, y: r.y, width: 140, height: 60 };
+      applied(run([add({ id: 'aside', type: 'shape', shape: 'square', ...off })], stack()));
+    });
   });
 
   describe('invariants', () => {

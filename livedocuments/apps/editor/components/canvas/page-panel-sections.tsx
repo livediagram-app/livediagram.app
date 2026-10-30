@@ -38,6 +38,7 @@ const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   slide: { label: 'Slide', hint: 'Slide (16:9), always landscape' },
   'slide-classic': { label: 'Classic', hint: 'Classic slide (4:3), always landscape' },
   fit: { label: 'Fit', hint: 'Sized around its content' },
+  card: { label: 'Card', hint: 'Flashcard (5:3), always landscape' },
 };
 
 // A size drawn to scale in a 28 px box, in the page's current orientation (Fit to Content in

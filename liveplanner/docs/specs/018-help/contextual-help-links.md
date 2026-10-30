@@ -130,7 +130,7 @@ both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
 Wired: the Explorer (`explorerPanel`), Collaborate (`comments`), Vote (`sessionVoting`), the session popover, the
-minimap (`minimap`), and the Plan panels: Card Finder, New Card and Trash (`planCards`) and Card Types
+minimap (`minimap`), and the Plan panels: Card Finder and Trash (`planCards`) and Card Types
 (`planCardTypes`). So a panel you are looking at can tell you there is a page about it.
 
 `help-articles.test.ts` already refuses a key that resolves to no page, or one

@@ -28,6 +28,7 @@ const KIND_NOUN = {
   slide: 'slide',
   infographic: 'page',
   article: 'page',
+  flashcard: 'card',
 } as const;
 
 export function EmptyPageLayouts({
