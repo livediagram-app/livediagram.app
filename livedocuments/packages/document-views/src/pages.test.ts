@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { PagesView } from '@livedocuments/api-schema';
-import { layOutPages, type Element, type Page, type Tab } from '@livedocuments/document';
+import {
+  layOutPages,
+  newFlashcardPage,
+  type Element,
+  type Page,
+  type Tab,
+} from '@livedocuments/document';
 import { shapeAt } from './__fixtures__/build';
 import { itemLines } from './pages';
 import { renderView } from './render-view';
@@ -126,6 +132,28 @@ describe('the pages view', () => {
     } as unknown as Tab;
     const out = pagesOf(articleOnly);
     expect(out.text).toContain('article f "Untitled" · page 1 · 1 blocks · 1 words\n  Hi');
+    expect(out.text).not.toContain('layouts ');
+  });
+
+  // docs/specs/007-editor/flashcards.md "Agents".
+  it('prints a stack of flashcards, each card its own writing, with no layouts', () => {
+    const stack = {
+      id: 'tab-cards',
+      name: 'Talk',
+      pages: [newFlashcardPage('c1', 'card-1'), newFlashcardPage('c2', 'card-2')],
+      articles: {
+        'card-1': {
+          blocks: [{ id: 'b', type: 'paragraph', style: 'title', runs: [{ text: 'Opening' }] }],
+        },
+        'card-2': {
+          blocks: [{ id: 'b', type: 'paragraph', style: 'title', runs: [{ text: 'Close' }] }],
+        },
+      },
+      elements: [],
+    } as unknown as Tab;
+    const out = pagesOf(stack);
+    expect(out.text).toMatch(/^page 1 c1 · flashcard /m);
+    expect(out.text).toContain('article card-2 "Close" · page 2');
     expect(out.text).not.toContain('layouts ');
   });
 

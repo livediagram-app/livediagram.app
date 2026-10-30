@@ -7,6 +7,7 @@ import {
   MAX_ARTICLE_BLOCK_TEXT,
   MAX_ARTICLE_BLOCKS,
   MAX_PAGES,
+  newFlashcardPage,
   type ArticleFlow,
   type Element,
   type Page,
@@ -275,5 +276,74 @@ describe('the writing', () => {
 
   it('refuses a locked tab', () => {
     expect(refusal(tabOf({ locked: true }), { markdown: 'x' }).code).toBe('tab_locked');
+  });
+});
+
+// docs/specs/007-editor/flashcards.md "Agents".
+describe('a stack of flashcards', () => {
+  const stack = (count = 2): Tab =>
+    tabOf({
+      pages: Array.from({ length: count }, (_, i) => newFlashcardPage(`c${i}`, `card-${i}`)),
+      articles: Object.fromEntries(
+        Array.from({ length: count }, (_, i) => [
+          `card-${i}`,
+          {
+            blocks: [para(`t${i}`, i ? 'Close' : 'Opening', 'title')],
+            style: { margins: 'narrow' },
+          },
+        ]),
+      ),
+    });
+
+  it('writes a card named by its title, saying card', () => {
+    const out = write(stack(), { markdown: '---\ntitle: Close\n---\nThanks', article: 'close' });
+    expect(texts(articlesOf(out.tab)['card-1'])).toEqual(['Close', 'Thanks']);
+    expect(out.lines).toEqual(['Wrote the card "Close" (card-1): 2 blocks.']);
+  });
+
+  it('asks which card, and names the cards it has', () => {
+    const r = refusal(stack(), { markdown: 'x' });
+    expect(r.code).toBe('article_ambiguous');
+    expect(r.message).toBe('The tab has 2 cards; name one: "Opening" (card-0), "Close" (card-1).');
+    expect(refusal(stack(), { markdown: 'x', article: 'Middle' }).message).toBe(
+      'No card "Middle". Cards: "Opening" (card-0), "Close" (card-1).',
+    );
+  });
+
+  it('adds a new card after the last, on the card size only', () => {
+    const out = write(stack(), {
+      markdown: 'Next',
+      new: true,
+      size: 'card',
+      orientation: 'landscape',
+    });
+    expect(pagesOf(out.tab)[2]).toMatchObject({ id: 'pg-1', kind: 'flashcard', flow: 'art-1' });
+    expect(texts(articlesOf(out.tab)['art-1'])).toEqual(['Next']);
+    expect(out.lines[0]).toMatch(/^Started the card ".*" \(art-1\): 1 blocks\.$/);
+    expect(refusal(stack(), { markdown: 'x', new: true, size: 'a4' })).toEqual({
+      code: 'size_not_offered',
+      message: 'A flashcard takes the size card.',
+    });
+    expect(refusal(stack(), { markdown: 'x', new: true, orientation: 'portrait' }).message).toBe(
+      'A flashcard is landscape: it takes no orientation.',
+    );
+    expect(refusal(stack(MAX_PAGES), { markdown: 'x', new: true }).code).toBe('page_limit');
+    // Without ids given, it mints its own.
+    const minted = applyArticleWrite(stack(), { markdown: 'x', new: true });
+    expect('tab' in minted && pagesOf(minted.tab)).toHaveLength(3);
+  });
+
+  it('keeps a card to text: page breaks are left out, tables written as lists', () => {
+    const out = write(stack(), {
+      markdown: 'One\n\n\\pagebreak\n\n| a | b |\n|---|---|\n| 1 | 2 |',
+      article: 'card-0',
+      mode: 'append',
+    });
+    const blocks = articlesOf(out.tab)['card-0']!.blocks;
+    expect(blocks.some((b) => b.type === 'pageBreak')).toBe(false);
+    expect(out.lines.slice(1)).toEqual([
+      'Wrote Markdown tables as lists (1): a card holds text only.',
+      'Left out zones and page breaks (1): a card holds text only.',
+    ]);
   });
 });

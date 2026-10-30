@@ -1,6 +1,8 @@
 // An agent's article write (docs/specs/024-agents/pages-for-agents.md "write_article"): an
 // article's text from Markdown, replacing or appending, on a new article or a named one, with its
-// look. The pages its writing reaches are the editor's to count ("Pages for the writing").
+// look. The pages its writing reaches are the editor's to count ("Pages for the writing"). On a
+// stack of flashcards (docs/specs/007-editor/flashcards.md "Agents") it writes a card the same way,
+// text only.
 import type { ArticleWrite, PagesRefusal } from '@livedocuments/api-schema';
 import {
   ARTICLE_LOOK_IDS,
@@ -9,6 +11,7 @@ import {
   articlesOf,
   articleTitleOf,
   elementIdsOnPage,
+  flashcardBlocks,
   pagesOf,
   layOutPages,
   MAX_ARTICLE_BLOCK_TEXT,
@@ -61,6 +64,9 @@ export function applyArticleWrite(
   const articles = articlesOf(current);
   const flows = Object.keys(articles);
   const titles = () => flows.map((f) => `"${articleTitleOf(articles[f]!)}" (${f})`).join(', ');
+  // A stack of flashcards: each card its own writing, named as a card.
+  const stack = tabPageKind(pagesOf(current)) === 'flashcard';
+  const noun = stack ? 'card' : 'article';
 
   // Which article.
   let flow: string | undefined;
@@ -73,21 +79,34 @@ export function applyArticleWrite(
       return refuse(
         'article_unknown',
         flows.length
-          ? `No article "${write.article}". Articles: ${titles()}.`
+          ? `No ${noun} "${write.article}". ${stack ? 'Cards' : 'Articles'}: ${titles()}.`
           : `No article "${write.article}": the tab has none. Leave "article" out to start one.`,
       );
   } else if (!write.new) {
     if (flows.length > 1)
       return refuse(
         'article_ambiguous',
-        `The tab has ${flows.length} articles; name one: ${titles()}.`,
+        `The tab has ${flows.length} ${noun}s; name one: ${titles()}.`,
       );
     flow = flows[0];
   }
 
-  // A new article: on the fresh tab's empty, unchosen first page, else after the last page.
+  // A new article: on the fresh tab's empty, unchosen first page, else after the last page. A new
+  // card goes after a stack's last card.
   const created = flow === undefined;
-  if (created) {
+  if (created && stack) {
+    if (write.size && write.size !== 'card')
+      return refuse('size_not_offered', 'A flashcard takes the size card.');
+    if (write.orientation === 'portrait')
+      return refuse('size_not_offered', 'A flashcard is landscape: it takes no orientation.');
+    const newFlow = ids.flow?.() ?? nextArticleFlowId(new Set(flows));
+    const pageId = ids.page?.() ?? nextPageId(pagesOf(current));
+    const added = pageAdded(current, 'flashcard', pageId, newFlow);
+    if ('refused' in added)
+      return refuse('page_limit', 'A tab holds at most 100 pages: delete one first.');
+    current = added.tab;
+    flow = newFlow;
+  } else if (created) {
     const pages = pagesOf(current);
     const laid = layOutPages(pages);
     const first = pages[0]!;
@@ -159,6 +178,10 @@ export function applyArticleWrite(
       (b): b is ArticleZoneBlock => b.type === 'zone' && read.droppedZones.includes(b.id),
     );
   }
+  // A card holds text only: zones and page breaks are left out.
+  const kept = stack ? flashcardBlocks(blocks) : blocks;
+  const leftOut = blocks.length - kept.length;
+  blocks = kept;
   // An article always has a block to write in.
   if (blocks.length === 0) blocks = [{ id: nextArticleBlockId(), type: 'paragraph', runs: [] }];
   if (blocks.length > MAX_ARTICLE_BLOCKS)
@@ -185,12 +208,15 @@ export function applyArticleWrite(
 
   const title = articleTitleOf(next);
   lines.push(
-    `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the article "${title}" (${flow}): ${append ? `${read.blocks.length - read.keptZones.length} blocks added, ` : ''}${blocks.length} blocks.`,
+    `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the ${noun} "${title}" (${flow}): ${append ? `${read.blocks.length - read.keptZones.length - leftOut} blocks added, ` : ''}${blocks.length} blocks.`,
   );
   if (read.tables)
     lines.push(
-      `Wrote Markdown tables as lists (${read.tables}): an article's text holds no tables (put a table element on a page with update_document).`,
+      stack
+        ? `Wrote Markdown tables as lists (${read.tables}): a card holds text only.`
+        : `Wrote Markdown tables as lists (${read.tables}): an article's text holds no tables (put a table element on a page with update_document).`,
     );
+  if (leftOut) lines.push(`Left out zones and page breaks (${leftOut}): a card holds text only.`);
   if (gone.length)
     lines.push(`Removed zones and what was in them: ${gone.map((z) => z.id).join(', ')}.`);
   if (markersGone) lines.push(`Removed margin notes whose text is gone (${markersGone}).`);
