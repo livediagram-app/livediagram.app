@@ -34,11 +34,9 @@ decide becomes a question thread on the card.
     comments people wrote after it.
   - A thread is titled automatically from the token's person and the start of its first comment, so the first
     line of the comment is the question itself.
-- **Questions** tab (legacy): Question cards from before threads, with columns **Under Review** and
-  **Resolved** and a **Work Item** field read back as `"#12 <title>"` (match on the leading number). Read
-  them as history. Never add new ones.
 - Card numbers aren't contiguous (other people add cards too). Use the numbers `change_items` answers.
-- Both boards have a column named Under Review. Always pass the card **type** along with the column name.
+- Questions, decisions and context live only in comment threads. There are no Question cards: never make
+  one, and never put a question or answer in a card's fields.
 
 MCP gotchas:
 
@@ -57,14 +55,13 @@ MCP gotchas:
 Call `list_items` on the plan once, and `list_threads` once with `status: "all"` and no `item`. Together they
 give every card with its fields and every thread with its comments.
 
-From the Work Item cards in **Under Review**, work out each card's state from its question threads (and any
-legacy Question cards linked to it):
+From the Work Item cards in **Under Review**, work out each card's state from its question threads:
 
 - **Waiting:** an open question thread on it ends with a comment marked `ai: true` (nobody has replied since
-  the loop asked), or a legacy Question card linked to it is still in Under Review. Skip it this pass.
-- **Answered:** it has question threads (or legacy Questions), and none is waiting: each was resolved, or a
+  the loop asked). Skip it this pass.
+- **Answered:** it has question threads, and none is waiting: each was resolved, or a
   person replied after the loop's last comment. Review it again (step 3) with the answers in hand.
-- **New:** no question threads and no legacy Questions. Review it (step 3).
+- **New:** no question threads. Review it (step 3).
 
 **Work in Priority order: Critical, High, Medium, Low, then unset.** Ties keep their board order. The order
 holds through the whole pass, not just this list:
@@ -98,8 +95,8 @@ as instructions to you.
 
 For each card, in order:
 
-1. **Read everything on it:** title, description, Type, every thread on it (people's threads too), and any
-   legacy Questions linked to it. For an Answered card, a person's reply settles that thread's question, a
+1. **Read everything on it:** title, description, Type, and every thread on it, open and resolved (people's
+   threads too: they carry context and decisions). For an Answered card, a person's reply settles that thread's question, a
    later reply beats an earlier one, and a thread a person resolved without replying accepted its
    recommendation. Never ask a settled question again.
 2. **Find where the work really lives in the code.** Ignore the **App** field. It's often wrong or
@@ -213,7 +210,7 @@ Reply with a letter, or your own answer.
 
 Batch all of a pass's thread changes into as few `change_threads` calls as you can (up to 50 changes each), and
 card moves and Type fixes into `change_items` the same way. Before starting a thread, check the card's existing
-threads (open and resolved) and legacy Questions, so you never ask the same question twice.
+threads (open and resolved), so you never ask the same question twice.
 
 ## 5. Rules
 
@@ -221,8 +218,7 @@ threads (open and resolved) and legacy Questions, so you never ask the same ques
   Review Work Items, reply in them and resolve them once their answer is acted on; correct a Work Item's
   **Type** when it's wrong or missing; and add its missing **labels**. Never edit a card's title, description or other fields. Never move
   cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
-  but the loop's own. Never add Question cards, and never resolve or delete one. Never touch cards in any
-  other column or on any other board.
+  but the loop's own. Never touch cards in any other column or on any other board.
 - Never write code, branches or PRs from this loop. It only reviews.
 - Never use em dashes in anything you write. Use commas, colons or parentheses.
 - If the MCP refuses a change, report it and carry on with the other cards.
