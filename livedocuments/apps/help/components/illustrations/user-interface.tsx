@@ -404,45 +404,6 @@ export function ZoomControls() {
   );
 }
 
-/** One selected shape with its toolbar above: the "Selected Square" caption,
- *  then More, Add text, Duplicate, Bring to front, Send to back, Lock and
- *  Delete (an editor's toolbar; Add Comment is in the More menu). */
-export function ContextualToolbar() {
-  const tx = 92;
-  const ty = 40;
-  const buttons: ReactNode[] = [
-    <DotsGlyph key="more" x={0} y={0} />,
-    <path key="text" d="M-5 -5 h10 M0 -5 v10" {...GLYPH} />,
-    <g key="dup">
-      <rect x={-5} y={-5} width={8} height={8} rx={1.5} {...GLYPH} />
-      <rect x={-2} y={-2} width={8} height={8} rx={1.5} {...GLYPH} />
-    </g>,
-    <path key="front" d="M0 5 V-5 M-4 -1 L0 -5 L4 -1" {...GLYPH} />,
-    <path key="back" d="M0 -5 V5 M-4 1 L0 5 L4 1" {...GLYPH} />,
-    <g key="lock">
-      <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
-      <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
-    </g>,
-    <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
-  ];
-  return (
-    <Scene w={420} h={210}>
-      <Label x={tx + 2} y={ty - 10} size={10} weight={600} tone="muted">
-        Selected Square
-      </Label>
-      <Panel x={tx} y={ty} w={8 + buttons.length * 30} h={34}>
-        {buttons.map((g, i) => (
-          <IconButton key={i} x={tx + 6 + i * 30} y={ty + 5}>
-            {g}
-          </IconButton>
-        ))}
-      </Panel>
-      <Shape x={150} y={108} w={120} h={60} label="Checkout" />
-      <SelectionBox x={150} y={108} w={120} h={60} />
-    </Scene>
-  );
-}
-
 /** A mixed marquee selection (two shapes and an arrow) with the multi-select
  *  toolbar: More, Filter Selection, Duplicate, Export, Lock and Delete. */
 export function MultiSelectToolbar() {

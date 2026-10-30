@@ -32,7 +32,6 @@ Scope, by file:
 | `apps/editor/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                                        |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                                      |
 | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                    | Canvas shortcuts stand down inside a menu surface                                                                           |
-| `apps/editor/components/canvas/SelectionPopover.tsx`                        | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                                           |
 | `apps/editor/lib/element-names.ts`                                          | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                                  |
 | `packages/ui/src/SiteSwitcher.tsx`                                          | Site switcher command menu (the logo's, [site switcher](../../../../../liveworkspace/docs/specs/010-site/site-switcher.md)) |
 | `../liveworkspace/apps/site/app/telemetry/_shared/StickyWindowBar.tsx`      | View picker command menu                                                                                                    |
