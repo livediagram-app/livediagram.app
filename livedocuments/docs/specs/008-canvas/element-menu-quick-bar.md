@@ -5,6 +5,10 @@ buttons above its first category. What gets reached for on any element sits ther
 inside a category that has to be opened first. livedocuments has no selection toolbar
 ([Selection popover](canvas-and-palette.md#selection-popover)), so the menu is the one place for what it held.
 
+A long-press on a selected element's resize handles opens the menu too: on a phone a small element is mostly
+handles, and the browser moves a finger near one onto it, so a press held still there is still a press on the
+element. A press that moves resizes, as before.
+
 ## What it holds
 
 The first row, **Element actions** (`aria-label`), holds what the selection toolbar used to:
@@ -83,6 +87,7 @@ Every editor (livediagram, liveplanner, livedocuments, livedesign) opens the sam
   decides the rows from the role, and `ReadOnlyElementMenu`
   (`../packages/workbench/src/components/palette/ReadOnlyElementMenu.tsx`) draws them; each editor's
   `ReadOnlyElementMenuHost` fills them from its own handlers, and `EditorCanvasHost` opens it on a right-click or a
-  long-press for every role.
+  long-press for every role. `SelectionChromeLayer` (`apps/editor/components/canvas/element-parts.tsx`) hands each
+  handle's press to the element's long-press (`onHandlePress`); tested in `SelectionGripsLayer.test.tsx`.
 - Tests: `ElementMenuQuickBar.test.tsx`, `EditorContextMenu.plan-attachments.test.tsx`,
   `read-only-element-menu.test.ts`, `ReadOnlyElementMenu.test.tsx`, `ReadOnlyElementMenuHost.test.tsx`.
