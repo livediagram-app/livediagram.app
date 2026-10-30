@@ -53,7 +53,7 @@ async function openStill(page: Page, path: string) {
   await seedTab(page, BOARD);
   await page.keyboard.press('v');
   await page.locator('[data-element-id="sq-9"]').first().click();
-  await expect(page.locator('[data-testid="selection-popover"]')).toBeVisible();
+  await expect(page.locator('[data-quick-plus]').first()).toBeVisible();
   // Let the selection settle: toolbars placed, transitions done.
   await page.waitForTimeout(1500);
 }
