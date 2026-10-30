@@ -227,11 +227,9 @@ export function PlanBoardCard({
           <span
             aria-hidden
             data-card-file-drop=""
-            className={`pointer-events-none absolute inset-0 flex items-end justify-center rounded-xl ring-2 ring-brand-500 ${
-              fileDrop.over ? 'bg-brand-500/10' : ''
-            }`}
+            className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-white/80 ring-2 ring-brand-500 dark:bg-slate-900/80"
           >
-            <span className="mb-2 rounded-md bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm dark:bg-brand-600">
+            <span className="rounded-md bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm dark:bg-brand-600">
               {fileDrop.uploading ? 'Uploading…' : 'Drop to Attach'}
             </span>
           </span>

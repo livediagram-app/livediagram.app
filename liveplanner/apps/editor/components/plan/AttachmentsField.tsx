@@ -282,8 +282,8 @@ function AttachmentRow({
             <span className="truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">
               {a.name}
             </span>
-            <span className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-              {size}
+            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="whitespace-nowrap">{size}</span>
               {a.cover ? (
                 <span className="rounded bg-brand-50 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
                   Cover
