@@ -229,7 +229,7 @@ export function pageAdded<T extends PagesTab>(
   const carried = pages[pages.length - 1]?.background;
   if (kind === 'flashcard') {
     const out = withFlashcardAdded(tab, { id, ...(carried ? { background: carried } : {}) }, flow);
-    return out ? { tab: out as T } : refused('page_limit');
+    return out ? { tab: out } : refused('page_limit');
   }
   if (kind === 'article') {
     const last = pages[pages.length - 1];

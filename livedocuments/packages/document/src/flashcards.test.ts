@@ -132,7 +132,7 @@ describe('making cards', () => {
     const tab = tabOf([{ ...card('a'), background }], { 'f-a': newFlashcardFlow() });
     const out = pageAdded(tab, 'flashcard', 'b', 'f-b');
     if (!('tab' in out)) throw new Error('refused');
-    expect(out.tab.pages!.map((x) => x.id)).toEqual(['a', 'b']);
+    expect(out.tab.pages.map((x) => x.id)).toEqual(['a', 'b']);
     expect(pagesOf(out.tab)[1]).toMatchObject({ kind: 'flashcard', flow: 'f-b', background });
     expect(articlesOf(out.tab)['f-b']).toBeDefined();
   });
