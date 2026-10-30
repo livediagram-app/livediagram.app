@@ -1,0 +1,76 @@
+== livediagram (localhost:3601)
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: text/plain; charset=utf-8
+Date: Fri, 30 Oct 2026 18:52:46 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+Contact: https://github.com/livediagram-app/livediagram.app/security/advisories/new
+Expires: 2027-10-30T18:52:46Z
+Policy: https://www.livediagram.app/help/policies/report-a-vulnerability/
+Preferred-Languages: en
+Canonical: https://www.livediagram.app/.well-known/security.txt
+
+== liveplanner (localhost:3602)
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: text/plain; charset=utf-8
+Date: Fri, 30 Oct 2026 18:52:52 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+Contact: https://github.com/livediagram-app/livediagram.app/security/advisories/new
+Expires: 2027-10-30T18:52:52Z
+Policy: https://www.liveplanner.app/help/policies/report-a-vulnerability/
+Preferred-Languages: en
+Canonical: https://www.liveplanner.app/.well-known/security.txt
+
+== livedocuments (localhost:3603)
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: text/plain; charset=utf-8
+Date: Fri, 30 Oct 2026 18:52:57 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+Contact: https://github.com/livediagram-app/livediagram.app/security/advisories/new
+Expires: 2027-10-30T18:52:57Z
+Policy: https://www.livedocuments.app/help/policies/report-a-vulnerability/
+Preferred-Languages: en
+Canonical: https://www.livedocuments.app/.well-known/security.txt
+
+== livedesign (localhost:3604)
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: text/plain; charset=utf-8
+Date: Fri, 30 Oct 2026 18:53:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+Contact: https://github.com/livediagram-app/livediagram.app/security/advisories/new
+Expires: 2027-10-30T18:53:02Z
+Policy: https://www.livedesign.app/help/policies/report-a-vulnerability/
+Preferred-Languages: en
+Canonical: https://www.livedesign.app/.well-known/security.txt
+
+== liveworkspace (localhost:3600)
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: text/plain; charset=utf-8
+Date: Fri, 30 Oct 2026 18:53:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+Contact: https://github.com/livediagram-app/livediagram.app/security/advisories/new
+Expires: 2027-10-30T18:53:04Z
+Policy: https://github.com/livediagram-app/livediagram.app/security/policy
+Preferred-Languages: en
+Canonical: https://www.liveworkspace.app/.well-known/security.txt
+
+done
