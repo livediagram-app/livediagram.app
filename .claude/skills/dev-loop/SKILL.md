@@ -1,6 +1,6 @@
 ---
 name: dev-loop
-description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (three agents at a time, small cards batched on a lighter model) and opens one PR per item, moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a comment thread on the card saying why). Run with `/loop 1h /dev-loop`.
+description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (up to six agents at a time, related cards grouped into one agent and one PR, small cards on a lighter model), moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a comment thread on the card saying why). Run with `/loop 1h /dev-loop`.
 ---
 
 # Dev loop: one pass
@@ -115,15 +115,23 @@ Then, in one `change_items` batch and one `change_threads` batch:
   above). Skip it when an open thread already covers it.
 - **Ready:** don't move it yet (step 3 moves each one when its agent starts).
 
-## 3. Build: agents by size, three at a time
+## 3. Build: grouped by area, up to six at a time
 
-Work through the ready cards in Priority order, with **at most three agents running at once**. When one finishes,
-start the next. Two cards whose file lists overlap never run at the same time: hold the later one until the
-earlier one's agent has finished.
+**Group first.** Cluster the ready cards by the files they would touch (step 2's file lists): cards in the same
+area (the editor chrome in every app, one board view, the Explorer, the card modal) go to **one agent**, so no two
+agents ever edit the same files. Inside a group, **closely related cards share one branch and one PR**
+(`work/<n1>-<n2>-<short-slug>`, naming every card: "Work Tracker #98, #110"): the same feature, the same component
+or the same small fix in the same place. Cards in a group that aren't closely related keep their own branch and
+PR. Fewer PRs mean fewer CI runs and fewer reviews; never fold in a card that would make the PR hard to read or
+riskier than its own.
 
-- **Standard cards:** one agent per card, on the default model.
-- **Small cards:** one agent with `model: "sonnet"` takes up to four of them, one after another, each still on its
-  own branch with its own PR. Its brief holds every card's section and Answers.
+Work through the groups in the Priority order of their highest card, with **at most six agents running at once**.
+When one finishes, start the next. Two groups whose file lists overlap never run at the same time: hold the later
+one until the earlier one's agent has finished.
+
+- **Groups with a Standard card:** on the default model.
+- **Groups of only Small cards:** `model: "sonnet"`, up to four cards.
+- Each brief holds every card's section and Answers, and says which cards share a PR.
 - **Large cards:** one agent per pass, on the default model, builds **one part**. The first agent also writes the
   build plan: two to five parts in order, each a PR against `main` that leaves main working on its own (the
   spec and data model first, the visible entry points last, so nothing half-built is reachable). The coordinator
@@ -133,7 +141,8 @@ earlier one's agent has finished.
   plan and the merged parts' PR links.
 
 **Rework uses the open PR.** Before spawning, look for the card's open PR:
-`gh pr list -R "$REPO" --state open --search "head:work/<number>-"`. If there is one (the card came back to
+`gh pr list -R "$REPO" --state open --json number,headRefName -q '.[] | select(.headRefName | test("^work/([0-9]+-)*<number>-")) | .number'`
+(a grouped branch names every card it carries). If there is one (the card came back to
 Selected for Development after new answers, or from Implemented), the brief says to check out that branch,
 build the new answers on it, gate the push on the PR being OPEN (`[ "$(gh pr view N --json state -q .state)" = OPEN ] && git push`, since
 `gh` exits 0 for a merged PR too),
@@ -141,7 +150,7 @@ and update the PR description's Answers. If the earlier PR has merged, the new w
 `work/<number>-<slug>-2` (or the next free number).
 
 Check the machine first: if `uptime`'s one-minute load is above `sysctl -n hw.ncpu`, other sessions are busy, so
-run one agent at a time this pass.
+run at most two agents this pass.
 
 For each agent, when its turn comes:
 
@@ -171,7 +180,7 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   Shared code goes in `packages/` (AGENTS.md and docs/structure.md set the order).
 - **Tests:** cover every new branch. In each touched package, run typecheck, oxlint, `prettier --check` on
   changed files, and `test:coverage` where it has thresholds. Run one package at a time with `--maxWorkers=2`,
-  because three agents share this machine. Build a Next app only when you changed its pages, MDX or build
+  because several agents share this machine. Build a Next app only when you changed its pages, MDX or build
   config; CI builds the rest.
 - **Verify in a real browser** for anything visible, following the `verify` skill. Where the same change lands
   in several apps (a shared component, or the same edit in each editor's copy), verify it in **one** app and
@@ -202,9 +211,9 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - **Report:** `DONE <PR url>` or `FAILED`, then each answer and how it was built, a few lines on what was
   built, the decisions, and anything the owner should look at.
 
-Give each agent its own **port block** (the first agent of a pass 3600 to 3619, the second 3620 to 3639, the
-third 3640 to 3659, and the next agent reuses a finished one's block) and its own **scratch folder**
-(`<scratchpad>/card-<number>/`). Put both in the brief. Agents that share them overwrite each other's servers and
+Give each agent its own **port block** of 20 (the first agent of a pass 3600 to 3619, the second 3620 to 3639,
+and so on up to the sixth at 3700 to 3719; the next agent reuses a finished one's block) and its own **scratch
+folder** (`<scratchpad>/<group-name>/`). Put both in the brief. Agents that share them overwrite each other's servers and
 screenshots.
 
 **Hard rules for every agent (copy them in verbatim):**
@@ -226,7 +235,8 @@ open`). If the work can't avoid it, report FAILED and say which PR is in the way
 As each agent reports, first check its DONE report accounts for every answer you put in its brief. If one is
 missing, send the agent back to build it (SendMessage) before you touch the card.
 
-- **DONE:** in one `change_items` call, set `f-pull-request` to the PR url and move the card to **Implemented**.
+- **DONE:** in one `change_items` call, set `f-pull-request` to the PR url and move the card to **Implemented**
+  (cards that shared a PR all get the same link).
   For a Large card's part, set the link and keep it In Progress until the last part; reply in the build plan
   thread with the part's PR.
 - **Close the thread loop** (on DONE): in one `change_threads` call, reply in each question thread whose answer
@@ -246,7 +256,7 @@ If the MCP refuses a change, report it and carry on with the other cards.
   them once their answers are built, and take a Large card's next part from In Progress. Never
   edit titles, descriptions or other fields, never add Question cards, never resolve, edit or
   delete a thread or comment a person wrote, and never touch cards in any other column.
-- One open PR per Work Item (per part, for a Large card): rework goes onto it, and a follow-up opens only once
+- One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
   it has merged. Never open a PR for anything that isn't a selected card. Merging is the
   pr-loop's job.
 - Remove every worktree this pass made before it ends.
