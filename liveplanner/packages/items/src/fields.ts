@@ -26,6 +26,7 @@ import {
 } from './limits';
 import { HEX_COLOUR, isObj } from './validate';
 import { itemColourValue } from './item-colour';
+import { normaliseAttachments } from './attachments';
 
 type ItemFieldKind =
   | 'text'
@@ -37,6 +38,7 @@ type ItemFieldKind =
   | 'number'
   | 'date'
   | 'checklist'
+  | 'attachments'
   | 'votes'
   | 'comments'
   | 'flag'
@@ -54,6 +56,7 @@ const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   start: 'date',
   due: 'date',
   checklist: 'checklist',
+  attachments: 'attachments',
   votes: 'votes',
   comments: 'comments',
   archived: 'flag',
@@ -194,6 +197,12 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
         rows.push({ text: r['text'], done: r['done'] });
       }
       return rows;
+    }
+    // Pictures at the media service (docs/specs/026-plan/items.md "Attachments"): at most ITEM_ATTACHMENTS_MAX, one
+    // cover. An empty list is no value: the field is cleared instead.
+    case 'attachments': {
+      const list = normaliseAttachments(v);
+      return list && list.length > 0 ? (list as unknown as ItemFieldValue) : undefined;
     }
     // A flag is set (true) or cleared (the key removed); false is not stored.
     case 'flag':

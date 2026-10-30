@@ -44,6 +44,8 @@ export const CARD_FIELD_LABELS: Readonly<Record<Exclude<CardField, CustomCardFie
   checklist: 'Checklist',
   comments: 'Comments',
   description: 'Description',
+  attachments: 'Attachments',
+  cover: 'Cover Image',
 };
 
 export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot, string>>>> = {
@@ -61,10 +63,10 @@ export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot
 const DRAWN: Readonly<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>> = {
   minimal: { lead: ['key'], trail: ['priority', 'due', 'assignee'] },
   detailed: {
-    head: ['type', 'key'],
+    head: ['cover', 'type', 'key'],
     headEnd: ['priority'],
     body: ['parent', 'description', 'labels'],
-    foot: ['start', 'due', 'estimate', 'checklist', 'comments', 'votes'],
+    foot: ['start', 'due', 'estimate', 'checklist', 'attachments', 'comments', 'votes'],
     // The assignee sits at the bottom right by default (docs/specs/026-plan/item-types.md "Card display").
     footEnd: ['assignee'],
   },
@@ -78,6 +80,8 @@ export function cardDisplayFields(size: CardSize): readonly CardField[] {
 // Whether a field may sit in a slot: any slot of a size that draws it (the person chooses where). A custom field
 // fits any slot of any size.
 export function cardSlotFits(size: CardSize, slot: CardSlot, field: CardField): boolean {
+  // The cover is drawn across the top of the card: it is placed in the Header alone.
+  if (field === 'cover') return size === 'detailed' && slot === 'head';
   return (
     CARD_SLOTS[size].includes(slot) &&
     (isCustomCardField(field) || CARD_SIZE_FIELDS[size].includes(field))
@@ -99,6 +103,10 @@ export function cardLayoutFields(size: CardSize, layout: CardLayout): CardField[
   return CARD_SLOTS[size].flatMap((slot) => [...(layout[slot] ?? [])]);
 }
 
+// A type's Attachments' two card fields (docs/specs/026-plan/item-types.md "Card display"): in every default, drawn
+// only while the type offers Attachments (typeOffersCardField), so adding them to a type shows its cover at once.
+const WITH_ATTACHMENTS: readonly CardField[] = ['cover', 'attachments'];
+
 // The built-in types' default field sets, by id.
 const BUILT_IN_FIELDS: Readonly<Record<string, Partial<Record<CardSize, readonly CardField[]>>>> = {
   project: {
@@ -113,6 +121,7 @@ const BUILT_IN_FIELDS: Readonly<Record<string, Partial<Record<CardSize, readonly
       'checklist',
       'comments',
       'description',
+      ...WITH_ATTACHMENTS,
     ],
   },
   task: {
@@ -128,16 +137,26 @@ const BUILT_IN_FIELDS: Readonly<Record<string, Partial<Record<CardSize, readonly
       'comments',
       'description',
       'parent',
+      ...WITH_ATTACHMENTS,
     ],
   },
   note: {
-    detailed: ['type', 'votes', 'comments', 'description'],
+    detailed: ['type', 'votes', 'comments', 'description', ...WITH_ATTACHMENTS],
   },
   idea: {
-    detailed: ['type', 'labels', 'votes', 'comments', 'description'],
+    detailed: ['type', 'labels', 'votes', 'comments', 'description', ...WITH_ATTACHMENTS],
   },
   action: {
-    detailed: ['key', 'type', 'assignee', 'due', 'checklist', 'comments', 'description'],
+    detailed: [
+      'key',
+      'type',
+      'assignee',
+      'due',
+      'checklist',
+      'comments',
+      'description',
+      ...WITH_ATTACHMENTS,
+    ],
   },
 };
 
@@ -213,6 +232,7 @@ export function typeOffersCardField(
   field: CardField,
 ): boolean {
   if (isCustomCardField(field)) return (type.custom ?? []).some((c) => c.id === field);
+  if (field === 'cover') return type.fields.includes('attachments');
   return field === 'key' || field === 'type' || type.fields.includes(field);
 }
 

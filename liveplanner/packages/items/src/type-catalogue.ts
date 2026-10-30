@@ -88,6 +88,7 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'start',
   'due',
   'checklist',
+  'attachments',
   'comments',
   'votes',
 ];
@@ -174,6 +175,7 @@ function overviewField(type: ItemTypeDef, f: string): boolean {
   return (
     f === 'description' ||
     f === 'checklist' ||
+    f === 'attachments' ||
     isCommentsField(type, f) ||
     customFieldOf(type, f)?.kind === 'longtext'
   );

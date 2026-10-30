@@ -43,7 +43,8 @@ const fieldsArg = z
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
       '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
       '("Severity": "S2"; a Card field takes "#12"). A field the card type lacks is refused: add it with ' +
-      'change_card_types. A new card must give every custom field list_items marks required.',
+      'change_card_types. A new card must give every custom field list_items marks required. Attachments ' +
+      '(pictures) are added in the card panel only: they can be cleared, never set.',
   );
 
 export const listItemsShape = {
@@ -305,7 +306,8 @@ const glyphArg = z.string().describe(`A Plan glyph id: ${PLAN_GLYPH_IDS.join(', 
 const builtInFields = z
   .array(z.string())
   .describe(
-    'Built-in fields by name: description, assignee, priority, labels, estimate, start, due, checklist, parent, color.',
+    'Built-in fields by name: description, assignee, priority, labels, estimate, start, due, checklist, ' +
+      'attachments, parent, color.',
   );
 
 // A type's card face per size: each place on the card a list of fields by name, in order.
