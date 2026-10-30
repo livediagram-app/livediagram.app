@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Auth } from './auth.ts';
 import { deleteAccount } from './delete-account.ts';
+import { storeDeletionCode } from './deletion-code.ts';
 import {
   purgeFromIndex,
   recordPendingPurge,
@@ -119,21 +120,19 @@ describe('deleteAccount', () => {
     }),
   } as unknown as Auth;
 
-  const close = () =>
-    deleteAccount(
-      new Request('https://liveworkspace.app/api/auth/delete-account', {
-        method: 'POST',
-        headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
-        body: JSON.stringify({ token: 'access-token' }),
-      }),
-      auth,
-      db,
-      config,
-    );
+  // Closing needs the code emailed to Ada (deletion-code.ts), stored here as if she had asked for it.
+  const closeRequest = () =>
+    new Request('https://liveworkspace.app/api/auth/delete-account', {
+      method: 'POST',
+      headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
+      body: JSON.stringify({ token: 'access-token', code: '123456' }),
+    });
+  const close = () => deleteAccount(closeRequest(), db, { auth, index: config });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     addUser(sql, { id: 'user_ada', email: 'ada@example.com' });
     addUser(sql, { id: 'user_bea', email: 'bea@example.com' });
+    await storeDeletionCode(db, 'user_ada', '123456');
   });
 
   it('refuses a body of null as a bad request, closing nothing', async () => {
@@ -143,9 +142,8 @@ describe('deleteAccount', () => {
         headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
         body: 'null',
       }),
-      auth,
       db,
-      config,
+      { auth, index: config },
     );
     expect(res.status).toBe(400);
     expect(sql.prepare('SELECT id FROM "user"').all()).toHaveLength(2);
@@ -169,22 +167,16 @@ describe('deleteAccount', () => {
 
   it('disconnects the account’s Google Drive mirror once the account is gone', async () => {
     const disconnected: string[] = [];
-    const res = await deleteAccount(
-      new Request('https://liveworkspace.app/api/auth/delete-account', {
-        method: 'POST',
-        headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
-        body: JSON.stringify({ token: 'access-token' }),
-      }),
+    const res = await deleteAccount(closeRequest(), db, {
       auth,
-      db,
-      config,
-      async () => {},
-      (userId) => {
+      index: config,
+      closeWorkbench: async () => {},
+      disconnectDrive: (userId) => {
         // The account is already closed when Drive is told.
         expect(sql.prepare('SELECT id FROM "user" WHERE id = ?').all(userId)).toEqual([]);
         disconnected.push(userId);
       },
-    );
+    });
     expect(res.status).toBe(200);
     expect(disconnected).toEqual(['user_ada']);
   });

@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   codeEmail,
+  deletionCodeEmail,
+  sendDeletionCodeEmail,
   inviteResponseEmail,
   sendCodeEmail,
   teamInviteEmail,
@@ -18,6 +20,32 @@ const env = (over: Partial<Env>) =>
   }) as Env;
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe('deletionCodeEmail', () => {
+  it('says what the code does, in the asking app’s brand', () => {
+    const email = deletionCodeEmail('654321', emailBrand(env({}), 'livedesign.app'));
+
+    expect(email.subject).toBe('654321 is your code to delete your liveworkspace account');
+    expect(email.html).toContain('>654321</span>');
+    expect(email.html).toContain('Enter this code in livedesign to delete');
+    expect(email.text).toContain('Your code to delete your liveworkspace account is 654321');
+    expect(email.text).toContain('nothing is deleted without it');
+  });
+
+  it('logs in development, with the code in the subject', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    await sendDeletionCodeEmail(
+      env({ ENVIRONMENT: 'development' }),
+      'ada@example.com',
+      '654321',
+      null,
+    );
+    expect(log).toHaveBeenCalledWith(
+      '[email] To: ada@example.com Subject: 654321 is your code to delete your liveworkspace account',
+    );
+    log.mockRestore();
+  });
+});
 
 describe('codeEmail', () => {
   it('wears liveworkspace’s brand on its own sign-in page', () => {
