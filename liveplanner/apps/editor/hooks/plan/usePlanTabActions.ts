@@ -84,7 +84,8 @@ export function dashboardOf(tab: Tab | undefined): DashboardLayout {
   return readDashboard(tab?.dashboard) ?? newDashboard(newId);
 }
 
-// `tab` with the slot's content replaced: the element the slot held (if any) removed, `add` added.
+// `tab` with the slot's content replaced: the element the slot held (if any) removed unless the content still shows
+// it, `add` added.
 export function withSlotContent(
   tab: Tab,
   slotId: string,
@@ -93,7 +94,10 @@ export function withSlotContent(
 ): Tab {
   const layout = dashboardOf(tab);
   const held = layout.rows.flatMap((r) => r.slots).find((s) => s.id === slotId)?.content;
-  const dropId = held?.type === 'element' ? held.elementId : null;
+  // The element the slot held goes with it, unless the new content still shows it (a slot's name changed:
+  // plan-tabs.md "A slot's name").
+  const kept = content?.type === 'element' ? content.elementId : null;
+  const dropId = held?.type === 'element' && held.elementId !== kept ? held.elementId : null;
   const elements = tab.elements.filter((e) => e.id !== dropId);
   return {
     ...tab,

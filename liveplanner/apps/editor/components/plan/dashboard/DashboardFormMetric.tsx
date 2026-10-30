@@ -45,7 +45,7 @@ export function DashboardFormMetric({
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
         <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">
-          {FORM_METRIC_NAMES[content.metric]}
+          {content.name ?? FORM_METRIC_NAMES[content.metric]}
         </span>
         {canEdit ? (
           <FormChoice
@@ -128,7 +128,8 @@ function FormMetricBody({
     offline: link.status === 'offline',
     now,
   });
-  const name = FORM_METRIC_NAMES[content.metric];
+  // The slot's own name, else the figure's (plan-tabs.md "A slot's name").
+  const name = content.name ?? FORM_METRIC_NAMES[content.metric];
   const live = link.link?.link ?? null;
   const url = live?.code ? formUrlFor(window.location.origin, live.code) : null;
   const loading = link.status === 'loading' && !link.link;

@@ -39,6 +39,27 @@ describe('buildDashboardTab', () => {
     );
   });
 
+  it('gives a named chart’s slot its name, the Gantt’s included, and leaves the rest unnamed', () => {
+    const { tab } = buildDashboardTab('t9', 'Overview', {
+      charts: [
+        { view: 'workload', name: '  Team load ' },
+        { view: 'gantt', name: 'Launch plan' },
+        { view: 'calendar', name: '   ' },
+      ],
+    });
+    const slotOf = (view: string) => {
+      const el = tab.elements.find((e) => e.type === 'shape' && e.planView?.view === view)!;
+      return tab
+        .dashboard!.rows.flatMap((r) => r.slots)
+        .find((s) => s.content?.type === 'element' && s.content.elementId === el.id)!.content;
+    };
+    expect(slotOf('workload')).toMatchObject({ name: 'Team load' });
+    expect(slotOf('gantt')).toMatchObject({ name: 'Launch plan' });
+    expect(slotOf('calendar')).not.toHaveProperty('name');
+    // The view itself keeps no title: the name is the slot's.
+    expect(tab.elements.every((e) => !(e.type === 'shape' && e.planView?.title))).toBe(true);
+  });
+
   it('leaves off rows past the Dashboard’s twelve, and says how many', () => {
     const notes = Array.from({ length: 40 }, (_, i) => ({ title: `N${i}`, text: '' }));
     const { tab, dropped } = buildDashboardTab('t9', 'Notes', { notes });

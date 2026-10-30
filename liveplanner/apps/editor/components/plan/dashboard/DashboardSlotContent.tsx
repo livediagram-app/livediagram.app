@@ -19,6 +19,7 @@ import { DashboardLinksCard } from './DashboardLinksCard';
 import { DashboardSheetMetric } from './DashboardSheetMetric';
 import { DashboardFormMetric } from './DashboardFormMetric';
 import { DashboardSheetChart } from './DashboardSheetChart';
+import { SlotName } from './slot-name-context';
 
 // The box's size, kept as it changes (the row resized, the window).
 export function useBoxSize(
@@ -61,7 +62,16 @@ export function Missing({ message, slotId }: { message: string; slotId: string }
   );
 }
 
-function SlotElement({ slotId, elementId }: { slotId: string; elementId: string }) {
+function SlotElement({
+  slotId,
+  elementId,
+  name,
+}: {
+  slotId: string;
+  elementId: string;
+  // The slot's own name, for a plan view's heading.
+  name?: string;
+}) {
   const { elements } = useDashboard();
   const ref = useRef<HTMLDivElement>(null);
   const size = useBoxSize(ref);
@@ -76,7 +86,9 @@ function SlotElement({ slotId, elementId }: { slotId: string; elementId: string 
       {!shape ? (
         <Missing message="This item was removed." slotId={slotId} />
       ) : !sized ? null : shape.shape === 'plan-view' ? (
-        <PlanViewView element={sized} />
+        <SlotName.Provider value={name}>
+          <PlanViewView element={sized} />
+        </SlotName.Provider>
       ) : shape.shape === 'plan-board' ? (
         <div className="absolute inset-0">
           <PlanBoardView element={sized} />
@@ -105,7 +117,7 @@ export function DashboardSlotContent({
     case 'tab':
       return <DashboardTabPreview slotId={slotId} tabId={content.tabId} of={content.of} />;
     case 'element':
-      return <SlotElement slotId={slotId} elementId={content.elementId} />;
+      return <SlotElement slotId={slotId} elementId={content.elementId} name={content.name} />;
     case 'note':
       return <DashboardNote slotId={slotId} note={content} />;
     case 'title':

@@ -2729,6 +2729,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "elementId": {
             "type": "string"
           },
+          "name": {
+            "type": "string"
+          },
           "type": {
             "const": "element",
             "type": "string"
@@ -3845,6 +3848,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "metric": {
         "$ref": "#/components/schemas/FormMetricKind"
+      },
+      "name": {
+        "type": "string"
       },
       "type": {
         "const": "form-metric",
@@ -9458,6 +9464,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "metric": {
         "$ref": "#/components/schemas/SheetMetricKind"
+      },
+      "name": {
+        "type": "string"
       },
       "sheetId": {
         "type": "string"

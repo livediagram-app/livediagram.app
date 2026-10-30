@@ -86,6 +86,28 @@ describe('a Dashboard’s page', () => {
     expect(out.tab.kind).toBe('dashboard');
   });
 
+  it('titles a named slot’s view with its name, on a copy (plan-tabs.md "A slot’s name")', () => {
+    const out = exportOf(
+      {
+        rows: [
+          row('r1', [
+            { id: 'a', span: 6, content: { type: 'element', elementId: 'v1', name: 'Launch' } },
+            { id: 'b', span: 6, content: { type: 'element', elementId: 'v1' } },
+          ]),
+        ],
+      },
+      [view],
+    );
+    const at = (id: string) =>
+      out.tab.elements.find((e) => e.id === `export-el-${id}`) as Element & {
+        planView?: { title?: string };
+      };
+    expect(at('a').planView?.title).toBe('Launch');
+    expect(at('b').planView?.title).toBeUndefined();
+    // The stored view is untouched.
+    expect((view as { planView?: { title?: string } }).planView?.title).toBeUndefined();
+  });
+
   it('writes the quiet line of an empty, deleted, removed or loading slot', () => {
     const out = exportOf({
       rows: [

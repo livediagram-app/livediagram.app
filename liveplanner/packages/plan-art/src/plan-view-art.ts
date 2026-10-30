@@ -337,11 +337,12 @@ function cardRows(
 }
 
 // A metric tile: its name, the figure (and its unit), the line under it, and its bars where it has them.
-function metricArt(kind: MetricKind, { rect, p, items, data }: ViewArtInput): string {
+function metricArt(kind: MetricKind, { rect, p, items, data, title }: ViewArtInput): string {
   const board = metricBoard(items.values(), data.statusPhases, data.types);
   const model = metricModel(kind, board, data.types, data.now);
   const parts = [box(rect, { fill: p.surface, stroke: p.border, rx: 12 })];
-  const label = BOARD_WIDGET_INFO[kind].label;
+  // Its own title (a Dashboard slot's name, dashboard-export.ts) in place of its label.
+  const label = titled(BOARD_WIDGET_INFO[kind].label, title);
   const inner = rect.width - ART_PAD * 2;
   const compact = rect.height < 110;
   const hero = Math.max(18, Math.min(48, rect.height / (compact ? 2.2 : 3.2)));

@@ -153,6 +153,21 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   widget **+**, reordering and ×, the form strip, renaming, Reveal, Add New Card Type and, for an Editor, the
   **Board Settings** cog (its board sections, then the slot's **Slot** section). **Restore** returns it to the
   simplified slot board. Focus stays off (a slot has no place on the canvas to glide to).
+- **A slot's name**: a filled slot whose heading is made for it takes a name of its own, so a reader sees what it is
+  for ("Launch readiness" rather than "Cards by Assignee"). That is a slot showing a chart or a metric tile (a plan
+  view), a figure from a Sheet, or a Form figure. An Editor gives it in the Slot section, under Add a Slot: a **Name**
+  field (up to 80 characters) whose placeholder is the generated name where it is fixed (a metric's, a figure's
+  kind, a chart's kind; a chart that names what it groups by shows its kind, "Cards by Field"). Enter or leaving the
+  field saves the trimmed name; Escape puts back what was there; emptying it clears the name, and the slot shows the
+  generated name again. A name that is unchanged saves nothing. The name takes the generated heading's place wherever
+  the slot draws it: a chart's header title (what it shows at the moment kept after it, "Launch · Oct 2026"), a
+  metric tile's label, a figure's label, their accessible names, maximised too, and the Dashboard's image and PDF
+  exports. A chart's own title (set where a chart fills a Visualisation tab) still shows where the slot has no name.
+  A slot showing a Board or Sheet tab is not offered one (its name is the tab's: Names); nor are a Sheet Chart (it
+  draws no heading), a Board or Sheet on the dashboard, or a note, a title or another utility, whose own titles are
+  written in place. The name is stored on the slot's content (`name`, additive: a dashboard without one reads as
+  before), so it moves, swaps and duplicates with what the slot shows, and goes when the slot is cleared or filled
+  with something else. One undo step, `Plan · Changed · DashboardContent`.
 - **A new slot settles into place**: a slot added (Add a Slot, a new Dashboard's rows, or by a collaborator)
   fades up from 8 px low at 96% scale, at the long motion token; a new row's slots cascade left to right, landing by
   the motion ceiling. The slots a Dashboard opens with, or shows on switching to another Dashboard, draw still, and

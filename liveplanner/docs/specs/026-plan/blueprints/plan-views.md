@@ -71,6 +71,17 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
 - Opening: `openProps(plan, id)`: in Plan input a click opens and pointerdown is kept from the canvas; a
   double-click opens in any mode. "Add a start date" shows only when `plan.canEdit`.
 
+- A Dashboard slot's name (plan-tabs.md "A slot's name"): `name?: string` on the `element`, `sheet-metric` and
+  `form-metric` slot contents (`packages/project/src/slot-name.ts` and dashboard.ts, `DASHBOARD_SLOT_NAME_MAX` 80, read trimmed and
+  dropped when empty, kept through `remapDashboardElements`; `slotNameOf`, `withSlotName`). `SlotNameField`
+  (`components/plan/dashboard/SlotNameField.tsx`) in SlotSection, where `generatedSlotName(content, element)` is not null (a
+  `plan-view` element or either figure), saves through `actions.setSlotContent` (one step). `SlotElement` provides
+  `SlotName` (`components/plan/dashboard/slot-name-context.ts`) round a plan view: `PlanViewView` reads it before `planView.title` for `ViewTitle`
+  and passes it to `MetricView` as the tile's label; `DashboardSheetMetric` and `DashboardFormMetric` read
+  `content.name`. Exports: `dashboard-export.ts` places a named view with `planView.title` set to the name (a copy,
+  never stored), `metricArt` labels with the title, and the figures' art with the name. Agents: `charts[].name` in
+  `DashboardInput` (`dashboard-input.ts`) to `DashboardChartSpec.name` to the slot's content (`dashboardLayoutOf`).
+
 ## Interfaces and contracts
 
 - `PlanContextValue.statusPhases: ReadonlyMap<string, StatusPhase>` (from `usePlanStatuses`, signature-keyed, read from every tab's boards, the open tab's first).
@@ -186,20 +197,25 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 
 ## Testing
 
-| Rule                                           | Test                                                        |
-| ---------------------------------------------- | ----------------------------------------------------------- |
-| Ids, sizes, phases, metric board               | packages/items/src/plan-views.test.ts                       |
-| Gantt rows, marks, axis, ticks, drags, scales  | packages/items/src/plan-view-gantt.test.ts                  |
-| Calendar, workload, status, priority models    | packages/items/src/plan-view-charts.test.ts                 |
-| Calendar moves, Start Calendar model           | packages/items/src/calendar-move.test.ts                    |
-| Calendar drag, keyboard move, roles, Start Cal | apps/editor/components/plan/views/CalendarView.test.tsx     |
-| Element seed, validation, export box           | packages/project/src/plan-shapes.test.ts                    |
-| Rendering, empty and loading, opening, metrics | apps/editor/components/plan/views/PlanViewView.test.tsx     |
-| Gantt window pin, pan, slop, cleanup           | apps/editor/components/plan/views/useGanttWindow.test.ts    |
-| Gantt View flyout (card types, swimlanes)      | apps/editor/components/palette/PlanViewMenuSection.test.tsx |
-| Gantt row order (apply, reorder, validation)   | packages/items/src/gantt-row-order.test.ts                  |
-| Gantt row drag, keyboard move, lanes           | apps/editor/components/plan/views/GanttRowOrder.test.tsx    |
-| Palette categories and tiles                   | apps/editor/components/palette/palette-*.test.ts(x)         |
+| Rule                                                 | Test                                                                                                                                                                                                       |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ids, sizes, phases, metric board                     | packages/items/src/plan-views.test.ts                                                                                                                                                                      |
+| Gantt rows, marks, axis, ticks, drags, scales        | packages/items/src/plan-view-gantt.test.ts                                                                                                                                                                 |
+| Calendar, workload, status, priority models          | packages/items/src/plan-view-charts.test.ts                                                                                                                                                                |
+| Calendar moves, Start Calendar model                 | packages/items/src/calendar-move.test.ts                                                                                                                                                                   |
+| Calendar drag, keyboard move, roles, Start Cal       | apps/editor/components/plan/views/CalendarView.test.tsx                                                                                                                                                    |
+| Element seed, validation, export box                 | packages/project/src/plan-shapes.test.ts                                                                                                                                                                   |
+| Rendering, empty and loading, opening, metrics       | apps/editor/components/plan/views/PlanViewView.test.tsx                                                                                                                                                    |
+| Gantt window pin, pan, slop, cleanup                 | apps/editor/components/plan/views/useGanttWindow.test.ts                                                                                                                                                   |
+| Gantt View flyout (card types, swimlanes)            | apps/editor/components/palette/PlanViewMenuSection.test.tsx                                                                                                                                                |
+| Gantt row order (apply, reorder, validation)         | packages/items/src/gantt-row-order.test.ts                                                                                                                                                                 |
+| Gantt row drag, keyboard move, lanes                 | apps/editor/components/plan/views/GanttRowOrder.test.tsx                                                                                                                                                   |
+| Palette categories and tiles                         | apps/editor/components/palette/palette-*.test.ts(x)                                                                                                                                                        |
+| Slot name: read, cap, remap, set and clear           | packages/project/src/slot-name.test.ts                                                                                                                                                                     |
+| Slot name field: offered, save, Escape, clear, roles | apps/editor/components/plan/dashboard/SlotNameField.test.tsx                                                                                                                                               |
+| Slot name shown on a chart, metric and figures       | apps/editor/components/plan/views/PlanViewView.slot-name.test.tsx, apps/editor/components/plan/dashboard/DashboardSheetMetric.test.tsx, apps/editor/components/plan/dashboard/DashboardFormMetric.test.tsx |
+| Slot name in exports                                 | packages/plan-art/src/dashboard-export.test.ts, dashboard-card-art.test.ts, plan-view-art.test.ts                                                                                                          |
+| Agent chart names                                    | packages/agent-verbs/src/plan/dashboard-input.test.ts, packages/templates/src/dashboard-builder.test.ts                                                                                                    |
 
 ## Constants and configuration
 

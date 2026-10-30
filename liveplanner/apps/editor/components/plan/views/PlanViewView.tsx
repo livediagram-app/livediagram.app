@@ -24,6 +24,7 @@ import { StatusMixView } from './StatusMixView';
 import { PriorityMatrixView } from './PriorityMatrixView';
 import { CardSearchView } from './CardSearchView';
 import { ViewHeaderEnd, ViewTitle } from './view-frame';
+import { useSlotName } from '../dashboard/slot-name-context';
 import { PlanViewSettingsPanel } from './PlanViewSettingsPanel';
 import { SettingsCog } from '../SettingsCog';
 import { SLOT_KEEP_OPEN, useSlotSettings } from '../dashboard/slot-menu';
@@ -106,10 +107,13 @@ export function PlanViewView({
   // In a Dashboard slot, the slot's settings (slot-menu.ts).
   const slot = useSlotSettings();
   useMaximisedPlanLifetime(element.id, maximised, interactive);
-  if (widget) return <MetricView kind={widget} {...props} />;
+  // A Dashboard slot's own name, before the chart's own title (plan-tabs.md "A slot's name").
+  const slotName = useSlotName();
+  if (widget)
+    return <MetricView kind={widget} {...props} {...(slotName ? { title: slotName } : {})} />;
   // Its own title, and on a Visualisation tab a rename of the chart and tab together (view-frame ViewTitle), for
   // someone who may change the chart (an Editor) only.
-  const ownTitle = element.planView?.title;
+  const ownTitle = slotName ?? element.planView?.title;
   const rename =
     filled && interactive && plan?.canEdit && element.planView
       ? (title: string) => {

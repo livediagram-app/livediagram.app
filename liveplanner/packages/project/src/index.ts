@@ -607,6 +607,7 @@ export * from './plan-presets';
 export * from './dashboard';
 export * from './dashboard-cards';
 export * from './dashboard-card-style';
+export * from './slot-name';
 export * from '@liveworkspace/model-core/tab-names';
 export { planBoardFitHeight } from './svg-render-plan';
 export * from './session-button-text';
