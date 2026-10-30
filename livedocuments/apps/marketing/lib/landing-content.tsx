@@ -178,7 +178,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <FlashcardStackArt />,
-        href: '/help/pages/working-with-pages/',
+        href: '/help/pages/flashcards/',
         group: 'Build',
         title: 'Flashcards to speak from',
         description:

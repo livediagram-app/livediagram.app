@@ -16,10 +16,10 @@ small modules beside it. Each rule below names its home.
 | text only             | `isFlashcardBlock`, `flashcardBlocks` (writing); `guardFlashcards` (`packages/document/src/flashcard-guard.ts`) |
 | split                 | `canSplitFlashcardAt`, `withFlashcardSplit`, `FlashcardSplitRefusal`                                            |
 | card added            | `withFlashcardAdded`; `pageAdded(tab, 'flashcard', id, flow)`                                                   |
-| card in front         | `PagesModeView.cardInFront` (`apps/editor/hooks/editor/usePagesMode.ts`)                                        |
+| card in front         | `PagesModeView.cardStage` (`apps/editor/hooks/editor/usePagesMode.ts`), `cardInFrontOf`, `cardStageOf`          |
 | the stage             | `flashcardStage(view)`, `apps/editor/lib/flashcard-stack.ts`: the view narrowed to the card in front            |
 | the stack behind      | `stackSheets(rect, behind)` (same module); drawn by `FlashcardStack` (`components/canvas/FlashcardStack.tsx`)   |
-| flip                  | `flipCard({ fromId, toId, forward })`, `apps/editor/lib/flashcard-flip.ts`                                      |
+| flip                  | `pictureCard(page)`, `flipCard(from, to, forward)`, `apps/editor/lib/flashcard-flip.ts`                         |
 | footer                | `FlashcardFooter` (`components/canvas/FlashcardStack.tsx`)                                                      |
 | too long              | `FlowLayout.overflowFrom` (`ArticleEditor`), `flashcard-overflow-store.ts`, `FlashcardTooLong`                  |
 | palette kind          | `PaletteKind` `'flashcard'` (`apps/editor/lib/palette-kind.ts`)                                                 |
@@ -68,30 +68,32 @@ small modules beside it. Each rule below names its home.
 
 ### The stack (`usePagesMode`, `flashcard-stack.ts`, `flashcard-flip.ts`)
 
-- `usePagesMode` keeps `cardInFront: string | null` (state). In a stack (`isFlashcardStack(current)`), `frame(page)` for
-  a card that is not in front calls `flipCard` with the card in front and the target, sets the target in front, and
-  sets the view at once (never a glide). Framing the card in front glides as before. Snapping (`usePageSnap`) hands its
-  target page to `glideTo(frame, pageId)` so a swipe flips too. `focusPage` also sets the current page kind.
-- `view.cardInFront` is the state when it names a page of the tab, else the first card. Off a stack it is absent.
-- `flashcardStage(view)` (called by `Canvas` for the world layers only): when `view.cardInFront` is set, `pages` is that
-  card alone, `rowPages` the whole row, and `cardStack: { behind, index, count }` (`behind` = cards after it). The
-  chrome (navigator, Contents, Map) keeps the whole view.
+- `usePagesMode` keeps the card asked for (`{ tabId, id }`, state); `cardInFrontOf(pages, wanted)` resolves it to the
+  card in front (the first card when it names none of this tab's), and `cardStageOf` memoises
+  `view.cardStage: { pages: [card], stack: { index, count, behind } }`, absent off a stack. `frame(page)` on a card
+  pictures the card in front (`pictureCard`), sets the target in front and sets the view at once (never a glide); a
+  layout effect on the new card in front runs `flipCard`. The landing frame (`frame(..., lands)`) never flips.
+  Snapping (`usePageSnap`) hands its target page to `glideTo(frame, pageId)`, so a swipe or a pan let go toward
+  another card flips to it.
+- `flashcardStage(view)` (called by `Canvas`, memoised on the view, for the world layers only): `pages` is the card
+  alone, `rowPages` the whole row and `cardStack` its place. A page slide presenting (`letterbox`) is left as it is.
+  The chrome (navigator, Contents, Map) keeps the whole view.
 - `CanvasPages` draws `FlashcardStack` (the `stackSheets` under the sheet) and `FlashcardFooter` on a card, and passes
   the + its card. `ArticleFlows` clips to the shown card already (`pagesClipPath(view.pages)`).
-- `flipCard`: reduced motion (`prefers-reduced-motion: reduce`) does nothing. Otherwise it clones the front card's
-  sheet (`[data-page-id]`) and writing (`[data-article-flow]`) into a fixed overlay (`[data-flashcard-flip]`,
-  `pointer-events: none`) over the canvas at their screen rects, scaled by the zoom. Forward: the clone turns
-  `rotateX(0 → 100deg)` about its top edge and fades (`FLASHCARD_FLIP_MS`, ease-in-out, perspective 1600 px). Back: the
-  old card's clone stays still under a clone of the target card's sheet and writing, which turns
-  `rotateX(100deg → 0)` about its top edge. The overlay is removed when the animation ends; a new flip finishes the
-  last at once.
+- `flipCard`: reduced motion (`prefers-reduced-motion: reduce`, or the editor's own `.reduce-motion`) does nothing.
+  Otherwise the picture (copies of the card's sheet `[data-page-id]` and writing `.article-flow[data-article-flow]`,
+  their ids, roles and tour anchors stripped, `inert`, `aria-hidden`) is placed in canvas space over the new card in
+  front (`[data-flashcard-flip]`, overflow hidden), so it pans and zooms with the view. Forward: it turns
+  `rotateX(0 → 78deg)` about its top edge and fades (`FLASHCARD_FLIP_MS`, ease-in-out, perspective 2400 canvas px).
+  Back: it stays still under a picture of the target card, which turns `rotateX(78deg → 0)` and fades in. The pictures
+  are removed when the animation ends; a new flip finishes the last at once.
 
 ### Text only
 
 - `paletteKindForPage('flashcard')` is `'flashcard'`. `ToolbarPalette` docks the page toolbar for `article` and
   `flashcard`, and hides Search for `flashcard`.
 - `PageToolbar` reads the docked article's page kind: on a card no Insert, Comment or Assign Action, and More
-  Formatting's style entry reads "Card Style".
+  Formatting's style entry reads "Card style".
 - `ArticleEditor` `card` prop: slash items filtered to `FLASHCARD_SLASH_KINDS` (style, list, quote, code, divider);
   the paste plugin's image and element intake is off (`onInsert` refused), so a paste keeps its text only.
 - The commit guard (`useEditorState`) runs `guardFlashcards` after `guardLockedPagesIn` and announces
@@ -171,7 +173,7 @@ SVG in the existing preview groups.
 
 ## Observability
 
-- `[flashcard] flipped` (from, to, forward), `[flashcard] split` (tabId, pageId, moved blocks),
+- `[flashcard] flip` (to, forward), `[flashcard] split` (tabId, pageId, moved blocks),
   `[flashcard] held back` (the guard), `[flashcard] split refused` (reason).
 
 ## Testing

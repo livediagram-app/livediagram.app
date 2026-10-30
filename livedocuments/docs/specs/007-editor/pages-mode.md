@@ -1413,7 +1413,7 @@ lies on; one between pages is on none.
 
 ## Locking a page
 
-Any page, of every kind (infographic, article, slide), can be **locked**, so it stays as it
+Any page, of every kind (infographic, article, slide, flashcard), can be **locked**, so it stays as it
 is while the rest of the tab is worked on.
 
 - **Where**: a padlock button in the page's title bar, before its cog, for someone who may edit: **Lock page** while open, **Unlock page** (pressed, the
