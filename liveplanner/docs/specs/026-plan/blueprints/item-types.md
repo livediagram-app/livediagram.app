@@ -172,7 +172,7 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   the labels share row 1 and the controls row 2, `items-start`; the swatches sit in a `min-h-[2.375rem]` (the name field's height) flex column, `justify-center`, so the in-place custom colour picker grows down without moving Name; below `md` the rows stack as blocks)
   then **Fields** (`data-tour-id="card-type-fields"`, set off by a top border: the lead line, then
   `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
-  problem or a custom field problem flag `configuration`; a left-out status problem flags `statuses`.
+  problem or a custom field problem flag `configuration`; a status list problem flags `statuses`.
 - **Add Field** (spec "Fields and Tabs": Add Field). `ItemTypeLayoutEditor` opens it in an `AnchoredPopover`
   (`ADD_FIELD_POPOVER_PX` 384, `name="Add Field"`, `initialFocus` `'panel'` under `(pointer: coarse)` else
   `'first'`, `onEscape` handed to the form), holding `NewFieldForm` (`NewFieldForm.tsx`), which keeps the step
@@ -246,16 +246,44 @@ q)` (its `BUILT_IN_FIELD_LABELS` name holds the query) and `kindReadiness(field)
   `newTabId('tab', ...)`), `withoutEmptyTabs`. The type editor starts from `tabsOf(type)` and saves `tabs`
   explicitly. Problems: "Give every tab a name.", "Two tabs have the same name."
 
-## Statuses a type leaves out
+## The statuses a type uses
 
-- `ItemTypeDef.excludedStatuses?: string[]`, read by `readExcludedStatuses` in `readType` (strings, non-blank, at most
-  `ITEM_STATUS_MAX` long, de-duplicated in order, at most `ITEM_TYPE_EXCLUDED_STATUSES_MAX`; an empty list is
-  dropped). `typeAllowsStatus(type, status)` (no status is always allowed) and `statusRefusal(typeLabel,
-statusName)` ("{Type} cards can't be {Status}") live beside it.
-- Editor: `ItemTypeStatuses` (its own file) lists `plan.statusNames` as `aria-pressed` chips; every one may go
-  off; at `ITEM_TYPE_EXCLUDED_STATUSES_MAX` off, the chips still on are disabled and a `role="note"` says so. The
-  draft carries `excludedStatuses` only when non-empty. `ItemTypeEditor` names a catalogue check failing on
-  `.excludedStatuses` "Too many statuses turned off: a type can turn off at most 64." and flags the States tab.
+- `ItemTypeDef.statuses?: string[]`, the ordered inclusion list, read by `readStatusList` in `readType` (strings,
+  non-blank, at most `ITEM_STATUS_MAX` long, de-duplicated in order, at most `ITEM_TYPE_STATUSES_MAX`; an empty
+  list is kept: the type uses none). A type stored before it keeps `excludedStatuses` (read by the same reader, at
+  most `ITEM_TYPE_EXCLUDED_STATUSES_MAX`, an empty list dropped) and is called **legacy**; a type with `statuses`
+  drops any `excludedStatuses` on read. Nothing writes `excludedStatuses` any more.
+- `packages/items/src/type-statuses.ts`: `typeStatusesOf(type, planStatuses)` (the list, or for a legacy type
+  `planStatuses` less its exclusions); `planStatusOrder(setups)` (every status the boards name, in the order
+  given, All Cards and Archive aside); `boardTypeStatuses(setups, typeIds)` (per type id, the statuses of the boards
+  that take it, in board order: a board naming no types, or only deleted ones, takes every type);
+  `boardStatusJoins(before, after, typeIds)` (per type, the statuses `after` gives it that `before` did not);
+  `withTypeStatuses(catalogue, { joins?, planStatuses? })` (legacy types written as `typeStatusesOf(type,
+planStatuses)` when `planStatuses` is given, then each type's joins appended where missing; null when nothing
+  changes or the result fails `validateItemTypeCatalogue`, so a join never makes a catalogue unsaveable).
+  `typeAllowsStatus(type, status)` (no status is always allowed; a list type by membership, a legacy type by its
+  exclusions) and `statusRefusal(typeLabel, statusName)` ("{Type} cards can't be {Status}") live in
+  `type-catalogue.ts`. `catalogueWithBoardTypes` gives each brought type `statuses` from `boardTypeStatuses` of
+  the elements.
+- Editor joins (`hooks/plan/useTypeStatusJoins.ts`, wired in `useEditorState` with `enabled` = hydrated, not
+  structure read-only, catalogue chosen): per loaded tab, `boardTypeStatuses` of its boards. A tab first seen
+  (loaded) that was in the project when the hook started only seeds the session's `seen` sets; a tab that appears
+  later counts from empty. Each type's `seen` set gains what its compatible boards give it; what is new (not
+  `seen`) is its join. A type first seen is seeded, never joined. Legacy types are written with `planStatusOrder` of
+  every tab (no tab first) once every tab is loaded. Both go through `useItemTypes.quietChange(remake)`: a pending
+  change kept as a function, made to the stored catalogue at each send (so it is made again over a stale write),
+  with no undo step and no toast on failure, and skipped when it changes nothing.
+- Editor: `ItemTypeStatuses` (its own file) takes `used` (the ordered list) and `onChange(used)`: `ItemTypeStatusOrder`
+  (its own file) draws Order, an `ol` of rows (grip through `useHandleReorder`, Alt+Up / Alt+Down on the grip,
+  the name, a Turn Off cross), then the board groups (`statusGroups`) as `OptionRows` checkbox rows: ticking
+  appends, unticking removes; `selectAllStates` appends the listed ones missing, `deselectAllStates` removes the
+  listed ones. At `ITEM_TYPE_STATUSES_MAX` on, the rows still off are disabled and a `role="note"` says so.
+  `ItemTypeEditor` starts `used` from `typeStatusesOf(start, statusIds)` and always saves `statuses`; a catalogue
+  check failing on `.statuses` reads "Too many states on: a type can use at most 128." and flags the States tab.
+  `newTypeForBoard` starts a type with `statuses` = the board's.
+- Order readers: the card panel's Status (`ItemFieldEditor`) lists `typeStatusesOf(type, names)` with a name,
+  then a current left-out status as a disabled option; the Default State menu and `newCardStatus` (the first
+  status the type uses that the tab's boards name) read the same list.
 - Enforcement (`hooks/plan/status-refusal.ts`): `typeStatusRefusal(types, typeId, status, name)`;
   `moveStatusRefusal(types, item, { status, type? }, name)`, null for the card's own status and checked with the
   lane's type when given; `cardsMovingRefused` / `cardsStayedMessage` for a removed column's cards.
@@ -376,7 +404,8 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | `CUSTOM_CHOICE_OPTION_MAX`                             | 100    | Spec "Custom field kinds" (was D11)                                            |
 | `ITEM_TYPES_BYTES`                                     | 32,768 | Spec "Limits and validation"                                                   |
 | `ITEM_TYPES_SAVE_ATTEMPTS`, `CARD_TYPES_SAVE_ATTEMPTS` | 3      | Spec "Storage and sync": a change made again a few times, then refused; 1 to 5 |
-| `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Far more than a board's columns; keeps the catalogue small                     |
+| `ITEM_TYPE_STATUSES_MAX`                               | 128    | Spec "An item type": ten boards of twelve columns; keeps the catalogue small   |
+| `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Legacy types only: what an old type could leave out                            |
 | `PLAN_TYPE_COLOURS`                                    | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
 | `ADD_FIELD_POPOVER_PX`                                 | 384    | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
 
@@ -392,7 +421,8 @@ a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug T
 - `broughtTypesToAdd(named, types)`: the ready-made types named that `types` lacks, each once, in order;
   `boardTypesToAdd(elements, types)` the same off the elements; `defaultTypesToAdd(types)` the missing defaults.
 - `catalogueWithBoardTypes(stored, elements)`: `typesOf(stored)` (empty for null) with the missing ones after,
-  capped at `ITEM_TYPES_MAX`; null when nothing changes.
+  each with `statuses` from the boards among `elements` that take it, capped at `ITEM_TYPES_MAX`; null when
+  nothing changes.
 - `typesOf(null)` is `[]`; `validateItemTypeCatalogue` takes 0 to `ITEM_TYPES_MAX` types. `legacyCatalogue(stored,
 hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline records in `recordToProject` and
   `offline-items`, exported tabs in `parseImportedTab`, and the api's create with carried items).

@@ -63,7 +63,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | `custom`           | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`; `required: true` for a [required field](#required-fields)) |
 | `tabs`             | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                     |
 | `detailsLabel`     | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                |
-| `excludedStatuses` | The statuses (ids) cards of this type do not use, up to 64 (a project's boards may name more; the type editor stops at 64). Absent: every status. A status added later is open to every type                                                                                                                        |
+| `statuses`         | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below |
 | `defaultStatus`    | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                  |
 | `display`          | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                   |
 
@@ -78,9 +78,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - **The Default State** (`defaultStatus`): a card made into a board's column takes that column's status, always; a
   card made anywhere else takes its type's Default State. That is a **New {Type}** made from a linked-card section
   of a card's panel, and a card created through the API or the MCP tools without a status. Without a Default State
-  those keep today's rule: New {Type} takes the first status its type uses on the tab's boards, and an API or MCP
+  those keep today's rule: New {Type} takes the first status its type uses (in the type's order) that the tab's boards name, and an API or MCP
   card with no status is made with none, so it waits as **not on board**. A Default State the type has turned off
-  (in `excludedStatuses`) is ignored, as if absent; turning the Default State off in the editor clears it. An id no
+  (not in `statuses`) is ignored, as if absent; turning the Default State off in the editor clears it. An id no
   board names any more is kept: the card is made in it and shows as not on board until a board adds that status.
 - **A ready-made type's Default State** is a state _name_, since a project's state ids are its own (`todo~k3f9`):
   **Project** starts in **Backlog**; **Task**, **Action** and **Note** in **To Do**; **Idea** in **Ideas**; any
@@ -90,10 +90,31 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   match) when it makes a card, and when none has that name (or the type turns it off) it falls back as a type
   without one does. A Default State chosen in the editor replaces it. The API and MCP do not see state names, so
   there a ready-made type's card made without a status is made with none, as before.
-- **Statuses a type leaves out** (`excludedStatuses`): a card of the type never moves into one. Kept as what is
-  left out, so a status a board adds later is open to every type until a type leaves it out. An id no board names
-  any more is kept, so the status keeps its exclusion if it comes back. A type may leave out every status: its cards
-  stay in the status they are made in and never move. Only a move into a left-out status is refused, never a new
+- <a id="the-statuses-a-type-uses"></a>**The statuses a type uses** (`statuses`): one ordered list per type, of
+  the statuses its cards may move into. A status not in it is one the type **leaves out**: a card of the type never
+  moves into one. An id no board names any more is kept, in its place, so the status comes back where it was.
+  - **Order.** The list's order is the order of every status menu for a card of the type (the card panel's
+    **Status**, the type editor's **Default State**), the same on every tab. Editors set it by dragging in the type
+    editor's **States** tab.
+  - **Where a new status goes.** A status joins a type's list, at its end, when it first appears on a board that
+    takes the type: a new board, a column added to a board, or a type a board starts taking (its columns' statuses
+    join it). A board that takes every type gives its statuses to every type. A board that takes chosen types
+    gives its statuses to those types only, never to the others: a Bug Triage board's New, In Progress and Done do
+    not join a Story that no board of theirs takes. A status joins a type only once a session: putting back a column
+    whose status the type had turned off (an undo) does not turn it on again. The join is made by the editor of
+    whoever changed the board (one quiet catalogue change with no undo step of its own, made again over anyone's
+    later change), and by the plan agents' **add_board**, **change_board** and **add_tab**.
+  - **A new type's list.** Add New Card Type from a board starts with that board's statuses; a type a board brings
+    (a ready-made type) starts with the statuses of the boards that bring it; any other new type (the Card Types
+    panel's Add Type, the default types) starts with every status the project's boards name, in tab, board and
+    column order.
+  - **Types stored before the list** (with `excludedStatuses`, the statuses they left out, or neither) read as
+    every status the project's boards name, in tab, board and column order (no tab first), less those they left
+    out: exactly the statuses they used before. The first time someone who may edit card types opens the project
+    with every tab loaded, each such type is written in the new shape (one quiet change), so from then on only
+    compatible boards' statuses join it. Until then (a project of more than 12 tabs, or one only agents touch) it
+    keeps the old rule, a new status open to it, and the api checks it by what it leaves out, as before.
+  - A type may use no status: its cards stay in the status they are made in and never move. Only a move into a left-out status is refused, never a new
   card: a card is made in whatever column it is added to (Add Card, a palette card, New {Type}), even one whose
   status its type leaves out, and a card already in one (moved there before the type left it out) stays where it is, shows its status, and
   can move out but not back. A type change keeps the card's status whether or not the new type uses it. Every way a
@@ -353,7 +374,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   a type uses; boards, cards and filters still say Status). Its title names the type as saved, "Edit {Name} Card
   Type" ("Edit Note Card Type"), or "New Card Type" for a new one. It opens
   on Configuration, new or edited alike. Arrow keys, Home and End move between the tabs. A tab holding what stops Save carries a small red
-  dot (a clashing name, a tab problem or a custom field problem is Configuration's; a left-out status problem is
+  dot (a clashing name, a tab problem or a custom field problem is Configuration's; a status list problem is
   States'; a missing name is not flagged, since a new type starts without one), and the problem is
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
   The title row ends with **Show Me**, **Help** (the Card Types help article) and a close cross, which acts as
@@ -481,19 +502,24 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     for more. A ticked type the project no longer has keeps a row after the others, named by its id, so it can be
     unticked. The last ticked type cannot be unticked (its row is disabled), so a field always links somewhere.
     Escape, a press outside or the field again close it. Its accessible name is "Links To". **Add Tab**, the same full-width dashed row under the groups, adds an unnamed tab.
-  - **States**: every status the project's boards name, and any a card is in that no board names, grouped by the
-    board that shows it: a group per board (All Cards and Archive boards aside), headed by the board's title as it
+  - **States**: first **Order**, the states the type uses in its order ("Drag to set the order a card's status
+    menu lists them in."), a numbered list of rows, each a grip, the state's name and a cross to turn it off
+    ("Turn Off {State}"). A row moves by dragging its grip (mouse, pen or touch: the row follows the pointer and the
+    rows it passes slide aside; release places it, Escape puts it back) or, focused on its grip, by Alt+Up and
+    Alt+Down. A state the type uses that nothing names any more is kept in its place but not listed. With every
+    state off, Order is not shown. Then every status the project's boards name, and any a card is in that no board
+    names, grouped by the board that shows it: a group per board (All Cards and Archive boards aside), headed by the board's title as it
     is now (so a renamed board reads its new name) with "N of M states on", holding its statuses in column order (a status
     on two boards shows in both, and ticking it in one ticks it in both, as it is one status), then **No Board** for
     any status no board names. Each group is a grid of checkbox rows (three to a row on desktop, two on a tablet,
-    one on a phone), each ticked while the type uses it (all ticked to start), with "N of M states on" and
+    one on a phone), each ticked while the type uses it, with "N of M states on" and
     **Select All** and **Deselect All** above them (each disabled when it would change nothing). Unticking one
-    leaves it out; Select All turns every listed status back on (a left-out status no board lists any more stays
-    left out); Deselect All turns them off in board order as far as the cap allows. All may be off, and then a note
+    leaves it out; ticking one adds it at the end of Order; Select All adds every listed status not yet on, in board
+    order, at the end; Deselect All turns every listed status off (one nothing lists any more stays). All may be off, and then a note
     says a card of this type stays in the state it is made in and can never be moved to another. With no columns
-    on the tab's boards it shows an empty state, **No States Yet**: "When you add states to a board, they’re added here automatically." At most 64 may be off: then every status still
-    on is disabled, and a note says "A type can turn off at most 64 states. Turn one back on to turn off another."
-    Under them, **Default State**: a menu of every state still on, each once and by its own name, in board order,
+    on the tab's boards it shows an empty state, **No States Yet**: "When you add states to a board that takes this type, they’re added here automatically." At most 128 may be on: then every status still
+    off is disabled, and a note says "A type can use at most 128 states. Turn one off to turn on another."
+    Under them, **Default State**: a menu of every state still on, each once and by its own name, in the type's order,
     after **None** (left out for a ready-made type whose named state the project has: that state shows picked until
     another is chosen, and a pick is saved as picked), with a line saying
     "Cards made outside a board start here; a card added to a board takes that column's state."
@@ -517,9 +543,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     **Reset to Default** (shown only once the size differs from its default; nothing in its place otherwise). A
     size equal to its default is stored as absent.
   - A problem is named beside Save, which waits for it: no name, a name another type has, or a custom field
-    without a name or a Choice without options, a tab without a name, or two tabs with one name, or more than 64
-    statuses off (a type stored that way: "Too many states turned off: a type can turn off at most 64.", on the
-    States tab).
+    without a name or a Choice without options, a tab without a name, or two tabs with one name, or more than 128
+    statuses on ("Too many states on: a type can use at most 128.", on the States tab). Save always stores the
+    type's `statuses` list, so a type stored before the list is saved in the new shape.
   - **Delete** (one word, as is **Duplicate**, so a phone's footer keeps each on one line), at the foot, for any type that exists, the catalogue's last too.
   - **Save** applies the whole edit as one change; **Cancel** drops it.
 - Removing a field from a type, or deleting a custom field, never deletes values: items keep them, and they show
