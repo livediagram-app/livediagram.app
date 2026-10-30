@@ -108,7 +108,12 @@ export function ArticleFlows({
     [reshape, flows, openByFlow, zoneId, zoneFlow, selectedIds, elements],
   );
   const articlePages = useMemo(
-    () => row.flatMap((p) => (p.flow && !held.has(p.flow) ? [{ id: p.id, flow: p.flow }] : [])),
+    () =>
+      row.flatMap((p) =>
+        p.flow && !held.has(p.flow)
+          ? [{ id: p.id, flow: p.flow, card: p.kind === 'flashcard' }]
+          : [],
+      ),
     [row, held],
   );
   const zoneDrag = useZoneDrag({
@@ -151,6 +156,12 @@ export function ArticleFlows({
     zoom,
     pagesOf: (flow) => byFlow.get(flow),
   });
+  // A too-long card's Split Onto a New Card, from its marker: an Editor's page edit.
+  const edit = view.edit;
+  const cardSplit = useMemo(
+    () => (edit ? { state: edit.cardSplitState, run: edit.splitCard } : undefined),
+    [edit],
+  );
   if (!articles || byFlow.size === 0) return null;
   const writable = (flow: string) => articles.editable && !held.has(flow);
   return (
@@ -207,6 +218,8 @@ export function ArticleFlows({
                 flow={flow}
                 pages={pages}
                 atPageLimit={row.length >= MAX_PAGES}
+                card={lead.kind === 'flashcard'}
+                split={lead.kind === 'flashcard' && writable(flow) ? cardSplit : undefined}
                 doc={doc}
                 editable={writable(flow)}
                 reshape={articles.reshape && writable(flow)}
