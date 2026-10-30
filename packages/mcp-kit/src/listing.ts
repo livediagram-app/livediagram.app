@@ -5,6 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { LATEST_PROTOCOL_VERSION, type Implementation } from '@modelcontextprotocol/sdk/types.js';
+import type { jsonSchemaValidator } from '@modelcontextprotocol/sdk/validation/types.js';
 
 // Every product lists under the GitHub organisation that owns the monorepo (livediagram-app/livediagram.app), so
 // one GitHub sign-in, or the repo's own OIDC token, proves the namespace for all of them.
@@ -13,6 +14,12 @@ export const REPOSITORY_URL = 'https://github.com/livediagram-app/livediagram.ap
 // The registry's own limit on a listing's description.
 export const DESCRIPTION_MAX = 100;
 export const SERVER_CARD_PATH = '/.well-known/mcp/server-card.json';
+
+// The card only lists tools and never calls one, so their output schemas need no validators. The SDK's default
+// compiles each with ajv, which generates code at runtime, and workerd refuses that.
+const SKIP_OUTPUT_SCHEMAS: jsonSchemaValidator = {
+  getValidator: () => (input) => ({ valid: true, data: input as never, errorMessage: undefined }),
+};
 
 export type McpListing = {
   // The product's name, lowercase ("livediagram"): serverInfo.name, the title and its domain's first label.
@@ -91,7 +98,10 @@ export async function serverCard(
 ): Promise<Record<string, unknown>> {
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
-  const client = new Client({ name: 'server-card', version: listing.version });
+  const client = new Client(
+    { name: 'server-card', version: listing.version },
+    { jsonSchemaValidator: SKIP_OUTPUT_SCHEMAS },
+  );
   await client.connect(clientSide);
   try {
     const capabilities = client.getServerCapabilities() ?? {};

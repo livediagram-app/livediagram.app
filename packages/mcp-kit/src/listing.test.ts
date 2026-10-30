@@ -24,8 +24,12 @@ function buildServer(): McpServer {
   const server = new McpServer(serverIdentity(LISTING), { instructions: 'Use the tools.' });
   server.registerTool(
     'find_examples',
-    { description: 'Finds examples.', inputSchema: { query: z.string() } },
-    async () => ({ content: [{ type: 'text', text: 'none' }] }),
+    {
+      description: 'Finds examples.',
+      inputSchema: { query: z.string() },
+      outputSchema: { count: z.number() },
+    },
+    async () => ({ content: [{ type: 'text', text: 'none' }], structuredContent: { count: 0 } }),
   );
   return server;
 }
