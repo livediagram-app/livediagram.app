@@ -54,6 +54,7 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 | `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                             |
 | `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                    |
 | `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                            |
+| `attachments`     | attachments | Up to 20 pictures on the card, `{ id, name, size, type, cover? }` each ([Attachments](#attachments))                                                                  |
 | `parent`          | card link | Another item's id (a Project): the Card field named Parent that Task carries (item-types.md "Card fields"), under its reserved id                                         |
 | `votes`           | votes     | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                                   |
 | `comments`        | comments  | The card's comment threads: stored apart from the card, in the plan's thread store, never in `fields`, and written only through the thread writes ([Comments](#comments)) |
@@ -61,6 +62,73 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 A card's type may leave statuses out ([Item types](item-types.md#an-item-type)): an item made or moved into one is
 refused (`status_excluded`), from the editor, the api and agents alike. A card already in one is never moved out
 by it, and putting a change back (a restore from the Trash, an undo or redo) is never refused.
+
+### Attachments
+
+Screenshots, mock-ups and photos kept on the card itself. **Attachments** (`attachments`) is a built-in field any card
+type can offer (no ready-made type offers it to start): Add Field's **Image** kind lists it under **Ready to use**,
+"Pictures on the card, and its cover". The owner's answer (2026-10-30) set what it takes: images only, on
+liveworkspace's media service, as [Image fields](item-types.md#image-fields) are.
+
+- **What a file may be**: a PNG, JPEG, WebP or GIF of up to 10 MB (the media service's own rule,
+  `@liveworkspace/media` limits.ts). A card holds at most **20** (`ITEM_ATTACHMENTS_MAX`). Each entry is
+  `{ id, name, size, type, cover? }`: the picture's id at the media service, its file name (cut to 120 characters),
+  its size in bytes, its type, and `cover: true` on at most one of them. The api refuses anything else
+  (`field_value_invalid`), a 21st picture included, so the cap holds for every door: the editor, agents and a sync.
+- **Adding** (the card panel, an Editor or a Participant): the field's section lists the card's pictures, then a
+  dashed **Add Images** zone ("PNG, JPEG, WebP or GIF, up to 10 MB · or paste"). Pressing it opens the file picker
+  (several files at once); files dropped on it, or on the list above it, upload; and an image pasted while
+  the panel is open, outside a text field, uploads too. A file **dropped on a card** on a board uploads into that
+  card's Attachments when its type offers them (the card rings in the brand colour while a file is over it; a card
+  whose type has no Attachments, or a reader who can't edit it, takes no drop). Each upload goes through
+  `POST /api/images?p=` as an Image field's does, then joins the end of the list in one write. Several files upload
+  one after another; a file past the card's 20, or one the media service refuses, is skipped and said under the
+  zone ("That image is over 10 MB.", "A card holds up to 20 images."), the rest still land.
+- **Each picture** is a row: a 40 px square thumbnail (cropped to fill), its name and its size ("1.2 MB"), with a
+  **Cover** tag on the cover. Pressing the row **opens** the picture full size in a new browser tab. Its **⋯** menu
+  holds **Open**, **Download** (saves it under its name), **Set as Cover** (or **Remove Cover** on the cover) and
+  **Remove**. A Viewer, and a link visitor who only reads, sees the rows and opens and downloads them; the menu
+  then holds only Open and Download.
+- **Removing** takes the picture off the card (one undo step, as any field change); its bytes stay in the
+  uploader's gallery, which the Explorer's Image Gallery lists, until the media service's sweep (below).
+- **The cover**: **Set as Cover** makes that picture the card's cover (the one before stops being it). On a
+  Detailed card whose type's Display holds **Cover Image** ([Card display](item-types.md#card-display)), the cover
+  is drawn across the top of the card, edge to edge, 120 px tall and cropped to fill. Removing the cover's picture
+  leaves the card without one.
+- **On the card face**: the **Attachments** card field is a paperclip and how many pictures the card holds
+  ("Attachments: 3"); with none it is not drawn.
+- **Loading**: thumbnails and covers are fetched only as the card or row scrolls into view, at the size they are
+  drawn (a cover at most 640 px on its longest side, a row's thumbnail 160 px), never the original; each size is
+  fetched once and shared by every card and panel showing it.
+- **Who sees the bytes**: `GET /api/images/{id}?p=` serves an attachment as it serves an Image field's picture: to
+  its uploader, and to anyone who may read the plan while the plan holds a grant for it and one of its cards holds it
+  ([api.md](../015-api/api.md) "Images").
+- **The Trash and deleting for good**: a trashed card keeps its pictures (Restore brings them back as they were). A
+  card deleted for good, or a plan purged, no longer places them: the plan reports the pictures its cards hold to
+  the media service ("Images in use", below), and the service's daily sweep deletes a picture no document in any
+  app has placed for 30 days.
+- **Copies**: duplicating a card, or a whole plan, carries the attachment ids: no bytes are copied. In the same
+  plan the copy shows them to everyone; a copied plan shows them to their uploader, and to its other readers once
+  someone who may edit it uploads them there again (as an Image field's).
+- **This Browser plans** take no attachments: the server holds no record of them, so nothing would report their
+  pictures and the sweep would take them. The zone reads "Save this plan to your account to add images." and
+  takes no file; a card that came in with attachments (a plan taken offline) keeps them and shows them to their
+  uploader.
+- **Agents and the api read it**: `list_items` lists each card's attachments by name; an agent may clear the field
+  but never set it ("Attachments are added in the card panel"). A form can't ask it, and Import CSV and Export CSV
+  leave it out, as an Image field's.
+- Telemetry: `Plan · Added · CardAttachment`, `Plan · Removed · CardAttachment`, `Plan · Set · CardCover`.
+
+### Images in use
+
+A plan tells liveworkspace's media service which pictures its cards hold, so the service's sweep never takes one in
+use and can take one no card holds any more ([media.md](../../../../liveworkspace/docs/specs/006-media/media.md)
+"References"). The set is every picture a card's Attachments hold, and every Image field value the plan holds a grant
+for. A card write that could change it (made, changed or deleted while the plan holds a grant or a card holds
+attachments) and each upload's grant queue an `images` key in the plan's outbox; the outbox's drain, at most once a
+minute, works the set out and sends it (`POST /app/refs`, the plan as the document, `complete: true`) only when it
+differs from the last one sent. A purged plan sends an empty set. A plan reports on its first wake after this ships
+when it holds a grant, so pictures uploaded before are counted.
 
 ## Item types
 
@@ -583,6 +651,7 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   long: a card title holds up to 500 characters", "That value is too long or isn't one this field takes").
 
 - Up to 2,000 items per project; a create past it is refused with `items_full`.
+- Up to 20 pictures in a card's Attachments ([Attachments](#attachments)), each at most 10 MB.
 - Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
   card's comment threads sit outside that budget: up to 50 threads a card, 20 cards a thread, and 200 comments and
   128 KB a thread; a write past one is refused with `threads_full`, `thread_cards_full` or `comments_full`.
