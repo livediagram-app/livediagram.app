@@ -104,7 +104,7 @@ describe('AppAccountMenu', () => {
     expect(renderToString(<AppAccountMenu hint={HINT} />)).toBe(placeholder);
   });
 
-  it("shows the signed-in person's menu from the cookies, with no request", () => {
+  it("shows the signed-in person's menu from the cookies, with no request on the way", () => {
     setCookies('lp_signed_in=1', 'lp_account=Ada%20Lovelace');
     render(<AppAccountMenu hint={HINT} />);
     const trigger = screen.getByRole('button', { name: 'Ada Lovelace, account menu' });
@@ -188,6 +188,44 @@ describe('AppAccountMenu', () => {
     await act(async () => answer());
     expect(screen.getAllByRole('button', { name: 'Ada, account menu' })).toHaveLength(2);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('checks a named session once, when the page is idle, and turns to Guest if it ended elsewhere', async () => {
+    vi.useFakeTimers();
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    // Signed out in another app: the session here ended with it, and the answer clears this app's cookies.
+    fetchMock.mockImplementation(async () => {
+      document.cookie = 'lp_signed_in=0; path=/';
+      return new Response('{"signedIn":false}', { status: 401 });
+    });
+    render(
+      <>
+        <AppAccountMenu hint={HINT} />
+        <AppAccountMenu hint={HINT} />
+      </>,
+    );
+    // Shown from the cookies at once; nothing asked during the page's own work.
+    expect(screen.getAllByRole('button', { name: 'Ada, account menu' })).toHaveLength(2);
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+    });
+    vi.useRealTimers();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/token');
+    expect(screen.getAllByRole('button', { name: 'Guest, account menu' })).toHaveLength(2);
+  });
+
+  it('waits for an idle moment where the browser offers one, and keeps a live session as it is', async () => {
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (fn: () => void) => void idle.push(fn));
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    fetchMock.mockResolvedValue(new Response('{"signedIn":true}', { status: 200 }));
+    render(<AppAccountMenu hint={HINT} />);
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => idle.shift()!());
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Ada, account menu' })).toBeTruthy();
   });
 
   it('turns to Guest when the token says the session is gone', async () => {
