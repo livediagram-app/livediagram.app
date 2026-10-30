@@ -38,7 +38,6 @@ import {
 } from '@livedocuments/document';
 
 import { track } from '@/lib/telemetry';
-import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
 import {
   readPresentationConfig,
   withPresentationConfig,
@@ -219,8 +218,6 @@ export function useSlideDeck({
       setPresenting(next === null ? null : positionAt(next, runnableRef.current)),
     [runnableRef],
   );
-  // Row previews, from the same headless renderer the Layers panel uses.
-  const thumbs = useSlideThumbnails(deck, tabs);
   // Each page slide's page, named from its own tab (null once the page is gone).
   const pageLabels = useMemo(() => pageSlideLabels(deck, tabs), [deck, tabs]);
   // What each slide is about, for a row whose slide has no name: its largest text.
@@ -501,7 +498,8 @@ export function useSlideDeck({
     setOpenSlideId,
     openSlideInEditor,
     runnable,
-    thumbs,
+    // The real tabs, for the panel's row previews (useSlideThumbnails, drawn while it is open).
+    slideTabs: tabs,
     pageLabels,
     headlines,
     newSlideFromSelection,

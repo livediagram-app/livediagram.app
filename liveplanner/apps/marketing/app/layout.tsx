@@ -14,9 +14,10 @@ import {
   trustedHtml,
   trustedTypesBootScript,
 } from '@liveplanner/ui';
-import { NON_MARKETING_SEGMENTS } from '@liveplanner/api-schema';
+import { NON_MARKETING_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
 import { viewTransitionGuardScript } from '@liveworkspace/marketing-site/lib/view-transition-guard';
 import { HERO_FAN_BOOT_SCRIPT } from '@liveworkspace/marketing-site/lib/hero-fan-boot';
+import { marketingSilentSignInScript } from '@liveworkspace/marketing-site/lib/silent-sign-in';
 import { MARKETING_DESCRIPTION, MARKETING_TITLE } from '@/lib/site-copy';
 
 // Skips a view transition into this product's other apps (viewTransitionGuardScript).
@@ -35,6 +36,10 @@ const DESCRIPTION = MARKETING_DESCRIPTION;
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
 // violation log, and this app's own scripts under its asset prefix.
 const TRUSTED_TYPES_BOOT = trustedTypesBootScript('');
+
+// Signing in without a click (@liveworkspace/marketing-site/lib/silent-sign-in): someone signed in to liveworkspace
+// is signed in here too, by a bounce that waits until the page has painted and gone idle.
+const SILENT_SIGN_IN_SCRIPT = marketingSilentSignInScript(SIGNED_IN_HINT_COOKIE);
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -146,6 +151,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_SCRIPT) }} />
         <style>{VIEW_TRANSITION_OPT_IN}</style>
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(VIEW_TRANSITION_GUARD_SCRIPT) }} />
         {/* The hero fan deals a shuffled hand once script runs (components/HeroFan.tsx). */}
