@@ -34,4 +34,20 @@ describe('migratePlanSchema', () => {
     sql.exec('UPDATE _plan_schema SET version = 4');
     expect(() => migratePlanSchema((q) => exec.exec(q))).not.toThrow();
   });
+
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields": a thread's Comments field.
+  it('gives a plan made at version 8 its threads’ field column, once', () => {
+    const sql = new DatabaseSync(':memory:');
+    const exec = nodeItemSql(sql);
+    const columns = () =>
+      sql
+        .prepare('PRAGMA table_info(card_threads)')
+        .all()
+        .map((r) => r.name as string);
+    migratePlanSchema((q) => exec.exec(q));
+    expect(columns()).toContain('field');
+    sql.exec('ALTER TABLE card_threads DROP COLUMN field; UPDATE _plan_schema SET version = 8');
+    migratePlanSchema((q) => exec.exec(q));
+    expect(columns().filter((c) => c === 'field')).toHaveLength(1);
+  });
 });

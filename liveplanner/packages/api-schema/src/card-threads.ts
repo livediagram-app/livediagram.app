@@ -12,8 +12,14 @@ export type { CardRef, CardThread, ThreadPerson } from '@liveplanner/project';
 export type CardThreadsResponse = { threads: CardThread[] };
 
 // POST /api/projects/:id/items/:itemId/threads: a new thread on the card, with its first comment. `title` is
-// optional; left out, the thread is titled from the caller's name and the comment.
-export type CardThreadStartRequest = { text: string; mentions?: CommentMention[]; title?: string };
+// optional; left out, the thread is titled from the caller's name and the comment. `field` is the Comments field it
+// starts in (a Comments field of the card's type, by id; the built-in Comments when absent), else 400 field_invalid.
+export type CardThreadStartRequest = {
+  text: string;
+  mentions?: CommentMention[];
+  title?: string;
+  field?: string;
+};
 
 // POST /api/projects/:id/threads/:threadId/comments (a reply) and PUT .../comments/:commentId (an edit).
 export type CardThreadCommentRequest = { text: string; mentions?: CommentMention[] };

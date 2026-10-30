@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { checklistProgress, currencyText, customFieldText, dayLabel, linkHost } from './card-text';
+import {
+  checklistProgress,
+  currencyText,
+  customFieldText,
+  dayLabel,
+  linkHost,
+  voteTotalOf,
+} from './card-text';
 import type { CustomFieldDef } from './item-types';
 import type { Item } from './item';
 
@@ -46,6 +53,12 @@ describe('customFieldText', () => {
     expect(customFieldText(field('text'), 3)).toBeNull();
   });
 
+  it('reads a Votes field as its total and a Comments field as nothing (item-types.md "Comments and Votes fields")', () => {
+    expect(customFieldText(field('votes'), { ali: 2, sam: 1 })).toBe('3');
+    expect(customFieldText(field('votes'), { ali: 0 })).toBeNull();
+    expect(customFieldText(field('comments'), 'x')).toBeNull();
+  });
+
   it('names the card a Card field points at', () => {
     const items = new Map([['c1', { id: 'c1', fields: { title: 'Ship it' } } as unknown as Item]]);
     expect(customFieldText(field('card'), 'c1', items)).toMatch(/Ship it/);
@@ -83,5 +96,14 @@ describe('checklistProgress', () => {
     expect(
       checklistProgress({ fields: { checklist: [{ done: true }, { done: false }, null] } }),
     ).toEqual({ done: 1, total: 3 });
+  });
+});
+
+describe('voteTotalOf', () => {
+  it('adds up the positive dots of a votes map, and is 0 for anything else', () => {
+    expect(voteTotalOf({ ali: 2, sam: 3, kim: -1, joe: 'x' })).toBe(5);
+    expect(voteTotalOf(undefined)).toBe(0);
+    expect(voteTotalOf(4)).toBe(0);
+    expect(voteTotalOf(['a'])).toBe(0);
   });
 });

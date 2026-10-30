@@ -7,6 +7,7 @@
 
 import {
   CARD_THREADS_MAX,
+  isThreadFieldId,
   isThreadId,
   newThreadId,
   readThreadTitle,
@@ -17,6 +18,14 @@ import {
   type CardThread,
   type ThreadChange,
 } from '@liveplanner/project';
+import {
+  commentsFieldsOf,
+  customFieldOf,
+  typeIn,
+  typesOf,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import {
   COMMENT_TEXT_MAX,
   type CardThreadWriteResponse,
@@ -172,6 +181,33 @@ async function list(ctx: PlanRouteContext, projectId: string): Promise<Response>
 
 // ---------- POST /items/:itemId/threads ----------------------------------------------------------------------
 
+// The Comments field a new thread starts in (items.md "Comments", item-types.md "Comments and Votes fields"): absent
+// is the built-in; else one of the card's type's Comments fields, or `field_invalid` naming the ones there are.
+function readThreadField(
+  body: Record<string, unknown>,
+  type: ItemTypeDef,
+): string | undefined | Response {
+  if (body.field === undefined) return undefined;
+  const fields = commentsFieldsOf(type);
+  if (isThreadFieldId(body.field) && fields.includes(body.field)) return body.field;
+  const names = fields.map((f) =>
+    f === 'comments' ? 'comments (Comments)' : `${f} (${customFieldOf(type, f)?.label ?? f})`,
+  );
+  console.info('[threads] refused', { error: 'field_invalid' });
+  return json(
+    {
+      error: 'field_invalid',
+      message: names.length
+        ? `field names a Comments field of the card's type ${type.label}: ${names.join(', ')}`
+        : `a ${type.label} card has no Comments field to start a thread in`,
+    },
+    { status: 400 },
+  );
+}
+
+const typeOfItem = (caller: ItemCaller, item: Item): ItemTypeDef =>
+  typeIn(typesOf(caller.doc?.itemTypes), item.type);
+
 export async function startOnCard(
   ctx: PlanRouteContext,
   projectId: string,
@@ -186,6 +222,8 @@ export async function startOnCard(
   if (title === null) return refusal('title_too_long');
   const item = await readItem(ctx.env, projectId, itemId);
   if (!item) return itemNotFound();
+  const field = readThreadField(body, typeOfItem(caller, item));
+  if (field instanceof Response) return field;
   if ((await threadCountOfItem(ctx.env, projectId, itemId)) >= CARD_THREADS_MAX)
     return refusal('threads_full');
   const comment = await newComment(ctx, caller.owner, body);
@@ -197,6 +235,7 @@ export async function startOnCard(
     card: { projectId, itemId, key: item.key },
     comment,
     title,
+    ...(field ? { field } : {}),
     now,
   });
   await insertThread(ctx.env, thread, defer(ctx));

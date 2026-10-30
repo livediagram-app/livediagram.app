@@ -119,8 +119,9 @@ export function boardCsvRows(
             const linked = linkedCard(items, item.fields[f.id]);
             return linked ? itemTitle(linked) : '';
           }
-          // A Checklist reads as its progress ("2/5"), as the card shows it.
-          if (f.kind === 'checklist') return customFieldText(f, item.fields[f.id]) ?? '';
+          // A Checklist reads as its progress ("2/5") and a Votes field as its total, as the card shows them.
+          if (f.kind === 'checklist' || f.kind === 'votes')
+            return customFieldText(f, item.fields[f.id]) ?? '';
           // An option may hold a comma, so a Multiple Choice's picks are kept apart by semicolons.
           if (f.kind === 'multichoice') {
             const v = item.fields[f.id];
@@ -182,11 +183,14 @@ function customValue(
 ): ItemFieldValue | undefined {
   switch (f.kind) {
     // Never read from a file: a Card field names a card by id, a Calculated field is worked out, an Image is a
-    // picture uploaded in the card panel, and a Checklist's rows are not in its cell (only its progress is).
+    // picture uploaded in the card panel, a Checklist's rows are not in its cell (only its progress is), and threads
+    // and votes are written by their own writes.
     case 'card':
     case 'calculated':
     case 'image':
     case 'checklist':
+    case 'comments':
+    case 'votes':
       return undefined;
     // The built-in fields' kinds read as those fields do: a person by name, labels by commas, a colour as #rrggbb.
     case 'person':

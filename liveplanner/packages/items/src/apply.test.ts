@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyMove,
   applyPatch,
+  applyTally,
   columnItems,
   inversePatch,
   itemPlacer,
@@ -10,6 +11,7 @@ import {
   placeOf,
   rankForPlace,
 } from './apply';
+import { ITEM_VOTES_PER_PERSON_MAX } from './limits';
 import { ALI, SAM, item } from './test-items';
 
 const ctx = { now: 10, by: ALI };
@@ -102,6 +104,17 @@ describe('item writes', () => {
     expect(cleared.type).toBe('bug');
     // Status kept when the move only reorders.
     expect(applyMove(a, { after: null }, [a, c], ctx).fields['status']).toBe('todo');
+  });
+
+  // docs/specs/026-plan/items.md "Tally" and item-types.md "Comments and Votes fields".
+  it('adds a tally to the built-in Votes, or to the Votes field named', () => {
+    const a = item({ votes: { p: 1 }, 'f-pri': { p: 98 } });
+    const built = applyTally(a, { p: 2, q: 1, r: 0 }, ctx);
+    expect(built.fields['votes']).toEqual({ p: 3, q: 1 });
+    expect(built.rev).toBe(a.rev + 1);
+    const own = applyTally(a, { p: 5 }, ctx, 'f-pri');
+    expect(own.fields['f-pri']).toEqual({ p: ITEM_VOTES_PER_PERSON_MAX });
+    expect(own.fields['votes']).toEqual({ p: 1 });
   });
 
   it('makes 12-character ids', () => {

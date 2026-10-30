@@ -250,6 +250,13 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
       fields[key] = v;
       continue;
     }
+    // A custom Votes field's votes ride along on a create as the built-in's `votes` do (an undo of a delete, a sync);
+    // a patch never sets them (docs/specs/026-plan/item-types.md "Comments and Votes fields").
+    const carried = !kind && mode === 'create' ? carriedVotes(v) : null;
+    if (carried) {
+      fields[key] = carried;
+      continue;
+    }
     const value = kind ? normaliseKnown(kind, v) : normaliseUnknown(v);
     // `color` was a free key before it was a field: an item made from older data (offline sync, a duplicated
     // project, a seed) may hold any value there. Making one drops a value that is not a swatch rather than
@@ -297,6 +304,13 @@ export function validateVotes(input: unknown): Record<string, number> | null {
     out[k] = v;
   }
   return out;
+}
+
+// A non-empty voter-to-dots map, as a custom Votes field holds it; null for anything else (a person among them).
+function carriedVotes(v: unknown): Record<string, number> | null {
+  if (!isObj(v)) return null;
+  const votes = validateVotes(v);
+  return votes && Object.keys(votes).length > 0 ? votes : null;
 }
 
 // Keys a patch may clear: any valid key but the title (an item keeps a title).

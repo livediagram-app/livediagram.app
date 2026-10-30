@@ -68,8 +68,13 @@ export type ItemsBulkRequest = { items: ItemCreate[] };
 // cards to the Trash), optionally marked as an undo or redo.
 export type ItemsPatchRequest = { items: (ItemPatch & { id: string })[] } & ItemUndoFlag;
 
-// POST /api/projects/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it.
-export type ItemsTallyRequest = { items: { id: string; votes: Record<string, number> }[] };
+// POST /api/projects/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it. `field` is
+// the Votes field it counts in (the built-in `votes` when absent, or a custom Votes field's id); a card whose type
+// does not offer it takes its dots in the built-in.
+export type ItemsTallyRequest = {
+  items: { id: string; votes: Record<string, number> }[];
+  field?: string;
+};
 
 // The room op every item write sends (system kind). `upserts` and `removed` are empty for a
 // session scoped to one tab: it refetches the items its tab shows.

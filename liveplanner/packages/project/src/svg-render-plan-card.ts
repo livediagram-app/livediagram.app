@@ -143,6 +143,11 @@ function bitOf(
       // A custom field: its name and its value, a linked card's title for a Card field.
       if (!isCustomCardField(f)) return null;
       const def = (type.custom ?? []).find((c) => c.id === f);
+      // A Votes field draws the built-in's ▲ count of its own votes (item-types.md "Comments and Votes fields").
+      if (def?.kind === 'votes') {
+        const n = itemVoteTotal(item, def.id);
+        return n > 0 ? { kind: 'text', text: `${def.label} ▲ ${n}`, color: p.muted } : null;
+      }
       const value = !def
         ? null
         : def.kind === 'calculated'

@@ -84,6 +84,14 @@ export function customFieldText(
     // "Image fields").
     case 'image':
       return null;
+    // A Comments field's threads are not a value; a Votes field reads as its total (docs/specs/026-plan/item-types.md
+    // "Comments and Votes fields").
+    case 'comments':
+      return null;
+    case 'votes': {
+      const total = voteTotalOf(value);
+      return total > 0 ? String(total) : null;
+    }
     default:
       return typeof value === 'string' ? value.split('\n')[0]! : null;
   }
@@ -162,4 +170,12 @@ export function checklistRowsProgress(
     (r) => !!r && typeof r === 'object' && (r as { done?: unknown }).done === true,
   ).length;
   return { done, total: rows.length };
+}
+
+// A Votes value's total dots (`{ voter: dots }`, as the built-in Votes holds them); 0 for anything else.
+export function voteTotalOf(value: ItemFieldValue | undefined): number {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
+  let total = 0;
+  for (const n of Object.values(value)) if (typeof n === 'number' && n > 0) total += n;
+  return total;
 }

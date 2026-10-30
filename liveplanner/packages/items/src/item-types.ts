@@ -63,6 +63,11 @@ export const CUSTOM_FIELD_KINDS = [
   'checklist',
   // One picture at liveworkspace's media service, by its id (docs/specs/026-plan/item-types.md "Image fields").
   'image',
+  // Its own comment threads and its own votes (docs/specs/026-plan/item-types.md "Comments and Votes fields"): a
+  // thread names its Comments field (`CardThread.field`); a Votes field holds `{ voter: dots }` as the built-in Votes,
+  // written only by a session vote's tally.
+  'comments',
+  'votes',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
 
@@ -73,6 +78,8 @@ const BUILT_IN_OF_KIND: Partial<Record<CustomFieldKind, ItemFieldId>> = {
   labels: 'labels',
   colour: 'color',
   checklist: 'checklist',
+  comments: 'comments',
+  votes: 'votes',
 };
 export const builtInFieldOfKind = (kind: CustomFieldKind): ItemFieldId | undefined =>
   BUILT_IN_OF_KIND[kind];

@@ -1461,6 +1461,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdBy": {
         "$ref": "#/components/schemas/ThreadPerson"
       },
+      "field": {
+        "type": "string"
+      },
       "home": {
         "type": "string"
       },
@@ -1548,6 +1551,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CardThreadStartRequest": {
     "additionalProperties": false,
     "properties": {
+      "field": {
+        "type": "string"
+      },
       "mentions": {
         "items": {
           "$ref": "#/components/schemas/CommentMention"
@@ -2534,7 +2540,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "labels",
       "colour",
       "checklist",
-      "image"
+      "image",
+      "comments",
+      "votes"
     ],
     "type": "string"
   },
@@ -5555,6 +5563,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemsTallyRequest": {
     "additionalProperties": false,
     "properties": {
+      "field": {
+        "type": "string"
+      },
       "items": {
         "items": {
           "additionalProperties": false,
@@ -10422,6 +10433,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "startedBy": {
+        "type": "string"
+      },
+      "voteField": {
         "type": "string"
       },
       "voteLayerId": {
