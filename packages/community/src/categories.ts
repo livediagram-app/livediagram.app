@@ -217,8 +217,44 @@ export const COMMUNITY_APP_CATEGORIES = {
 
 type AppCategories = typeof COMMUNITY_APP_CATEGORIES;
 
-// Every app's category ids, together: what a stored or queried category can be.
-export type CommunityCategory = AppCategories[CommunityApp][number]['id'];
+// Every app's category ids, together: what a stored or queried category can be. Spelled out, not derived from the
+// four lists: livediagram's OpenAPI schemas are generated from these types, and the generator can't read an indexed
+// access over a union of tuples. categories.test.ts checks the two agree.
+export type CommunityCategory =
+  | 'architecture'
+  | 'art'
+  | 'articles'
+  | 'budgets'
+  | 'dashboards'
+  | 'data'
+  | 'decks'
+  | 'design'
+  | 'events'
+  | 'flows'
+  | 'forms'
+  | 'guides'
+  | 'illustrations'
+  | 'infographics'
+  | 'learning'
+  | 'logos'
+  | 'mindmaps'
+  | 'newsletters'
+  | 'other'
+  | 'personal'
+  | 'photos'
+  | 'planning'
+  | 'posters'
+  | 'projects'
+  | 'proposals'
+  | 'roadmaps'
+  | 'social'
+  | 'trackers'
+  | 'wireframes'
+  | 'workflows'
+  | 'workshops';
+
+/** The ids the four lists hold, for the check that CommunityCategory names exactly them. */
+export type CommunityAppCategoryId = AppCategories[CommunityApp][number]['id'];
 
 // One app's categories, in display order.
 export function communityCategories<A extends CommunityApp>(app: A): AppCategories[A] {

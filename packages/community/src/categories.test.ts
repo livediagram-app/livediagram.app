@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { COMMUNITY_APPS } from './apps';
 import {
   COMMUNITY_APP_CATEGORIES,
@@ -8,6 +8,8 @@ import {
   communityCategoryTypes,
   isCommunityCategory,
   isCommunityCategoryOf,
+  type CommunityAppCategoryId,
+  type CommunityCategory,
   type CommunityCategoryDef,
 } from './categories';
 
@@ -74,5 +76,11 @@ describe("each app's categories", () => {
       'Learning',
       'Other',
     ]);
+  });
+});
+
+describe('CommunityCategory', () => {
+  it('names exactly the ids the apps’ lists hold', () => {
+    expectTypeOf<CommunityCategory>().toEqualTypeOf<CommunityAppCategoryId>();
   });
 });
