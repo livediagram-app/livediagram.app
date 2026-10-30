@@ -204,9 +204,15 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
   }
 }
 
+// A custom field's value: a scalar or a list of them, or the two shapes a built-in field's kind keeps that are not
+// (docs/specs/026-plan/item-types.md "Custom field kinds"): a Person field's `{ id, name, color }`, and a Checklist
+// field's `{ text, done }` rows, checked as the Assignee's and the Checklist's are.
 function normaliseUnknown(v: unknown): ItemFieldValue | undefined {
   if (isScalar(v)) return v;
-  if (Array.isArray(v) && v.length <= ITEM_UNKNOWN_ARRAY_MAX && v.every(isScalar)) return v;
+  if (isObj(v)) return normaliseKnown('person', v);
+  if (!Array.isArray(v)) return undefined;
+  if (v.length > 0 && v.every(isObj)) return normaliseKnown('checklist', v);
+  if (v.length <= ITEM_UNKNOWN_ARRAY_MAX && v.every(isScalar)) return v;
   return undefined;
 }
 

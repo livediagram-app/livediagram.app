@@ -311,10 +311,12 @@ function customOf(
   type: ItemTypeDef,
   types: readonly ItemTypeDef[],
 ): CustomFieldDef {
-  const kind = input.kind
+  const typed = input.kind
     .trim()
     .toLowerCase()
     .replace(/[\s_-]+/g, '');
+  // An American agent's "color" is the Colour kind.
+  const kind = typed === 'color' ? 'colour' : typed;
   const known = CUSTOM_FIELD_KINDS.find((k) => k === kind);
   if (!known)
     throw invalid(
