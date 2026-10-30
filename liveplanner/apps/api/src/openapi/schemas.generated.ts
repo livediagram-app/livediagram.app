@@ -2526,7 +2526,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "multichoice",
       "rating",
       "card",
-      "calculated"
+      "calculated",
+      "person",
+      "labels",
+      "colour",
+      "checklist",
+      "image"
     ],
     "type": "string"
   },

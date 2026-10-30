@@ -328,7 +328,7 @@ All follow the **active tab theme**. Two looks, both legible by construction: so
 
 **Swapping an icon.** In every mode, an icon dropped onto a standalone `icon` element **replaces its glyph**: the target keeps its id, box, position, rotation, style and label and takes the dropped icon's id. Two ways in: (1) **drag an icon tile** from the Icons or Technology tab onto it (the whole icon rings and fills faintly while it is the target, with no side band); (2) **drag an icon element** already on the canvas onto it: on release the dragged icon is used up (removed) and the target takes its glyph, in one undo with the move. Any icon swaps with any other, a Technology mark included. Telemetry: `Element · Changed · IconSwapped` (a palette drop; a canvas drag reports nothing new, as the inline fold does not).
 
-**No images.** liveplanner takes no image uploads, so nothing makes an Image, Avatar or Hero. The Header's logo is its inline icon (drop an icon on it) or the brand's initial, so it needs no image.
+**No images.** The canvas takes no image uploads (only a card's Image field does, [Image fields](../026-plan/item-types.md#image-fields)), so nothing makes an Image, Avatar or Hero. The Header's logo is its inline icon (drop an icon on it) or the brand's initial, so it needs no image.
 
 ### Screens inside an element
 
@@ -1363,7 +1363,7 @@ re-attaching any of them to a copy misrepresents it, and a copy can cross
 accounts.
 
 **Two sources compete on paste, in order:** our own serialised elements, then
-the in-app buffer (an image on the system clipboard is ignored: liveplanner
+the in-app buffer (an image on the system clipboard is ignored: the canvas
 takes no image uploads). The buffer is kept as a fallback
 rather than deleted because clipboard writes are best-effort: `writeText`
 rejects when the project isn't focused or permission is denied, and a copy
