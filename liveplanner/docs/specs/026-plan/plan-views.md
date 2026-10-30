@@ -81,7 +81,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 - Every visualisation (not a metric tile) has a **cog** at the end of its header, last after Maximise, for someone who
   may change the chart (an Editor; Participants and Viewers see no cog). It opens **Chart Settings**, a popover of
   collapsible sections like a board's Board Settings: **Card Types** for every view, **Group By** for Cards by Field
-  (open first there), **Statuses** for Cards by Field and Priority by Status, and **Swimlanes** and **Row Order** (its note, and **Sort by Date** while the chart has its own
+  (open first there), **Count By** for Cards by Field, **Dates** for a Gantt chart and the calendars, **Statuses** for Cards by Field and Priority by Status, and **Swimlanes** and **Row Order** (its note, and **Sort by Date** while the chart has its own
   order, closing the popover) for a Gantt chart. They are the same settings as the element menu's **View** flyout,
   and each change is one edit, tracked as there. In a Dashboard slot it holds the slot's **Slot** section last
   ([Dashboard tab](plan-tabs.md#dashboard-tab)); there, someone who may not change the chart sees the slot's own cog
@@ -94,7 +94,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   which fields a type needs to be listed: a Gantt chart needs Start and Due ("Only card types with Start and Due
   fields show here."), a Due Calendar Due, a Start Calendar Start, Priority by Status and the Priorities metric Priority, the People and
   Unassigned metrics Assignee, the Due Soon metric Due, the Points metric Estimate and the Top Voted metric Votes;
-  the rest list every type. At least one stays pressed.
+  the rest list every type. A view reading a picked field ([Dates](#dates), [Count By](#cards-by-field)) needs
+  that field instead, named by its label. At least one stays pressed.
 - A view other than the Gantt chart shows every type it can until told otherwise, stored as the `types` it names
   only when that is not every listed type; the Gantt chart keeps its own default (Project). A named type that has
   lost a needed field is not listed and drops out of the view, but stays named, so it comes back when the type has
@@ -261,6 +262,21 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   edit; choosing exactly Project again leaves the default (the setting is dropped). Telemetry: `Plan` · `Changed` ·
   `GanttTypes`.
 
+#### Dates
+
+- A Gantt chart, a Due Calendar and a Start Calendar read their dates by role ([Fields by
+  role](item-types.md#fields-by-role)): Start and Due unless picked. Chart Settings' **Dates** section (the View
+  flyout's too) has, for a Gantt chart, **Starts On** and **Due On**; for a Due Calendar **Due On**; for a Start
+  Calendar **Starts On**. Each is an [option list](plan-board.md#option-lists) of the Date fields the views' card
+  types offer: the built-in Start Date or Due Date first, then each custom Date field by its label, ticked when
+  picked. Its note: "The date field this chart reads."
+- Stored on the element as `startField` and `dueField` (a custom field's id); the built-in is the default and
+  never stored. A picked field no shown type offers any more reads as the built-in again, and the setting stays.
+- Everything the chart does reads and writes the picked fields: its bars, the calendar's days, a drag or Alt+Arrow
+  move, the other date carried along, Add Card's first dates, the counts and an image of the chart. A type must
+  offer the picked fields to be listed under Card Types.
+- Telemetry: `Plan` · `Changed` · `ViewDates`.
+
 ### Due Calendar
 
 - The month opens on today's, weeks from Monday; **‹** and **›** step a month (each viewer's own, unsaved),
@@ -312,8 +328,13 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   field (Parent among them). The empty group ("No assignee", "No priority"...) is last. Each bar is as long as its cards against
   the fullest row, split into Not Started, In Progress and Done, with the total at its end.
 - Its element menu's **View** flyout has **Group By**, the board's Swimlanes grid without None, listing what the
-  view's card types offer (stored as `swimlaneBy` and `swimlaneField`; Assignee is the default, not stored).
-  Telemetry: `Plan` · `Changed` · `ViewGrouping`.
+  view's card types offer, custom Person and Labels fields among them (stored as `swimlaneBy` and
+  `swimlaneField`; Assignee is the default, not stored). Telemetry: `Plan` · `Changed` · `ViewGrouping`.
+- **Count By**: **Cards** (the default), or the **Estimate** or any custom Number field the view's types offer,
+  as an option list. Counting by a field, each bar is the sum of its cards' values (a card without one adds
+  nothing), split by phase as before, its total at its end, and the header reads `34 points` for Estimate or
+  `34 {field}` (`34 Story Points`); a group whose cards hold no value still shows, at 0. Stored as `measure` (the
+  field's id); absent counts cards. Telemetry: `Plan` · `Changed` · `ViewMeasure`.
 - Its header names what it groups by, "Cards by Assignee", "Cards by Severity" (a field gone reads "Cards by
   Field"), unless the view has a title of its own; images draw the same heading.
 - A legend names the three phases, at the top right. The header counts the cards: `14 cards`.

@@ -388,7 +388,8 @@ Where each is set, so a setting lives with what it changes, never in one central
 A board can group its rows by one field of its cards (`swimlaneBy: 'field'` with `swimlaneField`, the field's
 id), so a field added to a type (a Project's **Customer**) can set the rows straight away.
 
-- **Which fields**: every custom field of a kind that groups (Choice, Checkbox, Number, Date, Text, Card) on any type in
+- **Which fields**: every custom field of a kind that groups (Choice, Checkbox, Number, Date, Text, Card, Person,
+  Labels) on any type in
   the project's catalogue, and the built-in **Labels**, **Estimate**, **Start Date** and **Due Date**. Long
   text and Link never group (each value is its own row), nor do Description, Checklist, Votes and Title.
   Assignee, Type, Priority and Status keep their own tiles. A **Card** field (Parent among them) gives a row per
@@ -406,7 +407,9 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
   - **Number** (and Estimate): lowest first. **Date** (and Start, Due): earliest first, written as stored
     (`2026-10-06`).
   - **Text**: A to Z, ignoring case; surrounding spaces are not part of the value, and a blank value has none.
-  - **Labels**: a card sits in the row of its **first** label; rows A to Z.
+  - **Labels** (and a Labels field): a card sits in the row of its **first** label; rows A to Z.
+  - **Person**: a row per person, named and drawn as the Assignee's rows are (a disc and the name), most cards
+    first, then **No _field_**; a drop into a person's row sets the field to them.
 - **Dropping a card into a row** sets the field to that row's value, as Sam's row assigns to Sam: a Choice to the
   option, a box ticked (Yes) or cleared (No), a number, a date, the text. Into a **Labels** row it puts that label
   first, adding it if the card did not have it (its other labels are kept). Into **No _field_** it clears the

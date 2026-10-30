@@ -153,8 +153,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   is edited exactly as the built-in field of its kind (the same control in the card panel, the same chip on the
   card): a type may hold the built-in and any number of fields of its kind, each with its own name and value. The
   built-in fields keep their ids (`assignee`, `labels`, `color`, `checklist`, `comments`, `votes`), so every card,
-  board, view and agent reads them as before; the features that use a field by its role (the Gantt chart's dates,
-  Workload's person, a card's colour) use the built-in field. An option holds up to 100 characters, so a form question's full answers (a Choice field's options are a
+  board, view and agent reads them as before. A feature that uses a field by its **role** reads the built-in
+  field until told to read another of its kind ([Fields by role](#fields-by-role)). An option holds up to 100 characters, so a form question's full answers (a Choice field's options are a
   question's) fit; a card shows a long one shortened, and its details whole. Multiple Choice and Rating came with [Forms](../030-forms/forms.md#new-card-field-kinds), which describes
   how they read and are edited.
   - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
@@ -172,10 +172,36 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     keeps under any field too. Their values are ordinary entries in the item's `fields`, under the custom
     field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
   - **A Person field** offers the plan's people, as the Assignee does, and draws its person's avatar disc and name.
-    Only the Assignee notifies (Inbox, My Work, assignment emails and Only Mine read it alone).
+    Whether it **notifies** its person is its own switch ([Notifies](#notifies)).
   - **A Labels field** reads and is edited as Labels (its chips, coloured by their names), offering the labels the
     plan's cards carry; **a Colour field** as Colour (a swatch and its name, the one colour picker); **a Checklist
     field** as Checklist (its rows, ticked off, and "2/5" on the card).
+- **Fields by role** <a id="fields-by-role"></a>: a feature that reads a field for what it means, not by its name,
+  reads the built-in field unless its own settings pick another field of the same kind. Nothing a plan already
+  shows changes until someone picks.
+  - **Dates**: a Gantt chart's bars run from its **Start** field to its **Due** field, a Due Calendar places
+    cards by its **Due** field and a Start Calendar by its **Start** field. Each picks any Date field of the card
+    types it shows, built-in or custom, in its Chart Settings ([Plan views](plan-views.md#dates)).
+  - **Person**: a board's Swimlanes and Cards by Field group by the Assignee or by any custom Person field
+    ([Swimlanes by a field](plan-board.md#swimlanes-by-a-field)); notifying is the Person field's own switch
+    ([Notifies](#notifies)).
+  - **Estimate**: Cards by Field counts cards, or adds up the Estimate or any Number field
+    ([Cards by Field](plan-views.md#cards-by-field)).
+  - **Sort**: Sort Cards already lists every built-in and custom field it can order by; nothing changes there.
+  - **Card colour**: a type's cards take their colour (the stripe, the Gantt bar, a linked card's dot) from its
+    **Colour** field, or from a custom Colour field picked as its **Card Colour** on the type's Display tab,
+    so a card is the same colour on every board, chart and export. Stored as `colourField` on the type (the
+    custom field's id); absent is Colour. A picked field the type no longer has reads as Colour again.
+    Telemetry: `Plan` · `Changed` · `CardColourField`.
+- **Notifies** <a id="notifies"></a>: every Person field, the Assignee included, has a **Notifies** switch in its
+  settings in the type editor (the Assignee's row menu, a custom Person field's form), with the line "Tell the
+  person when a card is theirs: the Inbox, emails and Only Mine." The Assignee notifies unless switched off
+  (`assigneeNotifies: false` on the type); a custom Person field does not unless switched on (`notifies: true` on
+  the field), so nothing a plan does today changes. A card is **someone's** when a notifying Person field holds
+  them, and is then theirs everywhere the Assignee made it so: the Inbox's **Assigned to You** (one row a card,
+  however many of its fields name them), the assignment event on their timeline and any email it sends, and the
+  board's **Only Mine** ([Plan board](plan-board.md)). A custom person (an `n-` id) never notifies, as before.
+  Telemetry: `Plan` · `Changed` · `FieldNotifies`.
 - **Required fields**: any custom field but a Checkbox (unticked reads as empty), a [Calculated](#calculated-fields) field (the plan
   works it out) or an [Image](#image-fields) field (a picture is added once the card exists) can be marked **Required**. A
   required field must have a value: empty is no value, an empty or all-space text and an empty Multiple Choice
