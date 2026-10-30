@@ -10,6 +10,10 @@ import { useTabRevisions } from './useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
+import {
+  usePublishTabName,
+  usePublishTabRename,
+} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
@@ -146,6 +150,14 @@ import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { announcePageLocked, guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
+import { announceTextOnly, guardFlashcardsIn, setTextOnlyToast } from '@/lib/flashcard-guard';
+
+// The guards every local edit of the active tab passes (Pages mode): locked pages, then text-only
+// flashcards (docs/specs/007-editor/flashcards.md "Text only"), each saying why after the commit.
+const guardPagesIn = (prev: readonly Tab[], next: Tab[], guard: PageLockGuard | null): Tab[] =>
+  guardFlashcardsIn(prev, guardLockedPagesIn(prev, next, guard), guard?.tabId ?? null, () =>
+    queueMicrotask(() => announceTextOnly()),
+  );
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
@@ -205,7 +217,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const tickTabs = useCallback(
     (mapTabs: (ts: Tab[]) => Tab[]) =>
       rawTickTabs((ts) =>
-        guardLockedPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
+        guardPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
       ),
     [rawTickTabs],
   );
@@ -222,7 +234,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
       // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after the commit moved their hosts.
-      const next = guardLockedPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
+      const next = guardPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -1480,6 +1492,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Said after the commit: the guard runs inside a state update, where no toast may be set.
     onBlocked: () => queueMicrotask(() => announcePageLocked(toast.info)),
   });
+  // Where a card's "text only" notice goes (lib/flashcard-guard).
+  useEffect(() => {
+    setTextOnlyToast(toast.info);
+    return () => setTextOnlyToast(null);
+  }, [toast.info]);
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -1782,6 +1799,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     confirm,
     toast,
   });
+  // The menu box shows the open tab's name, and renames it on a click (active-tab-name-store).
+  usePublishTabName(activeTab.name);
+  usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
 
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
   // useTabActions. Menu-only: drag-reorder lives above.

@@ -81,6 +81,8 @@ type ItemPanelProps = {
   onClose: () => void;
   // Edit Card Type in the ⋯ menu: closes the panel and opens the card's type in the type editor.
   onEditType?: (() => void) | undefined;
+  // Copy Card Link in the ⋯ menu (docs/specs/026-plan/plan-board.md "Its address"); absent, no row.
+  onCopyLink?: (() => void) | undefined;
   // The cards opened before this one from inside the panel, ending on it (docs/specs/026-plan/plan-board.md
   // "Breadcrumb").
   trail: readonly Item[];
@@ -160,6 +162,7 @@ function ItemPanelContent({
   onArchive,
   onClose,
   onEditType,
+  onCopyLink,
   trail,
   linkedGroups = NO_GROUPS,
   fresh = false,
@@ -268,6 +271,7 @@ function ItemPanelContent({
         onArchive={onArchive}
         onTrash={onTrash}
         onEditType={onEditType}
+        onCopyLink={onCopyLink}
       />
       <DialogCloseButton compact onClick={onClose} />
     </div>

@@ -91,6 +91,7 @@ describe('the shelves, as the template step lays them out', () => {
       'blank-illustration',
       'blank-slide-deck',
       'blank-article',
+      'blank-flashcards',
     ]);
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(

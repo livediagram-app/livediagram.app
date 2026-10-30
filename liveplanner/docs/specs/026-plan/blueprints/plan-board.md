@@ -164,6 +164,21 @@ BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX
                          Enter or blur saves the trimmed non-empty name through onSetup(..., 'Title'),
                          Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
+BoardCardTypeChips.tsx   the header's card type chips (spec "Card type chips"): one `button` per `boardAddTypes`
+                         type, `PlanCardTileArt` (22 px: card outline, a stripe in the type's colour, its glyph) then
+                         its label (labels drop above `CHIP_NAMES_MAX` types), each in a `HoverCard` "Add a {Type}"
+                         / "Click to add one, or drag it onto the board.", aria-label "Add a {Type}"; a `role="group"`
+                         aria-label "Add Cards" row, `overflow-x-auto` without a scrollbar. Pointer down stops
+                         propagation (the header would move the board) and hands the press to useCardTypeDrag;
+                         a click (or Enter / Space) adds through `chipClickCell` + `plan.addItem` + `openNewItem`.
+                         PlanBoardView renders it only when `chipsShown` (card-type-chips.ts) holds, and passes it
+                         to PlanBoardHeader as `chips`, which draws it after the title on a canvas, and in a header
+                         band (the title portalled into the menu box) first in the header's middle, so it shrinks
+                         and scrolls before the widgets and controls do
+card-type-chips.ts       pure: `chipsShown({ interactive, canEditCards, phone, simplified, setup, types })` (the
+                         role and place gate) and `chipClickCell(setup, projection, type, statusNames)` (the column
+                         of the type's `newCardStatus` when the board has it, else the first; the first row; the
+                         status `cellStatus`; the row's `laneMove` set; after the cell's last card)
 phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action) + shownQuick
                          In a Dashboard slot and not maximised (`simplified = useInDashboard() && !maximised`,
                          dashboard-context.ts: DashboardContext present) PlanBoardView is simplified: `setUpHere =
@@ -181,10 +196,12 @@ PlanCardView.tsx         the plan-card element body (themed; a lone card's fill 
 PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
+copy-card-link.ts        Copy Card Link: copyCardLink(link, notify) writes the card's address to the clipboard, toasts
+                         LINK_COPIED ("Link copied") or LINK_NOT_COPIED ("Couldn't copy the link"; no clipboard too)
 ../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel (a board maximised from a slot): PLAN_BOARD_SECTIONS (Board Setup, Columns,
                          Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
                          Cards / Archive), each Body given `open` so it can defer work while shut
-ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column
+ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, Copy Card Link, close), main column
                          (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
                          then made/changed); phone: one column, a Details tab first, sheet 85dvh
 ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG + accentVars of the type colour),
@@ -215,8 +232,15 @@ plan-tile-art.tsx        a picture per board preset, and the card tile glyph
 
 Hooks (`apps/editor/hooks/plan/`): `usePlanItems` (store), `usePlanSlice` (composed into `useEditorState`; provides
 the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`), `usePlanBoardDrop` (the board's drag and
-drop, and the board as a target for cards from other boards through `plan-board-targets.ts`, a registry of the
-boards on screen by element id), `usePlanCardDrag` (pointer drag
+drop, and the board as a target for cards from other boards, and for a chip's new card, through `plan-board-targets.ts`, a registry of the
+boards on screen by element id), `useCardTypeDrag` (a header chip's press: idle, pressed, carrying, then dropped
+or cancelled; past `PRESS_DRAG_SLOP_PX` a ghost card follows the pointer, moved by style per animation frame, never a
+React render; each frame `otherPlanBoardAt(x, y, '')` finds the board, its target's `acceptsType` gates it,
+`dropSlotAt` and `refuseAt({ type, fields: {} }, slot)` read the cell, and `hover({ itemId: CHIP_DRAG_ID, slot,
+height: CHIP_GHOST_HEIGHT_PX, refused })` opens the placeholder, the last hover kept so a still pointer sends none;
+pointerup over an open slot calls `addCard(type, slot)`, over a refused one announces the reason, anywhere else adds
+nothing; Escape, pointercancel or unmount end it and clear the hover; a press that never travels is the chip's
+click), `usePlanCardDrag` (pointer drag
 within, between and out of boards; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
 under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
 `maximised-plan.ts` is the maximised board or view, a module store
@@ -261,6 +285,30 @@ the items too.
   (`tint`, `color-mix`).
 
 ## Behaviour and state
+
+- **A card's address** (spec "Its address"): `apps/editor/lib/card-address.ts` holds the pure parts:
+  `cardHash(tabId, itemId)` is `placeHash({ tabId, cardId })` from `@liveworkspace/explorer` (`#t=<tab>` or
+  `#t=<tab>&item=<id>`, the Inbox grammar `parseCollabDeepLink` reads); `hashCardId(hash)` reads `item`;
+  `CARD_ENTRY_KEY` (`liveplannerCard`) marks a history entry an opened card pushed (`cardEntryState`,
+  `isCardEntry`; the App Router merges its own keys beside it); `cardLink({ origin, projectId, search, tabId,
+itemId })` is `<origin>/project/<id>[?s=<code>]` plus `cardHash`, keeping only the `s` query.
+  - `app/project/[id]/useCardAddress.ts`, composed in `useEditorState` after `usePlanSlice`, writes the address
+    when `hydrated`, `activeId` or `shownId` change. `shownId` is `openItemId` when the item store holds it, else
+    null (a card being made, deleted, or out of a tab-scoped share's items is never written). Only on
+    `isEditorPath`. With `was` the last written card: equal hash, no write; `shownId && !was` and not arriving,
+    `pushState(cardEntryState(true))`; `!shownId && was` on a marked entry, `history.back()`; otherwise
+    `replaceState` keeping the mark. `arrivingCardRef` names the card opened from an address (the deep link's
+    `openItem` in `useEditorState`, and Forward); it replaces and is cleared once written.
+  - Its `popstate` listener (once hydrated): off the editor path, nothing; the hash's card equal to `openItemId`,
+    nothing; a card, `arrivingRef = id` then `openItem(id)`; none, `closeItem()`.
+  - `useTabEntryEffects`' tab pin replaces with `cardEntryState(isCardEntry(history.state))`, so a tab switch under
+    an open card keeps its entry's mark.
+  - `useCollabDeepLinkCapture(hydrated)` reads the hash on each commit until it holds a link or the hydration
+    commit has run; after that the address is the editor's own, so a card opened later is never read back as a
+    link and reopened.
+  - Copy Card Link: `usePlanSlice({ cardLink })` puts a stable `cardLink(itemId)` on `PlanContextValue` (read through
+    `useLatest`, so the context keeps its identity); `PlanSheetsHost` hands `ItemPanel` `onCopyLink`, which
+    `ItemPanelMenu` shows as **Copy Card Link** (lucide `link`, 14 px) before Help for every role.
 
 - **Input routing**: `PlanBoardView` receives `interactive = editorMode === 'plan' && !readOnly`. Interactive:
   card pointerdown stops propagation and starts `usePlanCardDrag`; header/border do not stop propagation (the
@@ -468,6 +516,9 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 - Card face: 8 px radius, 4 px type stripe on the left, glyph + `#key` muted 12 px, title 14 px semibold up to
   3 lines (`line-clamp`), chips row (priority dot, labels, estimate, due, votes, checklist `3/5`), assignee
   avatar bottom right. Done column cards draw at 70% opacity.
+- Cursors (`components/plan/board-cursors.ts`): `planCardCursor(interactive, canEditCards)` is `grab` for an
+  Editor or a Participant, `pointer` for a Viewer, nothing out of Plan mode; `planBoardBodyCursor(interactive)`
+  sets `default` on the board body, which otherwise inherits the canvas's `cursor-grab`.
 - WIP over: count chip uses `--warning` tokens, column head text "Over WIP limit".
 - Empty board: first column shows the open add field with "Add your first item".
 - Copy: "Add card", "Add your first card", "Add a Card", "Or type a title and press Enter", "Open",
@@ -520,21 +571,25 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 
 ## Errors and edge cases
 
-| Case                                      | Handling                                        |
-| ----------------------------------------- | ----------------------------------------------- |
-| Items not loaded yet                      | Columns draw with skeleton cards (3 per column) |
-| Item store failed to load                 | Header shows "Couldn't load items" + Retry      |
-| Drop on the same slot                     | No write                                        |
-| Column statuses duplicated by an agent    | Validation rejects; normalise keeps the first   |
-| Board narrower than columns × 220         | Columns scroll horizontally inside the board    |
-| Picker: board already has every status    | Plain field, no list, as before                 |
-| Picker: typed text matches no row         | "No states match" empty state; Add Column       |
-| Every suggestion's name already taken     | No Suggested section at all                     |
-| Suggestion pressed at the column limit    | Setup: rows disabled; picker: no add, no write  |
-| Fill Tab: two boards set to fill          | The first in element order fills; others hidden |
-| Fill Tab: element added while on          | Kept under the board, hidden; counted next time |
-| Fill Tab: board deleted                   | `fillTabElementOf` is null; canvas is back      |
-| Item moved by someone else during my drag | My drop still applies (last write wins)         |
+| Case                                          | Handling                                        |
+| --------------------------------------------- | ----------------------------------------------- |
+| Items not loaded yet                          | Columns draw with skeleton cards (3 per column) |
+| Item store failed to load                     | Header shows "Couldn't load items" + Retry      |
+| Drop on the same slot                         | No write                                        |
+| Column statuses duplicated by an agent        | Validation rejects; normalise keeps the first   |
+| Board narrower than columns × 220             | Columns scroll horizontally inside the board    |
+| Picker: board already has every status        | Plain field, no list, as before                 |
+| Picker: typed text matches no row             | "No states match" empty state; Add Column       |
+| Every suggestion's name already taken         | No Suggested section at all                     |
+| Suggestion pressed at the column limit        | Setup: rows disabled; picker: no add, no write  |
+| Fill Tab: two boards set to fill              | The first in element order fills; others hidden |
+| Fill Tab: element added while on              | Kept under the board, hidden; counted next time |
+| Fill Tab: board deleted                       | `fillTabElementOf` is null; canvas is back      |
+| Item moved by someone else during my drag     | My drop still applies (last write wins)         |
+| Address names a deleted or unseen card        | Nothing opens; the address drops the card       |
+| Address names a tab gone or out of scope      | The first tab; the card still opens             |
+| Card deleted by someone while open            | Its entry is stepped back off                   |
+| Clipboard missing or refused (Copy Card Link) | Toast "Couldn't copy the link"                  |
 
 ## Observability
 
@@ -555,6 +610,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Sort Cards menu, role                                          | `apps/editor/components/palette/PlanBoardMenuSection.test.tsx`                                                                                              |
 | change_board sortBy, list_items order                          | `packages/agent-verbs/src/plan/change-board.test.ts`, `plan-listing.test.ts`                                                                                |
 | Column picker statuses, counts, boards                         | `packages/items/src/board-status-picks.test.ts`                                                                                                             |
+| Cursors per role: card hand, Viewer pointer, body arrow        | `apps/editor/components/plan/board-cursors.test.ts`                                                                                                         |
 | Fill Tab: which board, deletion, copy                          | `apps/editor/components/plan/fill-tab.test.ts`                                                                                                              |
 | Setup Board Layout step, stepper, Fill Tab                     | `apps/editor/components/plan/PlanSetupBoard.test.tsx`                                                                                                       |
 | Setup Board as a dialog: opens, Escape, placeholder, toast     | `apps/editor/components/plan/SetupBoardHost.test.tsx`                                                                                                       |
@@ -603,6 +659,12 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Dashboard Settings steps aside while maximised                 | `apps/editor/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                          |
 | Maximise, restore, Escape, unmount ends it                     | `apps/editor/hooks/plan/maximised-plan.test.ts`                                                                                                             |
 | No remount, maximised size, one Escape                         | `apps/editor/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                   |
+| Card type chips: roles, phone, Archive, slot, labels, click    | `apps/editor/components/plan/card-type-chips.test.ts`, `BoardCardTypeChips.test.tsx`                                                                        |
+| Card type chip drag: placeholder, refusal, drop, Escape        | `apps/editor/hooks/plan/useCardTypeDrag.test.tsx`                                                                                                           |
+| Card address: hash, link, mark, deep link reads it             | `apps/editor/lib/card-address.test.ts`                                                                                                                      |
+| Card address: push, back, replace, arrive, Back/Forward        | `apps/editor/app/project/[id]/useCardAddress.test.tsx`                                                                                                      |
+| Capture stops at hydration; tab pin keeps the mark             | `apps/editor/app/project/[id]/useCollabDeepLink.test.tsx`, `useTabEntryEffects.test.tsx`                                                                    |
+| Copy Card Link: every role, before Help; toasts                | `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `copy-card-link.test.ts`                                                                              |
 | Drag, Add card, card menu, item panel                          | checked by hand against the dev stack (screenshots in the PR)                                                                                               |
 
 ## Constants and configuration
@@ -623,6 +685,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `PRESS_DRAG_SLOP_PX`       | 4                  | Shared, ../packages/workbench/src/lib/press-gestures.ts                  |
 | `PLAN_COLUMN_MIN_PX`       | 220                | A card's title reads in 3 lines; 180–320                                 |
 | `PLAN_COLUMNS_MAX`         | 12                 | Spec                                                                     |
+| `CHIP_NAMES_MAX`           | 3                  | Spec ("more than three types" drop their names); 2-5                     |
+| `CHIP_GHOST_HEIGHT_PX`     | 56                 | A Minimal card's height, the placeholder a carried chip opens; 40-80     |
 | `BOARD_SORT_LEVELS_MAX`    | 2                  | Spec (Work Tracker #18): Sort By and Then By                             |
 | `SUGGESTED_STATUSES_MAX`   | 5                  | Spec ("up to five"); the list `SUGGESTED_STATUSES` holds exactly five    |
 | `ITEM_EDIT_DEBOUNCE_MS`    | 400                | One undo step per pause in typing                                        |
@@ -633,7 +697,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to
-  `addItem`: Add Card (PlanBoardView), a palette card's `addCard` (usePlanBoardDrop), New {Type}
+  `addItem`: Add Card (PlanBoardView), a chip's click (BoardCardTypeChips), a chip's drop through the target's
+  `addCard` (usePlanBoardDrop), New {Type}
   (PlanSheetsHost `onAddLinked`). PlanSheetsHost passes `fresh={freshItemId === item.id}` to ItemPanel, whose
   `useTitleFocus` (desktop and `canEdit` only, a frame after the Dialog's `initialFocus="container"` trap)
   focuses the title input with the caret at its end, or selects it when `fresh`.

@@ -53,6 +53,10 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'blank-slide-deck':
     case 'blank-article':
     case 'blank-infographic':
+    case 'blank-flashcards':
+    case 'talk-flashcards':
+    case 'wedding-toast':
+    case 'pitch-flashcards':
       return [];
     // Built on their own pages (template-pages.ts), whatever the centre.
     case 'event-poster':

@@ -390,6 +390,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
     useCanvasTool({
       defaultPan: embedMode,
+      tabId: activeId,
     });
   useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +

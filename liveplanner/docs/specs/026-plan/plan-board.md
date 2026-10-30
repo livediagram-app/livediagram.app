@@ -347,7 +347,7 @@ Where each is set, so a setting lives with what it changes, never in one central
 
 ## What the board shows
 
-- **Header**: title, the count of items shown, a progress bar (cards in its done columns of all, when it has one), the
+- **Header**: title, the [card type chips](#card-type-chips), the count of items shown, a progress bar (cards in its done columns of all, when it has one), the
   avatars of people on the board and the quick filter.
 - **Renaming in place**: in Plan mode, someone who may edit double-clicks the board's title (or the header's
   empty space) and the title becomes a text field, its text selected. **Enter** or leaving the field saves the
@@ -447,6 +447,10 @@ Input follows the person's editor mode (the [Editor modes](../007-editor/editor-
   header or border picks up the board.
 - **In Diagram and Draw modes** the board is an element like any other: pressing anywhere on it selects and moves
   the board. Double-clicking a card still opens its item.
+- **Cursors** (in Plan mode): a hand shows only where a press picks something up. A card shows the open hand to
+  someone who may move it (an Editor or a Participant) and the pointing finger to a Viewer, whose press opens it; the
+  board's body between the cards shows the arrow, for everyone, since a press there neither pans the canvas nor
+  moves the board (it used to inherit the canvas's hand, so a Viewer saw a hand everywhere and could move nothing).
 
 In Plan mode:
 
@@ -466,6 +470,31 @@ In Plan mode:
   (taking the row's field). Arrow keys move between the rows as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
   typing names it (see **Open an item**).
+- <a id="card-type-chips"></a>**Card type chips**: the board's header holds, right after its title, a **chip per
+  card type the board takes** (its Add card types, in the project's order), so a card is one press or one drag away
+  from the top of the page. Each chip is a small card drawn in its type's colour (a stripe of it down its left edge,
+  the type's glyph on the card), then the type's name; while the header holds the top row (maximised or filling its
+  tab), the board's name rides in the menu box and the chips lead the header straight after it, so they sit to
+  the right of the name and give way to the widgets and controls rather than widening the box. With more than
+  three types the chips drop their names and keep the little cards (the tooltip names each); when they do not fit,
+  the row scrolls sideways, as the widget zone does. Each chip has a hover card, **Add a Task** (its type's name)
+  over "Click to add one, or drag it onto the board.", and its accessible name is "Add a Task".
+  - **A click** (or Enter or Space on a focused chip) adds a card of the type at the end of the column of the type's
+    starting status (its Default State, as New {Type} uses) when the board has one, else the board's first column,
+    in the first row (taking that row's field), and opens it in its panel to be named, exactly as Add card does.
+  - **A drag** carries a card of the type: a small card in its colour and glyph, reading its new-card title ("New
+    task"), follows the pointer, and over a board the cell under it opens the same placeholder a dragged card does
+    (the column, the row and the place among its cards); a column whose status the type leaves out shows it red
+    with the reason. Letting go there adds the card in that place, sets the row's field, and opens it to be named
+    ("Task added to To Do" is announced). Let go anywhere else, over a refused cell (the reason is announced), or
+    pressing Escape adds nothing. Any board on screen takes the drop, not only the chip's own, while it shows the type.
+  - **Who sees them**: anyone who may add cards, an Editor or a Participant (the share roles' card rule, as Add card
+    and Duplicate are), in Plan mode. A Viewer sees none. **Not on a phone** (below 640 px, where the header has no
+    room), not on an Archive board (it takes no new cards), not on a board in a Dashboard slot (simplified), not on
+    a board not set up yet (no columns), and not on a board that takes no card types.
+  - The chips are buttons inside the header: a press on one never picks the board up, and a double-click on one
+    never renames it. Their cursor is the pointer.
+  - Telemetry: `Plan` · `Added` · the type, as any new card.
 - **Add New Card Type**: under the rows, the menu ends in **Add New Card Type**, for someone who may edit while the catalogue has room for another type. It closes the menu and opens the type editor
   on a new type whose statuses are only this board's columns' (every other status of the project turned off), so
   its cards fit the board. Saving it adds it to this board's card types when the board takes a chosen few (a board
@@ -500,8 +529,28 @@ In Plan mode:
     quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
   - **Header**: the type (a picker, with its glyph), the key, a **⋯** menu of **Duplicate** (a copy right after
     it, without its votes, as the card menu's), **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Edit Card Type** (closing the panel and opening the card's type in the type
-    editor), then, after a separator, **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
-    may only view gets a ⋯ of Help alone.
+    editor), then, after a separator, **Copy Card Link** (the card's address, below) and **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
+    may only view gets a ⋯ of Copy Card Link and Help.
+  - **Its address**: while a card is open, the page's address names it beside the tab pin, as
+    `#t=<tab>&item=<card id>` (the same fragment an Inbox row opens a card with,
+    [Inbox](../013-workspace/inbox.md) §1), and closing it takes the card back off. Opening that address opens the
+    plan on that tab with the card's panel open, as the person's role draws it (a Viewer reads it, a Participant
+    edits what a Participant may). A card that no longer exists, or that the link's share does not show, opens
+    nothing and says nothing: the plan opens on the tab, and the address drops the card. A tab that is gone, or out
+    of the share's scope, gives way to the plan's first tab, and the card still opens.
+    - **Back closes the card.** Opening a card from the plan (a board, a sheet row, the Cards finder, a search
+      result, a new card) adds one history entry, so the browser's Back closes the card and leaves the person on
+      the plan, and Forward opens it again. Closing the card any other way (Close, Escape, Enter in the title,
+      Trash) steps back off that entry, so Back afterwards leaves the plan as it did before. Moving from card to
+      card inside the panel (the breadcrumb, a Parent's Open, a Linked as row) replaces the address and adds no
+      entry. A card opened by its address, an Inbox row or an Actions board link replaces the address too: that
+      entry is already the card's.
+    - **Copy Card Link** in the ⋯ menu copies the card's address, for every role: `/project/<plan id>` with the share
+      code it was opened with (`?s=<code>`, so someone on the same share link can follow it), then
+      `#t=<tab>&item=<card id>`. The menu closes and a toast says "Link copied"; a copy the browser refuses
+      says "Couldn't copy the link". A copied link only opens for someone who may already see the plan.
+    - Only the editor's own address carries the card: an embed and the liveworkspace workbench frame keep their
+      addresses as they are (as the tab pin does).
   - **Parent** is a Card field (item-types.md "Card fields"): its control's open arrow opens the parent, and a
     Project lists the cards under it in its **Linked as Parent** section, as any Card field's linked card does.
   - **Breadcrumb**: the panel remembers the cards opened from inside it (a Parent's Open, a child row, a crumb).
@@ -658,7 +707,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - **The name rides in the menu box**: while the header holds the top row, the element's name (a board's or view's
   title, a Sheet's title) moves out of its header into the menu box at the top left, after the mode menu and a hairline,
   in the chrome's own text colour, truncating past 16 rem. It is the same title: a double-click on it renames it in
-  place, as in the header. The room the band needs is measured from the menu box without the name, so the name
+  place, as in the header. A board's [card type chips](#card-type-chips) stay in the header, leading it just after
+  the menu box. The room the band needs is measured from the menu box without the name, so the name
   coming or going never takes the band away. Without a band (a phone, a narrow window) the name stays in the header.
 - **It is not placed on the canvas while it fills it**: maximised or filling its tab, a board, view or Sheet's
   element menu leaves out **Layer**, **Size**, **Rotation** and its **Animation** categories (they would change
@@ -865,7 +915,7 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 - **Cards are Minimal** on a phone (below 640 px), whatever the board's card size, so a column shows more of them; the
   size is the board's again on a wider screen. Nothing is saved.
-- **The header has no widgets** on a phone: the title, taking the room up to the header's controls (beside widgets
+- **The header has no widgets and no card type chips** on a phone: the title, taking the room up to the header's controls (beside widgets
   it keeps to 40% of the header), then the controls. The quick filter the widgets set
   stands down with them, so a filter set on a wider screen never hides cards with nothing on screen saying so.
 - A board that scrolls on its own (maximised, filling its tab, or in a Dashboard slot) shows one column a screen (see

@@ -3880,6 +3880,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                   "article": {
                     "type": "number"
                   },
+                  "flashcard": {
+                    "type": "number"
+                  },
                   "infographic": {
                     "type": "number"
                   },
@@ -4401,7 +4404,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "infographic",
       "article",
-      "slide"
+      "slide",
+      "flashcard"
     ],
     "type": "string"
   },
@@ -4505,7 +4509,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wide",
       "slide",
       "slide-classic",
-      "fit"
+      "fit",
+      "card"
     ],
     "type": "string"
   },
@@ -7827,6 +7832,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "additionalProperties": false,
             "properties": {
               "article": {
+                "type": "number"
+              },
+              "flashcard": {
                 "type": "number"
               },
               "infographic": {

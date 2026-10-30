@@ -9,11 +9,11 @@ const COLUMNS = [
 ];
 
 // The bottom-right cluster's buttons and their centres, left to right (Panel Layout): Undo and Redo, then the
-// card strip (Trash is left out for room), then Style.
+// card strip (Trash, Find, Types), then Style.
 const CLUSTER = [
   { label: '↶', x: 212 },
   { label: '↷', x: 232 },
-  { label: 'New', x: 260 },
+  { label: 'Trash', x: 260 },
   { label: 'Find', x: 290 },
   { label: 'Types', x: 322 },
   { label: 'Style', x: 356 },

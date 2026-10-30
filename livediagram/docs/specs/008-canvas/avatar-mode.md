@@ -101,6 +101,10 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - Nothing is persisted. The one thing that leaves the browser is the ephemeral presence snapshot peers need to draw the character (below).
 - **Reaching for the palette leaves the mode.** Picking any palette tile, or dragging one onto the canvas, exits Avatar mode back to **whichever tool was active before it** (not a hardcoded Select) and then performs the add, so a click on the palette mid-walk drops the element instead of being swallowed by a read-only canvas. Implemented as one wrapper over the whole tile-action bundle, so tiles added later inherit it.
 
+## Changing tab
+
+**Avatar mode ends when the active tab changes**, however it changes (the tab bar, the Explorer, a portal, following a presenter): the tool goes back to the one that was active before the mode was entered (Select or Hand), exactly as reaching for the palette does. The character is a point on the tab you left; on the next tab it could stand inside a fence it was meant to be kept out of, so it never carries over. The exit happens in the same render as the tab change (`useCanvasTool({ tabId })`), so the new tab never draws or publishes the character even for one frame. Leaving the mode [publishes `avatar: null`](#realtime), which deletes the entry on every peer, so the character is gone from the tab you left as well. Entering again on the new tab places it as any fresh entry does.
+
 ## Realtime
 
 **Everyone sees everyone.** The character rides the presence channel as an `avatar` `RoomOp` (alongside `cursor` / `select` / `laser` / `tab-focus` in `@livediagram/api-schema`), so a whole room can walk around one canvas at once.

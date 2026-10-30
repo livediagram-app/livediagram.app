@@ -49,13 +49,13 @@ describe('the Trash in Plan’s strip', () => {
     expect(screen.queryByRole('button', { name: /Trash/ })).toBeNull();
   });
 
-  // docs/specs/026-plan/item-types.md "The type catalogue": with no card types, New Card and Find a Card would
+  // docs/specs/026-plan/item-types.md "The type catalogue": with no card types, Find a Card would
   // surface nothing; the Trash stays only while it holds cards to restore.
   it('shows only Card Types with no card types, and the Trash while it holds cards', () => {
     plan.draggingItemId = null;
     plan.types = [];
     const labels = () => screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'));
-    const withNewCard = () =>
+    const withTrash = () =>
       render(
         <PlanCardsClusterStrip
           finderOpen={false}
@@ -63,15 +63,14 @@ describe('the Trash in Plan’s strip', () => {
           typesOpen={false}
           onToggleTypes={() => {}}
           trash={{ open: false, onToggle: () => {} }}
-          newCard={{ open: false, onToggle: () => {} }}
         />,
       );
-    withNewCard();
+    withTrash();
     expect(labels()).toEqual(['Open the Trash, 1 card', 'Open Card Types']);
     cleanup();
     const held = plan.items;
     plan.items = new Map();
-    withNewCard();
+    withTrash();
     expect(labels()).toEqual(['Open Card Types']);
     plan.items = held;
     plan.types = [{ id: 'task' }];

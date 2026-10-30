@@ -1,9 +1,10 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { Glyph } from '@livediagram/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { TabNameInBox } from './TabNameInBox';
+import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
+import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 
@@ -55,14 +56,11 @@ export function ToolbarExplorerButton({
   );
   return (
     <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
-      {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
-          button keeps its focus as the panel opens. */}
-      <HoverCard title="Explorer" description="Your canvases, folders and teams." disabled={open}>
-        {button}
-      </HoverCard>
+      {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
+      {button}
       <EditorModeSwitch iconOnly={phone || inline} />
       {/* The open tab's name, in every mode (not on a phone). */}
-      {phone || inline ? null : <TabNameInBox />}
+      {phone || inline ? null : <TabNameInBox maxLength={NAME_MAX_LENGTH} />}
     </ToolbarMenuCard>
   );
 }

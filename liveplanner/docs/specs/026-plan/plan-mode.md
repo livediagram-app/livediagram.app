@@ -183,7 +183,8 @@ used:
 
 - **Boards and Sheets**: Start Planning on an empty tab ([Starting a board](#starting-a-board)), its templates
   included.
-- **Cards**: a column's **Add card** ([Plan board](plan-board.md)), and the Plan strip's **New Card**.
+- **Cards**: a board's [card type chips](plan-board.md#card-type-chips) (a click, or a drag into a column and row)
+  and a column's **Add card** ([Plan board](plan-board.md)).
 - **Widgets**: the **+** at the end of a board's widgets ([Board widgets](board-widgets.md)).
 - **Card Types**: the **Card Types** button in the bottom-right cluster ([Item types](item-types.md)).
 - **Metrics, visualisations, notes and the written cards**: a Dashboard's **Add to Slot** and its slot menu's **Add a

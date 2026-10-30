@@ -161,6 +161,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'colours-borders-opacity': '#9333ea',
   'formatting-label-text': '#0e7490',
   'slide-pages': '#f97316',
+  flashcards: '#e11d48',
   technology: '#0ea5e9',
   drawing: '#f97316',
   layers: '#6366f1',

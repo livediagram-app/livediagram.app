@@ -121,6 +121,28 @@ describe('useCollabDeepLinkCapture', () => {
     expect(result.current.current?.itemId).toBe('it1');
   });
 
+  // docs/specs/026-plan/plan-board.md "Its address": after hydration an open card rides in the address, and
+  // reading it back as a link would reopen a card closed since.
+  it('stops reading the address once the editor has hydrated', () => {
+    window.location.hash = '#t=t1';
+    const { result, rerender } = renderHook(
+      (hydrated: boolean) => useCollabDeepLinkCapture(hydrated),
+      {
+        initialProps: false,
+      },
+    );
+    rerender(true);
+    window.location.hash = '#t=t1&item=it1';
+    rerender(true);
+    expect(result.current.current).toBeNull();
+  });
+
+  it('reads a link on the hydration commit itself', () => {
+    window.location.hash = '#t=t1&item=it1';
+    const { result } = renderHook(() => useCollabDeepLinkCapture(true));
+    expect(result.current.current?.itemId).toBe('it1');
+  });
+
   it('holds nothing for a plain tab pin', () => {
     window.location.hash = '#t=t1';
     const { result } = renderHook(() => useCollabDeepLinkCapture());

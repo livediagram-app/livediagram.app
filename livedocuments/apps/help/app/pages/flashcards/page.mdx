@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Flashcards',
+  description:
+    'Make flashcards to speak from: a stack of small cards, each a title and a few lines, flipped one at a time, with its number and how long it takes to say.',
+  path: '/help/pages/flashcards/',
+});
+
+<ArticleLayout
+  title="Flashcards"
+  description="A stack of small cards to speak from, each a title and a few lines of text, flipped one at a time."
+  categoryTitle="Pages"
+  categorySlug="pages"
+  subArticles={getSubArticles('flashcards')}
+>
+
+**Flashcards** are a kind of page ([Working with Pages](/help/pages/working-with-pages/)) for a talk, a toast or a pitch: a stack of small landscape cards, each holding a title and a few lines of text. The canvas shows one card at a time, with the cards still to come stacked behind it, and going to another card flips it over like a card in your hand.
+
+## Making Flashcards
+
+- **On a new tab**: when the first page asks **What Is This Page For?**, choose **Flashcards**. The page becomes the first card, with the caret in its title.
+- **From the Start screen**: **Blank Flashcards** starts an empty stack. **Conference Talk**, **Wedding Toast** and **Product Pitch** start a stack already written, for you to write over. Find them under **Flashcards** on the Start screen, under **Presentations** in Templates, or by searching ([Templates](/help/canvas/templates/)).
+- **Another card**: the **+** beside the card in front (its tooltip reads **Add Another Card**) adds a card after the last one and flips to it. There is no limit on cards other than a tab's page limit.
+
+## What a Card Holds
+
+A card is text only: a title and rich text from the page toolbar, with headings, bold, italic, underline, colour, links, lists and alignment. Type **/** for a heading, a list, a quote, code or a divider.
+
+- The Toolbar strip shows the page toolbar and nothing else: no palette categories, no tiles and no **Search**.
+- Nothing can be put on a card: a shape, a picture or a chart drawn, dropped or pasted onto it is not added, and the editor says **Flashcards hold text only.** Pasted text keeps its headings, lists and formatting.
+- The page toolbar on a card has no **Insert**, **Comment** or **Assign Action**. **More Formatting** ends with **Card style**.
+
+## Too Long for a Card
+
+Each card stands on its own: its writing never flows onto the next card. When there is more than fits, the writing past the card's foot is kept but hidden, and the card shows **Too long for this card**.
+
+- Press **Split Onto a New Card** on that marker, or in the card's settings (its cog), to move the writing that does not fit onto a new card right after it. A " (continued)" title goes with it.
+- When one paragraph fills the whole card, there is nothing to split off: shorten it first. A tab at its page limit cannot take another card either; the button's tooltip says which.
+
+## Going Between Cards
+
+Every way of going to a page goes to a card by flipping it: the **Previous page** and **Next page** arrows under the card, the arrow keys, a row in **Contents**, and a swipe or a drag let go toward the next card. Going forward, the card in front turns over its top edge and uncovers the next one; going back, the earlier card comes back over the top. With **Reduce Motion** on (in your settings, or your device's), the card changes at once with no flip.
+
+**Contents** lists every card in order with its picture and name, and each row says how long the card takes to say. Drag a row to move a card in the stack.
+
+## The Card Number and Speaking Time
+
+Each card's bottom-right corner reads its place in the stack, such as **Card 3 of 10**, and, once it has words on it, how long it takes to say at a steady speaking pace of 130 words a minute: **25 sec** under a minute, **2 min** from a minute up. Both are a guide on the canvas only, and exports leave them out.
+
+## Who Can Do What
+
+An **Editor** writes on the cards, and adds, splits, moves and deletes them. A **Participant** writes on the cards already there but cannot add, split, move or delete one. A **Viewer** reads and flips through the stack and changes nothing. Everyone can flip ([Sharing](/help/collaboration/sharing/)).
+
+</ArticleLayout>

@@ -1,13 +1,14 @@
 'use client';
 
 // The first page's own choice (docs/specs/007-editor/pages-mode.md "Page kinds"): while a tab's
-// only page is unchosen and empty, it offers the three kinds of page inside itself, the same cards
-// as the add-a-page popover. Infographic keeps the page and puts the choice away; Article makes it
-// the first page of an article, the caret in its title; Slide turns it into a 16:9 landscape slide.
+// only page is unchosen and empty, it offers the kinds of page inside itself. Infographic keeps the
+// page and puts the choice away; Article makes it the first page of an article, the caret in its
+// title; Slide turns it into a 16:9 landscape slide; Flashcards makes it the first card of a stack
+// (docs/specs/007-editor/flashcards.md "Making flashcards").
 // Held at one screen size, centred on the page.
 import type { PageKind } from '@livedocuments/document';
 import { useRef } from 'react';
-import { moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
+import { kindCardIsWide, moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
 import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 
 export function FirstPageChoice({
@@ -47,7 +48,7 @@ export function FirstPageChoice({
             <PageKindCard
               key={k.kind}
               choice={k}
-              wide={i === PAGE_KINDS.length - 1}
+              wide={kindCardIsWide(i)}
               ref={(el) => {
                 cards.current[i] = el;
               }}

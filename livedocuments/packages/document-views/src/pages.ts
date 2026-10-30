@@ -40,7 +40,7 @@ const WRITING = { one: 'line of writing', many: 'lines of writing' };
 const LAYOUTS = { one: 'layout line', many: 'layout lines' };
 const ELEMENT = { one: 'element line', many: 'element lines' };
 
-const KIND_ORDER: readonly PageKind[] = ['infographic', 'slide', 'article'];
+const KIND_ORDER: readonly PageKind[] = ['infographic', 'slide', 'article', 'flashcard'];
 
 const sizeName = (size: keyof typeof PAGE_SIZES, orientation: 'portrait' | 'landscape' | null) => {
   const s = PAGE_SIZES[size];
@@ -96,7 +96,10 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
     ...a,
     markdown: articleToMarkdown(writing[a.flow]!),
   }));
-  const kinds = KIND_ORDER.filter((k) => k !== 'article' && pages.some((p) => p.kind === k));
+  // Article pages and flashcards are written, never laid out.
+  const kinds = KIND_ORDER.filter(
+    (k) => k !== 'article' && k !== 'flashcard' && pages.some((p) => p.kind === k),
+  );
   const layouts = kinds.map((kind) => ({
     kind,
     layouts: layoutCatalogueFor(kind).layouts.map((l) => ({ id: l.id, label: l.label })),

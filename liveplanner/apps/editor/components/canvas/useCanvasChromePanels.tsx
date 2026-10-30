@@ -20,10 +20,6 @@ const CardFinderPanel = dynamic(
 const TrashPanel = dynamic(() => import('@/components/plan/TrashPanel').then((m) => m.TrashPanel), {
   ssr: false,
 });
-const NewCardPanel = dynamic(
-  () => import('@/components/plan/NewCardPanel').then((m) => m.NewCardPanel),
-  { ssr: false },
-);
 const CardTypesPanel = dynamic(
   () => import('@/components/plan/CardTypesPanel').then((m) => m.CardTypesPanel),
   { ssr: false },
@@ -80,7 +76,6 @@ export function useCanvasChromePanels({
   // The Card Types panel over its cluster button (docs/specs/026-plan/item-types.md).
   cardTypesPopoverEl: ReactNode;
   trashPopoverEl: ReactNode;
-  newCardPopoverEl: ReactNode;
   cardFinderPopoverEl: ReactNode;
   // The Session strip's open popover (Timer or Vote), over its button.
   sessionPopoverEl: ReactNode;
@@ -174,7 +169,6 @@ export function useCanvasChromePanels({
   const cardTypesOpen = activeDockPanel === 'card-types';
   const trashOpen = activeDockPanel === 'plan-trash';
   const cardFinderOpen = activeDockPanel === 'plan-cards';
-  const newCardOpen = activeDockPanel === 'plan-new-card';
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
   // the folders someone expanded stay expanded.
@@ -315,9 +309,6 @@ export function useCanvasChromePanels({
         popoverAnchor={activeDockAnchor ?? undefined}
         onPopoverClose={closeDockPanel}
       />
-    ) : null,
-    newCardPopoverEl: newCardOpen ? (
-      <NewCardPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
     ) : null,
     trashPopoverEl: trashOpen ? (
       <TrashPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />

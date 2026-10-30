@@ -13,6 +13,16 @@ afterEach(() => {
 });
 
 describe('ToolbarExplorerButton', () => {
+  // It got in the way of the Explorer's app switcher (Work Tracker #101); the aria-label still names it.
+  it('shows no hover card on the menu button, and keeps its accessible name', () => {
+    render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Explorer' });
+    fireEvent.pointerEnter(button, { pointerType: 'mouse' });
+    fireEvent.focus(button);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(button.getAttribute('aria-label')).toBe('Explorer');
+  });
+
   it('passes its own element to the toggle, to anchor the popover under it', () => {
     const onToggle = vi.fn();
     render(<ToolbarExplorerButton open={false} onToggle={onToggle} />);

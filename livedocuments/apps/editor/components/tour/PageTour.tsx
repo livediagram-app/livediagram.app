@@ -28,6 +28,7 @@ type Frozen = { pageId: string; kind: PageKind };
 function trackStarted(kind: PageKind) {
   if (kind === 'slide') track('UI', 'Started', 'SlideTour');
   else if (kind === 'article') track('UI', 'Started', 'ArticleTour');
+  else if (kind === 'flashcard') track('UI', 'Started', 'FlashcardTour');
   else track('UI', 'Started', 'InfographicTour');
 }
 
@@ -35,6 +36,8 @@ function trackEnded(kind: PageKind, completed: boolean) {
   if (kind === 'slide') track('UI', 'Ended', completed ? 'SlideTourCompleted' : 'SlideTourSkipped');
   else if (kind === 'article')
     track('UI', 'Ended', completed ? 'ArticleTourCompleted' : 'ArticleTourSkipped');
+  else if (kind === 'flashcard')
+    track('UI', 'Ended', completed ? 'FlashcardTourCompleted' : 'FlashcardTourSkipped');
   else track('UI', 'Ended', completed ? 'InfographicTourCompleted' : 'InfographicTourSkipped');
 }
 
@@ -106,6 +109,7 @@ export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey }> = {
   slide: { article: 'slidePages' },
   infographic: { article: 'infographicLayouts' },
   article: { article: 'articlePages' },
+  flashcard: { article: 'flashcards' },
 };
 
 export function PageTourStage({ tour, kind }: { tour: TourEngine<PageTourApi>; kind: PageKind }) {

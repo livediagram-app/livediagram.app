@@ -195,7 +195,7 @@ still reopens on the group it was left on. Nothing about the bar is stored acros
 ## The tab's name
 
 - On a desktop, the menu box (the Explorer button, top left) ends with the open tab's name, after a
-  hairline. It is the chrome's ink, 14 px at regular weight (never bold), cut short
+  hairline, as in every editor (the one `TabNameInBox`, `@liveworkspace/workbench`). It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
 - A click (a tap) on it renames the tab in place, for someone who may change the
   document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
@@ -209,7 +209,8 @@ popover hanging under it, and closed again. It starts closed on every page and i
 reopened from a remembered state; pressing the button is the only thing that opens it. A press
 outside, Esc, the button again or opening an item closes it. The status screens (deleted,
 couldn't load, not found) have no menu button and no Explorer. The popover hangs from the
-button's left edge (`computeDockAnchor(..., 'button')`).
+button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover card: it
+got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
 Collaborate, Slides and Contents open as **popovers over their bottom-row
 buttons** ([Editor app](editor-app.md)): they are not corner panels. Every

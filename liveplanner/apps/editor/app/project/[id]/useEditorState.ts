@@ -144,6 +144,8 @@ import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
 import { useTabEntryEffects } from './useTabEntryEffects';
+import { useCardAddress } from './useCardAddress';
+import { cardLink } from '@/lib/card-address';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
 import { useTabScope } from './useTabScope';
@@ -1128,7 +1130,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Capture an Inbox element deep link BEFORE the tab-entry
   // effect below rewrites the hash to the plain #t= pin (docs/specs/013-workspace/inbox.md §1).
   // Consumed further down by useCollabDeepLink once the tab is ready.
-  const collabDeepLink = useCollabDeepLinkCapture();
+  const collabDeepLink = useCollabDeepLinkCapture(hydrated);
+  // The card a link is opening (useCardAddress): its address replaces the entry rather than adding one.
+  const arrivingCardRef = useRef<string | null>(null);
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
   // entry). See useTabEntryEffects.
@@ -1346,6 +1350,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openComments,
     // Read when the link lands, after this render has made the Plan slice below.
     openItem: (itemId, threadId) => {
+      arrivingCardRef.current = itemId;
       plan.context.openItem(itemId);
       // The thread a link names opens on the card (docs/specs/026-plan/items.md "Where it shows").
       if (threadId) cardThreads.focus(threadId);
@@ -1580,6 +1585,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A form is an Editor's to make (docs/specs/030-forms/forms.md "Who may do what").
     newFormFor: participant.can.level === 'edit' ? forms.newFormFor : undefined,
     linkedActions: linkedPlan,
+    // Copy Card Link in the item panel's ⋯ menu (docs/specs/026-plan/plan-board.md "Its address").
+    cardLink: (itemId) =>
+      cardLink({
+        origin: window.location.origin,
+        projectId: projectId ?? '',
+        search: window.location.search,
+        tabId: activeId,
+        itemId,
+      }),
+  });
+  // The open card in the address, and Back and Forward over it (docs/specs/026-plan/plan-board.md "Its address").
+  useCardAddress({
+    hydrated,
+    activeId,
+    shownId: plan.openItemId && plan.context.items.has(plan.openItemId) ? plan.openItemId : null,
+    openItemId: plan.openItemId,
+    arrivingRef: arrivingCardRef,
+    openItem: plan.context.openItem,
+    closeItem: plan.closeItem,
   });
   // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const tourSquare = useTourSquare({ activeId, tickTabs });

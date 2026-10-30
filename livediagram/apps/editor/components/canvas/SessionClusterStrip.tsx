@@ -39,6 +39,13 @@ export function sessionStripTools(
   return null;
 }
 
+// An embed (docs/specs/013-workspace/embeds.md) has no Session strip: its visitors read the document and
+// cannot run or join a session there, so the Timer, Vote and Poll buttons would only open nothing. The
+// editor host hands the canvas chrome its session tools through this, so an embed gets none.
+export function sessionToolsForSurface<T>(tools: T, embedMode: boolean): T | undefined {
+  return embedMode ? undefined : tools;
+}
+
 // Whether this strip offers its idle tools, to start one: an editor's. The one rule both the strip's buttons
 // and its popovers' closing read, so they never disagree about what is there.
 export function stripCanStart(readOnly: boolean): boolean {

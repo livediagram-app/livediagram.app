@@ -8,7 +8,7 @@ import {
   setActiveTabName,
   usePublishTabName,
   usePublishTabRename,
-} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
+} from '../../hooks/editor/active-tab-name-store';
 
 afterEach(() => {
   cleanup();
@@ -23,7 +23,7 @@ describe('the tab’s name in the menu box', () => {
 
   it('shows the name the editor publishes, following a rename, and clears as the editor goes', () => {
     const editor = render(<Editor name="Roadmap" />);
-    const { container } = render(<TabNameInBox />);
+    const { container } = render(<TabNameInBox maxLength={60} />);
     expect(container.querySelector('[data-tab-name-in-box]')?.textContent).toBe('Roadmap');
     editor.rerender(<Editor name="Q4 Roadmap" />);
     expect(container.querySelector('[data-tab-name-in-box]')?.textContent).toBe('Q4 Roadmap');
@@ -32,7 +32,7 @@ describe('the tab’s name in the menu box', () => {
   });
 
   it('shows nothing without a tab', () => {
-    const { container } = render(<TabNameInBox />);
+    const { container } = render(<TabNameInBox maxLength={60} />);
     expect(container.innerHTML).toBe('');
   });
 });
@@ -40,7 +40,7 @@ describe('the tab’s name in the menu box', () => {
 describe('renaming the tab from the menu box', () => {
   function Publish({ can, onRename }: { can: boolean; onRename: (id: string, n: string) => void }) {
     usePublishTabRename('tab1', onRename, can);
-    return <TabNameInBox />;
+    return <TabNameInBox maxLength={60} />;
   }
 
   it('renames on a click: Enter saves, Escape puts it back', () => {
@@ -62,7 +62,7 @@ describe('renaming the tab from the menu box', () => {
   it('drops a draft when another tab opens, renaming neither', () => {
     function Host({ id, onRename }: { id: string; onRename: (id: string, n: string) => void }) {
       usePublishTabRename(id, onRename, true);
-      return <TabNameInBox />;
+      return <TabNameInBox maxLength={60} />;
     }
     act(() => setActiveTabName('Alpha'));
     const onRename = vi.fn();

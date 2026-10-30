@@ -42,7 +42,8 @@ const RECOMMENDED_SWAPS: ReadonlyMap<TemplateKind, TemplateKind> = new Map<
 
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
-// Grouped by what each makes, each group but Posters and Design led by its blank of a page kind. A template in none of
+// Grouped by what each makes, each group but Posters and Design led by its blank of a page kind (Flashcards by
+// Blank Flashcards). A template in none of
 // the groups is placed in the last.
 const OWN_GROUPS: readonly OwnGroup[] = [
   {
@@ -57,6 +58,12 @@ const OWN_GROUPS: readonly OwnGroup[] = [
       'team-welcome',
       'workshop-kickoff',
     ],
+  },
+  {
+    id: 'flashcards',
+    name: 'Flashcards',
+    line: 'Cards to speak from, flipped one at a time.',
+    kinds: ['blank-flashcards', 'talk-flashcards', 'pitch-flashcards', 'wedding-toast'],
   },
   {
     id: 'infographics',

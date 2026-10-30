@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Pages',
     description:
       'Build documents out of pages: articles, slide decks and infographics, with layouts, backgrounds and exports.',
-    articleCount: 7,
+    articleCount: 8,
     kind: 'feature',
     groups: ['Basics', 'Kinds of Page'],
   },
@@ -1223,6 +1223,16 @@ export const articles: Article[] = [
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
+  },
+  {
+    slug: 'flashcards',
+    title: 'Flashcards',
+    description: 'A stack of small text cards to speak from, flipped one at a time.',
+    keywords:
+      'flashcard flashcards flash card cards cue card cue cards note cards index card speaker notes speech talk toast pitch presentation stack flip flipping card number speaking time reading time words per minute too long split onto a new card text only blank flashcards conference talk wedding toast product pitch',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Kinds of Page',
   },
   {
     slug: 'slide-pages',

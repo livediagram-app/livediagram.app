@@ -15,11 +15,13 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
   slides: [
     'slide-deck',
     'launch-keynote',
+    'talk-flashcards',
     'quarterly-review',
+    'pitch-flashcards',
     'team-welcome',
     'workshop-kickoff',
-    'social-carousel',
     'blank-slide-deck',
+    'blank-flashcards',
   ],
   infographics: [
     'data-story',

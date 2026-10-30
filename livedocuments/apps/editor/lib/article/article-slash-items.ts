@@ -192,14 +192,24 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   },
 ];
 
-/** The entries matching `query`, best first. Empty query: every entry, in order. */
-export function filterSlashItems(query: string): SlashItem[] {
+// What a flashcard's slash menu offers (docs/specs/007-editor/flashcards.md "Text only"): the text
+// blocks, never a page break or an object.
+const isTextItem = (item: SlashItem) =>
+  item.action.kind === 'style' ||
+  item.action.kind === 'list' ||
+  (item.action.kind === 'block' && item.action.block === 'divider');
+const TEXT_SLASH_ITEMS = SLASH_ITEMS.filter(isTextItem);
+
+/** The entries matching `query`, best first. Empty query: every entry, in order. `textOnly` (a
+ *  flashcard): the text blocks alone. */
+export function filterSlashItems(query: string, textOnly = false): SlashItem[] {
+  const items = textOnly ? TEXT_SLASH_ITEMS : SLASH_ITEMS;
   const q = query.trim().toLowerCase();
-  if (!q) return [...SLASH_ITEMS];
+  if (!q) return [...items];
   const starts: SlashItem[] = [];
   const contains: SlashItem[] = [];
   const keyword: SlashItem[] = [];
-  for (const item of SLASH_ITEMS) {
+  for (const item of items) {
     const name = item.label.toLowerCase();
     if (name.startsWith(q)) starts.push(item);
     else if (name.includes(q)) contains.push(item);

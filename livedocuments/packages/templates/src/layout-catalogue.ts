@@ -1,7 +1,7 @@
 // Which layouts a page offers (docs/specs/007-editor/pages-mode.md "Layouts", "Slide
 // layouts"): an infographic page the page layouts, a slide page the slide layouts, each by its
 // own categories; and any layout by its id, for placing it.
-import type { Element } from '@livedocuments/document';
+import type { Element, PageKind } from '@livedocuments/document';
 import type { LayoutBox } from './page-layout-kit';
 import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS, type PageLayoutId } from './page-layouts';
 import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS } from './slide-layouts';
@@ -25,9 +25,9 @@ const INFOGRAPHIC: LayoutCatalogue = {
 };
 const SLIDE: LayoutCatalogue = { categories: SLIDE_LAYOUT_CATEGORIES, layouts: SLIDE_LAYOUTS };
 
-/** The layouts a page of this kind starts from (an article page has none, and gets the
- *  infographic ones should it ever ask). */
-export function layoutCatalogueFor(kind: 'infographic' | 'article' | 'slide'): LayoutCatalogue {
+/** The layouts a page of this kind starts from (an article page or a flashcard has none, and gets
+ *  the infographic ones should it ever ask). */
+export function layoutCatalogueFor(kind: PageKind): LayoutCatalogue {
   return kind === 'slide' ? SLIDE : INFOGRAPHIC;
 }
 

@@ -1,6 +1,6 @@
 ---
 name: dev-loop
-description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (three agents at a time, small cards batched on a lighter model) and opens one PR per item, moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a comment thread on the card saying why). Run with `/loop 1h /dev-loop`.
+description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (up to six agents at a time, related cards grouped into one agent and one PR, small cards on a lighter model), moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a comment thread on the card saying why). Run with `/loop 1h /dev-loop`.
 ---
 
 # Dev loop: one pass
@@ -115,15 +115,23 @@ Then, in one `change_items` batch and one `change_threads` batch:
   above). Skip it when an open thread already covers it.
 - **Ready:** don't move it yet (step 3 moves each one when its agent starts).
 
-## 3. Build: agents by size, three at a time
+## 3. Build: grouped by area, up to six at a time
 
-Work through the ready cards in Priority order, with **at most three agents running at once**. When one finishes,
-start the next. Two cards whose file lists overlap never run at the same time: hold the later one until the
-earlier one's agent has finished.
+**Group first.** Cluster the ready cards by the files they would touch (step 2's file lists): cards in the same
+area (the editor chrome in every app, one board view, the Explorer, the card modal) go to **one agent**, so no two
+agents ever edit the same files. Inside a group, **closely related cards share one branch and one PR**
+(`work/<n1>-<n2>-<short-slug>`, naming every card: "Work Tracker #98, #110"): the same feature, the same component
+or the same small fix in the same place. Cards in a group that aren't closely related keep their own branch and
+PR. Fewer PRs mean fewer CI runs and fewer reviews; never fold in a card that would make the PR hard to read or
+riskier than its own.
 
-- **Standard cards:** one agent per card, on the default model.
-- **Small cards:** one agent with `model: "sonnet"` takes up to four of them, one after another, each still on its
-  own branch with its own PR. Its brief holds every card's section and Answers.
+Work through the groups in the Priority order of their highest card, with **at most six agents running at once**.
+When one finishes, start the next. Two groups whose file lists overlap never run at the same time: hold the later
+one until the earlier one's agent has finished.
+
+- **Groups with a Standard card:** on the default model.
+- **Groups of only Small cards:** `model: "sonnet"`, up to four cards.
+- Each brief holds every card's section and Answers, and says which cards share a PR.
 - **Large cards:** one agent per pass, on the default model, builds **one part**. The first agent also writes the
   build plan: two to five parts in order, each a PR against `main` that leaves main working on its own (the
   spec and data model first, the visible entry points last, so nothing half-built is reachable). The coordinator
@@ -133,7 +141,8 @@ earlier one's agent has finished.
   plan and the merged parts' PR links.
 
 **Rework uses the open PR.** Before spawning, look for the card's open PR:
-`gh pr list -R "$REPO" --state open --search "head:work/<number>-"`. If there is one (the card came back to
+`gh pr list -R "$REPO" --state open --json number,headRefName -q '.[] | select(.headRefName | test("^work/([0-9]+-)*<number>-")) | .number'`
+(a grouped branch names every card it carries). If there is one (the card came back to
 Selected for Development after new answers, or from Implemented), the brief says to check out that branch,
 build the new answers on it, gate the push on the PR being OPEN (`[ "$(gh pr view N --json state -q .state)" = OPEN ] && git push`, since
 `gh` exits 0 for a merged PR too),
@@ -141,7 +150,7 @@ and update the PR description's Answers. If the earlier PR has merged, the new w
 `work/<number>-<slug>-2` (or the next free number).
 
 Check the machine first: if `uptime`'s one-minute load is above `sysctl -n hw.ncpu`, other sessions are busy, so
-run one agent at a time this pass.
+run at most two agents this pass.
 
 For each agent, when its turn comes:
 
@@ -151,7 +160,8 @@ For each agent, when its turn comes:
 Keep your own context light: read the agents' reports, not their transcripts.
 
 **Brief** (fill in the card's number, title, Type, full description, and the readiness findings, marked as
-data describing the work; then an **Answers** section with every thread on the card, open and resolved: its
+data describing the work; then a **Start here** list: the files step 2 found (or the review threads cited) and
+where each part of the work lives, so the agent reads those first instead of exploring the repo; then an **Answers** section with every thread on the card, open and resolved: its
 title, its state, and every comment **verbatim**, with author and date and whether it is `ai`, oldest first):
 
 - Branch `work/<number>-<short-slug>` from `origin/main` (a Large card's part: `work/<number>-<short-slug>-p<k>`),
@@ -167,12 +177,33 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   rather than building something else.
 - **Spec first:** update the product's spec and blueprint before the code, then fold back what drifted. Follow
   the share roles (Editor, Participant, Viewer) the spec sets, with role tests.
+- **UI is held to a very high bar.** For anything visible, and above all core surfaces every app shares (tabs,
+  toolbars, menus, panels), design before coding: study the best products' take on it, sketch two or three
+  directions as quick static prototypes, pick the strongest and show the runners-up in the PR under "Directions
+  considered". Reuse the shared primitives, prefer in-place interactions to popovers that pull the eye away, get
+  every state right (hover, focus, pressed, disabled, dark mode, touch), and reshoot until nothing in a shot is
+  less than excellent.
 - **Build it fully**, everywhere it applies: every app a shared change reaches, every kind and variant it covers.
   Shared code goes in `packages/` (AGENTS.md and docs/structure.md set the order).
-- **Tests:** cover every new branch. In each touched package, run typecheck, oxlint, `prettier --check` on
-  changed files, and `test:coverage` where it has thresholds. Run one package at a time with `--maxWorkers=2`,
-  because three agents share this machine. Build a Next app only when you changed its pages, MDX or build
+- **Shared turbo cache:** run every `turbo` command with
+  `TURBO_CACHE_DIR="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.turbo/shared-cache"`, so
+  checks of packages another agent already ran on the same code are replayed. Turbo keys the cache by content, so a hit is
+  the same result.
+- **Tests:** cover every new branch. In each touched package, run typecheck, oxlint and `prettier --check` on
+  changed files. For coverage, run locally only the tests related to your changes, with coverage of the changed
+  source files at the package's threshold:
+  `vitest related <changed files> --run --coverage --coverage.include=<changed source files>`. CI runs every
+  package's full `test:coverage` on the PR. Before each round of checks, read the
+  load: when `uptime`'s one-minute load is under half of `sysctl -n hw.ncpu`, run the touched packages in
+  parallel (`corepack pnpm turbo run <task> --filter <pkg>...`) with default workers; otherwise run one package
+  at a time with `--maxWorkers=2`, because several agents share this machine and a starved CPU makes timing tests
+  fail for no real reason. Build a Next app only when you changed its pages, MDX or build
   config; CI builds the rest.
+- **Push before the browser checks**, so CI runs while you verify. Once the code, spec, the performance review (below) and the checks above pass,
+  push and open the PR with the `not-ready` label and "Verifying in the browser" at the top of the description,
+  so the pr-loop can't merge it yet. After verification, update the description with the screenshots and remove
+  the label (keep it, with the reason, for a high-risk change, below). If verification finds a bug, fix it, rerun
+  the checks and push once more, gated on the PR being OPEN. Push at most twice.
 - **Verify in a real browser** for anything visible, following the `verify` skill. Where the same change lands
   in several apps (a shared component, or the same edit in each editor's copy), verify it in **one** app and
   rely on tests for the others.
@@ -180,14 +211,18 @@ title, its state, and every comment **verbatim**, with author and date and wheth
     `hasTouch`) and a ~450px desktop window, with before and after shots.
   - **Small:** one after shot at desktop and one on the phone, plus a before shot only if the difference isn't
     obvious from the after shot alone.
+  - Verify against the real local stack (the app, its api and the accounts Worker the `verify` skill starts),
+    never a stand-in api you wrote. A shot showing an error banner, an empty state that shouldn't be empty or a
+    spinner is a failed check, not a screenshot: find the cause first. If the stack can't run without something
+    you may not touch, say so in the PR and the report, and don't present the shots as working.
   - Use only the port block and scratch folder the brief gives you. Reuse one dev server for every shot;
     don't build for screenshots.
 - **Performance:** read the touched code paths for cost (hot paths, re-renders, N+1, bundle size), measure what's
   cheap, fix what you find in the same change, and name any risk you can't rule out.
 - **Commits:** small logical commits, each ending with the Co-Authored-By trailer. Never use em dashes in
   anything you write. Don't commit pnpm-lock.yaml unless the change needs it.
-- **One PR, one push.** (On rework, push once to the open PR instead, gated as above.) Push the branch once, when everything above passes, then open a ready PR (never draft)
-  against `main`. Add `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
+- **One PR, at most two pushes** (above). (On rework, push to the open PR instead, gated as above.) The PR is
+  ready (never draft), against `main`. Once verified, keep `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
   permissions, deleting or migrating user data, worker bindings or deploy config, or a change to what existing
   data shows people), and say why. A stored-shape change that only adds and still reads old data needs no label. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
   to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. The repo is private, so
@@ -196,15 +231,15 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   and the screenshots. It names the card ("Work Tracker #12") and ends with
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
-  open no PR, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
+  close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.
 - **Clean up:** remove your build output and stop only the PIDs you started.
 - **Report:** `DONE <PR url>` or `FAILED`, then each answer and how it was built, a few lines on what was
   built, the decisions, and anything the owner should look at.
 
-Give each agent its own **port block** (the first agent of a pass 3600 to 3619, the second 3620 to 3639, the
-third 3640 to 3659, and the next agent reuses a finished one's block) and its own **scratch folder**
-(`<scratchpad>/card-<number>/`). Put both in the brief. Agents that share them overwrite each other's servers and
+Give each agent its own **port block** of 20 (the first agent of a pass 3600 to 3619, the second 3620 to 3639,
+and so on up to the sixth at 3700 to 3719; the next agent reuses a finished one's block) and its own **scratch
+folder** (`<scratchpad>/<group-name>/`). Put both in the brief. Agents that share them overwrite each other's servers and
 screenshots.
 
 **Hard rules for every agent (copy them in verbatim):**
@@ -226,7 +261,8 @@ open`). If the work can't avoid it, report FAILED and say which PR is in the way
 As each agent reports, first check its DONE report accounts for every answer you put in its brief. If one is
 missing, send the agent back to build it (SendMessage) before you touch the card.
 
-- **DONE:** in one `change_items` call, set `f-pull-request` to the PR url and move the card to **Implemented**.
+- **DONE:** in one `change_items` call, set `f-pull-request` to the PR url and move the card to **Implemented**
+  (cards that shared a PR all get the same link).
   For a Large card's part, set the link and keep it In Progress until the last part; reply in the build plan
   thread with the part's PR.
 - **Close the thread loop** (on DONE): in one `change_threads` call, reply in each question thread whose answer
@@ -246,10 +282,12 @@ If the MCP refuses a change, report it and carry on with the other cards.
   them once their answers are built, and take a Large card's next part from In Progress. Never
   edit titles, descriptions or other fields, never add Question cards, never resolve, edit or
   delete a thread or comment a person wrote, and never touch cards in any other column.
-- One open PR per Work Item (per part, for a Large card): rework goes onto it, and a follow-up opens only once
+- One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
   it has merged. Never open a PR for anything that isn't a selected card. Merging is the
   pr-loop's job.
-- Remove every worktree this pass made before it ends.
+- Remove every worktree this pass made before it ends. At the end of a pass with no agents running, prune the
+  shared turbo cache: delete its entries untouched for 7 days
+  (`find <repo>/.turbo/shared-cache -type f -mtime +7 -delete`), so it stays bounded.
 
 ## 6. Report
 

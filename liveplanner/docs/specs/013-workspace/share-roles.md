@@ -57,7 +57,7 @@ A Participant changes the board's **content**, never its **shape**.
   asks only someone who may answer, a comment thread or card finder invites only someone who may add. A Viewer's
   selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button
   on one that has none (a Participant's offers **Add Comment** everywhere). A Participant
-  writes on comment panels and adds Plan cards from New Card, as it may.
+  writes on comment panels and adds Plan cards from a board's card type chips and Add card, as it may.
 - **The server is the rule.** A Participant's content changes travel as element changes the server applies one by
   one against the stored tab: a permitted change lands, a forbidden field is left as stored, a forbidden add or
   delete is refused. A stale screen therefore never writes an old copy of the board over a newer one.

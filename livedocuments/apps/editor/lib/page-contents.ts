@@ -3,6 +3,8 @@
 // narrowing. Pure: pages and the view in, rows out.
 import {
   articleTitleOf,
+  flashcardSpeakingSeconds,
+  speakingTimeLabel,
   pageHasOrientation,
   pageKindOf,
   pageSizeLabel,
@@ -28,6 +30,8 @@ export type ContentsRow = {
   kind: PageKind;
   // A slide page with a slide in the deck; absent where there is no deck to ask.
   inDeck?: boolean;
+  // A card's speaking time ("45 sec"), shown beside its name; absent off a card or on an empty one.
+  speakingTime?: string;
 };
 
 // More pages than this show the Find a Page box.
@@ -37,6 +41,7 @@ const KIND_NAME = {
   infographic: 'Infographic',
   slide: 'Slide',
   article: 'Article',
+  flashcard: 'Flashcard',
 } as const;
 
 export function contentsRows(
@@ -50,26 +55,33 @@ export function contentsRows(
   return pages.map((p, i) => {
     const kind = pageKindOf(p);
     let line: string = KIND_NAME[kind];
+    let speakingTime: string | null = null;
     if (kind === 'infographic') {
       const size = pageSizeLabel(p);
       const turn = pageHasOrientation(p) && ['a4', 'letter', 'a3'].includes(p.size ?? 'a4');
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
     } else if (kind === 'slide' && opts.inDeck) {
       line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
-    } else if (kind === 'article' && p.flow) {
+    } else if ((kind === 'article' || kind === 'flashcard') && p.flow) {
       const flow = opts.articles?.[p.flow];
       const title = flow ? articleTitleOf(flow).trim() : '';
       if (title) line += ` · ${title}`;
+      // A card says how long it takes to say (docs/specs/007-editor/flashcards.md "Card number and
+      // speaking time").
+      speakingTime =
+        kind === 'flashcard' && flow ? speakingTimeLabel(flashcardSpeakingSeconds(flow)) : null;
+      if (speakingTime) line += ` · ${speakingTime}`;
     }
     return {
       id: p.id,
       number: i + 1,
-      name: p.name?.trim() || `Page ${i + 1}`,
+      name: p.name?.trim() || `${kind === 'flashcard' ? 'Card' : 'Page'} ${i + 1}`,
       line,
       locked: p.locked === true,
       aspect: p.rect.width / p.rect.height,
       kind,
       ...(kind === 'slide' && opts.inDeck ? { inDeck: opts.inDeck(p.id) } : {}),
+      ...(speakingTime ? { speakingTime } : {}),
     };
   });
 }
