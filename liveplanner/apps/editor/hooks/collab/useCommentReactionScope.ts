@@ -1,5 +1,5 @@
 // The editor's comment reactions (docs/specs/012-collaboration/comment-reactions.md): who is reacting, whether
-// they may, and how a reaction reaches the document, as the scope every comment row reads
+// they may, and how a reaction reaches the project, as the scope every comment row reads
 // (CommentReactionsContext). A reaction is one `comment-react` delta, applied here at once and sent to the room
 // like every comment change, never a history commit. The room stamps the name and key and, for a Participant,
 // writes it to the stored tab; an Editor's autosave carries it too.

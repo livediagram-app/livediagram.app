@@ -1,7 +1,7 @@
 # Comment Reactions
 
 Anyone who may comment can react to a comment with one of six emoji, so agreeing, cheering or saying "I've seen
-this" takes one press instead of a reply. Everyone in the document sees the reactions and who left them, live, and
+this" takes one press instead of a reply. Everyone in the project sees the reactions and who left them, live, and
 they stay with the comment. One behaviour, one look and one component in all four products (livediagram,
 liveplanner, livedocuments, livedesign): the canvas's comment popover, the [Comment Panel](comment-pin.md) and, here
 in liveplanner, a card's comment threads.
