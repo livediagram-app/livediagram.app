@@ -31,7 +31,8 @@ header; they are not in the palette.
 - **Not on a phone**: below 640 px the header shows no widgets and their narrowing stands down
   ([Plan board](plan-board.md#on-a-phone)).
 - The zone ends in a **+** (for someone who may edit, tooltip-free, named "Add a widget") that opens the widget
-  gallery below it.
+  gallery below it, then, while the board has widgets, **Edit Widgets** (a pencil, with a tooltip) that puts the zone
+  in edit mode (see **Remove**).
 - A press on the zone's empty space selects (and moves) the board, as the rest of the header does.
 - A board holds each kind **at most once**: a filter is the board's filter, not one of several.
 - **Widgets that narrow the board**: pressing a person in People, a type in Card Types, the overdue or due-soon
@@ -60,10 +61,15 @@ header; they are not in the palette.
   of the header and closes the gallery; the + pressed again, Escape or a press outside closes it.
 - **Reorder**: drag a widget left or right along the zone; the others make way at the bar, and it lands there.
   From the keyboard, a focused widget moves with Alt+← and Alt+→.
-- **Remove**: a widget's × (only while the board is selected, and then only on hover over the widget, while it has keyboard focus, or once a touch has tapped it: a maximised or tab-filling board is always selected, and a × on every widget all the time read as clutter), or Delete or Backspace while it
-  is focused.
-  Once one is taken off, nothing of it stays selected: no widget keeps the tap or the focus. A tapped widget's × goes away
-  again on a tap anywhere outside the widget zone, or Escape.
+- **Remove**: **Edit Widgets** puts the zone in **edit mode**: every widget shows a × at its top right, on any
+  pointer and on any board (selected or not, on the canvas, maximised or filling its tab), and the pencil becomes
+  **Done** (a check in the brand colour, named "Done Editing Widgets", pressed). A × takes its widget off at once and
+  the zone stays in edit mode for the next; **Done**, Escape, a press anywhere outside the widget zone, or the last
+  widget going ends it. Edit mode is this person's alone and never saved. Out of edit mode no widget shows a ×, so the
+  header stays clean. Delete or Backspace still takes a focused widget off, in or out of edit mode.
+  Once one is taken off, nothing of it stays selected: no widget keeps the focus.
+  (Before edit mode the × showed only while the board was selected, and then only on hover, keyboard focus or a tap;
+  a board filling its tab is seldom selected, so on a desktop the × hardly ever appeared.)
 - Each placement, move and removal is one board edit: undoable, live for everyone, and saved with the board.
 - Only someone who may edit the board places, moves or removes widgets; everyone sees and uses them.
 

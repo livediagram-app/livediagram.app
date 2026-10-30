@@ -468,6 +468,9 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 - Card face: 8 px radius, 4 px type stripe on the left, glyph + `#key` muted 12 px, title 14 px semibold up to
   3 lines (`line-clamp`), chips row (priority dot, labels, estimate, due, votes, checklist `3/5`), assignee
   avatar bottom right. Done column cards draw at 70% opacity.
+- Cursors (`components/plan/board-cursors.ts`): `planCardCursor(interactive, canEditCards)` is `grab` for an
+  Editor or a Participant, `pointer` for a Viewer, nothing out of Plan mode; `planBoardBodyCursor(interactive)`
+  sets `default` on the board body, which otherwise inherits the canvas's `cursor-grab`.
 - WIP over: count chip uses `--warning` tokens, column head text "Over WIP limit".
 - Empty board: first column shows the open add field with "Add your first item".
 - Copy: "Add card", "Add your first card", "Add a Card", "Or type a title and press Enter", "Open",
@@ -555,6 +558,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Sort Cards menu, role                                          | `apps/editor/components/palette/PlanBoardMenuSection.test.tsx`                                                                                              |
 | change_board sortBy, list_items order                          | `packages/agent-verbs/src/plan/change-board.test.ts`, `plan-listing.test.ts`                                                                                |
 | Column picker statuses, counts, boards                         | `packages/items/src/board-status-picks.test.ts`                                                                                                             |
+| Cursors per role: card hand, Viewer pointer, body arrow        | `apps/editor/components/plan/board-cursors.test.ts`                                                                                                         |
 | Fill Tab: which board, deletion, copy                          | `apps/editor/components/plan/fill-tab.test.ts`                                                                                                              |
 | Setup Board Layout step, stepper, Fill Tab                     | `apps/editor/components/plan/PlanSetupBoard.test.tsx`                                                                                                       |
 | Setup Board as a dialog: opens, Escape, placeholder, toast     | `apps/editor/components/plan/SetupBoardHost.test.tsx`                                                                                                       |
