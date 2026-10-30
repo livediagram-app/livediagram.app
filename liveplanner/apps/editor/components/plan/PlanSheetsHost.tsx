@@ -14,6 +14,7 @@ import {
   typeIn,
 } from '@liveplanner/items';
 import { duplicateItem } from './duplicate-item';
+import { copyCardLink } from './copy-card-link';
 import { mayCreateCardType } from './may-create-card-type';
 import { newCardStatus } from './new-card-status';
 import { newTypeForBoard } from '@/hooks/plan/useTypeForBoard';
@@ -110,6 +111,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
   // Every label in use, for the labels field's suggestions.
   const allLabels = [...new Set([...ctx.items.values()].flatMap((it) => itemLabels(it)))].sort();
   if (item) {
+    const linkOf = ctx.cardLink;
     return (
       <ItemPanel
         item={item}
@@ -174,6 +176,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           else track('Plan', 'Moved', 'Archive');
         }}
         onClose={plan.closeItem}
+        {...(linkOf ? { onCopyLink: () => copyCardLink(linkOf(item.id), ctx.notify) } : {})}
         onEditType={() => {
           plan.closeItem();
           ctx.editType({ id: item.type });

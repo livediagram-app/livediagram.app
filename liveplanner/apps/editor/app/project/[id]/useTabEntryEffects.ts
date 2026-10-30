@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
 import { isEditorPath } from '@/lib/editor-path';
+import { cardEntryState, isCardEntry } from '@/lib/card-address';
 
 // The side effects of LANDING on a tab (hydration, a tab switch, or the
 // active tab's elements finishing their lazy load), lifted out of
@@ -47,7 +48,12 @@ export function useTabEntryEffects({
     if (!isEditorPath(url.pathname)) return;
     if (url.hash === `#t=${activeId}`) return;
     url.hash = `t=${activeId}`;
-    window.history.replaceState({}, '', url.toString());
+    // Keeps an opened card's mark on its entry (useCardAddress), so closing it still steps back off it.
+    window.history.replaceState(
+      cardEntryState(isCardEntry(window.history.state)),
+      '',
+      url.toString(),
+    );
   }, [hydrated, activeId]);
 
   const lastFittedTabRef = useRef<string | null>(null);

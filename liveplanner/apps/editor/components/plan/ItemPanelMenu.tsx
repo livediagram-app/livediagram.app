@@ -1,11 +1,12 @@
 'use client';
 
 // The item panel's `⋯` menu (docs/specs/026-plan/plan-board.md "Open an item"): Duplicate, Flag (or Remove
-// Flag), Archive (or Restore) and Edit Card Type for someone who may edit, then Help for everyone, then Trash last
-// for an editor, as icon-left rows beside
+// Flag), Archive (or Restore) and Edit Card Type for someone who may edit, then Copy Link and Help for everyone, then
+// Trash last for an editor, as icon-left rows beside
 // the panel's Close, so the header keeps only the item's type, its key and the two buttons.
 import { useState } from 'react';
-import { DuplicateIcon, PlanCardsIcon, TrashIcon } from '@liveplanner/ui';
+import { DuplicateIcon, PlanCardsIcon, TrashIcon, lucideGlyph } from '@liveplanner/ui';
+import { lucideLink } from '@liveworkspace/icons/lucide';
 import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
 import {
@@ -15,6 +16,8 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { PlanBoardTileArt } from './plan-tile-art';
 import { PlanTypeGlyph } from './plan-type-glyph';
+
+const LinkIcon = lucideGlyph(lucideLink, 14);
 
 export function ItemPanelMenu({
   itemKey,
@@ -27,6 +30,7 @@ export function ItemPanelMenu({
   onArchive,
   onTrash,
   onEditType,
+  onCopyLink,
 }: {
   itemKey: number;
   // Someone who may only view gets Help alone.
@@ -42,6 +46,8 @@ export function ItemPanelMenu({
   onTrash: () => void;
   // Opens the card's type in the type editor; absent, no row.
   onEditType?: (() => void) | undefined;
+  // Copies the card's address (docs/specs/026-plan/plan-board.md "Its address"), for every role; absent, no row.
+  onCopyLink?: (() => void) | undefined;
 }) {
   const [open, setOpen] = useState(false);
   // Held in state so the menu anchors on its first render.
@@ -93,6 +99,9 @@ export function ItemPanelMenu({
               ) : null}
               <MenuGroupSeparator />
             </>
+          ) : null}
+          {onCopyLink ? (
+            <MenuActionRow plain label="Copy Link" icon={<LinkIcon />} onClick={run(onCopyLink)} />
           ) : null}
           <MenuActionRow
             plain

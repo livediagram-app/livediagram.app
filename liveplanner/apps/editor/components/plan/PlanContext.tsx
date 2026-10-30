@@ -69,6 +69,8 @@ export type PlanContextValue = {
   // A card this person just made, opened at once with its title selected (never for others' or undone cards).
   openNewItem: (itemId: string, via?: ItemOpenVia) => void;
   openItemId: string | null;
+  // A card's address, for Copy Link (docs/specs/026-plan/plan-board.md "Its address"); absent, no row.
+  cardLink?: (itemId: string) => string;
   addItem: (input: {
     type: string;
     fields: Item['fields'];

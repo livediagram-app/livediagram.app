@@ -87,6 +87,8 @@ export function usePlanSlice(opts: {
   newFormFor?: (boardElementId: string) => void;
   // The Actions board's links (useLinkedActionCards); stable callbacks, placeOf changes with the tabs.
   linkedActions?: PlanContextValue['linkedActions'];
+  // A card's address for Copy Link; read when pressed, so it may change every render.
+  cardLink?: (itemId: string) => string;
 }) {
   const { planItems, itemTypes, canEdit, canVote, presence } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
@@ -97,6 +99,12 @@ export function usePlanSlice(opts: {
   const selectRef = useLatest(opts.select);
   const announceRef = useLatest(opts.announce);
   const publishRef = useLatest(opts.publishPresence);
+  const cardLinkRef = useLatest(opts.cardLink);
+  const hasCardLink = opts.cardLink !== undefined;
+  const cardLink = useCallback(
+    (itemId: string) => cardLinkRef.current?.(itemId) ?? '',
+    [cardLinkRef],
+  );
   const commit = useCallback(
     (mapElements: (els: Element[]) => Element[]) => commitRef.current(mapElements),
     [commitRef],
@@ -520,6 +528,7 @@ export function usePlanSlice(opts: {
       openItem,
       openNewItem,
       openItemId,
+      ...(hasCardLink ? { cardLink } : {}),
       addItem,
       addItems,
       moveItem,
@@ -563,6 +572,8 @@ export function usePlanSlice(opts: {
       openItem,
       openNewItem,
       openItemId,
+      hasCardLink,
+      cardLink,
       addItem,
       addItems,
       moveItem,

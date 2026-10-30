@@ -29,16 +29,23 @@ import type { TabLoadState } from './editor-page-helpers';
 // after the page's first render, so the hash still belongs to the
 // previous page then. So `useCollabDeepLinkCapture` re-reads the hash
 // on every commit until it finds a link (a rewritten plain pin parses
-// to null and never overwrites a capture), and `useCollabDeepLink`
-// consumes it once the tab is ready. Held in a ref: nothing re-renders
-// on it. Consumed once, so a refresh lands on the tab without
-// re-opening the popover.
-export function useCollabDeepLinkCapture(): MutableRefObject<CollabDeepLink | null> {
+// to null and never overwrites a capture), up to and including the
+// hydration commit, and `useCollabDeepLink` consumes it once the tab is
+// ready. After hydration the address is the editor's own: an open card
+// rides in it (useCardAddress), and reading that back as a link would
+// reopen a card the person has since closed. Held in a ref: nothing
+// re-renders on it. Consumed once, so a refresh lands on the tab
+// without re-opening the popover.
+export function useCollabDeepLinkCapture(
+  hydrated = false,
+): MutableRefObject<CollabDeepLink | null> {
   const link = useRef<CollabDeepLink | null>(null);
+  const settled = useRef(false);
   useEffect(() => {
-    if (link.current || typeof window === 'undefined') return;
+    if (link.current || settled.current || typeof window === 'undefined') return;
     const parsed = parseCollabDeepLink(window.location.hash);
     if (parsed) link.current = parsed;
+    if (hydrated) settled.current = true;
   });
   return link;
 }

@@ -77,6 +77,36 @@ describe('ItemPanelMenu', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: 'Flag' }));
     expect(fns.onFlag).toHaveBeenCalledOnce();
   });
+
+  // docs/specs/026-plan/plan-board.md "Its address": Copy Link is every role's, before Help.
+  it.each([
+    ['an Editor', true, true],
+    ['a Participant', true, false],
+    ['a Viewer', false, false],
+  ])('offers %s Copy Link before Help, and copies', (_role, canEdit, canRetire) => {
+    const onCopyLink = vi.fn();
+    render(
+      <ItemPanelMenu
+        itemKey={7}
+        canEdit={canEdit}
+        canRetire={canRetire}
+        archived={false}
+        flagged={false}
+        onDuplicate={vi.fn()}
+        onFlag={vi.fn()}
+        onArchive={vi.fn()}
+        onTrash={vi.fn()}
+        onCopyLink={onCopyLink}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
+    const labels = screen.getAllByRole('menuitem').map((m) => m.textContent);
+    expect(labels[labels.indexOf('Help') - 1]).toBe('Copy Link');
+    if (!canEdit) expect(labels).toEqual(['Copy Link', 'Help']);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Copy Link' }));
+    expect(onCopyLink).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menuitem')).toBeNull();
+  });
 });
 
 describe('duplicateItem', () => {
