@@ -5353,6 +5353,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "newTitle": {
         "type": "string"
       },
+      "statuses": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "tabs": {
         "items": {
           "$ref": "#/components/schemas/ItemTypeTab"
