@@ -25,7 +25,7 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
 - **Every canvas toolbar pads its items.** The Palette strip carries `PHONE_TOOLBAR_ITEMS`;
-  the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do the tab pill,
+  the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do a tab's name,
   the role pill (Editing / Viewing), the tour card's buttons and a page's lock and cog.
   The empty-tab card's close takes the full `touch-target`.
 - **A phone sheet's grab handle** (BottomSheet, Dialog's `phoneSheet`, the start panels) is one shared strip,

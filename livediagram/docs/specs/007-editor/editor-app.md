@@ -50,8 +50,8 @@ Three regions stacked vertically, filling the viewport:
 
 The tabs read as tabs, not buttons, and every editor draws them alike from `packages/workbench/src/components/chrome/` (`tab-shape.ts` for the classes, `TabFrame.tsx` for one tab, `TabStrip.tsx` for the strip):
 
-- **They stand on the screen's bottom edge**, like sheet tabs in a spreadsheet: 40 px tall (a 44 px tap area on touch), their upper corners rounded at 10 px and their foot square, at the foot of the bar. The bar is slate-100 (slate-900 in dark), a shade below the open tab, so the open tab lifts off it.
-- **The open tab is a card that joins the bottom edge.** It is white (slate-800 in dark) with a hairline ring and a soft shadow cast upward, its foot running into the screen's edge, and its name is semibold in the tab theme's accent, made legible (AA) on the card. Nothing runs along its top: no accent line or bar. Becoming open, its surface eases in over 150 ms (at once under reduced motion).
+- **They stand on the screen's bottom edge**, like sheet tabs in a spreadsheet: 40 px tall (a 44 px tap area on touch), their upper corners rounded at 10 px and their foot square, at the foot of the bar. The bar is slate-100 (slate-950 in dark), a shade below the open tab, so the open tab lifts off it.
+- **The open tab is a card that joins the bottom edge.** It is white (in dark, slate-800 lifted 30% toward slate-600, so it stands clear of the bar and of a hover) with a hairline ring and a soft shadow cast upward, its foot running into the screen's edge, and its name is semibold in the tab theme's accent, made legible (AA) on the card. Nothing runs along its top: no accent line or bar. Becoming open, its surface eases in over 150 ms (at once under reduced motion).
 - **The others are quiet.** No fill, no dividers between them, medium-weight slate ink readable whatever the tab's theme. Hovering one fills a soft rounded wash inset inside it and darkens its ink.
 - **Long names truncate** with an ellipsis past 14rem; a truncated name shows in full in a Tooltip.
 - **Focus** draws a 2 px brand ring inside the tab's name.
