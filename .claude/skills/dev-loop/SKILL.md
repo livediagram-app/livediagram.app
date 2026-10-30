@@ -177,6 +177,12 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   rather than building something else.
 - **Spec first:** update the product's spec and blueprint before the code, then fold back what drifted. Follow
   the share roles (Editor, Participant, Viewer) the spec sets, with role tests.
+- **UI is held to a very high bar.** For anything visible, and above all core surfaces every app shares (tabs,
+  toolbars, menus, panels), design before coding: study the best products' take on it, sketch two or three
+  directions as quick static prototypes, pick the strongest and show the runners-up in the PR under "Directions
+  considered". Reuse the shared primitives, prefer in-place interactions to popovers that pull the eye away, get
+  every state right (hover, focus, pressed, disabled, dark mode, touch), and reshoot until nothing in a shot is
+  less than excellent.
 - **Build it fully**, everywhere it applies: every app a shared change reaches, every kind and variant it covers.
   Shared code goes in `packages/` (AGENTS.md and docs/structure.md set the order).
 - **Shared turbo cache:** run every `turbo` command with
