@@ -1,9 +1,12 @@
 import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { scrollLeftToReveal } from '@liveworkspace/workbench/components/chrome/tab-strip-scroll';
-import { TAB_STRIP_CLASS } from '@liveworkspace/workbench/components/chrome/tab-shape';
+import { useState, type ReactNode } from 'react';
+import {
+  TAB_BAR_CLASS,
+  TAB_RENAME_FIELD_CLASS,
+} from '@liveworkspace/workbench/components/chrome/tab-shape';
+import { TabStrip } from '@liveworkspace/workbench/components/chrome/TabStrip';
 import {
   folderNamesInDocument,
   groupTabsIntoRuns,
@@ -13,7 +16,8 @@ import {
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
 import { safeInlinePadding, safeInset } from '@livediagram/ui';
-import { TabFolderChip } from '@/components/chrome/TabFolderChip';
+import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
+import { NameEditor } from '@/components/primitives/NameEditor';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
@@ -264,8 +268,8 @@ export function TabBar({
 
   const activeTab = tabs.find((t) => t.id === activeId);
 
-  // One tab pill — see TabPill. The ctx bundle keeps the render
-  // callback (shared with TabFolderChip's members) a one-liner.
+  // One tab, see TabPill. The ctx bundle keeps the render callback (the strip's, for loose tabs and folder
+  // members alike) a one-liner.
   const pillCtx: TabPillCtx = {
     isOutOfScope,
     activeId,
@@ -275,8 +279,10 @@ export function TabBar({
     setMenuFor,
     readOnly,
     isDark,
-    // A tap on the tab already open still brings all of it into view (a phone's tab half under the fade).
-    onSelect: (id: string) => (id === activeId ? revealActive() : onSelect(id)),
+    // A tap on the tab already open selects nothing again; the strip brings all of it into view instead.
+    onSelect: (id: string) => {
+      if (id !== activeId) onSelect(id);
+    },
     onRename,
     reorderDrag,
     participantsByTab,
@@ -290,32 +296,28 @@ export function TabBar({
   };
   const renderTabPill = (tab: Tab): ReactNode => <TabPill key={tab.id} tab={tab} ctx={pillCtx} />;
 
-  // The active tab is always in view: a tab added to a full strip, or picked from the Tabs list, used to open past
-  // the strip's edge, under Search. Runs when the active tab or the number of tabs changes, never on a timer.
-  const stripRef = useRef<HTMLDivElement>(null);
-  const lastTabId = tabs.at(-1)?.id;
-  const tabCount = tabs.length;
-  const revealActive = () => {
-    const strip = stripRef.current;
-    // The whole tab, its menu button and avatars included: measuring the name alone left the rest of a tapped tab
-    // under the strip's edge.
-    const name = strip?.querySelector<HTMLElement>('[aria-current="page"]');
-    const pill = name?.closest<HTMLElement>('[data-tab]') ?? name;
-    if (!strip || !pill) return;
-    const s = strip.getBoundingClientRect();
-    const t = pill.getBoundingClientRect();
-    // The last tab brings Add tab with it, so a run of new tabs never has to hunt for it.
-    const add = activeId === lastTabId ? strip.querySelector('[data-tour-id="add-tab"]') : null;
-    const right = add ? add.getBoundingClientRect().right : t.right;
-    const left = scrollLeftToReveal(
-      { left: s.left, right: s.right, scrollLeft: strip.scrollLeft },
-      { left: t.left, right },
+  // Who is on a collapsed folder's tucked-away tabs, each person once, on its chip.
+  const folderPresence = (tabIds: string[]): ReactNode => {
+    const seen = new Set<string>();
+    const people: Participant[] = [];
+    for (const id of tabIds)
+      for (const p of participantsByTab.get(id) ?? []) {
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        people.push(p);
+      }
+    if (people.length === 0) return null;
+    return (
+      <TabPresenceStack
+        participants={people}
+        selfId={selfId}
+        selfRole={selfRole}
+        followingId={followingId}
+        followerCount={followerCount}
+        onOpenCollaborators={onOpenCollaborators}
+      />
     );
-    if (left === strip.scrollLeft) return;
-    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    strip.scrollTo({ left, behavior: still ? 'auto' : 'smooth' });
   };
-  useEffect(revealActive, [activeId, tabCount, lastTabId]);
 
   return (
     <>
@@ -331,46 +333,23 @@ export function TabBar({
           paddingBottom: safeInset('bottom'),
           ...safeInlinePadding('0.75rem'),
         }}
-        className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
+        className={TAB_BAR_CLASS}
       >
         {roleIcon}
-        {/* The tabs rise from the screen's bottom edge (tab-shape), standing at the strip's foot. Sideways
-            only, the edge with more tabs beyond it fading (scroll-edge-fade). */}
-        <div ref={stripRef} className={TAB_STRIP_CLASS}>
-          {groupTabsIntoRuns(tabs).map((run) =>
-            run.kind === 'loose' ? (
-              renderTabPill(run.tab)
-            ) : (
-              <TabFolderChip
-                key={`folder:${run.name}`}
-                name={run.name}
-                tabs={run.tabs}
-                activeId={activeId}
-                readOnly={readOnly}
-                renderTab={renderTabPill}
-                onReorder={onReorder}
-                onRename={onRenameFolder}
-                participantsByTab={participantsByTab}
-                selfId={selfId}
-                selfRole={selfRole}
-                followingId={followingId}
-                followerCount={followerCount}
-                onOpenCollaborators={onOpenCollaborators}
-              />
-            ),
+        {/* The tabs and folders (the shared strip, docs/specs/007-editor/editor-app.md "How a tab looks"). */}
+        <TabStrip
+          runs={groupTabsIntoRuns(tabs)}
+          activeId={activeId}
+          readOnly={readOnly}
+          renderTab={renderTabPill}
+          onAdd={onAdd}
+          onReorder={onReorder}
+          onRenameFolder={onRenameFolder}
+          renderRenameField={(field) => (
+            <NameEditor {...field} className={TAB_RENAME_FIELD_CLASS} />
           )}
-          {readOnly ? null : (
-            <button
-              type="button"
-              onClick={onAdd}
-              aria-label="Add tab"
-              data-tour-id="add-tab"
-              className="relative mb-1.5 ml-1 flex h-7 w-7 shrink-0 cursor-pointer touch-target items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-            >
-              +
-            </button>
-          )}
-        </div>
+          folderPresence={folderPresence}
+        />
         {/* Shared right-hand cluster (search / settings / dark-mode; GitHub
             lives in the Explorer panel's ⋯ menu here),
             reused by the Explorer's bottom bar (docs/specs/007-editor/editor-app.md). Labelled here on
