@@ -1161,4 +1161,21 @@ describe('a Long Text field written as Markdown', () => {
     expect(posted(seen)[0]).toEqual({ clear: ['f-steps', 'f-stepsRich'] });
     expect(r.applied[0]).toContain('cleared Steps');
   });
+
+  it('still formats the description on a type with no custom fields', async () => {
+    const { custom: _custom, ...base } = ITEM_TYPES[1];
+    const BARE = { ...base, id: 'bare', label: 'Bare', fields: ['title', 'status', 'description'] };
+    const bare = { ...plan, types: [...ITEM_TYPES, BUG, BARE] };
+    const items = [item(1, 'aaa111', { title: 'B', status: 'todo~x' }, 'bare')];
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items, rev: 1 } }, bare);
+    await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { description: '**Now**' } }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({
+      set: { description: 'Now', descriptionRich: [{ text: 'Now', bold: true }] },
+    });
+  });
 });
