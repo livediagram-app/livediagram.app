@@ -8,6 +8,12 @@ export default defineProject({
   test: {
     coverage: {
       thresholds: {
+        'src/agent-presence-stamps.ts': {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
         'src/image-refs.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/d1-compound.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/d1-compound-guard.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
