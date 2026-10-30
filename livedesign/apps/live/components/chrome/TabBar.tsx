@@ -336,7 +336,7 @@ export function TabBar({
         className={TAB_BAR_CLASS}
       >
         {roleIcon}
-        {/* The tabs and folders (the shared strip, docs/specs/007-editor/editor-app.md "How a tab looks"). */}
+        {/* The tabs and folders (the shared strip, docs/specs/007-editor/live-app.md "How a tab looks"). */}
         <TabStrip
           runs={groupTabsIntoRuns(tabs)}
           activeId={activeId}

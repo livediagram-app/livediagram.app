@@ -101,8 +101,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       // The open tab's name takes the tab theme's accent, made legible on its card; the others keep neutral ink.
       accent={isActive ? legibleTabAccent(tab, isDark) : undefined}
       lockIcon={tab.locked ? <TabLockIcon /> : null}
-      // Tour anchor (docs/specs/007-editor/editor-tour.md): the Tabs step highlights the open tab together with the
-      // add button.
+      // Tour anchor: the open tab.
       tourId={isActive ? 'active-tab' : undefined}
       caret={reorderDrag.caretFor(tab.id)}
       dragging={reorderDrag.isDragging(tab.id)}
