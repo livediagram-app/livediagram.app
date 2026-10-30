@@ -181,10 +181,12 @@ PlanCardView.tsx         the plan-card element body (themed; a lone card's fill 
 PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
+copy-card-link.ts        Copy Link: copyCardLink(link, notify) writes the card's address to the clipboard, toasts
+                         LINK_COPIED ("Link copied") or LINK_NOT_COPIED ("Couldn't copy the link"; no clipboard too)
 ../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel (a board maximised from a slot): PLAN_BOARD_SECTIONS (Board Setup, Columns,
                          Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
                          Cards / Archive), each Body given `open` so it can defer work while shut
-ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column
+ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, Copy Link, close), main column
                          (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
                          then made/changed); phone: one column, a Details tab first, sheet 85dvh
 ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG + accentVars of the type colour),
@@ -261,6 +263,30 @@ the items too.
   (`tint`, `color-mix`).
 
 ## Behaviour and state
+
+- **A card's address** (spec "Its address"): `apps/editor/lib/card-address.ts` holds the pure parts:
+  `cardHash(tabId, itemId)` is `placeHash({ tabId, cardId })` from `@liveworkspace/explorer` (`#t=<tab>` or
+  `#t=<tab>&item=<id>`, the Inbox grammar `parseCollabDeepLink` reads); `hashCardId(hash)` reads `item`;
+  `CARD_ENTRY_KEY` (`liveplannerCard`) marks a history entry an opened card pushed (`cardEntryState`,
+  `isCardEntry`; the App Router merges its own keys beside it); `cardLink({ origin, projectId, search, tabId,
+itemId })` is `<origin>/project/<id>[?s=<code>]` plus `cardHash`, keeping only the `s` query.
+  - `app/project/[id]/useCardAddress.ts`, composed in `useEditorState` after `usePlanSlice`, writes the address
+    when `hydrated`, `activeId` or `shownId` change. `shownId` is `openItemId` when the item store holds it, else
+    null (a card being made, deleted, or out of a tab-scoped share's items is never written). Only on
+    `isEditorPath`. With `was` the last written card: equal hash, no write; `shownId && !was` and not arriving,
+    `pushState(cardEntryState(true))`; `!shownId && was` on a marked entry, `history.back()`; otherwise
+    `replaceState` keeping the mark. `arrivingCardRef` names the card opened from an address (the deep link's
+    `openItem` in `useEditorState`, and Forward); it replaces and is cleared once written.
+  - Its `popstate` listener (once hydrated): off the editor path, nothing; the hash's card equal to `openItemId`,
+    nothing; a card, `arrivingRef = id` then `openItem(id)`; none, `closeItem()`.
+  - `useTabEntryEffects`' tab pin replaces with `cardEntryState(isCardEntry(history.state))`, so a tab switch under
+    an open card keeps its entry's mark.
+  - `useCollabDeepLinkCapture(hydrated)` reads the hash on each commit until it holds a link or the hydration
+    commit has run; after that the address is the editor's own, so a card opened later is never read back as a
+    link and reopened.
+  - Copy Link: `usePlanSlice({ cardLink })` puts a stable `cardLink(itemId)` on `PlanContextValue` (read through
+    `useLatest`, so the context keeps its identity); `PlanSheetsHost` hands `ItemPanel` `onCopyLink`, which
+    `ItemPanelMenu` shows as **Copy Link** (lucide `link`, 14 px) before Help for every role.
 
 - **Input routing**: `PlanBoardView` receives `interactive = editorMode === 'plan' && !readOnly`. Interactive:
   card pointerdown stops propagation and starts `usePlanCardDrag`; header/border do not stop propagation (the
@@ -535,6 +561,10 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 | Fill Tab: element added while on          | Kept under the board, hidden; counted next time |
 | Fill Tab: board deleted                   | `fillTabElementOf` is null; canvas is back      |
 | Item moved by someone else during my drag | My drop still applies (last write wins)         |
+| Address names a deleted or unseen card    | Nothing opens; the address drops the card       |
+| Address names a tab gone or out of scope  | The first tab; the card still opens             |
+| Card deleted by someone while open        | Its entry is stepped back off                   |
+| Clipboard missing or refused (Copy Link)  | Toast "Couldn't copy the link"                  |
 
 ## Observability
 
@@ -603,6 +633,10 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Dashboard Settings steps aside while maximised                 | `apps/editor/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                          |
 | Maximise, restore, Escape, unmount ends it                     | `apps/editor/hooks/plan/maximised-plan.test.ts`                                                                                                             |
 | No remount, maximised size, one Escape                         | `apps/editor/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                   |
+| Card address: hash, link, mark, deep link reads it             | `apps/editor/lib/card-address.test.ts`                                                                                                                      |
+| Card address: push, back, replace, arrive, Back/Forward        | `apps/editor/app/project/[id]/useCardAddress.test.tsx`                                                                                                      |
+| Capture stops at hydration; tab pin keeps the mark             | `apps/editor/app/project/[id]/useCollabDeepLink.test.tsx`, `useTabEntryEffects.test.tsx`                                                                    |
+| Copy Link: every role, before Help; toasts                     | `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `copy-card-link.test.ts`                                                                              |
 | Drag, Add card, card menu, item panel                          | checked by hand against the dev stack (screenshots in the PR)                                                                                               |
 
 ## Constants and configuration
