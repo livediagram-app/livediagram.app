@@ -10,7 +10,7 @@ import { pushFormInbox } from '../forms/form-inbox';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabForm } from './tab-form-route';
-import { handleChangesetRoutes } from './changesets';
+import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
@@ -108,6 +108,8 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       }
       const tab = await getTab(env, id, tabId);
       if (!tab) return notFound();
+      // An agent's read shows it on this tab (docs/specs/024-agents/agent-presence.md "Presence").
+      refreshAfterRead(ctx, existing, tabId, owner);
       // Blank other people's comment author ids before handing the tab
       // to a non-owner: a visitor should only ever see their OWN author
       // id (so they can delete-own), never another participant's owner
