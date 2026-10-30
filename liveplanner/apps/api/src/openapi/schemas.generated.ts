@@ -4036,6 +4036,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FormSheetDestination": {
     "additionalProperties": false,
     "properties": {
+      "columns": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
       "sheetId": {
         "type": "string"
       },

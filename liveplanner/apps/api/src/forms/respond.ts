@@ -1,6 +1,6 @@
 // A response (docs/specs/030-forms/forms.md "What a response makes", blueprint §11 "The response write"): checked
-// against the form as its tab holds it now, numbered, and made into one card in the form's destination, which the
-// room relays to everyone with the board open.
+// against the form as its tab holds it now, numbered, and made into one card (or sheet row) in the form's
+// destination, which the room relays to everyone with it open. A response that makes nothing gives its number back.
 import { pushFormInboxByCode } from './form-inbox';
 import type { FormResponseAccepted, FormResponseRefusal } from '@liveplanner/api-schema';
 import {
@@ -13,7 +13,13 @@ import {
   type FormDefinition,
 } from '@liveplanner/forms';
 import { itemTitle, readItemCreate, typesOf, type ItemPerson } from '@liveplanner/items';
-import { claimResponseNumber, getProject, getFormLink, type FormLinkRow } from '../db';
+import {
+  claimResponseNumber,
+  getProject,
+  getFormLink,
+  releaseResponseNumber,
+  type FormLinkRow,
+} from '../db';
 import { notifyFormResponse } from '../email/notifications';
 import { json } from '../responses';
 import { createMany } from '../routes/item-routes';
@@ -168,13 +174,15 @@ export async function respond(
       preview,
       by: formPerson(code, form),
     });
-    // The number stays claimed whatever happened, so numbers never repeat.
-    if (wrote === 'full') return refuse({ error: 'form_full' }, 413);
-    if (wrote !== 'written')
+    if (wrote !== 'written') {
+      // Nothing was made, so nothing is counted: the number goes back (forms.md "A counted response is never lost").
+      await releaseResponseNumber(env, code, number);
+      if (wrote === 'full') return refuse({ error: 'form_full' }, 413);
       return refuse(
         { error: wrote === 'missing' ? 'form_closed' : 'form_busy' },
         wrote === 'missing' ? 409 : 429,
       );
+    }
     return accepted(ctx, { doc, form, code, number, preview, title: `${form.heading} #${number}` });
   }
 
@@ -214,7 +222,8 @@ export async function respond(
     { by: formPerson(code, form) },
   );
   if (made instanceof Response) {
-    // A full item store: the number stays claimed, so numbers never repeat.
+    // No card was made, so nothing is counted: the number goes back.
+    await releaseResponseNumber(env, code, number);
     if (made.status === 413) return refuse({ error: 'form_full' }, 413);
     return refuse({ error: 'form_busy' }, 429);
   }
