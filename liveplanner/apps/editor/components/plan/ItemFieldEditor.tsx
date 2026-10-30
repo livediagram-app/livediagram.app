@@ -268,7 +268,8 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     case 'comments':
       // The card's comment threads (docs/specs/026-plan/items.md "Comments"), from their own context.
-      return <CardThreads item={item} />;
+      // A custom Comments field draws the same, listing its own threads (item-types.md "Comments and Votes fields").
+      return <CardThreads item={item} type={type} field={f} />;
     default:
       return null;
   }

@@ -9,6 +9,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { markResponseOpened } from '@/components/forms/fresh-responses';
 import {
   BUILT_IN_FIELD_IDS,
+  commentsFieldsOf,
   detailFieldsOf,
   detailsLabelOf,
   isArchived,
@@ -326,7 +327,7 @@ function ItemPanelContent({
           {meta}
         </>
       ) : current.id === firstTabId && showsChildren ? (
-        tabFieldsWithChildren(current.fields, mainField, childSection)
+        tabFieldsWithChildren(type, current.fields, mainField, childSection)
       ) : current.fields.length > 0 ? (
         current.fields.map(mainField)
       ) : (
@@ -431,13 +432,15 @@ function ItemPanelContent({
   );
 }
 
-// A first tab's fields with the Linked as sections placed before Comments (or last when it has none).
+// A first tab's fields with the Linked as sections placed before its first Comments field (or last when it has none).
 function tabFieldsWithChildren(
+  type: ItemTypeDef,
   fields: readonly string[],
   mainField: (f: string) => ReactNode,
   childSection: ReactNode,
 ): ReactNode[] {
-  const at = fields.indexOf('comments');
+  const comments = new Set(commentsFieldsOf(type));
+  const at = fields.findIndex((f) => comments.has(f));
   const cut = at < 0 ? fields.length : at;
   return [
     ...fields.slice(0, cut).map(mainField),

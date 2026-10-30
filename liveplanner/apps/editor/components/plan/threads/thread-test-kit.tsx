@@ -79,6 +79,7 @@ export function fakeThreads(initial: CardThread[], opts: { refuse?: boolean } = 
           createdBy: { name: 'Sam', color: '#2563eb', authorId: ME },
           updatedAt: Date.now(),
           cards: [{ projectId: PLAN, itemId: action.itemId, key: 1 }],
+          ...(action.field ? { field: action.field } : {}),
         });
         held = new Map(held).set(made.id, made);
         return made;

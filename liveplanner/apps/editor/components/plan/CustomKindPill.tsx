@@ -9,10 +9,11 @@ import {
   checklistRowsProgress,
   isItemPerson,
   itemColourValue,
+  voteTotalOf,
   type CustomFieldDef,
   type ItemFieldValue,
 } from '@liveplanner/items';
-import { ChecklistPill, LabelChips, MetaPill } from './plan-card-parts';
+import { ChecklistPill, LabelChips, MetaPill, VotesPill } from './plan-card-parts';
 import { ColourDot, planColourName } from './ColourSwatches';
 import { PersonDisc } from './PersonDisc';
 import { ImageThumb } from './ImageField';
@@ -24,7 +25,8 @@ export const isBuiltInKindPill = (def: CustomFieldDef): boolean =>
   def.kind === 'labels' ||
   def.kind === 'colour' ||
   def.kind === 'checklist' ||
-  def.kind === 'image';
+  def.kind === 'image' ||
+  def.kind === 'votes';
 
 export function customKindPill(
   def: CustomFieldDef,
@@ -70,6 +72,11 @@ export function customKindPill(
       return typeof value === 'string' && value ? (
         <ImageThumb key={def.id} imageId={value} label={`${def.label}: image`} />
       ) : null;
+    // A Votes field: the built-in's ▲ count, of its own votes (item-types.md "Comments and Votes fields").
+    case 'votes':
+      return (
+        <VotesPill key={def.id} total={voteTotalOf(value)} palette={palette} name={def.label} />
+      );
     default:
       return null;
   }

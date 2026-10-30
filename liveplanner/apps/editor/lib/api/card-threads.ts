@@ -4,7 +4,7 @@
 // tab-scoped link names its tab on every call.
 
 import type { CardThreadWriteResponse, CardThreadsResponse } from '@liveplanner/api-schema';
-import type { ItemPerson } from '@liveplanner/items';
+import { storedThreadField, type ItemPerson } from '@liveplanner/items';
 import type { CardThread, CommentMention } from '@liveplanner/project';
 import { isOfflineId } from '../offline/offline-store';
 import { offlineFetchThreads, offlineWriteThread } from '../offline/offline-threads';
@@ -12,7 +12,8 @@ import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 import type { ItemsScope } from './items';
 
 export type ThreadAction =
-  | { kind: 'start'; itemId: string; text: string; mentions?: CommentMention[] }
+  // `field`: the Comments field it starts in (absent: the built-in Comments).
+  | { kind: 'start'; itemId: string; text: string; mentions?: CommentMention[]; field?: string }
   | { kind: 'reply'; threadId: string; text: string; mentions?: CommentMention[] }
   | {
       kind: 'edit';
@@ -67,7 +68,7 @@ function requestOf(action: ThreadAction): { method: string; path: string; body?:
       return {
         method: 'POST',
         path: `/items/${enc(action.itemId)}/threads`,
-        body: comment(action),
+        body: { ...comment(action), ...storedThreadField(action.field) },
       };
     case 'reply':
       return { method: 'POST', path: `${t}/comments`, body: comment(action) };

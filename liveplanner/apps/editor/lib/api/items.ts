@@ -116,6 +116,8 @@ async function postInChunks(
   entries: readonly object[],
   action: string,
   undo?: true,
+  // What every request carries beside its items (a tally's Votes field).
+  extra: Record<string, unknown> = {},
 ): Promise<ItemWriteAnswer> {
   const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
   for (let i = 0; i < entries.length; i += ITEM_BULK_MAX) {
@@ -123,7 +125,7 @@ async function postInChunks(
     const res = await apiFetch(itemsUrl(scope, path), {
       method: 'POST',
       headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
-      body: JSON.stringify(undoBody({ items }, undo)),
+      body: JSON.stringify(undoBody({ items, ...extra }, undo)),
     });
     const partial = res.ok ? null : await landedOf(res);
     try {
@@ -178,8 +180,15 @@ export async function writeItem(
     case 'patch':
       return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change'));
     case 'tally':
-      // A session vote's tally, as its host ends it.
-      return postInChunks(scope, '/tally', write.tallies, 'items tally');
+      // A session vote's tally, as its host ends it, in the Votes field it counts in (session-tools.md "Count In").
+      return postInChunks(
+        scope,
+        '/tally',
+        write.tallies,
+        'items tally',
+        undefined,
+        write.field ? { field: write.field } : {},
+      );
     case 'patches':
       // A type's or a removed column's cards to the Trash.
       return postInChunks(

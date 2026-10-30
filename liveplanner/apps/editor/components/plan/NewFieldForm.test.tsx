@@ -102,23 +102,40 @@ describe('Pick', () => {
   it('lists the built-ins’ kinds in their groups, tagging those the type lacks Ready to use', () => {
     open({ missing: ['assignee', 'due', 'labels', 'comments'] });
     fireEvent.click(header('People & teamwork'));
-    expect(kindNames()).toEqual(['Person', 'Checklist', 'Comments']);
-    expect(tagged()).toEqual(['Person']);
+    expect(kindNames()).toEqual(['Person', 'Checklist', 'Comments', 'Votes']);
+    expect(tagged()).toEqual(['Person', 'Comments']);
     fireEvent.click(header('Colour & images'));
     expect(kindNames()).toEqual(['Colour', 'Image']);
     fireEvent.click(header('Numbers & dates'));
     expect(tagged()).toEqual(['Date']);
   });
 
-  it('adds Comments at once while the type lacks it, and leaves it out once it has it', () => {
-    const { onAddBuiltIn } = open({ missing: ['comments'] });
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields": they open Shape as every kind does.
+  it('opens Shape for Comments and Votes, offering the built-in while the type lacks it', () => {
+    const { onAddBuiltIn, onAddCustom } = open({ missing: ['votes'] });
+    pick('Votes', 'People & teamwork');
+    expect(readyToUse()).toEqual(['Votes']);
+    expect(screen.getByText('Session votes, Top Voted and sorting')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^Votes/ }));
+    expect(onAddBuiltIn).toHaveBeenCalledWith('votes');
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
     pick('Comments', 'People & teamwork');
-    expect(onAddBuiltIn).toHaveBeenCalledWith('comments');
-    cleanup();
-    open({ missing: [] });
-    fireEvent.click(header('People & teamwork'));
-    expect(kindNames()).toEqual(['Person', 'Checklist']);
-    expect(tagged()).toEqual([]);
+    expect(screen.queryByRole('region', { name: 'Ready to use' })).toBeNull();
+    fireEvent.change(name(), { target: { value: 'Design Review' } });
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Design Review', kind: 'comments' }),
+    );
+  });
+
+  it('makes a Votes field from its name alone, never required, its preview a ▲ count', () => {
+    const { onAddCustom } = open({ missing: [] });
+    pick('Votes', 'People & teamwork');
+    expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
+    expect(preview().getByText('▲ 3')).toBeTruthy();
+    fireEvent.change(name(), { target: { value: 'Priority Vote' } });
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith({ label: 'Priority Vote', kind: 'votes' });
   });
 
   it('filters the kinds as you type, by a built-in’s name too, opening every group with a match', () => {

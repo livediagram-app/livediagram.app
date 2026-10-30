@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useVoteCountIn } from '@/hooks/plan/useVoteCountIn';
 
 // The session-tools bundle (session-tools-props.ts) read off the editor, for the bottom-right
 // cluster's Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip").
@@ -24,6 +25,7 @@ export function useSessionTools(): SessionToolsProps {
   } = useEditorContext();
   const timer = activeTab.timer ?? null;
   const vote = activeTab.vote ?? null;
+  const voteFields = useVoteCountIn();
   return useMemo(
     () => ({
       timer,
@@ -40,6 +42,7 @@ export function useSessionTools(): SessionToolsProps {
       onClearVote: clearVote,
       voteLayers: layers,
       activeLayerId,
+      voteFields,
     }),
     [
       timer,
@@ -56,6 +59,7 @@ export function useSessionTools(): SessionToolsProps {
       clearVote,
       layers,
       activeLayerId,
+      voteFields,
     ],
   );
 }

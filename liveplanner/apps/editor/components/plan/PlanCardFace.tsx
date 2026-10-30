@@ -54,6 +54,7 @@ import {
   StartPill,
   TypeChip,
   TypeDot,
+  VotesPill,
   checklistProgress,
 } from './plan-card-parts';
 
@@ -193,14 +194,10 @@ export function PlanCardFace({
       case 'checklist':
         return progress ? <ChecklistPill key={f} progress={progress} palette={palette} /> : null;
       case 'comments':
-        return <CommentsPill key={f} item={item} palette={palette} />;
+        return <CommentsPill key={f} item={item} palette={palette} type={type} />;
       // The votes the card has gathered from ended session votes, read-only.
       case 'votes':
-        return votes > 0 ? (
-          <MetaPill key={f} palette={palette} label={votes === 1 ? '1 vote' : `${votes} votes`}>
-            <span aria-hidden>▲ {votes}</span>
-          </MetaPill>
-        ) : null;
+        return <VotesPill key={f} total={votes} palette={palette} />;
       case 'assignee':
         return assignee ? (
           <PersonDisc key={f} person={assignee} label={`Assigned to ${assignee.name}`} />
@@ -220,6 +217,18 @@ export function PlanCardFace({
       default: {
         // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
         const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
+        // A Comments field counts its own open threads, as the built-in's chip (item-types.md "Comments and Votes fields").
+        if (def?.kind === 'comments')
+          return (
+            <CommentsPill
+              key={f}
+              item={item}
+              palette={palette}
+              type={type}
+              field={f}
+              name={def.label}
+            />
+          );
         // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
         if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
         // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields").

@@ -1,7 +1,8 @@
 'use client';
 
-// A card's comment threads in the card panel (docs/specs/026-plan/items.md "Where it shows"): the `comments` field,
-// last in the Overview tab. A quiet tally and New Thread over the list; no threads, a soft empty state; the starter at
+// A card's comment threads in the card panel (docs/specs/026-plan/items.md "Where it shows"): one Comments field's
+// (the built-in `comments`, or the type's own, item-types.md "Comments and Votes fields"), last in the Overview tab,
+// listing only the threads that field holds, its New Thread starting one in it. A quiet tally and New Thread over the list; no threads, a soft empty state; the starter at
 // the top when New Thread is pressed; open threads most recently active first, every one closed when the card opens
 // (a thread just started, or one a link names, opens); resolved threads under a Resolved disclosure at the bottom.
 // Drawn for about five threads, and for many more.
@@ -9,7 +10,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CommentIcon, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideChevronDown, lucidePlus } from '@liveworkspace/icons/lucide';
-import { itemTitle, type Item } from '@liveplanner/items';
+import {
+  COMMENTS_FIELD,
+  itemTitle,
+  threadsInField,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import type { CardThread, CommentMention } from '@liveplanner/project';
 import { usePlan } from '../PlanContext';
 import { AddThreadToCardDialog } from './AddThreadToCardDialog';
@@ -21,15 +28,25 @@ import { ANNOUNCE, threadTally } from './thread-words';
 const PlusIcon = lucideGlyph(lucidePlus, 13);
 const Chevron = lucideGlyph(lucideChevronDown, 13);
 
+type CardThreadsProps = {
+  item: Item;
+  // The card's type and the Comments field drawn: every thread on the card when not given.
+  type?: ItemTypeDef;
+  field?: string;
+};
+
 // Keyed by the card, so opening another card (or this one again) starts with every thread closed.
-export function CardThreads({ item }: { item: Item }) {
-  return <CardThreadsOf key={item.id} item={item} />;
+export function CardThreads(props: CardThreadsProps) {
+  return <CardThreadsOf key={props.item.id} {...props} />;
 }
 
-function CardThreadsOf({ item }: { item: Item }) {
+function CardThreadsOf({ item, type, field = COMMENTS_FIELD }: CardThreadsProps) {
   const ctx = useCardThreadsContext();
   const plan = usePlan();
-  const threads = useMemo(() => ctx?.threads.threadsOf(item.id) ?? [], [ctx?.threads, item.id]);
+  const threads = useMemo(() => {
+    const all = ctx?.threads.threadsOf(item.id) ?? [];
+    return type ? threadsInField(all, type, field) : all;
+  }, [ctx?.threads, item.id, type, field]);
   const open = threads.filter((t) => !t.resolved);
   const resolved = threads.filter((t) => t.resolved);
   const [starting, setStarting] = useState(false);
@@ -90,7 +107,13 @@ function CardThreadsOf({ item }: { item: Item }) {
   const start = (text: string, mentions: CommentMention[]) => {
     setStarting(false);
     void ctx.threads
-      .act({ kind: 'start', itemId: item.id, text, ...(mentions.length ? { mentions } : {}) })
+      .act({
+        kind: 'start',
+        itemId: item.id,
+        text,
+        ...(mentions.length ? { mentions } : {}),
+        ...(field !== COMMENTS_FIELD ? { field } : {}),
+      })
       .then((made) => {
         if (!made) return;
         setExpanded((prev) => new Set([...prev, made.id]));

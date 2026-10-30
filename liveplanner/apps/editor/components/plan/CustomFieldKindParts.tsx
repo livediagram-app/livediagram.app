@@ -67,6 +67,8 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   colour: <PaletteIcon />,
   checklist: <ChecklistIcon />,
   image: <ImageIcon />,
+  comments: <CommentsIcon />,
+  votes: <VotesIcon />,
 };
 
 // Add Field's kinds: every custom kind's icon, and the one-to-a-type built-in fields' (Comments, Votes).
@@ -225,6 +227,14 @@ function SampleValue({
           </span>
           photo.png
         </span>
+      );
+    // A Comments field's threads are not a value (item-types.md "Comments and Votes fields").
+    case 'comments':
+      return null;
+    // A Votes field reads as the built-in Votes' ▲ count.
+    case 'votes':
+      return (
+        <span className="text-[13px] tabular-nums text-slate-700 dark:text-slate-200">▲ 3</span>
       );
   }
 }
