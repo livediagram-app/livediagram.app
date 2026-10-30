@@ -136,8 +136,11 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 - `applyPatch(item, patch, ctx)` merges `set`, deletes `clear`, `rev + 1`, stamps `updatedBy/At`.
 - `applyMove(item, move, items, ctx)` sets status, computes rank against the target neighbours (`after` wins
   over `before`; a missing neighbour id falls back to the column end), merges `set`.
-- `applyTally(item, tally, ctx)` adds each voter's dots to what they had, caps a voter's count at
-  `ITEM_VOTES_PER_PERSON_MAX`, admits no new voter past `ITEM_VOTERS_MAX`, `rev + 1`.
+- `applyTally(item, tally, ctx, field = 'votes')` adds each voter's dots to what they had in `field`, caps a voter's
+  count at `ITEM_VOTES_PER_PERSON_MAX`, admits no new voter past `ITEM_VOTERS_MAX`, `rev + 1`. The route picks
+  `field` per card with `tallyFieldOn(type, body.field)` (comments-votes-fields.ts): the vote's field while the
+  card's type offers it, else the built-in `votes`. `itemVotes(item, field?)` / `itemVoteTotal(item, field?)` read
+  one Votes field (the built-in by default).
 
 ### Board projection (`projectBoard(setup, items, quick?)`)
 
@@ -243,7 +246,7 @@ All under `/projects/:id/items`, auth `guest-or-clerk`, token-usable, registered
 | POST   | `/items/patches`      | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
 | POST   | `/items/:itemId`      | edit | `ItemPatch`                                                  | `ItemResponse`      |
 | POST   | `/items/:itemId/move` | edit | `ItemMove`                                                   | `ItemResponse`      |
-| POST   | `/items/tally`        | edit | `{ items: { id, votes }[] }` ≤ `ITEM_BULK_MAX`               | `ItemsResponse`     |
+| POST   | `/items/tally`        | edit | `{ items: { id, votes }[], field? }` ≤ `ITEM_BULK_MAX`       | `ItemsResponse`     |
 | DELETE | `/items/:itemId`      | edit |                                                              | 204                 |
 
 Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
@@ -288,8 +291,10 @@ on each card it is on by a link row in that card's plan.
 
 - **Types**: `CardRef = { projectId, itemId, key: number | null, projectName?: string }`; `ThreadPerson = { name,
 color, authorId? }`; `CardThread = { id, title, resolved, resolvedBy?: string, resolvedAt?: number, comments:
-Comment[], createdAt, createdBy: ThreadPerson, updatedAt, home, cards: CardRef[], rev }`. `Comment` gains `ai?:
-true` (comments.ts) and `editedAt?: number`.
+Comment[], createdAt, createdBy: ThreadPerson, updatedAt, home, cards: CardRef[], field?: string, rev }`. `field`
+  is the Comments field it belongs to (item-types.md "Comments and Votes fields"), set at start and never changed;
+  absent is the built-in `comments`. `isThreadFieldId(s)` (`comments` or a custom field id) checks it. `Comment` gains
+  `ai?: true` (comments.ts) and `editedAt?: number`.
 - **Constants**: `THREAD_COMMENTS_MAX` 200 and `THREAD_BYTES` 131,072 (the old per-card `ITEM_COMMENTS_MAX` /
   `ITEM_COMMENTS_BYTES`), `CARD_THREADS_MAX` 50, `THREAD_CARDS_MAX` 20, `THREAD_TITLE_MAX` 120,
   `THREAD_OPENING_MAX` 60, `THREAD_ID_PREFIX` `'th-'`.
@@ -301,9 +306,11 @@ true` (comments.ts) and `editedAt?: number`.
 resolve { resolved, by } | rename { title } | addCard { card } | removeCard { projectId, itemId }`;
   `applyThreadChange(thread, change, now)` answers `{ ok, thread }` (rev + 1, `updatedAt` now except for card
   changes) or a refusal: `comments_full`, `comment_not_found`, `title_too_long`, `thread_on_card`,
-  `thread_cards_full`, `unchanged`. `startThread({ id, home, card, comment, title?, now })` makes one (title
-  `autoThreadTitle` unless given). Who may is the caller's (routes), never here.
-- **Reads**: `isCardThread(v)` (shape, caps), `openCommentCount(threads, projectId, itemId)` (the face count),
+  `thread_cards_full`, `unchanged`. `startThread({ id, home, card, comment, title?, field?, now })` makes one (title
+  `autoThreadTitle` unless given; `field` stored unless it is `comments`). Who may is the caller's (routes), never here.
+- **Reads**: `isCardThread(v)` (shape, caps, `field`), `openCommentCount(threads, projectId, itemId)` (the face
+  count), `openCommentCounts(threads, projectId)` (every card's face count by item id, and each card's count in
+  each Comments field a thread names under `fieldCountKey(itemId, field)`),
   `threadsOnCard(threads, projectId, itemId)`, `sortedThreads(threads)` (open first by `updatedAt` desc, then
   resolved by `resolvedAt` desc), `threadParticipants(thread)` (authors, first seen order).
 - **Redaction**: `threadForViewer(thread, viewer)` (author and token ids on the viewer's own comments and
@@ -323,16 +330,26 @@ becomes `ItemCreate.threads` (restore: `unknown[]`, checked by the api); `itemCo
 face count from a `ReadonlyMap<itemId, number>` (an item carries none); `itemsWithCommentCounts` is not added: the
 renderers take the map.
 
+A type's own Comments fields (custom kind `comments`) are read by `comments-votes-fields.ts`: `commentsFieldsOf(type)`
+(the built-in and its own, in its order), `threadFieldOn(thread, type)` (the thread's field while the type offers it,
+else the built-in when offered, else the type's first; `null` with none), `threadsInField(threads, type, field)` and
+`storedThreadField(field)` (`{}` for the built-in). `tabsOf`'s default Overview tab ends with every Comments field in
+the type's order. A Comments field is never required (`canBeRequired`), never written as a value (`resolveFields`
+refuses it, pointing at change_threads) and has no CSV value.
+
 ### Storage (plan schema step V7, `plan-room/plan-schema.ts`)
 
 ```sql
 card_threads      (plan_id, id, title, resolved, resolved_by, resolved_at, comments JSON, created_at,
-                   created_by JSON, updated_at, rev, cards JSON)            PK (plan_id, id)   -- the home's
+                   created_by JSON, updated_at, rev, cards JSON, field NULL) PK (plan_id, id)  -- the home's
 card_thread_links (plan_id, item_id, thread_id, home, added_at, open_comments)
                                                                             PK (plan_id, item_id, thread_id)
                    INDEX (plan_id, thread_id)                                                  -- each card's
 ```
 
+- `field` (step V9, `ALTER TABLE card_threads ADD COLUMN field TEXT NULL`, run only when `PRAGMA
+table_info(card_threads)` lacks it, so the step runs again harmlessly; `STEPS` may hold a function step for this):
+  the thread's Comments field, null the built-in; read back only when `isThreadFieldId`.
 - `plan_id` is the home on `card_threads` and the card's plan on `card_thread_links` (`home` = `plan_id` for a
   thread stored here). `open_comments` caches the thread's comment count while open (0 resolved), for faces drawn
   without the thread (thumbnails, renders, agents' listings).
@@ -375,18 +392,18 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
 
 'threads'`and by`handleItemRoutes`on`segments[5] === 'threads'`)
 
-| Method | Path                                          | Gate (on `:id`, the plan viewed)   | Body                          | Answers                                                 |
-| ------ | --------------------------------------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------- |
-| GET    | `/projects/:id/threads`                       | read                               | `?item=` narrows to one card  | `CardThreadsResponse`                                   |
-| POST   | `/projects/:id/items/:itemId/threads`         | participate                        | `{ text, mentions?, title? }` | 201 `CardThreadWriteResponse`                           |
-| POST   | `/projects/:id/threads/:threadId/comments`    | participate                        | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
-| PUT    | `/projects/:id/threads/:threadId/comments/:c` | participate; own                   | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId/comments/:c` | participate; own, or edit          | none                          | `CardThreadWriteResponse` (`thread: null` once it went) |
-| POST   | `/projects/:id/threads/:threadId/resolve`     | participate                        | none                          | `CardThreadWriteResponse`, 204 if already               |
-| POST   | `/projects/:id/threads/:threadId/reopen`      | participate                        | none                          | the same                                                |
-| PUT    | `/projects/:id/threads/:threadId/title`       | participate                        | `{ title }` (`''` automatic)  | `CardThreadWriteResponse`                               |
-| POST   | `/projects/:id/threads/:threadId/cards`       | participate here and on the target | `{ projectId?, itemId }`      | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId`             | participate; every comment own     | none                          | 204                                                     |
+| Method | Path                                          | Gate (on `:id`, the plan viewed)   | Body                                  | Answers                                                 |
+| ------ | --------------------------------------------- | ---------------------------------- | ------------------------------------- | ------------------------------------------------------- |
+| GET    | `/projects/:id/threads`                       | read                               | `?item=` narrows to one card          | `CardThreadsResponse`                                   |
+| POST   | `/projects/:id/items/:itemId/threads`         | participate                        | `{ text, mentions?, title?, field? }` | 201 `CardThreadWriteResponse`                           |
+| POST   | `/projects/:id/threads/:threadId/comments`    | participate                        | `{ text, mentions? }`                 | `CardThreadWriteResponse`                               |
+| PUT    | `/projects/:id/threads/:threadId/comments/:c` | participate; own                   | `{ text, mentions? }`                 | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId/comments/:c` | participate; own, or edit          | none                                  | `CardThreadWriteResponse` (`thread: null` once it went) |
+| POST   | `/projects/:id/threads/:threadId/resolve`     | participate                        | none                                  | `CardThreadWriteResponse`, 204 if already               |
+| POST   | `/projects/:id/threads/:threadId/reopen`      | participate                        | none                                  | the same                                                |
+| PUT    | `/projects/:id/threads/:threadId/title`       | participate                        | `{ title }` (`''` automatic)          | `CardThreadWriteResponse`                               |
+| POST   | `/projects/:id/threads/:threadId/cards`       | participate here and on the target | `{ projectId?, itemId }`              | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId`             | participate; every comment own     | none                                  | 204                                                     |
 
 - The thread is reached through `:id`: a link row of the plan for a card the caller's scope holds, else
   `404 thread_not_found`. Writes count against the write rate limit.
@@ -410,7 +427,12 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
   card's legacy thread (the trigger takes it).
 - The old `/items/:itemId/comments` routes are removed.
 
-Refusals, by name: `400` text missing or too long, `400 title_too_long`, `403 forbidden`, `404 thread_not_found`,
+- **Start in a field**: `body.field`, when given, must pass `isThreadFieldId` and be one of
+  `commentsFieldsOf(typeIn(typesOf(caller.doc.itemTypes), item.type))`, else `400 { error: 'field_invalid', message }`
+  (the message names the type's Comments fields as `id (Name)`, or says the type has none), checked after the card is
+  read and before the card's thread count. Stored through `startThread`'s `field`.
+
+Refusals, by name: `400` text missing or too long, `400 title_too_long`, `400 field_invalid`, `403 forbidden`, `404 thread_not_found`,
 `404 comment_not_found`, `404 item_not_found`, `409 thread_on_card`, `409 thread_busy`, `409 thread_has_others`,
 `413 comments_full`, `413 threads_full`, `413 thread_cards_full`.
 
@@ -438,7 +460,8 @@ lists empty and reads `GET /threads` again.
   `fields.comments` into it on read (`legacyThreadOf`); `offlineWriteThread(projectId, op)` applies
   `applyThreadChange` (same rights) in `serializeOfflineWrite`. **Sync to cloud** sends `threads` with the create
   (`POST /projects` `threads`, each read as a restore); **Take offline** fetches `GET /threads` and keeps those whose
-  `home` is the plan.
+  `home` is the plan. A start's `field` is checked against the record's types as the api checks it
+  (`field_invalid`).
 
 ### Inbox
 
@@ -450,20 +473,24 @@ many of the plan's cards it is on.
 ### Editor
 
 - `lib/api/card-threads.ts`: `fetchThreads(scope)`, `writeThread(scope, action)` (`ThreadAction = start { itemId,
-text, mentions? } | reply | edit | delete | resolve | rename | addToCard { projectId, itemId } | deleteThread`),
+text, mentions?, field? } | reply | edit | delete | resolve | rename | addToCard { projectId, itemId } | deleteThread`),
   offline through `lib/offline/offline-threads.ts`.
 - `hooks/plan/useCardThreads.ts`: the plan's threads (`Map` by id), loaded with the items and again on a reconnect,
   kept live by `receive(op)` (`keepOwnThreadAuthors`), `countsByItem` (memoised `openCommentCount` per card), and
   `act(action)`: telemetry, applied now (a start shows at once under a temporary id), sent, settled on the answer;
   a refusal toasts and reloads. Mention notices as before (`onMentioned`).
-- `components/plan/threads/`: `CardThreads.tsx` (the field: header, empty state, starter, list, Resolved
-  disclosure), `ThreadTile.tsx` (one thread: header, meta, menu, body), `ThreadStarter.tsx`, `ThreadTitleEditor.tsx`,
+- `components/plan/threads/`: `CardThreads.tsx` (one Comments field: `{ item, type?, field? }`, listing
+  `threadsInField`, its New Thread starting in `field`; header, empty state, starter, list, Resolved disclosure;
+  `ItemFieldEditor` draws one per Comments field the type offers, under the field's name), `ThreadTile.tsx` (one thread: header, meta, menu, body), `ThreadStarter.tsx`, `ThreadTitleEditor.tsx`,
   `ThreadSharedChip.tsx`, `AddThreadToCardDialog.tsx` (with `useThreadCardPicker.ts`: this plan's live cards and the
   search over them, never another plan's), `thread-words.ts` (counts,
   titles, announcements). `comment-thread-parts.tsx`'s `CommentRow` draws **Generated by AI** and **Edited**, and
   takes `onEdit`.
 - `PlanContext.threads` (`{ byItem, counts, act, selfId, canComment, canEdit }`); `CommentsPill` reads
-  `counts`; exports get the counts map; `collab-deep-link.ts` reads `thread`.
+  `counts` through `useFieldThreadCount(store, itemId, type, field)` (thread-store.ts): a custom field's own key, and
+  for the field unknown threads land in (the built-in, else the first) the whole less the type's other fields; a
+  custom Comments field placed on the face draws the same chip, named `{Field}: N comments`; the Display tab's sample
+  card has a store with two comments in each Comments field; exports get the counts map; `collab-deep-link.ts` reads `thread`.
 
 ## Live: room op
 
