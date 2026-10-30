@@ -39,7 +39,7 @@ export function ApplyToAllTabsRow({
         >
           <span
             aria-hidden
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white group-disabled:bg-slate-300 dark:group-disabled:bg-slate-600"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-white group-disabled:bg-slate-300 dark:bg-brand-600 dark:group-disabled:bg-slate-600"
           >
             <AllTabsGlyph />
           </span>

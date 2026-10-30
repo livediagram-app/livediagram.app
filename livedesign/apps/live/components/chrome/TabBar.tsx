@@ -334,8 +334,8 @@ export function TabBar({
         className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
       >
         {roleIcon}
-        {/* The tabs hang from the canvas's edge (tab-shape): the strip rises over the bar's top border so the active
-            tab can cover it. Sideways only, the edge with more tabs beyond it fading (scroll-edge-fade). */}
+        {/* The tabs rise from the screen's bottom edge (tab-shape), standing at the strip's foot. Sideways
+            only, the edge with more tabs beyond it fading (scroll-edge-fade). */}
         <div ref={stripRef} className={TAB_STRIP_CLASS}>
           {groupTabsIntoRuns(tabs).map((run) =>
             run.kind === 'loose' ? (
@@ -365,7 +365,7 @@ export function TabBar({
               onClick={onAdd}
               aria-label="Add tab"
               data-tour-id="add-tab"
-              className="relative ml-1 mt-1 flex h-7 w-7 shrink-0 cursor-pointer touch-target items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="relative mb-1.5 ml-1 flex h-7 w-7 shrink-0 cursor-pointer touch-target items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
               +
             </button>

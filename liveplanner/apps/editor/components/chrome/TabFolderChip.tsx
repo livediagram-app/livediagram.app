@@ -123,7 +123,7 @@ export function TabFolderChip({
       // A folder reads as a CONTAINER, clearly distinct from the tab pills
       // inside it: dashed boundary (the app's "grouping" cue) + a tinted
       // inset surface the inline active pill sits on.
-      className={`${TAB_DASHED_CLASS} items-start bg-slate-100/70 px-1 dark:bg-slate-800/40 ${
+      className={`${TAB_DASHED_CLASS} bg-slate-100/70 px-1 dark:bg-slate-800/40 ${
         dragOver ? 'ring-2 ring-brand-400 ring-offset-1' : ''
       }`}
       onDragOver={
@@ -171,7 +171,7 @@ export function TabFolderChip({
           onDoubleClick={readOnly ? undefined : () => setEditing(true)}
           aria-expanded={open}
           aria-label={`${name}, ${tabs.length} ${tabs.length === 1 ? 'tab' : 'tabs'}`}
-          className="mt-1 flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-100"
+          className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-100"
         >
           <FolderGlyph open={open} />
           <span>{name}</span>

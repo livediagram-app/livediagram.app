@@ -7,13 +7,11 @@ import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
 import { SideBySideIcon } from '@liveplanner/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
-import { TabModeIcon } from './editor-mode/TabModeIcon';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
 import { OutOfScopeTabPill } from './OutOfScopeTabPill';
 import type { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import {
   TAB_ACCENT_CLASS,
-  TAB_TYPE_ICON_CLASS,
   tabShapeClass,
 } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import type { CanvasMenuActions } from './TabBar';
@@ -121,8 +119,8 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
               setMenuFor(tab.id);
             }
       }
-      // The tab's shape (tab-shape, docs/specs/007-editor/editor-app.md "How a tab looks"): the active tab hangs from
-      // the canvas's edge in its colour, the others sit flat on the bar. The active tab's name takes the tab theme's
+      // The tab's shape (tab-shape, docs/specs/007-editor/editor-app.md "How a tab looks"): the active tab rises from
+      // the screen's bottom edge, the others sit flat on the bar; no type icon before the name. The active tab's name takes the tab theme's
       // accent, made legible on its surface; the others keep neutral ink, readable whatever the tab's theme.
       data-tab=""
       data-active={isActive ? '' : undefined}
@@ -162,13 +160,6 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           aria-current={isActive ? 'page' : undefined}
           className="relative flex h-7 cursor-pointer items-center gap-1.5 rounded-md text-sm font-medium outline-none touch-target-y focus-visible:ring-2 focus-visible:ring-brand-400"
         >
-          {/* The mode you work in on this tab (docs/specs/007-editor/editor-modes.md), tinted with
-              the tab theme's accent; the pill text itself stays neutral so it reads on the bar for
-              ANY theme. */}
-          {/* On a computer only: a phone keeps the room for names. */}
-          <span className={TAB_TYPE_ICON_CLASS}>
-            <TabModeIcon tab={tab} style={{ color: accent }} />
-          </span>
           {tab.locked ? <TabLockIcon /> : null}
           {/* Trimmed to its cap band so the name centres on its letters; the button's height is
               pinned because the trimmed name no longer props it open. */}

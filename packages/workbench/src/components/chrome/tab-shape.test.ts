@@ -1,28 +1,28 @@
-// The footer tab's shape (docs/specs/007-editor/editor-app.md "How a tab looks"): hanging from the canvas edge, the
-// active tab joined to it, the others flat with a hairline between neighbours.
+// The footer tab's shape (docs/specs/007-editor/editor-app.md "How a tab looks"): standing on the screen's bottom edge,
+// the active tab open at its foot, the others flat with a hairline between neighbours.
 import { describe, expect, it } from 'vitest';
 import { TAB_STRIP_CLASS, tabShapeClass } from './tab-shape';
 
 const classes = (s: string) => s.split(/\s+/);
 
 describe('tabShapeClass', () => {
-  it('hangs every tab from the top edge: square top, rounded foot, one height', () => {
+  it('stands every tab on the bottom edge: rounded top, square foot, one height', () => {
     for (const active of [true, false]) {
       const c = classes(tabShapeClass({ active, editing: false, readOnly: false }));
-      expect(c).toContain('rounded-b-lg');
-      expect(c).toContain('h-9');
+      expect(c).toContain('rounded-t-lg');
+      expect(c).toContain('h-10');
       expect(c).not.toContain('rounded-lg');
       // The border is kept (transparent when unused), so a tab keeps its width as it becomes active.
-      expect(c).toEqual(expect.arrayContaining(['border-x', 'border-b']));
+      expect(c).toEqual(expect.arrayContaining(['border-x', 'border-t']));
     }
   });
 
-  it('raises the active tab in the canvas surface, outlined with no top edge, in light and dark', () => {
+  it('raises the active tab as a card outlined on top and sides, open at its foot, in light and dark', () => {
     const c = classes(tabShapeClass({ active: true, editing: false, readOnly: false }));
     expect(c).toEqual(
       expect.arrayContaining(['bg-white', 'dark:bg-slate-800', 'border-slate-200', 'z-[1]']),
     );
-    expect(c).not.toContain('border-t');
+    expect(c).not.toContain('border-b');
     expect(c).not.toContain('border-transparent');
   });
 
@@ -49,11 +49,10 @@ describe('tabShapeClass', () => {
 });
 
 describe('TAB_STRIP_CLASS', () => {
-  it('rises over the bar’s top border and scrolls sideways only, its edges fading', () => {
+  it('stands the tabs at the bar’s foot and scrolls sideways only, its edges fading', () => {
     expect(classes(TAB_STRIP_CLASS)).toEqual(
       expect.arrayContaining([
-        '-mt-px',
-        'items-start',
+        'items-end',
         'overflow-x-auto',
         'overflow-y-hidden',
         'scroll-edge-fade',

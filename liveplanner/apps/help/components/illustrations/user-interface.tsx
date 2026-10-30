@@ -179,7 +179,7 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The bottom bar's tabs: the Tabs label, the active tab with its menu
+/** The bottom bar's tabs: the active tab with its menu
  *  button and a presence avatar, another tab, a collapsible folder, the +
  *  button, and the quick controls at the far end. */
 export function TabBar() {
@@ -189,9 +189,6 @@ export function TabBar() {
       <Shape x={195} y={22} w={110} h={46} label="Checkout" />
       <rect x={0} y={y} width={500} height={36} className="fill-white" />
       <line x1={0} y1={y} x2={500} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
-      <Label x={10} y={y + 19} size={10} weight={700} tone="muted">
-        TABS
-      </Label>
       {/* Active tab, with a presence avatar and its ⋯ menu button. */}
       <rect
         x={40}

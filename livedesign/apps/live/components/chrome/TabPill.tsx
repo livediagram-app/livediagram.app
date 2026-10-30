@@ -122,8 +122,8 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
               setMenuFor(tab.id);
             }
       }
-      // The tab's shape (tab-shape, docs/specs/007-editor/editor-app.md "How a tab looks"): the active tab hangs from
-      // the canvas's edge in its colour, the others sit flat on the bar. The active tab's name takes the tab theme's
+      // The tab's shape (tab-shape, docs/specs/007-editor/live-app.md "How a tab looks"): the active tab rises from
+      // the screen's bottom edge, the others sit flat on the bar; no type icon before the name. The active tab's name takes the tab theme's
       // accent, made legible on its surface; the others keep neutral ink, readable whatever the tab's theme.
       data-tab=""
       data-active={isActive ? '' : undefined}

@@ -6,8 +6,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { FlowchartIcon, MarkerIcon } from '@livediagram/ui';
-import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { TabPill, type TabPillCtx } from './TabPill';
 
 function ctx(over: Partial<TabPillCtx> = {}): TabPillCtx {
@@ -67,38 +65,15 @@ describe('TabPill out of scope', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "The tab pill shows what it opens in".
-describe('TabPill opening-mode icon', () => {
-  it.each([
-    ['Diagram', undefined, FlowchartIcon],
-    ['Draw', 'draw' as const, MarkerIcon],
-  ])('leads with the %s mode icon', (_, opensIn, Icon) => {
-    const expected = render(<Icon size={12} />).container.querySelector('svg')!.innerHTML;
-    cleanup();
-    render(<TabPill tab={{ ...tab('t2', 'Board'), opensIn }} ctx={ctx()} />);
-    const button = screen.getByRole('button', { name: 'Board' });
-    expect(button.querySelector('svg')!.innerHTML).toBe(expected);
-  });
-
-  // docs/specs/007-editor/editor-modes.md "Where the mode lives": nothing is remembered per person.
-  it("shows the tab's own mode, never one an earlier editor remembered in this browser", () => {
-    const expected = render(<FlowchartIcon size={12} />).container.querySelector('svg')!.innerHTML;
-    cleanup();
-    localStorage.setItem('livediagram:v2:editor-mode:pill-switched', 'draw');
-    render(
-      <EditorModeProvider
-        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
-      >
-        <TabPill
-          tab={tab('pill-switched', 'Board')}
-          ctx={ctx({ activeId: 'pill-switched', isOutOfScope: () => false })}
-        />
-      </EditorModeProvider>,
-    );
-    const button = screen.getByRole('button', { name: 'Board' });
-    expect(button.querySelector('svg')!.innerHTML).toBe(expected);
-    localStorage.clear();
-  });
+// docs/specs/007-editor/editor-modes.md "The tab pill shows no mode icon": the name alone, whatever the mode.
+describe('TabPill mode icon', () => {
+  it.each([undefined, 'draw' as const])(
+    'shows no icon before the name (opens in %s)',
+    (opensIn) => {
+      render(<TabPill tab={{ ...tab('t2', 'Board'), opensIn }} ctx={ctx()} />);
+      expect(screen.getByRole('button', { name: 'Board' }).querySelector('svg')).toBeNull();
+    },
+  );
 });
 
 // docs/specs/004-interface-design/touch-targets.md: the 28px pill reaches a 44px-tall tap area on a

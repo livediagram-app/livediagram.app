@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The tab strip (docs/specs/007-editor/editor-app.md "Tab bar", "How a tab looks"): no Tabs label before the tabs,
+// The tab strip (docs/specs/007-editor/live-app.md "Tab bar", "How a tab looks"): no Tabs label before the tabs,
 // and a tap on the tab already open brings all of it into view rather than switching to it again.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
