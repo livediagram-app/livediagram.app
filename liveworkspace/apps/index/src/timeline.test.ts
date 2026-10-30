@@ -314,16 +314,20 @@ describe('what apps report', () => {
       ['user_tl7c', null, (TODAY + 1) * DAY],
       ['user_tl7c', 'Cy', TODAY * DAY + 4000],
     ]);
+    // Each day counts as one open, however many edits it reports.
     const days = h.db.sql
-      .prepare('SELECT day FROM use_days WHERE person_id = ? AND item_id = ? ORDER BY day')
-      .all('user_tl7c', item.id) as { day: number }[];
-    expect(days.map((d) => d.day)).toEqual([TODAY, TODAY + 1]);
+      .prepare('SELECT day, opens FROM use_days WHERE person_id = ? AND item_id = ? ORDER BY day')
+      .all('user_tl7c', item.id) as { day: number; opens: number }[];
+    expect(days.map((d) => [d.day, d.opens])).toEqual([
+      [TODAY, 1],
+      [TODAY + 1, 1],
+    ]);
     // Cy's Most Used counts both.
     const cyNow = await person('user_tl7c', { teams: [{ id: 'team_tl7' }] });
-    const recent = await body<{ mostUsed: { id: string; useDays: number }[] }>(
+    const recent = await body<{ mostUsed: { id: string; useDays: number; useOpens: number }[] }>(
       await call('/items?view=recent&used=2', { auth: cyNow.auth }),
     );
-    expect(recent.mostUsed.map((i) => [i.id, i.useDays])).toEqual([[item.id, 2]]);
+    expect(recent.mostUsed.map((i) => [i.id, i.useOpens, i.useDays])).toEqual([[item.id, 2, 2]]);
   });
 
   it('refuses a bad report, and another app’s', async () => {

@@ -521,7 +521,7 @@ export async function pushAppEvents(
         actorName: event.actorName,
         at: event.at,
       }),
-      ...useDayStatements(env, event.actorId, itemId, event.at),
+      ...useDayStatements(env, event.actorId, itemId, event.at, 'edit'),
     );
   }
   await db.batch(statements);

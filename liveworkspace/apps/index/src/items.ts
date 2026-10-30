@@ -675,14 +675,27 @@ function pruneDue(personId: string, day: number): boolean {
   return true;
 }
 
-/** The statements that count today as a use day of `itemId` for `personId`, and, at most once a day, drop the
- * person's days that have left the window. Both read through use_days' (person_id, …) indexes. */
-export function useDayStatements(env: Env, personId: string, itemId: string, at: number) {
+/** The statements that count a use of `itemId` by `personId` on the day of `at`, and, at most once a day, drop the
+ * person's days that have left the window. An open adds one to the day's opens (Most Used ranks by them); any other
+ * use (an edit an app reports) only makes sure the day is there, as one open, so an item only edited still counts
+ * without an edit adding to the opens. Both read through use_days' (person_id, …) indexes. */
+export function useDayStatements(
+  env: Env,
+  personId: string,
+  itemId: string,
+  at: number,
+  use: 'open' | 'edit',
+) {
   const db = env.INDEX_DB;
   const day = useDayOf(at);
   const statements = [
     db
-      .prepare('INSERT OR IGNORE INTO use_days (person_id, item_id, day) VALUES (?, ?, ?)')
+      .prepare(
+        use === 'open'
+          ? `INSERT INTO use_days (person_id, item_id, day, opens) VALUES (?, ?, ?, 1)
+             ON CONFLICT (person_id, item_id, day) DO UPDATE SET opens = use_days.opens + 1`
+          : 'INSERT OR IGNORE INTO use_days (person_id, item_id, day) VALUES (?, ?, ?)',
+      )
       .bind(personId, itemId, day),
   ];
   if (pruneDue(personId, day)) {
@@ -742,8 +755,8 @@ async function recordOpen(ctx: RouteContext, id: string): Promise<Response> {
          WHERE excluded.last_opened_at - opens.last_opened_at >= ?`,
       )
       .bind(person.id, id, now, OPEN_DEBOUNCE_MS),
-    // Most Used: today counts once, however many opens.
-    ...useDayStatements(env, person.id, id, now),
+    // Most Used: one more open today (at most one a minute, by the debounce above).
+    ...useDayStatements(env, person.id, id, now, 'open'),
   ];
   // Through a link: kept for Shared with me, and a first time in tells the app (notices.ts). Not a public link's (a
   // Community post's): its visitors are not added to Shared, and its author is not told.

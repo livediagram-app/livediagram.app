@@ -156,7 +156,7 @@ for the person (favourite, last opened, link access) is one D1 batch. `lists.tes
 list's query plan and times 2,000 of a person's items among 20,000 others' (each page a few
 milliseconds). Opens are written at most once a minute per person and item, in memory and in SQL. Comment
 pushes go in through `json_each`, one statement per table. Most Used rides Recent's first page as one more
-query on `use_days`' person index (`most-used.test.ts`: 14 ms beside 100,000 other rows). A Timeline page is
+query on `use_days`' person index, its opens summed per item over 14 days (`most-used.test.ts`: 14 ms beside 100,000 other rows). A Timeline page is
 one statement reading one index range of at most `limit + 1` rows per scope the person has (their own, and
 each team's), never the whole feed (`timeline.test.ts`: two pages from 10,000 of a person's events among
 100,000 others in about 15 ms); an event is recorded in the batch of the change it is about, two or three
