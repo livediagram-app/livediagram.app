@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   checkDeletionCode,
   closeAccount,
-  deletionCodeRefusal,
+  confirmDeletionCode,
   isDeletionCode,
   requestDeletionCode,
   sendDeletionCode,
@@ -134,30 +134,35 @@ describe('an app’s answers', () => {
     });
   });
 
-  it('lets the delete go ahead only with the right code', async () => {
+  it('lets the delete go ahead only with the right code, then closes with it', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(await deletionCodeRefusal(credentials, 'at', '123456', answering({ ok: true }))).toBe(
-      null,
-    );
-    expect(await deletionCodeRefusal(null, 'at', '123456')).toMatchObject({ status: 503 });
-    expect(await deletionCodeRefusal(credentials, null, '123456')).toMatchObject({ status: 401 });
-    expect(await deletionCodeRefusal(credentials, 'at', undefined)).toEqual({
+    const fetchImpl = vi.fn<typeof fetch>(async () => Response.json({ ok: true }));
+    const confirmed = await confirmDeletionCode(credentials, 'at', '123456', fetchImpl);
+    expect(confirmed.ok).toBe(true);
+    if (!confirmed.ok) return;
+    await confirmed.closeAccount();
+    const [url, init] = fetchImpl.mock.calls[1]!;
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/delete-account');
+    expect(JSON.parse(String(init?.body))).toEqual({ token: 'at', code: '123456' });
+
+    const refusal = async (...args: Parameters<typeof confirmDeletionCode>) => {
+      const answer = await confirmDeletionCode(...args);
+      return answer.ok ? null : answer.answer;
+    };
+    expect(await refusal(null, 'at', '123456')).toMatchObject({ status: 503 });
+    expect(await refusal(credentials, null, '123456')).toMatchObject({ status: 401 });
+    expect(await refusal(credentials, 'at', undefined)).toEqual({
       status: 400,
       body: { error: 'code_required' },
     });
     expect(
-      await deletionCodeRefusal(
-        credentials,
-        'at',
-        '123456',
-        answering({ error: 'invalid_code' }, 403),
-      ),
+      await refusal(credentials, 'at', '123456', answering({ error: 'invalid_code' }, 403)),
     ).toEqual({ status: 403, body: { error: 'invalid_code' } });
-    expect(await deletionCodeRefusal(credentials, 'at', '123456', answering({}, 429))).toEqual({
+    expect(await refusal(credentials, 'at', '123456', answering({}, 429))).toEqual({
       status: 429,
       body: { error: 'rate_limited' },
     });
-    expect(await deletionCodeRefusal(credentials, 'at', '123456', answering({}, 500))).toEqual({
+    expect(await refusal(credentials, 'at', '123456', answering({}, 500))).toEqual({
       status: 502,
       body: { error: 'code_not_checked' },
     });

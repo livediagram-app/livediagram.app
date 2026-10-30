@@ -28,10 +28,11 @@ export {
 export {
   checkDeletionCode,
   closeAccount,
-  deletionCodeRefusal,
+  confirmDeletionCode,
   isDeletionCode,
   requestDeletionCode,
   sendDeletionCode,
+  type ConfirmedDeletion,
   type DeletionAnswer,
   type DeletionCodeCheck,
 } from './close-account';

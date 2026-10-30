@@ -4,7 +4,7 @@
 // client secret, so this runs in the app's Worker, with the access token the person signed in to the app with.
 //
 // The apps' own routes answer the same in every app, so the answers are made here too (`requestDeletionCode`,
-// `deletionCodeRefusal`): an app's route only wraps them in its own JSON response.
+// `confirmDeletionCode`): an app's route only wraps them in its own JSON response.
 import { accountsRoute, basicAuthorization, type ClientCredentials } from './oauth';
 
 // How long an app waits on the accounts Worker to send or check a code before giving up.
@@ -126,25 +126,38 @@ export async function requestDeletionCode(
   }
 }
 
+/** The code checked out: the app may delete its data, then close the account with the same code. */
+export interface ConfirmedDeletion {
+  ok: true;
+  closeAccount: () => Promise<void>;
+}
+
 /**
- * An app's `DELETE /api/account`, before it deletes anything: null when `code` is the account's, else the refusal to
- * answer with. Nothing may be deleted unless this is null.
+ * An app's `DELETE /api/account`, before it deletes anything: confirmed when `code` is the account's, else the refusal
+ * to answer with. Nothing may be deleted unless it is confirmed.
  */
-export async function deletionCodeRefusal(
+export async function confirmDeletionCode(
   credentials: ClientCredentials | null,
   accessToken: string | null,
   code: unknown,
   fetchImpl: typeof fetch = fetch,
-): Promise<DeletionAnswer | null> {
-  if (!credentials) return unavailable;
-  if (!accessToken) return signedOut;
-  if (!isDeletionCode(code)) return { status: 400, body: { error: 'code_required' } };
+): Promise<ConfirmedDeletion | { ok: false; answer: DeletionAnswer }> {
+  const refuse = (answer: DeletionAnswer) => ({ ok: false as const, answer });
+  if (!credentials) return refuse(unavailable);
+  if (!accessToken) return refuse(signedOut);
+  if (!isDeletionCode(code)) return refuse({ status: 400, body: { error: 'code_required' } });
+  let checked: DeletionCodeCheck;
   try {
-    const checked = await checkDeletionCode(credentials, accessToken, code, fetchImpl);
-    if (checked === 'ok') return null;
-    return checked === 'rate_limited' ? limited : { status: 403, body: { error: checked } };
+    checked = await checkDeletionCode(credentials, accessToken, code, fetchImpl);
   } catch (err) {
     console.warn('[account] code_not_checked', err instanceof Error ? err.message : 'unknown');
-    return { status: 502, body: { error: 'code_not_checked' } };
+    return refuse({ status: 502, body: { error: 'code_not_checked' } });
   }
+  if (checked === 'ok') {
+    return {
+      ok: true,
+      closeAccount: () => closeAccount(credentials, accessToken, code, fetchImpl),
+    };
+  }
+  return refuse(checked === 'rate_limited' ? limited : { status: 403, body: { error: checked } });
 }

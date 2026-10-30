@@ -119,17 +119,17 @@ it ([sign-in.md](../003-accounts/sign-in.md#closing-an-account)). The app's Work
 and `@liveworkspace/auth-client` makes their answers, so every app answers the same:
 
 ```ts
-import { closeAccount, deletionCodeRefusal, requestDeletionCode } from '@liveworkspace/auth-client';
+import { confirmDeletionCode, requestDeletionCode } from '@liveworkspace/auth-client';
 
 // POST /api/account/deletion-code: the code is emailed to the account.
 const sent = await requestDeletionCode(credentials, accessToken);
 return Response.json(sent.body, { status: sent.status });
 
 // DELETE /api/account { code }: checked before anything is deleted.
-const refusal = await deletionCodeRefusal(credentials, accessToken, body.code);
-if (refusal) return Response.json(refusal.body, { status: refusal.status });
+const confirmed = await confirmDeletionCode(credentials, accessToken, body.code);
+if (!confirmed.ok) return Response.json(confirmed.answer.body, { status: confirmed.answer.status });
 await deleteAppData(env, userId);
-await closeAccount(credentials, accessToken, body.code);
+await confirmed.closeAccount(); // `closeAccount`, with the same code
 // then clear the refresh cookie: the refresh token died with the account
 ```
 
