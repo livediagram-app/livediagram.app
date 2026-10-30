@@ -880,6 +880,10 @@ sign-off. The marks are transparent 64px PNGs at `/email/<name>-mark-64.png` on 
   (`check-verification-otp`, which checks a code without spending it and counts attempts in two steps, so guesses
   sent at once count as one; and the password, email-verification and email-change flows, which nothing here uses)
   are off (`UNUSED_CODE_PATHS` in `src/auth-options.ts`) and answer `404`.
+- **The deletion code** ([Closing an account](#closing-an-account)) is drawn the same way, in the brand of the app
+  that asked for it, and says what it is for: its subject is `123456 is your code to delete your liveworkspace
+account`, it says the code deletes the account and everything in it in every app, and that ignoring it keeps the
+  account as it is. It is sent to the account's own address and can't be turned off.
 - **The onboarding series** is liveworkspace's, whichever app it speaks for.
 - **The team emails and the token reminder** (an invitation and its reminders, an answer to an invitation, a token
   about to expire) are liveworkspace's: they are about the account and its teams, which are the same in every app,
@@ -985,8 +989,10 @@ An app's own one-time milestones (its tenth item, its first share link) stay tha
 
 ## Closing an account
 
-An app's server asks (`POST /api/auth/delete-account`, with its client credentials and the person's
-access token, `src/delete-account.ts`), and the account closes for every app at once:
+An app's server asks (`POST /api/auth/delete-account`, with its client credentials, the person's access token and the
+code emailed to them, `src/delete-account.ts`), and the account closes for every app at once. Without the right code
+nothing happens: the code is sent and checked first, by the same app's server
+([sign-in.md](sign-in.md#closing-an-account), `src/deletion-code.ts`). Then:
 
 1. It leaves every team: a team it ran alone is deleted, and one where it was the only admin passes to
    the longest-standing member. Then every `team_member` row it had (its own by `userId`, and those addressed to it that
