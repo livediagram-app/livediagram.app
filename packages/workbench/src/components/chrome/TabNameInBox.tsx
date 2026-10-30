@@ -1,31 +1,59 @@
 'use client';
 
+// The open tab's name in the menu box (docs/specs/007-editor/toolbar-layout.md "The tab's name" in each product), on
+// a desktop in every editor, after a hairline beside the menu button. A click (a tap) renames the tab, for someone who
+// may. Each editor publishes the name and the rename through active-tab-name-store and hides this on a phone.
 import { useState } from 'react';
 import {
   activeTabRenameId,
   useActiveTabName,
   useActiveTabRename,
   type TabRename,
-} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
-import { NAME_MAX_LENGTH } from '@livedesign/design';
+} from '../../hooks/editor/active-tab-name-store';
 
-// The name's look: the chrome's text at regular weight (never bold), a little smaller than a header's,
-// truncating.
-const IN_BOX_TITLE_CLASS = 'min-w-0 max-w-[16rem] truncate text-[14px] font-normal leading-tight';
+// The name's look: the chrome's text at regular weight (never bold), a little smaller than a header's, truncating.
+export const IN_BOX_TITLE_CLASS =
+  'min-w-0 max-w-[16rem] truncate text-[14px] font-normal leading-tight';
 
-// The open tab's name in the menu box (docs/specs/007-editor/toolbar-layout.md "The tab's name"), on a desktop.
-export function TabNameInBox() {
+const FRAME =
+  'ml-0.5 border-l border-slate-200 pl-2.5 pr-2 text-slate-800 dark:border-slate-700 dark:text-slate-100';
+
+export function TabNameInBox({
+  maxLength,
+  className = '',
+}: {
+  // The product's longest tab name (its NAME_MAX_LENGTH).
+  maxLength: number;
+  // Extra classes on the frame (liveplanner hides the name while its slot holds an element's).
+  className?: string;
+}) {
   const name = useActiveTabName();
   const rename = useActiveTabRename();
   if (!name) return null;
   // Keyed by the tab it renames: another tab opening drops a draft begun on this one.
-  return <TabName key={rename?.tabId ?? ''} name={name} rename={rename} />;
+  return (
+    <TabName
+      key={rename?.tabId ?? ''}
+      name={name}
+      rename={rename}
+      maxLength={maxLength}
+      frame={className ? `${FRAME} ${className}` : FRAME}
+    />
+  );
 }
 
-function TabName({ name, rename }: { name: string; rename: TabRename | null }) {
+function TabName({
+  name,
+  rename,
+  maxLength,
+  frame,
+}: {
+  name: string;
+  rename: TabRename | null;
+  maxLength: number;
+  frame: string;
+}) {
   const [draft, setDraft] = useState<string | null>(null);
-  const frame =
-    'ml-0.5 border-l border-slate-200 pl-2.5 pr-2 text-slate-800 dark:border-slate-700 dark:text-slate-100';
   if (draft !== null && rename) {
     const save = () => {
       const next = draft.trim();
@@ -41,7 +69,7 @@ function TabName({ name, rename }: { name: string; rename: TabRename | null }) {
           data-keeps-escape
           aria-label="Tab name"
           value={draft}
-          maxLength={NAME_MAX_LENGTH}
+          maxLength={maxLength}
           onFocus={(e) => e.currentTarget.select()}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={save}
@@ -58,7 +86,6 @@ function TabName({ name, rename }: { name: string; rename: TabRename | null }) {
   return (
     <span
       data-tab-name-in-box=""
-      // A click (a tap) renames the tab, for someone who may.
       onClick={rename ? () => setDraft(name) : undefined}
       className={`${frame} ${rename ? 'cursor-text' : ''} ${IN_BOX_TITLE_CLASS}`}
     >

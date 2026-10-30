@@ -1,7 +1,10 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { HoverCard, Glyph } from '@livedocuments/ui';
+import { Glyph } from '@livedocuments/ui';
+import { NAME_MAX_LENGTH } from '@livedocuments/document';
+import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -25,6 +28,7 @@ export function ToolbarExplorerButton({
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
 }) {
+  const phone = useIsMobileViewport();
   const button = (
     <button
       type="button"
@@ -47,11 +51,10 @@ export function ToolbarExplorerButton({
   );
   return (
     <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
-      {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
-          button keeps its focus as the panel opens. */}
-      <HoverCard title="Explorer" description="Your documents, folders and teams." disabled={open}>
-        {button}
-      </HoverCard>
+      {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
+      {button}
+      {/* The open tab's name (not on a phone, where the strip has the row). */}
+      {phone || inline ? null : <TabNameInBox maxLength={NAME_MAX_LENGTH} />}
     </ToolbarMenuCard>
   );
 }
