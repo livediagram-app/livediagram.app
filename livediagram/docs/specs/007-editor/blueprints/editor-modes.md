@@ -26,7 +26,7 @@ design decision. Draw mode's own tools are blueprinted in
 | May this person edit        | `useViewPreview(...).canEdit`, `apps/editor/app/document/[id]/useViewPreview.ts`                                                                                                                                                                                                            |
 | The mode switch             | `EditorModeSwitch` (beside the menu button, in `ToolbarExplorerButton`'s card) and `StartModeSwitch` (`apps/editor/components/start/`, a start panel's rail): chip `ModeMenuChip` (`compact`, `iconOnly`), menu `ModeMenu` + `ModePreviewArt`, `apps/editor/components/chrome/editor-mode/` |
 | The editor's resolved mode  | `EditorModeProvider` / `useEditorModeState()`, `editor-mode-context.tsx`                                                                                                                                                                                                                    |
-| The tab pill's mode icon    | `TabModeIcon`, `apps/editor/components/chrome/editor-mode/`                                                                                                                                                                                                                                 |
+| A tab's mode icon           | `TabModeIcon`, `apps/editor/components/chrome/editor-mode/`                                                                                                                                                                                                                                 |
 | Each mode's mark            | `EDITOR_MODE_ICONS` (`packages/ui/src/icons/drawing-kinds.tsx`), one per mode, Workshop's `FlipchartIcon`, read straight by the chip, the menu rows and the pill                                                                                                                            |
 | A template's opening mode   | `templateOpensIn(overrides)`, `apps/editor/app/document/[id]/useTemplateFlow.ts`                                                                                                                                                                                                            |
 | The tool a mode starts with | `modeDefaultTool(mobile)`, `useModeDefaultTool`, `apps/editor/hooks/editor/useModeDefaultTool.ts`                                                                                                                                                                                           |
@@ -87,7 +87,7 @@ or written (left in place). Nothing is pinned per page.
 - **One resolution** (`useEditorState`): `editorMode = useEditorMode(...)` drives the switch beside the menu button,
   the start's switch, Shift+D, the palette and the canvas on the active tab. Both switches read it through
   `useEditorModeState()` and write through its `setMode`, so on an empty tab, where both show, a switch in either
-  re-renders the other, the palette and `TabModeIcon` (which reads `opensInOf(tab)`) from the one `Tab.opensIn`.
+  re-renders the other, the palette and any `TabModeIcon` (which reads `opensInOf(tab)`) from the one `Tab.opensIn`.
 - **Everyone follows**: a peer's switch arrives as a `tab-meta` op setting `opensIn` (or clearing
   it, back to Diagram) and is applied like any tab change, so every client re-resolves the mode.
   `useRoomConnection` also reads it with `peerModeSwitchOf(op)` and calls
@@ -274,7 +274,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | Shift+D on a tab with content                                       | `editorModeShortcut` returns null: nothing written, no telemetry                                                                         |
 | A peer switches while I type in a label                             | The editor stays open; the text commits as usual; a toast names the peer                                                                 |
 | Previewing as a viewer                                              | `canEdit` false: no switch, the tab's mode, read-only                                                                                    |
-| Event-storming board, or outside an editor                          | `StartModeSwitch` renders nothing; the pill icon shows Diagram                                                                           |
+| Event-storming board, or outside an editor                          | `StartModeSwitch` renders nothing; its mode is Diagram                                                                                   |
 | A tab switched while a paste's images upload                        | The paste is dropped (unchanged board-scene rule)                                                                                        |
 | Stale client sends a `Whiteboard` telemetry event                   | Refused by the closed category list                                                                                                      |
 
@@ -316,8 +316,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
   opening, the chip reads its host's effective zoom (`effectiveZoom`: `currentCSSZoom`, else screen width over
   layout width) and the menu sets `zoom: 1 / hostZoom`, undoing the panel UI scale ([UI scale](../ui-scale.md)).
   The same for everyone: power user mode does not change it.
-- The tab pill leads with `TabModeIcon` (in place of the accent dot), tinted with the tab's
-  accent.
+- The tab pill shows no mode icon (its name alone); `TabModeIcon` marks the split view's chip.
 - No Mode section in the tab menu.
 - No other cue marks the mode (spec "No further cue").
 
@@ -329,7 +328,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
   return focus to the chip. Tab away closes the menu: a blur closes it only when focus moves to
   another element outside it (`relatedTarget` set); a blur to nowhere is a press (Safari does not
   focus a pressed button), so the row's click still lands. A press outside is
-  `useClickOutside`'s. The tab pill's icon is `aria-hidden`.
+  `useClickOutside`'s. `TabModeIcon` is `aria-hidden`.
 - Shift+D carries `aria-keyshortcuts`; a switch by key is announced politely
   (`announce('Draw mode')`). The key obeys the character-key shortcuts setting.
 - Focus rings `MODE_SWITCH_FOCUS` (brand-600 light, brand-400 dark, at least 3:1).
@@ -370,7 +369,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | The two switches agree on an empty tab, with the tab icon | `EditorModeSwitch.test.tsx` "EditorModeSwitch and the start switch on an empty tab", e2e `editor-modes.spec.ts` "on an empty tab the switch beside the menu button and the start's agree" |
 | One context value across edits | `useEditorMode.test.tsx` "returns the same object across an edit that leaves the mode alone" |
 | A Draw tool in hand never takes the press | `ToolbarExplorerButton.test.tsx` "marks its card as floating chrome…" |
-| The tab pill shows the tab's mode | `components/chrome/TabPill.test.tsx`, `components/chrome/editor-mode/TabModeIcon.test.tsx` |
+| The tab pill shows no mode icon | `components/chrome/TabPill.shape.test.tsx`; the icon itself `components/chrome/editor-mode/TabModeIcon.test.tsx` |
 | A template decides the tab's mode | `app/document/[id]/useTemplateFlow.test.ts` |
 | A peer's switch is followed and named | `lib/peer-mode-switch.test.ts`, e2e `editor-modes.spec.ts` "the start's switch changes the tab for everyone, and Undo switches it back" |
 | A tab with content switches, losslessly, by the switch and by key | `EditorModeSwitch.test.tsx` "lets an Editor switch a tab with content, losslessly", `editor-mode-shortcut.test.ts`, e2e `editor-modes.spec.ts` "a drawn-on tab switches to Diagram beside the menu button, keeping its strokes, and back by Shift+D" |

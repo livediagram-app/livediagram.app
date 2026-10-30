@@ -48,13 +48,14 @@ Three regions stacked vertically, filling the viewport:
 
 ### How a tab looks
 
-The tabs read as tabs, not buttons (`@liveworkspace/workbench` `components/chrome/tab-shape.ts`, shared by all four editors):
+The tabs read as tabs, not buttons (`packages/workbench/src/components/chrome/tab-shape.ts`, shared by all four editors):
 
-- **They hang from the canvas's bottom edge**, like sheet tabs: each is 36 px tall with its lower corners rounded and its top square.
-- **The active tab is joined to the canvas.** It is a raised card in the canvas's surface (white, slate-800 in dark), outlined on its sides and foot with no top edge, and it covers the bar's top border, so the canvas runs into it. Its name takes the tab theme's accent (made legible on that surface), with a short accent bar along its foot.
+- **They stand on the screen's bottom edge**, like tabs on a bottom tab bar: each is 40 px tall with its upper corners rounded and its foot square, standing at the foot of the bar.
+- **The active tab is open at its foot.** It is a raised card (white, slate-800 in dark), outlined along its top and sides with no bottom edge, so it runs into the screen's bottom edge. Its name takes the tab theme's accent (made legible on that surface), with a short accent bar along its top.
 - **The others sit flat on the bar**: no fill, neutral ink (readable whatever the tab's theme), a fill on hover, and a hairline between two neighbouring flat tabs (never beside the active tab, whose outline divides there).
-- A tab folder and a tab outside a tab-scoped share hang the same way, outlined dashed; in a folder's upward fan the tabs are a list and round every corner.
+- A tab folder and a tab outside a tab-scoped share stand the same way, outlined dashed; in a folder's upward fan the tabs are a list and round every corner.
 - **No `Tabs` label** before the tabs: the row is plainly tabs, and the room goes to them.
+- **No type icon.** A tab shows its name alone, at every width: no mode or kind icon before it. A lock still marks a locked tab, and the active tab keeps its menu button.
 
 ## Role pill
 

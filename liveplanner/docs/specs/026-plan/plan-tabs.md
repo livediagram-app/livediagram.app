@@ -23,8 +23,9 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   and a search reaches Plan's templates. The choice sets the tab's kind and adds its element in one change, one undo step.
   A Dashboard started on a tab still on its default name ("Tab 5") is named **Dashboard**; a name someone gave the tab
   stays.
-- Its tab pill leads with its **kind's glyph** rather than Plan's mark (a general tab's): a kanban for a Board tab, a grid for a
-  Sheet tab, a layout of tiles for a Dashboard; tinted with the tab's accent as any pill's is.
+- Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather
+  than Plan's mark (a general tab's): a kanban for a Board tab, a grid for a Sheet tab, a layout of tiles for a
+  Dashboard. The footer tab itself shows its name alone ([Editor app](../007-editor/editor-app.md#how-a-tab-looks)).
 - A tab's kind is stored on the tab (`kind`) and syncs as tab metadata. A Board or Sheet tab whose element is deleted
   shows Start Planning again; choosing anew sets the kind anew.
 

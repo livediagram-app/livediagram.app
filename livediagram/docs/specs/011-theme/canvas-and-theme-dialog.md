@@ -203,7 +203,7 @@ Undo puts every tab back."
   theme does, so each tab's elements take the new colours and keep their own picks), and its canvas (pattern,
   colours, strength, scale, speed), its text defaults (font, size of new text) and its finish, set exactly as the
   open tab has them (a setting the open tab leaves unset is cleared on the others). Names, content and locks are
-  untouched (`@liveworkspace/workbench` `lib/tab-style-to-all.ts`, `TAB_STYLE_KEYS`).
+  untouched (`packages/workbench/src/lib/tab-style-to-all.ts`, `TAB_STYLE_KEYS`).
 - **One change:** a single undo step restores every tab. No confirmation: the dialog applies live, and Undo is there.
 - **Tabs not opened yet** are loaded first (the search sweep), so none is left out for being unopened. A tab whose
   content could not load keeps its style, as does a locked tab: neither is written. A toast says how many tabs took
