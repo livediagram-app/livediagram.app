@@ -22,6 +22,15 @@ afterEach(() => vi.useRealTimers());
 // A leaving avatar is an exit hold (docs/specs/004-interface-design/motion.md): it stays
 // mounted exactly as long as its pop-out runs, the micro motion token.
 describe('TabPresenceStack', () => {
+  it('lifts an agent over the person beside it, so the overlap never hides its mark', () => {
+    const agentRow: Participant = { ...person('x', "Ada's Agent"), agent: true };
+    const view = render(
+      <TabPresenceStack participants={[ada, agentRow]} selfId="me" selfRole="edit" />,
+    );
+    const [first, second] = [...view.container.querySelectorAll<HTMLElement>('.animate-pop-in')];
+    expect(Number(second!.style.zIndex)).toBeGreaterThan(Number(first!.style.zIndex));
+  });
+
   it('holds a leaving avatar for its pop-out, then drops it', () => {
     const view = render(<TabPresenceStack participants={[ada, bo]} selfId="me" selfRole="edit" />);
     view.rerender(<TabPresenceStack participants={[ada]} selfId="me" selfRole="edit" />);
