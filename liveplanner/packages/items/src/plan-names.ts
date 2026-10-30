@@ -3,12 +3,7 @@
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
-import {
-  builtInFieldOfKind,
-  isEmailAddress,
-  ratingScaleOf,
-  type ItemTypeDef,
-} from './item-types';
+import { builtInFieldOfKind, isEmailAddress, ratingScaleOf, type ItemTypeDef } from './item-types';
 import { knownFieldKind, PRIORITIES, validDate, validateFields } from './fields';
 import {
   ITEM_CHECKLIST_MAX,

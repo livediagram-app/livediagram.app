@@ -146,7 +146,16 @@ describe('CSV', () => {
       { type: 'review' },
     );
     const rows = boardCsvRows(setup, new Map([[card.id, card]]), [REVIEW]);
-    expect(rows[0]).toEqual(['Key', 'Title', 'Type', 'Status', 'Reviewer', 'Areas', 'Tone', 'Steps']);
+    expect(rows[0]).toEqual([
+      'Key',
+      'Title',
+      'Type',
+      'Status',
+      'Reviewer',
+      'Areas',
+      'Tone',
+      'Steps',
+    ]);
     expect(rows[1]!.slice(4)).toEqual(['Sam Lee', 'Web, Q3', '#0d9488', '1/2']);
   });
 

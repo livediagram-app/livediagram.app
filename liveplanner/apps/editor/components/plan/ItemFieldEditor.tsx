@@ -6,6 +6,7 @@
 import { Select } from '@liveplanner/ui';
 import {
   ITEM_TYPES,
+  builtInFieldOfKind,
   customFieldOf,
   isBuiltInFieldId,
   linkCandidates,
@@ -31,6 +32,7 @@ import { CustomFieldEditor } from './CustomFieldEditor';
 import { CalculatedFieldValue } from './CalculatedFieldValue';
 import { calculatedFieldValue } from './calculated-values';
 import { LinkedCardField } from './LinkedCardField';
+import { ImageFieldControl } from './ImageField';
 import { usePlan } from './PlanContext';
 import { isHexColour } from '@liveplanner/project';
 import { ColourSelect } from './ColourSwatches';
@@ -58,14 +60,18 @@ export function fieldLabel(type: ItemTypeDef, f: string): string {
   return customFieldOf(type, f)?.label ?? FIELD_LABELS[f as ItemFieldId] ?? f;
 }
 
-// Fields whose editor is not one labelled control (a label `for` would point nowhere).
+// Fields whose editor is not one labelled control (a label `for` would point nowhere): a custom field of a built-in
+// kind as its built-in field.
 export function labelsItsControl(type: ItemTypeDef, f: string): boolean {
+  const kind = customFieldOf(type, f)?.kind;
+  const as = (kind && builtInFieldOfKind(kind)) ?? f;
   return (
-    f !== 'checklist' &&
-    f !== 'color' &&
-    f !== 'description' &&
-    f !== 'comments' &&
-    customFieldOf(type, f)?.kind !== 'checkbox'
+    as !== 'checklist' &&
+    as !== 'color' &&
+    as !== 'description' &&
+    as !== 'comments' &&
+    kind !== 'checkbox' &&
+    kind !== 'image'
   );
 }
 
@@ -126,13 +132,28 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       />
     );
   }
-  if (custom) {
+  // An Image field (docs/specs/026-plan/item-types.md "Image fields"): one picture, uploaded into the media service.
+  if (custom?.kind === 'image') {
+    return (
+      <ImageFieldControl
+        id={id}
+        label={custom.label}
+        value={value}
+        disabled={disabled}
+        onSave={save}
+      />
+    );
+  }
+  // A custom field of a built-in kind (Person, Labels, Colour, Checklist) is edited as its built-in field is.
+  const asBuiltIn = custom ? builtInFieldOfKind(custom.kind) : undefined;
+  if (custom && !asBuiltIn) {
     return (
       <CustomFieldEditor id={id} field={custom} value={value} disabled={disabled} onSave={save} />
     );
   }
-  if (!isBuiltInFieldId(f)) return null;
-  switch (f) {
+  const as = asBuiltIn ?? f;
+  if (!isBuiltInFieldId(as)) return null;
+  switch (as) {
     case 'status': {
       // A state no board names any more reads as No status (docs/specs/026-plan/plan-board.md "A state no board
       // names"), never as its raw id; the card keeps it until another is picked.
@@ -188,7 +209,14 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
     }
     case 'assignee':
       return (
-        <PersonPicker id={id} value={value} people={ctx.people} disabled={disabled} onSave={save} />
+        <PersonPicker
+          id={id}
+          value={value}
+          people={ctx.people}
+          disabled={disabled}
+          onSave={save}
+          {...(custom ? { label: custom.label } : {})}
+        />
       );
     case 'priority':
       return <PriorityPicker id={id} value={value} disabled={disabled} onSave={save} />;
@@ -211,7 +239,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           value={isHexColour(value) ? value.toLowerCase() : undefined}
           onChange={(c) => {
             save(c);
-            track('Plan', 'Changed', 'ProjectColour');
+            if (!asBuiltIn) track('Plan', 'Changed', 'ProjectColour');
           }}
         />
       );

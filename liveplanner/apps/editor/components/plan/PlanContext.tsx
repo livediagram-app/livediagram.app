@@ -23,6 +23,7 @@ import type {
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
 import type { ItemOpenVia } from './item-trail';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
+import type { ItemsScope } from '@/lib/api/items';
 
 // Someone else's hands on a card: dragging it or reading it.
 export type PlanCardPresence = { name: string; color: string; state: 'drag' | 'view' };
@@ -91,6 +92,9 @@ export type PlanContextValue = {
   deleteItem: (itemId: string) => void;
   // This person's owner id: the author id on their own comments, for the delete-own control.
   ownerId: string;
+  // The project as this session reaches it (its id, this person, a share link's code): an Image field uploads and
+  // reads its picture through it (docs/specs/026-plan/item-types.md "Image fields"). Absent outside a project.
+  itemsScope?: ItemsScope | null;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
   // Delete Status: the state's columns off every board but `exceptBoardId` (the one deleting it updates itself).
   removeStatusColumns: (status: string, exceptBoardId: string) => void;

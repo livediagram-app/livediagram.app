@@ -158,6 +158,17 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   (projection), `PlanBoardCells`/`PlanCardView` names,
   the palette's Cards tiles (`planCardTile`, in `PalettePlanCardsTab`, `ToolbarPalette`'s strip and `BoardCardsStrip`),
   SVG export and thumbnails (`itemTypes` render option), the MCP's previews.
+- Built-in kinds: `builtInFieldOfKind` (`packages/items/src/item-types.ts`) maps Person, Labels, Colour and
+  Checklist to `assignee`, `labels`, `color` and `checklist`; the store (`normaliseUnknown`), `customFieldText`
+  (`personName`, `checklistRowsProgress`), the CSV (`board-csv.ts`) and the agents (`plan-names.ts`, refusals named
+  by the field) read the custom field through it. The editor's `ItemFieldEditor` draws the built-in control for it
+  (`PersonPicker` takes the field's name as `label`), `CustomKindPill.tsx` (`isBuiltInKindPill`, `customKindPill`)
+  draws it on `PlanCardFace`, and `BuiltInKindField.tsx` asks it in `RequiredFieldsDialog`.
+- Image fields: `ImageField.tsx` (`ImageFieldControl` in the card panel, `ImageThumb` on the card face, lazy through
+  an `IntersectionObserver`), reading through `apps/editor/lib/api/images.ts` (`apiUploadImage`, `apiImageUrl`,
+  `releaseImageUrl`, `ImageUploadError`) with the plan's `itemsScope` (`PlanContext`, from `usePlanItems`). The api's
+  `routes/images.ts` and the room's `plan-room/image-grants.ts` (api.md "Images"). An upload tracks
+  `Plan · Added · CardImage`.
 - The Card Types segment of `PlanCardsClusterStrip` (a `ClusterPopoverSegment`, from `ClusterPopoverButton.tsx`,
   shared with Slides) opens dock panel `card-types` (`useCardTypesOpener` opens it from Edit Cards);
   `CardTypesPanel` is a `MovablePanel` popover; `ItemTypeEditor` + `ItemTypeLayoutEditor` (forms in `ItemTypeFieldForms`) the modal (`Dialog`,
@@ -398,6 +409,9 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | Required fields: New {Type} dialog, type editor switch    | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                         |
 | Add Field: groups, descriptions, aliases, readiness       | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                    |
 | Add Field: search, accordion, Ready to use, keys, shape   | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                      |
+| Built-in kinds: store, text, CSV, agents                  | `packages/items/src/built-in-field-kinds.test.ts`                                                                                        |
+| Built-in kinds and Image: panel, card face, required      | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                             |
+| Image fields: upload, read, roles, grants                 | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                |
 | Add Field: option rows, Enter, Backspace, paste           | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                               |
 | Add Field: opened from a group, lands there               | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                         |
 | Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |
