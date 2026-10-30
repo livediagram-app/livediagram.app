@@ -83,7 +83,8 @@ export function TabStrip<T extends { id: string }>({
       { left: s.left, right: s.right, scrollLeft: strip.scrollLeft },
       { left, right },
     );
-    if (to !== strip.scrollLeft) strip.scrollTo({ left: to, behavior: still() ? 'auto' : 'smooth' });
+    if (to !== strip.scrollLeft)
+      strip.scrollTo({ left: to, behavior: still() ? 'auto' : 'smooth' });
   }, []);
 
   // The open tab is always in view: a tab added to a full strip, or picked from the Tabs list, used to open past the

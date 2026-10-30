@@ -9,12 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@liveworkspace/ui';
-import {
-  TAB_CARET_CLASS,
-  TAB_NAME_BUTTON_CLASS,
-  TAB_NAME_CLASS,
-  tabShapeClass,
-} from './tab-shape';
+import { TAB_CARET_CLASS, TAB_NAME_BUTTON_CLASS, TAB_NAME_CLASS, tabShapeClass } from './tab-shape';
 
 // One footer tab, drawn alike in every editor (docs/specs/007-editor/editor-app.md "How a tab looks"): the shape,
 // the name as the strip's `role="tab"`, its Tooltip when the name is cut short, the drag caret, and the slots each
@@ -91,8 +86,12 @@ export function TabFrame({
       style={active && !editing && accent ? { color: accent } : undefined}
       className={`${tabShapeClass({ active, editing, readOnly, dragging })}${className ? ` ${className}` : ''}`}
     >
-      {caret === 'before' ? <span aria-hidden className={`${TAB_CARET_CLASS} -left-[2px]`} /> : null}
-      {caret === 'after' ? <span aria-hidden className={`${TAB_CARET_CLASS} -right-[2px]`} /> : null}
+      {caret === 'before' ? (
+        <span aria-hidden className={`${TAB_CARET_CLASS} -left-[2px]`} />
+      ) : null}
+      {caret === 'after' ? (
+        <span aria-hidden className={`${TAB_CARET_CLASS} -right-[2px]`} />
+      ) : null}
       {editing ? (
         renameField
       ) : (

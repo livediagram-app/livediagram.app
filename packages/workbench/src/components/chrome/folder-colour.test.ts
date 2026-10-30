@@ -19,7 +19,18 @@ describe('folderHue', () => {
   });
 
   it('spreads everyday names across the hues', () => {
-    const names = ['Planning', 'Engineering', 'Design', 'Research', 'Marketing', 'Sales', 'Ops', 'Q1', 'Q2', 'Archive'];
+    const names = [
+      'Planning',
+      'Engineering',
+      'Design',
+      'Research',
+      'Marketing',
+      'Sales',
+      'Ops',
+      'Q1',
+      'Q2',
+      'Archive',
+    ];
     const used = new Set(names.map((n) => folderHue(n).name));
     expect(used.size).toBeGreaterThanOrEqual(5);
   });

@@ -91,7 +91,13 @@ describe('TabStrip', () => {
     strip();
     fireEvent.click(chip());
     expect(chip().getAttribute('aria-expanded')).toBe('true');
-    expect(visibleTabs()).toEqual(['Overview', 'Planning, 2 tabs', 'Roadmap', 'Q1 Goals', 'Backlog']);
+    expect(visibleTabs()).toEqual([
+      'Overview',
+      'Planning, 2 tabs',
+      'Roadmap',
+      'Q1 Goals',
+      'Backlog',
+    ]);
     fireEvent.click(chip());
     expect(chip().getAttribute('aria-expanded')).toBe('false');
     expect(visibleTabs()).toEqual(['Overview', 'Planning, 2 tabs', 'Backlog']);
@@ -111,7 +117,11 @@ describe('TabStrip', () => {
       <TabStrip
         {...props}
         activeId="b"
-        runs={[RUNS[0]!, { kind: 'folder', name: 'Plans', tabs: [t('r', 'Roadmap'), t('q', 'Q1 Goals')] }, RUNS[2]!]}
+        runs={[
+          RUNS[0]!,
+          { kind: 'folder', name: 'Plans', tabs: [t('r', 'Roadmap'), t('q', 'Q1 Goals')] },
+          RUNS[2]!,
+        ]}
       />,
     );
     expect(screen.getByRole('tab', { name: /^Plans,/ }).getAttribute('aria-expanded')).toBe('true');
@@ -127,10 +137,16 @@ describe('TabStrip', () => {
     rerender(
       <TabStrip
         {...props}
-        runs={[RUNS[0]!, { kind: 'folder', name: 'Plans', tabs: [t('r', 'Roadmap'), t('q', 'Q1 Goals')] }, RUNS[2]!]}
+        runs={[
+          RUNS[0]!,
+          { kind: 'folder', name: 'Plans', tabs: [t('r', 'Roadmap'), t('q', 'Q1 Goals')] },
+          RUNS[2]!,
+        ]}
       />,
     );
-    expect(screen.getByRole('tab', { name: /^Plans,/ }).getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByRole('tab', { name: /^Plans,/ }).getAttribute('aria-expanded')).toBe(
+      'false',
+    );
   });
 
   it('moves focus with the arrows across tabs and chips, skipping tucked-away tabs, and Home and End', () => {
@@ -171,11 +187,17 @@ describe('TabStrip', () => {
     const { container } = strip();
     expect(scrollTo).not.toHaveBeenCalled();
     const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
-    vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({ left: 0, right: 100, width: 100 } as DOMRect);
+    vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      right: 100,
+      width: 100,
+    } as DOMRect);
     const open = container.querySelector('[data-tab][data-active]') as HTMLElement;
     vi.spyOn(open, 'getBoundingClientRect').mockReturnValue({ left: 60, right: 140 } as DOMRect);
     fireEvent.click(tabNamed('Overview'));
-    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 68, behavior: 'smooth' }));
+    expect(scrollTo).toHaveBeenCalledWith(
+      expect.objectContaining({ left: 68, behavior: 'smooth' }),
+    );
     // A tap elsewhere does not.
     scrollTo.mockClear();
     fireEvent.click(chip());
@@ -185,8 +207,14 @@ describe('TabStrip', () => {
   it('brings Add tab into view with the last tab', () => {
     const { container, props, rerender } = strip();
     const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
-    vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({ left: 0, right: 200, width: 200 } as DOMRect);
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      right: 200,
+      width: 200,
+    } as DOMRect);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
       if (this === scroller) return { left: 0, right: 200, width: 200 } as DOMRect;
       if (this.dataset.tourId === 'add-tab') return { left: 190, right: 230 } as DOMRect;
       return { left: 150, right: 190 } as DOMRect;
@@ -195,7 +223,14 @@ describe('TabStrip', () => {
       ...props,
       activeId: 'b',
       renderTab: (tab) => (
-        <TabFrame key={tab.id} id={tab.id} name={tab.name} active={tab.id === 'b'} readOnly={false} onSelect={vi.fn()} />
+        <TabFrame
+          key={tab.id}
+          id={tab.id}
+          name={tab.name}
+          active={tab.id === 'b'}
+          readOnly={false}
+          onSelect={vi.fn()}
+        />
       ),
     };
     rerender(<TabStrip {...last} />);
@@ -210,8 +245,15 @@ describe('TabStrip', () => {
     );
     const { container } = strip();
     const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
-    vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({ left: 0, right: 100, width: 100 } as DOMRect);
-    vi.spyOn(container.querySelector('[data-tab][data-active]') as HTMLElement, 'getBoundingClientRect').mockReturnValue({
+    vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      right: 100,
+      width: 100,
+    } as DOMRect);
+    vi.spyOn(
+      container.querySelector('[data-tab][data-active]') as HTMLElement,
+      'getBoundingClientRect',
+    ).mockReturnValue({
       left: 60,
       right: 140,
     } as DOMRect);
@@ -222,7 +264,11 @@ describe('TabStrip', () => {
   it('brings an opened folder into view, chip first when it is wider than the strip', () => {
     const { container } = strip();
     const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
-    vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({ left: 0, right: 300, width: 300 } as DOMRect);
+    vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      right: 300,
+      width: 300,
+    } as DOMRect);
     const group = container.querySelector('[data-tab-folder]') as HTMLElement;
     vi.spyOn(group, 'getBoundingClientRect').mockReturnValue({ left: 250, right: 900 } as DOMRect);
     fireEvent.click(chip());

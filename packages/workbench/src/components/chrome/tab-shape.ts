@@ -52,7 +52,12 @@ export type TabShapeState = {
 
 // The tab's classes for its state. The open tab's trailing menu button carries its own padding around the glyph, so
 // the tab trims its own trailing padding (optical-alignment.md).
-export function tabShapeClass({ active, editing, readOnly, dragging = false }: TabShapeState): string {
+export function tabShapeClass({
+  active,
+  editing,
+  readOnly,
+  dragging = false,
+}: TabShapeState): string {
   const pad = editing ? 'px-1' : active && !readOnly ? 'pl-3.5 pr-1' : 'px-3.5';
   return `${BASE} ${active ? ACTIVE : INACTIVE} ${pad}${dragging ? ' opacity-50' : ''}`;
 }
