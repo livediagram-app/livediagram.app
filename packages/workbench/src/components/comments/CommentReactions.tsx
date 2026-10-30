@@ -179,13 +179,15 @@ function ReactionChip({
         <span
           key={group.mine ? 'mine' : 'theirs'}
           aria-hidden
-          className={`inline-block animate-reaction-pop leading-none motion-reduce:animate-none ${
+          className={`text-optical-centre inline-block animate-reaction-pop leading-none motion-reduce:animate-none ${
             comfortable ? 'text-[14px]' : 'text-[13px]'
           }`}
         >
           {def.emoji}
         </span>
-        <span aria-hidden>{group.count}</span>
+        <span aria-hidden className="text-optical-centre">
+          {group.count}
+        </span>
       </button>
     </HoverCard>
   );
@@ -263,7 +265,9 @@ function ReactionPicker({
                 comfortable ? 'h-8 w-8 text-[18px]' : 'h-7 w-7 text-[16px]'
               } ${mine ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:ring-brand-400/50' : ''}`}
             >
-              <span aria-hidden>{def.emoji}</span>
+              <span aria-hidden className="text-optical-centre">
+                {def.emoji}
+              </span>
             </button>
           </Tooltip>
         );
