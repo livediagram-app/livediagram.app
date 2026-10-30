@@ -2,6 +2,7 @@
 
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
+import { sessionToolsForSurface } from '@/components/canvas/SessionClusterStrip';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
@@ -778,7 +779,7 @@ export function EditorCanvasHost() {
             layers={layers}
             activeLayerId={activeLayerId}
             layerCounts={layerCounts}
-            sessionTools={sessionTools}
+            sessionTools={sessionToolsForSurface(sessionTools, embedMode)}
             pollPanel={
               // Results are for the host and for anyone who has responded
               // (docs/specs/012-collaboration/live-poll.md) — answering is what buys you the tally. A local
