@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, ITEM_TYPE_EXCLUDED_STATUSES_MAX, type ItemTypeDef } from '@liveplanner/items';
+import { ITEM_TYPES, ITEM_TYPE_STATUSES_MAX, type ItemTypeDef } from '@liveplanner/items';
 import { ItemTypeEditor, deleteMessage } from './ItemTypeEditor';
 
 // docs/specs/026-plan/item-types.md "Editing a type": the editor's Configuration, States and Display tabs.
@@ -146,13 +146,10 @@ describe('the type editor’s tabs', () => {
     ).not.toBeNull();
   });
 
-  it('says too many statuses are turned off, on the Statuses tab, not as a custom field problem', () => {
-    const excludedStatuses = Array.from(
-      { length: ITEM_TYPE_EXCLUDED_STATUSES_MAX + 1 },
-      (_, i) => `s${i}`,
-    );
-    editor({ ...ITEM_TYPES[1], excludedStatuses });
-    expect(screen.getByText(/Too many states turned off/)).toBeTruthy();
+  it('says too many statuses are on, on the States tab, not as a custom field problem', () => {
+    const statuses = Array.from({ length: ITEM_TYPE_STATUSES_MAX + 1 }, (_, i) => `s${i}`);
+    editor({ ...ITEM_TYPES[1], statuses });
+    expect(screen.getByText(/Too many states on/)).toBeTruthy();
     expect(screen.queryByText(/A custom field needs a name/)).toBeNull();
     expect(
       screen.getByRole('tab', { name: /States/ }).querySelector('[aria-label="Needs attention"]'),
@@ -241,5 +238,53 @@ describe('the Display tab', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(onSave.mock.lastCall![0]).toHaveProperty('display', { minimal: { lead: ['due'] } });
+  });
+});
+
+// docs/specs/026-plan/item-types.md "The statuses a type uses": Save always stores the ordered list (Work Tracker #78).
+describe('the States tab saves the ordered list', () => {
+  function open(type: ItemTypeDef, onSave: (t: ItemTypeDef) => void) {
+    for (const key of Object.keys(plan)) delete plan[key];
+    Object.assign(plan, {
+      types: ITEM_TYPES,
+      items: new Map(),
+      statusNames: new Map([
+        ['todo', 'To Do'],
+        ['doing', 'Doing'],
+        ['done', 'Done'],
+      ]),
+    });
+    render(
+      <ItemTypeEditor
+        type={type}
+        types={ITEM_TYPES}
+        itemCount={0}
+        onSave={onSave}
+        onDelete={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('tab', { name: 'States' }));
+  }
+
+  it('saves a legacy type in the new shape: every status less what it left out', () => {
+    const onSave = vi.fn<(t: ItemTypeDef) => void>();
+    open({ ...ITEM_TYPES[1], excludedStatuses: ['doing'] }, onSave);
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSave.mock.lastCall![0].statuses).toEqual(['todo', 'done']);
+    expect(onSave.mock.lastCall![0].excludedStatuses).toBeUndefined();
+  });
+
+  it('saves a state moved up, and clears a Default State turned off', () => {
+    const onSave = vi.fn<(t: ItemTypeDef) => void>();
+    open({ ...ITEM_TYPES[1], statuses: ['todo', 'doing', 'done'], defaultStatus: 'todo' }, onSave);
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Move Done' }), {
+      key: 'ArrowUp',
+      altKey: true,
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Turn Off To Do' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSave.mock.lastCall![0].statuses).toEqual(['done', 'doing']);
+    expect(onSave.mock.lastCall![0].defaultStatus).toBeUndefined();
   });
 });

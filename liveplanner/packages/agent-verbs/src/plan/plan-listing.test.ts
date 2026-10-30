@@ -104,3 +104,20 @@ describe('listedType', () => {
     ]);
   });
 });
+
+// docs/specs/026-plan/plan-agents.md "Reading the plan": each type's statuses, by column name, in its order.
+describe('a listed type’s statuses', () => {
+  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+
+  it('names the statuses a type uses in its order, leaving out one no board names', () => {
+    expect(
+      listedType({ ...task, statuses: ['done~a1', 'gone', 'todo~a1'] }, statuses).statuses,
+    ).toEqual(['Done', 'To Do']);
+  });
+
+  it('reads a legacy type as every column less what it left out', () => {
+    expect(listedType({ ...task, excludedStatuses: ['todo~a1'] }, statuses).statuses).toEqual([
+      'Done',
+    ]);
+  });
+});

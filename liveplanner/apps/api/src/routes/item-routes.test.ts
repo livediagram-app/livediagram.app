@@ -727,6 +727,24 @@ describe('statuses a type leaves out', () => {
     expect((await add({ title: 'N', status: 'done' }, { type: 'note' })).status).toBe(201);
   });
 
+  // docs/specs/026-plan/item-types.md "The statuses a type uses": a type with its ordered list refuses every
+  // status the list leaves out, a new one included.
+  it('refuses a move into a status a type’s ordered list leaves out', async () => {
+    const listed = {
+      version: 1,
+      types: [{ ...noDone.types[0]!, excludedStatuses: undefined, statuses: ['todo', 'done'] }],
+    };
+    expect(
+      (await call({ method: 'PUT', path: '/item-types', body: { itemTypes: listed } })).status,
+    ).toBe(200);
+    const t = (await add({ title: 'T', status: 'todo' })).body.item;
+    expect((await call({ path: `/items/${t.id}/move`, body: { status: 'done' } })).status).toBe(
+      200,
+    );
+    const fresh = await call({ path: `/items/${t.id}/move`, body: { status: 'brand-new' } });
+    expect(fresh.body).toEqual({ error: 'status_excluded', field: 'status' });
+  });
+
   it('lets a card already in one stay, be reordered there, and move out', async () => {
     await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
     const a = (await add({ title: 'A', status: 'done' })).body.item;

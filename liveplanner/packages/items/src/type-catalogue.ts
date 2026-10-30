@@ -50,8 +50,11 @@ export const ITEM_TYPE_CATALOGUE_VERSION = 1;
 export const ITEM_TYPE_TABS_MAX = 6;
 export const ITEM_TYPE_TAB_LABEL_MAX = 24;
 const ITEM_TYPE_TAB_ID_PATTERN = /^t-[a-z0-9-]{1,30}$/;
-// The most statuses a type can leave out (a board holds far fewer columns than this).
+// The most statuses a type stored before its ordered list could leave out (docs/specs/026-plan/item-types.md "The
+// statuses a type uses": a legacy type). Read only: nothing writes an exclusion list any more.
 export const ITEM_TYPE_EXCLUDED_STATUSES_MAX = 64;
+// The most statuses a type uses (its ordered list): ten boards of twelve columns, and the catalogue stays small.
+export const ITEM_TYPE_STATUSES_MAX = 128;
 // The one tab a type without its own shows.
 export const OVERVIEW_TAB_ID = 't-overview';
 
@@ -364,9 +367,16 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (!d || d.length > ITEM_TYPE_TAB_LABEL_MAX) return `${at}.detailsLabel`;
     if (d !== DETAILS_LABEL_DEFAULT) detailsLabel = d;
   }
+  // The ordered list of the statuses it uses; a type stored before it (legacy) keeps what it left out, and a type
+  // with the list drops any exclusions, which it replaced.
+  let statuses: string[] | undefined;
   let excludedStatuses: string[] | undefined;
-  if (input['excludedStatuses'] !== undefined) {
-    const read = readExcludedStatuses(input['excludedStatuses']);
+  if (input['statuses'] !== undefined) {
+    const read = readStatusList(input['statuses'], ITEM_TYPE_STATUSES_MAX);
+    if (!read) return `${at}.statuses`;
+    statuses = read;
+  } else if (input['excludedStatuses'] !== undefined) {
+    const read = readStatusList(input['excludedStatuses'], ITEM_TYPE_EXCLUDED_STATUSES_MAX);
     if (!read) return `${at}.excludedStatuses`;
     if (read.length) excludedStatuses = read;
   }
@@ -393,17 +403,18 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     ...(custom.length ? { custom } : {}),
     ...(tabs ? { tabs } : {}),
     ...(detailsLabel ? { detailsLabel } : {}),
+    ...(statuses ? { statuses } : {}),
     ...(excludedStatuses ? { excludedStatuses } : {}),
     ...(defaultStatus ? { defaultStatus } : {}),
     ...(display ? { display } : {}),
   };
 }
 
-// A type's left-out statuses as stored: status ids (trimmed, de-duplicated, in order), at most
-// ITEM_TYPE_EXCLUDED_STATUSES_MAX. An id no board names any more is kept, so the status keeps its exclusion if it
-// comes back. Null for anything else.
-function readExcludedStatuses(input: unknown): string[] | null {
-  if (!Array.isArray(input) || input.length > ITEM_TYPE_EXCLUDED_STATUSES_MAX) return null;
+// A type's status list as stored (the statuses it uses, or a legacy type's left-out ones): status ids
+// (non-blank, de-duplicated, in order), at most `max`. An id no board names any more is kept, so the status comes
+// back as it was. Null for anything else.
+function readStatusList(input: unknown, max: number): string[] | null {
+  if (!Array.isArray(input) || input.length > max) return null;
   const out: string[] = [];
   for (const s of input) {
     if (typeof s !== 'string' || !s.trim() || s.length > ITEM_STATUS_MAX) return null;
@@ -412,19 +423,24 @@ function readExcludedStatuses(input: unknown): string[] | null {
   return out;
 }
 
-// Whether a card of `type` may be in `status` (docs/specs/026-plan/item-types.md "An item type"). No status (an
-// unplaced card) is always allowed.
+// Whether a card of `type` may be in `status` (docs/specs/026-plan/item-types.md "The statuses a type uses"): one
+// its list holds, or for a legacy type (no list) one it does not leave out. No status (an unplaced card) is always
+// allowed.
 export function typeAllowsStatus(
-  type: Pick<ItemTypeDef, 'excludedStatuses'> | undefined,
+  type: TypeStatusesPart | undefined,
   status: string | null | undefined,
 ): boolean {
-  if (!status || !type?.excludedStatuses) return true;
-  return !type.excludedStatuses.includes(status);
+  if (!status || !type) return true;
+  if (type.statuses) return type.statuses.includes(status);
+  return !type.excludedStatuses?.includes(status);
 }
+
+// What says which statuses a type uses: its ordered list, or a legacy type's exclusions.
+export type TypeStatusesPart = Pick<ItemTypeDef, 'statuses' | 'excludedStatuses'>;
 
 // A type's Default State, or undefined: none set, or one the type has turned off (ignored, as if absent).
 export function defaultStatusOf(
-  type: Pick<ItemTypeDef, 'defaultStatus' | 'excludedStatuses'> | undefined,
+  type: (TypeStatusesPart & Pick<ItemTypeDef, 'defaultStatus'>) | undefined,
 ): string | undefined {
   const d = type?.defaultStatus;
   return d && typeAllowsStatus(type, d) ? d : undefined;
@@ -455,7 +471,7 @@ export const READY_MADE_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = 
 // The built-in default's state in this project (`statusNames`: status id to name), or undefined: not a built-in
 // type, no state of that name, or one the type turns off.
 export function readyMadeDefaultStatus(
-  type: Pick<ItemTypeDef, 'id' | 'excludedStatuses'>,
+  type: TypeStatusesPart & Pick<ItemTypeDef, 'id'>,
   statusNames: Iterable<readonly [string, string]>,
 ): string | undefined {
   const name = READY_MADE_DEFAULT_STATE_NAMES[type.id];
@@ -466,7 +482,7 @@ export function readyMadeDefaultStatus(
 // The state a card of this type is made in outside a board, as the editor resolves it: its own Default State,
 // else its built-in one, else undefined.
 export function resolvedDefaultStatus(
-  type: Pick<ItemTypeDef, 'id' | 'defaultStatus' | 'excludedStatuses'>,
+  type: TypeStatusesPart & Pick<ItemTypeDef, 'id' | 'defaultStatus'>,
   statusNames: Iterable<readonly [string, string]>,
 ): string | undefined {
   return defaultStatusOf(type) ?? readyMadeDefaultStatus(type, statusNames);

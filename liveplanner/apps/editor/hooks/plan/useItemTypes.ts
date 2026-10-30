@@ -54,13 +54,22 @@ export type ItemTypesSlice = {
   addDefaultTypes: () => void;
   // The whole catalogue a board's types leave (catalogueWithBoardTypes), as one change.
   saveCatalogue: (next: ItemTypeCatalogue) => void;
+  // A change that follows another (docs/specs/026-plan/item-types.md "The statuses a type uses": statuses joining
+  // types): `remake` is made to the catalogue as stored at each send, so it is made again over anyone's later change.
+  // No undo step, and no toast when it fails; nothing is sent when it changes nothing (remake answers null).
+  quietChange: (remake: (stored: ItemTypeCatalogue | null) => ItemTypeCatalogue | null) => void;
   receive: (op: ItemTypesRoomOp) => void;
 };
 
-type Pending = { id: number; change: CatalogueChange };
+type Remake = (stored: ItemTypeCatalogue | null) => ItemTypeCatalogue | null;
+type Pending = { id: number; change: CatalogueChange; remake?: Remake };
+
+// One pending change made to `current`: a quiet change's remake (unchanged when it answers null), else the change.
+const madeTo = (current: ItemTypeCatalogue | null, p: Pending) =>
+  p.remake ? (p.remake(current) ?? current) : rebaseCatalogueChange(current, p.change);
 
 const applied = (stored: ItemTypeCatalogue | null, pending: readonly Pending[]) =>
-  pending.reduce((c, p) => rebaseCatalogueChange(c, p.change), stored);
+  pending.reduce(madeTo, stored);
 
 export function useItemTypes(opts: {
   projectId: string | null;
@@ -117,7 +126,9 @@ export function useItemTypes(opts: {
       if (!doc) return done();
       for (let attempt = 1; attempt <= ITEM_TYPES_SAVE_ATTEMPTS; attempt += 1) {
         const base = storedRef.current.value;
-        const next = rebaseCatalogueChange(base.itemTypes, entry.change);
+        const next = madeTo(base.itemTypes, entry);
+        // A quiet change already made (by someone else first) sends nothing.
+        if (entry.remake && next === base.itemTypes) return done();
         try {
           const saved = await saveItemTypes(
             { ownerId, projectId: doc, shareCode },
@@ -141,17 +152,17 @@ export function useItemTypes(opts: {
           break;
         }
       }
-      // Only this change is dropped: any saved since stay.
+      // Only this change is dropped: any saved since stay. A quiet change fails quietly.
       done();
-      onError('Couldn’t save the card types');
+      if (!entry.remake) onError('Couldn’t save the card types');
     },
     [latest, keepStored, setPendingNow],
   );
 
   // Makes `change` now (shown at once), and saves it after any change still on its way.
   const make = useCallback(
-    (change: CatalogueChange) => {
-      const entry = { id: (nextId.current += 1), change };
+    (change: CatalogueChange, remake?: Remake) => {
+      const entry: Pending = { id: (nextId.current += 1), change, ...(remake ? { remake } : {}) };
       setPendingNow([...pendingRef.current, entry]);
       queue.current = queue.current.then(() => send(entry));
     },
@@ -210,6 +221,14 @@ export function useItemTypes(opts: {
     [withTypes],
   );
   const saveCatalogue = useCallback((next: ItemTypeCatalogue) => change(() => next), [change]);
+  const quietChange = useCallback(
+    (remake: Remake) => {
+      const before = applied(storedRef.current.value.itemTypes, pendingRef.current);
+      const after = remake(before);
+      if (after) make({ before, after }, remake);
+    },
+    [make],
+  );
   const receive = useCallback(
     (op: ItemTypesRoomOp) =>
       keepStored({
@@ -229,8 +248,19 @@ export function useItemTypes(opts: {
       addTypes,
       addDefaultTypes,
       saveCatalogue,
+      quietChange,
       receive,
     }),
-    [catalogue, types, saveType, deleteType, addTypes, addDefaultTypes, saveCatalogue, receive],
+    [
+      catalogue,
+      types,
+      saveType,
+      deleteType,
+      addTypes,
+      addDefaultTypes,
+      saveCatalogue,
+      quietChange,
+      receive,
+    ],
   );
 }

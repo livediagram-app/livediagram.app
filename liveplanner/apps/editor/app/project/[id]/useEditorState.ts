@@ -5,6 +5,7 @@ import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
+import { useTypeStatusJoins } from '@/hooks/plan/useTypeStatusJoins';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
@@ -1488,6 +1489,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     itemsReady: planItems.status === 'ready',
     catalogue: itemTypes.catalogue,
     saveCatalogue: itemTypes.saveCatalogue,
+  });
+  // A new status joins only the card types its board takes, and old types take the ordered list. See
+  // useTypeStatusJoins.
+  useTypeStatusJoins({
+    tabs,
+    loadedTabIds,
+    enabled: hydrated && !isStructureReadOnly,
+    catalogue: itemTypes.catalogue,
+    quietChange: itemTypes.quietChange,
   });
   // The Actions board (docs/specs/026-plan/linked-boards.md): every action has a card on it, kept together.
   const actionsBoard = useMemo(() => actionsBoardIn(tabs), [tabs]);

@@ -26,7 +26,9 @@ never told a change worked when it shows on no board.
   - **statuses**: each status the boards name, once, with its column name, the first board's name winning (the
     editor's rule, [Plan templates](plan-templates.md) "Hand-offs");
   - **types**: the project's card types (its catalogue; none while not chosen), each with its id, name and fields,
-    custom fields by id, name and kind (and a Choice's options);
+    custom fields by id, name and kind (and a Choice's options), and the statuses it uses, in its order
+    ([Item types](item-types.md#the-statuses-a-type-uses); a type stored before the list reads as every status
+    the boards name less those it left out);
   - **tabs**: every tab the caller may read, in order, with its id, name, kind and theme, and a Sheet tab's sheet ids, read
     from the stored tabs without their bodies, so a form verb names a board, a sheet or a Form tab in one request
     ([Forms](../030-forms/forms.md#agents)).
@@ -93,8 +95,12 @@ Every write takes what a person would say, and stores the ids:
 - It brings its preset's card types, as placing it in the editor does
   ([Item types](item-types.md#the-type-catalogue)): in a project whose card types are not chosen and that has no
   cards, they become its card types; otherwise each [ready-made type](plan-templates.md#ready-made-card-types) it
-  takes that the project lacks (a Bug Triage board's Bug) is added. So does `add_tab` with a Plan template, for
-  the boards on its one tab.
+  takes that the project lacks (a Bug Triage board's Bug) is added, using only the statuses of the boards that
+  bring it. So does `add_tab` with a Plan template, for the boards on its one tab.
+- Its statuses join the card types it takes, at the end of each type's list, and no other type's
+  ([Item types](item-types.md#the-statuses-a-type-uses)): a board that takes every type gives them to every type.
+  `change_board` does the same for a column it adds and for a type the board starts taking. A type stored before
+  the list is first written in the new shape, from the statuses the boards named before the change.
 - The answer gives its columns with their names and statuses.
 
 ## Changing a board
@@ -171,7 +177,7 @@ Every write takes what a person would say, and stores the ids:
 ## Changing card types
 
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
-  - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, excludedStatuses? }`: a new type. Fields are
+  - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
     are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, onCard?, required? }]`
     (kinds `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `card`,
@@ -181,7 +187,9 @@ Every write takes what a person would say, and stores the ids:
     by name or id (one or more), or to `linkType`, one; both given, they are merged, `linkType` first. Colour and glyph default
     as the type editor's Add Type does.
   - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,
-defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes
+defaultStatus?, statuses? }`: edit a type. Statuses here are named as above. `statuses` is the whole ordered list
+    of the statuses the type uses (its order is every status menu's for its cards); a status left out of it is one
+    the type's cards can never move into; absent, a new type uses every status the boards name. Removing a field never deletes
     values. `editCustom` `[{ field, name?, options?, linkTypes?, calculation?, onCard?, required? }]` edits a custom field in place, as the
     type editor's field form does: a new name, a Choice field's options replaced whole (any other kind is refused),
     a Card field's card types replaced whole (any other kind is refused), a Calculated field's calculation (any

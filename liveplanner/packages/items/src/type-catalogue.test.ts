@@ -19,6 +19,7 @@ import {
   statusRefusal,
   typeAllowsStatus,
   ITEM_TYPE_EXCLUDED_STATUSES_MAX,
+  ITEM_TYPE_STATUSES_MAX,
   slugOf,
   typeIn,
   typesOf,
@@ -214,8 +215,39 @@ describe('a Project’s dates', () => {
   });
 });
 
-// docs/specs/026-plan/item-types.md "An item type": the statuses a type leaves out.
-describe('a type’s left-out statuses', () => {
+// docs/specs/026-plan/item-types.md "The statuses a type uses": the ordered list.
+describe('a type’s status list', () => {
+  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+  const read = (type: object) =>
+    validateItemTypeCatalogue({ version: 1, types: [{ ...task, ...type }] });
+
+  it('is stored in order, de-duplicated, kept when empty, and replaces any exclusions', () => {
+    const ok = read({ statuses: ['done', 'todo', 'done'], excludedStatuses: ['doing'] });
+    expect(ok.ok && ok.catalogue.types[0]!.statuses).toEqual(['done', 'todo']);
+    expect(ok.ok && 'excludedStatuses' in ok.catalogue.types[0]!).toBe(false);
+    const none = read({ statuses: [] });
+    expect(none.ok && none.catalogue.types[0]!.statuses).toEqual([]);
+  });
+
+  it('refuses anything but a list of short status ids, up to the cap', () => {
+    expect(read({ statuses: 'done' })).toMatchObject({ ok: false, reason: 'types[0].statuses' });
+    expect(read({ statuses: [''] }).ok).toBe(false);
+    expect(
+      read({ statuses: Array.from({ length: ITEM_TYPE_STATUSES_MAX + 1 }, (_, i) => `s${i}`) }).ok,
+    ).toBe(false);
+    expect(
+      read({ statuses: Array.from({ length: ITEM_TYPE_STATUSES_MAX }, (_, i) => `s${i}`) }).ok,
+    ).toBe(true);
+  });
+
+  it('turns a Default State off when the list leaves it out', () => {
+    expect(defaultStatusOf({ defaultStatus: 'todo', statuses: ['done'] })).toBeUndefined();
+    expect(defaultStatusOf({ defaultStatus: 'todo', statuses: ['done', 'todo'] })).toBe('todo');
+  });
+});
+
+// docs/specs/026-plan/item-types.md "The statuses a type uses": a legacy type's left-out statuses.
+describe('a legacy type’s left-out statuses', () => {
   const task = ITEM_TYPES.find((t) => t.id === 'task')!;
   const read = (excludedStatuses: unknown) =>
     validateItemTypeCatalogue({ version: 1, types: [{ ...task, excludedStatuses }] });

@@ -164,8 +164,12 @@ export interface ItemTypeDef {
   detailsLabel?: string;
   // The panel's tabs; absent is one Overview tab (tabsOf).
   tabs?: readonly ItemTypeTab[];
-  // Statuses this type does not use (docs/specs/026-plan/item-types.md "An item type"): a card of it never moves
-  // into one. An exclusion list, so a status added later is open to every type.
+  // The statuses this type uses, in order (docs/specs/026-plan/item-types.md "The statuses a type uses"): a card of
+  // it never moves into any other, and every status menu for its cards lists them in this order. A new board's
+  // statuses join only the types that board takes. Empty: it uses none. Absent: a legacy type (below).
+  statuses?: readonly string[];
+  // A legacy type's statuses it does not use, from before `statuses`: such a type uses every status the boards name
+  // but these (typeStatusesOf). Read, never written; a type with `statuses` has none.
   excludedStatuses?: readonly string[];
   // The Default State (docs/specs/026-plan/item-types.md "An item type"): the status a card of this type is made in
   // when nothing else gives it one (a board's column always does). Absent: none.
