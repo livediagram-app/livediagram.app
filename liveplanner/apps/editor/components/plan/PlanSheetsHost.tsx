@@ -26,6 +26,7 @@ import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
 import { RequiredFieldsDialog } from './RequiredFieldsDialog';
 import { track } from '@/lib/telemetry';
+import { useCardPanelMaximised } from '@/hooks/plan/useCardPanelMaximised';
 
 export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
   const ctx = plan.context;
@@ -48,6 +49,9 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     const open = openId ? ctx.items.get(openId) : undefined;
     return open ? linkedCardsOf(open, ctx.items, ctx.types) : [];
   }, [openId, ctx.items, ctx.types]);
+  // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): this person's preference, so every card opens
+  // the way they last left one.
+  const { maximised, setMaximised } = useCardPanelMaximised(ctx.ownerId);
   // A new card waiting for its required fields comes first (docs/specs/026-plan/item-types.md "Required fields"):
   // the panel of a card opened as it was asked for shows once it is made.
   if (plan.requiredFields) {
@@ -161,6 +165,8 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         }}
         onLinkExisting={(group, cardId, moved) => linkExistingCard(ctx, item, group, cardId, moved)}
         statusNames={ctx.statusNames}
+        maximised={maximised}
+        onMaximise={setMaximised}
         {...(ctx.linkedActions ? { linkedActions: ctx.linkedActions } : {})}
         onTrash={() => {
           ctx.trashItem(item.id);
