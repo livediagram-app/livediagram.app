@@ -1102,3 +1102,63 @@ describe('a description written as Markdown', () => {
     expect(r.applied[0]).not.toContain('descriptionRich');
   });
 });
+
+// docs/specs/026-plan/plan-agents.md "Naming things as people do": a Long Text field takes Markdown as a description does.
+describe('a Long Text field written as Markdown', () => {
+  const NOTES = {
+    ...ITEM_TYPES[1],
+    id: 'repro',
+    label: 'Repro',
+    fields: ['title', 'status', 'f-steps'],
+    custom: [{ id: 'f-steps', label: 'Steps', kind: 'longtext' as const }],
+  };
+  const plan = { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, BUG, NOTES] };
+  const card = (fields: Item['fields']) => [
+    item(1, 'aaa111', { title: 'B', status: 'todo~x', ...fields }, 'repro'),
+  ];
+  const posted = (seen: { method: string; body: unknown }[]) =>
+    seen.filter((c) => c.method === 'POST').map((c) => c.body);
+
+  it('stores its plain text and its formatting, read back by name', async () => {
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: card({}), rev: 1 } }, plan);
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { Steps: '1. Open **Settings**' } }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({
+      set: {
+        'f-steps': '1. Open Settings',
+        'f-stepsRich': [{ text: '1. Open ' }, { text: 'Settings', bold: true }],
+      },
+    });
+    expect(r.applied[0]).toContain('set Steps = "1. Open Settings"');
+    expect(r.applied[0]).not.toContain('Rich');
+  });
+
+  it('keeps plain text plain, dropping formatting the card had', async () => {
+    const had = card({ 'f-steps': 'Old', 'f-stepsRich': [{ text: 'Old', italic: true }] });
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: had, rev: 1 } }, plan);
+    await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { Steps: 'Plain' } }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({ set: { 'f-steps': 'Plain' }, clear: ['f-stepsRich'] });
+  });
+
+  it('clears the formatting with the field', async () => {
+    const had = card({ 'f-steps': 'Old', 'f-stepsRich': [{ text: 'Old', italic: true }] });
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: had, rev: 1 } }, plan);
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', clear: ['Steps'] }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({ clear: ['f-steps', 'f-stepsRich'] });
+    expect(r.applied[0]).toContain('cleared Steps');
+  });
+});

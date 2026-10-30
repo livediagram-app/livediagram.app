@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { validateFields } from './fields';
-import { ITEM_RICH_RUNS_MAX, normaliseRichRuns } from './rich-text-field';
+import {
+  ITEM_RICH_RUNS_MAX,
+  isRichFieldKey,
+  normaliseRichRuns,
+  richFieldOf,
+  richRunsOf,
+  runsAreMarked,
+} from './rich-text-field';
 
 // docs/specs/026-plan/items.md "Fields": descriptionRich.
 describe('descriptionRich', () => {
@@ -41,5 +48,49 @@ describe('descriptionRich', () => {
       ok: false,
       field: 'descriptionRich',
     });
+  });
+});
+
+// docs/specs/026-plan/item-types.md "An item type": a Long Text field's formatting, `<id>Rich`.
+describe('a Long Text field’s formatting', () => {
+  it('is kept under the field’s id and Rich, and only there', () => {
+    expect(richFieldOf('f-steps')).toBe('f-stepsRich');
+    expect(richFieldOf('description')).toBe('descriptionRich');
+    expect(isRichFieldKey('f-stepsRich')).toBe(true);
+    expect(isRichFieldKey('descriptionRich')).toBe(true);
+    expect(isRichFieldKey('f-steps')).toBe(false);
+    expect(isRichFieldKey('labelsRich')).toBe(false);
+    expect(isRichFieldKey('f-Rich')).toBe(false);
+  });
+
+  it('rides an item write, held to the field’s own limit', () => {
+    const runs = [{ text: 'Go', bold: true }];
+    expect(validateFields({ 'f-stepsRich': runs }, 'patch')).toEqual({
+      ok: true,
+      fields: { 'f-stepsRich': runs },
+    });
+    expect(validateFields({ 'f-stepsRich': [{ text: 'a'.repeat(2001) }] }, 'patch')).toMatchObject({
+      ok: false,
+      field: 'f-stepsRich',
+    });
+    expect(validateFields({ descriptionRich: [{ text: 'a'.repeat(2001) }] }, 'patch').ok).toBe(
+      true,
+    );
+  });
+
+  it('reads only while its text still spells the field’s value', () => {
+    const runs = [{ text: 'Open ' }, { text: 'it', italic: true }];
+    expect(richRunsOf({ 'f-s': 'Open it', 'f-sRich': runs }, 'f-s')).toBe(runs);
+    expect(richRunsOf({ 'f-s': 'Rewritten', 'f-sRich': runs }, 'f-s')).toBeUndefined();
+    expect(richRunsOf({ 'f-sRich': runs }, 'f-s')).toBeUndefined();
+    expect(richRunsOf({ 'f-s': 'x', 'f-sRich': [] }, 'f-s')).toBeUndefined();
+    expect(richRunsOf({ 'f-s': 'x', 'f-sRich': ['x'] }, 'f-s')).toBeUndefined();
+    expect(richRunsOf({ 'f-s': 'x', 'f-sRich': [{ text: 1 }] }, 'f-s')).toBeUndefined();
+  });
+
+  it('is worth keeping only when a run is marked', () => {
+    expect(runsAreMarked([{ text: 'a' }, { text: 'b' }])).toBe(false);
+    expect(runsAreMarked([{ text: 'a' }, { text: 'b', bold: true }])).toBe(true);
+    expect(runsAreMarked([null])).toBe(false);
   });
 });
