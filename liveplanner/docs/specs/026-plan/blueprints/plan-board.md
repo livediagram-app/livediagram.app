@@ -181,14 +181,36 @@ card-type-chips.ts       pure: `chipsShown({ interactive, canEditCards, phone, s
                          status `cellStatus`; the row's `laneMove` set; after the cell's last card)
 phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action) + shownQuick
                          In a Dashboard slot and not maximised (`simplified = useInDashboard() && !maximised`,
-                         dashboard-context.ts: DashboardContext present) PlanBoardView is simplified: `setUpHere =
-                         canEdit && !simplified` gates PlanBoardHeader's `canEdit` (widget zone read-only, no Set Done
-                         Column, no Reveal) and `canRename`, PlanColumnHeader's `canEdit` (no column cog, so no Add
-                         Column After) and Add New Card Type; the header's end is Maximise then `slot.cog` (none
-                         without slot settings); PlanBoardHeader `simplified` drops FormBoardStrip. Maximised
+                         dashboard-context.ts: DashboardContext present) PlanBoardView draws the compact slot board
+                         (plan-tabs.md "A board in a slot is simplified"): `setUpHere = canEdit && !simplified`
+                         keeps Add New Card Type off; the projection and usePlanBoardDrop run over
+                         `slotSetup(setup)` (slot-board.ts: one row, so a lane-free move) with no quick filter (`applied`
+                         is NO_QUICK); SlotBoardHeader replaces PlanBoardHeader and SlotColumnHeader replaces
+                         PlanColumnHeader; ExampleCardsNotice and each cell's Add card row are not drawn. Maximised
                          from the slot all of it returns, the cog SlotBoardCog (PlanBoardSectionsPanel + slot
-                         sections) for an Editor. Cards, drag, Add card, the card
-                         menu, SetupBoardHost and counts keep `canEdit`/`canEditCards` as on a Board tab
+                         sections) for an Editor. Cards, drag, the card menu, SetupBoardHost and counts keep
+                         `canEdit`/`canEditCards` as on a Board tab
+slot-board.ts            `slotSetup(setup)` (swimlaneBy 'none', but an All Cards board's 'status' rows kept; the same
+                         object when nothing changes); `slotColumnUnit(bodyPx, columns)`: room = body - 2 x 12 px, the
+                         even share (room - (units - 1) x 8) / units while >= SLOT_COLUMN_MIN_PX, else the largest whole
+                         count k (units - 1 down to 1) with (room - k x 8) / (k + SLOT_COLUMN_PEEK) >= the floor, else
+                         the floor; `slotColumnTemplate`: the 'slot' minmax template while they fit or unmeasured, else
+                         each column floor(unit x w + (w - 1) x 8) px; `slotCardSize(size, unit)`: the board's size
+                         while unit >= PLAN_COLUMN_MIN_PX, else 'minimal' (cards then `stacked`). The body width is
+                         useObservedSize(bodyRef) while simplified and not on a phone
+PlanCardFace.tsx         `stacked` (slot boards' Minimal cards): the TypeDot and title (2 lines, 12.5 px) in a row, then
+                         the lead and trail bits in one wrapping row under it (`data-card-bits`), none when empty
+SlotBoardHeader.tsx      the slot board's 40 px header: BoardTitle (no rename) and a CountBadge of the cards shown,
+                         then (`data-slot-board-controls`) Retry when the load failed, Maximise, `slot.cog`; the
+                         controls are opacity-0 until `group-hover`/`group-focus-within` of the board, always at
+                         `pointer-coarse`, and never `invisible` so Tab reaches them
+SlotColumnHeader.tsx     a slot column's sticky head: a colour dot (the column's colour, else the border), its name
+                         (12 px semibold, truncated), CountBadge (`n / wip`, warning colours over the limit), then for
+                         canEditCards (and not loading, not an Archive board) AddCardButton `compact` (icon only,
+                         aria-label "Add a card to {name}", tooltip the same) opening AddCardPopover; `open` follows
+                         the N key's adding cell
+plan-board-columns.ts    layout 'slot' (inSlot, not a phone, not covering): `minmax(SLOT_COLUMN_MIN_PX * w px, w fr)`,
+                         SLOT_COLUMN_MIN_PX 160, the grid's gap 8 px (SLOT_COLUMN_GAP_PX) and the body `scroll-edge-fade`
 AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
 PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face (custom fields as chips where Display places them; its gathered votes read-only)
@@ -654,6 +676,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Breadcrumb back bar, step back                                 | `apps/editor/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                      |
 | Phone look: Minimal, no widgets, columns, touch                | `apps/editor/components/plan/phone-board.test.ts`, `plan-board-columns.test.ts`                                                                             |
 | Simplified in a Dashboard slot, whole maximised, restored      | `apps/editor/components/plan/PlanBoardView.dashboard.test.tsx`                                                                                              |
+| Slot board: compact parts, roles, lanes off, card size         | `PlanBoardView.dashboard.test.tsx`, `slot-board.test.ts`, `plan-board-columns.test.ts`, `phone-board.test.ts`                                               |
 | Phone's shared top row                                         | `apps/editor/lib/canvas-layer-insets.test.ts` (`phoneRow`)                                                                                                  |
 | Empty widget zone keeps its + in a band                        | `apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx`                                                                                              |
 | Dashboard Settings steps aside while maximised                 | `apps/editor/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                          |
@@ -669,31 +692,34 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 
 ## Constants and configuration
 
-| Constant                   | Value              | Provenance / safe range                                                  |
-| -------------------------- | ------------------ | ------------------------------------------------------------------------ |
-| `CANVAS_LAYER_Z`           | `--z-panel` − 1    | Over the canvas, under its panels                                        |
-| `MAXIMISED_BOARD_SLOTS`    | 5                  | DEFAULTS; slots across a maximised board before it scrolls; 3-8          |
-| `PHONE_COLUMN_PEEK_PX`     | 48                 | DEFAULTS D44; the next column's peek on a phone, gap included; 32-80     |
-| `PHONE_END_CLEARANCE`      | 8.5rem + safe area | DEFAULTS D45; the phone's bottom controls over a covering board; 6-10rem |
-| `PHONE_COVER_PAD_PX`       | 8                  | CanvasCover's p-2 on a phone                                             |
-| `PHONE_ROW_MIN_PX`         | 160                | DEFAULTS D46; a short title and Restore and the cog; 120-220             |
-| `EDGE_SCROLL_ZONE_PX`      | 56                 | DEFAULTS; capped at a quarter of the viewport; 32-96                     |
-| `EDGE_SCROLL_MAX_PX`       | 18                 | DEFAULTS; px per frame at the edge; 8-30                                 |
-| `EDGE_SCROLL_REDUCED_PX`   | 6                  | DEFAULTS; constant under reduced motion; 3-10                            |
-| `WIDE_PANEL_SHARE`         | 0.6                | Side panels are 18-24rem; a sheet spans most of a phone; 0.5-0.8         |
-| `MAX_INSET_SHARE`          | 0.45               | The element keeps at least 10% per axis; 0.3-0.45                        |
-| `PRESS_DRAG_SLOP_PX`       | 4                  | Shared, ../packages/workbench/src/lib/press-gestures.ts                  |
-| `PLAN_COLUMN_MIN_PX`       | 220                | A card's title reads in 3 lines; 180–320                                 |
-| `PLAN_COLUMNS_MAX`         | 12                 | Spec                                                                     |
-| `CHIP_NAMES_MAX`           | 3                  | Spec ("more than three types" drop their names); 2-5                     |
-| `CHIP_GHOST_HEIGHT_PX`     | 56                 | A Minimal card's height, the placeholder a carried chip opens; 40-80     |
-| `BOARD_SORT_LEVELS_MAX`    | 2                  | Spec (Work Tracker #18): Sort By and Then By                             |
-| `SUGGESTED_STATUSES_MAX`   | 5                  | Spec ("up to five"); the list `SUGGESTED_STATUSES` holds exactly five    |
-| `ITEM_EDIT_DEBOUNCE_MS`    | 400                | One undo step per pause in typing                                        |
-| `CUSTOM_ASSIGNEE_NAME_MAX` | 60                 | Spec; a name on one line of the picker; 30-120                           |
-| `ITEM_TRAIL_MAX`           | 8                  | Spec; bounds the trail's memory; 2–20                                    |
-| `FIT_GLIDE_MS`             | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`               |
-| `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                         |
+| Constant                   | Value              | Provenance / safe range                                                     |
+| -------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| `CANVAS_LAYER_Z`           | `--z-panel` − 1    | Over the canvas, under its panels                                           |
+| `MAXIMISED_BOARD_SLOTS`    | 5                  | DEFAULTS; slots across a maximised board before it scrolls; 3-8             |
+| `PHONE_COLUMN_PEEK_PX`     | 48                 | DEFAULTS D44; the next column's peek on a phone, gap included; 32-80        |
+| `PHONE_END_CLEARANCE`      | 8.5rem + safe area | DEFAULTS D45; the phone's bottom controls over a covering board; 6-10rem    |
+| `PHONE_COVER_PAD_PX`       | 8                  | CanvasCover's p-2 on a phone                                                |
+| `PHONE_ROW_MIN_PX`         | 160                | DEFAULTS D46; a short title and Restore and the cog; 120-220                |
+| `EDGE_SCROLL_ZONE_PX`      | 56                 | DEFAULTS; capped at a quarter of the viewport; 32-96                        |
+| `EDGE_SCROLL_MAX_PX`       | 18                 | DEFAULTS; px per frame at the edge; 8-30                                    |
+| `EDGE_SCROLL_REDUCED_PX`   | 6                  | DEFAULTS; constant under reduced motion; 3-10                               |
+| `WIDE_PANEL_SHARE`         | 0.6                | Side panels are 18-24rem; a sheet spans most of a phone; 0.5-0.8            |
+| `MAX_INSET_SHARE`          | 0.45               | The element keeps at least 10% per axis; 0.3-0.45                           |
+| `PRESS_DRAG_SLOP_PX`       | 4                  | Shared, ../packages/workbench/src/lib/press-gestures.ts                     |
+| `PLAN_COLUMN_MIN_PX`       | 220                | A card's title reads in 3 lines; 180–320                                    |
+| `SLOT_COLUMN_MIN_PX`       | 160                | DEFAULTS D57; a slot board's narrowest column; 140-200                      |
+| `SLOT_COLUMN_PEEK`         | 0.4                | DEFAULTS D59; the next column's share at a too-narrow slot's edge; 0.25-0.6 |
+| `SLOT_COLUMN_GAP_PX`       | 8                  | A slot board's `gap-2` between columns                                      |
+| `PLAN_COLUMNS_MAX`         | 12                 | Spec                                                                        |
+| `CHIP_NAMES_MAX`           | 3                  | Spec ("more than three types" drop their names); 2-5                        |
+| `CHIP_GHOST_HEIGHT_PX`     | 56                 | A Minimal card's height, the placeholder a carried chip opens; 40-80        |
+| `BOARD_SORT_LEVELS_MAX`    | 2                  | Spec (Work Tracker #18): Sort By and Then By                                |
+| `SUGGESTED_STATUSES_MAX`   | 5                  | Spec ("up to five"); the list `SUGGESTED_STATUSES` holds exactly five       |
+| `ITEM_EDIT_DEBOUNCE_MS`    | 400                | One undo step per pause in typing                                           |
+| `CUSTOM_ASSIGNEE_NAME_MAX` | 60                 | Spec; a name on one line of the picker; 30-120                              |
+| `ITEM_TRAIL_MAX`           | 8                  | Spec; bounds the trail's memory; 2–20                                       |
+| `FIT_GLIDE_MS`             | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`                  |
+| `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                            |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to

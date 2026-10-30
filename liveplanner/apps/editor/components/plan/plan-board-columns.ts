@@ -7,6 +7,11 @@
 // and, centred, its neighbours peek in at both edges. Pure.
 import { PLAN_COLUMN_MIN_PX, type PlanColumn } from '@liveplanner/items';
 
+// A Dashboard slot's compact board (docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified"): each column
+// at least this wide, sharing the rest, before its columns scroll sideways (blueprint DEFAULTS D57), 8 px apart.
+export const SLOT_COLUMN_MIN_PX = 160;
+export const SLOT_COLUMN_GAP_PX = 8;
+
 // How many column slots a maximised board shows across its body before it scrolls (blueprint DEFAULTS).
 export const MAXIMISED_BOARD_SLOTS = 5;
 // The gap between columns (the grid's `gap-3`).
@@ -18,14 +23,18 @@ export const PHONE_COLUMN_PEEK_PX = 64;
 export const PHONE_COLUMN_WIDTH = `max(${PLAN_COLUMN_MIN_PX}px, calc(100cqw - ${PHONE_COLUMN_PEEK_PX}px))`;
 
 // How a board lays its columns out: sharing the canvas element's width, five slots across while it covers the canvas,
-// or one a screen on a phone.
-export type BoardColumnLayout = 'canvas' | 'maximised' | 'phone';
+// one a screen on a phone, or compact in a Dashboard slot.
+export type BoardColumnLayout = 'canvas' | 'maximised' | 'phone' | 'slot';
 
 export function boardColumnTemplate(
   columns: readonly Pick<PlanColumn, 'width'>[],
   layout: BoardColumnLayout,
 ): string {
   if (layout === 'phone') return columns.map(() => PHONE_COLUMN_WIDTH).join(' ');
+  if (layout === 'slot')
+    return columns
+      .map((c) => `minmax(${SLOT_COLUMN_MIN_PX * (c.width ?? 1)}px, ${c.width ?? 1}fr)`)
+      .join(' ');
   const maximised = layout === 'maximised';
   const gaps = (MAXIMISED_BOARD_SLOTS - 1) * PLAN_COLUMN_GAP_PX;
   return columns

@@ -139,20 +139,41 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   sits last among that header's controls; otherwise (a metric, a note, an empty slot) the Slot Settings cog floats at
   the slot's top right on hover.
   Each change is one undo step.
-- **A board in a slot is simplified**: a board shown in a slot (a Board tab, or a dashboard's own board) is drawn for
-  working its cards, not for setting the board up, always (no per-slot choice). It keeps its title, its cards and their
-  card faces, dragging cards between columns and within them, **Add card** (without **Add New Card Type**), opening a
-  card (and its right-click menu), each column's name, count and WIP limit, the board's saved widgets, read-only (they
-  count and filter as anywhere, but there is no **+**, no reordering and no × to take one off, and nothing in them
-  changes the board's set-up, such as a Done widget's Set Done Column), and **Maximise Board**. It drops **Focus**, the column cogs (and with them adding a column), the form strip (a form sending
-  its responses to the board), renaming the board from its title, **Reveal**, and the board-setup sections of its cog:
-  the cog is the slot's own (**Slot Settings**, with the slot toolbar's **Open Tab**), or none for someone with no
-  slot settings. Changes to the board are made on its own tab, through **Open Tab**. A board not set up yet still
-  offers **Set Up Board** there, so a new board can be started from its slot.
-  **Maximised** from its slot the board is the whole board again, as on its tab: column cogs and adding a column, the
-  widget **+**, reordering and ×, the form strip, renaming, Reveal, Add New Card Type and, for an Editor, the
-  **Board Settings** cog (its board sections, then the slot's **Slot** section). **Restore** returns it to the
-  simplified slot board. Focus stays off (a slot has no place on the canvas to glide to).
+- **A board in a slot is simplified**: a board shown in a slot (a Board tab, or a dashboard's own board) is a compact
+  board made only for working its cards, always (no per-slot choice), so it stays usable in a small slot. Nothing on it
+  sets anything up.
+  - **What it shows**: a slim header (the board's title and how many cards it shows), then the columns, then the
+    cards. Each column's head is its colour dot, its name, its count (against its WIP limit, in the warning colour
+    when over it) and, for someone who may add cards, a **+** (**Add a card to <column>**, opening the Add a Card
+    menu, without **Add New Card Type**). There is no Add card row under the cards (but an All Cards board's
+    rows by status, below, keep theirs).
+  - **Working the cards**: drag a card between columns and within one, click (or Enter) to open it, right-click or
+    hold for its menu, add one from a column's **+** (or the N key). The share roles are a Board tab's: an Editor and
+    a Participant move, add and open cards; a Viewer opens them only.
+  - **Compact and scaling**: the columns share the slot's width, each at least `SLOT_COLUMN_MIN_PX` (160 px) wide.
+    When the slot is narrower than that, they scroll sideways, sized so whole columns fit with a part of the next
+    (`SLOT_COLUMN_PEEK`, 40% of a column) peeking in at the edge, which fades out, so it reads as "more this way".
+    The cards are the board's own size while a column is at least `PLAN_COLUMN_MIN_PX` (220 px) wide; narrower, they
+    are Minimal and stacked: the title on its own (up to two lines), and what its type's Minimal Display shows
+    (by default a custom type's key, priority, due date and assignee; a Task only its title) in a row under it, so a small slot still reads. On a phone the board shows one column a screen, as a phone does
+    elsewhere ([Plan board](plan-board.md#on-a-phone)).
+  - **Swimlanes are not drawn**: a board with swimlanes shows its cards in plain columns in a slot (a move changes
+    only a card's column, never its lane). An All Cards board keeps its rows by status, since its one column holds
+    every status and those rows are where a card's status is shown and changed.
+  - **Left on its tab**: the widgets (and the filter they set), the Items Not on This Board tray, the example cards'
+    **Clear Example Cards** and **Keep Them**, **Focus**, the column cogs (and adding a column), the form strip (a
+    form sending its responses to the board), renaming the board from its title, **Reveal**, **Add New Card Type**
+    and the board-setup sections of its cog. Changes to the board are made on its own tab, through **Open Tab**.
+  - **The header's controls**: **Maximise Board**, then the slot's own cog (**Slot Settings**, with the slot
+    toolbar's **Open Tab**; none for someone with no slot settings). They show while the pointer is over the slot or
+    focus is in it, and always on a touch screen, so at rest the slot is only the title, the columns and the cards.
+    A failed load still shows **Couldn't load items · Retry**, and a board not set up yet still offers **Set Up
+    Board**, so a new board can be started from its slot.
+  - **Maximised** from its slot the board is the whole board again, as on its tab: its own card size, swimlanes, the
+    widgets and their **+**, reordering and ×, the example cards' notice, column cogs and adding a column, Add card
+    under each cell, the form strip, renaming, Reveal, Add New Card Type and, for an Editor, the **Board Settings**
+    cog (its board sections, then the slot's **Slot** section). **Restore** returns it to the simplified slot board.
+    Focus stays off (a slot has no place on the canvas to glide to).
 - **A slot's name**: a filled slot whose heading is made for it takes a name of its own, so a reader sees what it is
   for ("Launch readiness" rather than "Cards by Assignee"). That is a slot showing a chart or a metric tile (a plan
   view), a figure from a Sheet, or a Form figure. An Editor gives it in the Slot section, under Add a Slot: a **Name**
@@ -268,8 +289,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   its height eases to the new level's (short motion token, easing out), and the new level slides in from the right
   going in and from the left coming back, fading up (the wizard's tip-next and tip-prev); only one level is ever
   drawn. Under reduced motion the swap is instant.
-- **What fits**: content goes only into a slot big enough to draw it well: a board (or Board tab) 480 by 440 px (its header, three
-  columns and two or three cards: less shows one card and reads as cramped), a Sheet (or Sheet tab) 320 by 240, a visualisation 300 by 220; a metric or a note fits any slot. Add to Slot offers only what fits, saying "Only what looks good at this slot’s size, each
+- **What fits**: content goes only into a slot big enough to draw it well: a board (or Board tab) 280 by 260 px (simplified there: its slim header, a column with part of the next peeking in and two Minimal cards; it was 480 by 440 while a slot drew the whole board), a Sheet (or Sheet tab) 320 by 240, a visualisation 300 by 220; a metric or a note fits any slot. Add to Slot offers only what fits, saying "Only what looks good at this slot’s size, each
   shown as it will look here.", and when anything was left out, "Boards, sheets and charts need a bigger slot: drag
   the row’s lower edge to make it taller." (naming only those left out). Each choice is drawn as it will look: a board
   preset's picture, a sheet's, a metric as its tile, a chart as its chart, a note as a heading over lines.

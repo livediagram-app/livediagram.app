@@ -115,6 +115,7 @@ export function PlanBoardCard({
   done,
   setupFields,
   cardSize,
+  stacked = false,
   touch = 'touch-none',
   faceDown,
   presence,
@@ -134,6 +135,8 @@ export function PlanBoardCard({
   done: boolean;
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
   cardSize: Parameters<typeof PlanCardFace>[0]['size'];
+  // A slot board's narrow column: a Minimal card's title over its bits (PlanCardFace `stacked`).
+  stacked?: boolean;
   // The card's touch-action (phone-board.ts cardTouch): touch-none but on a phone board one column a screen.
   touch?: string;
   faceDown: boolean;
@@ -210,6 +213,7 @@ export function PlanBoardCard({
           palette={palette}
           fields={setupFields}
           size={cardSize}
+          stacked={stacked}
           faceDown={faceDown}
           muted={done}
           presence={presence}
@@ -241,6 +245,7 @@ export function PlanDragGhost({
   palette,
   fields,
   size,
+  stacked = false,
 }: {
   drag: {
     clientX: number;
@@ -256,6 +261,8 @@ export function PlanDragGhost({
   palette: PlanPalette;
   fields: Parameters<typeof PlanCardFace>[0]['fields'];
   size: Parameters<typeof PlanCardFace>[0]['size'];
+  // As the card it carries was drawn (PlanBoardCard `stacked`).
+  stacked?: boolean;
 }) {
   const at = usePlanDragPointer(pointer) ?? drag;
   return createPortal(
@@ -268,7 +275,7 @@ export function PlanDragGhost({
         height: drag.height,
       }}
     >
-      <PlanCardFace item={item} palette={palette} fields={fields} size={size} />
+      <PlanCardFace item={item} palette={palette} fields={fields} size={size} stacked={stacked} />
     </div>,
     document.body,
   );

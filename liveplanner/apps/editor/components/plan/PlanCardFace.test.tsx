@@ -57,6 +57,35 @@ function face(item: Item, size?: 'minimal' | 'detailed', muted?: boolean) {
 }
 
 describe('the card face', () => {
+  // docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified": a narrow slot column's Minimal card.
+  it('stacks a Minimal card in a slot: the title on its own, its bits in a row under it', () => {
+    render(
+      <PlanCardFace
+        item={card({ assignee: PERSON, due: dayKey(3) }, 'request')}
+        palette={planPalette('light', {})}
+        fields={ALL}
+        size="minimal"
+        stacked
+      />,
+    );
+    const bits = document.querySelector('[data-card-bits]');
+    expect(bits).toBeTruthy();
+    expect(bits?.textContent).not.toContain('A card');
+    expect(screen.getByText('A card')).toBeTruthy();
+    cleanup();
+    render(
+      <PlanCardFace
+        item={card({})}
+        palette={planPalette('light', {})}
+        fields={[]}
+        size="minimal"
+        stacked
+      />,
+    );
+    expect(document.querySelector('[data-card-bits]')).toBeNull();
+    expect(screen.getByText('A card')).toBeTruthy();
+  });
+
   it('heads a Detailed card with its type, number and priority, and ends it with pills', () => {
     face(
       card({

@@ -44,8 +44,8 @@ describe('Add to Slot', () => {
     );
   });
 
-  it('offers a tall, narrow slot sheets and charts but not boards', () => {
-    const { sections, tooBig } = slotFillSections([], { width: 320, height: 400 });
+  it('offers a short slot sheets and charts but not boards', () => {
+    const { sections, tooBig } = slotFillSections([], { width: 320, height: 240 });
     expect(sections.map((s) => s.title)).toEqual([
       'New Sheet',
       'Card Metrics',
