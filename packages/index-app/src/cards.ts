@@ -3,11 +3,12 @@
 // (`PUT /app/items/:id/collab/~cards`) by the item's outbox drain, so the Inbox lists them however the card was
 // changed (the editor, an agent, a form response).
 //
-// A card names its assignee and its last writer by a one-way hash of their person id, so anyone may hold a card
-// without learning anyone's id. The index needs the id. The item matches each hash against the people it knows:
-// whoever its app passes in (its owner, its team, the editors it has seen) and everyone who commented on or was
-// mentioned in a card. A card whose assignee is none of them is left out of the push and counted in `unmatched`;
-// the next push after that person comments, edits or joins the team lists it.
+// A card names the people it tells (its assignee, and any other field that notifies) and its last writer by a
+// one-way hash of their person id, so anyone may hold a card without learning anyone's id. The index needs the id.
+// The item matches each hash against the people it knows: whoever its app passes in (its owner, its team, the
+// editors it has seen) and everyone who commented on or was mentioned in a card. A person who is none of them is
+// left out of the push and counted in `unmatched`; the next push after that person comments, edits or joins the
+// team lists the card for them.
 
 import {
   COLLAB_MAX_ACTIONS,
@@ -36,14 +37,19 @@ export type InboxCardSource = {
   teamId: string | null;
   createdAt: number;
   updatedAt: number;
-  // Who it is assigned to, as a hash: set only while it is open and listed (not done, not shown elsewhere).
-  assignee: { hash: string; name: string | null } | null;
+  // The people it tells, as hashes, one action each: set only while it is open and listed (not done, not shown
+  // elsewhere), empty otherwise.
+  assignees: readonly InboxCardAssignee[];
   // Who last changed it, as a hash: the row's assigner.
   changedBy: { hash: string; name: string | null } | null;
   // Its comment threads, each its own Inbox row (elementId the thread's id, elementLabel its title). A thread on
   // several of the item's cards is listed once, on the first card that names it.
   threads: readonly InboxCardThread[];
 };
+
+// One person a card tells: their hash, their name, and the action's id (the card's id for its assignee, `{card
+// id}~{field id}` for another field, so each person's row keeps its own id however the others change).
+export type InboxCardAssignee = { hash: string; name: string | null; actionId: string };
 
 export type InboxCardThread = {
   id: string;
@@ -63,7 +69,7 @@ export type CardsPushOptions = {
 
 export type CardsPush = { push: CollabPush; unmatched: number; people: number };
 
-/** The cards push for the Inbox: one action per open, assigned card whose assignee is known, and one thread per comment
+/** The cards push for the Inbox: one action per known person an open card tells, and one thread per comment
  *  thread (on the first card naming it), newest first and capped as the index caps one push. */
 export async function cardsCollabPush(
   cards: readonly InboxCardSource[],
@@ -115,28 +121,33 @@ export async function cardsCollabPush(
   const actions: CollabActionInput[] = [];
   let unmatched = 0;
   for (const c of cards) {
-    if (!c.assignee) continue;
-    const assigneeId = byHash.get(c.assignee.hash);
-    if (!assigneeId) {
-      unmatched++;
-      continue;
+    // A person two of the card's fields name is told once, by the first.
+    const told = new Set<string>();
+    for (const assignee of c.assignees) {
+      const assigneeId = byHash.get(assignee.hash);
+      if (!assigneeId) {
+        unmatched++;
+        continue;
+      }
+      if (told.has(assigneeId)) continue;
+      told.add(assigneeId);
+      actions.push({
+        elementId: c.id,
+        actionId: assignee.actionId,
+        elementLabel: c.card.title,
+        name: c.card.title,
+        description: '',
+        status: 'open',
+        assigneeId,
+        assigneeName: assignee.name,
+        assignerId: (c.changedBy && byHash.get(c.changedBy.hash)) || opts.fallbackAssignerId,
+        assignerName: c.changedBy?.name ?? null,
+        teamId: c.teamId,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        card: c.card,
+      });
     }
-    actions.push({
-      elementId: c.id,
-      actionId: c.id,
-      elementLabel: c.card.title,
-      name: c.card.title,
-      description: '',
-      status: 'open',
-      assigneeId,
-      assigneeName: c.assignee.name,
-      assignerId: (c.changedBy && byHash.get(c.changedBy.hash)) || opts.fallbackAssignerId,
-      assignerName: c.changedBy?.name ?? null,
-      teamId: c.teamId,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
-      card: c.card,
-    });
   }
   return {
     push: {

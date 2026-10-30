@@ -7,6 +7,7 @@ import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { dayNumber, dayParts, MONTH_LONG, monthStart, shiftMonth } from './plan-view-dates';
 import { STATUS_PHASES, liveCards, phaseOf, type StatusPhase } from './plan-views';
 import type { CalendarField } from './calendar-move';
+import { BUILT_IN_DATES, measureValue, type ViewDates } from './view-fields';
 
 const byKey = (a: Item, b: Item) => a.key - b.key;
 
@@ -34,6 +35,8 @@ export function calendarModel(
   year: number,
   month: number,
   field: CalendarField = 'due',
+  // The fields it reads for each role (docs/specs/026-plan/plan-views.md "Dates").
+  dates: ViewDates = BUILT_IN_DATES,
 ): CalendarModel {
   const first = monthStart(year, month);
   const next = shiftMonth(year, month, 1);
@@ -42,7 +45,7 @@ export function calendarModel(
   const gridTo = last + (6 - dayParts(last).weekday);
   const byDay = new Map<number, Item[]>();
   for (const it of liveCards(items)) {
-    const d = dayNumber(it.fields[field]);
+    const d = dayNumber(it.fields[dates[field]]);
     if (d === undefined || d < gridFrom || d > gridTo) continue;
     const list = byDay.get(d);
     if (list) list.push(it);
@@ -87,6 +90,8 @@ export function breakdownModel(
   // Every card of the project, so a row per linked card (a Card field grouping) names a card of a type the chart
   // does not count (a Candidate's Role); the counted cards alone when absent.
   everyCard?: ReadonlyMap<string, Item>,
+  // The Number field each card adds to its bar ("Count By"), or undefined to count cards.
+  measure?: string,
 ): { rows: BreakdownRow[]; max: number; total: number } {
   const cards = liveCards(items);
   const all = everyCard ?? new Map(cards.map((c) => [c.id, c]));
@@ -107,14 +112,17 @@ export function breakdownModel(
   for (const it of cards) {
     const row = rows.get(groups.laneOfItem.get(it.id) ?? '');
     if (!row) continue;
-    row.counts[phaseOf(it, phases)] += 1;
-    row.total += 1;
+    const n = measure ? measureValue(it, measure) : 1;
+    row.counts[phaseOf(it, phases)] += n;
+    row.total += n;
   }
   let list = [...rows.values()];
-  if (groups.by === 'assignee')
+  // People busiest first: the Assignee, or a Person field (docs/specs/026-plan/plan-views.md "Cards by Field").
+  if (groups.by === 'assignee' || groups.field?.kind === 'person')
     list = list.sort((a, b) => b.total - a.total || a.label.localeCompare(b.label));
   list = [...list.filter((r) => !r.empty), ...list.filter((r) => r.empty)];
-  return { rows: list, max: Math.max(0, ...list.map((r) => r.total)), total: cards.length };
+  const total = measure ? list.reduce((sum, r) => sum + r.total, 0) : cards.length;
+  return { rows: list, max: Math.max(0, ...list.map((r) => r.total)), total };
 }
 
 // ---- Status Breakdown ----

@@ -129,6 +129,9 @@ export interface CustomFieldDef {
   onCard?: boolean;
   // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.
   required?: boolean;
+  // A Person field tells its person when a card is theirs (docs/specs/026-plan/item-types.md "Notifies"): the
+  // Inbox, emails and Only Mine. Kept only as true, only on a Person field.
+  notifies?: boolean;
 }
 
 // The most card types one Card field links to: every type the catalogue can hold (ITEM_TYPES_MAX).
@@ -197,6 +200,10 @@ export interface ItemTypeDef {
   // What its cards show at each card size (docs/specs/026-plan/item-types.md "Card display"); a size left out takes
   // the type's default (typeCardDisplay).
   display?: Partial<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>>;
+  // The Assignee does not tell its person (docs/specs/026-plan/item-types.md "Notifies"). Kept only as false.
+  assigneeNotifies?: boolean;
+  // The custom Colour field its cards take their colour from ("Fields by role"); absent is the built-in Colour.
+  colourField?: string;
 }
 
 // Parent (docs/specs/026-plan/item-types.md "Card fields"): a Card field linking to Projects, under the one custom

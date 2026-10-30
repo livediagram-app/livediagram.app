@@ -10,13 +10,15 @@ import type { Item, ItemPerson } from './item';
 import {
   ARCHIVED_FIELD,
   LANE_FIELD_BUILT_INS,
+  isItemPerson,
   itemAssignee,
   itemLabels,
   itemStatus,
   itemTitle,
 } from './item';
 import type { ItemMove } from './item';
-import { CUSTOM_FIELD_ID_PATTERN } from './type-catalogue';
+import { CUSTOM_FIELD_ID_PATTERN, typeIn } from './type-catalogue';
+import { isNotified } from './notify-fields';
 import { boardSortComparator, normaliseBoardSort, type BoardSortLevel } from './board-sort';
 import {
   ITEM_TYPES,
@@ -156,7 +158,7 @@ export interface QuickDueWindow {
 
 export interface QuickFilter {
   text?: string;
-  // Only items assigned to this person id.
+  // Only Mine: only items a notifying Person field gives this person id (notify-fields.ts).
   mine?: string;
   // From the board's widgets (docs/specs/026-plan/board-widgets.md): only items assigned to this person
   // id, only items of this type, only items due within a window of days (YYYY-MM-DD, both ends
@@ -218,7 +220,15 @@ export interface LaneHead {
 }
 
 // How a field lane groups (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
-export type LaneFieldKind = 'choice' | 'checkbox' | 'number' | 'date' | 'text' | 'labels' | 'card';
+export type LaneFieldKind =
+  | 'choice'
+  | 'checkbox'
+  | 'number'
+  | 'date'
+  | 'text'
+  | 'labels'
+  | 'card'
+  | 'person';
 export interface LaneField {
   id: string;
   label: string;
@@ -235,7 +245,16 @@ const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
   { id: 'start', label: 'Start Date', kind: 'date' },
   { id: 'due', label: 'Due Date', kind: 'date' },
 ];
-const GROUPING_KINDS = new Set<string>(['choice', 'checkbox', 'number', 'date', 'text', 'card']);
+const GROUPING_KINDS = new Set<string>([
+  'choice',
+  'checkbox',
+  'number',
+  'date',
+  'text',
+  'card',
+  'person',
+  'labels',
+]);
 
 // The fields a board can lane by, of the types it shows: the built-ins those types offer, then every grouping
 // custom field in catalogue order, each once (named as the first type that offers it names it).
@@ -277,13 +296,30 @@ function laneValue(
   field: LaneField,
   item: Pick<Item, 'fields'>,
 ): string | number | boolean | undefined {
-  if (field.kind === 'labels') return itemLabels(item)[0];
+  if (field.kind === 'labels') return labelsIn(field.id, item)[0];
   const v = item.fields[field.id];
   if (field.kind === 'checkbox') return v === true;
   if (field.kind === 'number') return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
   if (typeof v !== 'string') return undefined;
   const s = field.kind === 'text' ? v.trim() : v;
   return s ? s : undefined;
+}
+
+// A Labels field's labels: the built-in's, or a custom Labels field's (docs/specs/026-plan/item-types.md "Custom field
+// kinds").
+function labelsIn(fieldId: string, item: Pick<Item, 'fields'>): string[] {
+  if (fieldId === 'labels') return itemLabels(item);
+  const v = item.fields[fieldId];
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x !== '') : [];
+}
+
+// A Person field's row: its person, named and drawn as an Assignee row (plan-board.md "Swimlanes by a field").
+function personLane(field: LaneField, item: Pick<Item, 'fields'>): LaneHead {
+  const base = { field: 'field' as const, fieldId: field.id, fieldKind: field.kind };
+  const p = item.fields[field.id];
+  return isItemPerson(p)
+    ? { key: `f:p:${p.id}`, label: p.name, value: { ...p }, person: p, ...base }
+    : { key: NO_LANE, label: `No ${field.label}`, value: null, ...base };
 }
 
 function fieldLane(field: LaneField, value: string | number | boolean | undefined): LaneHead {
@@ -308,7 +344,7 @@ export function laneDropPatch(
     if (!id) return {};
     if (lane.value === null || lane.value === false) return { clear: [id] };
     if (lane.fieldKind === 'labels' && typeof lane.value === 'string') {
-      const rest = item ? itemLabels(item).filter((l) => l !== lane.value) : [];
+      const rest = item ? labelsIn(id, item).filter((l) => l !== lane.value) : [];
       return { set: { [id]: [lane.value, ...rest] } };
     }
     return { set: { [id]: lane.value } };
@@ -410,9 +446,14 @@ export function boardTakesType(
   return boardAddTypes(setup, types).some((t) => t.id === typeId);
 }
 
-export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): boolean {
+export function quickFilterMatches(
+  quick: QuickFilter | undefined,
+  item: Item,
+  // The project's type catalogue: Only Mine reads each card's notifying Person fields (notify-fields.ts).
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+): boolean {
   if (!quick) return true;
-  if (quick.mine && itemAssignee(item)?.id !== quick.mine) return false;
+  if (quick.mine && !isNotified(typeIn(types, item.type), item, quick.mine)) return false;
   if (quick.person && (itemAssignee(item)?.id ?? UNASSIGNED) !== quick.person) return false;
   if (quick.priority && item.fields['priority'] !== quick.priority) return false;
   if (quick.type && item.type !== quick.type) return false;
@@ -460,12 +501,15 @@ function laneOf(
   switch (by) {
     case 'field': {
       if (!field) return { key: NO_LANE, label: '', field: null, value: null };
+      if (field.kind === 'person') return personLane(field, item);
       const lane = fieldLane(field, laneValue(field, item));
       // A Card field's row is named by the linked card, with its colour dot when it has a Colour
       // (docs/specs/026-plan/item-types.md "Card fields").
       if (field.kind === 'card' && typeof lane.value === 'string') {
         const linked = linkedCard(items, lane.value);
-        const colour = linked ? itemColourOf(linked) : undefined;
+        const colour = linked
+          ? itemColourOf(linked, types.find((t) => t.id === linked.type))
+          : undefined;
         return {
           ...lane,
           label: linked ? itemTitle(linked) : 'Missing card',
@@ -520,6 +564,7 @@ function laneSort(
     // Card rows in the linked cards' number order, as Project rows are.
     if (by === 'field' && field?.kind === 'card')
       return (items.get(a.value as string)?.key ?? 0) - (items.get(b.value as string)?.key ?? 0);
+    if (by === 'field' && field?.kind === 'person') return a.label.localeCompare(b.label);
     if (by === 'field' && field) return fieldLaneOrder(field, a.value, b.value);
     // Statuses in the order the tab's boards name them, then any other by name.
     if (by === 'status') {
@@ -695,7 +740,7 @@ export function projectBoard(
           : []
         : scoped.filter((it) => itemStatus(it) === column.status);
     if (isDoneColumn(setup, column)) doneCount += all.length;
-    const shown = all.filter((it) => quickFilterMatches(quick, it));
+    const shown = all.filter((it) => quickFilterMatches(quick, it, types));
     return {
       column,
       count: all.length,

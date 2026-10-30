@@ -13,6 +13,7 @@ import {
 import { liveCards, phaseOf, type StatusPhase } from './plan-views';
 import { laneGroups, type LaneHead, type SwimlaneBy } from './board';
 import type { ItemTypeDef } from './item-types';
+import { BUILT_IN_DATES, type ViewDates } from './view-fields';
 
 // Days of axis either side of the dates, the shortest axis, and the longest that still ticks weeks.
 const GANTT_PAD_DAYS = 7;
@@ -49,9 +50,10 @@ function rowOf(
   kids: readonly Item[],
   phases: ReadonlyMap<string, StatusPhase>,
   today: number,
+  dates: ViewDates,
 ): GanttRow {
-  const start = dayNumber(project.fields['start']);
-  const due = dayNumber(project.fields['due']);
+  const start = dayNumber(project.fields[dates.start]);
+  const due = dayNumber(project.fields[dates.due]);
   const isDone = phaseOf(project, phases) === 'done';
   const done = kids.filter((k) => phaseOf(k, phases) === 'done').length;
   const overdue = !isDone && due !== undefined && due < today;
@@ -99,6 +101,8 @@ export function ganttModel(
   now: Date,
   // The card types the chart draws (ganttShownTypes: every type with a start and a due date unless it names others).
   types: readonly string[],
+  // The fields its bars run between (docs/specs/026-plan/plan-views.md "Dates").
+  dates: ViewDates = BUILT_IN_DATES,
 ): GanttModel {
   const accepted = new Set(types);
   const live = liveCards(items);
@@ -113,7 +117,7 @@ export function ganttModel(
   }
   const rows = live
     .filter((it) => accepted.has(it.type))
-    .map((p) => rowOf(p, kidsOf.get(p.id) ?? [], phases, today))
+    .map((p) => rowOf(p, kidsOf.get(p.id) ?? [], phases, today, dates))
     .sort((a, b) => {
       if (a.from === undefined) return b.from === undefined ? a.item.key - b.item.key : 1;
       if (b.from === undefined) return -1;
@@ -156,30 +160,32 @@ export function ganttDrag(
   row: Pick<GanttRow, 'mark' | 'from' | 'to' | 'item'>,
   edge: GanttEdge,
   days: number,
+  // The fields the chart reads its dates from: a drag writes them.
+  dates: ViewDates = BUILT_IN_DATES,
 ): { from: number; to: number; set: Record<string, string> } | null {
   if (row.mark === 'none' || row.from === undefined || row.to === undefined || days === 0)
     return null;
   if (row.mark !== 'bar') {
     const day = row.from + days;
-    return { from: day, to: day, set: { [row.mark]: dayKey(day) } };
+    return { from: day, to: day, set: { [dates[row.mark]]: dayKey(day) } };
   }
   const startIsLeft =
-    (dayNumber(row.item.fields['start']) ?? row.from) <=
-    (dayNumber(row.item.fields['due']) ?? row.to);
+    (dayNumber(row.item.fields[dates.start]) ?? row.from) <=
+    (dayNumber(row.item.fields[dates.due]) ?? row.to);
   if (edge === 'bar' || edge === 'mark') {
     const from = row.from + days;
     const to = row.to + days;
-    const [left, right] = startIsLeft ? ['start', 'due'] : ['due', 'start'];
+    const [left, right] = startIsLeft ? [dates.start, dates.due] : [dates.due, dates.start];
     return { from, to, set: { [left]: dayKey(from), [right]: dayKey(to) } };
   }
   if (edge === 'to') {
     const to = Math.max(row.from, row.to + days);
     if (to === row.to) return null;
-    return { from: row.from, to, set: { [startIsLeft ? 'due' : 'start']: dayKey(to) } };
+    return { from: row.from, to, set: { [startIsLeft ? dates.due : dates.start]: dayKey(to) } };
   }
   const from = Math.min(row.to, row.from + days);
   if (from === row.from) return null;
-  return { from, to: row.to, set: { [startIsLeft ? 'start' : 'due']: dayKey(from) } };
+  return { from, to: row.to, set: { [startIsLeft ? dates.start : dates.due]: dayKey(from) } };
 }
 
 // The chart's scales (docs/specs/026-plan/plan-views.md "Scale"): how many days the window shows.

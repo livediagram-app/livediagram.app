@@ -94,7 +94,11 @@ export interface ListedType {
     onCard?: boolean;
     // A card of the type must have a value for it (docs/specs/026-plan/item-types.md "Required fields").
     required?: boolean;
+    // A Person field that tells its person when a card is theirs (item-types.md "Notifies").
+    notifies?: boolean;
   }[];
+  // The Assignee tells no one (item-types.md "Notifies"); given only when switched off.
+  assigneeNotifies?: false;
   // The column a new card of it starts in, by name.
   defaultStatus?: string;
   // The columns its cards may move into, by name, in its order (docs/specs/026-plan/item-types.md "The statuses a
@@ -217,7 +221,9 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.kind === 'calculated' ? { calculation: f.calculation, readOnly: true as const } : {}),
       ...(f.onCard ? { onCard: true } : {}),
       ...(f.required ? { required: true } : {}),
+      ...(f.notifies ? { notifies: true } : {}),
     })),
+    ...(t.assigneeNotifies === false ? { assigneeNotifies: false as const } : {}),
     ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),
     statuses: typeStatusesOf(
       t,

@@ -76,6 +76,8 @@ export interface CustomFieldInput {
   onCard?: boolean;
   // Required (docs/specs/026-plan/item-types.md "Required fields"); never a checkbox.
   required?: boolean;
+  // A Person field tells its person when a card is theirs (item-types.md "Notifies"); only a Person field.
+  notifies?: boolean;
 }
 
 // An existing custom field edited in place: renamed, its options replaced (a Choice field), drawn on the card or not.
@@ -92,6 +94,8 @@ export interface CustomFieldEdit {
   onCard?: boolean;
   // true makes it required, false optional again.
   required?: boolean;
+  // A Person field: true tells its person when a card is theirs, false stops.
+  notifies?: boolean;
 }
 
 // A type's card face and panel (type-change-face.ts), as `add` and `set` take them.
@@ -99,6 +103,12 @@ interface FaceInput {
   display?: DisplayInput;
   tabs?: readonly TabInput[];
   detailsLabel?: string;
+}
+
+// Whether the Assignee tells its person when a card is theirs (item-types.md "Notifies"), as `add` and `set` take it;
+// absent leaves it as it is.
+interface NotifyInput {
+  assigneeNotifies?: boolean;
 }
 
 export type CardTypeChange =
@@ -112,7 +122,8 @@ export type CardTypeChange =
       defaultStatus?: string;
       // The statuses it uses, in order, by column name or status; absent, every status the boards name.
       statuses?: readonly string[];
-    } & FaceInput)
+    } & FaceInput &
+      NotifyInput)
   | ({
       op: 'set';
       type: string;
@@ -128,7 +139,8 @@ export type CardTypeChange =
       defaultStatus?: string | null;
       // The whole ordered list of the statuses it uses, by column name or status.
       statuses?: readonly string[];
-    } & FaceInput)
+    } & FaceInput &
+      NotifyInput)
   | { op: 'delete'; type: string }
   // Any of the five default types the project lacks, after its types (docs/specs/026-plan/plan-agents.md); its
   // older name, `restore_built_ins`, does the same.
@@ -242,6 +254,8 @@ function editedCustom(
   if (edit.onCard === false) delete next.onCard;
   if (edit.required === true) next.required = requirable(field);
   if (edit.required === false) delete next.required;
+  if (edit.notifies === true) next.notifies = notifiable(field);
+  if (edit.notifies === false) delete next.notifies;
   const edited = { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
   // Unticked, it leaves a Detailed Display of the type's own too.
   return edit.onCard === false ? withoutOnDetailed(edited, key) : edited;
@@ -362,6 +376,7 @@ function customOf(
     );
   if (input.onCard) field.onCard = true;
   if (input.required) field.required = requirable(field);
+  if (input.notifies) field.notifies = notifiable(field);
   return field;
 }
 
@@ -389,6 +404,22 @@ function requirable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
         : `"${field.label}" is calculated: the plan works it out, so it can't be required.`,
     );
   return true;
+}
+
+// `true`, for a Person field: no other kind names someone to tell.
+function notifiable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
+  if (field.kind !== 'person')
+    throw invalid(
+      `"${field.label}" is ${withArticle(field.kind)} field: only a person field notifies.`,
+    );
+  return true;
+}
+
+// The Assignee's Notifies switch: kept only as false, so a type that tells its assignee is stored as before.
+function withAssigneeNotifies(type: ItemTypeDef, on: boolean | undefined): ItemTypeDef {
+  if (on === undefined) return type;
+  const { assigneeNotifies: _was, ...rest } = type;
+  return on ? rest : { ...rest, assigneeNotifies: false };
 }
 
 // What a change's line adds when its Default State names a column no board has yet (docs/specs/026-plan/plan-agents.md
@@ -474,6 +505,7 @@ export function applyCardTypeChanges(
         const start = c.defaultStatus ? defaultStatusOf(c.defaultStatus, statuses) : null;
         if (start && 'status' in start) type = { ...type, defaultStatus: start.status };
         type = withFace(type, c);
+        type = withAssigneeNotifies(type, c.assigneeNotifies);
         type = withOnCardShown(
           type,
           (type.custom ?? []).filter((f) => f.onCard).map((f) => f.id),
@@ -544,6 +576,7 @@ export function applyCardTypeChanges(
         const start = c.defaultStatus ? defaultStatusOf(c.defaultStatus, statuses) : null;
         if (start && 'status' in start) type = { ...type, defaultStatus: start.status };
         type = withFace(type, c);
+        type = withAssigneeNotifies(type, c.assigneeNotifies);
         // The fields this change ticked Show on Card: placed on a type whose Display is its own.
         type = withOnCardShown(type, ticked);
         replace(type);

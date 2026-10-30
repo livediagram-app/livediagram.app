@@ -1304,6 +1304,12 @@ export type PlanViewRef = {
   filters?: CardSearchFilter[];
   // The statuses a chart counts (status ids; docs/specs/026-plan/plan-views.md "Statuses"); absent is every card.
   statuses?: string[];
+  // Fields by role (docs/specs/026-plan/plan-views.md "Dates", "Cards by Field"): the Date fields a Gantt chart or a
+  // calendar reads for its start and its due dates, and the Number field Cards by Field adds up; absent is Start, Due
+  // and counting cards.
+  startField?: string;
+  dueField?: string;
+  measure?: string;
   // Its own title in place of the view's name (a Visualisation tab's chart, named with its tab,
   // docs/specs/026-plan/plan-tabs.md "Names"); absent is the view's name.
   title?: string;

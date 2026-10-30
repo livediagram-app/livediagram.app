@@ -22,6 +22,14 @@ import { doneColumnsOf } from './done-columns';
 import { ITEM_TYPES, LEGACY_PARENT_GROUPING, type ItemTypeDef } from './item-types';
 import { isCardSearchFilters } from './card-search';
 import { isPlanViewStatuses } from './plan-view-statuses';
+import {
+  BUILT_IN_DATES,
+  isViewFieldId,
+  viewDatesOf,
+  viewMeasureOf,
+  type ViewDates,
+  type ViewFieldSettings,
+} from './view-fields';
 
 // The board widget kinds that read out rather than narrow a board or need its set-up
 // (docs/specs/026-plan/plan-views.md "Metrics"), in the palette's order.
@@ -64,20 +72,23 @@ export function isPlanViewId(value: unknown): value is PlanViewId {
 // The most card types a chart can name: the catalogue's own limit (ITEM_TYPES_MAX in type-catalogue.ts).
 export const GANTT_TYPES_MAX = 32;
 
-// The card types a Gantt chart can show (docs/specs/026-plan/plan-views.md "Card types"): those that offer both a
-// Start and a Due field, so every card of them can have a bar. A Project always can.
-export function ganttEligibleTypes(types: readonly ItemTypeDef[]): ItemTypeDef[] {
-  return types.filter((t) => t.fields.includes('start') && t.fields.includes('due'));
+// The card types a Gantt chart can show (docs/specs/026-plan/plan-views.md "Card types"): those that offer both its
+// Start and its Due field ("Dates"), so every card of them can have a bar. A Project always can.
+export function ganttEligibleTypes(
+  types: readonly ItemTypeDef[],
+  dates: ViewDates = BUILT_IN_DATES,
+): ItemTypeDef[] {
+  return types.filter((t) => t.fields.includes(dates.start) && t.fields.includes(dates.due));
 }
 
 // What a chart draws: the types it accepts that can be drawn. A type that loses Start or Due drops out until
 // it has them again; the setting keeps naming it.
 // A chart naming none draws every type that can have a bar: any card with a start and a due date.
 export function ganttShownTypes(
-  settings: { types?: readonly string[] } | undefined,
+  settings: ({ types?: readonly string[] } & ViewFieldSettings) | undefined,
   types: readonly ItemTypeDef[],
 ): string[] {
-  const eligible = ganttEligibleTypes(types).map((t) => t.id);
+  const eligible = ganttEligibleTypes(types, viewDatesOf(settings, types)).map((t) => t.id);
   if (!settings?.types || settings.types.length === 0) return eligible;
   const ok = new Set(eligible);
   return settings.types.filter((id) => ok.has(id));
@@ -114,6 +125,9 @@ export function isPlanViewSettings(value: unknown): boolean {
   )
     return false;
   if (v['rowOrder'] !== undefined && !isGanttRowOrder(v['rowOrder'])) return false;
+  // Fields by role (docs/specs/026-plan/plan-views.md "Dates", "Cards by Field"): a field's id each.
+  for (const key of ['startField', 'dueField', 'measure'])
+    if (v[key] !== undefined && !isViewFieldId(v[key])) return false;
   if (v['filters'] !== undefined && !isCardSearchFilters(v['filters'])) return false;
   if (v['statuses'] !== undefined && !isPlanViewStatuses(v['statuses'])) return false;
   const w = v['namesWidth'];
@@ -153,14 +167,28 @@ const VIEW_NEEDS: Partial<Record<PlanViewId, readonly string[]>> = {
   'metric:top-voted': ['votes'],
 };
 
-// The fields a view needs a type to offer, as its Card Types note names them.
-export function viewNeeds(view: PlanViewId): readonly string[] {
-  return VIEW_NEEDS[view] ?? [];
+// The fields a view needs a type to offer, as its Card Types note names them: its picked fields in place of the
+// built-ins they stand for ("Fields by role"), given its settings and the catalogue.
+export function viewNeeds(
+  view: PlanViewId,
+  settings?: ViewFieldSettings,
+  types: readonly ItemTypeDef[] = [],
+): readonly string[] {
+  const needs = VIEW_NEEDS[view] ?? [];
+  if (!settings) return needs;
+  const dates = viewDatesOf(settings, types);
+  const own = needs.map((f) => (f === 'start' ? dates.start : f === 'due' ? dates.due : f));
+  const measure = view === 'workload' ? viewMeasureOf(settings, types) : undefined;
+  return measure ? [...own, measure.id] : own;
 }
 
 // The card types a view can show: those offering every field it needs.
-export function viewEligibleTypes(view: PlanViewId, types: readonly ItemTypeDef[]): ItemTypeDef[] {
-  const needs = viewNeeds(view);
+export function viewEligibleTypes(
+  view: PlanViewId,
+  types: readonly ItemTypeDef[],
+  settings?: ViewFieldSettings,
+): ItemTypeDef[] {
+  const needs = viewNeeds(view, settings, types);
   return types.filter((t) => needs.every((f) => t.fields.includes(f)));
 }
 
@@ -168,11 +196,11 @@ export function viewEligibleTypes(view: PlanViewId, types: readonly ItemTypeDef[
 // start and a due date, docs/specs/026-plan/plan-views.md "Gantt Chart").
 export function viewChosenTypes(
   view: PlanViewId,
-  settings: { types?: readonly string[] } | undefined,
+  settings: ({ types?: readonly string[] } & ViewFieldSettings) | undefined,
   types: readonly ItemTypeDef[],
 ): readonly string[] {
   if (view === 'gantt' && !(settings?.types && settings.types.length > 0))
-    return ganttEligibleTypes(types).map((t) => t.id);
+    return ganttEligibleTypes(types, viewDatesOf(settings, types)).map((t) => t.id);
   return settings?.types && settings.types.length > 0 ? settings.types : types.map((t) => t.id);
 }
 
@@ -180,10 +208,10 @@ export function viewChosenTypes(
 // until it has it again.
 export function viewShownTypes(
   view: PlanViewId,
-  settings: { types?: readonly string[] } | undefined,
+  settings: ({ types?: readonly string[] } & ViewFieldSettings) | undefined,
   types: readonly ItemTypeDef[],
 ): string[] {
-  const eligible = new Set(viewEligibleTypes(view, types).map((t) => t.id));
+  const eligible = new Set(viewEligibleTypes(view, types, settings).map((t) => t.id));
   return viewChosenTypes(view, settings, types).filter((id) => eligible.has(id));
 }
 

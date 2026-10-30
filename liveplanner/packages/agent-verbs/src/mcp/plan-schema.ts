@@ -234,6 +234,16 @@ const calculationArg = z
       'done is a done column’s status. Children Done is a whole percentage, null with no children.',
   );
 
+// Notifies (docs/specs/026-plan/item-types.md "Notifies"): a person field, and the Assignee, telling their person.
+const notifiesArg = z
+  .boolean()
+  .describe(
+    'A person field only: true tells its person when a card is theirs (the Inbox, emails, Only Mine), false stops.',
+  );
+const assigneeNotifiesArg = z
+  .boolean()
+  .describe('false stops the Assignee telling its person when a card is theirs; true tells again.');
+
 const customField = z.object({
   name: z.string().min(1).describe('The field’s name, as cards show it ("Severity").'),
   kind: z
@@ -283,6 +293,7 @@ const customField = z.object({
     .describe(
       'Every new card of the type must give it a value, and no change may empty it (any kind but checkbox).',
     ),
+  notifies: notifiesArg.optional(),
 });
 
 const colourArg = z
@@ -346,6 +357,7 @@ const customFieldEdit = z.object({
     .boolean()
     .optional()
     .describe('true makes it required (any kind but checkbox), false optional again.'),
+  notifies: notifiesArg.optional(),
 });
 
 export const cardTypeChangeSchema = z.discriminatedUnion('op', [
@@ -374,6 +386,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     display: displayArg.optional(),
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
+    assigneeNotifies: assigneeNotifiesArg.optional(),
   }),
   z.object({
     op: z.literal('set'),
@@ -408,6 +421,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     display: displayArg.optional(),
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
+    assigneeNotifies: assigneeNotifiesArg.optional(),
   }),
   z.object({
     op: z.literal('delete'),
@@ -470,6 +484,10 @@ const listedCustom = z.object({
     .describe(
       'Required: change_items refuses a new card of the type without it, or a set emptying it.',
     ),
+  notifies: z
+    .boolean()
+    .optional()
+    .describe('A person field that tells its person when a card is theirs (the Inbox, emails).'),
 });
 
 const listedType = z.object({
@@ -497,6 +515,10 @@ const listedType = z.object({
     )
     .describe('Its item panel’s tabs; fields in none show under Details.'),
   detailsLabel: z.string().describe('What its panel calls Details.'),
+  assigneeNotifies: z
+    .literal(false)
+    .optional()
+    .describe('Given when its Assignee tells no one; the Assignee notifies otherwise.'),
 });
 
 const listedBoard = z.object({
