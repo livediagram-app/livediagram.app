@@ -87,14 +87,18 @@ level is Participant, `participate`).
 
 ## Behaviour and state
 
-An entry is **absent** or **live**. Its key is the token and the tab, so one token may be live on several tabs.
+An entry is **absent** or **live**. Its key is the token and the tab, and a token is live on one tab at most: a set
+or a refresh on another tab clears its other entries first (PR39).
 
 | From   | Event                                                       | To     | Guard / effect                                                                     |
 | ------ | ----------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------- |
 | absent | `PUT .../presence`                                          | live   | token present; `gateParticipate`; tab exists; room under `AGENT_PRESENCE_ROOM_MAX` |
 | live   | `PUT .../presence`                                          | live   | status and focus replaced (PR4); `expiresAt = now + ttl`                           |
-| absent | changeset applied or reverted with a token on the tab       | live   | no status, no focus; `expiresAt = now + AGENT_PRESENCE_TTL_MS`                     |
-| live   | changeset applied or reverted with that token on the tab    | live   | status and focus kept; `expiresAt = max(expiresAt, now + TTL)` (PR9)               |
+| absent | changeset applied or reverted with a token on the tab       | live   | no status, no focus; `expiresAt = now + AGENT_PRESENCE_ACTIVITY_TTL_MS`            |
+| absent | a token's read of the tab (`GET .../tabs/:tabId`), stamped  | live   | the same (PR38)                                                                    |
+| live   | changeset applied or reverted with that token on the tab    | live   | status and focus kept; `expiresAt = max(expiresAt, now + ACTIVITY_TTL)` (PR9)      |
+| live   | a token's read of that tab, stamped                         | live   | the same; nothing written when the expiry would move under a stamp (PR38)          |
+| live   | a set or refresh of that token on another tab               | absent | the other tab's entry goes live in its place (PR39)                                |
 | live   | `DELETE .../presence`                                       | absent | none                                                                               |
 | live   | `expiresAt <= now` (alarm, or the sweep on any roster read) | absent | logs `expired`                                                                     |
 | live   | `document-trashed` reaches the room                         | absent | every entry (PR15)                                                                 |
@@ -120,7 +124,8 @@ Invariants:
   array (PR14), so this holds by construction.
 - **I2** An entry's name and colour are the token owner's participant record at its last set or refresh, never a
   value from the request.
-- **I3** `expiresAt - now <= AGENT_PRESENCE_MAX_TTL_MS` at every write.
+- **I3** `expiresAt - now <= AGENT_PRESENCE_MAX_TTL_MS` after a set and `<= AGENT_PRESENCE_ACTIVITY_TTL_MS` after a
+  refresh.
 - **I4** `personTag` and `tokenId` never leave the room on the wire; `joins` names only presence ids the recipient
   already holds.
 - **I5** The room's one alarm is armed at the earliest entry's `expiresAt`, and cleared when there is none
@@ -267,14 +272,29 @@ Internal, reached only through the stub:
 - `DELETE /presence?token=<tokenId>&tab=<tabId>` answers 200 `{ cleared: boolean }`.
 
 The room broadcasts presence after a set, a refresh that creates an entry or changes its name, colour or level, a
-clear and a sweep that removed anything. A refresh that only moves `expiresAt` broadcasts nothing, since `expiresAt`
-is not on the wire. Every write ends in `armAlarm()`: `storage.setAlarm(min(deadlines))`, or `storage.deleteAlarm()`
+write that moved a token off another tab, a clear and a sweep that removed anything. A refresh that only moves
+`expiresAt` broadcasts nothing, since `expiresAt` is not on the wire, and one that would move it by less than
+`AGENT_PRESENCE_STAMP_MS` writes nothing either (PR38). Every write ends in `armAlarm()`:
+`storage.setAlarm(min(deadlines))`, or `storage.deleteAlarm()`
 when there is none. `alarm()` sweeps entries, broadcasts presence if any expired, then calls `armAlarm()` (PR29).
 
 `room-client.ts`: `putAgentPresence(env, liveDoc, body)` returns the room's answer or throws `RoomUnavailableError`;
 `deleteAgentPresence(env, liveDoc, tokenId, tabId)` likewise; `refreshAgentPresence(env, liveDoc, tabId, agent)`
-calls `putAgentPresence` with `mode: 'refresh'` and `ttlMs: AGENT_PRESENCE_TTL_MS`, logs and swallows every
-failure. The changeset route calls it in `waitUntil` after a token's changeset or revert is written.
+calls `putAgentPresence` with `mode: 'refresh'` and `ttlMs: AGENT_PRESENCE_ACTIVITY_TTL_MS`, logs and swallows every
+failure. The changeset route calls it in `waitUntil` after a token's changeset or revert is written
+(`refreshAfterWrite`), and the tab read after a token's read (`refreshAfterRead`).
+
+### Read stamps
+
+`refreshAfterRead(ctx, document, tabId, owner)` runs on `GET /api/documents/:id/tabs/:tabId` (any view) once the read
+gate has passed and the tab exists, for a token caller only. It first asks `agentPresenceStamps.shouldStamp(id, tokenId,
+tabId, now)` (`@liveworkspace/api-kit/agent-presence-stamps`), an in-memory map per isolate keyed by document and
+token, bounded at `AGENT_PRESENCE_STAMPS_MAX` with the oldest let go: it answers no for the tab last stamped inside
+`AGENT_PRESENCE_STAMP_MS`, and yes for any other tab, so the agent follows its reads. Only on a yes does it look up
+the owner's participant record, the person tag and the token's level (`gateEdit`, as an explicit set's, PR27), all
+in `waitUntil`, and call `refreshAgentPresence`. `refreshAfterWrite` notes its tab in the same map. The room keeps
+its own stamp (PR38), so a second isolate's read costs a room call and no storage write. A failure logs
+`[agent-presence] read stamp failed` and the read stands.
 
 The `presence` frame:
 
@@ -310,19 +330,18 @@ none, and the room pins it on the session attachment as `personTag`.
   without `agents` passes `[]`.
 - `splitPresenceFrame(frame)` returns `{ participants, agents }` with every agent entry validated (shape, string
   clamps) and invalid ones dropped.
-- `foldAgentPresence({ participantsByTab, agents, selfParticipant, activeId, tabIds, now })` returns a new map.
-  Per agent entry whose `tabId` is a known tab, grouped by `person` with the last entry's status winning: when
-  `self` and the tab is active, `statusLine` goes on the self row; else when a row on that tab has an id in `joins`,
-  on that row; else a row `{ id, name, color, role, status: 'online', lastActiveAt: now, statusLine, agent: true }`
-  is appended to the tab's bucket. Entries on unknown tabs are skipped (PR16). The owner's own agent on another tab
-  is such a row, in their name.
+- `foldAgentPresence({ participantsByTab, agents, tabIds, now })` returns a new map. Per agent entry whose `tabId`
+  is a known tab, grouped by `person` with the last entry's status winning, a row
+  `{ id, name: agentRowName(name), color, role, status: 'online', lastActiveAt: now, statusLine, agent: true }` is
+  appended to the tab's bucket, beside the owner's own row when they are there (`joins` and `self` stay on the wire
+  and fold nothing). `agentRowName(owner)` is "{owner}'s Agent". Entries on unknown tabs are skipped (PR16).
 - `buildParticipantsByTab` takes `agentsPresent: boolean`: a document neither shareable nor in a team, whose map is
   otherwise empty, builds it (self on the active tab) while any agent entry is present, so a personal document's
   stack shows its owner's agent.
 - `buildAgentFocusByElement(agents, activeId, elementIds)` returns `Map<elementId, { name, color }[]>` for entries on
   the active tab, ids missing from the tab skipped, once per person. It reaches the canvas through `AgentFocusContext`,
   apart from `remoteSelectionsByElement`, and never reaches the selection lock (`lockedByOther`).
-- `withoutAgentRows(rows)` drops standalone agent rows for the Collaborators count.
+- `withoutAgentRows(rows)` drops agent rows for the Collaborators count.
 - `apiSetThreadResolved(ownerId, documentId, tabId, commentId, resolved, shareCode)`: a session that may participate
   but not edit calls it from `resolveThread` / `unresolveThread` with the thread's first comment id, as its add calls
   `apiAddComment`; a session that may edit keeps the room path. A refused call puts the thread back (PR36).
@@ -403,6 +422,10 @@ setAt, expiresAt }`.
   128 characters, an 80-character status), `agents` adds under 96 KiB to a frame, inside the 256 KiB frame budget.
 - An entry's storage value is under 4 KiB, far under the 128 KiB value limit (PR13).
 - Changeset refresh: one room call per applied token changeset, off the response path.
+- Read stamp: one in-memory map lookup per token read of a tab; at most one room call per agent, document and tab
+  per `AGENT_PRESENCE_STAMP_MS` per isolate, off the response path, and at most one storage write per entry per
+  stamp in the room (PR38). The map holds at most `AGENT_PRESENCE_STAMPS_MAX` agents per isolate. Measured: 100,000
+  stamps against a full map in about 30 ms, and 50 refreshes inside one stamp write storage once.
 - Comment verbs: one tab read, one compare-and-swap write (two of each on a lost race) and one relay.
 - The list: one `instr` query naming the tabs that hold a thread, then one read per such tab, one tab in memory
   at a time (each at most `MAX_TAB_BYTES`). A document with T threaded tabs costs 1 + T queries.
@@ -412,12 +435,12 @@ setAt, expiresAt }`.
 The status line shows in the hover card, the Collaborators row and the avatar's accessible name, never as text in
 the tab pill.
 
-- A folded agent adds nothing to the stack: the owner's avatar stays, and its hover card description reads
-  "{status line} · {status} · Active {when}". Without a status line the card is unchanged. The owner sees their own
-  agent's status this way on their own avatar when both are on the tab.
-- A standalone agent row is an avatar in the owner's name and colour (initials, as the spec says),
-  always online (PR32); its hover card title carries the badge `participantBadges` gives the entry's level, and its
-  description reads "{status line}", or "Online" without one.
+- An agent row is an avatar in the owner's colour wearing the agent mark (`AgentIcon`, a filled four-point star at
+  62% of the disc) instead of initials, and never a picture, always online (PR32). Its name is "{owner}'s Agent".
+  Its hover card title carries the badges `participantBadges` gives it, "Agent" then its level, and its description
+  reads "{status line}", or "Working on this tab" without one (`agentRowDetail`).
+- Everyone on the document sees it, its owner included: the owner's own avatar is unchanged and the agent's sits
+  beside it.
 - Two tokens of one owner on one tab are one row, showing the status set last.
 - A personal document's stack, otherwise hidden, shows while its owner's agent is present.
 - The Collaborators modal lists agent rows under their tab, with the status line as the row's second line, no
@@ -427,7 +450,7 @@ the tab pill.
 
 ## Accessibility
 
-- The avatar's accessible name appends the status line: "Webber (Online), adding payment service".
+- The avatar's accessible name appends the status line: "Webber's Agent (Online), adding payment service".
 - Focus rings are `aria-hidden`: the same information is in the avatar's name and the modal row.
 - The ring's halo gives the 3:1 non-text contrast of WCAG 1.4.11 against the canvas whatever the owner's colour.
 - Rings never animate, so reduced motion needs nothing; an avatar's pop-in is the stack's existing animation.
@@ -467,43 +490,47 @@ client's copy.
 
 ## Testing
 
-| Spec rule                                                        | Test                                                                                                                                                                            |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Presence and comments carry the owner's name and colour          | `apps/api/src/routes/agent-presence-routes.test.ts`, `comment-routes.test.ts`                                                                                                   |
-| The token id is recorded on every comment, never shown as a name | `comment-routes.test.ts`, `apps/api/src/comments.test.ts`, `packages/document/src/comments.test.ts`                                                                             |
-| Appears in the stack as its owner, with a status line            | `apps/editor/lib/agent-presence-rows.test.ts` (also a personal document, two tokens of one owner, the owner's own agent)                                                        |
-| Owner with the tab open: shown once, status beside them          | `agent-presence-rows.test.ts`, `../packages/api-kit/src/room-agent-presence.test.ts` (`agentRosterFor`)                                                                         |
-| Every changeset refreshes for `AGENT_PRESENCE_TTL_MS`            | `room-agent-presence.test.ts`; the changeset route test (agent-changesets)                                                                                                      |
-| PUT `status` (80), `focus` (20), `ttl` (max); DELETE clears      | `packages/api-schema/src/agent-presence.test.ts`, `agent-presence-routes.test.ts`                                                                                               |
-| The agent holds no socket                                        | `apps/api/src/document-room.test.ts` (agent presence) (entries with no socket, restored on wake)                                                                                |
-| The room expires entries on their ttl                            | `document-room.test.ts` (alarm, sweep)                                                                                                                                          |
-| Never holds an element                                           | `document-room.test.ts` (`/selections`), `agent-presence-rows.test.ts` (lock map)                                                                                               |
-| Never in a head count                                            | `agent-presence-rows.test.ts` (`splitPresenceFrame`), `collaborator-roster.test.ts`, `document-room.test.ts` (multiplayer)                                                      |
-| An agent comments through the comment endpoints                  | `comment-routes.test.ts` (token caller)                                                                                                                                         |
-| Reply, resolve, reopen, each relayed as an `el-delta`            | `comment-routes.test.ts` (fake room stub records the deltas)                                                                                                                    |
-| Agents and people use the same endpoints                         | `comment-routes.test.ts` (session, guest Participant link, token); `apps/editor/lib/api/tabs.test.ts`                                                                           |
-| The cross-tab list, status filter, ref and label                 | `comment-routes.test.ts`; `apps/api/src/db/tabs.test.ts` (`tabIdsWithComments`)                                                                                                 |
-| Agents cannot be mentioned                                       | `../packages/model-core/src/comment-mentions.test.ts` (closed mention shape)                                                                                                    |
-| Levels: reading, participation (comments, presence), changesets  | `apps/api/src/index.test.ts` (choke point), `comment-routes.test.ts`, `agent-presence-routes.test.ts`                                                                           |
-| The two constants                                                | `packages/api-schema/src/agent-presence.test.ts` pins values and order                                                                                                          |
-| Logs and telemetry                                               | the route and room tests assert each fingerprint; `server-emitted-events.test.ts`                                                                                               |
-| Person tag through the ticket                                    | `routes/document-room-routes.test.ts`                                                                                                                                           |
-| OpenAPI parity                                                   | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                                                                 |
-| End to end, dark mode                                            | `apps/editor/e2e/signed-in/agent-presence.spec.ts`: a token sets presence, the avatar and status show, a ring draws, a short ttl expires it, a REST reply and resolve land live |
+| Spec rule                                                         | Test                                                                                                                                                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Presence and comments carry the owner's name and colour           | `apps/api/src/routes/agent-presence-routes.test.ts`, `comment-routes.test.ts`                                                                                                   |
+| The token id is recorded on every comment, never shown as a name  | `comment-routes.test.ts`, `apps/api/src/comments.test.ts`, `packages/document/src/comments.test.ts`                                                                             |
+| Appears as "{owner}'s Agent" beside its owner, with a status line | `apps/editor/lib/agent-presence-rows.test.ts` (also a personal document, two tokens of one owner, the owner's own agent beside them)                                            |
+| Owner with the tab open: they and their agent side by side        | `agent-presence-rows.test.ts`, `../packages/api-kit/src/room-agent-presence.test.ts` (`agentRosterFor`)                                                                         |
+| Every changeset refreshes for `AGENT_PRESENCE_ACTIVITY_TTL_MS`    | `room-agent-presence.test.ts`; the changeset route test (agent-changesets)                                                                                                      |
+| PUT `status` (80), `focus` (20), `ttl` (max); DELETE clears       | `packages/api-schema/src/agent-presence.test.ts`, `agent-presence-routes.test.ts`                                                                                               |
+| The agent holds no socket                                         | `apps/api/src/document-room.test.ts` (agent presence) (entries with no socket, restored on wake)                                                                                |
+| The room expires entries on their ttl                             | `document-room.test.ts` (alarm, sweep)                                                                                                                                          |
+| Reads stamp presence, throttled; one tab per agent                | `packages/api-kit/src/agent-presence-stamps.test.ts`, `packages/api-kit/src/room-agent-presence.test.ts` (worst-case burst, a move between tabs)                                |
+| Never holds an element                                            | `document-room.test.ts` (`/selections`), `agent-presence-rows.test.ts` (lock map)                                                                                               |
+| Never in a head count                                             | `agent-presence-rows.test.ts` (`splitPresenceFrame`), `collaborator-roster.test.ts`, `document-room.test.ts` (multiplayer)                                                      |
+| An agent comments through the comment endpoints                   | `comment-routes.test.ts` (token caller)                                                                                                                                         |
+| Reply, resolve, reopen, each relayed as an `el-delta`             | `comment-routes.test.ts` (fake room stub records the deltas)                                                                                                                    |
+| Agents and people use the same endpoints                          | `comment-routes.test.ts` (session, guest Participant link, token); `apps/editor/lib/api/tabs.test.ts`                                                                           |
+| The cross-tab list, status filter, ref and label                  | `comment-routes.test.ts`; `apps/api/src/db/tabs.test.ts` (`tabIdsWithComments`)                                                                                                 |
+| Agents cannot be mentioned                                        | `../packages/model-core/src/comment-mentions.test.ts` (closed mention shape)                                                                                                    |
+| Levels: reading, participation (comments, presence), changesets   | `apps/api/src/index.test.ts` (choke point), `comment-routes.test.ts`, `agent-presence-routes.test.ts`                                                                           |
+| The two constants                                                 | `packages/api-schema/src/agent-presence.test.ts` pins values and order                                                                                                          |
+| Logs and telemetry                                                | the route and room tests assert each fingerprint; `server-emitted-events.test.ts`                                                                                               |
+| Person tag through the ticket                                     | `routes/document-room-routes.test.ts`                                                                                                                                           |
+| OpenAPI parity                                                    | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                                                                 |
+| End to end, dark mode                                             | `apps/editor/e2e/signed-in/agent-presence.spec.ts`: a token sets presence, the avatar and status show, a ring draws, a short ttl expires it, a REST reply and resolve land live |
 
 Room and route tests run on the in-memory storage and SQLite fakes with a fixed clock; none waits on a real timer.
 
 ## Constants and configuration
 
-| Constant                    | Value  | Provenance                                                | Safe range      |
-| --------------------------- | ------ | --------------------------------------------------------- | --------------- |
-| `AGENT_PRESENCE_TTL_MS`     | 30000  | Spec                                                      | 10000 to 60000  |
-| `AGENT_PRESENCE_MAX_TTL_MS` | 120000 | Spec                                                      | 60000 to 300000 |
-| `AGENT_PRESENCE_MIN_TTL_MS` | 1000   | One second: below it an entry cannot reach a screen (PR5) | 500 to 5000     |
-| `AGENT_PRESENCE_STATUS_MAX` | 80     | Spec                                                      | 40 to 120       |
-| `AGENT_PRESENCE_FOCUS_MAX`  | 20     | Spec                                                      | 1 to 50         |
-| `AGENT_PRESENCE_ROOM_MAX`   | 32     | Keeps `agents` under 96 KiB of a 256 KiB frame (PR12)     | 8 to 64         |
-| `COMMENT_TEXT_MAX`          | 2000   | The add route's existing literal, now named               | 500 to 5000     |
+| Constant                         | Value  | Provenance                                                            | Safe range      |
+| -------------------------------- | ------ | --------------------------------------------------------------------- | --------------- |
+| `AGENT_PRESENCE_TTL_MS`          | 30000  | Spec                                                                  | 10000 to 60000  |
+| `AGENT_PRESENCE_MAX_TTL_MS`      | 120000 | Spec                                                                  | 60000 to 300000 |
+| `AGENT_PRESENCE_ACTIVITY_TTL_MS` | 180000 | Spec: "a few minutes" after the last read or write                    | 60000 to 600000 |
+| `AGENT_PRESENCE_STAMP_MS`        | 30000  | Spec: one room write per agent and tab per window (PR38)              | 10000 to 60000  |
+| `AGENT_PRESENCE_STAMPS_MAX`      | 1000   | Agents an isolate remembers; a forgotten one costs one more room call | 100 to 10000    |
+| `AGENT_PRESENCE_MIN_TTL_MS`      | 1000   | One second: below it an entry cannot reach a screen (PR5)             | 500 to 5000     |
+| `AGENT_PRESENCE_STATUS_MAX`      | 80     | Spec                                                                  | 40 to 120       |
+| `AGENT_PRESENCE_FOCUS_MAX`       | 20     | Spec                                                                  | 1 to 50         |
+| `AGENT_PRESENCE_ROOM_MAX`        | 32     | Keeps `agents` under 96 KiB of a 256 KiB frame (PR12)                 | 8 to 64         |
+| `COMMENT_TEXT_MAX`               | 2000   | The add route's existing literal, now named                           | 500 to 5000     |
 
 No new environment variable or binding, and no stored column.
 

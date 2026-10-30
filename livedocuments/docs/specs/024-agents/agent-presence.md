@@ -3,24 +3,29 @@
 Covers the comment endpoints and their listing, comment token ids, agent presence in the api, the room and the
 editor, and the CLI's `comment`, `presence`, `wait` and `watch`.
 
-An agent acts as the person whose token it holds. People see its work, its presence and its comments as that
-person's, and comments are how people and agents talk on the canvas when nobody is chatting.
+An agent acts as the person whose token it holds. People see its work and its comments as that person's, and its
+presence as that person's agent, and comments are how people and agents talk on the canvas when nobody is chatting.
 
 ## Attribution
 
-- An agent's changesets, comments and presence carry the name and colour of the token's owner. "Webber changed 3
-  elements" reads the same whether Webber or his agent made the change.
+- An agent's changesets and comments carry the name and colour of the token's owner, and its presence the owner's
+  colour and the name "{owner}'s Agent". "Webber changed 3 elements" reads the same whether Webber or his agent made
+  the change.
 - The token id is recorded on every changeset and comment for the audit trail (logs, `changeset ls`, revoking a
   token), and never shown as a name.
 
 ## Presence
 
-- An agent at work appears in the tab's presence stack as its owner, with an optional status line ("adding payment
-  service"). When the owner also has the tab open, the stack shows them once and the status line beside them.
+- An agent at work appears in the tab's presence stack as an avatar of its own, named "{owner}'s Agent" ("Webber's
+  Agent"), in its owner's colour and wearing the agent mark instead of initials, with an optional status line
+  ("adding payment service"). Everyone on the document sees it, its owner included: when the owner also has the tab
+  open, the stack shows the owner and their agent side by side.
 - The status line shows in the avatar's hover card, its row in the Collaborators modal and its accessible name, never
-  as text in the tab pill. An agent's avatar carries the owner's name and colour.
-- The owner sees their own agent's status on their own avatar when both are on the tab, and as an avatar in their
-  name on any other tab.
+  as text in the tab pill. Without one, the hover card and the row say "Working on this tab". The hover card and the
+  row carry an "Agent" badge before the agent's level.
+- An agent shows on one tab only: the last it read, changed or set presence on. Reading or changing another tab
+  moves it there.
+- It stays for a few minutes after it last read or changed the tab (`AGENT_PRESENCE_ACTIVITY_TTL_MS`), then leaves.
 - Two tokens of one owner on one tab show as one avatar, with the status set last.
 - A personal document's stack, otherwise hidden, shows while its owner's agent is present.
 - The Collaborators modal lists an agent under its tab with its status line, offers no Follow, and leaves it out of
@@ -28,7 +33,10 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - The room recognises the owner's own sessions by a per-document tag derived from the owner id, held inside the room
   and never sent to a socket, so no owner id reaches the room.
 - **Every changeset** applied or reverted with a token refreshes that token's presence on that tab for
-  `AGENT_PRESENCE_TTL_MS`. A dry run or a refused changeset refreshes nothing.
+  `AGENT_PRESENCE_ACTIVITY_TTL_MS`. A dry run or a refused changeset refreshes nothing.
+- **Every read** of a tab with a token (`GET /api/documents/:id/tabs/:tabId`, any view, as the MCP and the CLI read a
+  tab) refreshes it the same way, at most once per agent, document and tab every `AGENT_PRESENCE_STAMP_MS`: a read
+  inside that window, on the tab the agent already shows on, writes nothing. A session's read refreshes nothing.
 - An agent may set presence explicitly: `PUT /api/documents/:id/tabs/:tabId/presence` with `status` (up to 80
   characters), `focus` (up to 20 element ids, shown with a ring in the owner's colour) and `ttl` (up to
   `AGENT_PRESENCE_MAX_TTL_MS`). `DELETE` on the same path clears it. The agent holds no socket.
@@ -61,10 +69,12 @@ point. It becomes the Participant check when share roles land, and no route chan
 
 ## Limits
 
-| Constant                    | Value  | Why                                                      |
-| --------------------------- | ------ | -------------------------------------------------------- |
-| `AGENT_PRESENCE_TTL_MS`     | 30000  | Outlasts the gap between an agent's commands in one task |
-| `AGENT_PRESENCE_MAX_TTL_MS` | 120000 | An agent that stops refreshing leaves within two minutes |
+| Constant                         | Value  | Why                                                                        |
+| -------------------------------- | ------ | -------------------------------------------------------------------------- |
+| `AGENT_PRESENCE_TTL_MS`          | 30000  | An explicit set's default: outlasts the gap between an agent's commands    |
+| `AGENT_PRESENCE_MAX_TTL_MS`      | 120000 | An agent that sets presence and stops refreshing leaves within two minutes |
+| `AGENT_PRESENCE_ACTIVITY_TTL_MS` | 180000 | An agent stays a few minutes after it last read or changed the tab         |
+| `AGENT_PRESENCE_STAMP_MS`        | 30000  | A burst of reads costs one room write per agent and tab                    |
 
 ## Observability
 
