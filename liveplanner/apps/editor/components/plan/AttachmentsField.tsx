@@ -14,7 +14,7 @@ import {
   type ItemAttachment,
   type ItemFieldValue,
 } from '@liveplanner/items';
-import { TrashIcon, lucideGlyph } from '@liveplanner/ui';
+import { Tooltip, TrashIcon, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideDownload,
   lucideExternalLink,
@@ -29,12 +29,7 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import {
-  IMAGE_ACCEPT,
-  IMAGE_ROW_EDGE,
-  apiImageOriginal,
-  type ImagesScope,
-} from '@/lib/api/images';
+import { IMAGE_ACCEPT, IMAGE_ROW_EDGE, apiImageOriginal, type ImagesScope } from '@/lib/api/images';
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { imageFilesOf, useAttachmentUpload } from './use-attachment-upload';
@@ -51,9 +46,7 @@ const NO_ATTACHMENTS: readonly ItemAttachment[] = [];
 /** Whether an element takes typed text, so a paste there is text, never a picture for the card. */
 export function takesText(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  return (
-    target.isContentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA'
-  );
+  return target.isContentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
 }
 
 export function AttachmentsField({
@@ -256,41 +249,50 @@ function AttachmentRow({
   };
   const size = attachmentSizeText(a.size);
   return (
-    <li ref={ref} className="group/row relative flex items-center gap-1 bg-white pr-1 dark:bg-slate-900">
-      <button
-        type="button"
-        disabled={!scope}
-        title={`Open ${a.name}`}
-        aria-label={`Open ${a.name}, ${size}${a.cover ? ', the cover' : ''}`}
-        onClick={() => scope && void openAttachment(scope, a)}
-        className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-2 py-2 text-left transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400/60 disabled:cursor-default motion-reduce:transition-none pointer-coarse:min-h-11 dark:hover:bg-slate-800/60"
-      >
-        <span
-          aria-hidden
-          className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-100 text-slate-400 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:ring-slate-700"
+    <li
+      ref={ref}
+      className="group/row relative flex items-center gap-1 bg-white pr-1 dark:bg-slate-900"
+    >
+      <Tooltip label={`Open ${a.name}`}>
+        <button
+          type="button"
+          disabled={!scope}
+          aria-label={`Open ${a.name}, ${size}${a.cover ? ', the cover' : ''}`}
+          onClick={() => scope && void openAttachment(scope, a)}
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-2 py-2 text-left transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400/60 disabled:cursor-default motion-reduce:transition-none pointer-coarse:min-h-11 dark:hover:bg-slate-800/60"
         >
-          {shown.state === 'shown' ? (
-            <img src={shown.url} alt="" className="h-full w-full object-cover" draggable={false} />
-          ) : shown.state === 'missing' ? (
-            <BrokenIcon />
-          ) : (
-            <span className="h-full w-full animate-pulse bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-700/60" />
-          )}
-        </span>
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">
-            {a.name}
+          <span
+            aria-hidden
+            className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-100 text-slate-400 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:ring-slate-700"
+          >
+            {shown.state === 'shown' ? (
+              <img
+                src={shown.url}
+                alt=""
+                className="h-full w-full object-cover"
+                draggable={false}
+              />
+            ) : shown.state === 'missing' ? (
+              <BrokenIcon />
+            ) : (
+              <span className="h-full w-full animate-pulse bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-700/60" />
+            )}
           </span>
-          <span className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-            {size}
-            {a.cover ? (
-              <span className="rounded bg-brand-50 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
-                Cover
-              </span>
-            ) : null}
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">
+              {a.name}
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+              {size}
+              {a.cover ? (
+                <span className="rounded bg-brand-50 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
+                  Cover
+                </span>
+              ) : null}
+            </span>
           </span>
-        </span>
-      </button>
+        </button>
+      </Tooltip>
       <EllipsisTriggerButton
         ref={setButton}
         size="md"

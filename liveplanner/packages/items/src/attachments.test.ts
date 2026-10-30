@@ -12,7 +12,11 @@ import {
   type ItemAttachment,
 } from './attachments';
 import { validateFields } from './fields';
-import { ITEM_ATTACHMENTS_MAX, ITEM_ATTACHMENT_BYTES_MAX, ITEM_ATTACHMENT_NAME_MAX } from './limits';
+import {
+  ITEM_ATTACHMENTS_MAX,
+  ITEM_ATTACHMENT_BYTES_MAX,
+  ITEM_ATTACHMENT_NAME_MAX,
+} from './limits';
 import { resolveFields } from './plan-names';
 import { ITEM_TYPES } from './item-types';
 import { tabsOf } from './type-catalogue';
@@ -103,9 +107,7 @@ describe('a card’s pictures', () => {
 
   it('sets, moves and clears the cover, and removes a picture', () => {
     const list = itemAttachments(item);
-    expect(attachmentCover({ fields: { attachments: withCover(list, 'a') } as never })?.id).toBe(
-      'a',
-    );
+    expect(attachmentCover({ fields: { attachments: withCover(list, 'a') } })?.id).toBe('a');
     expect(withCover(list, null).some((a) => a.cover)).toBe(false);
     expect(withoutAttachment(list, 'b').map((a) => a.id)).toEqual(['a']);
     expect(attachmentsValue([])).toBeUndefined();

@@ -5,7 +5,7 @@
 // another, then every one that landed joins the end of the card's list in one write (one undo step), read from the
 // card as it is then, so a change made meanwhile is kept. A file past the card's cap, or one refused, is skipped and
 // said; the rest still land.
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ITEM_ATTACHMENTS_MAX,
   attachmentName,
@@ -25,7 +25,6 @@ export const ATTACHMENTS_OFFLINE = 'Save this plan to your account to add images
 const IMAGE_UNAVAILABLE = "Image uploads aren't available here.";
 const IMAGE_NOT_SAVED = "The images couldn't be added to the card. Try again.";
 
-
 export type AttachmentUpload = {
   // Whether this person may add pictures to the card here (a writer, a plan the server holds, a media service).
   canAdd: boolean;
@@ -36,7 +35,6 @@ export type AttachmentUpload = {
   error: string | null;
   // Answers what went wrong, in words to show (null: every file landed).
   add: (files: readonly File[]) => Promise<string | null>;
-  clearError: () => void;
 };
 
 /** The image files among `list` (a drop, a paste, a picker), in order. */
@@ -60,7 +58,9 @@ export function useAttachmentUpload(
   const [unavailable, setUnavailable] = useState(false);
   // The plan as it is now, read when the uploads end (the closure's would be stale by then).
   const planRef = useRef(plan);
-  planRef.current = plan;
+  useEffect(() => {
+    planRef.current = plan;
+  });
   const blocked = offline ? ATTACHMENTS_OFFLINE : unavailable ? IMAGE_UNAVAILABLE : null;
   const canAdd = canEdit && !!scope && !blocked;
 
@@ -90,7 +90,8 @@ export function useAttachmentUpload(
             type: isAcceptedAttachmentType(image.contentType) ? image.contentType : 'image/png',
           });
         } catch (err) {
-          const refused = err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
+          const refused =
+            err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
           if (refused.code === 'images_unavailable') setUnavailable(true);
           failure ??= refused.message;
         } finally {
@@ -124,6 +125,5 @@ export function useAttachmentUpload(
     uploading,
     error,
     add,
-    clearError: useCallback(() => setError(null), []),
   };
 }

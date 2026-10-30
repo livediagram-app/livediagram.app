@@ -13,12 +13,7 @@ import {
   lucideRefreshCw,
   lucideTrash2,
 } from '@liveworkspace/icons/lucide';
-import {
-  IMAGE_ACCEPT,
-  IMAGE_THUMB_EDGE,
-  ImageUploadError,
-  apiUploadImage,
-} from '@/lib/api/images';
+import { IMAGE_ACCEPT, IMAGE_THUMB_EDGE, ImageUploadError, apiUploadImage } from '@/lib/api/images';
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { useImageUrl, useSeen } from './use-image-url';

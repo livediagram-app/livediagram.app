@@ -256,6 +256,59 @@ describe('the card panel, for an Editor or a Participant', () => {
   });
 });
 
+describe('the card panel, edges', () => {
+  it('opens the picker from the zone, and lets go of a drag that leaves', () => {
+    field([pic('a')]);
+    const input = document.querySelector('input[type=file]') as HTMLInputElement;
+    const click = vi.spyOn(input, 'click').mockImplementation(() => {});
+    fireEvent.click(screen.getByRole('button', { name: /Add Images/ }));
+    expect(click).toHaveBeenCalled();
+    const list = screen.getByRole('list', { name: 'Attachments' });
+    fireEvent.dragOver(list, { dataTransfer: { types: ['Files'] } });
+    expect(list.className).toContain('ring-brand-500');
+    fireEvent.dragLeave(list.parentElement!, { relatedTarget: document.body });
+    expect(list.className).not.toContain('ring-brand-500');
+  });
+
+  it('opens from the menu, and in a tab of its own when the first was blocked', async () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    Object.assign(URL, { createObjectURL: () => 'blob:whole', revokeObjectURL: vi.fn() });
+    field([pic('a')]);
+    fireEvent.click(screen.getByRole('button', { name: 'More for a.png' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Open' }));
+    await flush();
+    expect(open).toHaveBeenLastCalledWith('blob:whole', '_blank');
+    open.mockRestore();
+  });
+
+  it('says so when the card refuses the pictures', async () => {
+    patchItem.mockResolvedValueOnce(false);
+    field(undefined);
+    const input = document.querySelector('input[type=file]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file('a.png')] } });
+    await flush();
+    expect(screen.getByRole('alert').textContent).toContain("couldn't be added");
+  });
+});
+
+describe('the Display’s example card', () => {
+  it('draws the cover as a placeholder where Cover Image sits', () => {
+    item = make([pic('a')]);
+    setPlan();
+    render(
+      <PlanCardFace
+        item={item}
+        palette={PALETTE}
+        fields={['cover']}
+        typeOverride={SHOTS}
+        edit={{ slot: (_slot, bits) => bits, bit: (_f, node) => node }}
+      />,
+    );
+    expect(screen.getByText('Cover image')).toBeTruthy();
+    expect(screen.getByText('Cover Image')).toBeTruthy();
+  });
+});
+
 describe('the card panel, for a Viewer', () => {
   it('shows the pictures to open and save, with no zone and no changes in the menu', async () => {
     field([pic('a', true)], false);
@@ -329,7 +382,12 @@ describe('on the card face', () => {
     item = make([pic('a')]);
     setPlan();
     render(
-      <PlanCardFace item={item} palette={PALETTE} fields={['attachments', 'cover']} size="minimal" />,
+      <PlanCardFace
+        item={item}
+        palette={PALETTE}
+        fields={['attachments', 'cover']}
+        size="minimal"
+      />,
     );
     render(<PlanCardFace item={item} palette={PALETTE} fields={['attachments', 'cover']} />);
     await flush();
@@ -369,6 +427,14 @@ describe('a file dropped on a board’s card', () => {
     expect(patchItem).toHaveBeenCalledWith(item.id, {
       set: { attachments: [{ id: 'img-1', name: 'drop.png', size: 2048, type: 'image/png' }] },
     });
+  });
+
+  it('lets the ring go when the file leaves', () => {
+    card();
+    const el = document.querySelector('[data-plan-card]')!;
+    fireEvent.dragOver(el, { dataTransfer: { types: ['Files'] } });
+    fireEvent.dragLeave(el, { relatedTarget: document.body });
+    expect(screen.queryByText('Drop to Attach')).toBeNull();
   });
 
   it('is said in a toast when the plan is in This Browser', async () => {

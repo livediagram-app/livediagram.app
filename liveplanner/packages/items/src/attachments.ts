@@ -36,8 +36,10 @@ export function attachmentName(name: string): string {
 function attachmentOf(v: unknown): ItemAttachment | undefined {
   if (!isObj(v)) return undefined;
   const { id, name, size, type, cover } = v;
-  if (typeof id !== 'string' || id.length === 0 || id.length > ITEM_ATTACHMENT_ID_MAX) return undefined;
-  if (typeof name !== 'string' || Array.from(name).length > ITEM_ATTACHMENT_NAME_MAX) return undefined;
+  if (typeof id !== 'string' || id.length === 0 || id.length > ITEM_ATTACHMENT_ID_MAX)
+    return undefined;
+  if (typeof name !== 'string' || Array.from(name).length > ITEM_ATTACHMENT_NAME_MAX)
+    return undefined;
   if (typeof size !== 'number' || !Number.isInteger(size) || size < 1) return undefined;
   if (size > ITEM_ATTACHMENT_BYTES_MAX || !isAcceptedAttachmentType(type)) return undefined;
   if (cover !== undefined && cover !== true) return undefined;

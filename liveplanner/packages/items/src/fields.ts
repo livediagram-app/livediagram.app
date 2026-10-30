@@ -202,7 +202,7 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
     // cover. An empty list is no value: the field is cleared instead.
     case 'attachments': {
       const list = normaliseAttachments(v);
-      return list && list.length > 0 ? (list as unknown as ItemFieldValue) : undefined;
+      return list && list.length > 0 ? list : undefined;
     }
     // A flag is set (true) or cleared (the key removed); false is not stored.
     case 'flag':

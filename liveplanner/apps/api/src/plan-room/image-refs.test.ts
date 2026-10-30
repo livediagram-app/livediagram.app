@@ -5,12 +5,7 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { recordImageGrant, planServesImage } from './image-grants';
-import {
-  PLACED_IMAGES_SQL,
-  forgetImageRefs,
-  placedImageIds,
-  pushImageRefs,
-} from './image-refs';
+import { PLACED_IMAGES_SQL, forgetImageRefs, placedImageIds, pushImageRefs } from './image-refs';
 import { migratePlanSchema } from './plan-schema';
 import { planNamespace } from './test-plan-namespace';
 
@@ -32,7 +27,7 @@ beforeEach(() => {
     vi.fn(async (url: string, init?: RequestInit) => {
       if (String(url).endsWith('/app/refs')) {
         if (refuse) return Response.json({ error: 'nope' }, { status: 500 });
-        synced.push(JSON.parse(String(init?.body)));
+        synced.push(JSON.parse(init?.body as string) as (typeof synced)[number]);
         return Response.json({ ok: true });
       }
       return Response.json({ error: 'not_found' }, { status: 404 });
@@ -134,6 +129,21 @@ describe('the pictures a plan reports', () => {
     p.sql.prepare('DELETE FROM items WHERE id = ?').run('a');
     await p.flush();
     expect(synced.at(-1)!.documents[0]!.images).toEqual([]);
+  });
+
+  it('sends at most what one sync carries, and says so', async () => {
+    const p = plan();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    for (let c = 0; c < 26; c++) {
+      p.card(`c${c}`, { attachments: Array.from({ length: 20 }, (_, i) => pic(`p${c}-${i}`)) });
+    }
+    await p.flush();
+    expect(synced[0]!.documents[0]!.images).toHaveLength(500);
+    expect(error).toHaveBeenCalledWith(
+      '[media] a plan holds more pictures than one sync carries',
+      expect.objectContaining({ images: 520 }),
+    );
+    error.mockRestore();
   });
 
   it('tells the service nothing for a plan that never held a picture', async () => {
