@@ -299,8 +299,8 @@ button, so there is nothing to watch in it. So do an idle tool's popover and any
 phone (where it would cover the canvas being voted on). Asking a poll keeps the popover open: it becomes the Poll panel. They share the editor's one open-popover slot with Layers, Collaborate
 and the Explorer. Nothing opens on its own: a vote or poll somebody starts lights its button and
 leaves the canvas clear. The strip shows in Zen mode as well, because a session in progress is the one
-piece of chrome a facilitator still needs there; it is hidden only while presenting or in the
-welcome flow, with the rest of the cluster.
+piece of chrome a facilitator still needs there; it is hidden only while presenting, in the
+welcome flow or in a [read-only embed](../013-workspace/embeds.md) (which offers no session to run or join), with the rest of the cluster.
 
 ## The Vote panel
 
