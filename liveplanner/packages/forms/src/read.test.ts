@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { readForm, readOptions } from './read';
-import { OPTIONS_MAX, QUESTIONS_MAX, SECTIONS_MAX, UNTITLED_FORM } from './limits';
+import {
+  OPTIONS_MAX,
+  QUESTIONS_MAX,
+  SECTIONS_MAX,
+  SHEET_COLUMNS_MAX,
+  UNTITLED_FORM,
+} from './limits';
 
 const q = (extra: Record<string, unknown> = {}) => ({
   id: 'q-1',
@@ -186,6 +192,22 @@ describe('readForm', () => {
     expect(readForm({ sheet: { tabId: 'tab-1', sheetId: 'x' } })!.sheet).toBeUndefined();
     expect(readForm({ sheet: { tabId: 'tab 1', sheetId: 'AbCdEf123456' } })!.sheet).toBeUndefined();
     expect(readForm({ sheet: 'AbCdEf123456' })!.sheet).toBeUndefined();
+  });
+
+  it("keeps a sheet form's remembered columns, dropping any it cannot read", () => {
+    const at = (columns: unknown) =>
+      readForm({ sheet: { tabId: 'tab-1', sheetId: 'AbCdEf123456', columns } })!.sheet;
+    expect(
+      at({ '#': 'ab12cd', at: 'ef34gh', 'q-1': 'ij56kl', 'BAD KEY': 'mn78op', 'q-2': 'NOPE' }),
+    ).toEqual({
+      tabId: 'tab-1',
+      sheetId: 'AbCdEf123456',
+      columns: { '#': 'ab12cd', at: 'ef34gh', 'q-1': 'ij56kl' },
+    });
+    expect(at({ 'q-2': 7 })!.columns).toBeUndefined();
+    expect(at('ab12cd')!.columns).toBeUndefined();
+    const many = Object.fromEntries(Array.from({ length: 150 }, (_, i) => [`q-${i}`, `col${i}x`]));
+    expect(Object.keys(at(many)!.columns!)).toHaveLength(SHEET_COLUMNS_MAX);
   });
 
   it('keeps a question with no prompt yet, its prompt empty', () => {

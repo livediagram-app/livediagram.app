@@ -97,6 +97,9 @@ export interface FormSection {
 export interface FormSheetDestination {
   tabId: string;
   sheetId: string;
+  // The column each header lives in, by the column's id (forms.md "Linked by column, not by heading"): `#` and `at`
+  // for # and Submitted, a question's id for its answers. Absent on a form from before, which finds them by header.
+  columns?: Record<string, string>;
 }
 
 // Where every response goes: a Board tab, a card type, a status.
