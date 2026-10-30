@@ -12,12 +12,17 @@ import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } fro
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
 import { panelEnabled } from '@/lib/user-preferences';
-import { ReadOnlyElementMenuHost } from './ReadOnlyElementMenuHost';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
 const EditorContextMenu = dynamic(
   () => import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
+  { ssr: false },
+);
+
+// A Participant's or Viewer's menu, loaded on its first right-click too.
+const ReadOnlyElementMenuHost = dynamic(
+  () => import('./ReadOnlyElementMenuHost').then((m) => m.ReadOnlyElementMenuHost),
   { ssr: false },
 );
 
@@ -193,7 +198,7 @@ export function EditorContextMenuHost() {
   // A Participant or a Viewer gets its own short menu, holding only what its role may do
   // (ReadOnlyElementMenuHost), so nothing below needs a second `isReadOnly` guard: everything past
   // this line is running for an editor by construction.
-  if (isReadOnly) return <ReadOnlyElementMenuHost />;
+  if (isReadOnly) return contextMenu?.mode === 'element' ? <ReadOnlyElementMenuHost /> : null;
   if (!contextMenu || contextMenu.mode === 'canvas') return null;
 
   // Selection-context-menu member resolution (right-click a multi-selection):
