@@ -298,9 +298,11 @@ true` (comments.ts) and `editedAt?: number`.
   the automatic one from `createdBy.name` and the first comment when it is `''`, as a migrated thread is).
 - **Ids**: `newThreadId(random)`; `isThreadId(s)` (`^th-[a-z0-9]{16}$`, or a migrated `c-<item id>`).
 - **Writes**: `ThreadChange = add { comment } | edit { commentId, text, mentions, now } | remove { commentId } |
-resolve { resolved, by } | rename { title } | addCard { card } | removeCard { projectId, itemId }`;
+resolve { resolved, by } | rename { title } | react { commentId, emoji, by, name, on } | addCard { card } |
+removeCard { projectId, itemId }`;
   `applyThreadChange(thread, change, now)` answers `{ ok, thread }` (rev + 1, `updatedAt` now except for card
-  changes) or a refusal: `comments_full`, `comment_not_found`, `title_too_long`, `thread_on_card`,
+  changes and reactions; `react` goes through `withReaction`/`commentWithReactions` from
+  `@liveworkspace/model-core/comment-reactions`, `comments_full` only when one is added past the byte budget) or a refusal: `comments_full`, `comment_not_found`, `title_too_long`, `thread_on_card`,
   `thread_cards_full`, `unchanged`. `startThread({ id, home, card, comment, title?, now })` makes one (title
   `autoThreadTitle` unless given). Who may is the caller's (routes), never here.
 - **Reads**: `isCardThread(v)` (shape, caps), `openCommentCount(threads, projectId, itemId)` (the face count),
@@ -369,24 +371,25 @@ off `cards` (`[threads] card.gone`).
 
 Rights, against the thread as stored: a comment edit needs `authorId === owner` (and `ai` for an agent); a comment
 delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` or `createdBy.authorId === owner`
-(never an agent); `rename` and `addCard` never an agent. Refused: `403 forbidden`.
+(never an agent); `rename`, `react` and `addCard` never an agent. Refused: `403 forbidden`.
 
 ### REST (`apps/api/src/routes/card-thread-routes.ts`, dispatched by `handleProjects` on `segments[3] ===
 
 'threads'`and by`handleItemRoutes`on`segments[5] === 'threads'`)
 
-| Method | Path                                          | Gate (on `:id`, the plan viewed)   | Body                          | Answers                                                 |
-| ------ | --------------------------------------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------- |
-| GET    | `/projects/:id/threads`                       | read                               | `?item=` narrows to one card  | `CardThreadsResponse`                                   |
-| POST   | `/projects/:id/items/:itemId/threads`         | participate                        | `{ text, mentions?, title? }` | 201 `CardThreadWriteResponse`                           |
-| POST   | `/projects/:id/threads/:threadId/comments`    | participate                        | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
-| PUT    | `/projects/:id/threads/:threadId/comments/:c` | participate; own                   | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId/comments/:c` | participate; own, or edit          | none                          | `CardThreadWriteResponse` (`thread: null` once it went) |
-| POST   | `/projects/:id/threads/:threadId/resolve`     | participate                        | none                          | `CardThreadWriteResponse`, 204 if already               |
-| POST   | `/projects/:id/threads/:threadId/reopen`      | participate                        | none                          | the same                                                |
-| PUT    | `/projects/:id/threads/:threadId/title`       | participate                        | `{ title }` (`''` automatic)  | `CardThreadWriteResponse`                               |
-| POST   | `/projects/:id/threads/:threadId/cards`       | participate here and on the target | `{ projectId?, itemId }`      | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId`             | participate; every comment own     | none                          | 204                                                     |
+| Method | Path                                                    | Gate (on `:id`, the plan viewed)   | Body                          | Answers                                                 |
+| ------ | ------------------------------------------------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------- |
+| GET    | `/projects/:id/threads`                                 | read                               | `?item=` narrows to one card  | `CardThreadsResponse`                                   |
+| POST   | `/projects/:id/items/:itemId/threads`                   | participate                        | `{ text, mentions?, title? }` | 201 `CardThreadWriteResponse`                           |
+| POST   | `/projects/:id/threads/:threadId/comments`              | participate                        | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
+| PUT    | `/projects/:id/threads/:threadId/comments/:c`           | participate; own                   | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId/comments/:c`           | participate; own, or edit          | none                          | `CardThreadWriteResponse` (`thread: null` once it went) |
+| POST   | `/projects/:id/threads/:threadId/comments/:c/reactions` | participate                        | `{ emoji, on, key }`          | `CardThreadWriteResponse`, 204 if unchanged             |
+| POST   | `/projects/:id/threads/:threadId/resolve`               | participate                        | none                          | `CardThreadWriteResponse`, 204 if already               |
+| POST   | `/projects/:id/threads/:threadId/reopen`                | participate                        | none                          | the same                                                |
+| PUT    | `/projects/:id/threads/:threadId/title`                 | participate                        | `{ title }` (`''` automatic)  | `CardThreadWriteResponse`                               |
+| POST   | `/projects/:id/threads/:threadId/cards`                 | participate here and on the target | `{ projectId?, itemId }`      | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId`                       | participate; every comment own     | none                          | 204                                                     |
 
 - The thread is reached through `:id`: a link row of the plan for a card the caller's scope holds, else
   `404 thread_not_found`. Writes count against the write rate limit.
@@ -395,6 +398,9 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
   `?item=` reads one card's.
 - A start, a reply, an edit: `newComment` (comment-routes.ts) stamps author, colour, id, token and `ai` (from
   `ctx.token`); a start or reply then runs `afterCommentPosted(ctx, caller, comment, itemId, threadId)`.
+- **React**: `emoji` one of the six (`isReactionId`), `on` a boolean and `key` the caller's collab key (1 to
+  `REACTION_BY_MAX` characters), else `400` (`unknown emoji`, `missing on`, `missing key`); the name is the caller's profile name
+  (`getParticipant`, else "Someone"). Not activity: no timeline entry, email or Inbox change.
 - **Add to card**: the target is always a card of `:id`; a body naming another plan (`projectId` other than `:id`)
   is refused `400 thread_other_plan` before anything is read. Then the card is linked here (`linkThread`) and the
   home's `addCard` runs (a thread shared in before the rule has another home; it is asked through it). Refusals:

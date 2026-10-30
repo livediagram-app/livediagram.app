@@ -13,6 +13,7 @@ export function useCardThreadsValue(input: {
   projectName: string;
   ownerId: string;
   self: { name: string; color: string } | null;
+  selfKey: string;
   canComment: boolean;
   isEditor: boolean;
   openCard: (itemId: string) => void;
@@ -24,6 +25,7 @@ export function useCardThreadsValue(input: {
     projectName,
     ownerId,
     self,
+    selfKey,
     canComment,
     isEditor,
     openCard,
@@ -39,12 +41,24 @@ export function useCardThreadsValue(input: {
             selfId: ownerId,
             ownerId,
             self,
+            selfKey,
             canComment,
             isEditor,
             openCard,
             announce,
           }
         : undefined,
-    [threads, projectId, projectName, ownerId, self, canComment, isEditor, openCard, announce],
+    [
+      threads,
+      projectId,
+      projectName,
+      ownerId,
+      self,
+      selfKey,
+      canComment,
+      isEditor,
+      openCard,
+      announce,
+    ],
   );
 }

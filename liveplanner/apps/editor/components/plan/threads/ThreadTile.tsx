@@ -5,7 +5,7 @@
 // menu), and, open, its comments, Resolve or Reopen, and a reply composer. A resolved thread is drawn quieter, with
 // who resolved it. Rename edits the title in place.
 
-import { useId, useRef, useState } from 'react';
+import { useId, useMemo, useRef, useState } from 'react';
 import {
   CheckIcon,
   CommentIcon,
@@ -35,6 +35,10 @@ import {
   MenuGroupSeparator,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import {
+  CommentReactionsProvider,
+  type CommentReactionScope,
+} from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { CommentComposer, CommentThreadList } from '@/components/panels/comment-thread-parts';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
@@ -108,8 +112,21 @@ export function ThreadTile({
   const [renaming, setRenaming] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const headerRef = useRef<HTMLButtonElement>(null);
-  const { canComment, isEditor, selfId, threads, announce } = ctx;
+  const { canComment, isEditor, selfId, selfKey, self, threads, announce } = ctx;
   const resolved = thread.resolved;
+  // Reacting to a comment in this thread (docs/specs/012-collaboration/comment-reactions.md): whoever may comment
+  // here, through the thread's own write, which shows it at once and reaches everyone through the room's thread op.
+  const threadId = thread.id;
+  const reactions = useMemo<CommentReactionScope>(
+    () => ({
+      selfKey,
+      selfName: self?.name,
+      canReact: canComment,
+      toggle: (commentId, emoji, on) =>
+        void threads.act({ kind: 'react', threadId, commentId, emoji, on, key: selfKey }),
+    }),
+    [selfKey, self, canComment, threads, threadId],
+  );
   // A title cleared back to the automatic one reads '' until the answer lands: worked out here meanwhile.
   const title = threadTitle(thread);
   // Only a thread made of this person's own comments is deleted, Editors' alike; with anyone else's in it, it is
@@ -291,33 +308,35 @@ export function ThreadTile({
           data-thread-body=""
           className="animate-card-rise border-t border-slate-100 px-3 pb-3 pt-1 motion-reduce:animate-none dark:border-slate-800"
         >
-          <CommentThreadList
-            thread={thread}
-            readOnly={!isEditor}
-            canComment={canComment}
-            selfId={selfId}
-            density="comfortable"
-            onDeleteComment={(commentId) =>
-              void threads.act({ kind: 'delete', threadId: thread.id, commentId }).then((ok) => {
-                if (ok !== false)
-                  announce(ok === null ? ANNOUNCE.deleted : ANNOUNCE.commentDeleted);
-              })
-            }
-            onEditComment={(commentId, text, mentions) =>
-              void threads
-                .act({
-                  kind: 'edit',
-                  threadId: thread.id,
-                  commentId,
-                  text,
-                  ...(mentions.length ? { mentions } : {}),
+          <CommentReactionsProvider value={reactions}>
+            <CommentThreadList
+              thread={thread}
+              readOnly={!isEditor}
+              canComment={canComment}
+              selfId={selfId}
+              density="comfortable"
+              onDeleteComment={(commentId) =>
+                void threads.act({ kind: 'delete', threadId: thread.id, commentId }).then((ok) => {
+                  if (ok !== false)
+                    announce(ok === null ? ANNOUNCE.deleted : ANNOUNCE.commentDeleted);
                 })
-                .then((ok) => {
-                  if (ok !== false) announce(ANNOUNCE.commentEdited);
-                })
-            }
-            className="max-h-96 divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800"
-          />
+              }
+              onEditComment={(commentId, text, mentions) =>
+                void threads
+                  .act({
+                    kind: 'edit',
+                    threadId: thread.id,
+                    commentId,
+                    text,
+                    ...(mentions.length ? { mentions } : {}),
+                  })
+                  .then((ok) => {
+                    if (ok !== false) announce(ANNOUNCE.commentEdited);
+                  })
+              }
+              className="max-h-96 divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800"
+            />
+          </CommentReactionsProvider>
           {resolved ? (
             canComment ? (
               <div className="mt-1 flex justify-end">

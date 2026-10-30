@@ -244,7 +244,7 @@ the same text, mentions, author stamp and author redaction, drawn with the same 
   Replying to a resolved thread is not offered (the composer is hidden), and a reply that reaches one anyway (an
   agent's, the Inbox's) reopens it, as on the canvas.
 - **`createdBy`**, **`createdAt`**, and **`updatedAt`** (its last activity: a comment added or edited, a resolve, a
-  reopen or a rename).
+  reopen or a rename; a reaction is not activity and leaves it).
 - **`cards`**: every card it is on (up to 20), each named by its plan and card id, with its number and, for a card in
   another plan, that plan's name as it was when the thread was added there. The first is the card it was started
   on.
@@ -287,6 +287,9 @@ or a deleted comment made from any of them changes it everywhere at once. Nothin
 
 - **Only all-own**: a thread every comment in which is the deleting person's own (an agent's posted with their
   token counts as theirs); one holding anyone else's comment is refused `409 thread_has_others`, Editors included.
+- **React** ([Comment reactions](../012-collaboration/comment-reactions.md)) goes with replying: an Editor or a
+  Participant adds and takes back their own six emoji on any comment, a Viewer only sees them and who left them, and
+  an agent reads them (`list_threads`) but never reacts (`403 forbidden`).
 - The card a thread is added to is always in the plan being viewed, so the same role decides.
 - A tab-scoped link reaches a thread only through a card its tab shows.
 - An agent token acts as its person, by that person's role, with the limits in the last row: it edits and deletes
@@ -332,7 +335,10 @@ text. Editing an AI comment keeps the flag; a person cannot set or clear it.
   **Reply** (primary, on the right), the same height, with no row of its own between the comments and the composer.
   Resolve shows only to those who may resolve, who are those who may reply. Your own comment offers **Edit**
   (in place: the text becomes a field, **Save** and **Cancel**, ⌘/Ctrl Enter saves, Escape cancels) and **Delete**; an
-  Editor's row offers Delete on anyone's. Every thread is **closed when the card opens** (its header only: title,
+  Editor's row offers Delete on anyone's. Every comment takes **reactions**
+  ([Comment reactions](../012-collaboration/comment-reactions.md)): **Add Reaction** in its row actions opens the
+  six in place, and chips under the text count each emoji, highlight yours and say who; a resolved thread's
+  comments keep their chips but take no new ones. Every thread is **closed when the card opens** (its header only: title,
   avatars, count, last activity). A thread opens when its header is pressed, when a link names it (below), or when
   the person has just started it with Start Thread (it lands open, so they see what they posted and can go on);
   replying keeps an opened thread open. What is open is remembered only while the panel stays on the card:
@@ -379,11 +385,13 @@ Every write is applied by the home plan to the thread as stored, so concurrent w
 | **edit**          | replaces one of the caller's own comments' text and mentions, marking it edited       | `comment_not_found`, 403 not theirs                        |
 | **delete**        | deletes a comment (own, or any for an Editor); the last one deletes the thread        | `comment_not_found`, 403                                   |
 | **resolve**       | resolves or reopens; already so changes nothing (an empty answer)                     | `thread_not_found`                                         |
+| **react**         | turns the caller's emoji on or off on a comment; already so changes nothing (empty)   | `comment_not_found`, `comments_full`, 403 agent            |
 | **rename**        | sets the title (trimmed, 1 to 120 characters), or clears it back to the automatic one | `title_too_long`                                           |
 | **add to card**   | puts the thread on another card                                                       | `thread_on_card`, `threads_full`, `thread_cards_full`, 403 |
 | **delete thread** | removes it from every card                                                            | 403                                                        |
 
-- A comment's author name, colour and id, its `ai` flag and its token are stamped by the server from the caller.
+- A comment's author name, colour and id, its `ai` flag and its token are stamped by the server from the caller. A
+  reaction's name is the server's too; its `by` is the caller's collab key, as on the canvas.
 - A thread write is not a change to its cards: no card's `rev`, **Edited by** or change time moves.
 - **Author ids** never leave the api except to their author: every read and answer leaves them out of other people's
   comments (and the thread's starter), and the room hears none.
