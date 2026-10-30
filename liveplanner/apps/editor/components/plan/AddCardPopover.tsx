@@ -102,9 +102,9 @@ export function AddCardPopover({
   );
 }
 
-// The choices themselves, shared by the Add a Card menu and the Plan strip's New Card panel: a row per card type
-// (its glyph on a tint of its colour, its name), then, given a way to make one, a full-width Add New Card Type.
-export function AddCardChoices({
+// The menu's choices: a row per card type (its glyph on a tint of its colour, its name), then, given a way to make
+// one, a full-width Add New Card Type.
+function AddCardChoices({
   types,
   onAdd,
   onCreateType,

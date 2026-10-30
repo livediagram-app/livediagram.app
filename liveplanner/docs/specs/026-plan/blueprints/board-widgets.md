@@ -69,13 +69,13 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 
 ## Errors and edge cases
 
-| Case                               | Handling                                       |
-| ---------------------------------- | ---------------------------------------------- |
-| A viewer who may not edit          | Zone has no +, no ×, no drag, no keys          |
-| Kind the board already has         | Left out of the + picker                       |
-| Completion with no done column     | "No done column"                               |
-| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`) |
-| More widgets than fit              | The zone scrolls sideways                      |
+| Case                               | Handling                                               |
+| ---------------------------------- | ------------------------------------------------------ |
+| A viewer who may not edit          | Zone has no +, no Edit Widgets, no ×, no drag, no keys |
+| Kind the board already has         | Left out of the + picker                               |
+| Completion with no done column     | "No done column"                                       |
+| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)         |
+| More widgets than fit              | The zone scrolls sideways                              |
 
 ## Presentation and UX
 
@@ -84,7 +84,14 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 - Reorder bar: 2 × 24 px, `palette.focus`.
 - Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Add widgets to
   this board" and its **+**; unselected, the empty zone draws nothing.
-- × : 16 px disc at the wrapper's top right, shown only while the board is selected (`selected`, from `PlanBoardHeader`), on any pointer; otherwise `display: none`, so it is out of the tab order too (Delete still removes a focused widget).
+- Edit Widgets: after the **+**, while `widgets.length > 0` and `canEdit`, a 28 px button (a pencil, `lucideGlyph(lucidePencil, 14)` drawn at 10, `Tooltip`
+  "Edit Widgets", `aria-pressed={false}`); in edit mode it is `CheckIcon` drawn at 12 in `palette.focus` on a tint of it, named
+  "Done Editing Widgets", `aria-pressed`. Both glyphs are sized by their ink to match the **+** (14 px box, ink 14 of 24 units) and take its stroke weight. Its state (`editing`) lives in `BoardWidgetZone`, never saved; it ends on
+  Done, Escape or a capture-phase `pointerdown` outside the zone (listened only while editing), and when the
+  widgets run out.
+- × : 16 px disc at the wrapper's top right, rendered for every widget only while `editing` (no hover, focus or tap
+  reveal, and no `selected` gate), so out of edit mode it is out of the tab order too (Delete still removes a focused
+  widget).
 
 ## Accessibility
 
@@ -104,11 +111,12 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 
 ## Testing
 
-| Rule                                              | Test                                                         |
-| ------------------------------------------------- | ------------------------------------------------------------ |
-| Known kinds once, default set, place/nudge/remove | packages/items/src/board-widgets.test.ts                     |
-| Counts behind People, Types, WIP, Due             | packages/plan-art/src/widget-stats.test.ts                   |
-| Slot math, the + picker offering only the missing | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx |
+| Rule                                                          | Test                                                         |
+| ------------------------------------------------------------- | ------------------------------------------------------------ |
+| Known kinds once, default set, place/nudge/remove             | packages/items/src/board-widgets.test.ts                     |
+| Counts behind People, Types, WIP, Due                         | packages/plan-art/src/widget-stats.test.ts                   |
+| Slot math, the + picker offering only the missing             | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx |
+| Edit Widgets: × on every widget, Done, Escape, outside, roles | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx |
 
 ## Constants and configuration
 

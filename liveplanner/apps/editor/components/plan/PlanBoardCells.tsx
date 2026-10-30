@@ -3,6 +3,7 @@
 // A Plan board's rows and cards (docs/specs/026-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
+import { planCardCursor } from './board-cursors';
 import { useEffect, useRef } from 'react';
 import { itemVoteKey } from '@liveplanner/project';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
@@ -118,6 +119,7 @@ export function PlanBoardCard({
   faceDown,
   presence,
   interactive,
+  canMove,
   onPress,
   onOpen,
   onKey,
@@ -137,6 +139,8 @@ export function PlanBoardCard({
   faceDown: boolean;
   presence: Parameters<typeof PlanCardFace>[0]['presence'];
   interactive: boolean;
+  // This person may pick the card up (an Editor, a Participant): the hand shows only then (board-cursors.ts).
+  canMove: boolean;
   onPress: (id: string, e: React.PointerEvent<HTMLElement>) => void;
   onOpen: () => void;
   onKey: (item: Item, e: React.KeyboardEvent<HTMLElement>) => void;
@@ -176,7 +180,7 @@ export function PlanBoardCard({
         className={`relative ${touch} rounded-lg outline-none transition-opacity focus-visible:ring-2`}
         style={{
           opacity: lifted ? 0.35 : 1,
-          cursor: interactive ? 'grab' : undefined,
+          cursor: planCardCursor(interactive, canMove),
           ['--tw-ring-color' as string]: palette.focus,
         }}
         onPointerDown={(e) => {

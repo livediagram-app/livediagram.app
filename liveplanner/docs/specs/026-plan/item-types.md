@@ -320,8 +320,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - **With no types**, the list's place holds an empty state (the Cards glyph): **No Card Types Yet**, and "Add a card
   type of your own, or add the default types: Project, Task, Note, Idea and Action." for someone who may edit, "This
   project has no card types yet." for anyone else. Add Type and Add Default Types sit under it as always.
-- **With no types**, Plan's bottom-right strip shows only **Card Types**: New Card and Find a Card would surface
-  nothing, so they wait for the first type. The Trash stays while it holds cards (deleting the last type sends its
+- **With no types**, Plan's bottom-right strip shows only **Card Types**: Find a Card would surface
+  nothing, so it waits for the first type. The Trash stays while it holds cards (deleting the last type sends its
   cards there), so they can be restored once a type exists.
 - Someone who may only view the project sees the list without the edit and add controls.
 

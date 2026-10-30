@@ -174,17 +174,17 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 
 ## The Plan strip
 
-- Plan mode's bottom-right strip (**Trash**, **New Card**, **Find a Card**, **Card Types**, each below) shows only
+- Plan mode's bottom-right strip (**Trash**, **Find a Card**, **Card Types**, each below) shows only
   while the open tab has something that shows cards: a board, a view, or a Sheet holding a card table
   ([Card tables](../029-sheets/sheet.md#card-tables)). On an empty tab, or one of only diagrams, stickies and plain
   Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
   placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
 - **On a phone beside the Session strip** (a tab whose cards take votes) the strip is one **More Card Tools** button,
-  its menu holding New Card, Find a Card, Card Types and, for an editor, the Trash (the Trash's only door on a phone);
+  its menu holding Find a Card, Card Types and, for an editor, the Trash (the Trash's only door on a phone);
   each opens its panel above that button ([Session tools](../012-collaboration/session-tools.md#the-session-strip)).
 - On a wide desktop (1440 px and up) each of its buttons is named beside its icon in one short word (**Trash**,
-  **New**, **Find**, **Types**), as the cluster's other strips are ([Editor app](../007-editor/editor-app.md)); narrower,
-  they are icons alone. Their accessible names and hover cards keep the fuller labels (New Card, Find a Card, Card
+  **Find**, **Types**), as the cluster's other strips are ([Editor app](../007-editor/editor-app.md)); narrower,
+  they are icons alone. Their accessible names and hover cards keep the fuller labels (Find a Card, Card
   Types), each containing its short name.
 
 ## Trash
@@ -421,14 +421,14 @@ import, a restore) is taken the same way as it lands. This Browser plans move as
 `Comment · Renamed · Thread`, `Comment · Linked · Thread` (added to another card; the type `ThreadOtherPlan`, for one
 added into another plan, is no longer sent) and `Comment · Deleted · Thread`.
 
-## New Card
+## No New Card button
 
-- Plan mode's bottom-right strip holds, for someone who may edit, a **+** (**New Card**, with a hover card) between
-  the Trash and Find a Card. It opens the **New Card** panel above it, pointing at it as the strip's other panels
-  do: a tile per card type of the project (no Add New Card Type here). A pick makes a card of that type, off any
-  board, in its type's starting status (its Default State, else the first status the type
-  uses), titled as the type names a new card ("New task"), and opens it in the card panel with its title selected.
-- Telemetry: `Plan` · `Added` · the type, as any new card.
+- The Plan strip has **no New Card button**: a card is added where it will live, from a board's
+  [card type chips](plan-board.md#card-type-chips) (a click, or a drag into a column and row) or a cell's **Add
+  card**. A card made off any board in the strip made people go and find it again, and a button that adds without
+  placing was the least convenient way in. On a phone, where the header has no chips, each cell's **Add card** is
+  the way in; a Sheet's card table adds rows of its own, and a linked card's **New {Type}** makes one beside the card
+  it links to.
 
 ## Finding a card
 
