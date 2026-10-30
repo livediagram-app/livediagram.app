@@ -101,7 +101,7 @@ import { slideFitOptions } from '@/lib/presentation-config';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
-import type { Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
@@ -121,6 +121,7 @@ import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
+import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { usePerTabLoad } from './usePerTabLoad';
 import { useRoomConnection } from './useRoomConnection';
 import { useRoomResync } from './useRoomResync';
@@ -1007,6 +1008,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
+  // the collab key their presence publishes; a session that may not edit sends them through the comment endpoints.
+  const commentReactions = useCommentReactionScope({
+    applyElementDelta,
+    activeTab,
+    selfKey: participantKey(selfParticipant),
+    selfName: selfParticipant.name,
+    canReact: participant.can.takePart,
+    readOnly: isReadOnly,
+    documentId,
+    selfId: selfParticipant.id,
+    shareCode: sessionShareCode,
+  });
   // The tab's editor mode (docs/specs/007-editor/pages-mode.md "One mode"): Pages, the one mode.
   const editorMode = useEditorMode(canEdit);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
@@ -2759,6 +2773,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // outside the panel and the overlay reads into it.
     slideDeck,
     commentMentions,
+    commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     // What the presentation is showing, or null. The canvas renders THESE

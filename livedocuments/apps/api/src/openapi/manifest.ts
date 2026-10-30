@@ -608,6 +608,28 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 405, 409, 410, 413],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/react',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Add or take back your reaction (one of six emoji) on a comment, as a person; agents read reactions only.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        emoji: {
+          type: 'string',
+          enum: ['thumbs-up', 'thumbs-down', 'laugh', 'hooray', 'heart', 'eyes'],
+        },
+        on: { type: 'boolean' },
+        key: { type: 'string' },
+      },
+      required: ['emoji', 'on', 'key'],
+    },
+    statuses: [204, 400, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/tabs/{tabId}/render.svg',
     segment: 'documents',
