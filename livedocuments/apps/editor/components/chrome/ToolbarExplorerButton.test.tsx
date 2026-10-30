@@ -1,15 +1,56 @@
 // @vitest-environment jsdom
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md): it toggles the Explorer and
 // hands itself over as the popover's anchor.
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { setActiveTabName } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
+
+const viewport = vi.hoisted(() => ({ phone: false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => viewport.phone,
+}));
 
 afterEach(() => {
   cleanup();
+  viewport.phone = false;
+  act(() => setActiveTabName(''));
+});
+
+// The open tab's name beside the menu button (docs/specs/007-editor/toolbar-layout.md "The tab's name"), as in every
+// editor (Work Tracker #105): on a desktop, never on a phone or inline in the strip's row.
+describe('the tab name beside the menu button', () => {
+  const name = () => document.querySelector('[data-tab-name-in-box]');
+
+  it('shows the open tab’s name on a desktop', () => {
+    act(() => setActiveTabName('Chapter One'));
+    render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
+    expect(name()?.textContent).toBe('Chapter One');
+  });
+
+  it('leaves it out on a phone, and inline in the strip', () => {
+    act(() => setActiveTabName('Chapter One'));
+    viewport.phone = true;
+    const { unmount } = render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
+    expect(name()).toBeNull();
+    unmount();
+    viewport.phone = false;
+    render(<ToolbarExplorerButton open={false} inline onToggle={vi.fn()} />);
+    expect(name()).toBeNull();
+  });
 });
 
 describe('ToolbarExplorerButton', () => {
+  // It got in the way of the Explorer's app switcher (Work Tracker #101); the aria-label still names it.
+  it('shows no hover card on the menu button, and keeps its accessible name', () => {
+    render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Explorer' });
+    fireEvent.pointerEnter(button, { pointerType: 'mouse' });
+    fireEvent.focus(button);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(button.getAttribute('aria-label')).toBe('Explorer');
+  });
+
   it('passes its own element to the toggle, to anchor the popover under it', () => {
     const onToggle = vi.fn();
     render(<ToolbarExplorerButton open={false} onToggle={onToggle} />);
