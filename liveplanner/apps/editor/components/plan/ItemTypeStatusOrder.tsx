@@ -77,7 +77,7 @@ export function ItemTypeStatusOrder({
             </Tooltip>
             <span
               aria-hidden
-              className="w-5 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-400 dark:text-slate-500"
+              className="w-5 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-500 dark:text-slate-400"
             >
               {i + 1}
             </span>
