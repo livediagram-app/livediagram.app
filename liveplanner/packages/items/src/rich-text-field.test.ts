@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateFields } from './fields';
+import type { ItemFieldValue } from './item';
 import {
   ITEM_RICH_RUNS_MAX,
   isRichFieldKey,
@@ -79,7 +80,7 @@ describe('a Long Text field’s formatting', () => {
   });
 
   it('reads only while its text still spells the field’s value', () => {
-    const runs = [{ text: 'Open ' }, { text: 'it', italic: true }];
+    const runs: ItemFieldValue[] = [{ text: 'Open ' }, { text: 'it', italic: true }];
     expect(richRunsOf({ 'f-s': 'Open it', 'f-sRich': runs }, 'f-s')).toBe(runs);
     expect(richRunsOf({ 'f-s': 'Rewritten', 'f-sRich': runs }, 'f-s')).toBeUndefined();
     expect(richRunsOf({ 'f-sRich': runs }, 'f-s')).toBeUndefined();
