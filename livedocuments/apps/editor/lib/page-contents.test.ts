@@ -31,6 +31,7 @@ describe('a stack in Contents', () => {
       ['Card 1', 'Flashcard · Opening · 1 min'],
       ['Card 2', 'Flashcard · Untitled'],
     ]);
+    expect(rows.map((r) => r.speakingTime)).toEqual(['1 min', undefined]);
   });
 });
 

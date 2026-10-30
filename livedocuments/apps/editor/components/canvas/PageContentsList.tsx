@@ -266,6 +266,14 @@ function NameLine({
       >
         {row.name}
       </span>
+      {row.speakingTime ? (
+        <span
+          data-contents-speaking-time=""
+          className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400"
+        >
+          {row.speakingTime}
+        </span>
+      ) : null}
       {row.locked ? (
         <span role="img" className="shrink-0 text-slate-400" aria-label="Locked">
           <LockIcon />

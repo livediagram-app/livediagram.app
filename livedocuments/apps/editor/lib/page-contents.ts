@@ -30,6 +30,8 @@ export type ContentsRow = {
   kind: PageKind;
   // A slide page with a slide in the deck; absent where there is no deck to ask.
   inDeck?: boolean;
+  // A card's speaking time ("45 sec"), shown beside its name; absent off a card or on an empty one.
+  speakingTime?: string;
 };
 
 // More pages than this show the Find a Page box.
@@ -53,6 +55,7 @@ export function contentsRows(
   return pages.map((p, i) => {
     const kind = pageKindOf(p);
     let line: string = KIND_NAME[kind];
+    let speakingTime: string | null = null;
     if (kind === 'infographic') {
       const size = pageSizeLabel(p);
       const turn = pageHasOrientation(p) && ['a4', 'letter', 'a3'].includes(p.size ?? 'a4');
@@ -65,9 +68,9 @@ export function contentsRows(
       if (title) line += ` · ${title}`;
       // A card says how long it takes to say (docs/specs/007-editor/flashcards.md "Card number and
       // speaking time").
-      const time =
+      speakingTime =
         kind === 'flashcard' && flow ? speakingTimeLabel(flashcardSpeakingSeconds(flow)) : null;
-      if (time) line += ` · ${time}`;
+      if (speakingTime) line += ` · ${speakingTime}`;
     }
     return {
       id: p.id,
@@ -78,6 +81,7 @@ export function contentsRows(
       aspect: p.rect.width / p.rect.height,
       kind,
       ...(kind === 'slide' && opts.inDeck ? { inDeck: opts.inDeck(p.id) } : {}),
+      ...(speakingTime ? { speakingTime } : {}),
     };
   });
 }
