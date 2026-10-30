@@ -9,7 +9,7 @@ function Harness(props: Omit<CodeDigitsProps, 'digits' | 'onDigits'>) {
   return <CodeDigits digits={digits} onDigits={setDigits} {...props} />;
 }
 
-const boxes = () => screen.getAllByRole('textbox') as HTMLInputElement[];
+const boxes = () => screen.getAllByRole<HTMLInputElement>('textbox');
 const values = () => boxes().map((b) => b.value);
 
 describe('CodeDigits', () => {
