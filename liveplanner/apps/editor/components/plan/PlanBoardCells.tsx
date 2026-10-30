@@ -231,7 +231,7 @@ export function PlanBoardCard({
               fileDrop.over ? 'bg-brand-500/10' : ''
             }`}
           >
-            <span className="mb-2 rounded-md bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+            <span className="mb-2 rounded-md bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm dark:bg-brand-600">
               {fileDrop.uploading ? 'Uploading…' : 'Drop to Attach'}
             </span>
           </span>
