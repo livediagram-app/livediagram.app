@@ -55,14 +55,19 @@ Three regions stacked vertically, filling the viewport:
 
 ### How a tab looks
 
-The tabs read as tabs, not buttons (`packages/workbench/src/components/chrome/tab-shape.ts`, shared by all four editors):
+The tabs read as tabs, not buttons, and every editor draws them alike from `packages/workbench/src/components/chrome/` (`tab-shape.ts` for the classes, `TabFrame.tsx` for one tab, `TabStrip.tsx` for the strip):
 
-- **They stand on the screen's bottom edge**, like tabs on a bottom tab bar: each is 40 px tall with its upper corners rounded and its foot square, standing at the foot of the bar.
-- **The active tab is open at its foot.** It is a raised card (white, slate-800 in dark), outlined along its top and sides with no bottom edge, so it runs into the screen's bottom edge. Its name takes the tab theme's accent (made legible on that surface), with a short accent bar along its top.
-- **The others sit flat on the bar**: no fill, neutral ink (readable whatever the tab's theme), a fill on hover, and a hairline between two neighbouring flat tabs (never beside the active tab, whose outline divides there).
-- A tab folder and a tab outside a tab-scoped share stand the same way, outlined dashed; in a folder's upward fan the tabs are a list and round every corner.
+- **They stand on the screen's bottom edge**, like sheet tabs in a spreadsheet: 40 px tall (a 44 px tap area on touch), their upper corners rounded at 10 px and their foot square, at the foot of the bar. The bar is slate-100 (slate-900 in dark), a shade below the open tab, so the open tab lifts off it.
+- **The open tab is a card that joins the bottom edge.** It is white (slate-800 in dark) with a hairline ring and a soft shadow cast upward, its foot running into the screen's edge, and its name is semibold in the tab theme's accent, made legible (AA) on the card. Nothing runs along its top: no accent line or bar. Becoming open, its surface eases in over 150 ms (at once under reduced motion).
+- **The others are quiet.** No fill, no dividers between them, medium-weight slate ink readable whatever the tab's theme. Hovering one fills a soft rounded wash inset inside it and darkens its ink.
+- **Long names truncate** with an ellipsis past 14rem; a truncated name shows in full in a Tooltip.
+- **Focus** draws a 2 px brand ring inside the tab's name.
+- **Locked** tabs carry a small padlock before the name, in the tab's own ink. **Renaming** swaps the name for a field the same height, inside the tab's own shape.
+- **Dragging** dims the dragged tab, and a 2 px brand caret, rounded, stands in the gap where it will land.
+- **Add tab** is a quiet `+` after the last tab, with the same inset wash on hover.
+- A tab outside a tab-scoped share stands the same way, outlined dashed. Folders open in place in the strip: [Tab folders](../006-project/tab-folders.md#tab-bar-rendering).
 - **No `Tabs` label** before the tabs: the row is plainly tabs, and the room goes to them.
-- **No type icon.** A tab shows its name alone, at every width: no mode or kind icon before it. A lock still marks a locked tab, and the active tab keeps its menu button.
+- **No type icon.** A tab shows its name alone, at every width: no mode or kind icon before it. A lock still marks a locked tab, and the open tab keeps its menu button.
 
 ## Role pill
 
