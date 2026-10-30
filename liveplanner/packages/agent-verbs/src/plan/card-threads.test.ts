@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Item } from '@liveplanner/items';
+import type { Item, ItemTypeDef } from '@liveplanner/items';
 import type { CardThread, Comment } from '@liveplanner/project';
 import { fakeApi } from '../testing/fake-api';
 import {
@@ -7,6 +7,7 @@ import {
   listedThread,
   readThreadsState,
   resolveComment,
+  resolveCommentsField,
   resolveThread,
   threadListing,
 } from './card-threads';
@@ -65,7 +66,20 @@ const T2 = thread('th-aaaa9999cccc0000', {
   updatedAt: 9,
   cards: [{ projectId: P, itemId: 'card4', key: 4 }],
 });
-const STATE = { threads: [T1, T2], items: ITEMS };
+// A Task with its own Design Review beside Comments (docs/specs/026-plan/item-types.md "Comments and Votes fields"),
+// and a Note with no Comments field at all.
+const TASK: ItemTypeDef = {
+  id: 'task',
+  label: 'Task',
+  newTitle: 'New task',
+  glyph: 'task',
+  color: '#71717a',
+  fields: ['title', 'comments', 'f-review'],
+  custom: [{ id: 'f-review', label: 'Design Review', kind: 'comments' }],
+};
+const NOTE: ItemTypeDef = { ...TASK, id: 'note', label: 'Note', fields: ['title'], custom: [] };
+const TYPES = [TASK, NOTE];
+const STATE = { threads: [T1, T2], items: ITEMS, types: TYPES };
 
 describe('naming a thread and a comment', () => {
   it('takes an id, a title (case aside) or a prefix of four or more', () => {
@@ -114,6 +128,7 @@ describe('listing threads', () => {
           title: T1.title,
           state: 'open',
           cards: ['#12 Basket', '#4 in Sprint 12'],
+          field: 'Comments',
           comments: [
             {
               id: 'cm-person',
@@ -156,6 +171,50 @@ describe('listing threads', () => {
     });
     expect(listedThread(lone, P, new Map()).cards).toEqual(['#7', 'a card in another plan']);
   });
+
+  it('names the Comments field each thread shows under, on its first card here', () => {
+    const review = thread('th-rrrr', { field: 'f-review' });
+    const gone = thread('th-gggg', { field: 'f-gone' });
+    const elsewhere = thread('th-eeee', {
+      field: 'f-review',
+      cards: [
+        { projectId: 'other', itemId: 'x', key: 4 },
+        { projectId: P, itemId: 'card4', key: 4 },
+      ],
+    });
+    const note = { ...ITEMS[0]!, id: 'note1', type: 'note' };
+    const onNote = thread('th-nnnn', { cards: [{ projectId: P, itemId: 'note1', key: 1 }] });
+    const items = new Map([...ITEMS, note].map((i) => [i.id, i]));
+    expect(listedThread(review, P, items, TYPES).field).toBe('Design Review');
+    expect(listedThread(gone, P, items, TYPES).field).toBe('Comments');
+    expect(listedThread(elsewhere, P, items, TYPES).field).toBe('Design Review');
+    expect(listedThread(onNote, P, items, TYPES)).not.toHaveProperty('field');
+    expect(listedThread(T1, P, new Map(), TYPES)).not.toHaveProperty('field');
+  });
+});
+
+describe('naming a Comments field', () => {
+  it('takes an id, or a name with case and spacing aside, the built-in as Comments', () => {
+    expect(resolveCommentsField('f-review', TASK)).toEqual({ ok: true, value: 'f-review' });
+    expect(resolveCommentsField('  design   REVIEW ', TASK)).toEqual({
+      ok: true,
+      value: 'f-review',
+    });
+    expect(resolveCommentsField('comments', TASK)).toEqual({ ok: true, value: 'comments' });
+  });
+
+  it('refuses one the type does not have, naming the ones it has', () => {
+    expect(resolveCommentsField('QA Notes', TASK)).toEqual({
+      ok: false,
+      code: 'field_unknown',
+      message:
+        'Task cards have no Comments field "QA Notes". Their Comments fields: Comments, Design Review.',
+    });
+    expect(resolveCommentsField('Comments', NOTE)).toMatchObject({
+      ok: false,
+      message: 'Note cards have no Comments field: add one with change_card_types.',
+    });
+  });
 });
 
 describe('reading the state', () => {
@@ -163,8 +222,9 @@ describe('reading the state', () => {
     const api = fakeApi({
       [`/projects/${P}/threads`]: { threads: [T1] },
       [`/projects/${P}/items`]: { items: ITEMS, rev: 1 },
+      [`/projects/${P}/plan`]: { boards: [], statuses: [], types: TYPES, itemTypesRev: 1 },
     });
-    expect(await readThreadsState(api, P)).toEqual({ threads: [T1], items: ITEMS });
+    expect(await readThreadsState(api, P)).toEqual({ threads: [T1], items: ITEMS, types: TYPES });
   });
 });
 
@@ -231,6 +291,41 @@ describe('changing threads', () => {
       ['POST', undefined],
       ['POST', undefined],
     ]);
+  });
+
+  it('starts a thread in a Comments field named by name, sending its id; the built-in sends none', async () => {
+    const made = thread('th-newnewnewnewnew1', { field: 'f-review' });
+    const { api, sent } = writes(() => Response.json({ thread: made, commentId: 'cm-1' }));
+    const out = await applyThreadChanges(
+      api,
+      P,
+      [
+        { op: 'start', item: '#12', text: 'Spacing', field: 'design review' },
+        { op: 'start', item: '#12', text: 'Plain', field: 'Comments' },
+      ],
+      STATE,
+    );
+    expect(out.refusal).toBeUndefined();
+    expect(sent.map((s) => s.body)).toEqual([
+      { text: 'Spacing', field: 'f-review' },
+      { text: 'Plain' },
+    ]);
+  });
+
+  it('refuses a Comments field the card’s type does not have, sending nothing', async () => {
+    const { api, sent } = writes(() => Response.json({ thread: T1 }));
+    const out = await applyThreadChanges(
+      api,
+      P,
+      [{ op: 'start', item: '#12', text: 'x', field: 'QA Notes' }],
+      STATE,
+    );
+    expect(out.refusal).toEqual({
+      code: 'field_unknown',
+      message:
+        'Task cards have no Comments field "QA Notes". Their Comments fields: Comments, Design Review.',
+    });
+    expect(sent).toEqual([]);
   });
 
   it('deletes its own comment, saying when the thread went with it', async () => {

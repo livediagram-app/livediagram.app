@@ -33,6 +33,12 @@ const threadChange = z.discriminatedUnion('op', [
     text: text.describe(
       'The first comment. The thread is titled from your person’s name and its start.',
     ),
+    field: z
+      .string()
+      .optional()
+      .describe(
+        'The Comments field of the card’s type to start it in, by name or id (as list_threads names a thread’s field); the built-in Comments when omitted.',
+      ),
   }),
   z.strictObject({ op: z.literal('reply'), thread: threadRef, text }),
   z.strictObject({ op: z.literal('resolve'), thread: threadRef }),
@@ -78,6 +84,12 @@ const listedThread = z.object({
   cards: z
     .array(z.string())
     .describe('Every card it is on: "#12 Title" in this plan, "#4 in Sprint 12" in another.'),
+  field: z
+    .string()
+    .optional()
+    .describe(
+      'The Comments field it belongs to, by name on its first card ("Comments" for the built-in).',
+    ),
   comments: z.array(listedComment).describe('Its comments, oldest first.'),
 });
 
