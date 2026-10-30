@@ -23,6 +23,43 @@ const REORDER_THRESHOLD_PX = 4;
 
 type Reorder = { kind: BoardWidgetKind; startX: number; dx: number; slot: number; moved: boolean };
 
+// The zone's small square buttons (the + and Edit Widgets): one container so they match in size, dashed border, hover
+// and dark mode. Pressed (Edit Widgets while editing) fills it with the focus colour and solidifies the border.
+function ZoneButton({
+  size,
+  palette,
+  pressed = false,
+  children,
+  ...rest
+}: {
+  size: 'sm' | 'md';
+  palette: PlanPalette;
+  pressed?: boolean;
+  children: ReactNode;
+} & Omit<React.ComponentProps<'button'>, 'type' | 'className' | 'style' | 'onPointerDown'>) {
+  return (
+    <button
+      type="button"
+      {...rest}
+      className={`flex shrink-0 cursor-pointer items-center justify-center rounded-md border transition hover:bg-black/5 dark:hover:bg-white/10 ${
+        pressed ? '' : 'border-dashed'
+      } ${size === 'sm' ? 'ml-1 h-6 w-6' : 'h-7 w-7'}`}
+      style={
+        pressed
+          ? {
+              borderColor: palette.focus,
+              color: palette.focus,
+              backgroundColor: `color-mix(in srgb, ${palette.focus} 14%, transparent)`,
+            }
+          : { borderColor: palette.border, color: palette.muted }
+      }
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function BoardWidgetZone({
   widgets,
   canEdit,
@@ -88,20 +125,16 @@ export function BoardWidgetZone({
     />
   ) : null;
   const addButton = (size: 'sm' | 'md') => (
-    <button
-      type="button"
+    <ZoneButton
+      size={size}
+      palette={palette}
       aria-label="Add a widget"
       aria-haspopup="menu"
       aria-expanded={pickerAt !== null}
-      className={`flex shrink-0 cursor-pointer items-center justify-center rounded-md border border-dashed transition hover:bg-black/5 dark:hover:bg-white/10 ${
-        size === 'sm' ? 'ml-1 h-6 w-6' : 'h-7 w-7'
-      }`}
-      style={{ borderColor: palette.border, color: palette.muted }}
-      onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => setPickerAt(pickerAt ? null : e.currentTarget)}
     >
       <PlusIcon size={size === 'sm' ? 12 : 14} />
-    </button>
+    </ZoneButton>
   );
 
   const onPointerDown = (kind: BoardWidgetKind) => (e: React.PointerEvent<HTMLDivElement>) => {
@@ -254,27 +287,19 @@ export function BoardWidgetZone({
       {canEdit ? addButton('md') : null}
       {canEdit ? (
         <Tooltip label={active ? 'Done Editing Widgets' : 'Edit Widgets'}>
-          <button
-            type="button"
+          <ZoneButton
+            size="md"
+            palette={palette}
+            pressed={active}
             aria-label={active ? 'Done Editing Widgets' : 'Edit Widgets'}
             aria-pressed={active}
-            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10"
-            style={
-              active
-                ? {
-                    color: palette.focus,
-                    backgroundColor: `color-mix(in srgb, ${palette.focus} 14%, transparent)`,
-                  }
-                : { color: palette.muted }
-            }
-            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               setEditing(!active);
             }}
           >
             {active ? <CheckIcon size={14} /> : <PencilIcon />}
-          </button>
+          </ZoneButton>
         </Tooltip>
       ) : null}
       {picker}
