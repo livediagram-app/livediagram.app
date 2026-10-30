@@ -221,14 +221,7 @@ export interface LaneHead {
 
 // How a field lane groups (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
 export type LaneFieldKind =
-  | 'choice'
-  | 'checkbox'
-  | 'number'
-  | 'date'
-  | 'text'
-  | 'labels'
-  | 'card'
-  | 'person';
+  'choice' | 'checkbox' | 'number' | 'date' | 'text' | 'labels' | 'card' | 'person';
 export interface LaneField {
   id: string;
   label: string;
@@ -508,7 +501,10 @@ function laneOf(
       if (field.kind === 'card' && typeof lane.value === 'string') {
         const linked = linkedCard(items, lane.value);
         const colour = linked
-          ? itemColourOf(linked, types.find((t) => t.id === linked.type))
+          ? itemColourOf(
+              linked,
+              types.find((t) => t.id === linked.type),
+            )
           : undefined;
         return {
           ...lane,
