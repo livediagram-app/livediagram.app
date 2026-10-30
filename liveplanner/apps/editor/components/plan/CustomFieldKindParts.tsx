@@ -228,9 +228,14 @@ function SampleValue({
           photo.png
         </span>
       );
-    // A Comments field's threads are not a value (item-types.md "Comments and Votes fields").
+    // A Comments field reads as the count of its open threads' comments, as the card's chip draws it
+    // (item-types.md "Comments and Votes fields").
     case 'comments':
-      return null;
+      return (
+        <span className="inline-flex items-center gap-1 text-[13px] tabular-nums text-slate-700 dark:text-slate-200 [&_svg]:h-3.5 [&_svg]:w-3.5">
+          <CommentsIcon />2
+        </span>
+      );
     // A Votes field reads as the built-in Votes' ▲ count.
     case 'votes':
       return (
