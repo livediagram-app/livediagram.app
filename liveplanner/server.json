@@ -1,10 +1,15 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.liveplanner-app/liveplanner",
+  "name": "io.github.livediagram-app/liveplanner",
   "title": "liveplanner",
-  "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on liveplanner.app.",
+  "description": "Plan on liveplanner.app: boards of cards, spreadsheets, dashboards and forms, shared live.",
   "version": "0.1.0",
   "websiteUrl": "https://www.liveplanner.app",
+  "repository": {
+    "url": "https://github.com/livediagram-app/livediagram.app",
+    "source": "github",
+    "subfolder": "liveplanner/apps/mcp"
+  },
   "icons": [
     {
       "src": "https://www.liveplanner.app/liveplanner-icon-512.png",
