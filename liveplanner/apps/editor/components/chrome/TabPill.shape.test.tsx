@@ -64,7 +64,9 @@ describe('TabPill look', () => {
       handlersFor: () => ({}),
       isDragging: () => true,
     } as unknown as TabPillCtx['reorderDrag'];
-    const { container } = render(<TabPill tab={tab('t2', 'Notes')} ctx={ctx({ reorderDrag: drag })} />);
+    const { container } = render(
+      <TabPill tab={tab('t2', 'Notes')} ctx={ctx({ reorderDrag: drag })} />,
+    );
     expect(root(container).className).toMatch(/\bopacity-50\b/);
   });
 

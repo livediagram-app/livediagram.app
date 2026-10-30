@@ -21,10 +21,7 @@ export function OutOfScopeTabPill({
   selfRole: AccessLevel;
 }) {
   return (
-    <div
-      draggable={false}
-      className={TAB_DASHED_CLASS}
-    >
+    <div draggable={false} className={TAB_DASHED_CLASS}>
       <HoverCard title="Not shared" description="This tab isn't shared with you.">
         <button
           type="button"
