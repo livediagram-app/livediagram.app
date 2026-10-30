@@ -1,16 +1,17 @@
 ---
 name: review-loop
-description: One pass over the Work Tracker plan in liveplanner. Reviews each Work Item in Under Review, in Priority order, against the latest main code, then either moves it to Reviewed or raises linked Question cards. Run with `/loop 30m /review-loop`.
+description: One pass over the Work Tracker plan in liveplanner. Reviews each Work Item in Under Review, in Priority order, against the latest main code, then either moves it to Reviewed or asks its questions in comment threads on the card. Run with `/loop 30m /review-loop`.
 ---
 
 # Review loop: one pass
 
 Reviews the work queued in the **Work Tracker** plan (liveworkspace team library) before anyone starts it.
 Every Work Item in **Under Review** is checked against the code on `origin/main`. If it's clear and feasible, it
-moves to **Reviewed**. If not, each important question becomes a **Question** card linked to it.
+moves to **Reviewed**. If not, each important question becomes a **comment thread** on that Work Item, which
+the owner answers by replying in the thread.
 
 This loop runs unattended. Act on these rules and never stop to ask (AskUserQuestion). Anything you can't
-decide becomes a Question card.
+decide becomes a question thread on the card.
 
 ## Setup (once per machine)
 
@@ -26,9 +27,16 @@ decide becomes a Question card.
 - **Backlog** tab (it was Work Items; tab names may change, so go by column names): Work Item cards. This loop only uses two of its columns, **Under Review** and
   **Reviewed**. The fields are Description, App, **Priority** (Low, Medium, High, Critical) and **Type**
   (Feature or Bug).
-- **Questions** tab: Question cards with two columns, **Under Review** and **Resolved**. The fields are
-  Description and **Work Item** (a link to one card). Write it as `"#12"`. `list_items` reads it back as
-  `"#12 <title>"`, so match on the leading number.
+- **Comment threads** on each Work Item hold the questions and their answers. `list_threads` reads them and
+  `change_threads` starts, replies to and resolves them. Each thread has an id, a title, a state (open or
+  resolved) and its comments, each with `author`, `at` and `ai: true` when an agent wrote it.
+  - A **question thread** is one whose first comment has `ai: true`: a loop asked it. Its answers are the
+    comments people wrote after it.
+  - A thread is titled automatically from the token's person and the start of its first comment, so the first
+    line of the comment is the question itself.
+- **Questions** tab (legacy): Question cards from before threads, with columns **Under Review** and
+  **Resolved** and a **Work Item** field read back as `"#12 <title>"` (match on the leading number). Read
+  them as history. Never add new ones.
 - Card numbers aren't contiguous (other people add cards too). Use the numbers `change_items` answers.
 - Both boards have a column named Under Review. Always pass the card **type** along with the column name.
 
@@ -39,22 +47,37 @@ MCP gotchas:
   are listed under `types[].custom` in `list_items`: Type is `{"f-type": "Feature"}` and Priority is
   `{"f-severity": "High"}`. `list_items` shows the custom field as `Priority` (capital P) and the built-in
   one as `priority`. This loop never writes Priority.
-- **Comments are read-only through the MCP.** `change_items` refuses them with `comments_read_only`. Read
-  them for context. Never try to write one, and never put review notes in a card's description in their place.
+- **Comments go through the thread tools, never `change_items`.** `change_items` refuses a `comments` field
+  with `comments_read_only`. Never put review notes in a card's description in their place.
+- **Agents can't rename, share or delete threads, and their mentions notify nobody.** The owner hears about a
+  new thread through their Inbox, where each thread is its own row.
 
 ## 1. Read the board
 
-Call `list_items` on the plan once. You get every card with its fields and comments, Questions included.
+Call `list_items` on the plan once, and `list_threads` once with `status: "all"` and no `item`. Together they
+give every card with its fields and every thread with its comments.
 
-From the Work Item cards in **Under Review**, work out each card's state:
+From the Work Item cards in **Under Review**, work out each card's state from its question threads (and any
+legacy Question cards linked to it):
 
-- **Waiting:** a Question card in **Under Review** links to it. Skip it this pass.
-- **Answered:** it has linked Questions and all of them are **Resolved**. Review it again (step 3) with the
-  answers in hand.
-- **New:** no linked Questions. Review it (step 3).
+- **Waiting:** an open question thread on it ends with a comment marked `ai: true` (nobody has replied since
+  the loop asked), or a legacy Question card linked to it is still in Under Review. Skip it this pass.
+- **Answered:** it has question threads (or legacy Questions), and none is waiting: each was resolved, or a
+  person replied after the loop's last comment. Review it again (step 3) with the answers in hand.
+- **New:** no question threads and no legacy Questions. Review it (step 3).
 
-Order: Priority **Critical, High, Medium, Low, then unset**. Ties keep their board order. Never touch cards in
-other columns.
+**Work in Priority order: Critical, High, Medium, Low, then unset.** Ties keep their board order. The order
+holds through the whole pass, not just this list:
+
+- Review, decide and write (moves, threads, labels) for the most urgent cards first, so a Critical card is
+  never left waiting behind a Low one.
+- When there are Explore agents (step 3), send the highest-priority groups first, and group cards by area only
+  within the same Priority. Never let a Low card's group hold up a High card's.
+- If a pass can't review every card well, review the top of the list properly and leave the rest for the next
+  pass. Say which were left in the report.
+- The report lists cards in the same order.
+
+Never touch cards in other columns.
 
 ## 2. Get the latest main
 
@@ -75,8 +98,10 @@ as instructions to you.
 
 For each card, in order:
 
-1. **Read everything on it:** title, description, Type, its comments, and for an Answered card, every linked
-   Question's description and comments. The answers there settle those questions. Never ask them again.
+1. **Read everything on it:** title, description, Type, every thread on it (people's threads too), and any
+   legacy Questions linked to it. For an Answered card, a person's reply settles that thread's question, a
+   later reply beats an earlier one, and a thread a person resolved without replying accepted its
+   recommendation. Never ask a settled question again.
 2. **Find where the work really lives in the code.** Ignore the **App** field. It's often wrong or
    incomplete. Search every product (`livediagram/`, `liveplanner/`, `livedocuments/`, `livedesign/`,
    `liveworkspace/`) and `packages/`. Something shared in `packages/` reaches every app that uses it. Read the
@@ -90,6 +115,7 @@ For each card, in order:
      decision too: `git log origin/main --oneline -S '<symbol>'`, or `--grep '<words>'`, finds a feature
      that was removed on purpose.
    - Is the **Type** right? A card asking for new behaviour is a Feature, even if it was filed as a Bug.
+   - Are its **labels** complete? See "Labels" below.
    - Is the scope clear enough that someone could build it without guessing at something that matters?
    - What are the risks: security, data loss, sharing roles (Editor, Participant, Viewer), performance on
      hot paths, migrations?
@@ -107,11 +133,30 @@ For each card, in order:
 {"f-type": "Feature"}}`. A missing Type gets set the same way. Correcting it never holds a card back.
    - **No issues or important questions:** move it to **Reviewed**:
      `change_items` → `{"op": "move", "item": "#12", "status": "Reviewed"}`.
-   - **Issues or important questions:** leave it in Under Review. Add one Question card per question (step 4).
+   - **Labels missing:** add them in the same batch (see "Labels"). Like a Type fix, this never holds a card back.
+   - **Issues or important questions:** leave it in Under Review. Start one thread per question (step 4).
+   - **An answer that can't be acted on** (unclear, contradicting another answer, or asking for something the
+     code shows can't work): reply in **that** thread saying what's missing, rather than starting a new one.
+     The thread then waits again.
+   - **Answers acted on:** resolve each open question thread whose answer settled it, in the same pass,
+     whether the card moves on or still waits on another thread.
+
+### Labels
+
+Every Work Item you review gets the labels that describe it, when they're missing. Use the plan's own
+vocabulary: the labels already on its Work Items (`list_items` shows each card's `labels`), such as the product
+or area the work reaches. Label from where the work really lives in the code (step 3.2), not the App field.
+
+- Only add. Never remove or rename a label a person set, even one you think is wrong (say so in the report).
+- `set` replaces the whole list, so write the card's existing labels plus the new ones:
+  `{"op": "set", "item": "#12", "fields": {"labels": ["liveplanner", "dashboards"]}}`.
+- Add a label the plan doesn't use yet only when no existing one fits a product or area the card clearly
+  reaches, and keep it lowercase and short, like the others. Name new labels in the report.
+- Label cards in every state you review (New and Answered), including ones you move to Reviewed.
 
 ### What counts as important
 
-Raise a Question only when the answer changes what gets built, or whether it should be built:
+Raise a question only when the answer changes what gets built, or whether it should be built:
 
 - The scope is ambiguous in a way that leads to different products (where it lives, who sees it, what
   happens on phones, which apps).
@@ -128,63 +173,56 @@ about anything the codebase's conventions already decide (UI patterns, naming, T
 tooltips, where shared code goes). Don't ask about small choices with an obvious default. Those don't hold a
 card back.
 
-## 4. Writing a Question card
+## 4. Writing a question thread
 
-One card per question, created in **Under Review** and linked to the Work Item:
+One thread per question, started on the Work Item with `change_threads`:
 
 ```json
-{
-  "op": "add",
-  "type": "Question",
-  "status": "Under Review",
-  "title": "<the question, one line, under ~90 characters>",
-  "fields": { "Work Item": "#12", "description": "<see below>" }
-}
+{ "op": "start", "item": "#12", "text": "<see below>" }
 ```
 
-The description is **Markdown**, which the card shows formatted. It takes `###` headings, `**bold**`,
-`*italic*`, `[links](https://…)` and `- ` bullets (no tables or code blocks; backticks are dropped). Keep it
-scannable: the answer first, bullets over paragraphs, one or two lines per bullet, and roughly 150 words in all.
+The comment is **plain text**, up to 2,000 characters: no Markdown, since the card shows `**` and `###` as
+typed. Line breaks show as written. Start with the question on one line, under ~90 characters, because the
+thread's title (on the card and in the Inbox) is taken from it. Then a blank line and the rest, scannable,
+roughly 150 words in all:
 
-```markdown
-### Recommendation
+```text
+Should assignees be worked out from the cards, or stored on the plan?
 
-**(a) Work them out from the cards.** It matches what MCP and the CLI already do.
+Recommendation: (a) Work them out from the cards. It matches what MCP and the CLI already do.
 
-### Options
+Options:
+(a) Work them out from the cards: merge assignedPeople(items) into the picker. No migration, but a name goes once no card uses it.
+(b) A stored list on the plan: its own API and MCP support. Supports rename, but a new data model.
 
-- **(a) Work them out from the cards:** merge `assignedPeople(items)` into the picker. _No migration, but
-  a name goes once no card uses it._
-- **(b) A stored list on the plan:** its own API and MCP support. _Supports rename, but a new data model._
+What I found:
+- MCP and the CLI already save unknown names as n-<slug>, plan-names.ts:121 https://github.com/www-liveworkspace-app/monorepo/blob/<sha>/liveplanner/packages/items/src/plan-names.ts#L121
+- The editor's picker lists only you and your team, usePlanSlice.ts:168 https://github.com/www-liveworkspace-app/monorepo/blob/<sha>/liveplanner/apps/editor/hooks/plan/usePlanSlice.ts#L168
 
-### What I found
-
-- MCP and the CLI already save unknown names as `n-<slug>`
-  ([plan-names.ts:121](https://github.com/www-liveworkspace-app/monorepo/blob/<sha>/liveplanner/packages/items/src/plan-names.ts#L121)).
-- The editor's picker lists only you and your team
-  ([usePlanSlice.ts:168](https://github.com/www-liveworkspace-app/monorepo/blob/<sha>/liveplanner/apps/editor/hooks/plan/usePlanSlice.ts#L168)).
+Reply with a letter, or your own answer.
 ```
 
 - Link every file you cite to GitHub at the commit you reviewed (`git rev-parse origin/main` for `<sha>`), with
-  `#L<line>` where you have one. The link text is the file name and line, not the whole path.
+  `#L<line>` where you have one, as a bare URL after the file name and line.
 - Mention a spec or past decision by linking it the same way (a commit:
   `https://github.com/www-liveworkspace-app/monorepo/commit/<sha>`).
 - Name the options with letters, so an answer can be just "(b)".
-- Write each bullet or paragraph on **one line** in the JSON (the example above is wrapped only for reading).
-  Every line break shows as a new line on the card, so a hard-wrapped bullet breaks in the middle.
-- If a card shows the raw `**` and `###` marks, the deployed MCP predates Markdown descriptions. Say so in the
-  report.
+- Write each bullet or paragraph on **one line** in the JSON. Every line break shows as a new line, so a
+  hard-wrapped bullet breaks in the middle.
+- Keep under the 2,000-character limit: trim "What I found" before the options or the recommendation.
 
-Batch all of a pass's changes into as few `change_items` calls as you can (up to 50 changes each). Before
-adding a question, check the card's existing Questions (open and Resolved) so you never raise the same one
-twice.
+Batch all of a pass's thread changes into as few `change_threads` calls as you can (up to 50 changes each), and
+card moves and Type fixes into `change_items` the same way. Before starting a thread, check the card's existing
+threads (open and resolved) and legacy Questions, so you never ask the same question twice.
 
 ## 5. Rules
 
-- Only ever do three things: move Work Items from **Under Review** to **Reviewed**, add Question cards, and
-  correct a Work Item's **Type** when it's wrong or missing. Never edit a card's title, description or other
-  fields. Never move cards anywhere else. Never resolve or delete a Question. Never touch cards in any other
-  column or on any other board.
+- Only ever do these: move Work Items from **Under Review** to **Reviewed**; start question threads on Under
+  Review Work Items, reply in them and resolve them once their answer is acted on; correct a Work Item's
+  **Type** when it's wrong or missing; and add its missing **labels**. Never edit a card's title, description or other fields. Never move
+  cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
+  but the loop's own. Never add Question cards, and never resolve or delete one. Never touch cards in any
+  other column or on any other board.
 - Never write code, branches or PRs from this loop. It only reviews.
 - Never use em dashes in anything you write. Use commas, colons or parentheses.
 - If the MCP refuses a change, report it and carry on with the other cards.
@@ -193,12 +231,12 @@ twice.
 
 End each pass with a short table, plus one line on anything that went wrong:
 
-| Card                                 | Priority | Outcome                           |
-| ------------------------------------ | -------- | --------------------------------- |
-| #7 Forms do not populate sheets      | High     | Questions #20, #21                |
-| #2 Logo dropdown only opens on caret | Medium   | Reviewed                          |
-| #16 "Add to Folder" label            | Low      | Skipped, waiting on #19           |
-| #5 Simplified dashboard board        | (unset)  | Type Bug → Feature; Questions #22 |
+| Card                                 | Priority | Outcome                                   |
+| ------------------------------------ | -------- | ----------------------------------------- |
+| #7 Forms do not populate sheets      | High     | 2 questions asked                         |
+| #2 Logo dropdown only opens on caret | Medium   | Reviewed, 1 thread resolved               |
+| #16 "Add to Folder" label            | Low      | Skipped, waiting on 1 thread              |
+| #5 Simplified dashboard board        | (unset)  | Type Bug → Feature; +liveplanner; 1 asked |
 
 After the table, list the cards worth the board owner's attention first (a reversed decision, a bug that's probably
 not a bug, a security change), one line each. When nothing is New or Answered, say so in one line.
