@@ -1146,6 +1146,8 @@ The active tab carries a **`⋯` ellipsis button** to the right of its name. Cli
 
 The menu renders through a **portal** to `document.body` so it isn't clipped by the tab bar's horizontal scroll. It positions itself from the ellipsis button's bounding rect (tab surface) or at the cursor / footer-button point (canvas surface), clamping back on-screen at every viewport edge.
 
+**Closing.** The menu closes like every other menu: on Escape, on a primary press anywhere outside it (the canvas included, though the canvas stops its own pointer events), on a wheel scroll outside it, and when the window loses focus. All of it is one shared hook, `useMenuDismiss` (`packages/workbench/src/hooks/ui/useMenuDismiss.ts`): the press is heard on `pointerdown` in the capture phase, before the canvas can stop it, so a click on the canvas both dismisses the menu and does what it would have done. A press inside the menu, on the tab that opened it, or on a flyout, confirm popover or tour popover it opened never closes it; nor does a right press (its release re-opens the menu where it lands), nor a finger lifting within the first 400ms of the long press that opened it. Scrolling means the wheel, not the `scroll` event: the tab strip scrolls itself smoothly to reveal a tab just right-clicked, which would close the menu the moment it opened.
+
 ### Reordering
 
 Tabs are **draggable** via the native HTML5 drag API. Dragging a tab over another shows a ring around the drop target; releasing reorders the source to the target's position.

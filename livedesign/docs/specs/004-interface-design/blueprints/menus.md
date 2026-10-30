@@ -26,7 +26,7 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/useRowMenu.ts`             | Built on `useMenuButton`                                                                                                    |
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                                     |
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                                          |
-| `apps/live/components/chrome/TabPortalMenu.tsx`                             | Tab and Canvas control menu                                                                                                 |
+| `apps/live/components/chrome/TabPortalMenu.tsx`                             | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
 | `apps/live/components/panels/LayerRowMenu.tsx`                              | Layer control menu                                                                                                          |
 | `apps/live/components/canvas/LockedElementMenu.tsx`                         | Command menu, no trigger                                                                                                    |
 | `apps/live/components/chrome/ZoomMenu.tsx`                                  | Hover-open command menu with a button of its own                                                                            |

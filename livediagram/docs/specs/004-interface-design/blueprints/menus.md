@@ -25,7 +25,7 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/MenuFlyoutPanel.tsx`       | The flyout's surface: `menu` or `dialog`                                                                                    |
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                                     |
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                                          |
-| `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu                                                                                                 |
+| `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
 | `apps/editor/components/panels/LayerRowMenu.tsx`                            | Layer control menu                                                                                                          |
 | `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                     | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                                |
 | `../packages/workbench/src/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                                                    |
