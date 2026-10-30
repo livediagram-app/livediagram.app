@@ -3,7 +3,7 @@ import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { refocusAfterField } from '@liveworkspace/workbench/components/primitives/refocus-after-field';
 
 // Inline rename input shared by the document title (EditorHeader), tabs
-// (TabBar), and tab folders (TabFolderChip). Mounts focused with the
+// (TabBar), and tab folders (TabFolderGroup). Mounts focused with the
 // text selected, commits on blur or Enter, cancels on Escape. The raw
 // value is handed to onCommit; callers decide how to trim / validate
 // (e.g. fall back to the original name on an empty string). Styling is

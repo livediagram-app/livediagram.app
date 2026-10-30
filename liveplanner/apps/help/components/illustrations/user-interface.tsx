@@ -67,7 +67,20 @@ function DotsGlyph({ x, y, tone = 'slate' }: { x: number; y: number; tone?: 'sla
 
 // --- Fixed chrome ------------------------------------------------------------
 
-/** One tab pill in the bottom bar. */
+/** The open tab's card: rounded only at the top, joining the bar's bottom edge. */
+function TabCard({ x, top, bottom, w }: { x: number; top: number; bottom: number; w: number }) {
+  const r = 6;
+  return (
+    <path
+      d={`M${x} ${bottom} V${top + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom} Z`}
+      className="fill-white stroke-slate-300"
+      strokeWidth={1}
+    />
+  );
+}
+
+/** One tab in the bottom bar, standing on its bottom edge: the open one a card with its name in
+ *  the accent and its ⋯, the others bare names. */
 function TabPill({
   x,
   y,
@@ -83,25 +96,17 @@ function TabPill({
 }) {
   return (
     <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={20}
-        rx={6}
-        className={active ? 'fill-white stroke-brand-400' : 'fill-slate-100 stroke-slate-200'}
-        strokeWidth={1.2}
-      />
+      {active && <TabCard x={x} top={y - 2} bottom={y + 25} w={w} />}
       <Label
         x={x + 9}
-        y={y + 11}
+        y={y + 12}
         size={10}
-        weight={active ? 700 : 500}
-        tone={active ? 'strong' : 'body'}
+        weight={active ? 650 : 500}
+        tone={active ? 'accent' : 'body'}
       >
         {label}
       </Label>
-      {active && <DotsGlyph x={x + w - 11} y={y + 10} />}
+      {active && <DotsGlyph x={x + w - 11} y={y + 11} />}
     </g>
   );
 }
@@ -187,49 +192,54 @@ export function TabBar() {
   return (
     <Scene w={500} h={140}>
       <Shape x={195} y={22} w={110} h={46} label="Checkout" />
-      <rect x={0} y={y} width={500} height={36} className="fill-white" />
+      <rect x={0} y={y} width={500} height={36} className="fill-slate-100" />
       <line x1={0} y1={y} x2={500} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
-      {/* Active tab, with a presence avatar and its ⋯ menu button. */}
-      <rect
-        x={40}
-        y={y + 7}
-        width={92}
-        height={22}
-        rx={6}
-        className="fill-white stroke-brand-400"
-        strokeWidth={1.2}
-      />
-      <Label x={47} y={y + 19} size={9.5} weight={700} tone="strong">
+      {/* The open tab, a card on the bar's bottom edge, with a presence avatar and its ⋯. */}
+      <TabCard x={40} top={y + 5} bottom={y + 36} w={92} />
+      <Label x={48} y={y + 19} size={9.5} weight={650} tone="accent">
         Overview
       </Label>
       <circle cx={108} cy={y + 18} r={5} className="fill-emerald-400" />
       <DotsGlyph x={122} y={y + 18} />
       <TabPill x={140} y={y + 8} w={40} label="Flow" />
-      {/* A collapsed tab folder, as TabFolderChip draws it: dashed slate, folder glyph, the name in
-          capitals and a count. */}
-      <rect
-        x={188}
-        y={y + 8}
-        width={60}
-        height={20}
-        rx={6}
-        className="fill-slate-50 stroke-slate-300"
-        strokeWidth={1.2}
-        strokeDasharray="3 2"
-      />
-      <path
-        d={`M193 ${y + 14} h4 l1.5 2 h4.5 v6 h-10 Z`}
-        className="fill-none stroke-slate-500"
-        strokeWidth={1.1}
-        strokeLinejoin="round"
-      />
-      <Label x={207} y={y + 19} size={8.5} weight={700} tone="muted">
-        IDEAS
+      {/* A shut tab folder, as TabFolderGroup draws it: a chip tinted in the folder's colour with
+          its name, a count badge and a chevron. */}
+      <rect x={188} y={y + 9} width={62} height={18} rx={5} className="fill-violet-100" />
+      <Label
+        x={195}
+        y={y + 19}
+        size={9}
+        weight={650}
+        className="fill-violet-700 dark:fill-violet-300"
+      >
+        Ideas
       </Label>
-      <circle cx={240} cy={y + 18} r={5} className="fill-slate-200" />
-      <Label x={240} y={y + 19} anchor="middle" size={7.5} weight={700} tone="body">
+      <rect
+        x={224}
+        y={y + 12}
+        width={12}
+        height={12}
+        rx={3.5}
+        className="fill-violet-600 dark:fill-violet-300"
+      />
+      <Label
+        x={230}
+        y={y + 18.5}
+        anchor="middle"
+        size={8}
+        weight={700}
+        className="fill-white dark:fill-slate-950"
+      >
         2
       </Label>
+      <path
+        d={`M240 ${y + 15} l3 3 l-3 3`}
+        fill="none"
+        className="stroke-violet-700 dark:stroke-violet-300"
+        strokeWidth={1.3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <Label x={262} y={y + 19} size={15} weight={600} tone="muted" anchor="middle">
         +
       </Label>
