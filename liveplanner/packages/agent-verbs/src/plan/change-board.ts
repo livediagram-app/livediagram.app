@@ -28,6 +28,7 @@ import {
   type PlanBoardOutline,
 } from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
+import { joinBoardStatuses } from './brought-types';
 import { readPlanState } from './plan-state';
 import { tabPath } from '../verbs/shared';
 
@@ -190,6 +191,14 @@ export async function changeBoard(
       headers: { [CLIENT_HEADER]: client },
       body: JSON.stringify(body),
     });
+    // A column it gained, or a type it now takes, joins those types' statuses (and no others').
+    await joinBoardStatuses(
+      api,
+      projectId,
+      setup,
+      reshaped.setup,
+      state.plan.statuses.map((s) => s.status),
+    );
     const label = (id: string) => state.plan.types.find((t) => t.id === id)?.label ?? id;
     return {
       ok: true,

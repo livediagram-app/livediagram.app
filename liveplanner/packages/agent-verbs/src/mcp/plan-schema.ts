@@ -362,10 +362,13 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
         'The column a card of it starts in when none is given (a board’s column always places its own cards). A ' +
           'column no board has yet leaves it unset, so the type can come before its board.',
       ),
-    excludedStatuses: z
+    statuses: z
       .array(z.string())
       .optional()
-      .describe('Columns, by name, its cards never move into.'),
+      .describe(
+        'The columns, by name, its cards may move into, in the order its status menu lists them; default ' +
+          'every column the boards have. A board added later gives its columns only to the types it takes.',
+      ),
     display: displayArg.optional(),
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
@@ -393,10 +396,13 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
       .nullable()
       .optional()
       .describe('The Default State, or null to clear it.'),
-    excludedStatuses: z
+    statuses: z
       .array(z.string())
       .optional()
-      .describe('Columns, by name, its cards never move into.'),
+      .describe(
+        'The whole ordered list of columns, by name, its cards may move into (its status menu’s order); a ' +
+          'column left out is one they never move into.',
+      ),
     display: displayArg.optional(),
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),

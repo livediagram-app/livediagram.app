@@ -1,15 +1,20 @@
 // A board an agent makes brings its card types (docs/specs/026-plan/plan-agents.md "Adding a board",
 // docs/specs/026-plan/item-types.md "The type catalogue"), as placing it in the editor does: the ones the project
-// lacks join its card types (in a fresh project, they become them).
-// Nothing is read or written when no Plan board is among the elements, nor written when nothing changes. A refused
-// save leaves the board as made, with nothing brought. The save names the catalogue's revision it read; when another
-// change landed first, the card types are read again and brought to them (CARD_TYPES_SAVE_ATTEMPTS).
+// lacks join its card types (in a fresh project, they become them). Its statuses join the types it takes, and no
+// others (item-types.md "The statuses a type uses"), as does a column or a type change_board gives a board
+// (joinBoardStatuses); given the statuses the boards named before, types stored before the list are first written
+// in the new shape.
+// Nothing is read or written when no Plan board or chart is among the elements, nor written when nothing changes. A
+// refused save leaves the board as made, with nothing brought. The save names the catalogue's revision it read; when
+// another change landed first, the card types are read again and the change made to them (CARD_TYPES_SAVE_ATTEMPTS).
 import type { ApiClient } from '@liveworkspace/api-client';
 import type { ProjectResponse, ItemTypesRequest } from '@liveplanner/api-schema';
 import {
+  boardStatusJoins,
   boardTypeIdsOf,
   catalogueWithBoardTypes,
   typesOf,
+  withTypeStatuses,
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
@@ -54,24 +59,80 @@ async function saved(
   }
 }
 
-// The ids of the types the project gained.
+// Saves `make` of the stored catalogue, made again to it when another change landed first; the catalogue it left,
+// with what it was made from, or null when nothing changed or it did not save.
+async function savedChange(
+  api: ApiClient,
+  projectId: string,
+  make: (stored: ItemTypeCatalogue | null) => ItemTypeCatalogue | null,
+  known?: KnownCardTypes,
+): Promise<{ stored: ItemTypeCatalogue | null; next: ItemTypeCatalogue } | null> {
+  let read = known ?? (await readKnown(api, projectId));
+  for (let attempt = 1; ; attempt += 1) {
+    const { stored, rev } = read;
+    const next = make(stored);
+    if (next === null) return null;
+    const ok = await saved(api, projectId, next, rev);
+    if (ok === true) return { stored, next };
+    if (ok === false || attempt >= CARD_TYPES_SAVE_ATTEMPTS) return null;
+    read = await readKnown(api, projectId);
+  }
+}
+
+const planBoardsOf = (elements: readonly BoardLike[]) =>
+  elements.flatMap((el) =>
+    el.type === 'shape' && el.shape === 'plan-board' ? [el.planBoard] : [],
+  );
+
+// The catalogue once `before` boards became `after`: each type gains, at the end of its list, the statuses `after`
+// gives it that `before` did not; with `planStatuses`, a legacy type is first written as every one of them less what
+// it left out. Null when nothing changes.
+function joined(
+  catalogue: ItemTypeCatalogue | null,
+  before: readonly unknown[],
+  after: readonly unknown[],
+  planStatuses: readonly string[] | undefined,
+): ItemTypeCatalogue | null {
+  const ids = typesOf(catalogue).map((t) => t.id);
+  const joins = boardStatusJoins(before, after, ids);
+  return withTypeStatuses(catalogue, { joins, ...(planStatuses ? { planStatuses } : {}) });
+}
+
+// The ids of the types the project gained. `planStatuses`: every status the boards named before these were made.
 export async function bringBoardCardTypes(
   api: ApiClient,
   projectId: string,
   elements: readonly BoardLike[],
   known?: KnownCardTypes,
+  planStatuses?: readonly string[],
 ): Promise<string[]> {
-  if (boardTypeIdsOf(elements).length === 0) return [];
-  let read = known ?? (await readKnown(api, projectId));
-  for (let attempt = 1; ; attempt += 1) {
-    const { stored, rev } = read;
-    const next = catalogueWithBoardTypes(stored, elements);
-    if (next === null) return [];
-    const ok = await saved(api, projectId, next, rev);
-    if (ok === true) return gained(stored, next);
-    if (ok === false || attempt >= CARD_TYPES_SAVE_ATTEMPTS) return [];
-    read = await readKnown(api, projectId);
-  }
+  const boards = planBoardsOf(elements);
+  if (boardTypeIdsOf(elements).length === 0 && boards.length === 0) return [];
+  const done = await savedChange(
+    api,
+    projectId,
+    (stored) => {
+      const brought = catalogueWithBoardTypes(stored, elements);
+      return joined(brought ?? stored, [], boards, planStatuses) ?? brought;
+    },
+    known,
+  );
+  return done ? gained(done.stored, done.next) : [];
+}
+
+// A board's statuses join the types it takes once change_board has changed it (`before` to `after`, set-ups):
+// whether anything was saved. `planStatuses`: every status the boards named before the change.
+export async function joinBoardStatuses(
+  api: ApiClient,
+  projectId: string,
+  before: unknown,
+  after: unknown,
+  planStatuses: readonly string[],
+): Promise<boolean> {
+  const done = await savedChange(api, projectId, (stored) =>
+    joined(stored, [before], [after], planStatuses),
+  );
+  return done !== null;
 }
 
 // The ids the project gained.

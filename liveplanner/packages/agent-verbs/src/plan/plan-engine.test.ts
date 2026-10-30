@@ -487,9 +487,19 @@ describe('addBoard', () => {
     expect(body.base.rev).toBe(7);
     expect(body.operations[0]!.element.x).toBeGreaterThan(100);
     expect(body.operations[0]!.element.planBoard.addTypes).toEqual(['bug']);
-    // The project has Bug already: nothing is brought, nothing more is written.
+    // The project has Bug already: nothing is brought. Its new status joins Bug, the type the board takes, and no
+    // other (docs/specs/026-plan/item-types.md "The statuses a type uses"), the types first written in the new shape.
     expect(r.brought).toEqual([]);
-    expect(seen).toHaveLength(1);
+    expect(seen.map((s) => `${s.method} ${s.path}`)).toEqual([
+      `POST /projects/${D}/tabs/t1/changesets`,
+      `PUT /projects/${D}/item-types`,
+    ]);
+    const saved = (seen[1]!.body as { itemTypes: { types: { id: string; statuses?: string[] }[] } })
+      .itemTypes.types;
+    const ideas = r.columns[0]!.status;
+    expect(saved.find((t) => t.id === 'bug')!.statuses).toContain(ideas);
+    expect(saved.find((t) => t.id === 'task')!.statuses).not.toContain(ideas);
+    expect(saved.every((t) => Array.isArray(t.statuses))).toBe(true);
   });
 
   // docs/specs/026-plan/plan-agents.md "Adding a board": a preset brings the types the project lacks.

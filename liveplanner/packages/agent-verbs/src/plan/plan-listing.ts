@@ -19,6 +19,7 @@ import {
   namedDisplay,
   PARENT_FIELD_ID,
   tabsOf,
+  typeStatusesOf,
   typeCardLayout,
   type Item,
   type ItemTypeDef,
@@ -96,6 +97,9 @@ export interface ListedType {
   }[];
   // The column a new card of it starts in, by name.
   defaultStatus?: string;
+  // The columns its cards may move into, by name, in its order (docs/specs/026-plan/item-types.md "The statuses a
+  // type uses"); a status no board names is left out.
+  statuses: string[];
   // What its cards show per size, by place and field name, as change_card_types takes it.
   display: Record<string, Record<string, string[]>>;
   tabs: { name: string; fields: string[] }[];
@@ -215,6 +219,10 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.required ? { required: true } : {}),
     })),
     ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),
+    statuses: typeStatusesOf(
+      t,
+      statuses.map((s) => s.status),
+    ).flatMap((id) => statuses.filter((s) => s.status === id).map((s) => s.name)),
     display: namedDisplay(t, (size) => typeCardLayout(t, size)),
     tabs: tabsOf(t).map((tab) => ({ name: tab.label, fields: tab.fields.map(fieldName) })),
     detailsLabel: detailsLabelOf(t),
