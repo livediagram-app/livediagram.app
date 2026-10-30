@@ -45,7 +45,12 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 // "Recommended and groups"). Mirrors isBlankTemplate (BLANK_TEMPLATE, EXTRA_BLANK_TEMPLATES and Blank Tab);
 // the categories test pins them together.
 type BlankKind =
-  'blank' | 'blank-illustration' | 'blank-slide-deck' | 'blank-article' | 'blank-infographic';
+  | 'blank'
+  | 'blank-illustration'
+  | 'blank-slide-deck'
+  | 'blank-article'
+  | 'blank-infographic'
+  | 'blank-flashcards';
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
@@ -66,6 +71,10 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   resume: 'presentations',
   'recipe-card': 'presentations',
   'live-card': 'presentations',
+  // Flashcards to speak from.
+  'talk-flashcards': 'presentations',
+  'wedding-toast': 'presentations',
+  'pitch-flashcards': 'presentations',
   // Design: shots and the spaces people move through.
   storyboard: 'design',
   'floor-plan': 'design',

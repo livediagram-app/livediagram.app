@@ -6,6 +6,7 @@ import type { BackgroundPattern, Tab } from '@livedocuments/document';
 import { articleTemplateOverrides } from './article-template';
 import { workingBackwardsOverrides } from './template-working-backwards';
 import { blankPageTemplateOverrides } from './blank-page-templates';
+import { flashcardTemplateOverrides, isFlashcardTemplate } from './flashcard-templates';
 import { templateLayers } from './template-layers';
 import { templatePages } from './template-pages';
 import type { TemplateKind } from './templates';
@@ -32,6 +33,8 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
   // Working Backwards is an article too: its PR/FAQ flows onto pages in the Report look (template-working-backwards.ts).
   if (kind === 'working-backwards') Object.assign(overrides, workingBackwardsOverrides());
+  // The flashcard stacks open on their cards (flashcard-templates.ts).
+  if (isFlashcardTemplate(kind)) Object.assign(overrides, flashcardTemplateOverrides(kind));
   // A blank of a page kind opens on its one page, its kind already chosen (blank-page-templates.ts).
   const blankPage = blankPageTemplateOverrides(kind);
   if (blankPage) Object.assign(overrides, blankPage);
