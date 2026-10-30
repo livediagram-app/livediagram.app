@@ -66,8 +66,8 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 - **Focus comes back.** When a menu closes while it holds focus (Escape, choosing a verb) focus
   returns to where it was when the menu opened: the trigger that opened it, the tree row Shift+F10
   was pressed on, the element that was right-clicked. If that place is gone, or was nowhere, it
-  goes to the menu's trigger; a control that re-renders as the menu closes (the selection
-  toolbar's More actions, which steps aside while the element menu is up) is found again by its
+  goes to the menu's trigger; a control that re-renders as the menu closes (the multi-selection
+  toolbar's More actions, which steps aside while the selection menu is up) is found again by its
   id. A verb that opens a dialog or a rename field hands focus on from there.
 - **The zoom percentage is a button of its own**: Enter and Space fit the screen, as a click does,
   and Down Arrow or Up Arrow opens its presets.
@@ -81,7 +81,7 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 
 - The menu is a non-modal `role="dialog"` with a name ("Element menu", "Selection menu", "Cell
   menu", "Tab menu", "Canvas menu", "<layer> layer menu",
-  "Live image"). Its trigger says so: `aria-haspopup="dialog"` (the tab's ⋯, the selection
+  "Live image"). Its trigger says so: `aria-haspopup="dialog"` (the tab's ⋯, the multi-selection
   toolbar's More actions, an element's settings ⋯).
 - Its controls keep their own roles: buttons, toggle buttons (`aria-pressed`), sliders, fields,
   selects. Its accordion headers are disclosure buttons (`aria-expanded`) and collapsed sections are
@@ -130,8 +130,7 @@ element or add one:
 - **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note") and the Toolbar strip's **Add Page**. A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@livedocuments/api-schema`).
 - **The quick-add ring's options**: "Add Row", "Add Column", "Add
   Point", "Add Stat".
-- **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
-  Text").
+- **Buttons drawn on an element**: the element menu's quick bar ("Stack Front", "Add Text").
 - **Command palette names**: every command search offers ("Bring to Front", "Create New Tab",
   "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
 - **Keyboard shortcut rows that name a command or tool** ("Bring to Front", "Zoom In", "Select
