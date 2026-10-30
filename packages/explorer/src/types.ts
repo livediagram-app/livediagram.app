@@ -1,6 +1,7 @@
 // The host-facing types: what an app hands the Explorer so it can link, navigate and create without
 // importing the app's router.
 
+import type { CommunityShareInput } from './dialogs/ShareDialogWithCommunity';
 import type { ComponentType, MouseEventHandler, ReactNode } from 'react';
 import type { App, InboxAction, InboxThread, Item, ShareLink } from '@liveworkspace/index-client';
 import type { ShareHandOver } from './dialogs/share/handover';
@@ -182,6 +183,9 @@ export type ShareHost = {
   handOver?: (item: Item) => ShareHandOver | undefined;
   helpHref?: ShareHelpHref;
   onTelemetry?: ShareHostTelemetry;
+  // The Community tab for an item whose app has a Community (liveworkspace/docs/specs/007-community/community.md "The
+  // Share dialog's Community tab"); undefined, the plain Share dialog.
+  community?: (item: Item) => CommunityShareInput | undefined;
 };
 
 /** The Share dialog's reports (ShareTelemetry), with the item it shares, so a host listing every app's items can

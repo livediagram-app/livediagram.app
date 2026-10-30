@@ -36,6 +36,7 @@
     "@livediagram/templates": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",

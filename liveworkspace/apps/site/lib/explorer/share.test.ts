@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ShareLink } from '@liveworkspace/index-client';
+import type { Item, ShareLink } from '@liveworkspace/index-client';
 
 vi.mock('./token', () => ({ workspaceToken: async () => 'tok' }));
 
-import { handOverFor, loadTabsOf, shareHelpHrefFor } from './share';
+import { communityShareOf, handOverFor, loadTabsOf, shareHelpHrefFor, shareHostFor } from './share';
 
 const link = { code: 'c/1' } as ShareLink;
 
@@ -69,5 +69,53 @@ describe('the Share dialog’s extras on liveworkspace.app', () => {
     expect(shareHelpHrefFor('liveplanner')('sharePasswords')).toBe(
       'https://www.liveplanner.app/help/collaboration/sharing/share-passwords/',
     );
+  });
+});
+
+describe('the Community tab on liveworkspace.app', () => {
+  const account = { id: 'user_a', name: 'Ada' };
+  const canvas = {
+    app: 'livediagram' as Item['app'],
+    id: 'd 1',
+    title: 'Payments',
+    ownerId: 'user_a',
+  };
+
+  it('offers the account’s own canvases, through livediagram’s owner route with the workspace token', async () => {
+    const fetch = vi.fn(async () => Response.json({ post: null }));
+    const tab = communityShareOf(canvas, account, true, '/sign-in', fetch)!;
+    expect(tab).toMatchObject({
+      ownerId: 'user_a',
+      documentName: 'Payments',
+      signedIn: true,
+      communityOn: true,
+      signInHref: '/sign-in',
+      author: { name: 'Ada' },
+    });
+    expect(tab.host.app).toBe('livediagram.app');
+    expect(tab.host.words.noun).toBe('canvas');
+    expect(tab.host.postHref('p1')).toBe('https://www.livediagram.app/community/post/?id=p1');
+    expect(await tab.host.client.get()).toBeNull();
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://www.livediagram.app/api/documents/d%201/community');
+    expect(new Headers(init.headers).get('Authorization')).toBe('Bearer tok');
+  });
+
+  it('offers none for someone else’s item, a guest, an app with no Community yet, or while it is off', () => {
+    expect(communityShareOf({ ...canvas, ownerId: 'user_b' }, account, true, '')).toBeUndefined();
+    expect(communityShareOf(canvas, null, true, '')).toBeUndefined();
+    expect(communityShareOf(canvas, account, false, '')).toBeUndefined();
+    expect(
+      communityShareOf({ ...canvas, app: 'liveplanner' as Item['app'] }, account, true, ''),
+    ).toBeUndefined();
+    expect(
+      communityShareOf({ ...canvas, app: 'nope' as never }, account, true, ''),
+    ).toBeUndefined();
+  });
+
+  it('is the Share host’s, per item', () => {
+    const host = shareHostFor('livediagram', account, true, '/sign-in');
+    expect(host.community!(canvas as never)?.documentName).toBe('Payments');
+    expect(shareHostFor('livediagram').community!(canvas as never)).toBeUndefined();
   });
 });

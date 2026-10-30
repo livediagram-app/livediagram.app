@@ -2,6 +2,7 @@
 
 import { PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
+import { COMMUNITY_PUBLIC_BADGE, COMMUNITY_PUBLIC_LABEL } from '@liveworkspace/community-ui/share';
 import {
   THIS_BROWSER_DESCRIPTION,
   THIS_BROWSER_LABEL,
@@ -41,11 +42,11 @@ export const SHARE_STATE_META: Record<
       'bg-brand-50 px-2 text-[10px] font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
     dot: 'text-brand-700 dark:text-brand-400',
   },
+  // The Share dialog's Community tab wears the same pink Public (@liveworkspace/community-ui).
   community: {
-    label: 'Public',
+    label: COMMUNITY_PUBLIC_LABEL,
     description: 'In the public Community: anyone can find it, view it and make their own copy.',
-    badge:
-      'bg-pink-50 px-2 text-[10px] font-semibold text-pink-700 ring-1 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30',
+    badge: COMMUNITY_PUBLIC_BADGE,
     dot: 'text-pink-500',
   },
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the

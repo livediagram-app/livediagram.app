@@ -180,8 +180,17 @@ the revoke confirmation beside the bin, Password Protection as a settings card, 
 glyph (never a coloured dot). The words are each app's own (Share This Plan, only you can open this design).
 
 The Explorer opens it from an item's menu with the host's `share` prop (`ShareHost`): `loadTabs(item)`,
-`handOver(item)`, `helpHref` and `onTelemetry(action, type, item)`, asked per item since the Explorer may list
-every app's; the item lets a host count a dialog's events for that item's app.
+`handOver(item)`, `helpHref`, `onTelemetry(action, type, item)` and `community(item)`, asked per item since the
+Explorer may list every app's; the item lets a host count a dialog's events for that item's app.
+
+### `<ShareDialogWithCommunity>`
+
+The Share dialog with the Community tab beside Passes (liveworkspace/docs/specs/007-community/community.md "The
+Share dialog's Community tab"): the `ShareDialog` props plus `community` (`CommunityShareInput`: a
+`CommunityShareHost` from `@liveworkspace/community-ui/share`, the owner, the document's name, signed in, the
+Community's switch, the sign-in link, the author). While a listing is being written the publish dialog takes the
+Share dialog's place. The Explorer uses it for an item whose `ShareHost.community(item)` answers; an app's editor
+uses it for the open document.
 
 ### `<ExplorerPanel>`
 

@@ -217,8 +217,15 @@ app knows who owns the document and whether it may be published).
   `ShareHost`, for every app whose Community is on. liveworkspace.app reaches each app's owner route at the
   address its sites registry entry names (`APP_ITEMS[app].share.communityPath`), with the person's workspace token,
   as it reads an item's tabs. An app without a Community, or switched off, gives no tab.
-- The tab is offered to the document's owner, signed in; a guest sees why and **Sign In to Share**. A team
-  library's document says it can't be shared to the Community.
+- The tab is offered for a signed-in owner's personal documents. A guest, someone else's document and a team
+  library's document get the Share dialog without it.
+- The tab's pieces are the same everywhere (`@liveworkspace/community-ui/share`); a host binds them once with a
+  `CommunityShareHost`: the app, its words ("canvas", "plan"), the owner client, where a post's page is, and
+  optionally its toasts, telemetry, help link and the card preview's picture. The Explorer's Share dialog with the
+  tab is `@liveworkspace/explorer` `ShareDialogWithCommunity`. liveworkspace.app's Explorer has no picture for the
+  card preview (the snapshot is the app's) and sends no Community telemetry (its Explorer events are a closed set).
+- On an app's own address the Explorer's token is that app's alone, so it offers the tab for that app's documents
+  only.
 
 ## Adding an app
 

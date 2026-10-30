@@ -163,6 +163,9 @@ export type AppShare = {
   tabsPath: string | null;
   // The app's help articles on sharing, under `${url}/help/`.
   help: { sharing: string; shareLinkExpiry: string; sharePasswords: string };
+  // An item's Community post as its owner manages it (`/api/<items>/:id/community`, the Share dialog's Community
+  // tab; liveworkspace/docs/specs/007-community/community.md), or null while the app has no Community.
+  communityPath: string | null;
 };
 
 // Every app's help centre keeps sharing under the same three addresses.
@@ -176,13 +179,17 @@ const SHARE_HELP = {
 export const itemTabsPath = (itemsSegment: string) => `/api/${itemsSegment}/:id/tabs`;
 
 // Every app serves its embeds and live images at the same addresses.
-const shareOf = (tabsPath: string, alt: string): AppShare => ({
+const shareOf = (tabsPath: string, alt: string, communityPath: string | null = null): AppShare => ({
   embedPath: '/embed?s=:code',
   liveImagePath: '/api/share/:code/image.svg',
   liveImageAlt: alt,
   tabsPath,
   help: SHARE_HELP,
+  communityPath,
 });
+
+/** Where an app serves an item's Community post to its owner. */
+const itemCommunityPath = (itemsSegment: string) => `/api/${itemsSegment}/:id/community`;
 
 export const APP_ITEMS: Record<AppName, AppItems> = {
   livediagram: {
@@ -203,7 +210,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
       { id: 'drawio', name: 'draw.io', libraries: true },
     ],
     importPath: '/import',
-    share: shareOf(itemTabsPath('documents'), 'livediagram tab'),
+    share: shareOf(itemTabsPath('documents'), 'livediagram tab', itemCommunityPath('documents')),
   },
   liveplanner: {
     site: 'liveplanner.app',

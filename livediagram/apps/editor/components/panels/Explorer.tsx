@@ -10,7 +10,7 @@ import {
 } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
-import { BrandMark, ProductNavLinks } from '@livediagram/ui';
+import { BrandMark, ProductNavLinks, useCommunityEnabled } from '@livediagram/ui';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -26,6 +26,7 @@ import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-host';
 import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
+import { API_BASE } from '@/lib/api-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
@@ -64,12 +65,21 @@ function ExplorerImpl({
   const isMobile = useIsMobileViewport();
   const sheet = isMobile;
   const router = useAppNavigation();
-  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   // Take Offline and Sync Canvas on a canvas's menu, as the person (an account, or this browser's guest).
   const guestId = useGuestId(authLoaded, accountUserId);
   const itemMenu = useOfflineItemMenu(accountUserId ?? guestId);
   const thisBrowser = useThisBrowserHost(accountUserId ?? guestId, !!accountUserId);
-  const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
+  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  const shareHost = useMemo(
+    () =>
+      explorerShareHost(
+        accountUserId ?? null,
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+      ),
+    [accountUserId, accountDisplayName, communityOn],
+  );
   // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
   const inboxOwner = accountUserId ?? guestId ?? null;
   const inboxBase = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);

@@ -13,6 +13,7 @@ import { DefaultFoldersDialog } from '../defaults/DefaultFolders';
 import { folderDefaultEntries, folderDeleteConfirmation } from '../defaults/entries';
 import { UseAsDefaultDialog } from '../defaults/UseAsDefaultDialog';
 import type { ShareUrl } from '../types';
+import type { ShareTelemetry } from '../dialogs/share/types';
 import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
 import { useHostExtras } from './host';
@@ -22,6 +23,14 @@ import { useTeams } from '../teams/context';
 // History loads when it is first opened: its timeline, runs and chips are only for the one who asks.
 const HistoryDialog = lazy(() =>
   import('../library/HistoryDialog').then((m) => ({ default: m.HistoryDialog })),
+);
+
+// The Community tab (@liveworkspace/community-ui: its guide, section and publish dialog) loads when an item with a
+// Community is first shared, so an Explorer that never shares one never downloads it.
+const ShareDialogWithCommunity = lazy(() =>
+  import('../dialogs/ShareDialogWithCommunity').then((m) => ({
+    default: m.ShareDialogWithCommunity,
+  })),
 );
 
 const defaultShareUrl: ShareUrl = (link) =>
@@ -119,22 +128,28 @@ export function ExplorerDialogs() {
     case 'share': {
       const item = dialog.item;
       const loadTabs = shareHost?.loadTabs;
-      return (
-        <ShareDialog
-          client={client}
-          item={item}
-          loadTabs={loadTabs ? () => loadTabs(item) : undefined}
-          shareUrl={shareUrl ?? defaultShareUrl}
-          handOver={shareHost?.handOver?.(item)}
-          helpHref={shareHost?.helpHref}
-          onTelemetry={
-            shareHost?.onTelemetry
-              ? (action, type) => shareHost.onTelemetry?.(action, type, item)
-              : undefined
-          }
-          notify={(text, tone) => toast.show(text, { tone })}
-          onClose={close}
-        />
+      const community = shareHost?.community?.(item);
+      const share = {
+        client,
+        item,
+        loadTabs: loadTabs ? () => loadTabs(item) : undefined,
+        shareUrl: shareUrl ?? defaultShareUrl,
+        handOver: shareHost?.handOver?.(item),
+        helpHref: shareHost?.helpHref,
+        onTelemetry: shareHost?.onTelemetry
+          ? (action: Parameters<ShareTelemetry>[0], type: string) =>
+              shareHost.onTelemetry?.(action, type, item)
+          : undefined,
+        notify: (text: string, tone: 'success' | 'info' | 'error') => toast.show(text, { tone }),
+        onClose: close,
+      };
+      // With a Community for the item's app, its tab sits beside Passes.
+      return community ? (
+        <Suspense fallback={null}>
+          <ShareDialogWithCommunity {...share} community={community} />
+        </Suspense>
+      ) : (
+        <ShareDialog {...share} />
       );
     }
     case 'delete-folder': {

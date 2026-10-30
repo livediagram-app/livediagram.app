@@ -23,6 +23,14 @@ export function contrastRatio(a: string, b: string): number {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
+// A `#rrggbb` colour darkened toward black by `amount` (0 to 1); the input unchanged when it isn't one.
+export function shade(hex: string, amount: number): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  const keep = 1 - amount;
+  return rgbToHex({ r: rgb.r * keep, g: rgb.g * keep, b: rgb.b * keep });
+}
+
 function relativeLuminance(hex: string): number | null {
   const rgb = hex.startsWith('#') ? hexToRgb(hex) : null;
   if (!rgb) return null;

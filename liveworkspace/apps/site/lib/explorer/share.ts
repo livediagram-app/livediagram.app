@@ -6,10 +6,17 @@
 // are read once, when the dialog opens, with the person's workspace token (and the item's share code when it was
 // reached through a link), as the previews are: the tabs alone where the app serves them, never the whole item.
 
-import type { ShareHandOver, ShareHelpHref, ShareHost } from '@liveworkspace/explorer';
+import { isCommunityApp } from '@liveworkspace/community';
+import { COMMUNITY_APP_WORDS, communityOwnerClient } from '@liveworkspace/community-ui/share';
+import type {
+  CommunityShareInput,
+  ShareHandOver,
+  ShareHelpHref,
+  ShareHost,
+} from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
 import { APP_ITEMS, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
-import { appOrigin } from './page-app';
+import { appOrigin, pageApp } from './page-app';
 import { trackShare } from './telemetry';
 import { workspaceToken } from './token';
 
@@ -74,9 +81,67 @@ export function shareHelpHrefFor(app: AppName): ShareHelpHref {
   return (article) => `${url}/help/${help[article]}/`;
 }
 
-/** The Share dialog's extras for the page's app (its help), and per item for every app's (tabs, embed, live image). */
-export function shareHostFor(app: AppName): ShareHost {
+/** The app whose items have a Community tab here so far (the others' come with their Communities). */
+export const COMMUNITY_SHARE_APP: AppName = 'livediagram';
+
+/** The signed-in account the Explorer asks as, for the Community tab: its `sub` and the name its listings show. */
+export type ShareAccount = { id: string; name: string | null };
+
+// The listing's author colour, which the account doesn't choose here.
+const AUTHOR_COLOUR = '#64748b';
+
+/** An item's Community tab (liveworkspace/docs/specs/007-community/community.md "The Share dialog's Community tab"):
+ *  for the account's own items of an app with a Community, through the app's owner route with the workspace token.
+ *  On an app's own address the token is that app's alone, so another app's items get none. */
+export function communityShareOf(
+  item: Pick<Item, 'app' | 'id' | 'title' | 'ownerId'>,
+  account: ShareAccount | null,
+  communityOn: boolean,
+  signInHref: string,
+  doFetch?: typeof fetch,
+): CommunityShareInput | undefined {
+  if (!account || !communityOn || item.ownerId !== account.id || !isAppName(item.app)) {
+    return undefined;
+  }
+  const app = item.app;
+  const here = pageApp();
+  if (here && here !== app) return undefined;
+  const { communityPath } = APP_ITEMS[app].share;
+  const communityApp = APP_ITEMS[app].site;
+  if (!communityPath || !isCommunityApp(communityApp)) return undefined;
+  const url = siteOfApp(app).url;
   return {
+    host: {
+      app: communityApp,
+      words: COMMUNITY_APP_WORDS[communityApp],
+      client: communityOwnerClient({
+        app: communityApp,
+        url: `${appOrigin(app)}${fill(communityPath, { id: item.id })}`,
+        token: workspaceToken,
+        fetch: doFetch,
+      }),
+      // The post's page in the app's own Community.
+      postHref: (postId) => `${url}/community/post/?id=${encodeURIComponent(postId)}`,
+    },
+    ownerId: account.id,
+    documentName: item.title,
+    signedIn: true,
+    communityOn,
+    signInHref,
+    author: { name: account.name || 'You', color: AUTHOR_COLOUR },
+  };
+}
+
+/** The Share dialog's extras for the page's app (its help), and per item for every app's (tabs, embed, live image,
+ *  and the Community tab for the signed-in account's own items while the Community is on). */
+export function shareHostFor(
+  app: AppName,
+  account: ShareAccount | null = null,
+  communityOn = false,
+  signInHref = '',
+): ShareHost {
+  return {
+    community: (item) => communityShareOf(item, account, communityOn, signInHref),
     loadTabs: (item) => loadTabsOf(item),
     handOver: (item) => (isAppName(item.app) ? handOverFor(item.app) : undefined),
     helpHref: shareHelpHrefFor(app),
