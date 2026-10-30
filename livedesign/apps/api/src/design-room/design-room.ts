@@ -1178,6 +1178,7 @@ export class DesignRoom extends DurableObject<Env> {
       const gate = gateClientOp(msg.op, {
         role: sender.role,
         tabScope: session.tabScope ?? null,
+        key: sender.key,
       });
       if (gate.kind === 'drop') return;
       if (gate.kind === 'participant-content') {
@@ -1194,7 +1195,7 @@ export class DesignRoom extends DurableObject<Env> {
         return;
       }
       const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
-      const isPresenceOp = gate.presence;
+      const isPresenceOp = gate.kind === 'relay' && gate.presence;
       // Remember the sender's current tab so a future joiner learns it
       // from the presence list (tab-focus ops only fire on a switch, so
       // they're invisible to anyone who joins afterwards). Persisted to
@@ -1243,6 +1244,11 @@ export class DesignRoom extends DurableObject<Env> {
           sender,
         );
         const seq = this.sequenceMutation(sender.id, op, ws);
+        // A Participant's own comment reaction (docs/specs/012-collaboration/comment-reactions.md) is written by
+        // the room, as stamped: a Participant never saves a whole tab.
+        if (gate.kind === 'participant-reaction') {
+          void this.participantWrites.writeReaction(session.designId ?? null, op);
+        }
         // The relay skips the sender, so tell it the seq its op took: its own
         // ops are already applied, and a reconnect must not replay them. The
         // op's `ref` comes back with it, so a save waiting on this op knows the
