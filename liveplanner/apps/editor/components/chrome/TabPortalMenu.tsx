@@ -1,7 +1,8 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import type { TabDataRows } from './tab-data-rows';
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
+import { useMenuDismiss } from '@liveworkspace/workbench/hooks/ui/useMenuDismiss';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
@@ -172,70 +173,10 @@ export function PortalMenu({
     return () => observer.disconnect();
   }, [pos, adjust, phone, element]);
 
-  useEffect(() => {
-    // Grace window after the menu opens during which outside mouse events are
-    // ignored. A mobile / iPad long-press opens this menu (the canvas menu)
-    // while the finger is still down, and the lift then emits trailing
-    // synthetic mouse events at the press point — outside the menu — within a
-    // few hundred ms. Without this guard that synthetic mousedown lands on the
-    // just-mounted dismiss listener and closes the menu the instant it appears
-    // (the bug). Mirrors ContextMenu.tsx's GRACE_MS. Desktop right-click is
-    // unaffected: its mousedown fires before the contextmenu that opens the
-    // menu, so nothing arrives during the window. Escape (below) is never
-    // graced.
-    const openedAt = performance.now();
-    const GRACE_MS = 400;
-    // POINTERDOWN, not mousedown. A touch only produces a compatibility
-    // mousedown when the gesture wasn't preventDefault'd, and the canvas
-    // surface does preventDefault on several of its pointer paths — so
-    // tapping the canvas on a phone never reached this listener and the menu
-    // stayed open. pointerdown fires for mouse, touch and pen alike, before
-    // any of that. PointerEvent extends MouseEvent, so every target guard
-    // below is unchanged, and the grace window still covers the long-press
-    // that opened the menu (its own pointerdown precedes the listener).
-    const handler = (e: PointerEvent) => {
-      if (!ref.current) return;
-      if (performance.now() - openedAt < GRACE_MS) return;
-      // The delete-confirm popover is portaled outside this menu's DOM,
-      // so a click on it would otherwise read as "outside" and close the
-      // whole menu before the confirm registers. Treat it as inside.
-      const inConfirm =
-        e.target instanceof Element && e.target.closest('[data-confirm-popover]') !== null;
-      // A mousedown on the button that OPENED this menu (the footer
-      // canvas-menu trigger) must not trip the outside-close, or the
-      // button's own onClick toggle would just reopen it. The trigger
-      // marks itself with data-context-menu-trigger and toggles in onClick.
-      const onTrigger =
-        e.target instanceof Element && e.target.closest('[data-context-menu-trigger]') !== null;
-      // The tour popover (docs/specs/007-editor/editor-tour.md) anchors to this menu while explaining
-      // it; its buttons must not dismiss the menu they're pointing at.
-      const inTour =
-        e.target instanceof Element && e.target.closest('[data-tour-popover]') !== null;
-      // A MenuFlyoutSection (a canvas section's side panel) portals its
-      // panel to <body> to escape this menu's overflow-hidden, so every
-      // click inside it lands "outside" and would close the whole menu.
-      // The panel marks itself data-menu-flyout for exactly this; the
-      // element ContextMenu and the primitives PortalMenu already honour
-      // it, and this dismisser is the third that had to.
-      const inFlyout =
-        e.target instanceof Element && e.target.closest('[data-menu-flyout]') !== null;
-      if (
-        e.target instanceof Node &&
-        !ref.current.contains(e.target) &&
-        e.target !== anchor &&
-        !inConfirm &&
-        !onTrigger &&
-        !inTour &&
-        !inFlyout
-      ) {
-        onClose();
-      }
-    };
-    document.addEventListener('pointerdown', handler);
-    return () => document.removeEventListener('pointerdown', handler);
-  }, [onClose, anchor]);
-  // Escape closes it too — via the shared hook, which registers the same
-  // project-level bubble listener this effect used to open-code.
+  // Closing on an outside press (the canvas included), a wheel scroll or the window losing focus, the
+  // same hook for every editor (docs/specs/008-canvas/canvas-and-palette.md, Tab menu "Closing").
+  useMenuDismiss(ref, onClose, anchor);
+  // Escape closes it through useControlMenu above.
 
   // Open this (the active) tab side by side, or close the split when one is showing; absent where a
   // split can't open (a phone, a lone tab, no editor around the menu).

@@ -221,6 +221,7 @@
     "./hooks/ui/useLatest": "./src/hooks/ui/useLatest.ts",
     "./hooks/ui/useLocalStorageValue": "./src/hooks/ui/useLocalStorageValue.ts",
     "./hooks/ui/useLongPress": "./src/hooks/ui/useLongPress.ts",
+    "./hooks/ui/useMenuDismiss": "./src/hooks/ui/useMenuDismiss.ts",
     "./hooks/ui/useMidnightPalette": "./src/hooks/ui/useMidnightPalette.ts",
     "./hooks/ui/useModKeyHeld": "./src/hooks/ui/useModKeyHeld.ts",
     "./hooks/ui/useModalGuard": "./src/hooks/ui/useModalGuard.ts",
