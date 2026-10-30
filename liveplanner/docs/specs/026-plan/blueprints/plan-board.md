@@ -172,8 +172,9 @@ BoardCardTypeChips.tsx   the header's card type chips (spec "Card type chips"): 
                          propagation (the header would move the board) and hands the press to useCardTypeDrag;
                          a click (or Enter / Space) adds through `chipClickCell` + `plan.addItem` + `openNewItem`.
                          PlanBoardView renders it only when `chipsShown` (card-type-chips.ts) holds, and passes it
-                         to PlanBoardHeader as `chips`, which draws it after the title: in the header on a canvas,
-                         and in the menu box's portal after the name (a hairline before it) in a header band
+                         to PlanBoardHeader as `chips`, which draws it after the title on a canvas, and in a header
+                         band (the title portalled into the menu box) first in the header's middle, so it shrinks
+                         and scrolls before the widgets and controls do
 card-type-chips.ts       pure: `chipsShown({ interactive, canEditCards, phone, simplified, setup, types })` (the
                          role and place gate) and `chipClickCell(setup, projection, type, statusNames)` (the column
                          of the type's `newCardStatus` when the board has it, else the first; the first row; the

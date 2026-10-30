@@ -371,17 +371,14 @@ export function PlanBoardView({
           track('Plan', 'Revealed', 'Board');
         }}
         chips={
-          chipsShown({ interactive, canEditCards, phone, simplified, setup, types: addTypes })
-            ? (inBox) => (
-                <BoardCardTypeChips
-                  setup={setup}
-                  projection={projection}
-                  types={addTypes}
-                  palette={palette}
-                  inBox={inBox}
-                />
-              )
-            : undefined
+          chipsShown({ interactive, canEditCards, phone, simplified, setup, types: addTypes }) ? (
+            <BoardCardTypeChips
+              setup={setup}
+              projection={projection}
+              types={addTypes}
+              palette={palette}
+            />
+          ) : undefined
         }
         onMoveUnplaced={(item, status) => {
           if (!plan) return;

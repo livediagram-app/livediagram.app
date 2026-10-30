@@ -470,7 +470,8 @@ In Plan mode:
   card type the board takes** (its Add card types, in the project's order), so a card is one press or one drag away
   from the top of the page. Each chip is a small card drawn in its type's colour (a stripe of it down its left edge,
   the type's glyph on the card), then the type's name; while the header holds the top row (maximised or filling its
-  tab), the chips ride in the menu box after the board's name, behind a hairline, as the name does. With more than
+  tab), the board's name rides in the menu box and the chips lead the header straight after it, so they sit to
+  the right of the name and give way to the widgets and controls rather than widening the box. With more than
   three types the chips drop their names and keep the little cards (the tooltip names each); when they do not fit,
   the row scrolls sideways, as the widget zone does. Each chip has a hover card, **Add a Task** (its type's name)
   over "Click to add one, or drag it onto the board.", and its accessible name is "Add a Task".
@@ -682,8 +683,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - **The name rides in the menu box**: while the header holds the top row, the element's name (a board's or view's
   title, a Sheet's title) moves out of its header into the menu box at the top left, after the mode menu and a hairline,
   in the chrome's own text colour, truncating past 16 rem. It is the same title: a double-click on it renames it in
-  place, as in the header. A board's [card type chips](#card-type-chips) follow its name there, behind a hairline.
-  The room the band needs is measured from the menu box without the name (or the chips), so the name
+  place, as in the header. A board's [card type chips](#card-type-chips) stay in the header, leading it just after
+  the menu box. The room the band needs is measured from the menu box without the name, so the name
   coming or going never takes the band away. Without a band (a phone, a narrow window) the name stays in the header.
 - **It is not placed on the canvas while it fills it**: maximised or filling its tab, a board, view or Sheet's
   element menu leaves out **Layer**, **Size**, **Rotation** and its **Animation** categories (they would change

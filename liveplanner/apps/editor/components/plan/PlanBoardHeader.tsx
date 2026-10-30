@@ -87,8 +87,9 @@ export function PlanBoardHeader({
   onRetry: () => void;
   onReveal: () => void;
   onMoveUnplaced: (item: Item, status: string) => void;
-  // The card type chips after the title (BoardCardTypeChips), given whether they ride in the menu box.
-  chips?: (inBox: boolean) => React.ReactNode;
+  // The card type chips after the title (BoardCardTypeChips). In a header band they lead the header itself, just after
+  // the menu box, so they give way to the widgets and controls rather than widening the box.
+  chips?: React.ReactNode;
   // What ends the header at its top right: Maximise Board / Restore Board (MaximisedPlanLayer).
   end?: React.ReactNode;
 }) {
@@ -200,13 +201,14 @@ export function PlanBoardHeader({
                   onDone={() => setRenaming(false)}
                 />
               </span>
-              {chips?.(true)}
             </>,
             nameSlot,
           )
         : null}
       <div className="flex min-w-0 max-w-[var(--plan-band-mid,none)] flex-1 items-center gap-3">
-        {inBox ? null : (
+        {inBox ? (
+          chips
+        ) : (
           <>
             <span data-board-title className="contents">
               <BoardTitle
@@ -220,7 +222,7 @@ export function PlanBoardHeader({
                 onDone={() => setRenaming(false)}
               />
             </span>
-            {chips?.(false)}
+            {chips}
             {/* No press guard here: a press on the zone's empty space selects and moves the board like the
                 rest of the header; each widget keeps its own presses. */}
             <div className="flex min-w-0 flex-1 items-center">

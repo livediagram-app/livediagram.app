@@ -21,15 +21,9 @@ afterEach(() => vi.clearAllMocks());
 
 const palette = planPalette('light');
 const projection = projectBoard(setup, new Map(), undefined, ITEM_TYPES, statusNames);
-const chips = (types = ITEM_TYPES.slice(0, 2), inBox = false) =>
+const chips = (types = ITEM_TYPES.slice(0, 2)) =>
   render(
-    <BoardCardTypeChips
-      setup={setup}
-      projection={projection}
-      types={types}
-      palette={palette}
-      inBox={inBox}
-    />,
+    <BoardCardTypeChips setup={setup} projection={projection} types={types} palette={palette} />,
   );
 
 describe('the card type chips', () => {
@@ -51,11 +45,6 @@ describe('the card type chips', () => {
     const buttons = screen.getAllByRole('button');
     expect(buttons.map((b) => b.textContent)).toEqual(['', '', '', '']);
     expect(buttons[3]!.getAttribute('aria-label')).toBe(`Add a ${four[3]!.label}`);
-  });
-
-  it('draws a hairline before them in the menu box only', () => {
-    chips(undefined, true);
-    expect(screen.getByRole('group').className).toContain('border-l');
   });
 
   it('adds a card and opens it on a click, announcing where it went', () => {
@@ -92,7 +81,6 @@ describe('the card type chips', () => {
           projection={projection}
           types={ITEM_TYPES.slice(0, 1)}
           palette={palette}
-          inBox={false}
         />
       </div>,
     );

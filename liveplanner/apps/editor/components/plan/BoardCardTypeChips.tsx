@@ -4,7 +4,7 @@
 // chip per card type the board takes, each a small card in its type's colour with its glyph, then its name. A click
 // (or Enter or Space) adds a card of the type and opens it to be named, as Add card does; a drag carries one onto the
 // board, into the column and row it is let go over (useCardTypeDrag). PlanBoardView decides whether they show
-// (chipsShown); in a header band they ride in the menu box after the board's name.
+// (chipsShown); in a header band they lead the header, straight after the menu box that holds the board's name.
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { HoverCard } from '@liveplanner/ui';
@@ -28,15 +28,12 @@ export function BoardCardTypeChips({
   projection,
   types,
   palette,
-  inBox,
 }: {
   setup: PlanBoardSetup;
   projection: BoardProjection;
   // The types the board takes (boardAddTypes), in the project's order.
   types: readonly ItemTypeDef[];
   palette: PlanPalette;
-  // In the menu box (a header band): the chrome's ink and hairlines rather than the board's.
-  inBox: boolean;
 }) {
   const plan = usePlan();
   const ghostRef = useRef<HTMLDivElement>(null);
@@ -69,9 +66,7 @@ export function BoardCardTypeChips({
       role="group"
       aria-label="Add Cards"
       // A row that scrolls sideways when it does not fit, as the widget zone does; no bar of its own.
-      className={`flex min-w-0 shrink items-center gap-1 overflow-x-auto [scrollbar-width:none] ${
-        inBox ? 'ml-1 border-l border-slate-200 pl-2.5 dark:border-slate-700' : ''
-      }`}
+      className="flex min-w-0 shrink items-center gap-1 overflow-x-auto [scrollbar-width:none]"
       onDoubleClick={stop}
     >
       {types.map((t) => (
@@ -88,11 +83,7 @@ export function BoardCardTypeChips({
             className={`flex h-8 shrink-0 cursor-pointer touch-none select-none items-center gap-1.5 rounded-lg text-[13px] font-medium transition hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/10 ${
               named ? 'pl-1.5 pr-2.5' : 'px-1.5'
             } ${carrying === t.id ? 'bg-black/5 dark:bg-white/10' : ''}`}
-            style={
-              inBox
-                ? { outlineColor: palette.focus }
-                : { color: palette.text, outlineColor: palette.focus }
-            }
+            style={{ color: palette.text, outlineColor: palette.focus }}
             onPointerDown={(e) => onPointerDown(t.id, e)}
             onClick={(e) => {
               e.stopPropagation();
