@@ -4,7 +4,7 @@
 // full-page visit to liveworkspace.app, never from a fetch or an iframe inside another app
 // (Safari blocks those third-party cookies outright).
 //
-// exchangeCode, refreshTokens and closeAccount send the client secret, so they run in the app's
+// exchangeCode and refreshTokens (and close-account.ts) send the client secret, so they run in the app's
 // Worker. authorizeUrl and createPkcePair are safe anywhere.
 
 const AUTH_PATH = '/api/auth/oauth2';
@@ -12,7 +12,7 @@ const AUTH_PATH = '/api/auth/oauth2';
 // A route of the accounts service, kept under any path its URL carries (a stand-in served at /e2e/accounts, say):
 // `new URL('/api/…', base)` would drop that path.
 // Trailing slashes dropped by a scan, not /\/+$/, which is quadratic on a long run of slashes.
-const accountsRoute = (accountsUrl: string, route: string): URL => {
+export const accountsRoute = (accountsUrl: string, route: string): URL => {
   let end = accountsUrl.length;
   while (end > 0 && accountsUrl[end - 1] === '/') end--;
   return new URL(`${accountsUrl.slice(0, end)}${route}`);
@@ -182,32 +182,6 @@ export function refreshTokens(
     { grant_type: 'refresh_token', refresh_token: input.refreshToken, resource: input.resource },
     fetchImpl,
   );
-}
-
-// Closes the person's liveworkspace account, everywhere, when they delete their account in the
-// app. Sends the client secret, so it runs in the app's Worker, with the access token the person
-// signed in to the app with. Resolves once the account is gone.
-export async function closeAccount(
-  credentials: ClientCredentials,
-  accessToken: string,
-  fetchImpl: typeof fetch = fetch,
-): Promise<void> {
-  const response = await fetchImpl(
-    accountsRoute(credentials.accountsUrl, '/api/auth/delete-account'),
-    {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        accept: 'application/json',
-        authorization: basicAuthorization(credentials),
-      },
-      body: JSON.stringify({ token: accessToken }),
-    },
-  );
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`closing the account failed (${response.status}): ${detail.slice(0, 200)}`);
-  }
 }
 
 // Signing out everywhere (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"). How long an app's sign-out

@@ -1074,14 +1074,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
 
   // ---- Account ----
   {
+    method: 'POST',
+    path: '/account/deletion-code',
+    segment: 'account',
+    tag: 'Account',
+    summary:
+      'Email the signed-in account the 6-digit code that deleting it needs (10 minutes, 3 tries).',
+    auth: 'account',
+    responseSchema: { type: 'object', properties: { sent: { type: 'boolean' } } },
+    statuses: [200, 401, 429, 502, 503],
+  },
+  {
     method: 'DELETE',
     path: '/account',
     segment: 'account',
     tag: 'Account',
-    summary: 'Delete the signed-in account and all of its data (designs, tokens, ...).',
+    summary:
+      'With the code emailed to it, delete the signed-in account and all of its data (designs, tokens, ...).',
     auth: 'account',
+    requestSchema: {
+      type: 'object',
+      properties: { code: { type: 'string' } },
+      required: ['code'],
+    },
     responseSchema: { type: 'object', properties: { deleted: { type: 'number' } } },
-    statuses: [204, 401],
+    statuses: [200, 400, 401, 403, 409, 429, 502, 503],
   },
 
   // ---- Teams ----

@@ -83,7 +83,7 @@ directly.
 ### Delete account moves here
 
 Account self-deletion (`DELETE /api/account`, `apps/api/src/routes/account.ts`; `DeleteAccountDialog`, the
-type-your-email confirmation) is the **Delete account** row on Settings › Account's Danger Zone, its one home. It
+type-your-email confirmation, then the code emailed to the account) is the **Delete account** row on Settings › Account's Danger Zone, its one home. It
 removes livedesign's data first, then closes the liveworkspace account, which closes it in every liveworkspace app
 ([Auth + guest access](auth-and-guest-access.md) "Deleting an account"): the data first, so a failure leaves a
 signed-in person who can try again. The person's own designs go for good through the index, **including every one

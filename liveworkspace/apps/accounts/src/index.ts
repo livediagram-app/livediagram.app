@@ -9,6 +9,13 @@ import { appOriginOfProxy, signInOnAppAddress } from './handoff.ts';
 import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
+import {
+  checkDeletionCodeRoute,
+  DELETION_CHECK_PATH,
+  DELETION_CODE_PATH,
+  sendDeletionCode,
+  type DeletionCodeConfig,
+} from './deletion-code.ts';
 import { disconnectDrive, driveDisconnectConfig } from './drive-disconnect.ts';
 import {
   END_SESSION_PATH,
@@ -35,7 +42,7 @@ import { withOwnCookies } from './own-cookies.ts';
 
 const GET_SESSION_PATH = '/get-session';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
-import { sendEmail, sendTeamInviteEmail } from './email.ts';
+import { sendDeletionCodeEmail, sendEmail, sendTeamInviteEmail } from './email.ts';
 import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
 import { sweepInvitations } from './teams.ts';
 import { noteExpiringTokens, sweepExpiringTokens } from './token-expiry.ts';
@@ -81,6 +88,8 @@ const routeLabel = createApiRouteLabel(
     'handoff',
     'start',
     'delete-account',
+    'code',
+    'check',
     'internal',
     'bench-accounts',
     'clients',
@@ -174,17 +183,25 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
     return benchAccounts(request, env);
   }
 
+  // Closing an account, and the code emailed first that it needs (deletion-code.ts).
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETION_CODE_PATH}`) {
+    return sendDeletionCode(request, env.AUTH_DB, deletionCodeConfig(env));
+  }
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETION_CHECK_PATH}`) {
+    return checkDeletionCodeRoute(request, env.AUTH_DB, deletionCodeConfig(env));
+  }
   if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
-    return deleteAccount(
-      request,
-      getAuth(env),
-      env.AUTH_DB,
-      indexPurgeConfig(env),
-      (userId) => closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
+    return deleteAccount(request, env.AUTH_DB, {
+      auth: getAuth(env),
+      issuerEnv: env,
+      checkLimiter: env.CODE_IP_LIMITER,
+      index: indexPurgeConfig(env),
+      closeWorkbench: (userId) =>
+        closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
       // After the answer: Google's revoke never holds the close up.
-      (userId) => ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
-      env,
-    );
+      disconnectDrive: (userId) =>
+        ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
+    });
   }
 
   if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {
@@ -346,6 +363,17 @@ async function step(name: string, run: () => Promise<void>): Promise<void> {
   } catch (error) {
     console.error(`[accounts] cron step failed: ${name}`, error);
   }
+}
+
+// The deletion code's doors: sending shares the sign-in send's per-address bucket, checking is per account.
+function deletionCodeConfig(env: Env): DeletionCodeConfig {
+  return {
+    auth: getAuth(env),
+    issuerEnv: env,
+    emailLimiter: env.CODE_EMAIL_LIMITER,
+    checkLimiter: env.CODE_IP_LIMITER,
+    send: (to, code, app) => sendDeletionCodeEmail(env, to, code, app),
+  };
 }
 
 const lifecycleSender =

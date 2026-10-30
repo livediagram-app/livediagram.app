@@ -9,7 +9,7 @@ Scope, by file:
 
 | File                                                 | Role                                                                            |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/email.ts`           | `sendEmail`; the code, invitation, invitation response and token expiry emails  |
+| `liveworkspace/apps/accounts/src/email.ts`           | `sendEmail`; the code, deletion code, invitation, response and expiry emails    |
 | `liveworkspace/apps/accounts/src/email-layout.ts`    | The frame every email is drawn in; `emailBrand`, `appUrl`                       |
 | `liveworkspace/apps/accounts/src/lifecycle.ts`       | The onboarding series: stages, claims, retries, `recordActivity`, `signupAppOf` |
 | `liveworkspace/apps/accounts/src/lifecycle-email.ts` | The series' five emails                                                         |
@@ -41,6 +41,7 @@ as `List-Unsubscribe`.
 | Email               | Sent when                                   | Subject                                                        | Brand / links                                                        | Can be turned off              |
 | ------------------- | ------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------ |
 | Sign-in code        | a code is asked for                         | `<code> is your live<word> sign-in code`                       | the app it came through, else liveworkspace                          | no                             |
+| Deletion code       | an app asks before closing an account       | `<code> is your code to delete your liveworkspace account`     | the asking client's app, else liveworkspace                          | no                             |
 | Team invitation     | an admin invites; reminders at stage 1 to 3 | `<who> invited you to <team> on liveworkspace` (`Reminder: …`) | accept at `/explorer/invites`; decline at `/join/decline?token=`     | no                             |
 | Invitation response | someone accepts or declines                 | `<responder> accepted\|declined your invitation to <team>`     | `/explorer/team?id=`; unsubscribe `/explorer?settings=notifications` | `notifyInviteResponse` (`all`) |
 | Token expiring      | daily, a week before                        | `Your liveworkspace API token expires soon`                    | `/explorer?settings=tokens`                                          | no                             |
@@ -50,7 +51,8 @@ as `List-Unsubscribe`.
 | Activation          | ~3 days in, nothing made, week 1 not sent   | `Your first piece of work is waiting`                          | as above                                                             | `notifyTips`                   |
 | Win-back            | once, 4 weeks after the last save           | `Your work is waiting`                                         | as above                                                             | `notifyTips`                   |
 
-The invitation's inviter name falls back to `Someone`. The code email says it works 10 minutes. Nothing a person
+The invitation's inviter name falls back to `Someone`. The code email and the deletion code email say they work 10 minutes; both draw the code in the same tinted panel
+(`codePanel`). Nothing a person
 wrote is ever in a series email.
 
 Every email is `frame(brand, { preheader, heading, body, footer })` with a `text` part. The code email takes the

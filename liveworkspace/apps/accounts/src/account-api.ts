@@ -9,6 +9,7 @@
 //     api, a returning guest of the old livediagram.app claimed (legacy-guests.ts).
 //   - workbenches, for every app (/api/account/workbench/*, workbench/routes.ts), and the apps' servers' checks of
 //     their sessions (workbench/internal.ts).
+import { basicClientId } from './app-caller.ts';
 import { storageOutageOf } from '@liveworkspace/api-kit/request-failure';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import { sameSiteOrigin } from '@liveworkspace/sites/www';
@@ -641,18 +642,6 @@ async function accountName(db: Env['AUTH_DB'], userId: string): Promise<string> 
 const CLIENT_CHECK_TTL_MS = 5 * 60_000;
 type CheckedClient = { clientId: string; app: SettingsApp | null };
 const checkedClients = new Map<string, CheckedClient & { until: number }>();
-
-function basicClientId(header: string | null): string | null {
-  const encoded = header?.match(/^Basic\s+(.+)$/i)?.[1];
-  if (!encoded) return null;
-  try {
-    const decoded = atob(encoded);
-    const colon = decoded.indexOf(':');
-    return colon > 0 ? decodeURIComponent(decoded.slice(0, colon)) : null;
-  } catch {
-    return null;
-  }
-}
 
 async function digest(value: string): Promise<string> {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));

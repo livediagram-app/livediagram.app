@@ -44,7 +44,8 @@ error: 'rate_limited' }`); `/api/auth/workspace-token`; `/api/auth/end-session` 
    discovery documents at the root.
 3. `/api/account` and below: `handleAccountApi`; after it, the request's telemetry events and Timeline events are
    flushed in `waitUntil`.
-4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account`;
+4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account/code`;
+   `POST /api/auth/delete-account/check`; `POST /api/auth/delete-account`;
    `POST /api/auth/end-session` (an app's Worker).
 5. Anything else under `/api/auth`: the code routes are limited first (below), then Better Auth's handler (for
    Google on an app's address, an instance built for that origin; before `POST /sign-out` and Security's `revoke-*`, every
@@ -81,23 +82,41 @@ Each step runs in `step()`: a throw logs `[accounts] cron step failed: <name>` a
 Details: [teams.md](teams.md), [tokens.md](tokens.md), [email.md](email.md),
 [sessions-and-guests.md](sessions-and-guests.md).
 
+### The deletion code (`deletion-code.ts`)
+
+Every door below starts the same way (`introspectCaller` in `delete-account.ts`): client credentials (`Basic`) and
+`{ token }`, the person's access token, missing either `400 invalid_request`; then introspection with those
+credentials, a wrong secret `401 invalid_client`, a token inactive, without a `sub`, or minted for another client `401
+invalid_token`. A body that won't parse is read as `{}`.
+
+| Door                                  | Body              | Then                                                                                                                                                                                                                                                            |
+| ------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/auth/delete-account/code`  | `{ token }`       | The account's address (`404 unknown_account` without one); `CODE_EMAIL_LIMITER` keyed `email:<lower-case address>`, the sign-in send's own bucket, over it `429 rate_limited`; a new code stored, then mailed in the client's app's brand. `200 { sent: true }` |
+| `POST /api/auth/delete-account/check` | `{ token, code }` | `CODE_IP_LIMITER` keyed `account:<userId>` (`429 rate_limited`); the code checked and kept (`403 invalid_code` or `403 too_many_attempts`). `200 { ok: true }`                                                                                                  |
+| `POST /api/auth/delete-account`       | `{ token, code }` | The same limit; the code checked and spent (the same refusals), then the close below                                                                                                                                                                            |
+
+The code: 6 digits, uniform (`crypto.getRandomValues`, rejection-sampled), in Better Auth's `verification` table under
+`delete-account-otp-<userId>`, its value `<sha256(userId:code), base64url>:<tries>`, `expiresAt` 600 s on. Storing one
+deletes the account's earlier row in the same batch. Each check is one `UPDATE … SET value = <tries + 1> … RETURNING`,
+so concurrent guesses each take a try. Then: no row, or one past `expiresAt` (deleted), is `invalid_code`; a try past
+the third deletes the row, `too_many_attempts`; a wrong code is `invalid_code`, or `too_many_attempts` (row deleted)
+when it was the third. A right one is kept with its tries back at 0 (`/check`), or spent: deleted only while the row
+still holds what this check wrote, else `invalid_code` (two closes can't share one code).
+
 ### Closing an account (`POST /api/auth/delete-account`), in order
 
-1. Client credentials (`Basic`) and `{ token }`, the person's access token: missing either is `400
-invalid_request`.
-2. Introspection with those credentials: a wrong secret `401 invalid_client`; a token inactive, without a `sub`, or
-   minted for another client `401 invalid_token`.
-3. `leaveAllTeams` ([teams.md](teams.md)): teams run alone close; a sole admin's role passes to the longest-standing
+1. The door and the code, above.
+2. `leaveAllTeams` ([teams.md](teams.md)): teams run alone close; a sole admin's role passes to the longest-standing
    member; their address comes off every row.
-4. Settings, then the profile, deleted.
-5. `recordPendingPurge(userId, closedTeams)`, before the user goes.
-6. Better Auth deletes the user: sessions, linked accounts, OAuth tokens, consents, API tokens, `account_app`,
+3. Settings, then the profile, deleted.
+4. `recordPendingPurge(userId, closedTeams)`, before the user goes.
+5. Better Auth deletes the user: sessions, linked accounts, OAuth tokens, consents, API tokens, `account_app`,
    `email_lifecycle` cascade.
-7. `purgeFromIndex`: `POST ${INDEX_URL}/internal/purge-person { personId, teamIds }` with `INDEX_MERGE_KEY`, 15 s;
+6. `purgeFromIndex`: `POST ${INDEX_URL}/internal/purge-person { personId, teamIds }` with `INDEX_MERGE_KEY`, 15 s;
    taken clears the row, else `attempts + 1` and the cron retries (logged as an error from the third try).
-8. `closeAccountWorkbench`, then `DELETE https://drive/app/people/<id>` with `DRIVE_KEY_ACCOUNTS` in `waitUntil` (10
+7. `closeAccountWorkbench`, then `DELETE https://drive/app/people/<id>` with `DRIVE_KEY_ACCOUNTS` in `waitUntil` (10
    s; `404` is done; nothing retried).
-9. `200 { deleted: true }`.
+8. `200 { deleted: true }`.
 
 ### Telemetry (`telemetry.ts`)
 
@@ -119,7 +138,7 @@ Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined
 | `/api/auth/oauth2/*`, `/api/auth/jwks`, `/.well-known/*`, `POST /api/auth/internal/clients`, an app's `/oauth/device*`                                                                                                                  | [oauth.md](oauth.md)                                         |
 | `/api/account/settings…`, `/api/account/profile`, `/api/account/internal/{settings/read,settings/write,profiles/read,profiles/write}`                                                                                                   | [settings-and-profiles.md](settings-and-profiles.md)         |
 | `/api/account/internal/{sightings,milestones/claim,activity,emails,settings/notify}`                                                                                                                                                    | [email.md](email.md)                                         |
-| `POST /api/auth/delete-account`                                                                                                                                                                                                         | this file                                                    |
+| `POST /api/auth/delete-account`, `POST /api/auth/delete-account/code`, `POST /api/auth/delete-account/check`                                                                                                                            | this file                                                    |
 | `/api/account/workbench/*`, `/api/account/internal/workbench/*`, `/api/account/internal/allowance`                                                                                                                                      | [011-workbench](../../011-workbench/blueprints/workbench.md) |
 
 ## Errors and edge cases
@@ -217,13 +236,15 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | File                                                          | Role                                                                                                                                                                                                               |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `liveworkspace/apps/accounts/src/account-api.ts`              | The account API under /api/account (liveworkspace/docs/specs/003-accounts/accounts.md "Teams" and "API tokens"): - for the signed-in person on liveworkspace.app, by their session cookie: th…                     |
+| `liveworkspace/apps/accounts/src/app-caller.ts`               | An app's server acting for someone signed in to it: `basicClientId`, `introspectCaller`                                                                                                                            |
 | `liveworkspace/apps/accounts/src/account-apps.ts`             | What one app keeps about an account (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per app"): when it first saw the account, which is how it counts a sign-up, a…                     |
 | `liveworkspace/apps/accounts/src/auth-options.ts`             | Everything Better Auth is configured with, apart from where the database lives                                                                                                                                     |
 | `liveworkspace/apps/accounts/src/auth.ts`                     |                                                                                                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/bearer.ts`                   | The Explorer served under an app's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address") has no liveworkspace.app session: it is the app's…                        |
 | `liveworkspace/apps/accounts/src/bench-accounts.ts`           | Throwaway accounts for the apps' local evaluation benches (each app's apps/mcp/eval/bench): an account and one API token each, so every bench run gets its own empty libra…                                        |
 | `liveworkspace/apps/accounts/src/clients.ts`                  | Registering an app (a confidential OAuth client) with this Worker                                                                                                                                                  |
-| `liveworkspace/apps/accounts/src/delete-account.ts`           | Closing a liveworkspace account, asked for by an app's own server when the person deletes their account there                                                                                                      |
+| `liveworkspace/apps/accounts/src/delete-account.ts`           | Closing a liveworkspace account, asked for by an app's own server with the code emailed to the person                                                                                                              |
+| `liveworkspace/apps/accounts/src/deletion-code.ts`            | The code that confirms closing an account: made, stored hashed in `verification`, emailed, checked and spent                                                                                                       |
 | `liveworkspace/apps/accounts/src/drive-disconnect.ts`         | Closing an account disconnects its Google Drive mirror too (liveworkspace/docs/specs/005-drive/drive.md "Disconnecting and account deletion"): the Drive service revokes the grant and for…                        |
 | `liveworkspace/apps/accounts/src/email-layout.ts`             | The frame every accounts email is drawn in (liveworkspace/docs/specs/003-accounts/accounts.md "Emails"), the same as the apps' own (each product's docs/specs/014-identity/transactional-emai…                     |
 | `liveworkspace/apps/accounts/src/email.ts`                    |                                                                                                                                                                                                                    |
@@ -430,6 +451,10 @@ Migrations, in order:
 | `BENCH_ACCOUNTS_MAX`                | `200`                                                                    | `bench-accounts.ts`  |
 | `CLIENTS_PATH`                      | `${AUTH_BASE_PATH}/internal/clients`                                     | `clients.ts`         |
 | `DELETE_ACCOUNT_PATH`               | `'/delete-account'`                                                      | `delete-account.ts`  |
+| `DELETION_CODE_PATH`                | `'/delete-account/code'`                                                 | `deletion-code.ts`   |
+| `DELETION_CHECK_PATH`               | `'/delete-account/check'`                                                | `deletion-code.ts`   |
+| `DELETION_CODE_TTL_SECONDS`         | `600`                                                                    | `deletion-code.ts`   |
+| `DELETION_CODE_TRIES`               | `3`                                                                      | `deletion-code.ts`   |
 | `INK`                               | `'#0f172a'`                                                              | `email-layout.ts`    |
 | `MUTED`                             | `'#475569'`                                                              | `email-layout.ts`    |
 | `GUEST_IDLE_MS`                     | `400 * DAY_MS`                                                           | `guest-sweep.ts`     |
@@ -563,6 +588,7 @@ Worker as a whole:
 | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/accounts/src/account-api.test.ts` (33)            | the account API's doors: signed in, by bearer, for the apps                                                                                                                  |
 | `liveworkspace/apps/accounts/src/index-purge.test.ts` (8)             | `purgeFromIndex`, `retryPendingPurges`, `deleteAccount`                                                                                                                      |
+| `liveworkspace/apps/accounts/src/deletion-code.test.ts`               | the deletion code: sent, checked, spent, expired, three tries, concurrent guesses, and closing refused without it                                                            |
 | `liveworkspace/apps/accounts/src/drive-disconnect.test.ts` (4)        | `disconnectDrive`: done, skipped, failed, a `404`                                                                                                                            |
 | `liveworkspace/apps/accounts/src/telemetry.test.ts` (7)               | server events: held, bounded, one batch per app, keys                                                                                                                        |
 | `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16)         | API token and team events; sending to the index; the outbox's bound                                                                                                          |
@@ -577,3 +603,5 @@ Worker as a whole:
 - `ACC2`: closing an account answers `200` once the account is gone, whether or not the index, the workbench or
   Drive took their part; the index's is retried, Drive's is not.
 - `ACC3`: a telemetry event with no app (someone who signed up on liveworkspace.app) is not counted.
+- `ACC17`: the spec gives the deletion code the sign-in code's rules; checking and closing share `CODE_IP_LIMITER`'s
+  10 a minute, keyed by account rather than address, since the caller is always an app's server.
