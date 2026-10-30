@@ -683,6 +683,11 @@ device)`. The popover carries `data-floating-panel` and `data-menu-surface`, so 
   buckets the elements once (`pageElementBuckets`) and redraws a page only when its laid-out page
   (fields and rect) or its bucket (by reference) changed, or what all share (tab id, layers, font,
   finish, icons loaded) did.
+  Image elements and picture fills draw their pictures: the ids on the drawn rows' pages
+  (`thumbImageIds`, `apps/live/lib/thumb-images.ts`) go to `useImageSources` (`page-image-access.tsx`,
+  under the `PageImageAccessProvider` that `Canvas` now puts round its pages and its chrome), whose blob
+  URLs come from the shared display cache (`apiFetchImageBlobUrl`), so the canvas and the thumbnails hold
+  one copy; a page also redraws when one of its pictures' URLs changes (`Drawn.hrefs`).
 
 ### Snapping
 
@@ -737,7 +742,8 @@ targets - locked, locked)`, the counts taken from the pages before the commit; `
   `<image preserveAspectRatio="xMid{YMin|YMid|YMax} slice">` when `href` (an inline URI, or
   `imageHref(imageId)`: `renderTabToSvg` / `renderTabToCanvas` pass `opts.images?.get(id)?.href`),
   then the overlay (a `fill-opacity` rect, or a `<linearGradient id="<id>-fade">` rect for Fade).
-  The Map passes no `imageHref`: tone and overlay only. `loadTabImages` loads the
+  The Map passes no `imageHref`: tone and overlay only. The Contents thumbnails pass their
+  `useImageSources` URLs ("Pictures" under Contents). `loadTabImages` loads the
   pages' pictures (`pageImageIds(tab.pages)`) with the elements' images, each once.
 
 `ImageExportOpts.page` makes `renderTabToCanvas` / `renderTabToSvg` use `pageExportFrame(page)`:
