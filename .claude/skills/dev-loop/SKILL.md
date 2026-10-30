@@ -179,8 +179,11 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - **Build it fully**, everywhere it applies: every app a shared change reaches, every kind and variant it covers.
   Shared code goes in `packages/` (AGENTS.md and docs/structure.md set the order).
 - **Tests:** cover every new branch. In each touched package, run typecheck, oxlint, `prettier --check` on
-  changed files, and `test:coverage` where it has thresholds. Run one package at a time with `--maxWorkers=2`,
-  because several agents share this machine. Build a Next app only when you changed its pages, MDX or build
+  changed files, and `test:coverage` where it has thresholds. Before each round of checks, read the
+  load: when `uptime`'s one-minute load is under half of `sysctl -n hw.ncpu`, run the touched packages in
+  parallel (`corepack pnpm turbo run <task> --filter <pkg>...`) with default workers; otherwise run one package
+  at a time with `--maxWorkers=2`, because several agents share this machine and a starved CPU makes timing tests
+  fail for no real reason. Build a Next app only when you changed its pages, MDX or build
   config; CI builds the rest.
 - **Verify in a real browser** for anything visible, following the `verify` skill. Where the same change lands
   in several apps (a shared component, or the same edit in each editor's copy), verify it in **one** app and
