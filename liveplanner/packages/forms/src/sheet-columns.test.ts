@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   sameSheetColumns,
   sheetColumnPlan,
@@ -179,13 +180,12 @@ describe('sameSheetColumns', () => {
 });
 
 describe('sheetColumnPlan cost', () => {
-  it('plans a full form over a wide sheet in linear time', () => {
+  it('plans a full form over a 5,000-column sheet within 50 ms of CPU', () => {
     const prompts = Array.from({ length: 100 }, (_, i) => `Question ${i}`);
     const cols = Array.from({ length: 5000 }, (_, i) => `c${String(i).padStart(4, '0')}`);
     const header = new Map(cols.slice(0, 4000).map((c, i) => [c, `Other ${i}`]));
     const columns = Object.fromEntries(prompts.map((_, i) => [`q-${i}`, cols[4000 + i]!]));
-    const start = process.cpuUsage();
-    for (let i = 0; i < 20; i += 1)
+    const plan = () =>
       sheetColumnPlan({
         form: form(prompts),
         layout: { rows: ['r1'], cols },
@@ -193,8 +193,11 @@ describe('sheetColumnPlan cost', () => {
         columns,
         rand,
       });
-    const used = process.cpuUsage(start);
-    // About 2 ms a plan on a laptop; the budget is generous so only a quadratic scan fails it.
-    expect((used.user + used.system) / 1000).toBeLessThan(1000);
+    // Untimed warm-up passes, then the fastest of a few timed ones (as packages/project's perf tests do).
+    for (let pass = 0; pass < 3; pass++) plan();
+    let best = Infinity;
+    for (let pass = 0; pass < 5; pass++) best = Math.min(best, cpuMsOf(plan));
+    // About 2 ms a plan here; a scan per remembered column (quadratic) takes several times the budget.
+    expect(best).toBeLessThan(cpuBudgetMs(50));
   });
 });
