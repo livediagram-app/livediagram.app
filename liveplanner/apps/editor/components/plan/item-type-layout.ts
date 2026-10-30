@@ -14,7 +14,13 @@ import {
 // The fields a tab can hold: never the title (it heads the panel) or votes (they live on the card).
 const NOT_TABBABLE = new Set(['title', 'votes']);
 
-export type LayoutDraft = { fields: string[]; custom: CustomFieldDef[]; tabs: ItemTypeTab[] };
+export type LayoutDraft = {
+  fields: string[];
+  custom: CustomFieldDef[];
+  tabs: ItemTypeTab[];
+  // The Assignee tells no one (docs/specs/026-plan/item-types.md "Notifies"); kept only as false.
+  assigneeNotifies?: false;
+};
 
 // Where a field shows: Details is `null`, a tab its id.
 export type GroupId = string | null;

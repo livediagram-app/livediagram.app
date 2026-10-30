@@ -60,6 +60,7 @@ const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
   choice: 'star',
   checkbox: 'task',
   card: 'person',
+  person: 'person',
   text: 'note',
 };
 

@@ -117,7 +117,7 @@ export function LinkedCardField({
   };
 
   const type = linked ? typeIn(types, linked.type) : undefined;
-  const own = linked ? itemColourOf(linked) : undefined;
+  const own = linked ? itemColourOf(linked, type) : undefined;
   const openLabel = linked ? `Open ${name}` : '';
   return (
     <div ref={boxRef} className="relative w-full">
@@ -252,7 +252,7 @@ export function LinkedCardField({
                         {/* Glyph and number sit level with the title's first line. */}
                         <span
                           className={`mt-[2px] shrink-0 ${ACCENT_TEXT}`}
-                          style={accentVars(itemColourOf(card) ?? t.color)}
+                          style={accentVars(itemColourOf(card, t) ?? t.color)}
                         >
                           <PlanTypeGlyph glyph={t.glyph} size={14} />
                         </span>

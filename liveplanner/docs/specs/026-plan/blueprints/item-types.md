@@ -5,16 +5,17 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                                                                                                                                                                                 |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                          |
-| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                            |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
-| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                           |
-| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                               |
-| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                             |
-| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                               |
-| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                              |
+| Spec term         | Identifier                                                                                                                                                                                                                                                            |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                                     |
+| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                                       |
+| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required?, notifies? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
+| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                                      |
+| notifying field   | a Person field that tells its person (spec "Notifies"): `notifies: true` on a person `CustomFieldDef`, the Assignee unless `assigneeNotifies: false` on the `ItemTypeDef`; `notifyingFieldsOf`, `notifiedPeople`, `isNotified` (`notify-fields.ts`)                   |
+| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                                          |
+| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                                        |
+| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                                          |
+| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                         |
 
 ## Package `@liveplanner/items`
 
@@ -28,6 +29,8 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
 src/required-fields.ts canBeRequired, requiredCustomFieldsOf (a type's required custom fields it still offers),
                        isEmptyFieldValue, missingRequiredFields(type, fields), requiredCleared(type, before, after),
                        requiredFieldsMessage(type, fields)
+src/notify-fields.ts   notifyingFieldsOf(type): string[], notifiedPeople(type, item): NotifiedPerson[]
+                       ({ fieldId, person }), isNotified(type, item, personId): boolean
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
                        @liveplanner/project's agent element ids)
 ```
@@ -51,6 +54,20 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   leaves empty, in the type's order. `requiredCleared(type, before, after)` the first required field `before` holds a
   value for and `after` leaves empty (so a card already empty is never refused). `requiredFieldsMessage(type, missing)`
   "{Type} cards need {A}, {B} and {C}".
+- Card colour (spec "Fields by role"): `readType` keeps `colourField` only when it names a custom `colour` field of
+  the type; `colourFieldOf(type)` reads it while `type.fields` holds it, else `color`, and `itemColourOf(item, type)`
+  reads that field (boards, linked cards, Gantt bars and their picture). The editor's `ItemTypeCardColour`
+  (Display tab, shown while the type has a Colour field of its own) sets it on the draft, the built-in as absent,
+  and tracks `Plan · Changed · CardColourField`.
+- Notifies (spec "Notifies"): `readCustom` keeps `notifies` only as `true` on a `person` field; `readType` keeps
+  `assigneeNotifies` only as `false`; anything else is dropped, never refused. `notifyingFieldsOf(type)` walks
+  `type.fields` in order and keeps `assignee` unless `assigneeNotifies === false`, and each custom field of kind
+  `person` with `notifies` (a field the type no longer offers never notifies). `notifiedPeople(type, item)` reads each
+  of those fields' values in that order and keeps an `ItemPerson` (`isItemPerson`) that is not a custom person
+  (`isNamedPerson`, an `n-` id) and not told already by an earlier field: `[{ fieldId, person }]`.
+  `isNotified(type, item, personId)` whether that list holds the person. Readers: Only Mine
+  (`quickFilterMatches(quick, item, types = ITEM_TYPES)`, `quick.mine` matched by `isNotified(typeIn(types,
+item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) and the agents.
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
 - `projectBoard(setup, items, quick?, types = ITEM_TYPES)`, `itemAccessibleName(item, types?)`,
   `boardAddTypes(setup, types)`: the catalogue where they name or order types.
@@ -342,6 +359,19 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
   `listedType.custom[].required`, `CustomFieldInput.required` / `CustomFieldEdit.required` in `applyCardTypeChanges`
   (a Checkbox refused), and `applyItemChanges` stops an `add` (`missingRequiredFields`) or a `set`
   (`requiredCleared`) with `field_required` and `requiredFieldsMessage` before any write.
+- Notifies: the api's `cardsPushOf` (`plan-room/plan-cards-push.ts`) reads each card's type from the catalogue (the
+  fallback type, Assignee only, when it has none) and, while the card is listed (open, not linked, not done), sends
+  `assignees: notifiedPeople(type, item)` as `InboxCardAssignee { hash, name, actionId }`: `actionId` the card's id for
+  `assignee`, `{card id}~{field id}` for another field. `@liveworkspace/index-app` `cardsCollabPush` pushes one action
+  per assignee it can name (each unnamed one counts in `unmatched`), a person once per card. Agents:
+  `CustomFieldInput.notifies` / `CustomFieldEdit.notifies` (a field that is no Person field refused: "only a person
+  field notifies") and `assigneeNotifies` on `add` and `set` (`true` drops the stored false) in
+  `applyCardTypeChanges`; `listedType` lists `custom[].notifies` and `assigneeNotifies: false`. The editor:
+  `NotifiesSwitch` (`ItemTypeFieldForms.tsx`, a `SwitchRow` "Notifies" described by `NOTIFIES_LINE`) in a Person
+  field's `CustomFieldForm` and Add Field's `ShapeOwn` (`addedField` keeps `notifies` only on a Person field); the
+  Assignee's `FieldMenu` (`ItemTypeFieldMenu.tsx`) opens with `MenuNotifiesRow`, a `menuitemcheckbox` drawing the
+  house `Switch`, that sets `LayoutDraft.assigneeNotifies` (kept only as `false`; `ItemTypeEditor` reads and saves
+  it). Each flip tracks `Plan` · `Changed` · `FieldNotifies`.
 
 ## Errors and edge cases
 
@@ -407,6 +437,10 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | Required fields: api refuses a create or a clear          | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
 | Required fields: agents list, set, refuse                 | `packages/agent-verbs/src/verbs/plan-verbs.test.ts`, `packages/items/src/type-changes.test.ts`                                           |
 | Required fields: New {Type} dialog, type editor switch    | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                         |
+| Notifies: fields, people told, Only Mine, agent changes   | `packages/items/src/notify-fields.test.ts`                                                                                               |
+| Notifies: the Inbox push, one action a person             | `packages/index-app/src/cards.test.ts`, `apps/api/src/plan-room/plan-outbox.test.ts`                                                     |
+| Notifies: agents list it                                  | `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                     |
+| Notifies: Person field switch, Assignee menu, save        | `apps/editor/components/plan/FieldNotifies.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                |
 | Add Field: groups, descriptions, aliases, readiness       | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                    |
 | Add Field: search, accordion, Ready to use, keys, shape   | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                      |
 | Built-in kinds: store, text, CSV, agents                  | `packages/items/src/built-in-field-kinds.test.ts`                                                                                        |

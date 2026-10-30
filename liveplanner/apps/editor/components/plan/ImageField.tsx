@@ -144,7 +144,7 @@ export function ImageFieldControl({
   const message = unavailable ? "Image uploads aren't available here." : error;
 
   if (!imageId) {
-    if (disabled) return <p className="text-[13px] text-slate-400 dark:text-slate-500">None</p>;
+    if (disabled) return <p className="text-[13px] text-slate-500 dark:text-slate-400">None</p>;
     return (
       <div className="flex flex-col gap-1.5">
         {picker}
@@ -292,7 +292,7 @@ export function ImageThumb({ imageId, label }: { imageId: string; label: string 
       ref={ref}
       role="img"
       aria-label={label}
-      className="inline-flex h-5 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-slate-200/80 text-slate-400 dark:bg-slate-700/70 dark:text-slate-500"
+      className="inline-flex h-5 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-slate-200/80 text-slate-500 dark:bg-slate-700/70 dark:text-slate-400"
     >
       {shown.state === 'shown' ? (
         <img src={shown.url} alt="" className="h-full w-full object-cover" draggable={false} />

@@ -412,4 +412,21 @@ describe('Shape', () => {
       expect.objectContaining({ kind: 'checkbox', required: undefined }),
     );
   });
+
+  // docs/specs/026-plan/item-types.md "Notifies".
+  it('offers a Person field Notifies, off by default, and no other kind', () => {
+    const { onAddCustom } = open();
+    pick('Person', 'People & teamwork');
+    fireEvent.change(name(), { target: { value: 'Reviewer' } });
+    const notifies = screen.getByRole('switch', { name: 'Notifies' });
+    expect(notifies.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(notifies);
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenLastCalledWith(
+      expect.objectContaining({ kind: 'person', notifies: true }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    pick('Email', 'Text & links');
+    expect(screen.queryByRole('switch', { name: 'Notifies' })).toBeNull();
+  });
 });

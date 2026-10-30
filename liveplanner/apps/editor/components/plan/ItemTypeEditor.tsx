@@ -40,6 +40,8 @@ import { ItemTypeConfiguration } from './ItemTypeConfiguration';
 import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
 import { ItemTypeStatuses } from './ItemTypeStatuses';
 import { ItemTypeDisplay, type CardDisplayDraft } from './ItemTypeDisplay';
+import { ItemTypeCardColour } from './ItemTypeCardColour';
+import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { withoutEmptyTabs, type LayoutDraft } from './item-type-layout';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -86,6 +88,7 @@ export function ItemTypeEditor({
       ...t,
       fields: [...t.fields],
     })),
+    ...(start.assigneeNotifies === false ? { assigneeNotifies: false as const } : {}),
   }));
   const { tabs } = layout;
   const [detailsLabel, setDetailsLabel] = useState(detailsLabelOf(start));
@@ -99,6 +102,8 @@ export function ItemTypeEditor({
   ]);
   // What its cards show at each card size (the Display tab); a size absent takes its default.
   const [display, setDisplay] = useState<CardDisplayDraft>(() => ({ ...start.display }));
+  // The Colour field that tints its cards (Card Colour, item-types.md "Fields by role"); absent is the built-in.
+  const [colourField, setColourField] = useState(start.colourField);
   // The Default State: the status a card made outside a board starts in (none: '').
   const [defaultStatus, setDefaultStatus] = useState(start.defaultStatus ?? '');
   const planItems = plan?.items;
@@ -129,6 +134,7 @@ export function ItemTypeEditor({
       glyph,
       fields: layout.fields,
       ...(layout.custom.length ? { custom: layout.custom } : {}),
+      ...(layout.assigneeNotifies === false ? { assigneeNotifies: false } : {}),
       tabs: withoutEmptyTabs(tabs).map((t) => ({ ...t, label: t.label.trim() })),
       ...(detailsLabel.trim() && detailsLabel.trim() !== DETAILS_LABEL_DEFAULT
         ? { detailsLabel: detailsLabel.trim() }
@@ -136,8 +142,27 @@ export function ItemTypeEditor({
       statuses: used,
       ...(defaultStatus && used.includes(defaultStatus) ? { defaultStatus } : {}),
       ...(Object.keys(display).length ? { display } : {}),
+      // Kept only while the type still has the field (a field taken off reads as the built-in Colour again).
+      ...(colourField &&
+      layout.custom.some((c) => c.id === colourField && c.kind === 'colour') &&
+      layout.fields.includes(colourField)
+        ? { colourField }
+        : {}),
     };
-  }, [type, types, label, color, glyph, layout, tabs, detailsLabel, used, defaultStatus, display]);
+  }, [
+    type,
+    types,
+    label,
+    color,
+    glyph,
+    layout,
+    tabs,
+    detailsLabel,
+    used,
+    defaultStatus,
+    display,
+    colourField,
+  ]);
   const tabNames = withoutEmptyTabs(tabs).map((t) => t.label.trim().toLowerCase());
   const tabProblem = tabNames.some((n) => !n)
     ? 'Give every tab a name.'
@@ -228,6 +253,13 @@ export function ItemTypeEditor({
               <SheetRow label="Display">
                 <ItemTypeDisplay type={draft} display={display} onChange={setDisplay} />
               </SheetRow>
+              <ItemTypeCardColour
+                type={draft}
+                onChange={(field) => {
+                  setColourField(field);
+                  track('Plan', 'Changed', 'CardColourField');
+                }}
+              />
             </div>
           ),
           statuses: (

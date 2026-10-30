@@ -13,6 +13,9 @@ import {
   breakdownTitle,
   breakdownModel,
   cardsInStatuses,
+  measureCountLabel,
+  measureNumber,
+  viewMeasureOf,
 } from '@liveplanner/items';
 import { PersonDisc } from '../PersonDisc';
 import { PHASE_COLOURS, PhaseLegend, ViewFrame, viewState } from './view-frame';
@@ -35,23 +38,41 @@ export function WorkloadView({
   const phases = plan?.statusPhases ?? NO_PHASES;
   const { by, field } = breakdownGroupingOf(settings);
   const types = plan?.types;
+  // What each card adds to its bar: 1, or its Estimate or a Number field (plan-views.md "Count By").
+  const measure = viewMeasureOf(settings, types ?? []);
+  const measureId = viewMeasureOf(settings, types ?? [])?.id;
   const statusNames = plan?.statusNames;
+  const everyCard = plan?.items;
   // Only the cards in the chosen statuses, when the view names some.
   const statuses = settings.statuses;
   const counted = useMemo(() => cardsInStatuses(items, statuses), [items, statuses]);
   const model = useMemo(
-    () => breakdownModel(counted.values(), phases, { by, field }, types, statusNames, plan?.items),
-    [counted, phases, by, field, types, statusNames, plan?.items],
+    () =>
+      breakdownModel(
+        counted.values(),
+        phases,
+        { by, field },
+        types,
+        statusNames,
+        everyCard,
+        measureId,
+      ),
+    [counted, phases, by, field, types, statusNames, everyCard, measureId],
   );
+  const amount = (n: number) => (measure ? measureCountLabel(n, measure) : plural(n, 'card'));
+  // People get a disc, and their empty row a dashed one: the Assignee or a Person field.
+  const byPerson =
+    by === 'assignee' ||
+    !!types?.some((t) => t.custom?.some((c) => c.id === field && c.kind === 'person'));
   const layout = workloadLayout(width, height, model.rows.length);
   return (
     <ViewFrame
       title={breakdownTitle({ by, field }, types)}
       count={model.total}
-      countLabel={`${model.total} ${model.total === 1 ? 'card' : 'cards'}`}
+      countLabel={amount(model.total)}
       palette={palette}
       fontFamily={fontFamily}
-      state={viewState(plan, model.total > 0)}
+      state={viewState(plan, model.rows.length > 0)}
       empty={
         settings.statuses ? NO_MATCH : 'No cards yet. Add cards to a board to see how they split.'
       }
@@ -79,12 +100,12 @@ export function WorkloadView({
                   height: layout.rowHeight,
                   fontSize: layout.font,
                 }}
-                aria-label={`${name}: ${plural(row.total, 'card')}, ${spoken}`}
+                aria-label={`${name}: ${amount(row.total)}, ${spoken}`}
               >
                 <span className="flex min-w-0 items-center gap-2">
                   {row.person ? (
                     <PersonDisc person={row.person} />
-                  ) : by === 'assignee' ? (
+                  ) : byPerson ? (
                     <span
                       aria-hidden
                       className="h-5 w-5 shrink-0 rounded-full border border-dashed"
@@ -103,7 +124,10 @@ export function WorkloadView({
                     aria-hidden
                     data-bar
                     className="flex min-w-0 overflow-hidden rounded"
-                    style={{ width: `${(row.total / model.max) * 100}%`, height: layout.bar }}
+                    style={{
+                      width: `${model.max > 0 ? (row.total / model.max) * 100 : 0}%`,
+                      height: layout.bar,
+                    }}
                   >
                     {STATUS_PHASES.map((p) =>
                       row.counts[p] ? (
@@ -122,7 +146,7 @@ export function WorkloadView({
                     className="shrink-0 font-semibold tabular-nums"
                     style={{ color: palette.muted, fontSize: layout.countFont }}
                   >
-                    {row.total}
+                    {measureNumber(row.total)}
                   </span>
                 </span>
               </li>
