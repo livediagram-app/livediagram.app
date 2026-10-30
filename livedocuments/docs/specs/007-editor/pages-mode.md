@@ -1247,6 +1247,11 @@ Both show the same list:
   124 px tall for a portrait page, left-aligned with the name under it. The page in view is marked
   by its row's tint and its picture's accent ring (and, in the popover, an accent bar down the
   row's left edge).
+- **Pictures in the thumbnails**: an image element and a page painted with a picture show the
+  picture itself, as on the canvas, fetched from the image store with the same access the canvas
+  has (an Editor's, or a share link's for a Participant or Viewer), once per picture and shared
+  with the canvas's own copy. Only the rows drawn so far ask for theirs. Until a picture arrives,
+  or where it can't be read, its place shows the image placeholder (a page picture, its tone). The Slide Deck's pictures show them the same way.
 - **A page's actions** (an Editor's): in the sidebar, a small toolbar at the end of the name's
   line, shown while the row is hovered, focused or marked: **Duplicate**, **Lock** or **Unlock**,
   and **Delete** (not on a locked page), each a glyph with its Tooltip. In the popover, one **⋯**
