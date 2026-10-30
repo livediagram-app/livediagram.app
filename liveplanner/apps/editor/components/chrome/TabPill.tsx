@@ -11,6 +11,11 @@ import { TabModeIcon } from './editor-mode/TabModeIcon';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
 import { OutOfScopeTabPill } from './OutOfScopeTabPill';
 import type { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
+import {
+  TAB_ACCENT_CLASS,
+  TAB_TYPE_ICON_CLASS,
+  tabShapeClass,
+} from '@liveworkspace/workbench/components/chrome/tab-shape';
 import type { CanvasMenuActions } from './TabBar';
 import type { AccessLevel } from '@liveplanner/api-schema';
 
@@ -91,6 +96,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
   const caret = reorderDrag.caretFor(tab.id);
   const showCaretBefore = caret === 'before';
   const showCaretAfter = caret === 'after';
+  const accent = legibleTabAccent(tab, isDark);
   return (
     <div
       key={tab.id}
@@ -115,36 +121,21 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
               setMenuFor(tab.id);
             }
       }
-      // Active tab: a raised card (bar-contrasting surface + accent ring +
-      // accent text) so it can't blend into the bar; inactive tabs use
-      // neutral slate text — readable on the bar whatever the tab's theme —
-      // with the theme accent kept on the opening-mode icon inside the label.
-      // color-mix keeps the ring legible for non-hex accents too.
-      style={
-        isActive && !isEditing
-          ? {
-              color: legibleTabAccent(tab, isDark),
-              // Dark: the dark palette's raised surface, so a themed tab's tint reaches it too.
-              backgroundColor: isDark ? 'var(--color-slate-800)' : '#ffffff',
-              boxShadow: `0 0 0 1px color-mix(in srgb, ${legibleTabAccent(tab, isDark)} 45%, transparent), 0 1px 3px rgb(0 0 0 / ${isDark ? '0.45' : '0.12'})`,
-            }
-          : undefined
-      }
-      className={`relative flex shrink-0 items-center gap-1 rounded-lg transition ${
-        // While renaming, the NameEditor carries the ONLY box (its own ring +
-        // background): the pill sheds its ring / fill / padding so the field
-        // doesn't render as a box inside a box.
-        isEditing
-          ? 'px-0'
-          : isActive
-            ? // The trailing ellipsis button carries its own padding around the glyph, so the pill's
-              // own trailing padding is trimmed to balance the icon's side (optical-alignment.md).
-              readOnly
-              ? 'px-2.5'
-              : 'pl-2.5 pr-1'
-            : 'bg-slate-200/50 px-2.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-      }${beside && !isActive ? ' outline-1 -outline-offset-1 outline-brand-400/70 outline-dashed' : ''}`}
+      // The tab's shape (tab-shape, docs/specs/007-editor/editor-app.md "How a tab looks"): the active tab hangs from
+      // the canvas's edge in its colour, the others sit flat on the bar. The active tab's name takes the tab theme's
+      // accent, made legible on its surface; the others keep neutral ink, readable whatever the tab's theme.
+      data-tab=""
+      data-active={isActive ? '' : undefined}
+      style={isActive && !isEditing ? { color: accent } : undefined}
+      className={`${tabShapeClass({ active: isActive, editing: isEditing, readOnly })}${
+        beside && !isActive
+          ? ' outline-1 -outline-offset-1 outline-brand-400/70 outline-dashed'
+          : ''
+      }`}
     >
+      {isActive && !isEditing ? (
+        <span aria-hidden className={TAB_ACCENT_CLASS} style={{ backgroundColor: accent }} />
+      ) : null}
       {/* Insertion caret: a vertical bar in the gap on the side the tab
           will land. pointer-events-none so it never intercepts the drag. */}
       {showCaretBefore ? (
@@ -169,12 +160,15 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           onClick={() => onSelect(tab.id)}
           onDoubleClick={readOnly ? undefined : () => isActive && setEditingId(tab.id)}
           aria-current={isActive ? 'page' : undefined}
-          className="relative flex h-7 items-center gap-1.5 rounded-lg text-sm font-medium outline-none touch-target-y focus-visible:ring-2 focus-visible:ring-brand-400"
+          className="relative flex h-7 cursor-pointer items-center gap-1.5 rounded-md text-sm font-medium outline-none touch-target-y focus-visible:ring-2 focus-visible:ring-brand-400"
         >
           {/* The mode you work in on this tab (docs/specs/007-editor/editor-modes.md), tinted with
               the tab theme's accent; the pill text itself stays neutral so it reads on the bar for
               ANY theme. */}
-          <TabModeIcon tab={tab} style={{ color: legibleTabAccent(tab, isDark) }} />
+          {/* On a computer only: a phone keeps the room for names. */}
+          <span className={TAB_TYPE_ICON_CLASS}>
+            <TabModeIcon tab={tab} style={{ color: accent }} />
+          </span>
           {tab.locked ? <TabLockIcon /> : null}
           {/* Trimmed to its cap band so the name centres on its letters; the button's height is
               pinned because the trimmed name no longer props it open. */}

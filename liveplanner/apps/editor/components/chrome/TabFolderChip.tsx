@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  TAB_DASHED_CLASS,
+  TAB_FAN_ITEM_CLASS,
+} from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { createPortal } from 'react-dom';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import type { Tab } from '@liveplanner/project';
@@ -119,7 +123,7 @@ export function TabFolderChip({
       // A folder reads as a CONTAINER, clearly distinct from the tab pills
       // inside it: dashed boundary (the app's "grouping" cue) + a tinted
       // inset surface the inline active pill sits on.
-      className={`flex shrink-0 items-center gap-1 rounded-lg border border-dashed border-slate-300 bg-slate-100/70 px-1 py-0.5 dark:border-slate-600 dark:bg-slate-800/40 ${
+      className={`${TAB_DASHED_CLASS} items-start bg-slate-100/70 px-1 dark:bg-slate-800/40 ${
         dragOver ? 'ring-2 ring-brand-400 ring-offset-1' : ''
       }`}
       onDragOver={
@@ -167,7 +171,7 @@ export function TabFolderChip({
           onDoubleClick={readOnly ? undefined : () => setEditing(true)}
           aria-expanded={open}
           aria-label={`${name}, ${tabs.length} ${tabs.length === 1 ? 'tab' : 'tabs'}`}
-          className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-100"
+          className="mt-1 flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-100"
         >
           <FolderGlyph open={open} />
           <span>{name}</span>
@@ -197,7 +201,7 @@ export function TabFolderChip({
               style={{ left: anchor.left, bottom: anchor.bottom }}
             >
               {fanTabs.map((t) => (
-                <div key={t.id} className="flex w-full items-center">
+                <div key={t.id} className={TAB_FAN_ITEM_CLASS}>
                   {renderTab(t)}
                 </div>
               ))}

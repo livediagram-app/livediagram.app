@@ -83,6 +83,8 @@ import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
+import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
+import { withStyleOfTab } from '@/lib/tab-theme-apply';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
@@ -1796,6 +1798,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     checkpointBurst,
   });
 
+  // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): the open tab's style on every tab, as one
+  // undo step, an Editor's of the whole plan only.
+  const { applyToAllTabs: applyStyleToAllTabs, applying: applyingStyleToAllTabs } =
+    useApplyStyleToAllTabs<Tab>({
+      canApply: !structureBlocked && !isStructureReadOnly,
+      activeId,
+      loadAllTabs,
+      isTabLoaded: (id) => loadedTabIdsRef.current.has(id),
+      commitTabs,
+      restyle: withStyleOfTab,
+      notify: (message) => toast.info(message),
+      onApplied: () => track('Tab', 'Changed', 'AllTabs'),
+    });
+
   // Live session tools (docs/specs/012-collaboration/session-tools.md): timer + dot-voting handlers.
   // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
   // UI reads it straight off the tab; these are just the mutators.
@@ -2614,6 +2630,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     assessCleanupKind,
     setTabFinish,
     applyTabLook,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+    canApplyStyleToAllTabs: !isStructureReadOnly,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,
     pauseTimer,

@@ -1,4 +1,5 @@
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
+import { TAB_DASHED_CLASS } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { TabNotSharedIcon } from '@/components/chrome/tab-bar-icons';
 import type { Participant } from '@/lib/identity';
 import { HoverCard } from '@livedesign/ui';
@@ -22,7 +23,7 @@ export function OutOfScopeTabPill({
   return (
     <div
       draggable={false}
-      className="flex shrink-0 items-center gap-1 rounded-lg border border-dashed border-slate-300 px-2.5 text-slate-500 dark:border-slate-600 dark:text-slate-400"
+      className={`${TAB_DASHED_CLASS} px-3 text-slate-500 dark:text-slate-400`}
     >
       <HoverCard title="Not shared" description="This tab isn't shared with you.">
         <button

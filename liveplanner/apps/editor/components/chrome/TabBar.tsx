@@ -5,6 +5,7 @@ import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { scrollLeftToReveal } from '@liveworkspace/workbench/components/chrome/tab-strip-scroll';
+import { TAB_STRIP_CLASS } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import {
   folderNamesInProject,
   groupTabsIntoRuns,
@@ -13,7 +14,7 @@ import {
 } from '@liveplanner/project';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
-import { TabsLabelIcon, safeInlinePadding, safeInset } from '@liveplanner/ui';
+import { safeInlinePadding, safeInset } from '@liveplanner/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
@@ -280,7 +281,8 @@ export function TabBar({
     setMenuFor,
     readOnly,
     isDark,
-    onSelect,
+    // A tap on the tab already open still brings all of it into view (a phone's tab half under the fade).
+    onSelect: (id: string) => (id === activeId ? revealActive() : onSelect(id)),
     onRename,
     reorderDrag,
     participantsByTab,
@@ -297,9 +299,12 @@ export function TabBar({
   const stripRef = useRef<HTMLDivElement>(null);
   const lastTabId = tabs.at(-1)?.id;
   const tabCount = tabs.length;
-  useEffect(() => {
+  const revealActive = () => {
     const strip = stripRef.current;
-    const pill = strip?.querySelector<HTMLElement>('[aria-current="page"]');
+    // The whole tab, its menu button and avatars included: measuring the name alone left the rest of a tapped tab
+    // under the strip's edge.
+    const name = strip?.querySelector<HTMLElement>('[aria-current="page"]');
+    const pill = name?.closest<HTMLElement>('[data-tab]') ?? name;
     if (!strip || !pill) return;
     const s = strip.getBoundingClientRect();
     const t = pill.getBoundingClientRect();
@@ -313,7 +318,8 @@ export function TabBar({
     if (left === strip.scrollLeft) return;
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     strip.scrollTo({ left, behavior: still ? 'auto' : 'smooth' });
-  }, [activeId, tabCount, lastTabId]);
+  };
+  useEffect(revealActive, [activeId, tabCount, lastTabId]);
 
   return (
     <>
@@ -333,30 +339,9 @@ export function TabBar({
       >
         {workbenchBack?.(labelled)}
         {roleIcon}
-        {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
-        {minimalChrome ? null : (
-          <span
-            className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:flex dark:text-slate-400"
-            aria-hidden
-          >
-            <TabsLabelIcon />
-            Tabs
-          </span>
-        )}
-        {/* -m-1/p-1 gives the scroll clip 4px of clearance on every side
-            without moving the content: the active pill's accent ring and
-            drop shadow are box-shadows, which an overflow container clips
-            at its padding edge, so with zero padding the ring vanished
-            along whichever edges the pill touched (bottom + first pill's
-            left). */}
-        {/* Sideways only: the tab menu's and Add tab's 44px tap areas (touch-target) reach past
-            the row, and a free y axis drew a vertical scrollbar beside Search for them. The edge with more
-            tabs beyond it fades (scroll-edge-fade), so a tab cut there reads as more to swipe to, not a
-            label clipped mid-word. */}
-        <div
-          ref={stripRef}
-          className="scroll-edge-fade scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1"
-        >
+        {/* The tabs hang from the canvas's edge (tab-shape): the strip rises over the bar's top border so the active
+            tab can cover it. Sideways only, the edge with more tabs beyond it fading (scroll-edge-fade). */}
+        <div ref={stripRef} className={TAB_STRIP_CLASS}>
           {groupTabsIntoRuns(tabs).map((run) =>
             run.kind === 'loose' ? (
               renderTabPill(run.tab)
@@ -383,7 +368,7 @@ export function TabBar({
               onClick={onAdd}
               aria-label="Add tab"
               data-tour-id="add-tab"
-              className="relative ml-1 flex h-7 w-7 shrink-0 touch-target items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="relative ml-1 mt-1 flex h-7 w-7 shrink-0 cursor-pointer touch-target items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
               +
             </button>
