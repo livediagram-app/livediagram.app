@@ -167,6 +167,26 @@ unplaced). Structural input `{ shape?: string; planBoard?: PlanBoardSetup; planC
 underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mailto ≤ 2048, heading? 1|2|3 }`,
   at most `ITEM_RICH_RUNS_MAX` (2000) runs and `ITEM_DESCRIPTION_MAX` characters in all; anything else is
   `field_value_invalid`. `description` stays the plain-text mirror (search, card faces, agents).
+- A Long Text custom field's formatting rides under `richFieldOf(id)` (`<id>Rich`); `isRichFieldKey(key)` accepts
+  `descriptionRich` and `/^f-[a-z0-9-]{1,30}Rich$/` (custom ids are lower case, so no field id ends that way), and
+  `validateFields` holds either to `normaliseRichRuns(v, richTextMaxOf(key))`: `ITEM_DESCRIPTION_MAX` for the
+  description, `ITEM_UNKNOWN_STRING_MAX` (2,000) for a Long Text. The field's own value stays a plain string (≤ 2,000).
+  `richRunsOf(fields, id)` returns the runs only while their text joined equals the plain value (else undefined: the
+  value was rewritten plain since); `runsAreMarked(runs)` says whether any run carries a mark, so unmarked text is
+  stored plain.
+
+### Label usage
+
+- `labelUsage(items)` (`label-usage.ts`) → `LabelUse[]` `{ label, count }`: one pass over the cards, skipping
+  `isTrashed`, each card's labels deduplicated; sorted by count descending, then by lower-cased name, then code
+  point. `planSpellingOf(text, uses)` → the first (most used) plan label equal to `text` case aside, else `text`.
+  `matchLabels(uses, query, taken)` → `{ matches, creatable }`: the query trimmed, a leading `#` dropped, lower-cased;
+  labels the card has (case aside) left out; with no query every label; else those starting with it, then those
+  containing it, each in usage order; `creatable` when no plan or card label equals it.
+- Cost: measured 1.5 ms median (5.5 ms worst of 20, a loaded machine) for 2,000 cards of 12 labels from 300 names;
+  `matchLabels` over those 300 labels 0.03 ms median per keystroke. The host (`PlanSheetsHost`) memoises
+  `labelUsage` on the cards map and the open card, so it runs once per change of the cards while a card is open, never
+  per keystroke; `label-usage.test.ts` holds the 2,000-card case to a 250 ms budget.
 
 ### Colour
 
@@ -578,6 +598,8 @@ include `fields` or comment text.
 | Rule                                           | Test                                                                                                                                                                                        |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                         |
+| Long Text formatting: key, limit, stale runs   | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                        |
+| Label usage, spelling, matching, 2,000 cards   | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                               |
 | Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                           |
 | Bulk create grows linearly, keeps column order | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                 |
 | Write checks shared with offline               | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                  |

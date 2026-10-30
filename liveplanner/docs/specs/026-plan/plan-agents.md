@@ -68,6 +68,10 @@ Every write takes what a person would say, and stores the ids:
   link that is not http(s) or mailto keeps its text only. Text with no Markdown is stored plain and drops any
   formatting the card had, so a rewritten description never shows the old one; clearing Description clears its
   formatting too.
+- **A Long Text custom field** takes Markdown the same way: its value the plain text, its formatting `<field id>Rich`
+  (as the item panel's rich text keeps it), Markdown-free text stored plain with any old formatting dropped, and
+  clearing the field clears its formatting. list_items reads the plain text under the field's name, and the
+  formatting under its `…Rich` key, as it does a description's.
 - **An assignee** is a person object `{ id, name, color }` or a name. A name matches a person already assigned on
   the project (case aside); otherwise it makes a named person (`n-` and a slug of the name, a Plan swatch chosen
   from the name; a hash of the name joins the slug when the slug cannot spell it, "Иван", or another person on the
