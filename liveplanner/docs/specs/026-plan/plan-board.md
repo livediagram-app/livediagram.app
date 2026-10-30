@@ -447,6 +447,10 @@ Input follows the person's editor mode (the [Editor modes](../007-editor/editor-
   header or border picks up the board.
 - **In Diagram and Draw modes** the board is an element like any other: pressing anywhere on it selects and moves
   the board. Double-clicking a card still opens its item.
+- **Cursors** (in Plan mode): a hand shows only where a press picks something up. A card shows the open hand to
+  someone who may move it (an Editor or a Participant) and the pointing finger to a Viewer, whose press opens it; the
+  board's body between the cards shows the arrow, for everyone, since a press there neither pans the canvas nor
+  moves the board (it used to inherit the canvas's hand, so a Viewer saw a hand everywhere and could move nothing).
 
 In Plan mode:
 

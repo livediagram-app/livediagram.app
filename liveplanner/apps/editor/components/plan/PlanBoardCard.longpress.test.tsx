@@ -41,6 +41,7 @@ function card(onLongPress?: (it: Item, at: { x: number; y: number }) => void) {
       faceDown={false}
       presence={undefined}
       interactive
+      canMove
       onPress={onPress}
       onOpen={() => {}}
       onKey={() => {}}
