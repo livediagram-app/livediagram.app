@@ -527,9 +527,24 @@ In Plan mode:
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
     its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Edited by close it, small and
     quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
+  - **Maximised**: on a desktop the header holds a **Maximise Card** button (the maximise glyph a board's own
+    Maximise uses) just left of the close button, after the ⋯ menu. Pressed, the panel grows to fill the window
+    less a 1 rem margin on every side (corners kept rounded, the dimmed editor showing as a thin frame, so it
+    still reads as the card over the plan: Escape, the close button and a press on that frame close it as
+    before), and the button becomes **Minimise Card** (the minimise glyph, pressed), which puts it back to its
+    usual size. The size eases between the two (200 ms; at once with reduced motion). Maximised, the room is used
+    rather than stretched: the main column keeps a reading width (at most 52 rem, centred in the space beside
+    Details, with wider side padding), the title grows to 26 px, and **Details** widens to 24 rem (28 rem on
+    a window 1536 px or wider) with an 8 rem label column, so its controls are roomier; the tabs, fields and
+    their order are unchanged. The choice is the person's own, kept with their [preferences](../007-editor/user-preferences.md)
+    (`cardPanelMaximised`) and so following them to every device: every card they open afterwards, in any plan,
+    opens the same way until they press it again. Every role has it (a Viewer reads a card maximised too), since
+    it changes nothing in the plan. A phone (below 640 px wide, or a phone held sideways) has no such button and
+    always opens the card as its sheet, whatever the preference says, as that layout already fills it. Pressing
+    it is tracked as `UI · Toggled · CardMaximisedOn` or `CardMaximisedOff`, before the preference is saved.
   - **Header**: the type (a picker, with its glyph), the key, a **⋯** menu of **Duplicate** (a copy right after
     it, without its votes, as the card menu's), **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Edit Card Type** (closing the panel and opening the card's type in the type
-    editor), then, after a separator, **Copy Card Link** (the card's address, below) and **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
+    editor), then, after a separator, **Copy Card Link** (the card's address, below) and **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then **Maximise Card** on a desktop (above), then the close button. Someone who
     may only view gets a ⋯ of Copy Card Link and Help.
   - **Its address**: while a card is open, the page's address names it beside the tab pin, as
     `#t=<tab>&item=<card id>` (the same fragment an Inbox row opens a card with,

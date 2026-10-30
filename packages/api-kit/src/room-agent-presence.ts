@@ -1,12 +1,14 @@
 import {
+  AGENT_PRESENCE_ACTIVITY_TTL_MS,
   AGENT_PRESENCE_MAX_TTL_MS,
   AGENT_PRESENCE_ROOM_MAX,
+  AGENT_PRESENCE_STAMP_MS,
   type AgentPresence,
 } from '@liveworkspace/api-schema/agent-presence';
 import type { ShareRole } from '@liveworkspace/api-schema/share-links';
 
-// Every product room's agent presence (each product's docs/specs/024-agents/blueprints/agent-presence.md "Room"): one entry per token and tab,
-// one Durable Object storage key each (PR3, PR13), restored by prefix on wake, swept on its expiry by the alarm or by
+// Every product room's agent presence (each product's docs/specs/024-agents/blueprints/agent-presence.md "Room"): one entry per token, on
+// the last tab it read, changed or named (PR39), one Durable Object storage key each (PR3, PR13), restored by prefix on wake, swept on its expiry by the alarm or by
 // any roster build (PR30). Entries travel in the presence frame's own `agents` array, so no reader of
 // `participants` ever counts one (I1, PR14).
 
@@ -84,14 +86,31 @@ export class RoomAgentPresence {
     // An entry past its expiry that no alarm has swept yet is gone (I3): a refresh of it starts a bare entry (PR9).
     const stored = this.entries.get(key);
     const prior = stored && stored.expiresAt > now ? stored : undefined;
+    // An agent shows on one tab, the last it used (PR39): its entries on other tabs go.
+    const moved = await this.clearWhere((r) => r.tokenId === w.tokenId && r.tabId !== w.tabId);
     if (!prior && this.entries.size >= AGENT_PRESENCE_ROOM_MAX) {
       // Expired entries waiting on a late alarm hold no place in a full room.
       await this.sweep();
       if (this.entries.size >= AGENT_PRESENCE_ROOM_MAX)
         return { ok: false, error: 'agent_presence_full' };
     }
-    const ttl = Math.min(w.ttlMs, AGENT_PRESENCE_MAX_TTL_MS);
+    // A refresh is an agent's read or write and lasts the activity window; a set is capped at the PUT's own limit.
+    const ttl = Math.min(
+      w.ttlMs,
+      w.mode === 'refresh' ? AGENT_PRESENCE_ACTIVITY_TTL_MS : AGENT_PRESENCE_MAX_TTL_MS,
+    );
     const refresh = w.mode === 'refresh' && prior;
+    const same =
+      refresh &&
+      prior.name === w.name &&
+      prior.color === w.color &&
+      prior.role === w.role &&
+      prior.personTag === w.personTag &&
+      prior.shareCode === w.shareCode;
+    // A refresh that changes nothing on the wire and moves the expiry by less than a stamp writes nothing (PR38): a
+    // burst of reads and writes on one tab costs one storage write per AGENT_PRESENCE_STAMP_MS.
+    if (same && now + ttl - prior.expiresAt < AGENT_PRESENCE_STAMP_MS)
+      return { ok: true, expiresAt: prior.expiresAt, created: false, broadcast: moved.length > 0 };
     const record: AgentPresenceRecord = {
       id: prior?.id ?? this.mintId(),
       tokenId: w.tokenId,
@@ -113,6 +132,7 @@ export class RoomAgentPresence {
     const broadcast =
       !prior ||
       !refresh ||
+      moved.length > 0 ||
       prior.name !== record.name ||
       prior.color !== record.color ||
       prior.role !== record.role;

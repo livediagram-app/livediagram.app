@@ -695,6 +695,18 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
 7. **Settings**: rows from the settings catalogue (`lib/settings-search-items.ts`), matched on title and keywords (non-empty query only). Picking one opens the Settings dialog on that row. Both the editor and `/explorer` offer it.
 8. **Help**: help-centre articles (`lib/help-search.ts`), matched on title and keywords (non-empty query only), listed last so navigation and edit results keep the default Enter. Both the editor and `/explorer` offer it.
 
+**Every App** (Work Tracker #63). Typing also asks liveworkspace's index (`GET /api/index/items?view=search&q=…`,
+every app, up to 24, once the typing pauses for 200 ms, the request before cancelled) for everything the person can
+open: their own work, their teams' and what a live share link reaches, exactly as the index decides, never more. The
+results this panel already lists from its own lists (documents of this app's, shared and team ones) are left out, and up
+to 8 of the rest form an **Every App** group after Teams, in the index's order. Each row wears its app's logo in the
+app's colour (`AppMark`) and ends in the app's name in that colour (its deep shade on light, its accent on dark), so a
+plan, a canvas, a document and a design read apart at a glance. Picking one of this app's opens it here (with its
+share code when a link is how the person reaches it); picking another app's opens it in that app, at its own address.
+A failed or offline index read shows no group and no error: the panel's own groups still work. The hook and the
+helpers are shared (`@liveworkspace/explorer/item-search`: `useItemSearch`, `everyAppResults`, `AppMark`,
+`appLabel`), so the four editors' panels behave alike.
+
 Out of scope (deliberate): element text in **other** documents (issue #13; needs a server-side index), comments, notes, element links, and participant names.
 
 ## Comments
@@ -1105,12 +1117,11 @@ The tab bar sits at the bottom of the editor. Each tab represents one canvas wit
 - Click a tab to switch to it. Switching clears element selection, edit mode, and any active picker, AND **fit-to-screens** the new tab's content on load (so the user lands centred on whatever's there, not wherever the previous tab left the viewport). A fit pads the content by at least the Palette strip's reach into the canvas on every side (`topChromeInset`, a whole even number of px), so nothing lands under the strip or the bottom chrome and the content stays centred on whole pixels. Subsequent edits on the same tab don't re-fit, the first element on an empty tab included; the gate is per tab id.
 - The **+** button at the right of the bar adds a fresh empty tab and switches to it. The new tab is **seeded from the active tab's visual context**: theme id, canvas backdrop (`backgroundColor`, `backgroundPattern`, `backgroundOpacity`, `patternColor`), font, and default text size all carry over, so a user mid-document doesn't land on a brand-default canvas. It opens on the Pages start ([Start Making Pages](../007-editor/start-diagramming.md)). Each tab stays independently styleable after creation (restyling the new tab never affects the source). The seed survives the new tab's template picker too: picking a template under the unchanged theme keeps the inherited backdrop (see [Templates](#templates)), and Skip leaves it untouched.
 
-### Tab pill styling
+### Tab styling
 
-Each tab pill colours itself from its tab's theme:
+A tab takes its colour from its tab's theme ([How a tab looks](../007-editor/editor-app.md#how-a-tab-looks)):
 
-- Pill text colour uses `getTheme(tab.theme).elementStroke` (falls through to the brand sky for themes that don't override the stroke).
-- The active pill additionally tints its background to a 10% alpha of the same accent.
+- The open tab's name uses `getTheme(tab.theme).elementStroke` (the brand sky for themes that set no stroke), made legible (AA) on the open tab's white (slate-800 in dark) card. The other tabs keep neutral ink, whatever their theme.
 - A small **padlock icon** sits to the left of the name when `tab.locked === true`.
 - Per-tab **participant avatars** stack to the right of the name, one circle per remote participant whose `tab-focus` op points at this tab. Lets the user see at a glance who's working where.
 

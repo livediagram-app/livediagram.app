@@ -36,7 +36,7 @@ it is what the tab is and it brings its own behaviour. It is always in Plan mode
 ## The Form tab
 
 - A Form tab follows the Plan tab kinds' rules ([Plan tabs](../026-plan/plan-tabs.md#the-kinds)): always in Plan,
-  no palette, its tab menu lists no modes. Its pill leads with a clipboard-list glyph.
+  no palette, its tab menu lists no modes. Its glyph, where tabs are listed with one, is a clipboard list.
 - The tab and its form share one name ([Names](../026-plan/plan-tabs.md#names)): the form's **heading** is the tab's
   name. Renaming either renames both in one undo step. A Form tab still on its default name takes its starter's name
   ("Bug Report"); a tab with a name of its own gives it to the form.

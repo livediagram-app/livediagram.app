@@ -882,6 +882,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|SeasonalLook':
     "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
+  'Tab|Changed|AllTabs':
+    "Someone pressed Apply to All Tabs in Tab Style, putting the open tab's style on every other tab at once.",
   'Tab|Changed|Finish':
     "Someone changed a tab's finish (Flexible, Professional, Sketch or Marker) from Tab Look & Feel.",
   'Tab|Changed|DefaultTextSize':

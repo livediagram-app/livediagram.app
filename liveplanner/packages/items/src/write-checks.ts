@@ -102,7 +102,9 @@ export function readItemMove(body: Record<string, unknown>): ItemMove | ItemReje
 // change of status into such a one is refused: making a card in any status is allowed (a type that leaves every
 // status out can still be made, it just never moves), a card already in one is never moved out by this, and a type
 // change that keeps its status is let through. Putting a change back is never refused either: a trashed card
-// restored to the status it was trashed from, and an undo or redo (`undo`: the body's `undo: true`).
+// restored to the status it was trashed from, and an undo or redo (`undo`: the body's `undo: true`). Nor is moving
+// a card to the Trash: the Trash is a status no type lists (a type's ordered statuses name its board states), so
+// without this every card of a type with a list could not be deleted.
 export function statusExcluded(
   types: readonly ItemTypeDef[],
   next: Item,
@@ -110,7 +112,7 @@ export function statusExcluded(
   undo: boolean,
 ): boolean {
   const status = itemStatus(next);
-  if (undo || !status || itemStatus(before) === status) return false;
+  if (undo || !status || itemStatus(before) === status || isTrashed(next)) return false;
   if (isTrashed(before) && before.fields[TRASHED_FROM_FIELD] === status) return false;
   return !typeAllowsStatus(typeIn(types, next.type), status);
 }

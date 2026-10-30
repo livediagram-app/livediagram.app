@@ -223,9 +223,21 @@ copy-card-link.ts        Copy Card Link: copyCardLink(link, notify) writes the c
 ../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel (a board maximised from a slot): PLAN_BOARD_SECTIONS (Board Setup, Columns,
                          Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
                          Cards / Archive), each Body given `open` so it can defer work while shut
-ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, Copy Card Link, close), main column
+ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, Copy Card Link,
+                         ItemMaximiseButton (desktop only), close), main column
                          (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
-                         then made/changed); phone: one column, a Details tab first, sheet 85dvh
+                         then made/changed); phone: one column, a Details tab first, sheet 85dvh. Maximised
+                         (`maximised` and not mobile): panelSizeClass(true) fills the window less 1rem, the main
+                         column's content max-w-[52rem] mx-auto, title 26px, aside w-96 (2xl:w-[28rem]), Details
+                         labels 8rem (ItemDetailsRow `wide`)
+item-panel-size.ts       panelSizeClass(maximised): the Dialog classes of each size, eased by PANEL_SIZE_EASE
+                         (transition-[width,height] 200ms, motion-reduce:transition-none)
+../../hooks/plan/useCardPanelMaximised.ts  the `cardPanelMaximised` preference, live from the device cache
+                         (useCachedPreferences); set(on) tracks UI · Toggled · CardMaximisedOn/Off, then
+                         commitUserPreferences(cache, next, ownerId) (PlanContext ownerId, the preferences owner)
+CardFinderTile.tsx       a Cards panel tile: the PlanCardFace (headAction: the ⋯ trigger) under a stretched Open
+                         button; CardFinderTileMenu (PortalMenu: Open, Copy Card Link, separator, Move to Trash
+                         when canRetire); the ⋯ hidden with a fine pointer until the tile is hovered or focused
 ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG + accentVars of the type colour),
                          ItemPanelSection (13px semibold heading, mb-8), ItemDetailsRow (grid 6.5rem/1fr, min-h-9,
                          rounded hover), ItemMeta (11px slate-400 created/edited lines); the aside is m-3 rounded-xl
@@ -704,6 +716,10 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Capture stops at hydration; tab pin keeps the mark             | `apps/editor/app/project/[id]/useCollabDeepLink.test.tsx`, `useTabEntryEffects.test.tsx`                                                                    |
 | Copy Card Link: every role, before Help; toasts                | `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `copy-card-link.test.ts`                                                                              |
 | Drag, Add card, card menu, item panel                          | checked by hand against the dev stack (screenshots in the PR)                                                                                               |
+| Maximise Card: desktop only, toggles, sizes, aria-pressed      | `apps/editor/components/plan/ItemPanel.maximise.test.tsx`, `item-panel-size.test.ts`                                                                        |
+| Maximised preference: read, write, tracked first, owner id     | `apps/editor/hooks/plan/useCardPanelMaximised.test.tsx`                                                                                                     |
+| Cards tiles: grid, ⋯ inside, menu rows per role, Trash         | `apps/editor/components/plan/CardFinderPanel.test.tsx`, `CardFinderTile.test.tsx`                                                                           |
+| Folded strip rows open their panels (no canvas pointerdown)    | `apps/editor/components/canvas/PlanCardsClusterStrip.test.tsx`                                                                                              |
 
 ## Constants and configuration
 

@@ -155,8 +155,8 @@ rounded-full leading-none [&>svg]:block`, `width` / `height` from `size` when gi
 
 ## Controls that keep their height
 
-- The tab pill's button pins `h-7`; the name sits in `text-optical-centre`; the active tab with its
-  ellipsis menu pads `pl-2.5 pr-1`, so the ellipsis button's own padding balances the dot's side.
+- A tab's name button pins `h-10` (`TAB_NAME_BUTTON_CLASS`); the name sits in `text-optical-line`; the open tab
+  with its ellipsis menu pads `pl-3.5 pr-1`, so the ellipsis button's own padding balances the name's side.
 - The share-state chip (`SharedBadge`) pins `height={19}`, its probed height.
 - Everything else keeps its padding-given height through `text-optical-line`.
 

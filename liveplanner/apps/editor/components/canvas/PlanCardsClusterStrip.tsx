@@ -1,7 +1,7 @@
 'use client';
 
 import { isTrashed } from '@liveplanner/items';
-import { useState } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 import { EllipsisIcon, PlanCardsIcon, SearchIcon, TrashIcon } from '@liveplanner/ui';
 import {
   MenuActionRow,
@@ -13,6 +13,8 @@ import {
 } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 import { TrashDropTarget, TrashSegment, usePlanCardDragging } from './TrashClusterButton';
 import { usePlan } from '@/components/plan/PlanContext';
+
+const stopPress = (e: SyntheticEvent) => e.stopPropagation();
 
 // Plan mode's buttons in the bottom-right cluster, one strip as Undo and Redo are, where Layers sits in the other
 // modes: the **Trash** on its left (docs/specs/026-plan/items.md "Trash"; given only off a phone, to an editor),
@@ -158,25 +160,30 @@ function FoldedPlanStrip({
         />
       </ClusterStrip>
       {menuOpen ? (
-        <PortalMenu
-          anchor={anchor}
-          placement="above"
-          onClose={() => setAnchor(null)}
-          initialFocus="first"
-        >
-          {rows.map((row) => (
-            <MenuActionRow
-              key={row.label}
-              plain
-              label={row.label}
-              icon={row.icon}
-              onClick={() => {
-                setAnchor(null);
-                row.onPick(anchor);
-              }}
-            />
-          ))}
-        </PortalMenu>
+        // A portal's events still bubble up the React tree, to the canvas under the cluster: a press on a row
+        // reached it, the canvas took the focus, and the menu shut before the row's click could open its panel.
+        // display: contents, so it lays out nothing; it only stops what bubbles out of the menu.
+        <div className="contents" onPointerDown={stopPress}>
+          <PortalMenu
+            anchor={anchor}
+            placement="above"
+            onClose={() => setAnchor(null)}
+            initialFocus="first"
+          >
+            {rows.map((row) => (
+              <MenuActionRow
+                key={row.label}
+                plain
+                label={row.label}
+                icon={row.icon}
+                onClick={() => {
+                  setAnchor(null);
+                  row.onPick(anchor);
+                }}
+              />
+            ))}
+          </PortalMenu>
+        </div>
       ) : null}
     </>
   );
