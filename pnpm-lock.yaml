@@ -5966,6 +5966,9 @@ importers:
 
   packages/marketing-site:
     dependencies:
+      '@liveworkspace/auth-client':
+        specifier: workspace:^
+        version: link:../auth-client
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
