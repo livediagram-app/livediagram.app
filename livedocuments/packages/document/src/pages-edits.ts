@@ -12,6 +12,7 @@ import {
   withArticleRemoved,
   withUnitMoved,
 } from './article-pages';
+import { withFlashcardAdded } from './flashcards';
 import type { Element, Tab } from './index';
 import {
   pagesOf,
@@ -226,6 +227,10 @@ export function pageAdded<T extends PagesTab>(
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
   // The new page wears the background of the page before it (the last), whatever either kind.
   const carried = pages[pages.length - 1]?.background;
+  if (kind === 'flashcard') {
+    const out = withFlashcardAdded(tab, { id, ...(carried ? { background: carried } : {}) }, flow);
+    return out ? { tab: out as T } : refused('page_limit');
+  }
   if (kind === 'article') {
     const last = pages[pages.length - 1];
     const paper = last && ['a4', 'letter', 'a3'].includes(last.size ?? 'a4');

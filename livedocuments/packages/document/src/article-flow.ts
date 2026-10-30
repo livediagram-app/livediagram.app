@@ -404,6 +404,20 @@ export function newArticleFlow(): ArticleFlow {
   };
 }
 
+/** A new card's writing (docs/specs/007-editor/flashcards.md "A card"): an empty Title and an
+ *  empty paragraph, Narrow margins so a card holds a title and a couple of paragraphs. */
+export function newFlashcardFlow(): ArticleFlow {
+  const title = nextArticleBlockId();
+  const body = nextArticleBlockId(new Set([title]));
+  return {
+    blocks: [
+      { id: title, type: 'paragraph', style: 'title', runs: [] },
+      { id: body, type: 'paragraph', runs: [] },
+    ],
+    style: { margins: 'narrow' },
+  };
+}
+
 /** A copy of an article's writing with every block given a fresh id (a duplicated article). */
 export function withFreshArticleBlockIds(flow: ArticleFlow): ArticleFlow {
   const taken = new Set<string>();
