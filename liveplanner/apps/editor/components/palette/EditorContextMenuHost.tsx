@@ -12,6 +12,7 @@ import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } fro
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
 import { panelEnabled } from '@/lib/user-preferences';
+import { ReadOnlyElementMenuHost } from './ReadOnlyElementMenuHost';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -189,10 +190,11 @@ export function EditorContextMenuHost() {
 
   const { swatches } = useColourPalette();
 
-  // A view-only session never gets an element context menu at all, so
-  // nothing below needs a second `isReadOnly` guard — everything past
+  // A Participant or a Viewer gets its own short menu, holding only what its role may do
+  // (ReadOnlyElementMenuHost), so nothing below needs a second `isReadOnly` guard: everything past
   // this line is running for an editor by construction.
-  if (!contextMenu || contextMenu.mode === 'canvas' || isReadOnly) return null;
+  if (isReadOnly) return <ReadOnlyElementMenuHost />;
+  if (!contextMenu || contextMenu.mode === 'canvas') return null;
 
   // Selection-context-menu member resolution (right-click a multi-selection):
   // the marquee set when one is active, else the clicked element.
