@@ -25,6 +25,7 @@ import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinked
 import { actionsBoardIn } from '@/hooks/plan/linked-actions';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
 import { useFormActions } from '@/hooks/forms/useFormActions';
+import { useFormSheetColumns } from '@/hooks/forms/useFormSheetColumns';
 import { makeFormSheet } from '@/lib/forms-make-sheet';
 import { usePlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { usePlanTabConversion } from '@/hooks/plan/usePlanTabConversion';
@@ -1551,6 +1552,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openTab: setActiveId,
     makeSheet: (create) => void makeFormSheet(sheets.bridge, create),
     retitleSheets: sheets.retitleSheets,
+  });
+  // A sheet form's columns, there before any response and linked by column (docs/specs/030-forms/forms.md).
+  useFormSheetColumns({
+    tab: activeTab,
+    canEdit: !isStructureReadOnly,
+    bridge: sheets.bridge,
+    changeFormQuietly: forms.changeFormQuietly,
   });
   // Old Plan tabs become the Plan kinds when an Editor opens them (docs/specs/026-plan/plan-tabs.md).
   usePlanTabConversion({
