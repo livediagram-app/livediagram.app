@@ -31,7 +31,7 @@ header; they are not in the palette.
 - **Not on a phone**: below 640 px the header shows no widgets and their narrowing stands down
   ([Plan board](plan-board.md#on-a-phone)).
 - The zone ends in a **+** (for someone who may edit, tooltip-free, named "Add a widget") that opens the widget
-  gallery below it, then, while the board has widgets, **Edit Widgets** (a pencil, with a tooltip) that puts the zone
+  gallery below it, then, while the board has widgets, **Edit Widgets** (a pencil, with a tooltip, drawn as large as the **+**) that puts the zone
   in edit mode (see **Remove**).
 - A press on the zone's empty space selects (and moves) the board, as the rest of the header does.
 - A board holds each kind **at most once**: a filter is the board's filter, not one of several.

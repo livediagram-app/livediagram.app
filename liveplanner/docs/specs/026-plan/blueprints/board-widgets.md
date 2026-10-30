@@ -84,9 +84,9 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 - Reorder bar: 2 × 24 px, `palette.focus`.
 - Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Add widgets to
   this board" and its **+**; unselected, the empty zone draws nothing.
-- Edit Widgets: after the **+**, while `widgets.length > 0` and `canEdit`, a 28 px button (a pencil, `lucideGlyph(lucidePencil, 14)`, `Tooltip`
-  "Edit Widgets", `aria-pressed={false}`); in edit mode it is `CheckIcon` in `palette.focus` on a tint of it, named
-  "Done Editing Widgets", `aria-pressed`. Its state (`editing`) lives in `BoardWidgetZone`, never saved; it ends on
+- Edit Widgets: after the **+**, while `widgets.length > 0` and `canEdit`, a 28 px button (a pencil, `lucideGlyph(lucidePencil, 14)` drawn at 10, `Tooltip`
+  "Edit Widgets", `aria-pressed={false}`); in edit mode it is `CheckIcon` drawn at 12 in `palette.focus` on a tint of it, named
+  "Done Editing Widgets", `aria-pressed`. Both glyphs are sized by their ink to match the **+** (14 px box, ink 14 of 24 units) and take its stroke weight. Its state (`editing`) lives in `BoardWidgetZone`, never saved; it ends on
   Done, Escape or a capture-phase `pointerdown` outside the zone (listened only while editing), and when the
   widgets run out.
 - × : 16 px disc at the wrapper's top right, rendered for every widget only while `editing` (no hover, focus or tap

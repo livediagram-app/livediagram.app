@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { placeWidget, removeWidget, nudgeWidget, type BoardWidgetKind } from '@liveplanner/items';
 import { CheckIcon, CloseIcon, PlusIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { glyphStrokePx } from '@liveworkspace/icons';
 import { lucidePencil } from '@liveworkspace/icons/lucide';
 import type { PlanPalette } from '../plan-palette';
 import { BOARD_WIDGET_INFO } from '@liveplanner/plan-art';
@@ -17,6 +18,14 @@ import { widgetSlotAt } from '@/hooks/plan/widget-slot';
 import { BoardWidgetPicker } from './BoardWidgetPicker';
 
 const PencilIcon = lucideGlyph(lucidePencil, 14);
+
+// The + is drawn 14px on a 24-unit grid, so its ink spans 14 / 24 of that. The pencil's drawing fills 19 of 24 units
+// and the check 16, so at the same box they read larger than the +. Sized by their ink instead (about 9px across,
+// that of the +) and kept at the + stroke weight, the three read as one size.
+const PLUS_SIZE = 14;
+const PENCIL_SIZE = 10;
+const CHECK_SIZE = 12;
+const ZONE_GLYPH_WEIGHT = glyphStrokePx(PLUS_SIZE);
 
 // Pixels a press travels before it is a reorder rather than a click.
 const REORDER_THRESHOLD_PX = 4;
@@ -133,7 +142,7 @@ export function BoardWidgetZone({
       aria-expanded={pickerAt !== null}
       onClick={(e) => setPickerAt(pickerAt ? null : e.currentTarget)}
     >
-      <PlusIcon size={size === 'sm' ? 12 : 14} />
+      <PlusIcon size={size === 'sm' ? 12 : PLUS_SIZE} />
     </ZoneButton>
   );
 
@@ -298,7 +307,11 @@ export function BoardWidgetZone({
               setEditing(!active);
             }}
           >
-            {active ? <CheckIcon size={14} /> : <PencilIcon />}
+            {active ? (
+              <CheckIcon size={CHECK_SIZE} weight={ZONE_GLYPH_WEIGHT} />
+            ) : (
+              <PencilIcon size={PENCIL_SIZE} weight={ZONE_GLYPH_WEIGHT} />
+            )}
           </ZoneButton>
         </Tooltip>
       ) : null}
