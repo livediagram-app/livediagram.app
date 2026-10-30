@@ -164,6 +164,20 @@ BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX
                          Enter or blur saves the trimmed non-empty name through onSetup(..., 'Title'),
                          Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
+BoardCardTypeChips.tsx   the header's card type chips (spec "Card type chips"): one `button` per `boardAddTypes`
+                         type, `PlanCardTileArt` (22 px: card outline, a stripe in the type's colour, its glyph) then
+                         its label (labels drop above `CHIP_NAMES_MAX` types), each in a `HoverCard` "Add a {Type}"
+                         / "Click to add one, or drag it onto the board.", aria-label "Add a {Type}"; a `role="group"`
+                         aria-label "Add Cards" row, `overflow-x-auto` without a scrollbar. Pointer down stops
+                         propagation (the header would move the board) and hands the press to useCardTypeDrag;
+                         a click (or Enter / Space) adds through `chipClickCell` + `plan.addItem` + `openNewItem`.
+                         PlanBoardView renders it only when `chipsShown` (card-type-chips.ts) holds, and passes it
+                         to PlanBoardHeader as `chips`, which draws it after the title: in the header on a canvas,
+                         and in the menu box's portal after the name (a hairline before it) in a header band
+card-type-chips.ts       pure: `chipsShown({ interactive, canEditCards, phone, simplified, setup, types })` (the
+                         role and place gate) and `chipClickCell(setup, projection, type, statusNames)` (the column
+                         of the type's `newCardStatus` when the board has it, else the first; the first row; the
+                         status `cellStatus`; the row's `laneMove` set; after the cell's last card)
 phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action) + shownQuick
                          In a Dashboard slot and not maximised (`simplified = useInDashboard() && !maximised`,
                          dashboard-context.ts: DashboardContext present) PlanBoardView is simplified: `setUpHere =
@@ -215,8 +229,15 @@ plan-tile-art.tsx        a picture per board preset, and the card tile glyph
 
 Hooks (`apps/editor/hooks/plan/`): `usePlanItems` (store), `usePlanSlice` (composed into `useEditorState`; provides
 the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`), `usePlanBoardDrop` (the board's drag and
-drop, and the board as a target for cards from other boards through `plan-board-targets.ts`, a registry of the
-boards on screen by element id), `usePlanCardDrag` (pointer drag
+drop, and the board as a target for cards from other boards, and for a chip's new card, through `plan-board-targets.ts`, a registry of the
+boards on screen by element id), `useCardTypeDrag` (a header chip's press: idle, pressed, carrying, then dropped
+or cancelled; past `PRESS_DRAG_SLOP_PX` a ghost card follows the pointer, moved by style per animation frame, never a
+React render; each frame `otherPlanBoardAt(x, y, '')` finds the board, its target's `acceptsType` gates it,
+`dropSlotAt` and `refuseAt({ type, fields: {} }, slot)` read the cell, and `hover({ itemId: CHIP_DRAG_ID, slot,
+height: CHIP_GHOST_HEIGHT_PX, refused })` opens the placeholder, the last hover kept so a still pointer sends none;
+pointerup over an open slot calls `addCard(type, slot)`, over a refused one announces the reason, anywhere else adds
+nothing; Escape, pointercancel or unmount end it and clear the hover; a press that never travels is the chip's
+click), `usePlanCardDrag` (pointer drag
 within, between and out of boards; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
 under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
 `maximised-plan.ts` is the maximised board or view, a module store
@@ -603,6 +624,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Dashboard Settings steps aside while maximised                 | `apps/editor/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                          |
 | Maximise, restore, Escape, unmount ends it                     | `apps/editor/hooks/plan/maximised-plan.test.ts`                                                                                                             |
 | No remount, maximised size, one Escape                         | `apps/editor/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                   |
+| Card type chips: roles, phone, Archive, slot, labels, click    | `apps/editor/components/plan/card-type-chips.test.ts`, `BoardCardTypeChips.test.tsx`                                                                        |
+| Card type chip drag: placeholder, refusal, drop, Escape        | `apps/editor/hooks/plan/useCardTypeDrag.test.tsx`                                                                                                           |
 | Drag, Add card, card menu, item panel                          | checked by hand against the dev stack (screenshots in the PR)                                                                                               |
 
 ## Constants and configuration
@@ -623,6 +646,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `PRESS_DRAG_SLOP_PX`       | 4                  | Shared, ../packages/workbench/src/lib/press-gestures.ts                  |
 | `PLAN_COLUMN_MIN_PX`       | 220                | A card's title reads in 3 lines; 180–320                                 |
 | `PLAN_COLUMNS_MAX`         | 12                 | Spec                                                                     |
+| `CHIP_NAMES_MAX`           | 3                  | Spec ("more than three types" drop their names); 2-5                     |
+| `CHIP_GHOST_HEIGHT_PX`     | 56                 | A Minimal card's height, the placeholder a carried chip opens; 40-80     |
 | `BOARD_SORT_LEVELS_MAX`    | 2                  | Spec (Work Tracker #18): Sort By and Then By                             |
 | `SUGGESTED_STATUSES_MAX`   | 5                  | Spec ("up to five"); the list `SUGGESTED_STATUSES` holds exactly five    |
 | `ITEM_EDIT_DEBOUNCE_MS`    | 400                | One undo step per pause in typing                                        |
@@ -633,7 +658,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to
-  `addItem`: Add Card (PlanBoardView), a palette card's `addCard` (usePlanBoardDrop), New {Type}
+  `addItem`: Add Card (PlanBoardView), a chip's click (BoardCardTypeChips), a chip's drop through the target's
+  `addCard` (usePlanBoardDrop), New {Type}
   (PlanSheetsHost `onAddLinked`). PlanSheetsHost passes `fresh={freshItemId === item.id}` to ItemPanel, whose
   `useTitleFocus` (desktop and `canEdit` only, a frame after the Dialog's `initialFocus="container"` trap)
   focuses the title input with the caret at its end, or selects it when `fresh`.
