@@ -35,6 +35,7 @@ import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/C
 import { canvasGestureNow } from '@/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { useKeyboardElementMenu } from '@/hooks/canvas/useKeyboardElementMenu';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
@@ -280,6 +281,9 @@ function CanvasView(props: CanvasProps) {
     onCommitPolygon,
   });
 
+  // Menu key / Shift+F10 on the canvas opens the selected element's menu (no toolbar to Tab to).
+  useKeyboardElementMenu(mainRef, selectionStore.get, handleElementContextSelect);
+
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
   // below mounts its handlers verbatim.
@@ -517,11 +521,7 @@ function CanvasView(props: CanvasProps) {
             />
           ) : null}
 
-          <CanvasSelectionToolbars
-            props={props}
-            selectionInput={selectionInput}
-            quickRingOpen={quickRingOpen !== null}
-          />
+          <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
           <CanvasChrome
             {...props}
             mainSize={mainSize}
