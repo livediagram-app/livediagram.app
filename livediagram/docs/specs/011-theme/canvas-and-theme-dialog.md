@@ -192,6 +192,28 @@ with reduced motion), under the shared [back bar](../004-interface-design/back-b
 Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
 open the dialog on that panel.
 
+### Apply to All Tabs
+
+Tabs drift apart in style over time, so the home ends with one grouped settings row, iOS style: **Apply to All Tabs**
+(a brand icon tile, the title, and a line saying what it does: "Give the other N tabs this tab's colours, finish,
+text and canvas."). It sits under Fine-tune, with a short note below the card: "Locked tabs keep their own style.
+Undo puts every tab back."
+
+- **What it copies:** the open tab's whole style onto every other tab of the document: its theme (applied as picking that
+  theme does, so each tab's elements take the new colours and keep their own picks), and its canvas (pattern,
+  colours, strength, scale, speed), its text defaults (font, size of new text) and its finish, set exactly as the
+  open tab has them (a setting the open tab leaves unset is cleared on the others). Names, content and locks are
+  untouched (`@liveworkspace/workbench` `lib/tab-style-to-all.ts`, `TAB_STYLE_KEYS`).
+- **One change:** a single undo step restores every tab. No confirmation: the dialog applies live, and Undo is there.
+- **Tabs not opened yet** are loaded first (the search sweep), so none is left out for being unopened. A tab whose
+  content could not load keeps its style, as does a locked tab: neither is written. A toast says how many tabs took
+  the style and which kept their own.
+- **One tab:** the row is greyed and says the document has one tab.
+- **Busy:** while the other tabs load, the row reads "Applying…" with a spinner and takes no second press.
+- **Share roles:** an Editor of the whole document only. A Participant or Viewer never reaches the dialog, and an Editor
+  in a tab-scoped session does not see the row (it would reach tabs outside their scope).
+- **Telemetry:** `Tab` `Changed` `AllTabs`, once per press that styled any tab.
+
 ### Eased changes
 
 Options do not preview on hover (tried and removed: the canvas changing under a passing pointer was distracting); a
