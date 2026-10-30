@@ -41,11 +41,11 @@ describe('useTabReorderDrag', () => {
     const { result } = renderHook(() => useTabReorderDrag(vi.fn()));
     act(() => result.current.handlersFor('a').onDragStart(event()));
     act(() => result.current.handlersFor('b').onDragOver(event(80)));
-    act(() => result.current.handlersFor('c').onDragLeave(event()));
+    act(() => result.current.handlersFor('c').onDragLeave());
     expect(result.current.caretFor('b')).toBe('after');
-    act(() => result.current.handlersFor('b').onDragLeave(event()));
+    act(() => result.current.handlersFor('b').onDragLeave());
     expect(result.current.caretFor('b')).toBeNull();
-    act(() => result.current.handlersFor('a').onDragEnd(event()));
+    act(() => result.current.handlersFor('a').onDragEnd());
     expect(result.current.isDragging('a')).toBe(false);
   });
 

@@ -192,7 +192,7 @@ describe('TabFolderGroup', () => {
     fireEvent.doubleClick(chip());
     fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
     fireEvent.doubleClick(chip());
-    (screen.getByRole('textbox') as HTMLInputElement).value = ' ';
+    screen.getByRole<HTMLInputElement>('textbox').value = ' ';
     fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
     fireEvent.doubleClick(chip());
     fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape' });

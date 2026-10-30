@@ -189,7 +189,7 @@ function FolderGroup({
   const chipH = 20;
   const mid = chipY + chipH / 2;
   const shelf = open || tabs.some((tab) => tab.active);
-  let tx = x + 4 + chipW + 4;
+  const tabsX = x + 4 + chipW + 4;
   const chevX = x + 4 + chipW - 10;
   return (
     <g>
@@ -230,13 +230,16 @@ function FolderGroup({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {tabs.map((tab) => {
-        const el = (
-          <TabPill key={tab.label} x={tx} y={y} w={tab.w} label={tab.label} active={tab.active} />
-        );
-        tx += tab.w + 2;
-        return el;
-      })}
+      {tabs.map((tab, i) => (
+        <TabPill
+          key={tab.label}
+          x={tabsX + tabs.slice(0, i).reduce((s, t) => s + t.w + 2, 0)}
+          y={y}
+          w={tab.w}
+          label={tab.label}
+          active={tab.active}
+        />
+      ))}
     </g>
   );
 }
