@@ -58,16 +58,20 @@ const props = (over: Partial<TabFolderGroupProps<T>> = {}): TabFolderGroupProps<
 
 const chip = () => screen.getByRole('tab', { name: /^Planning,/ });
 const shown = (c: HTMLElement) =>
-  Array.from(c.querySelectorAll('[data-collapse-width="open"]')).map((el) => el.textContent);
+  Array.from(c.querySelectorAll('[data-tab-folder] > [data-collapse-width="open"]')).map(
+    (el) => el.textContent,
+  );
+const count = () => chip().querySelector('[data-collapse-width]') as HTMLElement;
 
 describe('TabFolderGroup', () => {
   it('names the chip with its count, collapsed, and tucks every tab away', () => {
     const { container } = render(<TabFolderGroup {...props()} />);
     expect(chip().getAttribute('aria-expanded')).toBe('false');
     expect(chip().getAttribute('aria-label')).toBe('Planning, 3 tabs');
-    expect(chip().textContent).toContain('3');
+    expect(count().dataset.collapseWidth).toBe('open');
+    expect(count().textContent).toBe('3');
     expect(shown(container)).toEqual([]);
-    expect(container.querySelectorAll('[inert]')).toHaveLength(3);
+    expect(container.querySelectorAll('[data-tab-folder] > [inert]')).toHaveLength(3);
     // No popover, ever.
     expect(document.querySelector('[data-tab-folder-fan]')).toBeNull();
   });
@@ -81,7 +85,7 @@ describe('TabFolderGroup', () => {
     const { container } = render(<TabFolderGroup {...props({ expanded: true })} />);
     expect(chip().getAttribute('aria-expanded')).toBe('true');
     expect(shown(container)).toEqual(['Roadmap', 'Q1 Goals', 'Q2 Goals']);
-    expect(chip().textContent).not.toMatch(/\d/);
+    expect(count().dataset.collapseWidth).toBe('shut');
     expect(container.querySelector('[data-tab-folder]')?.hasAttribute('data-expanded')).toBe(true);
   });
 

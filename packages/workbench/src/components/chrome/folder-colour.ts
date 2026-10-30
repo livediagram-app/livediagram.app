@@ -42,7 +42,7 @@ export const FOLDER_SHELF_CLASS =
 // The chip: the folder's name on a soft tint of its colour, a hairline of the same, ink deep enough to read (AA) on
 // the tint in both appearances.
 export const FOLDER_CHIP_CLASS =
-  'relative flex h-[26px] shrink-0 cursor-pointer items-center gap-1.5 rounded-[7px] pl-2.5 pr-1.5 text-[12.5px] font-semibold whitespace-nowrap touch-target-y hover:brightness-[0.96] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 bg-[color-mix(in_srgb,var(--tf)_14%,white)] text-[color-mix(in_srgb,var(--tf)_70%,black)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--tf)_24%,transparent)] dark:bg-[color-mix(in_srgb,var(--tfd)_18%,var(--color-slate-900))] dark:text-[var(--tfd)] dark:shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--tfd)_26%,transparent)] dark:hover:brightness-110';
+  'relative flex h-[26px] shrink-0 cursor-pointer items-center rounded-[7px] pl-2.5 pr-1.5 text-[12.5px] font-semibold whitespace-nowrap touch-target-y hover:brightness-[0.96] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 bg-[color-mix(in_srgb,var(--tf)_14%,white)] text-[color-mix(in_srgb,var(--tf)_70%,black)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--tf)_24%,transparent)] dark:bg-[color-mix(in_srgb,var(--tfd)_18%,var(--color-slate-900))] dark:text-[var(--tfd)] dark:shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--tfd)_26%,transparent)] dark:hover:brightness-110';
 
 // The count badge on a collapsed chip: the folder's colour, the count in white (slate-950 in dark).
 export const FOLDER_BADGE_CLASS =

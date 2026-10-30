@@ -161,7 +161,12 @@ export function TabFolderGroup<T extends { id: string }>({
             className={`${FOLDER_CHIP_CLASS}${dropOver ? ' outline-2 outline-offset-1 outline-brand-500' : ''}`}
           >
             <span className="max-w-[10rem] truncate">{name}</span>
-            {expanded ? null : <span className={FOLDER_BADGE_CLASS}>{tabs.length}</span>}
+            {/* The count eases out as the folder opens, so the chip narrows with its tabs, not a frame ahead. */}
+            <CollapseWidth open={!expanded}>
+              <span className="flex items-center self-center pl-1.5">
+                <span className={FOLDER_BADGE_CLASS}>{tabs.length}</span>
+              </span>
+            </CollapseWidth>
             <FolderChevron open={expanded} />
           </button>
         )}
@@ -182,7 +187,7 @@ function FolderChevron({ open }: { open: boolean }) {
   return (
     <span
       aria-hidden
-      className={`flex shrink-0 opacity-80 transition-transform duration-[180ms] ease-out motion-reduce:transition-none ${
+      className={`ml-1.5 flex shrink-0 opacity-80 transition-transform duration-[180ms] ease-out motion-reduce:transition-none ${
         open ? 'rotate-180' : ''
       }`}
     >

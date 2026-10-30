@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 // A box that eases its width open or shut (docs/specs/006-document/tab-folders.md "Tab bar rendering"): shut it is
-// inert and zero wide; open it clips nothing; between, only its width moves, and it settles even when the browser
-// skips the transition.
+// inert and zero wide; open it clips nothing; between, only its width moves, from where it stands, and it settles
+// at once where nothing can move.
 
 import { act, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -57,39 +57,63 @@ describe('CollapseWidth', () => {
     expect(el.hasAttribute('inert')).toBe(false);
   });
 
-  it('eases open to its content’s width, then lets go of it when the transition ends', () => {
+  it('eases open to its content’s width, then lets go of it when the animation finishes', () => {
     const { container, rerender } = render(<CollapseWidth open={false}>x</CollapseWidth>);
     const el = box(container);
     widths(el, 0, 96);
+    const run = { onfinish: null as null | (() => void), cancel: vi.fn() };
+    const animate = vi.fn(() => run);
+    Object.defineProperty(el, 'animate', { value: animate, configurable: true });
     rerender(<CollapseWidth open>x</CollapseWidth>);
+    expect(animate).toHaveBeenCalledWith(
+      [{ width: '0px' }, { width: '96px' }],
+      expect.objectContaining({ duration: COLLAPSE_WIDTH_MS }),
+    );
     expect(el.style.width).toBe('96px');
     expect(el.style.overflow).toBe('hidden');
-    // Another property's end, or a child's, changes nothing.
-    act(() => {
-      el.firstElementChild!.dispatchEvent(new Event('transitionend', { bubbles: true }));
-    });
-    expect(el.style.width).toBe('96px');
-    act(() => {
-      const end = new Event('transitionend') as TransitionEvent;
-      Object.defineProperty(end, 'propertyName', { value: 'width' });
-      el.dispatchEvent(end);
-    });
+    expect(el.hasAttribute('inert')).toBe(false);
+    act(() => run.onfinish?.());
     expect(el.style.width).toBe('');
     expect(el.style.overflow).toBe('');
   });
 
-  it('eases shut from where it stands, and settles even when no transition ends', () => {
+  it('turns round from where it stands when shut mid-way', () => {
+    const { container, rerender } = render(<CollapseWidth open={false}>x</CollapseWidth>);
+    const el = box(container);
+    widths(el, 0, 96);
+    const runs: { onfinish: null | (() => void); cancel: ReturnType<typeof vi.fn> }[] = [];
+    const animate = vi.fn(() => {
+      const run = { onfinish: null, cancel: vi.fn() };
+      runs.push(run);
+      return run;
+    });
+    Object.defineProperty(el, 'animate', { value: animate, configurable: true });
+    rerender(<CollapseWidth open>x</CollapseWidth>);
+    widths(el, 40, 96);
+    rerender(<CollapseWidth open={false}>x</CollapseWidth>);
+    expect(runs[0]!.cancel).toHaveBeenCalledOnce();
+    expect(runs[0]!.onfinish).toBeNull();
+    expect(animate).toHaveBeenLastCalledWith(
+      [{ width: '40px' }, { width: '0px' }],
+      expect.anything(),
+    );
+    expect(el.style.width).toBe('0px');
+    expect(el.hasAttribute('inert')).toBe(true);
+  });
+
+  it('settles at once where the browser cannot animate, or nothing would move', () => {
     const { container, rerender } = render(<CollapseWidth open>x</CollapseWidth>);
     const el = box(container);
     widths(el, 120, 120);
     rerender(<CollapseWidth open={false}>x</CollapseWidth>);
     expect(el.style.width).toBe('0px');
-    expect(el.hasAttribute('inert')).toBe(true);
-    act(() => {
-      vi.advanceTimersByTime(COLLAPSE_WIDTH_MS + 100);
-    });
-    expect(el.style.width).toBe('0px');
     expect(el.style.overflow).toBe('hidden');
+    const animate = vi.fn();
+    Object.defineProperty(el, 'animate', { value: animate, configurable: true });
+    widths(el, 0, 0);
+    rerender(<CollapseWidth open>x</CollapseWidth>);
+    expect(animate).not.toHaveBeenCalled();
+    expect(el.style.width).toBe('');
   });
 
   it('snaps under reduced motion', () => {
