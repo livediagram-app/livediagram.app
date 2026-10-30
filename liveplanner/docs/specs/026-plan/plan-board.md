@@ -500,8 +500,28 @@ In Plan mode:
     quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
   - **Header**: the type (a picker, with its glyph), the key, a **⋯** menu of **Duplicate** (a copy right after
     it, without its votes, as the card menu's), **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Edit Card Type** (closing the panel and opening the card's type in the type
-    editor), then, after a separator, **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
-    may only view gets a ⋯ of Help alone.
+    editor), then, after a separator, **Copy Card Link** (the card's address, below) and **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
+    may only view gets a ⋯ of Copy Card Link and Help.
+  - **Its address**: while a card is open, the page's address names it beside the tab pin, as
+    `#t=<tab>&item=<card id>` (the same fragment an Inbox row opens a card with,
+    [Inbox](../013-workspace/inbox.md) §1), and closing it takes the card back off. Opening that address opens the
+    plan on that tab with the card's panel open, as the person's role draws it (a Viewer reads it, a Participant
+    edits what a Participant may). A card that no longer exists, or that the link's share does not show, opens
+    nothing and says nothing: the plan opens on the tab, and the address drops the card. A tab that is gone, or out
+    of the share's scope, gives way to the plan's first tab, and the card still opens.
+    - **Back closes the card.** Opening a card from the plan (a board, a sheet row, the Cards finder, a search
+      result, a new card) adds one history entry, so the browser's Back closes the card and leaves the person on
+      the plan, and Forward opens it again. Closing the card any other way (Close, Escape, Enter in the title,
+      Trash) steps back off that entry, so Back afterwards leaves the plan as it did before. Moving from card to
+      card inside the panel (the breadcrumb, a Parent's Open, a Linked as row) replaces the address and adds no
+      entry. A card opened by its address, an Inbox row or an Actions board link replaces the address too: that
+      entry is already the card's.
+    - **Copy Card Link** in the ⋯ menu copies the card's address, for every role: `/project/<plan id>` with the share
+      code it was opened with (`?s=<code>`, so someone on the same share link can follow it), then
+      `#t=<tab>&item=<card id>`. The menu closes and a toast says "Link copied"; a copy the browser refuses
+      says "Couldn't copy the link". A copied link only opens for someone who may already see the plan.
+    - Only the editor's own address carries the card: an embed and the liveworkspace workbench frame keep their
+      addresses as they are (as the tab pin does).
   - **Parent** is a Card field (item-types.md "Card fields"): its control's open arrow opens the parent, and a
     Project lists the cards under it in its **Linked as Parent** section, as any Card field's linked card does.
   - **Breadcrumb**: the panel remembers the cards opened from inside it (a Parent's Open, a child row, a crumb).
