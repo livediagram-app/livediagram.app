@@ -108,6 +108,14 @@ describe('useTabEntryEffects tab pin', () => {
     expect(window.location.hash).toBe('#t=t1');
   });
 
+  // docs/specs/026-plan/plan-board.md "Its address": a card's entry keeps its mark, so closing it steps back.
+  it('keeps an opened card’s mark on its entry', () => {
+    window.history.replaceState({ liveplannerCard: true }, '', '/project/doc-1#t=t0&item=it-1');
+    setup({ activeId: 't1', elementCount: 0, tabLoaded: true });
+    expect(window.location.hash).toBe('#t=t1');
+    expect(window.history.state).toEqual({ liveplannerCard: true });
+  });
+
   it('leaves an address that names no project alone', () => {
     window.history.replaceState(null, '', '/explorer/mine');
     setup({ activeId: 't1', elementCount: 0, tabLoaded: true });

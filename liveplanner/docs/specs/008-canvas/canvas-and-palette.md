@@ -588,7 +588,7 @@ type Element = {
 - The palette is always rendered on top of the canvas, regardless of which tab is active.
 - Each tab owns its own array of elements. Adding a shape adds it to the **active tab** only.
 - Switching tabs swaps the canvas content; each tab's shapes persist while the page is loaded.
-- Reloads restore the project from the api worker (D1), keyed by the project id in the URL. The active tab id is encoded in the URL fragment (`#t=<tabId>`) so refreshing keeps you on the same tab.
+- Reloads restore the project from the api worker (D1), keyed by the project id in the URL. The active tab id is encoded in the URL fragment (`#t=<tabId>`) so refreshing keeps you on the same tab; an open card rides beside it (`&item=<cardId>`, [Plan board](../026-plan/plan-board.md) "Its address").
 - When the active tab has zero elements (and the template picker isn't open), an **empty-state card** is centred on the canvas. It contains, top to bottom: a brand-coloured icon (square + circle, evoking diagram primitives), the tab name in bold, an `EMPTY CANVAS` subtitle, a one-paragraph hint explaining the three ways to start ("Open the palette on the left to add shapes, double-click anywhere to drop text, or connect elements by dragging from their anchor dots"), and a **Browse templates** button that opens the template picker. The card sits on top of any background pattern so it stays legible on coloured / patterned canvases.
 - The empty-state card disappears once the active tab has at least one element.
 
