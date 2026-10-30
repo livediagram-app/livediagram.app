@@ -28,7 +28,7 @@ Scope, by file:
 | Filters | `ListFilters { apps, words, source, since, owner, intent, modes, space }`            | The Explorer's lens; values of one combine with or        |
 | Source  | `ITEM_SOURCES`: `person`, `ai`, `import`, `template`                                 | How it was made                                           |
 | Intent  | `<mode>:<kind>[:<family>]`, ≤ 100 chars                                              | What it was made as; its last word is the `intent` filter |
-| Use day | `use_days (person, item, day)`                                                       | A UTC day the person opened or edited it: Most Used       |
+| Use day | `use_days (person, item, day, opens)`                                                | A UTC day the person opened or edited it, and how many opens: Most Used |
 | Open    | `opens (person, item, last_opened_at, hidden)`                                       | Recent; `hidden = 1` is Hide from Recent                  |
 
 `Item` on the wire: `{ id, app, kind, title, ownerId, teamId, folderId, source, intent, createdAt, updatedAt,
@@ -57,7 +57,7 @@ trashedAt, trashReason, summary, access, favourite, lastOpenedAt, hiddenFromRece
 | `GET /items/:id`        | `view`           | `{ item, tabId, publicCode }` (the tab a link confines to; the public code when that is the way in)                                                                                                                                                                                                                                                               |
 | `PATCH /items/:id`      | `edit`           | `title` (trimmed ≤ 500); `folderId`, `teamId` only for owner or team (`403` through a link). Into or out of a team needs both teams joined; leaving one makes it the mover's own; changing team clears the folder. A rename moves `updated_at`; a move doesn't. Events: `renamed { from }`, `moved { folderName, teamId }` after moving its events' scopes.       |
 | `POST /items/:id/copy`  | `view`, a person | New row `"<title> (copy)"` (≤ 500) or `title`; own or team's stays in place, a link's lands in the root of the copier's space; `created { copiedFrom }`; then the app's `POST /items/:from/copy-to/:to { tabId, by, code, ip }`. The app failing deletes the row: `502 copy_failed`. Through a link: `copied_by_visitor` on the owner's Timeline. `201 { item }`. |
-| `POST /items/:id/open`  | `view`           | `204`. No person: nothing. Debounced per isolate (60 s, 5,000 keys) and in SQL (`opens` rewritten only after 60 s); a use day (`INSERT OR IGNORE`), pruned once a UTC day per person to the last 90 days. Through a non-public link: `shared_with` upserted and, the first time, the app told `{ type: 'joined', personId, level }`.                              |
+| `POST /items/:id/open`  | `view`           | `204`. No person: nothing. Debounced per isolate (60 s, 5,000 keys) and in SQL (`opens` rewritten only after 60 s); the day's open counted (`use_days` upserted, `opens + 1`), pruned once a UTC day per person to the last 14 days. Through a non-public link: `shared_with` upserted and, the first time, the app told `{ type: 'joined', personId, level }`.                              |
 | `POST /items/:id/grant` | `view`           | `mintGrant` with `sub` the person or `link:<code>`, `trashed` and `link` set; `503` without a key; through a non-public link, `opened_by_visitor` once per visitor, item and UTC day                                                                                                                                                                              |
 
 `DELETE /items/:id` and `POST /items/:id/restore` are in [trash.md](trash.md).
@@ -85,8 +85,9 @@ person's folders (`LIKE` with `\` escapes); `apps`, `source`, `intent` (`intent 
 the list, the mode the item's app last reported, such as livediagram's `diagram`, `draw`, `workshop`; read from the
 row the page already holds, so no index); `since` (`updated_at >=`); `owner` `me`/`others`; `space` (`mine`, `shared`,
 `team:<id>`, teams joined now else `403 not_team_member`). The answer is `{ items, nextCursor }` plus, on a first
-page: `mostUsed` (items with `useDays`, by distinct days in 90, then last open, then id, hidden ones left out),
-`mine { count, more }` and `any`. One batch; the page and Most Used decorated together.
+page: `mostUsed` (items opened in the last 14 days with `useOpens` and `useDays`, by opens in the window, then last open,
+then id, hidden ones left out), `mine { count, more }` (the live items in every scope the person has: their own and
+each joined team's, each item in one scope so counted once) and `any`. One batch; the page and Most Used decorated together.
 
 ### Folders
 
@@ -117,7 +118,7 @@ Every folder route needs a folder the person can file into (their own scope or a
 | `folders`    | `id`                        | `folders_scope (scope, created_at, id)`; `folders_parent`; `folders_owner`                                                                                                                                                                                                                                                                | folder routes, merge, purge                                        | lists, search, defaults, previews   |
 | `favourites` | `(person_id, item_id)`      | `favourites_person_created (person_id, created_at DESC, item_id DESC)`; `favourites_item`                                                                                                                                                                                                                                                 | favourites, merge, purge                                           | `favourites` view, `decorate`       |
 | `opens`      | `(person_id, item_id)`      | `opens_recent (person_id, last_opened_at DESC, item_id DESC) WHERE hidden = 0`; `opens_item`                                                                                                                                                                                                                                              | open, Hide from Recent, merge                                      | `recent`, Most Used, `decorate`     |
-| `use_days`   | `(person_id, item_id, day)` | `use_days_person_day (person_id, day)`; `use_days_item`                                                                                                                                                                                                                                                                                   | open, `edited` reports, merge                                      | Most Used                           |
+| `use_days`   | `(person_id, item_id, day)` | `use_days_person_day (person_id, day)`; `use_days_item`                                                                                                                                                                                                                                                                                   | open (`opens + 1`), `edited` reports (the day only), merge (summed) | Most Used                           |
 
 `items` columns: `id`, `app` (CHECK the four), `kind` (CHECK the four), `owner_id`, `team_id`, `scope`, `folder_id`
 (`ON DELETE SET NULL`), `title`, `source` (CHECK), `intent`, `summary` (JSON ≤ 2 KB, default `'{}'`), `created_at`,
@@ -158,7 +159,7 @@ A folder preview is two statements for up to 60 folders.
 
 `LIST_LIMIT_DEFAULT` 50, `LIST_LIMIT_MAX` 200, `TITLE_MAX` 500, `FOLDER_NAME_MAX` 500, `SEARCH_MAX` 200,
 `SEARCH_WORDS_MAX` 16, `FILTER_VALUES_MAX` 8, `INTENT_WORD` `/^[a-z0-9-]{1,32}$/`, `OPEN_DEBOUNCE_MS` 60 s,
-`USE_WINDOW_DAYS` 90, `MOST_USED_MAX` 8, `FOLDER_PREVIEW_IDS_MAX` 60, `FOLDER_PREVIEW_ITEMS` 4,
+`USE_WINDOW_DAYS` 14, `MOST_USED_MAX` 8, `FOLDER_PREVIEW_IDS_MAX` 60, `FOLDER_PREVIEW_ITEMS` 4,
 `FOLDER_PREVIEW_COUNT_CAP` 1000 (`packages/index-client/src/constants.ts`); `INTENT_MAX` 100, `ID_MAX` 128,
 `OPEN_MEMORY_MAX` 5,000 (`liveworkspace/apps/index/src/config.ts`); `DEFAULT_TITLE` `'Untitled'` (`items.ts`).
 

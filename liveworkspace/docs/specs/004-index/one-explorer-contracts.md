@@ -144,10 +144,12 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`        |
 |                                |                     | and the lens's (below). Sorted by `updatedAt`, or by                          |
 |                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first           |
-|                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last      |
-|                                |                     | 90, each with `useDays`, in the same response (Jump Back In). On any first    |
-|                                |                     | page, `mine=N` (1 to 200) adds `mine: {count, more}`, the person's own live   |
-|                                |                     | items in `app` counted up to N (Home's pill), and `any=1` adds `any`, whether |
+|                                |                     | page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by    |
+|                                |                     | how many times (ties: opened last first), each with `useOpens` (and          |
+|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,           |
+|                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in    |
+|                                |                     | every space the person is in (their own and each team's; each item once)     |
+|                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether               |
 |                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.      |
 | `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201              |
 |                                |                     | `{item, grant}`. The index makes the id unless the client names the one it    |
@@ -161,8 +163,8 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 | `POST /items/:id/restore`      | owner / team        | `{item}`                                                                      |
 | `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the             |
 |                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`).  |
-| `POST /items/:id/open`         | person or link      | Records an open for Recent, and the day as a use day for Most Used            |
-|                                |                     | (`use_days`, kept 90 days). Debounced: at most one write a minute             |
+| `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used      |
+|                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute       |
 |                                |                     | per person and item.                                                          |
 | `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                    |
 |                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                             |
@@ -393,8 +395,8 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
 
 - `PUT /app/items/:id/events`: `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
   wrote to the item and when, for the Timeline and Most Used. Each person's `edited` lands on one event per
-  item and UTC day (a later report moves its time on), and counts that day as one of their use days, as an
-  open does. liveplanner sends one per person who wrote since its last push, with the time of their latest
+  item and UTC day (a later report moves its time on), and counts that day as one of their use days (one open
+  when the day has none yet, so an item only edited still reaches Most Used; it never adds to a day's opens). liveplanner sends one per person who wrote since its last push, with the time of their latest
   write.
 - `PUT /app/people/events`: `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
   app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
