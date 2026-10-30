@@ -73,12 +73,12 @@ export function LabelMenu({
       className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
-        <span className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+        <span className="whitespace-nowrap text-[10.5px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
           Labels on this plan
         </span>
         {!full && matches.length ? (
-          <span className="text-[10.5px] text-slate-400 max-sm:hidden [@media(hover:none)]:hidden">
-            ↑↓ to choose · Enter to add
+          <span className="whitespace-nowrap text-[10.5px] text-slate-400 max-sm:hidden [@media(hover:none)]:hidden">
+            ↑↓ · Enter to add
           </span>
         ) : null}
       </div>
