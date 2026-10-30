@@ -41,7 +41,8 @@ import {
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { Button, CloseIcon, PlusIcon } from '@liveplanner/ui';
+import { Button, CloseIcon, PlusIcon, lucideGlyph } from '@liveplanner/ui';
+import { lucidePaperclip } from '@liveworkspace/icons/lucide';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
@@ -58,6 +59,8 @@ import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { fieldCountKey } from '@liveplanner/project';
 import { createThreadStore, type ThreadStore } from '@/hooks/plan/thread-store';
 import { ThreadCountsProvider } from './threads/CardThreadsContext';
+
+const ClipGlyph = lucideGlyph(lucidePaperclip, 14);
 
 export type CardDisplayDraft = CardDisplay;
 
@@ -108,6 +111,13 @@ function sampleCard(type: ItemTypeDef): Item {
       description: 'A short description of the work, as its first lines read on a card.',
       votes: { 'sample-person': 3 },
       comments: { comments: [{}, {}] },
+      // Three pictures, so the Attachments chip reads 3; the cover draws as its placeholder (CardCover's `sample`).
+      attachments: ['a', 'b', 'c'].map((n) => ({
+        id: `sample-${n}`,
+        name: `${n}.png`,
+        size: 1024,
+        type: 'image/png',
+      })),
       // A sample value for each of the type's custom fields, so a placed one shows.
       ...Object.fromEntries((type.custom ?? []).flatMap((c) => sampleCustom(c))),
     },
@@ -192,6 +202,13 @@ const fieldIcon = (type: ItemTypeDef, f: CardField, size = 14) => {
     return (
       <span className="flex" style={{ width: size, height: size }}>
         <span className="flex [&_svg]:h-full [&_svg]:w-full">{CUSTOM_KIND_ICONS[custom.kind]}</span>
+      </span>
+    );
+  // Attachments draws its paperclip, as on the card.
+  if (f === 'attachments')
+    return (
+      <span className="flex [&_svg]:h-full [&_svg]:w-full" style={{ width: size, height: size }}>
+        <ClipGlyph />
       </span>
     );
   return f === 'key' ? (

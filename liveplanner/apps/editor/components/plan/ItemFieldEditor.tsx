@@ -33,6 +33,7 @@ import { CalculatedFieldValue } from './CalculatedFieldValue';
 import { calculatedFieldValue } from './calculated-values';
 import { LinkedCardField } from './LinkedCardField';
 import { ImageFieldControl } from './ImageField';
+import { AttachmentsField } from './AttachmentsField';
 import { usePlan } from './PlanContext';
 import { isHexColour } from '@liveplanner/project';
 import { ColourSelect } from './ColourSwatches';
@@ -52,6 +53,7 @@ const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   start: 'Start',
   due: 'Due',
   checklist: 'Checklist',
+  attachments: 'Attachments',
   description: 'Description',
   comments: 'Comments',
 };
@@ -67,6 +69,7 @@ export function labelsItsControl(type: ItemTypeDef, f: string): boolean {
   const as = (kind && builtInFieldOfKind(kind)) ?? f;
   return (
     as !== 'checklist' &&
+    as !== 'attachments' &&
     as !== 'color' &&
     as !== 'description' &&
     as !== 'comments' &&
@@ -264,6 +267,10 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       return <DateField id={id} value={value} disabled={disabled} onSave={save} />;
     case 'checklist':
       return <ChecklistEditor value={value} disabled={disabled} onSave={save} />;
+    case 'attachments':
+      return (
+        <AttachmentsField id={id} itemId={item.id} value={value} canEdit={canEdit} onSave={save} />
+      );
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     case 'comments':
