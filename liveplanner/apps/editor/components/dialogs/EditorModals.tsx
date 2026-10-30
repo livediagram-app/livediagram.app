@@ -45,6 +45,10 @@ export function EditorModals() {
     setTabDefaultTextSize,
     setTabFinish,
     applyTabLook,
+    tabs,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+    canApplyStyleToAllTabs,
   } = useEditorContext();
 
   return (
@@ -96,6 +100,15 @@ export function EditorModals() {
           onSetFinish={setTabFinish}
           canvasBackground={activeTab.backgroundColor}
           onApplyLook={applyTabLook}
+          allTabs={
+            canApplyStyleToAllTabs
+              ? {
+                  tabCount: tabs.length,
+                  applying: applyingStyleToAllTabs,
+                  onApply: () => void applyStyleToAllTabs(),
+                }
+              : undefined
+          }
           onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}
