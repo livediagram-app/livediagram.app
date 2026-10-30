@@ -15,10 +15,21 @@ const { db, authClient, order } = vi.hoisted(() => {
         return { folders: 1 };
       }),
     },
+    // The app's side of @liveworkspace/auth-client's deletion code (tested there): the code '123456' checks out and
+    // hands back the close; any other is refused.
     authClient: {
       closeAccount: vi.fn(async () => {
         order.push('account');
       }),
+      confirmDeletionCode: vi.fn(async (credentials: unknown, _token: unknown, code: unknown) => {
+        if (!credentials) {
+          return { ok: false, answer: { status: 503, body: { error: 'accounts_unavailable' } } };
+        }
+        return code === '123456'
+          ? { ok: true, closeAccount: () => authClientCloseAccount() }
+          : { ok: false, answer: { status: 403, body: { error: 'invalid_code' } } };
+      }),
+      requestDeletionCode: vi.fn(async () => ({ status: 200, body: { sent: true } })),
     },
   };
 });
@@ -46,8 +57,12 @@ vi.mock('../index-service', async (original) => ({
 }));
 vi.mock('@liveworkspace/auth-client', async (original) => ({
   ...(await original<typeof import('@liveworkspace/auth-client')>()),
-  ...authClient,
+  confirmDeletionCode: authClient.confirmDeletionCode,
+  requestDeletionCode: authClient.requestDeletionCode,
 }));
+function authClientCloseAccount() {
+  return authClient.closeAccount();
+}
 
 import { handleAccount } from './account';
 
@@ -58,12 +73,25 @@ const SIGN_IN: Partial<Env> = {
   API_RESOURCE: 'https://livedocuments.app/api',
 };
 
-function remove(opts: { env?: Partial<Env>; accountUserId?: string | null } = {}) {
+function remove(
+  opts: { env?: Partial<Env>; accountUserId?: string | null; code?: string | null } = {},
+) {
   return handleAccount(
     makeTestRouteContext('DELETE', '/api/account', {
       accountUserId: opts.accountUserId === undefined ? 'user_1' : opts.accountUserId,
       headers: { Authorization: 'Bearer access-token' },
       env: { ...SIGN_IN, ...opts.env } as Env,
+      ...(opts.code !== null && { body: { code: opts.code ?? '123456' } }),
+    }),
+  );
+}
+
+function askForCode(opts: { accountUserId?: string | null; path?: string } = {}) {
+  return handleAccount(
+    makeTestRouteContext('POST', opts.path ?? '/api/account/deletion-code', {
+      accountUserId: opts.accountUserId === undefined ? 'user_1' : opts.accountUserId,
+      headers: { Authorization: 'Bearer access-token' },
+      env: SIGN_IN as Env,
     }),
   );
 }
@@ -88,7 +116,8 @@ describe('DELETE /api/account', () => {
     expect(index.deleted.sort()).toEqual(['p1', 'p2']);
     expect(order).toEqual(['data', 'account']);
     expect(db.deleteAccount).toHaveBeenCalledWith(expect.anything(), 'user_1');
-    expect(authClient.closeAccount).toHaveBeenCalledWith(
+    // The code is checked with this app's credentials and the caller's token before anything goes.
+    expect(authClient.confirmDeletionCode).toHaveBeenCalledWith(
       {
         accountsUrl: SIGN_IN.ACCOUNTS_URL,
         clientId: 'client-1',
@@ -96,7 +125,9 @@ describe('DELETE /api/account', () => {
         resource: SIGN_IN.API_RESOURCE,
       },
       'access-token',
+      '123456',
     );
+    expect(authClient.closeAccount).toHaveBeenCalledTimes(1);
   });
 
   it('clears the refresh cookie, since the refresh token went with the account', async () => {
@@ -117,9 +148,28 @@ describe('DELETE /api/account', () => {
     expect(res.headers.getSetCookie()).toEqual([]);
   });
 
-  it('deletes only the data on a deployment without sign-in', async () => {
+  it('deletes nothing on a deployment without sign-in, where no code can be checked', async () => {
     const res = await remove({ env: { ACCOUNTS_URL: undefined } });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(503);
+    expect(db.deleteAccount).not.toHaveBeenCalled();
+    expect(index.deleted).toEqual([]);
+    expect(authClient.closeAccount).not.toHaveBeenCalled();
+  });
+
+  it('deletes nothing without the right code', async () => {
+    for (const code of ['000000', null]) {
+      const res = await remove({ code });
+      expect(res.status).toBe(403);
+      expect(await res.json()).toEqual({ error: 'invalid_code' });
+      expect(res.headers.get('Cache-Control')).toBe('no-store');
+    }
+    expect(authClient.confirmDeletionCode).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'access-token',
+      undefined,
+    );
+    expect(db.deleteAccount).not.toHaveBeenCalled();
+    expect(index.deleted).toEqual([]);
     expect(authClient.closeAccount).not.toHaveBeenCalled();
   });
 
@@ -129,5 +179,24 @@ describe('DELETE /api/account', () => {
     expect(db.deleteAccount).not.toHaveBeenCalled();
     expect(index.deleted).toEqual([]);
     expect(authClient.closeAccount).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/account/deletion-code', () => {
+  it('asks the accounts Worker to email the code, with this app’s credentials and the caller’s token', async () => {
+    const res = await askForCode();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ sent: true });
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(authClient.requestDeletionCode).toHaveBeenCalledWith(
+      expect.objectContaining({ clientId: 'client-1' }),
+      'access-token',
+    );
+  });
+
+  it('refuses a guest, and answers nothing else under /api/account', async () => {
+    expect((await askForCode({ accountUserId: null })).status).toBe(400);
+    expect((await askForCode({ path: '/api/account/other' })).status).toBe(404);
+    expect(authClient.requestDeletionCode).not.toHaveBeenCalled();
   });
 });
