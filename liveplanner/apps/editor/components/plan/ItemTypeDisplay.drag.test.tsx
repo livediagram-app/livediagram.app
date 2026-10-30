@@ -139,4 +139,29 @@ describe('custom fields in the Display', () => {
     );
     expect(screen.getByText('Person: Person')).toBeTruthy();
   });
+
+  it('draws a built-in kind’s sample as its built-in field, and an Image by its name', () => {
+    const review = {
+      ...task,
+      custom: [
+        { id: 'f-rev', label: 'Reviewer', kind: 'person' as const },
+        { id: 'f-areas', label: 'Areas', kind: 'labels' as const },
+        { id: 'f-tone', label: 'Tone', kind: 'colour' as const },
+        { id: 'f-steps', label: 'Steps', kind: 'checklist' as const },
+        { id: 'f-shot', label: 'Shot', kind: 'image' as const },
+      ],
+    };
+    render(
+      <ItemTypeDisplay
+        type={review}
+        display={{ detailed: { foot: ['f-rev', 'f-areas', 'f-tone', 'f-steps', 'f-shot'] } }}
+        onChange={() => {}}
+      />,
+    );
+    expect(screen.getByLabelText('Reviewer: Ana Silva')).toBeTruthy();
+    expect(screen.getByText('Areas: Urgent')).toBeTruthy();
+    expect(screen.getByText('Tone: Teal')).toBeTruthy();
+    expect(screen.getByText('Steps 1 of 2 done')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Shot, in Footer/ }).textContent).toContain('Shot');
+  });
 });
