@@ -74,7 +74,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         !editing && from
           ? duplicateItemType(from, ctx.types)
           : forBoard
-            ? newTypeForBoard(forBoard, ctx.statusNames.keys())
+            ? newTypeForBoard(forBoard)
             : undefined;
       return (
         <ItemTypeEditor

@@ -18,7 +18,7 @@ drop it in a column) instead of a drawing. It never decides what the tab is: a t
 ## Plan's mark
 
 Its mark is a board: three columns, the middle one holding a raised card (`PlanIcon`, `EDITOR_MODE_ICONS.plan`). A
-general tab's pill leads with it; a Board, Sheet, Dashboard or Form tab shows its kind's glyph instead
+general tab is marked with it where tabs are listed with an icon; a Board, Sheet, Dashboard or Form tab shows its kind's glyph instead
 ([Plan tabs](plan-tabs.md#the-kinds)). There is no mode switch and no other mode
 ([Editor mode](../007-editor/editor-modes.md#other-mode-ids)).
 

@@ -11,7 +11,6 @@ export {
 } from './verify';
 export {
   authorizeUrl,
-  closeAccount,
   createPkcePair,
   exchangeCode,
   GUEST_STATE_PATTERN,
@@ -26,6 +25,17 @@ export {
   type PkcePair,
   type TokenSet,
 } from './oauth';
+export {
+  checkDeletionCode,
+  closeAccount,
+  confirmDeletionCode,
+  isDeletionCode,
+  requestDeletionCode,
+  sendDeletionCode,
+  type ConfirmedDeletion,
+  type DeletionAnswer,
+  type DeletionCodeCheck,
+} from './close-account';
 export {
   accountEmails,
   claimLegacyGuest,

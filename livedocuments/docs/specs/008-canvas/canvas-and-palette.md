@@ -1106,12 +1106,11 @@ The tab bar sits at the bottom of the editor. Each tab represents one canvas wit
 - Click a tab to switch to it. Switching clears element selection, edit mode, and any active picker, AND **fit-to-screens** the new tab's content on load (so the user lands centred on whatever's there, not wherever the previous tab left the viewport). A fit pads the content by at least the Palette strip's reach into the canvas on every side (`topChromeInset`, a whole even number of px), so nothing lands under the strip or the bottom chrome and the content stays centred on whole pixels. Subsequent edits on the same tab don't re-fit, the first element on an empty tab included; the gate is per tab id.
 - The **+** button at the right of the bar adds a fresh empty tab and switches to it. The new tab is **seeded from the active tab's visual context**: theme id, canvas backdrop (`backgroundColor`, `backgroundPattern`, `backgroundOpacity`, `patternColor`), font, and default text size all carry over, so a user mid-document doesn't land on a brand-default canvas. It opens on the Pages start ([Start Making Pages](../007-editor/start-diagramming.md)). Each tab stays independently styleable after creation (restyling the new tab never affects the source). The seed survives the new tab's template picker too: picking a template under the unchanged theme keeps the inherited backdrop (see [Templates](#templates)), and Skip leaves it untouched.
 
-### Tab pill styling
+### Tab styling
 
-Each tab pill colours itself from its tab's theme:
+A tab takes its colour from its tab's theme ([How a tab looks](../007-editor/editor-app.md#how-a-tab-looks)):
 
-- Pill text colour uses `getTheme(tab.theme).elementStroke` (falls through to the brand sky for themes that don't override the stroke).
-- The active pill additionally tints its background to a 10% alpha of the same accent.
+- The open tab's name uses `getTheme(tab.theme).elementStroke` (the brand sky for themes that set no stroke), made legible (AA) on the open tab's white (slate-800 in dark) card. The other tabs keep neutral ink, whatever their theme.
 - A small **padlock icon** sits to the left of the name when `tab.locked === true`.
 - Per-tab **participant avatars** stack to the right of the name, one circle per remote participant whose `tab-focus` op points at this tab. Lets the user see at a glance who's working where.
 

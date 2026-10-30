@@ -1,6 +1,6 @@
 # Explorer Home
 
-`/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (Most Used: the items you used on the most days in the last 90, then your most recently opened, up to eight from every app, each with a line such as "Used on 6 days" or "Opened 2 hours ago") Shared With You Recently, and What Happened, read from the index.
+`/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (Most Used: up to eight items you opened in the last 14 days, the most opened first, then Recent: up to eight of your most recently opened, from every app, four across in two rows on a desktop and one strip of up to eight on a phone, each with a line such as "Opened 12 times" or "Opened 2 hours ago") Shared With You Recently, and What Happened, read from the index.
 
 ## The hero
 
@@ -9,7 +9,7 @@ The shared Explorer draws Home's hero ([`@liveworkspace/explorer`'s `HomeHero`](
 Top to bottom, left column:
 
 - **Status pills**, two, each a link with a coloured dot:
-  - the person's documents: "1 document" / "N documents" (My Work, the person's own space, in this app), opening **My Work**; a
+  - the person's documents: "1 document" / "N documents" (every space the person is in, in this app: My Work and each of their teams, each item counted once; not what was shared with them through a link), opening **My Work**, or for someone in a team, Search results narrowed to those spaces (`space:mine,team:…`); a
     green dot. The count is one request of up to 200 items, made only while the hero shows; past that it reads "200+ documents";
   - the Inbox: "Inbox is clear" when nothing open is assigned to the person, else "N open in your Inbox", the
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
@@ -79,6 +79,6 @@ The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) arti
 Telemetry, through the Explorer's `onHome` prop: `Home·Selected` (`WhatHappened`, `SeeTimeline`) and `Home·Opened`
 (`Group`).
 
-livedocuments says when a document is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the document. The index keeps the time for Recent and the day as a use day for Most Used, and Jump Back In reads both in one request.
+livedocuments says when a document is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the document. The index keeps the time for Recent and counts the open on that day for Most Used (opens over the last 14 days), and Jump Back In reads both in one request.
 
 The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

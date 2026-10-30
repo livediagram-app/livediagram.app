@@ -11,6 +11,7 @@ import {
   linkCandidates,
   linkTypesOf,
   typeAllowsStatus,
+  typeStatusesOf,
   type Item,
   type ItemFieldId,
   type ItemFieldValue,
@@ -138,15 +139,24 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       const raw = typeof value === 'string' ? value : '';
       const status = ctx.statuses.some((s) => s.status === raw) ? raw : '';
       const known = ctx.statuses;
-      // Only the statuses this card type uses (docs/specs/026-plan/item-types.md "An item type"); a card already
-      // in one it leaves out shows it, marked, and can move out of it but never back in.
-      const options = known
-        .filter((s) => typeAllowsStatus(type, s.status) || s.status === status)
-        .map((s) =>
-          typeAllowsStatus(type, s.status)
-            ? s
-            : { ...s, name: `${s.name} (not used by ${type.label})`, excluded: true },
-        );
+      // Only the statuses this card type uses, in its order (docs/specs/026-plan/item-types.md "The statuses a type
+      // uses"), the same on every tab; a card already in one it leaves out shows it last, marked, and can move out of
+      // it but never back in.
+      const byId = new Map(known.map((s) => [s.status, s]));
+      const options: { status: string; name: string; excluded?: true }[] = typeStatusesOf(
+        type,
+        byId.keys(),
+      ).flatMap((id) => {
+        const s = byId.get(id);
+        return s ? [s] : [];
+      });
+      const current = byId.get(status);
+      if (current && !typeAllowsStatus(type, status))
+        options.push({
+          ...current,
+          name: `${current.name} (not used by ${type.label})`,
+          excluded: true,
+        });
       // The status reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name.
       const phase = status ? (plan?.statusPhases?.get(status) ?? 'todo') : null;
       return (

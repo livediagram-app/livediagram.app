@@ -27,7 +27,7 @@ preference, so the email switches are found where every other setting is.
   configured AND the reader is signed in, since a guest has no address to send to; a guest sees one row saying to
   sign in to choose.
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**, which opens `DeleteAccountDialog`
-  (type your email to confirm).
+  (type your email, then the code emailed to the account, to confirm).
 
 ### The old profile address
 
@@ -45,7 +45,7 @@ New mail links at `/explorer?settings=notifications` directly (`apps/api/src/ema
 
 ### Deleting an account
 
-The confirmation flow (type your email, then wipe what livediagram keeps, then close the liveworkspace account, then
+The confirmation flow (type your email, then the code emailed to the account, then wipe what livediagram keeps, then close the liveworkspace account, then
 end the session) is [Auth + guest access](auth-and-guest-access.md#deleting-an-account)'s, and what is wiped is
 [API](../015-api/api.md#owner-keyed-data) "Owner-keyed data". Closing the liveworkspace account closes it in every
 app, so the dialog says the person's work in every app goes, the Trash included. Teams, memberships and their heirs

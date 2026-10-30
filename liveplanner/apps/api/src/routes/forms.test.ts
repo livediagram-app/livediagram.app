@@ -3,6 +3,7 @@ import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { FormLinkResponse, PublicFormResponse } from '@liveplanner/api-schema';
 import { FROM_FORM_FIELD, type FormDefinition } from '@liveplanner/forms';
 import { ITEMS_MAX, presetSetup, type Item } from '@liveplanner/items';
+import { SHEET_CELLS_MAX } from '@liveplanner/sheets';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { generateFormCode, listItems } from '../db';
 import { makeTestRouteContext } from './test-route-context';
@@ -452,6 +453,8 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
     for (let i = 1; i <= ITEMS_MAX; i += 1) insert.run(`i${i}`, i);
     const res = await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'x' } });
     expect(res).toEqual({ status: 413, body: { error: 'form_full' } });
+    // No card was made, so none is counted.
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ responses: 0 });
   });
 
   it('titles a card by the form and its number when nothing goes to Title', async () => {
@@ -543,6 +546,72 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
     expect((await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'x' } })).status).toBe(
       409,
     );
+  });
+
+  // Work Tracker #7: a counted response is never lost. A row that cannot be written gives its number back, so the count
+  // never grows for a response that made nothing, and the respondent hears why rather than Thanks.
+  it('gives the number back when the row cannot be written, and the next response takes it', async () => {
+    seedSheet();
+    writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));
+    const code = await publish();
+    sql.sql.prepare(`UPDATE sheets SET cell_count = ? WHERE id = ?`).run(SHEET_CELLS_MAX, SHEET);
+    const full = await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Lost?' } });
+    expect(full).toEqual({ status: 413, body: { error: 'form_full' } });
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ responses: 0 });
+    sql.sql.prepare(`UPDATE sheets SET cell_count = 0 WHERE id = ?`).run(SHEET);
+    const res = await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Kept' } });
+    expect(res).toEqual({ status: 201, body: { number: 1 } });
+    expect(textAt('ra02')).toContainEqual({ s: 'Kept' });
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ responses: 1 });
+  });
+
+  it('keeps answering a renamed heading through the column the form remembers', async () => {
+    seedSheet();
+    // The builder gave the sheet its headers and remembered their columns (ca01 #, ca02 Submitted, ca03 Summary).
+    sql.sql
+      .prepare(`UPDATE sheets SET layout = ? WHERE id = ?`)
+      .run(
+        JSON.stringify({ rows: ['ra01', 'ra02', 'ra03'], cols: ['ca01', 'ca02', 'ca03'] }),
+        SHEET,
+      );
+    const put = sql.sql.prepare(
+      `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input) VALUES ('d1', ?, 'ra01', ?, ?)`,
+    );
+    put.run(SHEET, 'ca01', JSON.stringify({ s: '#' }));
+    put.run(SHEET, 'ca02', JSON.stringify({ s: 'Submitted' }));
+    // Renamed in the sheet: "Summary" now reads "What went wrong".
+    put.run(SHEET, 'ca03', JSON.stringify({ s: 'What went wrong' }));
+    writeForm(
+      form({
+        destination: undefined,
+        sheet: {
+          tabId: 'stab',
+          sheetId: SHEET,
+          columns: { '#': 'ca01', at: 'ca02', 'q-sum': 'ca03' },
+        },
+      }),
+    );
+    const code = await publish();
+    await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Still linked' } });
+    const row = cells().filter((c) => c.row_id === 'ra02');
+    expect(row.find((c) => c.col_id === 'ca03')?.input).toBe(JSON.stringify({ s: 'Still linked' }));
+    // The renamed heading is kept, and no second Summary column was made for it.
+    expect(textAt('ra01').map((i) => i['s'])).toContain('What went wrong');
+    expect(textAt('ra01').map((i) => i['s'])).not.toContain('Summary');
+  });
+
+  it('puts a response under the last value, not under a styled empty row', async () => {
+    seedSheet();
+    // A banded look's empty row: a format, no value.
+    sql.sql
+      .prepare(
+        `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, format) VALUES ('d1', ?, 'ra03', 'ca01', ?)`,
+      )
+      .run(SHEET, JSON.stringify({ bg: '#eef' }));
+    writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));
+    const code = await publish();
+    await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'In view' } });
+    expect(textAt('ra02')).toContainEqual({ s: 'In view' });
   });
 
   // A deleted Sheet tab can leave its sheet behind: a row there would never be seen.

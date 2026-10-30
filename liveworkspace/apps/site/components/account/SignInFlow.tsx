@@ -1,6 +1,7 @@
 'use client';
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { CODE_DIGITS, CodeDigits, type CodeDigitsHandle, EMPTY_CODE } from '@liveworkspace/ui';
 import {
   afterSignIn,
   call,
@@ -57,9 +58,6 @@ function field(form: HTMLFormElement, name: string): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-const DIGITS = 6;
-const EMPTY_CODE = Array<string>(DIGITS).fill('');
-
 export function SignInFlow({ flow }: { flow: Flow }) {
   const signingUp = flow === 'sign-up';
   const [options, setOptions] = useState<SignInOptions | null>(null);
@@ -69,14 +67,14 @@ export function SignInFlow({ flow }: { flow: Flow }) {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [email, setEmail] = useState('');
-  const [digits, setDigits] = useState<string[]>(EMPTY_CODE);
+  const [digits, setDigits] = useState<readonly string[]>(EMPTY_CODE);
   // The query the page was opened with: the signed OAuth request.
   const search = useLocationSearch();
 
   const names = useRef<Names | null>(null);
   const continueTo = useRef<string | null>(null);
   const verifying = useRef(false);
-  const digitBoxes = useRef<(HTMLInputElement | null)[]>([]);
+  const digitBoxes = useRef<CodeDigitsHandle>(null);
   const captchaBox = useRef<HTMLDivElement>(null);
   const captcha = useRef<{ turnstile: Turnstile; widget: string } | null>(null);
   const nameStepGiven = useRef<HTMLInputElement>(null);
@@ -175,7 +173,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
 
   // The first box takes focus whenever the code step opens.
   useEffect(() => {
-    if (step === 'code') digitBoxes.current[0]?.focus();
+    if (step === 'code') digitBoxes.current?.focus();
     if (step === 'name') nameStepGiven.current?.focus();
   }, [step]);
 
@@ -198,7 +196,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     if (!result.ok) {
       setDigits(EMPTY_CODE);
       // After the render that enables the boxes again: a disabled box takes no focus.
-      requestAnimationFrame(() => digitBoxes.current[0]?.focus());
+      requestAnimationFrame(() => digitBoxes.current?.focus());
       return setError(
         result.data.code === 'TOO_MANY_ATTEMPTS'
           ? 'Too many wrong codes. Request a new one.'
@@ -220,16 +218,6 @@ export function SignInFlow({ flow }: { flow: Flow }) {
       return;
     }
     await finish();
-  }
-
-  function fill(text: string, from: number) {
-    const clean = text.replace(/\D/g, '').slice(0, DIGITS - from);
-    const next = [...digits];
-    for (let i = 0; i < clean.length; i++) next[from + i] = clean[i]!;
-    setDigits(next);
-    digitBoxes.current[Math.min(from + clean.length, DIGITS - 1)]?.focus();
-    const code = next.join('');
-    if (code.length === DIGITS) void verify(code);
   }
 
   async function saveNames(chosen: Names): Promise<boolean> {
@@ -424,41 +412,17 @@ export function SignInFlow({ flow }: { flow: Flow }) {
               <strong className="text-slate-900 dark:text-slate-100">{email}</strong>. Enter it
               below.
             </p>
-            <div role="group" aria-label="Verification code" className="flex justify-center gap-2">
-              {digits.map((digit, i) => (
-                <input
-                  key={i}
-                  ref={(box) => {
-                    digitBoxes.current[i] = box;
-                  }}
-                  value={digit}
-                  inputMode="numeric"
-                  maxLength={1}
-                  autoComplete={i === 0 ? 'one-time-code' : 'off'}
-                  aria-label={`Digit ${i + 1}`}
-                  disabled={working}
-                  onChange={(event) => {
-                    const typed = event.target.value.replace(/\D/g, '');
-                    if (typed) return fill(typed, i);
-                    const next = [...digits];
-                    next[i] = '';
-                    setDigits(next);
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Backspace' && !digit && i > 0)
-                      digitBoxes.current[i - 1]?.focus();
-                  }}
-                  onPaste={(event) => {
-                    event.preventDefault();
-                    fill(event.clipboardData.getData('text'), 0);
-                  }}
-                  className={`${FIELD} h-13 w-11 p-0 text-center text-xl font-semibold`}
-                />
-              ))}
-            </div>
+            <CodeDigits
+              ref={digitBoxes}
+              digits={digits}
+              onDigits={setDigits}
+              onComplete={(full) => void verify(full)}
+              disabled={working}
+              boxClassName={`${FIELD} h-13 w-11 p-0 text-center text-xl font-semibold`}
+            />
             <button
               type="submit"
-              disabled={working || code.length !== DIGITS}
+              disabled={working || code.length !== CODE_DIGITS}
               className={PRIMARY_BUTTON}
             >
               {busy === 'Verifying…' ? busy : 'Verify'}

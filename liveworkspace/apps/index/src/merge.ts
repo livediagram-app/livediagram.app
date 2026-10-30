@@ -71,8 +71,9 @@ export async function handleMerge(
     db.prepare('DELETE FROM opens WHERE person_id = ?').bind(guest),
     db
       .prepare(
-        `INSERT OR IGNORE INTO use_days (person_id, item_id, day)
-         SELECT ?, item_id, day FROM use_days WHERE person_id = ?`,
+        `INSERT INTO use_days (person_id, item_id, day, opens)
+         SELECT ?, item_id, day, opens FROM use_days WHERE person_id = ?
+         ON CONFLICT (person_id, item_id, day) DO UPDATE SET opens = use_days.opens + excluded.opens`,
       )
       .bind(user, guest),
     db.prepare('DELETE FROM use_days WHERE person_id = ?').bind(guest),

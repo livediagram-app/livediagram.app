@@ -219,3 +219,37 @@ describe('CanvasThemeDialog home', () => {
     expect(onTabChange).toHaveBeenCalledWith('looks');
   });
 });
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md "Apply to All Tabs": the home's last row, an Editor's only.
+describe('CanvasThemeDialog Apply to All Tabs', () => {
+  const row = () => screen.queryByRole('button', { name: /Apply to All Tabs/ });
+
+  it('ends the home with the row for an Editor, applying on a press', () => {
+    const onApply = vi.fn();
+    render(
+      <CanvasThemeDialog
+        {...props}
+        tab="looks"
+        allTabs={{ tabCount: 3, applying: false, onApply }}
+      />,
+    );
+    fireEvent.click(row()!);
+    expect(onApply).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the row out for anyone the editor does not offer it to (Participant, Viewer, a scoped session)', () => {
+    render(<CanvasThemeDialog {...props} tab="looks" />);
+    expect(row()).toBeNull();
+  });
+
+  it('shows the row on the home only, not inside a panel', () => {
+    render(
+      <CanvasThemeDialog
+        {...props}
+        tab="canvas"
+        allTabs={{ tabCount: 3, applying: false, onApply: vi.fn() }}
+      />,
+    );
+    expect(row()).toBeNull();
+  });
+});

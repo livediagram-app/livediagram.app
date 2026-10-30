@@ -4093,6 +4093,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FormSheetDestination": {
     "additionalProperties": false,
     "properties": {
+      "columns": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
       "sheetId": {
         "type": "string"
       },
@@ -5409,6 +5415,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "newTitle": {
         "type": "string"
+      },
+      "statuses": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "tabs": {
         "items": {

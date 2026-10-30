@@ -12,6 +12,7 @@ import {
   type ItemTypeCatalogue,
 } from './type-catalogue';
 import { normaliseBoardSetup } from './board';
+import { boardTypeStatuses } from './type-statuses';
 
 const WORK = [
   'title',
@@ -332,5 +333,19 @@ export function catalogueWithBoardTypes(
   const room = ITEM_TYPES_MAX - types.length;
   const missing = boardTypesToAdd(elements, types).slice(0, Math.max(0, room));
   if (missing.length === 0) return null;
-  return { version: ITEM_TYPE_CATALOGUE_VERSION, types: [...types, ...missing] };
+  // Each brought type uses the statuses of the boards that bring it (docs/specs/026-plan/item-types.md "The
+  // statuses a type uses"); one only a Gantt chart brings starts as a type made anywhere else does.
+  const setups = elements.flatMap((el) =>
+    el.type === 'shape' && el.shape === 'plan-board' ? [el.planBoard] : [],
+  );
+  // Named against the whole catalogue it becomes, so a board naming only types the project has gives these none.
+  const given = boardTypeStatuses(
+    setups,
+    [...types, ...missing].map((t) => t.id),
+  );
+  const withStatuses = missing.map((t) => {
+    const statuses = given.get(t.id)!;
+    return statuses.length ? { ...t, statuses } : t;
+  });
+  return { version: ITEM_TYPE_CATALOGUE_VERSION, types: [...types, ...withStatuses] };
 }

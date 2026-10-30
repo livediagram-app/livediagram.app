@@ -37,31 +37,37 @@ export async function sendEmail(env: Env, email: Email): Promise<void> {
   await send(env.EMAIL, { from: `liveworkspace <${env.EMAIL_FROM}>`, ...email });
 }
 
+// A code alone in a tinted panel, large and spaced, so it reads at a glance and copies cleanly: the sign-in code's and
+// the deletion code's.
+function codePanel(code: string, brand: EmailBrand): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0">
+          <tr><td align="center" style="background:${brand.panel};border:1px solid ${brand.panelEdge};border-radius:12px;padding:20px 12px">
+            <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:34px;font-weight:700;letter-spacing:10px;color:${INK}">${code}</span>
+          </td></tr>
+        </table>`;
+}
+
+const ONE_ACCOUNT =
+  'One free liveworkspace account signs you in to livediagram, liveplanner, livedocuments and livedesign.';
+
 // The sign-in code, in the frame of the app it was asked for through (null: liveworkspace's own sign-in page), so
-// someone signing in to livediagram gets a livediagram email. The code sits alone in a tinted panel, large and
-// spaced, so it reads at a glance and copies cleanly.
+// someone signing in to livediagram gets a livediagram email.
 export function codeEmail(code: string, brand: EmailBrand) {
   const name = `live${brand.word}`;
   const subject = `${code} is your ${name} sign-in code`;
   const lead = `Enter this code to sign in to ${name}. It works for 10 minutes.`;
   const ignore =
     'If you didn’t try to sign in, you can ignore this email: nobody can sign in without the code.';
-  const footer =
-    'One free liveworkspace account signs you in to livediagram, liveplanner, livedocuments and livedesign.';
-  const text = [`Your ${name} sign-in code is ${code}`, '', lead, '', ignore, '', footer].join(
+  const text = [`Your ${name} sign-in code is ${code}`, '', lead, '', ignore, '', ONE_ACCOUNT].join(
     '\n',
   );
   const html = frame(brand, {
     preheader: `${code} is your sign-in code. It works for 10 minutes.`,
     heading: 'Your sign-in code',
     body: `${paragraph(lead)}
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0">
-          <tr><td align="center" style="background:${brand.panel};border:1px solid ${brand.panelEdge};border-radius:12px;padding:20px 12px">
-            <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:34px;font-weight:700;letter-spacing:10px;color:${INK}">${code}</span>
-          </td></tr>
-        </table>
+        ${codePanel(code, brand)}
         ${paragraph(ignore, 24)}`,
-    footer,
+    footer: ONE_ACCOUNT,
   });
   return { subject, text, html };
 }
@@ -73,6 +79,42 @@ export async function sendCodeEmail(
   app: AppSiteId | null = null,
 ): Promise<void> {
   await sendEmail(env, { to: email, ...codeEmail(code, emailBrand(env, app)) });
+}
+
+// The code that confirms closing the account (liveworkspace/docs/specs/003-accounts/sign-in.md "Closing an account"),
+// in the frame of the app that asked for it. It says plainly what the code does, so nobody hands it over thinking it
+// signs them in, and that ignoring it keeps the account.
+export function deletionCodeEmail(code: string, brand: EmailBrand) {
+  const name = `live${brand.word}`;
+  const subject = `${code} is your code to delete your liveworkspace account`;
+  const lead = `Enter this code in ${name} to delete your liveworkspace account and everything you own in every liveworkspace app. It works for 10 minutes.`;
+  const ignore =
+    'If you didn’t ask to delete your account, ignore this email and don’t share the code: nothing is deleted without it. If you left your account signed in somewhere, sign out there.';
+  const text = [
+    `Your code to delete your liveworkspace account is ${code}`,
+    '',
+    lead,
+    '',
+    ignore,
+  ].join('\n');
+  const html = frame(brand, {
+    preheader: `${code} confirms deleting your account. It works for 10 minutes.`,
+    heading: 'Confirm deleting your account',
+    body: `${paragraph(lead)}
+        ${codePanel(code, brand)}
+        ${paragraph(ignore, 24)}`,
+    footer: ONE_ACCOUNT,
+  });
+  return { subject, text, html };
+}
+
+export async function sendDeletionCodeEmail(
+  env: Env,
+  email: string,
+  code: string,
+  app: AppSiteId | null,
+): Promise<void> {
+  await sendEmail(env, { to: email, ...deletionCodeEmail(code, emailBrand(env, app)) });
 }
 
 const origin = (baseUrl: string) => baseUrl.replace(/\/+$/, '');

@@ -2,7 +2,7 @@
 // part of the page, and two about what was shared:
 //
 //   - Jump Back In: Recent's first page with Most Used beside it (HomePane);
-//   - the hero's pill: how many items are in My Work (HomeHero);
+//   - the hero's pill: how many items are in every space the person is in, My Work and each team (HomeHero);
 //   - the first run: whether the person can open anything at all (WelcomeProvider);
 //   - Shared With You Recently (HomePane) and the sidebar's Shared With Me count (one page of the same list).
 //
@@ -154,7 +154,7 @@ export async function readRecentForHome(
   return answer.recent!;
 }
 
-/** My Work's count up to `cap`, for the hero's pill. */
+/** The count of every space the person is in (My Work and each team) up to `cap`, for the hero's pill. */
 export async function readMineCount(
   c: IndexClient,
   app: App,
@@ -164,11 +164,8 @@ export async function readMineCount(
 ): Promise<MineAnswer> {
   const answer = await askHome(c, app, filter, { mine: cap }, signal);
   if (answer.mine) return answer.mine;
-  // An index that doesn't count beside a page: one page of My Work, counted.
-  const res = await c.listItems(
-    { view: 'all', team: 'personal', limit: cap, ...appOf(app, filter) },
-    { signal },
-  );
+  // An index that doesn't count beside a page: one page of every space (no team named), counted.
+  const res = await c.listItems({ view: 'all', limit: cap, ...appOf(app, filter) }, { signal });
   return { count: res.items.length, more: res.nextCursor !== null };
 }
 

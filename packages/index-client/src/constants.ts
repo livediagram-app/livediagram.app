@@ -97,8 +97,9 @@ export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 export const EMPTY_ITEM_STALE_MS = 30 * 24 * 60 * 60 * 1000;
 // Opens are recorded at most once a minute per person and item.
 export const OPEN_DEBOUNCE_MS = 60 * 1000;
-// Most Used counts the distinct UTC days a person opened an item over this window; older days are pruned.
-export const USE_WINDOW_DAYS = 90;
+// Most Used counts how many times a person opened an item over this window of UTC days; older days are pruned, so an
+// item not opened in it drops off.
+export const USE_WINDOW_DAYS = 14;
 // How many Most Used items one Recent request may ask for alongside its page (`used`).
 export const MOST_USED_MAX = 8;
 

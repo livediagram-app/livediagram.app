@@ -330,7 +330,14 @@ quick bounce through the accounts site. The mechanism is shared, in `@liveworksp
    anything renders. With no session hint for this app, it marks the tab's `sessionStorage`, stops
    the page loading, so no signed-out page paints and no app code starts, lets the page follow the
    device's light or dark setting meanwhile, and goes to the app's
-   `GET /api/auth/silent?return=<path?query#hash>`.
+   `GET /api/auth/silent?return=<path?query#hash>`. That is the editors'. An app's **marketing pages**
+   (its landing page and the rest of its public site) run the same script with `afterPaint`
+   (`@liveworkspace/marketing-site/lib/silent-sign-in`): the page loads and paints as usual, and the
+   bounce goes once it has loaded and gone idle, and only while the visitor hasn't pressed, typed,
+   turned a wheel or touched it; someone who started using the page is left alone, and the next page
+   they open asks again. A guest's first look at a product paints at full speed, with the bounce out
+   of its Largest Contentful Paint. The page it lands back on is the same page loaded again, so the
+   script marks it (`<html data-silent-return>`) and its page view and Web Vitals aren't counted twice.
 2. **The app's Worker** (`startSilentSignIn`) sends it to `/api/auth/oauth2/authorize` with
    `prompt=none`, keeping its PKCE verifier and the return address in its own HttpOnly cookie (so a
    clicked sign-in in another tab is untouched) and setting a two-minute guard cookie.
@@ -351,12 +358,15 @@ It never bounces:
 - more than once per tab (`sessionStorage`), nor again in any tab of the app within two minutes (the
   guard cookie, `<prefix>silent`, which the route also refuses to bounce past, so it can't loop);
 - with a session in the app already (its hint cookie, `<prefix>signed_in=1`);
-- after the person signed out of that app. Signing out sets `<prefix>signed_out=1` (readable, the
+- after the person signed out of that app alone. Signing out ends the liveworkspace session and every
+  app's session in that browser ([Signing out](#signing-out)), so a bounce from any app finds no
+  session and needs no mark, and the next sign-in asks for an email code or Google. Only when that
+  fails (no refresh token, or the accounts site didn't answer) does the app sign out of itself alone
+  while the liveworkspace session may live on; then it sets `<prefix>signed_out=2` (readable, the
   whole site, 400 days), which the page and the route both respect, and the next sign-in to the app
-  clears it. Signing out also ends the liveworkspace session and every app's session in that browser
-  ([Signing out](#signing-out)), so a bounce from any app finds no session, and the next sign-in asks
-  for an email code or Google;
-- inside a frame (embeds, the workbench), for a crawler (by user agent), or for an automated browser
+  clears it. A mark of `1`, which every sign-out set before signing out became global, means nothing
+  now: it would keep someone signed out of an app after they signed in again elsewhere;
+- inside a frame (embeds, the workbench), for a crawler or a Lighthouse audit (by user agent), or for an automated browser
   (`navigator.webdriver`), which also keeps the apps' own end-to-end suites unbounced;
 - on the sign-in pages, the guest hand-off's way back, embeds, a share link (`?s=`) or liveplanner's
   form links, so their own flows are never interrupted. The AI-tool consent and device pages (`/oauth/*`)
@@ -405,8 +415,11 @@ whole site, so its public pages can tell who is signed in without loading the se
 
 None holds a secret or authenticates anything. The marketing header's account menu reads them, so a
 signed-in visitor sees their menu with no request, and a visitor makes none at all: they see the Guest button
-([site.md](../010-site/site.md#the-header)), whose menu code is fetched only once the pointer or focus reaches it. Only a session from
-before the name cookie existed (the hint without the name) asks `POST /api/auth/token` once, which sets it.
+([site.md](../010-site/site.md#the-header)), whose menu code is fetched only once the pointer or focus reaches it. Signed in, the
+page checks once, when it is idle, with the app's `POST /api/auth/token`: signing out in another app ends this
+app's session too but can't reach this site's cookies, so the hint can outlive the session; the answer clears it
+and the menu turns to Guest. A session from before the name cookie existed (the hint without the name) asks at
+once instead, since the answer sets the name.
 
 ## Signing out
 
@@ -424,7 +437,10 @@ belong to the account rather than to a browser. The accounts side is `src/end-se
    accounts Worker checks both through the provider's introspection, so a token alone ends nothing. It deletes every
    access and refresh token issued on that session, every app's, then the session, and answers a **ticket**: the
    client and the account, signed with the Worker's secret, good for five minutes.
-2. Clears its own cookies and sets the signed-out mark, as it always has, and answers `{ signedIn: false, next }`.
+2. Clears its own cookies and answers `{ signedIn: false, next }`. With the session ended it clears any signed-out
+   mark and sets the two-minute silent guard, so the page it lands on spends no bounce learning there is no
+   session; without (`next` null) it sets the signed-out mark, since only this app signed out
+   ([Signing in without a click](#signing-in-without-a-click)).
    `next` is the accounts site's
    `GET /api/auth/end-session?client_id=…&post_logout_redirect_uri=<app origin><path>&ticket=…`, or null when there
    was no refresh token to send or the accounts site didn't answer.
@@ -444,7 +460,9 @@ At `GET /api/auth/end-session` the accounts Worker:
   can't sign anyone out.
 - then answers `302` to `post_logout_redirect_uri`, `no-store`, `no-referrer`.
 
-The page lands back on the app with the signed-out mark set, so it never bounces, and is a guest. Should the hop
+The page lands back on the app with the silent guard set, so it doesn't bounce, and is a guest. Any other app the
+person opens afterwards may bounce once, finds no session, and stays a guest; open in a marketing page, its header
+turns to Guest at its idle check ([An app's signed-in cookies](#an-apps-signed-in-cookies)). Should the hop
 fail (the accounts site down), step 1 has already ended the session in every app.
 
 **On liveworkspace.app.** Its Sign out (Better Auth's `POST /api/auth/sign-out`, same site) first deletes every app's
@@ -880,6 +898,10 @@ sign-off. The marks are transparent 64px PNGs at `/email/<name>-mark-64.png` on 
   (`check-verification-otp`, which checks a code without spending it and counts attempts in two steps, so guesses
   sent at once count as one; and the password, email-verification and email-change flows, which nothing here uses)
   are off (`UNUSED_CODE_PATHS` in `src/auth-options.ts`) and answer `404`.
+- **The deletion code** ([Closing an account](#closing-an-account)) is drawn the same way, in the brand of the app
+  that asked for it, and says what it is for: its subject is `123456 is your code to delete your liveworkspace
+account`, it says the code deletes the account and everything in it in every app, and that ignoring it keeps the
+  account as it is. It is sent to the account's own address and can't be turned off.
 - **The onboarding series** is liveworkspace's, whichever app it speaks for.
 - **The team emails and the token reminder** (an invitation and its reminders, an answer to an invitation, a token
   about to expire) are liveworkspace's: they are about the account and its teams, which are the same in every app,
@@ -985,8 +1007,10 @@ An app's own one-time milestones (its tenth item, its first share link) stay tha
 
 ## Closing an account
 
-An app's server asks (`POST /api/auth/delete-account`, with its client credentials and the person's
-access token, `src/delete-account.ts`), and the account closes for every app at once:
+An app's server asks (`POST /api/auth/delete-account`, with its client credentials, the person's access token and the
+code emailed to them, `src/delete-account.ts`), and the account closes for every app at once. Without the right code
+nothing happens: the code is sent and checked first, by the same app's server
+([sign-in.md](sign-in.md#closing-an-account), `src/deletion-code.ts`). Then:
 
 1. It leaves every team: a team it ran alone is deleted, and one where it was the only admin passes to
    the longest-standing member. Then every `team_member` row it had (its own by `userId`, and those addressed to it that

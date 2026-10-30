@@ -25,6 +25,7 @@ import { statusKey } from './status-names';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
   ITEM_TYPES_MAX,
+  ITEM_TYPE_STATUSES_MAX,
   PLAN_TYPE_COLOURS,
   REQUIRED_TYPE_FIELDS,
   defaultNewTitle,
@@ -109,7 +110,8 @@ export type CardTypeChange =
       fields?: readonly string[];
       custom?: readonly CustomFieldInput[];
       defaultStatus?: string;
-      excludedStatuses?: readonly string[];
+      // The statuses it uses, in order, by column name or status; absent, every status the boards name.
+      statuses?: readonly string[];
     } & FaceInput)
   | ({
       op: 'set';
@@ -124,7 +126,8 @@ export type CardTypeChange =
       removeCustom?: readonly string[];
       // A status, or null to clear the Default State.
       defaultStatus?: string | null;
-      excludedStatuses?: readonly string[];
+      // The whole ordered list of the statuses it uses, by column name or status.
+      statuses?: readonly string[];
     } & FaceInput)
   | { op: 'delete'; type: string }
   // Any of the five default types the project lacks, after its types (docs/specs/026-plan/plan-agents.md); its
@@ -400,8 +403,20 @@ function defaultStatusOf(
   return named.ok ? { status: named.status } : { pending: DEFAULT_STATUS_PENDING(name) };
 }
 
+// A type's ordered status list by column names or statuses, each once (docs/specs/026-plan/item-types.md "The
+// statuses a type uses").
 function statusesOf(names: readonly string[], statuses: readonly PlanStatusName[]): string[] {
-  return names.map((n) => must(resolveStatus(n, statuses)).status);
+  const list = [...new Set(names.map((n) => must(resolveStatus(n, statuses)).status))];
+  if (list.length > ITEM_TYPE_STATUSES_MAX)
+    throw invalid(`A card type can use at most ${ITEM_TYPE_STATUSES_MAX} statuses.`);
+  return list;
+}
+
+// A type with `list` as the statuses it uses, in place of any legacy exclusions.
+function withStatusList(type: ItemTypeDef, list: readonly string[]): ItemTypeDef {
+  const next = { ...type, statuses: list };
+  delete next.excludedStatuses;
+  return next;
 }
 
 // The catalogue after `changes`, in order, each seeing the ones before it.
@@ -450,8 +465,10 @@ export function applyCardTypeChanges(
             fields: [...type.fields, field.id],
           };
         }
-        if (c.excludedStatuses)
-          type = { ...type, excludedStatuses: statusesOf(c.excludedStatuses, statuses) };
+        // Every status the boards name when none are given, as the type editor's Add Type starts one.
+        const every = statuses.map((s) => s.status);
+        if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
+        else if (every.length <= ITEM_TYPE_STATUSES_MAX) type = withStatusList(type, every);
         const start = c.defaultStatus ? defaultStatusOf(c.defaultStatus, statuses) : null;
         if (start && 'status' in start) type = { ...type, defaultStatus: start.status };
         type = withFace(type, c);
@@ -517,8 +534,7 @@ export function applyCardTypeChanges(
               : {}),
           };
         }
-        if (c.excludedStatuses)
-          type = { ...type, excludedStatuses: statusesOf(c.excludedStatuses, statuses) };
+        if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
         if (c.defaultStatus === null) {
           const { defaultStatus: _gone, ...rest } = type;
           type = rest;

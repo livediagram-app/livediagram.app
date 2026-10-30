@@ -25,6 +25,13 @@ export {
   type TextInputProps,
 } from './TextInput';
 export {
+  CODE_DIGITS,
+  CodeDigits,
+  EMPTY_CODE,
+  type CodeDigitsHandle,
+  type CodeDigitsProps,
+} from './CodeDigits';
+export {
   DATE_YEAR_MIN,
   DateInput,
   dateCommit,

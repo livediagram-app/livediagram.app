@@ -252,6 +252,12 @@ describe('the guest merge', () => {
       await call(`/items/${other.id}/share`, { method: 'POST', auth: owner.auth, body: {} }),
     );
     await call(`/share/${link.code}`, { auth: guest.auth });
+    // Both opened it on one day: the account's day keeps the opens of both.
+    const useDay = h.db.sql.prepare(
+      'INSERT INTO use_days (person_id, item_id, day, opens) VALUES (?, ?, 5, ?)',
+    );
+    useDay.run('guest_g1', item.id, 3);
+    useDay.run('user_u1', item.id, 2);
 
     const res = await merge({ guestId: 'guest_g1', userId: 'user_u1' });
     expect(await body(res)).toEqual({ items: 1 });
@@ -281,7 +287,10 @@ describe('the guest merge', () => {
         .prepare("SELECT COUNT(*) AS n FROM timeline_event_scopes WHERE scope = 'p:guest_g1'")
         .get(),
     ).toEqual({ n: 0 });
-    for (const table of ['favourites', 'opens', 'shared_with', 'placement_defaults']) {
+    expect(
+      h.db.sql.prepare("SELECT opens FROM use_days WHERE person_id = 'user_u1' AND day = 5").get(),
+    ).toEqual({ opens: 5 });
+    for (const table of ['favourites', 'opens', 'use_days', 'shared_with', 'placement_defaults']) {
       expect(
         h.db.sql.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE person_id = 'guest_g1'`).get(),
       ).toEqual({ n: 0 });

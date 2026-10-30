@@ -7,13 +7,14 @@ import { pickableStatuses } from './column-status-picks';
 import { useId, useMemo, useState } from 'react';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
-  ITEM_TYPE_EXCLUDED_STATUSES_MAX,
+  ITEM_TYPE_STATUSES_MAX,
   NEW_ITEM_TYPE,
   defaultNewTitle,
   newItemTypeId,
   tabsOf,
   detailsLabelOf,
   DETAILS_LABEL_DEFAULT,
+  typeStatusesOf,
   validateItemTypeCatalogue,
   type ItemTypeDef,
 } from '@liveplanner/items';
@@ -88,14 +89,18 @@ export function ItemTypeEditor({
   }));
   const { tabs } = layout;
   const [detailsLabel, setDetailsLabel] = useState(detailsLabelOf(start));
-  // The statuses it leaves out, edited as the rest is; the tab's boards name the statuses to choose from.
-  const [excluded, setExcluded] = useState<string[]>(() => [...(start.excludedStatuses ?? [])]);
+  const plan = usePlan();
+  const statusNames = plan?.statusNames;
+  // The statuses it uses, in order, edited as the rest is (docs/specs/026-plan/item-types.md "The statuses a type
+  // uses"); a type stored before the list (or a new one) starts on every status the boards name, less any it left
+  // out. Always saved, so such a type is saved in the new shape.
+  const [used, setUsed] = useState<string[]>(() => [
+    ...typeStatusesOf(start, statusNames?.keys() ?? []),
+  ]);
   // What its cards show at each card size (the Display tab); a size absent takes its default.
   const [display, setDisplay] = useState<CardDisplayDraft>(() => ({ ...start.display }));
   // The Default State: the status a card made outside a board starts in (none: '').
   const [defaultStatus, setDefaultStatus] = useState(start.defaultStatus ?? '');
-  const plan = usePlan();
-  const statusNames = plan?.statusNames;
   const planItems = plan?.items;
   // The boards' statuses, then any a card is in that no board names (shown under No Board in States).
   const statuses = useMemo(
@@ -128,23 +133,11 @@ export function ItemTypeEditor({
       ...(detailsLabel.trim() && detailsLabel.trim() !== DETAILS_LABEL_DEFAULT
         ? { detailsLabel: detailsLabel.trim() }
         : {}),
-      ...(excluded.length ? { excludedStatuses: excluded } : {}),
-      ...(defaultStatus && !excluded.includes(defaultStatus) ? { defaultStatus } : {}),
+      statuses: used,
+      ...(defaultStatus && used.includes(defaultStatus) ? { defaultStatus } : {}),
       ...(Object.keys(display).length ? { display } : {}),
     };
-  }, [
-    type,
-    types,
-    label,
-    color,
-    glyph,
-    layout,
-    tabs,
-    detailsLabel,
-    excluded,
-    defaultStatus,
-    display,
-  ]);
+  }, [type, types, label, color, glyph, layout, tabs, detailsLabel, used, defaultStatus, display]);
   const tabNames = withoutEmptyTabs(tabs).map((t) => t.label.trim().toLowerCase());
   const tabProblem = tabNames.some((n) => !n)
     ? 'Give every tab a name.'
@@ -156,8 +149,8 @@ export function ItemTypeEditor({
     () => validateItemTypeCatalogue({ version: ITEM_TYPE_CATALOGUE_VERSION, types: [draft] }),
     [draft],
   );
-  // Too many statuses left out (one stored past the cap, or kept ids a board no longer names): its own message.
-  const statusesProblem = !check.ok && check.reason.endsWith('.excludedStatuses');
+  // Too many statuses on (kept ids a board no longer names count too): its own message.
+  const statusesProblem = !check.ok && check.reason.endsWith('.statuses');
   const problem = !draft.label
     ? 'Give the type a name.'
     : clash
@@ -165,12 +158,12 @@ export function ItemTypeEditor({
       : tabProblem
         ? tabProblem
         : statusesProblem
-          ? `Too many states turned off: a type can turn off at most ${ITEM_TYPE_EXCLUDED_STATUSES_MAX}.`
+          ? `Too many states on: a type can use at most ${ITEM_TYPE_STATUSES_MAX}.`
           : !check.ok
             ? 'A custom field needs a name, and a Choice field at least one option.'
             : null;
 
-  // The tabs holding what stops Save (a left-out status problem is States'; a clashing name, a tab or a custom field
+  // The tabs holding what stops Save (a status list problem is States'; a clashing name, a tab or a custom field
   // problem is Configuration's). A missing name is not flagged: a new type starts without one, and Save says so.
   const flagged = new Set<TypeEditorTab>(
     !problem || !draft.label
@@ -243,11 +236,11 @@ export function ItemTypeEditor({
                 <SheetRow label="States">
                   <ItemTypeStatuses
                     statuses={statuses}
-                    excluded={excluded}
+                    used={used}
                     onChange={(next) => {
-                      setExcluded(next);
+                      setUsed(next);
                       // Turning the Default State off clears it.
-                      if (next.includes(defaultStatus)) setDefaultStatus('');
+                      if (!next.includes(defaultStatus)) setDefaultStatus('');
                     }}
                     defaultStatus={defaultStatus}
                     onDefaultStatus={setDefaultStatus}

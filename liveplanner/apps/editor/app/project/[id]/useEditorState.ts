@@ -5,6 +5,7 @@ import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
+import { useTypeStatusJoins } from '@/hooks/plan/useTypeStatusJoins';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
@@ -25,6 +26,7 @@ import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinked
 import { actionsBoardIn } from '@/hooks/plan/linked-actions';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
 import { useFormActions } from '@/hooks/forms/useFormActions';
+import { useFormSheetColumns } from '@/hooks/forms/useFormSheetColumns';
 import { makeFormSheet } from '@/lib/forms-make-sheet';
 import { usePlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { usePlanTabConversion } from '@/hooks/plan/usePlanTabConversion';
@@ -83,6 +85,8 @@ import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
+import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
+import { withStyleOfTab } from '@/lib/tab-theme-apply';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
@@ -1499,6 +1503,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     catalogue: itemTypes.catalogue,
     saveCatalogue: itemTypes.saveCatalogue,
   });
+  // A new status joins only the card types its board takes, and old types take the ordered list. See
+  // useTypeStatusJoins.
+  useTypeStatusJoins({
+    tabs,
+    loadedTabIds,
+    enabled: hydrated && !isStructureReadOnly,
+    catalogue: itemTypes.catalogue,
+    quietChange: itemTypes.quietChange,
+  });
   // The Actions board (docs/specs/026-plan/linked-boards.md): every action has a card on it, kept together.
   const actionsBoard = useMemo(() => actionsBoardIn(tabs), [tabs]);
   const editorLevel = hydrated && participant.can.level === 'edit' && !workbenchMode;
@@ -1561,6 +1574,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openTab: setActiveId,
     makeSheet: (create) => void makeFormSheet(sheets.bridge, create),
     retitleSheets: sheets.retitleSheets,
+  });
+  // A sheet form's columns, there before any response and linked by column (docs/specs/030-forms/forms.md).
+  useFormSheetColumns({
+    tab: activeTab,
+    canEdit: !isStructureReadOnly,
+    bridge: sheets.bridge,
+    changeFormQuietly: forms.changeFormQuietly,
   });
   // Old Plan tabs become the Plan kinds when an Editor opens them (docs/specs/026-plan/plan-tabs.md).
   usePlanTabConversion({
@@ -1829,6 +1849,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tickTabs,
     checkpointBurst,
   });
+
+  // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): the open tab's style on every tab, as one
+  // undo step, an Editor's of the whole plan only.
+  const { applyToAllTabs: applyStyleToAllTabs, applying: applyingStyleToAllTabs } =
+    useApplyStyleToAllTabs<Tab>({
+      canApply: !structureBlocked && !isStructureReadOnly,
+      activeId,
+      loadAllTabs,
+      isTabLoaded: (id) => loadedTabIdsRef.current.has(id),
+      commitTabs,
+      restyle: withStyleOfTab,
+      notify: (message) => toast.info(message),
+      onApplied: () => track('Tab', 'Changed', 'AllTabs'),
+    });
 
   // Live session tools (docs/specs/012-collaboration/session-tools.md): timer + dot-voting handlers.
   // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
@@ -2648,6 +2682,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     assessCleanupKind,
     setTabFinish,
     applyTabLook,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+    canApplyStyleToAllTabs: !isStructureReadOnly,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,
     pauseTimer,

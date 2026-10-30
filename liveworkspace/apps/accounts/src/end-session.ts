@@ -13,7 +13,7 @@
 // deletes every refresh token that app holds for the account, on every device. A deleted one is only unknown.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
-import { basicClientId } from './delete-account.ts';
+import { basicClientId } from './app-caller.ts';
 import type { Env } from './env.ts';
 import { findClient } from './guests.ts';
 

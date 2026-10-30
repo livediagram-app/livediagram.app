@@ -181,18 +181,32 @@ destination's own problem speaks). `PUBLISH_PROBLEM_TEXT` the dialog's lines. Th
 
 ## 6c. Responses to a Sheet (`sheet-row.ts`; api `forms/sheet-response.ts`)
 
-`FormDefinition.sheet?: FormSheetDestination` (`{ tabId, sheetId }`, read when both match `TAB_ID` and
-`SHEET_ID_PATTERN`). `sheetHeaders(form)` (`#`, `Submitted`, prompts made distinct), `submittedText(at)` (UTC),
-`responseRowWrite({ form, answers, number, preview, at, layout, header, usedRows, rand? })` → one `SheetWrite`: header
-row inserted if none, missing headers in one `insertCols` after the last header (`f: { b: true }`), `freeze rows 1`
-when the sheet had no headers, the row after the last used (rows inserted as needed); `cells` kind when nothing needs
+`FormDefinition.sheet?: FormSheetDestination` (`{ tabId, sheetId, columns? }`, read when both ids match `TAB_ID` and
+`SHEET_ID_PATTERN`; `columns` a record of header key (`#`, `at`, a question id) → column id, entries kept when the key
+matches `ID_PATTERN` (or is `#`/`at`) and the id `AXIS_ID_PATTERN`, at most `SHEET_COLUMNS_MAX` (`QUESTIONS_MAX` + 2)). `sheetHeaders(form)`
+(`#`, `Submitted`, prompts made distinct), `submittedText(at)` (UTC). `sheetColumnPlan({ form, layout, header, columns?,
+renamed?, rand? })` (`sheet-columns.ts`) resolves each key: a remembered column still in the layout (its header left
+alone unless `renamed` names the key's old header and the cell still reads it), else an unclaimed column whose header
+matches (case aside), else a new column after the last header (one `insertCols`, bold header); a header row inserted if
+none and `freeze rows 1` when the sheet had no headers. It answers `{ changes, cells, colOf, columns, rows }`.
+`sheetHeadersWrite(input)` → `{ write: SheetWrite | null, columns }` (the builder's sync; null when every header is in
+place). `responseRowWrite({ form, answers, number, preview, at, layout, header, usedRows, columns?, rand? })` → one
+`SheetWrite` from the same plan, the row after the last used (rows inserted as needed); `cells` kind when nothing needs
 the layout. `sheetDestinationProblem(sheet, sheets)` → `sheet_missing`. Api: `responsesProblem(env, docId, form,
 types)` (`sheetOnItsTab`: the sheet head on its tab and that tab still in the project (`projectLinksTab`), else the
 board check) for publishing and the public read; `respond` branches on
-`form.sheet` (`sheetThere`, claim, `writeResponseRow`, `accepted`); `previewToSheet` for an unlinked preview;
-`writeResponseRow` reads the header cells and `usedSheetRows` (`SELECT DISTINCT row_id`) and stores through
-`storeSheetWrite(ctx, projectId, sheetId, { write, unchecked: true }, by, null)`, the route's write path factored
-out. The sheet store retries a create refused `tab_not_found` (`CREATE_TAB_RETRIES` 4, `CREATE_TAB_RETRY_MS` 800 ms
+`form.sheet` (`sheetThere`, claim, `writeResponseRow`, `accepted`; any outcome but `written` runs
+`releaseResponseNumber(env, code, number)`, which takes the count back only while it still reads that number);
+`previewToSheet` for an unlinked preview; `writeResponseRow` reads the head, the header cells and `usedSheetRows`
+(`SELECT DISTINCT row_id … WHERE input IS NOT NULL`: rows holding a value), plans, and stores through
+`storeSheetWrite(ctx, projectId, sheetId, { write, unchecked: true }, by, null, { atRev })`, the route's write path
+factored out: `atRev` makes it answer `sheet_moved` (409) rather than apply a plan to a sheet that changed since it
+was read, and the row is planned again (`SHEET_WRITE_RETRIES`); a stored answer whose `applied` cells are fewer than
+planned is `busy`. The builder's sync: `useFormSheetColumns` (`hooks/forms/useFormSheetColumns.ts`, run by the
+editor state for the active Form tab when the session may edit structure) waits `FORM_COLUMNS_SYNC_MS` (800 ms) after
+the form last changed, loads the sheet's tab in the sheet store (fetched lazily, as `makeFormSheet`), and when
+`sheetHeadersWrite` finds work reloads the tab and plans again, then writes it (`undoable: false, unchecked: true`)
+and saves the new `columns` with `changeFormQuietly`; it keeps the headers it last saw per form (`renamed`). The sheet store retries a create refused `tab_not_found` (`CREATE_TAB_RETRIES` 4, `CREATE_TAB_RETRY_MS` 800 ms
 a step), for a sheet on a tab not saved yet. Live: `sheetsOf(tabs)`, `setResponsesTo`, `newResponsesSheet`
 (a new Sheet tab, its sheet made through `makeSheet` so the form stays open; `placeNewSheet` and opened where nothing can make it), `DestinationPicker` (`SheetDestination` / `BoardDestination`),
 `sendPreview` (a sheet destination with a problem fails at once, `PREVIEW_NO_SHEET`; else the api first; a sheet with
@@ -270,6 +284,7 @@ from every earlier link, suspended or deleted; null on a second live link), `set
 live link marked `deleted_at` and closed, never removed, so its number carries on and its code answers nothing),
 `deleteFormLinksForTab` (removes them all: the tab is gone), `claimResponseNumber` (one guarded `UPDATE … RETURNING`:
 number, `last_response_at` and the hourly window together, and `responses < limit` when given; null at either cap),
+`releaseResponseNumber` (the count and the hour's count back by one, only while `responses` still reads the number),
 `addFormReport` (distinct networks), `suspendFormLink`, `markFormSeen`, `unseenResponses`, `claimFormEmail`
 (compare-and-swap on `last_email_at`, returning how many were held).
 
@@ -305,12 +320,14 @@ with `open: true` and the publish `POST` share `notReadyToOpen` (`form-link-rout
 7. `claimResponseNumber` with the form's Response Limit (none for a preview) → 409 `form_closed` when another
    response took the last place meanwhile, else 429 `form_busy` at the hourly cap (`claimNumber`, `respond.ts`).
 8. `createMany(ctx, { projectId, owner: formPerson.id }, [create], { by: formPerson })`; `items_full` → 413
-   `form_full`. Relay; `Form·Sent·Response`; `notifyFormResponse` in `waitUntil`.
+   `form_full`, any refusal giving the number back (`releaseResponseNumber`). Relay; `Form·Sent·Response`;
+   `notifyFormResponse` in `waitUntil`.
 
 ### Logs
 
 `[forms] form.published`, `form.closed`, `form.reopened`, `form.deleted`, `form.response.accepted`,
 `form.response.refused {error}`, `form.response.dropped`, `form.response.unmade`, `form.destination.broken`,
+`form.sheet.unwritten {status}`, `form.sheet.dropped {planned, landed}`,
 `form.reported`, `form.suspended`, `form.email.sent`, `form.email.held`, `form.paused.destination_deleted`.
 
 ### Elsewhere

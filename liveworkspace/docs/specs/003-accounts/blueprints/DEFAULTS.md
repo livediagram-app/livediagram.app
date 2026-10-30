@@ -20,3 +20,4 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | ACC14 | settings-and-profiles | where a guest's settings and the account's share a key, the account's value is kept.                                                                                 |
 | ACC15 | email                 | three failed sends in a row take an account off every due list for good; a success before then resets the count.                                                     |
 | ACC16 | email                 | a series email for someone who has opened no app speaks for liveworkspace and is not counted under any app.                                                          |
+| ACC17 | accounts              | checking and closing with a deletion code share `CODE_IP_LIMITER`'s 10 a minute, keyed by account, since the caller is always an app's server.                       |

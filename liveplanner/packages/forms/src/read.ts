@@ -3,7 +3,7 @@
 // agent or a hand-edited file still opens.
 import { CUSTOM_FIELD_ID_PATTERN, ITEM_TYPE_PATTERN } from '@liveplanner/items';
 import { parseColourBackground } from '@liveworkspace/page-background';
-import { SHEET_ID_PATTERN } from '@liveplanner/sheets';
+import { AXIS_ID_PATTERN, SHEET_ID_PATTERN } from '@liveplanner/sheets';
 import {
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
@@ -21,6 +21,7 @@ import {
   SCALE_LABEL_MAX,
   SECTIONS_MAX,
   SECTION_TITLE_MAX,
+  SHEET_COLUMNS_MAX,
   UNTITLED_FORM,
 } from './limits';
 import {
@@ -37,6 +38,22 @@ import {
 } from './model';
 
 const FORM_ID_PATTERN = /^[a-z0-9-]{1,24}$/;
+
+// A sheet form's remembered columns (forms.md "Linked by column, not by heading"): `#`, `at` or a question id, each to
+// a column id; anything else dropped, at most SHEET_COLUMNS_MAX kept, absent when none is left.
+function readSheetColumns(raw: unknown): Record<string, string> | undefined {
+  if (!isObj(raw)) return undefined;
+  const out: Record<string, string> = {};
+  let n = 0;
+  for (const [key, col] of Object.entries(raw)) {
+    if (n >= SHEET_COLUMNS_MAX) break;
+    if (key !== '#' && key !== 'at' && !FORM_ID_PATTERN.test(key)) continue;
+    if (typeof col !== 'string' || !AXIS_ID_PATTERN.test(col)) continue;
+    out[key] = col;
+    n += 1;
+  }
+  return n ? out : undefined;
+}
 const STATUS_ID = /^[^\s].{0,63}$/s;
 const TAB_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -208,8 +225,11 @@ export function readForm(raw: unknown): FormDefinition | null {
     TAB_ID.test(sheet['tabId']) &&
     typeof sheet['sheetId'] === 'string' &&
     SHEET_ID_PATTERN.test(sheet['sheetId'])
-  )
+  ) {
     form.sheet = { tabId: sheet['tabId'], sheetId: sheet['sheetId'] };
+    const columns = readSheetColumns(sheet['columns']);
+    if (columns) form.sheet.columns = columns;
+  }
   if (finite(raw['closesAt']) && raw['closesAt'] > 0) form.closesAt = raw['closesAt'];
   const limit = raw['limit'];
   if (

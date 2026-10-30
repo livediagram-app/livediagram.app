@@ -30,6 +30,7 @@ export * from './plan-view-statuses';
 export * from './calendar-move';
 export * from './presets';
 export * from './brought-types';
+export * from './type-statuses';
 export * from './card-search';
 export * from './card-display';
 export * from './status-names';
