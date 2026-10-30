@@ -70,10 +70,7 @@ describe('boardTypeStatuses', () => {
   const ids = ['task', 'bug', 'story'];
 
   it('gives a board’s statuses to the types it takes, and every type when it names none', () => {
-    const got = boardTypeStatuses(
-      [board(['new', 'fixing'], ['bug']), board(['todo', 'new'])],
-      ids,
-    );
+    const got = boardTypeStatuses([board(['new', 'fixing'], ['bug']), board(['todo', 'new'])], ids);
     expect(got.get('bug')).toEqual(['new', 'fixing', 'todo']);
     expect(got.get('task')).toEqual(['todo', 'new']);
     expect(got.get('story')).toEqual(['todo', 'new']);
@@ -97,7 +94,11 @@ describe('boardTypeStatuses', () => {
   });
 
   it('reads a board by its named types alone when asked (its brought types still on their way)', () => {
-    const got = boardTypeStatuses([board(['x'], ['gone']), board(['y'], ['bug', 'gone'])], ids, true);
+    const got = boardTypeStatuses(
+      [board(['x'], ['gone']), board(['y'], ['bug', 'gone'])],
+      ids,
+      true,
+    );
     expect(got.get('task')).toEqual([]);
     expect(got.get('bug')).toEqual(['y']);
   });
@@ -150,9 +151,7 @@ describe('withTypeStatuses', () => {
   });
 
   it('leaves a legacy type alone without the plan’s statuses (it already takes a new one)', () => {
-    expect(
-      withTypeStatuses(catalogue(task), { joins: new Map([['task', ['qa']]]) }),
-    ).toBeNull();
+    expect(withTypeStatuses(catalogue(task), { joins: new Map([['task', ['qa']]]) })).toBeNull();
   });
 
   it('is null when nothing changes, or with no catalogue', () => {

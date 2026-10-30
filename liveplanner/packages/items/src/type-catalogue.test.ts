@@ -218,7 +218,8 @@ describe('a Project’s dates', () => {
 // docs/specs/026-plan/item-types.md "The statuses a type uses": the ordered list.
 describe('a type’s status list', () => {
   const task = ITEM_TYPES.find((t) => t.id === 'task')!;
-  const read = (type: object) => validateItemTypeCatalogue({ version: 1, types: [{ ...task, ...type }] });
+  const read = (type: object) =>
+    validateItemTypeCatalogue({ version: 1, types: [{ ...task, ...type }] });
 
   it('is stored in order, de-duplicated, kept when empty, and replaces any exclusions', () => {
     const ok = read({ statuses: ['done', 'todo', 'done'], excludedStatuses: ['doing'] });

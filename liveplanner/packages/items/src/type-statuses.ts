@@ -55,8 +55,7 @@ export function boardTypeStatuses(
       named && setup.addTypes
         ? types.filter((t) => setup.addTypes!.includes(t.id))
         : boardAddTypes(setup, types);
-    for (const t of takes)
-      for (const c of setup.columns) out.get(t.id)!.add(c.status);
+    for (const t of takes) for (const c of setup.columns) out.get(t.id)!.add(c.status);
   }
   return new Map([...out].map(([id, s]) => [id, [...s]]));
 }
