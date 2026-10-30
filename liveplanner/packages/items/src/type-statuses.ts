@@ -38,17 +38,24 @@ export function planStatusOrder(setups: readonly unknown[]): string[] {
 
 // Per type id, the statuses of the boards that take the type, in board and column order, each once: a board that
 // names no types (or only deleted ones) takes every type, one that names none takes none (boardAddTypes). All
-// Cards and Archive boards give none.
+// Cards and Archive boards give none. `named` reads a board by the types it names alone, so one naming only types
+// not yet in `typeIds` (a board whose brought types are on their way) gives nothing rather than everything: what
+// joins types uses it.
 export function boardTypeStatuses(
   setups: readonly unknown[],
   typeIds: readonly string[],
+  named = false,
 ): Map<string, string[]> {
   const out = new Map<string, Set<string>>(typeIds.map((id) => [id, new Set()]));
   const types = typeIds.map((id) => ({ id }));
   for (const raw of setups) {
     const setup = normaliseBoardSetup(raw);
     if (!setup || setup.allCards || setup.archive || setup.columns.length === 0) continue;
-    for (const t of boardAddTypes(setup, types))
+    const takes =
+      named && setup.addTypes
+        ? types.filter((t) => setup.addTypes!.includes(t.id))
+        : boardAddTypes(setup, types);
+    for (const t of takes)
       for (const c of setup.columns) out.get(t.id)!.add(c.status);
   }
   return new Map([...out].map(([id, s]) => [id, [...s]]));
@@ -61,9 +68,9 @@ export function boardStatusJoins(
   after: readonly unknown[],
   typeIds: readonly string[],
 ): Map<string, string[]> {
-  const was = boardTypeStatuses(before, typeIds);
+  const was = boardTypeStatuses(before, typeIds, true);
   const joins = new Map<string, string[]>();
-  for (const [id, now] of boardTypeStatuses(after, typeIds)) {
+  for (const [id, now] of boardTypeStatuses(after, typeIds, true)) {
     const had = new Set(was.get(id));
     const fresh = now.filter((s) => !had.has(s));
     if (fresh.length) joins.set(id, fresh);

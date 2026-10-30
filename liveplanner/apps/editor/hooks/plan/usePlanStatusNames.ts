@@ -20,7 +20,7 @@ import {
 // A tab's board set-ups, cached by its elements array: a tab's elements are replaced, never mutated,
 // so an unchanged tab is not walked again on the next render.
 const setupsCache = new WeakMap<readonly Element[], readonly unknown[]>();
-function boardSetupsIn(elements: readonly Element[]): readonly unknown[] {
+export function boardSetupsIn(elements: readonly Element[]): readonly unknown[] {
   let setups = setupsCache.get(elements);
   if (!setups) {
     setups = elements.flatMap((el) =>

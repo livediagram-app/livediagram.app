@@ -40,13 +40,18 @@ describe('the States tab', () => {
   it('heads each board’s states with its title and count; a shared state turns off in both', () => {
     const onChange = vi.fn();
     render(
-      <ItemTypeStatuses statuses={STATUSES} excluded={[]} onChange={onChange} boards={BOARDS} />,
+      <ItemTypeStatuses
+        statuses={STATUSES}
+        used={['backlog', 'doing', 'done', 'parked']}
+        onChange={onChange}
+        boards={BOARDS}
+      />,
     );
     const sprint = screen.getByRole('region', { name: 'Sprint' });
     expect(within(sprint).getByText('2 of 2 states on')).toBeTruthy();
     expect(screen.getByRole('region', { name: 'No Board' })).toBeTruthy();
     expect(screen.getAllByRole('checkbox', { name: 'Done' })).toHaveLength(2);
     fireEvent.click(within(sprint).getByRole('checkbox', { name: 'Done' }));
-    expect(onChange).toHaveBeenCalledWith(['done']);
+    expect(onChange).toHaveBeenCalledWith(['backlog', 'doing', 'parked']);
   });
 });

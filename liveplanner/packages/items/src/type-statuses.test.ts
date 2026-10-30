@@ -95,6 +95,12 @@ describe('boardTypeStatuses', () => {
   it('reads a board whose named types are all deleted as taking every type', () => {
     expect(boardTypeStatuses([board(['x'], ['gone'])], ids).get('task')).toEqual(['x']);
   });
+
+  it('reads a board by its named types alone when asked (its brought types still on their way)', () => {
+    const got = boardTypeStatuses([board(['x'], ['gone']), board(['y'], ['bug', 'gone'])], ids, true);
+    expect(got.get('task')).toEqual([]);
+    expect(got.get('bug')).toEqual(['y']);
+  });
 });
 
 describe('boardStatusJoins', () => {
