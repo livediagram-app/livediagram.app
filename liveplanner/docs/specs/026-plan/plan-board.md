@@ -500,8 +500,8 @@ In Plan mode:
     quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
   - **Header**: the type (a picker, with its glyph), the key, a **⋯** menu of **Duplicate** (a copy right after
     it, without its votes, as the card menu's), **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Edit Card Type** (closing the panel and opening the card's type in the type
-    editor), then, after a separator, **Copy Link** (the card's address, below) and **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
-    may only view gets a ⋯ of Copy Link and Help.
+    editor), then, after a separator, **Copy Card Link** (the card's address, below) and **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
+    may only view gets a ⋯ of Copy Card Link and Help.
   - **Its address**: while a card is open, the page's address names it beside the tab pin, as
     `#t=<tab>&item=<card id>` (the same fragment an Inbox row opens a card with,
     [Inbox](../013-workspace/inbox.md) §1), and closing it takes the card back off. Opening that address opens the
@@ -516,7 +516,7 @@ In Plan mode:
       card inside the panel (the breadcrumb, a Parent's Open, a Linked as row) replaces the address and adds no
       entry. A card opened by its address, an Inbox row or an Actions board link replaces the address too: that
       entry is already the card's.
-    - **Copy Link** in the ⋯ menu copies the card's address, for every role: `/project/<plan id>` with the share
+    - **Copy Card Link** in the ⋯ menu copies the card's address, for every role: `/project/<plan id>` with the share
       code it was opened with (`?s=<code>`, so someone on the same share link can follow it), then
       `#t=<tab>&item=<card id>`. The menu closes and a toast says "Link copied"; a copy the browser refuses
       says "Couldn't copy the link". A copied link only opens for someone who may already see the plan.

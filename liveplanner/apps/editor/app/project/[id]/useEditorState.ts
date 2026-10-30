@@ -1583,7 +1583,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A form is an Editor's to make (docs/specs/030-forms/forms.md "Who may do what").
     newFormFor: participant.can.level === 'edit' ? forms.newFormFor : undefined,
     linkedActions: linkedPlan,
-    // Copy Link in the item panel's ⋯ menu (docs/specs/026-plan/plan-board.md "Its address").
+    // Copy Card Link in the item panel's ⋯ menu (docs/specs/026-plan/plan-board.md "Its address").
     cardLink: (itemId) =>
       cardLink({
         origin: window.location.origin,

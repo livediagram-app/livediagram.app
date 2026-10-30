@@ -31,7 +31,7 @@ export function cardEntryState(card: boolean): Record<string, boolean> {
   return card ? { [CARD_ENTRY_KEY]: true } : {};
 }
 
-// Copy Link's address: the editor's own path for the plan, the share code it was opened with (so a person on the
+// Copy Card Link's address: the editor's own path for the plan, the share code it was opened with (so a person on the
 // same share link can follow it), then the card's fragment. Any other query (an Explorer hand-off, `share=1`) stays
 // behind.
 export function cardLink(input: {

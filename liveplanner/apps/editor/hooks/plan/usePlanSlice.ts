@@ -87,7 +87,7 @@ export function usePlanSlice(opts: {
   newFormFor?: (boardElementId: string) => void;
   // The Actions board's links (useLinkedActionCards); stable callbacks, placeOf changes with the tabs.
   linkedActions?: PlanContextValue['linkedActions'];
-  // A card's address for Copy Link; read when pressed, so it may change every render.
+  // A card's address for Copy Card Link; read when pressed, so it may change every render.
   cardLink?: (itemId: string) => string;
 }) {
   const { planItems, itemTypes, canEdit, canVote, presence } = opts;

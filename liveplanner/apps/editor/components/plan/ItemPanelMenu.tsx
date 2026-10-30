@@ -1,7 +1,7 @@
 'use client';
 
 // The item panel's `⋯` menu (docs/specs/026-plan/plan-board.md "Open an item"): Duplicate, Flag (or Remove
-// Flag), Archive (or Restore) and Edit Card Type for someone who may edit, then Copy Link and Help for everyone, then
+// Flag), Archive (or Restore) and Edit Card Type for someone who may edit, then Copy Card Link and Help for everyone, then
 // Trash last for an editor, as icon-left rows beside
 // the panel's Close, so the header keeps only the item's type, its key and the two buttons.
 import { useState } from 'react';
@@ -101,7 +101,12 @@ export function ItemPanelMenu({
             </>
           ) : null}
           {onCopyLink ? (
-            <MenuActionRow plain label="Copy Link" icon={<LinkIcon />} onClick={run(onCopyLink)} />
+            <MenuActionRow
+              plain
+              label="Copy Card Link"
+              icon={<LinkIcon />}
+              onClick={run(onCopyLink)}
+            />
           ) : null}
           <MenuActionRow
             plain

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { copyCardLink, LINK_COPIED, LINK_NOT_COPIED } from './copy-card-link';
 
-// docs/specs/026-plan/plan-board.md "Its address": Copy Link says what happened either way.
+// docs/specs/026-plan/plan-board.md "Its address": Copy Card Link says what happened either way.
 describe('copyCardLink', () => {
   afterEach(() => vi.unstubAllGlobals());
 
