@@ -205,6 +205,10 @@ title, its state, and every comment **verbatim**, with author and date and wheth
     `hasTouch`) and a ~450px desktop window, with before and after shots.
   - **Small:** one after shot at desktop and one on the phone, plus a before shot only if the difference isn't
     obvious from the after shot alone.
+  - Verify against the real local stack (the app, its api and the accounts Worker the `verify` skill starts),
+    never a stand-in api you wrote. A shot showing an error banner, an empty state that shouldn't be empty or a
+    spinner is a failed check, not a screenshot: find the cause first. If the stack can't run without something
+    you may not touch, say so in the PR and the report, and don't present the shots as working.
   - Use only the port block and scratch folder the brief gives you. Reuse one dev server for every shot;
     don't build for screenshots.
 - **Performance:** read the touched code paths for cost (hot paths, re-renders, N+1, bundle size), measure what's
