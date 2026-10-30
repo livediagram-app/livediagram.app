@@ -745,8 +745,8 @@ every app, up to 24, once the typing pauses for 200 ms, the request before cance
 open: their own work, their teams' and what a live share link reaches, exactly as the index decides, never more. The
 results this panel already lists from its own lists (plans of this app's, shared and team ones) are left out, and up
 to 8 of the rest form an **Every App** group after Teams, in the index's order. Each row wears its app's logo in the
-app's colour (`AppMark`) and ends in the app's name in that colour (its deep shade on light, its accent on dark), so a
-plan, a canvas, a document and a design read apart at a glance. Picking one of this app's opens it here (with its
+app's colour (`AppMark`) and ends in the app's name in that colour (its deep shade on light, its accent on dark), so
+canvases, plans, documents and designs read apart at a glance. Picking one of this app's opens it here (with its
 share code when a link is how the person reaches it); picking another app's opens it in that app, at its own address.
 A failed or offline index read shows no group and no error: the panel's own groups still work. The hook and the
 helpers are shared (`@liveworkspace/explorer/item-search`: `useItemSearch`, `everyAppResults`, `AppMark`,

@@ -115,7 +115,7 @@ describe('SearchPanel', () => {
       expect.objectContaining({ signal: expect.anything() }),
     );
     const rows = within(group).getAllByRole('option');
-    // The document this panel lists itself is not listed again.
+    // The project this panel lists itself is not listed again.
     expect(rows.map((r) => r.textContent)).toEqual([
       expect.stringContaining('Roadmap'),
       expect.stringContaining('Road show'),
