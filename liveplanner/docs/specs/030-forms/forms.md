@@ -534,17 +534,32 @@ board settings, for switching back.
   question. No mapping needed." A sheet no longer on its tab says "Its sheet was removed. Choose where responses go."
   and pauses the form, as a broken board destination does.
 - **In the builder**: a question's footer reads "Its own column in the sheet" in place of the Answer goes to badge.
+- **Columns before any response**: while an Editor has the Form tab open, the sheet holds a column for **#**,
+  **Submitted** and every question as soon as the sheet is chosen and as each question is added, a moment after the
+  last edit (so typing a wording writes one header, not one per letter). A question whose wording changes takes its
+  column's header with it while that header still reads the old wording; a header renamed in the sheet is kept. These
+  writes are no undo step and change nothing but headers. A tab-scoped link's Editor does not write them (the sheet is
+  on another tab); the first response does.
+- **Linked by column, not by heading**: the form remembers each column it uses (`form.sheet.columns`, question id →
+  the column's id; `#` and `at` for **#** and **Submitted**), so renaming a heading in the sheet, or moving its column,
+  keeps it linked. A question with no remembered column (a form from before, or one an agent changed) finds its column
+  by its header, as before, and the builder remembers it from then on. A remembered column that was deleted is
+  forgotten: the question finds or makes another.
 - **The row** (`responseRowWrite`, `@liveplanner/forms`): the sheet's first row holds the headers, **#**,
-  **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its column by its
-  header, ignoring case, and one with none takes the next free column after the last header (columns added in one
-  insert when the sheet has too few). Headers the form writes are bold, and a sheet given its first headers has row 1
-  frozen. The response takes the first row after the last row holding anything (rows added when there are none).
+  **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its remembered column,
+  else its column by its header, ignoring case, and one with neither takes the next free column after the last header
+  (columns added in one insert when the sheet has too few). Headers the form writes are bold, and a sheet given its
+  first headers has row 1 frozen. The response takes the first row after the last row holding a value (a styled but
+  empty row, such as a banded look's, does not count; rows added when there are none).
   Its cells: the response number, the time ("2026-10-15 14:03 UTC"; the api knows no one's zone), and each answer: a
   Number or Rating as a number, a Checkbox as true or false, the rest as text (several picks "Vegan, Halal"); an
   unanswered question leaves its cell empty.
 - **Stored** through the sheet store's own write (`storeSheetWrite`: validation, caps, the rev guard, the relay),
   unchecked against the sheet's validation rules so a response always lands; by the form's person ("<Form> form").
-  A sheet too full refuses as `form_full`; the number stays claimed whatever happens.
+  A sheet too full refuses as `form_full`. **A counted response is never lost**: the row is planned against the sheet
+  as stored and stored only if the sheet has not changed since (else planned again, up to the store's retries), and
+  every planned cell must land; a row that cannot be written gives its number back (the count does not grow) and the
+  respondent sees why (`form_full`, `form_closed` or `form_busy`), never Thanks.
 - **Preview**: a published form's preview is a counted row (its number, "· Preview" after its time); an unpublished
   form's preview is written by the api too (`.../form-preview` with no link), its # reading **Preview**.
 - **Elsewhere**: the response count opens the sheet's tab; the Inbox names the sheet's tab; no board shows the
