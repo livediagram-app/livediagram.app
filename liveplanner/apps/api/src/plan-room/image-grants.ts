@@ -1,4 +1,5 @@
-// Which Image field pictures a plan may serve (docs/specs/026-plan/item-types.md "Image fields"), in the plan's own
+// Which Image field and Attachments pictures a plan may serve (docs/specs/026-plan/item-types.md "Image fields",
+// items.md "Attachments"), in the plan's own
 // SQLite (plan-schema.ts `card_image_grants`). A grant is recorded when someone who may edit the plan's cards
 // uploads a picture for it (routes/images.ts); the plan serves the picture while it holds that grant AND one of its
 // cards holds the id as a field value. An id pasted into another plan, or carried there by a copy, serves nothing
@@ -43,7 +44,8 @@ const likeEscaped = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 // Whether the plan serves `imageId`: the grant first (a key lookup), then a card holding it. A text prefilter
 // (LIKE on the id as its JSON string, quoted and escaped as a card's fields store it) skips every card whose fields
-// never mention it before the exact check (a field whose value is the id itself, read from the JSON), and the first
+// never mention it before the exact check (a field whose value is the id itself, or an Attachments entry's id, read
+// from the JSON), and the first
 // match ends the scan.
 export function planServesImage(sql: Sql, planId: string, imageId: string): boolean {
   if (!imageId || imageId.length > IMAGE_ID_MAX) return false;
@@ -60,10 +62,13 @@ export function planServesImage(sql: Sql, planId: string, imageId: string): bool
       .exec(
         `SELECT 1 FROM items, json_each(items.fields) AS f
           WHERE items.plan_id = ? AND items.fields LIKE ? ESCAPE '\\'
-            AND f.type = 'text' AND f.value = ?
+            AND ((f.type = 'text' AND f.value = ?)
+              OR (f.key = 'attachments' AND f.type = 'array' AND EXISTS (
+                    SELECT 1 FROM json_each(f.value) AS a WHERE json_extract(a.value, '$.id') = ?)))
           LIMIT 1`,
         planId,
         `%${likeEscaped(JSON.stringify(imageId))}%`,
+        imageId,
         imageId,
       )
       .toArray().length > 0

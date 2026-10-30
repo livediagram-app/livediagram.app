@@ -89,6 +89,7 @@ import {
 } from './card-thread-store';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
 import { planServesImage, recordImageGrant } from './image-grants';
+import { forgetImageRefs } from './image-refs';
 import {
   exportPlanCopy,
   importPlanCopy,
@@ -607,6 +608,19 @@ export class PlanRoom extends DurableObject<Env> {
     recordImageGrant(this.state.storage.sql, planId, imageId, Date.now());
   }
 
+  // The pictures last reported for this plan (image-refs.ts `media_refs`), null when none were or it has no schema.
+  private lastSentImages(): string | null {
+    const sql = this.state.storage.sql;
+    if (!this.schemaReady && !hasPlanSchema((q) => sql.exec(q))) return null;
+    try {
+      const row = sql.exec('SELECT images FROM media_refs LIMIT 1').toArray()[0];
+      return typeof row?.images === 'string' ? row.images : null;
+    } catch {
+      // A plan whose schema predates media_refs reported nothing.
+      return null;
+    }
+  }
+
   // A plan never started serves nothing, and asking does not start it.
   async servesImage(planId: string, imageId: string): Promise<boolean> {
     const sql = this.state.storage.sql;
@@ -1080,6 +1094,8 @@ export class PlanRoom extends DurableObject<Env> {
     this.opLog = [];
     await this.leaveShares();
     await this.ledger.settled();
+    // What the media service last heard the plan's cards hold (image-refs.ts), read before it goes.
+    const sentImages = this.lastSentImages();
     await this.state.storage.deleteAlarm();
     await this.state.storage.deleteAll();
     this.schemaReady = false;
@@ -1087,6 +1103,14 @@ export class PlanRoom extends DurableObject<Env> {
     this.flushAt = null;
     this.shares.clear();
     this.maintenanceAt = null;
+    // The purged plan holds no pictures now, so the media service's sweep may take those only it held. A failure
+    // keeps them (storage kept, never a broken picture) and does not stop the purge.
+    const env = this.roomEnv;
+    if (env && this.planId) {
+      await forgetImageRefs(env, this.planId, sentImages).catch((error: unknown) =>
+        console.warn('[media] refs not cleared for a purged plan', { error: String(error) }),
+      );
+    }
     console.info('[room] purged');
   }
 

@@ -1319,6 +1319,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       {
+        "const": "attachments",
+        "type": "string"
+      },
+      {
+        "const": "cover",
+        "type": "string"
+      },
+      {
         "$ref": "#/components/schemas/CustomCardField"
       }
     ]
