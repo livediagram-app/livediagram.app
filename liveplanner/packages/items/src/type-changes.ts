@@ -7,6 +7,7 @@ import { isFormulaField } from './formula-fields';
 import { FORMULA_RESULTS, FORMULA_RESULT_DEFAULT } from './formula/limits';
 import { formulaScopeOf, storedFormula } from './formula/references';
 import { canShowAsPercent } from './percent-fields';
+import { isTimeSpent } from './duration-fields';
 import { isLookupField, isRollupField } from './calculated-result';
 import { Refused, invalid, type TypeChangeRefusal } from './type-change-refused';
 import { resolveRollups, withRollup, type PendingRollups } from './type-change-rollups';
@@ -93,6 +94,8 @@ export interface CustomFieldInput {
   // A share drawn as a Percent field is ('percent'), or as text ('number', the default); only where
   // canShowAsPercent allows it (docs/specs/026-plan/item-types.md "Percent").
   showAs?: string;
+  // A Duration field that tracks time (docs/specs/026-plan/item-types.md "Time Spent"); set only when it is made.
+  timeSpent?: boolean;
   onCard?: boolean;
   // Required (docs/specs/026-plan/item-types.md "Required fields"); never a checkbox.
   required?: boolean;
@@ -423,6 +426,11 @@ function customOf(
       rollups.set(field.id, { ...rollups.get(field.id), showAs: 'percent' });
   } else if (input.showAs !== undefined && showAsNamed(field, input.showAs))
     field.showAs = 'percent';
+  if (input.timeSpent) {
+    if (known !== 'duration')
+      throw invalid(`"${name}" is ${withArticle(known)} field: only a duration field tracks time.`);
+    field.timeSpent = true;
+  }
   if (input.onCard) field.onCard = true;
   if (input.required) field.required = requirable(field);
   if (input.notifies) field.notifies = notifiable(field);
@@ -534,7 +542,11 @@ function calculationNamed(field: string, named: string | undefined): Calculation
 
 // `true`, for a field that can be required; a checkbox (unticked reads as empty) and a calculated field (the plan
 // works it out) are refused.
-function requirable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
+function requirable(field: Pick<CustomFieldDef, 'kind' | 'label' | 'timeSpent'>): true {
+  if (isTimeSpent(field))
+    throw invalid(
+      `"${field.label}" tracks time: its entries are recorded, so it can't be required.`,
+    );
   if (!canBeRequired(field.kind))
     throw invalid(
       field.kind === 'checkbox'

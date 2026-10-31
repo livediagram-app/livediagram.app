@@ -371,9 +371,12 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
   }
   // Kept only as 'percent', on a field whose result is a share (percent-fields.ts); anything else reads as text.
   if (input['showAs'] === 'percent' && canShowAsPercent(field)) field.showAs = 'percent';
+  // Kept only as true, only on a Duration field (docs/specs/026-plan/item-types.md "Time Spent"); anything else reads off.
+  if (input['timeSpent'] === true && field.kind === 'duration') field.timeSpent = true;
   if (input['onCard'] === true) field.onCard = true;
   // Kept only as true, and never on a Checkbox: anything else reads as optional rather than refusing the catalogue.
-  if (input['required'] === true && canBeRequired(field.kind)) field.required = true;
+  if (input['required'] === true && canBeRequired(field.kind) && !field.timeSpent)
+    field.required = true;
   // Kept only as true, and only on a Person field.
   if (input['notifies'] === true && field.kind === 'person') field.notifies = true;
   // Kept only as true, and only on a Person or Card field (docs/specs/026-plan/item-types.md "Holds Several").

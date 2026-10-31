@@ -24,6 +24,7 @@ import type { PlanStatusName } from './plan-outline';
 import { resolveItemRef } from './refs';
 import { statusKey } from './status-names';
 import { parsePercent, PERCENT_MAX, PERCENT_MIN } from './percent-fields';
+import { DURATION_HINT, isTimeSpent, parseDuration } from './duration-fields';
 import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
 
@@ -233,6 +234,12 @@ export function resolveFields(
         'value_invalid',
         `${field.label} is a Votes field: votes come from a session vote.`,
       );
+    // Tracked time is a person's own record of their work (docs/specs/026-plan/item-types.md "Time Spent").
+    if (isTimeSpent(field))
+      return refuse(
+        'value_invalid',
+        `${field.label} is tracked: people add time in the card panel.`,
+      );
     // A Person or Card field that holds several takes a comma list or a list (item-types.md "Holds Several").
     if (holdsSeveral(field)) {
       const v = severalNamed(field, value, naming);
@@ -296,6 +303,17 @@ export function resolveFields(
         return refuse(
           'value_invalid',
           `${field.label} is a percent: give a number from ${PERCENT_MIN} to ${PERCENT_MAX}.`,
+        );
+      out[key] = n;
+    } else if (field.kind === 'duration') {
+      // "2h 30m", "90m", "1.5h" or a number of minutes (docs/specs/026-plan/item-types.md "Duration").
+      const n = parseDuration(
+        typeof value === 'string' || typeof value === 'number' ? value : undefined,
+      );
+      if (n === undefined)
+        return refuse(
+          'value_invalid',
+          `${field.label} is a duration: ${DURATION_HINT.charAt(0).toLowerCase()}${DURATION_HINT.slice(1)}.`,
         );
       out[key] = n;
     } else if (field.kind === 'number' && typeof value === 'string') {

@@ -8,6 +8,7 @@ import { PRIORITY_LABELS, isPriority } from './fields';
 import { itemAssignee, itemLabels, itemTitle, type Item, type ItemFieldValue } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { calculatedResultOf } from './calculated-result';
+import { durationMinutes, durationText } from './duration-fields';
 import { fieldCardIds, fieldPeople, holdsSeveral } from './several-values';
 import { compileFormula } from './formula/compile';
 import { evaluateTree } from './formula/evaluate';
@@ -114,6 +115,9 @@ function customValue(run: Run, def: CustomFieldDef): FormulaValue {
     case 'currency':
     case 'rating':
       return numberValue(raw);
+    // Whole minutes; a Time Spent field its entries' total (item-types.md "Duration").
+    case 'duration':
+      return numberValue(durationMinutes(def, raw));
     case 'date':
       return dateValue(raw);
     case 'checkbox':
@@ -279,6 +283,8 @@ function resultOf(def: Pick<CustomFieldDef, 'result'>, raw: FormulaValue): Formu
   if (typeof v !== 'number') return needs(v, 'a number');
   if (result === 'currency') return Math.round(v * 100) / 100;
   if (result === 'percent') return Math.round(v);
+  // Whole minutes, never below none (item-types.md "Formula fields", The result).
+  if (result === 'duration') return Math.max(0, Math.round(v));
   return Math.round(v * 1e10) / 1e10;
 }
 
@@ -353,6 +359,8 @@ export function formulaText(
       return typeof value === 'number' ? currencyText(value, field.currency) : null;
     case 'percent':
       return typeof value === 'number' ? `${value}%` : null;
+    case 'duration':
+      return typeof value === 'number' ? durationText(value) : null;
     case 'date':
       return typeof value === 'string' ? dayLabel(value, 'medium') : null;
     case 'checkbox':

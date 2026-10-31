@@ -3,6 +3,7 @@
 // {Type} dialog, Import CSV, forms' publish check and the agent verbs.
 import type { ItemFields, ItemFieldValue } from './item';
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
+import { isTimeSpent } from './duration-fields';
 
 // Every kind but a Checkbox, which reads unticked as empty, so a required one could never be left unticked, a
 // Calculated field, which nobody fills in (item-types.md "Calculated fields"), and an Image, which is added once the
@@ -20,7 +21,8 @@ export function requiredCustomFieldsOf(
   type: Pick<ItemTypeDef, 'fields' | 'custom'>,
 ): CustomFieldDef[] {
   return (type.custom ?? []).filter(
-    (f) => f.required === true && canBeRequired(f.kind) && type.fields.includes(f.id),
+    (f) =>
+      f.required === true && canBeRequired(f.kind) && !isTimeSpent(f) && type.fields.includes(f.id),
   );
 }
 

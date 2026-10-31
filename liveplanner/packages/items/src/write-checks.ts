@@ -19,9 +19,11 @@ import { ITEM_STATUS_MAX } from './limits';
 import { isObj } from './validate';
 import type { ItemTypeDef } from './item-types';
 import { calculatedFieldsOf } from './calculated-fields';
-import { typeAllowsStatus, typeIn } from './type-catalogue';
+import { CUSTOM_FIELD_ID_PATTERN, customFieldOf, typeAllowsStatus, typeIn } from './type-catalogue';
 import { missingRequiredFields, requiredCleared } from './required-fields';
 import type { ItemWrite } from './store';
+import { isTimeSpent } from './duration-fields';
+import { readTimeOp } from './time-tracking';
 
 export function readItemPlace(raw: unknown): ItemPlace | ItemRejection {
   if (raw === undefined) return {};
@@ -132,6 +134,33 @@ export function calculatedWritten(
   return null;
 }
 
+// A Time Spent field a card write set, cleared or changed (docs/specs/026-plan/item-types.md "Time Spent"): its id,
+// else null. Its entries change only through time writes; a card put back (an undo of a delete, a sync) carries them.
+export function timeSpentWritten(
+  types: readonly ItemTypeDef[],
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Pick<Item, 'fields'>,
+): string | null {
+  const type = typeIn(types, next.type);
+  for (const f of type?.custom ?? []) {
+    if (!isTimeSpent(f) || !type.fields.includes(f.id)) continue;
+    const was = before ? JSON.stringify(before.fields[f.id] ?? null) : 'null';
+    if (JSON.stringify(next.fields[f.id] ?? null) !== was) return f.id;
+  }
+  return null;
+}
+
+// Why a time write can't land on `item`: its field is no Time Spent field its card type offers. Null when it can.
+export function timeWriteRefusal(
+  types: readonly ItemTypeDef[],
+  item: Pick<Item, 'type'>,
+  field: string,
+): 'time_invalid' | null {
+  const type = typeIn(types, item.type);
+  const def = type ? customFieldOf(type, field) : undefined;
+  return def && isTimeSpent(def) && type.fields.includes(field) ? null : 'time_invalid';
+}
+
 type ItemWriteRefusal = { error: ItemRejection; id?: string; field?: string };
 
 // A new card missing a required custom field (docs/specs/026-plan/item-types.md "Required fields"): the first one,
@@ -189,6 +218,12 @@ export function readItemWrite(write: ItemWrite): ItemWrite | ItemWriteRefusal {
       const move = readItemMove(write.move as Record<string, unknown>);
       return typeof move === 'string' ? { error: move, id: write.id } : { ...write, move };
     }
+    case 'time': {
+      const op = readTimeOp(write.op);
+      if (typeof op === 'string' || !CUSTOM_FIELD_ID_PATTERN.test(write.field))
+        return { error: 'time_invalid', id: write.id };
+      return { ...write, op };
+    }
     default:
       return write;
   }
@@ -212,8 +247,19 @@ export function writtenItemsRefusal(
       if (c.key !== undefined || c.votes !== undefined || c.comments !== undefined) continue;
       const field = calculatedWritten(types, c);
       if (field) return { error: 'field_calculated', field, ...(c.id ? { id: c.id } : {}) };
+      const timed = timeSpentWritten(types, c);
+      if (timed)
+        return { error: 'field_time_tracked', field: timed, ...(c.id ? { id: c.id } : {}) };
     }
     return null;
+  }
+  if (write.kind === 'time') {
+    const next = upserts[0];
+    if (!next) return null;
+    if (timeWriteRefusal(types, next, write.field))
+      return { error: 'time_invalid', id: next.id, field: write.field };
+    const bound = fieldsWithinBounds(next.fields);
+    return bound ? { error: bound, id: next.id } : null;
   }
   if (write.kind !== 'patch' && write.kind !== 'patches' && write.kind !== 'move') return null;
   const had = new Map(before.map((i) => [i.id, i]));
@@ -223,6 +269,8 @@ export function writtenItemsRefusal(
       return { error: 'status_excluded', id: next.id };
     const field = write.undo === true ? null : calculatedWritten(types, next, was);
     if (field) return { error: 'field_calculated', id: next.id, field };
+    const timed = timeSpentWritten(types, next, was);
+    if (timed) return { error: 'field_time_tracked', id: next.id, field: timed };
     const cleared = was && requiredClearedBy(types, next, was, write.undo === true);
     if (cleared) return { error: 'field_required', id: next.id, field: cleared };
     const bound = fieldsWithinBounds(next.fields);

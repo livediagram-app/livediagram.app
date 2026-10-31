@@ -18,6 +18,7 @@ import {
 } from './apply';
 import { ITEMS_MAX } from './limits';
 import { statusSinceUndo } from './status-since';
+import { applyTimeOp, inverseTimeOp, type TimeOp } from './time-tracking';
 
 export type ItemStoreState = { items: Item[]; rev: number; nextKey: number };
 
@@ -34,13 +35,16 @@ export type ItemWrite =
   // A session vote's tally added to cards' votes when the vote ends (not undoable), in the Votes field `field` (the
   // built-in when absent; the editor sends only cards whose type offers it, and the api checks again).
   | { kind: 'tally'; tallies: ItemTally[]; field?: string }
+  // One time write to a card's Time Spent field `field` (docs/specs/026-plan/item-types.md "Time Spent"): applied to the
+  // card as stored, so two people's timers and entries never overwrite each other.
+  | { kind: 'time'; id: string; field: string; op: TimeOp }
   | { kind: 'delete'; id: string };
 
 export type ItemPatchOf = { id: string; patch: ItemPatch };
 // One card's tally: each voter's (pseudonymous person id) dots.
 export type ItemTally = { id: string; votes: Record<string, number> };
 
-type ItemWriteError = 'item_not_found' | 'item_exists' | 'items_full';
+type ItemWriteError = 'item_not_found' | 'item_exists' | 'items_full' | 'time_full';
 
 type ItemWriteResult =
   | { ok: true; state: ItemStoreState; upserts: Item[]; removed: string[] }
@@ -130,6 +134,16 @@ export function applyItemWrite(
       removed: [write.id],
     };
   }
+  if (write.kind === 'time') {
+    const timed = applyTimeOp(item, write.field, write.op, base);
+    if (!timed.ok) return { ok: false, error: timed.error };
+    return {
+      ok: true,
+      state: { ...state, items: replaced(state.items, timed.item), rev: state.rev + 1 },
+      upserts: [timed.item],
+      removed: [],
+    };
+  }
   const next =
     write.kind === 'patch'
       ? applyPatch(item, write.patch, base)
@@ -211,6 +225,11 @@ export function refetchedItemStore(
 // "Undo").
 export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): ItemWrite[] | null {
   if (write.kind === 'tally') return null;
+  if (write.kind === 'time') {
+    const item = before.items.find((i) => i.id === write.id);
+    const op = item ? inverseTimeOp(item, write.field, write.op) : null;
+    return op ? [{ kind: 'time', id: write.id, field: write.field, op }] : null;
+  }
   if (write.kind === 'create') return write.creates.map((c) => ({ kind: 'delete', id: c.id! }));
   if (write.kind === 'patches') {
     // Each item's old values, last patch first, as one write.

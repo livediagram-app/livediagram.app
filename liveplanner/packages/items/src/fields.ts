@@ -26,6 +26,7 @@ import {
   ITEM_VOTES_PER_PERSON_MAX,
 } from './limits';
 import { HEX_COLOUR, isObj } from './validate';
+import { carriedTimeValue } from './time-tracking';
 import { itemColourValue } from './item-colour';
 import { normaliseAttachments } from './attachments';
 import { STATUS_SINCE_FIELD } from './item';
@@ -105,7 +106,14 @@ export type ItemRejection =
   | 'field_required'
   // A value given to a Calculated field, which only the plan works out (docs/specs/026-plan/item-types.md
   // "Calculated fields").
-  | 'field_calculated';
+  | 'field_calculated'
+  // A card write that sets or clears a Time Spent field, whose entries change only through time writes
+  // (docs/specs/026-plan/item-types.md "Time Spent"); a time write that does not read, names no Time Spent field, would
+  // hold more than a field may, or touches another person's timer or entry without an Editor's access.
+  | 'field_time_tracked'
+  | 'time_invalid'
+  | 'time_full'
+  | 'time_not_yours';
 
 type FieldsResult =
   { ok: true; fields: ItemFields } | { ok: false; error: ItemRejection; field?: string };
@@ -290,6 +298,12 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
     const carried = !kind && mode === 'create' ? carriedVotes(v) : null;
     if (carried) {
       fields[key] = carried;
+      continue;
+    }
+    // So does a Time Spent field's time, checked whole (docs/specs/026-plan/item-types.md "Time Spent").
+    const time = !kind && mode === 'create' && isObj(v) ? carriedTimeValue(v) : null;
+    if (time) {
+      fields[key] = time;
       continue;
     }
     const value = kind ? normaliseKnown(kind, v) : normaliseUnknown(v);

@@ -59,6 +59,7 @@ function readsOf(f: FormulaField): FormulaResult {
       return 'number';
     case 'currency':
     case 'percent':
+    case 'duration':
     case 'date':
     case 'checkbox':
       return c.kind;
@@ -79,22 +80,22 @@ export function readableFieldsOf(type: Pick<ItemTypeDef, 'fields' | 'custom'>): 
   }));
 }
 
-// Whether a Rollup's calculation can read a field: a number (money and shares too, never a Sum of shares) for Sum,
-// Average, Min and Max; a day for Earliest and Latest.
+// Whether a Rollup's calculation can read a field: a number (money, durations and shares too, never a Sum of shares)
+// for Sum, Average, Min and Max; a day for Earliest and Latest.
 export function aggregateFits(a: Aggregate, field: Pick<ReadableField, 'reads'>): boolean {
   const reads = aggregateReads(a);
   if (reads === 'date') return field.reads === 'date';
   if (reads === 'none') return false;
   if (field.reads === 'percent') return a !== 'sum';
-  return field.reads === 'number' || field.reads === 'currency';
+  return field.reads === 'number' || field.reads === 'currency' || field.reads === 'duration';
 }
 
 // What an aggregate needs, for a refusal and the editor's empty menu.
 export function aggregateNeeds(a: Aggregate): string {
   if (aggregateReads(a) === 'date') return 'a Date, Start Date or Due Date field';
   return a === 'sum'
-    ? 'a Number, Currency, Rating or Estimate field'
-    : 'a Number, Currency, Rating, Estimate or Percent field';
+    ? 'a Number, Currency, Rating, Estimate or Duration field'
+    : 'a Number, Currency, Rating, Estimate, Duration or Percent field';
 }
 
 // A Card field others may read through, named as the first type holding it names it.

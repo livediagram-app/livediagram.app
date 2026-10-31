@@ -10,6 +10,7 @@ import { PRIORITIES } from './fields';
 import { CUSTOM_FIELD_ID_PATTERN, customFieldOf } from './type-catalogue';
 import { isObj } from './validate';
 import { percentValue } from './percent-fields';
+import { durationMinutes } from './duration-fields';
 import { statusKey } from './status-names';
 import { STAMP_FIELD_LABELS, isStampField, itemStampTime } from './card-stamps';
 
@@ -43,13 +44,15 @@ export const BOARD_SORT_KINDS: readonly CustomFieldKind[] = [
   'currency',
   // A share, lowest first as a Number (docs/specs/026-plan/item-types.md "Percent").
   'percent',
+  // Shortest first, as whole minutes; a Time Spent field by its total (docs/specs/026-plan/item-types.md "Duration").
+  'duration',
   'date',
   'rating',
   'choice',
 ];
 
 export type BoardSortKind =
-  'priority' | 'number' | 'currency' | 'percent' | 'date' | 'rating' | 'choice';
+  'priority' | 'number' | 'currency' | 'percent' | 'duration' | 'date' | 'rating' | 'choice';
 
 // A Formula, Rollup or Lookup sorts as its result reads (docs/specs/026-plan/item-types.md "Formula fields", "Rollup
 // and Lookup fields"): these results only.
@@ -57,6 +60,7 @@ const FORMULA_SORT_KINDS: Partial<Record<FormulaResult, BoardSortKind>> = {
   number: 'number',
   percent: 'number',
   currency: 'currency',
+  duration: 'duration',
   date: 'date',
 };
 const formulaSortKind = (c: CustomFieldDef): BoardSortKind | undefined =>
@@ -178,6 +182,7 @@ function readerFor(
     return (item) => num(item.fields[field]);
   // Held to 0..100 as every reader draws it, so a stray value sorts where its bar shows.
   if (def.kind === 'percent') return (item) => percentValue(item.fields[field]);
+  if (def.kind === 'duration') return (item) => durationMinutes(def, item.fields[field]);
   if (def.kind === 'date') return (item) => day(item.fields[field]);
   // A Formula, Rollup or Lookup by its worked-out value: a day as a day, every other sortable result as a number.
   const formulaKind = formulaSortKind(def);
