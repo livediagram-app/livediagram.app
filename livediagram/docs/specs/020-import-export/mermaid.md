@@ -31,8 +31,9 @@ guessing meaning from geometry: the flowchart export preserves the
 connection graph, which is the part that's real.
 
 Sequence diagrams are drawn by the agents' graph input only (below, [Sequence diagrams](#sequence-diagrams-agents));
-the editor's import does not take them yet. Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant)
-and class diagrams remain out of scope; importing one reports a clear error naming the supported types.
+the editor's import does not take them yet. Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant, git graph, C4, requirement, ZenUML and the
+`-beta` types: xychart, sankey, block, packet, architecture, radar, treemap, plus kanban) and class diagrams remain
+out of scope; importing one reports a clear error naming the supported types, never a graph of its header words.
 
 Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
 theme owns colours; Mermaid styling is skipped, never an error) and true
