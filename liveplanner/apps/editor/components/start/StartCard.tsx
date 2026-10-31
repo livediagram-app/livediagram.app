@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { tint } from '@/components/plan/plan-card-parts';
+import { mixHex, readableInk } from '@liveplanner/project';
 
 export type StartPanelCard = {
   id: string;
@@ -26,6 +27,13 @@ export type StartPanelCard = {
 
 // The accent at a strength, as a Plan card's tints are (plan-card-parts).
 export const startTint = (palette: PlanPalette, pct: number) => tint(palette.focus, pct);
+
+// How strongly a card's badge is tinted, and its ink: the accent, deepened (or lifted) until it reads at AA on the
+// badge as drawn, the tint over the card's surface (the accent alone read 4.43:1 on the violet theme's badge).
+const BADGE_TINT = 14;
+export function startBadgeInk(palette: PlanPalette): string {
+  return readableInk(palette.focus, mixHex(palette.focus, palette.surface, BADGE_TINT / 100));
+}
 
 function StartCard({
   card,
@@ -63,7 +71,10 @@ function StartCard({
             {card.badge ? (
               <span
                 className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
-                style={{ backgroundColor: startTint(palette, 14), color: palette.focus }}
+                style={{
+                  backgroundColor: startTint(palette, BADGE_TINT),
+                  color: startBadgeInk(palette),
+                }}
               >
                 {card.badge}
               </span>
