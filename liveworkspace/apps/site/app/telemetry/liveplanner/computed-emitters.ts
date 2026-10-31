@@ -235,7 +235,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/app/project/[id]/useProjectTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
   'apps/editor/hooks/plan/usePlanSlice.ts Plan·Added': {
-    values: PLAN_ITEM_TYPES,
+    values: [...PLAN_ITEM_TYPES, 'TimeEntry'],
     open: PLAN_TYPE_WHY,
   },
   'apps/editor/hooks/plan/usePlanSlice.ts Plan·Deleted': {
