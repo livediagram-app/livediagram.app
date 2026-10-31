@@ -54,6 +54,17 @@ async function open(cells: Record<string, string> = {}, opts: { canShape?: boole
 }
 
 describe('the Data Validation editor', () => {
+  it('moves the typing to the option Enter adds', async () => {
+    const { h, anchor, actions } = await open({ A2: 'Red' });
+    act(() => h.select('A2:A6'));
+    act(() => actions().openValidation(anchor, { start: 'list' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Data Validation' });
+    fireEvent.keyDown(within(dialog).getByLabelText('Option 1'), { key: 'Enter' });
+    expect(document.activeElement).toBe(within(dialog).getByLabelText('Option 2'));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add Another Option' }));
+    expect(document.activeElement).toBe(within(dialog).getByLabelText('Option 3'));
+  });
+
   it('starts a dropdown from the values in the selection and writes it on Done', async () => {
     const { h, anchor, actions } = await open({ A2: 'Red', A3: 'Green', A4: 'red' });
     act(() => h.select('A2:A6'));
