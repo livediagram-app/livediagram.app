@@ -5,6 +5,7 @@
 import type { CardField, CardSize } from './board';
 import type { CardSlot } from './card-display';
 import type { PlanGlyphId } from './glyphs';
+import type { FormulaResult } from './formula/limits';
 
 export type ItemFieldId =
   | 'title'
@@ -41,6 +42,8 @@ export const CUSTOM_FIELD_KINDS = [
   'number',
   // An amount in the field's own currency (`currency`), read as the locale formats it.
   'currency',
+  // How far along, a whole number from 0 to 100 drawn as a bar (docs/specs/026-plan/item-types.md "Percent").
+  'percent',
   'date',
   'checkbox',
   'link',
@@ -51,7 +54,8 @@ export const CUSTOM_FIELD_KINDS = [
   'multichoice',
   // A whole number from 1 to its `scale`, drawn as stars.
   'rating',
-  // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
+  // A link to one other card, of the type `linkType` names, or to several when it holds several
+  // (docs/specs/026-plan/item-types.md "Card fields").
   'card',
   // A value worked out from the plan by its `calculation`, never stored (docs/specs/026-plan/item-types.md
   // "Calculated fields").
@@ -114,9 +118,24 @@ export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const isEmailAddress = (v: string) => v.length <= EMAIL_MAX && EMAIL_PATTERN.test(v);
 
 // A Calculated field's menu (docs/specs/026-plan/item-types.md "Calculated fields"), in the order it is offered:
-// how many children a card has, and the share of them that are done.
-export const CALCULATIONS = ['childCount', 'childrenDone'] as const;
+// how many children a card has, the share of them that are done, one of the children's fields aggregated (a Rollup),
+// a linked card's field (a Lookup; rollup-fields.ts), and a formula over the card's own fields (formula-fields.ts).
+export const CALCULATIONS = ['childCount', 'childrenDone', 'rollup', 'lookup', 'formula'] as const;
 export type Calculation = (typeof CALCULATIONS)[number];
+
+// What a Rollup works out over a card's children (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"), in
+// the order its menu offers them.
+export const AGGREGATES = [
+  'sum',
+  'average',
+  'min',
+  'max',
+  'count',
+  'countDone',
+  'earliest',
+  'latest',
+] as const;
+export type Aggregate = (typeof AGGREGATES)[number];
 
 export interface CustomFieldDef {
   id: string;
@@ -134,6 +153,19 @@ export interface CustomFieldDef {
   currency?: string;
   // A Calculated field's calculation (calculated-fields.ts).
   calculation?: Calculation;
+  // A Formula's expression as stored, each field its id in braces (`{f-budget} - {f-spent}`; formula/references.ts),
+  // and how its value reads (`result`, Number when absent); only on a Calculated field whose calculation is formula.
+  formula?: string;
+  result?: FormulaResult;
+  // A Rollup's or Lookup's settings (rollup-fields.ts): the Card field it reads through (a Rollup's absent for every
+  // child), what a Rollup works out, and the field it reads on the other cards, by id. Its `result` (and `currency`)
+  // is taken from that field when it is set.
+  through?: string;
+  aggregate?: Aggregate;
+  source?: string;
+  // A worked-out share drawn as a Percent field is (percent-fields.ts); kept only as 'percent', only where
+  // canShowAsPercent allows it.
+  showAs?: 'percent';
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
   // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.
@@ -141,6 +173,9 @@ export interface CustomFieldDef {
   // A Person field tells its person when a card is theirs (docs/specs/026-plan/item-types.md "Notifies"): the
   // Inbox, emails and Only Mine. Kept only as true, only on a Person field.
   notifies?: boolean;
+  // A Person or Card field holds several people or cards (docs/specs/026-plan/item-types.md "Holds Several";
+  // several-values.ts). Kept only as true, only on those two kinds.
+  multiple?: boolean;
 }
 
 // The most card types one Card field links to: every type the catalogue can hold (ITEM_TYPES_MAX).

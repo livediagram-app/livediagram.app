@@ -5,22 +5,22 @@ editor views.
 
 ## Domain and naming
 
-| Spec term          | Identifier                                                                                                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Plan board         | `ShapeKind` `'plan-board'`; set-up field `ShapeElement.planBoard: PlanBoardSetup`                                                                                               |
-| Plan card          | `ShapeKind` `'plan-card'`; field `ShapeElement.planCard: { itemId: string }`                                                                                                    |
-| board set-up       | `PlanBoardSetup` (`@liveplanner/items` `board.ts`)                                                                                                                              |
-| column             | `PlanColumn`                                                                                                                                                                    |
-| swimlane           | `SwimlaneBy` (+ `swimlaneField` for `'field'`) + projected `lanes`, `swimlanes`                                                                                                 |
-| board sort         | `PlanBoardSetup.sortBy: BoardSortLevel[]` (`{ field, dir: 'asc' \| 'desc' }`, at most `BOARD_SORT_LEVELS_MAX`); fields `boardSortFieldsOf`, order `sortCards` (`board-sort.ts`) |
-| lane field         | `LaneField` (`laneFieldsOf`, `laneFieldOf`); a drop's patch is `laneDropPatch`                                                                                                  |
-| WIP limit          | `PlanColumn.wipLimit`                                                                                                                                                           |
-| done column        | `PlanColumn.done` (a flag); `isDoneColumn`, `doneColumnsOf`, `finishedStatuses`, `isDoneName` (`@liveplanner/items` `done-columns.ts`)                                          |
-| unplaced           | projection `unplaced`                                                                                                                                                           |
-| quick filter       | `QuickFilter` (per person, React state, never stored)                                                                                                                           |
-| face-down          | `cardIsFaceDown(item, setup, viewerId)`                                                                                                                                         |
-| board preset       | `PLAN_BOARD_PRESETS` (`@liveplanner/items` `presets.ts`), id `PlanBoardPresetId`                                                                                                |
-| suggested statuses | `SUGGESTED_STATUSES`, `suggestedStatuses(taken)`, `suggestionIndex(names, name)` (`@liveplanner/items` `suggested-statuses.ts`), a row `SuggestedStatus`                        |
+| Spec term          | Identifier                                                                                                                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Plan board         | `ShapeKind` `'plan-board'`; set-up field `ShapeElement.planBoard: PlanBoardSetup`                                                                                                                                                          |
+| Plan card          | `ShapeKind` `'plan-card'`; field `ShapeElement.planCard: { itemId: string }`                                                                                                                                                               |
+| board set-up       | `PlanBoardSetup` (`@liveplanner/items` `board.ts`)                                                                                                                                                                                         |
+| column             | `PlanColumn`                                                                                                                                                                                                                               |
+| swimlane           | `SwimlaneBy` (+ `swimlaneField` for `'field'`) + projected `lanes`, `swimlanes`                                                                                                                                                            |
+| board sort         | `PlanBoardSetup.sortBy: BoardSortLevel[]` (`{ field, dir: 'asc' \| 'desc' }`, at most `BOARD_SORT_LEVELS_MAX`); fields `boardSortFieldsOf`, order `sortCards` (`board-sort.ts`)                                                            |
+| lane field         | `LaneField` (`laneFieldsOf`, `laneFieldOf`); a drop's patch is `laneDropPatch(lane, item, from?)`; a field that holds several (`several`) puts a card in each value's lane (`lanesOfItem`, `inLane`; item-types blueprint "Holds Several") |
+| WIP limit          | `PlanColumn.wipLimit`                                                                                                                                                                                                                      |
+| done column        | `PlanColumn.done` (a flag); `isDoneColumn`, `doneColumnsOf`, `finishedStatuses`, `isDoneName` (`@liveplanner/items` `done-columns.ts`)                                                                                                     |
+| unplaced           | projection `unplaced`                                                                                                                                                                                                                      |
+| quick filter       | `QuickFilter` (per person, React state, never stored)                                                                                                                                                                                      |
+| face-down          | `cardIsFaceDown(item, setup, viewerId)`                                                                                                                                                                                                    |
+| board preset       | `PLAN_BOARD_PRESETS` (`@liveplanner/items` `presets.ts`), id `PlanBoardPresetId`                                                                                                                                                           |
+| suggested statuses | `SUGGESTED_STATUSES`, `suggestedStatuses(taken)`, `suggestionIndex(names, name)` (`@liveplanner/items` `suggested-statuses.ts`), a row `SuggestedStatus`                                                                                   |
 
 ## Element model (`packages/project`)
 
@@ -95,8 +95,8 @@ PlanColumnHeader.tsx     a column's head: colour bar, name, count, Collapse Colu
                          in a slot), and the cog (PlanColumnPopover, whose toolbar has Collapse Column too, a
                          PanelLeftClose glyph after Move Left/Right; pressing it closes the popover, then collapses)
 CollapsedColumn.tsx      Collapse Column (spec "Collapse Column"): `CollapseColumnButton` (ChevronLeft, tooltip
-                         "Collapse Column", aria-label "Collapse Column, {Name}", aria-expanded, `opacity-0` until
-                         group hover, focus-visible or `(hover: none)`); `CollapsedColumnHead` (sticky like a head:
+                         "Collapse Column", aria-label "Collapse Column, {Name}", aria-expanded, always shown at
+                         `opacity-70`, full on group hover or focus-visible); `CollapsedColumnHead` (sticky like a head:
                          colour bar over an "Expand Column" ChevronRight); `CollapsedColumnCell` (min-h-16, carrying
                          `data-plan-column`, `data-plan-strip`, `data-plan-status`, `data-plan-lane`, so
                          `dropSlotAt` reads it as a cell with no cards, `beforeId` null: the column's end; a button

@@ -21,6 +21,7 @@ import {
   type KindGroupId,
 } from './add-field-kinds';
 import { usePlan } from './PlanContext';
+import type { FormulaDraft } from './FormulaEditor';
 
 // A kind's field as it starts: the one left by going back when it is the same kind; else the name typed so far and
 // Required kept, every other setting fresh.
@@ -41,6 +42,7 @@ export function NewFieldForm({
   onAddCustom,
   onCancel,
   escapeRef,
+  formulaDraft,
 }: {
   missing: readonly ItemFieldId[];
   canAddCustom: boolean;
@@ -49,6 +51,8 @@ export function NewFieldForm({
   onCancel: () => void;
   // Set to this form's Escape: true when it took it (a step back, a search cleared), false to let the popover close.
   escapeRef?: MutableRefObject<(() => boolean) | null>;
+  // The type as drafted, for a Formula's names and preview.
+  formulaDraft?: FormulaDraft;
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
   const [query, setQuery] = useState('');
@@ -91,6 +95,7 @@ export function NewFieldForm({
           field={field}
           onChange={setField}
           types={types}
+          formulaDraft={formulaDraft}
           ready={readyBuiltIns(field.kind, missing)}
           canAddCustom={canAddCustom}
           onBack={back}

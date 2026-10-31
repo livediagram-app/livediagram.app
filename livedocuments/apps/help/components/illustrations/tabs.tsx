@@ -157,16 +157,14 @@ const FOLDER_TONES = {
   },
 } as const;
 
-/** A folder on the bar (TabFolderGroup): its chip (the name, a count badge while shut, and a
- *  chevron pointing the way it opens), then whichever of its tabs show. Shut, only the tab you
- *  are on stays beside the chip; open, every tab sits after it, in order. The shelf tint marks
- *  the group while it is open or holds the open tab. */
+/** A folder on the bar (TabFolderGroup): a shelf tinted in the folder's colour and shaped like a tab, always there,
+ *  holding its header (a folder glyph, the name and the count badge, open or shut) and then whichever of its tabs
+ *  show. Shut, only the tab you are on stays beside the header; open, every tab sits after it, in order. */
 function FolderGroup({
   x,
   y,
   name,
   count,
-  open = false,
   chipW = 80,
   tabs = [],
   tone = 'rose',
@@ -175,61 +173,46 @@ function FolderGroup({
   y: number;
   name: string;
   count: number;
-  open?: boolean;
   chipW?: number;
   tabs?: { label: string; w: number; active?: boolean }[];
   tone?: keyof typeof FOLDER_TONES;
 }) {
   const t = FOLDER_TONES[tone];
-  const w = 4 + chipW + tabs.reduce((s, tab) => s + tab.w + 2, 0) + 4;
-  const top = y - 6;
+  const w = chipW + tabs.reduce((s, tab) => s + tab.w + 2, 0) + 2;
+  const top = y - 4;
   const bottom = y + 34;
-  const r = 8;
-  const chipY = y + 4;
-  const chipH = 20;
-  const mid = chipY + chipH / 2;
-  const shelf = open || tabs.some((tab) => tab.active);
-  const tabsX = x + 4 + chipW + 4;
-  const chevX = x + 4 + chipW - 10;
+  const r = 7;
+  const mid = y + 15;
+  const tabsX = x + chipW + 2;
+  const badgeX = x + chipW - 20;
   return (
     <g>
-      {shelf && (
-        <path
-          d={`M${x} ${bottom} V${top + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom} Z`}
-          className={t.shelf}
-        />
-      )}
-      <rect x={x + 4} y={chipY} width={chipW} height={chipH} rx={6} className={t.chip} />
-      <Label x={x + 12} y={mid + 1} size={10.5} weight={650} className={t.ink}>
-        {name}
-      </Label>
-      {!open && (
-        <g>
-          <rect x={chevX - 20} y={mid - 6.5} width={14} height={13} rx={4} className={t.badge} />
-          <Label
-            x={chevX - 13}
-            y={mid + 0.5}
-            anchor="middle"
-            size={9}
-            weight={700}
-            className="fill-white dark:fill-slate-950"
-          >
-            {String(count)}
-          </Label>
-        </g>
-      )}
       <path
-        d={
-          open
-            ? `M${chevX + 2} ${mid - 3.5} l-3.5 3.5 l3.5 3.5`
-            : `M${chevX - 1} ${mid - 3.5} l3.5 3.5 l-3.5 3.5`
-        }
+        d={`M${x} ${bottom} V${top + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom} Z`}
+        className={t.shelf}
+      />
+      <path
+        d="M-8 -5 h5 l2 2 h8 a1 1 0 0 1 1 1 v7 a1 1 0 0 1 -1 1 h-14 a1 1 0 0 1 -1 -1 v-9 a1 1 0 0 1 1 -1 Z"
+        transform={`translate(${x + 14} ${mid + 0.5}) scale(0.65)`}
         fill="none"
         className={t.stroke}
-        strokeWidth={1.5}
-        strokeLinecap="round"
+        strokeWidth={2.2}
         strokeLinejoin="round"
       />
+      <Label x={x + 25} y={mid + 1} size={10.5} weight={650} className={t.ink}>
+        {name}
+      </Label>
+      <rect x={badgeX} y={mid - 7} width={14} height={14} rx={4} className={t.badge} />
+      <Label
+        x={badgeX + 7}
+        y={mid + 0.5}
+        anchor="middle"
+        size={9}
+        weight={700}
+        className="fill-white dark:fill-slate-950"
+      >
+        {String(count)}
+      </Label>
       {tabs.map((tab, i) => (
         <TabPill
           key={tab.label}
@@ -622,15 +605,15 @@ export function TabMenu() {
   );
 }
 
-/** A tab folder opening in place: shut, its chip holds a count and only the tab you are on stays
- *  beside it; a click opens its tabs after the chip on the bar, the neighbours sliding along. */
+/** A tab folder opening in place: its header always holds a count; shut, only the tab you are on stays
+ *  beside it; a click opens its tabs after the header on the bar, the neighbours sliding along. */
 export function TabFolderStates() {
   const shutY = 40;
   const openY = 128;
   return (
     <Scene w={432} h={186}>
       <Label x={14} y={shutY - 14} size={10} tone="muted">
-        Shut: the chip counts its tabs; the one you are on stays out
+        Shut: the tab you are on stays out beside the folder
       </Label>
       <TabBar y={shutY} w={432} />
       <TabPill x={8} y={shutY + 8} w={70} label="Overview" />
@@ -639,11 +622,10 @@ export function TabFolderStates() {
         y={shutY + 8}
         name="Plans"
         count={3}
-        chipW={70}
         tabs={[{ label: 'Q1 plan', w: 84, active: true }]}
       />
-      <TabPill x={250} y={shutY + 8} w={60} label="Notes" />
-      <AddTabButton x={312} y={shutY + 8} />
+      <TabPill x={252} y={shutY + 8} w={60} label="Notes" />
+      <AddTabButton x={314} y={shutY + 8} />
       <Label x={14} y={openY - 14} size={10} tone="muted">
         Open: a click lays every tab out after the chip
       </Label>
@@ -654,15 +636,13 @@ export function TabFolderStates() {
         y={openY + 8}
         name="Plans"
         count={3}
-        open
-        chipW={56}
         tabs={[
           { label: 'Q1 plan', w: 84, active: true },
-          { label: 'Q2 plan', w: 62 },
-          { label: 'Q3 plan', w: 62 },
+          { label: 'Q2 plan', w: 60 },
+          { label: 'Q3 plan', w: 60 },
         ]}
       />
-      <TabPill x={366} y={openY + 8} w={60} label="Notes" />
+      <TabPill x={370} y={openY + 8} w={58} label="Notes" />
     </Scene>
   );
 }
@@ -902,6 +882,8 @@ export function ImportWarning() {
   const cards: [string, string][] = [
     ['JSON', 'json'],
     ['Markdown', 'md'],
+    ['Word', 'docx'],
+    ['PowerPoint', 'pptx'],
   ];
   return (
     <Scene w={W} h={H}>
@@ -942,9 +924,9 @@ export function ImportWarning() {
         {cards.map(([title, badge], i) => (
           <FormatCard
             key={title}
-            x={dx + 16 + (i % 3) * 118}
-            y={dy + 100 + Math.floor(i / 3) * 40}
-            w={112}
+            x={dx + 16 + (i % 2) * 178}
+            y={dy + 100 + Math.floor(i / 2) * 40}
+            w={170}
             title={title}
             badge={badge}
           />

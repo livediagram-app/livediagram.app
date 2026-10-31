@@ -363,8 +363,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   the column header says so; it never refuses a card.
 - **Column width**: a column is one slot wide, or two or three (its cog's **Width**); the slots share the board's
   width, so a wide column suits a busy stage.
-- **Collapse Column**: a column's head offers **Collapse Column** (a chevron at its right, with that tooltip, shown on
-  hover and focus and always on a touch screen), and for someone who may edit, its cog's toolbar too. Collapsed, the
+- **Collapse Column**: a column's head offers **Collapse Column** (a chevron at its right, with that tooltip, always shown,
+  a little quieter at rest and full strength on hover and focus), and for someone who may edit, its cog's toolbar too. Collapsed, the
   column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** chevron at the
   top, then its count and its name written top to bottom, the whole strip pressable to expand it. On a board with
   swimlanes, each open swimlane's part of the strip shows that row's count and the name. The other columns take
@@ -429,6 +429,8 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
   linked card, named by its title with the linked card's colour dot when it has a Colour, in the linked cards' number
   order ("Missing card" for a link whose card is gone), then
   **No {Field}**; a drop into a row sets the link (item-types.md "Card fields").
+  A Person or Card field that [holds several](item-types.md#holds-several) puts a card in **each** of its values'
+  rows.
 - **Its name** is the field's label on the first type in the catalogue that offers it (a custom field id is
   unique within a type; two types sharing an id read as one field).
 - **Rows and their order**, each named by its value, then a **No _field_** row last (where every card without a
@@ -443,6 +445,11 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
   - **Labels** (and a Labels field): a card sits in the row of its **first** label; rows A to Z.
   - **Person**: a row per person, named and drawn as the Assignee's rows are (a disc and the name), most cards
     first, then **No _field_**; a drop into a person's row sets the field to them.
+  - **A field that holds several** (Person or Card, item-types.md "Holds Several"): a card sits in the row of
+    **each** value it holds, and in **No _field_** only when it holds none. Dragging it from one value's row into
+    another's swaps the value it left for the row's (keeping its others; if it already holds the row's value, the
+    one it left just goes); into **No _field_** clears the field; from **No _field_** into a row sets a list of
+    that one value.
 - **Dropping a card into a row** sets the field to that row's value, as Sam's row assigns to Sam: a Choice to the
   option, a box ticked (Yes) or cleared (No), a number, a date, the text. Into a **Labels** row it puts that label
   first, adding it if the card did not have it (its other labels are kept). Into **No _field_** it clears the
@@ -563,15 +570,28 @@ In Plan mode:
     sit under 13 px semibold headings with generous space between them. An empty description is one quiet
     line, "Add a description…" with a pencil, not a dashed box. **Details** is a soft rounded panel inset in the
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
-    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Last edited by close it, small and
-    quiet under a hairline: "Created by (disc) Sam, 3 Oct 2026" and "Last edited by (disc) Alex, 2h ago" ([Created and
-    Last Edited](items.md#created-and-last-edited)), each line left out when the card holds no one for it. On a phone the layout is unchanged: one column, Details the first tab.
+    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Who made the card and who last edited it close it as a quiet **footer** pinned to the
+    bottom of the Details panel (however few its rows), under a hairline: two tidy rows, each the person's disc (20 px),
+    "Created by **Sam**" or "Edited by **Alex**", and, at the row's end, when ("3 Oct", "2h ago"; the exact date and time
+    in a tooltip) ([Created and Last Edited](items.md#created-and-last-edited)); a form's response reads "Form
+    response **#12**" with its date. Each row is left out when the card holds no one for it. They are never fields
+    in the middle of the panel: a card type does not place them in its tabs or Details (they are card-face fields
+    only), so the footer is the panel's one place for them. On a phone the layout is one column, the footer ending
+    the Details tab.
+  - **Tabs**: the type's own tabs, then **Activity**, on every card type ([History](items.md#history) "Where it shows").
+    On a phone, the panel's side column becomes a tab too, **Details** (the type's Details name), and it is the
+    **last** tab, at the far right after Activity. A card always opens on the type's **first** tab (Overview), on a
+    phone as on a desktop. The tab bar scrolls sideways when its tabs do not fit; arrow keys move between the tabs.
   - **Maximised**: on a desktop the header holds a **Maximise Card** button (the maximise glyph a board's own
     Maximise uses) just left of the close button, after the ⋯ menu. Pressed, the panel grows to fill the window
     less a 1 rem margin on every side (corners kept rounded, the dimmed editor showing as a thin frame, so it
     still reads as the card over the plan: Escape, the close button and a press on that frame close it as
     before), and the button becomes **Minimise Card** (the minimise glyph, pressed), which puts it back to its
-    usual size. The size eases between the two (200 ms; at once with reduced motion). Maximised, the room is used
+    usual size. The change between the two sizes is animated (`short`, 200 ms, eased): the panel is laid out once at
+    its new size and the browser morphs its old picture into the new one, cross-fading them without stretching (a
+    React View Transition typed `item-panel-resize` on the shared Dialog's panel: only the compositor works each
+    frame, nothing is laid out again mid-way), wherever the panel opens (a board, a sheet row, a dashboard, the card
+    finder). With reduced motion, or a browser without View Transitions, it changes at once. Maximised, the room is used
     rather than stretched: the main column keeps a reading width (at most 52 rem, centred in the space beside
     Details, with wider side padding), the title grows to 26 px, and **Details** widens to 24 rem (28 rem on
     a window 1536 px or wider) with an 8 rem label column, so its controls are roomier; the tabs, fields and
@@ -905,7 +925,7 @@ column in board order, each column's cards in their order on it. A file named fo
   **Description** (its plain text).
 - Then the custom fields of the board's card types by their label, in catalogue order (a label two types share is one
   column): a Card field (Parent among them) as the linked card's title, a checkbox as "Yes" or empty, the rest as
-  written. A field a card's type does not offer is empty on its row.
+  written; a Person or Card field that holds several as its names or titles joined by ", ". A field a card's type does not offer is empty on its row.
 
 **Import CSV…** (an Editor or a Participant, who may add cards; dimmed for a Viewer, and on an Archive board) opens a
 file picker (`.csv`, `.tsv`). The first row names the columns, matched case-insensitively by the names the Sheet's
@@ -927,7 +947,8 @@ to import. Import CSV reads files up to 5 MB." Each row after it becomes a new c
   two-digit year in this century); a date that is not a real day is left empty.
 - **Labels**: split at commas and semicolons, as many as a card holds. **Description**: plain text, cut to its limit.
 - Custom fields of the row's type by label: a number as a number, a checkbox from Yes/True/1/X, a choice only as one
-  of its options; a Card field is not imported.
+  of its options; a Person field by name (a field that holds several takes a comma list of names); a Card field is
+  not imported.
 - A field the row's type does not offer is ignored, as is a value that does not fit its field.
 
 The rows go in as **one write and one undo step**, each card at the end of its column in file order. At most as many

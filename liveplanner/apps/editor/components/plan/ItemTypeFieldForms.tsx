@@ -15,6 +15,10 @@ import {
   RATING_FIELD_SCALE_MIN,
   type Calculation,
   canBeRequired,
+  isFormulaField,
+  isLookupField,
+  isRollupField,
+  canShowAsPercent,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
@@ -25,6 +29,8 @@ import { Select, SwitchRow, TextArea, TextInput } from '@liveplanner/ui';
 import { hasOptions, type PickKind } from './add-field-kinds';
 import { optionsFrom } from './ChoiceOptionsEditor';
 import { LinksToPicker } from './LinksToPicker';
+import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
+import { RollupEditor } from './RollupEditor';
 import { track } from '@/lib/telemetry';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
@@ -52,6 +58,7 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   longtext: 'Long Text',
   number: 'Number',
   currency: 'Currency',
+  percent: 'Percent',
   date: 'Date',
   checkbox: 'Checkbox',
   link: 'Link',
@@ -145,6 +152,45 @@ export function RatingScaleSelect({
   );
 }
 
+// What each calculation works out from, under the menu.
+const CALCULATION_LINES: Record<Calculation, string> = {
+  childCount:
+    'Worked out from the cards that link here with a Link to Card field. It can\u2019t be typed.',
+  childrenDone:
+    'Worked out from the cards that link here with a Link to Card field. Done means in a done column. It can\u2019t be typed.',
+  rollup:
+    'Worked out from one field of the cards that link here, totalled, averaged, counted or dated. It can\u2019t be typed.',
+  lookup: 'Shows a field of the card a Link to Card field links to. It can\u2019t be typed.',
+  formula: 'Worked out from this card\u2019s own fields by a formula. It can\u2019t be typed.',
+};
+
+// The patch picking a calculation makes: a Formula's settings go with any other (item-types.md "Formula fields").
+export function calculationPatch(calculation: Calculation): Partial<CustomFieldDef> {
+  // A new Formula gives a Number until its Result is picked, so it shows no share yet.
+  const settingsOff = { through: undefined, aggregate: undefined, source: undefined };
+  if (calculation === 'formula') {
+    track('Plan', 'Changed', 'FieldFormula');
+    return {
+      calculation,
+      showAs: undefined,
+      result: undefined,
+      currency: undefined,
+      ...settingsOff,
+    };
+  }
+  const off = {
+    calculation,
+    formula: undefined,
+    result: undefined,
+    currency: undefined,
+    ...settingsOff,
+  };
+  // A Child Count is no share, so it stops showing as a Percent.
+  return canShowAsPercent({ kind: 'calculated', calculation })
+    ? off
+    : { ...off, showAs: undefined };
+}
+
 // A Calculated field's calculation (docs/specs/026-plan/item-types.md "Calculated fields"): the fixed menu, with what
 // it works out from under it.
 export function CalculationSelect({
@@ -154,10 +200,12 @@ export function CalculationSelect({
   value: Calculation | undefined;
   onChange: (calculation: Calculation) => void;
 }) {
+  const lineId = useId();
   return (
     <div className="flex flex-col gap-1">
       <Select
         aria-label="Calculation"
+        aria-describedby={lineId}
         className="w-full"
         selectClassName="text-[13px]"
         value={value ?? CALCULATIONS[0]}
@@ -169,9 +217,8 @@ export function CalculationSelect({
           </option>
         ))}
       </Select>
-      <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        Worked out from the cards that link here with a Link to Card field. Done means in a done
-        column. It can&rsquo;t be typed.
+      <p id={lineId} className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {CALCULATION_LINES[value ?? CALCULATIONS[0]]}
       </p>
     </div>
   );
@@ -196,6 +243,41 @@ export function RequiredSwitch({
     >
       Required
     </SwitchRow>
+  );
+}
+
+// Show as Percent Bar (docs/specs/026-plan/item-types.md "Percent"): a switch on a worked-out share (a Children Done),
+// with its line under it; none for a field whose result is no share. Off is stored as absent.
+export const SHOW_AS_PERCENT_LINE = 'Draw the share as a bar, like a Percent field.';
+export function ShowAsPercentSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'> &
+    Partial<Pick<CustomFieldDef, 'result'>>;
+  onChange: (showAs: 'percent' | undefined) => void;
+}) {
+  const lineId = useId();
+  if (!canShowAsPercent(field)) return null;
+  const on = field.showAs === 'percent';
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={on}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldShowAsPercent');
+          onChange(on ? undefined : 'percent');
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Show as Percent Bar
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {SHOW_AS_PERCENT_LINE}
+      </p>
+    </div>
   );
 }
 
@@ -236,15 +318,57 @@ export function NotifiesSwitch({
   );
 }
 
+// Holds Several (docs/specs/026-plan/item-types.md "Holds Several"): what the switch on a Person or Card field says.
+export const HOLDS_SEVERAL_LINES: Partial<Record<CustomFieldDef['kind'], string>> = {
+  person: 'Hold more than one person, such as reviewers or a pair.',
+  card: 'Link more than one card, such as related work.',
+};
+
+// A Person or Card field's Holds Several switch, as Notifies', with its line under it; none for any other kind. Off is
+// stored as absent, and turning it either way leaves every card's value as it is.
+export function HoldsSeveralSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'multiple'>;
+  onChange: (multiple: boolean | undefined) => void;
+}) {
+  const lineId = useId();
+  const line = HOLDS_SEVERAL_LINES[field.kind];
+  if (!line) return null;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={field.multiple === true}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldHoldsSeveral');
+          onChange(field.multiple ? undefined : true);
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Holds Several
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {line}
+      </p>
+    </div>
+  );
+}
+
 // A custom field's name, options (Choice), the types it links to (Card) and its calculation (Calculated); where it
 // shows on a card is the Display tab's.
 export function CustomFieldForm({
   field,
   onChange,
+  formulaDraft,
   className = '',
 }: {
-  field: Omit<CustomFieldDef, 'id'>;
+  field: Omit<CustomFieldDef, 'id'> & Partial<Pick<CustomFieldDef, 'id'>>;
   onChange: (patch: Partial<CustomFieldDef>) => void;
+  // The type as drafted, for a Formula's names and preview (item-types.md "Formula fields").
+  formulaDraft?: FormulaDraft;
   className?: string;
 }) {
   const [optionsText, setOptionsText] = useState((field.options ?? []).join('\n'));
@@ -276,9 +400,27 @@ export function CustomFieldForm({
       {field.kind === 'calculated' ? (
         <CalculationSelect
           value={field.calculation}
-          onChange={(calculation) => onChange({ calculation })}
+          onChange={(calculation) => onChange(calculationPatch(calculation))}
         />
       ) : null}
+      {isFormulaField(field) && formulaDraft ? (
+        <FormulaEditor
+          field={field}
+          draft={formulaDraft}
+          keepLastWorking
+          onChange={onChange}
+          currencySelect={
+            <CurrencySelect
+              value={field.currency}
+              onChange={(currency) => onChange({ currency })}
+            />
+          }
+        />
+      ) : null}
+      {(isRollupField(field) || isLookupField(field)) && formulaDraft ? (
+        <RollupEditor field={field} draft={formulaDraft} onChange={onChange} />
+      ) : null}
+      <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
       {hasOptions(field.kind) ? (
         <TextArea
           aria-label="Options, one a line"
@@ -292,6 +434,7 @@ export function CustomFieldForm({
           }}
         />
       ) : null}
+      <HoldsSeveralSwitch field={field} onChange={(multiple) => onChange({ multiple })} />
       <RequiredSwitch field={field} onChange={(required) => onChange({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => onChange({ notifies })} />
       {/* Where it shows on a card is the Display tab's: drag it onto the card there. */}

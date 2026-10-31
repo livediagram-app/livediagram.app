@@ -2,10 +2,14 @@
 // fields, then by rank. Pure: the board's projection runs it, the menu lists what it can sort by, and the agents'
 // listing orders a column's cards the same way.
 import type { Item } from './item';
-import type { CustomFieldKind, ItemTypeDef } from './item-types';
+import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
+import { calculatedResultOf, hasResult } from './calculated-result';
+import { calculatedReaderOf, type CalculatedRead, type IsDoneStatus } from './calculated-fields';
+import type { FormulaResult } from './formula/limits';
 import { PRIORITIES } from './fields';
 import { CUSTOM_FIELD_ID_PATTERN, customFieldOf } from './type-catalogue';
 import { isObj } from './validate';
+import { percentValue } from './percent-fields';
 import { statusKey } from './status-names';
 import { STAMP_FIELD_LABELS, isStampField, itemStampTime } from './card-stamps';
 
@@ -37,12 +41,26 @@ type BuiltInSortField = (typeof BOARD_SORT_BUILT_INS)[number];
 export const BOARD_SORT_KINDS: readonly CustomFieldKind[] = [
   'number',
   'currency',
+  // A share, lowest first as a Number (docs/specs/026-plan/item-types.md "Percent").
+  'percent',
   'date',
   'rating',
   'choice',
 ];
 
-export type BoardSortKind = 'priority' | 'number' | 'currency' | 'date' | 'rating' | 'choice';
+export type BoardSortKind =
+  'priority' | 'number' | 'currency' | 'percent' | 'date' | 'rating' | 'choice';
+
+// A Formula, Rollup or Lookup sorts as its result reads (docs/specs/026-plan/item-types.md "Formula fields", "Rollup
+// and Lookup fields"): these results only.
+const FORMULA_SORT_KINDS: Partial<Record<FormulaResult, BoardSortKind>> = {
+  number: 'number',
+  percent: 'number',
+  currency: 'currency',
+  date: 'date',
+};
+const formulaSortKind = (c: CustomFieldDef): BoardSortKind | undefined =>
+  hasResult(c) ? FORMULA_SORT_KINDS[calculatedResultOf(c)!] : undefined;
 
 export interface BoardSortField {
   id: string;
@@ -71,9 +89,12 @@ export function boardSortFieldsOf(types: readonly ItemTypeDef[]): BoardSortField
   ).map((f) => BUILT_IN_SORT_FIELDS[f]);
   for (const t of types)
     for (const c of t.custom ?? []) {
-      if (!BOARD_SORT_KINDS.includes(c.kind) || !t.fields.includes(c.id)) continue;
+      const kind = BOARD_SORT_KINDS.includes(c.kind)
+        ? (c.kind as BoardSortKind)
+        : formulaSortKind(c);
+      if (!kind || !t.fields.includes(c.id)) continue;
       if (out.some((f) => f.id === c.id)) continue;
-      out.push({ id: c.id, label: c.label, kind: c.kind as BoardSortKind });
+      out.push({ id: c.id, label: c.label, kind });
     }
   return out;
 }
@@ -89,6 +110,8 @@ export function boardSortFieldOf(
     const c = customFieldOf(t, id);
     if (c && BOARD_SORT_KINDS.includes(c.kind))
       return { id: c.id, label: c.label, kind: c.kind as BoardSortKind };
+    const worked = c && formulaSortKind(c);
+    if (c && worked) return { id: c.id, label: c.label, kind: worked };
   }
   return undefined;
 }
@@ -133,7 +156,11 @@ const none: KeyReader = () => undefined;
 
 // How a card of `type` reads `field`: no value when its type does not have the field, or has it as a kind no board
 // sorts by.
-function readerFor(field: string, type: ItemTypeDef | undefined): KeyReader {
+function readerFor(
+  field: string,
+  type: ItemTypeDef | undefined,
+  calculated: CalculatedRead,
+): KeyReader {
   // The stamps, by the moment itself, on any card (an unknown type's too).
   if (field === 'createdAt' || field === 'updatedAt') return (item) => itemStampTime(item, field);
   if (!type || !type.fields.includes(field)) return none;
@@ -149,7 +176,15 @@ function readerFor(field: string, type: ItemTypeDef | undefined): KeyReader {
   if (!def) return none;
   if (def.kind === 'number' || def.kind === 'currency' || def.kind === 'rating')
     return (item) => num(item.fields[field]);
+  // Held to 0..100 as every reader draws it, so a stray value sorts where its bar shows.
+  if (def.kind === 'percent') return (item) => percentValue(item.fields[field]);
   if (def.kind === 'date') return (item) => day(item.fields[field]);
+  // A Formula, Rollup or Lookup by its worked-out value: a day as a day, every other sortable result as a number.
+  const formulaKind = formulaSortKind(def);
+  if (formulaKind) {
+    const read = formulaKind === 'date' ? day : num;
+    return (item) => read(calculated(def, item));
+  }
   if (def.kind === 'choice') {
     const options = def.options ?? [];
     return (item) => {
@@ -161,7 +196,11 @@ function readerFor(field: string, type: ItemTypeDef | undefined): KeyReader {
 }
 
 // A level's reader, resolved once per card type.
-function levelReader(field: string, types: readonly ItemTypeDef[]): KeyReader {
+function levelReader(
+  field: string,
+  types: readonly ItemTypeDef[],
+  calculated: CalculatedRead,
+): KeyReader {
   const byType = new Map<string, KeyReader>();
   return (item) => {
     let read = byType.get(item.type);
@@ -169,6 +208,7 @@ function levelReader(field: string, types: readonly ItemTypeDef[]): KeyReader {
       read = readerFor(
         field,
         types.find((t) => t.id === item.type),
+        calculated,
       );
       byType.set(item.type, read);
     }
@@ -184,12 +224,17 @@ function compareKeys(a: SortKey, b: SortKey, dir: BoardSortDir): number {
   return dir === 'asc' ? c : -c;
 }
 
-// A comparator for cards under `sortBy`: each card's keys read once, rank (the order given) breaking ties.
+// A comparator for cards under `sortBy`: each card's keys read once, rank (the order given) breaking ties. `items`
+// are the plan's cards a Formula, Rollup or Lookup reads (none without them), `isDone` the boards' done rule.
 export function boardSortComparator(
   sortBy: readonly BoardSortLevel[],
   types: readonly ItemTypeDef[],
+  items?: ReadonlyMap<string, Item>,
+  isDone?: IsDoneStatus,
 ): (a: Item, b: Item) => number {
-  const readers = sortBy.map((l) => levelReader(l.field, types));
+  // Without the cards a Formula still reads the card's own fields; a Rollup or Lookup reads none.
+  const calculated = calculatedReaderOf(items ?? new Map(), types, isDone);
+  const readers = sortBy.map((l) => levelReader(l.field, types, calculated));
   const keys = new Map<string, SortKey[]>();
   const keysOf = (item: Item) => {
     let k = keys.get(item.id);
@@ -215,9 +260,11 @@ export function sortCards<T extends Item>(
   items: readonly T[],
   sortBy: readonly BoardSortLevel[] | undefined,
   types: readonly ItemTypeDef[],
+  all?: ReadonlyMap<string, Item>,
+  isDone?: IsDoneStatus,
 ): T[] {
   if (!sortBy?.length) return [...items];
-  return [...items].sort(boardSortComparator(sortBy, types));
+  return [...items].sort(boardSortComparator(sortBy, types, all, isDone));
 }
 
 // Sort levels an agent names (docs/specs/026-plan/plan-agents.md "Changing a board"): each field by its name or id

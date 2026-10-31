@@ -464,9 +464,9 @@ export const articles: Article[] = [
     slug: 'exporting-documents',
     title: 'Exporting Documents',
     description:
-      'Take your pages with you as a PDF, images, a GIF or a portable file, or embed a live view.',
+      'Take your pages with you as a PDF, images, a GIF, PowerPoint, Word or a portable file, or embed a live view.',
     keywords:
-      'export download png svg pdf gif animated image save picture screenshot json embed backup',
+      'export download png svg pdf gif animated image save picture screenshot json embed backup powerpoint pptx word docx',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -1207,9 +1207,10 @@ export const articles: Article[] = [
   {
     slug: 'exporting-pages',
     title: 'Exporting and Presenting Pages',
-    description: 'Every page or one page as a PDF, images or an animated GIF, and pages as slides.',
+    description:
+      'Every page or one page as a PDF, images or an animated GIF, a deck as PowerPoint, an article as Word, and pages as slides.',
     keywords:
-      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
+      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages powerpoint pptx keynote google slides word docx google docs editable speaker notes',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1311,8 +1312,9 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      "Export a tab's pages as PDF, PNG, SVG or GIF, or as JSON; a selection also exports as Markdown.",
-    keywords: 'export download save png svg pdf gif animated json markdown image picture pages',
+      "Export a tab's pages as PDF, PNG, SVG, GIF, PowerPoint or Word, or as JSON; a selection also as Markdown.",
+    keywords:
+      'export download save png svg pdf gif animated json markdown image picture pages powerpoint pptx word docx',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

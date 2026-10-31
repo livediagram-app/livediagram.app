@@ -61,15 +61,16 @@ const shown = (c: HTMLElement) =>
   Array.from(c.querySelectorAll('[data-tab-folder] > [data-collapse-width="open"]')).map(
     (el) => el.textContent,
   );
-const count = () => chip().querySelector('[data-collapse-width]') as HTMLElement;
+const count = () => chip().querySelector('[data-folder-count]') as HTMLElement;
 
 describe('TabFolderGroup', () => {
   it('names the chip with its count, collapsed, and tucks every tab away', () => {
     const { container } = render(<TabFolderGroup {...props()} />);
     expect(chip().getAttribute('aria-expanded')).toBe('false');
     expect(chip().getAttribute('aria-label')).toBe('Planning, 3 tabs');
-    expect(count().dataset.collapseWidth).toBe('open');
     expect(count().textContent).toBe('3');
+    // No chevron: the chip is a folder glyph, the name and the count.
+    expect(chip().querySelectorAll('svg')).toHaveLength(1);
     expect(shown(container)).toEqual([]);
     expect(container.querySelectorAll('[data-tab-folder] > [inert]')).toHaveLength(3);
     // No popover, ever.
@@ -81,26 +82,42 @@ describe('TabFolderGroup', () => {
     expect(chip().getAttribute('aria-label')).toBe('Planning, 1 tab');
   });
 
-  it('opens its tabs inline after the chip, in order, without a count', () => {
+  it('opens its tabs inline after the chip, in order, keeping its count', () => {
     const { container } = render(<TabFolderGroup {...props({ expanded: true })} />);
     expect(chip().getAttribute('aria-expanded')).toBe('true');
     expect(shown(container)).toEqual(['Roadmap', 'Q1 Goals', 'Q2 Goals']);
-    expect(count().dataset.collapseWidth).toBe('shut');
+    expect(count().textContent).toBe('3');
     expect(container.querySelector('[data-tab-folder]')?.hasAttribute('data-expanded')).toBe(true);
   });
 
   it('keeps the open tab beside the chip while collapsed, on the shelf', () => {
     const { container } = render(<TabFolderGroup {...props({ activeId: 'b' })} />);
     expect(shown(container)).toEqual(['Q1 Goals']);
-    const group = container.querySelector('[data-tab-folder]') as HTMLElement;
-    expect(group.className).toMatch(/before:opacity-100/);
   });
 
-  it('shows no shelf on a collapsed folder that does not hold the open tab', () => {
-    const { container } = render(<TabFolderGroup {...props()} />);
-    expect((container.querySelector('[data-tab-folder]') as HTMLElement).className).toMatch(
-      /before:opacity-0/,
+  it('stands on its shelf open or shut, holding the open tab or not', () => {
+    for (const over of [{}, { activeId: 'b' }, { expanded: true }]) {
+      const { container, unmount } = render(<TabFolderGroup {...props(over)} />);
+      const group = container.querySelector('[data-tab-folder]') as HTMLElement;
+      expect(group.className).toMatch(/before:bg-/);
+      expect(group.className).not.toMatch(/before:opacity-0/);
+      unmount();
+    }
+  });
+
+  it('says what a click and a double-click do in its hover card', () => {
+    const { rerender } = render(<TabFolderGroup {...props()} />);
+    fireEvent.pointerEnter(chip());
+    fireEvent.mouseEnter(chip());
+    fireEvent.focus(chip());
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(document.body.textContent).toMatch(
+      /3 tabs\. Click to show them here, double-click to rename\./,
     );
+    rerender(<TabFolderGroup {...props({ expanded: true, readOnly: true })} />);
+    expect(document.body.textContent).toMatch(/3 tabs\. Click to tuck them away\./);
   });
 
   it('colours itself from its name', () => {
@@ -140,6 +157,29 @@ describe('TabFolderGroup', () => {
       vi.advanceTimersByTime(1000);
     });
     expect(onOpened).toHaveBeenCalledOnce();
+  });
+
+  it('asks the strip to show the open tab once it has shut', () => {
+    const onClosed = vi.fn();
+    const { rerender } = render(<TabFolderGroup {...props({ expanded: true, onClosed })} />);
+    // Mounting open is no closing.
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(onClosed).not.toHaveBeenCalled();
+    rerender(<TabFolderGroup {...props({ expanded: false, onClosed })} />);
+    expect(onClosed).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(COLLAPSE_WIDTH_MS + 20);
+    });
+    expect(onClosed).toHaveBeenCalledOnce();
+    // Opening again does not, and neither callback is needed.
+    rerender(<TabFolderGroup {...props({ expanded: true, onClosed })} />);
+    rerender(<TabFolderGroup {...props({ expanded: false })} />);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(onClosed).toHaveBeenCalledOnce();
   });
 
   it('joins a tab dropped on the chip at the folder’s head', () => {

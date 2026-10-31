@@ -52,6 +52,9 @@ export type EditorDragDeps = {
   // of selecting / dragging. `setFormatSourceId` arms the source.
   formatToolActive: boolean;
   setFormatSourceId: (id: string | null) => void;
+  // Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect"): a press on an element selects it to inspect
+  // and never starts a move, resize, connector or arrow drag, for an Editor too.
+  inspectToolActive?: boolean;
   // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): armed source + the action.
   connectSourceId: string | null;
   connectArrowTo: (targetId: string) => void;

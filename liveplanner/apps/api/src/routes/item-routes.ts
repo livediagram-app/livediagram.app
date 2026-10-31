@@ -28,6 +28,7 @@ import {
   doneStatusesOf,
   childIndexOf,
   calculatedValuesOf,
+  type CalculatedValue,
   withDefaultStatuses,
   makeItem,
   newItemId,
@@ -157,7 +158,7 @@ async function calculatedFor(
   ctx: PlanRouteContext,
   caller: ItemCaller,
   items: Item[],
-): Promise<Record<string, Record<string, number | null>> | null> {
+): Promise<Record<string, Record<string, CalculatedValue>> | null> {
   const types = typesOf(caller.doc?.itemTypes);
   if (!hasCalculatedFields(types)) return null;
   const scopedTab = caller.scope ? ctx.url.searchParams.get('tabId') : null;
@@ -167,9 +168,12 @@ async function calculatedFor(
   );
   const isDone = doneStatusesOf(boards);
   const index = childIndexOf(items, types);
-  const out: Record<string, Record<string, number | null>> = {};
+  const out: Record<string, Record<string, CalculatedValue>> = {};
+  // The cards by id, for a Formula's Card fields ("#12 Title"; docs/specs/026-plan/item-types.md "Formula fields") and
+  // a Lookup's linked card ("Rollup and Lookup fields").
+  const byId = new Map(items.map((i) => [i.id, i]));
   for (const it of items) {
-    const values = calculatedValuesOf(it, typeIn(types, it.type), index, isDone);
+    const values = calculatedValuesOf(it, typeIn(types, it.type), index, isDone, byId, types);
     if (values) out[it.id] = values;
   }
   return out;

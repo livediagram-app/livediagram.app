@@ -17,15 +17,23 @@ describe('resolveEditorCapabilities', () => {
     expect(can.remove(shape()) && can.move(shape()) && can.recolour(shape())).toBe(true);
   });
 
-  // Locks the role in as capabilities are added: every flag and every per-element check is false for a Viewer.
+  // Locks the role in as capabilities are added: every flag and every per-element check is false for a Viewer,
+  // but reading a wireframe with Inspect, which changes nothing.
   it('gives a Viewer nothing at all, whatever the element', () => {
     const can = resolveEditorCapabilities({ level: 'view', adderKey: ME });
     const els = [sticky(), sticky({ addedBy: ME }), shape(), shape({ shape: 'circle' })];
     for (const [key, value] of Object.entries(can)) {
-      if (key === 'level') continue;
+      if (key === 'level' || key === 'inspect') continue;
       if (typeof value === 'function') {
         for (const el of els) expect(value(el), key).toBe(false);
       } else expect(value, key).toBe(false);
+    }
+  });
+
+  // docs/specs/007-editor/wireframe-pages.md "Share roles": Inspect is every role's.
+  it('lets every role inspect', () => {
+    for (const level of ['edit', 'participate', 'view'] as const) {
+      expect(resolveEditorCapabilities({ level, adderKey: ME }).inspect, level).toBe(true);
     }
   });
 

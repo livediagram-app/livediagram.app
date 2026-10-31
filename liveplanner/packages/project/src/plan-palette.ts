@@ -160,3 +160,14 @@ export function liftAccent(color: string): string {
 export function accentOn(color: string, palette: Pick<PlanPalette, 'card'>): string {
   return isLightColor(palette.card) ? color : liftAccent(color);
 }
+
+// A Percent field's bar on a card face (docs/specs/026-plan/item-types.md "Percent"): its size, its fill (the board's
+// accent, lifted on a dark card) and its track (the muted ink, quiet on the chip's column ground). One answer for the
+// canvas's chip and the export's, so both draw the same bar.
+export const PLAN_PERCENT_BAR = { width: 32, height: 4 } as const;
+export function planPercentInks(palette: PlanPalette): { fill: string; track: string } {
+  return {
+    fill: accentOn(palette.focus, palette),
+    track: mixHex(palette.muted, palette.column, 0.3),
+  };
+}

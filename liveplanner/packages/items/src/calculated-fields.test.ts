@@ -248,7 +248,7 @@ describe('the catalogue', () => {
     expect(refused({ name: 'P', kind: 'calculated' })).toMatchObject({
       ok: false,
       message:
-        'The calculated field "P" needs a calculation: childCount (Child Count) or childrenDone (Children Done (%)).',
+        'The calculated field "P" needs a calculation: childCount (Child Count), childrenDone (Children Done (%)), rollup (Rollup), lookup (Lookup) or formula (Formula).',
     });
     expect(refused({ name: 'P', kind: 'text', calculation: 'childCount' })).toMatchObject({
       ok: false,

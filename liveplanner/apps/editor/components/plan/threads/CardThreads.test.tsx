@@ -78,7 +78,7 @@ describe('starting a thread', () => {
     // The new thread, open, its reply composer ready.
     expect(screen.getByText('Sam: started')).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Reply to “Sam: started”' })).toBeTruthy();
-    expect(screen.getByText('1 open')).toBeTruthy();
+    expect(screen.getByText('1 Open')).toBeTruthy();
   });
 
   it('cancels with Escape or Cancel', () => {
@@ -108,7 +108,7 @@ describe('the list', () => {
 
   it('puts open threads first, every one closed, and resolved ones under a closed disclosure', () => {
     renderLive(THREADS);
-    expect(screen.getByText('2 open · 1 resolved')).toBeTruthy();
+    expect(screen.getByText('2 Open')).toBeTruthy();
     const open = screen
       .getByRole('list', { name: 'Open threads' })
       .querySelectorAll('[data-thread]');
@@ -271,6 +271,59 @@ describe('replying and comments', () => {
     renderLive([mine], { isEditor: true });
     openThread('Title of th-a');
     expect(screen.getAllByRole('button', { name: 'Delete comment' })).toHaveLength(2);
+  });
+
+  it('posts the typed reply, then resolves, from Comment and Resolve', async () => {
+    const live = renderLive();
+    openThread('Title of th-a');
+    const field = screen.getByRole('textbox', { name: 'Reply to “Title of th-a”' });
+    expect(screen.queryByRole('button', { name: 'Comment and Resolve' })).toBeNull();
+    fireEvent.change(field, { target: { value: '  Fixed in 2.1  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Comment and Resolve' }));
+    await flush();
+    expect(live.acts).toEqual([
+      { kind: 'reply', threadId: 'th-a', text: 'Fixed in 2.1' },
+      { kind: 'resolve', threadId: 'th-a', resolved: true },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: 'Resolved · 1' }));
+    expect(screen.getByRole('list', { name: 'Resolved threads' })).toBeTruthy();
+  });
+
+  it('a blank box still only resolves', async () => {
+    const live = renderLive();
+    openThread('Title of th-a');
+    fireEvent.change(screen.getByRole('textbox', { name: 'Reply to “Title of th-a”' }), {
+      target: { value: '   ' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Resolve' }));
+    await flush();
+    expect(live.acts).toEqual([{ kind: 'resolve', threadId: 'th-a', resolved: true }]);
+  });
+
+  it('does not resolve, and keeps the draft, when the reply is refused', async () => {
+    const live = renderLive([thread('th-a')], {}, { refuse: true });
+    openThread('Title of th-a');
+    const field = screen.getByRole('textbox', { name: 'Reply to “Title of th-a”' });
+    fireEvent.change(field, { target: { value: 'Keep me' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Comment and Resolve' }));
+    await flush();
+    expect(live.acts).toEqual([{ kind: 'reply', threadId: 'th-a', text: 'Keep me' }]);
+    expect((field as HTMLTextAreaElement).value).toBe('Keep me');
+    expect(screen.getByRole('list', { name: 'Open threads' })).toBeTruthy();
+  });
+
+  it('offers a Participant, who may reply and so resolve, the combined action; a Viewer neither', () => {
+    renderLive([thread('th-a')], { isEditor: false, canComment: true });
+    openThread('Title of th-a');
+    fireEvent.change(screen.getByRole('textbox', { name: 'Reply to “Title of th-a”' }), {
+      target: { value: 'Hi' },
+    });
+    expect(screen.getByRole('button', { name: 'Comment and Resolve' })).toBeTruthy();
+    cleanup();
+    renderLive([thread('th-a')], { isEditor: false, canComment: false });
+    openThread('Title of th-a');
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Resolve/ })).toBeNull();
   });
 
   it('gives a Viewer no composer, no Resolve and no menu', () => {

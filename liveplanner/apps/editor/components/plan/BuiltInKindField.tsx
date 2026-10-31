@@ -17,6 +17,7 @@ export function BuiltInKindField({
   kind,
   value,
   onSave,
+  multiple = false,
 }: {
   id: string;
   // The field's name.
@@ -24,6 +25,8 @@ export function BuiltInKindField({
   kind: CustomFieldKind;
   value: ItemFieldValue | undefined;
   onSave: (value: ItemFieldValue | undefined) => void;
+  // A Person field that holds several (item-types.md "Holds Several").
+  multiple?: boolean;
 }) {
   const plan = usePlan();
   switch (builtInFieldOfKind(kind)) {
@@ -36,6 +39,7 @@ export function BuiltInKindField({
           disabled={false}
           onSave={onSave}
           label={label}
+          multiple={multiple}
         />
       );
     case 'labels':

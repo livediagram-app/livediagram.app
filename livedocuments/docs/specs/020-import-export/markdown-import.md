@@ -26,8 +26,12 @@ brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine poin
 
 - **JSON**: a `.json` tab export, restored exactly.
 - **Markdown**: a `.md` document, written into an article as above.
+- **Word** and **PowerPoint**: a `.docx` as an article, a `.pptx` as slide pages
+  ([Word and PowerPoint import](office-import.md)). They are files, not text, so each opens a
+  **file panel** (`FileImportPanel`: a drop area and **Choose a File**) instead of the paste panel
+  below, behind the same `BackBar` and warning.
 
-Every format is text, so each card opens the **same two-step panel**
+The format cards sit two across. Every text format's card opens the **same two-step panel**
 (`TextImportPanel`): **paste or write** the
 content, or **import a file instead**. The way back to the format grid is the
 shared **`BackBar`** across the top of that step (the same control the placement

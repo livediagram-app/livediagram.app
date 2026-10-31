@@ -15,11 +15,11 @@ add a sticky. The Participant level is the middle: take part in the design, neve
 
 ## The levels
 
-| Level           | Wire name     | May                                                                                                                                                                                                                                                       |
-| --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, export. Writes nothing: no comment or reaction.                                                        |
-| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; add, write and arrange stickies and text; place images and swap their pictures; write on any element, a table's cells included (see [What a Participant changes](#what-a-participant-changes)). |
-| **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                                                  |
+| Level           | Wire name     | May                                                                                                                                                                                                                                                                           |
+| --------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, export, inspect a wireframe ([Inspect](../007-editor/wireframe-pages.md#inspect)). Writes nothing: no comment or reaction. |
+| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; add, write and arrange stickies and text; place images and swap their pictures; write on any element, a table's cells included (see [What a Participant changes](#what-a-participant-changes)).                     |
+| **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                                                                      |
 
 - **The levels are a ladder**: every level holds everything below it.
 - **A Viewer only looks.** A comment and a reaction are both taking

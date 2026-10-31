@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a livedocuments JSON tab export, or a Markdown document as an article, into a tab by pasting text or picking a file. It replaces the tab contents.',
+    'Import a JSON tab export, Markdown or Word as an article, or PowerPoint as slide pages, Google Docs and Slides included. It replaces the tab contents.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file: a livedocuments JSON tab export, or Markdown as an article."
+  description="Bring a tab's contents in from pasted text or a file: a livedocuments JSON tab export, Markdown or Word as an article, or PowerPoint as slide pages."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -20,18 +20,49 @@ export const metadata = helpMetadata({
 
 ## Importing JSON or Markdown
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog takes two formats:
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog takes four formats:
 
 - **JSON**: a livedocuments tab export (a `.livedocuments-tab.json` file), pages and all, restored exactly, the highest-fidelity round trip.
 - **Markdown**: a `.md` document, written into an [article](/help/pages/articles/). Headings, lists, to-dos, quotes and code become the article's blocks; see [Markdown Import](/help/tools/markdown-import/).
+- **Word**: a `.docx` file from Word or Google Docs, written into an article. See [Importing from Word or Google Docs](#importing-from-word-or-google-docs).
+- **PowerPoint**: a `.pptx` file from PowerPoint or Google Slides, each slide a slide page. See [Importing from PowerPoint or Google Slides](#importing-from-powerpoint-or-google-slides).
 
 <Figure caption="The tab menu holds Import, beside Export and Clear.">
   <ImportMenu />
 </Figure>
 
-**Paste or write** the text into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
+For JSON and Markdown, **paste or write** the text into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
 
-Dropping a `.json` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
+Dropping a `.json`, `.md`, `.docx` or `.pptx` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
+
+## Importing from Word or Google Docs
+
+Choose **Word**, then drop a `.docx` file on the panel or press **Choose a File**. The document becomes an [article](/help/pages/articles/):
+
+- Title, Subtitle and Heading 1 to 3 styles become those paragraph styles (deeper headings become Heading 3).
+- Bulleted and numbered lists keep their nesting, up to five levels.
+- Quotes, code (a code style or a monospaced font), links, bold, italic, underline, strikethrough, superscript and subscript come across.
+- Page breaks become the article's page breaks.
+- Pictures are saved to the document's images and placed in the article where they sat.
+- A table comes across as a list of its rows, each row's cells joined with a dot.
+
+For a **Google Doc**, open it and choose **File › Download › Microsoft Word (.docx)**, then import the downloaded file.
+
+## Importing from PowerPoint or Google Slides
+
+Choose **PowerPoint**, then drop a `.pptx` file on the panel or press **Choose a File**. Each slide becomes a slide page, in order, with the deck's 16:9 or 4:3 shape:
+
+- Text boxes and placeholders become text where they sat on the slide, with their size, bold, italic and bullets.
+- Pictures are saved to the document's images and placed where they sat.
+- Speaker notes and hidden slides come across in the [Slide Deck](/help/selection-modes/slide-deck/).
+
+For **Google Slides**, open the deck and choose **File › Download › Microsoft PowerPoint (.pptx)**, then import the downloaded file.
+
+## What doesn't come across
+
+The file is read in your browser; nothing is sent anywhere except its pictures, which are saved like any image you add. When something can't come across (charts, SmartArt, equations, embedded objects, comments, tracked changes, more than 100 pictures), the dialog says what was left out once the import lands. Macros and embedded files are never run.
+
+A file needs to be under 50 MB, a deck at most 100 slides. Older `.doc` and `.ppt` files need saving as `.docx` or `.pptx` first: open them in Word or PowerPoint and choose **Save As**.
 
 ## Import replaces the tab
 

@@ -3,6 +3,11 @@
 // is searched by; the built-in fields of each kind (offered as Ready to use) with what uses them; how a search
 // matches a kind; and what a new field still needs before it can be added.
 import {
+  isFormulaField,
+  isLookupField,
+  isRollupField,
+  aggregateOf,
+  aggregateReads,
   linkTypesOf,
   type CustomFieldDef,
   type CustomFieldKind,
@@ -20,7 +25,11 @@ export type KindGroup = { id: KindGroupId; label: string; kinds: readonly PickKi
 // The groups, in order; the first opens to start.
 export const KIND_GROUPS: readonly KindGroup[] = [
   { id: 'text', label: 'Text & links', kinds: ['text', 'longtext', 'link', 'email'] },
-  { id: 'numbers', label: 'Numbers & dates', kinds: ['number', 'currency', 'rating', 'date'] },
+  {
+    id: 'numbers',
+    label: 'Numbers & dates',
+    kinds: ['number', 'currency', 'percent', 'rating', 'date'],
+  },
   { id: 'choices', label: 'Choices', kinds: ['choice', 'multichoice', 'checkbox', 'labels'] },
   {
     id: 'people',
@@ -42,6 +51,7 @@ export const KIND_DESCRIPTIONS: Record<PickKind, string> = {
   email: 'An address that opens your mail app',
   number: 'Points, counts and sizes',
   currency: 'An amount, like £12,500',
+  percent: 'How far along, drawn as a bar',
   rating: 'Stars out of 3 to 10',
   date: 'A day on the calendar',
   choice: 'One option from a list',
@@ -55,7 +65,7 @@ export const KIND_DESCRIPTIONS: Record<PickKind, string> = {
   colour: 'A colour to tell cards apart',
   image: 'A picture, like a mock-up or a photo',
   card: 'Another card, like a parent or an epic',
-  calculated: 'Worked out from the cards linked here',
+  calculated: 'Worked out from linked cards or a formula',
 };
 
 // The everyday words people reach for, beyond a kind's name and line.
@@ -79,6 +89,7 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
     '€',
     '£',
   ],
+  percent: ['percentage', 'progress', 'complete', 'completion', '%', 'slider', 'bar'],
   rating: ['stars', 'score', 'rank', 'review', 'grade'],
   date: ['day', 'deadline', 'when', 'calendar', 'due', 'time'],
   choice: ['dropdown', 'drop-down', 'select', 'option', 'single', 'picklist', 'enum', 'status'],
@@ -92,17 +103,7 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
   colour: ['color', 'swatch', 'hue', 'highlight', 'tint'],
   image: ['picture', 'photo', 'screenshot', 'mock-up', 'mockup', 'upload', 'attachment', 'cover'],
   card: ['parent', 'epic', 'relation', 'related', 'reference', 'child', 'linked card', 'lookup'],
-  calculated: [
-    'percent',
-    'percentage',
-    'progress',
-    'formula',
-    'computed',
-    'rollup',
-    'roll-up',
-    'sum',
-    'total',
-  ],
+  calculated: ['formula', 'computed', 'rollup', 'roll-up', 'sum', 'total'],
 };
 
 // The built-in fields of each kind, in the order Ready to use offers them: what the features that use a role read
@@ -176,13 +177,24 @@ export function kindMatches(
 
 export const hasOptions = (kind: CustomFieldKind) => kind === 'choice' || kind === 'multichoice';
 
-export type Readiness = 'name' | 'options' | 'links';
+export type Readiness = 'name' | 'options' | 'links' | 'formula' | 'through' | 'source';
 
 /** What a new field still needs before it can be added (null: nothing): a name, an option, a type it links to. */
 export function kindReadiness(field: Omit<CustomFieldDef, 'id'>): Readiness | null {
   if (!field.label.trim()) return 'name';
   if (hasOptions(field.kind) && (field.options?.length ?? 0) === 0) return 'options';
   if (field.kind === 'card' && linkTypesOf(field).length === 0) return 'links';
+  // A Formula holds one only while it works (FormulaEditor): docs/specs/026-plan/item-types.md "Formula fields".
+  if (isFormulaField(field) && !field.formula) return 'formula';
+  // A Lookup reads through one of the type's Card fields; a Rollup's calculation (but Count) and a Lookup read a
+  // field (docs/specs/026-plan/item-types.md "Rollup and Lookup fields").
+  if (isLookupField(field) && !field.through) return 'through';
+  if (
+    (isLookupField(field) ||
+      (isRollupField(field) && aggregateReads(aggregateOf(field)) !== 'none')) &&
+    !field.source
+  )
+    return 'source';
   return null;
 }
 
@@ -190,6 +202,9 @@ export const READINESS_HINT: Record<Readiness, string> = {
   name: 'Name the field to add it.',
   options: 'Add at least one option.',
   links: 'Pick a card type it links to.',
+  formula: 'Write a formula that works.',
+  through: 'Pick a Link to Card field to read through.',
+  source: 'Pick a field to read.',
 };
 
 export const CUSTOM_MAX_NOTE = (max: number) =>

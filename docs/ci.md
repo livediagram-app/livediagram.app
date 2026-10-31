@@ -26,6 +26,21 @@ root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, 
 Prettier config and ignore file, or a product folder's own `package.json`, `tsconfig.base.json` or
 Prettier files.
 
+### Suites that read other workspaces
+
+Some suites read files outside their own workspace from disk: the site's telemetry checks scan every
+product's apps and packages, each help app's guards read its whole product, the shared marketing guards
+read every marketing app, and livedesign's naming guard (`@livedesign/design`) reads all of `livedesign/`,
+the apps that depend on it included. Turbo's package graph can't see those reads, so before 2026-10-31 a
+pull request touching only `liveplanner/` never ran the site's suite: it passed, and `main` went red at
+the next change that did reach the site.
+
+Each such suite declares what it reads as `$TURBO_ROOT$/…` inputs on its `<workspace>#test` and
+`<workspace>#test:coverage` tasks in `turbo.json`. That one declaration does two jobs: turbo's cache
+hashes those files, so it never replays a stale pass, and the planner (`.github/scripts/ci-readers.mjs`)
+adds the suite to a run whose changed files fall in them. **A new test that reads outside its
+workspace adds its inputs there**, or it will pass on its pull request and fail on `main`.
+
 Turbo's own cache (`.turbo/cache`) is kept between runs with GitHub's cache, saved on `main` only and
 read by pull requests, so a workspace whose inputs haven't changed since `main`'s run replays its
 result.
@@ -36,6 +51,7 @@ result.
   - **Checks:** lint and type check of the affected workspaces, and a format check (each product's
     own `format:check`; the platform's Prettier over `packages/`, `liveworkspace/`, `docs/`,
     `.github/` and the root files).
+  - **Speed budgets:** a change may not add `performance.now()` to a test (see [Speed budgets](#speed-budgets)).
   - **Tests:** every affected workspace's suite once. Those with `test:coverage` run that, so their
     per-file thresholds are enforced in CI; the rest run `test`. Coverage goes to Codecov, one flag
     per group, carried forward when a run doesn't reach that group (`codecov.yml`).
@@ -75,6 +91,19 @@ result.
 CI publishes no CLI: the CLIs' npm publishing happens outside CI. Each product's CLI builds and
 packs on every run that reaches it (Build).
 
+## Speed budgets
+
+A test that holds code to a speed budget measures CPU time, with `cpuMsOf` / `cpuMsOfAsync` and
+`cpuBudgetMs` from `@liveworkspace/vitest-config/cpu-time`, never `performance.now()`. CI's runners
+are shared two-core machines running several suites at once: a wall-clock budget counts the time a
+test waits for a core and failed at random on `main`, where CPU time barely moves under contention and
+still catches a real regression. A test that seeds a large fixture sets its own timeout (seeding isn't
+what it measures) and times only the work under test.
+
+The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
+the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
+for a pass of their own. A line that truly needs the wall clock says why in a `wall-clock:` comment.
+
 ## Coverage report
 
 Each pull request gets a coverage report in its description, below a `---` separator between two hidden
@@ -108,7 +137,7 @@ deterministic failure shows up on the machine in minutes rather than on CI later
   saying so, when `CI` is set or outside a git work tree.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
   `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
-  group's steps as `ci.yml` does: lint and type check, the format check, `test`, `test:coverage`, then
+  group's steps as `ci.yml` does: lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
   each reached editor's suite once (unsharded). It stops at the first failing step.
 - It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.

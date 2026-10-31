@@ -7,7 +7,8 @@
 import type { ReactNode } from 'react';
 import {
   checklistRowsProgress,
-  isItemPerson,
+  fieldPeople,
+  holdsSeveral,
   itemColourValue,
   voteTotalOf,
   type CustomFieldDef,
@@ -18,6 +19,7 @@ import { ColourDot, planColourName } from './ColourSwatches';
 import { PersonDisc } from './PersonDisc';
 import { ImageThumb } from './ImageField';
 import type { PlanPalette } from './plan-palette';
+import { PeopleStack } from './SeveralValuesPills';
 
 /** The kinds this draws; every other custom kind is a value pill (PlanCardFace). */
 export const isBuiltInKindPill = (def: CustomFieldDef): boolean =>
@@ -34,10 +36,16 @@ export function customKindPill(
   palette: PlanPalette,
 ): ReactNode {
   switch (def.kind) {
-    case 'person':
-      return isItemPerson(value) ? (
-        <PersonDisc key={def.id} person={value} label={`${def.label}: ${value.name}`} />
+    // Several people stack (item-types.md "Holds Several"); one draws its disc.
+    case 'person': {
+      const people = fieldPeople(def, value);
+      if (holdsSeveral(def))
+        return <PeopleStack key={def.id} label={def.label} people={people} palette={palette} />;
+      const one = people[0];
+      return one ? (
+        <PersonDisc key={def.id} person={one} label={`${def.label}: ${one.name}`} />
       ) : null;
+    }
     case 'labels': {
       const labels = Array.isArray(value)
         ? value.filter((l): l is string => typeof l === 'string' && l !== '')

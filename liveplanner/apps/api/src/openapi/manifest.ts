@@ -795,7 +795,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         name: 'include',
         required: false,
         description:
-          "calculated: answer `calculated`, each card's Calculated field values (Child Count, Children Done (%)), read-only.",
+          "calculated: answer `calculated`, each card's Calculated field values (Child Count, Children Done (%), a Formula's value), read-only.",
       },
     ],
     responseSchema: 'ItemsResponse',

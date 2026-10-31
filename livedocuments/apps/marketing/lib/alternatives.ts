@@ -37,7 +37,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Export',
-        us: 'PDF, PNG, SVG and an animated GIF of the deck',
+        us: 'An editable PowerPoint file, PDF, PNG, SVG and an animated GIF of the deck',
         them: 'PowerPoint, PDF and images',
       },
       {
@@ -49,7 +49,7 @@ const LIST: Alternative[] = [
     themBest: [
       'Everyone in your organisation already lives in Google Workspace, with Drive, Meet and Docs around the deck.',
       'A full presentation suite: click-by-click builds within a slide, a presenter view, audience Q&A and a large template gallery.',
-      'PowerPoint import and export, for decks that travel between organisations.',
+      'Charts, tables and animations that stay native when a deck goes to PowerPoint and back.',
       'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
     ],
     usBest: [
@@ -59,7 +59,7 @@ const LIST: Alternative[] = [
       'Present with presenter notes, a time budget per slide, transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
       'Put another tab on a slide, live: a tab window shows it as it is now, so the slide follows every change.',
-      'Export the deck as an animated GIF for a chat, an email or a README.',
+      'Export the deck as an editable PowerPoint file, speaker notes included, or as an animated GIF for a chat, an email or a README.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
       '27 templates to start from, from a launch keynote to a quarterly review.',
@@ -89,18 +89,18 @@ const LIST: Alternative[] = [
       {
         heading: 'Free, open and no account needed',
         paragraphs: [
-          'Slides is free with a Google account. livedocuments needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel, or the whole deck as an animated GIF.',
+          'Slides is free with a Google account. livedocuments needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier. When a deck has to travel, export it as an editable PowerPoint file that opens in Slides, PowerPoint and Keynote, any page as a PNG, SVG or a print-ready PDF, or the whole deck as an animated GIF.',
         ],
       },
     ],
     faqs: [
       {
         q: 'Can livedocuments replace Google Slides?',
-        a: 'For many decks, yes: slide pages from ready-made layouts, presenter notes, time budgets, transitions, a laser pointer and a spotlight, all edited live with your team. If you need click-by-click builds within a slide, PowerPoint files or audience Q&A, Google Slides is still the deeper presentation suite.',
+        a: 'For many decks, yes: slide pages from ready-made layouts, presenter notes, time budgets, transitions, a laser pointer and a spotlight, all edited live with your team. If you need click-by-click builds within a slide or audience Q&A, Google Slides is still the deeper presentation suite.',
       },
       {
         q: 'Can I import or export PowerPoint files?',
-        a: 'No. livedocuments does not read or write .pptx. You can export each page as a PNG or SVG, every page as one PDF, or the deck as an animated GIF, and drop those into another deck.',
+        a: 'Yes, both ways. Import a .pptx from PowerPoint or Google Slides and each slide becomes a slide page, with its speaker notes. Export a deck as a .pptx and its text stays editable text boxes, its basic shapes stay shapes, and its charts, icons and pictures come as pictures; its speaker notes come along, and Google Slides and Keynote open it too.',
       },
       {
         q: 'Do my audience or co-editors need an account?',

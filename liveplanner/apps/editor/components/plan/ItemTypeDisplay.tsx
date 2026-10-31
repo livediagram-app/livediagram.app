@@ -163,6 +163,8 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
       return [[c.id, 'https://example.com']];
     case 'currency':
       return [[c.id, 12500]];
+    case 'percent':
+      return [[c.id, 40]];
     case 'email':
       return [[c.id, 'sam@example.com']];
     case 'choice':

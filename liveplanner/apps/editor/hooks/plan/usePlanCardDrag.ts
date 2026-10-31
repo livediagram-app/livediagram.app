@@ -113,6 +113,9 @@ type Pressed = {
   startX: number;
   startY: number;
   rect: DOMRect;
+  // The row the card was picked up in (`data-plan-lane`): a card holding several values sits in several rows, and a
+  // drop swaps the value of the row it left (docs/specs/026-plan/item-types.md "Holds Several").
+  fromLane: string | undefined;
   // A touch press on a phone board's card is carried only once held still this long (performance.now()); null
   // carries it on its first travel past the slop (components/plan/phone-board.ts holdPhase).
   holdUntil: number | null;
@@ -159,7 +162,7 @@ export function usePlanCardDrag(opts: {
   boardId: string;
   enabled: boolean;
   onClick: (itemId: string) => void;
-  onDrop: (itemId: string, slot: PlanDropSlot) => void;
+  onDrop: (itemId: string, slot: PlanDropSlot, fromLane?: string) => void;
   onDropOutside: (itemId: string, clientX: number, clientY: number) => void;
   // A drop on a board that does not show the item: nothing moves; the reason is announced.
   onRefused: (message: string) => void;
@@ -302,7 +305,7 @@ export function usePlanCardDrag(opts: {
         if (!d.target.accepts) optsRef.current.onRefused(target.refusal());
         else if (d.slot) target.drop(d.itemId, d.slot);
       } else if (d.outside) optsRef.current.onDropOutside(d.itemId, e.clientX, e.clientY);
-      else if (d.slot) optsRef.current.onDrop(d.itemId, d.slot);
+      else if (d.slot) optsRef.current.onDrop(d.itemId, d.slot, p.fromLane);
       end();
     };
     const onKey = (e: KeyboardEvent) => {
@@ -334,6 +337,7 @@ export function usePlanCardDrag(opts: {
         startX: e.clientX,
         startY: e.clientY,
         rect: e.currentTarget.getBoundingClientRect(),
+        fromLane: e.currentTarget.closest<HTMLElement>('[data-plan-lane]')?.dataset.planLane,
         holdUntil:
           holdToDrag && e.pointerType === 'touch' ? performance.now() + CARD_HOLD_TO_DRAG_MS : null,
       };

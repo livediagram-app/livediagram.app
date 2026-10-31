@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  clampPercent,
   PROGRESS_LABEL_PX,
   PROGRESS_RING_LABEL_MAX_PX,
   progressRingLabelPx,
@@ -34,5 +35,20 @@ describe('progressRingLabelPx', () => {
 
   it('rounds to whole px so the canvas and export agree', () => {
     expect(Number.isInteger(progressRingLabelPx(133, 133))).toBe(true);
+  });
+});
+
+// A whole 0 to 100 share, shared by the progress elements and liveplanner's Percent fields.
+describe('clampPercent', () => {
+  it('rounds to a whole percentage', () => {
+    expect(clampPercent(40.4)).toBe(40);
+    expect(clampPercent(40.5)).toBe(41);
+  });
+
+  it('holds the value to 0 to 100', () => {
+    expect(clampPercent(-5)).toBe(0);
+    expect(clampPercent(140)).toBe(100);
+    expect(clampPercent(0)).toBe(0);
+    expect(clampPercent(100)).toBe(100);
   });
 });

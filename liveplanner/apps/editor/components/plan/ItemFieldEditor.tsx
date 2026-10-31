@@ -11,6 +11,7 @@ import {
   customFieldOf,
   isBuiltInFieldId,
   linkCandidates,
+  holdsSeveral,
   linkTypesOf,
   requiredFieldEmptied,
   richFieldOf,
@@ -30,7 +31,7 @@ import { ParagraphField } from './ParagraphField';
 import { PersonPicker } from './PersonPicker';
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { CalculatedFieldValue } from './CalculatedFieldValue';
-import { calculatedFieldValue } from './calculated-values';
+import { calculatedFieldOutcome } from './calculated-values';
 import { LinkedCardField } from './LinkedCardField';
 import { ImageFieldControl } from './ImageField';
 import { AttachmentsField } from './AttachmentsField';
@@ -123,6 +124,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         disabled={disabled}
         onSave={save}
         onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
+        multiple={holdsSeveral(custom)}
       />
     );
   }
@@ -132,7 +134,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       <CalculatedFieldValue
         id={id}
         field={custom}
-        value={plan ? calculatedFieldValue(plan, custom, item) : null}
+        outcome={plan ? calculatedFieldOutcome(plan, custom, item) : { ok: true, value: null }}
       />
     );
   }
@@ -238,6 +240,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           disabled={disabled}
           onSave={save}
           {...(custom ? { label: custom.label } : {})}
+          multiple={holdsSeveral(custom)}
         />
       );
     case 'priority':

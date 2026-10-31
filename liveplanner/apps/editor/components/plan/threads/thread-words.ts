@@ -9,13 +9,8 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 /** "1 comment", "4 comments". */
 export const commentCount = (n: number) => plural(n, 'comment');
 
-/** The header's quiet tally: "2 open · 1 resolved", "3 open", "1 resolved"; '' with none. */
-export function threadTally(open: number, resolved: number): string {
-  const parts = [open ? `${open} open` : '', resolved ? `${resolved} resolved` : ''].filter(
-    Boolean,
-  );
-  return parts.join(' · ');
-}
+/** The heading's quiet count of open threads: "2 Open"; '' with none (the resolved count is on its disclosure). */
+export const openTally = (open: number): string => (open ? `${open} Open` : '');
 
 /** The shared chip: "On 3 cards" (only for a thread on more than one). */
 export const sharedLabel = (cards: number) => `On ${cards} cards`;
@@ -53,6 +48,7 @@ export const ANNOUNCE = {
   started: 'Thread started',
   replied: 'Reply posted',
   resolved: 'Thread resolved',
+  repliedAndResolved: 'Reply posted, thread resolved',
   reopened: 'Thread reopened',
   renamed: 'Thread renamed',
   deleted: 'Thread deleted',

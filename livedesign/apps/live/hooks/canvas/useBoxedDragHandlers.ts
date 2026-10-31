@@ -50,6 +50,13 @@ export function useBoxedDragHandlers({
       else d.applyFormatFromSource(elementId);
       return true;
     }
+    // Inspect: the press selects this element alone to read it, and nothing moves.
+    if (d.inspectToolActive) {
+      if (d.layerInertIds.has(elementId)) return true;
+      d.setSelectedId(elementId);
+      if (d.readSelection().multiSelectedIds.size > 0) d.setMultiSelectedIds(new Set());
+      return true;
+    }
     return false;
   };
 
@@ -151,7 +158,7 @@ export function useBoxedDragHandlers({
     },
   ) => {
     const d = depsRef.current;
-    if (d.formatSourceId !== null || d.formatToolActive) return;
+    if (d.formatSourceId !== null || d.formatToolActive || d.inspectToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
     if (d.layerInertIds.has(elementId)) return;

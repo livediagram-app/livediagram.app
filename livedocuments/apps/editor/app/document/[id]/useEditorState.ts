@@ -1795,6 +1795,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importFileIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
@@ -1820,6 +1821,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    onSlidesImported: slideDeck.adoptImportedSlides,
     refreshDocumentList: () => refreshDocumentList(),
     confirm,
     toast,
@@ -2783,6 +2785,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     imagePickerOpenFor,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importFileIntoActiveTab,
     isPinchingRef,
     isReadOnly,
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.

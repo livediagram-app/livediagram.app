@@ -22,6 +22,8 @@ import {
   itemColourOf,
   linkedCard,
   cardFieldsAt,
+  fieldCardIds,
+  holdsSeveral,
   type CardField,
   type CardSize,
   type Item,
@@ -31,6 +33,9 @@ import {
   type CardSlot,
   isCustomCardField,
   calculatedText,
+  FORMULA_ERROR_TEXT,
+  percentShown,
+  showsAsPercent,
   attachmentCover,
   itemAttachments,
   itemHasStamp,
@@ -39,9 +44,11 @@ import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
-import { calculatedFieldValue } from './calculated-values';
+import { calculatedFieldOutcome } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
+import { PercentChip } from './PercentBar';
+import { LinkedNumbersPill } from './SeveralValuesPills';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -55,6 +62,7 @@ import {
   DuePill,
   FlagMark,
   KeyTag,
+  LATE_COLOUR,
   LabelChips,
   MetaPill,
   PrioritySignal,
@@ -278,19 +286,65 @@ export function PlanCardFace({
           );
         // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
         if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
-        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields").
+        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields"); a Formula
+        // that can't be on this card reads "Error", its problem spoken with it and shown in the panel ("Formula
+        // fields").
+        const outcome =
+          def?.kind === 'calculated' && plan ? calculatedFieldOutcome(plan, def, item) : null;
+        // A Percent field, or a share shown as one, draws its bar (docs/specs/026-plan/item-types.md "Percent").
+        if (def && showsAsPercent(def) && outcome?.ok !== false) {
+          const share = percentShown(
+            def,
+            def.kind === 'calculated'
+              ? outcome?.ok && typeof outcome.value === 'number'
+                ? outcome.value
+                : null
+              : item.fields[def.id],
+          );
+          return share === undefined ? null : (
+            <PercentChip key={f} name={def.label} value={share} palette={palette} />
+          );
+        }
+        // A Card field that holds several reads its linked cards' numbers (item-types.md "Holds Several").
+        if (def?.kind === 'card' && holdsSeveral(def))
+          return plan ? (
+            <LinkedNumbersPill
+              key={f}
+              label={def.label}
+              ids={fieldCardIds(def, item.fields[def.id])}
+              items={plan.items}
+              types={plan.types}
+              palette={palette}
+            />
+          ) : null;
+        if (def && outcome && !outcome.ok)
+          return (
+            <MetaPill
+              key={f}
+              palette={palette}
+              tone={LATE_COLOUR}
+              label={`${def.label}: ${FORMULA_ERROR_TEXT}. ${outcome.error}`}
+            >
+              <span className="flex [&_svg]:h-[11px] [&_svg]:w-[11px]">
+                {CUSTOM_KIND_ICONS[def.kind]}
+              </span>
+              <span aria-hidden>{FORMULA_ERROR_TEXT}</span>
+            </MetaPill>
+          );
         const text = !def
           ? null
           : def.kind === 'calculated'
-            ? plan
-              ? calculatedText(def, calculatedFieldValue(plan, def, item))
+            ? outcome?.ok
+              ? calculatedText(def, outcome.value)
               : null
             : customFieldText(def, item.fields[def.id], plan?.items);
         if (!def || !text) return null;
         // A linked card with its own Colour shows it (a Parent project's colour), else its own type's glyph (a field
         // may link to several types), the field's first type's while the card is missing.
         const linked =
-          def.kind === 'card' && plan ? linkedCard(plan.items, item.fields[def.id]) : undefined;
+          def.kind === 'card' && plan
+            ? linkedCard(plan.items, fieldCardIds(def, item.fields[def.id])[0])
+            : undefined;
         const linkedTypeId = def.kind === 'card' ? (linked?.type ?? def.linkType) : undefined;
         const linkedType = linkedTypeId
           ? typeIn(plan?.types ?? ITEM_TYPES, linkedTypeId)

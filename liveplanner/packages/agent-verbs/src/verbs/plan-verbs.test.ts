@@ -93,6 +93,39 @@ describe('type ls and apply', () => {
     expect(typeLs.text!(out)[1]).toMatch(/^task\s+"Task"/);
   });
 
+  // docs/specs/026-plan/item-types.md "Formula fields": a Formula lists with its expression by names.
+  it('lists a Formula with its expression, and one not written yet without', async () => {
+    const deal = {
+      ...ITEM_TYPES[0],
+      id: 'deal',
+      label: 'Deal',
+      fields: ['title', 'f-budget', 'f-twice', 'f-blank'],
+      custom: [
+        { id: 'f-budget', label: 'Budget', kind: 'number' as const },
+        {
+          id: 'f-twice',
+          label: 'Twice',
+          kind: 'calculated' as const,
+          calculation: 'formula' as const,
+          formula: '{f-budget} * 2',
+        },
+        {
+          id: 'f-blank',
+          label: 'Blank',
+          kind: 'calculated' as const,
+          calculation: 'formula' as const,
+        },
+      ],
+    };
+    const { ctx } = ctxWith('', {
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [deal] },
+    });
+    const out = await typeLs.run!(ctx, { project: DOC_A });
+    const line = typeLs.text!(out).join('\n');
+    expect(line).toContain('Twice:calculated=formula(Budget * 2) (f-twice)');
+    expect(line).toContain('Blank:calculated=formula (f-blank)');
+  });
+
   it('applies changes from a file, printing the ids it made', async () => {
     const { ctx, sent } = ctxWith(
       '[{"op":"add","name":"Bug","custom":[{"name":"Severity","kind":"text"}]}]',

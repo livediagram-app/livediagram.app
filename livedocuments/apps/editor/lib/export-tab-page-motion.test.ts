@@ -84,6 +84,20 @@ describe('PNG and PDF', () => {
     expect(rect).toEqual({ x: 0, y: 0, width: page.rect.width, height: page.rect.height });
   });
 
+  it('leave the page out of a picture of some of its elements, cut to its own rect', async () => {
+    // docs/specs/020-import-export/office-export.md: a slide's pictures sit over its own background.
+    const { tab, laid } = deck();
+    const canvas = await renderTabToCanvas(tab, {
+      page: laid[0]!,
+      fontCss: '',
+      only: new Set(['nothing']),
+      crop: { x: 10, y: 20, w: 30, h: 40 },
+      scale: 2,
+    });
+    expect(paintMotionFrame).not.toHaveBeenCalled();
+    expect([canvas.width, canvas.height]).toEqual([60, 80]);
+  });
+
   it('leave a still gradient as it is', async () => {
     const { tab, laid } = deck({ kind: 'gradient', from: '#000000', to: '#ffffff', angle: 90 });
     await renderTabToCanvas(tab, { page: laid[0]!, fontCss: '' });

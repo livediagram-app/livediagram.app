@@ -7,21 +7,32 @@
 // the field, drawn over the page (AnchoredPopover) so the side column never squeezes it: at least LINK_LIST_MIN_PX
 // wide, wider with the field, kept on screen. A filter, None, then the candidate cards, each title on up to two
 // lines with the whole title in a tooltip. Keys: Enter or Space opens it, the arrows move, Enter picks, Escape
-// closes.
+// closes. A Card field that holds several (docs/specs/026-plan/item-types.md "Holds Several") draws its cards as chips
+// (FieldChips: each opens its card) and its list toggles: a pick links a card, picking one linked unlinks it, and the
+// list stays open for more.
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
+  cardKey,
+  fieldCardIds,
   itemColourOf,
   itemTitle,
   linkedCard,
+  severalValue,
+  toggledValues,
   typeIn,
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { ChevronDownIcon, ChevronRightIcon, NoMatches, Tooltip } from '@liveplanner/ui';
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon, NoMatches, Tooltip } from '@liveplanner/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { planColourName } from './ColourSwatches';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
+import { FieldChips } from './FieldChips';
+import { usePlan } from './PlanContext';
+
+// A field holding several, as several-values.ts reads it.
+const SEVERAL = { kind: 'card', multiple: true } as const;
 
 // More candidates than this and the list opens with a filter.
 export const LINK_FILTER_FROM = 8;
@@ -39,6 +50,7 @@ export function LinkedCardField({
   disabled,
   onSave,
   onOpen,
+  multiple = false,
 }: {
   id: string;
   // The field's name: the control's accessible name ("Parent", "Owner").
@@ -49,10 +61,13 @@ export function LinkedCardField({
   items: ReadonlyMap<string, Item>;
   types: readonly ItemTypeDef[];
   disabled: boolean;
-  onSave: (next: string | undefined) => void;
+  onSave: (next: string | string[] | undefined) => void;
   // Opens the linked card; absent (a card not made yet, the New {Type} dialog), there is no open arrow.
   onOpen?: (itemId: string) => void;
+  // A Card field that holds several: its cards as chips, the list toggling them.
+  multiple?: boolean;
 }) {
+  const announce = usePlan()?.announce;
   const listId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -64,7 +79,12 @@ export function LinkedCardField({
   // The list's width, taken from the field as it opens.
   const [listWidth, setListWidth] = useState(LINK_LIST_MIN_PX);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const linkedId = typeof value === 'string' && value ? value : undefined;
+  // The cards it links to: every one when it holds several, else the first (a stored list reads as its first).
+  const chosen = fieldCardIds(multiple ? SEVERAL : undefined, value);
+  const linkedId = multiple ? undefined : chosen[0];
+  const held = (card: Item | undefined) =>
+    multiple ? !!card && chosen.includes(card.id) : (card?.id ?? undefined) === linkedId;
+  const cardOf = (id: string) => linkedCard(items, id) ?? candidates.find((c) => c.id === id);
   // The linked card, from the project's cards, else from the candidates (a host that passes only those).
   const linked = linkedId
     ? (linkedCard(items, linkedId) ?? candidates.find((c) => c.id === linkedId))
@@ -80,8 +100,8 @@ export function LinkedCardField({
           (c) => String(c.key).startsWith(q) || itemTitle(c).toLowerCase().includes(q),
         )
       : candidates;
-    return [undefined, ...list] as (Item | undefined)[];
-  }, [candidates, query]);
+    return (multiple ? list : [undefined, ...list]) as (Item | undefined)[];
+  }, [candidates, query, multiple]);
 
   const close = (refocus = true) => {
     setOpen(false);
@@ -89,16 +109,25 @@ export function LinkedCardField({
     if (refocus) triggerRef.current?.focus();
   };
   const pick = (card: Item | undefined) => {
+    // Several: a card toggles and the list stays open for more.
+    if (multiple) {
+      if (card)
+        onSave(
+          severalValue(SEVERAL, toggledValues(chosen, card.id, cardKey)) as string[] | undefined,
+        );
+      return;
+    }
     if ((card?.id ?? undefined) !== linkedId) onSave(card?.id);
     close();
   };
 
   // Opened on the current link (set as it opens, not after), and the filter (or the list) takes the keys.
   const openList = () => {
-    const at = options.findIndex((o) => o?.id === linkedId);
+    const at = options.findIndex((o) => held(o));
     setActive(at < 0 ? 0 : at);
     setListWidth(Math.max(LINK_LIST_MIN_PX, boxRef.current?.offsetWidth ?? 0));
-    setAnchor(triggerRef.current);
+    // Several: under the whole field, as the single field's list sits under its trigger.
+    setAnchor(multiple ? boxRef.current : triggerRef.current);
     setOpen(true);
   };
   useEffect(() => {
@@ -121,78 +150,150 @@ export function LinkedCardField({
   const openLabel = linked ? `Open ${name}` : '';
   return (
     <div ref={boxRef} className="relative w-full">
-      <div
-        className={`flex min-h-[34px] w-full items-center rounded-md border bg-white transition dark:bg-slate-900 ${
-          open
-            ? 'border-brand-500 ring-2 ring-brand-500/20'
-            : 'border-slate-200 dark:border-slate-700'
-        } ${disabled ? 'opacity-60' : ''}`}
-      >
-        <Tooltip label={name}>
-          <button
-            ref={triggerRef}
-            id={id}
-            type="button"
-            disabled={disabled}
-            aria-label={`${label}: ${name}`}
-            aria-haspopup="listbox"
-            aria-expanded={open}
-            aria-controls={open ? listId : undefined}
-            onClick={() => (open ? close() : openList())}
-            onKeyDown={(e) => {
-              if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-                e.preventDefault();
-                openList();
-              }
-            }}
-            // 16px on a phone, as the card's selects are there (globals.css: iOS zooms a field under 16px on focus):
-            // at 13px it read a size smaller than the Status and Priority beside it.
-            className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md py-1 pl-2 pr-1 text-left text-[13px] max-sm:text-[16px] outline-none enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-400"
-          >
-            {/* The linked card's own colour, when it has one, tints its type's glyph: no dot beside it. */}
-            {type ? (
-              <span
-                className={`shrink-0 ${ACCENT_TEXT}`}
-                style={accentVars(own ?? type.color)}
-                {...(own ? { role: 'img', 'aria-label': `${planColourName(own)} colour` } : {})}
-              >
-                <PlanTypeGlyph glyph={type.glyph} size={14} />
-              </span>
-            ) : null}
-            {linked ? (
+      {multiple ? (
+        <FieldChips
+          ref={triggerRef}
+          id={id}
+          label={label}
+          emptyText="None"
+          disabled={disabled}
+          open={open}
+          listId={listId}
+          onAdd={() => (open ? close() : openList())}
+          onRemove={(key) => {
+            onSave(
+              severalValue(
+                SEVERAL,
+                chosen.filter((c) => c !== key),
+              ) as string[] | undefined,
+            );
+            const gone = cardOf(key);
+            announce?.(`Removed ${gone ? `#${gone.key}` : 'Missing card'}`);
+          }}
+          chips={chosen.map((cid) => {
+            const card = cardOf(cid);
+            const t = card ? typeIn(types, card.type) : undefined;
+            const cardName = card ? `#${card.key} ${itemTitle(card)}` : 'Missing card';
+            const body = (
               <>
-                <span className="shrink-0 rounded bg-slate-100 px-1 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800">
-                  #{linked.key}
-                </span>
-                <span className="min-w-0 flex-1 truncate font-medium text-slate-800 dark:text-slate-100">
-                  {itemTitle(linked)}
-                </span>
+                {t && card ? (
+                  <span
+                    className={`shrink-0 ${ACCENT_TEXT}`}
+                    style={accentVars(itemColourOf(card, t) ?? t.color)}
+                  >
+                    <PlanTypeGlyph glyph={t.glyph} size={12} />
+                  </span>
+                ) : null}
+                {card ? (
+                  <>
+                    <span className="text-optical-line shrink-0 tabular-nums text-slate-500 dark:text-slate-400">
+                      #{card.key}
+                    </span>
+                    <span className="text-optical-line min-w-0 truncate">{itemTitle(card)}</span>
+                  </>
+                ) : (
+                  <span className="text-optical-line italic text-slate-500 dark:text-slate-400">
+                    Missing card
+                  </span>
+                )}
               </>
-            ) : (
-              <span
-                className={`min-w-0 flex-1 truncate ${missing ? 'italic' : ''} text-slate-500 dark:text-slate-400`}
-              >
-                {name}
-              </span>
-            )}
-            <span aria-hidden className="shrink-0 text-slate-400">
-              <ChevronDownIcon size={12} />
-            </span>
-          </button>
-        </Tooltip>
-        {linked && onOpen ? (
-          <Tooltip label={openLabel}>
+            );
+            return {
+              key: cid,
+              name: cardName,
+              // A chip opens its card, as the single field's open arrow does.
+              content:
+                card && onOpen ? (
+                  <Tooltip label={`Open ${cardName}`}>
+                    <button
+                      type="button"
+                      aria-label={`Open ${cardName}`}
+                      onClick={() => onOpen(card.id)}
+                      className="flex min-w-0 cursor-pointer items-center gap-1 rounded-full py-0.5 pl-1.5 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:hover:text-brand-300"
+                    >
+                      {body}
+                    </button>
+                  </Tooltip>
+                ) : (
+                  <span className="flex min-w-0 items-center gap-1 pl-1.5">{body}</span>
+                ),
+            };
+          })}
+        />
+      ) : (
+        <div
+          className={`flex min-h-[34px] w-full items-center rounded-md border bg-white transition dark:bg-slate-900 ${
+            open
+              ? 'border-brand-500 ring-2 ring-brand-500/20'
+              : 'border-slate-200 dark:border-slate-700'
+          } ${disabled ? 'opacity-60' : ''}`}
+        >
+          <Tooltip label={name}>
             <button
+              ref={triggerRef}
+              id={id}
               type="button"
-              aria-label={openLabel}
-              onClick={() => onOpen(linked.id)}
-              className="mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+              disabled={disabled}
+              aria-label={`${label}: ${name}`}
+              aria-haspopup="listbox"
+              aria-expanded={open}
+              aria-controls={open ? listId : undefined}
+              onClick={() => (open ? close() : openList())}
+              onKeyDown={(e) => {
+                if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+                  e.preventDefault();
+                  openList();
+                }
+              }}
+              // 16px on a phone, as the card's selects are there (globals.css: iOS zooms a field under 16px on focus):
+              // at 13px it read a size smaller than the Status and Priority beside it.
+              className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md py-1 pl-2 pr-1 text-left text-[13px] max-sm:text-[16px] outline-none enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-400"
             >
-              <ChevronRightIcon size={12} />
+              {/* The linked card's own colour, when it has one, tints its type's glyph: no dot beside it. */}
+              {type ? (
+                <span
+                  className={`shrink-0 ${ACCENT_TEXT}`}
+                  style={accentVars(own ?? type.color)}
+                  {...(own ? { role: 'img', 'aria-label': `${planColourName(own)} colour` } : {})}
+                >
+                  <PlanTypeGlyph glyph={type.glyph} size={14} />
+                </span>
+              ) : null}
+              {linked ? (
+                <>
+                  <span className="shrink-0 rounded bg-slate-100 px-1 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800">
+                    #{linked.key}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate font-medium text-slate-800 dark:text-slate-100">
+                    {itemTitle(linked)}
+                  </span>
+                </>
+              ) : (
+                <span
+                  className={`min-w-0 flex-1 truncate ${missing ? 'italic' : ''} text-slate-500 dark:text-slate-400`}
+                >
+                  {name}
+                </span>
+              )}
+              <span aria-hidden className="shrink-0 text-slate-400">
+                <ChevronDownIcon size={12} />
+              </span>
             </button>
           </Tooltip>
-        ) : null}
-      </div>
+          {linked && onOpen ? (
+            <Tooltip label={openLabel}>
+              <button
+                type="button"
+                aria-label={openLabel}
+                onClick={() => onOpen(linked.id)}
+                className="mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+              >
+                <ChevronRightIcon size={12} />
+              </button>
+            </Tooltip>
+          ) : null}
+        </div>
+      )}
       {open && anchor ? (
         // Over the page, so the side column never clips it. Escape and a press outside close it (AnchoredPopover,
         // which takes Escape before the panel's own, so the card stays open).
@@ -226,13 +327,14 @@ export function LinkedCardField({
               role="listbox"
               aria-label={label}
               tabIndex={-1}
+              aria-multiselectable={multiple || undefined}
               aria-activedescendant={`${listId}-${active}`}
               onKeyDown={onListKey}
               className="max-h-60 overflow-y-auto py-1 outline-none"
             >
               {options.map((card, i) => {
                 const t = card ? typeIn(types, card.type) : undefined;
-                const selected = (card?.id ?? undefined) === linkedId;
+                const selected = held(card);
                 return (
                   <li
                     key={card?.id ?? 'none'}
@@ -266,6 +368,15 @@ export function LinkedCardField({
                             {itemTitle(card)}
                           </span>
                         </Tooltip>
+                        {/* Several: each card linked is ticked. */}
+                        {multiple && selected ? (
+                          <span
+                            aria-hidden
+                            className="mt-[3px] shrink-0 text-brand-700 dark:text-brand-400"
+                          >
+                            <CheckIcon size={12} />
+                          </span>
+                        ) : null}
                       </>
                     ) : (
                       <span className="text-slate-500 dark:text-slate-400">None</span>
@@ -273,7 +384,7 @@ export function LinkedCardField({
                   </li>
                 );
               })}
-              {options.length === 1 && query ? (
+              {options.length === (multiple ? 0 : 1) && query ? (
                 <li role="presentation">
                   <NoMatches things="cards" query={query} />
                 </li>

@@ -22,7 +22,8 @@ export const COLUMN_TOGGLE_ATTR = 'data-column-toggle';
 const CHEVRON =
   'touch-target relative flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 motion-reduce:transition-none dark:hover:bg-white/10';
 
-// Collapse Column on an open column's head: shown on hover and focus, and always on a touch screen.
+// Collapse Column on an open column's head: always shown, so it is found without hovering and the head keeps no gap;
+// at rest it sits a little quieter than the cog beside it, and rises to full strength on hover and focus.
 export function CollapseColumnButton({
   column,
   palette,
@@ -39,7 +40,7 @@ export function CollapseColumnButton({
         {...{ [COLUMN_TOGGLE_ATTR]: column.id }}
         aria-label={`Collapse Column, ${column.name}`}
         aria-expanded
-        className={`${CHEVRON} -mr-1 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100`}
+        className={`${CHEVRON} -mr-1 opacity-70 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100`}
         style={{ color: palette.muted }}
         onPointerDown={stop}
         onClick={(e) => {

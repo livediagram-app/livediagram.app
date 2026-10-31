@@ -6,13 +6,13 @@ import { ExportPagePickerScene } from '@/components/illustrations/pages';
 export const metadata = helpMetadata({
   title: 'Exporting and Presenting Pages',
   description:
-    'Export pages as a PDF, PNG, SVG or animated GIF of every page or just one, each exactly its sheet, and turn them into slides to present.',
+    'Export pages as a PDF, PNG, SVG or animated GIF, a deck as an editable PowerPoint file, an article as a Word document, and pages as slides.',
   path: '/help/pages/exporting-pages/',
 });
 
 <ArticleLayout
   title="Exporting and Presenting Pages"
-  description="Every page or one page as a PDF, images or an animated GIF, and pages as slides."
+  description="Every page or one page as a PDF, images or an animated GIF, a deck as PowerPoint, an article as Word, and pages as slides."
   categoryTitle="Pages"
   categorySlug="pages"
   subArticles={getSubArticles('exporting-pages')}
@@ -22,7 +22,7 @@ Export and present work in **pages**, not the content of the whole tab.
 
 ## Exporting
 
-Open **Export** as usual (see [Exporting a Tab](/help/tabs/export-tabs/)). A tab offers the formats that suit pages: **PDF**, **PNG**, **SVG** and **GIF**, plus **JSON** to keep a copy of the tab. Markdown is not offered, since a page is not an outline.
+Open **Export** as usual (see [Exporting a Tab](/help/tabs/export-tabs/)). A tab offers the formats that suit pages: **PDF**, **PNG**, **SVG** and **GIF**, **PowerPoint** for a tab of slides or **Word** for an article, plus **JSON** to keep a copy of the tab. Markdown is not offered, since a page is not an outline.
 
 Pick a format and choose **All pages** or **One page** above the preview:
 
@@ -54,9 +54,20 @@ The panel shows a still preview of the page and an estimate of the file size, wi
 
 GIFs are made to move, so your **Reduce Motion** setting never stills one. A video shows its poster, as in a PNG.
 
+### PowerPoint and Word
+
+A tab of [slide pages](/help/pages/slide-pages/) offers **PowerPoint**, and an [article](/help/pages/articles/) offers **Word**. Each makes a file you can keep editing: in PowerPoint, Keynote or Google Slides for a deck, in Word or Google Docs for an article. The panel says what the file will hold and what stays editable, with a preview of the first page.
+
+- **PowerPoint** makes one slide per page, in order, at PowerPoint's widescreen (16:9) or standard (4:3) size. Text stays text boxes with their font, size, colour and alignment, and rectangles, circles, diamonds and the other basic shapes stay shapes with their label (one with an icon, a shadow or the Sketch finish comes as a picture, so it looks the same). Charts, tables, icons, pictures, arrows and anything else come as pictures, exactly as the page shows them, each one on its own so you can move it. Each page's **speaker notes** from the Slide Deck go into the slide's notes, and a hidden slide stays hidden.
+- **Word** writes the article: titles, headings, quotes and code as Word's own styles, so restyling a heading in Word restyles them all; bulleted, numbered and to-do lists; links, bold, italic and the rest of the formatting. Pictures, charts and drawings in the article come as images, in line or with the text wrapping beside them as on the page, and page numbers go in the footer when the article has them. The document uses the article's paper size and margins.
+
+Press **Download PowerPoint** or **Download Word**. A progress bar shows the file being made; **Cancel** stops it and nothing downloads. The file is made on your device, and named after the document and tab (`Report - Tab 1.docx`).
+
+A font travels by name: an app that has it shows it, and one that doesn't uses a similar font.
+
 ## Importing
 
-**Import** takes **JSON** (a livedocuments tab, pages and all) or **Markdown**, which becomes an article (see [Importing a Tab](/help/tabs/import-tabs/) and [Markdown Import](/help/tools/markdown-import/)).
+**Import** takes **JSON** (a livedocuments tab, pages and all), **Markdown** or **Word**, which become an article, or **PowerPoint**, which becomes slide pages (see [Importing a Tab](/help/tabs/import-tabs/) and [Markdown Import](/help/tools/markdown-import/)).
 
 ## Turning Pages Into Slides
 

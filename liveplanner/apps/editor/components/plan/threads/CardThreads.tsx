@@ -2,11 +2,12 @@
 
 // A card's comment threads in the card panel (docs/specs/026-plan/items.md "Where it shows"): one Comments field's
 // (the built-in `comments`, or the type's own, item-types.md "Comments and Votes fields"), last in the Overview tab,
-// listing only the threads that field holds, its New Thread starting one in it. A quiet tally and New Thread over the list; no threads, a soft empty state; the starter at
+// listing only the threads that field holds, its New Thread starting one in it. The field's label, a quiet count of
+// open threads and New Thread share one heading line; no threads, a soft empty state; the starter at
 // the top when New Thread is pressed; open threads most recently active first, every one closed when the card opens
 // (a thread just started, or one a link names, opens); resolved threads under a Resolved disclosure at the bottom.
-// Drawn for about five threads, and for many more. With the header's Activity switch on, the card's history
-// (CardActivity.tsx, items.md "History") is interleaved with the open threads by time.
+// Drawn for about five threads, and for many more. Only threads: the card's history is its own Activity tab
+// (CardActivity.tsx, items.md "History").
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CommentIcon, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
@@ -15,28 +16,17 @@ import {
   COMMENTS_FIELD,
   itemTitle,
   threadsInField,
-  typeIn,
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
 import type { CardThread, CommentMention } from '@liveplanner/project';
 import { usePlan } from '../PlanContext';
+import { ItemPanelSection } from '../ItemPanelLayout';
 import { AddThreadToCardDialog } from './AddThreadToCardDialog';
 import { useCardThreadsContext } from './CardThreadsContext';
 import { ThreadStarter } from './ThreadStarter';
 import { ThreadTile } from './ThreadTile';
-import { ANNOUNCE, threadTally } from './thread-words';
-import { useCardHistory } from '@/hooks/plan/useCardHistory';
-import {
-  ACTIVITY_ROWS_SHOWN,
-  ActivityNote,
-  ActivityRow,
-  ActivitySwitch,
-  ShowMoreActivity,
-  activityFeed,
-  useActivityOn,
-} from './CardActivity';
-import type { ActivityContext } from './activity-words';
+import { ANNOUNCE, openTally } from './thread-words';
 
 const PlusIcon = lucideGlyph(lucidePlus, 13);
 const Chevron = lucideGlyph(lucideChevronDown, 13);
@@ -46,6 +36,8 @@ type CardThreadsProps = {
   // The card's type and the Comments field drawn: every thread on the card when not given.
   type?: ItemTypeDef;
   field?: string;
+  // The field's label: drawn as the section's heading, with the open count and New Thread on its line.
+  heading?: string;
 };
 
 // Keyed by the card, so opening another card (or this one again) starts with every thread closed.
@@ -53,7 +45,7 @@ export function CardThreads(props: CardThreadsProps) {
   return <CardThreadsOf key={props.item.id} {...props} />;
 }
 
-function CardThreadsOf({ item, type, field = COMMENTS_FIELD }: CardThreadsProps) {
+function CardThreadsOf({ item, type, field = COMMENTS_FIELD, heading }: CardThreadsProps) {
   const ctx = useCardThreadsContext();
   const plan = usePlan();
   const threads = useMemo(() => {
@@ -69,24 +61,6 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD }: CardThreadsProps)
   // has just been started here. Kept only while the panel stays on this card.
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const tiles = useRef(new Map<string, HTMLElement>());
-  // The card's activity: its history, read while the switch is on, the first rows shown until Show N More.
-  const [activityOn, setActivityOn] = useActivityOn();
-  const [allActivity, setAllActivity] = useState(false);
-  const history = useCardHistory({
-    scope: ctx?.threads.scope ?? null,
-    itemId: item.id,
-    rev: item.rev,
-    enabled: activityOn,
-  });
-  const activityCtx = useMemo<ActivityContext>(
-    () => ({
-      statusNames: plan?.statusNames ?? new Map(),
-      types: plan?.types ?? [],
-      type: plan ? typeIn(plan.types, item.type) : undefined,
-      items: plan?.items ?? new Map(),
-    }),
-    [plan, item.type],
-  );
 
   // A link to one of this card's threads (#item=…&thread=…): open it (the Resolved list too), bring it into view.
   const focused = ctx?.threads.focused ?? null;
@@ -106,7 +80,11 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD }: CardThreadsProps)
     return () => cancelAnimationFrame(frame);
   }, [focusedThread, ctx]);
 
-  if (!ctx) return null;
+  // No comments context (a preview): the field's heading alone, as any field's.
+  if (!ctx)
+    return heading === undefined ? null : (
+      <ItemPanelSection heading={heading}>{null}</ItemPanelSection>
+    );
   const { canComment } = ctx;
   const titleOf = (itemId: string) => {
     const it = plan?.items.get(itemId);
@@ -155,31 +133,34 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD }: CardThreadsProps)
     <button
       type="button"
       onClick={() => setStarting(true)}
-      className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 motion-reduce:transition-none pointer-coarse:py-2 dark:text-brand-300 dark:hover:bg-brand-500/10"
+      className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 motion-reduce:transition-none pointer-coarse:py-2 dark:text-brand-300 dark:hover:bg-brand-500/10"
     >
       <PlusIcon aria-hidden />
       New Thread
     </button>
   );
-  const tally = threadTally(open.length, resolved.length);
-  const entries = activityOn ? history.entries : [];
-  const feed = activityFeed(open, entries, allActivity ? entries.length : ACTIVITY_ROWS_SHOWN);
-  const activitySwitch = ctx.threads.scope ? (
-    <ActivitySwitch on={activityOn} onChange={setActivityOn} />
-  ) : null;
+  const tally = openTally(open.length);
+  // The heading line's end: the open count, then New Thread (gone while the starter is open, or with no threads,
+  // where the empty state offers it).
+  const actions = (
+    <>
+      {tally ? (
+        <span
+          data-thread-tally=""
+          className="rounded-full bg-slate-100 px-2 py-px text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+        >
+          {tally}
+        </span>
+      ) : null}
+      <span className="flex-1" />
+      {canComment && !starting && threads.length > 0 ? newThread : null}
+    </>
+  );
 
-  return (
+  const body = (
     <div data-card-threads="" className="flex flex-col gap-2">
-      {threads.length > 0 || starting || activitySwitch ? (
-        <div className="flex min-h-7 items-center justify-between gap-2">
-          <span className="text-[12px] text-slate-500 dark:text-slate-400">
-            {threads.length > 0 || starting ? tally : null}
-          </span>
-          <span className="flex items-center gap-1">
-            {activitySwitch}
-            {canComment && !starting && threads.length > 0 ? newThread : null}
-          </span>
-        </div>
+      {heading === undefined && (threads.length > 0 || starting) ? (
+        <div className="flex min-h-7 items-center gap-2">{actions}</div>
       ) : null}
       {starting ? (
         <ThreadStarter self={ctx.self} onStart={start} onCancel={() => setStarting(false)} />
@@ -198,24 +179,11 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD }: CardThreadsProps)
           className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700"
         />
       ) : null}
-      {feed.rows.length > 0 ? (
-        <ul
-          aria-label={entries.length > 0 ? 'Open threads and activity' : 'Open threads'}
-          className="flex flex-col gap-2"
-        >
-          {feed.rows.map((row) =>
-            row.kind === 'thread' ? (
-              tile(row.thread)
-            ) : (
-              <ActivityRow key={`a-${row.index}`} entry={row.entry} ctx={activityCtx} />
-            ),
-          )}
+      {open.length > 0 ? (
+        <ul aria-label="Open threads" className="flex flex-col gap-2">
+          {open.map(tile)}
         </ul>
       ) : null}
-      {feed.hidden > 0 ? (
-        <ShowMoreActivity hidden={feed.hidden} onShow={() => setAllActivity(true)} />
-      ) : null}
-      {activityOn ? <ActivityNote history={history} /> : null}
       {resolved.length > 0 ? (
         <div className="flex flex-col gap-2">
           <button
@@ -247,5 +215,12 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD }: CardThreadsProps)
         />
       ) : null}
     </div>
+  );
+  return heading === undefined ? (
+    body
+  ) : (
+    <ItemPanelSection heading={heading} actions={actions}>
+      {body}
+    </ItemPanelSection>
   );
 }

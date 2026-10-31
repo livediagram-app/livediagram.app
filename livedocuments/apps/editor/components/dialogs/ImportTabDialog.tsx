@@ -3,9 +3,15 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
+import { FileImportPanel } from './FileImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { ImportReport } from '@liveworkspace/workbench/components/dialogs/ImportReport';
-import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
+import type {
+  FileImportFormat,
+  FileImportStage,
+  ImportFormat as Format,
+  TextImportFormat,
+} from '@/hooks/persistence/useTabImport';
 import { Glyph, DialogCloseButton, DialogHeader } from '@livedocuments/ui';
 
 type ImportTabDialogProps = {
@@ -15,31 +21,42 @@ type ImportTabDialogProps = {
   // Runs a file import for the chosen format: opens the file picker,
   // parses, and replaces the active tab. Returns an outcome so this
   // dialog can close / stay open / show an error without throwing.
-  onImportFile: (format: Format) => Promise<ImportOutcome>;
+  onImportFile: (format: TextImportFormat) => Promise<ImportOutcome>;
   // Runs a text import (the paste/write path) for the chosen format,
   // bypassing the file picker (docs/specs/020-import-export/markdown-import.md).
-  onImportText: (format: Format, text: string) => Promise<ImportOutcome>;
+  onImportText: (format: TextImportFormat, text: string) => Promise<ImportOutcome>;
+  // Runs a Word or PowerPoint import of a dropped or chosen file (docs/specs/020-import-export/office-import.md),
+  // reporting its stage as it goes.
+  onImportFileFormat: (
+    format: FileImportFormat,
+    file: File,
+    onStage: (stage: FileImportStage) => void,
+  ) => Promise<ImportOutcome>;
   // The formats offered, in catalogue order; absent offers every one (docs/specs/007-editor/pages-mode.md
   // "Import"); a single format opens straight at its panel.
   formats?: readonly Format[];
   onClose: () => void;
 };
 
-// Per-format copy for the grid card + the paste-panel placeholder. Every
-// format is a text format, so each opens the same paste-or-file panel.
-const FORMATS: {
-  key: Format;
+// Per-format copy for the grid card and its panel. A text format opens the paste-or-file panel with its
+// placeholder; a file format (Word, PowerPoint) opens the file panel.
+type FormatEntry = {
   title: string;
   description: string;
-  placeholder: string;
-  // Optional footnote for this format's paste step — a help link for a
+  // Optional footnote for this format's panel — a help link for a
   // format whose mapping isn't obvious from the placeholder alone. It rides
   // on the format rather than the picker screen so it appears once the
   // reader has actually chosen that format and the answer is relevant.
-  note?: { article: 'markdownImport'; label: string };
-}[] = [
+  note?: { article: 'markdownImport' | 'importTabs'; label: string };
+} & (
+  | { key: TextImportFormat; kind: 'text'; placeholder: string }
+  | { key: FileImportFormat; kind: 'file' }
+);
+
+const FORMATS: FormatEntry[] = [
   {
     key: 'json',
+    kind: 'text',
     title: 'JSON',
     description:
       'A livedocuments tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
@@ -47,10 +64,25 @@ const FORMATS: {
   },
   {
     key: 'markdown',
+    kind: 'text',
     title: 'Markdown',
     description: 'A .md file. Becomes an article, its headings, lists and paragraphs kept.',
     placeholder: '# Project\n\nWhy we are doing this.\n\n- Research\n- Build\n- Launch',
     note: { article: 'markdownImport', label: 'See how Markdown becomes an article' },
+  },
+  {
+    key: 'word',
+    kind: 'file',
+    title: 'Word',
+    description: 'A .docx from Word or Google Docs. Becomes an article.',
+    note: { article: 'importTabs', label: 'How Word import works' },
+  },
+  {
+    key: 'powerpoint',
+    kind: 'file',
+    title: 'PowerPoint',
+    description: 'A .pptx from PowerPoint or Google Slides. Becomes slide pages.',
+    note: { article: 'importTabs', label: 'How PowerPoint import works' },
   },
 ];
 
@@ -70,6 +102,7 @@ export function ImportTabDialog({
   tabName,
   onImportFile,
   onImportText,
+  onImportFileFormat,
   onClose,
   formats,
 }: ImportTabDialogProps) {
@@ -89,9 +122,11 @@ export function ImportTabDialog({
         subtitle={
           report
             ? "Here's how your import came across."
-            : activeFormat
-              ? `Paste your ${activeFormat.title}, or import a file.`
-              : 'Pick a format to import into the current tab.'
+            : activeFormat?.kind === 'file'
+              ? `Import a ${activeFormat.title} file.`
+              : activeFormat
+                ? `Paste your ${activeFormat.title}, or import a file.`
+                : 'Pick a format to import into the current tab.'
         }
       >
         <HelpArticleLink article="importTabs" size="md" />
@@ -109,6 +144,7 @@ export function ImportTabDialog({
             single={only !== null}
             onImportFile={onImportFile}
             onImportText={onImportText}
+            onImportFileFormat={onImportFileFormat}
             onDone={(outcome) => (needsReport(outcome) ? setReport(outcome) : onClose())}
           />
         )}
@@ -125,16 +161,18 @@ function ImportChooser({
   onPick,
   onImportFile,
   onImportText,
+  onImportFileFormat,
   onDone,
   single,
 }: {
   tabName: string;
-  activeFormat: (typeof FORMATS)[number] | null;
-  formats: typeof FORMATS;
+  activeFormat: FormatEntry | null;
+  formats: FormatEntry[];
   onPick: (format: Format | null) => void;
   single: boolean;
   onImportFile: ImportTabDialogProps['onImportFile'];
   onImportText: ImportTabDialogProps['onImportText'];
+  onImportFileFormat: ImportTabDialogProps['onImportFileFormat'];
   onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
 }) {
   return (
@@ -152,7 +190,25 @@ function ImportChooser({
           <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
         </span>
       </div>
-      {activeFormat ? (
+      {activeFormat?.kind === 'file' ? (
+        <FileImportPanel
+          // A fresh panel per format, so a stale error never carries across.
+          key={activeFormat.key}
+          format={activeFormat.key}
+          note={
+            activeFormat.note ? (
+              <HelpArticleLink
+                article={activeFormat.note.article}
+                variant="text"
+                label={activeFormat.note.label}
+              />
+            ) : null
+          }
+          onImportFile={(file, onStage) => onImportFileFormat(activeFormat.key, file, onStage)}
+          onDone={onDone}
+          onBack={single ? undefined : () => onPick(null)}
+        />
+      ) : activeFormat ? (
         <TextImportPanel
           formatTitle={activeFormat.title}
           placeholder={activeFormat.placeholder}
@@ -193,7 +249,7 @@ function ImportChooser({
 }
 
 function FormatIcon({ kind }: { kind: Format }) {
-  const label = kind === 'markdown' ? 'md' : 'json';
+  const label = { json: 'json', markdown: 'md', word: 'docx', powerpoint: 'pptx' }[kind];
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

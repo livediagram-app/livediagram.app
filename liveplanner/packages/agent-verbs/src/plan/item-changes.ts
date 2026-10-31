@@ -15,6 +15,8 @@ import {
   itemSummary,
   resolveFields,
   calculatedWritten,
+  isFormulaField,
+  isLookupField,
   resolveItem,
   resolveStatus,
   resolveType,
@@ -114,6 +116,10 @@ function personNote(fields: Readonly<Record<string, unknown>>, items: readonly I
   return [`${p.name} is a new name on this plan, not linked to anyone's account`];
 }
 
+// The card a value names, by id.
+const byIdIn = (items: readonly Item[], v: unknown): Item | undefined =>
+  items.find((i) => i.id === v);
+
 // The most of a value a set line repeats.
 const SET_VALUE_MAX = 40;
 
@@ -121,6 +127,11 @@ const SET_VALUE_MAX = 40;
 // ★"). A card link by its number, a person by name, a list by its length.
 function storedText(value: unknown, items: readonly Item[]): string {
   if (isItemPerson(value)) return value.name;
+  // A field that holds several (docs/specs/026-plan/item-types.md "Holds Several"): its people or cards, named.
+  if (Array.isArray(value) && value.length > 0 && value.every(isItemPerson))
+    return cut(value.map((p) => p.name).join(', '));
+  if (Array.isArray(value) && value.length > 0 && value.every((v) => byIdIn(items, v)))
+    return cut(value.map((v) => `#${byIdIn(items, v)!.key}`).join(', '));
   if (Array.isArray(value)) return `${value.length} entr${value.length === 1 ? 'y' : 'ies'}`;
   if (typeof value === 'string') {
     const linked = items.find((i) => i.id === value);
@@ -211,10 +222,15 @@ export async function applyItemChanges(
     const calculated = calculatedWritten([type], { type: type.id, fields: fields as ItemFields });
     if (calculated) {
       // calculatedWritten names only a field the type has.
-      const label = type.custom!.find((f) => f.id === calculated)!.label;
+      const field = type.custom!.find((f) => f.id === calculated)!;
+      const from = isFormulaField(field)
+        ? 'by its formula'
+        : isLookupField(field)
+          ? 'from the card it links to'
+          : 'from the cards linking here';
       throw new Stop(
         'field_calculated',
-        `${label} is calculated: it can't be set. list_items lists its value, worked out from the cards linking here.`,
+        `${field.label} is calculated: it can't be set. list_items lists its value, worked out ${from}.`,
       );
     }
     return fields;

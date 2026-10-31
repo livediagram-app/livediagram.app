@@ -7,6 +7,7 @@ import { liveCards } from './plan-views';
 import {
   SWIMLANE_BY,
   laneFieldsOf,
+  inLane,
   laneGroups,
   swimlaneGroupingsFor,
   type SwimlaneBy,
@@ -74,7 +75,8 @@ export function searchCards(
   const all = new Map(cards.map((c) => [c.id, c]));
   for (const f of filters) {
     const groups = laneGroups(f.by, f.field, cards, all, types, statusNames);
-    cards = cards.filter((c) => groups.laneOfItem.get(c.id) === f.key);
+    // A card holding several values matches a filter on any of them (item-types.md "Holds Several").
+    cards = cards.filter((c) => inLane(groups, c.id, f.key));
   }
   return cards;
 }
@@ -121,7 +123,8 @@ export function searchValues(
   const all = new Map(liveCards(items).map((c) => [c.id, c]));
   const groups = laneGroups(field.by, field.field, matching, all, types, statusNames);
   const counts = new Map<string, number>();
-  for (const key of groups.laneOfItem.values()) counts.set(key, (counts.get(key) ?? 0) + 1);
+  for (const keys of groups.lanesOfItem.values())
+    for (const key of keys) counts.set(key, (counts.get(key) ?? 0) + 1);
   return groups.lanes.map((l) => ({ key: l.key, label: l.label, count: counts.get(l.key) ?? 0 }));
 }
 

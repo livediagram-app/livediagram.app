@@ -27,10 +27,12 @@ import {
   type Item,
   type ItemTypeDef,
   type CustomFieldDef,
+  type CalculatedValue,
   type IsDoneStatus,
   calculatedText,
   calculatedValue,
-  calculationOf,
+  formulaValue,
+  isFormulaField,
   childIndexFor,
   cardAgeDays,
   cardAgeText,
@@ -41,8 +43,17 @@ import {
   itemStampTime,
   stampDay,
   AUTOMATIC_CARD_FIELDS,
+  percentShown,
+  percentText,
+  showsAsPercent,
 } from '@liveplanner/items';
-import { FLAG_COLOUR, PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
+import {
+  FLAG_COLOUR,
+  PLAN_PERCENT_BAR,
+  PRIORITY_COLOURS,
+  planPercentInks,
+  type PlanPalette,
+} from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { personDisc, text as faceText, wrapLines } from './svg-render-face-kit';
 import { initialsOf } from '@liveworkspace/model-core/names';
@@ -69,14 +80,26 @@ const CHAR_EM = 0.56;
 type Bit =
   | { kind: 'text'; text: string; color: string; weight?: number; pill?: boolean; dot?: string }
   | { kind: 'person'; name: string; color: string }
-  | { kind: 'lines'; lines: string[]; color: string };
+  | { kind: 'lines'; lines: string[]; color: string }
+  // A share drawn as a Percent field is (docs/specs/026-plan/item-types.md "Percent"): its name, a thin bar, "40%".
+  | { kind: 'percent'; label: string; value: number; color: string; fill: string; track: string };
+
+// The gap either side of a Percent bit's bar.
+const PERCENT_GAP = 5;
+const charsWidth = (s: string) => s.length * BIT_PX * CHAR_EM;
 
 const bitWidth = (b: Bit): number =>
   b.kind === 'person'
     ? 20
     : b.kind === 'lines'
       ? 0
-      : b.text.length * BIT_PX * CHAR_EM + (b.pill ? 14 : 0) + (b.dot ? 12 : 0);
+      : b.kind === 'percent'
+        ? charsWidth(b.label) +
+          PLAN_PERCENT_BAR.width +
+          PERCENT_GAP * 2 +
+          charsWidth(percentText(b.value)) +
+          14
+        : charsWidth(b.text) + (b.pill ? 14 : 0) + (b.dot ? 12 : 0);
 
 export type CardFaceContext = {
   palette: PlanPalette;
@@ -197,10 +220,28 @@ function bitOf(
         const n = itemVoteTotal(item, def.id);
         return n > 0 ? { kind: 'text', text: `${def.label} ▲ ${n}`, color: p.muted } : null;
       }
+      // A Percent field, or a share shown as one, draws its bar (docs/specs/026-plan/item-types.md "Percent").
+      if (def && showsAsPercent(def)) {
+        const share = percentShown(
+          def,
+          def.kind === 'calculated'
+            ? calculatedOf(def, item, ctx, ctx.types ?? ITEM_TYPES)
+            : item.fields[def.id],
+        );
+        return share === undefined
+          ? null
+          : {
+              kind: 'percent',
+              label: def.label,
+              value: share,
+              color: p.text,
+              ...planPercentInks(p),
+            };
+      }
       const value = !def
         ? null
         : def.kind === 'calculated'
-          ? calculatedBit(def, item, ctx, ctx.types ?? ITEM_TYPES)
+          ? calculatedText(def, calculatedOf(def, item, ctx, ctx.types ?? ITEM_TYPES))
           : customFieldText(def, item.fields[def.id], ctx.items);
       return def && value
         ? { kind: 'text', text: `${def.label}: ${value}`, color: p.text, pill: true }
@@ -209,17 +250,24 @@ function bitOf(
   }
 }
 
-// A Calculated field's value as text, worked out from the cards in hand: null without them, and Children Done only
-// with the board's done columns.
-function calculatedBit(
+// A Calculated field's value, worked out from the cards in hand: null without them, and Children Done only with the
+// board's done columns (a Rollup's Count Done too). A Formula reads the card itself, so a lone card draws it too (none
+// when it can't be worked out; docs/specs/026-plan/item-types.md "Formula fields"); a Rollup or Lookup reads the
+// cards ("Rollup and Lookup fields").
+function calculatedOf(
   def: CustomFieldDef,
   item: Item,
   ctx: CardFaceContext,
   types: readonly ItemTypeDef[],
-): string | null {
-  if (!ctx.items || (calculationOf(def) === 'childrenDone' && !ctx.isDone)) return null;
-  const isDone = ctx.isDone ?? (() => false);
-  return calculatedText(def, calculatedValue(def, item, childIndexFor(ctx.items, types), isDone));
+): CalculatedValue {
+  const type = typeIn(types, item.type);
+  if (isFormulaField(def) && !ctx.items) return formulaValue(def, item, type);
+  if (!ctx.items) return null;
+  return calculatedValue(def, item, childIndexFor(ctx.items, types), ctx.isDone, {
+    type,
+    items: ctx.items,
+    types,
+  });
 }
 
 // The face, drawn at (x, y) `w` wide, with the height it took. `measureOnly` skips the markup.
@@ -381,6 +429,7 @@ function drawBit(
 ): string {
   if (b.kind === 'person')
     return personDisc(x + 10, y + 10, 10, b.color, { initials: initialsOf(b.name), fill: b.color });
+  if (b.kind === 'percent') return drawPercentBit(b, x, y, w, border);
   const parts: string[] = [];
   let tx = x;
   if (b.pill)
@@ -402,4 +451,37 @@ function drawBit(
     }),
   );
   return parts.join('');
+}
+
+// A Percent bit: the pill, the field's name, a thin track with the share filled, then "40%". A pill narrower than it
+// wants keeps the bar and the share, shortening the name.
+function drawPercentBit(
+  b: Extract<Bit, { kind: 'percent' }>,
+  x: number,
+  y: number,
+  w: number,
+  border: string,
+): string {
+  const share = percentText(b.value);
+  const shareW = charsWidth(share);
+  const bar = PLAN_PERCENT_BAR;
+  const nameRoom = Math.max(0, w - 14 - bar.width - PERCENT_GAP * 2 - shareW);
+  const name = fitChars(b.label, nameRoom);
+  const barX = x + 7 + (name ? charsWidth(name) + PERCENT_GAP : 0);
+  const barY = y + 10 - bar.height / 2;
+  const r = bar.height / 2;
+  const fillW = (bar.width * b.value) / 100;
+  return (
+    `<rect x="${r2(x)}" y="${r2(y + 1)}" width="${r2(w)}" height="18" rx="9" fill="none" stroke="${xmlEscape(border)}" stroke-width="1"/>` +
+    (name ? faceText(x + 7, y + 14, name, { size: BIT_PX, color: b.color }) : '') +
+    `<rect x="${r2(barX)}" y="${r2(barY)}" width="${bar.width}" height="${bar.height}" rx="${r}" fill="${xmlEscape(b.track)}"/>` +
+    (fillW > 0
+      ? `<rect x="${r2(barX)}" y="${r2(barY)}" width="${r2(fillW)}" height="${bar.height}" rx="${r}" fill="${xmlEscape(b.fill)}"/>`
+      : '') +
+    faceText(barX + bar.width + PERCENT_GAP, y + 14, share, {
+      size: BIT_PX,
+      color: b.color,
+      weight: 600,
+    })
+  );
 }

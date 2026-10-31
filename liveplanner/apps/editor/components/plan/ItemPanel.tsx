@@ -2,9 +2,10 @@
 
 // The item panel (docs/specs/026-plan/plan-board.md "Working on a board"): a wide modal in two columns.
 // The main column holds the title and the type's tabs (docs/specs/026-plan/item-types.md); the Details
-// panel beside it holds the fields in no tab, then who made the item and who last changed it. On a phone
-// it is one column and Details becomes the first tab. Every field saves as it changes. It follows the
-// item wherever someone moves it, and closes if someone deletes it.
+// panel beside it holds the fields in no tab, then who made the item and who last changed it. Every type's tabs end
+// with Activity (the card's history); on a phone it is one column and Details becomes the last tab. It opens on the
+// type's first tab. Every field saves as it changes. It follows the item wherever someone moves it, and closes if
+// someone deletes it.
 import { useEffect, useState, type ReactNode } from 'react';
 import { markResponseOpened } from '@/components/forms/fresh-responses';
 import {
@@ -38,7 +39,8 @@ import { LinkedActionBanner } from './LinkedActionBanner';
 import type { PlanContextValue } from './PlanContext';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
 import { ItemKeyTag, ItemMaximiseButton, ItemTypePill } from './ItemPanelHeaderParts';
-import { panelSizeClass } from './item-panel-size';
+import { PANEL_RESIZE_TRANSITION, panelSizeClass } from './item-panel-size';
+import { useAnimatedMaximise } from './useAnimatedMaximise';
 import type { ItemOpenVia } from './item-trail';
 import { FLAG_COLOUR } from './item-flag';
 import {
@@ -49,13 +51,12 @@ import {
   type ItemFieldContext,
 } from './ItemFieldEditor';
 import { ItemDetailsRow, ItemMeta, ItemPanelSection, ItemTypeBand } from './ItemPanelLayout';
+import { ACTIVITY_TAB, DETAILS_TAB, ItemPanelTabBar, panelTabs } from './ItemPanelTabs';
+import { track } from '@/lib/telemetry';
+import { CardActivityTab } from './threads/CardActivity';
+import { CardThreads } from './threads/CardThreads';
 
-// The phone's extra first tab, holding what the Details panel holds on a wide screen.
-const DETAILS_TAB = 'details';
 const NO_GROUPS: readonly LinkedGroup[] = [];
-
-const TAB_CLASS =
-  'relative shrink-0 whitespace-nowrap px-1 pb-2 pt-1 text-[13px] font-medium transition aria-selected:text-brand-700 dark:aria-selected:text-brand-300';
 
 type ItemPanelProps = {
   item: Item;
@@ -134,7 +135,9 @@ export function ItemPanel(props: ItemPanelProps) {
   // A response's card stops showing New once opened (docs/specs/030-forms/forms.md "Hearing about responses").
   useEffect(() => markResponseOpened(item), [item]);
   const mobile = useIsMobileViewport();
-  const maximised = !!props.maximised && !mobile;
+  // The size eases between the two (plan-board.md "Maximised"): a View Transition of the Dialog's panel.
+  const [shownMaximised, onMaximise] = useAnimatedMaximise(!!props.maximised, props.onMaximise);
+  const maximised = shownMaximised && !mobile;
   return (
     <Dialog
       open
@@ -147,8 +150,9 @@ export function ItemPanel(props: ItemPanelProps) {
       // no keyboard rises (docs/specs/026-plan/plan-board.md "Open an item").
       initialFocus="container"
       className={panelSizeClass(maximised)}
+      resizeTransition={PANEL_RESIZE_TRANSITION}
     >
-      <ItemPanelContent key={item.id} {...props} maximised={maximised} />
+      <ItemPanelContent key={item.id} {...props} maximised={maximised} onMaximise={onMaximise} />
     </Dialog>
   );
 }
@@ -204,11 +208,18 @@ function ItemPanelContent({
         item.fields[f] !== undefined,
     ),
   ];
-  const shownTabs = mobile
-    ? [{ id: DETAILS_TAB, label: detailsLabelOf(type), fields: details }, ...tabs]
-    : tabs;
-  const [picked, setPicked] = useState<string>(shownTabs[0]?.id ?? DETAILS_TAB);
-  const current = shownTabs.find((t) => t.id === picked) ?? shownTabs[0];
+  // The type's tabs, then Activity, then (on a phone) Details at the far right; the panel opens on the first.
+  const shownTabs = panelTabs(
+    tabs,
+    mobile ? { id: DETAILS_TAB, label: detailsLabelOf(type), fields: details } : null,
+  );
+  const [picked, setPicked] = useState<string>(shownTabs[0]!.id);
+  const current = shownTabs.find((t) => t.id === picked) ?? shownTabs[0]!;
+  const pick = (id: string) => {
+    // Picking Activity reads the card's history (items.md "History" "Where it shows").
+    if (id === ACTIVITY_TAB && current.id !== ACTIVITY_TAB) track('Plan', 'Toggled', 'ActivityOn');
+    setPicked(id);
+  };
   const ctx: ItemFieldContext = {
     item,
     type,
@@ -317,29 +328,40 @@ function ItemPanelContent({
     </ItemDetailsRow>
   );
 
-  // A main-column field: its name over its editor.
-  const mainField = (f: string) => (
-    <ItemPanelSection
-      key={f}
-      heading={fieldLabel(type, f)}
-      htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
-      required={requiredIds.has(f)}
-    >
-      <ItemFieldEditor f={f} ctx={ctx} />
-    </ItemPanelSection>
-  );
+  // A type's Comments fields draw their own heading line (the open count and New Thread beside the label).
+  const commentFields = new Set(commentsFieldsOf(type));
 
-  const tabPanel = current ? (
+  // A main-column field: its name over its editor.
+  const mainField = (f: string): ReactNode => {
+    if (commentFields.has(f))
+      return (
+        <CardThreads key={f} item={item} type={type} field={f} heading={fieldLabel(type, f)} />
+      );
+    return (
+      <ItemPanelSection
+        key={f}
+        heading={fieldLabel(type, f)}
+        htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
+        required={requiredIds.has(f)}
+      >
+        <ItemFieldEditor f={f} ctx={ctx} />
+      </ItemPanelSection>
+    );
+  };
+
+  const tabPanel = (
     <div
-      role={shownTabs.length > 1 ? 'tabpanel' : undefined}
+      role="tabpanel"
       id={`item-${item.id}-panel-${current.id}`}
-      aria-labelledby={shownTabs.length > 1 ? `item-${item.id}-tab-${current.id}` : undefined}
+      aria-labelledby={`item-${item.id}-tab-${current.id}`}
     >
-      {current.id === DETAILS_TAB ? (
-        <>
+      {current.id === ACTIVITY_TAB ? (
+        <CardActivityTab item={item} />
+      ) : current.id === DETAILS_TAB ? (
+        <div className="flex flex-col">
           {details.map(detailRow)}
           {meta}
-        </>
+        </div>
       ) : current.id === firstTabId && showsChildren ? (
         tabFieldsWithChildren(type, current.fields, mainField, childSection)
       ) : current.fields.length > 0 ? (
@@ -350,7 +372,7 @@ function ItemPanelContent({
         </p>
       )}
     </div>
-  ) : null;
+  );
 
   return (
     <>
@@ -388,56 +410,14 @@ function ItemPanelContent({
               onSave={(v) => onSave('title', v)}
               className={`-mx-2 mb-5 w-[calc(100%+1rem)] rounded-lg border border-transparent bg-transparent px-2 py-1 ${maximised ? 'text-[26px]' : 'text-[22px]'} font-semibold leading-snug tracking-tight text-slate-900 outline-none transition hover:bg-slate-50 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:text-slate-50 dark:hover:bg-slate-800/50 dark:focus:bg-slate-950`}
             />
-            {shownTabs.length > 1 ? (
-              <div
-                role="tablist"
-                aria-label="Item sections"
-                className="mb-6 flex gap-5 overflow-x-auto overflow-y-hidden border-b border-slate-200 dark:border-slate-700"
-                onKeyDown={(e) => {
-                  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-                  e.preventDefault();
-                  const i = shownTabs.findIndex((t) => t.id === current?.id);
-                  const next =
-                    shownTabs[
-                      (i + (e.key === 'ArrowRight' ? 1 : -1) + shownTabs.length) % shownTabs.length
-                    ]!;
-                  setPicked(next.id);
-                  document.getElementById(`item-${item.id}-tab-${next.id}`)?.focus();
-                }}
-              >
-                {shownTabs.map((t) => {
-                  const on = t.id === current?.id;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      role="tab"
-                      id={`item-${item.id}-tab-${t.id}`}
-                      aria-selected={on}
-                      aria-controls={`item-${item.id}-panel-${t.id}`}
-                      tabIndex={on ? 0 : -1}
-                      onClick={() => setPicked(t.id)}
-                      className={`${TAB_CLASS} ${on ? '' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'}`}
-                    >
-                      {t.label}
-                      {on ? (
-                        <span
-                          aria-hidden
-                          className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-brand-600 dark:bg-brand-400"
-                        />
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
+            <ItemPanelTabBar itemId={item.id} tabs={shownTabs} current={current.id} onPick={pick} />
             {tabPanel}
           </div>
         </div>
         {mobile ? null : (
           <aside
             aria-label={detailsLabelOf(type)}
-            className={`m-3 ml-0 shrink-0 ${maximised ? 'w-96 px-5 2xl:w-[28rem]' : 'w-80 px-4'} overflow-y-auto rounded-xl bg-slate-50 py-4 ring-1 ring-slate-200/70 dark:bg-slate-800/40 dark:ring-slate-700/60`}
+            className={`m-3 ml-0 flex shrink-0 flex-col ${maximised ? 'w-96 px-5 2xl:w-[28rem]' : 'w-80 px-4'} overflow-y-auto rounded-xl bg-slate-50 py-4 ring-1 ring-slate-200/70 dark:bg-slate-800/40 dark:ring-slate-700/60`}
           >
             <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {detailsLabelOf(type)}

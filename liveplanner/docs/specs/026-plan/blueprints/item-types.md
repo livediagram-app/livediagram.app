@@ -5,17 +5,17 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                                                                                                                                                                                            |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                                     |
-| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                                       |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required?, notifies? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
-| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                                      |
-| notifying field   | a Person field that tells its person (spec "Notifies"): `notifies: true` on a person `CustomFieldDef`, the Assignee unless `assigneeNotifies: false` on the `ItemTypeDef`; `notifyingFieldsOf`, `notifiedPeople`, `isNotified` (`notify-fields.ts`)                   |
-| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                                          |
-| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                                        |
-| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                                          |
-| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                         |
+| Spec term         | Identifier                                                                                                                                                                                                                                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                                                                                                           |
+| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                                                                                                             |
+| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, currency?, through?, aggregate?, source?, showAs?, onCard?, required?, notifies? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
+| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                                                                                                            |
+| notifying field   | a Person field that tells its person (spec "Notifies"): `notifies: true` on a person `CustomFieldDef`, the Assignee unless `assigneeNotifies: false` on the `ItemTypeDef`; `notifyingFieldsOf`, `notifiedPeople`, `isNotified` (`notify-fields.ts`)                                                                                         |
+| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                                                                                                                |
+| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                                                                                                              |
+| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                                                                                                                |
+| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                                                                                               |
 
 ## Package `@liveplanner/items`
 
@@ -31,6 +31,10 @@ src/required-fields.ts canBeRequired, requiredCustomFieldsOf (a type's required 
                        requiredFieldsMessage(type, fields)
 src/notify-fields.ts   notifyingFieldsOf(type): string[], notifiedPeople(type, item): NotifiedPerson[]
                        ({ fieldId, person }), isNotified(type, item, personId): boolean
+src/several-values.ts  holdsSeveralKind(kind), holdsSeveral(field), storedPeople(value), storedCardIds(value),
+                       fieldPeople(field, value), fieldCardIds(field, value), linkedCardIds(item, field),
+                       severalValue(field, values), toggledValues(values, v, keyOf), swappedValues(values, from,
+                       to, keyOf), personKey, cardKey (FIELD_VALUES_MAX = 20 in limits.ts)
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
                        @liveplanner/project's agent element ids)
 ```
@@ -68,6 +72,34 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `isNotified(type, item, personId)` whether that list holds the person. Readers: Only Mine
   (`quickFilterMatches(quick, item, types = ITEM_TYPES)`, `quick.mine` matched by `isNotified(typeIn(types,
 item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) and the agents.
+- Holds Several (spec "Holds Several"): `readCustom` keeps `multiple` only as `true` on a `person` or `card` field
+  (`holdsSeveralKind`); anything else is dropped, never refused. Every reader goes through `several-values.ts`:
+  `storedPeople` / `storedCardIds` read a list or a single value as a list (each once; anything else dropped), and
+  `fieldPeople(field, value)` / `fieldCardIds(field, value)` keep all of it when `holdsSeveral(field)`, else the first
+  (a def-less built-in, the Assignee or Parent, holds one). `severalValue` stores a list (cut to `FIELD_VALUES_MAX`)
+  or the first, `undefined` (clear) for none. Writes: `validateFields`' `normaliseUnknown` takes a non-empty list of
+  objects that each carry `id` as people (each `normaliseKnown('person')`, at most `FIELD_VALUES_MAX`, else
+  `field_value_invalid`); a card id list is a scalar list as before. Readers changed: `notifiedPeople` (each person of
+  each notifying field), `laneGroups` (`lanesOfItem: Map<itemId, laneKey[]>`, `inLane(groups, id, key)`;
+  `personLanes` / `cardLanes` return a head per value, `LaneField.several` and `LaneHead.several` mark them),
+  `laneDropPatch(lane, item, from?)` (a `several` lane sets `swappedValues` of the card's values, `from` the head it
+  left), `projectBoard`, `ganttLanes`, `searchCards` / `searchValues` and `breakdownModel` (a card in each of its
+  lanes; the chart's total counts it once), `linkFieldsOfType` (`several`), `linkedCardsOf` (`LinkedGroup.several`,
+  the list holding the target), `linkableCards` (`elsewhere` null for several), `linkedValue(card, group, targetId)`
+  (Link Existing and New {Type} append to a list), `childIndexOf` (through `linkedCardIds`, the reader a rollup will
+  use), `customFieldText` (names and titles joined by ", "), `resolveFields` (`severalNamed`: a comma list or array of
+  names or numbers, each once, refusing none, over `FIELD_VALUES_MAX`, a non-name or an unknown card),
+  `boardCsvRows` (joined by ", ") and `boardCsvImport` (a Person field holding several splits at commas). Agents:
+  `CustomFieldInput.multiple` / `CustomFieldEdit.multiple` (a field of another kind refused: "only a person or card
+  field holds several"), `listedType` lists `custom[].multiple`, `namedFields` reads a list as a comma list
+  (`listedValue`), and a set line names stored people and cards (`storedText`). The editor: `HoldsSeveralSwitch`
+  (`ItemTypeFieldForms.tsx`, a `SwitchRow` "Holds Several" described by `HOLDS_SEVERAL_LINES[kind]`) in a Person or
+  Card field's `CustomFieldForm` and Add Field's `ShapeOwn` (`addedField` keeps `multiple` only there), tracking
+  `Plan` · `Changed` · `FieldHoldsSeveral`; `FieldChips.tsx` (the chip field, its Add button and remove buttons) used
+  by `PersonPicker` and `LinkedCardField` with `multiple` (their lists toggle, `aria-multiselectable`, no No one /
+  None row, staying open); `SeveralValuesPills.tsx` (`PeopleStack`, `LinkedNumbersPill`, `SEVERAL_ON_CARD = 3`,
+  `severalNames`) drawn by `customKindPill` and `PlanCardFace`; `usePlanCardDrag` carries the press's
+  `data-plan-lane` as `fromLane` to `boardMoveFor(setup, projection, item, itemId, slot, fromLane)`.
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
 - Card Age (spec "Card display"): `age` is a built-in card field (`CARD_FIELDS`, both sizes' `CARD_SIZE_FIELDS`),
   labelled "Age", in no `DRAWN` slot and so in no default; `typeOffersCardField` offers it on every type. The editor's
@@ -191,6 +223,120 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   WeakMap), so the editor's `calculated-values.ts` (`calculatedFieldValue`, read by `PlanCardFace` and
   `ItemFieldEditor`) and the SVG export (`svg-render-plan-card.ts`, Children Done only with a board's done columns)
   cost one pass per store; `CalculatedFieldValue` draws one read-only.
+- Formula fields (item-types.md "Formula fields"): `calculation: 'formula'` (`CALCULATIONS`' third) with `formula`
+  (stored text, ids in braces) and `result` (`FORMULA_RESULTS`, `number` stored as absent; `currency` beside a
+  Currency result). `readCustom` keeps `formula` as any string up to `FORMULA_MAX` (a broken one is kept: the field
+  shows the problem), refuses an unknown `result` or a bad `currency`.
+  - The language, `packages/items/src/formula/`: `limits.ts` (`FORMULA_MAX` 1,000, `FORMULA_DEPTH_MAX` 32,
+    `FORMULA_STEPS_MAX` 10,000, `FORMULA_ROUND_PLACES_MAX` 10, `FORMULA_CACHE_MAX` 512, the results and their
+    labels), `tokens.ts` (`tokenize`: one character loop, no regex over the text; names as runs of words or
+    braces, `""` in text, `==`/`<>` aliases), `parse.ts` (`parseFormula`: recursive descent, comparison < sum <
+    product < unary < primary, depth counted on brackets, calls and signs; arity checked from `FUNCTIONS`;
+    `refsOf`), `functions.ts` (`FUNCTIONS` with min/max arity and lazy arguments, `functionNamed` by own key only,
+    `arityText`), `values.ts` (`FormulaValue`: number, text, boolean, null, `{ day }`, `{ list, field }`;
+    `FormulaFail`, `toNumber`, `toText`, `truthy`, `dateOf` without a regex), `evaluate.ts` (`evaluateTree` with a
+    shared `budget`, reading fields only through `read(id)`, the value source a rollup will add to),
+    `references.ts` (`formulaScopeOf(type)` WeakMap-cached: the readable fields in type order with Number and
+    Type last, names to ids with custom names first, the unreadable kinds' reasons; `storedFormula(text, scope,
+selfId)` names to ids by token spans, `shownFormula` ids to names (`nameAsWritten`, `{deleted field}` for a
+    lost id), `missingFieldProblem`), `compile.ts` (`compileFormula(stored)`: tree, ids, `usesToday`, cached by
+    text in a bounded Map).
+  - `formula-fields.ts`: `isFormulaField`, `formulaResultOf`, `formulaOutcome(field, item, type, ctx)` (never
+    throws; `{ ok, value } | { ok: false, error }`), `formulaValue` (null on a problem), `formulaText` (by result:
+    locale number, `currencyText`, "40%", `dayLabel`, Yes/No), `formulaProblem(field, type)` and
+    `FORMULA_ERROR_TEXT`. Per run: the step budget, a `visiting` set (circular reads), a `done` map (each nested
+    Formula once per card), blank tracking (every read field empty: null), today read once (`ctx.today` or the
+    runtime's local day). Card fields read through `fieldCardIds`/`fieldPeople` (lists when `holdsSeveral`), Child
+    Count and Children Done through `ctx.calculated`.
+  - `calculated-fields.ts`: `CalculatedValue` (`FormulaScalar`), `calculatedValue(..., formula?)` and
+    `calculatedOutcome(..., formula)` pass the type and items, `calculatedValuesOf(..., items?)`, `calculatedText`
+    by result. `board-sort.ts` offers a Formula with a Number, Currency, Percent (as number) or Date result and
+    reads it through `formulaValue`; `boardSortComparator(sortBy, types, items?)`. `board-csv.ts` writes a
+    Formula's column (`cellOf(formulaValue)`); Import skips it. `card-source.ts` answers a Formula by name.
+    `type-changes.ts` takes `formula` (names) and `result` on `custom`, `addCustom` and `editCustom`
+    (`withFormula`, resolved after the change's fields with `resolveFormulas`; "The formula for "Left" doesn't
+    work: ..."). `plan-listing.ts` lists `formula` (shown), `result` and `formulaError`; the api answers the
+    widened `calculated`; the SVG export draws a Formula with or without the cards.
+  - Editor: `FormulaEditor.tsx` (Result and Currency, the Formula box, the check line `role="status"`, Fields and
+    Functions chips inserting at the caret, `FormulaPreview` on the type's first live card through
+    `calculatedFieldOutcome`), wired by `CalculationSelect` (`calculationPatch`, track `Plan` · `Changed` ·
+    `FieldFormula` on picking Formula), `CustomFieldForm` (keeps the last working formula) and `AddFieldShape`
+    (`kindReadiness` 'formula', "Write a formula that works."). `PlanCardFace` draws a problem as a red "Error"
+    pill with the problem in its spoken label; `CalculatedFieldValue` shows the problem in red,
+    "No value" for none, and a Percent result shown as a Percent (`showAs`) through `percentShown`, as Children Done.
+    `FormulaEditor`'s Result menu drops `showAs` when the result leaves Percent (`calculationPatch` too); `readCustom`
+    reads `result` before `showAs`, so `canShowAsPercent` sees it.
+- Rollup and Lookup fields (item-types.md "Rollup and Lookup fields"): `calculation: 'rollup' | 'lookup'` with
+  `through` (a Card field id; a Rollup without one reads every child), `aggregate` (`AGGREGATES`, Rollup only, Sum
+  when absent) and `source` (a field id, `#key` or `#type`), plus `result` and `currency` taken from the source when
+  written (`inferredResult`), so every surface reads the kind without the walk. `readCustom` keeps them by
+  `READ_FIELD_PATTERN`.
+  - `calculated-result.ts`: `hasResult` (Formula, Rollup, Lookup), `isRollupField`, `isLookupField`,
+    `calculatedResultOf`. `rollup-fields.ts`: `AGGREGATE_LABELS`, `aggregateOf`, `aggregateReads` (number, date,
+    any or none), `aggregateFits`, `aggregateNeeds`, `readableFieldsOf` (through `formulaScopeOf`),
+    `rollupThroughOptions`, `rollupChildTypes`, `lookupThroughOptions`, `rollupSourceOptions`,
+    `lookupSourceOptions`, `rollupSettings` (the settings and the result they give), `rollupProblem` and
+    `GONE_PROBLEM`.
+  - `calculated-fields.ts` is the one walk: a top-level read memoises each (card, field), keeps a `visiting` set
+    ("Circular: X reads itself"), stops at `CALCULATED_DEPTH_MAX` (8) and shares `CALCULATED_STEPS_MAX`
+    (100,000) with the Formulas it reads (`ctx.steps`, each Formula still at most `FORMULA_STEPS_MAX`). A stopped
+    walk makes the whole value a problem; a child's own problem is skipped as a blank. The child index
+    (`childIndexFor`, WeakMap per items map) records the Card field each link came through, so `childrenOf(item,
+index, through?)` filters without a second pass. A Lookup reads the first live linked card (missing and
+    trashed skipped, archived read); lists read as text. `calculatedReaderOf(items, types, isDone?)` gives the
+    surfaces one reader (`CalculatedRead`) per items map.
+  - Surfaces: `board-sort.ts` sorts any `hasResult` field by its result; `board.ts` adds read-only `calculated`
+    swimlane fields (`CALCULATED_LANE_KINDS`, `laneDropPatch` answers `{}`), and `projectBoard` builds `isDone`
+    from the board's done columns; `board-csv.ts` and `card-source.ts` read through `calculatedReaderOf`;
+    `type-change-rollups.ts` resolves `through`, `aggregate` and `source` by name on `custom`/`editCustom`
+    (`resolveRollups`, after `resolveFormulas`) with refusals in `type-change-refused.ts`; `plan-listing.ts` lists
+    `through`, `aggregate`, `source`, `result`, `currency` and `error`; the api passes the plan's types to
+    `calculatedValuesOf`; the SVG export passes `isDone` and the types.
+  - Editor: `RollupEditor.tsx` (Through, Calculate, Field, the `role="status"` line, `rollupPatch`) in
+    `CustomFieldForm` and `AddFieldShape` (`kindReadiness` 'through' and 'source'); `CalculatedPreview.tsx` is
+    shared with `FormulaEditor` (a Rollup's prefers the first card with a value other than 0).
+- Percent fields (spec "Percent"): `percent-fields.ts` (packages/items) is the one reading, shared by every surface:
+  `PERCENT_MIN` 0 and `PERCENT_MAX` 100; `percentValue(v)` (a finite number, or numeric text with an optional "%",
+  rounded and held to 0..100 by `clampPercent` from `@liveworkspace/model-core/progress-label`, else undefined; the
+  readers' clamp, so a stray 140 draws 100); `parsePercent(v)` (the writers': the same reading, but undefined outside
+  0..100 rather than held, so agents and CSV refuse or skip it); `percentText(n)` ("40%");
+  `PERCENT_SHOWABLE_KINDS` (`['calculated']`: the worked-out kinds that may show as a Percent; Rollup
+  joins it), `canShowAsPercent(field)` (a showable kind whose result is a share: Calculated with `childrenDone`, or a
+  Formula, Rollup or Lookup with `result: 'percent'`),
+  `showsAsPercent(field)` (`kind: 'percent'`, or `showAs: 'percent'` on a field `canShowAsPercent` allows) and
+  `percentShown(field, value)` (the share a field shows, from its stored value or the worked-out one, or undefined).
+  `clampPercent` moves to model-core; every product's `data-shapes.ts` re-exports it, so the canvas's progress
+  elements and the Percent field round the same way.
+  - `item-types.ts`: `percent` in `CUSTOM_FIELD_KINDS` after `currency`; `showAs?: 'percent'` on `CustomFieldDef`.
+    `readCustom` keeps `showAs` only as `'percent'` on a field `canShowAsPercent` allows; `type-changes.ts` takes
+    `showAs` on `add` and `editCustom` (`'percent'` or `'number'`, `'number'` deleting it; a field that can't show as
+    a Percent is refused: "{Field} can't show as a percent: only a share, like Children Done or a Percent formula, can."), and a
+    calculation edited to `childCount` drops it.
+  - Values: `plan-names.ts` reads a Percent by `parsePercent`, refusing `value_invalid` "{Field} is a percent: give a
+    number from 0 to 100."; `board-csv.ts` writes the number and imports by `parsePercent` (a cell it can't read is
+    skipped); `card-text.ts` `customFieldText` gives `percentText(percentValue(v))`; `board-sort.ts` sorts it as a
+    number; `board.ts` lanes it as a Number (`LaneFieldKind` `'percent'`, its row named "40%"); `required-fields.ts`
+    lets it be required (0 is a value). `plan-view-charts.ts` leaves it out of Cards by Field's sums. Forms'
+    `MAPPABLE_KINDS` never name it.
+  - Editor: `PercentBar.tsx` is the shared drawing: `PercentBar` (`value`, optional `inks` `{ fill, track }`, else the
+    app's slate track and brand fill), `PercentChip` (the card face's `MetaPill`: the bar at `PLAN_PERCENT_BAR` in
+    `planPercentInks(palette)` from `@liveplanner/project`'s `plan-palette.ts`, the export's own, and "40%", spoken
+    "{Field}: 40%") and `PercentReading` (the panel's read-only bar across the row and the number: a Viewer's Percent
+    field, `CalculatedFieldValue` when it shows as a Percent, and Add Field's preview).
+    `PercentSlider.tsx` is the panel's control (a `role="slider"` with `aria-valuemin` 0, `aria-valuemax` 100,
+    `aria-valuenow`, `aria-valuetext` "40%" or "No value", `aria-label` the field's name; pointer capture on the
+    track, `shareAt(clientX, rect)` drawn live in local state and committed once on pointer up, a cancel putting it
+    back; keys step and commit; the number box, the row label's target, `typedShare(raw)` committing on Enter or
+    blur, Escape restoring; a Viewer gets `PercentReading`, or "None"). `CustomFieldEditor` routes `percent` to it; `PlanCardFace` and
+    `svg-render-plan-card.ts` draw every field `showsAsPercent` allows through the chip (a `percent` bit: the field's
+    name, a `PLAN_PERCENT_BAR` track and its fill in `planPercentInks`, then "40%"; a narrow pill shortens the name
+    and keeps the bar and the share). `ItemTypeFieldForms` shows the `ShowAsPercentSwitch` (a `SwitchRow` with its
+    line, tracking `Plan` · `Changed` · `FieldShowAsPercent`) on a Calculated field `canShowAsPercent` allows, in Add
+    Field's Shape and in the field's form; `calculationPatch(calculation)` drops `showAs` with a Child Count, and
+    `addedField` keeps it only where allowed.
+  - Agents: `plan-schema.ts` adds `percent` to the kind enum and `showAs` to `add`/`editCustom`; `plan-listing.ts`
+    lists `showAs` on a field that shows as a Percent; the OpenAPI schema is regenerated (`gen:openapi`) from
+    `CUSTOM_FIELD_KINDS` and `CustomFieldDef`.
 - Consumers: `PlanCardFace` (stripe, glyph, custom field chips via `custom-field-text.ts`), `ItemPanel` (the
   type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
   (projection), `PlanBoardCells`/`PlanCardView` names,
@@ -270,7 +416,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   - Pure data and matching in `add-field-kinds.ts`. A **pick kind** (`PickKind`) is a `CustomFieldKind`, Comments
     and Votes among them: each opens Shape, Ready to use offering its built-in while the type lacks it. `KIND_GROUPS`
     (`{ id, label, kinds: PickKind[] }[]`: `text` "Text & links" text, longtext, link, email; `numbers` "Numbers &
-    dates" number, currency, rating, date; `choices` "Choices" choice, multichoice, checkbox, labels; `people`
+    dates" number, currency, percent, rating, date; `choices` "Choices" choice, multichoice, checkbox, labels; `people`
     "People & teamwork" person, checklist, comments, votes; `look` "Colour & images" colour, image; `cards` "Linked
     cards" card, calculated; every `CUSTOM_FIELD_KINDS` member once, test-locked), `KIND_DESCRIPTIONS` and
     `KIND_ALIASES` (`Record<PickKind, …>`, the spec's words), `BUILT_INS_OF_KIND` (`Record<PickKind, ItemFieldId[]>`:
@@ -475,47 +621,55 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 
 ## Testing
 
-| Rule                                                      | Test                                                                                                                                     |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`                                                                                              |
-| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                                                                                                      |
-| Card fields of several types: read, stored, linked, lanes | `packages/items/src/card-links.test.ts`, `packages/items/src/type-catalogue.test.ts`, `packages/items/src/type-changes.test.ts`          |
-| Links To multi-select                                     | `apps/editor/components/plan/LinksToPicker.test.tsx`                                                                                     |
-| Glyph picker filters, empty state, picks                  | `apps/editor/components/plan/GlyphPicker.test.tsx`                                                                                       |
-| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
-| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
-| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`                                                                                       |
-| Editor: stale resend, failure drops one, undo keeps later | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                            |
-| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                      |
-| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                                                                                                        |
-| Card tiles follow the catalogue                           | `apps/editor/components/palette/palette-plan-tiles.test.ts`                                                                              |
-| Custom values on a card                                   | `apps/editor/components/plan/custom-field-text.test.ts`                                                                                  |
-| Calculated fields: children, done, values, refusals       | `packages/items/src/calculated-fields.test.ts`, `apps/api/src/routes/item-routes.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts` |
-| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`                                                                                              |
-| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
-| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                            |
-| Required fields: read, missing, cleared, message          | `packages/items/src/required-fields.test.ts`                                                                                             |
-| Required fields: api refuses a create or a clear          | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
-| Required fields: agents list, set, refuse                 | `packages/agent-verbs/src/verbs/plan-verbs.test.ts`, `packages/items/src/type-changes.test.ts`                                           |
-| Required fields: New {Type} dialog, type editor switch    | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                         |
-| Notifies: fields, people told, Only Mine, agent changes   | `packages/items/src/notify-fields.test.ts`                                                                                               |
-| Notifies: the Inbox push, one action a person             | `packages/index-app/src/cards.test.ts`, `apps/api/src/plan-room/plan-outbox.test.ts`                                                     |
-| Notifies: agents list it                                  | `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                     |
-| Notifies: Person field switch, Assignee menu, save        | `apps/editor/components/plan/FieldNotifies.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                |
-| Add Field: groups, descriptions, aliases, readiness       | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                    |
-| Add Field: search, accordion, Ready to use, keys, shape   | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                      |
-| Built-in kinds: store, text, CSV, agents                  | `packages/items/src/built-in-field-kinds.test.ts`                                                                                        |
-| Built-in kinds and Image: panel, card face, required      | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                             |
-| Image fields: upload, read, roles, grants                 | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                |
-| Attachments: value, cap, cover, agents                    | `packages/items/src/attachments.test.ts`, `packages/items/src/card-display.test.ts`                                                      |
-| Attachments: panel, roles, drop, paste, cover on the card | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                  |
-| Images in use: triggers, report, purge, serving           | `apps/api/src/plan-room/image-refs.test.ts`                                                                                              |
-| Add Field: option rows, Enter, Backspace, paste           | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                               |
-| Add Field: opened from a group, lands there               | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                         |
-| Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |
-| Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                               |
-| Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                                      |
-| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)                                                                                      |
+| Rule                                                                                                | Test                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Catalogue checks, ids, read-back, glyphs                                                            | `packages/items/src/type-catalogue.test.ts`                                                                                                                                                                                                                                                                      |
+| Glyph categories, keywords, old ids kept, search                                                    | `packages/items/src/glyphs.test.ts`                                                                                                                                                                                                                                                                              |
+| Card fields of several types: read, stored, linked, lanes                                           | `packages/items/src/card-links.test.ts`, `packages/items/src/type-catalogue.test.ts`, `packages/items/src/type-changes.test.ts`                                                                                                                                                                                  |
+| Links To multi-select                                                                               | `apps/editor/components/plan/LinksToPicker.test.tsx`                                                                                                                                                                                                                                                             |
+| Glyph picker filters, empty state, picks                                                            | `apps/editor/components/plan/GlyphPicker.test.tsx`                                                                                                                                                                                                                                                               |
+| Route: store, relay, null, refusals, gates, copy, create                                            | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                                                                        |
+| Route: a stale revision refused with what is stored                                                 | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                                                                        |
+| A change rebased onto another editor's catalogue                                                    | `packages/items/src/type-catalogue-change.test.ts`                                                                                                                                                                                                                                                               |
+| Editor: stale resend, failure drops one, undo keeps later                                           | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                                                                                                                                                                                                    |
+| Agents: a stale save read again and applied again                                                   | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                                                                                                                                                                                              |
+| Scoped sessions hear the op                                                                         | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                                                                                                |
+| Card tiles follow the catalogue                                                                     | `apps/editor/components/palette/palette-plan-tiles.test.ts`                                                                                                                                                                                                                                                      |
+| Custom values on a card                                                                             | `apps/editor/components/plan/custom-field-text.test.ts`                                                                                                                                                                                                                                                          |
+| Calculated fields: children, done, values, refusals                                                 | `packages/items/src/calculated-fields.test.ts`, `apps/api/src/routes/item-routes.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`                                                                                                                                                                         |
+| Rollup and Lookup: every aggregate, archived, trashed, missing links, limits, surfaces, 2,000 cards | `packages/items/src/rollup-fields.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`, `packages/project/src/svg-render-plan-card.test.ts`, `apps/editor/components/plan/RollupEditor.test.tsx`                                                                                                              |
+| Formula fields: language, limits, fuzz, values, results, sort, CSV, sheets, agents, 2,000 cards     | `packages/items/src/formula/formula.test.ts`, `packages/items/src/formula-fields.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`, `packages/project/src/svg-render-plan-card.test.ts`, `apps/editor/components/plan/FormulaEditor.test.tsx`, `apps/editor/components/plan/CalculatedFieldValue.test.tsx` |
+| Percent: read, parse, clamp, show as, sort, lanes, CSV                                              | `packages/items/src/percent-fields.test.ts`                                                                                                                                                                                                                                                                      |
+| Percent: agents write, refuse, list showAs                                                          | `packages/agent-verbs/src/verbs/item.test.ts`, `packages/items/src/type-changes.test.ts`                                                                                                                                                                                                                         |
+| Percent: slider, chip, panel, switch                                                                | `apps/editor/components/plan/PercentSlider.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                                                                                                                                        |
+| Percent: exports draw the bar                                                                       | `packages/project/src/svg-render-plan-card.test.ts`                                                                                                                                                                                                                                                              |
+| Left-out statuses: read, refuse, allow                                                              | `packages/items/src/type-catalogue.test.ts`                                                                                                                                                                                                                                                                      |
+| Left-out statuses: api refuses moves, patches, makes                                                | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                                                                        |
+| Left-out statuses: agent refusal message                                                            | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                                                                                                                                                                                                    |
+| Required fields: read, missing, cleared, message                                                    | `packages/items/src/required-fields.test.ts`                                                                                                                                                                                                                                                                     |
+| Required fields: api refuses a create or a clear                                                    | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                                                                        |
+| Required fields: agents list, set, refuse                                                           | `packages/agent-verbs/src/verbs/plan-verbs.test.ts`, `packages/items/src/type-changes.test.ts`                                                                                                                                                                                                                   |
+| Required fields: New {Type} dialog, type editor switch                                              | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                                                                                                                                 |
+| Notifies: fields, people told, Only Mine, agent changes                                             | `packages/items/src/notify-fields.test.ts`                                                                                                                                                                                                                                                                       |
+| Notifies: the Inbox push, one action a person                                                       | `packages/index-app/src/cards.test.ts`, `apps/api/src/plan-room/plan-outbox.test.ts`                                                                                                                                                                                                                             |
+| Notifies: agents list it                                                                            | `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                                                                                                                                                                                             |
+| Notifies: Person field switch, Assignee menu, save                                                  | `apps/editor/components/plan/FieldNotifies.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                                                                                                                                        |
+| Holds Several: read, store, notify, lanes, links, agents                                            | `packages/items/src/several-values.test.ts`, `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                                                                                                                                                 |
+| Holds Several: chips, card face, switch, drag, Link Existing                                        | `apps/editor/components/plan/HoldsSeveral.test.tsx`                                                                                                                                                                                                                                                              |
+| Add Field: groups, descriptions, aliases, readiness                                                 | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                                                                                                                                                                                            |
+| Add Field: search, accordion, Ready to use, keys, shape                                             | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                                                                                                                                                                                              |
+| Built-in kinds: store, text, CSV, agents                                                            | `packages/items/src/built-in-field-kinds.test.ts`                                                                                                                                                                                                                                                                |
+| Built-in kinds and Image: panel, card face, required                                                | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                                                                                                                                                                                                     |
+| Image fields: upload, read, roles, grants                                                           | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                                                                                                                                                                                        |
+| Attachments: value, cap, cover, agents                                                              | `packages/items/src/attachments.test.ts`, `packages/items/src/card-display.test.ts`                                                                                                                                                                                                                              |
+| Attachments: panel, roles, drop, paste, cover on the card                                           | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                                                                                                                                                                                          |
+| Images in use: triggers, report, purge, serving                                                     | `apps/api/src/plan-room/image-refs.test.ts`                                                                                                                                                                                                                                                                      |
+| Add Field: option rows, Enter, Backspace, paste                                                     | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                                                                                                                                                                                                       |
+| Add Field: opened from a group, lands there                                                         | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                                                                                                                                                                                                 |
+| Statuses chips, panel Status options                                                                | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                                                                                                                                                                                          |
+| Editor tabs, Configuration sections, flags, arrow keys                                              | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                                       |
+| Show Me steps open Configuration, scroll to Fields                                                  | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                                                                                                                                                                                                              |
+| Panel, editor, card face, palette in a browser                                                      | checked by hand against the dev stack (screenshots)                                                                                                                                                                                                                                                              |
 
 ## Constants and configuration
 

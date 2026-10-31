@@ -57,6 +57,7 @@ export function EditorTabDialogs() {
     importOpen,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importFileIntoActiveTab,
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
@@ -69,6 +70,7 @@ export function EditorTabDialogs() {
     accountDisplayName,
     documentTeamId,
     setSelfParticipant,
+    slideDeck,
   } = useEditorContext();
   const toast = useToast();
   // The selection the export covers, read from the store while a selection export is open
@@ -108,6 +110,8 @@ export function EditorTabDialogs() {
           // In Pages mode the whole tab exports as its pages
           // (docs/specs/007-editor/pages-mode.md "Export").
           pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
+          // The PowerPoint export's speaker notes and hidden slides (docs/specs/020-import-export/office-export.md).
+          deck={slideDeck?.deck}
           documentName={documentName}
           // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
           documentTabs={tabs}
@@ -126,6 +130,7 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          onImportFileFormat={importFileIntoActiveTab}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

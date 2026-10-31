@@ -22,6 +22,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   deckFollowingPages,
+  deckWithPageSlideDetails,
   GoneSlides,
   EMPTY_DECK,
   firstDeck,
@@ -33,6 +34,7 @@ import {
   presentableSlides,
   storePresentation,
   type Deck,
+  type PageSlideDetail,
   type Slide,
   type Tab,
 } from '@livedocuments/document';
@@ -344,6 +346,16 @@ export function useSlideDeck({
     [commitDeck, isReadOnly],
   );
 
+  // An imported deck's notes and hidden slides onto its pages' own slides (docs/specs/020-import-export/
+  // office-import.md "One undo step"); the follow pass then runs them into page order.
+  const adoptImportedSlides = useCallback(
+    (tabId: string, details: readonly PageSlideDetail[]) => {
+      if (isReadOnly) return;
+      commitDeck((prev) => deckWithPageSlideDetails(prev, tabId, details));
+    },
+    [commitDeck, isReadOnly],
+  );
+
   /** Leave a slide out of the run without losing it. */
   const toggleSlideHidden = useCallback(
     (slideId: string) => {
@@ -508,6 +520,7 @@ export function useSlideDeck({
     removeFromSlide,
     renameSlide,
     setSlideNotes,
+    adoptImportedSlides,
     setSlideMinutes,
     deleteSlide,
     ownPageSlideIds,

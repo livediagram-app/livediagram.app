@@ -23,6 +23,7 @@ import {
   type BoxedElement,
   type Element,
   type LaidOutPage,
+  type CanvasSurface,
   type ResolveTabWindow,
   type Tab,
 } from '@livedesign/design';
@@ -94,6 +95,14 @@ export type ImageExportOpts = {
   // animation class and custom properties, as the canvas mounts them, so the page's own motion stylesheets play it.
   // Only a tab window passes it (an inline SVG on the page); every file export is a still.
   motion?: SvgMotion;
+  // An element exported on its own from Inspect (docs/specs/007-editor/wireframe-pages.md "The Inspect panel"):
+  // `scale` (a PNG's pixels per px, an SVG's size), `padding` round the content (absent: EXPORT_PADDING),
+  // `transparent` leaves the ground clear, and `surface` is the paper its unpainted parts take their ink from (the
+  // page it came off, rather than the tab's backdrop). A page export ignores all but `scale`.
+  scale?: number;
+  padding?: number;
+  transparent?: boolean;
+  surface?: CanvasSurface;
 };
 
 // How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
@@ -174,7 +183,7 @@ export function renderedExportScale(canvas: HTMLCanvasElement): number {
 
 export async function renderTabToCanvas(
   tab: Tab,
-  opts: { scale?: number } & ImageExportOpts = {},
+  opts: ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
   const frame = opts.page
     ? pageExportFrame(opts.page, {
@@ -205,7 +214,7 @@ export async function renderTabToCanvas(
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
   const bounds = frame ? frame.bounds : contentBounds(els, labels, tab.elements);
-  const pad = frame ? 0 : EXPORT_PADDING;
+  const pad = frame ? 0 : (opts.padding ?? EXPORT_PADDING);
   const draw = bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
   // Content page reaches 19200 px, docs/specs/007-editor/pages-mode.md "Sizes").
@@ -224,11 +233,12 @@ export async function renderTabToCanvas(
   // Elements that carry no colours of their own are drawn in the ink of the
   // paper being exported onto (docs/specs/007-editor/live-app.md), so a dark canvas exports dark-canvas
   // elements rather than pale ones.
-  const surface = frame ? frame.surface : canvasSurface(bgColor);
+  const surface = frame ? frame.surface : (opts.surface ?? canvasSurface(bgColor));
   // The paper under the content: a hollow arrowhead is filled with it, as on the canvas.
   const paper = frame ? EXPORT_PAPER : bgColor;
   ctx.fillStyle = paper;
-  if (!frame?.transparent) ctx.fillRect(0, 0, w / scale, h / scale);
+  if (!frame?.transparent && !(opts.transparent && !frame))
+    ctx.fillRect(0, 0, w / scale, h / scale);
   const bg = frame ? null : backgroundPatternDefs(tab, opts);
   if (frame) {
     const { x, y, w: fw, h: fh } = frame.bounds;
@@ -502,7 +512,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
       ? `<g opacity="${r2(layerOpacity)}">${inner.join('\n')}</g>`
       : inner.join('\n');
   const bounds = frame ? frame.bounds : contentBounds(els, labels, tab.elements);
-  const pad = frame ? 0 : EXPORT_PADDING;
+  const pad = frame ? 0 : (opts.padding ?? EXPORT_PADDING);
   const draw = bounds;
   const vbX = draw.x - pad;
   const vbY = draw.y - pad;
@@ -510,19 +520,21 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const vbH = draw.h + pad * 2;
   const bgColor = tab.backgroundColor ?? EXPORT_BG;
   // See the PNG path: unpainted elements take the exported paper's ink.
-  const surface = frame ? frame.surface : canvasSurface(bgColor);
+  const surface = frame ? frame.surface : (opts.surface ?? canvasSurface(bgColor));
   // As the PNG path: a hollow head takes this paper, and an arrow breaks only
   // behind the boxes this export draws (`els`), never a hidden or off-page one.
   const paper = frame ? EXPORT_PAPER : bgColor;
   const parts: string[] = [];
+  // An SVG's scale is its size: the drawing (its viewBox) stays as it is.
+  const size = opts.scale ?? 1;
   parts.push(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW * size)}" height="${r2(vbH * size)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
   );
-  parts.push(
-    frame
-      ? frame.backgroundSvg
-      : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
-  );
+  if (frame) parts.push(frame.backgroundSvg);
+  else if (!opts.transparent)
+    parts.push(
+      `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
+    );
   // Typefaces (docs/specs/004-interface-design/fonts.md): the real bytes when the caller pre-fetched them
   // (a download, which must stand alone), else a declaration of the Google
   // stylesheet (the live preview, where the page has the faces already).

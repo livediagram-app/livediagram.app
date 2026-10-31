@@ -66,3 +66,17 @@ describe('tool commands against the palette dropdown', () => {
     expect(commands).toEqual(enabled);
   });
 });
+
+// docs/specs/007-editor/wireframe-pages.md "Inspect": the Inspect Tool is a wireframe tab's, for every role.
+describe('the Inspect Tool command', () => {
+  const ids = (c: CommandContext) => buildEditorCommands(c, noop()).map((cmd) => cmd.id);
+
+  it('is offered on a wireframe tab, a Viewer’s too', () => {
+    expect(ids({ ...ctx, wireframeTab: true })).toContain('tool:inspect');
+    expect(ids({ ...ctx, wireframeTab: true, isReadOnly: true })).toContain('tool:inspect');
+  });
+
+  it('is not offered on any other tab', () => {
+    expect(ids(ctx)).not.toContain('tool:inspect');
+  });
+});

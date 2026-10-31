@@ -212,3 +212,33 @@ export function slidePageOwnSlideIds(deck: Deck, tabs: readonly Tab[]): Set<stri
   }
   return new Set([...byPage.values()].filter((ids) => ids.length === 1).map((ids) => ids[0]!));
 }
+
+/** Notes and a hidden flag for a slide page's own slide, as an import brings them. */
+export type PageSlideDetail = { pageId: string; notes?: string; hidden?: true };
+
+// An imported deck's speaker notes and hidden slides onto its pages' own slides (docs/specs/020-import-export/
+// office-import.md "One undo step"): each page's slide (`pageSlideIdFor`) takes them, or is added with them when the
+// deck has none yet; deckFollowingPages then runs it into its page order. The same deck when nothing is given.
+export function deckWithPageSlideDetails(
+  deck: Deck,
+  tabId: string,
+  details: readonly PageSlideDetail[],
+): Deck {
+  if (details.length === 0) return deck;
+  const byId = new Map(details.map((d) => [pageSlideIdFor(tabId, d.pageId), d]));
+  const withDetail = (slide: Slide, d: PageSlideDetail): Slide => ({
+    ...slide,
+    ...(d.notes ? { notes: d.notes } : {}),
+    ...(d.hidden ? { hidden: true } : {}),
+  });
+  const slides = deck.slides.map((s) => {
+    const d = byId.get(s.id);
+    if (!d) return s;
+    byId.delete(s.id);
+    return withDetail(s, d);
+  });
+  for (const [id, d] of byId) {
+    slides.push(withDetail({ id, tabId, elementIds: [], pageId: d.pageId }, d));
+  }
+  return { ...deck, slides };
+}

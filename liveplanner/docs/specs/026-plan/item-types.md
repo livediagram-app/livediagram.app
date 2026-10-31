@@ -55,19 +55,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## An item type
 
-| Part            | Holds                                                                                                                                                                                                                                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                     |
-| `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                 |
-| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                         |
-| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                       |
-| `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                 |
-| `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`; `required: true` for a [required field](#required-fields)) |
-| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                     |
-| `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                |
-| `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                      |
-| `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                  |
-| `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                   |
+| Part            | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                                                                                                                                                                                                        |
+| `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                                                                                                                                                                                                                                                                            |
+| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`, a Formula's `formula` and `result`, a Rollup's or Lookup's `through`, `aggregate` and `source` and its `result`, and `showAs: "percent"` when it [shows as a Percent](#percent-fields); `required: true` for a [required field](#required-fields)) |
+| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                                                                                                                                                                                                                                                                        |
+| `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                                                                                                                                                                                                                                                                         |
+| `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                                                                                                                                                                                                                      |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
   Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are.
@@ -144,11 +144,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Trash is no type's status, so a type's list never refuses it.
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
-- **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
+- **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Percent (a share from 0 to
+  100, drawn as a bar, [below](#percent-fields)), Date, Checkbox, Link (an
   `https://` URL), Email, Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
-  options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type,
-  below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
-  **Person** (one person, as the Assignee holds one), **Labels** (up to 20 short labels, as Labels holds them),
+  options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type, or
+  to several, below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
+  **Person** (one person, as the Assignee holds one, or several, [below](#holds-several)), **Labels** (up to 20 short labels, as Labels holds them),
   **Colour** (any `#rrggbb` colour, as Colour holds one), **Checklist** (up to 50 to-do rows, each its text and
   whether it is done, as Checklist holds them), **Comments** (its own threads, [below](#comments-and-votes-fields)),
   **Votes** (its own votes, below) and **Image** (one picture, [below](#image-fields)). Each reads and
@@ -202,10 +203,45 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     - Agents: `list_threads` names each thread's field, and `change_threads`' `start` takes a `field` by name
       ([Plan agents](plan-agents.md#comment-threads)); `list_items` lists a card's votes per Votes field.
   - **A Person field** offers the plan's people, as the Assignee does, and draws its person's avatar disc and name.
-    Whether it **notifies** its person is its own switch ([Notifies](#notifies)).
+    Whether it **notifies** its person is its own switch ([Notifies](#notifies)); whether it holds one person or
+    several is another ([Holds Several](#holds-several)).
   - **A Labels field** reads and is edited as Labels (its chips, coloured by their names), offering the labels the
     plan's cards carry; **a Colour field** as Colour (a swatch and its name, the one colour picker); **a Checklist
     field** as Checklist (its rows, ticked off, and "2/5" on the card).
+  - <a id="percent-fields"></a>**Percent** is how far along something is: a whole number from 0 to 100, stored as a
+    number under the field's id. 0 is a value (nothing done yet); no value is no value.
+    - **In the card panel** it is a **draggable bar** the width of its row: a thin rounded track with the share
+      filled in the brand colour and a round thumb at its end, and after it a small box holding the number and a
+      quiet "%". Dragging the thumb (or pressing anywhere on the track, which jumps there and keeps dragging) moves
+      the share in whole steps, drawn live, and lets go as one change (one undo step), so a drag never floods the
+      plan with writes. The bar is a `slider` (its accessible name the field's, its value "40%"): ← and → (or ↓
+      and ↑) step 1, Page Up and Page Down 10, Home and End go to 0 and 100, each press one change. Typing in the
+      box sets it on Enter or leaving the box, rounded to a whole number and held to 0 to 100 (150 reads 100, -5
+      reads 0); emptying the box clears the field, and Escape puts the box back as it was. With no value the track
+      is empty, the thumb sits faded at 0 and the box is blank; pressing the track or typing sets one. Someone who
+      may only view sees the bar and the number, with no thumb and no box to type in ("None" with no value).
+    - **On the card** (where the type's Display places it) it is a chip of a short thin bar (32 px wide, 4 px tall,
+      the share filled in the board's accent, the brand violet unless the board has its own colour, on a quiet track of
+      its muted ink) and the number ("40%"), named "{Field}:
+      40%" for assistive technology; with no value it is not drawn. Exports and api or MCP images draw the same bar
+      and number, after the field's name, as they draw every custom field.
+    - **Sorts and groups as a number**: Sort Cards orders by it (lowest first, as a Number), and Swimlanes and Card
+      Search take it as a Number field, a row or a value per share ("40%"), dropping into a row setting it. Cards by
+      Field never adds Percents up: a sum of shares means nothing.
+    - **Reading and writing it elsewhere**: `list_items` lists the field with `kind: "percent"` and a card's value as
+      the number; `change_items`, the card table and the CLI take a number or text like "40%", round it to a whole
+      number and refuse one outside 0 to 100 ("Progress is a percent: give a number from 0 to 100."). Export CSV
+      writes the number ("40"); Import CSV reads "40" or "40%", rounding it, and skips a cell that is no number or is
+      outside 0 to 100, as it skips a Rating out of its scale. The api stores a custom field's value without knowing
+      its kind, so a stray value written straight to it (say 140) is kept, and every reader draws it held to 0 to
+      100 (100%). A form can't ask it (no question maps to it).
+    - It may be [required](#required-fields); 0 counts as a value.
+    - **Shown as a Percent**: a value the plan works out as a share is drawn exactly as a Percent field is when its
+      field says so (`showAs: "percent"`): the same chip on the card, the same bar (read-only) in the panel, the
+      same bar in exports. Today that is a [Calculated](#calculated-fields) field's **Children Done (%)** and a
+      [Formula](#formula-fields) with a **Percent** result; a [Rollup or Lookup](#rollup-and-lookup-fields) whose result is a Percent (an Average of a Percent field, a Lookup of
+      one) takes the same switch. One shared reading (`percent-fields.ts`) decides which
+      fields show as a Percent and what share they show, so every surface agrees.
 - **Fields by role** <a id="fields-by-role"></a>: a feature that reads a field for what it means, not by its name,
   reads the built-in field unless its own settings pick another field of the same kind. Nothing a plan already
   shows changes until someone picks.
@@ -228,7 +264,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   person when a card is theirs: the Inbox, emails and Only Mine." The Assignee notifies unless switched off
   (`assigneeNotifies: false` on the type); a custom Person field does not unless switched on (`notifies: true` on
   the field), so nothing a plan does today changes. A card is **someone's** when a notifying Person field holds
-  them, and is then theirs everywhere the Assignee made it so: the Inbox's **Assigned to You** (one row a card,
+  them (one of its people, for a field that [holds several](#holds-several)), and is then theirs everywhere the Assignee made it so: the Inbox's **Assigned to You** (one row a card,
   however many of its fields name them), the assignment event on their timeline and any email it sends, and the
   board's **Only Mine** ([Plan board](plan-board.md)). A custom person (an `n-` id) never notifies, as before.
   Telemetry: `Plan` · `Changed` · `FieldNotifies`.
@@ -263,6 +299,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Severity and Area: give them in fields, by name").
 - **Card fields** link a card to one other card, of any of the card types the field names: an Objective's
   **Owner** links to a Person, and a Task's **Parent** may link to a Project or an Epic. The value is that card's id.
+  A Card field switched to [hold several](#holds-several) links to a list of cards instead (a **Related** or a
+  **Depends On**); everything below reads every card of the list.
   - **Its card types**: one or more (up to the catalogue's 32), in the order they were ticked. Stored as `linkType`,
     the first, and, when there are several, `linkTypes`, all of them (the first included), so a field saved with one
     type reads exactly as before and an older editor or agent reading a field of several still finds a type it can
@@ -329,12 +367,71 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - Deleting, trashing or archiving a linked card never clears the links: they read **Missing card** until the
     card is back or the link is changed. A Card field whose type is gone from the catalogue keeps it among its
     types, and an unticked type is never taken off a card already linked to one of its cards.
+- <a id="holds-several"></a>**Holds Several**: a Person field or a Card field can hold more than one value, by
+  its **Holds Several** switch (stored as `multiple: true` on the field; kept only as true, and only on those two
+  kinds, so every field saved before holds one). Reviewers, Owners and pair work need several people; Related,
+  Depends On and Candidates need several cards. The built-in Assignee and Parent always hold one. One rule serves
+  both kinds:
+  - **The value** is a list: a Person field's people (`[{ id, name, color }, ...]`), a Card field's card ids
+    (`["<id>", ...]`), each once, in the order they were added, at most **20** (`FIELD_VALUES_MAX`). An empty list
+    is no value: the field is cleared instead. A field holding several still reads a single stored value (one
+    person, one card id, every value written before the switch) as a list of one, and a field holding one reads a
+    stored list as its first value, so turning the switch either way never rewrites or loses a card's value: a
+    value changes only when someone next edits it. An older editor reading a list reads the field as empty (never a
+    crash), and its next pick replaces the list with that one value.
+  - **The switch** sits in the field's form in the type editor (and Add Field's Shape step) under the kind's own
+    settings, with the line "Hold more than one person, such as reviewers or a pair." (Person) or "Link more than
+    one card, such as related work." (Card). Telemetry: `Plan` · `Changed` · `FieldHoldsSeveral`.
+  - **The control** (the card panel): one bordered field holding a **chip** per value (a person's disc and name; a
+    card's type glyph, number and title, pressing it opens the card), each with a remove button (accessible name
+    "Remove {name} from {Field}"), then an **Add** button (a plus, accessible name "Add to {Field}") that drops the
+    kind's own list (the plan's people and + Custom {Field}; the candidate cards with their filter). The list
+    stays open for more picks: a pick adds the value, picking one already held removes it (each held row ticked,
+    `aria-selected`), and Escape, a press outside or Tab close it. No one and None leave the list (removing every
+    chip empties the field). Full at 20, Add is disabled with the tooltip "{Field} holds up to 20". A Viewer sees
+    the chips without remove buttons or Add. Removing a chip announces "Removed {name}".
+  - **On the card face**: a Person field draws its people's discs stacked, overlapping by a third, the first three
+    then a "+N" disc for the rest (its accessible name "{Field}: Sam, Ana and 2 more"); a Card field reads its
+    linked cards' numbers ("#3 #5 #8"), the first three then "+N", with the first linked card's glyph (its
+    accessible name lists every number and title).
+  - **Swimlanes and grouping**: a card sits in **each** of its values' rows (Sam's and Ana's rows both show a card
+    Sam and Ana review), the way most planners lay several people, and in **No {Field}** only when it holds none.
+    Dragging a card out of one value's row into another's swaps that value for the new one (from Sam's row to
+    Lee's: Ana and Lee), keeping its others; into a row whose value it already holds just drops the one it left;
+    into **No {Field}** clears the field. A Cards by Field chart, a Gantt chart's swimlanes and a card table's
+    group filters count the card once in each of its rows. Filters by the field match a card holding any of the
+    picked values.
+  - **Notifies**: a notifying field holding several tells each of its people ([Notifies](#notifies)): the Inbox's
+    Assigned to You (one row a card), the assignment event and email, and Only Mine all match any of them. A custom
+    person among them never notifies.
+  - **Linked as and children**: a card in a list links to the card as any link does: its Linked as {Field}
+    section lists every card whose list holds it, Child Count and Children Done count it, and an agent's read of a
+    card names every linked card. **Link Existing** on a field holding several adds this card to the picked card's
+    list, so it never asks to move a link; the picked card's row shows no "Linked to" note. One shared reader
+    returns every card a field links to (`linkedCardIds`), so a later rollup or lookup reads every linked card the
+    same way.
+  - **Agents and CSV**: `list_items` reads a field holding several as a comma list ("Sam Reed, Ana Diaz";
+    "#3 Website, #5 Launch"), and `change_items` and Import CSV take a comma list (or, for agents, a JSON list) of
+    names, numbers or titles back, each resolved as one value would be; one value given sets a list of one. An agent
+    sets the switch with `multiple` on `change_card_types`' `custom`, `addCustom` and `editCustom` (only a Person or
+    Card field). Export CSV writes the list joined by ", ".
+  - **Share roles**: as any field. An Editor sets the switch (the type editor); an Editor and a Participant edit a
+    card's values; a Viewer reads them.
 - <a id="calculated-fields"></a>**Calculated fields**: a custom field of kind **Calculated** works its value out from the plan instead of holding
   one. It is made like any custom field (Add Field's **Calculated** kind, or `change_card_types`), with one
   **calculation** from a fixed menu, stored as `calculation` on the field:
   - **Child Count**: how many children the card has.
   - **Children Done (%)**: the share of its children that are done, a whole percentage ("40%"); nothing when it has
-    no children.
+    no children. Its form has a **Show as Percent Bar** switch ("Draw the share as a bar, like a Percent field."): telemetry `Plan` · `Changed` · `FieldShowAsPercent` on each flip;
+    on, the field is stored with `showAs: "percent"` and draws as a [Percent](#percent-fields) does, on the card,
+    in the panel and in exports; off (and for every field made before it), it reads as text ("40%") as before. A
+    Child Count is no share, so it never offers the switch, and changing a field's calculation to Child Count turns
+    it off.
+  - **Rollup**: one of a card's children's fields totalled, averaged, counted or dated (a Project's **Total
+    Points**, **Total Spend**, **Last Due**), [below](#rollup-and-lookup-fields).
+  - **Lookup**: a field of the card a Card field links to (a Task's **Project Due**, **Client Email**),
+    [below](#rollup-and-lookup-fields).
+  - **Formula**: an expression over the card's own fields (`Budget - Spent`), [below](#formula-fields).
 
   **Children** are the cards that link to the card through a Card field naming its type (the cards its panel lists
   under **Linked as {Field}**, Parent included): every such field, each child once, an archived child included and a
@@ -343,18 +440,165 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Nothing is stored**: the value is worked out where it is read, from the same shared functions
     (`calculated-fields.ts`), so it is always current and never conflicts. It updates as soon as a child is added,
     moved, relinked or trashed.
-  - **Read-only everywhere**: the card panel shows the value as text after a calculator glyph, never an input (Children Done with a thin bar of the share done, a card without children "No linked cards"); the field's form in the type editor says it is worked out from the cards that link here; the card face draws it like any custom field when the
+  - **Read-only everywhere**: the card panel shows the value as text after a calculator glyph, never an input (Children Done with a thin bar of the share done, or the Percent bar, read-only, when it shows as a Percent; a card without children "No linked cards"); the field's form in the type editor says it is worked out from the cards that link here; the card face draws it like any custom field when the
     type's Display places it ("Children Done: 40%"). A write that gives a Calculated field a value is refused
     (`field_calculated`, field: the field's id): the api (and This Browser projects, through the same check),
     `change_items` and the CLI ("Progress is calculated: it can't be set"). Clearing an old value left under the
     field's id is allowed.
   - **Agents and the api read it**: `list_items` lists each Calculated field with `kind: "calculated"`, its
-    `calculation` and `readOnly: true`, and each card's value among its `fields`, by name; `GET /items` answers
+    `calculation`, `showAs: "percent"` when it shows as a Percent, and `readOnly: true`, and each card's value among its `fields`, by name; `GET /items` answers
     `calculated` (by card id, then field id) when asked with `?include=calculated`.
   - **Where it is left out**: a form can't ask it (no question maps to it), Import CSV skips its column and Export
-    CSV leaves it out, and a board can't sort or lay swimlanes by it.
+    CSV leaves it out, and a board can't sort or lay swimlanes by it. A Formula, a Rollup and a Lookup are the exceptions: they export,
+    sort and filter as their result ([below](#formula-fields), [Rollup and Lookup](#rollup-and-lookup-fields)).
   - A field's kind never changes, so a Calculated field stays one; its calculation can be changed in its form (or
     `editCustom`'s `calculation`), and every card's value follows at once.
+
+- <a id="formula-fields"></a>**Formula fields**: a Calculated field whose calculation is **Formula** works its value
+  out from the card's own fields, so a budget, hiring or sales board does its own sums (`Budget - Spent`,
+  `Estimate * Rate`, `days(Due - Start)`, `if(Score >= 8, "Strong", "Weak")`). Like every Calculated field nothing is
+  stored and it is read-only everywhere (the rules above hold); what follows is its own.
+  - **The expression** names fields by the names the card panel gives them, ignoring case. A name of plain words
+    (letters, digits and `_`, one space between words: `Budget`, `Story Points`) is written as it is; any name may be
+    written in braces (`{Children Done (%)}`), which a name holding other characters, or one that is also `true`,
+    `false` or a function's name, needs. It reads the type's custom fields (all but Image, Comments and Votes), the
+    built-in Title, Estimate (or Points), Start Date (or Start), Due Date (or Due), Priority, Assignee, Labels,
+    Colour and Checklist when the type offers them, and every card's **Number** and **Type**. A custom field's name
+    wins over a built-in's other name. Status is not read (its names belong to the boards). Text is written in
+    double quotes (`"Strong"`, `""` for a quote inside), numbers as `12` or `0.5`, and `true` and `false`.
+  - **Operators**: `+ - * /`, brackets, a leading `-`, and the comparisons `= != < <= > >=` (`==` and `<>` read as
+    `=` and `!=`). `* /` bind before `+ -`, which bind before a comparison.
+  - **Functions**: `round(x)` (or `round(x, places)`, 0 to 10), `min(a, b, ...)`, `max(a, b, ...)`, `abs(x)`,
+    `if(test, then, else)` (else blank when left out; only the branch taken is worked out), `and(a, b, ...)`,
+    `or(a, b, ...)`, `not(x)`, `days(x)` (a date: the days from today to it, negative once past; a number: itself),
+    `today()`, `concat(a, b, ...)` (the values as text, joined) and `len(x)` (a list's count, a text's characters).
+    Names compare ignoring case; a function given the wrong number of values is a syntax error.
+  - **Values**: Number, Currency, Rating and Estimate read as numbers; Date, Start and Due as dates; Checkbox as
+    true or false; Text, Long Text (its text), Email, Link, Choice, Colour, Priority, Title and Type as text; a Person
+    (and the Assignee) as the person's name; a Card field as the linked card's "#12 Title" ("Missing card" when it is
+    gone); another Calculated field as its value (Child Count, Children Done, a Rollup's or a Lookup's result, as its result
+    reads: a Date result as a date, another Formula's result). **Lists**: a
+    field that [holds several](#holds-several), a Multiple Choice, Labels and a Checklist (its rows) read as a list:
+    `len()` counts it, `concat()` joins it with ", ", and anything else given a list is an error ("Reviewers holds
+    several: count them with len()").
+  - **Blanks**: an empty field reads as 0 in sums, "" as text and false in a test. When every field a formula reads
+    is empty on a card, the card shows no value, so a new card reads blank rather than 0 (a Checkbox, ticked or not,
+    and Number and Type always have a value).
+  - **Dates**: a date less a date is the whole days between them (a number); a date plus or less a number is a date;
+    dates compare earliest first. `today()` is the reader's day (the api's and the agents' in UTC).
+  - **Text** compares ignoring case (`Stage = "won"` matches "Won"); `+` on text is an error ("Join text with
+    concat()").
+  - **The result** (`result`, Number when absent) decides how the value reads, sorts and exports:
+    **Number** (grouped, up to two decimals, as a Number field), **Currency** (in the field's `currency`, as a
+    Currency field), **Percent** (a share, rounded to a whole number: `Spent / Budget * 100` reads "40%"; its
+    form offers **Show as Percent Bar**, as Children Done's does, and on it draws as a [Percent](#percent-fields)
+    does, held to 0 to 100; picking another result turns it off),
+    **Text**, **Date** (as a Date field) or **Checkbox** (Yes or No; any value tests true or false). A Number,
+    Currency or Percent result that is no number is an error ("Gives text: make the result Text"); so is a Date
+    result that is no date. Text takes any value as text.
+  - **Stored**: `formula`, the expression with each field written as its id in braces (`{f-budget} - {f-spent}`),
+    so a renamed field keeps working; the editor and agents show it with names. `result` and, for Currency,
+    `currency` beside it.
+  - **Errors never break a board.** A formula that can't be read (bad syntax, an unknown field, too long, too deep)
+    is refused where it is written: the editor and `change_card_types` name the problem and where ("Unknown field
+    "Spnt" at 10", "Expected ) at 14"). A stored formula that stopped working (a field it reads was deleted or taken off
+    the type, or a field it reads became a kind it can't read) and a value that can't be worked out on one card
+    (dividing by 0, a list in a sum, a formula that reads itself through another) read as an **error**: the card
+    panel shows the message in place of the value, the card face reads "Error" in red (the message spoken with it), and
+    the api, the agents, exports and sheets read no value.
+  - **Safety**: a small hand-written parser and evaluator, never `eval`; a formula holds up to 1,000 characters
+    (`FORMULA_MAX`) nested up to 32 deep, and working one out on a card takes at most 10,000 steps (other formulas it
+    reads included), past which it is an error ("Too much to work out").
+  - **Where it reads**: everywhere a Calculated field does (the card face, the panel, the api, the agents, the SVG
+    and PNG exports), and also **Export CSV** (its value as a field of its result kind exports: "2500", "2026-10-31", Yes) and a sheet's card functions
+    (`CARD`, `CARDS`... read it by name: a number, text, true or false, or a date). A board **sorts** by a Formula
+    whose result is a Number, Currency, Percent or Date (as that kind sorts), and lays swimlanes (and Card Search
+    filters) by one whose result is a Number, Percent, Date, Text or Checkbox, read-only ([Rollup and
+    Lookup](#rollup-and-lookup-fields), Filters); forms and Import CSV leave it out.
+  - **In the type editor**: picking Formula in the field's form (and Add Field's Shape step) opens the formula
+    editor: a **Result** menu (and **Currency** for a Currency result, **Show as Percent Bar** for a Percent one), a monospaced **Formula** box, the type's
+    fields as chips under it (pressing one writes its name at the caret), and a line that checks the formula as it is
+    typed: "Works" with a tick, or the problem in red. **Preview** works it out on a real card: the type's first
+    live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Add {Name} waits until the formula
+    works ("Write a formula that works"). In an existing field's form, a formula that doesn't work is not kept: the
+    field keeps its last working one, and the line says so ("Not saved: Unknown field "Spnt""). Picking another
+    calculation drops the formula and its result. Telemetry: `Plan` · `Changed` · `FieldFormula` on picking Formula.
+  - **Agents**: `change_card_types` takes `formula` (by names) and `result` on `custom`, `addCustom` and
+    `editCustom` (and `showAs: "percent"` with a Percent result), refusing a formula that can't be read with its problem; `list_items` lists a Formula field's
+    `formula` by names, its `result`, and `formulaError` when it stopped working, and each card's value (a number,
+    text, true or false, an ISO date, or null).
+  - **Share roles**: as any field. An Editor writes the formula (the type editor); everyone who can read the plan
+    reads the values.
+
+- <a id="rollup-and-lookup-fields"></a>**Rollup and Lookup fields**: two calculations that read other cards' fields
+  through the links between cards, so a Project totals its tasks' points or spend and a Task shows its Parent's due
+  date without anyone copying values by hand. Like every Calculated field nothing is stored and it is read-only
+  everywhere (the rules above hold); what follows is their own.
+  - **Rollup** works one value out over a card's [children](#calculated-fields) (archived ones counted, trashed ones
+    left out, as Child Count counts them). Its settings:
+    - **Through** (`through`): which children, **All Linked Cards** (every child, stored as no `through`) or the
+      ones linking here through one Card field, by name ("Parent", "Project"). The menu lists every Card field of
+      any type that links to this card's type, each once (a field id names the same field on every type holding
+      it). A card linking through a field that [holds several](#holds-several) is a child of each card it links.
+    - **Calculate** (`aggregate`): **Sum**, **Average**, **Min**, **Max** (of a number), **Count** (how many
+      children), **Count Done** (how many are done, by the boards' rule), **Earliest** and **Latest** (of a date).
+    - **Field** (`source`, by id): what Sum, Average, Min and Max read: a Number, Currency, Rating, Estimate or
+      Percent field (never Sum of a Percent: a sum of shares means nothing), or a Calculated field whose result is a
+      number, money or a share; what Earliest and Latest read: a Date, Start Date or Due Date field, or a Calculated
+      field whose result is a Date. Count and Count Done read none. The menu lists the fields of the card types
+      that link here through the chosen field (any of them for All Linked Cards), each once, by name.
+    - A child without the field, or with it empty, is skipped; so is a child whose own worked-out value is an error.
+      With nothing left Sum, Average, Min, Max, Earliest and Latest read no value; Count and Count Done read 0.
+  - **Lookup** shows one field of the card a Card field links to. Its settings: **Through** (`through`), one of this
+    type's own Card fields (required), and **Field** (`source`), any field of the card types that field links to
+    that a [Formula](#formula-fields) can read (Title, Number, Type, Estimate, Start and Due Date, Priority,
+    Assignee, Labels, Colour, Checklist and every custom field but Image, Comments and Votes), Calculated fields
+    included. A field that holds several reads its first linked card that is still there. No linked card, a
+    missing one or one in the Trash reads no value; an archived one is still read.
+  - **The result** (`result`, as a Formula's, with `currency` beside a Currency one) is taken from what it reads
+    when the field is set (the type editor and `change_card_types` write it), never picked: Count and Count Done
+    give a **Number**, Earliest and Latest a **Date**, Sum, Average, Min and Max the field's kind (**Currency** in
+    the field's currency, **Percent**, else **Number**: a Rating and Estimate read as numbers). A Lookup gives its
+    field's kind: Number (Rating, Estimate and Number too), Currency, Percent, Date (Start and Due too),
+    Checkbox, a Calculated field's own result, and **Text** for everything else (a Person's name, a list joined by
+    ", ", a Card field's "#12 Title"). Values are rounded as the result reads (money to the penny, a share to a
+    whole number). A Percent result offers **Show as Percent Bar**, as a Formula's does.
+  - **Problems** read as an error, as a Formula's do (the panel says why, the card face reads "Error", the api,
+    exports and sheets no value): a Card field or field it reads that no type has any more ("The field it reads is
+    gone"), a value that reads itself through other cards ("Circular: Total Points reads itself"), and one that
+    takes too long ("Too much to work out").
+  - **With Formulas** (the order): a Formula may read a Rollup's or a Lookup's value by name (`{Total Spend} /
+Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it reads. Working out one value, every
+    card and formula it reads included, takes at most 100,000 steps (`CALCULATED_STEPS_MAX`: each card read is a
+    step, and each formula's steps count; one formula still takes at most 10,000) and reads through at most 8
+    values across cards (`CALCULATED_DEPTH_MAX`); past either, it is "Too much to work out". Within one value each
+    card's value is worked out once, however many paths reach it.
+  - **Filters**: a board lays swimlanes by a Formula, a Rollup or a Lookup whose result is a Number, Percent, Date,
+    Text or Checkbox (a row per value, ordered as that kind's rows are; Currency, like a Currency field, lays none),
+    and Card Search filters by one the same way. Its rows are read-only, as a Created row is: a card dropped into one
+    keeps its value (only a drop's column move applies), and no empty row is offered to drop into.
+  - **Where it reads**: everywhere a Formula does: the card face, the panel, Sort Cards (a Number, Currency, Percent
+    or Date result), swimlanes and Card Search (above), Export CSV (its value as a field of its result kind exports),
+    a sheet's card functions, the SVG and PNG exports, `GET /items?include=calculated`, and the agents.
+  - **Performance**: the children index is made once per change to the cards (`childIndexFor`), never a scan per card
+    per field, so a board of 2,000 cards with several Rollups draws in one pass over the cards and one per child
+    link per Rollup.
+  - **In the type editor**: picking Rollup in the field's form (and Add Field's Shape step) shows **Through**,
+    **Calculate** and **Field** menus (Field hidden for Count and Count Done; a field that no longer fits the
+    calculation is dropped, and Add {Name} waits for one: "Pick a field to read"), **Show as Percent Bar** for a
+    Percent result, and **Preview**: the value on the type's first live card that has one ("On #3 Website: 21"),
+    else on its first live card, or "No {Type} card to try it on yet". Picking Lookup shows **Through** (this type's
+    Card fields; "Add a Link to Card field first" when it has none) and **Field**, and the same Preview. With no
+    Card field linking to the type a Rollup's Through offers only All Linked Cards and says "No Link to Card field
+    links here yet". Picking another calculation drops the settings.
+  - **Agents**: `change_card_types` takes `through` (a Card field by name, or "all" for a Rollup), `aggregate` (by
+    id, `countDone`, or name, "Count Done") and `source` (a field by name) on `custom`, `addCustom` and
+    `editCustom`, refusing a setting that does not fit with what would ("Total Points can't Sum Status: give a
+    Number, Currency, Rating, Estimate or Percent field."). `list_items` lists their `through` and `source` by name,
+    `aggregate` and `result`, and each card's value as a Formula's (a number, text, true or false, an ISO date, or
+    null).
+  - **Share roles**: as any field. An Editor sets a Rollup or Lookup up (the type editor); everyone who can read the
+    plan reads the values.
 
 - <a id="image-fields"></a>**Image fields**: a custom field of kind **Image** holds one picture, uploaded from the
   card panel into liveworkspace's media service (`liveworkspace/docs/specs/006-media/media.md`), where every app keeps
@@ -583,7 +827,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
         **start** find Date, **assignee** Person, **priority** Choice, **estimate** Number, **description** Long
         Text), and a few everyday words for it (**money**, **price**, **budget** find Currency; **stars**,
         **score** Rating; **yes/no**, **tick**, **toggle** Checkbox; **parent**, **epic**, **relation** Link to
-        Card; **percent**, **progress**, **formula** Calculated; **url**, **website** Link; **dropdown**,
+        Card; **percent**, **progress**, **complete** Percent; **formula**, **rollup** Calculated; **url**, **website** Link; **dropdown**,
         **select**, **option** Choice; **tags**, **multi-select** Multiple Choice and Labels; **notes**,
         **paragraph** Long Text; **deadline**, **day** Date; **count**, **points** Number; **mail** Email;
         **owner**, **reviewer**, **people** Person; **color**, **swatch** Colour; **to-do**, **subtasks** Checklist;
@@ -595,13 +839,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
         **accordion**, one group open at a time (opening one closes the other; pressing the open one closes it; the
         first open to start): **Text & links** (Text "A short line of text", Long Text "Paragraphs of notes", Link
         "A web address", Email "An address that opens your mail app"), **Numbers & dates** (Number "Points, counts
-        and sizes", Currency "An amount, like £12,500", Rating "Stars out of 3 to 10", Date "A day on the
+        and sizes", Currency "An amount, like £12,500", Percent "How far along, drawn as a bar", Rating "Stars out of 3 to 10", Date "A day on the
         calendar"), **Choices** (Choice "One option from a list", Multiple Choice "Several options from a list",
         Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name"), **People & teamwork** (Person
         "Someone on the plan, like an owner or a reviewer", Checklist "To-dos ticked off one by one", Comments
         "Threads to talk the card through", Votes "Thumbs up from the team"), **Colour & images** (Colour "A colour
         to tell cards apart", Image "A picture, like a mock-up or a photo") and **Linked cards** (Link to Card
-        "Another card, like a parent or an epic", Calculated "Worked out from the cards linked here"). Each group's
+        "Another card, like a parent or an epic", Calculated "Worked out from linked cards or a formula"). Each group's
         header is a button (`aria-expanded`) with the group's name, how many kinds it lists and a chevron. While a
         search is typed the accordion steps aside: every group with a match shows open, listing only its matches
         (its count then the matches'), and a group with none is hidden; clearing the search brings the accordion
@@ -635,11 +879,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       several lines into a row adding one option a line (blanks dropped, at most 20); for Rating **Scale** ("Out of
       3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for
       Link to Card **Links To** its card types (at least one); for Calculated **Calculation** (the menu below, the
-      first chosen); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes); then
+      first chosen; a Rollup's and a Lookup's own menus, [Rollup and Lookup](#rollup-and-lookup-fields)) and, for
+      Children Done or a Formula, Rollup or Lookup with a Percent result, **Show as Percent Bar** (off); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes); then
       **Preview**: a small card as a board's card panel draws it, "Example card" over the field's row: its name as
       typed ("Field name" until then, with the required mark when Required) beside a sample value of its kind
       (Choice its first option, Multiple Choice its first two, Link to Card the linked types' names, "Project or
-      Epic", Rating stars out of its scale, Currency in its currency, Calculated "3" or "40%", Person a person's
+      Epic", Rating stars out of its scale, Currency in its currency, Percent its bar at 40% and "40%", Calculated "3" or "40%" (the Percent bar when Show as Percent Bar is on), Person a person's
       disc and name, Labels two label chips, Colour a swatch and its name, Checklist "2/5", Image a picture glyph and
       "photo.png", Votes "▲ 3"); updating as you
       type. Last, one full-width primary button **Add {Name}** ("Add {Kind} Field" until named), off until the

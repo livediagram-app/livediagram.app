@@ -5,9 +5,18 @@ import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSet
 import { builtInFieldOf } from './card-source';
 import { customFieldText } from './card-text';
 import { itemColourValue } from './item-colour';
+import { hasResult } from './calculated-result';
+import { calculatedReaderOf, type IsDoneStatus } from './calculated-fields';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
-import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
+import { isItemPerson, itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
+import {
+  fieldCardIds,
+  fieldPeople,
+  holdsSeveral,
+  severalValue,
+  storedPeople,
+} from './several-values';
 import { isEmailAddress, ratingScaleOf, type CustomFieldDef, type ItemTypeDef } from './item-types';
 import {
   ITEM_DESCRIPTION_MAX,
@@ -19,6 +28,7 @@ import {
 } from './limits';
 import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogue';
 import { missingRequiredFields } from './required-fields';
+import { parsePercent } from './percent-fields';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
 const BOARD_CSV_FIELDS = [
@@ -41,13 +51,19 @@ export function boardCsvFileName(title: string): string {
 const lower = (s: string) => s.trim().toLowerCase();
 
 // The custom fields of the board's types, one per label (the first type naming it wins), in catalogue order. A
-// Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields");
-// so is an Image field, whose value is a picture's id (docs/specs/026-plan/item-types.md "Image fields").
+// Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields"),
+// but a Formula, Rollup or Lookup, worked out as its result, is written ("Formula fields", "Rollup and Lookup
+// fields"); so is an Image field left out, whose value
+// is a picture's id (docs/specs/026-plan/item-types.md "Image fields").
 function customColumns(types: readonly ItemTypeDef[]): string[] {
   const out = new Map<string, string>();
   for (const t of types)
     for (const f of t.custom ?? [])
-      if (f.kind !== 'calculated' && f.kind !== 'image' && !out.has(lower(f.label)))
+      if (
+        (f.kind !== 'calculated' || hasResult(f)) &&
+        f.kind !== 'image' &&
+        !out.has(lower(f.label))
+      )
         out.set(lower(f.label), f.label);
   return [...out.values()];
 }
@@ -87,8 +103,11 @@ export function boardCsvRows(
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
   statusNames?: ReadonlyMap<string, string>,
+  // The boards' done rule, for a Rollup's Count Done (none without it).
+  isDone?: IsDoneStatus,
 ): string[][] {
   const shown = boardAddTypes(setup, types);
+  const calculated = calculatedReaderOf(items, types, isDone);
   const builtIns = BOARD_CSV_FIELDS.filter(([id]) => shown.some((t) => t.fields.includes(id)));
   const customs = customColumns(shown);
   const rows: string[][] = [
@@ -115,10 +134,20 @@ export function boardCsvRows(
         ...customs.map((label) => {
           const f = customByLabel(type, label);
           if (!f) return '';
-          if (f.kind === 'card') {
-            const linked = linkedCard(items, item.fields[f.id]);
-            return linked ? itemTitle(linked) : '';
-          }
+          // A worked-out value, written as its result kind's field would be ("2500", "2026-10-31").
+          if (f.kind === 'calculated') return cellOf(calculated(f, item));
+          // Every linked card's title, and every person's name, of a field that holds several, joined by ", "
+          // (item-types.md "Holds Several").
+          if (f.kind === 'card')
+            return fieldCardIds(f, item.fields[f.id])
+              .map((id) => linkedCard(items, id))
+              .filter((c): c is Item => !!c)
+              .map(itemTitle)
+              .join(', ');
+          if (f.kind === 'person')
+            return fieldPeople(f, item.fields[f.id])
+              .map((p) => p.name)
+              .join(', ');
           // A Checklist reads as its progress ("2/5") and a Votes field as its total, as the card shows them.
           if (f.kind === 'checklist' || f.kind === 'votes')
             return customFieldText(f, item.fields[f.id]) ?? '';
@@ -193,9 +222,18 @@ function customValue(
     case 'votes':
       return undefined;
     // The built-in fields' kinds read as those fields do: a person by name, labels by commas, a colour as #rrggbb.
+    // A Person field that holds several takes a comma list of names.
     case 'person':
+      if (holdsSeveral(f)) {
+        const named = text
+          .split(',')
+          .map((name) => builtInValue('assignee', name, people))
+          .filter((p): p is ItemPerson => isItemPerson(p));
+        return severalValue(f, storedPeople(named));
+      }
+      return builtInValue('assignee', text, people);
     case 'labels':
-      return builtInValue(f.kind === 'person' ? 'assignee' : 'labels', text, people);
+      return builtInValue('labels', text, people);
     case 'colour':
       return itemColourValue(text);
     case 'number': {
@@ -214,6 +252,9 @@ function customValue(
       const n = Number(text);
       return Number.isInteger(n) && n >= 1 && n <= ratingScaleOf(f) ? n : undefined;
     }
+    // "40" or "40%", rounded; a cell outside 0 to 100 is skipped, as a Rating out of its scale is.
+    case 'percent':
+      return parsePercent(text);
     // An amount, as the card stores it: a number of up to two decimals, "£12,500" read as 12500.
     case 'currency': {
       const n = Number(text.replace(/[^\d.-]/g, ''));

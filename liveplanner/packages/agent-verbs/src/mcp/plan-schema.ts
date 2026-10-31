@@ -5,8 +5,13 @@ import { z } from 'zod';
 import {
   CALCULATIONS,
   CALCULATION_LABELS,
+  AGGREGATES,
+  AGGREGATE_LABELS,
   CARD_SIZES,
   CUSTOM_FIELD_KINDS,
+  FORMULA_MAX,
+  FORMULA_RESULTS,
+  FUNCTION_NAMES,
   PLAN_BOARD_PRESET_IDS,
   PLAN_COLUMNS_MAX,
   PLAN_GLYPH_IDS,
@@ -42,7 +47,8 @@ const fieldsArg = z
       '(YYYY-MM-DD), color (a #rrggbb colour, e.g. ' +
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
       '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
-      '("Severity": "S2"; a Card field takes "#12"; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
+      '("Severity": "S2"; a Card field takes "#12"; a field marked multiple takes a list or a comma list, "Sam, Ana" or ' +
+      '"#3, #5"; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
       'change_card_types. A new card must give every custom field list_items marks required. Attachments ' +
       '(pictures) are added in the card panel only: they can be cleared, never set.',
   );
@@ -177,8 +183,8 @@ export const changeBoardShape = {
         field: z
           .string()
           .describe(
-            'A field by name or id: Priority, Estimate, Start Date, Due Date, Created At, Last Edited At, or a number, currency, date, ' +
-              'rating or choice field ("Value").',
+            'A field by name or id: Priority, Estimate, Start Date, Due Date, Created At, Last Edited At, or a number, currency, percent, ' +
+              'date, rating or choice field ("Value").',
           ),
         direction: z
           .enum(['ascending', 'descending'])
@@ -232,7 +238,55 @@ const calculationArg = z
   .describe(
     `A calculated field's calculation: ${CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`).join(', ')}. ` +
       'Children are the cards linking to the card through a card field naming its type (Parent, for a Project); ' +
-      'done is a done column’s status. Children Done is a whole percentage, null with no children.',
+      'done is a done column’s status. Children Done is a whole percentage, null with no children. rollup works ' +
+      'one of the children’s fields out (aggregate, source, through), lookup shows a field of the card a card ' +
+      'field links to (through, source), and formula works the value out from the card’s own fields by its formula.',
+  );
+
+// A Rollup's or Lookup's settings (docs/specs/026-plan/item-types.md "Rollup and Lookup fields").
+const throughArg = z
+  .string()
+  .describe(
+    'A rollup’s or lookup’s card field, by name: a lookup reads the card its own card field links to (Parent); ' +
+      'a rollup reads the children linking here through a card field (Parent), or every child with "all" (the ' +
+      'default).',
+  );
+const aggregateArg = z
+  .string()
+  .describe(
+    `What a rollup works out over the children: ${AGGREGATES.map((a) => `${a} (${AGGREGATE_LABELS[a]})`).join(', ')}. ` +
+      'sum, average, min and max read a number, currency, rating, estimate or (not sum) percent field; earliest ' +
+      'and latest a date field; count and countDone none.',
+  );
+const sourceArg = z
+  .string()
+  .describe(
+    'The field a rollup aggregates on the children, or a lookup shows from the linked card, by name. Its result ' +
+      '(and a currency’s code) is taken from that field.',
+  );
+
+// A Formula field's expression and result kind (docs/specs/026-plan/item-types.md "Formula fields").
+const formulaArg = z
+  .string()
+  .describe(
+    `A formula field’s expression over the card’s fields by name (up to ${FORMULA_MAX} characters): ` +
+      'Budget - Spent, Estimate * Rate, days(Due - Start), if(Score >= 8, "Strong", "Weak"). A name with other ' +
+      'characters goes in braces: {Children Done (%)}. Operators + - * / and brackets, comparisons = != < <= > >=; ' +
+      `functions ${FUNCTION_NAMES.join(', ')}. A field holding several reads as a list: len() counts it, ` +
+      'concat() joins it. Refused, with the problem, when it can’t be read.',
+  );
+const resultArg = z
+  .string()
+  .describe(
+    `A formula field’s result: ${FORMULA_RESULTS.join(', ')} (number when left out); currency takes currency.`,
+  );
+
+// Show As (docs/specs/026-plan/item-types.md "Percent"): a worked-out share drawn as a Percent field is.
+const showAsArg = z
+  .enum(['percent', 'number'])
+  .describe(
+    'A calculated childrenDone field, or a formula field whose result is percent, only: percent draws its share ' +
+      'as a percent field’s bar, number as text ("40%", the default).',
   );
 
 // Notifies (docs/specs/026-plan/item-types.md "Notifies"): a person field, and the Assignee, telling their person.
@@ -240,6 +294,13 @@ const notifiesArg = z
   .boolean()
   .describe(
     'A person field only: true tells its person when a card is theirs (the Inbox, emails, Only Mine), false stops.',
+  );
+// Holds Several (docs/specs/026-plan/item-types.md "Holds Several"): a person or card field holding a list.
+const multipleArg = z
+  .boolean()
+  .describe(
+    'A person or card field only: true holds several people or cards (written as a comma list or a list), false ' +
+      'holds one again (cards keep what they hold).',
   );
 const assigneeNotifiesArg = z
   .boolean()
@@ -251,11 +312,14 @@ const customField = z.object({
     .enum(CUSTOM_FIELD_KINDS)
     .describe(
       'text (one line), longtext (rich paragraphs, in a panel tab; written as Markdown), number, currency (an amount in the field’s ' +
-        'currency, shown as "£12,500"), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
+        'currency, shown as "£12,500"), percent (how far along: a whole number from 0 to 100, ' +
+        'drawn as a bar; "40%" is taken too, and a value outside 0 to 100 is refused), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
         'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
-        'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12"), ' +
+        'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12", or several ' +
+        'with multiple), ' +
         'calculated (worked out from the cards linking to the card through a card field, by its calculation; ' +
-        'read-only, never given a value), person (someone, by name, as the assignee takes one), labels (a list, ' +
+        'read-only, never given a value), person (someone, by name, as the assignee takes one, or several with ' +
+        'multiple), labels (a list, ' +
         'as labels takes one), colour (#rrggbb), checklist (rows of { text, done }), image (a picture added ' +
         'in the card panel; an agent may clear it, never set one), comments (its own comment threads: start ' +
         'one in it with change_threads) or votes (its own votes, from a session vote that counts in it; never ' +
@@ -286,6 +350,12 @@ const customField = z.object({
     .optional()
     .describe('A currency field’s ISO 4217 code (GBP, USD, EUR...); GBP when left out.'),
   calculation: calculationArg.optional(),
+  formula: formulaArg.optional(),
+  result: resultArg.optional(),
+  through: throughArg.optional(),
+  aggregate: aggregateArg.optional(),
+  source: sourceArg.optional(),
+  showAs: showAsArg.optional(),
   onCard: z
     .boolean()
     .optional()
@@ -297,6 +367,7 @@ const customField = z.object({
       'Every new card of the type must give it a value, and no change may empty it (any kind but checkbox).',
     ),
   notifies: notifiesArg.optional(),
+  multiple: multipleArg.optional(),
 });
 
 const colourArg = z
@@ -357,12 +428,19 @@ const customFieldEdit = z.object({
     .describe('A card field’s target card types, replaced whole (one or more).'),
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
   calculation: calculationArg.optional(),
+  formula: formulaArg.optional(),
+  result: resultArg.optional(),
+  through: throughArg.optional(),
+  aggregate: aggregateArg.optional(),
+  source: sourceArg.optional(),
+  showAs: showAsArg.optional(),
   onCard: z.boolean().optional(),
   required: z
     .boolean()
     .optional()
     .describe('true makes it required (any kind but checkbox), false optional again.'),
   notifies: notifiesArg.optional(),
+  multiple: multipleArg.optional(),
 });
 
 export const cardTypeChangeSchema = z.discriminatedUnion('op', [
@@ -463,8 +541,8 @@ const listedCustom = z.object({
   kind: z
     .string()
     .describe(
-      'text, longtext, number, currency, date, checkbox, link, email, choice, multichoice, rating, card, ' +
-        'calculated, person, labels, colour, checklist or image.',
+      'text, longtext, number, currency, percent, date, checkbox, link, email, choice, multichoice, rating, ' +
+        'card, calculated, person, labels, colour, checklist or image.',
     ),
   options: z.array(z.string()).optional().describe('A choice or multichoice field’s options.'),
   scale: z.number().optional().describe('A rating field’s top score.'),
@@ -477,7 +555,49 @@ const listedCustom = z.object({
   calculation: z
     .string()
     .optional()
-    .describe('A calculated field’s calculation: childCount or childrenDone.'),
+    .describe(
+      'A calculated field’s calculation: childCount, childrenDone, rollup, lookup or formula.',
+    ),
+  through: z
+    .string()
+    .optional()
+    .describe('A rollup’s or lookup’s card field by name; "all" for a rollup over every child.'),
+  aggregate: z
+    .string()
+    .optional()
+    .describe('What a rollup works out (sum, average, countDone ...).'),
+  source: z
+    .string()
+    .optional()
+    .describe('The field a rollup aggregates or a lookup shows, by name.'),
+  error: z
+    .string()
+    .optional()
+    .describe(
+      'Why a rollup or lookup stopped working (a field it read is gone): its values read null.',
+    ),
+  formula: z
+    .string()
+    .optional()
+    .describe('A formula field’s expression, with field names, as change_card_types takes it.'),
+  result: z
+    .string()
+    .optional()
+    .describe(
+      `A formula’s, rollup’s or lookup’s result: ${FORMULA_RESULTS.join(', ')}; the value reads as it.`,
+    ),
+  formulaError: z
+    .string()
+    .optional()
+    .describe(
+      'Why a formula field stopped working (a field it read was deleted): its values read null.',
+    ),
+  showAs: z
+    .literal('percent')
+    .optional()
+    .describe(
+      'A calculated field drawn as a percent field’s bar; its value is still a whole percentage.',
+    ),
   readOnly: z
     .literal(true)
     .optional()
@@ -569,7 +689,8 @@ const listedItem = z.object({
     .record(z.string(), z.unknown())
     .describe(
       'Every field, title and status included; custom fields by their names, as change_items takes them. A ' +
-        'calculated field’s value is worked out (a count, a whole percentage, or null) and read-only.',
+        'calculated field’s value is worked out (a count, a whole percentage, a formula’s number, text, ' +
+        'true or false or ISO date, or null) and read-only.',
     ),
 });
 

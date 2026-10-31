@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { lucideGlyph } from '@liveworkspace/ui';
-import { lucideChevronRight } from '@liveworkspace/icons/lucide';
+import { HoverCard, lucideGlyph } from '@liveworkspace/ui';
+import { lucideFolder } from '@liveworkspace/icons/lucide';
 import { CollapseWidth, COLLAPSE_WIDTH_MS } from '../primitives/CollapseWidth';
 import {
   FOLDER_BADGE_CLASS,
@@ -12,8 +12,10 @@ import {
 } from './folder-colour';
 
 // One tab folder in the strip (docs/specs/006-document/tab-folders.md "Tab bar rendering"), the same in every editor.
-// Its chip comes first; its tabs follow inline and open or shut in place, each easing its own width so the whole
-// group slides as one. The open tab never tucks away: in a collapsed folder it stays on the shelf beside the chip.
+// It stands on its shelf, a tinted container shaped like a tab. Its chip, the folder's header, comes first: a folder
+// glyph, the name and the count badge, open or shut. Its tabs follow inline and open or shut in place, each easing its
+// own width so the whole group slides as one. The open tab never tucks away: in a collapsed folder it stays on the
+// shelf beside the chip.
 
 // How long a dragged tab rests on a collapsed chip before the folder springs open.
 export const SPRING_OPEN_MS = 500;
@@ -40,6 +42,8 @@ export type TabFolderGroupProps<T extends { id: string }> = {
   hiddenPresence?: (tabIds: string[]) => ReactNode;
   // Bring the whole folder into view once it has opened.
   onOpened?: (group: HTMLElement) => void;
+  // Once it has shut: the strip brings the open tab back into view (the folder shrinking can strand it past the edge).
+  onClosed?: () => void;
 };
 
 export function TabFolderGroup<T extends { id: string }>({
@@ -55,26 +59,26 @@ export function TabFolderGroup<T extends { id: string }>({
   renderRenameField,
   hiddenPresence,
   onOpened,
+  onClosed,
 }: TabFolderGroupProps<T>) {
   const [editing, setEditing] = useState(false);
   const [dropOver, setDropOver] = useState(false);
   const groupRef = useRef<HTMLDivElement>(null);
-  const holdsOpen = tabs.some((t) => t.id === activeId);
-  const shelf = expanded || holdsOpen;
 
-  // Once it has opened, the strip brings the folder into view (a phone's folder past the edge).
+  // Once it has opened, the strip brings the folder into view (a phone's folder past the edge); once it has shut, the
+  // open tab.
   const opened = useRef(expanded);
   useEffect(() => {
     const was = opened.current;
     opened.current = expanded;
-    if (!expanded || was || !onOpened) return;
+    if (expanded === was) return;
+    const then = expanded
+      ? () => groupRef.current && onOpened?.(groupRef.current)
+      : () => onClosed?.();
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const timer = window.setTimeout(
-      () => groupRef.current && onOpened(groupRef.current),
-      still ? 0 : COLLAPSE_WIDTH_MS + 20,
-    );
+    const timer = window.setTimeout(then, still ? 0 : COLLAPSE_WIDTH_MS + 20);
     return () => window.clearTimeout(timer);
-  }, [expanded, onOpened]);
+  }, [expanded, onOpened, onClosed]);
 
   // A dragged tab resting on a collapsed chip springs the folder open.
   const spring = useRef<number | null>(null);
@@ -94,11 +98,9 @@ export function TabFolderGroup<T extends { id: string }>({
       data-tab-folder={name}
       data-expanded={expanded ? '' : undefined}
       style={folderStyle(name)}
-      className={`${FOLDER_SHELF_CLASS} flex h-10 shrink-0 items-end pl-1 pr-0.5 ${
-        shelf ? 'before:opacity-100' : 'before:opacity-0'
-      }`}
+      className={`${FOLDER_SHELF_CLASS} flex h-10 shrink-0 items-end pr-0.5`}
     >
-      <div className="flex h-10 shrink-0 items-center pr-1">
+      <div className="flex h-10 shrink-0 items-center">
         {editing && !readOnly ? (
           renderRenameField({
             initial: name,
@@ -110,67 +112,76 @@ export function TabFolderGroup<T extends { id: string }>({
             onCancel: () => setEditing(false),
           })
         ) : (
-          <button
-            type="button"
-            // A tab of the strip that opens or shuts its folder rather than opening a page.
-            role="tab"
-            aria-selected={false}
-            aria-expanded={expanded}
-            aria-label={`${name}, ${count}`}
-            tabIndex={-1}
-            data-tab-key=""
-            data-folder-chip=""
-            onClick={onToggle}
-            onDoubleClick={readOnly ? undefined : () => setEditing(true)}
-            onDragEnter={
-              readOnly || expanded
-                ? undefined
-                : () => {
-                    if (spring.current == null)
-                      spring.current = window.setTimeout(() => {
-                        spring.current = null;
-                        onToggle();
-                      }, SPRING_OPEN_MS);
-                  }
-            }
-            onDragOver={
-              readOnly
-                ? undefined
-                : (e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                    if (!dropOver) setDropOver(true);
-                  }
-            }
-            onDragLeave={() => {
-              cancelSpring();
-              if (dropOver) setDropOver(false);
-            }}
-            onDrop={
-              readOnly
-                ? undefined
-                : (e) => {
-                    e.preventDefault();
-                    cancelSpring();
-                    setDropOver(false);
-                    const src = e.dataTransfer.getData('text/plain');
-                    const first = tabs[0];
-                    if (src && first && src !== first.id) onJoin(src, first.id);
-                  }
-            }
-            className={`${FOLDER_CHIP_CLASS}${dropOver ? ' outline-2 outline-offset-1 outline-brand-500' : ''}`}
+          <HoverCard
+            title={name}
+            description={`${count}. ${expanded ? 'Click to tuck them away' : 'Click to show them here'}${
+              readOnly ? '' : ', double-click to rename'
+            }.`}
           >
-            <span className="max-w-[10rem] truncate">{name}</span>
-            {/* The count eases out as the folder opens, so the chip narrows with its tabs, not a frame ahead. */}
-            <CollapseWidth open={!expanded}>
-              <span className="flex items-center self-center pl-1.5">
-                <span className={FOLDER_BADGE_CLASS}>{tabs.length}</span>
+            <button
+              type="button"
+              // A tab of the strip that opens or shuts its folder rather than opening a page.
+              role="tab"
+              aria-selected={false}
+              aria-expanded={expanded}
+              aria-label={`${name}, ${count}`}
+              tabIndex={-1}
+              data-tab-key=""
+              data-folder-chip=""
+              onClick={onToggle}
+              onDoubleClick={readOnly ? undefined : () => setEditing(true)}
+              onDragEnter={
+                readOnly || expanded
+                  ? undefined
+                  : () => {
+                      if (spring.current == null)
+                        spring.current = window.setTimeout(() => {
+                          spring.current = null;
+                          onToggle();
+                        }, SPRING_OPEN_MS);
+                    }
+              }
+              onDragOver={
+                readOnly
+                  ? undefined
+                  : (e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = 'move';
+                      if (!dropOver) setDropOver(true);
+                    }
+              }
+              onDragLeave={() => {
+                cancelSpring();
+                if (dropOver) setDropOver(false);
+              }}
+              onDrop={
+                readOnly
+                  ? undefined
+                  : (e) => {
+                      e.preventDefault();
+                      cancelSpring();
+                      setDropOver(false);
+                      const src = e.dataTransfer.getData('text/plain');
+                      const first = tabs[0];
+                      if (src && first && src !== first.id) onJoin(src, first.id);
+                    }
+              }
+              className={`${FOLDER_CHIP_CLASS}${dropOver ? ' outline-2 -outline-offset-2 outline-brand-500' : ''}`}
+            >
+              <span aria-hidden className="flex shrink-0 opacity-85">
+                <FolderGlyph />
               </span>
-            </CollapseWidth>
-            <FolderChevron open={expanded} />
-          </button>
+              <span className="text-optical-line max-w-[10rem] truncate">{name}</span>
+              {/* The count stays, open or shut: how many tabs the folder holds. */}
+              <span data-folder-count="" className={FOLDER_BADGE_CLASS}>
+                {tabs.length}
+              </span>
+            </button>
+          </HoverCard>
         )}
-        {hidden.length > 0 && hiddenPresence ? hiddenPresence(hidden) : null}
+        {hidden.length > 0 && hiddenPresence ? (
+          <span className="flex items-center pr-1.5">{hiddenPresence(hidden)}</span>
+        ) : null}
       </div>
       {tabs.map((t) => (
         <CollapseWidth key={t.id} open={expanded || t.id === activeId}>
@@ -181,17 +192,4 @@ export function TabFolderGroup<T extends { id: string }>({
   );
 }
 
-// Points the way the folder will move: right while shut (its tabs open that way), left while open.
-const ChevronGlyph = lucideGlyph(lucideChevronRight, 12);
-function FolderChevron({ open }: { open: boolean }) {
-  return (
-    <span
-      aria-hidden
-      className={`ml-1.5 flex shrink-0 opacity-80 transition-transform duration-[180ms] ease-out motion-reduce:transition-none ${
-        open ? 'rotate-180' : ''
-      }`}
-    >
-      <ChevronGlyph />
-    </span>
-  );
-}
+const FolderGlyph = lucideGlyph(lucideFolder, 14);

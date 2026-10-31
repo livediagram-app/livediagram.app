@@ -569,6 +569,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "Aggregate": {
+    "enum": [
+      "sum",
+      "average",
+      "min",
+      "max",
+      "count",
+      "countDone",
+      "earliest",
+      "latest"
+    ],
+    "type": "string"
+  },
   "Anchor": {
     "enum": [
       "n",
@@ -1231,7 +1244,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Calculation": {
     "enum": [
       "childCount",
-      "childrenDone"
+      "childrenDone",
+      "rollup",
+      "lookup",
+      "formula"
     ],
     "type": "string"
   },
@@ -2556,10 +2572,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CustomFieldDef": {
     "additionalProperties": false,
     "properties": {
+      "aggregate": {
+        "$ref": "#/components/schemas/Aggregate"
+      },
       "calculation": {
         "$ref": "#/components/schemas/Calculation"
       },
       "currency": {
+        "type": "string"
+      },
+      "formula": {
         "type": "string"
       },
       "id": {
@@ -2580,6 +2602,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "multiple": {
+        "type": "boolean"
+      },
       "notifies": {
         "type": "boolean"
       },
@@ -2595,8 +2620,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "required": {
         "type": "boolean"
       },
+      "result": {
+        "$ref": "#/components/schemas/FormulaResult"
+      },
       "scale": {
         "type": "number"
+      },
+      "showAs": {
+        "const": "percent",
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "through": {
+        "type": "string"
       }
     },
     "required": [
@@ -2612,6 +2650,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "longtext",
       "number",
       "currency",
+      "percent",
       "date",
       "checkbox",
       "link",
@@ -4277,6 +4316,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "type": "object"
   },
+  "FormulaResult": {
+    "enum": [
+      "number",
+      "currency",
+      "percent",
+      "text",
+      "date",
+      "checkbox"
+    ],
+    "type": "string"
+  },
   "FreehandElement": {
     "additionalProperties": false,
     "properties": {
@@ -5893,12 +5943,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "additionalProperties": {
             "type": [
               "number",
+              "string",
+              "boolean",
               "null"
             ]
           },
           "type": "object"
         },
-        "description": "Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, or null), by card id then field id; only cards whose type has a Calculated field. Worked out as read, never stored.",
+        "description": "Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, a Formula's number, text, true or false or ISO day, or null), by card id then field id; only cards whose type has a Calculated field. Worked out as read, never stored.",
         "type": "object"
       },
       "items": {

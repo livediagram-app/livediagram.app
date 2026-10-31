@@ -35,6 +35,21 @@ describe('Dialog backdrop', () => {
   });
 });
 
+// A panel that morphs between sizes (liveplanner's card panel, docs/specs/026-plan/plan-board.md "Maximised"): the
+// same panel, inside a View Transition for that type alone.
+describe('Dialog resizeTransition', () => {
+  it('draws the same panel, still the backdrop’s child', () => {
+    render(
+      <Dialog open onClose={vi.fn()} ariaLabel="Card" resizeTransition="item-panel-resize">
+        <p>Body</p>
+      </Dialog>,
+    );
+    const panel = screen.getByRole('dialog', { name: 'Card' });
+    expect(panel.textContent).toBe('Body');
+    expect(panel.parentElement!.className).toContain('fixed inset-0');
+  });
+});
+
 // docs/specs/007-editor/editor-app.md "Escape closes the dialog on top alone".
 describe('Dialog Escape', () => {
   it('closes an open dialog', () => {
