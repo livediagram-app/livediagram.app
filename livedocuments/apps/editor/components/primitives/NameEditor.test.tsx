@@ -13,6 +13,7 @@ function Host({ onRename = () => {} }: { onRename?: (name: string) => void }) {
     <div>
       {editing ? (
         <NameEditor
+          label="Tab name"
           initial="Plan"
           onCommit={(name) => {
             onRename(name);
@@ -34,6 +35,13 @@ const frame = () =>
   act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
 
 describe('NameEditor', () => {
+  it('names itself for a screen reader, having no visible label', () => {
+    render(<Host />);
+    expect(screen.getByRole('textbox', { name: 'Tab name' })).toBe(
+      screen.getByDisplayValue('Plan'),
+    );
+  });
+
   it('opens focused with the name selected', () => {
     render(<Host />);
     const field = screen.getByDisplayValue('Plan') as HTMLInputElement;
