@@ -15,6 +15,7 @@ import {
 import type { PlanStatusName } from './plan-outline';
 import { resolveItemRef } from './refs';
 import { statusKey } from './status-names';
+import { parsePercent, PERCENT_MAX, PERCENT_MIN } from './percent-fields';
 import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
 
@@ -269,6 +270,17 @@ export function resolveFields(
         return refuse(
           'value_invalid',
           `${field.label} is a rating: give a whole number from 1 to ${scale}.`,
+        );
+      out[key] = n;
+    } else if (field.kind === 'percent') {
+      // A number or "40%", rounded to a whole share; outside 0 to 100 is refused, never quietly held.
+      const n = parsePercent(
+        typeof value === 'string' || typeof value === 'number' ? value : undefined,
+      );
+      if (n === undefined)
+        return refuse(
+          'value_invalid',
+          `${field.label} is a percent: give a number from ${PERCENT_MIN} to ${PERCENT_MAX}.`,
         );
       out[key] = n;
     } else if (field.kind === 'number' && typeof value === 'string') {

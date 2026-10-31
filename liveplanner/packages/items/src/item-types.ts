@@ -41,6 +41,8 @@ export const CUSTOM_FIELD_KINDS = [
   'number',
   // An amount in the field's own currency (`currency`), read as the locale formats it.
   'currency',
+  // How far along, a whole number from 0 to 100 drawn as a bar (docs/specs/026-plan/item-types.md "Percent").
+  'percent',
   'date',
   'checkbox',
   'link',
@@ -134,6 +136,9 @@ export interface CustomFieldDef {
   currency?: string;
   // A Calculated field's calculation (calculated-fields.ts).
   calculation?: Calculation;
+  // A worked-out share drawn as a Percent field is (percent-fields.ts); kept only as 'percent', only where
+  // canShowAsPercent allows it.
+  showAs?: 'percent';
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
   // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.
