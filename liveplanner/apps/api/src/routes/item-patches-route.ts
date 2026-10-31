@@ -18,6 +18,7 @@ import { badRequest, forbidden, json } from '../responses';
 import { readBody, type PlanRouteContext } from './context';
 import {
   calculatedSet,
+  timeTracked,
   clearedRequired,
   excludedStatus,
   forCaller,
@@ -80,6 +81,8 @@ export async function patches(ctx: PlanRouteContext, projectId: string): Promise
           return rejectedFor(id, 'status_excluded', 'status');
         const calculated = calculatedSet(caller, next, stored.get(id), undo);
         if (calculated) return rejectedFor(id, 'field_calculated', calculated);
+        const timed = timeTracked(caller, next, stored.get(id));
+        if (timed) return rejectedFor(id, 'field_time_tracked', timed);
         const cleared = clearedRequired(caller, next, stored.get(id)!, undo);
         if (cleared) return rejectedFor(id, 'field_required', cleared);
         if (retiresItem(stored.get(id)!, next) && !(await isItemEditor(ctx, caller)))

@@ -1142,6 +1142,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wip",
       "due",
       "points",
+      "time",
       "priorities",
       "unassigned",
       "top-voted",
@@ -2635,6 +2636,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "through": {
         "type": "string"
+      },
+      "timeSpent": {
+        "type": "boolean"
       }
     },
     "required": [
@@ -2651,6 +2655,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "number",
       "currency",
       "percent",
+      "duration",
       "date",
       "checkbox",
       "link",
@@ -4321,6 +4326,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "number",
       "currency",
       "percent",
+      "duration",
       "text",
       "date",
       "checkbox"
@@ -5610,6 +5616,165 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rev"
     ],
     "type": "object"
+  },
+  "ItemTimeRequest": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "const": "start",
+            "type": "string"
+          },
+          "timer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "op",
+          "timer"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "const": "stop",
+            "type": "string"
+          },
+          "timer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry",
+          "field",
+          "op",
+          "timer"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "minutes": {
+            "type": "number"
+          },
+          "op": {
+            "const": "add",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry",
+          "field",
+          "minutes",
+          "op"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "const": "remove",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry",
+          "field",
+          "op"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "additionalProperties": false,
+            "properties": {
+              "at": {
+                "type": "number"
+              },
+              "by": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "minutes": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id",
+              "by",
+              "minutes",
+              "at"
+            ],
+            "type": "object"
+          },
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "const": "put",
+            "type": "string"
+          },
+          "person": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "color"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "entry",
+          "field",
+          "op",
+          "person"
+        ],
+        "type": "object"
+      }
+    ]
   },
   "ItemTypeCatalogue": {
     "additionalProperties": false,

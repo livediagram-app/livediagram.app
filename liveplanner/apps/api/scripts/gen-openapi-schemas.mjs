@@ -59,6 +59,7 @@ export const ROOT_TYPES = [
   'ItemsBulkRequest',
   'ItemsPatchRequest',
   'ItemsTallyRequest',
+  'ItemTimeRequest',
   'ItemTypesRequest',
   'ItemTypesResponse',
   'PlanResponse',

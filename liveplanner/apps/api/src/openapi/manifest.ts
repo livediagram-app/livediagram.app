@@ -857,6 +857,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/projects/{id}/items/{itemId}/time',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      "Track time on a card's Time Spent field: start the caller's timer, stop a timer (its time recorded as an entry), add a manual entry of whole minutes, remove an entry or a running timer, or put an entry back. Made to the card as stored, so concurrent timers all count. A Participant touches only their own timers and entries (403 time_not_yours); an Editor any.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemTimeRequest',
+    responseSchema: 'ItemResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'POST',
     path: '/projects/{id}/items/{itemId}',
     segment: 'projects',
     tag: 'Items',
