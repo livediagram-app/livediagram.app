@@ -20,3 +20,12 @@ One row per default applied where a spec is silent or qualitative.
 | D51 | animated-gif-export   | The easing of the GIF's transitions                 | The presenting transitions' own: cubic-bezier(0.4, 0, 0.2, 1) for Slide, ease for Fade                            |
 | D52 | animated-gif-export   | When the main thread yields during a make           | After every frame, so the editor stays responsive                                                                 |
 | D53 | animated-gif-export   | Which frames a page's shared palette is chosen from | Its first, middle and last frames outside a transition, every 4th pixel of each                                   |
+| D60 | office-import | How much compressed input the inflater takes at a time | 16 KB, so one write can unpack at most ~16.5 MB (deflate's 1032:1) before the count is checked |
+| D61 | office-import | How long a slide's imported notes may be | 20,000 characters, an article block's own cap |
+| D62 | office-import | ZIP64 packages | Refused as not a package: a file under the 50 MB cap never needs ZIP64 |
+| D63 | office-import | A list level the numbering part does not define | Bulleted |
+| D64 | office-import | Which fonts make a run code | Any font named with "mono", or Courier, Courier New, Consolas, Monaco, Menlo, Lucida Console, Inconsolata, Source Code Pro, Fira Code, Andale Mono, Cascadia Code |
+| D65 | office-import | A slide shape with no box on the slide, its layout or its master | Left out, uncounted (PowerPoint draws it nowhere either) |
+| D66 | office-import | Where an imported article's zones stand before the editor lays the writing out | Parked in non-overlapping slots left of the first page, each image exactly in its zone; the first layout settles them |
+| D67 | office-import | A deck with no slides | One empty slide page, as an empty document is one empty paragraph |
+| D68 | office-import | The Import dialog closed while an import is still running | The import finishes and replaces the tab; Undo still brings the old content back |

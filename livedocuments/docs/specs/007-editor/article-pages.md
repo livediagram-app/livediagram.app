@@ -134,7 +134,9 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   bold / italic / underline / strike are kept, everything else dropped; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links); other
   plain text pastes as paragraphs, one per line. Pasted images go into object zones. A paste of
-  canvas elements (copied from a canvas) lands as a drawing zone holding them.
+  canvas elements (copied from a canvas) lands as a drawing zone holding them. A whole Word
+  document (from Word or Google Docs) comes in through the tab's Import as an article of its own
+  ([Word and PowerPoint import](../020-import-export/office-import.md)).
 - **Links**: ⌘K or the toolbar opens a small field under the selection (address, then Enter).
   Hovering a link shows its address with **Open**, **Edit** and **Remove**; ⌘-press opens it in
   a new tab.
@@ -473,5 +475,5 @@ ink").
 
 - Tables as part of the text (a table is an object zone holding a table element).
 - Headers and footers beyond page numbers, footnotes, a table of contents, columns, suggestions
-  and tracked changes, find and replace, Word / Google Docs import.
+  and tracked changes, find and replace.
 - Character-level merging of two people typing in the same paragraph at the same moment.

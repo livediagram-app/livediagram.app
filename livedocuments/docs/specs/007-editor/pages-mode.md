@@ -1542,8 +1542,10 @@ The Export dialog exports **pages**, not the tab's content bounds.
 
 ## Import
 
-The Import dialog offers **JSON** (a livedocuments tab, which may carry pages) and **Markdown**
-([Markdown import](../020-import-export/markdown-import.md)).
+The Import dialog offers **JSON** (a livedocuments tab, which may carry pages), **Markdown**
+([Markdown import](../020-import-export/markdown-import.md)), **Word** (a `.docx` as an article) and
+**PowerPoint** (a `.pptx` as slide pages, a page a slide, its speaker notes in the Slide Deck)
+([Word and PowerPoint import](../020-import-export/office-import.md)).
 
 ## Telemetry
 
