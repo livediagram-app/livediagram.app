@@ -174,6 +174,20 @@ describe('a team’s view', () => {
     await waitFor(() => expect(host.removeMember).toHaveBeenCalledWith('t1', 'm3'));
   });
 
+  it('keeps focus on the card after a removal, not on the row that goes', async () => {
+    const host = fakeHost();
+    page({ kind: 'team', id: 't1' }, host);
+    await card();
+    const withdraw = screen.getByRole('button', { name: 'Withdraw invite to Kai Moss' });
+    withdraw.focus();
+    fireEvent.click(withdraw);
+    const ask = await screen.findByRole('dialog', { name: 'Withdraw Invite?' });
+    fireEvent.click(within(ask).getByRole('button', { name: 'Withdraw Invite' }));
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Design options' })),
+    );
+  });
+
   it('invites an address as a Member or an Admin', async () => {
     const host = fakeHost();
     page({ kind: 'team', id: 't1' }, host);
