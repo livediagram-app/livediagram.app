@@ -273,6 +273,11 @@ describe('a team’s view', () => {
   it('is a not-found card for a team the person is not in', async () => {
     page({ kind: 'team', id: 'gone' }, fakeHost(null));
     expect(await screen.findByText('Team not found')).toBeTruthy();
+    // White on brand-600 (sky, liveworkspace's brand) is 4.09:1: the way back is the shared primary Button, on 700;
+    // the 404 label lightens on the dark card (rose-600 there is 3.49:1).
+    const notFound = (await screen.findByText('Team not found')).closest('div')!;
+    expect(notFound.querySelector('button')?.className).toContain('bg-brand-700');
+    expect(screen.getByText('404').className).toContain('dark:text-rose-400');
   });
 
   it('shows the library alone without a TeamsHost', async () => {
