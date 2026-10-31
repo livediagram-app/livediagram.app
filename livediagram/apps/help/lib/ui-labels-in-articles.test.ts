@@ -31,6 +31,8 @@ const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;
 const SETTINGS_PACKAGE = `${ROOT}/../packages/settings-ui/src`;
 // The shared icon catalogues (@liveworkspace/icons) print the sticker words and icon names the palette shows.
 const ICONS_PACKAGE = `${ROOT}/../packages/icons/src`;
+// The Share dialog's Community tab is every app's (@liveworkspace/community-ui), rendered by the editor as its own.
+const COMMUNITY_UI_PACKAGE = `${ROOT}/../packages/community-ui/src`;
 
 // Every printed spelling per lowercase key: two surfaces can print one name
 // in different case (a dialog's title and its own aria-label, say), and an article matching either is right.
@@ -103,6 +105,7 @@ function editorSource(): string {
   // The design system (@liveworkspace/ui) left this product's packages/ui for the monorepo's; its words still print here.
   walk(`${ROOT}/../packages/ui/src`);
   walk(ICONS_PACKAGE);
+  walk(COMMUNITY_UI_PACKAGE);
   return all.toLowerCase();
 }
 

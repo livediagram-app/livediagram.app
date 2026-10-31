@@ -27,7 +27,10 @@ import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { useCommunityEnabled } from '@livediagram/ui';
+import { API_BASE } from '@/lib/api-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
@@ -97,11 +100,21 @@ export function ExplorerHost({
   onFolderShown?: (shown: FolderShown) => void;
 }) {
   const router = useAppNavigation();
-  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   const guestId = useGuestId(authLoaded, accountUserId);
   const teams = useTokenTeams(isSignedIn);
   const viewerId = accountUserId ?? guestId;
-  const shareHost = useMemo(() => explorerShareHost(viewerId ?? null), [viewerId]);
+  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  const shareHost = useMemo(
+    () => ({
+      ...explorerShareHost(viewerId ?? null),
+      community: explorerCommunity(
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+      ),
+    }),
+    [viewerId, accountUserId, accountDisplayName, communityOn],
+  );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   const library = useMemo(() => explorerLibraryHosts(), []);
   // The synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's

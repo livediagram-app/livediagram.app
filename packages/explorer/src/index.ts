@@ -21,6 +21,10 @@ export {
 } from './dialogs/ShareDialog';
 export { SECTION_LABEL as SHARE_SECTION_LABEL } from './dialogs/share/parts';
 export {
+  ShareDialogWithCommunity,
+  type CommunityShareInput,
+} from './dialogs/ShareDialogWithCommunity';
+export {
   explorerPath,
   viewFromLocation,
   DEFAULT_BASE_PATH,

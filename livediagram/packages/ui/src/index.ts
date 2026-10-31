@@ -28,23 +28,23 @@ export { PageViewBoot } from './PageViewBoot';
 export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';
 export { CARD_GRID, CARD_PREVIEW, CARD_SHELL } from './cardGrid';
 export { EDITOR_MODE_ICONS } from './icons';
-export { CommunityPostTile } from './community/CommunityPostTile';
-export { CommunityAuthorBadge } from './community/CommunityAuthorBadge';
-export { communitySharedAgo } from './community/shared-ago';
+// The Community's card, author, counts and on switch are every app's (@liveworkspace/community-ui).
 export {
+  COMMUNITY_DOT_GRID,
+  COMMUNITY_SKELETON_BAR,
+  CommunityAuthorBadge,
   CommunityCopyCount,
   CommunityLikeCount,
+  CommunityPostTile,
+  CommunityPostTileSkeleton,
   communityPlural,
-} from './community/CommunityCounts';
-export { CommunityPostTileSkeleton } from './community/CommunityPostTileSkeleton';
-export { formatCommunityCount } from './community/format-count';
-export { COMMUNITY_DOT_GRID, COMMUNITY_SKELETON_BAR } from './community/surfaces';
-export { CommunityHelpLink } from './community/CommunityHelpLink';
-export { useNearViewport } from './useNearViewport';
-export {
+  communitySharedAgo,
+  formatCommunityCount,
   resetCommunityEnabledForTests,
   useCommunityEnabled,
-} from './community/useCommunityEnabled';
+} from '@liveworkspace/community-ui';
+export { CommunityHelpLink } from './community/CommunityHelpLink';
+export { useNearViewport } from './useNearViewport';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,

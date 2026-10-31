@@ -7,7 +7,13 @@ import {
   apiRemoveCommunityPost,
 } from './community';
 import { readCommunityShareInfo } from './share';
-import { communityCodeMessage, communityErrorMessage } from '../community-errors';
+import {
+  COMMUNITY_APP_WORDS,
+  communityCodeMessage,
+  communityErrorMessage,
+} from '@liveworkspace/community-ui/share';
+
+const words = COMMUNITY_APP_WORDS['livediagram.app'];
 
 vi.mock('../guest-token', () => ({
   readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
@@ -69,7 +75,7 @@ describe('community api client', () => {
     const err = await apiPublishCommunityPost('guest-1', 'd1', INPUT).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ApiError);
     expect((err as ApiError).code).toBe('share_password_set');
-    expect(communityErrorMessage(err)).toBe(
+    expect(communityErrorMessage(err, words)).toBe(
       'This canvas has a share password. Remove the password to share it to the Community.',
     );
   });
@@ -93,20 +99,22 @@ describe('community api client', () => {
 
 describe('community error wording', () => {
   it('words every known code and falls back for the rest', () => {
-    expect(communityCodeMessage('empty_document')).toBe(
+    expect(communityCodeMessage('empty_document', words)).toBe(
       'Add something to your first tab before sharing: it is the picture on your Community card.',
     );
-    expect(communityCodeMessage('invalid_title')).toBe('The title needs 3 to 80 characters.');
-    expect(communityCodeMessage('something_new')).toBe(
+    expect(communityCodeMessage('invalid_title', words)).toBe(
+      'The title needs 3 to 80 characters.',
+    );
+    expect(communityCodeMessage('something_new', words)).toBe(
       "We couldn't reach the Community. Try again.",
     );
   });
 
   it('says a rate limit is one, and a network failure is the fallback', () => {
-    expect(communityErrorMessage(new ApiError('publish', 429, null))).toBe(
+    expect(communityErrorMessage(new ApiError('publish', 429, null), words)).toBe(
       'That was a lot at once. Try again in a minute.',
     );
-    expect(communityErrorMessage(new TypeError('Failed to fetch'))).toBe(
+    expect(communityErrorMessage(new TypeError('Failed to fetch'), words)).toBe(
       "We couldn't reach the Community. Try again.",
     );
   });

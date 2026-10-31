@@ -29,6 +29,8 @@
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/community": "workspace:*",
+    "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",

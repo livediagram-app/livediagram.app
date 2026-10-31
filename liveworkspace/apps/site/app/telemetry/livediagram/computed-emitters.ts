@@ -421,10 +421,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // Publishing to the Community: the post's category, as communityCategoryType.
-  'apps/editor/components/dialogs/community/CommunityPublishDialog.tsx Community·Shared': {
+  // Through the Share dialog's Community tab (@liveworkspace/community-ui), bound in lib/community-share-host.tsx.
+  'apps/editor/lib/community-share-host.tsx Community·Shared': {
     values: COMMUNITY_CATEGORY_TYPES,
   },
-  'apps/editor/components/dialogs/community/CommunityPublishDialog.tsx Community·Changed': {
+  'apps/editor/lib/community-share-host.tsx Community·Changed': {
     values: COMMUNITY_CATEGORY_TYPES,
   },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.

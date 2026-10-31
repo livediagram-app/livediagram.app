@@ -52,7 +52,8 @@ export const trackShare: ShareTelemetry = (action, type) => {
   }
 };
 
-/** The Explorer's Share: a canvas's tabs read when the dialog opens, its embed and live image, Help, telemetry. */
+/** The Explorer's Share: a canvas's tabs read when the dialog opens, its embed and live image, Help and telemetry.
+ *  The Community tab is added beside it (lib/explorer-community-host.ts). */
 export function explorerShareHost(ownerId: string | null): ShareHost {
   return {
     loadTabs: async (item) => {

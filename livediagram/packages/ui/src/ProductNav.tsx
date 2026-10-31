@@ -2,7 +2,7 @@
 
 import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
 import { ProductNavLinks as SharedLinks, type ProductNavKey } from '@liveworkspace/ui';
-import { useCommunityEnabled } from './community/useCommunityEnabled';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
 
 // The Explorer footer's links to this product's surfaces (@liveworkspace/ui's ProductNavLinks), with the
 // Community among them. Asks whether the Community is on as it mounts, since a host shows it only once someone

@@ -72,6 +72,7 @@ export { CONTRIBUTORS } from './contributors';
 export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './relative-time';
 export * from './random-uuid-boot';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
+export { prefersReducedMotion } from './motion-preference';
 export { useCopiedFlash } from './useCopiedFlash';
 export { useClickOutside } from './useClickOutside';
 export { useEscape } from './useEscape';

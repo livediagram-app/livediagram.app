@@ -2,11 +2,15 @@
 import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { CommunityAuthorBadge, communityAuthorInitial } from './CommunityAuthorBadge';
-import { CommunityCopyCount, CommunityLikeCount } from './CommunityCounts';
-import { CommunityPostTile } from './CommunityPostTile';
-import { CommunityPostTileSkeleton } from './CommunityPostTileSkeleton';
-import { formatCommunityCount } from './format-count';
+import {
+  CommunityAuthorBadge,
+  CommunityCopyCount,
+  CommunityLikeCount,
+  CommunityPostTile,
+  CommunityPostTileSkeleton,
+  communityAuthorInitial,
+  formatCommunityCount,
+} from '@liveworkspace/community-ui';
 
 // The Community's shared pieces (docs/specs/025-community/community.md "Gallery"), as the Community app, the landing
 // page and the editor's publish preview all draw them.
