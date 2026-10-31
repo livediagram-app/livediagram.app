@@ -5,6 +5,7 @@
 // sample.
 import {
   inspectElement,
+  inspectNumber,
   isBoxed,
   neighbourSpacing,
   pageScreenRect,
@@ -66,6 +67,18 @@ export function inspectNeighbours(
 
 /** A spacing line, and what it is measured to (an element, or the screen's edge). */
 export type InspectLine = SpacingLine & { toElement: BoxedElement | null };
+
+const SPACING_ORDER = ['top', 'right', 'bottom', 'left'] as const;
+const SPACING_NAME = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
+
+/** The spacing as Copy Values writes it, a `Spacing <Side>: <distance>` line per side measured, in the panel's
+ *  order (docs/specs/007-editor/wireframe-pages.md "The Inspect panel": every value it shows). */
+export function inspectSpacingText(lines: readonly InspectLine[]): string {
+  return SPACING_ORDER.flatMap((side) => {
+    const line = lines.find((l) => l.side === side);
+    return line ? [`Spacing ${SPACING_NAME[side]}: ${inspectNumber(line.distance)}`] : [];
+  }).join('\n');
+}
 
 /** The selected element's spacing to its neighbours: what the canvas draws and the panel lists. */
 export function inspectNeighbourLines(
