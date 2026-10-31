@@ -202,11 +202,22 @@ export function TabBar() {
       <circle cx={108} cy={y + 18} r={5} className="fill-emerald-400" />
       <DotsGlyph x={122} y={y + 18} />
       <TabPill x={140} y={y + 8} w={40} label="Flow" />
-      {/* A shut tab folder, as TabFolderGroup draws it: a chip tinted in the folder's colour with
-          its name, a count badge and a chevron. */}
-      <rect x={188} y={y + 9} width={62} height={18} rx={5} className="fill-violet-100" />
+      {/* A shut tab folder, as TabFolderGroup draws it: a shelf tinted in the folder's colour, shaped like a tab,
+          holding its header (a folder glyph, its name and a count badge) in the folder's ink. */}
+      <path
+        d={`M186 ${y + 36} V${y + 12} a7 7 0 0 1 7 -7 H247 a7 7 0 0 1 7 7 V${y + 36} Z`}
+        className="fill-violet-50"
+      />
+      <path
+        d="M-8 -5 h5 l2 2 h8 a1 1 0 0 1 1 1 v7 a1 1 0 0 1 -1 1 h-14 a1 1 0 0 1 -1 -1 v-9 a1 1 0 0 1 1 -1 Z"
+        transform={`translate(196 ${y + 18.5}) scale(0.6)`}
+        fill="none"
+        className="stroke-violet-700 dark:stroke-violet-300"
+        strokeWidth={2.2}
+        strokeLinejoin="round"
+      />
       <Label
-        x={195}
+        x={205}
         y={y + 19}
         size={9}
         weight={650}
@@ -215,16 +226,16 @@ export function TabBar() {
         Ideas
       </Label>
       <rect
-        x={224}
+        x={233}
         y={y + 12}
-        width={12}
-        height={12}
-        rx={3.5}
+        width={13}
+        height={13}
+        rx={4}
         className="fill-violet-600 dark:fill-violet-300"
       />
       <Label
-        x={230}
-        y={y + 18.5}
+        x={239.5}
+        y={y + 19}
         anchor="middle"
         size={8}
         weight={700}
@@ -232,14 +243,6 @@ export function TabBar() {
       >
         2
       </Label>
-      <path
-        d={`M240 ${y + 15} l3 3 l-3 3`}
-        fill="none"
-        className="stroke-violet-700 dark:stroke-violet-300"
-        strokeWidth={1.3}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
       <Label x={262} y={y + 19} size={15} weight={600} tone="muted" anchor="middle">
         +
       </Label>

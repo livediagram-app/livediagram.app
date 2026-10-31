@@ -82,6 +82,17 @@ describe('TabStrip', () => {
     expect(screen.getByRole('button', { name: 'Add tab' })).toBeTruthy();
   });
 
+  it('lays the open tab’s sliding card first in the tablist, hidden from assistive technology', () => {
+    strip();
+    const list = screen.getByRole('tablist', { name: 'Tabs' });
+    const card = list.firstElementChild as HTMLElement;
+    expect(card.hasAttribute('data-tab-slider')).toBe(true);
+    expect(card.getAttribute('aria-hidden')).toBe('true');
+    // Shown and placed (jsdom measures nothing, so at the origin), each tab's own card stands down.
+    expect(card.style.opacity).toBe('1');
+    expect(list.hasAttribute('data-tab-slide')).toBe(true);
+  });
+
   it('has no Add tab for a Viewer', () => {
     strip({ readOnly: true });
     expect(screen.queryByRole('button', { name: 'Add tab' })).toBeNull();

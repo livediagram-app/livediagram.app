@@ -4,8 +4,9 @@
 // wash on hover. Nothing runs along a tab's top. Classes only, so Tailwind finds them here (each app's globals.css
 // scans packages/workbench/src).
 //
-// The card and the wash are a tab's ::before and ::after layers, so becoming open and hovering ease their opacity
-// alone: no colour, size or shadow is animated.
+// The wash is a tab's ::after layer, so hovering eases its opacity alone. The open tab's card is one element for the
+// whole strip (TAB_SLIDER_CLASS, useTabSlider) that slides to the tab you open; each tab's ::before draws the same card
+// only until the strip's card has measured (or where no strip card is: a tab outside a tab-scoped share).
 
 // The footer bar the strip sits in: a shade below the open tab's card, so the card lifts off it.
 export const TAB_BAR_CLASS =
@@ -17,11 +18,19 @@ export const TAB_BAR_CLASS =
 export const TAB_STRIP_CLASS =
   'scroll-edge-fade scrollbar-slim flex flex-1 items-end self-stretch overflow-x-auto overflow-y-hidden px-1';
 
-// The tablist inside the scroller: every tab and folder, a hair apart.
-export const TAB_LIST_CLASS = 'flex h-full shrink-0 items-end gap-0.5';
+// The tablist inside the scroller: every tab and folder, a hair apart. Its own stacking layer, so the sliding card
+// stands above the folders' shelves and under every tab; `data-tab-slide` is set once that card shows.
+export const TAB_LIST_CLASS = 'group/tabs relative isolate flex h-full shrink-0 items-end gap-0.5';
 
 // The card: white (slate-800 in dark), rounded on top, a hairline ring and a shadow cast upward. Its own foot
-// reaches past the strip, which clips it, so no ring line runs along the bottom edge.
+// reaches past the strip, which clips it, so no ring line runs along the bottom edge. The strip's sliding card wears
+// the same surface (TAB_SLIDER_CLASS); this ::before copy shows only until it has measured.
+const CARD_SURFACE =
+  'rounded-t-[10px] bg-white shadow-[0_0_0_1px_rgb(15_23_42/0.08),0_-3px_10px_-4px_rgb(15_23_42/0.2)] dark:bg-[color-mix(in_srgb,var(--color-slate-800)_70%,var(--color-slate-600))] dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.1),0_0_0_1px_rgb(255_255_255/0.12),0_-4px_14px_-4px_rgb(0_0_0/0.8)]';
+
+// The strip's one sliding card (useTabSlider writes its place, size and opacity). Hidden until it has measured.
+export const TAB_SLIDER_CLASS = `pointer-events-none absolute top-0 left-0 opacity-0 will-change-transform ${CARD_SURFACE}`;
+
 const CARD =
   'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:-bottom-2 before:-z-10 before:rounded-t-[10px] before:bg-white before:shadow-[0_0_0_1px_rgb(15_23_42/0.08),0_-3px_10px_-4px_rgb(15_23_42/0.2)] before:opacity-0 before:transition-opacity before:duration-150 before:ease-out dark:before:bg-[color-mix(in_srgb,var(--color-slate-800)_70%,var(--color-slate-600))] dark:before:shadow-[inset_0_1px_0_rgb(255_255_255/0.1),0_0_0_1px_rgb(255_255_255/0.12),0_-4px_14px_-4px_rgb(0_0_0/0.8)] motion-reduce:before:transition-none';
 
@@ -33,8 +42,10 @@ const WASH =
 // focus ring that follows its shape when its name has keyboard focus.
 const BASE = `group/tab relative isolate flex h-10 shrink-0 items-center gap-1 rounded-t-[10px] text-[13.5px] tracking-[-0.005em] ${CARD} ${WASH} has-[[role=tab]:focus-visible]:outline-2 has-[[role=tab]:focus-visible]:-outline-offset-2 has-[[role=tab]:focus-visible]:outline-brand-500`;
 
-// The open tab: its card shows, its name semibold (its colour, the tab theme's accent, is set inline).
-const ACTIVE = 'z-[1] font-semibold before:opacity-100';
+// The open tab: its card shows (until the strip's sliding card takes over), its name semibold (its colour, the tab
+// theme's accent, is set inline).
+const ACTIVE =
+  'z-[1] font-semibold before:opacity-100 group-data-[tab-slide]/tabs:before:opacity-0';
 
 // The others: medium slate ink, darker with the wash on hover.
 const INACTIVE =

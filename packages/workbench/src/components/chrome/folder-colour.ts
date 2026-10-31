@@ -34,16 +34,19 @@ export function folderStyle(name: string): CSSProperties {
   return { '--tf': hue.light, '--tfd': hue.dark } as CSSProperties;
 }
 
-// The folder's shelf: a faint tint of its colour behind the chip and its tabs, rounded on top, standing on the
-// bottom edge like the tabs. A layer under the group, so it fades in and out (the caller sets before:opacity-*).
+// The folder's shelf: a faint tint of its colour behind the chip and its tabs, rounded on top like a tab and standing
+// on the bottom edge like them. Always there, so a folder reads as one container whether it is open or shut. It is a
+// layer under the group in the tablist's own stack (the group itself makes none), so the open tab's sliding card
+// passes over it.
 export const FOLDER_SHELF_CLASS =
-  'relative isolate before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-t-[12px] before:bg-[color-mix(in_srgb,var(--tf)_9%,transparent)] before:transition-opacity before:duration-150 dark:before:bg-[color-mix(in_srgb,var(--tfd)_7%,transparent)] motion-reduce:before:transition-none';
+  'relative before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-t-[10px] before:bg-[color-mix(in_srgb,var(--tf)_10%,transparent)] dark:before:bg-[color-mix(in_srgb,var(--tfd)_8%,transparent)]';
 
-// The chip: the folder's name on a soft tint of its colour, a hairline of the same, ink deep enough to read (AA) on
-// the tint in both appearances.
+// The chip, the folder's header: the shelf's first cell, the tabs' own height and padding, its folder glyph, name and
+// count in the folder's ink (AA on the shelf in both appearances), with the tabs' inset wash, in the folder's tint,
+// on hover. No box of its own: the shelf is its container.
 export const FOLDER_CHIP_CLASS =
-  'relative flex h-[26px] shrink-0 cursor-pointer items-center rounded-[7px] pl-2.5 pr-1.5 text-[12.5px] font-semibold whitespace-nowrap touch-target-y hover:brightness-[0.96] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 bg-[color-mix(in_srgb,var(--tf)_14%,white)] text-[color-mix(in_srgb,var(--tf)_70%,black)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--tf)_24%,transparent)] dark:bg-[color-mix(in_srgb,var(--tfd)_18%,var(--color-slate-900))] dark:text-[var(--tfd)] dark:shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--tfd)_26%,transparent)] dark:hover:brightness-110';
+  'relative isolate flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-t-[10px] pr-2.5 pl-3 text-[13px] font-semibold whitespace-nowrap touch-target-y text-[color-mix(in_srgb,var(--tf)_72%,black)] dark:text-[var(--tfd)] after:pointer-events-none after:absolute after:inset-x-1 after:inset-y-1.5 after:-z-10 after:rounded-lg after:bg-[color-mix(in_srgb,var(--tf)_14%,transparent)] after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 dark:after:bg-[color-mix(in_srgb,var(--tfd)_12%,transparent)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 motion-reduce:after:transition-none';
 
-// The count badge on a collapsed chip: the folder's colour, the count in white (slate-950 in dark).
+// The count badge, open or shut: the folder's colour, the count in white (slate-950 in dark).
 export const FOLDER_BADGE_CLASS =
-  'inline-flex h-4 min-w-4 items-center justify-center rounded-[5px] px-1 text-[11px] font-semibold leading-none tabular-nums bg-[color-mix(in_srgb,var(--tf)_88%,black)] text-white dark:bg-[var(--tfd)] dark:text-slate-950';
+  'inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[6px] px-1 text-[11px] font-semibold leading-none tabular-nums bg-[color-mix(in_srgb,var(--tf)_88%,black)] text-white dark:bg-[var(--tfd)] dark:text-slate-950';
