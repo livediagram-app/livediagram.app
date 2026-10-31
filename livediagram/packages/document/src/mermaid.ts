@@ -257,10 +257,13 @@ function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
 const SKIP_RE = /^\s*(?:classDef|class|style|linkStyle|%%|direction)\b/i;
 const STATE_HEADER_RE = /^\s*stateDiagram(?:-v2)?\b/i;
 const ER_HEADER_RE = /^\s*erDiagram\b/i;
+// Every other diagram type Mermaid draws, by its header. The newer types' headers end in `-beta` (or stand alone on
+// their line, as `kanban` does): read as a headerless flowchart, `block-beta` imported boxes named "block" and
+// "columns", and `gitGraph` or `C4Context` were told to add a flowchart header.
 const UNSUPPORTED_RE =
-  /^\s*(sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart)\b/i;
+  /^\s*(?:(?:sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart|gitGraph|requirementDiagram|zenuml|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b|(?:xychart|sankey|block|packet|architecture|radar|treemap)-beta\b|(?:kanban|xychart|sankey|block|packet|architecture|radar|treemap)\s*$)/i;
 export const MERMAID_UNSUPPORTED_ERROR =
-  'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram), and ER diagrams (erDiagram) are supported — not sequence / class / gantt / etc.';
+  'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram) and ER diagrams (erDiagram) are supported, not sequence, class, gantt or other diagram types.';
 
 // Whether the first meaningful line is a header the importer reads as a graph: a flowchart, a state diagram or an
 // ER diagram. The CLI tells a Mermaid file from edit operations by it (docs/specs/015-api/blueprints/cli.md CLI71).
