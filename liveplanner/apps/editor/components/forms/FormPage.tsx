@@ -12,11 +12,9 @@ import { formLook, type Tab } from '@liveplanner/project';
 import { ITEMS_MAX } from '@liveplanner/items';
 import {
   closedBySettings,
-  destinationProblem,
   destinationType,
   publicForm,
   publishProblems,
-  sheetDestinationProblem,
   readForm,
   type FormDefinition,
 } from '@liveplanner/forms';
@@ -30,7 +28,6 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { useFormLink } from '@/hooks/forms/useFormLink';
-import { boardsOf, sheetsOf } from '@liveplanner/templates';
 import { sendPreview } from '@/hooks/forms/form-preview';
 import { apiSendFormPreview } from '@/lib/api/forms';
 import { FormBuilderContext, type FormBuilderValue } from './builder/form-builder-context';
@@ -42,6 +39,7 @@ import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
+import { formDestinationOf } from './form-destination';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 const EyeIcon = lucideGlyph(lucideEye, 16);
@@ -62,6 +60,7 @@ export function FormPage({
   online,
   onSyncToCloud,
   syncReady,
+  tabScope = null,
 }: {
   tab: Tab;
   tabs: readonly Tab[];
@@ -77,6 +76,9 @@ export function FormPage({
   // Moves an offline project onto the server in place, from Share Form, once the reader is known.
   onSyncToCloud?: () => Promise<void>;
   syncReady?: boolean;
+  // The one tab a tab-scoped share session reaches (docs/specs/013-workspace/tab-scoped-share-links.md); null for
+  // everyone else.
+  tabScope?: string | null;
 }) {
   const [canvas, setCanvas] = useState<HTMLElement | null>(null);
   const mark = useCallback((node: HTMLElement | null) => {
@@ -134,14 +136,7 @@ export function FormPage({
   const locked = canEdit && !!link.link?.link?.open && !overdue;
   const building = canEdit && !preview && !locked;
   // Where responses go: a Sheet (a row each) when the form names one, else its board.
-  const destTab = tabs.find((t) => t.id === (form.sheet?.tabId ?? form.destination?.tabId));
-  const problem = form.sheet
-    ? sheetDestinationProblem(form.sheet, sheetsOf(tabs))
-    : destinationProblem(
-        form.destination,
-        destTab ? boardsOf(destTab).map((b) => b.setup) : [],
-        types,
-      );
+  const { destTab, problem } = formDestinationOf(form, tabs, types, tabScope);
   const type = destinationType(form.destination, types);
   // What else stops publishing (docs/specs/030-forms/forms.md "Publishing and the form link").
   const notReady = useMemo(
