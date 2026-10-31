@@ -32,9 +32,11 @@ class FakeWorker {
     await import('./photo.worker');
     vi.unstubAllGlobals();
   }
-  postMessage(m: unknown): void {
-    this.posted.push(m);
-    if (this.mode === 'run') this.handler?.({ data: m });
+  // Like a browser: the transferred buffers leave the page (detached), the worker gets a copy.
+  postMessage(m: unknown, transfer: Transferable[] = []): void {
+    const sent = structuredClone(m, { transfer });
+    this.posted.push(sent);
+    if (this.mode === 'run') this.handler?.({ data: sent });
   }
   addEventListener(type: string, fn: Listener): void {
     if (type === 'message') this.onMessage.push(fn);
@@ -112,6 +114,24 @@ describe('the photo workers', () => {
     await expect(a.result).resolves.toMatchObject({ kind: 'encode' });
     await expect(pool.run(encodeTask()).result).resolves.toMatchObject({ kind: 'encode' });
     expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  it('keep a task’s buffers until the worker has answered, then move them', async () => {
+    const dead = await booted('silent');
+    const pool = new PhotoWorkers(() => dead as never, 1);
+    const task = encodeTask();
+    const a = pool.run(task);
+    dead.crash();
+    await expect(a.result).resolves.toMatchObject({ kind: 'encode' });
+
+    const w = await booted();
+    const live = new PhotoWorkers(() => w as never, 1);
+    const first = encodeTask();
+    await live.run(first).result;
+    expect(first.kind === 'encode' && first.data.byteLength).toBe(8);
+    const second = encodeTask();
+    await live.run(second).result;
+    expect(second.kind === 'encode' && second.data.byteLength).toBe(0);
   });
 
   it('run on the page when a worker cannot start, or there is none', async () => {
