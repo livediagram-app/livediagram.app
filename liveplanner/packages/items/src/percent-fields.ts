@@ -19,7 +19,9 @@ type PercentDef = Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'>;
 function numberOf(v: ItemFieldValue | undefined): number | undefined {
   if (typeof v === 'number') return Number.isFinite(v) ? v : undefined;
   if (typeof v !== 'string') return undefined;
-  const t = v.trim().replace(/\s*%$/, '');
+  // Sliced, not a regex: `/\s*%$/` backtracks over a long run of spaces (polynomial time on hostile text).
+  const s = v.trim();
+  const t = s.endsWith('%') ? s.slice(0, -1).trimEnd() : s;
   if (t === '') return undefined;
   const n = Number(t);
   return Number.isFinite(n) ? n : undefined;

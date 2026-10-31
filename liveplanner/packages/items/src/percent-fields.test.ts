@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { laneFieldsOf, laneGroups, laneDropPatch, type PlanBoardSetup } from './board';
 import { boardCsvImport, boardCsvRows } from './board-csv';
@@ -57,6 +58,19 @@ describe('reading a share', () => {
     expect(percentValue(0)).toBe(0);
     for (const none of [undefined, null, '', ' ', 'lots', '%', Number.NaN, true, ['40']])
       expect(percentValue(none as never), String(none)).toBeUndefined();
+  });
+
+  // A trailing "%" was once cut with /\s*%$/, which backtracks over every run of spaces: 50k spaces then a letter
+  // took polynomial time. Sliced now, so linear. Timed in CPU time (cpuMsOf), so a busy machine does not fail it.
+  it('stays linear on a long run of spaces', () => {
+    const worst = ' '.repeat(50_000) + 'x';
+    let read: number | undefined = 0;
+    const ms = cpuMsOf(() => {
+      read = percentValue(worst);
+      parsePercent(worst + ' %');
+    });
+    expect(read).toBeUndefined();
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 
   it('refuses a write outside 0 to 100 rather than holding it', () => {
