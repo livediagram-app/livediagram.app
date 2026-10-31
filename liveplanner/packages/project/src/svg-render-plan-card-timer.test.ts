@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item, type ItemTypeDef } from "@liveplanner/items";
+import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { planPalette } from './plan-palette';
 import { planCardFace, TIMER_RUNNING_GREEN } from './svg-render-plan-card';
 

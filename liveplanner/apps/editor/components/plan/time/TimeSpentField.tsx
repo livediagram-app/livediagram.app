@@ -176,7 +176,7 @@ export function TimeSpentField({
                 <PersonDisc person={who} />
                 <span className="min-w-0 flex-1 truncate">{who.name}</span>
                 <RunningDot />
-                <Elapsed start={r.start} className="text-[13px] font-medium" />
+                <Elapsed start={r.start} className="whitespace-nowrap text-[13px] font-medium" />
                 {canEditAll ? (
                   <Tooltip label={`Stop ${who.name}'s timer`}>
                     <button
@@ -205,12 +205,14 @@ export function TimeSpentField({
             return (
               <li key={e.id} className={ROW}>
                 <PersonDisc person={who} />
-                <span className="min-w-0 flex-1 truncate">{who.name}</span>
-                <span className="font-medium tabular-nums text-slate-900 dark:text-slate-50">
-                  {time}
-                </span>
-                <span className="w-28 shrink-0 text-right text-[12px] text-slate-500 dark:text-slate-400">
-                  {entryWhen(e.at)}
+                {/* Two lines, so the row fits the panel's narrow Details rail: the time, then who and when. */}
+                <span className="flex min-w-0 flex-1 flex-col py-1 leading-tight">
+                  <span className="whitespace-nowrap font-medium tabular-nums text-slate-900 dark:text-slate-50">
+                    {time}
+                  </span>
+                  <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                    {`${who.name} · ${entryWhen(e.at)}`}
+                  </span>
                 </span>
                 {mayTouch(e.by) ? (
                   <Tooltip label={`Remove ${time} by ${who.name}`}>
