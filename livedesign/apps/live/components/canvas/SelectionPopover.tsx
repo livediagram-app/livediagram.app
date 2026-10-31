@@ -39,6 +39,8 @@ type SelectionPopoverProps = {
   hasText?: boolean;
   // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
   onEditPoints?: () => void;
+  // What Edit Points says it does, when not a path's (a stroke's tidies it first).
+  editPointsDescription?: string;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
@@ -90,6 +92,7 @@ export function SelectionPopover({
   onEditText,
   hasText = true,
   onEditPoints,
+  editPointsDescription,
   onDuplicate,
   onBringToFront,
   onSendToBack,
@@ -201,7 +204,9 @@ export function SelectionPopover({
             <>
               <PopoverButton
                 label="Edit Points"
-                description="Adjust the path's points, corners and curves."
+                description={
+                  editPointsDescription ?? "Adjust the path's points, corners and curves."
+                }
                 onClick={onEditPoints}
               >
                 <EditPointsIcon />

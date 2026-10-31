@@ -3,7 +3,7 @@
 // anchors in canvas px and hands them back through `pathGeometry`.
 import type { PathElement, PathNode, PathPoint } from './element-types';
 import type { Point } from '@liveworkspace/model-core/geometry-primitives';
-import { pathBounds, pathD, type PathAnchor } from './path-geometry';
+import { isCommittablePath, pathBounds, pathD, type PathAnchor } from './path-geometry';
 
 type PathGeometry = Pick<PathElement, 'x' | 'y' | 'width' | 'height' | 'nodes'>;
 
@@ -66,7 +66,7 @@ export function pathOfContours(
 }
 
 /** Whether the path is a combined shape of several contours (docs/specs/007-editor/logo-pages.md
- *  "Combine"): filled even-odd, edited as a whole. */
+ *  "Combine"): filled even-odd, its points edited one contour at a time. */
 export function isCompoundPath(el: Pick<PathElement, 'subpaths'>): boolean {
   return (el.subpaths?.length ?? 0) > 0;
 }
@@ -114,16 +114,47 @@ export function reshapePath(
   anchors: readonly PathAnchor[],
   closed: boolean,
 ): PathElement {
-  const g = pathGeometry(anchors, closed);
+  return { ...el, ...keptInPlace(el, pathGeometry(anchors, closed)), closed };
+}
+
+// A new box for the element's nodes, moved so its rotation about the new centre leaves every node
+// where it showed.
+function keptInPlace<G extends Pick<PathElement, 'x' | 'y' | 'width' | 'height'>>(
+  el: Pick<PathElement, 'x' | 'y' | 'width' | 'height' | 'rotation'>,
+  g: G,
+): G {
   const rotation = el.rotation ?? 0;
-  if (rotation % 360 === 0) return { ...el, ...g, closed };
+  if (rotation % 360 === 0) return g;
   const r = (rotation * Math.PI) / 180;
   const dx = el.x + el.width / 2 - (g.x + g.width / 2);
   const dy = el.y + el.height / 2 - (g.y + g.height / 2);
   // t = (c − c′) − R(c − c′)
   const tx = dx - (dx * Math.cos(r) - dy * Math.sin(r));
   const ty = dy - (dx * Math.sin(r) + dy * Math.cos(r));
-  return { ...el, ...g, x: g.x + tx, y: g.y + ty, closed };
+  return { ...g, x: g.x + tx, y: g.y + ty };
+}
+
+/**
+ * The element with one contour given new anchors (in its own unrotated frame), the others kept
+ * where they show (docs/specs/023-draw-mode/path-tool.md "Combined paths"). A contour left with
+ * fewer nodes than it needs goes; null when none is left. An index past the contours (a peer took
+ * one away) leaves the element as it was.
+ */
+export function reshapeContour(
+  el: PathElement,
+  index: number,
+  anchors: readonly PathAnchor[],
+): PathElement | null {
+  const contours = pathContours(el);
+  if (index < 0 || index >= contours.length) return el;
+  const placed = contours
+    .map((nodes, i) => (i === index ? anchors : pathAnchors({ ...el, nodes })))
+    .filter((c) => isCommittablePath(c, el.closed));
+  if (placed.length === 0) return null;
+  const { subpaths: _subpaths, ...rest } = el;
+  const next = pathOfContours(rest, placed);
+  const g = keptInPlace(el, { x: next.x, y: next.y, width: next.width, height: next.height });
+  return { ...next, ...g };
 }
 
 const turn = (p: Point, c: Point, cos: number, sin: number): Point => ({

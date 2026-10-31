@@ -47,6 +47,10 @@ Exclude), **Wordmark**, **Logo Kit**.
 | `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                | Spec ("a quarter of a pixel")                                    |
 | `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`               | Collinear merge distance; well under a device pixel              |
 | `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                | Refused above as Too detailed; measured runs stay under 4 ms     |
+| `SIMPLIFY_TOLERANCE_PX`                    | 0.5                                           | `apps/live/lib/path-simplify.ts`                  | Spec ("never moving the outline more than half a pixel")         |
+| `SIMPLIFY_MIN_NODES`                       | 12                                            | `apps/live/lib/path-simplify.ts`                  | Spec ("12 or more plain corners")                                |
+| `SHARP_TURN_DEGREES`                       | 50                                            | `apps/live/lib/path-simplify.ts`                  | A traced curve turns well under it a point; 30 to 70             |
+| `FIRST_CUT_SHARE` / `MAX_PASSES`           | 0.01 (of the contour's size) / 12             | `apps/live/lib/path-simplify.ts`                  | First cut before refinement; passes before giving up             |
 | `MAX_PATH_NODES`                           | 5,000 (across all contours)                   | `packages/design/src/validate.ts`                 | Existing                                                         |
 | `LOGO_KIT_PNG_SIZES`                       | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
 | `LOGO_ICO_SIZES`                           | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
@@ -398,8 +402,54 @@ ARC_DESCENT) × fontPx` (floored at fontPx), centred on the top (up) or the bott
 - Offered by `MultiSelectionToolbar` (`CombineMenuButton`, sharing `toolbar-buttons.ts`), the multi-selection menu
   (`MultiPlacementSections`) and the command palette (`combine-<op>`).
 - A compound path: `pathElementD` draws every contour, `fill-rule: evenodd` on the canvas (`PathSvg`)
-  and in export (`svgPathElementShape`); `pathTouchesBrush` hits even-odd; `usePathTool` treats it as
-  not editable and toasts once on an edit attempt; the toolbar offers no Edit points.
+  and in export (`svgPathElementShape`); `pathTouchesBrush` hits even-odd. Its points are edited one
+  contour at a time (below, "Point editing of combined paths").
+
+### Point editing of combined paths (`apps/live/components/canvas/path/usePathContour.ts`)
+
+- `usePathTool` no longer refuses a compound path. `usePathContour({ editing, elements, wrapperRef,
+viewportZoom })` holds `press` (the last press on a compound path while nothing is in edit mode,
+  noted by `notePress` from `usePathTool.beginEditPress` via its `[data-element-id]`) and `picked`
+  (`{ id, index, press }`). Opening edit mode on a compound path, or reopening it after a new press,
+  picks `contourAt(el, press.at, 0, true)` (else 0); reopening with the same press (Undo's reopen)
+  keeps the index. It returns `element` (the contour as a path of its own: `nodes` the contour, no
+  `subpaths`, the path's frame), `others` (`d`, the other contours' path data, and `points`, their
+  nodes), `pickAt(world, touch)` and `step()`.
+- `contourAt(el, world, radius, nearestAnyway)` (`apps/live/lib/path-contour-pick.ts`): each contour
+  sampled once (`samplePath`, 8 steps a curve) in the path's frame; the nearest outline within
+  `radius` (or at any distance with `nearestAnyway`), else the smallest contour holding the point
+  (even-odd ray cast), else null. Open paths pick by outline only.
+- `usePathEditGesture` takes `contour` (its selection, draft and gesture reset on a new
+  `${id}:${contour}`), `snapOthers` (passed to `dragNodes` / `snapNodeDelta` as extra candidates),
+  `snapToPage` (the Pen's guide snap: a dragged node that met no node is moved onto it, every moving
+  node by the same delta; unrotated paths only) and `onEmptyPress(world, touch)` (an `empty` hit
+  without Shift asks it first: `pickAt` with `PATH_NODE_HIT_PX` or `PATH_TOUCH_HIT_PX` over the zoom).
+  It exposes `clearSelection`.
+- Commits: `usePathTool` passes `contourIndex` to `onCommitPathEdit(id, next, kind, contour)`, and drops a
+  commit whose `closed` differs from the path's (J on a compound path). `usePathCommits` applies
+  `reshapeContour(el, contour, anchors)` (`packages/design/src/path-element.ts`): every contour placed in
+  the path's frame, the edited one replaced, those failing `isCommittablePath` dropped,
+  `pathOfContours` for the new box (one contour left: no `subpaths`), the box moved as `reshapePath`
+  moves a rotated one (`keptInPlace`); null (the element deleted) when none is left; an index past
+  the contours returns the element unchanged. The draft shows through the same function.
+- `PathEditLayer` draws `others` dashed (`data-path-others`, 1.5 px dashed 5/4, `stroke-brand-500`) under the
+  nodes. `PathEditToolbar` gains `shape` (`Shape n of m`, `data-path-shape`, steps with
+  `onNextShape`), `canClose: false` (no Close/Open Path) and `canSimplify` / `onSimplify`.
+- Simplify (`apps/live/lib/path-simplify.ts`): `isSimplifiable` (at least `SIMPLIFY_MIN_NODES`, all
+  corner with no handles). `simplifyContour(anchors, closed)`: sharp points (turn over
+  `SHARP_TURN_DEGREES`, and an open contour's ends) stay corners; runs between them (a closed one
+  with none cut at its first point and the point furthest from it) are cut by `simplifyLine` at
+  `max(4 × tolerance, size × FIRST_CUT_SHARE)`; every kept non-sharp point gets aligned handles along
+  its neighbours (a third of each side's chord). Up to `MAX_PASSES` passes check each segment at
+  16 samples against the traced points between its ends both ways; a straying one takes back the
+  point it strays furthest at (the middle one for a bulge, or both ends become corners when none is
+  between). Null when not simplifiable, when nothing would go, or still straying after the passes.
+  `usePathTool`'s `onSimplify` commits it as one `edit` on the contour and clears the selection, or
+  toasts "Already as simple as it gets."
+- Edit Points on a stroke (`CanvasSelectionToolbars`): for a `freehand` that `isTidyable`, with an
+  editor (`useOptionalEditorContext`), `tidyUpSelected()` (now returns whether it tidied) then
+  `onBeginEdit(id)` and the toast "Tidied into a path so its points can be edited."; the popover's
+  `editPointsDescription` says "Tidy this drawing into a path, then adjust its points."
 
 ### Export
 
@@ -452,7 +502,11 @@ gen:openapi`).
 | Arc text longer than its arc                          | Runs on along the circle (`textPath`)                                             |
 | Wordmark on an empty label                            | Nothing drawn                                                                     |
 | Mirror Copy of a locked element                       | The copy is unlocked                                                              |
-| Edit points asked of a combined path                  | Not entered; toast "Combined shapes edit as a whole."                             |
+| Edit points on a combined path                        | One contour at a time (`usePathContour`)                                          |
+| A contour edited until too few nodes                  | Contour dropped, edit mode left; the last contour takes the path                  |
+| A peer removes the contour being edited               | `reshapeContour` leaves the path; the index clamps to the contours left           |
+| Simplify finds nothing to drop                        | Toast "Already as simple as it gets."                                             |
+| Edit Points on a stroke Tidy cannot change            | Nothing opens (no toast; the button is offered only for tidyable strokes)         |
 | Logo kit export fails                                 | `[logo-kit]` warn; the dialog shows the error                                     |
 
 ## Security and trust
@@ -475,6 +529,12 @@ Measured (vitest on this branch):
 - Guides: geometry under 0.01 ms; one SVG per logo page. Snapping: two extra boxes per logo page.
 - Kit: one 1024 px raster, smaller sizes by canvas downscale.
 - Guard: `combine.test.ts` unites two maximally detailed discs under 500 ms.
+- Point editing of combined paths, at the 5,000-node cap (two 2,500-node contours): a draft frame's
+  `reshapeContour` 0.81 ms (linear: every contour re-normalised once); a press's `contourAt` 1.4 ms
+  (only presses on a compound path, and empty presses in its edit mode); the others' outline and snap
+  points are memoised per path and contour. Snapping scans the other contours' nodes once a frame
+  (linear). Simplify: a traced 400-point circle to 16 nodes in 5 ms, a 5,000-point one in 42 ms (one
+  click). Guard: `path-simplify.test.ts` simplifies a 5,000-point contour under 500 ms.
 
 ## Presentation and UX
 
@@ -532,6 +592,11 @@ Measured (vitest on this branch):
 | Wordmark fields, clamps, arc geometry, validation | `packages/design/src/wordmark.test.ts`                                                                                         |
 | Wordmark in export                                | `packages/design/src/svg-render-wordmark.test.ts`                                                                              |
 | Combined paths: draw, hit, validate               | `packages/design/src/path-contours.test.ts`                                                                                    |
+| Combined paths: a contour reshaped, dropped       | `packages/design/src/path-contours.test.ts`, `apps/live/hooks/canvas/usePathCommits.test.tsx`                                  |
+| Combined paths: picking and switching contours    | `apps/live/lib/path-contour-pick.test.ts`, `apps/live/components/canvas/path/usePathContour.test.tsx`                          |
+| Combined paths: edit gesture, toolbar, outline    | `apps/live/components/canvas/path/usePathEditGesture.test.tsx`, `PathEditToolbar.test.tsx`, `PathEditLayer.test.tsx`           |
+| Simplify, its tolerance and budget                | `apps/live/lib/path-simplify.test.ts`                                                                                          |
+| Edit Points on a combined path and a stroke       | `apps/live/components/canvas/CanvasSelectionToolbars.editpoints.test.tsx`                                                      |
 | Page edits, the delete glide                      | `apps/live/hooks/editor/page-edits.test.ts`                                                                                    |
 | Logo layouts fit the safe area                    | `apps/live/lib/logo-layouts.test.ts`                                                                                           |
 | Combine ops, style, empty, too detailed, budget   | `apps/live/lib/combine/combine.test.ts`, `apps/live/hooks/canvas/useCombineShapes.test.ts`                                     |
