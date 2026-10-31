@@ -32,6 +32,7 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
     if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
+    if (tool === 'inspect' && canvasTool !== 'inspect') track('Canvas', 'Used', 'Inspect');
     setCanvasTool(tool);
   };
   return { canvasTool, setCanvasTool, selectCanvasTool };
