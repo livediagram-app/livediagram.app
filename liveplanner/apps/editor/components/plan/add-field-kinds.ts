@@ -20,7 +20,11 @@ export type KindGroup = { id: KindGroupId; label: string; kinds: readonly PickKi
 // The groups, in order; the first opens to start.
 export const KIND_GROUPS: readonly KindGroup[] = [
   { id: 'text', label: 'Text & links', kinds: ['text', 'longtext', 'link', 'email'] },
-  { id: 'numbers', label: 'Numbers & dates', kinds: ['number', 'currency', 'rating', 'date'] },
+  {
+    id: 'numbers',
+    label: 'Numbers & dates',
+    kinds: ['number', 'currency', 'percent', 'rating', 'date'],
+  },
   { id: 'choices', label: 'Choices', kinds: ['choice', 'multichoice', 'checkbox', 'labels'] },
   {
     id: 'people',
@@ -42,6 +46,7 @@ export const KIND_DESCRIPTIONS: Record<PickKind, string> = {
   email: 'An address that opens your mail app',
   number: 'Points, counts and sizes',
   currency: 'An amount, like £12,500',
+  percent: 'How far along, drawn as a bar',
   rating: 'Stars out of 3 to 10',
   date: 'A day on the calendar',
   choice: 'One option from a list',
@@ -79,6 +84,7 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
     '€',
     '£',
   ],
+  percent: ['percentage', 'progress', 'complete', 'completion', '%', 'slider', 'bar'],
   rating: ['stars', 'score', 'rank', 'review', 'grade'],
   date: ['day', 'deadline', 'when', 'calendar', 'due', 'time'],
   choice: ['dropdown', 'drop-down', 'select', 'option', 'single', 'picklist', 'enum', 'status'],
@@ -92,17 +98,7 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
   colour: ['color', 'swatch', 'hue', 'highlight', 'tint'],
   image: ['picture', 'photo', 'screenshot', 'mock-up', 'mockup', 'upload', 'attachment', 'cover'],
   card: ['parent', 'epic', 'relation', 'related', 'reference', 'child', 'linked card', 'lookup'],
-  calculated: [
-    'percent',
-    'percentage',
-    'progress',
-    'formula',
-    'computed',
-    'rollup',
-    'roll-up',
-    'sum',
-    'total',
-  ],
+  calculated: ['formula', 'computed', 'rollup', 'roll-up', 'sum', 'total'],
 };
 
 // The built-in fields of each kind, in the order Ready to use offers them: what the features that use a role read

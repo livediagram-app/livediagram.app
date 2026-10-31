@@ -218,9 +218,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       box sets it on Enter or leaving the box, rounded to a whole number and held to 0 to 100 (150 reads 100, -5
       reads 0); emptying the box clears the field, and Escape puts the box back as it was. With no value the track
       is empty, the thumb sits faded at 0 and the box is blank; pressing the track or typing sets one. Someone who
-      may only view sees the bar and the number, with no thumb and no box to type in.
+      may only view sees the bar and the number, with no thumb and no box to type in ("None" with no value).
     - **On the card** (where the type's Display places it) it is a chip of a short thin bar (32 px wide, 4 px tall,
-      the share filled in the brand colour on the column's quiet ground) and the number ("40%"), named "{Field}:
+      the share filled in the board's accent, the brand violet unless the board has its own colour, on a quiet track of
+      its muted ink) and the number ("40%"), named "{Field}:
       40%" for assistive technology; with no value it is not drawn. Exports and api or MCP images draw the same bar
       and number, after the field's name, as they draw every custom field.
     - **Sorts and groups as a number**: Sort Cards orders by it (lowest first, as a Number), and Swimlanes and Card
@@ -367,7 +368,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   **calculation** from a fixed menu, stored as `calculation` on the field:
   - **Child Count**: how many children the card has.
   - **Children Done (%)**: the share of its children that are done, a whole percentage ("40%"); nothing when it has
-    no children. Its form has a **Show as Percent Bar** switch ("Draw the share as a bar, like a Percent field."):
+    no children. Its form has a **Show as Percent Bar** switch ("Draw the share as a bar, like a Percent field."): telemetry `Plan` · `Changed` · `FieldShowAsPercent` on each flip;
     on, the field is stored with `showAs: "percent"` and draws as a [Percent](#percent-fields) does, on the card,
     in the panel and in exports; off (and for every field made before it), it reads as text ("40%") as before. A
     Child Count is no share, so it never offers the switch, and changing a field's calculation to Child Count turns

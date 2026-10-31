@@ -213,17 +213,22 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
     number; `board.ts` lanes it as a Number (`LaneFieldKind` `'percent'`, its row named "40%"); `required-fields.ts`
     lets it be required (0 is a value). `plan-view-charts.ts` leaves it out of Cards by Field's sums. Forms'
     `MAPPABLE_KINDS` never name it.
-  - Editor: `PercentBar.tsx` is the shared drawing, a track and its fill (`size: 'chip' | 'row'`, `value`, an optional
-    `faded`), drawn by `PercentChip` (the card face's pill: the bar 32 x 4 px and "40%"), the panel's read-only
-    reading (`CalculatedFieldValue` when it shows as a Percent, and a Viewer's Percent field) and the preview.
+  - Editor: `PercentBar.tsx` is the shared drawing: `PercentBar` (`value`, optional `inks` `{ fill, track }`, else the
+    app's slate track and brand fill), `PercentChip` (the card face's `MetaPill`: the bar at `PLAN_PERCENT_BAR` in
+    `planPercentInks(palette)` from `@liveplanner/project`'s `plan-palette.ts`, the export's own, and "40%", spoken
+    "{Field}: 40%") and `PercentReading` (the panel's read-only bar across the row and the number: a Viewer's Percent
+    field, `CalculatedFieldValue` when it shows as a Percent, and Add Field's preview).
     `PercentSlider.tsx` is the panel's control (a `role="slider"` with `aria-valuemin` 0, `aria-valuemax` 100,
-    `aria-valuenow`, `aria-valuetext` "40%", the label's id as `aria-labelledby`; pointer capture on the track, the
-    value drawn live in local state and committed once on pointer up; keys step and commit; a `NumberBox` committing
-    on Enter or blur, Escape restoring). `CustomFieldEditor` routes `percent` to it; `PlanCardFace` and
+    `aria-valuenow`, `aria-valuetext` "40%" or "No value", `aria-label` the field's name; pointer capture on the
+    track, `shareAt(clientX, rect)` drawn live in local state and committed once on pointer up, a cancel putting it
+    back; keys step and commit; the number box, the row label's target, `typedShare(raw)` committing on Enter or
+    blur, Escape restoring; a Viewer gets `PercentReading`, or "None"). `CustomFieldEditor` routes `percent` to it; `PlanCardFace` and
     `svg-render-plan-card.ts` draw every field `showsAsPercent` allows through the chip (a `percent` bit: the field's
-    name, a 32 x 4 track and its fill in the palette's accent, then "40%"). `ItemTypeFieldForms` shows the
-    `ShowAsPercentSwitch` (a `SettingsToggleRow`) on a Calculated field `canShowAsPercent` allows, in Add Field's
-    Shape and in the field's form.
+    name, a `PLAN_PERCENT_BAR` track and its fill in `planPercentInks`, then "40%"; a narrow pill shortens the name
+    and keeps the bar and the share). `ItemTypeFieldForms` shows the `ShowAsPercentSwitch` (a `SwitchRow` with its
+    line, tracking `Plan` · `Changed` · `FieldShowAsPercent`) on a Calculated field `canShowAsPercent` allows, in Add
+    Field's Shape and in the field's form; `calculationPatch(calculation)` drops `showAs` with a Child Count, and
+    `addedField` keeps it only where allowed.
   - Agents: `plan-schema.ts` adds `percent` to the kind enum and `showAs` to `add`/`editCustom`; `plan-listing.ts`
     lists `showAs` on a field that shows as a Percent; the OpenAPI schema is regenerated (`gen:openapi`) from
     `CUSTOM_FIELD_KINDS` and `CustomFieldDef`.

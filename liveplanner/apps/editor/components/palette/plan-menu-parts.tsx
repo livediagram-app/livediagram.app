@@ -58,6 +58,7 @@ const ROW_GLYPHS: Record<SwimlaneBy, string> = {
 const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
   labels: 'bookmark',
   number: 'cube',
+  percent: 'percent',
   date: 'calendar',
   choice: 'star',
   checkbox: 'task',

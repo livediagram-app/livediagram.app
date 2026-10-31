@@ -31,6 +31,8 @@ import {
   type CardSlot,
   isCustomCardField,
   calculatedText,
+  percentShown,
+  showsAsPercent,
   attachmentCover,
   itemAttachments,
   itemHasStamp,
@@ -42,6 +44,7 @@ import { customFieldText } from './custom-field-text';
 import { calculatedFieldValue } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
+import { PercentChip } from './PercentBar';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -278,6 +281,20 @@ export function PlanCardFace({
           );
         // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
         if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
+        // A Percent field, or a share shown as one, draws its bar (docs/specs/026-plan/item-types.md "Percent").
+        if (def && showsAsPercent(def)) {
+          const share = percentShown(
+            def,
+            def.kind === 'calculated'
+              ? plan
+                ? calculatedFieldValue(plan, def, item)
+                : null
+              : item.fields[def.id],
+          );
+          return share === undefined ? null : (
+            <PercentChip key={f} name={def.label} value={share} palette={palette} />
+          );
+        }
         // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields").
         const text = !def
           ? null

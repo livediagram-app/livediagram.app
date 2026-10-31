@@ -8,6 +8,7 @@ import { useId } from 'react';
 import {
   CUSTOM_FIELD_LABEL_MAX,
   canBeRequired,
+  canShowAsPercent,
   linkTypesOf,
   withLinkTypes,
   type CustomFieldDef,
@@ -23,6 +24,8 @@ import {
   BUILT_IN_FIELD_LABELS,
   CUSTOM_KIND_LABELS,
   CalculationSelect,
+  calculationPatch,
+  ShowAsPercentSwitch,
   CurrencySelect,
   NotifiesSwitch,
   RatingScaleSelect,
@@ -44,6 +47,7 @@ export function addedField(field: NewField): NewField {
     ...(field.kind === 'card' ? {} : { linkType: undefined, linkTypes: undefined }),
     ...(field.kind === 'currency' ? {} : { currency: undefined }),
     ...(field.kind === 'calculated' ? {} : { calculation: undefined }),
+    ...(field.showAs === 'percent' && canShowAsPercent(field) ? {} : { showAs: undefined }),
     ...(field.required && canBeRequired(field.kind) ? {} : { required: undefined }),
     ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
   };
@@ -258,10 +262,11 @@ function ShapeOwn({
           <span className={LABEL}>Calculation</span>
           <CalculationSelect
             value={field.calculation}
-            onChange={(calculation) => set({ calculation })}
+            onChange={(calculation) => set(calculationPatch(calculation))}
           />
         </div>
       ) : null}
+      <ShowAsPercentSwitch field={field} onChange={(showAs) => set({ showAs })} />
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
       <CustomFieldPreview
@@ -276,6 +281,7 @@ function ShapeOwn({
         currency={field.currency}
         scale={field.scale}
         calculation={field.calculation}
+        showAs={field.showAs}
         required={field.required === true && canBeRequired(kind)}
       />
     </div>

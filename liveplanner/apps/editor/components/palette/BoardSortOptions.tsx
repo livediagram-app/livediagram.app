@@ -29,6 +29,7 @@ const SORT_KIND_GLYPHS: Record<BoardSortKind, string> = {
   priority: 'flag',
   number: 'cube',
   currency: 'coin',
+  percent: 'percent',
   date: 'calendar',
   rating: 'star',
   choice: 'checklist',

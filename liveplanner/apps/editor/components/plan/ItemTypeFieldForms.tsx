@@ -15,6 +15,7 @@ import {
   RATING_FIELD_SCALE_MIN,
   type Calculation,
   canBeRequired,
+  canShowAsPercent,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
@@ -52,6 +53,7 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   longtext: 'Long Text',
   number: 'Number',
   currency: 'Currency',
+  percent: 'Percent',
   date: 'Date',
   checkbox: 'Checkbox',
   link: 'Link',
@@ -199,6 +201,46 @@ export function RequiredSwitch({
   );
 }
 
+// Show as Percent Bar (docs/specs/026-plan/item-types.md "Percent"): a switch on a worked-out share (a Children Done),
+// with its line under it; none for a field whose result is no share. Off is stored as absent.
+export const SHOW_AS_PERCENT_LINE = 'Draw the share as a bar, like a Percent field.';
+export function ShowAsPercentSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'>;
+  onChange: (showAs: 'percent' | undefined) => void;
+}) {
+  const lineId = useId();
+  if (!canShowAsPercent(field)) return null;
+  const on = field.showAs === 'percent';
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={on}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldShowAsPercent');
+          onChange(on ? undefined : 'percent');
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Show as Percent Bar
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {SHOW_AS_PERCENT_LINE}
+      </p>
+    </div>
+  );
+}
+
+// A calculation's patch: a Child Count is no share, so it stops showing as a Percent.
+export const calculationPatch = (calculation: Calculation): Partial<CustomFieldDef> =>
+  canShowAsPercent({ kind: 'calculated', calculation })
+    ? { calculation }
+    : { calculation, showAs: undefined };
+
 // Notifies (docs/specs/026-plan/item-types.md "Notifies"): what the switch on a Person field, and on the Assignee's
 // row menu, says it does.
 export const NOTIFIES_LINE =
@@ -276,9 +318,10 @@ export function CustomFieldForm({
       {field.kind === 'calculated' ? (
         <CalculationSelect
           value={field.calculation}
-          onChange={(calculation) => onChange({ calculation })}
+          onChange={(calculation) => onChange(calculationPatch(calculation))}
         />
       ) : null}
+      <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
       {hasOptions(field.kind) ? (
         <TextArea
           aria-label="Options, one a line"

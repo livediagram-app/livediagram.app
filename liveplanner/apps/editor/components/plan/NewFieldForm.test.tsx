@@ -157,7 +157,7 @@ describe('Pick', () => {
     type('parent');
     expect(kindNames()).toEqual(['Link to Card']);
     type('percent');
-    expect(kindNames()).toEqual(['Calculated']);
+    expect(kindNames()).toEqual(['Percent']);
     type('url');
     expect(kindNames()).toEqual(['Link']);
     type('stars');
@@ -405,6 +405,54 @@ describe('Shape', () => {
     fireEvent.click(addButton());
     expect(onAddCustom).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'calculated', calculation: 'childrenDone' }),
+    );
+  });
+
+  // docs/specs/026-plan/item-types.md "Percent".
+  it('makes a Percent field, its preview a bar at 40%', () => {
+    const { onAddCustom } = open();
+    pick('Percent', 'Numbers & dates');
+    fireEvent.change(name(), { target: { value: 'Progress' } });
+    expect(preview().getByText('40%')).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Required' })).toBeTruthy();
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Progress', kind: 'percent' }),
+    );
+  });
+
+  it('finds Percent by progress, and Calculated by formula', () => {
+    open();
+    type('progress');
+    expect(kindNames()).toEqual(['Percent']);
+    type('formula');
+    expect(kindNames()).toEqual(['Calculated']);
+  });
+
+  it('shows a Children Done as a Percent bar, a switch a Child Count never offers', () => {
+    const { onAddCustom } = open();
+    pick('Calculated', 'Linked cards');
+    fireEvent.change(name(), { target: { value: 'Done' } });
+    expect(screen.queryByRole('switch', { name: 'Show as Percent Bar' })).toBeNull();
+    const calc = screen.getByLabelText<HTMLSelectElement>('Calculation');
+    fireEvent.change(calc, { target: { value: 'childrenDone' } });
+    const show = screen.getByRole('switch', { name: 'Show as Percent Bar' });
+    expect(show.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(show);
+    expect(show.getAttribute('aria-checked')).toBe('true');
+    expect(preview().getByText('40%')).toBeTruthy();
+    // Back to a count turns it off, and the switch goes.
+    fireEvent.change(calc, { target: { value: 'childCount' } });
+    expect(screen.queryByRole('switch', { name: 'Show as Percent Bar' })).toBeNull();
+    fireEvent.change(calc, { target: { value: 'childrenDone' } });
+    fireEvent.click(screen.getByRole('switch', { name: 'Show as Percent Bar' }));
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'calculated',
+        calculation: 'childrenDone',
+        showAs: 'percent',
+      }),
     );
   });
 
