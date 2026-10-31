@@ -552,7 +552,7 @@ describe('rollup and lookup fields', () => {
     ...ITEM_TYPES[1],
     id: 'job',
     label: 'Job',
-    fields: ['title', 'status', 'f-up', 'f-cost', 'f-name'],
+    fields: ['title', 'status', 'f-up', 'f-cost', 'f-name', 'f-unset'],
     custom: [
       { id: 'f-up', label: 'Up', kind: 'card', linkType: 'proj' },
       { id: 'f-cost', label: 'Cost', kind: 'currency' },
@@ -565,6 +565,8 @@ describe('rollup and lookup fields', () => {
         source: 'title',
         result: 'text',
       },
+      // Not set up yet: nothing to read through.
+      { id: 'f-unset', label: 'Unset', kind: 'calculated', calculation: 'lookup' },
     ],
   };
   const items = [
@@ -633,6 +635,10 @@ describe('rollup and lookup fields', () => {
       result: 'text',
     });
     expect(listed[0]).not.toHaveProperty('error');
+    const unset = listedType(JOB as ItemTypeDef, [], types).custom[3];
+    expect(unset).toMatchObject({ name: 'Unset', calculation: 'lookup' });
+    expect(unset!.through).toBeUndefined();
+    expect(unset).not.toHaveProperty('source');
   });
 
   it('refuses giving a lookup a value, saying the linked card works it out', async () => {

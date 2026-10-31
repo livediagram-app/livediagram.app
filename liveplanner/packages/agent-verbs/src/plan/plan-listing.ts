@@ -227,7 +227,7 @@ function listedRollup(f: CustomFieldDef, t: ItemTypeDef, types: readonly ItemTyp
     }
     return id;
   };
-  const problem = types.length ? rollupProblem(f, t, types) : null;
+  const problem = rollupProblem(f, t, types);
   return {
     through: rollup && !f.through ? 'all' : nameOf(f.through),
     ...(rollup ? { aggregate: aggregateOf(f) } : {}),
