@@ -1,0 +1,57 @@
+name: MCP Registry
+
+# Lists one product's hosted MCP server in the official MCP Registry (registry.modelcontextprotocol.io) from its
+# <product>/server.json. PulseMCP and other directories ingest from that registry. Started by hand only, never on a
+# push (docs/ci.md "Workflows"; each product's docs/specs/015-api/mcp-server.md "Registry listing").
+#
+# The registry refuses a version it already holds, so bump "version" in the product's server.json (and its
+# apps/mcp/src/listing.ts, which a test keeps equal) before running this again.
+
+on:
+  workflow_dispatch:
+    inputs:
+      product:
+        description: Product whose server.json to publish
+        required: true
+        type: choice
+        options:
+          - livediagram
+          - liveplanner
+          - livedocuments
+          - livedesign
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcp-registry-${{ inputs.product }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish ${{ inputs.product }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write # GitHub OIDC login: proves the io.github.livediagram-app namespace, no secret
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      # A pinned release, checked against the digest GitHub publishes for it.
+      - name: Install mcp-publisher
+        env:
+          VERSION: v1.8.1
+          SHA256: a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc
+        run: |
+          curl -sSLo mcp-publisher.tar.gz "https://github.com/modelcontextprotocol/registry/releases/download/${VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${SHA256}  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+
+      - name: Log in to the MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server.json
+        env:
+          PRODUCT: ${{ inputs.product }}
+        run: ./mcp-publisher publish "${PRODUCT}/server.json"
