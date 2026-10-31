@@ -283,6 +283,43 @@ describe('TabStrip', () => {
     expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 28 }));
   });
 
+  // Closing a phone's Start panel hands a footer control back its room: the strip lost 42px and the open last tab,
+  // with Add tab, stood past its edge until something else moved it.
+  it('brings the open tab back when the strip narrows, and leaves a widening alone', () => {
+    let resized: () => void = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          resized = cb;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    let width = 252;
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get: () => width,
+    });
+    strip();
+    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this === scroller) return { left: 0, right: width, width } as DOMRect;
+      return { left: 150, right: 240 } as DOMRect;
+    });
+    scrollTo.mockClear();
+    width = 300;
+    resized();
+    expect(scrollTo).not.toHaveBeenCalled();
+    width = 210;
+    resized();
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 58 }));
+    delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
+  });
+
   it('jumps rather than glides under reduced motion', () => {
     vi.stubGlobal(
       'matchMedia',

@@ -120,6 +120,23 @@ export function TabStrip<T extends { id: string }>({
   }, [activeId, lastTabId, reveal]);
   useEffect(revealActive, [revealActive, tabCount]);
 
+  // A strip that narrows (a panel closing hands a footer control back its room, the window shrinking) can leave the
+  // open tab past its edge with nothing else changed, so narrowing brings it back. Widening never hides it, and
+  // leaves where someone scrolled alone.
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip || typeof ResizeObserver === 'undefined') return;
+    let width = strip.clientWidth;
+    const observer = new ResizeObserver(() => {
+      const next = strip.clientWidth;
+      const narrowed = next < width;
+      width = next;
+      if (narrowed) revealActive();
+    });
+    observer.observe(strip);
+    return () => observer.disconnect();
+  }, [revealActive]);
+
   // The open tab's card slides to each tab you open (useTabSlider); a reorder moves it at once.
   useTabSlider(listRef, sliderRef, activeId, order);
 
