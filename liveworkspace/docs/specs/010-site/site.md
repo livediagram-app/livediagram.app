@@ -662,7 +662,9 @@ they never meet an app's own `/_next`, and one build serves both addresses.
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
 - The front door, Comparison, the dashboard, Status and the privacy policy and terms are indexable: title, description, canonical,
-  Open Graph, `robots.txt` and `sitemap.xml`.
+  Open Graph, `robots.txt` and `sitemap.xml`. Every other page's title names the page and then the site
+  (`Status · liveworkspace`), the same in its Open Graph and X cards, so a search result or a tab never reads
+  "Status" alone.
 
 ## Hosting
 

@@ -11,7 +11,7 @@ import { listedApps } from '@/lib/apps';
 // answers on its own site (packages/comparisons/README.md), so this page only points at them. The
 // old /alternatives addresses redirect here and to each app's pages (public/_redirects).
 
-const TITLE = 'Comparison';
+const TITLE = 'Comparison · liveworkspace';
 const DESCRIPTION =
   'Honest, side-by-side comparisons of each liveworkspace app with the tools it answers, on each app’s own site.';
 
@@ -19,7 +19,13 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: '/compare' },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: '/compare', type: 'website' },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: '/compare',
+    siteName: 'liveworkspace',
+    type: 'website',
+  },
   twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
 };
 
