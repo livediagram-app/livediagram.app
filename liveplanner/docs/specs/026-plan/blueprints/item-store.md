@@ -625,14 +625,17 @@ history.retention` with the count.
 - `hooks/plan/useCardHistory.ts` `useCardHistory({ scope, itemId, rev, enabled })`: `{ status: 'loading' | 'ready' |
 'error' | 'offline', entries, retry }`; reads when enabled and again when the card's `rev` moves (debounced
   `ITEM_HISTORY_REFETCH_MS`), dropping an answer for a card no longer shown.
-- `components/plan/threads/CardActivity.tsx`: `ActivityRow` (one entry) and `activityFeed(open threads, entries)`
-  (both by time, newest first; a thread by `updatedAt`); `activity-words.ts` words an entry (`activityParts`)
-  from the plan's `statusNames`, the card's type (field labels: `BUILT_IN_FIELD_LABELS`, then custom labels) and its
+- `components/plan/threads/CardActivity.tsx`: `CardActivitySection({ item })`, keyed by the card, draws the
+  **Activity** section: a divider, the disclosure (`aria-expanded`, controls the body), and, open, the first
+  `ACTIVITY_ROWS_SHOWN` `ActivityRow`s (newest first), **Show N More** and `ActivityNote` (loading, none, failed with
+  Try Again, This Browser). Open is `useActivityOpen()`: `useLocalStorageValue('liveplanner:v2:card-activity') ===
+  'on'`, its setter sending the telemetry before it writes. `useCardHistory` is enabled only while open. It draws
+  nothing without `useCardThreadsContext().threads.scope`. `activity-words.ts` words an entry (`activityParts`) from
+  the plan's `statusNames`, the card's type (field labels: `BUILT_IN_FIELD_LABELS`, then custom labels) and its
   items (a Card field's title).
-- `CardThreads` draws the **Activity** switch (`SwitchRow`, `xs`) in its header and, on, the feed in place of the
-  open list, the first `ACTIVITY_ROWS_SHOWN` activity rows and **Show N More**; the switch is
-  `useLocalStorageValue('liveplanner:v2:card-activity')` (`'off'` is off, anything else on). `useCardThreads` exposes
-  its `scope` for the read.
+- `ItemPanel` places it: after the first Comments field in tab order (`commentsFieldsOf`), on that field's tab; with
+  none, at the end of the first tab. `CardThreads` draws comment threads only. `useCardThreads` exposes its `scope`
+  for the read.
 
 ## Live: room op
 

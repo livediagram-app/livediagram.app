@@ -570,7 +570,7 @@ answers "who moved this?" for one card; it is not a plan-wide log, it offers no 
 | ----------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
 | **history**       | Every history entry one card keeps, newest first                                   | log, audit trail, feed            |
 | **history entry** | What one write did to the card: when, by whom, and its changes                     | event, log line, record           |
-| **activity**      | The card's history as the panel draws it, grouped and interleaved with its threads | timeline (that is the Explorer's) |
+| **activity**      | The card's history as the panel's Activity section draws it, grouped               | timeline (that is the Explorer's) |
 
 ### What is kept
 
@@ -611,8 +611,9 @@ Each entry is **tagged** by how it was made:
 
 ### Reading it
 
-- History is **read when a card's panel opens** (and again when the open card changes), one request for that card,
-  never sent with the room's item ops and never with the store.
+- History is **read while a card's Activity section is open** (when the panel opens with it open, or when it is
+  opened, and again when the open card changes), one request for that card, never sent with the room's item ops and
+  never with the store. A closed section reads nothing.
 - **Grouped**: entries one person makes with the same tag within a minute of the first of them read as one entry,
   each field once at its latest value ("Sam moved this from To Do to Review and set Priority to High"). A move
   there and back, a flag on and off, or a trash and restore within the minute drops out; a group with nothing left
@@ -626,23 +627,31 @@ Each entry is **tagged** by how it was made:
 
 ### Where it shows
 
-In the card panel, under **Comments**:
+In the card panel, in a section of its own below **Comments**, never mixed with the threads:
 
-- The Comments header carries an **Activity** switch (the house switch, small) after the tally: on, the card's
-  activity is interleaved with its open threads by time, newest first (a thread by its last activity); off, the
-  panel shows comments only. It starts on, and is remembered in this browser.
+- **Comments** shows only the card's comment threads, with **New Thread** in its header, as it did before history.
+- Below it, after a divider, an **Activity** section: its heading is a disclosure (a chevron and "Activity", one
+  hit target) that opens and closes it. It sits after the type's first Comments field, on that field's tab; a type
+  with no Comments field shows it at the end of its first tab. One per card, however many Comments fields the type
+  has.
+- It **starts closed**, as the panel's other disclosures (Resolved) do, so opening a card reads no history and the
+  conversation stays the first thing below the fields. Whether it is open is remembered in this browser
+  (`liveplanner:v2:card-activity`, the key the old Activity switch used: `on` is open, anything else closed, so a
+  person who turned that switch on finds the section open).
 - An activity row is quiet, one line where it fits: the author's disc (16 px), "**Sam** moved this from **In
   Progress** to **Review**", and its time ("2h ago", the full date in a tooltip). An agent's row carries the Generated
   by AI sparkle; an undo's ends with (Undo). Statuses read by their column names, fields by their names in the
-  card's type, people by name.
-- Activity rows past the eighth wait under **Show N More** (the number left) at the end of the open threads, which
-  shows them all; threads are never hidden by it.
-- **No history yet** (a card made before history, or past its age): a quiet line, "No activity recorded yet."; while it
-  loads, nothing moves (the threads show at once); a failed read says "Couldn't load this card's activity." with
+  card's type, people by name. Rows run newest first.
+- Rows past the eighth wait under **Show N More** (the number left) at the end of the list, which shows them all.
+- **While it loads**: a quiet "Loading activity…" line. **No history yet** (a card made before history, or past its
+  age): a quiet line, "No activity recorded yet."; a failed read says "Couldn't load this card's activity." with
   **Try Again**.
-- **This Browser** plans keep no history: with the switch on, the panel says "Plans in This Browser keep no card
-  history." in place of the rows.
-- Toggling sends `Plan · Toggled · ActivityOn` and `Plan · Toggled · ActivityOff`.
+- **This Browser** plans keep no history: open, the section says "Plans in This Browser keep no card history." in
+  place of the rows.
+- A panel with no plan to read from (a preview) draws no Activity section.
+- Opening and closing it sends `Plan · Toggled · ActivityOn` and `Plan · Toggled · ActivityOff`.
+- It was first an **Activity** switch in the Comments header that interleaved the rows with the open threads by time;
+  the threads and the history read better apart (Work Tracker #164).
 
 ## No New Card button
 
