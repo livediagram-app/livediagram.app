@@ -130,5 +130,6 @@ describe('GET /folders/previews', () => {
     // eslint-disable-next-line no-console
     console.log(`[folder previews] 60 folders x 2,000 items: ${took.toFixed(1)}ms`);
     expect(took).toBeLessThan(500);
-  });
+    // Seeding 120,000 items outruns the 5s default on a busy runner; the budget above times only the read.
+  }, 30_000);
 });
