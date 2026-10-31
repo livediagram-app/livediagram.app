@@ -19,3 +19,9 @@ export function progressRingLabelPx(width: number, height: number): number {
   const px = Math.round(diameter * PROGRESS_RING_LABEL_SHARE);
   return Math.min(PROGRESS_RING_LABEL_MAX_PX, Math.max(PROGRESS_LABEL_PX, px));
 }
+
+/** A value rounded to a whole 0 to 100 percentage: the progress elements' setter, slider and views, and
+ *  liveplanner's Percent fields, so a share rounds the same way everywhere (the caller applies any default first). */
+export function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
