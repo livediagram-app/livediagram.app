@@ -4,7 +4,13 @@
 // under the last card in the names column, opening the Add a Card menu of the card types the chart draws (those with a Start and a Due). The new
 // card starts today and is due a week on, so its bar shows at once, and opens to be named.
 import { useState } from 'react';
-import { newItemId, typeIn, type ItemTypeDef } from '@liveplanner/items';
+import {
+  BUILT_IN_DATES,
+  newItemId,
+  typeIn,
+  type ItemTypeDef,
+  type ViewDates,
+} from '@liveplanner/items';
 import { mayCreateCardType } from '../may-create-card-type';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucidePlus } from '@liveworkspace/icons/lucide';
@@ -21,15 +27,20 @@ const day = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 // A new card's dates: today, and a week on.
-export function ganttNewCardDates(now: Date): { start: string; due: string } {
+export function ganttNewCardDates(
+  now: Date,
+  // The fields the chart reads (plan-views.md "Dates"): the new card's dates go there.
+  dates: ViewDates = BUILT_IN_DATES,
+): Record<string, string> {
   const due = new Date(now.getFullYear(), now.getMonth(), now.getDate() + GANTT_NEW_CARD_DAYS);
-  return { start: day(now), due: day(due) };
+  return { [dates.start]: day(now), [dates.due]: day(due) };
 }
 
 export function GanttAddCard({
   plan,
   types: all,
   shown,
+  dates = BUILT_IN_DATES,
   palette,
   top,
   height,
@@ -41,6 +52,8 @@ export function GanttAddCard({
   types: readonly ItemTypeDef[];
   // The card types the chart draws, comma-joined ids.
   shown: string;
+  // The fields the chart reads its dates from (plan-views.md "Dates").
+  dates?: ViewDates;
   palette: PlanPalette;
   // Its place in the names column: under the last row (pinned to the column's foot when that is lower).
   top: number;
@@ -90,7 +103,7 @@ export function GanttAddCard({
             void plan.addItem({
               id,
               type,
-              fields: { ...fields, ...ganttNewCardDates(new Date()) },
+              fields: { ...fields, ...ganttNewCardDates(new Date(), dates) },
               status: newCardStatus(typeIn(plan.types, type), plan.statusNames),
               after: null,
             });

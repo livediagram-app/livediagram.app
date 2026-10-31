@@ -95,6 +95,22 @@ describe('planCardFace', () => {
     expect(on.svg).toContain('▲ 2');
   });
 
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields".
+  it('draws a Votes field of the type’s own as its ▲ count, not drawn with none', () => {
+    const poll: ItemTypeDef = {
+      ...task,
+      id: 'poll',
+      custom: [{ id: 'f-pri', label: 'Priority Vote', kind: 'votes' }],
+      fields: [...task.fields, 'f-pri'],
+      display: { detailed: { body: ['f-pri'] } },
+    };
+    const ctx = { palette, types: [...ITEM_TYPES, poll] };
+    const voted = item('a', { title: 'Idea', 'f-pri': { p: 3 } }, { type: 'poll' });
+    expect(planCardFace(voted, 0, 0, 240, ctx).svg).toContain('Priority Vote ▲ 3');
+    const none = item('b', { title: 'Idea' }, { type: 'poll' });
+    expect(planCardFace(none, 0, 0, 240, ctx).svg).not.toContain('▲');
+  });
+
   it('draws every card size, Minimal the shortest', () => {
     const it0 = item('a', { title: 'Ship it', priority: 'high' });
     const min = planCardFace(it0, 0, 0, 240, { palette, size: 'minimal' });

@@ -3,12 +3,19 @@
 // meanwhile is skipped, the rest land. The updates go in one D1 batch, each guarded by the rev read, with one store
 // rev raise and one room op; a card a concurrent write moved on is read again and retried (item-write-loop.ts), and a
 // retry still busy at the end carries the cards already tallied, so the host never sends them again. Edit access.
+// An optional `field` names the Votes field the vote counts in (session-tools.md "Count In"): the built-in `votes` or
+// a custom field's id; a card whose type does not offer it takes its dots in the built-in Votes.
 import type { ItemsResponse } from '@liveplanner/api-schema';
 import {
+  CUSTOM_FIELD_ID_PATTERN,
   ITEM_BULK_MAX,
   ITEM_VOTES_PER_PERSON_MAX,
   ITEM_VOTERS_MAX,
+  VOTES_FIELD,
   applyTally,
+  tallyFieldOn,
+  typeIn,
+  typesOf,
   type Item,
   type ItemTally,
 } from '@liveplanner/items';
@@ -43,6 +50,14 @@ function readTallies(raw: unknown): ItemTally[] | Response {
   return out;
 }
 
+// The Votes field the tally names: the built-in when absent.
+function readField(raw: unknown): string | Response {
+  if (raw === undefined) return VOTES_FIELD;
+  if (typeof raw !== 'string' || !(raw === VOTES_FIELD || CUSTOM_FIELD_ID_PATTERN.test(raw)))
+    return badRequest('field must be votes or a custom field id');
+  return raw;
+}
+
 export async function tally(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const caller = await itemCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
@@ -50,6 +65,9 @@ export async function tally(ctx: PlanRouteContext, projectId: string): Promise<R
   if (body instanceof Response) return body;
   const wanted = readTallies(body.items);
   if (wanted instanceof Response) return wanted;
+  const field = readField(body.field);
+  if (field instanceof Response) return field;
+  const types = typesOf(caller.doc?.itemTypes);
   if (caller.scope && wanted.some((w) => !caller.scope!.has(w.id))) return itemNotFound();
   const by = await writer(ctx, caller.owner);
   const now = Date.now();
@@ -61,8 +79,11 @@ export async function tally(ctx: PlanRouteContext, projectId: string): Promise<R
     wanted,
     async (pending, stored) => {
       const nexts = new Map<string, Item>();
-      for (const t of pending)
-        nexts.set(t.id, applyTally(nexts.get(t.id) ?? stored.get(t.id)!, t.votes, { now, by }));
+      for (const t of pending) {
+        const item = nexts.get(t.id) ?? stored.get(t.id)!;
+        const into = tallyFieldOn(typeIn(types, item.type), field);
+        nexts.set(t.id, applyTally(item, t.votes, { now, by }, into));
+      }
       return nexts;
     },
   );

@@ -481,6 +481,35 @@ describe('Multiple Choice and Rating fields', () => {
     ]);
   });
 
+  it('writes a Votes field as its total and reads neither a Votes nor a Comments field back', () => {
+    const review: ItemTypeDef = {
+      ...note,
+      id: 'review',
+      label: 'Review',
+      fields: ['title', 'status', 'f-qa', 'f-pv'],
+      custom: [
+        { id: 'f-qa', label: 'QA Notes', kind: 'comments' },
+        { id: 'f-pv', label: 'Priority Vote', kind: 'votes' },
+      ],
+    };
+    const reviewSetup: PlanBoardSetup = { ...setup, addTypes: ['review'] };
+    const voted = item(
+      { title: 'A', status: 'todo', 'f-pv': { ali: 2, sam: 1 } },
+      { type: 'review' },
+    );
+    const rows = boardCsvRows(reviewSetup, mapOf([voted]), [review]);
+    expect(rows[1]!.slice(-2)).toEqual(['', '3']);
+    const { creates } = boardCsvImport(
+      [
+        ['Title', 'QA Notes', 'Priority Vote'],
+        ['A', 'looks fine', '7'],
+      ],
+      { setup: reviewSetup, types: [review], people: [], room: 100 },
+    );
+    expect(creates[0]!.fields).not.toHaveProperty('f-qa');
+    expect(creates[0]!.fields).not.toHaveProperty('f-pv');
+  });
+
   it('splits on commas only when every part is an option', () => {
     const options = ['Vegan', 'Halal', 'Nuts, none'];
     expect(multiChoiceOf(options, 'Halal, Vegan')).toEqual(['Vegan', 'Halal']);

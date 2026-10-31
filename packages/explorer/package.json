@@ -15,6 +15,7 @@
     "./offline-redirect": "./src/offline-redirect.tsx",
     "./imports": "./src/library/app-imports.tsx",
     "./search-panel": "./src/search/SearchPanel.tsx",
+    "./item-search": "./src/search/item-search.ts",
     "./search-shortcut": "./src/search/useSearchShortcut.ts",
     "./explorer.css": "./explorer.css"
   },

@@ -9,6 +9,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
+import { refreshAfterRead } from './changesets';
 import { handleProjects } from './projects';
 import {
   ADD_PAYMENTS_VIEW,
@@ -594,5 +595,84 @@ describe('agent presence after a changeset (docs/specs/024-agents/agent-presence
     expect(res.status).toBe(200);
     await settled();
     expect(presenceCalls(r)).toHaveLength(1);
+  });
+});
+
+describe('agent presence after a read (docs/specs/024-agents/agent-presence.md "Presence", PR38)', () => {
+  const presenceCalls = (r: { calls: { url: string; body: unknown }[] }) =>
+    r.calls.filter((c) => c.url.includes('/presence'));
+  const read = (db: SqliteD1, query = '', token = true) =>
+    call(db, 'GET', `/api/projects/D/tabs/t1${query}`, undefined, { token });
+
+  it('refreshes the token’s presence on a read of the tab, once per stamp, and never on a session’s read', async () => {
+    quiet();
+    const { db, room: r } = await setUp();
+    // Far from any stamp another test left in this isolate's map.
+    let now = Date.now() + 10 * 3_600_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+    expect((await read(db, '', false)).status).toBe(200);
+    await settled();
+    expect(presenceCalls(r)).toEqual([]);
+    expect((await read(db)).status).toBe(200);
+    // A view read inside the stamp writes nothing more.
+    expect((await read(db, '?view=outline')).status).toBe(200);
+    await settled();
+    expect(presenceCalls(r)).toEqual([
+      {
+        url: 'https://room/presence',
+        body: expect.objectContaining({
+          tokenId: 'tok_1',
+          tabId: 't1',
+          mode: 'refresh',
+          role: 'edit',
+          ttlMs: 180_000,
+        }),
+      },
+    ]);
+    now += 30_000;
+    expect((await read(db)).status).toBe(200);
+    await settled();
+    expect(presenceCalls(r)).toHaveLength(2);
+  });
+
+  it('does nothing without a token or a waitUntil, and logs a stamp that fails', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const waits: Promise<unknown>[] = [];
+    const ctx = (token: { id: string } | null, waitUntil?: (p: Promise<unknown>) => void) =>
+      makeTestRouteContext('GET', '/api/projects/X/tabs/t1', {
+        owner: OWNER,
+        grant: null,
+        token,
+        ...(waitUntil ? { waitUntil } : {}),
+      });
+    const target = { id: 'X', ownerId: OWNER, teamId: null };
+    refreshAfterRead(
+      ctx(null, (p) => void waits.push(p)),
+      target,
+      't1',
+      OWNER,
+    );
+    refreshAfterRead(ctx({ id: 'tok_x' }), target, 't1', OWNER);
+    expect(waits).toEqual([]);
+    // A lookup that throws is logged, and the read stands.
+    const broken = {
+      id: 'tok_broken',
+      get readOnly(): boolean {
+        throw new Error('token store down');
+      },
+    };
+    refreshAfterRead(
+      ctx(broken, (p) => void waits.push(p)),
+      target,
+      't1',
+      OWNER,
+    );
+    expect(waits).toHaveLength(1);
+    await Promise.all(waits);
+    expect(warn).toHaveBeenCalledWith('[agent-presence] read stamp failed', {
+      projectId: 'X',
+      tabId: 't1',
+      error: 'Error: token store down',
+    });
   });
 });

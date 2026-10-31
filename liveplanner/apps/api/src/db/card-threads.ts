@@ -5,6 +5,7 @@
 
 import {
   isSafeColourValue,
+  isThreadFieldId,
   threadTitle,
   type CardRef,
   type CardThread,
@@ -25,10 +26,11 @@ type ThreadRow = {
   updated_at: number;
   rev: number;
   cards: string;
+  field: string | null;
 };
 
 const COLUMNS =
-  'plan_id, id, title, resolved, resolved_by, resolved_at, comments, created_at, created_by, updated_at, rev, cards';
+  'plan_id, id, title, resolved, resolved_by, resolved_at, comments, created_at, created_by, updated_at, rev, cards, field';
 
 function parseArray<T>(text: string): T[] {
   try {
@@ -67,6 +69,8 @@ function threadFromRow(row: ThreadRow): CardThread {
     updatedAt: row.updated_at,
     home: row.plan_id,
     cards: parseArray<CardRef>(row.cards),
+    // Its Comments field (item-types.md "Comments and Votes fields"); none is the built-in.
+    ...(isThreadFieldId(row.field) && row.field !== 'comments' ? { field: row.field } : {}),
     rev: row.rev,
   };
 }
@@ -122,13 +126,14 @@ const values = (t: CardThread) => [
   t.updatedAt,
   t.rev,
   JSON.stringify(t.cards),
+  t.field ?? null,
 ];
 
 export function insertThreadStatement(env: PlanEnv, t: CardThread): D1PreparedStatement {
   return env.PLAN_DB.prepare(
     `INSERT INTO card_threads (title, resolved, resolved_by, resolved_at, comments, created_at, created_by,
-                               updated_at, rev, cards, plan_id, id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                               updated_at, rev, cards, field, plan_id, id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(...values(t), t.home, t.id);
 }
 
@@ -140,7 +145,7 @@ export function updateThreadStatement(
 ): D1PreparedStatement {
   return env.PLAN_DB.prepare(
     `UPDATE card_threads SET title = ?, resolved = ?, resolved_by = ?, resolved_at = ?, comments = ?, created_at = ?,
-                             created_by = ?, updated_at = ?, rev = ?, cards = ?
+                             created_by = ?, updated_at = ?, rev = ?, cards = ?, field = ?
       WHERE plan_id = ? AND id = ? AND rev = ?`,
   ).bind(...values(next), next.home, next.id, expectedRev);
 }

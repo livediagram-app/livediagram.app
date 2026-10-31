@@ -31,7 +31,9 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   `*`/`_` italic, `~~` strikethrough, `[text](url)` (link kept when it passes the item store's safe-link check),
   backticks dropped, `\` escapes the next mark. `runs` is undefined when nothing is marked. `applyItemChanges`
   writes a `description` through it: `description` the plain text, `descriptionRich` the runs, or
-  `descriptionRich` cleared when there are none and the card has some; clearing `description` clears both.
+  `descriptionRich` cleared when there are none and the card has some; clearing `description` clears both. Each
+  `longtext` custom field of the card's type goes through it the same way (`withRichText`): its id the plain text,
+  `richFieldOf(id)` the runs, cleared as the description's is; set lines leave every `isRichFieldKey` key out.
 - `applyItemChanges`: one plan read per call; changes in order, each seeing earlier ones' items; first refusal
   stops; answers `applied` lines naming the column (`in To Do`, or `(on no board)`).
 - `applyCardTypeChanges`: changes in order on a working list; `add` starts from `NEW_ITEM_TYPE` (shared with the

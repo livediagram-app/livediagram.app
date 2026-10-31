@@ -80,6 +80,54 @@ describe('resolveDashboardInput', () => {
     });
   });
 
+  it('names the Date fields and the measure a chart reads, by name or id (plan-views.md "Dates")', () => {
+    const LAUNCH: ItemTypeDef = {
+      ...BUG,
+      id: 'launch',
+      label: 'Launch',
+      fields: ['title', 'start', 'due', 'estimate', 'f-ship', 'f-pts'],
+      custom: [
+        { id: 'f-ship', label: 'Ship Date', kind: 'date' },
+        { id: 'f-pts', label: 'Story Points', kind: 'number' },
+      ],
+    };
+    const all = [...types, LAUNCH];
+    const r = resolveDashboardInput(
+      {
+        charts: [
+          { view: 'gantt', startField: 'start date', dueField: 'ship  date' },
+          { view: 'calendar', dueField: 'f-ship' },
+          { view: 'workload', measure: 'Story Points' },
+          { view: 'workload', measure: 'estimate' },
+          { view: 'workload', measure: 'Cards' },
+        ],
+      },
+      TABS,
+      all,
+    );
+    expect(r.ok && r.spec.charts).toEqual([
+      { view: 'gantt', settings: { dueField: 'f-ship' } },
+      { view: 'calendar', settings: { dueField: 'f-ship' } },
+      { view: 'workload', settings: { measure: 'f-pts' } },
+      { view: 'workload', settings: { measure: 'estimate' } },
+      { view: 'workload' },
+    ]);
+    const unknown = resolveDashboardInput(
+      { charts: [{ view: 'gantt', startField: 'Kickoff' }] },
+      TABS,
+      all,
+    );
+    expect(unknown).toMatchObject({
+      ok: false,
+      message: expect.stringContaining(
+        'No Date field "Kickoff". Fields it can read: Start Date, Ship Date.',
+      ),
+    });
+    expect(
+      resolveDashboardInput({ charts: [{ view: 'workload', measure: 'Hours' }] }, TABS, [BUG]),
+    ).toMatchObject({ ok: false, message: 'No Number field "Hours". The card types have none.' });
+  });
+
   it('shows every Board and Sheet tab for "every"', () => {
     const r = resolveDashboardInput({ tabs: 'every' }, TABS, types);
     expect(r.ok && r.spec.tabs?.map((t) => t.tabId)).toEqual(['t1', 't2']);

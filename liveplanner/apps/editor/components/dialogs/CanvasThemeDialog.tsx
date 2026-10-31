@@ -39,6 +39,7 @@ import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';
 import { easeNextStyleChange } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { LooksHome } from './LooksHome';
+import { ApplyToAllTabsRow } from '@liveworkspace/workbench/components/dialogs/ApplyToAllTabsRow';
 import { activeLookId, type LookSettings, type TabLook } from '@/lib/tab-looks';
 
 // 'looks' is the home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"); the others are its Fine-tune panels.
@@ -92,6 +93,9 @@ type CanvasThemeDialogProps = {
   // Looks: set the tab's theme, finish, font and pattern at once (lib/tab-looks.ts).
   // A named look's id, or the Mashup card's random look whole.
   onApplyLook: (look: string | TabLook) => void;
+  // Apply to All Tabs, at the foot of the home (docs/specs/011-theme/canvas-and-theme-dialog.md): offered to an Editor
+  // of the whole plan only, so undefined for anyone else.
+  allTabs?: { tabCount: number; applying: boolean; onApply: () => void };
   onClose: () => void;
 };
 
@@ -120,6 +124,7 @@ export function CanvasThemeDialog({
   onSetFinish,
   canvasBackground,
   onApplyLook: applyLook,
+  allTabs,
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
@@ -248,17 +253,24 @@ export function CanvasThemeDialog({
                 />
               ) : null}
               {tab === 'looks' ? (
-                <LooksHome
-                  settings={lookSettings}
-                  activeLook={activeLookId(lookSettings)}
-                  onPickLook={onApplyLook}
-                  themeId={themeId}
-                  finish={resolveFinish(finish, undefined)}
-                  font={font}
-                  defaultTextSize={defaultTextSize}
-                  pattern={backgroundPattern}
-                  onOpenPanel={go}
-                />
+                <>
+                  <LooksHome
+                    settings={lookSettings}
+                    activeLook={activeLookId(lookSettings)}
+                    onPickLook={onApplyLook}
+                    themeId={themeId}
+                    finish={resolveFinish(finish, undefined)}
+                    font={font}
+                    defaultTextSize={defaultTextSize}
+                    pattern={backgroundPattern}
+                    onOpenPanel={go}
+                  />
+                  {allTabs ? (
+                    <div className="mt-5">
+                      <ApplyToAllTabsRow {...allTabs} noun="plan" />
+                    </div>
+                  ) : null}
+                </>
               ) : tab === 'font' ? (
                 <TextTab
                   font={font}

@@ -17,6 +17,7 @@ import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { usePlan } from '@/components/plan/PlanContext';
 import { InfoNote, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 import { planViewSettingsModel, viewTypesNote } from '@/components/plan/views/plan-view-settings';
+import { ViewDateOptions, ViewMeasureOptions } from '@/components/plan/views/ViewFieldSettings';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
@@ -41,7 +42,7 @@ export function PlanViewMenuSection({
         icon={<PlanIcon size={16} />}
         {...sectionProps('plan-view-types')}
       >
-        <InfoNote>{viewTypesNote(m.needs)}</InfoNote>
+        <InfoNote>{viewTypesNote(m.needs, plan.types)}</InfoNote>
         <CardTypeOptions types={m.eligible} selected={m.selected} onChange={m.setTypes} />
       </MenuAccordionSection>
       {m.grouping ? (
@@ -59,6 +60,24 @@ export function PlanViewMenuSection({
             noNone
             onPick={m.setGrouping}
           />
+        </MenuAccordionSection>
+      ) : null}
+      {m.measures.length > 1 ? (
+        <MenuAccordionSection
+          title="Count By"
+          icon={<PlanIcon size={16} />}
+          {...sectionProps('plan-view-measure')}
+        >
+          <ViewMeasureOptions m={m} />
+        </MenuAccordionSection>
+      ) : null}
+      {m.dateRoles.length ? (
+        <MenuAccordionSection
+          title="Dates"
+          icon={<PlanTypeGlyph glyph="calendar" size={16} />}
+          {...sectionProps('plan-view-dates')}
+        >
+          <ViewDateOptions m={m} />
         </MenuAccordionSection>
       ) : null}
       {m.gantt ? (

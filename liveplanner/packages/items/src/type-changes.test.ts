@@ -125,7 +125,7 @@ describe('applyCardTypeChanges: add', () => {
       code: 'type_change_invalid',
     });
     expect(
-      refusal({ op: 'add', name: 'X', custom: [{ name: 'A', kind: 'person' }] }),
+      refusal({ op: 'add', name: 'X', custom: [{ name: 'A', kind: 'signature' }] }),
     ).toMatchObject({
       code: 'type_change_invalid',
     });

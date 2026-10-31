@@ -1,5 +1,5 @@
 // A card's comment threads (docs/specs/026-plan/items.md "Comments", blueprint item-store.md "REST"): list, start,
-// reply, edit and delete a comment, resolve, reopen, rename, add to another card and delete, under
+// reply, edit and delete a comment, react to one, resolve, reopen, rename, add to another card and delete, under
 // /api/projects/:id/threads and /api/projects/:id/items/:itemId/threads. `:id` is the plan the caller views the
 // thread through: their role there decides (a Participant or an Editor writes, a Viewer reads), and the thread must
 // be on a card of it the caller reaches. The write itself is the home plan's (plan-room/card-thread-store.ts),
@@ -7,6 +7,9 @@
 
 import {
   CARD_THREADS_MAX,
+  isThreadFieldId,
+  REACTION_BY_MAX,
+  isReactionId,
   isThreadId,
   newThreadId,
   readThreadTitle,
@@ -17,6 +20,14 @@ import {
   type CardThread,
   type ThreadChange,
 } from '@liveplanner/project';
+import {
+  commentsFieldsOf,
+  customFieldOf,
+  typeIn,
+  typesOf,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import {
   COMMENT_TEXT_MAX,
   type CardThreadWriteResponse,
@@ -172,6 +183,33 @@ async function list(ctx: PlanRouteContext, projectId: string): Promise<Response>
 
 // ---------- POST /items/:itemId/threads ----------------------------------------------------------------------
 
+// The Comments field a new thread starts in (items.md "Comments", item-types.md "Comments and Votes fields"): absent
+// is the built-in; else one of the card's type's Comments fields, or `field_invalid` naming the ones there are.
+function readThreadField(
+  body: Record<string, unknown>,
+  type: ItemTypeDef,
+): string | undefined | Response {
+  if (body.field === undefined) return undefined;
+  const fields = commentsFieldsOf(type);
+  if (isThreadFieldId(body.field) && fields.includes(body.field)) return body.field;
+  const names = fields.map((f) =>
+    f === 'comments' ? 'comments (Comments)' : `${f} (${customFieldOf(type, f)?.label ?? f})`,
+  );
+  console.info('[threads] refused', { error: 'field_invalid' });
+  return json(
+    {
+      error: 'field_invalid',
+      message: names.length
+        ? `field names a Comments field of the card's type ${type.label}: ${names.join(', ')}`
+        : `a ${type.label} card has no Comments field to start a thread in`,
+    },
+    { status: 400 },
+  );
+}
+
+const typeOfItem = (caller: ItemCaller, item: Item): ItemTypeDef =>
+  typeIn(typesOf(caller.doc?.itemTypes), item.type);
+
 export async function startOnCard(
   ctx: PlanRouteContext,
   projectId: string,
@@ -186,6 +224,8 @@ export async function startOnCard(
   if (title === null) return refusal('title_too_long');
   const item = await readItem(ctx.env, projectId, itemId);
   if (!item) return itemNotFound();
+  const field = readThreadField(body, typeOfItem(caller, item));
+  if (field instanceof Response) return field;
   if ((await threadCountOfItem(ctx.env, projectId, itemId)) >= CARD_THREADS_MAX)
     return refusal('threads_full');
   const comment = await newComment(ctx, caller.owner, body);
@@ -197,6 +237,7 @@ export async function startOnCard(
     card: { projectId, itemId, key: item.key },
     comment,
     title,
+    ...(field ? { field } : {}),
     now,
   });
   await insertThread(ctx.env, thread, defer(ctx));
@@ -277,6 +318,34 @@ async function removeComment(
   if (!out.ok) return refusal(out.error);
   console.info('[threads] comment.deleted', { editor: actor.editor, agent: actor.agent });
   return answer(r.caller, out.thread);
+}
+
+// POST .../threads/:threadId/comments/:commentId/reactions { emoji, on, key }: the caller's own reaction on one
+// comment (docs/specs/012-collaboration/comment-reactions.md), taking part like a reply. `key` is the caller's
+// public collab key, the id the editor marks its own reactions by; the name is the server's, from their profile.
+async function react(
+  ctx: PlanRouteContext,
+  r: Reached,
+  threadId: string,
+  commentId: string,
+): Promise<Response> {
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
+  const { emoji, on, key } = body;
+  if (!isReactionId(emoji)) return badRequest('unknown emoji');
+  if (typeof on !== 'boolean') return badRequest('missing on');
+  if (typeof key !== 'string' || !key || key.length > REACTION_BY_MAX)
+    return badRequest('missing key');
+  const actor = await actorOf(ctx, r.caller, false);
+  const name = (await getParticipant(ctx.env, r.caller.owner))?.name ?? 'Someone';
+  const out = await throughHome(ctx, r, threadId, {
+    kind: 'change',
+    change: { kind: 'react', commentId, emoji, by: key, name, on },
+    actor,
+  });
+  if (!out.ok) return refusal(out.error);
+  console.info('[threads] comment.reacted', { on, agent: actor.agent });
+  return answer(r.caller, out.thread, commentId);
 }
 
 async function setResolved(
@@ -407,5 +476,7 @@ export async function handleThreadRoutes(ctx: PlanRouteContext): Promise<Respons
     if (method === 'DELETE') return write((r) => removeComment(ctx, r, threadId, commentId));
     return methodNotAllowed();
   }
+  if (segments.length === 8 && segments[5] === 'comments' && segments[7] === 'reactions')
+    return post((r) => react(ctx, r, threadId, segments[6]!));
   return null;
 }

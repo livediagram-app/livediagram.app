@@ -131,6 +131,11 @@ articles, conjunctions and prepositions (a, an, the, and, or, of, to, in, on, fo
 from, as) stay lowercase unless they lead: "Empty the Box", "Reset to Theme", "Start at Exact
 Anchor", "A List".
 
+A label reads from the left, beside its icon, however long it is: every row, header and trigger is
+left-aligned. A menu keeps its width, so a long label ("Move to Selected for Development" on a
+board card's menu) wraps onto a second line that starts under the first, and the row's icon stays
+level with the first line.
+
 The same rule covers the close cousins of a menu item, the controls that name an action on an
 element or add one:
 

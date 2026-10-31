@@ -180,11 +180,17 @@ describe('deriveCanvasSelection', () => {
       height: 60,
       cells: [['', '']],
     });
-    // A lone table shows the pluses (the slimmed table ring, docs/specs/008-canvas/canvas-and-palette.md).
-    expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(true);
-    // A stack shows them as well: it is a container you chain from.
-    const stack = box('f', { shape: 'stack', width: 600, height: 400 });
-    expect(derive({ elements: [stack], selectedId: 'f' }).showPlus).toBe(true);
+    // Only shapes and concept graphics show them (docs/specs/008-canvas/canvas-and-palette.md "Quick add +
+    // connect"): a table, a stack, a component, a chart and text are placed, not chained.
+    expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(false);
+    for (const shape of ['stack', 'card', 'pie-chart', 'browser', 'icon'] as const) {
+      expect(derive({ elements: [box('f', { shape })], selectedId: 'f' }).showPlus).toBe(false);
+    }
+    const text: Element = { ...box('t'), type: 'text' } as unknown as Element;
+    expect(derive({ elements: [text], selectedId: 't' }).showPlus).toBe(false);
+    for (const shape of ['circle', 'speech-bubble', 'pyramid', 'timeline-rail'] as const) {
+      expect(derive({ elements: [box('f', { shape })], selectedId: 'f' }).showPlus).toBe(true);
+    }
     // A margin note is a note rather than a node to chain from.
     const marker: Element = {
       id: 'n',

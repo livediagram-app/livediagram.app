@@ -65,6 +65,9 @@ const editor = (over: Record<string, unknown> = {}) => {
     selfParticipant: { id: 'me' },
     sankeyFlowsOpenForId: null,
     setSankeyFlowsOpenForId,
+    // Menu steps open and close the element menu (there is no More button to ring).
+    setContextMenu: vi.fn(),
+    closeContextMenu: vi.fn(),
     ...over,
   };
 };
@@ -190,8 +193,11 @@ describe('ElementTourHost tour', () => {
       seen.push(stage.engine.step!.id);
       await act(async () => stage.engine!.next());
     }
-    // The starter budget sends everything on (no leftover), and no More button is on screen here.
-    expect(seen).toEqual(['bands', 'flows']);
+    // The starter budget sends everything on (no leftover); the menu step opens the element menu.
+    expect(seen).toEqual(['bands', 'style', 'flows']);
+    expect(ctx.current.setContextMenu).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: 'element', elementId: 'sk1' }),
+    );
     expect(stage.engine?.step?.id).toBe('flows-nodes');
     expect(setSankeyFlowsOpenForId).toHaveBeenCalledWith('sk1');
   });

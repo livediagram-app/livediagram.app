@@ -37,6 +37,15 @@ describe('item readers', () => {
     expect(isItemPerson(null)).toBe(false);
   });
 
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields": a Votes field of the type's own reads as Votes.
+  it('reads the votes in a named Votes field', () => {
+    const a = item({ votes: { p: 1 }, 'f-pri': { p: 3, q: 2 } });
+    expect(itemVotes(a, 'f-pri')).toEqual({ p: 3, q: 2 });
+    expect(itemVoteTotal(a, 'f-pri')).toBe(5);
+    expect(itemVoteTotal(a)).toBe(1);
+    expect(itemVoteTotal(a, 'f-none')).toBe(0);
+  });
+
   it('catalogues types with a fallback', () => {
     expect(ITEM_TYPE_IDS).toEqual(['project', 'task', 'note', 'idea', 'action']);
     expect(FALLBACK_ITEM_TYPE.label).toBe('Item');

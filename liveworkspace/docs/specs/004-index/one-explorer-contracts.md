@@ -379,7 +379,10 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
   when no board shows it; `id` the card's id, given when the row's `elementId` is not the card's: a thread's). A
   thread on several of an item's cards is pushed once, on the first; a thread shared between items (a card thread on
   cards in two plans) is pushed by each, and the Inbox lists it once (below). An app whose cards name people by a hash matches it to a person id before pushing
-  (`@liveworkspace/index-app` `cardsCollabPush`); a card whose assignee it cannot name is left out.
+  (`@liveworkspace/index-app` `cardsCollabPush`); a card whose assignee it cannot name is left out. A card may
+  name several people to tell (liveplanner's notifying Person fields): one action a person, under the card's id as
+  `actionId` for its Assignee and `{card id}~{field id}` for another field (a person two fields name is told once,
+  by the first), so a card that names one person reads as before.
 - `PUT /app/items/:id/forms/:tabId`: `{form: {heading, boardTabId, responses, latestAt, code?} | null}`: a form's
   heading, the tab its responses land on, how many it has taken and when the last came; `null` takes it off the
   Inbox (deleted, or the tab gone). Pushed by the app's server when a response lands, the form is published,

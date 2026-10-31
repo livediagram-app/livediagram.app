@@ -33,6 +33,15 @@ describe('groups', () => {
     expect(cardFields(draft)).toEqual(['title', 'votes']);
     expect(detailFields(draft)).toEqual(['status', 'assignee', 'priority']);
   });
+
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields": a Votes field of its own lands On the Card.
+  it('puts a Votes field of the type’s own on the card, never in a tab', () => {
+    const pri = { id: 'f-pri', label: 'Priority Vote', kind: 'votes' as const };
+    const added = addField(draft, 'f-pri', 't-x', pri);
+    expect(added.tabs).toEqual(draft.tabs);
+    expect(cardFields(added)).toEqual(['title', 'votes', 'f-pri']);
+    expect(detailFields(added)).not.toContain('f-pri');
+  });
 });
 
 describe('field edits', () => {

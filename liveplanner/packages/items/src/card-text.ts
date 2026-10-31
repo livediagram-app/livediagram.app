@@ -5,6 +5,7 @@
 import { linkText } from './card-links';
 import { CURRENCY_DEFAULT, ratingScaleOf, type CustomFieldDef } from './item-types';
 import type { Item, ItemFieldValue } from './item';
+import { itemColourValue } from './item-colour';
 
 const FORMATS = {
   // A board card, where room is tight: "30 Oct".
@@ -68,9 +69,39 @@ export function customFieldText(
       return multiChoiceText(value);
     case 'rating':
       return ratingText(value, ratingScaleOf(field));
+    // The built-in fields' kinds read as those fields do (docs/specs/026-plan/item-types.md "Custom field kinds").
+    case 'person':
+      return personName(value);
+    case 'labels':
+      return multiChoiceText(value);
+    case 'colour':
+      return itemColourValue(value) ?? null;
+    case 'checklist': {
+      const p = checklistRowsProgress(value);
+      return p ? `${p.done}/${p.total}` : null;
+    }
+    // A picture is drawn, never written: the card face shows its thumbnail (docs/specs/026-plan/item-types.md
+    // "Image fields").
+    case 'image':
+      return null;
+    // A Comments field's threads are not a value; a Votes field reads as its total (docs/specs/026-plan/item-types.md
+    // "Comments and Votes fields").
+    case 'comments':
+      return null;
+    case 'votes': {
+      const total = voteTotalOf(value);
+      return total > 0 ? String(total) : null;
+    }
     default:
       return typeof value === 'string' ? value.split('\n')[0]! : null;
   }
+}
+
+// A person value's name (the Assignee's `{ id, name, color }`), null for anything else or a blank name.
+export function personName(value: ItemFieldValue | undefined): string | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const name = (value as { name?: unknown }).name;
+  return typeof name === 'string' && name.trim() ? name.trim() : null;
 }
 
 // A Multiple Choice's picks as one line ("Vegan, Gluten free"); null with none.
@@ -122,14 +153,29 @@ export function linkHost(url: string): string {
   }
 }
 
-// A card's checklist as done of total, null without one.
+// A card's checklist as done of total, null without one: the built-in Checklist, or the Checklist field `field`.
 export function checklistProgress(
   item: Pick<Item, 'fields'>,
+  field = 'checklist',
 ): { done: number; total: number } | null {
-  const rows = item.fields['checklist'];
+  return checklistRowsProgress(item.fields[field]);
+}
+
+// Checklist rows as done of total, null for none (or a value that is not a list).
+export function checklistRowsProgress(
+  rows: ItemFieldValue | undefined,
+): { done: number; total: number } | null {
   if (!Array.isArray(rows) || rows.length === 0) return null;
   const done = rows.filter(
     (r) => !!r && typeof r === 'object' && (r as { done?: unknown }).done === true,
   ).length;
   return { done, total: rows.length };
+}
+
+// A Votes value's total dots (`{ voter: dots }`, as the built-in Votes holds them); 0 for anything else.
+export function voteTotalOf(value: ItemFieldValue | undefined): number {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
+  let total = 0;
+  for (const n of Object.values(value)) if (typeof n === 'number' && n > 0) total += n;
+  return total;
 }

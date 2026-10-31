@@ -5,6 +5,7 @@
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
 import { isFixedSizeElement, isChipShape, type Rect } from '@livedocuments/document';
+import { takesQuickConnect } from './quick-connect-kinds';
 import {
   elementBounds,
   isBoxed,
@@ -148,17 +149,9 @@ export function deriveCanvasSelection(input: {
     // Quick-connect works on a single element. A marquee multi-select stays
     // suppressed: it's a transient selection, not a unit you chain from.
     multiSelectedIds.size === 0 &&
-    // A margin note is a note, not a node to chain from (docs/specs/007-editor/article-pages.md). Tables DO show the pluses, with a slimmed table ring (Arrow
-    // + Add Row / Add Column, docs/specs/008-canvas/canvas-and-palette.md).
-    //
-    // Frames used to be excluded too, on the grounds that a backdrop's
-    // pluses would float far out around the whole section. Lanes are the
-    // same shape of thing and always showed theirs, which made the rule look
-    // arbitrary rather than considered: both are containers you chain from
-    // exactly as often as you chain from a box.
-    selected.type !== 'article-note' &&
-    // Nor is a badge or step number: it is a mark on a node (docs/specs/009-elements/badge.md).
-    !(selected.type === 'shape' && isChipShape(selected.shape)) &&
+    // Only a shape or a concept graphic is chained from (takesQuickConnect): not a margin note, a badge, a
+    // table, text or any other kind placed rather than chained.
+    takesQuickConnect(selected) &&
     editingId !== selected.id &&
     !isPaintMode &&
     !selectedLocked &&

@@ -10,8 +10,8 @@
 // What is kept is the minimum that reproduces the state, not a log:
 //   - ticks: each checklist row's latest state, by index and text;
 //   - comments: each one posted (as the room stamped it, see
-//     `stampCommentAuthor`), each one removed, and the thread's latest
-//     resolve.
+//     `stampCommentAuthor`), each one removed, the thread's latest
+//     resolve, and each person's latest reaction per comment and emoji.
 //   - a Plan board's set-up (phase 6): the latest value of each top-level
 //     field and each column field, each column added or removed, and the
 //     latest column order.
@@ -28,6 +28,10 @@
 import type { Tab } from './index';
 import type { Comment } from './comments';
 import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
+import {
+  isReactionChange,
+  type CommentReactionId,
+} from '@liveworkspace/model-core/comment-reactions';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 
 export type ElementLedger = {
@@ -38,6 +42,9 @@ export type ElementLedger = {
     adds: Record<string, { comment: Comment; seq: number }>;
     removes: Record<string, number>;
     resolved?: { value: boolean; seq: number };
+    // Reactions, keyed `${commentId}\u0000${emoji}\u0000${by}`: each person's latest on or off
+    // (docs/specs/012-collaboration/comment-reactions.md).
+    reacts?: Record<string, { on: boolean; name: string; seq: number }>;
   };
 };
 
@@ -102,9 +109,13 @@ function recordElement(
     }
     case 'comment-add':
     case 'comment-remove':
-    case 'comment-resolve': {
+    case 'comment-resolve':
+    case 'comment-react': {
       const comments = prev?.comments ?? { adds: {}, removes: {} };
-      const events = Object.keys(comments.adds).length + Object.keys(comments.removes).length;
+      const events =
+        Object.keys(comments.adds).length +
+        Object.keys(comments.removes).length +
+        Object.keys(comments.reacts ?? {}).length;
       if (d.kind === 'comment-add') {
         if (!isComment(d.comment)) return null;
         const id = d.comment.id;
@@ -125,6 +136,20 @@ function recordElement(
           comments: { ...comments, adds, removes: { ...comments.removes, [d.commentId]: seq } },
         };
       }
+      if (d.kind === 'comment-react') {
+        const commentId = d.commentId;
+        if (!isStr(commentId, ID_MAX) || !isReactionChange(d)) return null;
+        const key = reactKey(commentId, d.emoji, d.by);
+        const reacts = comments.reacts ?? {};
+        if (!(key in reacts) && events >= COMMENT_EVENTS_MAX) return null;
+        return {
+          ...(prev ?? {}),
+          comments: {
+            ...comments,
+            reacts: { ...reacts, [key]: { on: d.on, name: d.name, seq } },
+          },
+        };
+      }
       if (typeof d.resolved !== 'boolean') return null;
       return {
         ...(prev ?? {}),
@@ -134,6 +159,11 @@ function recordElement(
     default:
       return null;
   }
+}
+
+// The ledger key of one person's reaction on one comment.
+function reactKey(commentId: string, emoji: string, by: string): string {
+  return `${commentId}\u0000${emoji}\u0000${by}`;
 }
 
 // Assemble a tab's ledger from its stored entries (keys under ledgerPrefix).
@@ -202,6 +232,14 @@ function applyCommentEvents<E extends Tab['elements'][number]>(
     events.push({
       seq: c.resolved.seq,
       delta: { kind: 'comment-resolve', resolved: c.resolved.value },
+    });
+  }
+  for (const [key, r] of Object.entries(c.reacts ?? {})) {
+    if (r.seq <= since) continue;
+    const [commentId, emoji, by] = key.split('\u0000') as [string, CommentReactionId, string];
+    events.push({
+      seq: r.seq,
+      delta: { kind: 'comment-react', commentId, emoji, by, name: r.name, on: r.on },
     });
   }
   events.sort((a, b) => a.seq - b.seq);

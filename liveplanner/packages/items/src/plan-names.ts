@@ -3,7 +3,7 @@
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
-import { isEmailAddress, ratingScaleOf, type ItemTypeDef } from './item-types';
+import { builtInFieldOfKind, isEmailAddress, ratingScaleOf, type ItemTypeDef } from './item-types';
 import { knownFieldKind, PRIORITIES, validDate, validateFields } from './fields';
 import {
   ITEM_CHECKLIST_MAX,
@@ -208,6 +208,31 @@ export function resolveFields(
       continue;
     }
     const field = type.custom!.find((f) => f.id === key)!;
+    // The built-in fields' kinds take what those fields take (docs/specs/026-plan/item-types.md "Custom field kinds"):
+    // a person by name, labels by commas, a colour as #rrggbb, checklist rows.
+    // Threads and votes have writes of their own (docs/specs/026-plan/item-types.md "Comments and Votes fields").
+    if (field.kind === 'comments')
+      return refuse(
+        'value_invalid',
+        `${field.label} is a Comments field: start a thread in it with change_threads.`,
+      );
+    if (field.kind === 'votes')
+      return refuse(
+        'value_invalid',
+        `${field.label} is a Votes field: votes come from a session vote.`,
+      );
+    const asBuiltIn = builtInFieldOfKind(field.kind);
+    if (asBuiltIn) {
+      const v = builtInValue(asBuiltIn, value, naming);
+      if (!v.ok) return v;
+      const checked = checkedBuiltIn(asBuiltIn, v.value, field.label);
+      if (!checked.ok) return checked;
+      out[key] = checked.value;
+      continue;
+    }
+    // A picture is uploaded in the card panel, never named (docs/specs/026-plan/item-types.md "Image fields").
+    if (field.kind === 'image')
+      return refuse('value_invalid', `${field.label} is an image: add one in the card panel.`);
     if (field.kind === 'choice' && typeof value === 'string') {
       const option = choiceOption(field.options ?? [], value);
       if (!option)
@@ -316,7 +341,11 @@ function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{
 // agent's change is refused here, naming the field and what it takes, rather than as a bare `field_value_invalid`
 // from the api (the production Error·Api·Http400.ItemChange.FieldValueInvalid). A number given as text ("5") is
 // read as the number.
-function checkedBuiltIn(key: string, value: unknown): Named<{ value: unknown }> {
+function checkedBuiltIn(
+  key: string,
+  value: unknown,
+  name = key.charAt(0).toUpperCase() + key.slice(1),
+): Named<{ value: unknown }> {
   const kind = knownFieldKind(key);
   if (!kind) return { ok: true, value };
   const given =
@@ -328,7 +357,7 @@ function checkedBuiltIn(key: string, value: unknown): Named<{ value: unknown }> 
       : value;
   const result = validateFields({ [key]: given }, 'patch');
   if (result.ok) return { ok: true, value: result.fields[key] };
-  const label = key.charAt(0).toUpperCase() + key.slice(1);
+  const label = name;
   const shown = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
   const takes: Partial<Record<string, string>> = {
     number: `a number from 0 to ${ITEM_NUMBER_MAX}`,

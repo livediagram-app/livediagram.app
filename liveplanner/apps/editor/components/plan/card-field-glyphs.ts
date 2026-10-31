@@ -15,4 +15,5 @@ export const FIELD_GLYPHS: Record<CardField, string> = {
   comments: 'chat',
   description: 'note',
   parent: 'project',
+  age: 'hourglass',
 };

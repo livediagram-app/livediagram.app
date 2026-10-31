@@ -691,7 +691,8 @@ describe('the bound', () => {
     expect(after.events[0]!.occurredAt).toBeLessThan(9000);
     console.info(`[timeline] a page past 1,000 removed events in ${ms.toFixed(1)} ms`);
     expect(ms).toBeLessThan(250);
-  });
+    // Seeding 110,000 rows outruns the 5s default on a busy runner; the budgets above time only the reads.
+  }, 30_000);
 
   it('writes a full batch of each new source in a few statements, within budget', async () => {
     tick();

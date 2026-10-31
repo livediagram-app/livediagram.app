@@ -19,6 +19,12 @@ const EditorContextMenu = dynamic(
   { ssr: false },
 );
 
+// A Participant's or Viewer's menu, loaded on its first right-click too.
+const ReadOnlyElementMenuHost = dynamic(
+  () => import('./ReadOnlyElementMenuHost').then((m) => m.ReadOnlyElementMenuHost),
+  { ssr: false },
+);
+
 // The element / multi-selection context menu's wiring, lifted out of
 // EditorView (which carried ~100 lines of prop plumbing for it). Reads
 // everything straight from EditorContext — the same host pattern as
@@ -171,6 +177,12 @@ export function EditorContextMenuHost() {
     openNote,
     openComments,
     openAssignAction,
+    beginEdit,
+    duplicateSelected,
+    stackSelectedFront,
+    stackSelectedBack,
+    toggleLockSelected,
+    deleteSelected,
   } = useEditorContext();
   // The selection the menu acts on, read from the store while a menu is open: a closed menu never
   // renders for a selection change (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -181,10 +193,11 @@ export function EditorContextMenuHost() {
 
   const { swatches } = useColourPalette();
 
-  // A view-only session never gets an element context menu at all, so
-  // nothing below needs a second `isReadOnly` guard — everything past
+  // A Participant or a Viewer gets its own short menu, holding only what its role may do
+  // (ReadOnlyElementMenuHost), so nothing below needs a second `isReadOnly` guard: everything past
   // this line is running for an editor by construction.
-  if (!contextMenu || contextMenu.mode === 'canvas' || isReadOnly) return null;
+  if (isReadOnly) return contextMenu?.mode === 'element' ? <ReadOnlyElementMenuHost /> : null;
+  if (!contextMenu || contextMenu.mode === 'canvas') return null;
 
   // Selection-context-menu member resolution (right-click a multi-selection):
   // the marquee set when one is active, else the clicked element.
@@ -389,6 +402,14 @@ export function EditorContextMenuHost() {
       onOpenNote={openNote}
       onOpenComments={openComments}
       onAssignAction={openAssignAction}
+      elementActions={{
+        onEditText: beginEdit,
+        onDuplicate: duplicateSelected,
+        onStackFront: stackSelectedFront,
+        onStackBack: stackSelectedBack,
+        onToggleLock: toggleLockSelected,
+        onDelete: deleteSelected,
+      }}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
         .filter((e): e is NonNullable<typeof e> => e != null)}

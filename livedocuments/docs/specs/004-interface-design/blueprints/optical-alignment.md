@@ -156,8 +156,8 @@ rounded-full leading-none [&>svg]:block`, `width` / `height` from `size` when gi
 
 ## Controls that keep their height
 
-- The tab pill's button pins `h-7`; the name sits in `text-optical-centre`; the active tab with its
-  ellipsis menu pads `pl-2.5 pr-1`, so the ellipsis button's own padding balances the dot's side.
+- A tab's name button pins `h-10` (`TAB_NAME_BUTTON_CLASS`); the name sits in `text-optical-line`; the open tab
+  with its ellipsis menu pads `pl-3.5 pr-1`, so the ellipsis button's own padding balances the name's side.
 - The share-state chip (`SharedBadge`) and the timeline's day badges pin `height={19}`, their probed
   heights.
 - Everything else keeps its padding-given height through `text-optical-line`.
@@ -174,7 +174,7 @@ export const capBandBaselineY = (centreY: number, fontPx: number) =>
   `y={capBandBaselineY(cy, fontPx)}`: process step numbers (`ProcessFace.tsx`, and
   `svg-render-web.ts` through `line(..., { onCapBand: true })`), the callout badge's "i" and the site
   header's monogram (export; the canvas draws them as `GlyphDisc`), the progress percentage
-  (`svg-render-data.ts`, `PROGRESS_LABEL_PX = 14`; its canvas label is `text-optical-centre`), and badge
+  (`svg-render-data.ts`, at `PROGRESS_LABEL_PX` or the ring's `progressRingLabelPx`; its canvas label is `text-optical-centre`), and badge
   stickers (`sticker-markup.ts`: the word on the pill's centre line, `x` moved half the tracking right,
   because SVG centres a word with its trailing letter-space).
 - Emoji glyphs (`icon-glyph.tsx`, `markup.ts` text prims, emoji stickers) keep `central`:

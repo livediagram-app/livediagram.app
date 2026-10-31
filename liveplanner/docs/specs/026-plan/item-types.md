@@ -16,6 +16,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                                    | kind, category, template    |
 | **type catalogue**  | A project's item types, in the order the interface lists them                                                                       | schema, config, type list   |
 | **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                     | property, attribute, column |
+| **field kind**      | What a field holds (Text, Date, Person, Image...): the one list Add Field offers, built-in and custom fields alike                  | field type, data type       |
+| **built-in field**  | A field liveplanner knows by its own id (`assignee`, `due`, `labels`...), which the features using that role read; one per type     | ready-made field, preset    |
 | **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards           | (no other name)             |
 | **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a project made before card types started empty reads as | built-in types              |
 | **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the ten more a template uses                  | preset type, built-in type  |
@@ -138,13 +140,23 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - the api refuses an item moved or edited into such a status (`status_excluded`, field `status`), so an agent or
     the CLI is told "the item's card type does not use that status"; making one in it is allowed. Putting a change
     back is never refused: a card restored from the Trash to the status it was trashed from, and an undo or redo
-    (sent with `undo: true`, which the editor's undo and redo always set).
+    (sent with `undo: true`, which the editor's undo and redo always set). Nor is moving a card to the Trash: the
+    Trash is no type's status, so a type's list never refuses it.
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
   `https://` URL), Email, Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
   options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type,
-  below) and Calculated (a value worked out from the plan, below). An option holds up to 100 characters, so a form question's full answers (a Choice field's options are a
+  below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
+  **Person** (one person, as the Assignee holds one), **Labels** (up to 20 short labels, as Labels holds them),
+  **Colour** (any `#rrggbb` colour, as Colour holds one), **Checklist** (up to 50 to-do rows, each its text and
+  whether it is done, as Checklist holds them), **Comments** (its own threads, [below](#comments-and-votes-fields)),
+  **Votes** (its own votes, below) and **Image** (one picture, [below](#image-fields)). Each reads and
+  is edited exactly as the built-in field of its kind (the same control in the card panel, the same chip on the
+  card): a type may hold the built-in and any number of fields of its kind, each with its own name and value. The
+  built-in fields keep their ids (`assignee`, `labels`, `color`, `checklist`, `comments`, `votes`), so every card,
+  board, view and agent reads them as before. A feature that uses a field by its **role** reads the built-in
+  field until told to read another of its kind ([Fields by role](#fields-by-role)). An option holds up to 100 characters, so a form question's full answers (a Choice field's options are a
   question's) fit; a card shows a long one shortened, and its details whole. Multiple Choice and Rating came with [Forms](../030-forms/forms.md#new-card-field-kinds), which describes
   how they read and are edited.
   - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
@@ -153,16 +165,76 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
   - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
     site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
+  - **Long Text** is rich text, edited as the Description is ([Working on a board](plan-board.md#working-on-a-board)):
+    bold, italic, underline, strikethrough, size, colour, headings, links and lists, from the same toolbar and
+    shortcuts. Its value stays plain text (search, the card face, CSV, forms and agents read it), and its formatting
+    is kept beside it as `<field id>Rich` (`f-steps-to-reproduce` → `f-steps-to-reproduceRich`), runs of text with
+    their marks, as `descriptionRich` is the Description's. A value with no formatting (written before Long Text was
+    rich, by a form, a sheet or an agent's plain text) reads as its plain text. Formatting whose text no longer
+    matches the value (the value was rewritten as plain text since) is ignored, so the field never shows an older
+    text. Emptying the field clears both.
   - **Email** is one email address (up to 254 characters, something@domain), kept as typed less surrounding spaces.
     The panel shows it as a mailto link; the card shows the address. A value that is not an address is refused, as
     a Link that is not `https://` is.
     Every value
-    is a plain string, number or true/false, which the
-    item store keeps for any field. People are assigned with the built-in Assignee field, so there is no custom
-    person kind. Their values are ordinary entries in the item's `fields`, under the custom
+    is a plain string, number or true/false, or a list of them, which the item store keeps for any field; a Person
+    is the Assignee's `{ id, name, color }` and a Checklist the Checklist's rows (`{ text, done }`), which the store
+    keeps under any field too. Their values are ordinary entries in the item's `fields`, under the custom
     field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
-- **Required fields**: any custom field but a Checkbox (unticked reads as empty) or a [Calculated](#calculated-fields) field (the plan
-  works it out) can be marked **Required**. A
+  - <a id="comments-and-votes-fields"></a>**Comments and Votes fields.** A type may hold the built-in Comments
+    and Votes and any number of its own (a **Design Review** and a **QA Notes**, a **Priority Vote** beside the
+    Votes).
+    - **A Comments field holds its own threads.** Each thread belongs to one Comments field: its `field`, the
+      field's id, set when the thread is started and never changed; a thread without one (every thread from before
+      this) belongs to the built-in **Comments**. The card panel draws each Comments field as it draws Comments
+      ([Items](items.md#where-it-shows)), under the field's name, listing only its threads, its **New Thread**
+      starting one in it; each field's card chip counts its own open threads. A thread whose field the card's
+      type does not offer (a thread added to a card of another type, a field taken off) shows under the type's
+      first Comments field, the built-in when it has it, so no thread is ever hidden; a type with no Comments field
+      shows none, as before. The Inbox, mentions and every thread rule are unchanged.
+    - **A Votes field holds its own votes**, as the built-in holds them (`{ voter: dots }` under the field's id),
+      drawn as the built-in's ▲ count on the card, its chip named for the field (like the built-in, never in the
+      panel). Votes are still cast only through a session vote ([Session tools](../012-collaboration/session-tools.md#voting-on-plan-cards)): when
+      the tab's card types offer more than one Votes field, the Vote set-up's **Count In** picks which one the
+      tally lands in (the built-in Votes first, the default). Top Voted and sorting by votes read the built-in.
+      A change never sets a Votes field; a card made again (an undo of a delete, an offline plan's sync) carries
+      its votes across, as it carries the built-in's.
+    - Agents: `list_threads` names each thread's field, and `change_threads`' `start` takes a `field` by name
+      ([Plan agents](plan-agents.md#comment-threads)); `list_items` lists a card's votes per Votes field.
+  - **A Person field** offers the plan's people, as the Assignee does, and draws its person's avatar disc and name.
+    Whether it **notifies** its person is its own switch ([Notifies](#notifies)).
+  - **A Labels field** reads and is edited as Labels (its chips, coloured by their names), offering the labels the
+    plan's cards carry; **a Colour field** as Colour (a swatch and its name, the one colour picker); **a Checklist
+    field** as Checklist (its rows, ticked off, and "2/5" on the card).
+- **Fields by role** <a id="fields-by-role"></a>: a feature that reads a field for what it means, not by its name,
+  reads the built-in field unless its own settings pick another field of the same kind. Nothing a plan already
+  shows changes until someone picks.
+  - **Dates**: a Gantt chart's bars run from its **Start** field to its **Due** field, a Due Calendar places
+    cards by its **Due** field and a Start Calendar by its **Start** field. Each picks any Date field of the card
+    types it shows, built-in or custom, in its Chart Settings ([Plan views](plan-views.md#dates)).
+  - **Person**: a board's Swimlanes and Cards by Field group by the Assignee or by any custom Person field
+    ([Swimlanes by a field](plan-board.md#swimlanes-by-a-field)); notifying is the Person field's own switch
+    ([Notifies](#notifies)).
+  - **Estimate**: Cards by Field counts cards, or adds up the Estimate or any Number field
+    ([Cards by Field](plan-views.md#cards-by-field)).
+  - **Sort**: Sort Cards already lists every built-in and custom field it can order by; nothing changes there.
+  - **Card colour**: a type's cards take their colour (the stripe, the Gantt bar, a linked card's dot) from its
+    **Colour** field, or from a custom Colour field picked as its **Card Colour** on the type's Display tab,
+    so a card is the same colour on every board, chart and export. Stored as `colourField` on the type (the
+    custom field's id); absent is Colour. A picked field the type no longer has reads as Colour again.
+    Telemetry: `Plan` · `Changed` · `CardColourField`.
+- **Notifies** <a id="notifies"></a>: every Person field, the Assignee included, has a **Notifies** switch in its
+  settings in the type editor (the Assignee's row menu, a custom Person field's form), with the line "Tell the
+  person when a card is theirs: the Inbox, emails and Only Mine." The Assignee notifies unless switched off
+  (`assigneeNotifies: false` on the type); a custom Person field does not unless switched on (`notifies: true` on
+  the field), so nothing a plan does today changes. A card is **someone's** when a notifying Person field holds
+  them, and is then theirs everywhere the Assignee made it so: the Inbox's **Assigned to You** (one row a card,
+  however many of its fields name them), the assignment event on their timeline and any email it sends, and the
+  board's **Only Mine** ([Plan board](plan-board.md)). A custom person (an `n-` id) never notifies, as before.
+  Telemetry: `Plan` · `Changed` · `FieldNotifies`.
+- **Required fields**: any custom field but a Checkbox (unticked reads as empty), a [Calculated](#calculated-fields) field (the plan
+  works it out), an [Image](#image-fields) field (a picture is added once the card exists) or a
+  [Comments or Votes](#comments-and-votes-fields) field (threads and votes are not typed in) can be marked **Required**. A
   required field must have a value: empty is no value, an empty or all-space text and an empty Multiple Choice
   included. Stored as `required: true` on the field; absent is optional, so every field saved before reads as
   optional. The rule holds wherever a card is made or changed, as one shared check (`missingRequiredFields`):
@@ -183,7 +255,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     refused. A type change is never refused for it, nor a card restored, synced, copied or put back by an undo (the
     api's bulk writes that carry a card's number, votes or thread, and every write sent with `undo: true`).
   - **In the type editor** a custom field's form (and Add Field's Shape step) has a **Required** switch (as a form
-    question's), absent for a Checkbox or Calculated field; turning a field into either is not possible, so it never needs clearing. A required field's
+    question's), absent for a Checkbox, Calculated or Image field; turning a field into any of them is not possible, so it never needs clearing. A required field's
     row carries the same red asterisk after its name.
   - **Agents** see it: `list_items` lists `required: true` on each required custom field, `change_card_types`
     sets it (`required` on `custom`, `addCustom` and `editCustom`), and `change_items` refuses an `add` missing one,
@@ -284,6 +356,39 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - A field's kind never changes, so a Calculated field stays one; its calculation can be changed in its form (or
     `editCustom`'s `calculation`), and every card's value follows at once.
 
+- <a id="image-fields"></a>**Image fields**: a custom field of kind **Image** holds one picture, uploaded from the
+  card panel into liveworkspace's media service (`liveworkspace/docs/specs/006-media/media.md`), where every app keeps
+  the images people upload. Its value is the image's id there (a string); the bytes never sit in the plan.
+  - **The control** (the card panel): with no picture, a dashed drop zone the width of its row, an image glyph and
+    **Add an Image** ("PNG, JPEG, WebP or GIF, up to 10 MB" under it); pressing it (or Enter or Space) opens the
+    file picker, and a file dropped on it uploads too. While it uploads it reads **Uploading…** with a spinner and
+    takes no other file. With a picture, the picture itself, fitted to the row's width and at most 12 rem (192 px)
+    tall on a soft grey ground, and under it **Replace** and **Remove** (each an icon and its word); its accessible
+    name is "{Field}: image". A picture that cannot be read (deleted at the service, or not shown to this person)
+    draws a quiet broken-image tile saying "This image can't be shown", with Replace and Remove still there.
+  - **What it refuses**, inline under the control, before anything is sent: a file that is not PNG, JPEG, WebP or
+    GIF ("Use a PNG, JPEG, WebP or GIF image."), one over 10 MB ("That image is over 10 MB."), an empty file; and
+    from the service, a full gallery ("Your image gallery is full. Delete some images and try again."). A server
+    without the media service answers 503: the control then says "Image uploads aren't available here." and
+    offers no upload.
+  - **Who may change it**: an Editor and a Participant (who edit cards) add, replace and remove a picture; a Viewer
+    sees the picture alone. Removing clears the field (one undo step, as any field); the image stays in its
+    uploader's gallery.
+  - **On the card face**: where the type's Display places it, a small thumbnail (20 px tall, rounded) before the
+    field's name, named "{Field}: image" for assistive technology; with no value it is not drawn. Thumbnails load
+    as cards scroll into view, each picture fetched once and shared by every card and panel showing it.
+  - **Reading the bytes** (the api): `GET /api/images/{id}?p={planId}` answers the picture to its uploader, and to
+    anyone who may read plan `{planId}` (its owner, its team, and every share role: Editor, Participant and Viewer)
+    when that plan **serves** it: one of its cards holds the id and the plan holds a **grant** for it. A grant is
+    recorded when the picture is uploaded for that plan (`POST /api/images?p={planId}`, by someone who may edit its
+    cards), so an id pasted into another plan serves nothing there. Anything else answers 404.
+  - **This Browser plans** upload too (as the person, their guest or account), and show their pictures to them.
+    **Copies** carry the id; a copy shows the picture to its uploader, and to the copy's share visitors once
+    someone who may edit it uploads it there again.
+  - **Where it is left out**: a form can't ask it, Import CSV skips its column and Export CSV leaves it out, and a
+    board can't sort or lay swimlanes by it. **Agents** read it (`list_items` lists the field with
+    `kind: "image"`, and a card's value as the image id) and may clear it, but never set one: `change_items`
+    refuses a value for it ("Photo is an image: add one in the card panel").
 - **Tabs**: a type has up to **6 tabs**, each with a name of 1 to 24 characters, unique in the type ignoring
   case. A field sits in at most one tab. Title is never in a tab: it heads the panel. With one tab the panel shows
   its fields without a tab bar.
@@ -341,8 +446,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   its own fields (a type without a default of its own starts from every field a size draws, less the ones it lacks),
   and a field taken off the type leaves the card, and its Display preview, at once.
 - Each size draws its fields in **slots**, each holding fields in order:
-  - **Minimal**: **Before the Title** and **After the Title**, on its one line; it can draw Number, Priority, Due Date
-    and Assignee. A default type's Minimal card shows none of them by default; a type of the person's own starts
+  - **Minimal**: **Before the Title** and **After the Title**, on its one line; it can draw Number, Priority, Due Date,
+    Age and Assignee. A default type's Minimal card shows none of them by default; a type of the person's own starts
     with its Number Before the Title and its Assignee After the Title (when it has one).
   - **Detailed**: **Header** and **Header End** (one row above the title, at its start and its end), **Under the
     Title** (its own lines), **Footer** (one row at the foot) and **Bottom Right** (the footer's far end); it can
@@ -366,6 +471,16 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   Minimal), the rest in the Footer. A built-in
   type's defaults are read from code by its id, so a project that stored its catalogue before Display
   existed gets them too.
+
+- **Age** is in no default: a type shows it only once someone places it. Every type offers it (every card sits in
+  a column). It reads how long the card has sat in its current status, in whole days ("4d"; "0d" on the day it
+  arrived), counted in local calendar days from the moment it entered that status (`statusSince`,
+  [Fields](items.md#fields)), so it moves on at local midnight with no reload, as Due Soon does, from one shared
+  day tick (never a timer per card). It is quiet under a week; from **7 days** it turns amber and semibold, and from
+  **14 days** (Stale Cards' threshold, [Plan views](plan-views.md)) red and bold. Its spoken label says
+  "In {status} for 4 days" (for a screen reader; the hourglass glyph marks it for the eye). A card in a done column never shows it, and neither does a card with no status. Exports,
+  thumbnails and api or MCP images draw it as the board does (a quiet "4d" pill, amber or red past the
+  thresholds); a lone Plan card element, which has no board to say which columns are done, leaves it out.
 
 ## Editing a type
 
@@ -416,7 +531,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Fields and Tabs**: one list laid out as the card's panel shows the fields, in groups. On desktop (768 px and
     up) it is two columns as the card's panel: On the Card, then the tabs and Add Tab, on the left, and Details in an
     18 rem column on the right; on a phone, one column in the order below.
-    - **On the Card**: Title (always) and Votes when the type has it; they never go in a tab.
+    - **On the Card**: Title (always), Votes when the type has it and each Votes field of its own; they never go in
+      a tab.
     - **Details**, tagged "Side column" (after On the Card on a phone, beside the main column on desktop): every field in no tab, its name renamed in place in the group's header,
       never moved or removed.
     - Each **tab**, tagged "Tab", in order (Overview first, as the panel reads): renamed in place in its header, moved with ↑ and ↓, and taken off with
@@ -426,10 +542,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - Field rows alternate white and a light grey within their group, so a long list reads row by row. Each field
     row leads with a **drag handle** (a grip), then an icon of what it holds, then its name, and a lock beside the
     name for a field the type always keeps (Title and Status, and a Project's Start and Due; its tooltip says "{Name}
-    is always on this type"). The icon is the Add Field kinds' own (a custom field's kind: Link to Card a card;
-    a built-in field the kind closest to it: Due Date a calendar, Estimate a #, Checklist a checkbox, Status,
-    Priority, Colour and Labels a list, Title text, Description and Comments long text, Votes a #), the Assignee a
-    person; its tooltip and accessible name name the kind ("Link to Card", "Date", "Person"). Dragging the handle (mouse, pen or touch alike) moves the field
+    is always on this type"). The icon is its kind's own, as Add Field lists it (a custom field's kind: Link to Card a
+    card; a built-in field its kind: the Assignee a person, Labels a tag, Colour a palette, Checklist a list of
+    ticks, Comments a speech bubble, Votes a thumbs up, Due Date a calendar, Estimate a #, Description long text,
+    Title text, Status and Priority a list); its tooltip and accessible name name the kind ("Link to Card", "Date", "Person"). Dragging the handle (mouse, pen or touch alike) moves the field
     within its group: the row follows the pointer, the rows it passes slide aside, release places it and Escape
     puts it back. Title, Status and Votes have no handle, and every row keeps its slot so the names line up.
     The row ends with a custom field's **Edit** (a pencil), which opens its name, its options (Choice), its
@@ -445,48 +561,68 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       - **Search fields** at the very top (a search field with a magnifier, its placeholder "Search fields, like
         money or date", and a close cross at its end, which closes the popover). It takes focus on opening under a
         mouse or a pen, never on a touch screen (no keyboard flies up); it stays at the top while the rest scrolls.
-        Typing filters both sections at once: a built-in by its name, a kind by its name, its line, and a few
-        everyday words for it (**money**, **price**, **budget** find Currency; **stars**, **score** Rating;
-        **yes/no**, **tick**, **toggle** Checkbox; **parent**, **epic**, **relation** Link to Card; **percent**,
-        **progress**, **formula** Calculated; **url**, **website** Link; **dropdown**, **select**, **option**
-        Choice; **tags**, **multi-select** Multiple Choice; **notes**, **paragraph** Long Text; **deadline**,
-        **day** Date; **count**, **points** Number; **mail** Email). With nothing matching it says **No matches for
-        “…”** with "Try a word like money, date or parent." under it. How many match is announced.
-      - **Ready-made**: the built-in fields the type does not have yet, each a tile with its icon (the type
-        editor's rows' own) and name, three to a row (two on a narrow window); one press adds it at once and closes
-        the popover. Hidden when the type has them all (or, searching, when none matches).
-      - **Your own field**: the thirteen kinds, each a row with its icon on a soft tile, its name, and a one-line
-        description in plain words, in four groups as an **accordion**, one group open at a time (opening one closes
-        the other; pressing the open one closes it; the first open to start): **Text & links** (Text "A short line
-        of text", Long Text "Paragraphs of notes", Link "A web address", Email "An address that opens your mail
-        app"), **Numbers & dates** (Number "Points, counts and sizes", Currency "An amount, like £12,500", Rating
-        "Stars out of 3 to 10", Date "A day on the calendar"), **Choices** (Choice "One option from a list",
-        Multiple Choice "Several options from a list", Checkbox "Yes or no, ticked or not") and **Linked cards**
-        (Link to Card "Another card, like a parent or an epic", Calculated "Worked out from the cards linked
-        here"). Each group's header is a button (`aria-expanded`) with the group's name, how many kinds it holds and
-        a chevron. While a search is typed the accordion steps aside: every group with a match shows open, listing
-        only its matches (its count then the matches'), and a group with none is hidden; clearing the search brings
-        the accordion back as it was.
-      - When the type holds the most custom fields it can (12), "Your own field" says "This type holds the most
-        custom fields it can (12). Remove one to add another." in place of the groups; Ready-made still works.
+        Typing filters the kinds: a kind by its name, its line, the built-in fields of its kind (**due** and
+        **start** find Date, **assignee** Person, **priority** Choice, **estimate** Number, **description** Long
+        Text), and a few everyday words for it (**money**, **price**, **budget** find Currency; **stars**,
+        **score** Rating; **yes/no**, **tick**, **toggle** Checkbox; **parent**, **epic**, **relation** Link to
+        Card; **percent**, **progress**, **formula** Calculated; **url**, **website** Link; **dropdown**,
+        **select**, **option** Choice; **tags**, **multi-select** Multiple Choice and Labels; **notes**,
+        **paragraph** Long Text; **deadline**, **day** Date; **count**, **points** Number; **mail** Email;
+        **owner**, **reviewer**, **people** Person; **color**, **swatch** Colour; **to-do**, **subtasks** Checklist;
+        **discussion**, **thread** Comments; **like**, **upvote** Votes; **picture**, **photo**, **screenshot**
+        Image). With nothing matching it says **No matches for “…”** with "Try a word like money, date or
+        parent." under it. How many match is announced.
+      - **One list of kinds**, with no Ready-made section: every kind a field can be, built-in or not, each a row
+        with its icon on a soft tile, its name, and a one-line description in plain words, in six groups as an
+        **accordion**, one group open at a time (opening one closes the other; pressing the open one closes it; the
+        first open to start): **Text & links** (Text "A short line of text", Long Text "Paragraphs of notes", Link
+        "A web address", Email "An address that opens your mail app"), **Numbers & dates** (Number "Points, counts
+        and sizes", Currency "An amount, like £12,500", Rating "Stars out of 3 to 10", Date "A day on the
+        calendar"), **Choices** (Choice "One option from a list", Multiple Choice "Several options from a list",
+        Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name"), **People & teamwork** (Person
+        "Someone on the plan, like an owner or a reviewer", Checklist "To-dos ticked off one by one", Comments
+        "Threads to talk the card through", Votes "Thumbs up from the team"), **Colour & images** (Colour "A colour
+        to tell cards apart", Image "A picture, like a mock-up or a photo") and **Linked cards** (Link to Card
+        "Another card, like a parent or an epic", Calculated "Worked out from the cards linked here"). Each group's
+        header is a button (`aria-expanded`) with the group's name, how many kinds it lists and a chevron. While a
+        search is typed the accordion steps aside: every group with a match shows open, listing only its matches
+        (its count then the matches'), and a group with none is hidden; clearing the search brings the accordion
+        back as it was.
+      - **Comments** and **Votes** open Shape as every kind does: **Ready to use** offers the built-in while the
+        type lacks it, then a field of your own takes only its name (Votes land on the card).
+      - A kind whose built-in field the type lacks carries a quiet **Ready to use** tag after its name (Date while
+        the type lacks Start Date or Due Date, Person while it lacks the Assignee, and so on).
+      - When the type holds the most custom fields it can (12), a note heads the list: "This type holds the most
+        custom fields it can (12). Remove one to add another." A kind with a built-in field the type lacks stays
+        open (its Shape offers only that field); every other kind is shown dimmed and can't be pressed.
       - **Keyboard**: ↓ from the search moves to the first result; ↑ and ↓ move through every result in order (the
-        Ready-made tiles, the group headers, the kinds), Home and End to the first and last, ↑ from the first back
-        to the search; Enter or Space presses the one focused; Enter in the search, with a search typed, picks the
-        first match. Escape in the search clears a typed search first, then closes the popover.
+        group headers, the kinds), Home and End to the first and last, ↑ from the first back to the search; Enter
+        or Space presses the one focused; Enter in the search, with a search typed, picks the first match. Escape
+        in the search clears a typed search first, then closes the popover.
     - **Shape** (step 2, after a kind is picked): a header with **All kinds** (a left chevron; back to Pick with
       the search as it was, focus on the kind that was picked) and the kind as a pill (its icon and name, read as
-      "Kind: Choice"); then **Name** (a labelled field, focused, "Field name" as its placeholder); then only what
+      "Kind: Choice"); then, when the type lacks a built-in field of this kind, **Ready to use**: a row per such
+      field (its icon, its name and what uses it: Assignee "Notifies them, and fills My Work and Workload", Labels
+      "Filters, swimlanes and coloured chips", Colour "A dot on the card, and its bar on the Gantt chart", Checklist
+      "Progress on the card, like 2/5", Start Date "Where its bar starts on the Gantt chart", Due Date "On the
+      calendar and the Gantt chart", Estimate "Story points, summed in Workload", Priority "Urgent to Low, for sorting
+      and swimlanes", Description "The card's main notes, with rich text", Comments "Threads on the card, and
+      mentions in the Inbox", Votes "Session votes, Top Voted and sorting"), each ending in a plus; one press adds that
+      built-in field, keeping its id, and closes the popover. Then, under a rule reading **Or make your own** (only
+      while Ready to use shows), **Name** (a labelled field, focused, "Field name" as its placeholder); then only what
       that kind needs: for Choice and Multiple Choice **Options**, a list of option rows (each a field named "Option
       1", "Option 2", … with a remove cross; one empty row to start), **Add an option** (a dashed row, "or paste a
       list" beside it), Enter in a row adding a row after it, Backspace in an empty row removing it, and pasting
       several lines into a row adding one option a line (blanks dropped, at most 20); for Rating **Scale** ("Out of
       3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for
       Link to Card **Links To** its card types (at least one); for Calculated **Calculation** (the menu below, the
-      first chosen); then **Required** (where the kind may be required: never Checkbox or Calculated); then
+      first chosen); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes); then
       **Preview**: a small card as a board's card panel draws it, "Example card" over the field's row: its name as
       typed ("Field name" until then, with the required mark when Required) beside a sample value of its kind
       (Choice its first option, Multiple Choice its first two, Link to Card the linked types' names, "Project or
-      Epic", Rating stars out of its scale, Currency in its currency, Calculated "3" or "40%"); updating as you
+      Epic", Rating stars out of its scale, Currency in its currency, Calculated "3" or "40%", Person a person's
+      disc and name, Labels two label chips, Colour a swatch and its name, Checklist "2/5", Image a picture glyph and
+      "photo.png", Votes "▲ 3"); updating as you
       type. Last, one full-width primary button **Add {Name}** ("Add {Kind} Field" until named), off until the
       field is ready: a name, at least one option for Choice and Multiple Choice, at least one type for Link to
       Card. While it is off, a quiet line under it says what is missing ("Name the field to add it.", "Add at

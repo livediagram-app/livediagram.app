@@ -31,7 +31,7 @@ function state(
     openSlideId: null,
     openSlideInEditor: noop,
     runnable: [],
-    thumbs: new Map(),
+    slideTabs: [],
     pageLabels,
     headlines: new Map(),
     newSlideFromSelection: noop,

@@ -334,3 +334,44 @@ describe('comment-rekey when the server copy arrived first (docs/specs/012-colla
     expect(el.commentThread?.comments).toEqual([{ ...serverCopy, authorId: 'me' }]);
   });
 });
+
+describe('comment-react (docs/specs/012-collaboration/comment-reactions.md)', () => {
+  const withThread = () =>
+    card({ commentThread: { comments: [comment('c1'), comment('c2')], resolved: false } });
+  const react = (by: string, on = true, commentId = 'c1'): ElementDelta => ({
+    kind: 'comment-react',
+    commentId,
+    emoji: 'thumbs-up',
+    by,
+    name: by,
+    on,
+  });
+
+  it("adds and takes back one person's reaction, and two at once both land", () => {
+    const el = apply(withThread(), react('a'), react('b'));
+    expect(el.commentThread?.comments[0]?.reactions?.map((r) => r.by)).toEqual(['a', 'b']);
+    expect(el.commentThread?.comments[1]?.reactions).toBeUndefined();
+    const back = apply(el, react('a', false), react('b', false));
+    expect(back.commentThread?.comments[0]).toEqual(comment('c1'));
+  });
+
+  it('is the same element for a repeat, an unknown comment, or a malformed frame', () => {
+    const el = apply(withThread(), react('a'));
+    expect(applyElementDelta(el, react('a'))).toBe(el);
+    expect(applyElementDelta(el, react('a', true, 'nope'))).toBe(el);
+    expect(
+      applyElementDelta(el, { ...react('a'), emoji: 'rocket' } as unknown as ElementDelta),
+    ).toBe(el);
+    expect(applyElementDelta(el, { ...react('a'), commentId: 1 } as unknown as ElementDelta)).toBe(
+      el,
+    );
+    expect(applyElementDelta(card(), react('a'))).toEqual(card());
+  });
+
+  it('keeps reactions through a whole-element update from a peer', () => {
+    const local = apply(withThread(), react('a'));
+    const merged = mergeIncomingElement(local, { ...withThread(), label: 'renamed' });
+    expect((merged as ShapeElement).commentThread?.comments[0]?.reactions).toHaveLength(1);
+    expect(elementChangeIsDeltaOnly(withThread(), local)).toBe(true);
+  });
+});

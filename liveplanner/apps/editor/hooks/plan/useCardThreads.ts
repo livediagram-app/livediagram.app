@@ -25,7 +25,7 @@ import {
   type CommentMention,
   type ThreadChange,
 } from '@liveplanner/project';
-import type { ItemPerson } from '@liveplanner/items';
+import { storedThreadField, type ItemPerson } from '@liveplanner/items';
 import { fetchThreads, writeThread, type ThreadAction } from '@/lib/api/card-threads';
 import type { ItemsScope } from '@/lib/api/items';
 import { track } from '@/lib/telemetry';
@@ -50,6 +50,8 @@ export type CardThreads = {
   receive: (op: CardThreadsRoomOp) => void;
   refetch: () => void;
   projectId: string | null;
+  // Where the plan's card reads go (its owner, share code and tab scope): a card's history reads through it too.
+  scope: ItemsScope | null;
   // The thread a link asked to open (#item=…&thread=…): its card's panel expands it and brings it into view, then
   // lets it go.
   focused: string | null;
@@ -77,6 +79,8 @@ export function threadRefusalMessage(code: string | null): string {
       return 'You can’t do that here';
     case 'thread_has_others':
       return 'Others have commented on this thread: resolve it instead';
+    case 'field_invalid':
+      return 'That card’s type no longer has that Comments field';
     default:
       return "Couldn't save that comment";
   }
@@ -93,6 +97,9 @@ function trackAction(action: ThreadAction): void {
       return track('Comment', 'Changed', 'Item');
     case 'delete':
       return track('Comment', 'Deleted', 'Item');
+    // Not counted yet (docs/specs/012-collaboration/comment-reactions.md "Telemetry").
+    case 'react':
+      return;
     case 'resolve':
       return action.resolved
         ? track('Comment', 'Resolved', 'Item')
@@ -131,6 +138,15 @@ function localChange(
       };
     case 'delete':
       return { kind: 'remove', commentId: action.commentId };
+    case 'react':
+      return {
+        kind: 'react',
+        commentId: action.commentId,
+        emoji: action.emoji,
+        by: action.key,
+        name: who.by.name,
+        on: action.on,
+      };
     case 'resolve':
       return { kind: 'resolve', resolved: action.resolved, by: who.by.name };
     case 'rename': {
@@ -270,6 +286,7 @@ export function useCardThreads(opts: {
             { id: ownerId, name: by.name, color: by.color },
             action.mentions,
           ),
+          ...storedThreadField(action.field),
           now: Date.now(),
         });
         settle(pendingId, shown);
@@ -324,9 +341,10 @@ export function useCardThreads(opts: {
       receive,
       refetch,
       projectId,
+      scope,
       focused,
       focus,
     }),
-    [status, threads, threadsOf, store, act, receive, refetch, projectId, focused],
+    [status, threads, threadsOf, store, act, receive, refetch, projectId, scope, focused],
   );
 }

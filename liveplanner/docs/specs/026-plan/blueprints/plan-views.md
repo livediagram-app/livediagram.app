@@ -23,12 +23,16 @@ packages/items/src/plan-view-gantt.ts   ganttModel, ganttAt, GANTT_* constants
 packages/items/src/plan-view-charts.ts  calendarModel, workloadModel, statusMixModel,
                                         priorityMatrixModel
 packages/items/src/calendar-move.ts     CalendarField, calendarFieldOf, calendarMove
+packages/items/src/view-fields.ts       ViewDates, BUILT_IN_DATES, viewDateOptions, viewDatesOf, viewDateName,
+                                        viewMeasureOptions, viewMeasureOf, measureValue, measureNumber,
+                                        measureCountLabel, isViewFieldId (fields by role)
 packages/project/src/svg-render-plan.ts svgPlanView (a labelled box)
 apps/editor/hooks/plan/usePlanStatusNames.ts usePlanStatusPhases -> PlanContext.statusPhases
 apps/editor/components/plan/views/        PlanViewView (router), view-frame (ViewFrame, openProps, viewState,
                                         PhaseLegend, PHASE_COLOURS), MetricView, GanttView, CalendarView,
                                         WorkloadView, StatusMixView, PriorityMatrixView; calendar-day
                                         (DayCell, CalendarEntryFace), useCalendarDrag (calendarDayAt)
+apps/editor/components/plan/views/ViewFieldSettings.tsx ViewDateOptions, ViewMeasureOptions (Dates, Count By)
 apps/editor/components/plan/plan-view-art.tsx           PlanViewArt (one Glyph per visualisation)
 apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread through PLAN_TILES
 ```
@@ -55,8 +59,14 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   key, dateless last. Axis `from = min(dates, today) - 7`, `to = max(max(dates, today) + 7, from + 27)`; Monday
   ticks up to 120 days, else month starts (the first and each January with the year). Labels thin to one per
   52 px of axis.
-- Calendar: `calendarModel(items, phases, year, month, field)` (`field` from `calendarFieldOf(view)`: `due` for
-  `calendar`, `start` for `start-calendar`); the month offset is component state. A day shows
+- Fields by role: `viewDatesOf(settings, types)` maps the roles `start` and `due` to field ids, `startField` /
+  `dueField` while a type offers that custom Date field, else `start` / `due`. `ganttModel`, `ganttDrag`,
+  `calendarModel`, `calendarMove`, `ganttNewCardDates`, `ganttEligibleTypes` and `viewNeeds` take the map
+  (`BUILT_IN_DATES` by default). `viewMeasureOf` reads `measure` (Estimate or a custom Number field);
+  `breakdownModel(..., measure)` adds `measureValue` (positive numbers, else 0) in place of 1 and totals the rows.
+  The setters (`planViewSettingsModel.setDate`, `setMeasure`) drop the default rather than store it.
+- Calendar: `calendarModel(items, phases, year, month, field, dates)` (`field` from `calendarFieldOf(view)`: `due` for
+  `calendar`, `start` for `start-calendar`; read through `dates[field]`); the month offset is component state. A day shows
   `floor(((height - 62) / weeks - 20) / 16)` entries, the last line kept for "+N more" when more are due.
 - Calendar moves: `canMove = plan.planInput && plan.canEditCards`. `useCalendarDrag` starts on an entry's
   pointerdown (button 0), listens on window, and counts a drag past `CALENDAR_DRAG_SLOP_PX` (3 px, Euclidean);
@@ -188,6 +198,7 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 
 - Placing a plan view sends `Element · Added · PlanView` (`SHAPE_TOKENS`); `PlanView` is in
   `PALETTE_TELEMETRY_TYPES.shapes`.
+- `Plan · Changed · ViewDates` (a Dates pick) and `Plan · Changed · ViewMeasure` (a Count By pick).
 
 ## Performance and limits
 

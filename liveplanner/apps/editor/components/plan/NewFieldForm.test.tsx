@@ -6,8 +6,8 @@ import { ITEM_TYPE_CUSTOM_MAX, type ItemFieldId } from '@liveplanner/items';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { NewFieldForm } from './NewFieldForm';
 
-// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field, Pick (search, Ready-made, the kinds' accordion,
-// the keyboard) then Shape (name, the kind's settings, Required, the preview, Add {Name}), Escape and back.
+// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field, Pick (search, one list of kinds in an accordion, the
+// keyboard) then Shape (Ready to use, name, the kind's settings, Required, the preview, Add {Name}), Escape and back.
 vi.mock('./PlanContext', () => ({ usePlan: () => null }));
 afterEach(cleanup);
 
@@ -58,8 +58,14 @@ const header = (name: string) => screen.getByRole('button', { name: new RegExp(`
 const kind = (name: string) => screen.getByRole('button', { name, exact: true } as never);
 const kindNames = () =>
   [...document.querySelectorAll('[data-kind]')].map((b) => b.getAttribute('aria-label'));
-const readyMade = () =>
-  [...document.querySelectorAll('[data-ready-made] button')].map((b) => b.textContent);
+const readyToUse = () =>
+  within(screen.getByRole('region', { name: 'Ready to use' }))
+    .getAllByRole('button')
+    .map((b) => b.querySelector('.font-medium')?.textContent);
+const tagged = () =>
+  [...document.querySelectorAll('[data-kind]')]
+    .filter((b) => b.textContent?.includes('Ready to use'))
+    .map((b) => b.getAttribute('aria-label'));
 const escape = () => fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
 const preview = () => within(screen.getByRole('figure', { name: 'Preview' }));
 const name = () => screen.getByRole('textbox', { name: 'Name' });
@@ -71,10 +77,11 @@ const pick = (k: string, group?: string) => {
 };
 
 describe('Pick', () => {
-  it('opens on the search, Ready-made and the first group, its kinds with their lines', () => {
+  it('opens on the search and the first group of one list of kinds, with their lines', () => {
     open();
     expect(document.activeElement).toBe(search());
-    expect(readyMade()).toEqual(['Assignee', 'Due Date', 'Labels']);
+    expect(screen.queryByText('Ready-made')).toBeNull();
+    expect(screen.queryByText('Your own field')).toBeNull();
     expect(header('Text & links').getAttribute('aria-expanded')).toBe('true');
     expect(header('Numbers & dates').getAttribute('aria-expanded')).toBe('false');
     expect(kindNames()).toEqual(['Text', 'Long Text', 'Link', 'Email']);
@@ -87,33 +94,63 @@ describe('Pick', () => {
     fireEvent.click(header('Choices'));
     expect(header('Choices').getAttribute('aria-expanded')).toBe('true');
     expect(header('Text & links').getAttribute('aria-expanded')).toBe('false');
-    expect(kindNames()).toEqual(['Choice', 'Multiple Choice', 'Checkbox']);
+    expect(kindNames()).toEqual(['Choice', 'Multiple Choice', 'Checkbox', 'Labels']);
     fireEvent.click(header('Choices'));
     expect(kindNames()).toEqual([]);
   });
 
-  it('adds a Ready-made field at once', () => {
-    const { onAddBuiltIn, onAddCustom } = open();
-    fireEvent.click(screen.getByRole('button', { name: 'Due Date' }));
-    expect(onAddBuiltIn).toHaveBeenCalledWith('due');
-    expect(onAddCustom).not.toHaveBeenCalled();
+  it('lists the built-ins’ kinds in their groups, tagging those the type lacks Ready to use', () => {
+    open({ missing: ['assignee', 'due', 'labels', 'comments'] });
+    fireEvent.click(header('People & teamwork'));
+    expect(kindNames()).toEqual(['Person', 'Checklist', 'Comments', 'Votes']);
+    expect(tagged()).toEqual(['Person', 'Comments']);
+    fireEvent.click(header('Colour & images'));
+    expect(kindNames()).toEqual(['Colour', 'Image']);
+    fireEvent.click(header('Numbers & dates'));
+    expect(tagged()).toEqual(['Date']);
   });
 
-  it('hides Ready-made when the type has every built-in', () => {
-    open({ missing: [] });
-    expect(screen.queryByText('Ready-made')).toBeNull();
-    expect(screen.getByText('Your own field')).toBeTruthy();
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields": they open Shape as every kind does.
+  it('opens Shape for Comments and Votes, offering the built-in while the type lacks it', () => {
+    const { onAddBuiltIn, onAddCustom } = open({ missing: ['votes'] });
+    pick('Votes', 'People & teamwork');
+    expect(readyToUse()).toEqual(['Votes']);
+    expect(screen.getByText('Session votes, Top Voted and sorting')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^Votes/ }));
+    expect(onAddBuiltIn).toHaveBeenCalledWith('votes');
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    pick('Comments', 'People & teamwork');
+    expect(screen.queryByRole('region', { name: 'Ready to use' })).toBeNull();
+    fireEvent.change(name(), { target: { value: 'Design Review' } });
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Design Review', kind: 'comments' }),
+    );
   });
 
-  it('filters both sections as you type, opening every group with a match', () => {
+  it('makes a Votes field from its name alone, never required, its preview a ▲ count', () => {
+    const { onAddCustom } = open({ missing: [] });
+    pick('Votes', 'People & teamwork');
+    expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
+    expect(preview().getByText('▲ 3')).toBeTruthy();
+    fireEvent.change(name(), { target: { value: 'Priority Vote' } });
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith({ label: 'Priority Vote', kind: 'votes' });
+  });
+
+  it('filters the kinds as you type, by a built-in’s name too, opening every group with a match', () => {
     open();
     type('date');
-    expect(readyMade()).toEqual(['Due Date']);
     expect(kindNames()).toEqual(['Date']);
     expect(header('Numbers & dates').getAttribute('aria-expanded')).toBe('true');
     expect(screen.queryByRole('button', { name: /^Text & links/ })).toBeNull();
+    type('due');
+    expect(kindNames()).toEqual(['Date']);
+    type('assignee');
+    expect(kindNames()).toEqual(['Person']);
+    type('photo');
+    expect(kindNames()).toEqual(['Image']);
     type('money');
-    expect(screen.queryByText('Ready-made')).toBeNull();
     expect(kindNames()).toEqual(['Currency']);
     type('yes/no');
     expect(kindNames()).toEqual(['Checkbox']);
@@ -142,9 +179,9 @@ describe('Pick', () => {
   });
 
   it('moves through the results with the arrow keys, and Enter in the search picks the first', () => {
-    const { onAddBuiltIn } = open();
+    open();
     fireEvent.keyDown(search(), { key: 'ArrowDown' });
-    expect(document.activeElement?.textContent).toBe('Assignee');
+    expect(document.activeElement?.textContent).toMatch(/^Text & links/);
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
     expect(document.activeElement?.textContent).toMatch(/^Linked cards/);
     fireEvent.keyDown(document.activeElement!, { key: 'Home' });
@@ -152,18 +189,26 @@ describe('Pick', () => {
     expect(document.activeElement).toBe(search());
     type('due');
     fireEvent.keyDown(search(), { key: 'Enter' });
-    expect(onAddBuiltIn).toHaveBeenCalledWith('due');
+    expect(screen.getByRole('form', { name: 'New Date field' })).toBeTruthy();
   });
 
-  it('says the type holds the most custom fields it can, in place of the kinds', () => {
-    open({ canAddCustom: false });
+  it('says the type holds the most custom fields it can, keeping only kinds with a built-in to add', () => {
+    const { onAddBuiltIn } = open({ canAddCustom: false });
     expect(
       screen.getByText(
         `This type holds the most custom fields it can (${ITEM_TYPE_CUSTOM_MAX}). Remove one to add another.`,
       ),
     ).toBeTruthy();
-    expect(kindNames()).toEqual([]);
-    expect(readyMade()).toHaveLength(3);
+    expect(kind('Text').getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(kind('Text'));
+    expect(screen.queryByRole('form')).toBeNull();
+    pick('Date', 'Numbers & dates');
+    expect(readyToUse()).toEqual(['Due Date']);
+    expect(screen.queryByRole('textbox', { name: 'Name' })).toBeNull();
+    expect(screen.queryByText('Or make your own')).toBeNull();
+    fireEvent.submit(screen.getByRole('form', { name: 'New Date field' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Due Date/ }));
+    expect(onAddBuiltIn).toHaveBeenCalledWith('due');
   });
 
   it('closes with Escape, after a typed search is cleared first', () => {
@@ -184,6 +229,53 @@ describe('Pick', () => {
 });
 
 describe('Shape', () => {
+  it('offers the kind’s built-in fields the type lacks as Ready to use, then your own', () => {
+    const { onAddBuiltIn, onAddCustom } = open({ missing: ['assignee', 'start', 'due'] });
+    pick('Date', 'Numbers & dates');
+    expect(readyToUse()).toEqual(['Start Date', 'Due Date']);
+    expect(screen.getByText('Where its bar starts on the Gantt chart')).toBeTruthy();
+    expect(screen.getByText('Or make your own')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^Due Date/ }));
+    expect(onAddBuiltIn).toHaveBeenCalledWith('due');
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    pick('Person', 'People & teamwork');
+    expect(readyToUse()).toEqual(['Assignee']);
+    fireEvent.change(name(), { target: { value: 'Reviewer' } });
+    expect(preview().getByText('Sam Rivera')).toBeTruthy();
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Reviewer', kind: 'person' }),
+    );
+  });
+
+  it('makes more of a kind the type has, with no Ready to use', () => {
+    const { onAddCustom } = open({ missing: [] });
+    pick('Colour', 'Colour & images');
+    expect(screen.queryByRole('region', { name: 'Ready to use' })).toBeNull();
+    expect(screen.queryByText('Or make your own')).toBeNull();
+    fireEvent.change(name(), { target: { value: 'Theme' } });
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Theme', kind: 'colour' }),
+    );
+  });
+
+  it('previews each built-in kind as its field draws, and never makes an Image required', () => {
+    open({ missing: [] });
+    pick('Labels', 'Choices');
+    expect(preview().getByText('Design')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    pick('Checklist', 'People & teamwork');
+    expect(preview().getByText(/2\/5/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    pick('Colour', 'Colour & images');
+    expect(preview().getByText('Teal')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    pick('Image', 'Colour & images');
+    expect(preview().getByText('photo.png')).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
+  });
+
   it('shows the kind, focuses Name, and adds once named, by Enter too', () => {
     const { onAddCustom } = open();
     pick('Text');
@@ -336,5 +428,22 @@ describe('Shape', () => {
     expect(onAddCustom).toHaveBeenLastCalledWith(
       expect.objectContaining({ kind: 'checkbox', required: undefined }),
     );
+  });
+
+  // docs/specs/026-plan/item-types.md "Notifies".
+  it('offers a Person field Notifies, off by default, and no other kind', () => {
+    const { onAddCustom } = open();
+    pick('Person', 'People & teamwork');
+    fireEvent.change(name(), { target: { value: 'Reviewer' } });
+    const notifies = screen.getByRole('switch', { name: 'Notifies' });
+    expect(notifies.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(notifies);
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenLastCalledWith(
+      expect.objectContaining({ kind: 'person', notifies: true }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    pick('Email', 'Text & links');
+    expect(screen.queryByRole('switch', { name: 'Notifies' })).toBeNull();
   });
 });

@@ -15,7 +15,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import type { App, Folder, IndexClient, Item } from '@liveworkspace/index-client';
+import type { App, Folder, IndexClient } from '@liveworkspace/index-client';
 import { Dialog } from '../ui/Dialog';
 import {
   CloseIcon,
@@ -28,7 +28,8 @@ import {
 } from '../ui/icons';
 import { DEFAULT_BASE_PATH, explorerPath } from '../views';
 import type { ItemHref, RenderAppLogo, TeamRef } from '../types';
-import { matchAll, queryWords, SEARCH_DEBOUNCE_MS, SEARCH_GROUP_MAX } from './match';
+import { matchAll, queryWords } from './match';
+import { useItemSearch } from './useItemSearch';
 
 /** A host's own result: a help article or a settings section. */
 export type SearchEntry = {
@@ -68,33 +69,6 @@ type Result = {
   newTab?: boolean;
 };
 type Group = { key: string; label: string; results: Result[] };
-
-type ItemsState = { q: string; items: Item[]; failed: boolean };
-
-/** The index's search for the words, once they rest, the request before cancelled. */
-function useItemSearch(client: IndexClient, app: App | null, q: string): ItemsState | null {
-  const [state, setState] = useState<ItemsState | null>(null);
-  useEffect(() => {
-    if (q === '') return;
-    const abort = new AbortController();
-    const timer = setTimeout(() => {
-      client
-        .listItems(
-          { view: 'search', q, limit: SEARCH_GROUP_MAX, ...(app ? { app } : {}) },
-          { signal: abort.signal },
-        )
-        .then(
-          (res) => setState({ q, items: res.items.slice(0, SEARCH_GROUP_MAX), failed: false }),
-          () => !abort.signal.aborted && setState({ q, items: [], failed: true }),
-        );
-    }, SEARCH_DEBOUNCE_MS);
-    return () => {
-      clearTimeout(timer);
-      abort.abort();
-    };
-  }, [client, app, q]);
-  return state;
-}
 
 /** The person's folders, read once as the panel opens: the first page, as many as the index gives one. */
 function useFolders(client: IndexClient): readonly Folder[] {

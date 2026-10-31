@@ -180,7 +180,8 @@ describe('inverseItemWrites', () => {
         move: {
           status: 'todo',
           before: b.id,
-          set: { priority: 'low' },
+          // The old column's stamp comes back with it (status-since.ts).
+          set: { priority: 'low', statusSince: 0 },
           clear: ['assignee'],
           type: 'bug',
         },
@@ -444,6 +445,28 @@ describe('a tally write', () => {
     expect(s.items[1]!.fields['votes']).toEqual({});
     expect((s.upserts as { id: string }[]).map((i) => i.id)).toEqual(['a', 'b']);
     expect(inverseItemWrites(two, write)).toBeNull();
+  });
+
+  // docs/specs/012-collaboration/session-tools.md "Count In".
+  it('adds the dots to the Votes field the write names, and keeps it when limited to some cards', () => {
+    const write: ItemWrite = {
+      kind: 'tally',
+      field: 'f-pri',
+      tallies: [
+        { id: 'a', votes: { p: 1 } },
+        { id: 'b', votes: { q: 2 } },
+      ],
+    };
+    const s = ok(applyItemWrite(two, write, ctx));
+    expect(s.items.map((i) => [i.fields['votes'], i.fields['f-pri']])).toEqual([
+      [{ p: 2 }, { p: 1 }],
+      [undefined, { q: 2 }],
+    ]);
+    expect(writeLimitedTo(write, new Set(['b']))).toEqual({
+      kind: 'tally',
+      field: 'f-pri',
+      tallies: [{ id: 'b', votes: { q: 2 } }],
+    });
   });
 
   it('caps a voter’s count and the number of voters', () => {

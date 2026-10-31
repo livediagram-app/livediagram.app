@@ -1,6 +1,7 @@
 // The numbers the board widgets read (docs/specs/026-plan/board-widgets.md "Widget kinds"), from the
 // items the board shows (their status is one of its columns). Pure, so each rule is tested on its own.
 import {
+  CARD_AGE_ALERT_DAYS,
   DAY_MS,
   PRIORITIES,
   dayNumber,
@@ -18,8 +19,8 @@ import {
 
 // Days ahead that count as "due soon".
 export const DUE_SOON_DAYS = 7;
-// Days without a change before a card not yet done is stale.
-export const STALE_DAYS = 14;
+// Days without a change before a card not yet done is stale: the day a card's Age turns red too.
+export const STALE_DAYS = CARD_AGE_ALERT_DAYS;
 
 // The share done as a whole percent, for "73% done": rounded, except that it reads 100 only when every one is done
 // and 0 only when none is, so 199 of 200 is 99% and 1 of 300 is 1%, never a finished or untouched board that is not.

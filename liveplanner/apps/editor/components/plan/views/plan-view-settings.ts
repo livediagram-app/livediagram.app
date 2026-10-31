@@ -1,9 +1,11 @@
 // A plan view's settings and their changes (docs/specs/026-plan/plan-views.md "Card types", "Swimlanes", "Row
-// order", "Statuses"), shared by its element menu's View flyout and a Gantt chart's cog (GanttSettingsPanel): what it
+// order", "Statuses", "Dates", "Count By"), shared by its element menu's View flyout and a Gantt chart's cog (GanttSettingsPanel): what it
 // can show, what it shows, and one element edit per change through PlanContext, each tracked.
 import { withArticle } from '@liveplanner/ui';
 import {
+  BUILT_IN_DATES,
   breakdownGroupingOf,
+  calendarFieldOf,
   readPlanViewSettings,
   viewChosenTypes,
   viewEligibleTypes,
@@ -11,7 +13,13 @@ import {
   viewShownTypes,
   viewStatusOptions,
   viewTakesStatuses,
+  viewDateOptions,
+  viewDatesOf,
+  viewMeasureOf,
+  viewMeasureOptions,
   type ItemTypeDef,
+  type ViewDates,
+  type ViewFieldOption,
   type SwimlaneBy,
 } from '@liveplanner/items';
 import type { PlanViewRef } from '@liveplanner/project';
@@ -27,7 +35,7 @@ export function planViewSettingsModel(
   const settings = readPlanViewSettings(stored);
   const view = settings.view;
   const gantt = view === 'gantt';
-  const eligible: ItemTypeDef[] = viewEligibleTypes(view, plan.types);
+  const eligible: ItemTypeDef[] = viewEligibleTypes(view, plan.types, settings);
   const eligibleIds = new Set(eligible.map((t) => t.id));
   const chosen = viewChosenTypes(view, settings, plan.types);
   const shownIds = viewShownTypes(view, settings, plan.types);
@@ -45,11 +53,40 @@ export function planViewSettingsModel(
     : [];
   const optionIds = new Set(statusOptions.map((o) => o.id));
   const storedStatuses = settings.statuses;
+  // Fields by role (plan-views.md "Dates"): a Gantt chart picks both its dates, a calendar the one it places by.
+  const calendar = calendarFieldOf(view);
+  const roles: (keyof ViewDates)[] = gantt ? ['start', 'due'] : calendar ? [calendar] : [];
+  const dates = viewDatesOf(settings, plan.types);
+  // What Cards by Field adds up ("Count By"): cards, then Estimate and the Number fields.
+  const measures: ViewFieldOption[] =
+    view === 'workload'
+      ? [{ id: COUNT_CARDS, label: 'Cards' }, ...viewMeasureOptions(plan.types)]
+      : [];
   return {
     settings,
     view,
     gantt,
-    needs: viewNeeds(view),
+    needs: viewNeeds(view, settings, plan.types),
+    dateRoles: roles.map((role) => ({
+      role,
+      title: role === 'start' ? 'Starts On' : 'Due On',
+      options: viewDateOptions(plan.types, role),
+      selected: dates[role],
+    })),
+    setDate: (role: keyof ViewDates, id: string) => {
+      const key = role === 'start' ? 'startField' : 'dueField';
+      const { [key]: _field, ...rest } = settings;
+      // The built-in field is the default, dropped rather than stored.
+      plan.updateView(elementId, id === BUILT_IN_DATES[role] ? rest : { ...rest, [key]: id });
+      track('Plan', 'Changed', 'ViewDates');
+    },
+    measures,
+    measure: viewMeasureOf(settings, plan.types)?.id ?? COUNT_CARDS,
+    setMeasure: (id: string) => {
+      const { measure: _measure, ...rest } = settings;
+      plan.updateView(elementId, id === COUNT_CARDS ? rest : { ...rest, measure: id });
+      track('Plan', 'Changed', 'ViewMeasure');
+    },
     eligible,
     selected: chosen.filter((id) => eligibleIds.has(id)),
     shown,
@@ -116,6 +153,9 @@ export function planViewSettingsModel(
   };
 }
 
+// Count By's first row: count the cards, the default (no `measure` stored).
+const COUNT_CARDS = 'cards';
+
 const NEED_LABELS: Record<string, string> = {
   start: 'Start',
   due: 'Due',
@@ -125,10 +165,16 @@ const NEED_LABELS: Record<string, string> = {
   votes: 'Votes',
 };
 
-// Why some card types are missing from Card Types: the view reads fields a type must offer.
-export function viewTypesNote(needs: readonly string[]): string {
+// Why some card types are missing from Card Types: the view reads fields a type must offer, a picked field by its
+// own name ("Fields by role").
+export function viewTypesNote(
+  needs: readonly string[],
+  types: readonly ItemTypeDef[] = [],
+): string {
   if (needs.length === 0) return 'The card types this view charts.';
-  const names = needs.map((f) => NEED_LABELS[f] ?? f);
+  const custom = (id: string) =>
+    types.flatMap((t) => t.custom ?? []).find((c) => c.id === id)?.label;
+  const names = needs.map((f) => NEED_LABELS[f] ?? custom(f) ?? f);
   const list =
     names.length === 1 ? `${withArticle(names[0]!)} field` : `${names.join(' and ')} fields`;
   return `The card types this view charts; only those with ${list} are listed.`;

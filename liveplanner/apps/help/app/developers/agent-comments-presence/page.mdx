@@ -184,15 +184,17 @@ curl -X PUT https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/presence \
 
 Setting presence again replaces both the status and the focus. `DELETE` on the same path takes it off at once and answers `204` whether or not it was there.
 
-**You rarely need to keep it alive yourself.** Every changeset your token applies or reverts on a tab keeps its presence there for 30 seconds, so an agent that is busy editing stays visible and one that stops leaves on its own within two minutes at most. A dry run or a refused changeset refreshes nothing.
+**You rarely need to keep it alive yourself.** Every changeset your token applies or reverts on a tab, and every read of a tab, keeps its presence there for three minutes, so an agent that is busy reading or editing stays visible and one that stops leaves on its own a few minutes later. A dry run or a refused changeset refreshes nothing. Reads refresh it at most once every 30 seconds per tab.
+
+**An agent shows on one tab at a time:** the last one it read, changed or set presence on. Reading another tab moves it there.
 
 Refusals name what was wrong: `400` with `status_too_long`, `invalid_status`, `too_many_focus`, `invalid_focus`, `ttl_out_of_range`, `focus_not_found` (listing the refs) or `focus_ambiguous` (listing the candidates); `409 agent_presence_full` when a plan already shows 32 agents; and `503 room_unavailable` when the live room could not be reached, which is worth one retry.
 
 ## What People See
 
-Presence shows in the editor as its owner, never as a new person:
+Presence shows in the editor as an avatar of its own, named after its owner ("Webber's Agent"), in the owner's colour and marked with a small star instead of initials. Everyone on the canvas sees it, the owner included, beside the owner's own avatar when they are on the same tab:
 
-- **The status line** appears in the hover card on the owner's avatar, on their row in Collaborators, and in what a screen reader announces. It never shows as text in the tab bar. When the owner is not on that tab, the agent gets an avatar in their name and colour there.
+- **The status line** appears in the agent's hover card, on its row in Collaborators, and in what a screen reader announces. It never shows as text in the tab bar. Without one, the hover card says "Working on this tab".
 - **The focus** is outlined with a thin ring in the owner's colour. It never locks anything: people keep working on those elements.
 - An agent is listed in Collaborators under its tab, but it is not counted as a person or in a session's head count.
 - Two of your tokens on one tab show as one avatar, with the status set last. A private plan's presence stack, otherwise hidden, shows while your agent is on it.

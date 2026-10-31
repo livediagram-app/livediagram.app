@@ -21,7 +21,16 @@ import {
   type CardThread,
   type ThreadChange,
 } from '@liveplanner/project';
-import type { Item, ItemCreate, ItemWrite } from '@liveplanner/items';
+import {
+  commentsFieldsOf,
+  legacyCatalogue,
+  storedThreadField,
+  typeIn,
+  typesOf,
+  type Item,
+  type ItemCreate,
+  type ItemWrite,
+} from '@liveplanner/items';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { ApiError } from '../api/core';
 import type { ThreadAction, ThreadAnswer, ThreadWriter } from '../api/card-threads';
@@ -106,6 +115,15 @@ function changeOf(
     }
     case 'delete':
       return { kind: 'remove', commentId: action.commentId };
+    case 'react':
+      return {
+        kind: 'react',
+        commentId: action.commentId,
+        emoji: action.emoji,
+        by: action.key,
+        name: who.by.name,
+        on: action.on,
+      };
     case 'resolve':
       return { kind: 'resolve', resolved: action.resolved, by: who.by.name };
     case 'rename': {
@@ -140,6 +158,12 @@ export async function offlineWriteThread(
         if (!item) throw refused('item_not_found');
         if (threadsOnCard(threads, projectId, item.id).length >= CARD_THREADS_MAX)
           throw refused('threads_full');
+        // In one of the card's type's Comments fields, as on the api (items.md "Comments").
+        if (action.field !== undefined) {
+          const types = typesOf(legacyCatalogue(rec.itemTypes ?? null, true));
+          if (!commentsFieldsOf(typeIn(types, item.type)).includes(action.field))
+            throw refused('field_invalid');
+        }
         const comment = createComment(
           action.text,
           { id: who.ownerId, name: who.by.name, color: who.by.color },
@@ -150,6 +174,7 @@ export async function offlineWriteThread(
           home: projectId,
           card: { projectId, itemId: item.id, key: item.key },
           comment,
+          ...storedThreadField(action.field),
           now,
         });
         answer = { thread, commentId: comment.id };

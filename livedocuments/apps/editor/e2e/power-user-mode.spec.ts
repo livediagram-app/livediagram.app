@@ -94,7 +94,6 @@ test.describe('Role pill', () => {
 test.describe('Power user mode', () => {
   test('Minimal chrome hides words, keeps names and controls', async ({ page, pageErrors }) => {
     await openEditor(page);
-    await expect(tabBar(page).getByText('Tabs', { exact: true })).toBeVisible();
     await expect(tabBar(page).getByText('Search', { exact: true })).toBeVisible();
 
     await setPowerUserMode(page, true);
@@ -111,7 +110,6 @@ test.describe('Power user mode', () => {
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
     // Status bar: icons only, names kept.
-    await expect(tabBar(page).getByText('Tabs', { exact: true })).toHaveCount(0);
     await expect(tabBar(page).getByText('Search', { exact: true })).toHaveCount(0);
     await expect(tabBar(page).getByRole('button', { name: 'Search' })).toBeVisible();
 
@@ -138,18 +136,16 @@ test.describe('Power user mode', () => {
     await keyboardFocus(page, square);
     await expect(page.locator(TOOLTIP)).toHaveText('Add Square', { timeout: 300 });
 
-    // Selection: no caption, no desktop bin, no More; the keys still delete.
+    // Selection: no toolbar over a single element (livedocuments has none for anyone,
+    // docs/specs/008-canvas/canvas-and-palette.md "Selection popover"); the keys still delete.
     await square.click();
     await page.mouse.click(640, 420);
     const shape = page.locator('[data-element-id]').first();
     await expect(shape).toBeVisible();
     // Placing selects the square; a click on it now would deselect it
     // (docs/specs/008-canvas/canvas-and-palette.md "Click the selected element again").
-    const toolbar = page.getByRole('toolbar', { name: 'Selected Square' });
-    await expect(toolbar).toBeVisible();
+    await expect(page.getByRole('toolbar', { name: 'Selected Square' })).toHaveCount(0);
     await expect(page.getByText('Selected Square', { exact: true })).toHaveCount(0);
-    await expect(toolbar.getByRole('button', { name: 'Delete' })).toHaveCount(0);
-    await expect(toolbar.getByRole('button', { name: 'More actions' })).toHaveCount(0);
     await page.keyboard.press('Backspace');
     await expect(page.locator('[data-element-id]')).toHaveCount(0);
 

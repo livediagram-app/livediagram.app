@@ -410,9 +410,6 @@ export type CanvasProps = {
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
   };
-  // Touch-friendly fallback for right-click: a SelectionPopover
-  // ellipsis button opens the same context menu under the cursor.
-  onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
   // The visitor name prompt (IdentityPrompt).
   showIdentityPrompt: boolean;
   // True after the page has resolved its initial identity + document
@@ -463,18 +460,9 @@ export type CanvasProps = {
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
-  onToggleLockSelected: () => void;
-  onDeleteSelected: () => void;
-  // Duplicate the selected element. Surfaced as a one-click button in
-  // the selection toolbar (SelectionPopover); previously context-menu only.
-  // True while an element context menu is open, so the selection popover
-  // can stand down (one gesture, one answer).
+  // True while an element context menu is open, so the quick-connect pluses stand down (one gesture,
+  // one answer).
   elementMenuOpen?: boolean;
-  onDuplicateSelected: () => void;
-  // Intra-LAYER z-order from the selection popover (docs/specs/006-document/layers.md): stack the
-  // selection within its own band, never between layers.
-  onBringSelectedToFront: () => void;
-  onSendSelectedToBack: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
   // Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). While the active tab's content is being
   // fetched ('loading') or after that fetch failed ('error'), Canvas

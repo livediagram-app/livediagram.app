@@ -1,32 +1,44 @@
 'use client';
 
 // Add Field's first step, Pick (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field): a search at the
-// top, the built-in fields the type lacks as Ready-made tiles (one press adds one), and the custom field kinds as
-// "Your own field", in four groups, one open at a time. A search filters both and opens every group with a match.
-// ↑ and ↓ move through the search and every result; Enter in the search picks the first match.
+// top, then one list of field kinds, built-in and custom alike, in six groups, one open at a time. A kind whose
+// built-in field the type lacks is tagged Ready to use; every kind, Comments and Votes among them, opens Shape. A search filters the kinds and opens every group with a match. ↑ and ↓ move through the search and
+// every result; Enter in the search picks the first match.
 import { useId, useLayoutEffect, useRef, type KeyboardEvent } from 'react';
 import { ITEM_TYPE_CUSTOM_MAX, type CustomFieldKind, type ItemFieldId } from '@liveplanner/items';
 import { CloseIcon, lucideGlyph } from '@liveplanner/ui';
 import { lucideChevronDown, lucideSearch } from '@liveworkspace/icons/lucide';
 import {
+  BUILT_INS_OF_KIND,
   CUSTOM_MAX_NOTE,
   KIND_DESCRIPTIONS,
   KIND_GROUPS,
   kindMatches,
-  matchingBuiltIns,
+  readyBuiltIns,
   searchKey,
   type KindGroupId,
+  type PickKind,
 } from './add-field-kinds';
-import { CUSTOM_KIND_ICONS, fieldIconOf } from './CustomFieldKindParts';
-import { BUILT_IN_FIELD_LABELS, CUSTOM_KIND_LABELS } from './ItemTypeFieldForms';
+import { PICK_KIND_ICONS } from './CustomFieldKindParts';
+import { BUILT_IN_FIELD_LABELS, PICK_KIND_LABELS } from './ItemTypeFieldForms';
 
 const SearchIcon = lucideGlyph(lucideSearch, 15);
 const Chevron = lucideGlyph(lucideChevronDown, 14);
 
-const SECTION_HEADING =
-  'px-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
 const FOCUS_RING =
   'outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900';
+
+// A kind as the list shows it: open to press, or dimmed (the type holds the most custom fields and the kind has no
+// built-in field left to add).
+type KindState = 'open' | 'dimmed';
+
+export function kindState(
+  kind: PickKind,
+  missing: readonly ItemFieldId[],
+  canAddCustom: boolean,
+): KindState {
+  return readyBuiltIns(kind, missing).length > 0 || canAddCustom ? 'open' : 'dimmed';
+}
 
 export function AddFieldPicker({
   query,
@@ -35,7 +47,6 @@ export function AddFieldPicker({
   onOpenGroup,
   missing,
   canAddCustom,
-  onAddBuiltIn,
   onPick,
   onCancel,
   focusKind,
@@ -45,9 +56,9 @@ export function AddFieldPicker({
   // The accordion's open group (null: all closed); a search sets it aside without changing it.
   openGroup: KindGroupId | null;
   onOpenGroup: (group: KindGroupId | null) => void;
+  // The built-in fields the type lacks.
   missing: readonly ItemFieldId[];
   canAddCustom: boolean;
-  onAddBuiltIn: (id: ItemFieldId) => void;
   onPick: (kind: CustomFieldKind) => void;
   onCancel: () => void;
   // The kind to focus on arriving (back from Shape).
@@ -58,13 +69,19 @@ export function AddFieldPicker({
   const ids = useId();
   const key = searchKey(query);
   const searching = key.length > 0;
-  const builtIns = matchingBuiltIns(missing, (id) => BUILT_IN_FIELD_LABELS[id], key);
   const groups = KIND_GROUPS.map((g) => ({
     ...g,
-    shown: g.kinds.filter((k) => kindMatches(k, CUSTOM_KIND_LABELS[k], key)),
+    shown: g.kinds.filter((k) =>
+      kindMatches(
+        k,
+        PICK_KIND_LABELS[k],
+        key,
+        (BUILT_INS_OF_KIND[k] ?? []).map((id) => BUILT_IN_FIELD_LABELS[id]),
+      ),
+    ),
   }));
-  const kindCount = canAddCustom ? groups.reduce((n, g) => n + g.shown.length, 0) : 0;
-  const nothing = searching && builtIns.length === 0 && kindCount === 0;
+  const kindCount = groups.reduce((n, g) => n + g.shown.length, 0);
+  const nothing = searching && kindCount === 0;
 
   // Back from Shape: the kind that was picked takes focus (its group is open, or the search shows it).
   useLayoutEffect(() => {
@@ -93,6 +110,8 @@ export function AddFieldPicker({
     e.preventDefault();
     nav[to]!.focus();
   };
+
+  const press = (kind: PickKind) => onPick(kind);
 
   return (
     <div ref={root} onKeyDown={onKeyDown} className="flex flex-col">
@@ -127,11 +146,17 @@ export function AddFieldPicker({
         </button>
       </div>
       <p id={`${ids}-count`} aria-live="polite" className="sr-only">
-        {searching
-          ? `${builtIns.length + kindCount} ${builtIns.length + kindCount === 1 ? 'field matches' : 'fields match'}`
-          : ''}
+        {searching ? `${kindCount} ${kindCount === 1 ? 'field matches' : 'fields match'}` : ''}
       </p>
-      <div className="flex flex-col gap-3 px-3 pb-3 motion-safe:animate-card-rise">
+      <div className="flex flex-col gap-1 px-3 pb-3 motion-safe:animate-card-rise">
+        {canAddCustom ? null : (
+          <p
+            role="note"
+            className="mb-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-[12px] leading-snug text-slate-600 dark:border-slate-600 dark:text-slate-300"
+          >
+            {CUSTOM_MAX_NOTE(ITEM_TYPE_CUSTOM_MAX)}
+          </p>
+        )}
         {nothing ? (
           <div role="status" className="px-2 py-6 text-center">
             <p className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
@@ -142,139 +167,121 @@ export function AddFieldPicker({
             </p>
           </div>
         ) : null}
-        {builtIns.length > 0 ? (
-          <section aria-labelledby={`${ids}-ready`}>
-            <h3 id={`${ids}-ready`} className={SECTION_HEADING}>
-              Ready-made
-            </h3>
+        {groups.map((g) => {
+          if (g.shown.length === 0) return null;
+          const open = searching || openGroup === g.id;
+          const listId = `${ids}-${g.id}`;
+          return (
             <div
-              data-ready-made=""
-              className="grid grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] gap-1.5"
+              key={g.id}
+              className={`rounded-xl border transition-colors motion-reduce:transition-none ${
+                open
+                  ? 'border-slate-200 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-800/40'
+                  : 'border-transparent'
+              }`}
             >
-              {builtIns.map((id) => (
+              <h4>
                 <button
-                  key={id}
                   type="button"
                   data-nav=""
-                  data-pick=""
-                  onClick={() => onAddBuiltIn(id)}
-                  className={`flex min-h-9 min-w-0 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-left text-[12px] font-medium text-slate-800 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 motion-reduce:transition-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10 dark:hover:text-brand-100 ${FOCUS_RING}`}
+                  aria-expanded={open}
+                  aria-controls={listId}
+                  aria-disabled={searching || undefined}
+                  onClick={() => {
+                    if (!searching) onOpenGroup(openGroup === g.id ? null : g.id);
+                  }}
+                  className={`flex min-h-9 w-full items-center gap-2 rounded-xl px-2.5 text-left text-[13px] font-semibold text-slate-800 transition motion-reduce:transition-none pointer-coarse:min-h-11 dark:text-slate-100 ${
+                    searching
+                      ? 'cursor-default'
+                      : 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800'
+                  } ${FOCUS_RING}`}
                 >
-                  <span aria-hidden className="shrink-0 text-slate-500 dark:text-slate-400">
-                    {fieldIconOf(id, undefined).node}
+                  <span className="flex-1">{g.label}</span>
+                  <span className="rounded-full bg-slate-200/70 px-1.5 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                    {g.shown.length}
                   </span>
-                  <span className="truncate">{BUILT_IN_FIELD_LABELS[id]}</span>
+                  <span
+                    aria-hidden
+                    className={`text-slate-400 motion-safe:transition-transform ${open ? 'rotate-180' : ''}`}
+                  >
+                    <Chevron />
+                  </span>
                 </button>
-              ))}
+              </h4>
+              {open ? (
+                <ul
+                  id={listId}
+                  className="flex flex-col gap-0.5 px-1 pb-1 motion-safe:animate-card-rise"
+                >
+                  {g.shown.map((k) => (
+                    <li key={k}>
+                      <KindRow
+                        kind={k}
+                        descId={`${ids}-${k}-desc`}
+                        ready={readyBuiltIns(k, missing).length > 0}
+                        dimmed={kindState(k, missing, canAddCustom) === 'dimmed'}
+                        onPress={press}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
-          </section>
-        ) : null}
-        {!nothing && (canAddCustom ? kindCount > 0 || !searching : !searching) ? (
-          <section aria-labelledby={`${ids}-own`}>
-            <h3 id={`${ids}-own`} className={SECTION_HEADING}>
-              Your own field
-            </h3>
-            {canAddCustom ? (
-              <div className="flex flex-col gap-1">
-                {groups.map((g) => {
-                  if (searching && g.shown.length === 0) return null;
-                  const open = searching || openGroup === g.id;
-                  const listId = `${ids}-${g.id}`;
-                  return (
-                    <div
-                      key={g.id}
-                      className={`rounded-xl border transition-colors motion-reduce:transition-none ${
-                        open
-                          ? 'border-slate-200 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-800/40'
-                          : 'border-transparent'
-                      }`}
-                    >
-                      <h4>
-                        <button
-                          type="button"
-                          data-nav=""
-                          aria-expanded={open}
-                          aria-controls={listId}
-                          aria-disabled={searching || undefined}
-                          onClick={() => {
-                            if (!searching) onOpenGroup(openGroup === g.id ? null : g.id);
-                          }}
-                          className={`flex min-h-9 w-full items-center gap-2 rounded-xl px-2.5 text-left text-[13px] font-semibold text-slate-800 transition motion-reduce:transition-none pointer-coarse:min-h-11 dark:text-slate-100 ${
-                            searching
-                              ? 'cursor-default'
-                              : 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800'
-                          } ${FOCUS_RING}`}
-                        >
-                          <span className="flex-1">{g.label}</span>
-                          <span className="rounded-full bg-slate-200/70 px-1.5 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                            {searching ? g.shown.length : g.kinds.length}
-                          </span>
-                          <span
-                            aria-hidden
-                            className={`text-slate-400 motion-safe:transition-transform ${open ? 'rotate-180' : ''}`}
-                          >
-                            <Chevron />
-                          </span>
-                        </button>
-                      </h4>
-                      {open ? (
-                        <ul
-                          id={listId}
-                          className="flex flex-col gap-0.5 px-1 pb-1 motion-safe:animate-card-rise"
-                        >
-                          {g.shown.map((k) => (
-                            <li key={k}>
-                              <KindRow kind={k} descId={`${ids}-${k}-desc`} onPick={onPick} />
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-[12px] leading-snug text-slate-600 dark:border-slate-600 dark:text-slate-300">
-                {CUSTOM_MAX_NOTE(ITEM_TYPE_CUSTOM_MAX)}
-              </p>
-            )}
-          </section>
-        ) : null}
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// One kind: its icon on a soft tile, its name, and what it holds in a line.
+// One kind: its icon on a soft tile, its name (tagged Ready to use when the type lacks a built-in field of it), and
+// what it holds in a line.
 function KindRow({
   kind,
   descId,
-  onPick,
+  ready,
+  dimmed,
+  onPress,
 }: {
-  kind: CustomFieldKind;
+  kind: PickKind;
   descId: string;
-  onPick: (kind: CustomFieldKind) => void;
+  ready: boolean;
+  dimmed: boolean;
+  onPress: (kind: PickKind) => void;
 }) {
   return (
     <button
       type="button"
       data-nav=""
-      data-pick=""
+      {...(dimmed ? { 'aria-disabled': true } : { 'data-pick': '' })}
       data-kind={kind}
-      aria-label={CUSTOM_KIND_LABELS[kind]}
+      aria-label={PICK_KIND_LABELS[kind]}
       aria-describedby={descId}
-      onClick={() => onPick(kind)}
-      className={`group flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left transition hover:bg-white focus-visible:bg-white motion-reduce:transition-none pointer-coarse:min-h-11 dark:hover:bg-slate-900 dark:focus-visible:bg-slate-900 ${FOCUS_RING}`}
+      onClick={() => {
+        if (!dimmed) onPress(kind);
+      }}
+      className={`group flex w-full items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left transition motion-reduce:transition-none pointer-coarse:min-h-11 ${
+        dimmed
+          ? 'cursor-not-allowed opacity-45'
+          : 'cursor-pointer hover:bg-white focus-visible:bg-white dark:hover:bg-slate-900 dark:focus-visible:bg-slate-900'
+      } ${FOCUS_RING}`}
     >
       <span
         aria-hidden
         className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white text-slate-600 ring-1 ring-slate-200 transition group-hover:bg-brand-50 group-hover:text-brand-700 group-hover:ring-brand-200 motion-reduce:transition-none dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:group-hover:bg-brand-500/15 dark:group-hover:text-brand-200 dark:group-hover:ring-brand-500/40"
       >
-        {CUSTOM_KIND_ICONS[kind]}
+        {PICK_KIND_ICONS[kind]}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[13px] font-medium text-slate-900 dark:text-slate-50">
-          {CUSTOM_KIND_LABELS[kind]}
+        <span className="flex items-center gap-1.5">
+          <span className="text-[13px] font-medium text-slate-900 dark:text-slate-50">
+            {PICK_KIND_LABELS[kind]}
+          </span>
+          {ready ? (
+            <span className="rounded-full bg-brand-50 px-1.5 py-px text-[10px] font-semibold text-brand-700 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30">
+              Ready to use
+            </span>
+          ) : null}
         </span>
         <span id={descId} className="block truncate text-[11px] text-slate-500 dark:text-slate-400">
           {KIND_DESCRIPTIONS[kind]}

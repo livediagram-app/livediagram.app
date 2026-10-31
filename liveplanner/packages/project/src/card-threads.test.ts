@@ -8,7 +8,9 @@ import {
   THREAD_TITLE_MAX,
   applyThreadChange,
   autoThreadTitle,
+  fieldCountKey,
   isCardThread,
+  isThreadFieldId,
   isThreadId,
   keepOwnThreadAuthors,
   legacyThreadOf,
@@ -144,6 +146,24 @@ describe('ids and shape', () => {
         cards: [{ projectId: 'p2', itemId: 'i9', key: null, projectName: 'Other' }],
       }),
     ).toBe(true);
+  });
+
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields".
+  it('starts a thread in a Comments field, storing none for the built-in', () => {
+    expect(thread({ field: 'f-review' }).field).toBe('f-review');
+    expect(thread({ field: 'comments' })).not.toHaveProperty('field');
+    expect(thread()).not.toHaveProperty('field');
+  });
+
+  it('keeps a stored thread’s field only when it can name a Comments field', () => {
+    expect(isThreadFieldId('comments')).toBe(true);
+    expect(isThreadFieldId('f-review')).toBe(true);
+    expect(isThreadFieldId('title')).toBe(false);
+    expect(isThreadFieldId('f-')).toBe(false);
+    expect(isThreadFieldId(7)).toBe(false);
+    expect(isCardThread({ ...thread(), field: 'f-review' })).toBe(true);
+    expect(isCardThread({ ...thread(), field: 'Design Review' })).toBe(false);
+    expect(isCardThread({ ...thread(), field: null })).toBe(false);
   });
 });
 
@@ -314,6 +334,60 @@ describe('writes', () => {
       applyThreadChange(thread(), { kind: 'removeCard', projectId: 'p1', itemId: 'zz' }, 2),
     ).toEqual({ ok: false, reason: 'unchanged' });
   });
+
+  // docs/specs/012-collaboration/comment-reactions.md "On a card's comment threads".
+  describe('react', () => {
+    const react = (by: string, on = true, commentId = 'c1') =>
+      ({ kind: 'react', commentId, emoji: 'eyes', by, name: by.toUpperCase(), on }) as const;
+
+    it('turns a reaction on and off, raising rev but not activity', () => {
+      const t = thread();
+      const on = applyThreadChange(t, react('k-bo'), 500);
+      expect(on.ok && on.thread?.comments[0]?.reactions).toEqual([
+        { emoji: 'eyes', by: 'k-bo', name: 'K-BO' },
+      ]);
+      expect(on.ok && on.thread).toMatchObject({ rev: t.rev + 1, updatedAt: t.updatedAt });
+      expect(isCardThread(on.ok ? on.thread : null)).toBe(true);
+      const off = applyThreadChange(on.ok ? on.thread! : t, react('k-bo', false), 600);
+      expect(off.ok && off.thread?.comments[0]).toEqual(t.comments[0]);
+      expect(off.ok && off.thread).toMatchObject({ rev: t.rev + 2, updatedAt: t.updatedAt });
+    });
+
+    it('changes nothing when already so, and refuses a missing comment', () => {
+      const t = thread();
+      expect(applyThreadChange(t, react('k-bo', false), 1)).toEqual({
+        ok: false,
+        reason: 'unchanged',
+      });
+      const on = applyThreadChange(t, react('k-bo'), 1);
+      expect(applyThreadChange(on.ok ? on.thread! : t, react('k-bo'), 2)).toEqual({
+        ok: false,
+        reason: 'unchanged',
+      });
+      expect(applyThreadChange(t, react('k-bo', true, 'zz'), 1)).toEqual({
+        ok: false,
+        reason: 'comment_not_found',
+      });
+    });
+
+    it('refuses one past the byte budget, but still takes one back', () => {
+      const big = {
+        ...thread(),
+        comments: [
+          comment('c1', {
+            text: 'x'.repeat(THREAD_BYTES - 400),
+            reactions: [{ emoji: 'eyes', by: 'k-bo', name: 'Bo' }],
+          }),
+        ],
+      };
+      expect(applyThreadChange(big, react('k-' + 'y'.repeat(190)), 1)).toEqual({
+        ok: false,
+        reason: 'comments_full',
+      });
+      const off = applyThreadChange(big, { ...react('k-bo', false), name: 'Bo' }, 1);
+      expect(off.ok && off.thread?.comments[0]?.reactions).toBeUndefined();
+    });
+  });
 });
 
 describe('reads', () => {
@@ -339,6 +413,18 @@ describe('reads', () => {
       ]),
     );
     expect(openCommentCounts([a], 'p9').size).toBe(0);
+  });
+
+  it('counts each card’s comments in each Comments field a thread names, beside the whole', () => {
+    const review = { ...thread({ id: 'th-dddddddddddddddd', field: 'f-review' }) };
+    const shut = { ...review, id: 'th-eeeeeeeeeeeeeeee', resolved: true };
+    expect(openCommentCounts([a, b, review, shut], 'p1')).toEqual(
+      new Map([
+        ['i1', 4],
+        ['i2', 2],
+        [fieldCountKey('i1', 'f-review'), 1],
+      ]),
+    );
   });
 
   it('sorts open threads first by activity, then resolved ones by when', () => {

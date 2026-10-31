@@ -38,9 +38,9 @@ A drag both reorders AND sets membership: the dropped tab **adopts the drop targ
 
 Folder membership changes two ways:
 
-**1. Drag and drop.** Dropping a tab onto a folder's pills (or onto the folder chip, which targets the run's first member, so it works while the members are tucked away too) **joins** that folder; dropping it among loose tabs makes it **loose**; dropping it among a different folder's pills **moves** it there. The tab simply adopts the drop target's folder. `reorderTabs` performs the membership change in the same commit as the reorder.
+**1. Drag and drop.** Dropping a tab onto a folder's tabs (or onto the folder chip, which targets the run's first member, so it works while the members are tucked away too) **joins** that folder; dropping it among loose tabs makes it **loose**; dropping it among a different folder's tabs **moves** it there. The tab simply adopts the drop target's folder. `reorderTabs` performs the membership change in the same commit as the reorder.
 
-**Drop position is deterministic + shown.** While dragging, the tab bar reads the pointer's position within the hovered pill: the left half means "land **before** this tab", the right half means "land **after**", and a vertical **insertion caret** renders in that exact gap so the user can see where the tab will go before releasing. `reorderTabs` takes a `placeBefore` flag (set from that side) and recomputes the target index _after_ removing the source, so the result matches the caret regardless of drag direction. (Dropping onto a folder chip omits the flag and joins at the run's head, as above.) Before this, the only cue was a highlight ring around the whole target and the landing side flipped with drag direction, so the drop was hard to predict.
+**Drop position is deterministic + shown.** While dragging, the tab bar reads the pointer's position within the hovered tab: the left half means "land **before** this tab", the right half means "land **after**", and a vertical **insertion caret** renders in that exact gap so the user can see where the tab will go before releasing. `reorderTabs` takes a `placeBefore` flag (set from that side) and recomputes the target index _after_ removing the source, so the result matches the caret regardless of drag direction. (Dropping onto a folder chip omits the flag and joins at the run's head, as above.) Before this, the only cue was a highlight ring around the whole target and the landing side flipped with drag direction, so the drop was hard to predict.
 
 **2. The tab's right-click / ellipsis menu**: an **Organise in Tab Folder** row that opens a centred **modal** (`AddTabToFolderDialog`, the same tile-grid language as the shared placement browser, [Folders](../013-workspace/folders.md)). The row and the dialog title both read **Organise in Tab Folder**, which says which folders it means and that it also moves a tab between folders and out of one. Picking commits immediately and closes:
 
@@ -50,11 +50,19 @@ Folder membership changes two ways:
 
 ## Tab bar rendering
 
-`TabBar` maps over `groupTabsIntoRuns(tabs)` instead of the flat list:
+`TabBar` maps over `groupTabsIntoRuns(tabs)` and hands the runs to the shared strip (`packages/workbench/src/components/chrome/TabStrip.tsx`, with `TabFrame` and `TabFolderGroup` beside it), so all four editors draw tabs and folders alike:
 
-- **Loose** entries render the tab pill: a softly-rounded chip (rounded-lg, deliberately not a full pill) with **neutral slate text** so the name reads on the bar whatever the tab's theme, and the theme accent kept on the label's leading **tab icon** (the Pages glyph). The **active** tab is a raised card: a bar-contrasting surface (white / slate-800) with an accent ring + shadow and accent-coloured text, so it can never blend into the bar; inactive tabs are soft tinted chips. The bar itself sits on a slate-50 surface so the active card pops.
-- **Folder** entries render as a **container**, clearly distinct from the tab pills inside it: a **dashed** rounded boundary over a tinted inset surface, carrying a **folder glyph** (closed when the fan is tucked away, open while it shows; no separate chevron), the folder **name** (small caps, no tooltip), and the member count as a small rounded **badge**. Members **fan UPWARD**: clicking the chip opens a transient popover above the bar listing the members vertically (the same pills loose tabs use: selection, presence, drag-reorder, context menu) instead of expanding sideways, so a big folder costs one chip of horizontal space. Only the folder's **active member** (when the active tab lives in the folder) renders inline beside the chip; picking a member from the fan switches to it (it becomes the inline pill) and closes the fan. The fan closes on outside press, Escape, or any tab switch; the old persisted per-folder collapse state is gone (the fan is transient), and the chip surfaces the **presence** of its hidden members (the inline pill shows its own stack).
-- Clicking the chip toggles the fan. Double-clicking renames (rewrites every member). Nothing about the fan is stored or broadcast.
+- **Loose** entries render a tab, as [How a tab looks](../007-editor/live-app.md#how-a-tab-looks) describes.
+- **A folder opens in place, in the strip.** Its **chip** comes first: the folder's name on a soft tint of the folder's colour, a chevron that points the way the folder will move (right while it is closed, left while it is open) and, while closed, the member count in a small badge of the folder's colour. Clicking the chip, or Enter or Space on it, **expands the folder's tabs inline, right after the chip**; clicking again collapses them. Their width eases open or shut over 180 ms, the badge easing out or back with them, and the neighbours slide along (at once under reduced motion). There is no popover and no list: the folder never leaves the strip.
+- **The folder's tabs read as one group.** The chip and its tabs stand on a **shelf**, a faint tint of the folder's colour rounded on top and standing on the bottom edge like the tabs. The open tab keeps its own card on the shelf.
+- **The folder's colour comes from its name**, a stable pick from eight hues (blue, violet, emerald, amber, rose, cyan, orange, pink), so a folder keeps its colour from visit to visit and every collaborator sees the same one. Nothing is stored for it; renaming a folder may give it another hue.
+- **The open tab is always in view.** When it is in a collapsed folder it stays in the strip, on the folder's shelf right after the chip, so the folder plainly holds where you are; the other members stay tucked away and the badge still counts them all.
+- **Open or closed belongs to this visit.** Folders start collapsed; nothing about expanding one is stored or broadcast, and switching tabs never closes one. Renaming a folder keeps it open or closed as it was.
+- **Expanding brings the group into view.** When the expanded tabs run past the strip's edge, the strip scrolls the least distance that shows the whole folder (or as much of it as fits, from the chip), clear of the edge fade, so on a phone the folder's tabs come on screen.
+- **Presence.** A collapsed folder's chip carries the presence stack of the people on its tucked-away members (the open tab shows its own).
+- **Dragging.** Holding a dragged tab over a collapsed chip for half a second springs the folder open, so the tab can land between its members; dropping it on the chip joins the folder at its head, open or not. The dragged tab dims while it moves and a 2 px caret marks where it will land.
+- **Keyboard and screen readers.** The strip is a `tablist`. Each tab's name is a `tab`, `aria-selected` on the open one; each chip is a `tab` too, with `aria-expanded` and the name "Planning, 3 tabs", that toggles rather than opens. Tab moves focus into the strip on the open tab; Left and Right move between tabs and chips (skipping tucked-away members, which are `inert`), Home and End go to the first and last; Enter or Space opens a tab or toggles a folder.
+- Double-clicking the chip renames the folder (rewrites every member).
 
 ## Persistence & realtime
 
@@ -87,8 +95,8 @@ Two further rules, both learned from the untyped version:
 
 ## Edge cases
 
-- **Active tab in a folder** → it renders inline beside the chip, so the user can always see where they are.
-- **One-tab folder** → valid; renders as a chip.
+- **Active tab in a folder** → it stays in the strip on the folder's shelf beside the chip, even while the folder is collapsed, so the user can always see where they are.
+- **One-tab folder** → valid; renders as a chip with its one tab tucked away until expanded.
 - **Empty/whitespace name** → treated as loose everywhere (client normalize, create handler rejects, server trims to NULL).
 - **Name uniqueness within a design** → same name is the same folder (members merge into one run on normalize).
 - **Shared tab, foldered in A, loose in B** → naturally correct: folder is on the link, never in the body.

@@ -25,6 +25,7 @@ import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
+import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { isEditorPath } from '@/lib/editor-path';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
@@ -198,7 +199,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     <EditorContext.Provider value={state}>
       {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
       <MentionContext.Provider value={state.commentMentions}>
-        <EditorView />
+        {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}
+        <CommentReactionsProvider value={state.commentReactions}>
+          <EditorView />
+        </CommentReactionsProvider>
       </MentionContext.Provider>
       {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
