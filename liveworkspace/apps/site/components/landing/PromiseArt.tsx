@@ -26,7 +26,7 @@ const LockGlyph = lucideGlyph(lucideLock, 12);
 const ink = (app: ListedApp) =>
   ({
     '--lw-ink': app.deep,
-    '--lw-ink-dark': app.accent,
+    '--lw-ink-dark': app.light,
     '--lw-accent': app.accent,
   }) as CSSProperties;
 

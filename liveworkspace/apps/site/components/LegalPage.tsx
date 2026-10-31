@@ -185,7 +185,7 @@ export function LegalPage({
                       key={app.id}
                       id={app.name}
                       className="scroll-mt-24 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
-                      style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+                      style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
                     >
                       <div className="h-1.5" style={{ background: app.accent }} />
                       <div className="p-6 sm:p-8">

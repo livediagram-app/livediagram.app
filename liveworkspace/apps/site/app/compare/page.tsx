@@ -53,7 +53,7 @@ export default function ComparePage() {
             <li key={app.id}>
               <a
                 href={`${app.url}/alternatives`}
-                style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+                style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
                 className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--lw-ink)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-slate-700 dark:bg-slate-900"
               >
                 <AppLogo app={app} size="md" />

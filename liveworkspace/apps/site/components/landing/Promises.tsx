@@ -180,7 +180,7 @@ function ExplorerArt() {
                 <div
                   key={app.id}
                   className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900"
-                  style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+                  style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
                 >
                   <AppMark app={app} className="size-5 shrink-0" />
                   <span className="min-w-0">
@@ -247,7 +247,7 @@ function AccountArt() {
           <div
             key={app.id}
             className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900"
-            style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+            style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
           >
             <AppMark app={app} className="size-5" />
             <span className="text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">{app.name}</span>
