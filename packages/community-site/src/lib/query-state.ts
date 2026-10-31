@@ -2,6 +2,7 @@ import {
   communityQueryParams,
   EMPTY_COMMUNITY_QUERY,
   isCommunityCategory,
+  isCommunityCategoryOf,
   communitySearchCategory,
   communitySearchSort,
   communitySearchTags,
@@ -10,6 +11,7 @@ import {
   setCommunitySearchCategory,
   setCommunitySearchSort,
   parseCommunityListQuery,
+  type CommunityApp,
   type CommunityListQuery,
 } from '@liveworkspace/community';
 
@@ -30,11 +32,17 @@ export const EMPTY_FILTERS: GalleryFilters = {
 
 // A stale or hand-edited link still shows something: an unknown category or a tag that does not
 // normalise is dropped on its own rather than discarding the whole query (the api would refuse it as
-// `invalid_query`).
-export function readQueryState(params: URLSearchParams): GalleryFilters {
+// `invalid_query`). With the gallery's `app`, another app's category (`?category=architecture` on livedesign's) is
+// unknown here too, in `?category=` or a `category:` word: each app has its own closed set, so it could only match
+// nothing under a label the app's own picker never offers.
+export function readQueryState(params: URLSearchParams, app?: CommunityApp): GalleryFilters {
   const clean = new URLSearchParams(params);
+  const known = (id: string) => (app ? isCommunityCategoryOf(app, id) : isCommunityCategory(id));
   const category = clean.get('category');
-  if (category !== null && !isCommunityCategory(category)) clean.delete('category');
+  if (category !== null && !known(category)) clean.delete('category');
+  const asked = communitySearchCategory(clean.get('q') ?? '');
+  if (asked && !known(asked))
+    clean.set('q', setCommunitySearchCategory(clean.get('q') ?? '', null));
   const tag = clean.get('tag');
   if (tag !== null && !normaliseCommunityTag(tag)) clean.delete('tag');
   clean.delete('offset');

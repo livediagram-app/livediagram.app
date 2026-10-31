@@ -38,3 +38,27 @@ describe('sites', () => {
     expect(SITES.map((s) => LOCAL_PORTS[s.id])).toEqual([3000, 3100, 3200, 3300, 3400]);
   });
 });
+
+// WCAG relative luminance and contrast.
+function luminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+}
+const contrast = (a: string, b: string) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
+};
+
+describe('each site’s light shade', () => {
+  // The dark surfaces text in a site's colour sits on: slate-950, slate-900 and slate-800.
+  it('reads at WCAG AA as text on every dark surface', () => {
+    for (const site of SITES)
+      for (const surface of ['#020618', '#0f172a', '#1e293b'])
+        expect(contrast(site.light, surface), `${site.id} on ${surface}`).toBeGreaterThanOrEqual(
+          4.5,
+        );
+  });
+});

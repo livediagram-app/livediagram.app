@@ -67,7 +67,7 @@ describe('SettingsPanel', () => {
     const { calls, request } = fakeRequest();
     renderWithKit(<Host own={fixtureCategories()} request={request} />);
     expect(within(pane()).getByRole('switch', { name: 'Alignment Guides' })).toBeTruthy();
-    const header = document.querySelector('header')!;
+    const header = document.querySelector<HTMLElement>('[data-settings-header]')!;
     const switcher = within(header).getByRole('group', { name: 'Show settings for' });
     expect(
       within(switcher)
@@ -78,6 +78,13 @@ describe('SettingsPanel', () => {
     expect(switcher.querySelector('[data-logo="all"]')).not.toBeNull();
     // Only reads: the Account section and Common are fetched beside the editor's own, nothing written.
     expect(calls.every((call) => call.method === 'GET')).toBe(true);
+  });
+
+  it('adds no banner or contentinfo landmark to the page it opens over', () => {
+    const { request } = fakeRequest();
+    renderWithKit(<Host own={fixtureCategories()} request={request} />);
+    expect(screen.queryByRole('banner')).toBeNull();
+    expect(screen.queryByRole('contentinfo')).toBeNull();
   });
 
   it("keeps the Account section and Common on an app's own side, signed in", async () => {

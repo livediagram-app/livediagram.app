@@ -353,7 +353,7 @@ describe('the Settings panel, for a guest on an app’s address', () => {
     );
     act(() => railButton('Editor')!.click());
     expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
-    const footer = document.querySelector('[role="dialog"] footer')!;
+    const footer = document.querySelector('[role="dialog"] [data-settings-footer]')!;
     expect(footer.textContent).toContain('Saved in this browser');
     expect(footer.textContent).not.toContain('More in livediagram Settings');
     expect(footer.querySelector('[data-settings-sign-in]')?.getAttribute('href')).toBe(

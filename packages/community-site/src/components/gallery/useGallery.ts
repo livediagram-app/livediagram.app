@@ -69,11 +69,11 @@ function appendUnique(posts: GalleryPost[], more: GalleryPost[]): GalleryPost[] 
 }
 
 export function useGallery(session: CommunitySession | null): Gallery {
-  const { api, telemetry } = useCommunitySite();
+  const { app, api, telemetry } = useCommunitySite();
   const search = useSyncExternalStore(subscribeSearch, getSearchSnapshot, getServerSearchSnapshot);
   const filters = useMemo(
-    () => (search === null ? null : readQueryState(new URLSearchParams(search))),
-    [search],
+    () => (search === null ? null : readQueryState(new URLSearchParams(search), app)),
+    [search, app],
   );
   const mine = filters ? communitySearchMine(filters.q) : false;
   // My Shares can only load once the session has said who is signed in.

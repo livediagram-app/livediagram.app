@@ -19,6 +19,9 @@ export type Site = {
   accent: string;
   // Its deep shade (brand-700): "live" in its wordmark on light, where the accent is too pale.
   deep: string;
+  // Its light shade (brand-400): text in the site's colour on a dark page, where the accent itself can fall short of
+  // WCAG AA (liveplanner's violet-500 on slate-900 is 4.1:1).
+  light: string;
 };
 
 // Running the apps locally (the root AGENTS.md port blocks): each site's router, or the liveworkspace
@@ -50,6 +53,7 @@ export const PLATFORM_SITE: Site = {
   pitch: 'One account across every app',
   accent: '#64748b',
   deep: '#334155',
+  light: '#94a3b8',
 };
 
 /** liveworkspace.app's origin as seen from a page on `host`: staging's from a staging app (`staging.<app>`), else
@@ -71,6 +75,7 @@ export const APP_SITES: readonly Site[] = [
     pitch: 'Diagram and draw together',
     accent: '#0ea5e9',
     deep: '#0369a1',
+    light: '#38bdf8',
   },
   {
     id: 'liveplanner.app',
@@ -79,6 +84,7 @@ export const APP_SITES: readonly Site[] = [
     pitch: 'Plan the work together',
     accent: '#8b5cf6',
     deep: '#6d28d9',
+    light: '#a78bfa',
   },
   {
     id: 'livedocuments.app',
@@ -87,6 +93,7 @@ export const APP_SITES: readonly Site[] = [
     pitch: 'Write and present together',
     accent: '#f59e0b',
     deep: '#b45309',
+    light: '#fbbf24',
   },
   {
     id: 'livedesign.app',
@@ -95,6 +102,7 @@ export const APP_SITES: readonly Site[] = [
     pitch: 'Design logos, wireframes and photos together',
     accent: '#f43f5e',
     deep: '#be123c',
+    light: '#fb7185',
   },
 ];
 

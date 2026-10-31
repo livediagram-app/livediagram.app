@@ -86,6 +86,7 @@ export function siteOf(app: App): Site {
       pitch: '',
       accent: '#64748b',
       deep: '#334155',
+      light: '#94a3b8',
     }
   );
 }

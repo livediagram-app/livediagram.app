@@ -7,7 +7,8 @@ import { Header } from '@/components/Header';
 // the mirror is liveworkspace's, the same for every app, so it is explained once here. Each app's help keeps a short
 // Google Drive article that points to this page, and Settings › Account › Cloud Sync links here.
 
-const TITLE = 'Google Drive sync';
+const HEADING = 'Google Drive sync';
+const TITLE = `${HEADING} · liveworkspace`;
 const DESCRIPTION =
   'Keep a copy of your work from every liveworkspace app in your own Google Drive, in matching folders, with renames, moves and deletions synced both ways.';
 
@@ -15,7 +16,13 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: '/help/google-drive' },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: '/help/google-drive', type: 'article' },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: '/help/google-drive',
+    siteName: 'liveworkspace',
+    type: 'article',
+  },
   twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
 };
 
@@ -297,7 +304,7 @@ export default function GoogleDriveHelpPage() {
           Help
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance text-slate-900 sm:text-5xl dark:text-white">
-          {TITLE}
+          {HEADING}
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           Keep a copy of your work, from every app, in your own Google Drive: each item a file in

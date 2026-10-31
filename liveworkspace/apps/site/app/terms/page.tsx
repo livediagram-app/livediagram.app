@@ -11,7 +11,7 @@ import { SECURITY_ADVISORY_URL } from '@liveworkspace/sites/security';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
 
 export const metadata: Metadata = {
-  title: 'Terms of Use',
+  title: 'Terms of Use · liveworkspace',
   description:
     'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign): what you agree to, and what the free service promises.',
   alternates: { canonical: '/terms' },
