@@ -9,9 +9,9 @@
     "./raw-svg": "./raw-svg.ts"
   },
   "dependencies": {
-    "@oxlint/plugins": "^1.88.0",
-    "oxlint": "^1.88.0",
-    "oxlint-tsgolint": "^7.0.2004"
+    "@oxlint/plugins": "^1.90.0",
+    "oxlint": "^1.90.0",
+    "oxlint-tsgolint": "^7.0.2005"
   },
   "scripts": {
     "lint": "oxlint",
