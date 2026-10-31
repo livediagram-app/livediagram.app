@@ -38,4 +38,14 @@ describe('FirstPageChoice', () => {
     fireEvent.click(document.querySelector('[data-device-tile="android"]')!);
     expect(onChoose).toHaveBeenCalledWith('wireframe', 'android');
   });
+
+  it('is its own scroll box, capped to the window, so the back bar pins to its top', () => {
+    // Without one the sticky All kinds bar pinned to the editor's frame, outside the canvas's transform,
+    // and floated over the device tiles.
+    render(<FirstPageChoice zoom={1} onChoose={vi.fn()} />);
+    const card = document.querySelector('[data-first-page-choice]')!;
+    expect(card.className).toContain('overflow-y-auto');
+    expect(card.className).toContain('max-h-[calc(100dvh-12rem)]');
+    expect(card.className).toContain('w-[min(420px,calc(100vw-1.5rem))]');
+  });
 });
