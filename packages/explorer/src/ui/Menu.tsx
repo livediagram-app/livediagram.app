@@ -21,18 +21,28 @@ import { useLatest } from './useLatest';
 const ITEM = '[role="menuitem"]:not([aria-disabled="true"])';
 const MARGIN = 8;
 
-function placeMenu(anchor: HTMLElement, menu: HTMLElement): { left: number; top: number } {
-  const a = anchor.getBoundingClientRect();
-  const width = menu.offsetWidth || 224;
-  const height = menu.offsetHeight || 0;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  let left = a.right - width;
-  left = Math.max(MARGIN, Math.min(left, vw - width - MARGIN));
-  let top = a.bottom + 4;
-  // Opens upward when there is no room below.
-  if (height && top + height > vh - MARGIN && a.top - height - 4 > MARGIN) top = a.top - height - 4;
-  return { left, top };
+export type MenuPlace = { left: number; top: number; maxHeight?: number };
+
+type Box = { width: number; height: number };
+
+// Below the trigger, right edges aligned, kept inside the window's margin. With no room below it opens upward; with
+// room on neither side it slides up over its trigger until its last row is on screen (a long menu from a card
+// halfway down a short window), and one taller than the window keeps to it and scrolls. Never off the page, where a
+// verb could not be reached (liveworkspace/docs/specs/004-index/one-explorer.md).
+export function placeMenu(
+  a: Pick<DOMRect, 'top' | 'bottom' | 'right'>,
+  menu: Box,
+  view: Box,
+): MenuPlace {
+  const width = menu.width || 224;
+  const left = Math.max(MARGIN, Math.min(a.right - width, view.width - width - MARGIN));
+  const room = view.height - 2 * MARGIN;
+  if (menu.height > room) return { left, top: MARGIN, maxHeight: room };
+  const below = a.bottom + 4;
+  if (below + menu.height <= view.height - MARGIN) return { left, top: below };
+  const above = a.top - menu.height - 4;
+  if (above >= MARGIN) return { left, top: above };
+  return { left, top: view.height - MARGIN - menu.height };
 }
 
 export function PortalMenu({
@@ -50,12 +60,19 @@ export function PortalMenu({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [at, setAt] = useState<{ left: number; top: number } | null>(null);
+  const [at, setAt] = useState<MenuPlace | null>(null);
   const close = useLatest(onClose);
 
   useLayoutEffect(() => {
     if (!anchor || !ref.current) return;
-    setAt(placeMenu(anchor, ref.current));
+    const menu = ref.current;
+    setAt(
+      placeMenu(
+        anchor.getBoundingClientRect(),
+        { width: menu.offsetWidth, height: menu.offsetHeight },
+        { width: window.innerWidth, height: window.innerHeight },
+      ),
+    );
   }, [anchor]);
 
   useEffect(() => {
@@ -121,7 +138,13 @@ export function PortalMenu({
         tabIndex={-1}
         onKeyDown={onKeyDown}
         className={`fixed z-50 flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
-        style={at ? { left: at.left, top: at.top } : { left: -9999, top: -9999 }}
+        style={
+          at
+            ? at.maxHeight === undefined
+              ? { left: at.left, top: at.top }
+              : { left: at.left, top: at.top, maxHeight: at.maxHeight, overflowY: 'auto' }
+            : { left: -9999, top: -9999 }
+        }
       >
         {children}
       </div>
