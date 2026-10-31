@@ -34,6 +34,10 @@ never told a change worked when it shows on no board.
     ([Forms](../030-forms/forms.md#agents)).
 - A card link (Parent, a Card field) reads as its card's number and title (`"#12 Fix login"`); writes take that form
   back, by the number.
+- A Person or Card field that holds several ([Holds Several](item-types.md#holds-several)) reads as a comma list
+  (`"Sam Reed, Ana Diaz"`, `"#3 Website, #5 Launch"`); writes take a comma list or a JSON list of names or numbers
+  back, each resolved as one value is, and one value sets a list of one. `change_card_types` sets the switch with
+  `multiple` (a Person or Card field only; any other kind is refused).
 - A person named for the first time gets a colour no one on the project has yet, while colours remain.
 - Each board's card types are part of what it shows: a card is on a board only when its column is there and the
   board takes its card type ([Plan board](plan-board.md#the-board-set-up)).
