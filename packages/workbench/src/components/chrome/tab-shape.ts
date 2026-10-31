@@ -18,7 +18,7 @@ export const TAB_BAR_CLASS =
 export const TAB_STRIP_CLASS =
   'scroll-edge-fade scrollbar-slim flex flex-1 items-end self-stretch overflow-x-auto overflow-y-hidden px-1';
 
-// The tablist inside the scroller: every tab and folder, a hair apart. Its own stacking layer, so the sliding card
+// The toolbar inside the scroller: every tab and folder, a hair apart. Its own stacking layer, so the sliding card
 // stands above the folders' shelves and under every tab; `data-tab-slide` is set once that card shows.
 export const TAB_LIST_CLASS = 'group/tabs relative isolate flex h-full shrink-0 items-end gap-0.5';
 
@@ -40,7 +40,7 @@ const WASH =
 
 // Every tab: one height, the rounded top, its own stacking layer (the card and wash sit under its content), and a
 // focus ring that follows its shape when its name has keyboard focus.
-const BASE = `group/tab relative isolate flex h-10 shrink-0 items-center gap-1 rounded-t-[10px] text-[13.5px] tracking-[-0.005em] ${CARD} ${WASH} has-[[role=tab]:focus-visible]:outline-2 has-[[role=tab]:focus-visible]:-outline-offset-2 has-[[role=tab]:focus-visible]:outline-brand-500`;
+const BASE = `group/tab relative isolate flex h-10 shrink-0 items-center gap-1 rounded-t-[10px] text-[13.5px] tracking-[-0.005em] ${CARD} ${WASH} has-[[data-tab-key]:focus-visible]:outline-2 has-[[data-tab-key]:focus-visible]:-outline-offset-2 has-[[data-tab-key]:focus-visible]:outline-brand-500`;
 
 // The open tab: its card shows (until the strip's sliding card takes over), its name semibold (its colour, the tab
 // theme's accent, is set inline).
@@ -71,7 +71,7 @@ export function tabShapeClass({ active, editing, dragging = false }: TabShapeSta
 // The tab's name: one line, truncated past 14rem, trimmed to its cap band so it centres on its letters.
 export const TAB_NAME_CLASS = 'text-optical-line max-w-[14rem] truncate';
 
-// The name's button, the tab's `role="tab"`: the tab's full height (a 44px tap area on touch), no ring of its own
+// The name's button, the tab's own key in the strip (`data-tab-key`): the tab's full height (a 44px tap area on touch), no ring of its own
 // (the tab draws it).
 export const TAB_NAME_BUTTON_CLASS =
   'relative flex h-10 min-w-0 cursor-pointer items-center gap-1.5 outline-none touch-target-y';

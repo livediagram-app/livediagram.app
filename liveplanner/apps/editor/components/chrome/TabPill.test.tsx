@@ -40,14 +40,14 @@ afterEach(cleanup);
 describe('TabPill out of scope', () => {
   it('reads "Not shared" and never shows a name', () => {
     render(<TabPill tab={tab('t1', '')} ctx={ctx()} />);
-    const pill = screen.getByRole('tab', { name: 'Not shared' });
+    const pill = screen.getByRole('button', { name: 'Not shared' });
     expect(pill.getAttribute('aria-disabled')).toBe('true');
   });
 
   it('does nothing when clicked', () => {
     const c = ctx();
     render(<TabPill tab={tab('t1', '')} ctx={c} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Not shared' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Not shared' }));
     expect(c.onSelect).not.toHaveBeenCalled();
   });
 
@@ -62,7 +62,7 @@ describe('TabPill out of scope', () => {
 
   it('leaves the scoped tab an ordinary pill', () => {
     render(<TabPill tab={tab('t2', 'Roadmap')} ctx={ctx()} />);
-    expect(screen.getByRole('tab', { name: /Roadmap/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Roadmap/ })).toBeTruthy();
   });
 });
 
@@ -70,7 +70,7 @@ describe('TabPill out of scope', () => {
 describe('TabPill kind glyph', () => {
   it('shows no glyph before the name', () => {
     render(<TabPill tab={tab('t2', 'Board')} ctx={ctx()} />);
-    expect(screen.getByRole('tab', { name: 'Board' }).querySelector('svg')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Board' }).querySelector('svg')).toBeNull();
   });
 });
 
@@ -79,7 +79,7 @@ describe('TabPill kind glyph', () => {
 describe('TabPill tap area', () => {
   it('carries the vertical touch pad on a positioned button', () => {
     render(<TabPill tab={tab('t2', 'Board')} ctx={ctx()} />);
-    const button = screen.getByRole('tab', { name: 'Board' });
+    const button = screen.getByRole('button', { name: 'Board' });
     expect(button.className).toMatch(/\btouch-target-y\b/);
     expect(button.className).toMatch(/\brelative\b/);
   });

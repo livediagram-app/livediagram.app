@@ -92,15 +92,17 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   await visitor.goto(url);
   const canvas = visitor.locator('[data-canvas-a11y-root]');
   await expect(canvas.getByRole('img', { name: /Q3 beta/ })).toBeVisible();
-  await expect(visitor.getByRole('tab', { name: 'Not shared' })).toHaveCount(2);
-  await expect(visitor.getByRole('tab', { name: /Roadmap/ })).toBeVisible();
+  await expect(visitor.getByRole('button', { name: 'Not shared' })).toHaveCount(2);
+  await expect(visitor.locator('[data-tab-key]', { hasText: 'Roadmap' })).toBeVisible();
   await expect(visitor.getByText('Pricing')).toHaveCount(0);
   expect(leaks).toEqual([]);
 
   // Widening the link reloads the visitor into every tab.
   await scopeSelect.selectOption({ label: 'All tabs' });
-  await expect(visitor.getByRole('tab', { name: /Pricing/ })).toBeVisible({ timeout: 15_000 });
-  await expect(visitor.getByRole('tab', { name: 'Not shared' })).toHaveCount(0);
+  await expect(visitor.locator('[data-tab-key]', { hasText: 'Pricing' })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(visitor.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
 
   await visitorContext.close();
 });
@@ -109,6 +111,6 @@ test('the owner is never scoped', async ({ page, pageErrors }) => {
   // On livedocuments: a document in This Browser has no share links to scope.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor();
-  await expect(page.getByRole('tab', { name: 'Not shared' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });

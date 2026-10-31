@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 
 // The open tab's card, one for the whole strip, that slides from the tab you left to the tab you opened
-// (docs/specs/007-editor/editor-app.md "How a tab looks"). It lives in the tablist, under every tab, so it scrolls
+// (docs/specs/007-editor/editor-app.md "How a tab looks"). It lives in the strip's toolbar, under every tab, so it scrolls
 // with them for free; only its transform and width are ever written, straight to the element, never through React.
 //
 // When it moves:
@@ -25,7 +25,7 @@ export const TAB_SLIDER_FOOT_PX = 8;
 
 export type SliderBox = { x: number; y: number; w: number; h: number };
 
-// Where the card stands for `tab`, in the tablist's own coordinates (scroll cancels out: both move together). With
+// Where the card stands for `tab`, in the toolbar's own coordinates (scroll cancels out: both move together). With
 // `settled`, widths still easing (CollapseWidth) before the tab count at their end width.
 export function measureSlot(list: HTMLElement, tab: HTMLElement, settled: boolean): SliderBox {
   const l = list.getBoundingClientRect();
@@ -99,7 +99,7 @@ export function useTabSlider(
     list.dataset.tabSlide = '';
   });
 
-  // One observer for the strip's life: the tablist (every width change in the strip) and the open tab.
+  // One observer for the strip's life: the toolbar (every width change in the strip) and the open tab.
   useLayoutEffect(() => {
     const list = listRef.current;
     if (!list || typeof ResizeObserver === 'undefined') return;

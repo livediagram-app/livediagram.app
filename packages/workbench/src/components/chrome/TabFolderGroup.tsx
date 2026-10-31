@@ -95,7 +95,6 @@ export function TabFolderGroup<T extends { id: string }>({
   return (
     <div
       ref={groupRef}
-      role="presentation"
       data-tab-folder={name}
       data-expanded={expanded ? '' : undefined}
       style={folderStyle(name)}
@@ -121,9 +120,7 @@ export function TabFolderGroup<T extends { id: string }>({
           >
             <button
               type="button"
-              // A tab of the strip that opens or shuts its folder rather than opening a page.
-              role="tab"
-              aria-selected={false}
+              // A key of the strip that opens or shuts its folder rather than opening a page.
               aria-expanded={expanded}
               aria-label={`${name}, ${count}`}
               tabIndex={-1}

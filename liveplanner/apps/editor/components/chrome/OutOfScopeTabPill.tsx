@@ -25,8 +25,6 @@ export function OutOfScopeTabPill({
       <HoverCard title="Not shared" description="This tab isn't shared with you.">
         <button
           type="button"
-          role="tab"
-          aria-selected={false}
           aria-disabled="true"
           tabIndex={-1}
           className="flex cursor-not-allowed items-center gap-1.5 rounded-lg py-1 text-sm font-medium"

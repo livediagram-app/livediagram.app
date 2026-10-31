@@ -66,6 +66,7 @@
     "./components/chrome/header-action": "./src/components/chrome/header-action.tsx",
     "./components/chrome/tab-strip-scroll": "./src/components/chrome/tab-strip-scroll.ts",
     "./components/chrome/tab-shape": "./src/components/chrome/tab-shape.ts",
+    "./components/chrome/useStripRoving": "./src/components/chrome/useStripRoving.ts",
     "./components/chrome/useTabReorderDrag": "./src/components/chrome/useTabReorderDrag.ts",
     "./components/chrome/useTabSlider": "./src/components/chrome/useTabSlider.ts",
     "./components/colour/colour-metrics": "./src/components/colour/colour-metrics.ts",

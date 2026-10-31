@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 
 // The footer's tab strip (docs/specs/007-editor/editor-app.md "Tab bar"; docs/specs/006-document/tab-folders.md "Tab
-// bar rendering"): a tablist of tabs and folder chips, folders opening in place this visit only, the arrow keys
-// moving between what is showing, and the open tab kept in view.
+// bar rendering"): a toolbar of tabs and folder chips (never a tablist: a tab holds its avatars and menu button), folders
+// opening in place this visit only, one Tab stop and the arrow keys moving through every control showing, and the open
+// tab kept in view.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { createPortal } from 'react-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { COLLAPSE_WIDTH_MS } from '../primitives/CollapseWidth';
 import { TabFrame } from './TabFrame';
@@ -65,26 +67,25 @@ function strip(over: Partial<TabStripProps<T>> = {}) {
   return { props, ...render(<TabStrip {...props} />) };
 }
 
-const chip = () => screen.getByRole('tab', { name: /^Planning,/ });
-const tabNamed = (name: string) => screen.getByRole('tab', { name });
+const chip = () => screen.getByRole('button', { name: /^Planning,/ });
+const tabNamed = (name: string) => screen.getByRole('button', { name });
 const visibleTabs = () =>
-  screen
-    .getAllByRole('tab', { hidden: true })
+  Array.from(document.querySelectorAll('[data-tab-key]'))
     .filter((el) => !el.closest('[inert]'))
     .map((el) => el.getAttribute('aria-label') ?? el.textContent);
 
 describe('TabStrip', () => {
-  it('is a tablist of tabs and folder chips, with Add tab after it', () => {
+  it('is a toolbar of tabs and folder chips, with Add tab after it', () => {
     strip();
-    const list = screen.getByRole('tablist', { name: 'Tabs' });
+    const list = screen.getByRole('toolbar', { name: 'Tabs' });
     expect(list.getAttribute('aria-orientation')).toBe('horizontal');
     expect(visibleTabs()).toEqual(['Overview', 'Planning, 2 tabs', 'Backlog']);
     expect(screen.getByRole('button', { name: 'Add tab' })).toBeTruthy();
   });
 
-  it('lays the open tab’s sliding card first in the tablist, hidden from assistive technology', () => {
+  it('lays the open tab’s sliding card first in the toolbar, hidden from assistive technology', () => {
     strip();
-    const list = screen.getByRole('tablist', { name: 'Tabs' });
+    const list = screen.getByRole('toolbar', { name: 'Tabs' });
     const card = list.firstElementChild as HTMLElement;
     expect(card.hasAttribute('data-tab-slider')).toBe(true);
     expect(card.getAttribute('aria-hidden')).toBe('true');
@@ -135,7 +136,9 @@ describe('TabStrip', () => {
         ]}
       />,
     );
-    expect(screen.getByRole('tab', { name: /^Plans,/ }).getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByRole('button', { name: /^Plans,/ }).getAttribute('aria-expanded')).toBe(
+      'true',
+    );
   });
 
   it('keeps a shut folder shut under its new name', () => {
@@ -155,7 +158,7 @@ describe('TabStrip', () => {
         ]}
       />,
     );
-    expect(screen.getByRole('tab', { name: /^Plans,/ }).getAttribute('aria-expanded')).toBe(
+    expect(screen.getByRole('button', { name: /^Plans,/ }).getAttribute('aria-expanded')).toBe(
       'false',
     );
   });
@@ -189,15 +192,119 @@ describe('TabStrip', () => {
     overview.focus();
     fireEvent.keyDown(overview, { key: 'a' });
     expect(document.activeElement).toBe(overview);
-    const list = screen.getByRole('tablist');
+    const list = screen.getByRole('toolbar');
     fireEvent.keyDown(list, { key: 'ArrowRight' });
     expect(document.activeElement).toBe(overview);
+  });
+
+  // axe's aria-required-children (critical) fired on every editor: a tablist may own only tabs, and each tab holds its
+  // avatars and the open one its menu button. The strip is a toolbar of buttons, one Tab stop, the arrows reaching
+  // every control (docs/specs/006-document/tab-folders.md "Tab bar rendering").
+  describe('as a toolbar, with a tab menu and avatars', () => {
+    const avatar = (who: string) => (
+      <button type="button" aria-label={`Collaborators, showing ${who}`}>
+        {who[0]}
+      </button>
+    );
+    const rich = (
+      activeId = 'o',
+      presence: Record<string, string> = { o: 'Ada', b: 'Ben' },
+      portal?: HTMLElement,
+    ): Partial<TabStripProps<T>> => ({
+      activeId,
+      renderTab: (tab) => (
+        <TabFrame
+          key={tab.id}
+          id={tab.id}
+          name={tab.name}
+          active={tab.id === activeId}
+          readOnly={false}
+          onSelect={() => {}}
+          presence={presence[tab.id] ? avatar(presence[tab.id]!) : undefined}
+          menu={
+            tab.id === activeId ? (
+              <div>
+                <button type="button" aria-label="Tab menu">
+                  …
+                </button>
+                {portal ? createPortal(<button type="button">Rename</button>, portal) : null}
+              </div>
+            ) : null
+          }
+        />
+      ),
+    });
+    const tabStops = (list: HTMLElement) =>
+      Array.from(list.querySelectorAll<HTMLElement>('button')).filter((b) => b.tabIndex >= 0);
+
+    it('owns no tab roles, marks the open tab current, and is one Tab stop', () => {
+      const { container } = strip(rich());
+      const list = screen.getByRole('toolbar', { name: 'Tabs' });
+      expect(
+        container.querySelectorAll('[role="tab"], [role="tablist"], [aria-selected]'),
+      ).toHaveLength(0);
+      expect(tabNamed('Overview').getAttribute('aria-current')).toBe('page');
+      expect(tabNamed('Backlog').hasAttribute('aria-current')).toBe(false);
+      // The menu button and avatars are in the toolbar, reachable, but not Tab stops of their own.
+      for (const name of ['Tab menu', 'Collaborators, showing Ada', 'Collaborators, showing Ben'])
+        expect(list.contains(screen.getByRole('button', { name }))).toBe(true);
+      expect(tabStops(list)).toEqual([tabNamed('Overview')]);
+    });
+
+    it('moves the arrows through every control in order: names, avatars, the menu button, chips', () => {
+      strip(rich());
+      const order = [
+        'Overview',
+        'Collaborators, showing Ada',
+        'Tab menu',
+        'Planning, 2 tabs',
+        'Backlog',
+        'Collaborators, showing Ben',
+      ];
+      const at = (name: string) =>
+        name === 'Overview' || name === 'Backlog'
+          ? tabNamed(name)
+          : screen.getByRole('button', { name: name.startsWith('Planning') ? /^Planning,/ : name });
+      at(order[0]!).focus();
+      for (const next of order.slice(1)) {
+        fireEvent.keyDown(document.activeElement!, { key: 'ArrowRight' });
+        expect(document.activeElement).toBe(at(next));
+      }
+      for (const prev of order.slice(0, -1).reverse()) {
+        fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
+        expect(document.activeElement).toBe(at(prev));
+      }
+      fireEvent.keyDown(document.activeElement!, { key: 'End' });
+      expect(document.activeElement).toBe(at('Collaborators, showing Ben'));
+      fireEvent.keyDown(document.activeElement!, { key: 'Home' });
+      expect(document.activeElement).toBe(tabNamed('Overview'));
+    });
+
+    it('takes an avatar that arrives later out of the Tab order too', async () => {
+      const { props, rerender } = strip(rich());
+      rerender(<TabStrip {...props} {...rich('o', { o: 'Ada', b: 'Ben', r: 'Cy' })} />);
+      fireEvent.click(chip());
+      await act(async () => {});
+      const cy = screen.getByRole('button', { name: 'Collaborators, showing Cy' });
+      expect(cy.tabIndex).toBe(-1);
+      expect(tabStops(screen.getByRole('toolbar'))).toEqual([tabNamed('Overview')]);
+    });
+
+    it('leaves the arrows alone in a menu portalled out of the tab', () => {
+      const portal = document.body.appendChild(document.createElement('div'));
+      strip(rich('o', {}, portal));
+      const rename = screen.getByRole('button', { name: 'Rename' });
+      rename.focus();
+      fireEvent.keyDown(rename, { key: 'ArrowRight' });
+      expect(document.activeElement).toBe(rename);
+      portal.remove();
+    });
   });
 
   it('brings the open tab into view, and a tap on it brings it in again', () => {
     const { container } = strip();
     expect(scrollTo).not.toHaveBeenCalled();
-    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    const scroller = screen.getByRole('toolbar').parentElement as HTMLElement;
     vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({
       left: 0,
       right: 100,
@@ -217,7 +324,7 @@ describe('TabStrip', () => {
 
   it('brings Add tab into view with the last tab', () => {
     const { container, props, rerender } = strip();
-    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    const scroller = screen.getByRole('toolbar').parentElement as HTMLElement;
     vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({
       left: 0,
       right: 200,
@@ -254,7 +361,7 @@ describe('TabStrip', () => {
   // of sight. Once those widths land, the strip measures once more.
   it('measures again once the open tab’s slots finish easing', async () => {
     const { props, rerender } = strip();
-    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    const scroller = screen.getByRole('toolbar').parentElement as HTMLElement;
     let grown = false;
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement,
@@ -303,7 +410,7 @@ describe('TabStrip', () => {
       get: () => width,
     });
     strip();
-    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    const scroller = screen.getByRole('toolbar').parentElement as HTMLElement;
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement,
     ) {
@@ -326,7 +433,7 @@ describe('TabStrip', () => {
       vi.fn(() => ({ matches: true })),
     );
     const { container } = strip();
-    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    const scroller = screen.getByRole('toolbar').parentElement as HTMLElement;
     vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({
       left: 0,
       right: 100,
@@ -345,7 +452,7 @@ describe('TabStrip', () => {
 
   it('brings an opened folder into view, chip first when it is wider than the strip', () => {
     const { container } = strip();
-    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    const scroller = screen.getByRole('toolbar').parentElement as HTMLElement;
     vi.spyOn(scroller, 'getBoundingClientRect').mockReturnValue({
       left: 0,
       right: 300,

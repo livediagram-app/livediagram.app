@@ -15,7 +15,7 @@ import { TAB_SLIDE_MS } from './useTabSlider';
 import { TAB_CARET_CLASS, TAB_NAME_BUTTON_CLASS, TAB_NAME_CLASS, tabShapeClass } from './tab-shape';
 
 // One footer tab, drawn alike in every editor (docs/specs/007-editor/editor-app.md "How a tab looks"): the shape,
-// the name as the strip's `role="tab"`, its Tooltip when the name is cut short, the drag caret, and the slots each
+// the name as a plain button in the strip's toolbar (`aria-current="page"` on the open one), its Tooltip when the name is cut short, the drag caret, and the slots each
 // app fills (its rename field, presence avatars, menu button and any mark after the name).
 
 export type TabDragHandlers = {
@@ -159,9 +159,10 @@ function TabName({
   const button = (
     <button
       type="button"
-      role="tab"
-      aria-selected={active}
-      // The strip's roving focus: Tab lands on the open tab, the arrows move between the rest (TabStrip).
+      // The open tab is the current page of the document; not aria-pressed, which reads as a toggle a second press
+      // would turn off.
+      aria-current={active ? 'page' : undefined}
+      // The strip's roving focus: Tab lands on the open tab, the arrows move between the rest (useStripRoving).
       tabIndex={active ? 0 : -1}
       data-tab-key=""
       onClick={onSelect}
