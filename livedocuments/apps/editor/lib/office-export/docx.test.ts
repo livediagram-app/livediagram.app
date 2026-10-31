@@ -107,6 +107,17 @@ describe('Word export', () => {
     expect(doc).not.toContain('footerReference');
   });
 
+  it('reads its to-dos back as to-dos, ticked and at their level, with no box or strike in the text', async () => {
+    const { bytes } = await everyBlockFile(false);
+    const read = await readDocx(await openOfficePackage(bytes, 'word'));
+    const byText = new Map(read.blocks.map((b) => [textOf(b), b]));
+    expect(byText.get('To do')).toMatchObject({ type: 'list', list: 'todo' });
+    expect(byText.get('To do')).not.toHaveProperty('checked');
+    expect(byText.get('Done')).toMatchObject({ type: 'list', list: 'todo', checked: true });
+    expect(byText.get('Done')).toMatchObject({ runs: [{ text: 'Done' }] });
+    expect(byText.get('Nested to do')).toMatchObject({ type: 'list', list: 'todo', level: 2 });
+  });
+
   it('floats a zone that wraps beside the text and centres one that does not', async () => {
     const { doc, bytes } = await everyBlockFile();
     const images = doc.blocks.filter((b) => b.type === 'image');

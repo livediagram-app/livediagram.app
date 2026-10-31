@@ -49,8 +49,36 @@ type Para = {
   style?: ArticleParagraphStyle;
   align?: ArticleAlign;
   list?: { kind: ArticleListKind; level: number };
+  // The paragraph's left indent in twips, read for a to-do's level.
+  indent?: number;
   code: boolean;
 };
+
+// A to-do's box at the start of a paragraph, as Word's check boxes and the Word export write it, and whether it is
+// ticked (docs/specs/020-import-export/office-import.md "Word becomes an article").
+const TODO_BOXES: Record<string, boolean> = { '☐': false, '☒': true, '☑': true };
+// The Word export's to-do indent: 20 px, then 28 px a level, at 15 twips a px (office-export/docx-body.ts).
+const todoLevelOf = (twips: number) =>
+  Math.min(ARTICLE_LIST_MAX_LEVEL, Math.max(0, Math.round((twips / 15 - 20) / 28)));
+
+/** The to-do a paragraph's runs start with, its box cut from them; undefined when they start with no box. */
+function readTodo(runs: ArticleRun[]): { checked: boolean; runs: ArticleRun[] } | undefined {
+  const out = trimRuns(runs);
+  const first = out[0];
+  if (!first) return undefined;
+  const checked = TODO_BOXES[first.text[0] ?? ''];
+  const after = first.text[1];
+  if (checked === undefined || (after !== undefined && after !== ' ' && after !== '\u00a0'))
+    return undefined;
+  // The box may be a run of its own (the export writes "☐ " alone), so the space after it can open the next run.
+  first.text = first.text.slice(1);
+  const rest = trimRuns(out.filter((r) => r.text !== ''));
+  if (rest.length === 0) return undefined;
+  return {
+    checked,
+    runs: checked ? rest.map(({ s: _s, ...r }) => r) : rest,
+  };
+}
 
 const ALIGN: Record<string, ArticleAlign> = {
   center: 'center',
@@ -147,10 +175,13 @@ class DocxWalker {
       const kind = this.numbering.kindOf(numId, level);
       if (kind) list = { kind, level };
     }
+    const ind = child(pPr, 'w:ind');
+    const indent = intAttr(ind, 'w:left') ?? intAttr(ind, 'w:start');
     return {
       ...(role.style ? { style: role.style } : {}),
       ...(align ? { align } : {}),
       ...(list ? { list } : {}),
+      ...(indent !== undefined ? { indent } : {}),
       code: role.code === true,
     };
   }
@@ -182,6 +213,20 @@ class DocxWalker {
     if (text.length > MAX_ARTICLE_BLOCK_TEXT) addSkip(this.tally, 'longText');
     const trimmed = trimRuns(runs);
     const id = nextArticleBlockId();
+    const todo = this.para.style ? undefined : readTodo(trimmed);
+    if (todo) {
+      const level = this.para.list?.level ?? todoLevelOf(this.para.indent ?? 0);
+      this.push({
+        id,
+        type: 'list',
+        list: 'todo',
+        ...(level > 0 ? { level } : {}),
+        ...(todo.checked ? { checked: true as const } : {}),
+        ...(this.para.align ? { align: this.para.align } : {}),
+        runs: normaliseRuns(todo.runs),
+      });
+      return;
+    }
     if (this.para.list) {
       this.push({
         id,

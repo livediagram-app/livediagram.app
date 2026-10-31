@@ -186,6 +186,7 @@ export function everyBlockArticle(): { tab: Tab; pages: LaidOutPage[] } {
     { id: 'b11', type: 'list', list: 'numbered', runs: [{ text: 'Second' }] },
     { id: 'b12', type: 'list', list: 'todo', runs: [{ text: 'To do' }] },
     { id: 'b13', type: 'list', list: 'todo', checked: true, runs: [{ text: 'Done' }] },
+    { id: 'b13b', type: 'list', list: 'todo', level: 2, runs: [{ text: 'Nested to do' }] },
     { id: 'b14', type: 'code', text: 'const a = 1;\n  return a;' },
     { id: 'b15', type: 'divider' },
     {
