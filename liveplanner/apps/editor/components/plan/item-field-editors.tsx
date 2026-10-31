@@ -3,7 +3,6 @@
 // The item panel's field editors (docs/specs/026-plan/plan-board.md "Working on a board"), one per field
 // kind: text that saves on a pause in typing, and pickers that save at once. Each calls `onSave` with
 // the field's new value, or `undefined` to clear it.
-import { ChipField } from '@/components/primitives/ChipField';
 import {
   CheckIcon,
   CloseIcon,
@@ -205,78 +204,6 @@ export function PriorityPicker({
 
 // A label's colour: one of the Plan swatches, the same for the same label everywhere (label-colour.ts).
 export { labelColour } from './label-colour';
-import { labelColour } from './label-colour';
-
-export function LabelsEditor({
-  id,
-  value,
-  disabled,
-  suggestions = [],
-  onSave,
-}: {
-  id: string;
-  value: ItemFieldValue | undefined;
-  disabled: boolean;
-  // Labels other items of the project carry, offered as the field is typed in.
-  suggestions?: readonly string[];
-  onSave: Save;
-}) {
-  const labels = Array.isArray(value)
-    ? value.filter((l): l is string => typeof l === 'string')
-    : [];
-  const [draft, setDraft] = useState('');
-  const addLabels = (texts: readonly string[]) => {
-    const next = [...labels];
-    for (const t of texts) {
-      const l = t.trim().replace(/^#/, '');
-      if (l && !next.includes(l)) next.push(l);
-    }
-    if (next.length !== labels.length) void onSave(next);
-  };
-  const remove = (l: string) => {
-    const next = labels.filter((x) => x !== l);
-    void onSave(next.length ? next : undefined);
-  };
-  const offered = suggestions.filter((s) => !labels.includes(s));
-  return (
-    <ChipField
-      compact
-      id={id}
-      chips={labels}
-      chipColour={labelColour}
-      removeLabel={(l) => `Remove label ${l}`}
-      draft={draft}
-      onDraftChange={(value) => {
-        // A comma (typed or pasted) adds what comes before it.
-        if (!value.includes(',')) return setDraft(value);
-        const parts = value.split(',');
-        addLabels(parts.slice(0, -1));
-        setDraft(parts[parts.length - 1]!);
-      }}
-      onCommit={() => {
-        addLabels([draft]);
-        setDraft('');
-      }}
-      onBlur={() => {
-        addLabels([draft]);
-        setDraft('');
-      }}
-      onRemove={remove}
-      readOnly={disabled}
-      emptyText="None"
-      placeholder={labels.length ? 'Add…' : 'Add a label'}
-      list={offered.length ? `${id}-labels` : undefined}
-    >
-      {!disabled && offered.length ? (
-        <datalist id={`${id}-labels`}>
-          {offered.map((s) => (
-            <option key={s} value={s} />
-          ))}
-        </datalist>
-      ) : null}
-    </ChipField>
-  );
-}
 
 // An Estimate (docs/specs/026-plan/items.md "Fields"): picked from the story-point sizes, or None. A value a card
 // already holds that is not a size (set before, or by an agent) stays offered, so opening the card loses nothing.

@@ -47,9 +47,10 @@ export type Participant = {
   // the switch says.
   picture?: string;
   // What their agent is doing on this tab (docs/specs/024-agents/agent-presence.md "In the editor"): the status
-  // line an agent set, shown in the hover card, the Collaborators row and the accessible name.
+  // line an agent set, on its own row, shown in the hover card, the Collaborators row and the accessible name.
   statusLine?: string;
-  // A row standing for an agent whose owner is not on the tab: never counted as a person, never followed.
+  // A row standing for an agent, "{owner}'s Agent", on the last tab it read or changed: never counted as a person,
+  // never followed.
   agent?: true;
 };
 

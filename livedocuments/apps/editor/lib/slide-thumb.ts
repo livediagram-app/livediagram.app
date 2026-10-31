@@ -38,6 +38,9 @@ export type SlideThumbOptions = {
   // The canvas's surface: a page with no fill is drawn on the paper as the canvas shows it (slate
   // in dark mode, CANVAS_PAPER), its ink the canvas's. Light when absent.
   surface?: CanvasSurface;
+  // A picture's URL by image id (thumb-images.ts's thumbImageHref): an image element and a page's
+  // picture fill draw it, and without one (or before it arrives) the placeholder and the tone.
+  resolveImageHref?: (imageId: string) => string | undefined;
 };
 
 /** The tab's arrow labels as the canvas lays them out, for slideThumbFor's `labels`. */
@@ -70,6 +73,7 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
     const frame = pageExportFrame(page, {
       paper: CANVAS_PAPER[canvasSurface === 'dark' ? 'dark' : 'light'],
       idPrefix: `lvd-slide-${slide.id}`,
+      imageHref: opts.resolveImageHref,
       ruling: pageRulingOf(tab, page),
     });
     if (page.background?.fill) surface = frame.surface;
@@ -88,6 +92,7 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
       parts.push(
         svgBoxed(el, {
           ...art,
+          resolveImageHref: opts.resolveImageHref,
           tabFont: tab.font,
           tabFinish: tab.finish,
           sketchBackdrop: backdrops.has(el.id),

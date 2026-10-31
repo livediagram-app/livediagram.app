@@ -33,6 +33,9 @@ export type PageThumbOptions = {
   // The canvas's surface: a page with no fill is drawn on the paper as the canvas shows it (slate
   // in dark mode, CANVAS_PAPER), its ink the canvas's. Light when absent.
   surface?: CanvasSurface;
+  // A picture's URL by image id (thumb-images.ts's thumbImageHref): an image element and a page's
+  // picture fill draw it, and without one (or before it arrives) the placeholder and the tone.
+  resolveImageHref?: (imageId: string) => string | undefined;
 };
 
 /** The tab's arrow labels as the canvas lays them out, for pageThumbFor's `labels`. */
@@ -63,6 +66,7 @@ export function pageThumbFor(pageId: string, tab: Tab, opts: PageThumbOptions): 
   const frame = pageExportFrame(page, {
     paper: CANVAS_PAPER[canvasSurface === 'dark' ? 'dark' : 'light'],
     idPrefix: `lvd-thumb-${pageId}`,
+    imageHref: opts.resolveImageHref,
     frameTheme: tabWireframeFrameTheme(tab),
   });
   if (page.background?.fill) surface = frame.surface;
@@ -77,6 +81,7 @@ export function pageThumbFor(pageId: string, tab: Tab, opts: PageThumbOptions): 
       parts.push(
         svgBoxed(el, {
           ...art,
+          resolveImageHref: opts.resolveImageHref,
           tabFont: tab.font,
           tabFinish: tab.finish,
           sketchBackdrop: backdrops.has(el.id),

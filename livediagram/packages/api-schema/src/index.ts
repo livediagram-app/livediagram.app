@@ -221,6 +221,8 @@ export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-imag
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see @liveworkspace/api-schema/title-case).
 export { headlineCase, titleCase } from '@liveworkspace/api-schema/title-case';
+// The names a mode's blank gives a document: one light list the editor and the template catalogue share.
+export { isUntitledName, UNTITLED_DOCUMENT_NAMES } from '@liveworkspace/api-schema/untitled-names';
 export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';

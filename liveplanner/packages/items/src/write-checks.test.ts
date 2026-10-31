@@ -87,6 +87,9 @@ describe('the items a write leaves', () => {
     expect(statusExcluded(types, { ...trashed, fields: { status: 'done' } }, trashed, false)).toBe(
       false,
     );
+    // The Trash is a status no type lists, so moving a card there is never refused.
+    const toTrash = { ...was, fields: { ...was.fields, status: 'trash', trashedFrom: 'todo' } };
+    expect(statusExcluded(types, toTrash, was, false)).toBe(false);
     const move = { kind: 'move' as const, id: was.id, move: { status: 'done' } };
     expect(writtenItemsRefusal(move, [was], [next], types)).toEqual({
       error: 'status_excluded',

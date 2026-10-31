@@ -1,7 +1,8 @@
 'use client';
 
 // One field of an item, as the item panel edits it (docs/specs/026-plan/plan-board.md "Working on a
-// board"): a built-in field by its kind, a custom field by its kind, and the description as rich text.
+// board"): a built-in field by its kind, a custom field by its kind, and the description and Long Text fields as
+// rich text.
 // Each saves as it changes.
 import { Select } from '@liveplanner/ui';
 import {
@@ -11,6 +12,8 @@ import {
   isBuiltInFieldId,
   linkCandidates,
   linkTypesOf,
+  requiredFieldEmptied,
+  richFieldOf,
   typeAllowsStatus,
   typeStatusesOf,
   type Item,
@@ -19,14 +22,11 @@ import {
   type ItemPatch,
   type ItemPerson,
   type ItemTypeDef,
+  type LabelUse,
 } from '@liveplanner/items';
-import {
-  ChecklistEditor,
-  DateField,
-  LabelsEditor,
-  EstimateSelect,
-  PriorityPicker,
-} from './item-field-editors';
+import { ChecklistEditor, DateField, EstimateSelect, PriorityPicker } from './item-field-editors';
+import { LabelsEditor } from './LabelsEditor';
+import { ParagraphField } from './ParagraphField';
 import { PersonPicker } from './PersonPicker';
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { CalculatedFieldValue } from './CalculatedFieldValue';
@@ -71,7 +71,8 @@ export function labelsItsControl(type: ItemTypeDef, f: string): boolean {
     as !== 'description' &&
     as !== 'comments' &&
     kind !== 'checkbox' &&
-    kind !== 'image'
+    kind !== 'image' &&
+    kind !== 'longtext'
   );
 }
 
@@ -81,8 +82,8 @@ export type ItemFieldContext = {
   statuses: readonly { status: string; name: string }[];
   people: readonly ItemPerson[];
   canEdit: boolean;
-  // Every label the project's items carry, offered while a label is typed.
-  labels: readonly string[];
+  // Every label the plan's cards carry, with how many carry it, most used first (labelUsage): the label menu's.
+  labels: readonly LabelUse[];
   // Whether the save landed (false: refused), so a text field can go back to what is saved.
   onSave: (field: string, value: ItemFieldValue | undefined) => void | Promise<boolean>;
   onPatch: (patch: ItemPatch) => void;
@@ -141,6 +142,24 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         value={value}
         disabled={disabled}
         onSave={save}
+      />
+    );
+  }
+  // A Long Text field (docs/specs/026-plan/item-types.md "An item type"): rich text, as the description is.
+  if (custom?.kind === 'longtext') {
+    return (
+      <ParagraphField
+        item={item}
+        field={custom}
+        canEdit={canEdit}
+        onPatch={ctx.onPatch}
+        onEmpty={() => {
+          // A required field is refused by the host's own save, which says why; any other clears with its
+          // formatting.
+          if (requiredFieldEmptied(type, item.fields, f, undefined)) return save(undefined);
+          const clear = [f, richFieldOf(f)].filter((k) => k in item.fields);
+          if (clear.length) ctx.onPatch({ clear });
+        }}
       />
     );
   }

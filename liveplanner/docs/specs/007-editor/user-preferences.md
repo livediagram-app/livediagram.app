@@ -195,6 +195,10 @@ type UserPreferences = {
   // footer bar's and, on a wide desktop, the bottom-right cluster's (editor-app.md "Named on a wide
   // desktop"). Missing / true === shown; a phone never shows them. Read through useDockNames.
   dockButtonNames?: boolean;
+  // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): whether the item panel opens filling the
+  // window on a desktop. Written by the panel's own Maximise / Minimise Card button, not a Settings row.
+  // Missing / false === the usual size; a phone ignores it.
+  cardPanelMaximised?: boolean;
 
   // Panel switches (the Panels sub-categories, see "Settings dialog"
   // below). Each defaults ON via `!== false`, so an existing user's editor
@@ -332,6 +336,10 @@ Missing key === undefined === default behaviour. Concretely:
   alone, each still named in its hover card. A phone shows icons alone
   whatever it says, so its Settings row is desktop only. Emits
   `UI`/`Toggled`/`DockButtonNames{On,Off}`.
+- `cardPanelMaximised` undefined / false → a card's item panel opens at its usual size (the default).
+  `true`, set by the panel's Maximise Card button, opens every card filling the window on a desktop until
+  Minimise Card clears it; a phone always opens its sheet whatever it says. Emits
+  `UI`/`Toggled`/`CardMaximised{On,Off}`, before the write.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.

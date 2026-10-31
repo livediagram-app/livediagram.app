@@ -5,7 +5,7 @@ import { freshUserId, installSession } from './session';
 
 // Agent presence end to end (docs/specs/024-agents/agent-presence.md): Webber has his own unshared design open
 // while his agent works on it with an API token. The agent shows itself with a status line and a focus; his stack
-// shows it on his own avatar, a ring marks what it is looking at, a short ttl takes it away, and the comments it
+// shows it as an avatar of its own beside his, a ring marks what it is looking at, a short ttl takes it away, and the comments it
 // writes through the REST thread verbs land live.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1440, height: 860 } });
@@ -37,20 +37,20 @@ test('an agent shows its status and focus to its owner, expires on its ttl, and 
   const s = await arrange(page, baseURL!, userId);
   await open(page, s);
 
-  // The agent shows itself: on Webber's own tab, its status goes on his own avatar, and a ring marks its focus.
+  // The agent shows itself: an avatar of its own, "{owner}'s Agent", beside Webber's, and a ring marks its focus.
   const set = await setPresence(page, s, {
     status: 'Adding the payment flow',
     focus: ['api'],
     ttl: 60_000,
   });
   expect(set.status()).toBe(200);
-  const avatar = page.getByRole('img', { name: /, Adding the payment flow$/ });
+  const avatar = page.getByRole('img', { name: /'s Agent \(Online\), Adding the payment flow$/ });
   await expect(avatar.first()).toBeVisible();
   await expect(page.locator('[data-agent-focus-id="api"]')).toBeVisible();
   await avatar.first().hover();
   // The avatar's hidden description says the same, so look in the card itself.
   await expect(
-    page.locator('[data-hint="hover-card"]').getByText(/^Adding the payment flow · Online/),
+    page.locator('[data-hint="hover-card"]').getByText('Adding the payment flow', { exact: true }),
   ).toBeInViewport();
   // The card fades in; the screenshot waits for it.
   await page
@@ -58,11 +58,11 @@ test('an agent shows its status and focus to its owner, expires on its ttl, and 
     .evaluate((el) => Promise.all(el.getAnimations().map((animation) => animation.finished)));
   await page.screenshot({ path: test.info().outputPath('agent-presence.png') });
 
-  // The Collaborators modal counts Webber alone and shows the status line on his row.
+  // The Collaborators modal counts Webber alone and lists his agent on a row of its own, with its status line.
   await avatar.first().click();
   const dialog = page.getByRole('dialog', { name: 'Collaborators' });
   await expect(dialog.getByText('Just you so far')).toBeVisible();
-  await expect(dialog.getByText(/^Adding the payment flow · Online/)).toBeVisible();
+  await expect(dialog.getByText('Adding the payment flow', { exact: true })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('agent-presence-collaborators.png') });
   await page.keyboard.press('Escape');
 

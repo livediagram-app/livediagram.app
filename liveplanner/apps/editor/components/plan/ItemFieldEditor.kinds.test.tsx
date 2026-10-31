@@ -70,7 +70,7 @@ function ctx(item: Item, over: Partial<ItemFieldContext> = {}): ItemFieldContext
     statuses: [],
     people: [SAM],
     canEdit: true,
-    labels: ['Web'],
+    labels: [{ label: 'Web', count: 1 }],
     onSave: vi.fn(),
     onPatch: vi.fn(),
     onOpenItem: vi.fn(),

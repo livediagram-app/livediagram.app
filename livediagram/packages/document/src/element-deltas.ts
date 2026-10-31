@@ -35,6 +35,13 @@ import {
 } from './responses';
 import { IDEA_MAX_CARDS, IDEA_MAX_TEXT, alignedIdeaCardIds, isIdeaCardId } from './collab-shapes';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
+import {
+  commentWithReactions,
+  isCommentReactions,
+  isReactionChange,
+  withReaction,
+  type CommentReactionId,
+} from '@liveworkspace/model-core/comment-reactions';
 
 // Bound on the round id, which is otherwise opaque.
 export const COLLAB_ROUND_MAX = 64;
@@ -65,7 +72,17 @@ export type ElementDelta =
   | { kind: 'comment-add'; comment: Comment; before?: string }
   | { kind: 'comment-remove'; commentId: string }
   | { kind: 'comment-rekey'; from: string; to: string }
-  | { kind: 'comment-resolve'; resolved: boolean };
+  | { kind: 'comment-resolve'; resolved: boolean }
+  // One person's reaction on one comment, on or off (docs/specs/012-collaboration/comment-reactions.md): `by` is
+  // their collab key, `name` the name they react under (the room stamps both from the sender's presence).
+  | {
+      kind: 'comment-react';
+      commentId: string;
+      emoji: CommentReactionId;
+      by: string;
+      name: string;
+      on: boolean;
+    };
 
 function sameRound(el: ShapeElement, round: string | undefined): boolean {
   return (el.collabRound ?? undefined) === (round ?? undefined);
@@ -83,7 +100,10 @@ export function isComment(value: unknown): value is Comment {
     typeof c.authorColor === 'string' &&
     // Mentions (docs/specs/012-collaboration/comment-mentions.md), when present, are a bounded list; their
     // fields are cleaned server-side (sanitizeMentions) before they persist.
-    (c.mentions === undefined || (Array.isArray(c.mentions) && c.mentions.length <= MENTIONS_MAX))
+    (c.mentions === undefined ||
+      (Array.isArray(c.mentions) && c.mentions.length <= MENTIONS_MAX)) &&
+    // Reactions (docs/specs/012-collaboration/comment-reactions.md), when present, are the bounded list.
+    isCommentReactions(c.reactions)
   );
 }
 
@@ -197,6 +217,19 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       const thread = threadOf(el);
       const next = threadResolved(thread, delta.resolved);
       return next === thread ? el : withThread(el, next);
+    }
+    case 'comment-react': {
+      if (typeof delta.commentId !== 'string' || !isReactionChange(delta)) return el;
+      if (!holdsComment(el, delta.commentId)) return el;
+      const thread = threadOf(el)!;
+      let changed = false;
+      const comments = thread.comments.map((c) => {
+        if (c.id !== delta.commentId) return c;
+        const next = commentWithReactions(c, withReaction(c.reactions, delta));
+        if (next !== c) changed = true;
+        return next;
+      });
+      return changed ? withThread(el, { ...thread, comments }) : el;
     }
     default:
       return el;

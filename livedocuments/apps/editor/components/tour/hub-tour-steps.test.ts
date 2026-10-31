@@ -16,7 +16,6 @@ const rows = ['Payments', 'Stock', 'Email', 'Search', 'Analytics'].map((label) =
 const ctxOf = (over: Partial<ConceptTourContext> = {}): ConceptTourContext => ({
   elementId: 'hb',
   rows,
-  hasMore: true,
   touch: false,
   ...over,
 });
@@ -33,7 +32,6 @@ describe('hubTourSteps', () => {
       'animate',
       'outro',
     ]);
-    expect(hubTourSteps(ctxOf({ hasMore: false })).map((s) => s.id)).not.toContain('spokes');
   });
 
   it('points at the hub, the first satellite and Add Satellite, and counts the satellites', () => {

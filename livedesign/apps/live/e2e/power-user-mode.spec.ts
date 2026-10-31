@@ -95,7 +95,6 @@ test.describe('Role pill', () => {
 test.describe('Power user mode', () => {
   test('Minimal chrome hides words, keeps names and controls', async ({ page, pageErrors }) => {
     await openEditor(page);
-    await expect(tabBar(page).getByText('Tabs', { exact: true })).toBeVisible();
     await expect(tabBar(page).getByText('Search', { exact: true })).toBeVisible();
 
     await setPowerUserMode(page, true);
@@ -117,7 +116,6 @@ test.describe('Power user mode', () => {
     await expect(page.getByRole('button', { name: 'Show Templates' })).toBeVisible();
 
     // Status bar: icons only, names kept.
-    await expect(tabBar(page).getByText('Tabs', { exact: true })).toHaveCount(0);
     await expect(tabBar(page).getByText('Search', { exact: true })).toHaveCount(0);
     await expect(tabBar(page).getByRole('button', { name: 'Search' })).toBeVisible();
 

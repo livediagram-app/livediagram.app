@@ -1,3 +1,4 @@
+import { AppMark } from '@liveworkspace/explorer/item-search';
 import {
   lucideCircle,
   lucideCircleHelp,
@@ -34,6 +35,8 @@ const KIND_PRIMS: Partial<Record<SearchResultItem['kind'], readonly IconPrim[]>>
 };
 
 export function SearchResultIcon({ item }: { item: SearchResultItem }) {
+  // A result from every app wears its app's logo in the app's colour.
+  if (item.kind === 'workspace') return <AppMark app={item.app} size={13} />;
   if (item.kind === 'design') return <DesignIcon size={13} />;
   return (
     <Glyph size={13} units={24}>

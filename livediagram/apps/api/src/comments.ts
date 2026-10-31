@@ -5,7 +5,10 @@ import {
   type DocumentCommentThread,
 } from '@livediagram/api-schema';
 import {
+  cleanReactions,
+  commentWithReactions,
   isSafeColourValue,
+  reactionSummary,
   sanitizeMentions,
   type Comment,
   type CommentMention,
@@ -158,7 +161,12 @@ export function rewriteCommentAuthors(
           ...withMentions,
         };
       });
-      return { ...thread, comments: sanitised };
+      // Reactions (docs/specs/012-collaboration/comment-reactions.md) are public and an Editor's save may carry
+      // anyone's (they reached it live), so they pass, cleaned: a malformed one never reaches D1 or a peer.
+      const comments = sanitised.map((c) =>
+        commentWithReactions(c as Comment, cleanReactions((c as Comment).reactions)),
+      );
+      return { ...thread, comments };
     }),
   );
 }
@@ -279,6 +287,7 @@ export function threadsOfTab(
           authorName: c.authorName,
           authorColor: c.authorColor,
           ...(c.mentions ? { mentions: c.mentions } : {}),
+          ...(c.reactions?.length ? { reactions: reactionSummary(c.reactions) } : {}),
           ...(c.authorId ? { authorId: c.authorId } : {}),
           ...(c.tokenId ? { tokenId: c.tokenId } : {}),
         })),

@@ -118,8 +118,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       now: presenceClock.now,
     }),
     agents: liveAgents,
-    selfParticipant: shownSelf,
-    activeId,
     tabIds: tabs.map((tab) => tab.id),
     now: presenceClock.now,
   });

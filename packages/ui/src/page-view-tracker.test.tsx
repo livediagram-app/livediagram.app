@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { createPageViewTracker } from './page-view-tracker';
+import { isSilentReturn, SILENT_RETURN_ATTRIBUTE } from './silent-return';
 
 // A product's binding, on a stand-in for its api-schema's pageViewPath: a document's id folds away, a
 // trailing slash goes, and a path with a space cannot be expressed.
@@ -44,6 +45,22 @@ describe('reportPageView', () => {
     const track = vi.fn();
     reportPageView(track, '/help/some thing');
     expect(track).not.toHaveBeenCalled();
+  });
+
+  it('does not count again the way back from a deferred silent sign-in, but does the pages after it', () => {
+    document.documentElement.setAttribute(SILENT_RETURN_ATTRIBUTE, '');
+    const track = vi.fn();
+    reportPageView(track, '/features/diagrams');
+    reportPageView(track, '/faq');
+    document.documentElement.removeAttribute(SILENT_RETURN_ATTRIBUTE);
+    expect(track.mock.calls.map((c): unknown => c[2])).toEqual(['/faq']);
+  });
+
+  it('reads that mark safely outside a page', () => {
+    vi.stubGlobal('document', undefined);
+    const silent = isSilentReturn();
+    vi.unstubAllGlobals();
+    expect(silent).toBe(false);
   });
 
   it('never throws into the host', () => {

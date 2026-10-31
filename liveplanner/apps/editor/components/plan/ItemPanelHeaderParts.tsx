@@ -1,9 +1,16 @@
 'use client';
 
 // The current card's part of the item panel header (docs/specs/026-plan/plan-board.md "The header reads part by
-// part"): its Card Type picker as a bordered pill, and its number as a quiet tag that copies "#12".
+// part"): its Card Type picker as a bordered pill, its number as a quiet tag that copies "#12", and the desktop's
+// Maximise / Minimise Card button beside the close button ("Maximised").
 import type { ItemTypeDef } from '@liveplanner/items';
-import { ChevronDownIcon, Tooltip, useCopiedFlash } from '@liveplanner/ui';
+import {
+  ChevronDownIcon,
+  MaximizeIcon,
+  MinimizeIcon,
+  Tooltip,
+  useCopiedFlash,
+} from '@liveplanner/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
@@ -78,6 +85,31 @@ export function ItemKeyTag({ itemKey }: { itemKey: number }) {
         className="shrink-0 cursor-pointer rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[12px] tabular-nums text-slate-600 transition hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
       >
         {text}
+      </button>
+    </Tooltip>
+  );
+}
+
+// Maximise Card / Minimise Card (docs/specs/026-plan/plan-board.md "Maximised"): the window-control pair to the
+// close button's left, drawn as the close button is (compact), pressed while the panel is maximised.
+export function ItemMaximiseButton({
+  maximised,
+  onToggle,
+}: {
+  maximised: boolean;
+  onToggle: (on: boolean) => void;
+}) {
+  const label = maximised ? 'Minimise Card' : 'Maximise Card';
+  return (
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={maximised}
+        onClick={() => onToggle(!maximised)}
+        className="touch-target relative rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      >
+        {maximised ? <MinimizeIcon size={16} /> : <MaximizeIcon size={16} />}
       </button>
     </Tooltip>
   );

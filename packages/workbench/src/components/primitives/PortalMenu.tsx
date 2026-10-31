@@ -197,7 +197,7 @@ export function MenuAccordionSection({
         onClick={onToggle}
         onMouseDown={preserveFocus ? (e) => e.preventDefault() : undefined}
         aria-expanded={open}
-        className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
+        className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
       >
         <span className="flex items-center gap-2">
           {/* Fixed-width, centred icon slot so every category title starts at
@@ -267,12 +267,12 @@ export function MenuActionRow({
       <span
         aria-disabled
         {...itemProps}
-        className="flex w-full cursor-not-allowed items-center gap-2.5 px-3 py-2 text-[13px] text-slate-500 dark:text-slate-600"
+        className="flex w-full cursor-not-allowed items-start gap-2.5 px-3 py-2 text-left text-[13px] text-slate-500 dark:text-slate-600"
       >
-        <span className="flex w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4">
+        <span className="flex h-lh w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4">
           {icon}
         </span>
-        {label}
+        <span className="min-w-0 flex-1">{label}</span>
       </span>
     );
   }
@@ -282,7 +282,7 @@ export function MenuActionRow({
       <span
         aria-disabled
         {...itemProps}
-        className="flex w-full cursor-not-allowed items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-600"
+        className="flex w-full cursor-not-allowed items-center gap-2 px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-600"
       >
         <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
         {label}
@@ -295,14 +295,16 @@ export function MenuActionRow({
         type="button"
         {...itemProps}
         onClick={onClick}
-        className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px] transition ${'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'}`}
+        className={`flex w-full cursor-pointer items-start gap-2.5 px-3 py-2 text-left text-[13px] transition ${'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'}`}
       >
         <span
-          className={`flex w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4 ${'text-slate-400 dark:text-slate-400'}`}
+          className={`flex h-lh w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4 ${'text-slate-400 dark:text-slate-400'}`}
         >
           {icon}
         </span>
-        {labelStyle ? <span style={labelStyle}>{label}</span> : label}
+        <span className="min-w-0 flex-1" style={labelStyle}>
+          {label}
+        </span>
       </button>
     );
   }
@@ -311,7 +313,7 @@ export function MenuActionRow({
       type="button"
       {...itemProps}
       onClick={onClick}
-      className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${'text-slate-500 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'}`}
+      className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider transition ${'text-slate-500 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'}`}
     >
       <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
       {label}

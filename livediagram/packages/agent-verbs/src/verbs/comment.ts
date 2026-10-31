@@ -30,7 +30,23 @@ const threadOutput = z.object({
   label: z.string().nullable(),
   resolved: z.boolean(),
   comments: z.array(
-    z.object({ id: z.string(), authorName: z.string(), createdAt: z.number(), text: z.string() }),
+    z.object({
+      id: z.string(),
+      authorName: z.string(),
+      createdAt: z.number(),
+      text: z.string(),
+      // Who reacted, per emoji (docs/specs/012-collaboration/comment-reactions.md); absent when nobody did.
+      reactions: z
+        .array(
+          z.object({
+            emoji: z.string(),
+            name: z.string(),
+            count: z.number(),
+            by: z.array(z.string()),
+          }),
+        )
+        .optional(),
+    }),
   ),
 });
 
@@ -78,6 +94,7 @@ export const commentLs = defineVerb({
           authorName: c.authorName,
           createdAt: c.createdAt,
           text: c.text,
+          ...(c.reactions?.length ? { reactions: c.reactions } : {}),
         })),
       })),
     };

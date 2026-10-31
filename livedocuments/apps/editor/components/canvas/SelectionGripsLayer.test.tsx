@@ -108,6 +108,34 @@ describe('SelectionGripsLayer', () => {
     expect(onElementDown).not.toHaveBeenCalled();
   });
 
+  // docs/specs/008-canvas/element-menu-quick-bar.md "Opening it": a finger near a small element's edge lands on a
+  // handle, so a press held there still opens the element's menu.
+  it("hands every handle's press to the element's long-press", () => {
+    const onHandlePress = vi.fn();
+    const { container } = render(
+      <Harness>
+        <CanvasZoomProvider zoom={1}>
+          <SelectionChromeLayer
+            elementId="a"
+            box={box}
+            rotation={0}
+            showHandles
+            showAnchors
+            onBeginDrag={vi.fn()}
+            onHandlePress={onHandlePress}
+          />
+        </CanvasZoomProvider>
+      </Harness>,
+    );
+    const handles = layerOf(container).querySelectorAll<HTMLElement>('[data-canvas-handle]');
+    fireEvent.pointerDown(handles[0]!, { button: 0, pointerId: 1 });
+    fireEvent.pointerDown(layerOf(container).querySelector('[aria-label="Resize width"]')!, {
+      button: 0,
+      pointerId: 2,
+    });
+    expect(onHandlePress).toHaveBeenCalledTimes(2);
+  });
+
   it('renders nothing while there are no handles to show', () => {
     const { container } = render(
       <Harness>

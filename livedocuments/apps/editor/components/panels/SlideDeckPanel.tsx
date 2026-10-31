@@ -36,6 +36,7 @@ import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
 import { PlayIcon } from '@liveworkspace/workbench/components/primitives/PlayIcon';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
+import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
 import { track } from '@/lib/telemetry';
 import {
   rowDropIndex,
@@ -72,7 +73,7 @@ export function SlideDeckPanel({
     openSlideId,
     openSlideInEditor,
     runnable,
-    thumbs,
+    slideTabs,
     pageLabels,
     headlines,
     newSlideFromSelection,
@@ -93,6 +94,8 @@ export function SlideDeckPanel({
   // The selection the panel offers to slide, read from the store: a selection change re-renders this
   // panel and not the canvas (docs/specs/008-canvas/blueprints/selection-store.md).
   const selected = useSelectionOf(selectionSetOf, sameMembers);
+  // Row previews, from the same headless renderer the Layers panel uses: drawn only while the panel is open.
+  const thumbs = useSlideThumbnails(deck, slideTabs);
   const selectionCount = selected.size;
   const currentSelectionIds = useMemo(() => [...selected], [selected]);
 

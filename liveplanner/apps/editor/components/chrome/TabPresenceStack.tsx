@@ -85,7 +85,9 @@ export function TabPresenceStack({
           className={`inline-flex ${i === slots - 1 ? '' : '-mr-0.5'} ${
             slot.leaving ? 'animate-pop-out' : 'animate-pop-in'
           }`}
-          style={{ zIndex: slots - i, transformOrigin: 'center' }}
+          // An agent's mark sits over the person beside it, so the overlap never hides its star
+          // (docs/specs/024-agents/agent-presence.md "Presence").
+          style={{ zIndex: slot.p.agent ? slots + 1 : slots - i, transformOrigin: 'center' }}
         >
           {(() => {
             const badges = participantBadges(slot.p, selfId, selfRole);

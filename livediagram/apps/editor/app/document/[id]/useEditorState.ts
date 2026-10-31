@@ -103,11 +103,14 @@ import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferen
 import type { PollCandidate } from '@/lib/poll-collaborators';
 import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { track } from '@/lib/telemetry';
+import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
+import { withStyleOfTab } from '@/lib/tab-theme-apply';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useLivePoll } from '@/hooks/collab/useLivePoll';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
+import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useNoteActions } from '@/hooks/canvas/useNoteActions';
 import { usePhotoPicker } from '@/hooks/canvas/usePhotoPicker';
@@ -1172,6 +1175,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
+  // the collab key their answers use; a Community visitor has no comments at all.
+  const commentReactions = useCommentReactionScope({
+    applyElementDelta,
+    activeTab,
+    selfKey: voteSelfId,
+    selfName: selfParticipant.name,
+    canReact: participant.can.takePart && realtime.sessionCommunity === null,
+  });
   // The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md): every
   // tool and rule gate keys on it, never on what the tab is. A switch is one tab edit.
   const editorMode = useEditorMode(activeTab, {
@@ -2176,6 +2188,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tickTabs,
     checkpointBurst,
   });
+
+  // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): the open tab's style on every tab, as one
+  // undo step, an Editor's of the whole document only.
+  const { applyToAllTabs: applyStyleToAllTabs, applying: applyingStyleToAllTabs } =
+    useApplyStyleToAllTabs<Tab>({
+      canApply: !structureBlocked && !isStructureReadOnly,
+      activeId,
+      loadAllTabs,
+      isTabLoaded: (id) => loadedTabIdsRef.current.has(id),
+      commitTabs,
+      restyle: withStyleOfTab,
+      notify: (message) => toast.info(message),
+      onApplied: () => track('Tab', 'Changed', 'AllTabs'),
+    });
 
   // Live session tools (docs/specs/012-collaboration/session-tools.md): facilitator timer + dot-voting handlers.
   // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
@@ -3310,6 +3336,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     facilitator,
     setTabFinish,
     applyTabLook,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+    canApplyStyleToAllTabs: !isStructureReadOnly,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,
     pauseTimer,
@@ -3435,6 +3464,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // nothing outside the panel and the overlay reads into it.
     slideDeck,
     commentMentions,
+    commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     // What the presentation is showing, or null. The canvas renders THESE

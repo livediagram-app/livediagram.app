@@ -13,7 +13,6 @@ vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
 
 const ctxOf = (over: Partial<ChartTourContext> = {}): ChartTourContext => ({
   elementId: 'ch',
-  hasMore: true,
   touch: false,
   type: 'line',
   ...over,

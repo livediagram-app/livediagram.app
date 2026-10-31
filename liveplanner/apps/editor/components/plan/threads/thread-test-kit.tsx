@@ -107,10 +107,19 @@ export function fakeThreads(initial: CardThread[], opts: { refuse?: boolean } = 
               ? { kind: 'remove' as const, commentId: action.commentId }
               : action.kind === 'edit'
                 ? { kind: 'edit' as const, commentId: action.commentId, text: action.text }
-                : {
-                    kind: 'add' as const,
-                    comment: comment('c-reply', { text: action.text, authorId: ME }),
-                  };
+                : action.kind === 'react'
+                  ? {
+                      kind: 'react' as const,
+                      commentId: action.commentId,
+                      emoji: action.emoji,
+                      by: action.key,
+                      name: 'Sam',
+                      on: action.on,
+                    }
+                  : {
+                      kind: 'add' as const,
+                      comment: comment('c-reply', { text: action.text, authorId: ME }),
+                    };
       const out = applyThreadChange(t, change, Date.now());
       if (!out.ok) return false;
       if (!out.thread) {
@@ -141,6 +150,7 @@ export function contextOf(
     selfId: ME,
     ownerId: ME,
     self: { name: 'Sam', color: '#2563eb' },
+    selfKey: 'k-me',
     canComment: true,
     isEditor: true,
     openCard: vi.fn(),
