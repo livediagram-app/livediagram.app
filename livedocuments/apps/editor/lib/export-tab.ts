@@ -213,9 +213,19 @@ export function renderedExportScale(canvas: HTMLCanvasElement): number {
   return renderedScale.get(canvas) ?? 1;
 }
 
+// What renderTabToCanvas draws beyond the image exports' options: its scale, and for a picture of part of a page
+// (docs/specs/020-import-export/blueprints/office-export.md "drawRegion") only some elements, cut to a rect.
+export type CanvasRenderOpts = {
+  scale?: number;
+  // Only these elements, on a transparent canvas: no paper, background, pattern or writing.
+  only?: ReadonlySet<string>;
+  // The canvas covers exactly this rect (canvas px), with no padding.
+  crop?: { x: number; y: number; w: number; h: number };
+} & ImageExportOpts;
+
 export async function renderTabToCanvas(
   tab: Tab,
-  opts: { scale?: number } & ImageExportOpts = {},
+  opts: CanvasRenderOpts = {},
 ): Promise<HTMLCanvasElement> {
   const frame = opts.page
     ? pageExportFrame(opts.page, {
@@ -223,12 +233,16 @@ export async function renderTabToCanvas(
         imageHref: (id) => opts.images?.get(id)?.href,
       })
     : null;
-  // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
-  const writing = opts.page ? pageWriting(tab, opts.page) : null;
+  // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes"); a picture of some
+  // elements has none.
+  const only = opts.only;
+  const writing = opts.page && !only ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
   const chartInk = exportChartInk(tab, opts.page);
   const reaches = (el: Element) =>
-    !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
+    !isArticleNoteMarker(el) &&
+    (!only || only.has(el.id)) &&
+    (!frame || frame.reaches(el, tab.elements));
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
@@ -248,8 +262,8 @@ export async function renderTabToCanvas(
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = frame ? frame.bounds : contentBounds(els, labels);
-  const pad = frame ? 0 : EXPORT_PADDING;
+  const bounds = opts.crop ?? (frame ? frame.bounds : contentBounds(els, labels));
+  const pad = frame || opts.crop ? 0 : EXPORT_PADDING;
   const draw = bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
   // Content page reaches 19200 px, docs/specs/007-editor/pages-mode.md "Sizes").
@@ -271,10 +285,13 @@ export async function renderTabToCanvas(
   const surface = frame ? frame.surface : canvasSurface(bgColor);
   // The paper under the content: a hollow arrowhead is filled with it, as on the canvas.
   const paper = frame ? EXPORT_PAPER : bgColor;
-  ctx.fillStyle = paper;
-  ctx.fillRect(0, 0, w / scale, h / scale);
-  const bg = frame ? null : backgroundPatternDefs(tab, opts);
-  if (frame) {
+  // A picture of some elements is transparent around them.
+  if (!only) {
+    ctx.fillStyle = paper;
+    ctx.fillRect(0, 0, w / scale, h / scale);
+  }
+  const bg = frame || only ? null : backgroundPatternDefs(tab, opts);
+  if (frame && !only) {
     const { x, y, w: fw, h: fh } = frame.bounds;
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.floor(w)}" height="${Math.floor(h)}" viewBox="${r2(x)} ${r2(y)} ${r2(fw)} ${r2(fh)}">` +
