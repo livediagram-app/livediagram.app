@@ -35,6 +35,7 @@
     "./tab-size": "./src/tab-size.ts",
     "./teams": "./src/teams.ts",
     "./title-case": "./src/title-case.ts",
+    "./untitled-names": "./src/untitled-names.ts",
     "./trash": "./src/trash.ts",
     "./within-reach": "./src/within-reach.ts"
   },

@@ -55,6 +55,7 @@ import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { currentPageIdNow } from '@/lib/current-page-kind';
 import { useArticles } from '@/hooks/editor/useArticles';
+import { articleTitleName } from '@/lib/article/article-document-name';
 import { usePagesMode } from '@/hooks/editor/usePagesMode';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -1712,6 +1713,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canEdit: !isReadOnly,
     // A Participant writes in an article too (docs/specs/013-workspace/share-roles.md), each commit through its guard.
     canWrite: participant.participating && participant.can.writeArticle,
+    // An article's Title names a still-untitled document, as the first label does (a Participant names nothing).
+    onWritten: (flow, blocks) => {
+      if (isReadOnly) return;
+      const name = articleTitleName(documentName, tabs[0], flow, blocks);
+      if (name) setDocumentName(name);
+    },
     commitTabs: participant.participating ? guardedCommitTabs : commitTabs,
     tickTabs,
     undo,
