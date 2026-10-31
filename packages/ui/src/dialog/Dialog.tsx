@@ -1,6 +1,13 @@
 'use client';
 
-import { ViewTransition, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import {
+  ViewTransition,
+  useLayoutEffect,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+  type ViewTransitionClassPerType,
+} from 'react';
 import { Portal } from '../Portal';
 import { useEscape } from '../useEscape';
 import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
@@ -97,6 +104,15 @@ const BACKDROPS: Record<NonNullable<DialogProps['backdrop']>, string> = {
 // press on its backdrop does. Every dialog listens on the document, so without this one Escape closed them all. The
 // one on top is the last panel in the page: its portal mounted after the other's, so it is drawn over it. Only an
 // open dialog renders its panel, so the page holds exactly the open ones.
+// The panel's update animation for one transition type, none for any other. Built here, outside the component: the
+// React Compiler (Rust, under Turbopack) read a computed key written inline in the JSX as the literal word
+// "resizeTransition", so no type ever matched and the panel never animated.
+function resizeUpdate(type: string): ViewTransitionClassPerType {
+  const update: ViewTransitionClassPerType = { default: 'none' };
+  update[type] = type;
+  return update;
+}
+
 const PANEL_SELECTOR = '[data-dialog-panel]';
 
 function isTopDialog(panel: HTMLElement | null): boolean {
@@ -251,10 +267,7 @@ export function Dialog({
         }}
       >
         {resizeTransition ? (
-          <ViewTransition
-            default="none"
-            update={{ [resizeTransition]: resizeTransition, default: 'none' }}
-          >
+          <ViewTransition default="none" update={resizeUpdate(resizeTransition)}>
             {panelEl}
           </ViewTransition>
         ) : (
