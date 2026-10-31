@@ -745,6 +745,14 @@ export const PLAN_FILL_TAB = chart(
   { types: ['FillTabOn', 'FillTabOff', 'SheetFillTabOn', 'SheetFillTabOff'], rising: 'neutral' },
 );
 
+export const PLAN_CARD_ACTIVITY = chart(
+  'Plan',
+  'Toggled',
+  'Card Activity Shown',
+  "The Activity switch in a card's Comments: the card's history shown among its threads, or hidden again.",
+  { types: ['ActivityOn', 'ActivityOff'], rising: 'neutral' },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1049,6 +1057,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_MAXIMISED,
   PLAN_FOCUSED,
   PLAN_FILL_TAB,
+  PLAN_CARD_ACTIVITY,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,

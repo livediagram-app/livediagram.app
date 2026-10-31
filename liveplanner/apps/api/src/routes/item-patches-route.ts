@@ -28,6 +28,7 @@ import {
   writer,
 } from './item-route-kit';
 import { writeItemsWithRetry } from './item-write-loop';
+import { historyTagOf } from './item-history-route';
 
 // A refusal that names the item it is about.
 function rejectedFor(id: string, error: ItemRejection, field?: string): Response {
@@ -88,6 +89,7 @@ export async function patches(ctx: PlanRouteContext, projectId: string): Promise
       }
       return nexts;
     },
+    { tag: historyTagOf(ctx, undo) },
   );
   if (result instanceof Response) return result;
   console.info('[items] patched', { projectId, count: result.done.size });

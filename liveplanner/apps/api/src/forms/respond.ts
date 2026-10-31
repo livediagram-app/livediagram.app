@@ -23,6 +23,7 @@ import {
 import { notifyFormResponse } from '../email/notifications';
 import { json } from '../responses';
 import { createMany } from '../routes/item-routes';
+import { appendItemHistory } from '../db/item-history';
 import { relay } from '../routes/item-route-kit';
 import type { PlanRouteContext } from '../routes/context';
 import { reportServerEvent } from '../server-telemetry';
@@ -228,6 +229,13 @@ export async function respond(
     return refuse({ error: 'form_busy' }, 429);
   }
   relay(ctx, doc.id, made.items, [], made.rev);
+  // The card's history starts with the response (docs/specs/026-plan/items.md "History").
+  await appendItemHistory(
+    ctx.env,
+    doc.id,
+    made.items.map((after) => ({ before: null, after })),
+    'form',
+  );
   return accepted(ctx, {
     doc,
     form,

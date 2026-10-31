@@ -12,6 +12,7 @@
 
 import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
+import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -366,7 +367,11 @@ CREATE TABLE IF NOT EXISTS card_image_grants (
 CREATE INDEX IF NOT EXISTS card_image_grants_age ON card_image_grants (plan_id, created_at);
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8];
+// A card's history (item-history-schema.ts; docs/specs/026-plan/items.md "History"). Its own step, appended; every
+// statement is IF NOT EXISTS, so it runs again harmlessly wherever it lands.
+const V9 = ITEM_HISTORY_SCHEMA;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8, V9];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
 
