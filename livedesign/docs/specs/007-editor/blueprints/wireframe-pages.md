@@ -19,6 +19,9 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 | wireframe layout | `WireframeLayoutId`, `WIREFRAME_LAYOUTS`, `WIREFRAME_LAYOUT_CATEGORIES`, `wireframeLayoutsFor(class)`            |
 | screen form      | `ScreenForm` (`'watch' \| 'phone' \| 'wide'`), `screenForm(box)`                                                 |
 | device memory    | `lastWireframeDevice()`, `rememberWireframeDevice(device)`                                                       |
+| Inspect          | `CanvasTool` member `'inspect'`; `can.inspect`; `PanelId` `'inspect'`; `InspectPanel`, `InspectOverlay`          |
+| measurements     | `InspectSpec` (`inspectElement`), `SpacingLine` (`neighbourSpacing`, `pairSpacing`), `InspectRect`               |
+| inspect link     | `INSPECT_PARAM` (`'inspect'`), `wantsInspect`, `withInspect`, `inspectViewLink`                                  |
 
 "Device" alone always means the page's `WireframeDeviceId`; never "mockup" or "frame" for the device itself.
 
@@ -41,6 +44,12 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 | `apps/live/lib/wireframe-device-memory.ts`                                            | The device last chosen in this browser                                                                              |
 | `apps/live/lib/palette-kind.ts`, `components/palette/palette-wireframe-tiles.tsx`     | The palette's Wireframe kind and its Elements tiles                                                                 |
 | `apps/live/components/tour/wireframe-tour-steps.ts`                                   | The Wireframe track of the Pages tour ([Pages tour](../pages-tour.md))                                              |
+| `packages/design/src/inspect-element.ts` (+ test)                                     | Inspect's reading of an element (`inspectElement`) and its CSS and plain values                                     |
+| `packages/design/src/inspect-spacing.ts` (+ test)                                     | The spacing lines to neighbours, containers and the screen edge; between two elements                               |
+| `apps/live/lib/inspect-target.ts`                                                     | Which element is inspected, its neighbours on its page, its spec and lines in page points                           |
+| `apps/live/lib/inspect-link.ts`, `inspect-export.ts`                                  | The `inspect` parameter and the Viewer link it rides; exporting one element at a scale                              |
+| `apps/live/components/canvas/inspect/`                                                | `InspectOverlay` (outlines, lines, pills), `InspectClusterSegment`, `useInspectHost`, `InspectSessionContext`       |
+| `apps/live/components/panels/inspect/`                                                | `InspectPanel`, `InspectSpacingBox`, `inspect-panel-parts` (sections, copyable value cells, swatches)               |
 
 ## Behaviour and state
 
@@ -101,6 +110,25 @@ to the canvas.
 Going to a wireframe page fits the whole device, with the fit's zoom capped at `WIREFRAME_FIT_MAX_ZOOM` rather than
 100%, so a small device fills the view.
 
+### Inspect
+
+- Inspect is a canvas tool (`canvasTool === 'inspect'`), offered only on a wireframe tab (its first page's kind):
+  the pages cluster strip's last button, and the command palette's **Inspect Tool** (`wireframeOnly` in
+  `CANVAS_TOOLS`, offered when `CommandContext.wireframeTab`). `useInspectHost` turns it on once when the address
+  carries `inspect` and the active tab is loaded, and back to Select when the tab is not a wireframe tab.
+- While it is on, the canvas gets a Viewer's gestures whatever the role: `inspectToolActive` makes a press select
+  only (no drag, anchor or arrow drag, no in-place edit), `canMove`/`canWriteText`/`canResize` are `NEVER`, the
+  selection wears read-only chrome, and the keyboard runs as read-only. Escape returns to Select.
+- `inspectTarget` picks the one selected element (a multi-selection shows a count); `inspectTargetSpec` reads it
+  with `inspectElement` against its page's screen origin and surface (`pageSurface`, light when the page has none).
+- Neighbours are the boxed elements on the same page (`rowPageAt` of each centre), so the lines are linear in the
+  page's elements; `InspectOverlay` keeps the hovered id in state, set only when it changes, so a pointer move over
+  the same element renders nothing.
+- Export: `exportInspectedElement` renders the element and what it holds (`containerContents`, `withAttached`) with
+  `renderTabToCanvas`/`renderTabToSvg` at `{ scale, padding: 0, transparent: true, pattern: false, surface }`.
+- Copy Inspect Link: the visitor's `sessionShareCode`, else `inspectViewLink` over `indexClient.listShareLinks`;
+  never creates a link. None: open the Share dialog with a toast. An offline design gets no button.
+
 ## Interfaces and contracts
 
 - `Page` fields: `kind: 'wireframe'`, `device?: WireframeDeviceId`, `orientation?: PageOrientation`,
@@ -126,18 +154,25 @@ The frame is the app's own markup, never content; nothing on the page reaches it
 Telemetry from `page-edits.ts`: `Tab · Changed · WireframePageAdded` and `PageKindWireframe`;
 `Tab · Changed · WireframeDevice<Device>` (`WIREFRAME_DEVICE_EVENT`); `Tab · Changed · WireframeFrame<Look>`
 (`WIREFRAME_FRAME_EVENT`); `UI · Toggled · WireframeSystemBarsOn` / `WireframeSystemBarsOff`. Never a name or text.
+Inspect: `Canvas · Used · Inspect` (`useCanvasTool`); `UI · Copied · InspectValue`, `InspectCss`, `InspectValues`,
+`InspectLink`; `Document · Exported · InspectPng` / `InspectSvg`. Never a value, a name or a link.
 
 ## Testing
 
-| Rule                                                                                                                                        | Test                                                                                                         |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Devices, turning, the iPhone Duo, the address; parsing, screen, safe area, clip, frame and export; adding, the +, device edits and refusals | `packages/design/src/wireframe-device.test.ts`                                                               |
-| Layouts by device class; each flow on its own pages                                                                                         | `packages/templates/src/wireframe-layouts.test.ts`                                                           |
-| Adding a screen, the device memory, the + and the chooser                                                                                   | `apps/live/components/canvas/AddPageButton.test.tsx`, `ContentsAddPage.test.tsx`, `FirstPageChoice.test.tsx` |
-| The editor's page edits on a wireframe page                                                                                                 | `apps/live/hooks/editor/page-edits.test.ts`                                                                  |
-| The page panel's Device tab                                                                                                                 | `apps/live/components/canvas/PagePanel.tabs.test.tsx`                                                        |
-| Layout gallery by device class                                                                                                              | `apps/live/components/canvas/layout-gallery/LayoutGallery.test.tsx`, `layout-gallery-filter.test.ts`         |
-| The Wireframe tour track                                                                                                                    | `apps/live/components/tour/page-tour-steps.test.ts`                                                          |
+| Rule                                                                                                                                        | Test                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Devices, turning, the iPhone Duo, the address; parsing, screen, safe area, clip, frame and export; adding, the +, device edits and refusals | `packages/design/src/wireframe-device.test.ts`                                                                                                                                                          |
+| Layouts by device class; each flow on its own pages                                                                                         | `packages/templates/src/wireframe-layouts.test.ts`                                                                                                                                                      |
+| Adding a screen, the device memory, the + and the chooser                                                                                   | `apps/live/components/canvas/AddPageButton.test.tsx`, `ContentsAddPage.test.tsx`, `FirstPageChoice.test.tsx`                                                                                            |
+| The editor's page edits on a wireframe page                                                                                                 | `apps/live/hooks/editor/page-edits.test.ts`                                                                                                                                                             |
+| The page panel's Device tab                                                                                                                 | `apps/live/components/canvas/PagePanel.tabs.test.tsx`                                                                                                                                                   |
+| Layout gallery by device class                                                                                                              | `apps/live/components/canvas/layout-gallery/LayoutGallery.test.tsx`, `layout-gallery-filter.test.ts`                                                                                                    |
+| The Wireframe tour track                                                                                                                    | `apps/live/components/tour/page-tour-steps.test.ts`                                                                                                                                                     |
+| Inspect's reading: size, position, colours, border, radius, text; CSS and plain values                                                      | `packages/design/src/inspect-element.test.ts`                                                                                                                                                           |
+| Spacing to neighbours, containers and the screen edge; between two elements                                                                 | `packages/design/src/inspect-spacing.test.ts`                                                                                                                                                           |
+| Every role may inspect; Inspect's press selects only; the tool on wireframe tabs only                                                       | `apps/live/lib/editor-capabilities.test.ts`, `hooks/canvas/useEditorDrag.inspect-press.test.tsx`, `lib/editor-commands-tools.test.tsx`                                                                  |
+| The target, its page and lines; the link and its Viewer link; the export's name and options                                                 | `apps/live/lib/inspect-target.test.ts`, `inspect-link.test.ts`, `inspect-export.test.ts`                                                                                                                |
+| The panel's sections, copy, export and link; the overlay; the address opening Inspect                                                       | `apps/live/components/panels/inspect/InspectPanel.test.tsx`, `components/canvas/inspect/InspectOverlay.test.tsx`, `useInspectHost.test.tsx`, `InspectClusterSegment.test.tsx`; `lib/export-tab.test.ts` |
 
 ## Constants and configuration
 
@@ -154,6 +189,9 @@ Telemetry from `page-edits.ts`: `Tab · Changed · WireframePageAdded` and `Page
 | `TALL_RATIO` / `COLUMN_MAX`           | 1.2 / 560                                  | `wireframe-layouts-start.ts` |
 | `WIREFRAME_FIT_MAX_ZOOM`              | 2.5                                        | `usePagesMode.ts`            |
 | Device memory key                     | `livedesign:v2:wireframe-device`           | `wireframe-device-memory.ts` |
+| `INSPECT_PARAM`                       | `'inspect'` (copied as `inspect=1`)        | `inspect-link.ts`            |
+| `INSPECT_EXPORT_SCALES`               | 1, 2, 3                                    | `inspect-export.ts`          |
+| `INSPECT_LINE_COLOUR`                 | `#e5484d`                                  | `InspectOverlay.tsx`         |
 
 ## Defaults ledger
 
