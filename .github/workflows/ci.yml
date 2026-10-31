@@ -101,6 +101,13 @@ jobs:
           PRODUCT: ${{ matrix.format }}
         run: bash .github/scripts/format-check.sh
 
+      # No new wall-clock speed budget in a test (docs/ci.md "Speed budgets"): CPU time only.
+      - name: Speed budgets use CPU time
+        env:
+          BASE: ${{ matrix.base }}
+          PRODUCT: ${{ matrix.format }}
+        run: node .github/scripts/cpu-budget-guard.mjs
+
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 

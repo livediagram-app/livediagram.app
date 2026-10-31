@@ -56,6 +56,12 @@ export function prePushSteps({ groups, editors }) {
         args: ['.github/scripts/format-check.sh'],
         env: { BASE: g.base, PRODUCT: g.format },
       },
+      {
+        label: `${g.group}: speed budgets use CPU time`,
+        cmd: 'node',
+        args: ['.github/scripts/cpu-budget-guard.mjs'],
+        env: { BASE: g.base, PRODUCT: g.format },
+      },
     );
     if (g.plain)
       steps.push({
