@@ -7,7 +7,7 @@ import {
   resolvedByLabel,
   sharedBeyond,
   sharedLabel,
-  threadTally,
+  openTally,
   titlePreview,
 } from './thread-words';
 
@@ -16,10 +16,9 @@ describe('thread words', () => {
   it('counts', () => {
     expect(commentCount(1)).toBe('1 comment');
     expect(commentCount(4)).toBe('4 comments');
-    expect(threadTally(2, 1)).toBe('2 open · 1 resolved');
-    expect(threadTally(3, 0)).toBe('3 open');
-    expect(threadTally(0, 1)).toBe('1 resolved');
-    expect(threadTally(0, 0)).toBe('');
+    expect(openTally(2)).toBe('2 Open');
+    expect(openTally(1)).toBe('1 Open');
+    expect(openTally(0)).toBe('');
     expect(sharedLabel(3)).toBe('On 3 cards');
   });
 

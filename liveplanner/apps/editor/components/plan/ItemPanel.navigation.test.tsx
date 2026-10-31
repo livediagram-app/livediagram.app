@@ -157,16 +157,19 @@ describe('the item panel header', () => {
 // docs/specs/026-plan/plan-board.md "Open an item": the Details panel ends with who made and last edited it, and when
 // (docs/specs/026-plan/items.md "Created and Last Edited").
 describe('the item panel’s authorship', () => {
-  it('says Created by and Last edited by, each with the person’s disc', () => {
+  it('says Created by and Edited by, each with the person’s disc, in a footer at the foot of Details', () => {
     const task = {
       ...item('t', 1, 'task'),
       updatedBy: { id: 'q', name: 'Robin Lee', color: '#16a34a' },
     };
     panel(task, [task], []);
-    const created = screen.getByText(/^Created by/).closest('div')!;
-    expect(created.textContent).toBe('Created by SASam');
-    const edited = screen.getByText(/^Last edited by/).closest('div')!;
-    expect(edited.textContent).toBe('Last edited by RLRobin Lee');
+    const created = screen.getByText(/^Created by/).closest('[data-item-meta-row]')!;
+    expect(created.textContent).toMatch(/^SACreated by Sam/);
+    const edited = screen.getByText(/^Edited by/).closest('[data-item-meta-row]')!;
+    expect(edited.textContent).toMatch(/^RLEdited by Robin Lee/);
+    const footer = created.closest('footer')!;
+    expect(footer.hasAttribute('data-item-meta')).toBe(true);
+    expect(footer.closest('aside')!.lastElementChild).toBe(footer);
   });
 
   it('says the day it was made and how long since its last edit', () => {
@@ -177,10 +180,10 @@ describe('the item panel’s authorship', () => {
       updatedAt: Date.now() - 2 * 3_600_000,
     };
     panel(task, [task], []);
-    const created = screen.getByText(/^Created by/).closest('div')!;
-    expect(created.textContent).toBe(`Created by SASam, ${dayLabel('2026-10-03', 'medium')}`);
-    const edited = screen.getByText(/^Last edited by/).closest('div')!;
-    expect(edited.textContent).toBe('Last edited by SASam, 2 hours ago');
+    const created = screen.getByText(/^Created by/).closest('[data-item-meta-row]')!;
+    expect(created.textContent).toBe(`SACreated by Sam${dayLabel('2026-10-03', 'medium')}`);
+    const edited = screen.getByText(/^Edited by/).closest('[data-item-meta-row]')!;
+    expect(edited.textContent).toBe('SAEdited by Sam2 hours ago');
     expect(edited.querySelector('time')?.getAttribute('datetime')).toBe(
       new Date(task.updatedAt).toISOString(),
     );
@@ -191,6 +194,6 @@ describe('the item panel’s authorship', () => {
     const task = { ...item('t', 1, 'task'), createdBy: lost, updatedBy: lost };
     panel(task, [task], []);
     expect(screen.queryByText(/^Created by/)).toBeNull();
-    expect(screen.queryByText(/^Last edited by/)).toBeNull();
+    expect(screen.queryByText(/^Edited by/)).toBeNull();
   });
 });
