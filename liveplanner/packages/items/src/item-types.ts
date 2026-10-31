@@ -288,7 +288,7 @@ const BUILT_IN_TYPES = [
   {
     id: 'project',
     label: 'Project',
-    newTitle: 'New plan',
+    newTitle: 'New project',
     glyph: 'project',
     color: '#18181b',
     fields: [
