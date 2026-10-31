@@ -168,6 +168,44 @@ describe('copy and paste', () => {
       )![0]!.map((c) => c.format),
     ).toEqual([{ i: true, u: true, st: true }, { fc: '#0000ff', ha: 'l', st: true }, { ha: 'c' }]);
   });
+  // Google Sheets puts each cell's value and formula in attributes, where a browser may leave a `>` unescaped.
+  it('reads a Google Sheets cell whose attributes hold a >', () => {
+    const rows = readPastedHtml(
+      '<google-sheets-html-origin><table><tbody><tr>' +
+        '<td style="background-color:#ffff00;" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;a>b&quot;}">a&gt;b</td>' +
+        '<td style="text-align:right;" data-sheets-formula="=IF(R[0]C[-1]>2,1,0)">12</td>' +
+        '<td data-x=\'it>s\' title="q">ok</td></tr></tbody></table>',
+    )!;
+    expect(rows.map((r) => r.map((c) => c.text))).toEqual([['a>b', '12', 'ok']]);
+    expect(rows[0]![0]!.format).toEqual({ bg: '#ffff00' });
+    expect(rows[0]![1]!.format).toEqual({ ha: 'r' });
+    // An unclosed quote ends the tag at its first > , as a browser recovers.
+    expect(
+      readPastedHtml('<table><tr><td title="oops>x</td></tr></table>')![0]!.map((c) => c.text),
+    ).toEqual(['x']);
+  });
+  it('reads hostile pasted HTML in linear time', () => {
+    const cpuMs = (fn: () => unknown) => {
+      const t = process.cpuUsage();
+      fn();
+      const d = process.cpuUsage(t);
+      return (d.user + d.system) / 1000;
+    };
+    const N = 20_000;
+    for (const html of [
+      `<table><tr>${'<td title="x>a</td>'.repeat(N)}</tr></table>`,
+      `<table><tr>${"<td title='x>a</td>".repeat(N)}</tr></table>`,
+      `<table><tr><td>${'<a'.repeat(N)}>`,
+      `<table><tr>${'<td a=b c = "d>e" f>g</td>'.repeat(N)}</tr></table>`,
+    ])
+      expect(cpuMs(() => readPastedHtml(html))).toBeLessThan(1000);
+  });
+  // Excel writes a cell's line break as <br> and indents the next line's source.
+  it('drops the source indent after an Excel line break', () => {
+    expect(
+      readPastedHtml('<table><tr><td>Two<br>\n    lines</td></tr></table>')![0]![0]!.text,
+    ).toBe('Two\nlines');
+  });
   it('reads pasted text', () => {
     expect(readPastedText('a\tb\nc\td\n')).toEqual([
       ['a', 'b'],
