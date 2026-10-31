@@ -17,13 +17,17 @@ export class DrawRefused extends Error {
 
 // Pictures at twice the page's resolution, as the PNG export draws.
 const PICTURE_SCALE = 2;
-// A background is a whole page: at its own size, it stays a few hundred KB.
+// A background is a whole page, at its own size, and opaque: a JPEG, as a gradient's PNG is over a megabyte (D71).
 const BACKGROUND_SCALE = 1;
+const BACKGROUND_QUALITY = 0.9;
 
-async function pngBytes(canvas: HTMLCanvasElement): Promise<Uint8Array> {
+async function imageBytes(
+  canvas: HTMLCanvasElement,
+  type: 'image/png' | 'image/jpeg' = 'image/png',
+): Promise<Uint8Array> {
   const blob = await new Promise<Blob | null>((resolve) => {
     try {
-      canvas.toBlob(resolve, 'image/png');
+      canvas.toBlob(resolve, type, BACKGROUND_QUALITY);
     } catch {
       resolve(null);
     }
@@ -55,11 +59,11 @@ export async function pageDrawer(
         crop: { x: rect.x, y: rect.y, w: rect.width, h: rect.height },
         scale: PICTURE_SCALE,
       });
-      return pngBytes(canvas);
+      return imageBytes(canvas);
     },
     async background(page: LaidOutPage) {
       const canvas = await renderTabToCanvas(bare, { ...base, page, scale: BACKGROUND_SCALE });
-      return pngBytes(canvas);
+      return imageBytes(canvas, 'image/jpeg');
     },
   };
 }

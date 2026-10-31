@@ -1,12 +1,13 @@
 // A deck written as a `.pptx` (docs/specs/020-import-export/blueprints/office-export.md "writePptx"): the fixed
 // parts, then a slide part per slide with its relationships (its layout, its pictures, its notes slide), each
-// picture's PNG a media part of its own. Pure: the deck is already in the file's units.
+// distinct picture a media part of its own. Pure: the deck is already in the file's units.
 
 import {
   APP_PROPS_TYPE,
   appPropsXml,
   CORE_PROPS_TYPE,
   corePropsXml,
+  imageExt,
   REL,
   relsPathFor,
   relsXml,
@@ -27,6 +28,26 @@ import {
 } from './pptx-parts';
 import { notesSlideXml, slideXml } from './pptx-slide-xml';
 import type { PptxDeck } from './pptx-types';
+
+/** Names media parts, the same bytes always the same part (FNV-1a over the bytes, then compared in full). */
+export class MediaStore {
+  private readonly seen = new Map<string, { name: string; bytes: Uint8Array }[]>();
+  private count = 0;
+
+  nameOf(bytes: Uint8Array): { name: string; added: boolean } {
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < bytes.length; i++) hash = Math.imul(hash ^ bytes[i]!, 0x01000193);
+    const key = `${bytes.length}:${hash >>> 0}`;
+    const bucket = this.seen.get(key) ?? [];
+    const same = bucket.find((m) => m.bytes === bytes || m.bytes.every((b, i) => b === bytes[i]));
+    if (same) return { name: same.name, added: false };
+    this.count += 1;
+    const name = `image${this.count}.${imageExt(bytes)}`;
+    bucket.push({ name, bytes });
+    this.seen.set(key, bucket);
+    return { name, added: true };
+  }
+}
 
 const MASTER = 'ppt/slideMasters/slideMaster1.xml';
 const LAYOUT = 'ppt/slideLayouts/slideLayout1.xml';
@@ -92,22 +113,22 @@ export function writePptx(deck: PptxDeck, when: Date = new Date()): Uint8Array<A
   ]);
   withRels(parts, NOTES_MASTER, [{ id: 'rId1', type: REL.theme, target: '../theme/theme2.xml' }]);
 
-  let media = 0;
+  // A picture the deck repeats (a background every slide shares) is one media part.
+  const media = new MediaStore();
   deck.slides.forEach((slide, i) => {
     const n = i + 1;
     const path = `ppt/slides/slide${n}.xml`;
     const rels: OoxmlRel[] = [
       { id: 'rId1', type: REL.slideLayout, target: '../slideLayouts/slideLayout1.xml' },
     ];
-    const image = (png: Uint8Array): string => {
-      media += 1;
-      const name = `image${media}.png`;
-      parts.push({ path: `ppt/media/${name}`, bytes: png });
+    const image = (bytes: Uint8Array): string => {
+      const { name, added } = media.nameOf(bytes);
+      if (added) parts.push({ path: `ppt/media/${name}`, bytes });
       const id = `rId${rels.length + 1}`;
       rels.push({ id, type: REL.image, target: `../media/${name}` });
       return id;
     };
-    const bgRid = slide.background?.kind === 'picture' ? image(slide.background.png) : undefined;
+    const bgRid = slide.background?.kind === 'picture' ? image(slide.background.image) : undefined;
     const pictureRids = new Map<number, string>();
     slide.items.forEach((item, at) => {
       if (item.kind === 'picture') pictureRids.set(at, image(item.png));

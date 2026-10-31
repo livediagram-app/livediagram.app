@@ -55,7 +55,7 @@ export type PptxPicture = { kind: 'picture'; name: string; box: EmuRect; png: Ui
 export type PptxItem = PptxShape | PptxPicture;
 
 export type PptxBackground =
-  { kind: 'solid'; colour: OoxmlColour } | { kind: 'picture'; png: Uint8Array };
+  { kind: 'solid'; colour: OoxmlColour } | { kind: 'picture'; image: Uint8Array };
 
 export type PptxSlide = {
   background: PptxBackground | null;

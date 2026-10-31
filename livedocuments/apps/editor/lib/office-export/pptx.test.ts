@@ -12,7 +12,7 @@ import { readPptx } from '../office-import/pptx';
 import { openZip } from '../office-import/zip';
 import { parseXml } from '../office-import/xml';
 import { buildDeck, cutTo, deckSize, placementFor, backgroundKind } from './pptx-build';
-import { writePptx } from './pptx-write';
+import { MediaStore, writePptx } from './pptx-write';
 import { everyKindDeck, fakeDrawer, ONE_PIXEL_PNG } from './test-tabs';
 
 // docs/specs/020-import-export/office-export.md "PowerPoint: one slide a page": the deck read back through the
@@ -317,5 +317,38 @@ describe('PowerPoint export', () => {
     expect(xml).toContain('<dc:title>A &amp; B</dc:title>');
     expect(xml).toContain('<a:t>Three &lt;b&gt;</a:t>');
     expect(xml).toContain('../notesSlides/notesSlide1.xml');
+  });
+
+  it('stores a background every slide shares once, a JPEG as a JPEG', async () => {
+    const jpeg = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
+    const sameAgain = Uint8Array.from(jpeg);
+    const slide = (image: Uint8Array) => ({
+      background: { kind: 'picture' as const, image },
+      items: [
+        {
+          kind: 'picture' as const,
+          name: 'P',
+          box: { x: 0, y: 0, cx: 10, cy: 10 },
+          png: ONE_PIXEL_PNG,
+        },
+      ],
+    });
+    const bytes = writePptx({
+      title: 'T',
+      cx: 12_192_000,
+      cy: 6_858_000,
+      slides: [slide(jpeg), slide(sameAgain)],
+    });
+    const zip = openZip(bytes);
+    const media = zip.names().filter((n) => n.startsWith('ppt/media/'));
+    expect(media.sort()).toEqual(['ppt/media/image1.jpeg', 'ppt/media/image2.png']);
+    const parts = await everyPart(bytes);
+    expect(parts.get('[content_types].xml')).toContain('Extension="jpeg" ContentType="image/jpeg"');
+    expect(parts.get('ppt/slides/_rels/slide2.xml.rels')).toContain('../media/image1.jpeg');
+    // Same length and hash but other bytes stay apart.
+    const store = new MediaStore();
+    expect(store.nameOf(Uint8Array.from([1, 2])).added).toBe(true);
+    expect(store.nameOf(Uint8Array.from([1, 2])).added).toBe(false);
+    expect(store.nameOf(Uint8Array.from([2, 1])).name).toBe('image2.png');
   });
 });

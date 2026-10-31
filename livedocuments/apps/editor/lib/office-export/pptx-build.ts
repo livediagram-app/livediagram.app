@@ -173,8 +173,8 @@ async function slideOf(
     const c = ooxmlColour(fill.color);
     if (c && c !== NO_PAINT) background = { kind: 'solid', colour: c };
   } else if (kind === 'picture') {
-    const png = await drawer.background(page);
-    if (png) background = { kind: 'picture', png };
+    const image = await drawer.background(page);
+    if (image) background = { kind: 'picture', image };
   }
   const slide = slideOfPage(input.deck, tab.id, page.id);
   const notes = slide?.notes?.trim();

@@ -51,7 +51,7 @@ Only `page-drawer.ts` and the panel touch the DOM; every other module runs in No
 | `PICTURE_PAD`      | 4 px   | `pptx-build.ts`  | Antialiasing and strokes past the box stay in the picture (D70) |
 | `ARROW_PAD`        | 16 px  | `pptx-build.ts`  | An arrow's head and label stay in its picture (D70)             |
 | `PICTURE_SCALE`    | 2      | `page-drawer.ts` | Pictures at the PNG export's resolution (D71)                   |
-| `BACKGROUND_SCALE` | 1      | `page-drawer.ts` | A whole-page picture stays a few hundred KB (D71)               |
+| `BACKGROUND_SCALE` | 1      | `page-drawer.ts` | A whole-page picture, as a JPEG, stays tens of KB (D71)         |
 | `DOCX_EMU_PER_PX`  | 9,525  | `docx-body.ts`   | Word's 96 dpi pixel                                             |
 | `TWIPS_PER_PX`     | 15     | `docx-styles.ts` | Word's spacing and page units                                   |
 | `LIST_LEVELS`      | 5      | `docx-styles.ts` | The article's list levels, 0 to 4                               |
@@ -140,7 +140,11 @@ or the article's links (already `isSafeArticleHref`), written `TargetMode="Exter
   paragraphs, a list item and a zone a page) in 45 to 60 ms, a 115 KB file; measured on a loaded machine (load 16).
 - **Pictures** dominate in the browser: each is one `renderTabToCanvas` call at 2x and one PNG encode, the image
   export's own cost per element. They run one at a time with a yield between slides or zones, so the editor stays
-  responsive; the browser numbers are in the PR.
+  responsive. In Chrome (headless), the six-slide pitch template (20 pictures, a gradient background) took 0.44 to
+  0.70 s from Download to the file, 930 KB: about 0.1 s a slide.
+- **Backgrounds are JPEG** (quality 0.9): the template's gradient was a 1.43 MB PNG and is a 15 KB JPEG. A picture the
+  deck repeats (the same background on every slide) is one media part (`MediaStore`: FNV-1a over the bytes, then a
+  full comparison), so a 50-slide deck on one background stores it once.
 
 ## Presentation and UX
 

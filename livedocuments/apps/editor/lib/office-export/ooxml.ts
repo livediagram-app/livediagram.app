@@ -100,7 +100,13 @@ const DEFAULT_TYPES: Readonly<Record<string, string>> = {
   rels: 'application/vnd.openxmlformats-package.relationships+xml',
   xml: 'application/xml',
   png: 'image/png',
+  jpeg: 'image/jpeg',
 };
+
+/** A picture's file extension, from its first bytes: JPEG's marker, else PNG. */
+export function imageExt(bytes: Uint8Array): 'jpeg' | 'png' {
+  return bytes[0] === 0xff && bytes[1] === 0xd8 ? 'jpeg' : 'png';
+}
 
 function contentTypesXml(parts: readonly OoxmlPart[]): string {
   const defaults = Object.entries(DEFAULT_TYPES).map(
