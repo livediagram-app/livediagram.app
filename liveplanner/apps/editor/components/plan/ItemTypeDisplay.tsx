@@ -36,6 +36,7 @@ import {
   type CustomFieldDef,
   type CardDisplay,
   type CardField,
+  AUTOMATIC_CARD_FIELDS,
   type CardLayout,
   type CardSize,
   type CardSlot,
@@ -126,8 +127,9 @@ function sampleCard(type: ItemTypeDef): Item {
       ...Object.fromEntries((type.custom ?? []).flatMap((c) => sampleCustom(c))),
     },
     rev: 1,
-    createdAt: 0,
-    updatedAt: 0,
+    // Made two days ago and edited today, so placed stamps read as a real card's.
+    createdAt: Date.now() - 2 * 86_400_000,
+    updatedAt: Date.now(),
     createdBy: SAMPLE_PERSON,
     updatedBy: SAMPLE_PERSON,
   };
@@ -250,6 +252,9 @@ export function ItemTypeDisplay({
   const available = [...cardDisplayFields(size), ...customCardFields(type)].filter(
     (f) => typeOffersCardField(type, f) && !placed.includes(f),
   );
+  // The fields a person fills in, then those filled in automatically (Age and the stamps), each group under its head.
+  const automatic = available.filter((f) => AUTOMATIC_CARD_FIELDS.includes(f));
+  const filledIn = available.filter((f) => !AUTOMATIC_CARD_FIELDS.includes(f));
   const isDefault = sameCardLayout(size, layout, typeDefaultCardLayout(type, size));
   const sample = useMemo(() => sampleCard(type), [type]);
   const sampleThreads = useMemo(() => sampleThreadStore(type, sample.id), [type, sample.id]);
@@ -306,6 +311,35 @@ export function ItemTypeDisplay({
       card.current?.querySelector<HTMLElement>(`[data-chip="${field}"]`)?.focus(),
     );
   };
+  // A group of Available Fields' chips: drag one onto the card, or press it to choose where it goes.
+  const fieldChips = (fields: readonly CardField[]) => (
+    <ul className="flex flex-wrap gap-1.5">
+      {fields.map((f) => (
+        <li key={f}>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={placing?.field === f}
+            {...dragProps(f, (el) => setPlacing({ field: f, anchor: el }))}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter' && e.key !== ' ') return;
+              e.preventDefault();
+              setPlacing({ field: f, anchor: e.currentTarget });
+            }}
+            className={`inline-flex cursor-grab touch-none select-none items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-1 pl-1.5 pr-2.5 text-[12px] font-medium text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/60 active:cursor-grabbing dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10 ${
+              drag?.moving && drag.field === f ? 'opacity-40' : ''
+            }`}
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              {fieldIcon(type, f, 12)}
+            </span>
+            {fieldLabel(type, f)}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+
   const slotOf = (field: CardField) =>
     CARD_SLOTS[size].find((s) => (layout[s] ?? []).includes(field))!;
 
@@ -461,31 +495,15 @@ export function ItemTypeDisplay({
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Drag one onto the card, or press it to choose where it goes.
                 </p>
-                <ul className="flex flex-wrap gap-1.5">
-                  {available.map((f) => (
-                    <li key={f}>
-                      <button
-                        type="button"
-                        aria-haspopup="dialog"
-                        aria-expanded={placing?.field === f}
-                        {...dragProps(f, (el) => setPlacing({ field: f, anchor: el }))}
-                        onKeyDown={(e) => {
-                          if (e.key !== 'Enter' && e.key !== ' ') return;
-                          e.preventDefault();
-                          setPlacing({ field: f, anchor: e.currentTarget });
-                        }}
-                        className={`inline-flex cursor-grab touch-none select-none items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-1 pl-1.5 pr-2.5 text-[12px] font-medium text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/60 active:cursor-grabbing dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10 ${
-                          drag?.moving && drag.field === f ? 'opacity-40' : ''
-                        }`}
-                      >
-                        <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {fieldIcon(type, f, 12)}
-                        </span>
-                        {fieldLabel(type, f)}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {filledIn.length > 0 ? fieldChips(filledIn) : null}
+                {automatic.length > 0 ? (
+                  <>
+                    <h5 className="mt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Filled In Automatically
+                    </h5>
+                    {fieldChips(automatic)}
+                  </>
+                ) : null}
               </>
             )}
           </section>

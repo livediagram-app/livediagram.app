@@ -67,6 +67,8 @@ describe('Sort Cards', () => {
     expect(boardSortFieldsOf([deal, odd]).map((f) => `${f.id}:${f.kind}`)).toEqual([
       'priority:priority',
       'due:date',
+      'createdAt:date',
+      'updatedAt:date',
       'f-value:currency',
       'f-stage:choice',
       'f-fit:rating',
@@ -281,7 +283,9 @@ describe('Sort Cards', () => {
     expect(boardSortNamed([{ field: 'Note' }], [deal])).toMatchObject({
       ok: false,
       code: 'board_invalid',
-      message: expect.stringContaining('Sortable fields: Priority, Due Date, Value'),
+      message: expect.stringContaining(
+        'Sortable fields: Priority, Due Date, Created At, Last Edited At, Value',
+      ),
     });
     expect(boardSortNamed([{ field: 'Priority' }, { field: 'priority' }], [deal])).toMatchObject({
       ok: false,

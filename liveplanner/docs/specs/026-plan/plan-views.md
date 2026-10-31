@@ -372,8 +372,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   `12 cards`.
 - A **filter** is a field and a value, shown as a chip ("Card Type: Project", "State: Done", "Assignee: No
   assignee") with a cross that removes it; a card must match every filter. A field is any of a board's groupings
-  (Card Type, State, Assignee, Priority) or lane fields (Labels, Estimate, Start Date, Due Date, any grouping
-  custom field, Parent among them), and a value is one of its lanes, named and ordered as a board's swimlanes are, the empty one ("No
+  (Card Type, State, Assignee, Priority) or lane fields (Labels, Estimate, Start Date, Due Date, Created At, Created
+  By, Last Edited At, Last Edited By, any grouping custom field, Parent among them), and a value is one of its lanes, named and ordered as a board's swimlanes are, the empty one ("No
   assignee") included. At most 8 filters.
 - **Add Filter** (a dashed pill with a plus) opens a popover drawn over the page, so it reads at its own size
   whatever the canvas zoom: first the fields still worth filtering, those the matching cards' types offer (all

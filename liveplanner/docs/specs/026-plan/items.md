@@ -33,7 +33,8 @@ fields people usually want, and any item may carry other fields. The store never
 - **`key`**: the item's number in its project, assigned by the store when the item is made (1, 2, 3...).
 - **Who and when**: `createdBy` and `updatedBy` (the display identity of the person or agent), `createdAt` and
   `updatedAt`. A person's id on an item is a one-way hash of their identity, never the identity itself: a guest's
-  id is their credential, so items never carry it.
+  id is their credential, so items never carry it. They are stamped by the plan on each write, never sent by a
+  client, and people see them as the card's [Created and Last Edited](#created-and-last-edited) fields.
 - **`rev`**: the item's revision, raised by one on every write.
 
 ## Fields
@@ -64,6 +65,42 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 A card's type may leave statuses out ([Item types](item-types.md#an-item-type)): an item made or moved into one is
 refused (`status_excluded`), from the editor, the api and agents alike. A card already in one is never moved out
 by it, and putting a change back (a restore from the Trash, an undo or redo) is never refused.
+
+### Created and Last Edited
+
+Four built-in fields read the item's own stamps, so people can see who made a card and who last changed it, and
+when, and sort, filter and lane by them. Every type offers them, as it offers [Age](item-types.md#card-display), and
+they are the same family: filled in automatically, never typed.
+
+| Field              | Id          | Kind   | Reads                                     |
+| ------------------ | ----------- | ------ | ----------------------------------------- |
+| **Created At**     | `createdAt` | date   | When the card was made                    |
+| **Created By**     | `createdBy` | person | Who made it: a person, an agent or a form |
+| **Last Edited At** | `updatedAt` | date   | When it was last edited (an edit, below)  |
+| **Last Edited By** | `updatedBy` | person | Who last edited it                        |
+
+- **Read-only**: the plan stamps them as it applies a write, from the editor, the api, agents and forms alike, from
+  the caller it has signed in; nothing a client sends sets them. A write naming one in its fields is refused
+  (`field_key_invalid`), as is an agent naming one in `change_items`. They are not in `fields`: they are the item's
+  `createdAt`, `createdBy`, `updatedAt` and `updatedBy`.
+- **An edit** is any write that changes the card: a field set or cleared, a status or type changed, a move into
+  another column, a trash, archive or flag and their restores, an undo or redo (by the person undoing). These leave
+  **Last Edited** as it was, because nobody edited the card:
+  - a session vote's **tally** (its votes; its `rev` still rises);
+  - a card's **place within its column alone** (a reorder, a drop back where it was), as History leaves it out;
+  - a **linked board** keeping a card with its record ([Linked boards](linked-boards.md#keeping-them-together)): a
+    write that sets or clears the link's own fields (`linked`, `linkedAt`, `linkedRev`, `linkedGone`) is that
+    upkeep, whoever's browser sends it;
+  - a **thread** write ([Writes](#writes)), and the plan's own upkeep (the schema's moves, a closed account's
+    anonymising, which rewrites the name to **Deleted account**, and the migration door).
+- **People** are shown as the item holds them today, a name and colour beside the hashed id, never more: the same
+  identity the panel's foot has always shown.
+- **No guessing**: a card stored without a maker or a time (an import from an older file, a row that lost its
+  person, which reads as an empty id) shows nothing for that field, and sorts and lanes as having no value; it is
+  never filled from another field. Undoing a card's delete, or duplicating a card, makes it anew: stamped then, by
+  the person doing it.
+- **Dates** read as the viewer's local calendar day ("31 Oct") on a card, the full date and time in its spoken label
+  (and in the panel's tooltip on the last edit's "2h ago"); lanes and filters group by that day (`2026-10-31`), sorts by the moment itself.
 
 ### Attachments
 
@@ -209,7 +246,8 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   pseudonymous person ids) in one write (`POST /items/tally`, edit access); nothing else writes `votes`. A vote that
   counts in a Votes field of the type's own sends its id as `field`, and the dots land there; a card whose type
   does not offer that field takes them in the built-in `votes` ([Session tools](../012-collaboration/session-tools.md)
-  "Count In"). Cards are
+  "Count In"). A tally is not an edit: the card's Last Edited stays as it was ([Created and Last
+  Edited](#created-and-last-edited)). Cards are
   voted on through the tab's session vote ([Session tools](../012-collaboration/session-tools.md) "Voting on Plan
   cards"), which keeps its own budget and privacy.
 - **Delete**: removes the item. Its key is not reused.
@@ -482,7 +520,7 @@ Every write is applied by the home plan to the thread as stored, so concurrent w
 
 - A comment's author name, colour and id, its `ai` flag and its token are stamped by the server from the caller. A
   reaction's name is the server's too; its `by` is the caller's collab key, as on the canvas.
-- A thread write is not a change to its cards: no card's `rev`, **Edited by** or change time moves.
+- A thread write is not a change to its cards: no card's `rev`, **Last Edited By** or **Last Edited At** moves.
 - **Author ids** never leave the api except to their author: every read and answer leaves them out of other people's
   comments (and the thread's starter), and the room hears none.
 - **Live**: every write reaches everyone with any of the thread's cards open, in every plan it is on, at once.

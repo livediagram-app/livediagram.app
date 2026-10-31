@@ -18,4 +18,8 @@ export const FIELD_GLYPHS: Record<CardField, string> = {
   cover: 'page',
   parent: 'project',
   age: 'hourglass',
+  createdAt: 'clock',
+  createdBy: 'person',
+  updatedAt: 'pencil',
+  updatedBy: 'person',
 };

@@ -45,6 +45,15 @@ import {
 } from './limits';
 import { HEX_COLOUR, isObj } from './validate';
 import { isDoneColumn } from './done-columns';
+import {
+  STAMP_FIELDS,
+  STAMP_FIELD_LABELS,
+  isStampField,
+  itemStampPerson,
+  itemStampTime,
+  stampDay,
+  type StampTimeField,
+} from './card-stamps';
 
 export interface PlanColumn {
   id: string;
@@ -90,6 +99,11 @@ export const CARD_FIELDS = [
   'cover',
   // How long the card has sat in its status (docs/specs/026-plan/item-types.md "Card display"): in no default.
   'age',
+  // Its stamps (docs/specs/026-plan/items.md "Created and Last Edited"; card-stamps.ts): Age's family, in no default.
+  'createdAt',
+  'createdBy',
+  'updatedAt',
+  'updatedBy',
 ] as const;
 // A card field: a built-in one, or a card type's custom field by its id (`f-…`, or the reserved `parent`), placed
 // by the type's Display (docs/specs/026-plan/item-types.md "Card display").
@@ -242,6 +256,8 @@ export interface LaneField {
   id: string;
   label: string;
   kind: LaneFieldKind;
+  // One of the item's stamps (card-stamps.ts): read from the item itself, and a drop into its row sets nothing.
+  readOnly?: true;
   options?: readonly string[];
   // A Card field's target types: a row per linked card, of any of them (docs/specs/026-plan/item-types.md "Card
   // fields").
@@ -257,6 +273,13 @@ const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
   { id: 'start', label: 'Start Date', kind: 'date' },
   { id: 'due', label: 'Due Date', kind: 'date' },
 ];
+// The four stamps every type offers (docs/specs/026-plan/items.md "Created and Last Edited").
+const STAMP_LANE_FIELDS: readonly LaneField[] = STAMP_FIELDS.map((id) => ({
+  id,
+  label: STAMP_FIELD_LABELS[id],
+  kind: id === 'createdBy' || id === 'updatedBy' ? 'person' : 'date',
+  readOnly: true,
+}));
 const GROUPING_KINDS = new Set<string>([
   'choice',
   'checkbox',
@@ -273,14 +296,18 @@ const GROUPING_KINDS = new Set<string>([
 export function laneFieldsOf(types: readonly ItemTypeDef[]): LaneField[] {
   // A built-in lane field only when one of the types offers it (docs/specs/026-plan/plan-board.md "Swimlanes by a
   // field"): a board or chart lanes by what its own cards can hold.
-  return everyLaneField(types).filter(
-    (f) => !BUILT_IN_LANE_FIELDS.includes(f) || types.some((t) => t.fields.includes(f.id)),
+  // The stamps with any type at all: every type offers them.
+  return everyLaneField(types).filter((f) =>
+    f.readOnly
+      ? types.length > 0
+      : !BUILT_IN_LANE_FIELDS.includes(f) || types.some((t) => t.fields.includes(f.id)),
   );
 }
 
-// Every field a board could lane by, offered or not: what a board already laned by a field looks it up in.
+// Every field a board could lane by, offered or not: what a board already laned by a field looks it up in. The
+// stamps come after the built-ins, before the custom fields.
 function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
-  const out: LaneField[] = [...BUILT_IN_LANE_FIELDS];
+  const out: LaneField[] = [...BUILT_IN_LANE_FIELDS, ...STAMP_LANE_FIELDS];
   for (const t of types)
     for (const c of t.custom ?? []) {
       if (!GROUPING_KINDS.has(c.kind) || !t.fields.includes(c.id)) continue;
@@ -377,6 +404,17 @@ function cardLanes(
   });
 }
 
+// A stamp's row: the person, or the local day of the moment (docs/specs/026-plan/items.md "Created and Last Edited").
+// A card stored without one sits in the No row.
+function stampLane(field: LaneField, item: Partial<Item>): LaneHead {
+  if (field.id === 'createdBy' || field.id === 'updatedBy') {
+    const p = itemStampPerson(item, field.id);
+    return personLanes(field, { fields: p ? { [field.id]: { ...p } } : {} })[0]!;
+  }
+  const at = itemStampTime(item, field.id as StampTimeField);
+  return fieldLane(field, at === undefined ? undefined : stampDay(at));
+}
+
 function fieldLane(field: LaneField, value: string | number | boolean | undefined): LaneHead {
   const base = laneBase(field);
   if (value === undefined)
@@ -399,7 +437,8 @@ export function laneDropPatch(
   if (lane.field === 'type') return typeof lane.value === 'string' ? { type: lane.value } : {};
   if (lane.field === 'field') {
     const id = lane.fieldId;
-    if (!id) return {};
+    // Nobody changes who made a card or when: a stamp's row sets nothing.
+    if (!id || isStampField(id)) return {};
     if (lane.value === null || lane.value === false) return { clear: [id] };
     if (lane.fieldKind === 'labels' && typeof lane.value === 'string') {
       const rest = item ? labelsIn(id, item).filter((l) => l !== lane.value) : [];
@@ -583,10 +622,9 @@ function laneOf(
 ): LaneHead {
   switch (by) {
     case 'field':
-      // A Person or Card field's rows are lanesOf's, one per value; every other field's value is one row.
-      return field
-        ? fieldLane(field, laneValue(field, item))
-        : { key: NO_LANE, label: '', field: null, value: null };
+      if (!field) return { key: NO_LANE, label: '', field: null, value: null };
+      // A Created or Edited field's row is its stamp's; a Person or Card field's rows are lanesOf's, one per value.
+      return field.readOnly ? stampLane(field, item) : fieldLane(field, laneValue(field, item));
     case 'status': {
       const s = namedStatus(item, statusNames);
       return s
@@ -629,8 +667,10 @@ function lanesOf(
   statusNames?: ReadonlyMap<string, string>,
   field?: LaneField,
 ): LaneHead[] {
-  if (by === 'field' && field?.kind === 'person') return personLanes(field, item);
-  if (by === 'field' && field?.kind === 'card') return cardLanes(field, item, items, types);
+  if (by === 'field' && !field?.readOnly && field?.kind === 'person')
+    return personLanes(field, item);
+  if (by === 'field' && !field?.readOnly && field?.kind === 'card')
+    return cardLanes(field, item, items, types);
   return [laneOf(by, item, types, statusNames, field)];
 }
 
@@ -752,6 +792,7 @@ function boardLanes(
     by !== 'type' &&
     by !== 'status' &&
     field?.kind !== 'checkbox' &&
+    !field?.readOnly &&
     !laneMap.has(NO_LANE)
   ) {
     laneMap.set(NO_LANE, lanesOf(by, { fields: {} } as Item, items, types, statusNames, field)[0]!);
@@ -924,6 +965,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     swimlaneBy === 'field' &&
     typeof laneField === 'string' &&
     ((LANE_FIELD_BUILT_INS as readonly string[]).includes(laneField) ||
+      isStampField(laneField) ||
       CUSTOM_FIELD_ID_PATTERN.test(laneField))
       ? laneField
       : undefined;

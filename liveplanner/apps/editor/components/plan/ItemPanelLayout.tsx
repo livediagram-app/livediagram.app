@@ -6,10 +6,20 @@
 // ItemFieldEditor's.
 import { FROM_FORM_FIELD, readFromForm } from '@liveplanner/forms';
 import type { ReactNode } from 'react';
-import { relativeSince } from '@liveplanner/ui';
-import type { Item } from '@liveplanner/items';
+import { Tooltip, relativeSince } from '@liveplanner/ui';
+import {
+  dayLabel,
+  itemStampPerson,
+  itemStampTime,
+  stampDay,
+  stampMomentLabel,
+  type Item,
+} from '@liveplanner/items';
 import { PersonDisc } from './PersonDisc';
 import { ACCENT_BG, accentVars } from './plan-palette';
+
+// The day a card was made, as the panel gives it: "3 Oct 2026".
+const stampDayLabel = (ms: number) => dayLabel(stampDay(ms), 'medium');
 
 // The card type's colour as a thin band across the panel's top edge: the type shows without shouting. ACCENT_BG
 // lifts a colour too dark to see on the dark chrome (Project's black), as the Card Types panel's stripes do.
@@ -89,39 +99,52 @@ export function ItemDetailsRow({
   );
 }
 
-// Who made the card and who last changed it, small and quiet at Details' foot.
+// Who made the card and who last edited it, and when, small and quiet at Details' foot (docs/specs/026-plan/items.md
+// "Created and Last Edited"): each line left out when the card holds no one for it, never a guess.
 export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const response = readFromForm(item.fields[FROM_FORM_FIELD]);
+  const maker = itemStampPerson(item, 'createdBy');
+  const made = itemStampTime(item, 'createdAt');
+  const editor = itemStampPerson(item, 'updatedBy');
+  const edited = itemStampTime(item, 'updatedAt');
+  if (!maker && !response && !editor) return null;
   return (
     <div className="mt-5 flex flex-col gap-1.5 border-t border-slate-200/80 pt-3 text-[11px] text-slate-500 dark:text-slate-400 dark:border-slate-700/80">
-      <div className="flex items-center gap-1.5">
-        Created by <PersonDisc person={item.createdBy} />
-        <span className="font-medium text-slate-600 dark:text-slate-300">
-          {item.createdBy.name}
-        </span>
-      </div>
+      {maker ? (
+        <div className="flex items-center gap-1.5">
+          Created by <PersonDisc person={maker} />
+          <span>
+            <span className="font-medium text-slate-600 dark:text-slate-300">{maker.name}</span>
+            {/* A form's response says when on its own line. */}
+            {made !== undefined && !response ? `, ${stampDayLabel(made)}` : null}
+          </span>
+        </div>
+      ) : null}
       {response ? (
         // A form's response (docs/specs/030-forms/forms.md "What a response makes"): its number and when it came.
         <div>
-          Form response #{response.number},{' '}
-          {new Date(item.createdAt).toLocaleString(undefined, {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+          Form response #{response.number}
+          {made !== undefined ? `, ${stampMomentLabel(made)}` : null}
         </div>
       ) : null}
-      <div className="flex items-center gap-1.5">
-        Edited by <PersonDisc person={item.updatedBy} />
-        <span>
-          <span className="font-medium text-slate-600 dark:text-slate-300">
-            {item.updatedBy.name}
+      {editor ? (
+        <div className="flex items-center gap-1.5">
+          Last edited by <PersonDisc person={editor} />
+          <span>
+            <span className="font-medium text-slate-600 dark:text-slate-300">{editor.name}</span>
+            {edited !== undefined ? (
+              <>
+                ,{' '}
+                <Tooltip label={stampMomentLabel(edited)}>
+                  <time dateTime={new Date(edited).toISOString()}>
+                    {relativeSince(edited, now)}
+                  </time>
+                </Tooltip>
+              </>
+            ) : null}
           </span>
-          , {relativeSince(item.updatedAt, now)}
-        </span>
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }
