@@ -3,6 +3,7 @@
 import type { FolderPreview } from '@liveworkspace/index-client';
 import type { SQLInputValue } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import type { Person } from './auth';
 import { folderPreviewQueries } from './folder-previews';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
@@ -114,9 +115,11 @@ describe('GET /folders/previews', () => {
       }
     }
     db.exec('COMMIT');
-    const started = performance.now();
-    const got = await previews(ada.auth, ids);
-    const took = performance.now() - started;
+    // CPU time, not wall clock: a busy runner's wait for a core is not the query's cost.
+    let got!: { previews: FolderPreview[] };
+    const took = await cpuMsOfAsync(async () => {
+      got = await previews(ada.auth, ids);
+    });
     expect(got.previews).toHaveLength(60);
     for (const p of got.previews) {
       expect(p.itemCount).toBe(1000);
@@ -128,8 +131,8 @@ describe('GET /folders/previews', () => {
       ]);
     }
     // eslint-disable-next-line no-console
-    console.log(`[folder previews] 60 folders x 2,000 items: ${took.toFixed(1)}ms`);
-    expect(took).toBeLessThan(500);
+    console.log(`[folder previews] 60 folders x 2,000 items: ${took.toFixed(1)} ms of CPU`);
+    expect(took).toBeLessThan(cpuBudgetMs(500));
     // Seeding 120,000 items outruns the 5s default on a busy runner; the budget above times only the read.
   }, 30_000);
 });
