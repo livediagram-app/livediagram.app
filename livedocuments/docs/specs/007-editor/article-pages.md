@@ -131,7 +131,12 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   centre, right, justify), ⌘\ (clear formatting), ⌘Enter (tick or untick the to-do at the
   caret), ⌘Z / ⌘⇧Z (undo, redo), ⌘A (all the article's writing), Escape (leave the writing; the caret goes, nothing is selected).
 - **Paste**: from a web page or another editor, its headings, lists, quotes, code, links and
-  bold / italic / underline / strike are kept, everything else dropped; Markdown text is read as
+  bold / italic / underline / strike are kept, everything else dropped (a list item or quote
+  holding paragraphs, as Google Docs writes them, is still that item or quote; Word's list
+  paragraphs are list items at their level, its typed markers dropped; Google Docs' checklist
+  items are to-dos; a table's cells of text are a paragraph each); into an empty block, pasted
+  writing that opens with a heading, quote, list item or code takes the block's place, so it keeps
+  its kind; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links); other
   plain text pastes as paragraphs, one per line. Pasted images go into object zones. A paste of
   canvas elements (copied from a canvas) lands as a drawing zone holding them. A whole Word
