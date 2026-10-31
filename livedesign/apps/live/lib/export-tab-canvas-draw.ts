@@ -18,6 +18,7 @@ import { type CanvasSurface, type BoxedElement } from '@livedesign/design';
 // MCP worker reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
+  borderOf,
   describeBoxedExport,
   EXPORT_DEFAULT_FONT,
   EXPORT_IMAGE_FILL,
@@ -34,26 +35,30 @@ function boxedSilhouettePath(
   ctx: CanvasRenderingContext2D,
   el: BoxedElement,
   kind: ExportShape['kind'],
-  dx = 0,
-  dy = 0,
+  // A shape's own border (svg-render-border's borderOf): the outline is inset by half its width, as the SVG export
+  // and the canvas's CSS border sit inside the box, with its corner radius. Absent: the 6px rounded box.
+  border?: { width: number; radius: number },
 ): void {
-  const x = el.x + dx;
-  const y = el.y + dy;
-  const cx = x + el.width / 2;
-  const cy = y + el.height / 2;
+  const inset = border ? border.width / 2 : 0;
+  const x = el.x + inset;
+  const y = el.y + inset;
+  const w = Math.max(0, el.width - inset * 2);
+  const h = Math.max(0, el.height - inset * 2);
+  const cx = x + w / 2;
+  const cy = y + h / 2;
   if (kind === 'ellipse') {
     ctx.beginPath();
-    ctx.ellipse(cx, cy, el.width / 2, el.height / 2, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
   } else if (kind === 'diamond') {
     ctx.beginPath();
     ctx.moveTo(cx, y);
-    ctx.lineTo(x + el.width, cy);
-    ctx.lineTo(cx, y + el.height);
+    ctx.lineTo(x + w, cy);
+    ctx.lineTo(cx, y + h);
     ctx.lineTo(x, cy);
     ctx.closePath();
   } else {
     // rect + image both use the rounded outline.
-    roundedRect(ctx, x, y, el.width, el.height, 6);
+    roundedRect(ctx, x, y, w, h, border ? Math.max(0, border.radius - inset) : 6);
   }
 }
 
@@ -128,14 +133,19 @@ export function drawBoxed(
     // silhouette: `boxedNeedsSvgRaster` routes every one of them through its
     // own SVG before this drawer is reached (docs/specs/010-palette/stickers.md).
     ctx.fillStyle = shape.fill;
-    boxedSilhouettePath(ctx, el, shape.kind);
+    // A shape's border is its own width, dash and radius, as the SVG export draws it
+    // (docs/specs/020-import-export/export-fidelity.md "Borders are the element's own"); a borderless shape has no
+    // line. Only Flexible shapes reach here (boxedNeedsSvgRaster sends the other finishes through their SVG).
+    const border = el.type === 'shape' ? borderOf(el) : undefined;
+    boxedSilhouettePath(ctx, el, shape.kind, border);
     ctx.fill();
-    // A borderless shape has no line, as the SVG export draws it (stroke="none"): stroking it anyway put a 1.5px
-    // line of the default border colour round every borderless button in a PNG.
-    const borderless = el.type === 'shape' && el.strokeWidth === 'none';
-    if (shape.stroke !== 'none' && !borderless) {
+    const lineWidth = border ? border.width : 1.5;
+    if (shape.stroke !== 'none' && lineWidth > 0) {
       ctx.strokeStyle = shape.stroke;
+      ctx.lineWidth = lineWidth;
+      if (border?.dash) ctx.setLineDash(border.dash.split(' ').map(Number));
       ctx.stroke();
+      if (border?.dash) ctx.setLineDash([]);
     }
   }
   if (label && !drewImage) {
