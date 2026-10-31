@@ -120,7 +120,8 @@ function page(
   return onNavigate;
 }
 
-const card = () => screen.findByText('Northwind · 2 members · 1 invited · You’re an admin');
+const HEADLINE = 'Northwind · 2 members · 1 invited · You’re an admin';
+const card = () => screen.findByText((_, el) => el?.tagName === 'P' && el.textContent === HEADLINE);
 
 describe('a team’s view', () => {
   beforeEach(() => localStorage.clear());
@@ -133,6 +134,20 @@ describe('a team’s view', () => {
     expect(screen.getByText('Kai Moss')).toBeTruthy();
     expect(screen.getByText('Invited')).toBeTruthy();
     expect(await screen.findByText('Item 1')).toBeTruthy();
+  });
+
+  it('isolates the organisation, names and addresses, so right-to-left text turns nothing else around', async () => {
+    const team = details({ organisation: '\u202Eevil org' });
+    team.members[1]!.name = '\u202Eeel nna';
+    page({ kind: 'team', id: 't1' }, fakeHost(team));
+    const headline = await screen.findByText(
+      (_, el) =>
+        el?.tagName === 'P' &&
+        el.textContent === `\u202Eevil org · 2 members · 1 invited · You’re an admin`,
+    );
+    expect(headline.querySelector('bdi')?.textContent).toBe('\u202Eevil org');
+    expect(screen.getByText('\u202Eeel nna').tagName).toBe('BDI');
+    expect(screen.getByText('ann@x.test').tagName).toBe('BDI');
   });
 
   it('pins the only admin, and lets an admin change another’s role', async () => {
