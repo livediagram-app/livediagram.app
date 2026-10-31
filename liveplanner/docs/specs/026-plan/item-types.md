@@ -768,7 +768,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
         "Someone on the plan, like an owner or a reviewer", Checklist "To-dos ticked off one by one", Comments
         "Threads to talk the card through", Votes "Thumbs up from the team"), **Colour & images** (Colour "A colour
         to tell cards apart", Image "A picture, like a mock-up or a photo") and **Linked cards** (Link to Card
-        "Another card, like a parent or an epic", Calculated "Worked out from the cards linked here"). Each group's
+        "Another card, like a parent or an epic", Calculated "Worked out from linked cards or a formula"). Each group's
         header is a button (`aria-expanded`) with the group's name, how many kinds it lists and a chevron. While a
         search is typed the accordion steps aside: every group with a match shows open, listing only its matches
         (its count then the matches'), and a group with none is hidden; clearing the search brings the accordion

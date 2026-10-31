@@ -5,7 +5,7 @@
 // is typed ("Works", or the problem), the type's fields and the functions as chips that write themselves at the caret,
 // and a Preview working it out on the type's first live card. The box holds the formula with names; the field keeps it
 // with ids (storedFormula), so a renamed field keeps working.
-import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   FORMULA_MAX,
   FORMULA_RESULTS,
@@ -93,18 +93,24 @@ export function FormulaEditor({
     else if (!keepLastWorking) onChange({ formula: undefined });
   };
 
-  // A chip's text written at the caret (over any selection), the caret left after it.
+  // A chip's text written at the caret (over any selection), the caret left after it: put back as soon as the box
+  // holds the new text (a layout effect, before anything else can type), never on a later frame that could land
+  // after more typing.
+  const caretAfter = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const caret = caretAfter.current;
+    if (caret === null) return;
+    caretAfter.current = null;
+    box.current?.focus();
+    box.current?.setSelectionRange(caret, caret);
+  }, [text]);
   const insert = (piece: string) => {
     const el = box.current;
     const start = el?.selectionStart ?? text.length;
     const end = el?.selectionEnd ?? text.length;
     const next = (text.slice(0, start) + piece + text.slice(end)).slice(0, FORMULA_MAX);
+    caretAfter.current = Math.min(start + piece.length, next.length);
     write(next);
-    const caret = Math.min(start + piece.length, next.length);
-    requestAnimationFrame(() => {
-      el?.focus();
-      el?.setSelectionRange(caret, caret);
-    });
   };
 
   const empty = text.trim() === '';

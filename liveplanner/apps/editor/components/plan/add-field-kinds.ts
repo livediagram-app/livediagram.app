@@ -61,7 +61,7 @@ export const KIND_DESCRIPTIONS: Record<PickKind, string> = {
   colour: 'A colour to tell cards apart',
   image: 'A picture, like a mock-up or a photo',
   card: 'Another card, like a parent or an epic',
-  calculated: 'Worked out from the cards linked here',
+  calculated: 'Worked out from linked cards or a formula',
 };
 
 // The everyday words people reach for, beyond a kind's name and line.

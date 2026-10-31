@@ -114,10 +114,6 @@ describe('FormulaEditor', () => {
   });
 
   it('writes a field or a function at the caret, a name in braces when it needs them', () => {
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
-      cb(0);
-      return 0;
-    });
     render(<Harness start={{}} keep={false} />);
     type('1 + ');
     box().setSelectionRange(4, 4);
