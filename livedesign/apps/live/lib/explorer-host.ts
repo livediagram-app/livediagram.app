@@ -30,8 +30,12 @@ export const itemHref: ItemHref = (item, at) => {
 
 // A link opens the design on this site as `/design/shared?s=<code>`: the code names the design, and that address is the
 // one whose page head names it, so the link previews as the design in chat apps (src/share-page.ts).
-export const shareUrl: ShareUrl = (link) =>
-  `${typeof window === 'undefined' ? '' : window.location.origin}/design/shared?s=${encodeURIComponent(link.code)}`;
+export const shareUrl: ShareUrl = (link) => shareAddress(link.code);
+
+/** A share code's address on this site (Inspect's link adds its parameter to it). */
+export function shareAddress(code: string): string {
+  return `${typeof window === 'undefined' ? '' : window.location.origin}/design/shared?s=${encodeURIComponent(code)}`;
+}
 
 // New from the Explorer: the /new flow, filed where the person pressed it.
 export function newDesignHref(placement: Placement | null): string {
