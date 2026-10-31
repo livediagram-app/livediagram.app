@@ -110,10 +110,14 @@ export function AppDashboard({
           full set overflows the column (see ViewTabs). */}
       <ViewTabs views={views} leads={['dashboard', 'search']} view={view} onSelect={selectView} />
 
+      {/* Clipped sideways: a stack deals in from 20px to the right (timeline-motion.css), and on a
+          phone that spill widened the page, which the fixed StickyWindowBar then held wide. Hover
+          cards and the stack modal are portalled, so nothing real is cut. */}
       <div
         aria-busy={shownWindow !== active}
         className={
-          'transition-opacity duration-short ' + (shownWindow !== active ? 'opacity-60' : '')
+          'overflow-x-clip transition-opacity duration-short ' +
+          (shownWindow !== active ? 'opacity-60' : '')
         }
       >
         <ActiveView
