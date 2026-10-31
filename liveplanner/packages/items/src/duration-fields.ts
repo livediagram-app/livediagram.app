@@ -25,12 +25,13 @@ function minutesIn(n: number): number | undefined {
   return m <= DURATION_MINUTES_MAX ? m : undefined;
 }
 
-// "2h 30m", "2 hours 30 mins", "1.5h", "90m", "45m" ...: one or more number-and-unit parts.
-// Sticky, so each part is read where the last one ended: a scan that retried at every digit was polynomial on a
-// long run of digits (CodeQL js/polynomial-redos).
-const PART = /(\d+(?:\.\d+)?|\.\d+)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes)(?![a-z])/y;
-const SEPARATORS = /[\s,]*/y;
+// "2h 30m", "2 hours 30 mins", "1.5h", "90m", "45m" ...: one or more number-and-unit parts, read left to right by
+// hand: a regex scan over the parts was polynomial on a long run of digits (CodeQL js/polynomial-redos).
 const HOURS = new Set(['h', 'hr', 'hrs', 'hour', 'hours']);
+const MINUTES = new Set(['m', 'min', 'mins', 'minute', 'minutes']);
+const isDigit = (c: string | undefined) => c !== undefined && c >= '0' && c <= '9';
+const isLetter = (c: string | undefined) => c !== undefined && c >= 'a' && c <= 'z';
+const isSpace = (c: string | undefined) => c !== undefined && /\s/.test(c);
 const CLOCK = /^(\d+):([0-5]?\d)$/;
 const BARE = /^(\d+(?:\.\d+)?|\.\d+)$/;
 
@@ -50,16 +51,26 @@ export function parseDuration(v: string | number | undefined | null): number | u
   let parts = 0;
   let at = 0;
   for (;;) {
-    SEPARATORS.lastIndex = at;
-    SEPARATORS.exec(text);
-    at = SEPARATORS.lastIndex;
+    while (text[at] === ',' || isSpace(text[at])) at += 1;
     if (at === text.length) break;
-    PART.lastIndex = at;
-    const m = PART.exec(text);
-    if (!m) return undefined;
-    total += Number(m[1]) * (HOURS.has(m[2]!) ? 60 : 1);
+    // The number: digits with an optional fraction ("1.5"), or a fraction alone (".5").
+    const start = at;
+    while (isDigit(text[at])) at += 1;
+    if (text[at] === '.' && isDigit(text[at + 1])) {
+      at += 1;
+      while (isDigit(text[at])) at += 1;
+    }
+    if (at === start) return undefined;
+    const amount = Number(text.slice(start, at));
+    while (isSpace(text[at])) at += 1;
+    // The unit: the whole run of letters, so "2hx" is refused.
+    const unitStart = at;
+    while (isLetter(text[at])) at += 1;
+    const unit = text.slice(unitStart, at);
+    if (HOURS.has(unit)) total += amount * 60;
+    else if (MINUTES.has(unit)) total += amount;
+    else return undefined;
     parts += 1;
-    at = PART.lastIndex;
   }
   return parts ? minutesIn(total) : undefined;
 }
