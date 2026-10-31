@@ -312,9 +312,12 @@ its range is refused by the design's validation, as any malformed field is.
   no edit, and a toast says "Nothing left: these shapes don't overlap."
 - **Too detailed**: a result of more than 5,000 points (`MAX_PATH_NODES`) is not made; a toast says
   "That combination is too detailed to keep as one shape."
-- A path with more than one contour moves, resizes, rotates and restyles as a whole; its points are
-  not edited one by one (its point editing offers none, and says "Combined shapes edit as a
-  whole.").
+- A path with more than one contour moves, resizes, rotates and restyles as a whole, and its points
+  are edited **one contour at a time** with the Path tool's point editing
+  ([Path tool](../023-draw-mode/path-tool.md) "Combined paths").
+- Combine keeps its result exact, so a curve comes out as many corner points (a combined circle has
+  dozens). Point editing offers **Simplify** for such a contour: it keeps the points the shape
+  needs and makes the curves smooth nodes again, never moving the outline more than half a pixel.
 
 ## Tidy
 
@@ -375,7 +378,8 @@ clean, as one edit:
 ## Non-goals
 
 - Text converted to outlines (it needs a font parser; wordmarks stay live text).
-- Editing a combined path's points one by one; a mirror axis or centre anywhere but the artboard's
+- Keeping a shape's curves as curves through Combine (the result is traced; Simplify brings curves
+  back on request); a mirror axis or centre anywhere but the artboard's
   centre lines and centre; Mirror Copy across any line but the vertical centre line;
   linked twins that follow each other's edits.
 - Combining on pages other than logo pages.

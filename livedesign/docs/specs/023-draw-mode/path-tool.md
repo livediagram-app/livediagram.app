@@ -27,7 +27,8 @@ editable.
 
 A path is a new element type, `path`: an ordered list of **nodes** (anchor points), each with an
 optional incoming and outgoing **handle**, and a `closed` flag. Freehand strokes keep their own type:
-their points carry no handles and are not edited point by point.
+their points carry no handles and are not edited point by point (Edit Points tidies one into a path
+first, "Freehand strokes" below).
 
 - Nodes and handles are stored normalised to the element's box, like freehand points, so resizing
   scales the whole path, handles included. Rotation, lock, layers, opacity, links, comments and the
@@ -146,6 +147,35 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
   original position on either axis, snaps and shows a guide.
 - Every edit gesture (a drag, a toggle, an add, a delete) is **one undo step**; the whole edit mode
   session is several.
+- **Snapping to the page:** on a logo page showing its guides, a dragged node that snaps to no node
+  snaps to the guides as a Pen click does (an unrotated path).
+
+### Combined paths
+
+A path of several contours (a [Logo page](../007-editor/logo-pages.md) Combine result, or a merged
+mirrored stroke) is edited **one contour at a time**, with every tool above.
+
+- **Entering** by double-click picks the contour whose outline is nearest the pointer; Enter and
+  Edit Points pick the one nearest the last press on the path, else the first.
+- The other contours show as a thin dashed outline. **Switching:** a press on another contour's
+  outline or inside it edits that one instead; the edit toolbar's **Shape 2 of 3** button steps to
+  the next. Escape, Enter, Done or a click off the path leave as for any path.
+- A dragged node also snaps to the other contours' nodes.
+- Closing and opening apply to the whole path, so a path of several contours offers neither.
+- Deleting a contour's nodes until it has fewer than it needs removes that contour and leaves edit
+  mode; the last one left takes the path with it. One contour left makes it a plain path again.
+- **Simplify** (on the edit toolbar for a contour of 12 or more plain corners, as Combine and Tidy
+  make them): keeps the corners whose turn is sharp, keeps only the points the outline needs
+  between them and gives those smooth (aligned) handles, so no part of the outline moves more than
+  half a pixel. One undo step; "Already as simple as it gets." when nothing would go.
+- Every edit is one undo step and reaches collaborators like any element change.
+
+### Freehand strokes
+
+A pencil or marker stroke has samples, not points. Its selection toolbar offers **Edit Points**
+too: it runs [Tidy](../007-editor/logo-pages.md) on the stroke (one undo step), opens the
+resulting path's edit mode and says "Tidied into a path so its points can be edited." A stroke
+Tidy cannot take (a highlighter, a rotated stroke) offers no Edit Points.
 
 ## Style
 
