@@ -21,6 +21,7 @@ import {
   ganttNamesWidth,
   itemColourOf,
   itemTitle,
+  viewDatesOf,
   typeIn,
   type GanttRow,
 } from '@liveplanner/items';
@@ -66,19 +67,25 @@ export function GanttView({
   // "Card types").
   const accepted = ganttShownTypes(settings, types);
   const acceptedKey = accepted.join(',');
+  // The fields its bars run between: Start and Due unless picked (plan-views.md "Dates").
+  const { start: startField, due: dueField } = viewDatesOf(settings, types);
   // Add Card under the last row (GanttAddCard): for someone who may add cards, with a type to add.
   // An Editor gets it with no type to draw yet too, for Add New Card Type.
   const canAdd = !!plan && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
   // Recomputed when the cards, the phases, the accepted types or the day change.
   const model = useMemo(
-    () => ganttModel(items.values(), phases, new Date(dayKey), acceptedKey.split(',')),
-    [items, phases, dayKey, acceptedKey],
+    () =>
+      ganttModel(items.values(), phases, new Date(dayKey), acceptedKey.split(','), {
+        start: startField,
+        due: dueField,
+      }),
+    [items, phases, dayKey, acceptedKey, startField, dueField],
   );
   // A card's own Colour draws its bar and diamond, else its card type's colour (docs/specs/026-plan/items.md
   // "Colour"); either is lifted on a dark surface like a type accent.
   const colourOf = (row: GanttRow) => {
-    const own = itemColourOf(row.item);
-    return accentOn(own ?? typeIn(types, row.item.type).color, palette);
+    const type = typeIn(types, row.item.type);
+    return accentOn(itemColourOf(row.item, type) ?? type.color, palette);
   };
   const n = model.rows.length;
   // The chart's own row order first (plan-views.md "Row order"), the rest in date order.
@@ -127,6 +134,7 @@ export function GanttView({
   const today = (ganttAt(view, model.today) + ganttAt(view, model.today + 1)) * 50;
   const drag = useGanttDrag({
     model: view,
+    dates: { start: startField, due: dueField },
     trackRef,
     onCommit: (itemId, patch) => {
       void plan?.patchItem(itemId, patch);
@@ -225,6 +233,7 @@ export function GanttView({
               plan={plan}
               types={types}
               shown={acceptedKey}
+              dates={{ start: startField, due: dueField }}
               palette={palette}
               top={AXIS_H + layout.height}
               height={ROW_H}

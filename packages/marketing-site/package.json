@@ -16,6 +16,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
+    "@liveworkspace/auth-client": "workspace:^",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/licences": "workspace:*",
     "@liveworkspace/ui": "workspace:*"

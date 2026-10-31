@@ -81,6 +81,17 @@ describe('settleTabFields', () => {
     ).toEqual({ a: ['p1'] });
   });
 
+  // docs/specs/012-collaboration/session-tools.md "Count In".
+  it("keeps a vote's Votes field when it is a custom field id, and drops anything else", () => {
+    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {} };
+    const kept = { ...base, vote: { ...vote, voteField: 'f-pri' } };
+    expect(settleTabFields(kept)).toBe(kept);
+    for (const voteField of [3, 'title', 'f-'])
+      expect(
+        (settleTabFields({ ...base, vote: { ...vote, voteField } }) as unknown as Tab).vote,
+      ).toEqual(vote);
+  });
+
   it('a malformed tab arriving from outside renders after the migration', () => {
     const el = { id: 'e', type: 'text', x: 0, y: 0, width: 10, height: 10, text: 'x' };
     for (const layers of ['x', 0.5, [1, 'a', null], [{ id: 'a' }, null]]) {

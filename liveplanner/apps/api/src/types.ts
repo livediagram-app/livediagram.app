@@ -59,11 +59,11 @@ export type Env = {
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
   // liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts), which serves every plan's previews
-  // (liveworkspace/docs/specs/006-media/previews.md): its API's base URL (`https://www.liveworkspace.app/api/media`; locally
+  // (liveworkspace/docs/specs/006-media/previews.md) and keeps the pictures of Image fields (routes/images.ts): its API's base URL (`https://www.liveworkspace.app/api/media`; locally
   // `http://localhost:8792/api/media`), unset for production's, and liveplanner's key there, a secret (wrangler
   // secret put MEDIA_KEY), the same value as the service's MEDIA_KEY_LIVEPLANNER. The service draws through the
-  // export door with it (routes/internal-items.ts). Unset, the export door answers only the index and a purge
-  // leaves the plan's previews to lapse.
+  // export door with it (routes/internal-items.ts). Unset, the export door answers only the index, a purge
+  // leaves the plan's previews to lapse, and /api/images answers 503 images_unavailable.
   MEDIA_URL?: string;
   MEDIA_KEY?: string;
   // liveplanner's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the

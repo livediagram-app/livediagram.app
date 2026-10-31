@@ -54,8 +54,35 @@ export const CUSTOM_FIELD_KINDS = [
   // A value worked out from the plan by its `calculation`, never stored (docs/specs/026-plan/item-types.md
   // "Calculated fields").
   'calculated',
+  // The kinds the built-in fields are (docs/specs/026-plan/item-types.md "Custom field kinds"): each reads and is
+  // edited as its built-in field, so a type may hold more than one. A Person is the Assignee's `{ id, name, color }`,
+  // Labels the Labels' list, a Colour any `#rrggbb`, a Checklist the Checklist's `{ text, done }` rows.
+  'person',
+  'labels',
+  'colour',
+  'checklist',
+  // One picture at liveworkspace's media service, by its id (docs/specs/026-plan/item-types.md "Image fields").
+  'image',
+  // Its own comment threads and its own votes (docs/specs/026-plan/item-types.md "Comments and Votes fields"): a
+  // thread names its Comments field (`CardThread.field`); a Votes field holds `{ voter: dots }` as the built-in Votes,
+  // written only by a session vote's tally.
+  'comments',
+  'votes',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
+
+// The built-in field each of the built-in kinds reads, is edited and is checked as (docs/specs/026-plan/item-types.md
+// "Custom field kinds"): a Person field as the Assignee, and so on. Undefined for every other kind.
+const BUILT_IN_OF_KIND: Partial<Record<CustomFieldKind, ItemFieldId>> = {
+  person: 'assignee',
+  labels: 'labels',
+  colour: 'color',
+  checklist: 'checklist',
+  comments: 'comments',
+  votes: 'votes',
+};
+export const builtInFieldOfKind = (kind: CustomFieldKind): ItemFieldId | undefined =>
+  BUILT_IN_OF_KIND[kind];
 
 // The currencies a Currency field offers first, and the one it takes when none is given (docs/specs/026-plan/
 // item-types.md "Custom field kinds"); any other ISO 4217 code is kept too.
@@ -109,6 +136,9 @@ export interface CustomFieldDef {
   onCard?: boolean;
   // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.
   required?: boolean;
+  // A Person field tells its person when a card is theirs (docs/specs/026-plan/item-types.md "Notifies"): the
+  // Inbox, emails and Only Mine. Kept only as true, only on a Person field.
+  notifies?: boolean;
 }
 
 // The most card types one Card field links to: every type the catalogue can hold (ITEM_TYPES_MAX).
@@ -177,6 +207,10 @@ export interface ItemTypeDef {
   // What its cards show at each card size (docs/specs/026-plan/item-types.md "Card display"); a size left out takes
   // the type's default (typeCardDisplay).
   display?: Partial<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>>;
+  // The Assignee does not tell its person (docs/specs/026-plan/item-types.md "Notifies"). Kept only as false.
+  assigneeNotifies?: boolean;
+  // The custom Colour field its cards take their colour from ("Fields by role"); absent is the built-in Colour.
+  colourField?: string;
 }
 
 // Parent (docs/specs/026-plan/item-types.md "Card fields"): a Card field linking to Projects, under the one custom

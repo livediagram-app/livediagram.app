@@ -57,6 +57,19 @@ describe('writeItem tally', () => {
     expect(sentJson(init)).toEqual({ items: [{ id: 'i1', votes: { p: 2 } }] });
     expect(answer.rev).toBe(3);
   });
+
+  // docs/specs/012-collaboration/session-tools.md "Count In".
+  it('sends the Votes field the vote counts in', async () => {
+    const fetch = vi.fn(async () => Response.json({ items: [{ id: 'i1', rev: 2 }], rev: 3 }));
+    vi.stubGlobal('fetch', fetch);
+    await writeItem(
+      scope,
+      { kind: 'tally', field: 'f-pri', tallies: [{ id: 'i1', votes: { p: 2 } }] },
+      by,
+    );
+    const [, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(sentJson(init)).toEqual({ field: 'f-pri', items: [{ id: 'i1', votes: { p: 2 } }] });
+  });
 });
 
 // A many-item change refused after part of it landed (blueprint item-store.md "Interfaces and contracts: REST"):

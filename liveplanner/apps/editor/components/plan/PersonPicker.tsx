@@ -36,12 +36,16 @@ export function PersonPicker({
   people,
   disabled,
   onSave,
+  label = 'Assignee',
 }: {
   id: string;
   value: ItemFieldValue | undefined;
   people: readonly ItemPerson[];
   disabled: boolean;
   onSave: Save;
+  // The field's name: the Assignee, or a Person field of the type's own (docs/specs/026-plan/item-types.md
+  // "Custom field kinds").
+  label?: string;
 }) {
   const listId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -102,7 +106,7 @@ export function PersonPicker({
         id={id}
         type="button"
         disabled={disabled}
-        aria-label={`Assignee: ${name}`}
+        aria-label={`${label}: ${name}`}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
@@ -137,7 +141,7 @@ export function PersonPicker({
           ref={listRef}
           id={listId}
           role="listbox"
-          aria-label="Assignee"
+          aria-label={label}
           tabIndex={-1}
           aria-activedescendant={`${listId}-${active}`}
           onKeyDown={onListKey}
@@ -148,7 +152,7 @@ export function PersonPicker({
             const person = custom ? null : row;
             const selected = sameId(row, current);
             const marked = !!person && hasAccountMark(person);
-            const text = custom ? '+ Custom Assignee' : (person?.name ?? 'No one');
+            const text = custom ? `+ Custom ${label}` : (person?.name ?? 'No one');
             return (
               <li
                 key={custom ? CUSTOM_ASSIGNEE_OPTION : (person?.id ?? 'none')}

@@ -80,7 +80,6 @@ the interface, and leaves the controls:
   Elements (3)") is hidden.
 - **Palette tile captions.** Palette tiles show their icon only.
 - **Status bar text.** The bottom bar's Start Tour, Search, Settings and appearance controls show their icons only.
-- **The "Tabs" label** before the tab pills is hidden.
 - **Panel titles and help buttons.** Panels (Explorer, Map, Layers, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same
   article. The Explorer is the one panel with a `⋯` menu today. A panel without one simply drops its `?`: no menu is
@@ -120,8 +119,7 @@ Minimal chrome meets WCAG 2.2 AA:
   keyboard focus, long press on touch), per [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md).
   Palette tiles use a Tooltip.
 - **Non-interactive labels stay in the document.** A panel title keeps its text as visually hidden text; the selection
-  toolbar names itself with the kind (`role="toolbar"`, `aria-label` "Selected Square"); the "Tabs" label was never
-  announced (the tab strip carries its own names).
+  toolbar names itself with the kind (`role="toolbar"`, `aria-label` "Selected Square").
 - **No layout shift.** Hiding happens at render, from the preference, never after paint: nothing moves on its own.
   Flipping the setting re-lays the chrome once, as the direct result of the click.
 

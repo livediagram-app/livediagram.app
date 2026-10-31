@@ -82,6 +82,32 @@ describe('the Plan strip folded on a phone', () => {
     expect(types).toHaveBeenCalledWith(more);
     expect(screen.queryByRole('menuitem')).toBeNull();
   });
+
+  // docs/specs/026-plan/items.md "Finding a card": a press on a row reaches only the menu. It used to bubble up the
+  // React tree to the canvas, which took the focus and shut the menu before the row's click, so no row opened.
+  it('keeps a press on a row from reaching the canvas under it', () => {
+    dock.names = false;
+    const canvas = vi.fn();
+    const finder = vi.fn();
+    render(
+      <div onPointerDown={canvas}>
+        <PlanCardsClusterStrip
+          folded
+          finderOpen={false}
+          onToggleFinder={finder}
+          typesOpen={false}
+          onToggleTypes={() => {}}
+        />
+      </div>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'More card tools' }));
+    canvas.mockClear();
+    const row = screen.getByRole('menuitem', { name: 'Find a Card' });
+    fireEvent.pointerDown(row);
+    expect(canvas).not.toHaveBeenCalled();
+    fireEvent.click(row);
+    expect(finder).toHaveBeenCalled();
+  });
 });
 
 // docs/specs/026-plan/items.md "No New Card button": a card is added where it lives (a board's card type chips, a

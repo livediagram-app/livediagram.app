@@ -26,6 +26,8 @@ src/limits.ts        named constants (Constants table)
 src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
 src/apply.ts         makeItem, applyPatch, applyMove, applyTally (shared by api and offline store), rankInColumn,
                      itemPlacer (ranks a batch of creates: one sort per column, not one per create)
+src/status-since.ts  STATUS_SINCE_FIELD, itemStatusSince (falls back to updatedAt), stampStatusSince (apply.ts's
+                     stamp), statusSinceUndo (the old value an inverse puts back), cardAgeDays, cardAgeTone
 src/write-checks.ts  readItemPlace, readItemCreate, readItemPatch, readItemMove, statusExcluded, readItemWrite,
                      writtenItemsRefusal: the api's body checks, run by an offline project on its own writes
 src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard
@@ -114,6 +116,7 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 | item ref  | id string matching `ITEM_ID_PATTERN`                               |
 | votes     | rejected in create/patch (`votes_read_only`)                       |
 | comments  | rejected in create/patch and clear (`comments_read_only`)          |
+| timestamp | `statusSince` only: a finite integer ms epoch ≥ 0                  |
 | unknown   | scalar, or array of ≤ 50 scalars; strings ≤ 2,000                  |
 
 - Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`,
@@ -136,8 +139,17 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 - `applyPatch(item, patch, ctx)` merges `set`, deletes `clear`, `rev + 1`, stamps `updatedBy/At`.
 - `applyMove(item, move, items, ctx)` sets status, computes rank against the target neighbours (`after` wins
   over `before`; a missing neighbour id falls back to the column end), merges `set`.
-- `applyTally(item, tally, ctx)` adds each voter's dots to what they had, caps a voter's count at
-  `ITEM_VOTES_PER_PERSON_MAX`, admits no new voter past `ITEM_VOTERS_MAX`, `rev + 1`.
+- `makeItem`, `applyPatch` and `applyMove` pass their result through `stampStatusSince(before, next, written, now)`:
+  a status change (or a create) stamps `statusSince` with `now`; a write that names `statusSince` keeps it; any
+  other write on a card without one backfills it from the card's previous `updatedAt`, so an older card's age
+  never restarts on an edit. `inversePatch` and the move branch of `inverseItemWrites` add the old
+  `itemStatusSince` when the write changes the status, and `isMoveSettable` admits `statusSince` so a move's
+  undo can carry it.
+- `applyTally(item, tally, ctx, field = 'votes')` adds each voter's dots to what they had in `field`, caps a voter's
+  count at `ITEM_VOTES_PER_PERSON_MAX`, admits no new voter past `ITEM_VOTERS_MAX`, `rev + 1`. The route picks
+  `field` per card with `tallyFieldOn(type, body.field)` (comments-votes-fields.ts): the vote's field while the
+  card's type offers it, else the built-in `votes`. `itemVotes(item, field?)` / `itemVoteTotal(item, field?)` read
+  one Votes field (the built-in by default).
 
 ### Board projection (`projectBoard(setup, items, quick?)`)
 
@@ -167,6 +179,26 @@ unplaced). Structural input `{ shape?: string; planBoard?: PlanBoardSetup; planC
 underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mailto ≤ 2048, heading? 1|2|3 }`,
   at most `ITEM_RICH_RUNS_MAX` (2000) runs and `ITEM_DESCRIPTION_MAX` characters in all; anything else is
   `field_value_invalid`. `description` stays the plain-text mirror (search, card faces, agents).
+- A Long Text custom field's formatting rides under `richFieldOf(id)` (`<id>Rich`); `isRichFieldKey(key)` accepts
+  `descriptionRich` and `/^f-[a-z0-9-]{1,30}Rich$/` (custom ids are lower case, so no field id ends that way), and
+  `validateFields` holds either to `normaliseRichRuns(v, richTextMaxOf(key))`: `ITEM_DESCRIPTION_MAX` for the
+  description, `ITEM_UNKNOWN_STRING_MAX` (2,000) for a Long Text. The field's own value stays a plain string (≤ 2,000).
+  `richRunsOf(fields, id)` returns the runs only while their text joined equals the plain value (else undefined: the
+  value was rewritten plain since); `runsAreMarked(runs)` says whether any run carries a mark, so unmarked text is
+  stored plain.
+
+### Label usage
+
+- `labelUsage(items)` (`label-usage.ts`) → `LabelUse[]` `{ label, count }`: one pass over the cards, skipping
+  `isTrashed`, each card's labels deduplicated; sorted by count descending, then by lower-cased name, then code
+  point. `planSpellingOf(text, uses)` → the first (most used) plan label equal to `text` case aside, else `text`.
+  `matchLabels(uses, query, taken)` → `{ matches, creatable }`: the query trimmed, a leading `#` dropped, lower-cased;
+  labels the card has (case aside) left out; with no query every label; else those starting with it, then those
+  containing it, each in usage order; `creatable` when no plan or card label equals it.
+- Cost: measured 1.5 ms median (5.5 ms worst of 20, a loaded machine) for 2,000 cards of 12 labels from 300 names;
+  `matchLabels` over those 300 labels 0.03 ms median per keystroke. The host (`PlanSheetsHost`) memoises
+  `labelUsage` on the cards map and the open card, so it runs once per change of the cards while a card is open, never
+  per keystroke; `label-usage.test.ts` holds the 2,000-card case to a 250 ms budget.
 
 ### Colour
 
@@ -243,7 +275,7 @@ All under `/projects/:id/items`, auth `guest-or-clerk`, token-usable, registered
 | POST   | `/items/patches`      | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
 | POST   | `/items/:itemId`      | edit | `ItemPatch`                                                  | `ItemResponse`      |
 | POST   | `/items/:itemId/move` | edit | `ItemMove`                                                   | `ItemResponse`      |
-| POST   | `/items/tally`        | edit | `{ items: { id, votes }[] }` ≤ `ITEM_BULK_MAX`               | `ItemsResponse`     |
+| POST   | `/items/tally`        | edit | `{ items: { id, votes }[], field? }` ≤ `ITEM_BULK_MAX`       | `ItemsResponse`     |
 | DELETE | `/items/:itemId`      | edit |                                                              | 204                 |
 
 Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
@@ -288,8 +320,10 @@ on each card it is on by a link row in that card's plan.
 
 - **Types**: `CardRef = { projectId, itemId, key: number | null, projectName?: string }`; `ThreadPerson = { name,
 color, authorId? }`; `CardThread = { id, title, resolved, resolvedBy?: string, resolvedAt?: number, comments:
-Comment[], createdAt, createdBy: ThreadPerson, updatedAt, home, cards: CardRef[], rev }`. `Comment` gains `ai?:
-true` (comments.ts) and `editedAt?: number`.
+Comment[], createdAt, createdBy: ThreadPerson, updatedAt, home, cards: CardRef[], field?: string, rev }`. `field`
+  is the Comments field it belongs to (item-types.md "Comments and Votes fields"), set at start and never changed;
+  absent is the built-in `comments`. `isThreadFieldId(s)` (`comments` or a custom field id) checks it. `Comment` gains
+  `ai?: true` (comments.ts) and `editedAt?: number`.
 - **Constants**: `THREAD_COMMENTS_MAX` 200 and `THREAD_BYTES` 131,072 (the old per-card `ITEM_COMMENTS_MAX` /
   `ITEM_COMMENTS_BYTES`), `CARD_THREADS_MAX` 50, `THREAD_CARDS_MAX` 20, `THREAD_TITLE_MAX` 120,
   `THREAD_OPENING_MAX` 60, `THREAD_ID_PREFIX` `'th-'`.
@@ -298,12 +332,16 @@ true` (comments.ts) and `editedAt?: number`.
   the automatic one from `createdBy.name` and the first comment when it is `''`, as a migrated thread is).
 - **Ids**: `newThreadId(random)`; `isThreadId(s)` (`^th-[a-z0-9]{16}$`, or a migrated `c-<item id>`).
 - **Writes**: `ThreadChange = add { comment } | edit { commentId, text, mentions, now } | remove { commentId } |
-resolve { resolved, by } | rename { title } | addCard { card } | removeCard { projectId, itemId }`;
+resolve { resolved, by } | rename { title } | react { commentId, emoji, by, name, on } | addCard { card } |
+removeCard { projectId, itemId }`;
   `applyThreadChange(thread, change, now)` answers `{ ok, thread }` (rev + 1, `updatedAt` now except for card
-  changes) or a refusal: `comments_full`, `comment_not_found`, `title_too_long`, `thread_on_card`,
-  `thread_cards_full`, `unchanged`. `startThread({ id, home, card, comment, title?, now })` makes one (title
-  `autoThreadTitle` unless given). Who may is the caller's (routes), never here.
-- **Reads**: `isCardThread(v)` (shape, caps), `openCommentCount(threads, projectId, itemId)` (the face count),
+  changes and reactions; `react` goes through `withReaction`/`commentWithReactions` from
+  `@liveworkspace/model-core/comment-reactions`, `comments_full` only when one is added past the byte budget) or a refusal: `comments_full`, `comment_not_found`, `title_too_long`, `thread_on_card`,
+  `thread_cards_full`, `unchanged`. `startThread({ id, home, card, comment, title?, field?, now })` makes one (title
+  `autoThreadTitle` unless given; `field` stored unless it is `comments`). Who may is the caller's (routes), never here.
+- **Reads**: `isCardThread(v)` (shape, caps, `field`), `openCommentCount(threads, projectId, itemId)` (the face
+  count), `openCommentCounts(threads, projectId)` (every card's face count by item id, and each card's count in
+  each Comments field a thread names under `fieldCountKey(itemId, field)`),
   `threadsOnCard(threads, projectId, itemId)`, `sortedThreads(threads)` (open first by `updatedAt` desc, then
   resolved by `resolvedAt` desc), `threadParticipants(thread)` (authors, first seen order).
 - **Redaction**: `threadForViewer(thread, viewer)` (author and token ids on the viewer's own comments and
@@ -323,16 +361,26 @@ becomes `ItemCreate.threads` (restore: `unknown[]`, checked by the api); `itemCo
 face count from a `ReadonlyMap<itemId, number>` (an item carries none); `itemsWithCommentCounts` is not added: the
 renderers take the map.
 
+A type's own Comments fields (custom kind `comments`) are read by `comments-votes-fields.ts`: `commentsFieldsOf(type)`
+(the built-in and its own, in its order), `threadFieldOn(thread, type)` (the thread's field while the type offers it,
+else the built-in when offered, else the type's first; `null` with none), `threadsInField(threads, type, field)` and
+`storedThreadField(field)` (`{}` for the built-in). `tabsOf`'s default Overview tab ends with every Comments field in
+the type's order. A Comments field is never required (`canBeRequired`), never written as a value (`resolveFields`
+refuses it, pointing at change_threads) and has no CSV value.
+
 ### Storage (plan schema step V7, `plan-room/plan-schema.ts`)
 
 ```sql
 card_threads      (plan_id, id, title, resolved, resolved_by, resolved_at, comments JSON, created_at,
-                   created_by JSON, updated_at, rev, cards JSON)            PK (plan_id, id)   -- the home's
+                   created_by JSON, updated_at, rev, cards JSON, field NULL) PK (plan_id, id)  -- the home's
 card_thread_links (plan_id, item_id, thread_id, home, added_at, open_comments)
                                                                             PK (plan_id, item_id, thread_id)
                    INDEX (plan_id, thread_id)                                                  -- each card's
 ```
 
+- `field` (step V9, `ALTER TABLE card_threads ADD COLUMN field TEXT NULL`, run only when `PRAGMA
+table_info(card_threads)` lacks it, so the step runs again harmlessly; `STEPS` may hold a function step for this):
+  the thread's Comments field, null the built-in; read back only when `isThreadFieldId`.
 - `plan_id` is the home on `card_threads` and the card's plan on `card_thread_links` (`home` = `plan_id` for a
   thread stored here). `open_comments` caches the thread's comment count while open (0 resolved), for faces drawn
   without the thread (thumbnails, renders, agents' listings).
@@ -369,24 +417,25 @@ off `cards` (`[threads] card.gone`).
 
 Rights, against the thread as stored: a comment edit needs `authorId === owner` (and `ai` for an agent); a comment
 delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` or `createdBy.authorId === owner`
-(never an agent); `rename` and `addCard` never an agent. Refused: `403 forbidden`.
+(never an agent); `rename`, `react` and `addCard` never an agent. Refused: `403 forbidden`.
 
 ### REST (`apps/api/src/routes/card-thread-routes.ts`, dispatched by `handleProjects` on `segments[3] ===
 
 'threads'`and by`handleItemRoutes`on`segments[5] === 'threads'`)
 
-| Method | Path                                          | Gate (on `:id`, the plan viewed)   | Body                          | Answers                                                 |
-| ------ | --------------------------------------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------- |
-| GET    | `/projects/:id/threads`                       | read                               | `?item=` narrows to one card  | `CardThreadsResponse`                                   |
-| POST   | `/projects/:id/items/:itemId/threads`         | participate                        | `{ text, mentions?, title? }` | 201 `CardThreadWriteResponse`                           |
-| POST   | `/projects/:id/threads/:threadId/comments`    | participate                        | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
-| PUT    | `/projects/:id/threads/:threadId/comments/:c` | participate; own                   | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId/comments/:c` | participate; own, or edit          | none                          | `CardThreadWriteResponse` (`thread: null` once it went) |
-| POST   | `/projects/:id/threads/:threadId/resolve`     | participate                        | none                          | `CardThreadWriteResponse`, 204 if already               |
-| POST   | `/projects/:id/threads/:threadId/reopen`      | participate                        | none                          | the same                                                |
-| PUT    | `/projects/:id/threads/:threadId/title`       | participate                        | `{ title }` (`''` automatic)  | `CardThreadWriteResponse`                               |
-| POST   | `/projects/:id/threads/:threadId/cards`       | participate here and on the target | `{ projectId?, itemId }`      | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId`             | participate; every comment own     | none                          | 204                                                     |
+| Method | Path                                                    | Gate (on `:id`, the plan viewed)   | Body                                  | Answers                                                 |
+| ------ | ------------------------------------------------------- | ---------------------------------- | ------------------------------------- | ------------------------------------------------------- |
+| GET    | `/projects/:id/threads`                                 | read                               | `?item=` narrows to one card          | `CardThreadsResponse`                                   |
+| POST   | `/projects/:id/items/:itemId/threads`                   | participate                        | `{ text, mentions?, title?, field? }` | 201 `CardThreadWriteResponse`                           |
+| POST   | `/projects/:id/threads/:threadId/comments`              | participate                        | `{ text, mentions? }`                 | `CardThreadWriteResponse`                               |
+| PUT    | `/projects/:id/threads/:threadId/comments/:c`           | participate; own                   | `{ text, mentions? }`                 | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId/comments/:c`           | participate; own, or edit          | none                                  | `CardThreadWriteResponse` (`thread: null` once it went) |
+| POST   | `/projects/:id/threads/:threadId/comments/:c/reactions` | participate                        | `{ emoji, on, key }`                  | `CardThreadWriteResponse`, 204 if unchanged             |
+| POST   | `/projects/:id/threads/:threadId/resolve`               | participate                        | none                                  | `CardThreadWriteResponse`, 204 if already               |
+| POST   | `/projects/:id/threads/:threadId/reopen`                | participate                        | none                                  | the same                                                |
+| PUT    | `/projects/:id/threads/:threadId/title`                 | participate                        | `{ title }` (`''` automatic)          | `CardThreadWriteResponse`                               |
+| POST   | `/projects/:id/threads/:threadId/cards`                 | participate here and on the target | `{ projectId?, itemId }`              | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId`                       | participate; every comment own     | none                                  | 204                                                     |
 
 - The thread is reached through `:id`: a link row of the plan for a card the caller's scope holds, else
   `404 thread_not_found`. Writes count against the write rate limit.
@@ -395,6 +444,9 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
   `?item=` reads one card's.
 - A start, a reply, an edit: `newComment` (comment-routes.ts) stamps author, colour, id, token and `ai` (from
   `ctx.token`); a start or reply then runs `afterCommentPosted(ctx, caller, comment, itemId, threadId)`.
+- **React**: `emoji` one of the six (`isReactionId`), `on` a boolean and `key` the caller's collab key (1 to
+  `REACTION_BY_MAX` characters), else `400` (`unknown emoji`, `missing on`, `missing key`); the name is the caller's profile name
+  (`getParticipant`, else "Someone"). Not activity: no timeline entry, email or Inbox change.
 - **Add to card**: the target is always a card of `:id`; a body naming another plan (`projectId` other than `:id`)
   is refused `400 thread_other_plan` before anything is read. Then the card is linked here (`linkThread`) and the
   home's `addCard` runs (a thread shared in before the rule has another home; it is asked through it). Refusals:
@@ -410,7 +462,12 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
   card's legacy thread (the trigger takes it).
 - The old `/items/:itemId/comments` routes are removed.
 
-Refusals, by name: `400` text missing or too long, `400 title_too_long`, `403 forbidden`, `404 thread_not_found`,
+- **Start in a field**: `body.field`, when given, must pass `isThreadFieldId` and be one of
+  `commentsFieldsOf(typeIn(typesOf(caller.doc.itemTypes), item.type))`, else `400 { error: 'field_invalid', message }`
+  (the message names the type's Comments fields as `id (Name)`, or says the type has none), checked after the card is
+  read and before the card's thread count. Stored through `startThread`'s `field`.
+
+Refusals, by name: `400` text missing or too long, `400 title_too_long`, `400 field_invalid`, `403 forbidden`, `404 thread_not_found`,
 `404 comment_not_found`, `404 item_not_found`, `409 thread_on_card`, `409 thread_busy`, `409 thread_has_others`,
 `413 comments_full`, `413 threads_full`, `413 thread_cards_full`.
 
@@ -438,7 +495,8 @@ lists empty and reads `GET /threads` again.
   `fields.comments` into it on read (`legacyThreadOf`); `offlineWriteThread(projectId, op)` applies
   `applyThreadChange` (same rights) in `serializeOfflineWrite`. **Sync to cloud** sends `threads` with the create
   (`POST /projects` `threads`, each read as a restore); **Take offline** fetches `GET /threads` and keeps those whose
-  `home` is the plan.
+  `home` is the plan. A start's `field` is checked against the record's types as the api checks it
+  (`field_invalid`).
 
 ### Inbox
 
@@ -450,20 +508,123 @@ many of the plan's cards it is on.
 ### Editor
 
 - `lib/api/card-threads.ts`: `fetchThreads(scope)`, `writeThread(scope, action)` (`ThreadAction = start { itemId,
-text, mentions? } | reply | edit | delete | resolve | rename | addToCard { projectId, itemId } | deleteThread`),
+text, mentions?, field? } | reply | edit | delete | resolve | rename | addToCard { projectId, itemId } | deleteThread`),
   offline through `lib/offline/offline-threads.ts`.
 - `hooks/plan/useCardThreads.ts`: the plan's threads (`Map` by id), loaded with the items and again on a reconnect,
   kept live by `receive(op)` (`keepOwnThreadAuthors`), `countsByItem` (memoised `openCommentCount` per card), and
   `act(action)`: telemetry, applied now (a start shows at once under a temporary id), sent, settled on the answer;
   a refusal toasts and reloads. Mention notices as before (`onMentioned`).
-- `components/plan/threads/`: `CardThreads.tsx` (the field: header, empty state, starter, list, Resolved
-  disclosure), `ThreadTile.tsx` (one thread: header, meta, menu, body), `ThreadStarter.tsx`, `ThreadTitleEditor.tsx`,
+- `components/plan/threads/`: `CardThreads.tsx` (one Comments field: `{ item, type?, field? }`, listing
+  `threadsInField`, its New Thread starting in `field`; header, empty state, starter, list, Resolved disclosure;
+  `ItemFieldEditor` draws one per Comments field the type offers, under the field's name), `ThreadTile.tsx` (one thread: header, meta, menu, body), `ThreadStarter.tsx`, `ThreadTitleEditor.tsx`,
   `ThreadSharedChip.tsx`, `AddThreadToCardDialog.tsx` (with `useThreadCardPicker.ts`: this plan's live cards and the
   search over them, never another plan's), `thread-words.ts` (counts,
   titles, announcements). `comment-thread-parts.tsx`'s `CommentRow` draws **Generated by AI** and **Edited**, and
   takes `onEdit`.
 - `PlanContext.threads` (`{ byItem, counts, act, selfId, canComment, canEdit }`); `CommentsPill` reads
-  `counts`; exports get the counts map; `collab-deep-link.ts` reads `thread`.
+  `counts` through `useFieldThreadCount(store, itemId, type, field)` (thread-store.ts): a custom field's own key, and
+  for the field unknown threads land in (the built-in, else the first) the whole less the type's other fields; a
+  custom Comments field placed on the face draws the same chip, named `{Field}: N comments`; the Display tab's sample
+  card has a store with two comments in each Comments field; exports get the counts map; `collab-deep-link.ts` reads `thread`.
+
+## History
+
+A card's history (spec items.md "History"): entries the plan appends as it applies each card write, kept in the plan's
+own SQLite, read one card at a time.
+
+### Pure core (`packages/items/src/item-history.ts`)
+
+- **Types**: `ItemHistoryChange` = `{ kind: 'created', status? }` | `{ kind: 'moved', from: string | null, to: string |
+null }` | `{ kind: 'trashed' }` | `{ kind: 'untrashed' }` | `{ kind: 'archived' }` | `{ kind: 'unarchived' }` |
+  `{ kind: 'flagged' }` | `{ kind: 'unflagged' }` | `{ kind: 'type', from, to }` | `{ kind: 'set', field, value? }` |
+  `{ kind: 'cleared', field }`; `ItemHistoryTag` = `'ai' | 'undo' | 'form'`; `StoredHistoryEntry = { at, by:
+ItemPerson, tag?, changes }`; `ItemHistoryEntry = { at, by: { name, color }, mine?: true, tag?, changes }` (the wire).
+- `historyChangesOf(before: Item | null, after: Item)`: `created` (with the status) for no `before`; else, in order, the
+  status (`trash` in or out reads `trashed` / `untrashed`, any other change `moved`), `archived`, `flagged`, the type,
+  then every other key of either `fields` whose JSON differs, skipping `status`, `trashedFrom`, `archived`, `flagged`,
+  `votes`, `comments`, `example` and every formatting key (`isRichFieldKey`: a `descriptionRich` or `<id>Rich` change
+  reads as its field). A set field carries `historyValueOf` of its value, or no value for a field with formatting;
+  `cleared` when the value went (absent, null, '' or an empty list). Rank alone, or votes alone, give `[]`, and an
+  empty list writes no entry. At most `ITEM_HISTORY_CHANGES_MAX` changes an entry.
+- `historyValueOf(field, value)`: `undefined` (named, not copied) for `description`, `checklist`
+  and any object or list of objects but a person; a person (an object with a string `name`) is its name; a string is
+  cut to `ITEM_HISTORY_VALUE_MAX` characters (an ellipsis); a list of scalars keeps its first `ITEM_HISTORY_LIST_MAX`,
+  each string cut to 40; numbers and booleans as they are.
+- `groupHistory(entries)` (newest first in, newest first out): an entry joins the group before it when the author id
+  and tag match and it is within `ITEM_HISTORY_GROUP_MS` of the group's oldest entry. Changes merge by key (`created`,
+  status, `archive`, `flag`, `type`, each field): a `moved` keeps the oldest `from` and the newest `to` and drops out
+  when they meet; an on and off pair (flag, archive, trash) cancels; a field keeps its newest change; `created` stays
+  first. A group left with no changes is dropped. The group's `at` is its newest.
+- `historyForReader(entries, readerId)`: each entry's `by` as `{ name, color }`, and `mine: true` where `by.id` is the
+  reader's `itemPersonId`.
+
+### Storage (plan schema step V8, `plan-room/item-history-schema.ts`)
+
+```sql
+CREATE TABLE IF NOT EXISTS item_history (
+  id      INTEGER PRIMARY KEY,           -- rowid: append order
+  plan_id TEXT    NOT NULL,
+  item_id TEXT    NOT NULL,
+  at      INTEGER NOT NULL,
+  by      TEXT    NOT NULL,              -- JSON ItemPerson, as items.updated_by
+  tag     TEXT    NULL,                  -- 'ai' | 'undo' | 'form'
+  changes TEXT    NOT NULL,              -- JSON ItemHistoryChange[]
+  FOREIGN KEY (plan_id, item_id) REFERENCES items (plan_id, id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS item_history_item ON item_history (plan_id, item_id, id);
+```
+
+- Every statement is `IF NOT EXISTS`, so the step is idempotent: run twice, or renumbered past another step, it
+  changes nothing. A step that lands beside it under the same number must be renumbered so each runs once.
+- The foreign key deletes a card's history with the card (`DELETE /items/:itemId`, Empty Trash) and with the plan.
+- `apps/api/src/db/item-history.ts`:
+  - `appendItemHistory(env, projectId, writes: { before: Item | null; after: Item }[], tag?)`: one batch. A single
+    `INSERT ... SELECT ... FROM json_each(?)` writes every write with changes (by `after.updatedBy`, or `createdBy`
+    for a create; `at` = `after.updatedAt`), so a bulk of 40 cards is still one statement. Then, for each changed
+    (not created) card, `DELETE ... WHERE plan_id = ? AND item_id = ? AND (at < cutoff OR id <= the id
+ITEM_HISTORY_MAX back)`, which reads at most that card's `ITEM_HISTORY_MAX` + 1 index entries. A new card has
+    nothing to trim. Never throws: a failure logs `[items] history.append.failed` and the write stands.
+  - `readItemHistory(env, projectId, itemId, now)`: `SELECT at, by, tag, changes FROM item_history WHERE plan_id = ?
+AND item_id = ? AND at >= ? ORDER BY id DESC LIMIT ITEM_HISTORY_MAX`, rows that do not parse skipped.
+  - `deleteOldItemHistory(env, cutoff)`: the daily upkeep's sweep (`PlanRoom.maintain`): deletes every row before the
+    first (by id) at or after the cutoff, so it reads only the rows it deletes plus one. Logs `[items]
+history.retention` with the count.
+- Callers, in the plan's request path (`routes/`), each after its write landed: `writeItem` (patch, move), `create`
+  and `bulk` (`item-routes.ts`), `patches` (through `writeItemsWithRetry`'s `history` option) and a form's response
+  (`forms/respond.ts`, tag `form`). Tag: `undo` when the body's `undo` is true or a create restores (a key, votes or
+  threads), else `ai` for an API token (`ctx.token !== null`), else none (`historyTagOf`). Not called by: `tally`, a
+  project create's seed (`seedItems`), the copy and file imports (`plan-content.ts`, `project-file.ts`), the migration
+  door, the schema's own steps and `anonymisePlan`.
+- `anonymisePlan` sets the `by` of the rows the person wrote (`by ->> '$.id'` = their hashed `itemPersonId`) to the
+  Deleted account author: history names authors by hashed id, so the raw-id `anonymiseJsonText` would miss them.
+- Copies (`exportPlanCopy`), project files and offline records carry no history: none of them reads the table.
+
+### REST
+
+| Method | Path                     | Gate | Answers                           |
+| ------ | ------------------------ | ---- | --------------------------------- |
+| GET    | `/items/:itemId/history` | read | `ItemHistoryResponse { entries }` |
+
+- `routes/item-history-route.ts`: the caller (`itemCaller(..., 'read')`), a tab-scoped caller only for a card in scope,
+  `404 item_not_found` for a card not in the store; then `readItemHistory`, `groupHistory`, `historyForReader`.
+  Registered in `openapi/manifest.ts` (tag `Items`, token-usable); `ItemHistoryResponse` in
+  `packages/api-schema/src/items.ts`. Logs `[items] history.read` with the entry count.
+
+### Editor
+
+- `lib/api/item-history.ts` `fetchItemHistory(scope, itemId)`: `'offline'` for a This Browser plan (no request), else
+  the entries.
+- `hooks/plan/useCardHistory.ts` `useCardHistory({ scope, itemId, rev, enabled })`: `{ status: 'loading' | 'ready' |
+'error' | 'offline', entries, retry }`; reads when enabled and again when the card's `rev` moves (debounced
+  `ITEM_HISTORY_REFETCH_MS`), dropping an answer for a card no longer shown.
+- `components/plan/threads/CardActivity.tsx`: `ActivityRow` (one entry) and `activityFeed(open threads, entries)`
+  (both by time, newest first; a thread by `updatedAt`); `activity-words.ts` words an entry (`activityParts`)
+  from the plan's `statusNames`, the card's type (field labels: `BUILT_IN_FIELD_LABELS`, then custom labels) and its
+  items (a Card field's title).
+- `CardThreads` draws the **Activity** switch (`SwitchRow`, `xs`) in its header and, on, the feed in place of the
+  open list, the first `ACTIVITY_ROWS_SHOWN` activity rows and **Show N More**; the switch is
+  `useLocalStorageValue('liveplanner:v2:card-activity')` (`'off'` is off, anything else on). `useCardThreads` exposes
+  its `scope` for the read.
 
 ## Live: room op
 
@@ -547,6 +708,8 @@ replays the write with the keys the first write was given. Votes push nothing.
 - People on items (authors, voters) are keyed by `itemPersonId`, a one-way hash: a guest's owner id is their
   credential and never reaches an item.
 - Hide writing hides faces only; the api returns full items to anyone who may read.
+- History entries keep their author as an `ItemPerson` (a hashed id); the read answers only name and colour, and
+  `mine` to the author ([History](#history)). Nobody writes history through the api: only the plan's own item writes.
 - Comment author ids are owner ids (a guest's credential): they reach only their author (`itemForViewer`), never
   the room (`itemForRoom`), and a restore cannot claim someone else's (`readRestoredThread`). Author name and
   colour are stamped server-side from the caller.
@@ -566,11 +729,18 @@ replays the write with the keys the first write was given. Votes push nothing.
 - Room op carries only the changed items. A card with a long thread (up to `ITEM_COMMENTS_BYTES`, 128 KB) sends
   its whole thread with every write to it: typical threads are a few KB; the cap bounds the worst case.
 
+- History: a card write adds one batch to its request, of one row insert (one table row and one index entry, about
+  0.2 KB) and one bounded delete per card it changed; measured in `apps/api/src/db/item-history.test.ts` (rows
+  written and time per append, held to a budget). A card at the cap answers `ITEM_HISTORY_MAX` entries before grouping,
+  measured there at its worst case. Storage is bounded at `ITEMS_MAX` x `ITEM_HISTORY_MAX` rows, in practice far
+  fewer (the age limit, and most cards change a few times).
+
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
 `items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
-`comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api). Api logs never
+`comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api), `history.read`,
+`history.append.failed`, `history.retention` (api), `items.history.failed` (editor). Api logs never
 include `fields` or comment text.
 
 ## Testing
@@ -578,6 +748,8 @@ include `fields` or comment text.
 | Rule                                           | Test                                                                                                                                                                                        |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                         |
+| Long Text formatting: key, limit, stale runs   | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                        |
+| Label usage, spelling, matching, 2,000 cards   | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                               |
 | Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                           |
 | Bulk create grows linearly, keeps column order | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                 |
 | Write checks shared with offline               | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                  |
@@ -597,6 +769,10 @@ include `fields` or comment text.
 | Thread routes: roles, agents, cross-plan, AI   | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                            |
 | Editor thread writes, room merge, refusals     | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                              |
 | Panel threads, Add to Card, shared chip, words | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                |
+| History: changes, values, grouping, redaction  | `packages/items/src/item-history.test.ts`                                                                                                                                                   |
+| History: storage, bounds, cascade, no D1       | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                        |
+| History: writes tagged, roles, scope, redacted | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                            |
+| History: panel feed, switch, words, offline    | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                                                                   |
 | Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
 | Tab import: parse, plan, land, report          | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
@@ -619,3 +795,11 @@ include `fields` or comment text.
 | `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                               |
 | `ITEM_ID_PATTERN`          | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                     |
 | `ITEM_FIELD_KEY_PATTERN`   | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                    |
+| `ITEM_HISTORY_MAX`         | 200                       | Card #122; a busy card's year of moves; 50 to 1000      |
+| `ITEM_HISTORY_MAX_AGE_MS`  | 180 days                  | What a reader asks about; 30 to 365 days                |
+| `ITEM_HISTORY_GROUP_MS`    | 60000                     | Spec "within a minute"                                  |
+| `ITEM_HISTORY_VALUE_MAX`   | 80                        | One readable line; 40 to 200                            |
+| `ITEM_HISTORY_LIST_MAX`    | 12                        | `ITEM_LABELS_MAX`                                       |
+| `ITEM_HISTORY_CHANGES_MAX` | 16                        | Bounds one entry; a write changes a few fields          |
+| `ITEM_HISTORY_REFETCH_MS`  | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
+| `ACTIVITY_ROWS_SHOWN`      | 8                         | Spec; a panel's worth before Show More                  |

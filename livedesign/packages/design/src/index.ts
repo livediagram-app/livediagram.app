@@ -388,6 +388,8 @@ export * from './comment-thread';
 export * from './design-envelope';
 export * from './export-tab-text';
 export * from '@liveworkspace/model-core/comment-mentions';
+// Comment reactions (docs/specs/012-collaboration/comment-reactions.md): the six, the stored shape and the toggle.
+export * from '@liveworkspace/model-core/comment-reactions';
 // The shared plain-object guard for untrusted JSON.
 export * from '@liveworkspace/model-core/is-record';
 // The shared FNV-1a string hash for deterministic picks.
@@ -422,6 +424,7 @@ export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';
 export * from '@liveworkspace/model-core/icon-size';
+export * from '@liveworkspace/model-core/progress-label';
 export * from '@liveworkspace/model-core/icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure

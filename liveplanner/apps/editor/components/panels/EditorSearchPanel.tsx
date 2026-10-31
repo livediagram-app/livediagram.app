@@ -10,6 +10,9 @@ import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { explorerPath } from '@liveworkspace/explorer';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { APP_KINDS } from '@liveworkspace/index-client';
+import { itemHref } from '@/lib/explorer-host';
 import { cardTabResolver, type CardSearchSource } from '@/lib/search-plan';
 
 const SearchPanel = dynamic(
@@ -23,6 +26,9 @@ const SearchPanel = dynamic(
 // content covers the canvas, so nothing added there would show.
 // Reads everything from EditorContext (commands come from useEditorCommands,
 // itself context-driven), so EditorView just renders <EditorSearchPanel />.
+// Every app's work, from the index (Work Tracker #63): only what the person can open, as the index decides.
+const WORKSPACE = { client: indexClient };
+
 export function EditorSearchPanel() {
   const {
     searchOpen,
@@ -97,6 +103,12 @@ export function EditorSearchPanel() {
       }}
       commandItems={commandItems}
       onRunCommand={runCommand}
+      workspace={WORKSPACE}
+      onSelectWorkspaceItem={(item) => {
+        // One of this app's opens here, as a pick from its own lists does; another app's opens in that app.
+        if (item.app === 'liveplanner') openProject(item.id, item.sharedVia ?? undefined);
+        else assignAppLocation(itemHref({ ...item, kind: APP_KINDS[item.app] }));
+      }}
       helpItems={HELP_SEARCH_ITEMS}
       settingItems={SETTINGS_SEARCH_ITEMS}
       onSelectSetting={openSettingsAt}

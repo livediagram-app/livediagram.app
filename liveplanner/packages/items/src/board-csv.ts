@@ -3,6 +3,8 @@
 import { byRank } from './apply';
 import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSetup } from './board';
 import { builtInFieldOf } from './card-source';
+import { customFieldText } from './card-text';
+import { itemColourValue } from './item-colour';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
 import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
@@ -39,12 +41,14 @@ export function boardCsvFileName(title: string): string {
 const lower = (s: string) => s.trim().toLowerCase();
 
 // The custom fields of the board's types, one per label (the first type naming it wins), in catalogue order. A
-// Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields").
+// Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields");
+// so is an Image field, whose value is a picture's id (docs/specs/026-plan/item-types.md "Image fields").
 function customColumns(types: readonly ItemTypeDef[]): string[] {
   const out = new Map<string, string>();
   for (const t of types)
     for (const f of t.custom ?? [])
-      if (f.kind !== 'calculated' && !out.has(lower(f.label))) out.set(lower(f.label), f.label);
+      if (f.kind !== 'calculated' && f.kind !== 'image' && !out.has(lower(f.label)))
+        out.set(lower(f.label), f.label);
   return [...out.values()];
 }
 
@@ -115,6 +119,9 @@ export function boardCsvRows(
             const linked = linkedCard(items, item.fields[f.id]);
             return linked ? itemTitle(linked) : '';
           }
+          // A Checklist reads as its progress ("2/5") and a Votes field as its total, as the card shows them.
+          if (f.kind === 'checklist' || f.kind === 'votes')
+            return customFieldText(f, item.fields[f.id]) ?? '';
           // An option may hold a comma, so a Multiple Choice's picks are kept apart by semicolons.
           if (f.kind === 'multichoice') {
             const v = item.fields[f.id];
@@ -169,12 +176,28 @@ export function multiChoiceOf(options: readonly string[], text: string): string[
 
 const TRUE_TEXT = new Set(['yes', 'y', 'true', '1', 'x', '✓', '✔']);
 
-function customValue(f: CustomFieldDef, text: string): ItemFieldValue | undefined {
+function customValue(
+  f: CustomFieldDef,
+  text: string,
+  people: readonly ItemPerson[],
+): ItemFieldValue | undefined {
   switch (f.kind) {
-    // Never read from a file: a Card field names a card by id, a Calculated field is worked out.
+    // Never read from a file: a Card field names a card by id, a Calculated field is worked out, an Image is a
+    // picture uploaded in the card panel, a Checklist's rows are not in its cell (only its progress is), and threads
+    // and votes are written by their own writes.
     case 'card':
     case 'calculated':
+    case 'image':
+    case 'checklist':
+    case 'comments':
+    case 'votes':
       return undefined;
+    // The built-in fields' kinds read as those fields do: a person by name, labels by commas, a colour as #rrggbb.
+    case 'person':
+    case 'labels':
+      return builtInValue(f.kind === 'person' ? 'assignee' : 'labels', text, people);
+    case 'colour':
+      return itemColourValue(text);
     case 'number': {
       const n = Number(text);
       return text && Number.isFinite(n) ? n : undefined;
@@ -327,7 +350,7 @@ export function boardCsvImport(
       if (at < 0 || [...builtIns.values()].includes(at)) continue;
       const text = (row[at] ?? '').trim();
       if (!text) continue;
-      const v = customValue(f, text);
+      const v = customValue(f, text, ctx.people);
       if (v !== undefined) fields[f.id] = v;
     }
     const valid = validateFields(fields, 'create');

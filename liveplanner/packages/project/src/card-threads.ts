@@ -4,9 +4,14 @@
 // face count, author redaction and the move from the old single thread a card held in `fields.comments`. Who may
 // do what is the caller's (the routes, the offline store); nothing here knows who is asking.
 
-import type { Item } from '@liveplanner/items';
+import { CUSTOM_FIELD_ID_PATTERN, type Item } from '@liveplanner/items';
 import { sanitizeMentions, type CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import { withoutCommentAuthorId, type Comment, type CommentThread } from './comments';
+import {
+  commentWithReactions,
+  withReaction,
+  type CommentReactionId,
+} from '@liveworkspace/model-core/comment-reactions';
 import { isComment } from './element-deltas';
 
 // ---------- Shape --------------------------------------------------------------------------------------------
@@ -41,6 +46,9 @@ export type CardThread = {
   home: string;
   // Every card it is on, the card it was started on first.
   cards: CardRef[];
+  // The Comments field it belongs to (docs/specs/026-plan/item-types.md "Comments and Votes fields"), set when it is
+  // started; absent is the built-in Comments (every thread from before).
+  field?: string;
   rev: number;
 };
 
@@ -64,6 +72,11 @@ export const THREAD_COMMENT_TEXT_MAX = 2_000;
 
 const THREAD_ID = /^th-[a-z0-9]{16}$/;
 const LEGACY_ID = /^c-[A-Za-z0-9_-]{1,64}$/;
+
+/** Whether `value` can name a thread's Comments field: the built-in's id or a custom field's (`f-` and a slug). */
+export function isThreadFieldId(value: unknown): value is string {
+  return typeof value === 'string' && (value === 'comments' || CUSTOM_FIELD_ID_PATTERN.test(value));
+}
 
 export function isThreadId(value: unknown): value is string {
   return typeof value === 'string' && (THREAD_ID.test(value) || LEGACY_ID.test(value));
@@ -148,6 +161,7 @@ export function isCardThread(v: unknown): v is CardThread {
     Array.isArray(t.cards) &&
     t.cards.length <= THREAD_CARDS_MAX &&
     t.cards.every(isCardRef) &&
+    (t.field === undefined || isThreadFieldId(t.field)) &&
     typeof t.rev === 'number'
   );
 }
@@ -166,7 +180,17 @@ export type ThreadChange =
   | { kind: 'resolve'; resolved: boolean; by: string }
   | { kind: 'rename'; title: string }
   | { kind: 'addCard'; card: CardRef }
-  | { kind: 'removeCard'; projectId: string; itemId: string };
+  | { kind: 'removeCard'; projectId: string; itemId: string }
+  // One person's reaction on one comment, on or off (docs/specs/012-collaboration/comment-reactions.md): `by` is
+  // their public collab key, `name` the name the server stamped. Not activity: the thread keeps its place.
+  | {
+      kind: 'react';
+      commentId: string;
+      emoji: CommentReactionId;
+      by: string;
+      name: string;
+      on: boolean;
+    };
 
 export type ThreadRefusal =
   | 'unchanged'
@@ -255,6 +279,18 @@ export function applyThreadChange(
         return { ok: false, reason: 'thread_cards_full' };
       return next({ cards: [...thread.cards, change.card] }, false);
     }
+    case 'react': {
+      const at = thread.comments.findIndex((c) => c.id === change.commentId);
+      if (at < 0) return { ok: false, reason: 'comment_not_found' };
+      const before = thread.comments[at]!;
+      const after = commentWithReactions(before, withReaction(before.reactions, change));
+      if (after === before) return { ok: false, reason: 'unchanged' };
+      const comments = thread.comments.map((c, i) => (i === at ? after : c));
+      // Taking one back always fits; adding one keeps to the thread's budget.
+      if (change.on && threadBytes(comments) > THREAD_BYTES)
+        return { ok: false, reason: 'comments_full' };
+      return next({ comments }, false);
+    }
     case 'removeCard': {
       if (!thread.cards.some((c) => sameCard(c, change.projectId, change.itemId)))
         return { ok: false, reason: 'unchanged' };
@@ -268,13 +304,15 @@ function sameMentions(a: CommentMention[] | undefined, b: CommentMention[] | und
   return JSON.stringify(a ?? []) === JSON.stringify(b ?? []);
 }
 
-/** A new thread on `card`, with its first comment and (unless given) its automatic title. */
+/** A new thread on `card`, with its first comment and (unless given) its automatic title, in its Comments field
+ *  (`field`; the built-in Comments when absent or `comments`). */
 export function startThread(input: {
   id: string;
   home: string;
   card: CardRef;
   comment: Comment;
   title?: string;
+  field?: string;
   now: number;
 }): CardThread {
   const { comment } = input;
@@ -292,6 +330,7 @@ export function startThread(input: {
     updatedAt: input.now,
     home: input.home,
     cards: [input.card],
+    ...(input.field && input.field !== 'comments' ? { field: input.field } : {}),
     rev: 1,
   };
 }
@@ -321,17 +360,24 @@ export function openCommentCount(
   return n;
 }
 
-/** Each card's face count in one pass over the threads: the card ids of `projectId` with a count above 0. */
+/** The key a card's face count for one Comments field (not the built-in) is kept under, beside the card's whole. */
+export const fieldCountKey = (itemId: string, field: string): string => `${itemId}\u0000${field}`;
+
+/** Each card's face count in one pass over the threads: the card ids of `projectId` with a count above 0, and each
+ *  card's count in each Comments field a thread names (docs/specs/026-plan/item-types.md "Comments and Votes
+ *  fields") under `fieldCountKey`; the built-in's is the whole less the others. */
 export function openCommentCounts(
-  threads: Iterable<Pick<CardThread, 'cards' | 'resolved' | 'comments'>>,
+  threads: Iterable<Pick<CardThread, 'cards' | 'resolved' | 'comments' | 'field'>>,
   projectId: string,
 ): Map<string, number> {
   const out = new Map<string, number>();
+  const add = (key: string, n: number) => out.set(key, (out.get(key) ?? 0) + n);
   for (const t of threads) {
     if (t.resolved) continue;
     for (const c of t.cards) {
       if (c.projectId !== projectId) continue;
-      out.set(c.itemId, (out.get(c.itemId) ?? 0) + t.comments.length);
+      add(c.itemId, t.comments.length);
+      if (t.field) add(fieldCountKey(c.itemId, t.field), t.comments.length);
     }
   }
   return out;

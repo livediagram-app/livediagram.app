@@ -1,19 +1,26 @@
 // The plan's cards in liveworkspace's Inbox (docs/specs/013-workspace/inbox.md; liveworkspace/docs/one-explorer-
 // contracts.md "What an item pushes"): every open card assigned to someone and each of its cards' comment threads, pushed
 // under COLLAB_CARDS_TAB by the outbox drain (plan-outbox.ts) whenever a card, a board's tab or the type catalogue
-// changes. A card's assignee is a one-way hash (@liveplanner/items itemPersonId); @liveworkspace/index-app
-// `cardsCollabPush` names them by matching it against the people the plan knows: its owner, the editors it has seen
-// (`known_people`) and everyone who commented on or was mentioned in a card.
+// changes. A card tells each person a notifying Person field of its type holds (@liveplanner/items notifiedPeople;
+// docs/specs/026-plan/item-types.md "Notifies"), one action each. A person is a one-way hash (@liveplanner/items
+// itemPersonId); @liveworkspace/index-app `cardsCollabPush` names them by matching it against the people the plan
+// knows: its owner, the editors it has seen (`known_people`) and everyone who commented on or was mentioned in a card.
 
-import { cardsCollabPush, type CardsPush, type InboxCardSource } from '@liveworkspace/index-app';
+import {
+  cardsCollabPush,
+  type CardsPush,
+  type InboxCardAssignee,
+  type InboxCardSource,
+} from '@liveworkspace/index-app';
 import {
   ARCHIVED_FIELD,
-  itemAssignee,
+  FALLBACK_ITEM_TYPE,
   itemPersonId,
   itemStatus,
   itemTitle,
-  isNamedPerson,
+  notifiedPeople,
   typesOf,
+  type Item,
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
 import {
@@ -67,6 +74,18 @@ const inboxThreadOf = (t: CardThread): InboxCardThread => ({
   })),
 });
 
+// The people a card tells as the Inbox push takes them: the Assignee's action under the card's id, as before, and
+// another field's under `{card id}~{field id}` (one-explorer-contracts.md "What an item pushes").
+const inboxAssigneesOf = (
+  item: Pick<Item, 'id'>,
+  told: ReturnType<typeof notifiedPeople>,
+): InboxCardAssignee[] =>
+  told.map(({ fieldId, person }) => ({
+    hash: person.id,
+    name: person.name,
+    actionId: fieldId === 'assignee' ? item.id : `${item.id}~${fieldId}`,
+  }));
+
 function parseElements(data: string): Element[] {
   try {
     const body = JSON.parse(data) as { elements?: unknown };
@@ -112,7 +131,7 @@ export async function cardsPushOf(env: PlanEnv, planId: string): Promise<CardsPu
       elements: parseElements(t.data),
     })),
   );
-  const labels = new Map(typesOf(parseTypes(plan.item_types)).map((t) => [t.id, t.label]));
+  const types = new Map(typesOf(parseTypes(plan.item_types)).map((t) => [t.id, t]));
   // Each card's threads, oldest link first, so a thread on two cards is pushed on the first (cardsCollabPush).
   const threadsByCard = new Map<string, InboxCardThread[]>();
   for (const t of threads) {
@@ -129,28 +148,28 @@ export async function cardsPushOf(env: PlanEnv, planId: string): Promise<CardsPu
     if (item.fields[ARCHIVED_FIELD] === true) continue;
     const status = itemStatus(item);
     if (status === 'trash') continue;
-    // A custom assignee (an `n-` named person) is nobody the index could name: never listed, never counted as
-    // unmatched (docs/specs/026-plan/items.md "Custom assignees").
-    const held = itemAssignee(item);
-    const assignee = held && !isNamedPerson(held) ? held : undefined;
+    const type = types.get(item.type);
+    // A custom person (an `n-` named person) is nobody the index could name: never listed, never counted as
+    // unmatched (docs/specs/026-plan/items.md "Custom assignees"); notifiedPeople leaves them out.
+    const told = notifiedPeople(type ?? FALLBACK_ITEM_TYPE, item);
     const cardThreads = threadsByCard.get(item.id) ?? [];
-    // Listed for its assignee while open; a linked card's action is listed already
+    // Listed for the people it tells while open; a linked card's action is listed already
     // (docs/specs/026-plan/linked-boards.md "The Inbox").
-    const listed = !!assignee && item.fields['linked'] == null && !places.isDone(status);
+    const listed = told.length > 0 && item.fields['linked'] == null && !places.isDone(status);
     if (!listed && cardThreads.length === 0) continue;
     cards.push({
       id: item.id,
       card: {
         key: item.key,
         type: item.type,
-        typeLabel: labels.get(item.type) ?? item.type,
+        typeLabel: type?.label ?? item.type,
         title: itemTitle(item) || 'Untitled',
         board: places.boardFor(status),
       },
       teamId: plan.team_id,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      assignee: listed && assignee ? { hash: assignee.id, name: assignee.name } : null,
+      assignees: listed ? inboxAssigneesOf(item, told) : [],
       changedBy: item.updatedBy ? { hash: item.updatedBy.id, name: item.updatedBy.name } : null,
       threads: cardThreads,
     });

@@ -96,11 +96,16 @@ export function isSwimlaneSettable(key: string): boolean {
 // The flag an archived item carries (docs/specs/026-plan/items.md "Archive").
 export const ARCHIVED_FIELD = 'archived';
 
-// Whether a move may set or clear this field: a swimlane's (isSwimlaneSettable), or the archived flag, which a card
-// dragged off an Archive board loses in the move itself (one write, one undo step).
+// Whether a move may set or clear this field: a swimlane's (isSwimlaneSettable), the archived flag, which a card
+// dragged off an Archive board loses in the move itself (one write, one undo step), or the status stamp a move's undo
+// puts back.
 export function isMoveSettable(key: string): boolean {
-  return isSwimlaneSettable(key) || key === ARCHIVED_FIELD;
+  return isSwimlaneSettable(key) || key === ARCHIVED_FIELD || key === STATUS_SINCE_FIELD;
 }
+
+// When the card entered its current status, a ms epoch (docs/specs/026-plan/items.md "Fields"; status-since.ts).
+// A move may carry it, so undoing one puts the card's Age back.
+export const STATUS_SINCE_FIELD = 'statusSince';
 
 export function itemTitle(item: Pick<Item, 'fields'>): string {
   const title = item.fields['title'];
@@ -125,16 +130,18 @@ export function itemAssignee(item: Pick<Item, 'fields'>): ItemPerson | undefined
   return isItemPerson(a) ? a : undefined;
 }
 
-export function itemVotes(item: Pick<Item, 'fields'>): Record<string, number> {
-  const v = item.fields['votes'];
+// A card's votes in one Votes field (`{ voter: dots }`): the built-in `votes` unless a custom Votes field's id is
+// given (docs/specs/026-plan/item-types.md "Comments and Votes fields").
+export function itemVotes(item: Pick<Item, 'fields'>, field = 'votes'): Record<string, number> {
+  const v = item.fields[field];
   if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
   const out: Record<string, number> = {};
   for (const [k, n] of Object.entries(v)) if (typeof n === 'number' && n > 0) out[k] = n;
   return out;
 }
 
-export function itemVoteTotal(item: Pick<Item, 'fields'>): number {
-  return Object.values(itemVotes(item)).reduce((a, b) => a + b, 0);
+export function itemVoteTotal(item: Pick<Item, 'fields'>, field = 'votes'): number {
+  return Object.values(itemVotes(item, field)).reduce((a, b) => a + b, 0);
 }
 
 // The card's comment count: the comments in its open threads, as a render worked them out (`openComments`), else

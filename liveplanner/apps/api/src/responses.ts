@@ -41,6 +41,12 @@ export const {
   missingAuth,
 } = createResponses(CORS_HEADERS);
 
+// No media service on this deploy (no MEDIA_KEY): Image fields can't upload or show a picture here
+// (docs/specs/026-plan/item-types.md "Image fields"), so the editor says so rather than failing on a generic 500.
+export function imagesUnavailable(): Response {
+  return json({ error: 'images_unavailable' }, { status: 503 });
+}
+
 // A plan in the Trash (docs/specs/013-workspace/trash.md), answered only to a
 // caller who could have opened it: the deleted state, not a not-found.
 export function projectTrashed(): Response {

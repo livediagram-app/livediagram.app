@@ -16,7 +16,7 @@ const card = async (
     teamId: null,
     createdAt: 1,
     updatedAt: 2,
-    assignee: assigneeId ? { hash: await hashOf(assigneeId), name: 'Bob' } : null,
+    assignees: assigneeId ? [{ hash: await hashOf(assigneeId), name: 'Bob', actionId: id }] : [],
     changedBy: changedById ? { hash: await hashOf(changedById), name: 'Ada' } : null,
     threads: [],
     ...rest,
@@ -44,6 +44,36 @@ describe('cardsCollabPush', () => {
         assignerId: 'user_a',
         card: cards[0]!.card,
       }),
+    ]);
+    expect(unmatched).toBe(1);
+  });
+
+  it('pushes one action a person a card tells, each under its own action id, a person once', async () => {
+    const tell = async (personId: string, actionId: string) => ({
+      hash: await hashOf(personId),
+      name: personId,
+      actionId,
+    });
+    const cards = [
+      await card('c1', {
+        assignees: [
+          await tell('user_b', 'c1'),
+          await tell('user_c', 'c1~f-reviewer'),
+          await tell('user_stranger', 'c1~f-qa'),
+          await tell('user_b', 'c1~f-owner'),
+        ],
+      }),
+    ];
+    const { push, unmatched } = await cardsCollabPush(cards, {
+      people: ['user_b', 'user_c'],
+      hashOf,
+      fallbackAssignerId: 'o',
+    });
+    expect(
+      push.actions.map((a) => [a.elementId, a.actionId, a.assigneeId, a.assigneeName]),
+    ).toEqual([
+      ['c1', 'c1', 'user_b', 'user_b'],
+      ['c1', 'c1~f-reviewer', 'user_c', 'user_c'],
     ]);
     expect(unmatched).toBe(1);
   });

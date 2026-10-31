@@ -33,6 +33,7 @@ import {
   ICON_BUTTON,
 } from './ItemTypeFieldForms';
 import { NewFieldForm } from './NewFieldForm';
+import { track } from '@/lib/telemetry';
 import {
   addField,
   addTab,
@@ -98,6 +99,17 @@ export function ItemTypeLayoutEditor({
     ...draft.tabs.map((t) => ({ id: t.id, label: t.label.trim() || 'Untitled tab' })),
   ];
 
+  // The Assignee's Notifies switch (docs/specs/026-plan/item-types.md "Notifies"): on unless the type switched it off,
+  // stored only as off.
+  const assigneeNotifies = {
+    on: draft.assigneeNotifies !== false,
+    onChange: (on: boolean) => {
+      track('Plan', 'Changed', 'FieldNotifies');
+      const { assigneeNotifies: _was, ...rest } = draft;
+      onChange(on ? rest : { ...rest, assigneeNotifies: false });
+    },
+  };
+
   // The card's rows are fixed; a group's (Details or a tab) move within and between groups.
   const rowsOf = (home: 'card' | { group: GroupId }, list: readonly string[]) => {
     if (list.length === 0) return null;
@@ -135,6 +147,7 @@ export function ItemTypeLayoutEditor({
                     : (by) => onChange(moveField(draft, group, id, by))
                 }
                 onRemove={() => onChange(removeField(draft, id))}
+                notifies={id === 'assignee' ? assigneeNotifies : undefined}
               >
                 {c && editing === id ? (
                   <CustomFieldForm

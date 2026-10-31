@@ -41,8 +41,8 @@ Click a card to open its panel. It closes with **Escape** or the close button, a
 </Figure>
 
 - **The header:** the card's type (change it from the picker), its number, the **⋯** menu (Duplicate, Flag, Archive, Trash, **Edit Card Type**, which opens the card's type in the type editor, **Copy Card Link**, and **Help**, which opens this page) and the close button.
-- **On the left:** the title, then the card type's **tabs** (Overview by default) and their fields. The **description** is rich text: bold, italic, underline, strikethrough, size, colour, headings, links, and bullet or numbered lists, from the toolbar over it or the usual shortcuts. It reads as text until you click it.
-- **On the right, in Details:** status, assignee and parent, then priority, labels, estimate, due date and, on a plan, start date (a start after the due date says **Starts after it is due**). Labels are coloured chips, with the plan's labels offered as you type. **Open** beside a parent takes you to it. At the foot: who made the card and who last changed it.
+- **On the left:** the title, then the card type's **tabs** (Overview by default) and their fields. The **description** is rich text: bold, italic, underline, strikethrough, size, colour, headings, links, and bullet or numbered lists, from the toolbar over it or the usual shortcuts. It reads as text until you click it. Every **Long Text** field the card type has works the same way.
+- **On the right, in Details:** status, assignee and parent, then priority, labels, estimate, due date and, on a plan, start date (a start after the due date says **Starts after it is due**). Labels are coloured chips. Click into the field and the plan's labels open under it, most used first, each with how many cards carry it; type to narrow them, then press Enter or click one to add it, or pick **Create** for a new one. A label typed in another case takes the plan's spelling, so near-duplicates don't pile up, and a label no card uses any more is forgotten. **Open** beside a parent takes you to it. At the foot: who made the card and who last changed it.
 - **A checklist** shows its progress ("2 of 5"); tick steps, edit them in place, and **Add a step**.
 - **Linked as Parent:** a plan lists the cards under it (the cards whose **Parent** is that plan) on its first tab, each with its number, title and status. Click one to open it in the same panel, or **New Task** to make one already under it. **Link Existing** puts a card you already have under it: search by number, title or type and pick one. A card already under another plan says so, and you're asked before it moves. Trashed cards are left out; an archived one shows an **Archived** chip.
 - **Find your way back:** as you move from a card to its parent or a child, a bar above the card names the one you came from, with this card's number beside it. Click it to go back; keep clicking to retrace your steps one card at a time. Opening a card from a board starts a new trail.
@@ -58,6 +58,8 @@ On a phone the panel rises from the bottom, with **Details** as its first tab an
 ## Comment Threads
 
 A card holds **comment threads**: as many separate conversations as it needs, each with its own title, replies and resolved state. They sit at the end of the card's **Overview** tab, under **Comments**, and use the same [comments](/help/collaboration/comments/) as the rest of the plan.
+
+A card type can hold more Comments fields of its own, say a **Design Review** beside **Comments** ([Card Types](/help/plan/card-types/)). Each shows the same way under its own name, listing only its threads; **New Thread** in a field starts the thread there.
 
 <Figure caption="A card's comment threads: two open, the first on three cards, and one resolved at the bottom.">
   <PlanCardThreadsScene />

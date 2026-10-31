@@ -51,6 +51,18 @@ describe('the thread routes', () => {
         { text: 'Hi', mentions },
       ],
       [
+        { kind: 'start', itemId: 'c1', text: 'Hi', field: 'f-review' },
+        'POST',
+        '/items/c1/threads',
+        { text: 'Hi', field: 'f-review' },
+      ],
+      [
+        { kind: 'start', itemId: 'c1', text: 'Hi', field: 'comments' },
+        'POST',
+        '/items/c1/threads',
+        { text: 'Hi' },
+      ],
+      [
         { kind: 'reply', threadId: 'th', text: 'Yes' },
         'POST',
         '/threads/th/comments',
@@ -88,6 +100,12 @@ describe('the thread routes', () => {
         { itemId: 'c2' },
       ],
       [{ kind: 'deleteThread', threadId: 'th' }, 'DELETE', '/threads/th', undefined],
+      [
+        { kind: 'react', threadId: 'th', commentId: 'k', emoji: 'eyes', on: true, key: 'k-me' },
+        'POST',
+        '/threads/th/comments/k/reactions',
+        { emoji: 'eyes', on: true, key: 'k-me' },
+      ],
     ];
     for (const [action, method, path, body] of cases) {
       vi.mocked(apiFetch).mockResolvedValueOnce(Response.json({ thread: null }));

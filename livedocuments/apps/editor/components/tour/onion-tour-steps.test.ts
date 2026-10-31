@@ -16,7 +16,6 @@ const rows = ['Domain', 'Application', 'Adapters', 'Infrastructure'].map((label)
 const ctxOf = (over: Partial<ConceptTourContext> = {}): ConceptTourContext => ({
   elementId: 'on',
   rows,
-  hasMore: true,
   touch: false,
   ...over,
 });
@@ -33,7 +32,6 @@ describe('onionTourSteps', () => {
       'animate',
       'outro',
     ]);
-    expect(onionTourSteps(ctxOf({ hasMore: false })).map((s) => s.id)).not.toContain('rows');
   });
 
   it('points at the core, the outermost ring and Add Ring', () => {

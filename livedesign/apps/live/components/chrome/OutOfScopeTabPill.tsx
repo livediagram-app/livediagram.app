@@ -1,4 +1,5 @@
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
+import { TAB_DASHED_CLASS } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { TabNotSharedIcon } from '@/components/chrome/tab-bar-icons';
 import type { Participant } from '@/lib/identity';
 import { HoverCard } from '@livedesign/ui';
@@ -20,14 +21,14 @@ export function OutOfScopeTabPill({
   selfRole: AccessLevel;
 }) {
   return (
-    <div
-      draggable={false}
-      className="flex shrink-0 items-center gap-1 rounded-lg border border-dashed border-slate-300 px-2.5 text-slate-500 dark:border-slate-600 dark:text-slate-400"
-    >
+    <div draggable={false} className={TAB_DASHED_CLASS}>
       <HoverCard title="Not shared" description="This tab isn't shared with you.">
         <button
           type="button"
+          role="tab"
+          aria-selected={false}
           aria-disabled="true"
+          tabIndex={-1}
           className="flex cursor-not-allowed items-center gap-1.5 rounded-lg py-1 text-sm font-medium"
         >
           <TabNotSharedIcon />

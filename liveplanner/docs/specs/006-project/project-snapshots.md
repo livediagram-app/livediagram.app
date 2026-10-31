@@ -19,7 +19,7 @@ is answered by the plan's Durable Object, where the content is (`plan-room.ts` `
   `@liveplanner/plan-art`, since a form is not an element). A Board draws its project's cards, a Sheet its window of
   cells, a Dashboard its page laid out with its metrics and charts counted from the cards. Icon elements render their
   real glyph via `@liveworkspace/icons/resolve` ([Technology icons](../010-palette/technology-icons.md) "Rendering").
-  liveplanner takes no image uploads, so an image placeholder left by a diagram template draws as its empty box.
+  The canvas takes no image uploads (a card's Image field is the one picture liveplanner keeps), so an image placeholder left by a diagram template draws as its empty box.
 - The **version** is the plan's `saved_at`, which every tab, card and Sheet write that lands moves, whoever made it
   (editor, collaborators, MCP server, API token). The service sends the version it holds as `If-None-Match`; an
   unchanged plan answers `304` without drawing.

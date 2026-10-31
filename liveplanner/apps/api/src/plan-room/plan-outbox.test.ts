@@ -306,6 +306,56 @@ describe('the cards push', () => {
     expect(cards.actions.map((a) => [a.actionId, a.assigneeId])).toEqual([['c2', 'owner']]);
   });
 
+  it("pushes one action a person a card's notifying Person fields tell, by its type", async () => {
+    const db = plan();
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    const type = (id: string, extra: Record<string, unknown>) => ({
+      id,
+      label: id,
+      newTitle: `New ${id}`,
+      glyph: 'bug',
+      color: '#dc2626',
+      fields: ['title', 'status', 'assignee', 'f-reviewer', 'f-qa'],
+      custom: [
+        { id: 'f-reviewer', label: 'Reviewer', kind: 'person', notifies: true },
+        { id: 'f-qa', label: 'QA', kind: 'person', notifies: true },
+      ],
+      ...extra,
+    });
+    db.sql.prepare(`UPDATE plan SET item_types = ? WHERE id = 'P'`).run(
+      JSON.stringify({
+        version: 1,
+        types: [type('review', {}), type('chore', { assigneeNotifies: false })],
+      }),
+    );
+    await insertItems(db.env, 'P', [
+      {
+        ...(await card('c1', 1, {
+          status: 'new',
+          assignee: await person('owner'),
+          'f-reviewer': await person('user_b'),
+          'f-qa': await person('owner'),
+        })),
+        type: 'review',
+      },
+      {
+        ...(await card('c2', 2, { status: 'new', assignee: await person('owner') })),
+        type: 'chore',
+      },
+    ]);
+    const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
+    recordItemEditor(exec, PLAN_OUTBOX, 'P', 'user_b', T0);
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    const cards = index.collab.find((c) => c.tab === '~cards')!.push;
+    expect(cards.actions.map((a) => [a.elementId, a.actionId, a.assigneeId])).toEqual([
+      ['c1', 'c1', 'owner'],
+      ['c1', 'c1~f-reviewer', 'user_b'],
+    ]);
+    expect(cards.actions[0]!.card).toMatchObject({ typeLabel: 'review' });
+  });
+
   it('pushes 1,000 cards among 500 known people within budget', async () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);

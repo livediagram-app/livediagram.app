@@ -316,6 +316,7 @@ Resolved where `lwt_` is, only when no account access token verified:
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GET              | `capabilities`, `openapi.json`, `templates`, `templates/:kind`, `icons`, `schema`, `schema/:kind`                                                                             |
 | GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`                                                                                     |
+| POST, GET        | `images` (a card's Image field upload), `images/:imageId` (the route keeps a project session to its own plan)                                                                 |
 | GET, PUT         | `projects/:doc`                                                                                                                                                               |
 | GET, PUT, DELETE | `projects/:doc/tabs/:tabId`                                                                                                                                                   |
 | PUT              | `projects/:doc/tabs/:tabId/name`                                                                                                                                              |
@@ -595,6 +596,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only)         |
 | GET                    | `share/**` (the person opening a link shared with them)                                                                             |
+| POST, GET              | `images`, `images/:imageId` (a card's Image field)                                                                                  |
 | GET, POST, PUT, DELETE | `projects/**` but `projects/:p/tabs/:p/presence`                                                                                    |
 | GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `tags/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**` |
 | GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                         |

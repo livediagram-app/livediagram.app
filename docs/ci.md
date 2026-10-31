@@ -66,7 +66,13 @@ result.
   released queries also run against an unchanged `main`. It is an advanced setup, so the repository's
   CodeQL default setup stays off, or GitHub rejects the upload. The `main` ruleset requires its results.
 
-CI publishes no CLI: the CLIs' npm publishing and MCP Registry listing happen outside CI. Each product's CLI builds and
+- **MCP Registry** (`mcp-registry.yml`): only by hand (`workflow_dispatch`), never on a push. It publishes the
+  chosen product's `server.json` (livediagram, liveplanner, livedocuments or livedesign) to the official MCP
+  Registry, signed in with the repository's GitHub OIDC token, which proves the `io.github.livediagram-app`
+  namespace every product lists under; no secret. Each product's MCP spec, "Registry listing", says what the
+  descriptor holds.
+
+CI publishes no CLI: the CLIs' npm publishing happens outside CI. Each product's CLI builds and
 packs on every run that reaches it (Build).
 
 ## Coverage report
@@ -118,10 +124,10 @@ deterministic failure shows up on the machine in minutes rather than on CI later
 Every Worker deploys from here, to the liveworkspace Cloudflare account its `wrangler.toml` pins:
 each product's api, sites, MCP and router, and the platform's services and site.
 
-- **Staging** follows `main` (`deploy-staging.yml`): when CI passes for a push to `main`, that commit
-  deploys to every Worker's `[env.staging]`. A run for a commit `main` has already moved past is skipped,
-  and the newer commit's run deploys both. Runs queue rather than cancel, so a deploy is never cut off
-  halfway. It can also be run by hand, with **all** to redeploy every Worker. A run by hand skips the
+- **Staging** follows `main` (`deploy-staging.yml`): when CI passes for a push to `main`, the newest
+  commit on `main` whose CI passed deploys to every Worker's `[env.staging]`, whichever run finished, so
+  a steady stream of merges never holds staging back. A run is skipped only when staging already runs
+  that commit or a newer one. Runs queue rather than cancel, so a deploy is never cut off halfway. It can also be run by hand, with **all** to redeploy every Worker. A run by hand skips the
   check for `main`'s tip and deploys the head of the branch it was started on, moving
   `deployed/staging` there, so production's default then ships that commit.
 - **Production** is a manual gate (`deploy-production.yml`): run **Deploy Production** from the Actions

@@ -13,8 +13,17 @@ import {
 
 // The fields a tab can hold: never the title (it heads the panel) or votes (they live on the card).
 const NOT_TABBABLE = new Set(['title', 'votes']);
+// A Votes field of the type's own lives on the card as the built-in does (item-types.md "Comments and Votes fields").
+const onCardOnly = (custom: readonly CustomFieldDef[], f: string): boolean =>
+  NOT_TABBABLE.has(f) || custom.some((c) => c.id === f && c.kind === 'votes');
 
-export type LayoutDraft = { fields: string[]; custom: CustomFieldDef[]; tabs: ItemTypeTab[] };
+export type LayoutDraft = {
+  fields: string[];
+  custom: CustomFieldDef[];
+  tabs: ItemTypeTab[];
+  // The Assignee tells no one (docs/specs/026-plan/item-types.md "Notifies"); kept only as false.
+  assigneeNotifies?: false;
+};
 
 // Where a field shows: Details is `null`, a tab its id.
 export type GroupId = string | null;
@@ -28,13 +37,13 @@ export function orderedFields(fields: readonly string[]): string[] {
 
 // The fields on the card alone: Title, and Votes when the type has it.
 export function cardFields(d: LayoutDraft): string[] {
-  return orderedFields(d.fields).filter((f) => NOT_TABBABLE.has(f));
+  return orderedFields(d.fields).filter((f) => onCardOnly(d.custom, f));
 }
 
 // The fields Details shows: every tabbable field in no tab, in the type's order.
 export function detailFields(d: LayoutDraft): string[] {
   const tabbed = new Set(d.tabs.flatMap((t) => t.fields));
-  return orderedFields(d.fields).filter((f) => !NOT_TABBABLE.has(f) && !tabbed.has(f));
+  return orderedFields(d.fields).filter((f) => !onCardOnly(d.custom, f) && !tabbed.has(f));
 }
 
 export function groupFields(d: LayoutDraft, group: GroupId): readonly string[] {
@@ -106,7 +115,10 @@ export function addField(
   return {
     fields: [...orderedFields(d.fields), field],
     custom: custom ? [...d.custom, custom] : d.custom,
-    tabs: group === null || NOT_TABBABLE.has(field) ? d.tabs : fileField(d.tabs, field, group),
+    tabs:
+      group === null || onCardOnly(custom ? [custom] : [], field)
+        ? d.tabs
+        : fileField(d.tabs, field, group),
   };
 }
 

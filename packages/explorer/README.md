@@ -221,7 +221,9 @@ the team's name, or Shared with you (the index keeps no names, so a sharer is no
 ### `<SearchPanel>` (`@liveworkspace/explorer/search-panel`)
 
 The Search panel a host's Search button and Cmd/Ctrl+K or Cmd/Ctrl+. open (liveworkspace/docs/specs/010-site/site.md "The Explorer"): one field
-over the person's items, folders and teams and the host's own entries, in groups of at most 8 (`SEARCH_GROUP_MAX`).
+over the person's items, folders and teams and the host's own entries, in groups of at most 8 (`SEARCH_GROUP_MAX`). Each editor's own Search panel finds work in every app through `@liveworkspace/explorer/item-search`: the same
+index search (`useItemSearch`, every app when no app is named), `everyAppResults` (what the panel does not list itself,
+at most 8), and `AppMark` and `appLabel` to mark each result with its app's logo, name and colour.
 Its own entry point, so a host loads it (`React.lazy`) only when it first opens.
 
 - **Items** come from the index's `search` view (the words in the title or folder name), only `app`'s when given,

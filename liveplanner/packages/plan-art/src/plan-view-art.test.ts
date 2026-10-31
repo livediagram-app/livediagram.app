@@ -23,6 +23,16 @@ describe('a plan view’s picture', () => {
     expect(svg).toContain('In Progress');
   });
 
+  it('sums Cards by Field’s Count By field (plan-views.md "Count By")', () => {
+    const sized = artData([
+      card({ title: 'a', status: 'todo', estimate: 2.5 }),
+      card({ title: 'b', status: 'done', estimate: 3 }),
+    ]);
+    const svg = planViewArt(view('workload', { measure: 'estimate' }), sized, 'light');
+    expect(svg).toContain('5.5');
+    expect(planViewArt(view('workload'), sized, 'light')).not.toContain('5.5');
+  });
+
   it('draws Priority by Status as a grid of counts', () => {
     const svg = planViewArt(view('priority-matrix'), data, 'light');
     expect(svg).toContain('Priority by Status');

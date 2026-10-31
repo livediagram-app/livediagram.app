@@ -160,13 +160,21 @@ export function newCustomFieldId(label: string, taken: Iterable<string>): string
 
 // The fields a panel never files under a tab: the title heads it, and votes live on the card.
 const NEVER_IN_A_TAB = new Set(['title', 'votes']);
+// The same for a type's own Votes field, which lives on the card as the built-in does (item-types.md "Comments and
+// Votes fields").
+const neverInATab = (type: ItemTypeDef, f: string): boolean =>
+  NEVER_IN_A_TAB.has(f) || customFieldOf(type, f)?.kind === 'votes';
 
-// A field the default Overview tab holds: the long-form ones, and the comment thread.
+// A Comments field, the built-in or the type's own (item-types.md "Comments and Votes fields").
+const isCommentsField = (type: ItemTypeDef, f: string): boolean =>
+  f === 'comments' || customFieldOf(type, f)?.kind === 'comments';
+
+// A field the default Overview tab holds: the long-form ones, and the comment threads.
 function overviewField(type: ItemTypeDef, f: string): boolean {
   return (
     f === 'description' ||
     f === 'checklist' ||
-    f === 'comments' ||
+    isCommentsField(type, f) ||
     customFieldOf(type, f)?.kind === 'longtext'
   );
 }
@@ -176,15 +184,19 @@ function overviewField(type: ItemTypeDef, f: string): boolean {
 export function tabsOf(type: ItemTypeDef): readonly ItemTypeTab[] {
   const offered = new Set(type.fields);
   if (type.tabs)
-    return type.tabs.map((t) => ({ ...t, fields: t.fields.filter((f) => offered.has(f)) }));
+    return type.tabs.map((t) => ({
+      ...t,
+      fields: t.fields.filter((f) => offered.has(f) && !neverInATab(type, f)),
+    }));
   return [
     {
       id: OVERVIEW_TAB_ID,
       label: 'Overview',
-      // The conversation ends the tab, after every long-form field (docs/specs/026-plan/items.md "Comments").
+      // The conversations end the tab, after every long-form field, in the type's order (docs/specs/026-plan/items.md
+      // "Comments").
       fields: type.fields
         .filter((f) => overviewField(type, f))
-        .sort((a, b) => Number(a === 'comments') - Number(b === 'comments')),
+        .sort((a, b) => Number(isCommentsField(type, a)) - Number(isCommentsField(type, b))),
     },
   ];
 }
@@ -198,7 +210,7 @@ export function detailsLabelOf(type: Pick<ItemTypeDef, 'detailsLabel'>): string 
 // The fields the panel's Details shows: the type's fields in no tab (never the title or votes).
 export function detailFieldsOf(type: ItemTypeDef): string[] {
   const tabbed = new Set(tabsOf(type).flatMap((t) => t.fields));
-  return type.fields.filter((f) => !NEVER_IN_A_TAB.has(f) && !tabbed.has(f));
+  return type.fields.filter((f) => !neverInATab(type, f) && !tabbed.has(f));
 }
 
 export function newTabId(label: string, taken: Iterable<string>): string {
@@ -316,6 +328,8 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
   if (input['onCard'] === true) field.onCard = true;
   // Kept only as true, and never on a Checkbox: anything else reads as optional rather than refusing the catalogue.
   if (input['required'] === true && canBeRequired(field.kind)) field.required = true;
+  // Kept only as true, and only on a Person field.
+  if (input['notifies'] === true && field.kind === 'person') field.notifies = true;
   return field;
 }
 
@@ -389,6 +403,12 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
   }
   const display = readCardDisplay(input['display'], id);
   if (display === null) return `${at}.display`;
+  // The Card Colour: a custom Colour field of the type's own; anything else reads as the built-in Colour.
+  const colourIn = input['colourField'];
+  const colourField =
+    typeof colourIn === 'string' && custom.some((f) => f.id === colourIn && f.kind === 'colour')
+      ? colourIn
+      : undefined;
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -407,6 +427,8 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     ...(excludedStatuses ? { excludedStatuses } : {}),
     ...(defaultStatus ? { defaultStatus } : {}),
     ...(display ? { display } : {}),
+    ...(input['assigneeNotifies'] === false ? { assigneeNotifies: false } : {}),
+    ...(colourField ? { colourField } : {}),
   };
 }
 

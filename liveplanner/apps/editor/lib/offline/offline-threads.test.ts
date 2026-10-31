@@ -51,6 +51,19 @@ describe('offline threads', () => {
     expect('commentId' in reply && reply.commentId).toBeTruthy();
     const id = t.comments[0]!.id;
     await writeThread(scope, { kind: 'edit', threadId: t.id, commentId: id, text: 'Fixed' }, who);
+    // docs/specs/012-collaboration/comment-reactions.md: a This Browser plan keeps its reactions too.
+    const react = {
+      kind: 'react',
+      threadId: t.id,
+      commentId: id,
+      emoji: 'eyes',
+      key: 'k-me',
+    } as const;
+    const reacted = await writeThread(scope, { ...react, on: true }, who);
+    expect('thread' in reacted && reacted.thread?.comments[0]?.reactions).toEqual([
+      { emoji: 'eyes', by: 'k-me', name: 'Gentle Falcon' },
+    ]);
+    expect(await writeThread(scope, { ...react, on: true }, who)).toEqual({ unchanged: true });
     await writeThread(scope, { kind: 'resolve', threadId: t.id, resolved: true }, who);
     // Already resolved: nothing.
     expect(
@@ -79,6 +92,41 @@ describe('offline threads', () => {
     expect(await writeThread(scope, { kind: 'deleteThread', threadId: other.id }, who)).toEqual({
       thread: null,
     });
+  });
+
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields".
+  it('starts a thread in one of the card type’s Comments fields, and refuses any other', async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(
+      testRecord({
+        itemTypes: {
+          version: 1,
+          types: [
+            {
+              id: 'task',
+              label: 'Task',
+              newTitle: 'New task',
+              glyph: 'task',
+              color: '#71717a',
+              fields: ['title', 'comments', 'f-review'],
+              custom: [{ id: 'f-review', label: 'Design Review', kind: 'comments' }],
+            },
+          ],
+        },
+      }),
+    );
+    await writeItem(
+      scope,
+      { kind: 'create', creates: [{ id: A, type: 'task', fields: { title: 'Card' } }] },
+      ME,
+    );
+    const start = (field: string) =>
+      writeThread(scope, { kind: 'start', itemId: A, text: 'x', field }, who);
+    const review = await start('f-review');
+    expect('thread' in review && review.thread?.field).toBe('f-review');
+    const builtIn = await start('comments');
+    expect('thread' in builtIn && builtIn.thread).not.toHaveProperty('field');
+    await expect(start('f-gone')).rejects.toMatchObject({ code: 'field_invalid' });
   });
 
   it('refuses as the api does', async () => {

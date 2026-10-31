@@ -4,6 +4,7 @@
 import type {
   Item,
   ItemCreate,
+  ItemHistoryEntry,
   ItemMove,
   ItemPatch,
   ItemTypeCatalogue,
@@ -18,6 +19,10 @@ export type {
   ItemCreate,
   ItemFields,
   ItemFieldValue,
+  ItemHistoryChange,
+  ItemHistoryEntry,
+  ItemHistoryTag,
+  ItemHistoryValue,
   ItemMove,
   ItemPatch,
   ItemPerson,
@@ -44,6 +49,10 @@ export type ItemsResponse = {
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.
 export type ItemResponse = { item: Item; rev: number };
 
+// GET /api/projects/:id/items/:itemId/history (docs/specs/026-plan/items.md "History"): the card's history, newest
+// first, grouped. An author is named by name and colour; `mine` marks the caller's own.
+export type ItemHistoryResponse = { entries: ItemHistoryEntry[] };
+
 // A card comment add's answer also names the comment it wrote, so the editor can point the mention email at
 // the stored comment (docs/specs/012-collaboration/comment-mentions.md "The email").
 export type ItemCommentAddResponse = ItemResponse & { commentId: string };
@@ -68,8 +77,13 @@ export type ItemsBulkRequest = { items: ItemCreate[] };
 // cards to the Trash), optionally marked as an undo or redo.
 export type ItemsPatchRequest = { items: (ItemPatch & { id: string })[] } & ItemUndoFlag;
 
-// POST /api/projects/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it.
-export type ItemsTallyRequest = { items: { id: string; votes: Record<string, number> }[] };
+// POST /api/projects/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it. `field` is
+// the Votes field it counts in (the built-in `votes` when absent, or a custom Votes field's id); a card whose type
+// does not offer it takes its dots in the built-in.
+export type ItemsTallyRequest = {
+  items: { id: string; votes: Record<string, number> }[];
+  field?: string;
+};
 
 // The room op every item write sends (system kind). `upserts` and `removed` are empty for a
 // session scoped to one tab: it refetches the items its tab shows.

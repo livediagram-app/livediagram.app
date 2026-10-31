@@ -126,7 +126,9 @@ moves between them, and the one account that joins them.
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
    comparisons, the telemetry dashboard and Status) and Legal (the
-   privacy policy, Terms of Use and Licences). Every footer, here and in each app, labels the
+   privacy policy, Terms of Use, Report a Vulnerability and Licences). Report a Vulnerability opens the repository's
+   security policy on GitHub (`SECURITY_POLICY_URL`,
+   [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md)). Every footer, here and in each app, labels the
    terms "Terms of Use" from one constant, `TERMS_LABEL` in `@liveworkspace/sites`.
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
@@ -140,6 +142,17 @@ footer. They were built from the apps' own policies, which said the same things 
 feature only some apps have (livediagram's sticky-note reader, liveplanner's live sessions) says which;
 Google Drive sync and Offline Mode are every app's. Every app is MIT-licensed, and the terms say so app by app. Both share
 `components/LegalPage.tsx`, and their date and contact form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
+The privacy policy's Security section and the terms' Acceptable use send a vulnerability to the private advisory
+form (`SECURITY_ADVISORY_URL`), never the contact form
+([Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md)).
+
+### Security reporting (`/.well-known/security.txt`)
+
+The site serves liveworkspace.app's [RFC 9116](https://www.rfc-editor.org/rfc/rfc9116) file from
+`app/.well-known/security.txt/route.ts`, built at build time by `securityTxt` in `@liveworkspace/sites/security`, the
+same builder every app's marketing site uses. Its `Policy` is the repository's security policy on GitHub
+(`SECURITY_POLICY_URL`), since every app's policy agrees and this site has no help centre of its own. The fields and
+why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md#securitytxt-on-every-site).
 
 ### Help (`/help/google-drive`)
 
@@ -659,7 +672,8 @@ path routes on the same hosts, which win over a custom domain, so Cloudflare sen
 the two `.well-known` discovery documents to the accounts Worker, `/api/index*` to the index, `/api/media*` and
 `/api/previews*` to media, `/api/telemetry*` to telemetry, `/api/community*` to the Community, `/api/status*` to
 the status Worker, `/api/drive*` to Drive, and everything else here. Every API has the same routes on both hosts.
-Security headers come from `public/_headers`.
+Security headers come from `public/_headers`. `/.well-known/security.txt` is the site's (accounts' routes name only its two
+discovery documents), and the bare-domain redirect leaves `/.well-known/*` alone, so both hosts answer it.
 
 Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
 livediagram/docs/specs/016-platform/trusted-types.md). Each app's router passes these same headers through for the
@@ -704,7 +718,7 @@ corepack pnpm dev:workspace           # from the repo root: http://localhost:300
 That runs the site's dev server on 3000 and the seven services behind it (accounts on 8787, telemetry on 8790, the
 Community on 8791, media on 8792, the index on 8793, status on 3010, Drive on 3011; first-time setup for each is in
 [the README](../../../README.md#local-development) and the API's own doc). The dev server forwards `/api/auth/*`,
-`/api/account/*`, `/.well-known/*`, `/api/index/*`, `/api/previews/*`, `/api/telemetry/*`, `/api/community/*`,
+`/api/account/*`, the two `.well-known` discovery documents, `/api/index/*`, `/api/previews/*`, `/api/telemetry/*`, `/api/community/*`,
 `/api/status*` and `/api/drive/*` to them (`next.config.ts`), so the whole site works from one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
 
 ## Known gaps

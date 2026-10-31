@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gateClientOp, type GateSender } from './room-op-gate';
+import { gateClientOp, reactsAsSelf, type GateSender } from './room-op-gate';
 
 // docs/specs/013-workspace/share-roles.md "The level ladder": what each role may relay through the room.
 const as = (role: unknown, over: Partial<GateSender> = {}): GateSender => ({
@@ -82,5 +82,30 @@ describe('gateClientOp', () => {
     );
     expect(gateClientOp({ kind: 'tab', tabId: 't2', tab: { id: 't2' } }, scoped)).toEqual(DROP);
     expect(gateClientOp({ kind: 'design-meta' }, scoped)).toEqual(DROP);
+  });
+});
+
+// docs/specs/012-collaboration/comment-reactions.md "Share roles": whoever may comment may react.
+describe('comment reactions through the room', () => {
+  const react = (by: string) => ({
+    kind: 'el-delta',
+    tabId: 't',
+    elementId: 'e',
+    delta: { kind: 'comment-react', commentId: 'c', emoji: 'eyes', by, name: 'Me', on: true },
+  });
+  it("relays an Editor's, writes a Participant's own, and drops a Viewer's", () => {
+    expect(gateClientOp(react('me'), as('edit', { key: 'me' }))).toEqual(relay(false));
+    expect(gateClientOp(react('me'), as('participate', { key: 'me' }))).toEqual({
+      kind: 'participant-reaction',
+    });
+    expect(gateClientOp(react('you'), as('participate', { key: 'me' }))).toEqual(DROP);
+    expect(gateClientOp(react('me'), as('participate'))).toEqual(DROP);
+    expect(gateClientOp(react('me'), as('view', { key: 'me' }))).toEqual(DROP);
+  });
+  it('knows a reaction from anything else', () => {
+    expect(reactsAsSelf(react('me'), 'me')).toBe(true);
+    expect(reactsAsSelf({ kind: 'el-delta', delta: { kind: 'check' } }, 'me')).toBe(false);
+    expect(reactsAsSelf({ kind: 'el-delta', delta: null }, 'me')).toBe(false);
+    expect(reactsAsSelf(null, 'me')).toBe(false);
   });
 });

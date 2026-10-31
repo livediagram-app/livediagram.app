@@ -6,8 +6,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { FlowchartIcon, MarkerIcon } from '@livediagram/ui';
-import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { TabPill, type TabPillCtx } from './TabPill';
 
 function ctx(over: Partial<TabPillCtx> = {}): TabPillCtx {
@@ -24,6 +22,7 @@ function ctx(over: Partial<TabPillCtx> = {}): TabPillCtx {
     reorderDrag: {
       caretFor: () => null,
       handlersFor: () => ({}),
+      isDragging: () => false,
     } as unknown as TabPillCtx['reorderDrag'],
     participantsByTab: new Map(),
     selfId: 'me',
@@ -41,14 +40,14 @@ afterEach(cleanup);
 describe('TabPill out of scope', () => {
   it('reads "Not shared" and never shows a name', () => {
     render(<TabPill tab={tab('t1', '')} ctx={ctx()} />);
-    const pill = screen.getByRole('button', { name: 'Not shared' });
+    const pill = screen.getByRole('tab', { name: 'Not shared' });
     expect(pill.getAttribute('aria-disabled')).toBe('true');
   });
 
   it('does nothing when clicked', () => {
     const c = ctx();
     render(<TabPill tab={tab('t1', '')} ctx={c} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Not shared' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Not shared' }));
     expect(c.onSelect).not.toHaveBeenCalled();
   });
 
@@ -63,50 +62,27 @@ describe('TabPill out of scope', () => {
 
   it('leaves the scoped tab an ordinary pill', () => {
     render(<TabPill tab={tab('t2', 'Roadmap')} ctx={ctx()} />);
-    expect(screen.getByRole('button', { name: /Roadmap/ })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /Roadmap/ })).toBeTruthy();
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "The tab pill shows what it opens in".
-describe('TabPill opening-mode icon', () => {
-  it.each([
-    ['Diagram', undefined, FlowchartIcon],
-    ['Draw', 'draw' as const, MarkerIcon],
-  ])('leads with the %s mode icon', (_, opensIn, Icon) => {
-    const expected = render(<Icon size={12} />).container.querySelector('svg')!.innerHTML;
-    cleanup();
-    render(<TabPill tab={{ ...tab('t2', 'Board'), opensIn }} ctx={ctx()} />);
-    const button = screen.getByRole('button', { name: 'Board' });
-    expect(button.querySelector('svg')!.innerHTML).toBe(expected);
-  });
-
-  // docs/specs/007-editor/editor-modes.md "Where the mode lives": nothing is remembered per person.
-  it("shows the tab's own mode, never one an earlier editor remembered in this browser", () => {
-    const expected = render(<FlowchartIcon size={12} />).container.querySelector('svg')!.innerHTML;
-    cleanup();
-    localStorage.setItem('livediagram:v2:editor-mode:pill-switched', 'draw');
-    render(
-      <EditorModeProvider
-        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
-      >
-        <TabPill
-          tab={tab('pill-switched', 'Board')}
-          ctx={ctx({ activeId: 'pill-switched', isOutOfScope: () => false })}
-        />
-      </EditorModeProvider>,
-    );
-    const button = screen.getByRole('button', { name: 'Board' });
-    expect(button.querySelector('svg')!.innerHTML).toBe(expected);
-    localStorage.clear();
-  });
+// docs/specs/007-editor/editor-modes.md "The tab pill shows no mode icon": the name alone, whatever the mode.
+describe('TabPill mode icon', () => {
+  it.each([undefined, 'draw' as const])(
+    'shows no icon before the name (opens in %s)',
+    (opensIn) => {
+      render(<TabPill tab={{ ...tab('t2', 'Board'), opensIn }} ctx={ctx()} />);
+      expect(screen.getByRole('tab', { name: 'Board' }).querySelector('svg')).toBeNull();
+    },
+  );
 });
 
-// docs/specs/004-interface-design/touch-targets.md: the 28px pill reaches a 44px-tall tap area on a
+// docs/specs/004-interface-design/touch-targets.md: the tab's name reaches a 44px-tall tap area on a
 // touch screen, vertically only, since the tabs sit side by side.
 describe('TabPill tap area', () => {
   it('carries the vertical touch pad on a positioned button', () => {
     render(<TabPill tab={tab('t2', 'Board')} ctx={ctx()} />);
-    const button = screen.getByRole('button', { name: 'Board' });
+    const button = screen.getByRole('tab', { name: 'Board' });
     expect(button.className).toMatch(/\btouch-target-y\b/);
     expect(button.className).toMatch(/\brelative\b/);
   });

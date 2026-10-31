@@ -4,7 +4,7 @@
 // (@liveworkspace/api-schema/comment-threads). The thread is declared here: a project's can also sit on a
 // Sheet cell, and the api's OpenAPI document names it `ProjectCommentThread`.
 
-import type { CommentMention } from '@liveplanner/project';
+import type { CommentMention, ReactionSummary } from '@liveplanner/project';
 
 export {
   COMMENT_LIST_STATUSES,
@@ -31,6 +31,8 @@ export type ProjectCommentThread = {
     authorName: string;
     authorColor: string;
     mentions?: CommentMention[];
+    // Who reacted, one entry per emoji used (docs/specs/012-collaboration/comment-reactions.md). Absent when none.
+    reactions?: ReactionSummary[];
     // The caller's own comments only.
     authorId?: string;
     tokenId?: string;

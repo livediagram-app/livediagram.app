@@ -153,6 +153,52 @@ describe('starting a thread', () => {
     expect(t.comments[0]).toMatchObject({ ai: true, tokenId: 'tok-1' });
   });
 
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields".
+  it('starts one in a Comments field of the card’s type, and refuses any other field', async () => {
+    const itemTypes = {
+      version: 1,
+      types: [
+        {
+          id: 'task',
+          label: 'Task',
+          color: '#71717a',
+          glyph: 'task',
+          fields: ['comments', 'f-review', 'f-notes'],
+          custom: [
+            { id: 'f-review', label: 'Design Review', kind: 'comments' },
+            { id: 'f-notes', label: 'Notes', kind: 'text' },
+          ],
+        },
+        { id: 'bug', label: 'Bug', color: '#dc2626', glyph: 'bug', fields: ['title'] },
+      ],
+    };
+    expect((await call('p1', 'PUT', '/item-types', { itemTypes })).status).toBe(200);
+    const inReview = await start('p1', a.id, 'Looks off', {}, { field: 'f-review' });
+    expect(inReview.status).toBe(201);
+    expect(inReview.body.thread?.field).toBe('f-review');
+    expect((await threads('p1')).map((t) => t.field)).toEqual(['f-review']);
+    // The built-in, named or not, is stored as no field.
+    const builtIn = await start('p1', a.id, 'Plain', {}, { field: 'comments' });
+    expect(builtIn.body.thread).not.toHaveProperty('field');
+    for (const field of ['f-notes', 'f-gone', 'not a field', 7]) {
+      const res = await start('p1', a.id, 'Hi', {}, { field });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({
+        error: 'field_invalid',
+        message:
+          "field names a Comments field of the card's type Task: comments (Comments), f-review (Design Review)",
+      });
+    }
+    const bug = (
+      await call<ItemResponse>('p1', 'POST', '/items', { type: 'bug', fields: { title: 'B' } })
+    ).body.item;
+    expect((await start('p1', bug.id, 'Hi', {}, { field: 'comments' })).body).toEqual({
+      error: 'field_invalid',
+      message: 'a Bug card has no Comments field to start a thread in',
+    });
+    expect((await start('p1', bug.id, 'Hi')).status).toBe(201);
+  });
+
   it('is a Participant’s and an Editor’s, never a Viewer’s', async () => {
     expect((await start('p1', a.id, 'Hi', { owner: 'visitor', code: 'PART' })).status).toBe(201);
     expect((await start('p1', a.id, 'Hi', { owner: 'visitor', code: 'EDIT' })).status).toBe(201);
@@ -382,6 +428,64 @@ describe('the writes on a thread', () => {
       { agent: true },
     );
     expect((await call('p1', 'DELETE', `/threads/${own.id}`)).status).toBe(204);
+  });
+
+  // docs/specs/012-collaboration/comment-reactions.md "On a card's comment threads".
+  describe('reactions', () => {
+    const react = (body: unknown, who: Who = {}, commentId = t.comments[0]!.id) =>
+      call<CardThreadWriteResponse>(
+        'p1',
+        'POST',
+        `/threads/${t.id}/comments/${commentId}/reactions`,
+        body,
+        who,
+      );
+
+    it('lets an Editor and a Participant react under their own name, and relays it', async () => {
+      const mine = await react({ emoji: 'eyes', on: true, key: 'k-owner' });
+      expect(mine.status).toBe(200);
+      const theirs = await react(
+        { emoji: 'eyes', on: true, key: 'k-vee', name: 'Someone Else' },
+        { owner: 'visitor', code: 'PART' },
+      );
+      expect(theirs.status).toBe(200);
+      const edit = await react(
+        { emoji: 'heart', on: true, key: 'k-ed' },
+        { owner: 'visitor', code: 'EDIT' },
+      );
+      expect(edit.status).toBe(200);
+      expect(edit.body.thread?.comments[0]?.reactions).toEqual([
+        { emoji: 'eyes', by: 'k-owner', name: 'Gentle Falcon' },
+        { emoji: 'eyes', by: 'k-vee', name: 'Vee' },
+        { emoji: 'heart', by: 'k-ed', name: 'Vee' },
+      ]);
+      // A reaction is not activity: the thread keeps its place.
+      expect(edit.body.thread?.updatedAt).toBe(t.updatedAt);
+      expect(threadRelays()).toHaveLength(3);
+      const [read] = await threads('p1', { owner: 'visitor', code: 'LOOK' });
+      expect(read!.comments[0]!.reactions).toHaveLength(3);
+    });
+
+    it('takes one back, and answers nothing when nothing changes', async () => {
+      await react({ emoji: 'eyes', on: true, key: 'k-owner' });
+      expect((await react({ emoji: 'eyes', on: true, key: 'k-owner' })).status).toBe(204);
+      const off = await react({ emoji: 'eyes', on: false, key: 'k-owner' });
+      expect(off.body.thread?.comments[0]?.reactions).toBeUndefined();
+      expect((await react({ emoji: 'eyes', on: false, key: 'k-owner' })).status).toBe(204);
+    });
+
+    it('refuses a Viewer, an agent, a bad body and a missing comment', async () => {
+      const body = { emoji: 'eyes', on: true, key: 'k' };
+      expect((await react(body, { owner: 'visitor', code: 'LOOK' })).status).toBe(403);
+      expect((await react(body, { agent: true })).status).toBe(403);
+      expect((await react({ ...body, emoji: 'rocket' })).status).toBe(400);
+      expect((await react({ ...body, on: 'yes' })).status).toBe(400);
+      expect((await react({ ...body, key: '' })).status).toBe(400);
+      expect((await react({ ...body, key: 'k'.repeat(201) })).status).toBe(400);
+      expect((await react(body, {}, 'nope')).status).toBe(404);
+      expect((await call('p1', 'GET', `/threads/${t.id}/comments/x/reactions`)).status).toBe(405);
+      expect((await threads('p1'))[0]!.comments[0]!.reactions).toBeUndefined();
+    });
   });
 
   it('rejects verbs it does not take', async () => {

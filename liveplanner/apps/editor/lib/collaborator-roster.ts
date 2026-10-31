@@ -1,6 +1,6 @@
 import { statusLabel, type Participant, type ParticipantStatus } from '@/lib/identity';
 import { relativeSince } from '@/lib/relative-time';
-import { withoutAgentRows } from '@/lib/agent-presence-rows';
+import { agentRowDetail, withoutAgentRows } from '@/lib/agent-presence-rows';
 import { parseStoredLevel, type AccessLevel } from '@liveplanner/api-schema';
 
 // The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the project,
@@ -78,21 +78,23 @@ const LEVEL_BADGE: Record<AccessLevel, string> = {
 
 export function participantBadges(p: Participant, selfId: string, selfRole: AccessLevel): string[] {
   const badges: string[] = [];
+  // An agent's row says what it is before its level (docs/specs/024-agents/agent-presence.md "Presence").
+  if (p.agent) badges.push('Agent');
   if (p.id === selfId) badges.push('You', LEVEL_BADGE[selfRole]);
   else if (p.role) badges.push(LEVEL_BADGE[parseStoredLevel(p.role)]);
   return badges;
 }
 
-// A Collaborators row's second line: an agent row says what it is doing (or that it is online); a person's row
-// says their agent's status line first, then their status and, for anyone but you, how long ago they were active
+// A Collaborators row's second line: an agent row says what it is doing (or that it is at work on the tab); a
+// person's row says their status and, for anyone but you, how long ago they were active
 // (docs/specs/024-agents/blueprints/agent-presence.md "Presentation and UX").
 export function collaboratorRowDetail(p: Participant, isSelf: boolean, now: number): string {
-  if (p.agent) return p.statusLine ?? statusLabel(p.status);
+  if (p.agent) return agentRowDetail(p);
   const active =
     p.lastActiveAt !== undefined && !isSelf
       ? ` · Active ${relativeSince(p.lastActiveAt, now)}`
       : '';
-  return `${p.statusLine ? `${p.statusLine} · ` : ''}${statusLabel(p.status)}${active}`;
+  return `${statusLabel(p.status)}${active}`;
 }
 
 // "3 people across 2 tabs" / "Just you". The stray group counts as a tab:

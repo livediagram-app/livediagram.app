@@ -118,4 +118,34 @@ describe('session panes', () => {
       expect.objectContaining({ onePerElement: false }),
     );
   });
+
+  // docs/specs/012-collaboration/session-tools.md "Count In".
+  it('counts in the built-in Votes unless another Votes field is picked', () => {
+    const voteFields = [
+      { id: 'votes', label: 'Votes' },
+      { id: 'f-pri', label: 'Priority Vote' },
+    ];
+    const p = props({ voteFields });
+    render(<Vote {...p} />);
+    const group = screen.getByRole('radiogroup', { name: 'Count In' });
+    expect(screen.getByRole('radio', { name: 'Votes' }).getAttribute('aria-checked')).toBe('true');
+    expect(group.textContent).toBe('VotesPriority Vote');
+    fireEvent.click(screen.getByRole('button', { name: 'Start vote' }));
+    expect(p.onStartVote).toHaveBeenLastCalledWith(
+      3,
+      expect.objectContaining({ voteField: undefined }),
+    );
+    fireEvent.click(screen.getByRole('radio', { name: 'Priority Vote' }));
+    screen.getByText(/added to its Priority Vote, or to its Votes when its type has none/);
+    fireEvent.click(screen.getByRole('button', { name: 'Start vote' }));
+    expect(p.onStartVote).toHaveBeenLastCalledWith(
+      3,
+      expect.objectContaining({ voteField: 'f-pri' }),
+    );
+  });
+
+  it('shows no Count In with only the built-in Votes', () => {
+    render(<Vote {...props()} />);
+    expect(screen.queryByRole('radiogroup', { name: 'Count In' })).toBeNull();
+  });
 });

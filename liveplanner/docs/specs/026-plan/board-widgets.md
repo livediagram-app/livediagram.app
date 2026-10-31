@@ -52,6 +52,8 @@ header; they are not in the palette.
   narrowing shows only those: a card in Done, Won't Do or any other done column is never overdue or stale. A board
   with no done column counts every card. Completion and Points count every done column's cards as done.
 - Lone counts in widgets and column heads are badges: the figure in a small pill.
+- **Only Mine** keeps the cards that are the viewer's: a notifying Person field holds them, the Assignee unless its
+  type switched it off ([Notifies](item-types.md#notifies)).
 - The Filter and Only Mine widgets are each viewer's own and unsaved (the quick filter, see plan-board.md); taking
   either widget off the board clears that narrowing.
 

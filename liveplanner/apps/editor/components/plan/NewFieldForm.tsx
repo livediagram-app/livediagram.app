@@ -1,8 +1,8 @@
 'use client';
 
 // Add Field (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field), in two steps in one popover: Pick
-// (AddFieldPicker: search, Ready-made, the kinds' accordion) then Shape (AddFieldShape: the chosen kind's name,
-// settings, preview and "Add {Name}"). It keeps the step, the search (across the steps) and the open group, and
+// (AddFieldPicker: search, then one list of kinds in an accordion) then Shape (AddFieldShape: the kind's built-in
+// fields the type lacks as Ready to use, then the field's name, settings, preview and "Add {Name}"). It keeps the step, the search (across the steps) and the open group, and
 // answers Escape for the popover: Shape goes back to Pick, Pick clears a typed search, and then the popover closes.
 import { useEffect, useState, type MutableRefObject } from 'react';
 import {
@@ -13,7 +13,13 @@ import {
 } from '@liveplanner/items';
 import { AddFieldPicker } from './AddFieldPicker';
 import { AddFieldShape, type NewField } from './AddFieldShape';
-import { groupOfKind, KIND_GROUPS, searchKey, type KindGroupId } from './add-field-kinds';
+import {
+  groupOfKind,
+  KIND_GROUPS,
+  readyBuiltIns,
+  searchKey,
+  type KindGroupId,
+} from './add-field-kinds';
 import { usePlan } from './PlanContext';
 
 // A kind's field as it starts: the one left by going back when it is the same kind; else the name typed so far and
@@ -85,8 +91,11 @@ export function NewFieldForm({
           field={field}
           onChange={setField}
           types={types}
+          ready={readyBuiltIns(field.kind, missing)}
+          canAddCustom={canAddCustom}
           onBack={back}
           onAdd={onAddCustom}
+          onAddBuiltIn={onAddBuiltIn}
         />
       ) : (
         <AddFieldPicker
@@ -96,7 +105,6 @@ export function NewFieldForm({
           onOpenGroup={setOpenGroup}
           missing={missing}
           canAddCustom={canAddCustom}
-          onAddBuiltIn={onAddBuiltIn}
           onPick={(kind) => setField(freshField(kind, left))}
           onCancel={onCancel}
           focusKind={left?.kind}

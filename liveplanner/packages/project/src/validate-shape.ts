@@ -434,7 +434,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     // Called, not referenced: @liveplanner/items imports this package too, so at module load the binding
     // may not be initialised yet (a ReferenceError in the browser).
     valid: (v: unknown) => isPlanViewSettings(v),
-    rule: 'an object { view } naming a plan view, with an optional types (1 to 32 card type ids), swimlaneBy, swimlaneField, namesWidth (120 to 2000), rowOrder (up to 2000 card ids), filters (up to 8), statuses (1 to 64 status ids) and title (up to 80 characters)',
+    rule: 'an object { view } naming a plan view, with an optional types (1 to 32 card type ids), swimlaneBy, swimlaneField, namesWidth (120 to 2000), rowOrder (up to 2000 card ids), filters (up to 8), statuses (1 to 64 status ids), startField, dueField and measure (field ids, up to 64 characters each) and title (up to 80 characters)',
   },
   {
     field: 'chartSource',

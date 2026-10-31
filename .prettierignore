@@ -3,3 +3,5 @@ packages/icons/src/lucide.generated.ts
 # Each product api's OpenAPI schemas, kept byte for byte as gen:openapi writes them (its own .prettierignore
 # says the same), so a Prettier run from the root never rewrites them.
 */apps/api/src/openapi/schemas.generated.ts
+# The MCP Registry's server.json schema (2025-12-11), vendored byte for byte from static.modelcontextprotocol.io.
+packages/mcp-kit/src/server.schema.json

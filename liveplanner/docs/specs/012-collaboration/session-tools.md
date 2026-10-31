@@ -126,6 +126,10 @@ Plan has no voting of its own: a vote on a tab with Plan boards is this vote, ca
   (`votes`, per voter, as pseudonymous person ids), in one write by the host's editor; Top Voted, sorting and the
   card's ▲ count read it afterwards. Revealing does not write; clearing a vote that never ended writes nothing.
   Undo does not take a tally back.
+- **Count In**: when the tab's card types offer more than one Votes field (item-types.md "Comments and Votes
+  fields"), the Vote set-up lists them (the built-in **Votes** first, the default) and the tally lands in the
+  one picked (`voteField` on the vote, sent as `field` with the tally). A card whose type lacks it takes its
+  dots in the built-in Votes.
 
 ### Casting a dot: the one thing that is not plain tab state
 

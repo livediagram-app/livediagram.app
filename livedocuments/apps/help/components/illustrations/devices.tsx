@@ -40,24 +40,22 @@ function MiniFlow({
   );
 }
 
-// The editor's fixed chrome in miniature: the bottom bar (a tab pill or two at
+// The editor's fixed chrome in miniature: the bottom bar (a tab or two at
 // the left, the quick-control icons at the right) and the bottom-right corner
 // cluster (undo/redo, layers, the paintbrush, zoom), drawn inside a screen.
 function MiniBottomBar({ x, y, w }: { x: number; y: number; w: number }) {
   return (
     <g>
-      <rect x={x} y={y} width={w} height={16} className="fill-white" />
+      <rect x={x} y={y} width={w} height={16} className="fill-slate-100" />
       <line x1={x} y1={y} x2={x + w} y2={y} className="stroke-slate-200" strokeWidth={1} />
-      <rect
-        x={x + 6}
-        y={y + 3}
-        width={40}
-        height={10}
-        rx={3}
-        className="fill-white stroke-brand-400"
+      {/* The open tab, a card standing on the bar's bottom edge, then a quiet tab's name. */}
+      <path
+        d={`M${x + 6} ${y + 16} V${y + 5} a3 3 0 0 1 3 -3 H${x + 43} a3 3 0 0 1 3 3 V${y + 16} Z`}
+        className="fill-white stroke-slate-300"
         strokeWidth={1}
       />
-      <rect x={x + 50} y={y + 3} width={28} height={10} rx={3} className="fill-slate-100" />
+      <rect x={x + 12} y={y + 8} width={22} height={2.5} rx={1.25} className="fill-brand-400" />
+      <rect x={x + 54} y={y + 8} width={20} height={2.5} rx={1.25} className="fill-slate-300" />
       {[0, 1, 2].map((i) => (
         <circle key={i} cx={x + w - 30 + i * 10} cy={y + 8} r={2.6} className="fill-slate-300" />
       ))}

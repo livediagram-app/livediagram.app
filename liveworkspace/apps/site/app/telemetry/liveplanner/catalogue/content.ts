@@ -43,8 +43,8 @@ export const TAB_LOOKS_PICKED = chart(
   'Tab',
   'Changed',
   'Tab Looks',
-  'A look picked in Tab Style: theme, finish, font and canvas pattern set at once, a random Mashup rolled, or a seasonal look picked.',
-  { types: ['Look', 'Mashup', 'SeasonalLook'] },
+  'A look picked in Tab Style: theme, finish, font and canvas pattern set at once, a random Mashup rolled, a seasonal look picked, or one tab’s style applied to all tabs.',
+  { types: ['Look', 'Mashup', 'SeasonalLook', 'AllTabs'] },
 );
 
 export const TABS_ARRANGED = chart(
@@ -745,6 +745,22 @@ export const PLAN_FILL_TAB = chart(
   { types: ['FillTabOn', 'FillTabOff', 'SheetFillTabOn', 'SheetFillTabOff'], rising: 'neutral' },
 );
 
+export const PLAN_CARD_ACTIVITY = chart(
+  'Plan',
+  'Toggled',
+  'Card Activity Shown',
+  "The Activity switch in a card's Comments: the card's history shown among its threads, or hidden again.",
+  { types: ['ActivityOn', 'ActivityOff'], rising: 'neutral' },
+);
+
+export const PLAN_COLUMNS_COLLAPSED = chart(
+  'Plan',
+  'Toggled',
+  'Columns Collapsed',
+  "A board column folded to a narrow strip from its header, or opened again: each person's own view.",
+  { types: ['ColumnCollapsed', 'ColumnExpanded'], rising: 'neutral' },
+);
+
 export const PLAN_CARD_TYPES_DUPLICATED = chart(
   'Plan',
   'Duplicated',
@@ -1041,6 +1057,8 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_MAXIMISED,
   PLAN_FOCUSED,
   PLAN_FILL_TAB,
+  PLAN_CARD_ACTIVITY,
+  PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
   PLAN_VIEW_STATUSES,

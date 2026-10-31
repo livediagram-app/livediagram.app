@@ -281,6 +281,32 @@ describe('changing items', () => {
     );
   });
 
+  // When a card entered its status (docs/specs/026-plan/items.md "Fields"): stamped by the api's own writes.
+  it('stamps statusSince on a create and on each change of status, and keeps it otherwise', async () => {
+    const made = item.fields['statusSince'];
+    expect(typeof made).toBe('number');
+    const edited = await call<ItemResponse>({
+      path: `/items/${item.id}`,
+      body: { set: { priority: 'high' } },
+    });
+    expect(edited.body.item.fields['statusSince']).toBe(made);
+    const moved = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'doing' },
+    });
+    expect(moved.body.item.fields['statusSince']).toBeGreaterThanOrEqual(made as number);
+    expect(moved.body.item.updatedAt).toBe(moved.body.item.fields['statusSince']);
+    // An undo names the old stamp, which the move keeps.
+    const undone = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'todo', set: { statusSince: made }, undo: true },
+    });
+    expect(undone.body.item.fields).toMatchObject({ status: 'todo', statusSince: made });
+    expect(
+      (await call({ path: `/items/${item.id}`, body: { set: { statusSince: 'soon' } } })).body,
+    ).toMatchObject({ error: 'field_value_invalid' });
+  });
+
   it('moves between columns and sets or clears a swimlane field', async () => {
     const b = (await add({ title: 'B', status: 'done' })).body.item;
     const res = await call<ItemResponse>({
@@ -1232,7 +1258,7 @@ describe('changing many items at once', () => {
     ]);
     expect([...written.landed]).toEqual([a.id]);
     expect(written.rev).toBe(await db.getItemsRev(sql.env, 'd1'));
-    expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual({ title: 'B' });
+    expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual(b.fields);
   });
 });
 
@@ -1285,6 +1311,59 @@ describe('a vote’s tally', () => {
     expect(res.body.items.map((i) => [i.id, i.fields['votes']])).toEqual([[a.id, { p1: 2 }]]);
     expect(res.body.rev).toBeGreaterThan(0);
     expect((await db.readItem(sql.env, 'd1', b.id))!.fields['votes']).toBeUndefined();
+  });
+
+  // docs/specs/012-collaboration/session-tools.md "Count In": the dots land in the vote's Votes field, and a card
+  // whose type lacks it takes them in the built-in Votes.
+  it('counts a tally in the Votes field it names, the built-in for a type without it', async () => {
+    const type = (id: string, custom: unknown[]) => ({
+      id,
+      label: id,
+      color: '#71717a',
+      glyph: 'task',
+      fields: ['description', 'votes', ...custom.map((c) => (c as { id: string }).id)],
+      custom,
+    });
+    const put = await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: {
+        itemTypes: {
+          version: 1,
+          types: [
+            type('task', [{ id: 'f-priority', label: 'Priority Vote', kind: 'votes' }]),
+            type('note', []),
+          ],
+        },
+      },
+    });
+    expect(put.status).toBe(200);
+    const a = (await add({ title: 'A' })).body.item;
+    const b = (await add({ title: 'B' }, { type: 'note' })).body.item;
+    const res = await call<ItemsResponse>({
+      path: '/items/tally',
+      body: {
+        field: 'f-priority',
+        items: [
+          { id: a.id, votes: { p1: 2 } },
+          { id: b.id, votes: { p1: 1 } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((i) => [i.fields['votes'], i.fields['f-priority']])).toEqual([
+      [undefined, { p1: 2 }],
+      [{ p1: 1 }, undefined],
+    ]);
+    for (const field of [3, 'title', 'f-'])
+      expect(
+        (
+          await call({
+            path: '/items/tally',
+            body: { field, items: [{ id: a.id, votes: { p: 1 } }] },
+          })
+        ).status,
+      ).toBe(400);
   });
 
   it('refuses a malformed tally, and needs edit access', async () => {

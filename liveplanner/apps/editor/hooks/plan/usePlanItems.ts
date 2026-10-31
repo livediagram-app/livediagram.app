@@ -47,6 +47,9 @@ export type PlanItems = {
   refetch: () => void;
   // This person's owner id: the author id their own comments carry (the delete-own check).
   ownerId: string;
+  // Who is asking for which project, and through which share link (an Image field's uploads and reads, docs/specs/
+  // 026-plan/item-types.md "Image fields"); null until the project is known.
+  scope?: ItemsScope | null;
 };
 
 // The project's item store in the editor (docs/specs/026-plan/items.md, blueprint item-store.md
@@ -322,5 +325,5 @@ export function usePlanItems(opts: {
 
   const items = useMemo(() => new Map(store.items.map((i) => [i.id, i])), [store.items]);
 
-  return { store, items, status, self, write, writeQuiet, receive, refetch, ownerId };
+  return { store, items, status, self, write, writeQuiet, receive, refetch, ownerId, scope };
 }

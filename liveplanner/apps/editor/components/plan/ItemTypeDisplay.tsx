@@ -19,6 +19,8 @@ import { createPortal } from 'react-dom';
 import {
   CARD_FIELDS,
   CARD_SIZES,
+  COMMENTS_FIELD,
+  commentsFieldsOf,
   CARD_SLOTS,
   CARD_SLOT_LABELS,
   cardDisplayFields,
@@ -30,6 +32,7 @@ import {
   typeOffersCardField,
   customCardFields,
   isCustomCardField,
+  STATUS_SINCE_FIELD,
   type CustomFieldDef,
   type CardDisplay,
   type CardField,
@@ -53,6 +56,9 @@ import { dayKey } from './day-label';
 import { planPalette } from './plan-palette';
 import { useCardFieldDrag } from './useCardFieldDrag';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
+import { fieldCountKey } from '@liveplanner/project';
+import { createThreadStore, type ThreadStore } from '@/hooks/plan/thread-store';
+import { ThreadCountsProvider } from './threads/CardThreadsContext';
 
 export type CardDisplayDraft = CardDisplay;
 
@@ -76,6 +82,7 @@ export function cardZoomFor(width: number | undefined): number {
 }
 
 const SAMPLE_PERSON = { id: 'sample-person', name: 'Sam Rivera', color: '#0d9488' };
+const SAMPLE_REVIEWER = { id: 'sample-reviewer', name: 'Ana Silva', color: '#7c3aed' };
 
 // A card with something in every field, so each placed field shows.
 function sampleCard(type: ItemTypeDef): Item {
@@ -90,6 +97,9 @@ function sampleCard(type: ItemTypeDef): Item {
       priority: 'high',
       due: dayKey(3),
       start: dayKey(-2),
+      // Four days in its column, so a placed Age reads "4d".
+      status: 'In Progress',
+      [STATUS_SINCE_FIELD]: Date.now() - 4 * 86_400_000,
       labels: ['Design'],
       estimate: 3,
       checklist: [
@@ -113,6 +123,21 @@ function sampleCard(type: ItemTypeDef): Item {
   };
 }
 
+// The sample's open comments: two in each of the type's Comments fields, so each placed one's chip shows.
+function sampleThreadStore(type: ItemTypeDef, itemId: string): ThreadStore {
+  const fields = commentsFieldsOf(type);
+  const store = createThreadStore();
+  store.setCounts(
+    new Map([
+      [itemId, 2 * fields.length],
+      ...fields
+        .filter((f) => f !== COMMENTS_FIELD)
+        .map((f) => [fieldCountKey(itemId, f), 2] as const),
+    ]),
+  );
+  return store;
+}
+
 // A custom field's sample value, by its kind (none for a Link to Card: the chip then reads its name).
 function sampleCustom(c: CustomFieldDef): [string, unknown][] {
   switch (c.kind) {
@@ -130,7 +155,30 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
       return [[c.id, 'sam@example.com']];
     case 'choice':
       return c.options?.[0] ? [[c.id, c.options[0]]] : [];
+    // A built-in kind's sample is its built-in field's; an Image has none to fetch, so it reads its name, and a
+    // Comments field's chip counts the sample's threads (sampleThreadStore).
+    case 'person':
+      return [[c.id, SAMPLE_REVIEWER]];
+    case 'labels':
+      return [[c.id, ['Urgent']]];
+    case 'colour':
+      return [[c.id, '#0d9488']];
+    case 'checklist':
+      return [
+        [
+          c.id,
+          [
+            { id: 'a', text: 'One', done: true },
+            { id: 'b', text: 'Two', done: false },
+          ],
+        ],
+      ];
+    // A Votes field reads its ▲ count, as the built-in Votes' sample does.
+    case 'votes':
+      return [[c.id, { 'sample-person': 2 }]];
     case 'card':
+    case 'image':
+    case 'comments':
       return [];
     default:
       return [[c.id, c.label || 'Sample']];
@@ -187,6 +235,7 @@ export function ItemTypeDisplay({
   );
   const isDefault = sameCardLayout(size, layout, typeDefaultCardLayout(type, size));
   const sample = useMemo(() => sampleCard(type), [type]);
+  const sampleThreads = useMemo(() => sampleThreadStore(type, sample.id), [type, sample.id]);
   const palette = planPalette(useCanvasSurface());
   const setLayout = (next: CardLayout) => onChange({ ...display, [size]: next });
 
@@ -355,14 +404,16 @@ export function ItemTypeDisplay({
             className="shrink-0"
             style={{ width: CARD_PX, zoom }}
           >
-            <PlanCardFace
-              item={sample}
-              palette={palette}
-              fields={CARD_FIELDS}
-              size={size}
-              typeOverride={drafted}
-              edit={edit}
-            />
+            <ThreadCountsProvider value={sampleThreads}>
+              <PlanCardFace
+                item={sample}
+                palette={palette}
+                fields={CARD_FIELDS}
+                size={size}
+                typeOverride={drafted}
+                edit={edit}
+              />
+            </ThreadCountsProvider>
           </div>
         </div>
         <div className="flex min-w-0 flex-col gap-3">
