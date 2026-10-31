@@ -44,7 +44,13 @@ describe('TableView column and row menu', () => {
     const menu = await screen.findByRole('menu');
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
     const items = screen.getAllByRole('menuitem').map((i) => i.textContent);
-    expect(items).toEqual(['Insert Left', 'Insert Right', 'Move Left', 'Move Right', 'Delete Column']);
+    expect(items).toEqual([
+      'Insert Left',
+      'Insert Right',
+      'Move Left',
+      'Move Right',
+      'Delete Column',
+    ]);
     // The first column cannot move left: still an item (the arrow keys reach it), marked disabled.
     expect(screen.getByRole('menuitem', { name: 'Move Left' }).getAttribute('aria-disabled')).toBe(
       'true',
