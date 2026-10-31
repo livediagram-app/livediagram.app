@@ -87,11 +87,11 @@ describe('PageContentsPanel', () => {
   it('adds no page to a tab with no kind yet, and never one of another kind', () => {
     const h = show(2);
     expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Add Page/ })).toBeNull();
     expect(h.addPage).not.toHaveBeenCalled();
     cleanup();
     show(2, false);
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Add Page/ })).toBeNull();
   });
 
   it('offers Find a Page past six pages, narrowing the list', () => {

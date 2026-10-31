@@ -1,19 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import { NAME_MAX_LENGTH } from '@liveplanner/project';
-import { refocusAfterField } from '@liveworkspace/workbench/components/primitives/refocus-after-field';
+import { NAME_MAX_LENGTH } from '@liveworkspace/model-core/names';
+import { refocusAfterField } from './refocus-after-field';
 
-// Inline rename input shared by the project title (EditorHeader), tabs
+// Inline rename input shared by every editor's title (EditorHeader), tabs
 // (TabBar), and tab folders (TabFolderGroup). Mounts focused with the
 // text selected, commits on blur or Enter, cancels on Escape. The raw
 // value is handed to onCommit; callers decide how to trim / validate
 // (e.g. fall back to the original name on an empty string). Styling is
 // caller-supplied via className since each surface sizes it differently.
+// `label` names the field for a screen reader (it has no visible label of its
+// own): "Tab name", "Folder name", "Document name".
 export function NameEditor({
+  label,
   initial,
   onCommit,
   onCancel,
   className,
 }: {
+  label: string;
   initial: string;
   onCommit: (name: string) => void;
   onCancel: () => void;
@@ -31,8 +35,9 @@ export function NameEditor({
   return (
     <input
       ref={ref}
+      aria-label={label}
       value={value}
-      // Names are capped (docs/specs/006-project/name-length.md) — enforced here too so the limit shows
+      // Names are capped (each product's docs/specs/006-*/name-length.md) — enforced here too so the limit shows
       // while typing rather than truncating silently on commit.
       maxLength={NAME_MAX_LENGTH}
       onChange={(e) => setValue(e.target.value)}

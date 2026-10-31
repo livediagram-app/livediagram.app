@@ -37,7 +37,7 @@ export function TitlePopoverButton({
   openRequest = 0,
   children,
 }: {
-  // The control's name: its label, tooltip ("<name>: on" while on) and the popover's name.
+  // The control's name: its label, its tooltip and the popover's name (on or off is aria-pressed).
   name: string;
   // Whether its tool is on for the page (`aria-pressed`); absent, it is a plain opener.
   on?: boolean;
@@ -68,7 +68,8 @@ export function TitlePopoverButton({
   const body = typeof children === 'function' ? children(close) : children;
   return (
     <>
-      <Tooltip label={on ? `${name}: on` : name}>
+      {/* Its name: whether it is on is aria-pressed and the pressed look. */}
+      <Tooltip label={name}>
         <button
           ref={setAnchor}
           type="button"

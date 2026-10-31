@@ -37,8 +37,14 @@ export const viewport: Viewport = PUBLIC_VIEWPORT;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    // suppressHydrationWarning: the pre-paint script may add `dark` to <html>.
-    <html lang="en-GB" suppressHydrationWarning className="scroll-smooth">
+    // suppressHydrationWarning: the pre-paint script may add `dark` to <html>. Smooth scrolling is for the page's own
+    // anchors (#apps); `data-scroll-behavior` lets Next turn it off for a route change, which lands at the top at once.
+    <html
+      lang="en-GB"
+      suppressHydrationWarning
+      className="scroll-smooth"
+      data-scroll-behavior="smooth"
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
       </head>

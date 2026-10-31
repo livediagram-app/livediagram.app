@@ -113,7 +113,9 @@ moves between them, and the one account that joins them.
    Every logo is the app's own UI package `Brand`, with its hover
    shimmer, "live" pointed at the app's deep and accent colours (`components/landing/AppLogo.tsx`). The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
-   WCAG AA.
+   WCAG AA. On a dark page, text in an app's colour (a link, a name, a card's call to action, here and on every
+   page of the site) is its light shade, `light` in `@liveworkspace/sites` (its brand-400), which passes AA on every
+   dark surface; the accent itself does not for each app (liveplanner's violet-500 is 4.1:1 on slate-900).
 3. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
    the same promises", ten tiles that fill every row, each with a small piece of the product drawn
    in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
@@ -662,7 +664,9 @@ they never meet an app's own `/_next`, and one build serves both addresses.
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
 - The front door, Comparison, the dashboard, Status and the privacy policy and terms are indexable: title, description, canonical,
-  Open Graph, `robots.txt` and `sitemap.xml`.
+  Open Graph, `robots.txt` and `sitemap.xml`. Every other page's title names the page and then the site
+  (`Status · liveworkspace`), the same in its Open Graph and X cards, so a search result or a tab never reads
+  "Status" alone.
 
 ## Hosting
 

@@ -411,6 +411,43 @@ describe('problems', () => {
     expect(out).toEqual({ ok: false, error: 'Too much to work out' });
   });
 
+  // The walk's steps are shared: once Formula children spend them, the Rollup is too much to work out, never a total
+  // of the children it reached.
+  it('a Rollup whose Formula children spend the steps is too much to work out, not a partial total', () => {
+    const long: ItemTypeDef = {
+      ...task,
+      custom: task.custom!.map((c) =>
+        c.id === 'f-double' ? { ...c, formula: Array(100).fill('{f-pts}').join(' + ') } : c,
+      ),
+    };
+    const ts = [project, long, note];
+    const many = new Map<string, Item>([[p.id, p]]);
+    for (let i = 0; i < 600; i += 1) {
+      const c = item({ parent: p.id, 'f-pts': 1 }, { id: `many${i}` });
+      many.set(c.id, c);
+    }
+    const out = calculatedOutcome(def(project, 'f-weighted'), p, childIndexFor(many, ts), isDone, {
+      type: project,
+      items: many,
+      types: ts,
+    });
+    expect(out).toEqual({ ok: false, error: 'Too much to work out' });
+  });
+
+  it('a Rollup Sum too large to hold reads no value, never Infinity', () => {
+    const huge = new Map<string, Item>([[p.id, p]]);
+    for (let i = 0; i < 2; i += 1) {
+      const c = item({ parent: p.id, 'f-pts': 1e308 }, { id: `huge${i}` });
+      huge.set(c.id, c);
+    }
+    const v = calculatedValue(def(project, 'f-points'), p, childIndexFor(huge, types), isDone, {
+      type: project,
+      items: huge,
+      types,
+    });
+    expect(v).toBeNull();
+  });
+
   it("a child's own error is skipped", () => {
     const broken: ItemTypeDef = {
       ...task,

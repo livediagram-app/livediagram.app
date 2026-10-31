@@ -7,7 +7,8 @@ import { Header } from '@/components/Header';
 // the mirror is liveworkspace's, the same for every app, so it is explained once here. Each app's help keeps a short
 // Google Drive article that points to this page, and Settings › Account › Cloud Sync links here.
 
-const TITLE = 'Google Drive sync';
+const HEADING = 'Google Drive sync';
+const TITLE = `${HEADING} · liveworkspace`;
 const DESCRIPTION =
   'Keep a copy of your work from every liveworkspace app in your own Google Drive, in matching folders, with renames, moves and deletions synced both ways.';
 
@@ -15,7 +16,13 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: '/help/google-drive' },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: '/help/google-drive', type: 'article' },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: '/help/google-drive',
+    siteName: 'liveworkspace',
+    type: 'article',
+  },
   twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
 };
 
@@ -48,9 +55,9 @@ const SECTIONS: Section[] = [
           copies your work into it, oldest first, in folders that match yours, each item a file
           named after it with its app&apos;s extension (<code>.livediagram</code>,{' '}
           <code>.liveplanner</code>, <code>.livedocuments</code>, <code>.livedesign</code>) and a
-          picture of it as the thumbnail. Cloud Sync shows the progress, and the copy carries on
-          if you close the tab. You may rename or move the folder in Drive; liveworkspace keeps
-          using it.
+          picture of it as the thumbnail. Cloud Sync shows the progress, and the copy carries on if
+          you close the tab. You may rename or move the folder in Drive; liveworkspace keeps using
+          it.
         </p>
       </>
     ),
@@ -61,10 +68,10 @@ const SECTIONS: Section[] = [
     body: (
       <>
         <p>
-          Everything you own outside a team, from every app, in your own folders. Not synced:
-          items in a team, items others shared with you, and anything kept only in this browser
-          (This Browser and Offline). Move an item into a team and its file goes to Drive&apos;s
-          bin; move it back out and the file returns.
+          Everything you own outside a team, from every app, in your own folders. Not synced: items
+          in a team, items others shared with you, and anything kept only in this browser (This
+          Browser and Offline). Move an item into a team and its file goes to Drive&apos;s bin; move
+          it back out and the file returns.
         </p>
         <p>
           The copy in Drive is a mirror. Your work still lives in liveworkspace, so sharing,
@@ -117,12 +124,12 @@ const SECTIONS: Section[] = [
           </tbody>
         </table>
         <p>
-          It works the other way too: <strong>rename</strong> a file in Drive,{' '}
-          <strong>move</strong> it to another folder in the liveworkspace tree, or move it to the{' '}
-          <strong>bin</strong>, and the item follows. Restoring it from Drive&apos;s bin restores
-          the item; deleting it for good from Drive deletes it only if it is already in your
-          Trash. Folders follow the same way. Edits to a file&apos;s contents made in Drive are
-          not taken in: liveworkspace writes its copy again on the next sync.
+          It works the other way too: <strong>rename</strong> a file in Drive, <strong>move</strong>{' '}
+          it to another folder in the liveworkspace tree, or move it to the <strong>bin</strong>,
+          and the item follows. Restoring it from Drive&apos;s bin restores the item; deleting it
+          for good from Drive deletes it only if it is already in your Trash. Folders follow the
+          same way. Edits to a file&apos;s contents made in Drive are not taken in: liveworkspace
+          writes its copy again on the next sync.
         </p>
       </>
     ),
@@ -143,8 +150,8 @@ const SECTIONS: Section[] = [
           </li>
           <li>
             An item&apos;s contents are written at most once every 5 minutes, so a long editing
-            session writes to Drive a few times rather than on every change. Renames, moves and
-            the bin are never held back.
+            session writes to Drive a few times rather than on every change. Renames, moves and the
+            bin are never held back.
           </li>
           <li>
             Google tells liveworkspace when your Drive changes, and a change there follows about
@@ -163,11 +170,10 @@ const SECTIONS: Section[] = [
         <p>
           The Google Drive row in Cloud Sync says where it stands: <strong>Last synced</strong> a
           while ago (or <strong>Not synced yet</strong>), <strong>Syncing…</strong>, or{' '}
-          <strong>Copying 3 of 12…</strong> during the first copy. Under the row, it names the
-          Drive folder your work is synced to. When something needs you, the status turns amber
-          with a warning sign (<strong>Needs reconnecting</strong>,{' '}
-          <strong>Needs attention</strong> or <strong>Offline</strong>) and a second line says
-          what happened, with the button to fix it.
+          <strong>Copying 3 of 12…</strong> during the first copy. Under the row, it names the Drive
+          folder your work is synced to. When something needs you, the status turns amber with a
+          warning sign (<strong>Needs reconnecting</strong>, <strong>Needs attention</strong> or{' '}
+          <strong>Offline</strong>) and a second line says what happened, with the button to fix it.
         </p>
         <p>In the Explorer, each item you own carries a small cloud by its Updated time:</p>
         <ul>
@@ -206,8 +212,8 @@ const SECTIONS: Section[] = [
           folder here.
         </p>
         <p>
-          Folders you make in liveworkspace always appear in Drive, so building your tree here
-          needs no extra step.
+          Folders you make in liveworkspace always appear in Drive, so building your tree here needs
+          no extra step.
         </p>
       </>
     ),
@@ -238,15 +244,14 @@ const SECTIONS: Section[] = [
     body: (
       <ul>
         <li>
-          <strong>Offline.</strong> Google Drive can&apos;t be reached just now. liveworkspace
-          tries again by itself.
+          <strong>Offline.</strong> Google Drive can&apos;t be reached just now. liveworkspace tries
+          again by itself.
         </li>
         <li>
-          <strong>Needs reconnecting.</strong> Google stopped accepting liveworkspace&apos;s
-          access: you removed it from your Google account, or Google expired it. Syncing pauses
-          and <strong>nothing is deleted</strong>, here or in Drive. Choose{' '}
-          <strong>Reconnect</strong> (in Cloud Sync, or on the banner in the Explorer) and sync
-          carries on.
+          <strong>Needs reconnecting.</strong> Google stopped accepting liveworkspace&apos;s access:
+          you removed it from your Google account, or Google expired it. Syncing pauses and{' '}
+          <strong>nothing is deleted</strong>, here or in Drive. Choose <strong>Reconnect</strong>{' '}
+          (in Cloud Sync, or on the banner in the Explorer) and sync carries on.
         </li>
         <li>
           <strong>Needs attention.</strong> An item moved in Drive into a folder liveworkspace
@@ -263,8 +268,8 @@ const SECTIONS: Section[] = [
       <p>
         If you reconnect with a different Google account, nothing changes until you choose.{' '}
         <strong>Switch Google Account?</strong> asks first: <strong>Switch Account</strong> moves
-        Cloud Sync to the new account and starts a fresh copy in its Drive, and the files already
-        in the other account&apos;s Drive stay there untouched. <strong>Keep Current Account</strong>{' '}
+        Cloud Sync to the new account and starts a fresh copy in its Drive, and the files already in
+        the other account&apos;s Drive stay there untouched. <strong>Keep Current Account</strong>{' '}
         leaves everything as it was. The question waits 30 minutes; after that, connect again.
       </p>
     ),
@@ -280,8 +285,8 @@ const SECTIONS: Section[] = [
           liveworkspace finds the same folder rather than making a second one.
         </p>
         <p>
-          Deleting your liveworkspace account disconnects Drive the same way, and the files in
-          your Drive stay yours.
+          Deleting your liveworkspace account disconnects Drive the same way, and the files in your
+          Drive stay yours.
         </p>
       </>
     ),
@@ -297,7 +302,7 @@ export default function GoogleDriveHelpPage() {
           Help
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance text-slate-900 sm:text-5xl dark:text-white">
-          {TITLE}
+          {HEADING}
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           Keep a copy of your work, from every app, in your own Google Drive: each item a file in

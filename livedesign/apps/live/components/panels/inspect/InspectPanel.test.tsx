@@ -118,6 +118,10 @@ describe('the Inspect panel', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Copy Values' }));
     });
     expect(writeText.mock.calls[1]![0]).toContain('W: 120');
+    // Every value the panel shows, the spacing too, in its order.
+    expect(writeText.mock.calls[1]![0]).toMatch(
+      /Y: 100\nSpacing Top: 100\nSpacing Right: 257\nSpacing Bottom: 20\nSpacing Left: 16\nFill:/,
+    );
     expect(track).toHaveBeenCalledWith('UI', 'Copied', 'InspectValues');
   });
 

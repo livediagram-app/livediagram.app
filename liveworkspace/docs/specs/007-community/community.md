@@ -40,7 +40,9 @@ Each app offers the same Community, in its own words and look, built from the sa
 
 Each app has its own closed set, in display order. The id is stored; the label is shown; the type is the
 telemetry value. An id two apps share means the same thing in both and has the same label and type. A post's
-category must be one of its own app's (`invalid_category` otherwise).
+category must be one of its own app's (`invalid_category` otherwise). A gallery link naming another app's category
+(`?category=architecture` or `category:architecture` on livedesign's) reads as no category, keeping the rest of
+the search.
 
 | App                 | Categories (id: label)                                                                                                                                                                                                                                                                                      |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

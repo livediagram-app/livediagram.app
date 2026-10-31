@@ -1,5 +1,5 @@
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
-import { NameEditor } from '@/components/primitives/NameEditor';
+import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import type { Tab } from '@liveplanner/project';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
@@ -124,6 +124,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       renameField={
         isEditing ? (
           <NameEditor
+            label="Tab name"
             initial={tab.name}
             onCommit={(name) => {
               onRename(tab.id, name.trim() || tab.name);

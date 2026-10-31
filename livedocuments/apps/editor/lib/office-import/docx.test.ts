@@ -124,6 +124,30 @@ describe('readDocx, the edges', () => {
     expect(blocks.map(kindOf)).toEqual(['h1', 'title', 'bullet0', 'body']);
   });
 
+  it('reads a paragraph starting with a box as a to-do, ticked for ☒ and ☑, and nothing else', async () => {
+    const { blocks } = await read({
+      body: [
+        p(r('☐') + r(' Buy milk')),
+        p(r('☑\u00a0Paid'), numbered(7, 1)),
+        p(r('☒ ') + r('Sent', '<w:strike/>'), '<w:ind w:left="1140"/>'),
+        p(r('☐x not a box')),
+        p(r('☐ ')),
+        p(r('☐ A heading'), styled('Heading1')),
+      ].join(''),
+    });
+    expect(blocks.map((b) => [kindOf(b), textOf(b), 'checked' in b ? b.checked : false])).toEqual([
+      ['todo0', 'Buy milk', false],
+      ['todo1', 'Paid', true],
+      ['todo2', 'Sent', true],
+      ['body', '☐x not a box', false],
+      ['body', '☐', false],
+      ['h1', '☐ A heading', false],
+    ]);
+    // A ticked item's strikethrough is the article's to draw.
+    expect(blocks[2]).toMatchObject({ runs: [{ text: 'Sent' }] });
+    expect((blocks[2] as { runs: object[] }).runs[0]).not.toHaveProperty('s');
+  });
+
   it('follows basedOn chains and outline levels', async () => {
     const { blocks } = await read({
       body: [p(r('Mine'), styled('MyHeading')), p(r('Outlined'), '<w:outlineLvl w:val="2"/>')].join(

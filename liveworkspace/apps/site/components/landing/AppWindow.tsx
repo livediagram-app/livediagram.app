@@ -97,7 +97,7 @@ export function DiagramScene() {
       <span className="absolute top-[56%] left-[5%] w-[24%] -rotate-3 rounded-md bg-amber-200 p-2 text-[10px] leading-snug font-medium text-amber-950 shadow-md sm:text-[11px]">
         Ask the team before Friday
       </span>
-      <Cursor name="Ada" colour="#0284c7" className="lw-drift-a absolute top-[66%] left-[28%]" />
+      <Cursor name="Ada" colour="#0369a1" className="lw-drift-a absolute top-[66%] left-[28%]" />
     </div>
   );
 }

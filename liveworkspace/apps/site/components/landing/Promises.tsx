@@ -180,7 +180,7 @@ function ExplorerArt() {
                 <div
                   key={app.id}
                   className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900"
-                  style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+                  style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
                 >
                   <AppMark app={app} className="size-5 shrink-0" />
                   <span className="min-w-0">
@@ -216,7 +216,7 @@ function AccountArt() {
           <span className="size-3.5 rounded-full bg-[conic-gradient(#ea4335_0_25%,#fbbc05_0_50%,#34a853_0_75%,#4285f4_0)]" />
           Continue with Google
         </div>
-        <div className="my-3 flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500">
+        <div className="my-3 flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
           <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
           or
           <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
@@ -247,7 +247,7 @@ function AccountArt() {
           <div
             key={app.id}
             className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900"
-            style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+            style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
           >
             <AppMark app={app} className="size-5" />
             <span className="text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">{app.name}</span>

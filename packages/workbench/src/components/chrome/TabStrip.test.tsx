@@ -249,6 +249,77 @@ describe('TabStrip', () => {
     expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 58 }));
   });
 
+  // The open tab's menu button eases open (TabFrame's slots, over the sliding card's time), so the first measure is
+  // short of where the tab and Add tab end up: on a phone the last tab stood half under the edge fade with Add tab out
+  // of sight. Once those widths land, the strip measures once more.
+  it('measures again once the open tab’s slots finish easing', async () => {
+    const { props, rerender } = strip();
+    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    let grown = false;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this === scroller) return { left: 0, right: 200, width: 200 } as DOMRect;
+      const shift = grown ? 30 : 0;
+      if (this.dataset.tourId === 'add-tab')
+        return { left: 140 + shift, right: 170 + shift } as DOMRect;
+      return { left: 100, right: 140 + shift } as DOMRect;
+    });
+    let land: () => void = () => {};
+    const finished = new Promise<void>((resolve) => (land = resolve));
+    const box = document.createElement('div');
+    box.dataset.collapseWidth = 'open';
+    Object.defineProperty(scroller, 'getAnimations', {
+      configurable: true,
+      value: () => [{ effect: { target: box }, finished }],
+    });
+    rerender(<TabStrip {...props} activeId="b" />);
+    expect(scrollTo).not.toHaveBeenCalled();
+    grown = true;
+    await act(async () => {
+      land();
+      await finished;
+    });
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 28 }));
+  });
+
+  // Closing a phone's Start panel hands a footer control back its room: the strip lost 42px and the open last tab,
+  // with Add tab, stood past its edge until something else moved it.
+  it('brings the open tab back when the strip narrows, and leaves a widening alone', () => {
+    let resized: () => void = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          resized = cb;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    let width = 252;
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get: () => width,
+    });
+    strip();
+    const scroller = screen.getByRole('tablist').parentElement as HTMLElement;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this === scroller) return { left: 0, right: width, width } as DOMRect;
+      return { left: 150, right: 240 } as DOMRect;
+    });
+    scrollTo.mockClear();
+    width = 300;
+    resized();
+    expect(scrollTo).not.toHaveBeenCalled();
+    width = 210;
+    resized();
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 58 }));
+    delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
+  });
+
   it('jumps rather than glides under reduced motion', () => {
     vi.stubGlobal(
       'matchMedia',

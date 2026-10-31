@@ -23,7 +23,9 @@ missing.
 - **Cmd/Ctrl+F** opens the Find bar with the caret in its field, whenever the document has the
   keyboard: the canvas, a selection, or the article's writing. Pressed with the bar already open it
   selects the field's text again. Text selected in the writing (one line, up to 200 characters)
-  becomes the query.
+  becomes the query. The keyboard is the Find field's from the key on: what is typed straight after Cmd/Ctrl+F, even
+  before the bar's code has arrived the first time, is the query, and never reaches the canvas (a selected element's
+  label, a tool's key, Delete).
 - **The browser's own find stays the browser's** wherever the editor does not have the keyboard:
   in any other text field (a comment, a panel, a dialog's input, a label being edited), while a
   dialog is open, while a deck presents, and in an embed.
@@ -143,7 +145,9 @@ missing.
   dark mode in the card's dark surface.
 - **Keyboard**: Tab moves through the bar's controls in the order above; Enter and Shift+Enter step
   from the Find field; Enter in Replace With replaces; Cmd/Ctrl+Enter in Replace With replaces all;
-  Alt+C and Alt+W toggle Match Case and Whole Word; Escape closes.
+  Alt+C and Alt+W toggle Match Case and Whole Word; Escape closes. A control that turns off under the keyboard
+  (Replace All taking the last match, Replace the only one) hands the keyboard back to the Find field, so Escape
+  still closes the bar.
 - **Screen readers**: the bar is a `search` landmark named "Find in Tab"; the count is a polite live
   region ("3 of 12", "No Results").
 - **Touch**: every control is a 44 px target on a touch screen.

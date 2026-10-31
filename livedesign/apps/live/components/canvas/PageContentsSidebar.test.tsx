@@ -166,12 +166,12 @@ describe('PageContentsSidebar', () => {
     // One kind a tab: no chooser of another kind, and a logo tab has no device chooser either.
     expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Add a Screen of Another Device' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Add Page/ }));
     expect(h.addPageLike).toHaveBeenCalledWith('p3');
     expect(h.addPage).not.toHaveBeenCalled();
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Add Page/ })).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 });

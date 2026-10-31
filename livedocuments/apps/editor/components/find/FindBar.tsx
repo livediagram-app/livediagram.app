@@ -16,6 +16,7 @@ import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { FIND_QUERY_MAX } from '@/lib/find/find-text';
 import { FIND_MATCHES_MAX } from '@/lib/find/find-matches';
 import type { FindView } from '@/hooks/editor/useFindReplace';
+import { takeLoadingHandover } from './FindBarLoading';
 import {
   TOOLBAR_CARD,
   TOOLBAR_CONTROL_PRESSED,
@@ -94,11 +95,31 @@ function BarButton({
 export function FindBar({ find }: { find: FindView }) {
   const field = useRef<HTMLInputElement | null>(null);
   const replaceRowId = useId();
-  // The caret into the Find field, its text selected, on every open (and Cmd/Ctrl+F with the bar open).
+  // The caret into the Find field, its text selected, on every open (and Cmd/Ctrl+F with the bar open). Taking over from
+  // the field that stood in while this code arrived (FindBarLoading), the caret goes after what was typed there, so
+  // the next key adds to the query rather than replacing it.
   useEffect(() => {
-    field.current?.focus();
-    field.current?.select();
+    const input = field.current;
+    if (!input) return;
+    const typing = takeLoadingHandover();
+    input.focus();
+    if (typing) input.setSelectionRange(input.value.length, input.value.length);
+    else input.select();
   }, [find.focusSeq]);
+  // A control the keyboard is on that turns off under it (Replace All taking the last match, Next with none left) drops
+  // focus to the page, where Escape no longer closes the bar: the keyboard goes back to the Find field instead.
+  const lastFocused = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const was = lastFocused.current;
+    const now = document.activeElement;
+    if (
+      was instanceof HTMLButtonElement &&
+      was.disabled &&
+      (now === null || now === document.body || now === was)
+    ) {
+      field.current?.focus();
+    }
+  });
   const count = findCountLabel(find);
   const none = find.count === 0;
   const replaceable = find.count - find.heldCount;
@@ -132,6 +153,9 @@ export function FindBar({ find }: { find: FindView }) {
       data-find-bar=""
       data-keeps-escape=""
       onKeyDown={onBarKey}
+      onFocus={(e) => {
+        lastFocused.current = e.target;
+      }}
       className={`${TOOLBAR_CARD} pointer-events-auto flex-col !items-stretch gap-1`}
     >
       <div className="flex items-center gap-0.5">

@@ -130,6 +130,7 @@
     "./components/primitives/PagedCarousel": "./src/components/primitives/PagedCarousel.tsx",
     "./components/primitives/PlayIcon": "./src/components/primitives/PlayIcon.tsx",
     "./components/primitives/PopoverScrim": "./src/components/primitives/PopoverScrim.tsx",
+    "./components/primitives/NameEditor": "./src/components/primitives/NameEditor.tsx",
     "./components/primitives/PortalMenu": "./src/components/primitives/PortalMenu.tsx",
     "./components/primitives/PreviewSliderRow": "./src/components/primitives/PreviewSliderRow.tsx",
     "./components/primitives/ResetPositionGlyph": "./src/components/primitives/ResetPositionGlyph.tsx",

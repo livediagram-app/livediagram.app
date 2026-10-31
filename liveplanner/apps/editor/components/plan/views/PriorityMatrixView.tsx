@@ -58,22 +58,28 @@ export function PriorityMatrixView({
           gridTemplateRows: `auto repeat(${model.rows.length}, minmax(0, 1fr))`,
         }}
       >
-        <span role="columnheader" />
-        {STATUS_PHASES.map((p) => (
-          <span
-            key={p}
-            role="columnheader"
-            className="flex min-w-0 items-center justify-center gap-1.5 truncate pb-1 font-semibold"
-            style={{ color: palette.muted, fontSize: layout.labelFont - 1 }}
-          >
-            <span
-              aria-hidden
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: PHASE_COLOURS[p] }}
-            />
-            <span className="truncate">{STATUS_PHASE_LABELS[p]}</span>
+        {/* The header row: a table's column headers sit in a row, as its cells do, and the corner names the
+            priority column for a screen reader (it draws nothing). */}
+        <div role="row" className="contents">
+          <span role="columnheader" className="min-w-0">
+            <span className="sr-only">Priority</span>
           </span>
-        ))}
+          {STATUS_PHASES.map((p) => (
+            <span
+              key={p}
+              role="columnheader"
+              className="flex min-w-0 items-center justify-center gap-1.5 truncate pb-1 font-semibold"
+              style={{ color: palette.muted, fontSize: layout.labelFont - 1 }}
+            >
+              <span
+                aria-hidden
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: PHASE_COLOURS[p] }}
+              />
+              <span className="truncate">{STATUS_PHASE_LABELS[p]}</span>
+            </span>
+          ))}
+        </div>
         {model.rows.map((row) => {
           const label = row.priority ? PRIORITY_LABELS[row.priority] : 'No Priority';
           const tint = row.priority ? PRIORITY_COLOURS[row.priority] : palette.muted;

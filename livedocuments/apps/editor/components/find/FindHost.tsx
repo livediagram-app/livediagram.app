@@ -3,14 +3,21 @@
 // Where the Find bar sits (docs/specs/007-editor/find-and-replace.md "The bar"): at the canvas's top right, under the
 // Toolbar strip; on a phone across the canvas's top under the strip. Placed against the canvas's own box (it moves
 // with the header, the tab bar and a side pane), so the canvas never re-renders for it. The bar's code loads the first
-// time it opens.
-import dynamic from 'next/dynamic';
-import { useLayoutEffect, useState, type CSSProperties, type RefObject } from 'react';
+// time it opens, its Find field standing in meanwhile so what is typed is the query (FindBarLoading).
+import {
+  lazy,
+  Suspense,
+  useLayoutEffect,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import type { FindView } from '@/hooks/editor/useFindReplace';
+import { FindBarLoading } from './FindBarLoading';
 
-const FindBar = dynamic(() => import('./FindBar').then((m) => m.FindBar), { ssr: false });
+const FindBar = lazy(() => import('./FindBar').then((m) => ({ default: m.FindBar })));
 
 // The bar's width on a desktop, and its inset from the canvas's edges.
 const BAR_WIDTH = 420;
@@ -52,7 +59,9 @@ export function FindHost({
     : { top, right: box.right + INSET, width: `min(${BAR_WIDTH}px, calc(100vw - ${2 * INSET}px))` };
   return (
     <div className="pointer-events-none fixed z-[var(--z-panel)]" style={style}>
-      <FindBar find={find} />
+      <Suspense fallback={<FindBarLoading find={find} />}>
+        <FindBar find={find} />
+      </Suspense>
     </div>
   );
 }

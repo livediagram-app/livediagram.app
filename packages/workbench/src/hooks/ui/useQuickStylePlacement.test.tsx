@@ -175,6 +175,17 @@ describe('useQuickStylePlacement', () => {
     onCanvas.remove();
   });
 
+  it('keeps clear of the Contents panel docked at the left, standing beside it', () => {
+    const contents = document.createElement('aside');
+    contents.setAttribute('data-contents-sidebar', '');
+    box(contents, { left: 0, top: 120, width: 236, height: 780 });
+    document.body.append(contents);
+    const panelRef = mountPanel();
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true));
+    expect(result.current!.left).toBeGreaterThanOrEqual(236);
+    contents.remove();
+  });
+
   it('watches chrome that mounts after the panel', () => {
     const panelRef = mountPanel();
     const { result } = renderHook(() => useQuickStylePlacement(panelRef, true));

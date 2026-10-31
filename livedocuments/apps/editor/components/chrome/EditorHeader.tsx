@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { NameEditor } from '@/components/primitives/NameEditor';
+import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import {
   Brand,
   HoverCard,
@@ -143,6 +143,7 @@ export function EditorHeader({
       <div className="flex min-w-0 flex-1 items-center justify-start sm:justify-center">
         {hideTitle ? null : editing && !readOnly ? (
           <NameEditor
+            label="Document name"
             initial={documentName}
             onCommit={(v) => {
               onRename(v.trim() || documentName);

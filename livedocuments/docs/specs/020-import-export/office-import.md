@@ -44,6 +44,7 @@ document's body, in the order it is written. The article flows onto as many page
 | Heading 1, Heading 2, Heading 3 to 9 (by style name or outline level)       | Heading 1, Heading 2, Heading 3                                   |
 | Quote, Intense Quote styles                                                 | Quote paragraphs                                                  |
 | A list paragraph (bulleted or numbered by its numbering definition), level  | A bulleted or numbered list item at that level (deepest 5 levels) |
+| A paragraph starting with ☐, or ☒ or ☑ ticked (the Word export's to-dos)    | A to-do item, ticked or not, the box left out                     |
 | A paragraph in a code style, or every run of it in a monospace font         | A code block; consecutive ones join into one                      |
 | Bold, italic, underline, strikethrough, superscript, subscript, a code font | The same marks                                                    |
 | A hyperlink to an http, https or mailto address (relationship or field)     | A link (anything else keeps its text, unlinked)                   |

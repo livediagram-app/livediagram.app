@@ -123,6 +123,24 @@ describe('the Find bar', () => {
     expect(find.replaceAll).toHaveBeenCalledTimes(3);
   });
 
+  it('gives the keyboard back to the Find field when Replace All takes the last match', () => {
+    const { rerender } = render(<FindBar find={view({ replaceOpen: true, by: 'map' })} />);
+    const all = screen.getByRole('button', { name: /^Replace All/ });
+    all.focus();
+    expect(document.activeElement).toBe(all);
+    // Every match replaced: the button turns off under the keyboard.
+    rerender(<FindBar find={view({ replaceOpen: true, by: 'map', count: 0, index: null })} />);
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Find' }));
+  });
+
+  it('leaves the keyboard where it is when the control it is on stays on', () => {
+    const { rerender } = render(<FindBar find={view({ replaceOpen: true, by: 'map' })} />);
+    const all = screen.getByRole('button', { name: /^Replace All/ });
+    all.focus();
+    rerender(<FindBar find={view({ replaceOpen: true, by: 'map', count: 11, index: 2 })} />);
+    expect(document.activeElement).toBe(all);
+  });
+
   it('says which matches are held and why Replace is off on one', () => {
     render(<FindBar find={view({ replaceOpen: true, heldCount: 3, currentHeld: 'role' })} />);
     const replace = screen.getByRole('button', { name: "Replace: You can't edit this text" });

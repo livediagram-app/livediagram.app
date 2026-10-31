@@ -29,7 +29,12 @@ import {
   type InspectExportFormat,
   type InspectExportScale,
 } from '@/lib/inspect-export';
-import { inspectNeighbourLines, inspectTarget, inspectTargetSpec } from '@/lib/inspect-target';
+import {
+  inspectNeighbourLines,
+  inspectSpacingText,
+  inspectTarget,
+  inspectTargetSpec,
+} from '@/lib/inspect-target';
 import { track } from '@/lib/telemetry';
 import { InspectSpacingBox } from './InspectSpacingBox';
 import { InspectValueCell, InspectSection } from './inspect-panel-parts';
@@ -97,6 +102,15 @@ export function InspectPanel({
       toast.error('Couldn’t copy that. Try again.');
     }
   };
+  // Every value the panel shows, in its order: the layout, the spacing, then the rest.
+  const valuesText = () =>
+    [
+      inspectValuesText(values.filter((v) => v.group === 'layout')),
+      inspectSpacingText(lines),
+      inspectValuesText(values.filter((v) => v.group !== 'layout')),
+    ]
+      .filter(Boolean)
+      .join('\n');
   const valueOf = (name: string, group?: string) =>
     values.find((v) => v.name === name && (!group || v.group === group))?.value;
 
@@ -221,7 +235,7 @@ export function InspectPanel({
                 />
                 <CopyButton
                   label={copied === 'values' ? 'Copied' : 'Copy Values'}
-                  onClick={() => void copy('values', inspectValuesText(values), 'InspectValues')}
+                  onClick={() => void copy('values', valuesText(), 'InspectValues')}
                 />
               </div>
             </InspectSection>

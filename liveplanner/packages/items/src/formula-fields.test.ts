@@ -139,6 +139,43 @@ describe('formula fields', () => {
     expect(formulaValue(f('x', 'X', '2 * 3'), card({}), deal, ctx)).toBe(6);
   });
 
+  // An overdue check on a new card: comparing a blank Due Date with a date can't be worked, but every field it reads
+  // is empty, so the card reads blank, never Error.
+  it('reads blank, not an error, when every field it reads is empty and the sum fails on blanks', () => {
+    const overdue = f('x', 'Overdue', '{due} < today()', 'checkbox');
+    expect(formulaOutcome(overdue, card({}), deal, ctx)).toEqual({ ok: true, value: null });
+    expect(formulaValue(overdue, card({ due: '2026-10-01' }), deal, ctx)).toBe(true);
+    // With a field holding a value, the same failure is still the formula's problem.
+    expect(
+      formulaOutcome(
+        f('y', 'Y', '{f-budget} < today()', 'checkbox'),
+        card({ 'f-budget': 3 }),
+        deal,
+        ctx,
+      ).ok,
+    ).toBe(false);
+  });
+
+  it('gives a date only within years 0 to 9999, else a problem', () => {
+    expect(formulaOutcome(f('x', 'X', 'today() + 5000000', 'date'), card({}), deal, ctx)).toEqual({
+      ok: false,
+      error: 'The date is out of range',
+    });
+    expect(formulaValue(f('x', 'X', 'today() + 1', 'date'), card({}), deal, ctx)).toBe(
+      '2026-11-01',
+    );
+  });
+
+  it('never gives Infinity: a sum too large is a problem', () => {
+    const out = formulaOutcome(
+      f('x', 'X', '{f-budget} * {f-budget}'),
+      card({ 'f-budget': 1e300 }),
+      deal,
+      ctx,
+    );
+    expect(out).toEqual({ ok: false, error: 'The number is too large' });
+  });
+
   it('reads each kind and built-in field as the spec says', () => {
     const owner = card({ title: 'Parent deal' });
     const items = new Map([[owner.id, owner]]);

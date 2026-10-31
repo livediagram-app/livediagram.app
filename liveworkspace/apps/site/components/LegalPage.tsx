@@ -155,7 +155,7 @@ export function LegalPage({
                   className="scroll-mt-24 border-t border-slate-200 py-10 first:border-t-0 first:pt-0 dark:border-slate-800"
                 >
                   <h2 className="flex items-baseline gap-4 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                    <span className="font-mono text-sm font-medium text-slate-400 tabular-nums">
+                    <span className="font-mono text-sm font-medium text-slate-500 tabular-nums dark:text-slate-400">
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     {section.title}
@@ -185,7 +185,7 @@ export function LegalPage({
                       key={app.id}
                       id={app.name}
                       className="scroll-mt-24 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
-                      style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+                      style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
                     >
                       <div className="h-1.5" style={{ background: app.accent }} />
                       <div className="p-6 sm:p-8">

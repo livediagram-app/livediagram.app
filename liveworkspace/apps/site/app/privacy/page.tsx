@@ -11,7 +11,7 @@ import { SECURITY_ADVISORY_URL } from '@liveworkspace/sites/security';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
+  title: 'Privacy Policy · liveworkspace',
   description:
     'What liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign) do, and do not do, with your data.',
   alternates: { canonical: '/privacy' },

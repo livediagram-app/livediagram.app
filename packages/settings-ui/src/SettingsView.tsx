@@ -160,14 +160,19 @@ export function SettingsView({
 
   return (
     <>
-      <header className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+      {/* Plain divs, not <header>/<footer>: inside a dialog those are the page's banner and contentinfo landmarks
+          again, so the panel would give every page a second of each. */}
+      <div
+        data-settings-header
+        className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800"
+      >
         {showBack ? null : leading}
         <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
           {showBack ? selected?.label : title}
         </h2>
         {switcher && !isMobile ? <div className="min-w-0 shrink">{switcher}</div> : null}
         <CloseButton onClick={onClose} />
-      </header>
+      </div>
       {switcher && isMobile && !showBack ? (
         <div className="flex border-b border-slate-200 px-4 py-2 dark:border-slate-800 [&>*]:flex-1 [&>*>button]:flex-1">
           {switcher}
@@ -271,9 +276,12 @@ export function SettingsView({
       )}
 
       {footer ? (
-        <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+        <div
+          data-settings-footer
+          className="border-t border-slate-200 px-4 py-3 dark:border-slate-800"
+        >
           {footer}
-        </footer>
+        </div>
       ) : null}
     </>
   );

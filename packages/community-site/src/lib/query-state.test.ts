@@ -36,6 +36,17 @@ describe('readQueryState', () => {
     expect(read('?category=nope&q=kanban')).toEqual({ ...EMPTY_FILTERS, q: 'kanban' });
   });
 
+  it("drops another app's category, as a parameter or a search word, and keeps the app's own", () => {
+    const design = (search: string) =>
+      readQueryState(new URLSearchParams(search), 'livedesign.app');
+    expect(design('?category=architecture&q=kanban')).toEqual({ ...EMPTY_FILTERS, q: 'kanban' });
+    expect(design('?q=kanban+category:architecture')).toEqual({ ...EMPTY_FILTERS, q: 'kanban' });
+    expect(design('?q=category:logos').q).toBe('category:logos');
+    expect(design('?category=logos').q).toBe('category:logos');
+    // Without an app, any app's category stands, as before.
+    expect(read('?q=category:architecture').q).toBe('category:architecture');
+  });
+
   it('drops a tag that does not normalise but keeps the rest', () => {
     expect(read('?tag=%21&sort=copied')).toEqual({
       ...EMPTY_FILTERS,
