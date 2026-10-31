@@ -216,7 +216,7 @@ function AccountArt() {
           <span className="size-3.5 rounded-full bg-[conic-gradient(#ea4335_0_25%,#fbbc05_0_50%,#34a853_0_75%,#4285f4_0)]" />
           Continue with Google
         </div>
-        <div className="my-3 flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500">
+        <div className="my-3 flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
           <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
           or
           <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />

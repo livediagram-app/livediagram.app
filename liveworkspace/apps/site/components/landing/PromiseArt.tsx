@@ -211,7 +211,7 @@ export function InboxArt() {
           );
         })}
       </div>
-      <span className="absolute right-3 bottom-2 flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500">
+      <span className="absolute right-3 bottom-2 flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
         <AtGlyph />
         Mentions, comments and actions
       </span>
@@ -280,7 +280,7 @@ export function KeyArt() {
         {['bg-rose-400/80', 'bg-amber-400/80', 'bg-emerald-400/80'].map((c) => (
           <span key={c} className={`size-2 rounded-full ${c}`} />
         ))}
-        <span className="ml-2 text-[10px] text-slate-500">terminal</span>
+        <span className="ml-2 text-[10px] text-slate-400">terminal</span>
       </div>
       <div className="px-3 py-2.5 font-mono text-[11px] leading-relaxed">
         <div className="text-slate-300">
