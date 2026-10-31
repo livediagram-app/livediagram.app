@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { cubicAt, type PathAnchor } from '@livedesign/design';
 import {
   isSimplifiable,
@@ -117,10 +118,11 @@ describe('simplifyContour (path-tool.md "Combined paths", Simplify)', () => {
 
   it('simplifies the largest contour a path may hold within a CPU budget', () => {
     const traced = tracedCircle(5000, 2000);
-    const t0 = performance.now();
-    const out = simplifyContour(traced, true);
-    const ms = performance.now() - t0;
+    let out: PathAnchor[] | null = null;
+    const spent = cpuMsOf(() => {
+      out = simplifyContour(traced, true);
+    });
     expect(out).not.toBeNull();
-    expect(ms).toBeLessThan(500);
+    expect(spent).toBeLessThan(cpuBudgetMs(500));
   });
 });
