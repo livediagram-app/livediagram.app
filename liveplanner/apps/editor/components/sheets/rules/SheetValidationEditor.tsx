@@ -275,7 +275,7 @@ export function SheetValidationEditor({
   const [advanced, setAdvanced] = useState(!!(existing?.warn || existing?.help));
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [focusKey, setFocusKey] = useState<number | null>(null);
-  const set =(patch: Partial<Draft>) => {
+  const set = (patch: Partial<Draft>) => {
     setWhy(null);
     setD((x) => ({ ...x, ...patch }));
   };
