@@ -105,7 +105,9 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   block. Text selection spans blocks, lists and pages freely.
 - **The caret stays in sight.** After the writer types or moves the caret (the arrow keys, Page Down, a paste), the
   view pans the least it must to show the caret, as the canvas brings any element into view (`scrollIntoView`), so
-  writing that runs onto the next page, or below the window, is never written blind. A collaborator's writing never
+  writing that runs onto the next page, below the window or behind a phone's on-screen keyboard (what shows ends 24 px
+  above the keyboard), is never written blind; the view is left there, not snapped back onto a page
+  ([Pages](pages-mode.md) "The view rests on a page"). A collaborator's writing never
   moves the view, nor does a press, which lands where the caret already shows.
 - **Typing**, the arrow keys, Home / End, word jumps (Alt / Ctrl+Arrow), Page Up / Down, Shift to
   extend, the browser's spell check, IME composition, dictation and the system emoji picker all
