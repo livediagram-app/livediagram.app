@@ -4,6 +4,7 @@
 // a timing attack could use.
 
 import { timelineStatement, type TimelineEvent } from './index-timeline.ts';
+import { cleanText } from './text.ts';
 
 export const API_TOKEN_PREFIX = 'lwt_';
 // Tokens carried over from the old livediagram.app (docs/migration.md step 1): their rows were copied in as they
@@ -77,7 +78,7 @@ export async function listApiTokens(
 }
 
 export function cleanTokenName(value: unknown, fallback: string): string {
-  const name = typeof value === 'string' ? value.trim().slice(0, TOKEN_NAME_MAX_LENGTH) : '';
+  const name = typeof value === 'string' ? cleanText(value, TOKEN_NAME_MAX_LENGTH) : '';
   return name || fallback;
 }
 

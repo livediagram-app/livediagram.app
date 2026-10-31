@@ -5,6 +5,7 @@
 // Google also has its Google picture ("Profile pictures"), which others see unless its switch is off.
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { GUEST_ID, USER_ID } from './ids.ts';
+import { withoutBidiControls } from './text.ts';
 
 // The most ids one read may name: a presence list's worth, in one query.
 export const MAX_PROFILE_IDS = 100;
@@ -72,7 +73,7 @@ export function checkProfilePatch(
     if (body.name !== null && typeof body.name !== 'string') {
       return { ok: false, error: 'invalid_name' };
     }
-    const name = body.name?.trim() ?? '';
+    const name = withoutBidiControls(body.name ?? '').trim();
     if (name.length > PROFILE_NAME_MAX || CONTROL.test(name)) {
       return { ok: false, error: 'invalid_name' };
     }

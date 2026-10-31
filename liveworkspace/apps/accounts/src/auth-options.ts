@@ -10,6 +10,7 @@ import { type MergeConfig, mergeGuestOnSignIn } from './guests.ts';
 import { handoffPlugin, type HandoffPluginConfig } from './handoff.ts';
 import { newUserId } from './ids.ts';
 import { ADMIN_HEADER, sameSecret } from './secrets.ts';
+import { cleanText } from './text.ts';
 import { wwwTwin } from '@liveworkspace/sites/www';
 
 export const AUTH_BASE_PATH = '/api/auth';
@@ -297,7 +298,7 @@ async function isAdmin(headers: Headers, adminToken: string): Promise<boolean> {
 type NamedUser = { name?: string | null; givenName?: unknown; familyName?: unknown };
 
 const cleanName = (value: unknown): string | undefined =>
-  typeof value === 'string' ? value.trim().slice(0, NAME_MAX_LENGTH) : undefined;
+  typeof value === 'string' ? cleanText(value, NAME_MAX_LENGTH) : undefined;
 
 // Trims and caps the names. An update carries only the fields it changes, so `name` is
 // rebuilt from the two halves only when both are there.
