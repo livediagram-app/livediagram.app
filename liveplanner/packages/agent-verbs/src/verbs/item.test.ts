@@ -413,6 +413,62 @@ describe('calculated fields', () => {
   });
 });
 
+// docs/specs/026-plan/item-types.md "Percent".
+describe('percent fields', () => {
+  const WORK = {
+    ...ITEM_TYPES[1],
+    id: 'work',
+    label: 'Work',
+    fields: ['title', 'status', 'f-progress', 'f-done'],
+    custom: [
+      { id: 'f-progress', label: 'Progress', kind: 'percent' },
+      {
+        id: 'f-done',
+        label: 'Done',
+        kind: 'calculated',
+        calculation: 'childrenDone',
+        showAs: 'percent',
+      },
+    ],
+  };
+  const withPercent = () =>
+    api({ [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, WORK] } });
+
+  it('lists the kind, and a Children Done shown as a Percent', () => {
+    expect(listedType(WORK as ItemTypeDef).custom).toEqual([
+      { id: 'f-progress', name: 'Progress', kind: 'percent' },
+      {
+        id: 'f-done',
+        name: 'Done',
+        kind: 'calculated',
+        calculation: 'childrenDone',
+        showAs: 'percent',
+        readOnly: true,
+      },
+    ]);
+  });
+
+  it('writes "40%" as 40, and refuses a share outside 0 to 100 before writing', async () => {
+    const { ctx, seen } = withPercent();
+    await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ project: DOC_A, title: 'W', type: 'Work', fields: ['progress=40%'] }),
+    );
+    expect(seen.find((s) => s.method === 'POST')!.body).toMatchObject({
+      fields: { 'f-progress': 40 },
+    });
+    const refused = await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ project: DOC_A, title: 'W', type: 'Work', fields: ['progress=140'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(refused).toMatchObject({
+      code: 'value_invalid',
+      message: 'Progress is a percent: give a number from 0 to 100.',
+    });
+    expect(seen.filter((s) => s.method === 'POST')).toHaveLength(1);
+  });
+});
+
 describe('required fields (docs/specs/026-plan/item-types.md "Required fields")', () => {
   const required = {
     ...BUG,

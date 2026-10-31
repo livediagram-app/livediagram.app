@@ -6,6 +6,7 @@ import type { CustomFieldKind, ItemTypeDef } from './item-types';
 import { PRIORITIES } from './fields';
 import { CUSTOM_FIELD_ID_PATTERN, customFieldOf } from './type-catalogue';
 import { isObj } from './validate';
+import { percentValue } from './percent-fields';
 import { statusKey } from './status-names';
 import { STAMP_FIELD_LABELS, isStampField, itemStampTime } from './card-stamps';
 
@@ -37,12 +38,15 @@ type BuiltInSortField = (typeof BOARD_SORT_BUILT_INS)[number];
 export const BOARD_SORT_KINDS: readonly CustomFieldKind[] = [
   'number',
   'currency',
+  // A share, lowest first as a Number (docs/specs/026-plan/item-types.md "Percent").
+  'percent',
   'date',
   'rating',
   'choice',
 ];
 
-export type BoardSortKind = 'priority' | 'number' | 'currency' | 'date' | 'rating' | 'choice';
+export type BoardSortKind =
+  'priority' | 'number' | 'currency' | 'percent' | 'date' | 'rating' | 'choice';
 
 export interface BoardSortField {
   id: string;
@@ -149,6 +153,8 @@ function readerFor(field: string, type: ItemTypeDef | undefined): KeyReader {
   if (!def) return none;
   if (def.kind === 'number' || def.kind === 'currency' || def.kind === 'rating')
     return (item) => num(item.fields[field]);
+  // Held to 0..100 as every reader draws it, so a stray value sorts where its bar shows.
+  if (def.kind === 'percent') return (item) => percentValue(item.fields[field]);
   if (def.kind === 'date') return (item) => day(item.fields[field]);
   if (def.kind === 'choice') {
     const options = def.options ?? [];

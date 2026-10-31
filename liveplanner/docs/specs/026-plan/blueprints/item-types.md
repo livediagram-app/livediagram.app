@@ -5,17 +5,17 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                                                                                                                                                                                            |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                                     |
-| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                                       |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required?, notifies? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
-| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                                      |
-| notifying field   | a Person field that tells its person (spec "Notifies"): `notifies: true` on a person `CustomFieldDef`, the Assignee unless `assigneeNotifies: false` on the `ItemTypeDef`; `notifyingFieldsOf`, `notifiedPeople`, `isNotified` (`notify-fields.ts`)                   |
-| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                                          |
-| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                                        |
-| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                                          |
-| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                         |
+| Spec term         | Identifier                                                                                                                                                                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                                              |
+| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                                                |
+| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, showAs?, onCard?, required?, notifies? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
+| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                                               |
+| notifying field   | a Person field that tells its person (spec "Notifies"): `notifies: true` on a person `CustomFieldDef`, the Assignee unless `assigneeNotifies: false` on the `ItemTypeDef`; `notifyingFieldsOf`, `notifiedPeople`, `isNotified` (`notify-fields.ts`)                            |
+| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                                                   |
+| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                                                 |
+| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                                                   |
+| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                                  |
 
 ## Package `@liveplanner/items`
 
@@ -223,6 +223,47 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   WeakMap), so the editor's `calculated-values.ts` (`calculatedFieldValue`, read by `PlanCardFace` and
   `ItemFieldEditor`) and the SVG export (`svg-render-plan-card.ts`, Children Done only with a board's done columns)
   cost one pass per store; `CalculatedFieldValue` draws one read-only.
+- Percent fields (spec "Percent"): `percent-fields.ts` (packages/items) is the one reading, shared by every surface:
+  `PERCENT_MIN` 0 and `PERCENT_MAX` 100; `percentValue(v)` (a finite number, or numeric text with an optional "%",
+  rounded and held to 0..100 by `clampPercent` from `@liveworkspace/model-core/progress-label`, else undefined; the
+  readers' clamp, so a stray 140 draws 100); `parsePercent(v)` (the writers': the same reading, but undefined outside
+  0..100 rather than held, so agents and CSV refuse or skip it); `percentText(n)` ("40%");
+  `PERCENT_SHOWABLE_KINDS` (`['calculated']`: the worked-out kinds that may show as a Percent; Formula and Rollup
+  join it), `canShowAsPercent(field)` (a showable kind whose result is a share: Calculated with `childrenDone`),
+  `showsAsPercent(field)` (`kind: 'percent'`, or `showAs: 'percent'` on a field `canShowAsPercent` allows) and
+  `percentShown(field, value)` (the share a field shows, from its stored value or the worked-out one, or undefined).
+  `clampPercent` moves to model-core; every product's `data-shapes.ts` re-exports it, so the canvas's progress
+  elements and the Percent field round the same way.
+  - `item-types.ts`: `percent` in `CUSTOM_FIELD_KINDS` after `currency`; `showAs?: 'percent'` on `CustomFieldDef`.
+    `readCustom` keeps `showAs` only as `'percent'` on a field `canShowAsPercent` allows; `type-changes.ts` takes
+    `showAs` on `add` and `editCustom` (`'percent'` or `'number'`, `'number'` deleting it; a field that can't show as
+    a Percent is refused: "{Field} can't show as a percent: only a share, like Children Done, can."), and a
+    calculation edited to `childCount` drops it.
+  - Values: `plan-names.ts` reads a Percent by `parsePercent`, refusing `value_invalid` "{Field} is a percent: give a
+    number from 0 to 100."; `board-csv.ts` writes the number and imports by `parsePercent` (a cell it can't read is
+    skipped); `card-text.ts` `customFieldText` gives `percentText(percentValue(v))`; `board-sort.ts` sorts it as a
+    number; `board.ts` lanes it as a Number (`LaneFieldKind` `'percent'`, its row named "40%"); `required-fields.ts`
+    lets it be required (0 is a value). `plan-view-charts.ts` leaves it out of Cards by Field's sums. Forms'
+    `MAPPABLE_KINDS` never name it.
+  - Editor: `PercentBar.tsx` is the shared drawing: `PercentBar` (`value`, optional `inks` `{ fill, track }`, else the
+    app's slate track and brand fill), `PercentChip` (the card face's `MetaPill`: the bar at `PLAN_PERCENT_BAR` in
+    `planPercentInks(palette)` from `@liveplanner/project`'s `plan-palette.ts`, the export's own, and "40%", spoken
+    "{Field}: 40%") and `PercentReading` (the panel's read-only bar across the row and the number: a Viewer's Percent
+    field, `CalculatedFieldValue` when it shows as a Percent, and Add Field's preview).
+    `PercentSlider.tsx` is the panel's control (a `role="slider"` with `aria-valuemin` 0, `aria-valuemax` 100,
+    `aria-valuenow`, `aria-valuetext` "40%" or "No value", `aria-label` the field's name; pointer capture on the
+    track, `shareAt(clientX, rect)` drawn live in local state and committed once on pointer up, a cancel putting it
+    back; keys step and commit; the number box, the row label's target, `typedShare(raw)` committing on Enter or
+    blur, Escape restoring; a Viewer gets `PercentReading`, or "None"). `CustomFieldEditor` routes `percent` to it; `PlanCardFace` and
+    `svg-render-plan-card.ts` draw every field `showsAsPercent` allows through the chip (a `percent` bit: the field's
+    name, a `PLAN_PERCENT_BAR` track and its fill in `planPercentInks`, then "40%"; a narrow pill shortens the name
+    and keeps the bar and the share). `ItemTypeFieldForms` shows the `ShowAsPercentSwitch` (a `SwitchRow` with its
+    line, tracking `Plan` · `Changed` · `FieldShowAsPercent`) on a Calculated field `canShowAsPercent` allows, in Add
+    Field's Shape and in the field's form; `calculationPatch(calculation)` drops `showAs` with a Child Count, and
+    `addedField` keeps it only where allowed.
+  - Agents: `plan-schema.ts` adds `percent` to the kind enum and `showAs` to `add`/`editCustom`; `plan-listing.ts`
+    lists `showAs` on a field that shows as a Percent; the OpenAPI schema is regenerated (`gen:openapi`) from
+    `CUSTOM_FIELD_KINDS` and `CustomFieldDef`.
 - Consumers: `PlanCardFace` (stripe, glyph, custom field chips via `custom-field-text.ts`), `ItemPanel` (the
   type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
   (projection), `PlanBoardCells`/`PlanCardView` names,
@@ -302,7 +343,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   - Pure data and matching in `add-field-kinds.ts`. A **pick kind** (`PickKind`) is a `CustomFieldKind`, Comments
     and Votes among them: each opens Shape, Ready to use offering its built-in while the type lacks it. `KIND_GROUPS`
     (`{ id, label, kinds: PickKind[] }[]`: `text` "Text & links" text, longtext, link, email; `numbers` "Numbers &
-    dates" number, currency, rating, date; `choices` "Choices" choice, multichoice, checkbox, labels; `people`
+    dates" number, currency, percent, rating, date; `choices` "Choices" choice, multichoice, checkbox, labels; `people`
     "People & teamwork" person, checklist, comments, votes; `look` "Colour & images" colour, image; `cards` "Linked
     cards" card, calculated; every `CUSTOM_FIELD_KINDS` member once, test-locked), `KIND_DESCRIPTIONS` and
     `KIND_ALIASES` (`Record<PickKind, …>`, the spec's words), `BUILT_INS_OF_KIND` (`Record<PickKind, ItemFieldId[]>`:
@@ -523,6 +564,10 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | Card tiles follow the catalogue                              | `apps/editor/components/palette/palette-plan-tiles.test.ts`                                                                              |
 | Custom values on a card                                      | `apps/editor/components/plan/custom-field-text.test.ts`                                                                                  |
 | Calculated fields: children, done, values, refusals          | `packages/items/src/calculated-fields.test.ts`, `apps/api/src/routes/item-routes.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts` |
+| Percent: read, parse, clamp, show as, sort, lanes, CSV       | `packages/items/src/percent-fields.test.ts`                                                                                              |
+| Percent: agents write, refuse, list showAs                   | `packages/agent-verbs/src/verbs/item.test.ts`, `packages/items/src/type-changes.test.ts`                                                 |
+| Percent: slider, chip, panel, switch                         | `apps/editor/components/plan/PercentSlider.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                |
+| Percent: exports draw the bar                                | `packages/project/src/svg-render-plan-card.test.ts`                                                                                      |
 | Left-out statuses: read, refuse, allow                       | `packages/items/src/type-catalogue.test.ts`                                                                                              |
 | Left-out statuses: api refuses moves, patches, makes         | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
 | Left-out statuses: agent refusal message                     | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                            |

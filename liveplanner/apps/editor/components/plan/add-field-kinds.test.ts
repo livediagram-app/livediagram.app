@@ -73,8 +73,9 @@ describe('searching', () => {
     expect(found('yes/no')).toEqual(['checkbox']);
     expect(found('tick')).toEqual(['checkbox', 'checklist']);
     expect(found('parent')).toContain('card');
-    expect(found('percent')).toEqual(['calculated']);
-    expect(found('progress')).toEqual(['calculated']);
+    expect(found('percent')).toEqual(['percent']);
+    expect(found('progress')).toEqual(['percent']);
+    expect(found('formula')).toEqual(['calculated']);
     expect(found('url')).toEqual(['link']);
     expect(found('dropdown')).toEqual(['choice']);
     expect(found('select')).toContain('choice');

@@ -5,6 +5,7 @@
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import { isCalculation } from './calculated-fields';
+import { canShowAsPercent } from './percent-fields';
 import {
   CARD_LINK_TYPES_MAX,
   CURRENCY_CODE,
@@ -328,6 +329,8 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     if (!isCalculation(calculation)) return `${at}.calculation`;
     field.calculation = calculation;
   }
+  // Kept only as 'percent', on a field whose result is a share (percent-fields.ts); anything else reads as text.
+  if (input['showAs'] === 'percent' && canShowAsPercent(field)) field.showAs = 'percent';
   if (input['onCard'] === true) field.onCard = true;
   // Kept only as true, and never on a Checkbox: anything else reads as optional rather than refusing the catalogue.
   if (input['required'] === true && canBeRequired(field.kind)) field.required = true;

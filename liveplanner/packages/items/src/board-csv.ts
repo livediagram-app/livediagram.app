@@ -26,6 +26,7 @@ import {
 } from './limits';
 import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogue';
 import { missingRequiredFields } from './required-fields';
+import { parsePercent } from './percent-fields';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
 const BOARD_CSV_FIELDS = [
@@ -238,6 +239,9 @@ function customValue(
       const n = Number(text);
       return Number.isInteger(n) && n >= 1 && n <= ratingScaleOf(f) ? n : undefined;
     }
+    // "40" or "40%", rounded; a cell outside 0 to 100 is skipped, as a Rating out of its scale is.
+    case 'percent':
+      return parsePercent(text);
     // An amount, as the card stores it: a number of up to two decimals, "£12,500" read as 12500.
     case 'currency': {
       const n = Number(text.replace(/[^\d.-]/g, ''));

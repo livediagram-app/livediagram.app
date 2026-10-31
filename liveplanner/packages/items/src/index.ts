@@ -67,6 +67,7 @@ export * from './vote-count-in';
 export * from './type-catalogue-change';
 export * from './linked-cards';
 export * from './calculated-fields';
+export * from './percent-fields';
 export * from './view-fields';
 export * from './attachments';
 export * from './label-usage';

@@ -18,6 +18,7 @@ import {
 import { DateField, DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { RatingInput } from '../forms/RatingInput';
+import { PercentSlider } from './PercentSlider';
 
 type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
@@ -114,6 +115,17 @@ export function CustomFieldEditor({
         </div>
       );
     }
+    // A draggable bar and the number (docs/specs/026-plan/item-types.md "Percent").
+    case 'percent':
+      return (
+        <PercentSlider
+          id={id}
+          label={field.label}
+          value={value}
+          disabled={disabled}
+          onSave={(v) => void onSave(v)}
+        />
+      );
     case 'email':
       return (
         <div className="flex items-center gap-1.5">

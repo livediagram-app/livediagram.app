@@ -3,6 +3,7 @@
 // card face and every export, so a board reads the same on the canvas and in its picture.
 
 import { linkText } from './card-links';
+import { percentText, percentValue } from './percent-fields';
 import { CURRENCY_DEFAULT, ratingScaleOf, type CustomFieldDef } from './item-types';
 import type { Item, ItemFieldValue } from './item';
 import { itemColourValue } from './item-colour';
@@ -62,6 +63,11 @@ export function customFieldText(
       return typeof value === 'string' ? linkHost(value) : null;
     case 'currency':
       return typeof value === 'number' ? currencyText(value, field.currency) : null;
+    // "40%", held to 0..100 (docs/specs/026-plan/item-types.md "Percent").
+    case 'percent': {
+      const n = percentValue(value);
+      return n === undefined ? null : percentText(n);
+    }
     case 'email':
       return typeof value === 'string' ? value : null;
     // Every linked card or person of a field that holds several, joined (item-types.md "Holds Several").
