@@ -12,7 +12,7 @@ export const BOARD_WIDGET_INFO: Record<BoardWidgetKind, { label: string; descrip
     label: 'Filter',
     description: 'A search box that narrows the cards to those that match.',
   },
-  mine: { label: 'Only Mine', description: 'Shows only the cards assigned to you.' },
+  mine: { label: 'Only Mine', description: 'Shows only the cards that are yours.' },
   people: { label: 'People', description: 'Who has cards on the board, by avatar.' },
   unplaced: {
     label: 'Not on Board',

@@ -5,8 +5,9 @@
 import type { Item } from './item';
 import type { PlanViewId } from './plan-views';
 import { dayKey, dayNumber } from './plan-view-dates';
+import { BUILT_IN_DATES, type ViewDates } from './view-fields';
 
-// The date field a calendar places its cards by.
+// The date role a calendar places its cards by; its field is the view's pick for that role (view-fields.ts).
 export type CalendarField = 'due' | 'start';
 
 // The calendar views and the field each places by.
@@ -24,19 +25,22 @@ export function calendarMove(
   item: Pick<Item, 'fields'>,
   field: CalendarField,
   toDay: number,
+  // The fields the calendar reads for each role (docs/specs/026-plan/plan-views.md "Dates").
+  dates: ViewDates = BUILT_IN_DATES,
 ): { set: Record<string, string>; days: number } | null {
-  const from = dayNumber(item.fields[field]);
+  const from = dayNumber(item.fields[dates[field]]);
   if (from === undefined || !Number.isInteger(toDay) || toDay === from) return null;
   const days = toDay - from;
-  const set: Record<string, string> = { [field]: dayKey(toDay) };
+  const set: Record<string, string> = { [dates[field]]: dayKey(toDay) };
   const other: CalendarField = field === 'due' ? 'start' : 'due';
-  const otherDay = dayNumber(item.fields[other]);
+  const otherDay = dayNumber(item.fields[dates[other]]);
   if (otherDay !== undefined) {
     // A Due moved before its Start takes the Start with it (and a Start moved past its Due the Due), by the same
     // days; never past the moved date, even when the card's dates were the wrong way round to begin with.
-    if (field === 'due' && otherDay > toDay) set[other] = dayKey(Math.min(otherDay + days, toDay));
+    if (field === 'due' && otherDay > toDay)
+      set[dates[other]] = dayKey(Math.min(otherDay + days, toDay));
     if (field === 'start' && otherDay < toDay)
-      set[other] = dayKey(Math.max(otherDay + days, toDay));
+      set[dates[other]] = dayKey(Math.max(otherDay + days, toDay));
   }
   return { set, days };
 }

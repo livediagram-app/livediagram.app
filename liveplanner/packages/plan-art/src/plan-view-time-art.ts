@@ -6,6 +6,7 @@ import {
   ganttAt,
   ganttModel,
   ganttShownTypes,
+  viewDatesOf,
   itemColourOf,
   itemTitle,
   shiftMonth,
@@ -30,6 +31,7 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
     data.statusPhases,
     data.now,
     ganttShownTypes(settings, data.types),
+    viewDatesOf(settings, data.types),
   );
   const frame = viewFrame(rect, p, titled('Gantt Chart', title), model.rows.length);
   if (model.rows.length === 0)
@@ -53,7 +55,8 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
   const room = Math.max(0, Math.floor((body.height - AXIS_H) / ROW_H));
   model.rows.slice(0, room).forEach((row, i) => {
     const y = body.y + AXIS_H + i * ROW_H;
-    const colour = accentOn(itemColourOf(row.item) ?? typeIn(data.types, row.item.type).color, p);
+    const type = typeIn(data.types, row.item.type);
+    const colour = accentOn(itemColourOf(row.item, type) ?? type.color, p);
     parts.push(
       line(body.x + ART_PAD, y + 18, itemTitle(row.item).trim() || 'Untitled', {
         size: 12,
@@ -95,12 +98,19 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
 
 // A Calendar: this month's weeks, each day its date and its cards (a line each, as many as fit, then "+2").
 export function calendarArt(
-  { rect, p, items, data, title }: ViewArtInput,
+  { rect, p, items, data, settings, title }: ViewArtInput,
   field: CalendarField,
 ): string {
   const now = data.now;
   const shown = shiftMonth(now.getFullYear(), now.getMonth(), 0);
-  const model = calendarModel(items.values(), data.statusPhases, shown.year, shown.month, field);
+  const model = calendarModel(
+    items.values(),
+    data.statusPhases,
+    shown.year,
+    shown.month,
+    field,
+    viewDatesOf(settings, data.types),
+  );
   const name = field === 'start' ? 'Start Calendar' : 'Due Calendar';
   const frame = viewFrame(rect, p, `${titled(name, title)} · ${model.label}`, model.count);
   const body = frame.body;

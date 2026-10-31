@@ -4,14 +4,15 @@
 import type React from 'react';
 import { HANDLE_TOUCH, type useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { LockIcon, PencilIcon, Tooltip } from '@liveplanner/ui';
-import { FieldMenu, GripIcon } from './ItemTypeFieldMenu';
+import { FieldMenu, GripIcon, type NotifiesToggle } from './ItemTypeFieldMenu';
 import { ICON_BUTTON } from './ItemTypeFieldForms';
 import { RequiredMark } from './ItemPanelLayout';
 import type { GroupId } from './item-type-layout';
 
 // One field: a drag handle (a field that moves), its kind's icon (the Add Field popover's, CustomFieldKindParts),
 // its name with a lock when the type always keeps it,
-// Edit (a custom field) and a ⋯ menu: Move Up, Move Down, Move to each other group and Remove. Title and Status
+// Edit (a custom field) and a ⋯ menu: the Assignee's Notifies switch, Move Up, Move Down, Move to each other group and
+// Remove. Title and Status
 // stay put and never come off; a field the type always keeps (a Project's Start and Due) moves but never comes
 // off. The handle is for a pointer or a finger; the menu's Move Up and Move Down are the keyboard's way.
 // Rows alternate white and a light grey (odd and even in their group), so a long list reads row by row.
@@ -32,6 +33,7 @@ export function FieldRow({
   canDown,
   onMove,
   onRemove,
+  notifies,
   children,
 }: {
   id: string;
@@ -54,9 +56,12 @@ export function FieldRow({
   canDown: boolean;
   onMove?: ((by: -1 | 1) => void) | undefined;
   onRemove: () => void;
+  // The Assignee's Notifies switch, in its menu (docs/specs/026-plan/item-types.md "Notifies").
+  notifies?: NotifiesToggle | undefined;
   children?: React.ReactNode;
 }) {
-  const hasMenu = removable || moveTargets.length > 0 || (onMove && (canUp || canDown));
+  const hasMenu =
+    !!notifies || removable || moveTargets.length > 0 || (onMove && (canUp || canDown));
   return (
     <li
       data-reorder-id={id}
@@ -126,6 +131,7 @@ export function FieldRow({
             canDown={canDown}
             onMove={onMove}
             onRemove={removable ? onRemove : undefined}
+            notifies={notifies}
           />
         ) : (
           <span aria-hidden className="h-7 w-7 shrink-0" />

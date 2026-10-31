@@ -3,7 +3,7 @@
 // The type editor's field forms (docs/specs/026-plan/item-types.md "Editing a type"): a custom field's
 // name, options (Choice, Multiple Choice) and scale (Rating), and the settings Add Field's Shape step shares with it
 // (NewFieldForm). The grouped field list is ItemTypeLayoutEditor.
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
   COMMON_CURRENCIES,
   CURRENCY_DEFAULT,
@@ -25,6 +25,7 @@ import { Select, SwitchRow, TextArea, TextInput } from '@liveplanner/ui';
 import { hasOptions, type PickKind } from './add-field-kinds';
 import { optionsFrom } from './ChoiceOptionsEditor';
 import { LinksToPicker } from './LinksToPicker';
+import { track } from '@/lib/telemetry';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   title: 'Title',
@@ -195,6 +196,43 @@ export function RequiredSwitch({
   );
 }
 
+// Notifies (docs/specs/026-plan/item-types.md "Notifies"): what the switch on a Person field, and on the Assignee's
+// row menu, says it does.
+export const NOTIFIES_LINE =
+  'Tell the person when a card is theirs: the Inbox, emails and Only Mine.';
+
+// A Person field's Notifies switch, as Required's, with its line under it (the switch's description); none for any
+// other kind. Off is stored as absent.
+export function NotifiesSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'notifies'>;
+  onChange: (notifies: boolean | undefined) => void;
+}) {
+  const lineId = useId();
+  if (field.kind !== 'person') return null;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={field.notifies === true}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldNotifies');
+          onChange(field.notifies ? undefined : true);
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Notifies
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {NOTIFIES_LINE}
+      </p>
+    </div>
+  );
+}
+
 // A custom field's name, options (Choice), the types it links to (Card) and its calculation (Calculated); where it
 // shows on a card is the Display tab's.
 export function CustomFieldForm({
@@ -252,6 +290,7 @@ export function CustomFieldForm({
         />
       ) : null}
       <RequiredSwitch field={field} onChange={(required) => onChange({ required })} />
+      <NotifiesSwitch field={field} onChange={(notifies) => onChange({ notifies })} />
       {/* Where it shows on a card is the Display tab's: drag it onto the card there. */}
     </div>
   );

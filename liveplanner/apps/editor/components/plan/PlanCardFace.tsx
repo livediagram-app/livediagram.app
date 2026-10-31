@@ -153,7 +153,7 @@ export function PlanCardFace({
   const start = item.fields['start'];
   const description = item.fields['description'];
   // An item's own colour (docs/specs/026-plan/items.md "Colour"): a dot beside the type, never replacing it.
-  const ownColour = itemColourOf(item);
+  const ownColour = itemColourOf(item, type);
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
   const title = itemTitle(item) || 'Untitled';
@@ -261,7 +261,7 @@ export function PlanCardFace({
         const linkedType = linkedTypeId
           ? typeIn(plan?.types ?? ITEM_TYPES, linkedTypeId)
           : undefined;
-        const linkedColour = linked ? itemColourOf(linked) : undefined;
+        const linkedColour = linked ? itemColourOf(linked, linkedType) : undefined;
         return (
           <MetaPill key={f} palette={palette} label={`${def.label}: ${text}`}>
             {linkedColour ? (

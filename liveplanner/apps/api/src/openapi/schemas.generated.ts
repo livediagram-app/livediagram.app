@@ -2550,6 +2550,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "notifies": {
+        "type": "boolean"
+      },
       "onCard": {
         "type": "boolean"
       },
@@ -5276,7 +5279,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemTypeDef": {
     "additionalProperties": false,
     "properties": {
+      "assigneeNotifies": {
+        "type": "boolean"
+      },
       "color": {
+        "type": "string"
+      },
+      "colourField": {
         "type": "string"
       },
       "custom": {
@@ -7351,11 +7360,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PlanViewRef": {
     "additionalProperties": false,
     "properties": {
+      "dueField": {
+        "type": "string"
+      },
       "filters": {
         "items": {
           "$ref": "#/components/schemas/CardSearchFilter"
         },
         "type": "array"
+      },
+      "measure": {
+        "type": "string"
       },
       "namesWidth": {
         "type": "number"
@@ -7365,6 +7380,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "startField": {
+        "type": "string"
       },
       "statuses": {
         "items": {

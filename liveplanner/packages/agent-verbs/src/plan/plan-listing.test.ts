@@ -27,6 +27,22 @@ describe('listedType', () => {
     expect(task.tabs[0]).toMatchObject({ name: 'Overview' });
   });
 
+  it('lists Notifies: a notifying Person field, and an Assignee switched off', () => {
+    const review = listedType({
+      ...ITEM_TYPES[1],
+      id: 'review',
+      label: 'Review',
+      fields: ['title', 'status', 'assignee', 'f-r'],
+      custom: [{ id: 'f-r', label: 'Reviewer', kind: 'person', notifies: true }],
+      assigneeNotifies: false,
+    });
+    expect(review.custom).toEqual([
+      { id: 'f-r', name: 'Reviewer', kind: 'person', notifies: true },
+    ]);
+    expect(review.assigneeNotifies).toBe(false);
+    expect(listedType(ITEM_TYPES[1])).not.toHaveProperty('assigneeNotifies');
+  });
+
   it('lists what change_card_types set, the Default State by column name', () => {
     const r = applyCardTypeChanges(
       defaultCatalogue(),

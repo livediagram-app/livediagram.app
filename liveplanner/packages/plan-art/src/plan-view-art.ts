@@ -18,6 +18,8 @@ import {
   breakdownModel,
   cardsInStatuses,
   itemTitle,
+  measureNumber,
+  viewMeasureOf,
   metricBoard,
   planViewMetric,
   priorityMatrixModel,
@@ -130,6 +132,7 @@ function phaseLegend(body: Rect, p: PlanPalette): string {
 function workloadArt({ rect, p, items, data, settings, title }: ViewArtInput): string {
   const { by, field } = breakdownGroupingOf(settings);
   const counted = cardsInStatuses(items, settings.statuses);
+  const measure = viewMeasureOf(settings, data.types);
   const model = breakdownModel(
     counted.values(),
     data.statusPhases,
@@ -137,14 +140,15 @@ function workloadArt({ rect, p, items, data, settings, title }: ViewArtInput): s
     data.types,
     data.statusNames,
     data.items,
+    measure?.id,
   );
   const frame = viewFrame(
     rect,
     p,
     titled(breakdownTitle({ by, field }, data.types), title),
-    model.total,
+    Number(measureNumber(model.total)),
   );
-  if (model.total === 0) return frame.markup + emptyBody(frame.body, p, 'No cards yet.');
+  if (model.rows.length === 0) return frame.markup + emptyBody(frame.body, p, 'No cards yet.');
   const body = frame.body;
   const top = body.y + 32;
   const rows = model.rows;
@@ -184,7 +188,9 @@ function workloadArt({ rect, p, items, data, settings, title }: ViewArtInput): s
       );
       x += part;
     }
-    parts.push(line(x + 8, cy + 4, String(row.total), { size: 12, weight: 600, color: p.muted }));
+    parts.push(
+      line(x + 8, cy + 4, measureNumber(row.total), { size: 12, weight: 600, color: p.muted }),
+    );
   });
   return parts.join('');
 }

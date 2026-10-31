@@ -2,8 +2,8 @@
 
 // Add Field's second step, Shape (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field): All kinds back to
 // Pick, the kind as a pill, the built-in fields of the kind the type lacks as Ready to use (one press adds one), then
-// "Or make your own": the field's Name, only the settings its kind needs, Required, a live preview of a card holding
-// it, and one button, "Add {Name}", off until the field is ready (and saying what is missing).
+// "Or make your own": the field's Name, only the settings its kind needs, Required (and Notifies, a Person's), a
+// live preview of a card holding it, and one button, "Add {Name}", off until the field is ready (and saying what is missing).
 import { useId } from 'react';
 import {
   CUSTOM_FIELD_LABEL_MAX,
@@ -24,6 +24,7 @@ import {
   CUSTOM_KIND_LABELS,
   CalculationSelect,
   CurrencySelect,
+  NotifiesSwitch,
   RatingScaleSelect,
   RequiredSwitch,
 } from './ItemTypeFieldForms';
@@ -44,6 +45,7 @@ export function addedField(field: NewField): NewField {
     ...(field.kind === 'currency' ? {} : { currency: undefined }),
     ...(field.kind === 'calculated' ? {} : { calculation: undefined }),
     ...(field.required && canBeRequired(field.kind) ? {} : { required: undefined }),
+    ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
   };
 }
 
@@ -190,7 +192,7 @@ function ReadyToUse({
   );
 }
 
-// A field of the type's own: its Name, its kind's settings, Required and the preview.
+// A field of the type's own: its Name, its kind's settings, Required, Notifies (a Person field) and the preview.
 function ShapeOwn({
   ids,
   field,
@@ -261,6 +263,7 @@ function ShapeOwn({
         </div>
       ) : null}
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
+      <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
       <CustomFieldPreview
         label={field.label}
         kind={kind}

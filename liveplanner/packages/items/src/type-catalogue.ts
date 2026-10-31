@@ -316,6 +316,8 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
   if (input['onCard'] === true) field.onCard = true;
   // Kept only as true, and never on a Checkbox: anything else reads as optional rather than refusing the catalogue.
   if (input['required'] === true && canBeRequired(field.kind)) field.required = true;
+  // Kept only as true, and only on a Person field.
+  if (input['notifies'] === true && field.kind === 'person') field.notifies = true;
   return field;
 }
 
@@ -389,6 +391,12 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
   }
   const display = readCardDisplay(input['display'], id);
   if (display === null) return `${at}.display`;
+  // The Card Colour: a custom Colour field of the type's own; anything else reads as the built-in Colour.
+  const colourIn = input['colourField'];
+  const colourField =
+    typeof colourIn === 'string' && custom.some((f) => f.id === colourIn && f.kind === 'colour')
+      ? colourIn
+      : undefined;
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -407,6 +415,8 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     ...(excludedStatuses ? { excludedStatuses } : {}),
     ...(defaultStatus ? { defaultStatus } : {}),
     ...(display ? { display } : {}),
+    ...(input['assigneeNotifies'] === false ? { assigneeNotifies: false } : {}),
+    ...(colourField ? { colourField } : {}),
   };
 }
 
