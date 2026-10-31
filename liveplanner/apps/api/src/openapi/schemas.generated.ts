@@ -569,6 +569,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "Aggregate": {
+    "enum": [
+      "sum",
+      "average",
+      "min",
+      "max",
+      "count",
+      "countDone",
+      "earliest",
+      "latest"
+    ],
+    "type": "string"
+  },
   "Anchor": {
     "enum": [
       "n",
@@ -1232,6 +1245,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "childCount",
       "childrenDone",
+      "rollup",
+      "lookup",
       "formula"
     ],
     "type": "string"
@@ -2557,6 +2572,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CustomFieldDef": {
     "additionalProperties": false,
     "properties": {
+      "aggregate": {
+        "$ref": "#/components/schemas/Aggregate"
+      },
       "calculation": {
         "$ref": "#/components/schemas/Calculation"
       },
@@ -2610,6 +2628,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "showAs": {
         "const": "percent",
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "through": {
         "type": "string"
       }
     },

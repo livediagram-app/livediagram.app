@@ -3,7 +3,7 @@
 // The formula editor (docs/specs/026-plan/item-types.md "Formula fields", In the type editor): a Calculated field's
 // Formula written in place in its form, never a dialog. Its Result, a monospaced Formula box, a line checking it as it
 // is typed ("Works", or the problem), the type's fields and the functions as chips that write themselves at the caret,
-// and a Preview working it out on the type's first live card. The box holds the formula with names; the field keeps it
+// and a Preview working it out on the type's first live card (CalculatedPreview). The box holds the formula with names; the field keeps it
 // with ids (storedFormula), so a renamed field keeps working.
 import { useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
@@ -11,12 +11,8 @@ import {
   FORMULA_RESULTS,
   FORMULA_RESULT_LABELS,
   FUNCTION_NAMES,
-  calculatedText,
   formulaResultOf,
   formulaScopeOf,
-  isArchived,
-  isTrashed,
-  itemTitle,
   ITEM_TYPES,
   nameAsWritten,
   shownFormula,
@@ -24,12 +20,11 @@ import {
   typeIn,
   type CustomFieldDef,
   type FormulaResult,
-  type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
 import { Select, TextArea, lucideGlyph } from '@liveplanner/ui';
 import { lucideCircleCheck, lucideTriangleAlert } from '@liveworkspace/icons/lucide';
-import { calculatedFieldOutcome } from './calculated-values';
+import { CalculatedPreview } from './CalculatedPreview';
 import { usePlan } from './PlanContext';
 
 const CheckIcon = lucideGlyph(lucideCircleCheck, 13);
@@ -85,6 +80,18 @@ export function FormulaEditor({
   const [text, setText] = useState(() => shownFormula(field.formula ?? '', scope));
   const check = useMemo(() => storedFormula(text, scope, field.id), [text, scope, field.id]);
   const result = formulaResultOf(field);
+  const previewed = useMemo(
+    () =>
+      check.ok
+        ? {
+            kind: 'calculated' as const,
+            calculation: 'formula' as const,
+            ...field,
+            formula: check.formula,
+          }
+        : null,
+    [check, field],
+  );
 
   const write = (next: string) => {
     setText(next);
@@ -212,11 +219,12 @@ export function FormulaEditor({
           </button>
         ))}
       </ChipRow>
-      <FormulaPreview
+      <CalculatedPreview
         typeId={draft.typeId}
         typeLabel={draft.typeId ? type.label : undefined}
         type={type}
-        field={check.ok ? { ...field, formula: check.formula } : null}
+        field={previewed}
+        waiting="Waiting for a formula that works"
       />
     </div>
   );
@@ -230,78 +238,5 @@ function ChipRow({ label, id, children }: { label: string; id: string; children:
       </span>
       <div className="flex flex-wrap gap-1">{children}</div>
     </div>
-  );
-}
-
-// The type's first live card, in number order: the real card a formula is tried on.
-function previewCard(items: ReadonlyMap<string, Item>, typeId: string): Item | undefined {
-  let first: Item | undefined;
-  for (const it of items.values())
-    if (it.type === typeId && !isArchived(it) && !isTrashed(it) && (!first || it.key < first.key))
-      first = it;
-  return first;
-}
-
-// Preview: the formula worked out on a real card ("On #12 Website: £2,500"), its problem there, or why there is
-// nothing to try it on.
-function FormulaPreview({
-  typeId,
-  typeLabel,
-  type,
-  field,
-}: {
-  typeId: string | undefined;
-  typeLabel: string | undefined;
-  type: ItemTypeDef;
-  // The field with a working formula, or null while it doesn't work.
-  field: FormulaFieldDraft | null;
-}) {
-  const plan = usePlan();
-  const card = useMemo(
-    () => (plan && typeId ? previewCard(plan.items, typeId) : undefined),
-    [plan, typeId],
-  );
-  const def = field
-    ? { kind: 'calculated' as const, calculation: 'formula' as const, ...field }
-    : null;
-  const outcome = plan && card && def ? calculatedFieldOutcome(plan, def, card, type) : null;
-  const text = outcome?.ok && def ? calculatedText(def, outcome.value) : null;
-  return (
-    <figure
-      aria-label="Preview"
-      className="flex flex-col gap-1 rounded-xl bg-slate-100/80 p-2.5 dark:bg-slate-800/60"
-    >
-      <figcaption className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        Preview
-      </figcaption>
-      <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        {!card ? (
-          <p className="text-slate-500 dark:text-slate-400">
-            {typeLabel
-              ? `No ${typeLabel} card to try it on yet`
-              : 'No card of this type to try it on yet'}
-          </p>
-        ) : (
-          <p className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
-              On{' '}
-              <span className="tabular-nums text-slate-500 dark:text-slate-400">#{card.key}</span>{' '}
-              {itemTitle(card) || 'Untitled'}
-            </span>
-            {!def ? (
-              <span className="text-slate-500 dark:text-slate-400">
-                Waiting for a formula that works
-              </span>
-            ) : outcome && !outcome.ok ? (
-              <span className="text-red-700 dark:text-red-300">{outcome.error}</span>
-            ) : (
-              <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-50">
-                {text ?? 'No value'}
-              </span>
-            )}
-          </p>
-        )}
-      </div>
-    </figure>
   );
 }

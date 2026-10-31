@@ -4,6 +4,10 @@
 // matches a kind; and what a new field still needs before it can be added.
 import {
   isFormulaField,
+  isLookupField,
+  isRollupField,
+  aggregateOf,
+  aggregateReads,
   linkTypesOf,
   type CustomFieldDef,
   type CustomFieldKind,
@@ -173,7 +177,7 @@ export function kindMatches(
 
 export const hasOptions = (kind: CustomFieldKind) => kind === 'choice' || kind === 'multichoice';
 
-export type Readiness = 'name' | 'options' | 'links' | 'formula';
+export type Readiness = 'name' | 'options' | 'links' | 'formula' | 'through' | 'source';
 
 /** What a new field still needs before it can be added (null: nothing): a name, an option, a type it links to. */
 export function kindReadiness(field: Omit<CustomFieldDef, 'id'>): Readiness | null {
@@ -182,6 +186,15 @@ export function kindReadiness(field: Omit<CustomFieldDef, 'id'>): Readiness | nu
   if (field.kind === 'card' && linkTypesOf(field).length === 0) return 'links';
   // A Formula holds one only while it works (FormulaEditor): docs/specs/026-plan/item-types.md "Formula fields".
   if (isFormulaField(field) && !field.formula) return 'formula';
+  // A Lookup reads through one of the type's Card fields; a Rollup's calculation (but Count) and a Lookup read a
+  // field (docs/specs/026-plan/item-types.md "Rollup and Lookup fields").
+  if (isLookupField(field) && !field.through) return 'through';
+  if (
+    (isLookupField(field) ||
+      (isRollupField(field) && aggregateReads(aggregateOf(field)) !== 'none')) &&
+    !field.source
+  )
+    return 'source';
   return null;
 }
 
@@ -190,6 +203,8 @@ export const READINESS_HINT: Record<Readiness, string> = {
   options: 'Add at least one option.',
   links: 'Pick a card type it links to.',
   formula: 'Write a formula that works.',
+  through: 'Pick a Link to Card field to read through.',
+  source: 'Pick a field to read.',
 };
 
 export const CUSTOM_MAX_NOTE = (max: number) =>

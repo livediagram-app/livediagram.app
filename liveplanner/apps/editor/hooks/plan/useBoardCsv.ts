@@ -9,6 +9,7 @@ import {
   boardCsvMessage,
   boardCsvRows,
   boardTakesCsv,
+  donePhase,
   type PlanBoardSetup,
 } from '@liveplanner/items';
 import { parseCsv, toCsv } from '@liveplanner/sheets';
@@ -28,11 +29,16 @@ export const BOARD_CSV_MAX_BYTES = 5 * 1024 * 1024;
 export const BOARD_CSV_TOO_BIG =
   'That file is too big to import. Import CSV reads files up to 5 MB.';
 
-type Plan = Pick<PlanContextValue, 'items' | 'types' | 'statusNames'>;
+type Plan = Pick<PlanContextValue, 'items' | 'types' | 'statusNames'> &
+  Partial<Pick<PlanContextValue, 'statusPhases'>>;
 
 export function boardCsvText(plan: Plan, setup: PlanBoardSetup): string {
   // A download: no field runs as a formula in the spreadsheet that opens it (sheet.md "CSV").
-  return toCsv(boardCsvRows(setup, plan.items, plan.types, plan.statusNames), { safe: true });
+  // A Rollup's Count Done by the plan's done columns (docs/specs/026-plan/item-types.md "Rollup and Lookup fields").
+  const isDone = plan.statusPhases ? donePhase(plan.statusPhases) : undefined;
+  return toCsv(boardCsvRows(setup, plan.items, plan.types, plan.statusNames, isDone), {
+    safe: true,
+  });
 }
 
 // Reads a file's text into new cards on the board as one write; answers what the board then says.

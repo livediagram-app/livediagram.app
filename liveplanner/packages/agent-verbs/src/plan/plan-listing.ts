@@ -42,6 +42,12 @@ import {
   formulaScopeOf,
   isFormulaField,
   shownFormula,
+  aggregateOf,
+  isLookupField,
+  isRollupField,
+  calculatedResultOf,
+  readableFieldsOf,
+  rollupProblem,
   type CalculatedValue,
   type CustomFieldDef,
 } from '@liveplanner/items';
@@ -106,6 +112,12 @@ export interface ListedType {
     formula?: string;
     result?: string;
     formulaError?: string;
+    // A Rollup's or Lookup's Card field and field by name ("all" for every child), a Rollup's calculation, and why
+    // it stopped working (docs/specs/026-plan/item-types.md "Rollup and Lookup fields").
+    through?: string;
+    aggregate?: string;
+    source?: string;
+    error?: string;
     // A share drawn as a Percent field is (docs/specs/026-plan/item-types.md "Percent").
     showAs?: 'percent';
     readOnly?: true;
@@ -202,6 +214,30 @@ function listedFormula(f: CustomFieldDef, t: ItemTypeDef) {
   };
 }
 
+// A Rollup or Lookup as an agent reads it (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"): the Card
+// field it reads through and the field it reads, by name (as change_card_types takes them back; "all" for every
+// child), a Rollup's calculation, its result, and why it stopped working when it has.
+function listedRollup(f: CustomFieldDef, t: ItemTypeDef, types: readonly ItemTypeDef[]) {
+  const rollup = isRollupField(f);
+  const nameOf = (id: string | undefined): string | undefined => {
+    if (id === undefined) return undefined;
+    for (const ty of types) {
+      const hit = readableFieldsOf(ty).find((r) => r.id === id);
+      if (hit) return hit.name;
+    }
+    return id;
+  };
+  const problem = types.length ? rollupProblem(f, t, types) : null;
+  return {
+    through: rollup && !f.through ? 'all' : nameOf(f.through),
+    ...(rollup ? { aggregate: aggregateOf(f) } : {}),
+    ...(f.source ? { source: nameOf(f.source) } : {}),
+    result: calculatedResultOf(f),
+    ...(f.result === 'currency' ? { currency: f.currency ?? CURRENCY_DEFAULT } : {}),
+    ...(problem ? { error: problem } : {}),
+  };
+}
+
 // An item's fields with its custom fields under their names ("Severity"), as writes name them; a custom field its
 // type no longer has keeps its id. A card link (Parent, a Card field) reads as its card's number and title
 // ("#12 Fix login"), which writes take back. A Calculated field's value, worked out (`calculated`), is listed too.
@@ -253,7 +289,12 @@ function listedValue(
 
 // A card type as list_items answers it: everything change_card_types sets, by the names it takes. Its Default
 // State by column name when `statuses` has it.
-export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] = []): ListedType {
+export function listedType(
+  t: ItemTypeDef,
+  statuses: readonly PlanStatusName[] = [],
+  // The catalogue, naming the fields a Rollup or Lookup reads on other types.
+  types: readonly ItemTypeDef[] = [t],
+): ListedType {
   const fieldName = (f: string) => (t.custom ?? []).find((c) => c.id === f)?.label ?? f;
   const status = t.defaultStatus;
   return {
@@ -272,6 +313,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.kind === 'rating' ? { scale: ratingScaleOf(f) } : {}),
       ...(f.kind === 'calculated' ? { calculation: f.calculation } : {}),
       ...(isFormulaField(f) ? listedFormula(f, t) : {}),
+      ...(isRollupField(f) || isLookupField(f) ? listedRollup(f, t, types) : {}),
       ...(f.kind === 'calculated' && showsAsPercent(f) ? { showAs: 'percent' as const } : {}),
       ...(f.kind === 'calculated' ? { readOnly: true as const } : {}),
       ...(f.onCard ? { onCard: true } : {}),
@@ -293,7 +335,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
 
 // Each of `types` listed against the plan's columns.
 export const listedTypes = (types: readonly ItemTypeDef[], statuses: readonly PlanStatusName[]) =>
-  types.map((t) => listedType(t, statuses));
+  types.map((t) => listedType(t, statuses, types));
 
 // The plan, narrowed by a filter resolveListingFilter resolved.
 export function planListing(state: PlanState, filter: ResolvedListingFilter = {}): PlanListing {
@@ -302,6 +344,8 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
     .filter((i) => !isTrashed(i) && !isArchived(i))
     .sort((a, b) => compareRank(a.rank, b.rank) || a.key - b.key);
   const onABoard = new Set<string>();
+  const byId = new Map(state.items.map((i) => [i.id, i]));
+  const isDone = doneStatusesOf(plan.boards);
   const boards = plan.boards.map((b): ListedBoard => {
     const filed = b.kind === 'board';
     return {
@@ -324,6 +368,8 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
               ),
               b.sortBy,
               plan.types,
+              byId,
+              isDone,
             )
           : [];
         for (const i of cards) onABoard.add(i.id);
@@ -337,11 +383,10 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
       }),
     };
   });
-  const byId = new Map(state.items.map((i) => [i.id, i]));
   // Calculated fields (docs/specs/026-plan/item-types.md "Calculated fields"), worked out from what was read, and only
   // when a type has one.
   const calc = hasCalculatedFields(plan.types)
-    ? { index: childIndexOf(state.items, plan.types), isDone: doneStatusesOf(plan.boards) }
+    ? { index: childIndexOf(state.items, plan.types), isDone }
     : null;
   const items = [...state.items]
     .filter((i) => !filter.type || i.type === filter.type)
@@ -359,7 +404,14 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
         plan.types,
         byId,
         calc
-          ? calculatedValuesOf(i, typeIn(plan.types, i.type), calc.index, calc.isDone, byId)
+          ? calculatedValuesOf(
+              i,
+              typeIn(plan.types, i.type),
+              calc.index,
+              calc.isDone,
+              byId,
+              plan.types,
+            )
           : undefined,
       ),
     }));

@@ -378,7 +378,7 @@ describe('problems', () => {
     };
     const cards: Item[] = [];
     for (let i = 0; i < 12; i += 1)
-      cards.push(item({ title: `S${i}`, 'f-prev': cards[i - 1]?.id }, { type: 'step' }));
+      cards.push(item({ title: `S${i}`, 'f-prev': cards[i - 1]?.id ?? null }, { type: 'step' }));
     const items = new Map(cards.map((c) => [c.id, c]));
     const out = calculatedOutcome(
       chain.custom![1]!,
@@ -616,13 +616,7 @@ describe('every surface', () => {
   });
 
   it('exports its value in CSV, and sheets read it by name', () => {
-    const rows = boardCsvRows(
-      { ...setup, addTypes: ['project'] } as PlanBoardSetup,
-      items,
-      types,
-      undefined,
-      isDone,
-    );
+    const rows = boardCsvRows({ ...setup, addTypes: ['project'] }, items, types, undefined, isDone);
     const header = rows[0]!;
     const launch = rows.find((r) => r[1] === 'Launch')!;
     expect(launch[header.indexOf('Total Points')]).toBe('9');
@@ -756,7 +750,7 @@ describe('the catalogue and agents', () => {
   };
   const base = { version: ITEM_TYPE_CATALOGUE_VERSION, types: [small, task, note] };
   const change = (changes: Parameters<typeof applyCardTypeChanges>[1]) =>
-    applyCardTypeChanges(base, changes);
+    applyCardTypeChanges(base, changes, []);
   const field = (r: ReturnType<typeof change>, type: string, label: string) =>
     r.ok
       ? r.catalogue!.types.find((t) => t.id === type)!.custom!.find((c) => c.label === label)

@@ -16,6 +16,8 @@ import {
   type Calculation,
   canBeRequired,
   isFormulaField,
+  isLookupField,
+  isRollupField,
   canShowAsPercent,
   type CustomFieldDef,
   type CustomFieldKind,
@@ -28,6 +30,7 @@ import { hasOptions, type PickKind } from './add-field-kinds';
 import { optionsFrom } from './ChoiceOptionsEditor';
 import { LinksToPicker } from './LinksToPicker';
 import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
+import { RollupEditor } from './RollupEditor';
 import { track } from '@/lib/telemetry';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
@@ -155,17 +158,33 @@ const CALCULATION_LINES: Record<Calculation, string> = {
     'Worked out from the cards that link here with a Link to Card field. It can\u2019t be typed.',
   childrenDone:
     'Worked out from the cards that link here with a Link to Card field. Done means in a done column. It can\u2019t be typed.',
+  rollup:
+    'Worked out from one field of the cards that link here, totalled, averaged, counted or dated. It can\u2019t be typed.',
+  lookup: 'Shows a field of the card a Link to Card field links to. It can\u2019t be typed.',
   formula: 'Worked out from this card\u2019s own fields by a formula. It can\u2019t be typed.',
 };
 
 // The patch picking a calculation makes: a Formula's settings go with any other (item-types.md "Formula fields").
 export function calculationPatch(calculation: Calculation): Partial<CustomFieldDef> {
   // A new Formula gives a Number until its Result is picked, so it shows no share yet.
+  const settingsOff = { through: undefined, aggregate: undefined, source: undefined };
   if (calculation === 'formula') {
     track('Plan', 'Changed', 'FieldFormula');
-    return { calculation, showAs: undefined };
+    return {
+      calculation,
+      showAs: undefined,
+      result: undefined,
+      currency: undefined,
+      ...settingsOff,
+    };
   }
-  const off = { calculation, formula: undefined, result: undefined, currency: undefined };
+  const off = {
+    calculation,
+    formula: undefined,
+    result: undefined,
+    currency: undefined,
+    ...settingsOff,
+  };
   // A Child Count is no share, so it stops showing as a Percent.
   return canShowAsPercent({ kind: 'calculated', calculation })
     ? off
@@ -397,6 +416,9 @@ export function CustomFieldForm({
             />
           }
         />
+      ) : null}
+      {(isRollupField(field) || isLookupField(field)) && formulaDraft ? (
+        <RollupEditor field={field} draft={formulaDraft} onChange={onChange} />
       ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
       {hasOptions(field.kind) ? (

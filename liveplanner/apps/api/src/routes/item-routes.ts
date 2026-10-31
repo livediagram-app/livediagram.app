@@ -169,10 +169,11 @@ async function calculatedFor(
   const isDone = doneStatusesOf(boards);
   const index = childIndexOf(items, types);
   const out: Record<string, Record<string, CalculatedValue>> = {};
-  // The cards by id, for a Formula's Card fields ("#12 Title"; docs/specs/026-plan/item-types.md "Formula fields").
+  // The cards by id, for a Formula's Card fields ("#12 Title"; docs/specs/026-plan/item-types.md "Formula fields") and
+  // a Lookup's linked card ("Rollup and Lookup fields").
   const byId = new Map(items.map((i) => [i.id, i]));
   for (const it of items) {
-    const values = calculatedValuesOf(it, typeIn(types, it.type), index, isDone, byId);
+    const values = calculatedValuesOf(it, typeIn(types, it.type), index, isDone, byId, types);
     if (values) out[it.id] = values;
   }
   return out;

@@ -8,7 +8,7 @@
 import {
   calculatedText,
   calculationOf,
-  isFormulaField,
+  hasResult,
   percentShown,
   type CustomFieldDef,
   type FormulaOutcome,
@@ -72,7 +72,7 @@ export function CalculatedFieldValue({
         <span className="min-w-0 break-words tabular-nums">{text}</span>
       ) : (
         <span className="text-slate-500 dark:text-slate-400">
-          {isFormulaField(field) ? 'No value' : 'No linked cards'}
+          {hasResult(field) ? 'No value' : 'No linked cards'}
         </span>
       )}
       {share !== null ? (
