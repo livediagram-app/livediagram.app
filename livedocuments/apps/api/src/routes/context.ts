@@ -76,6 +76,10 @@ export type RouteContext = {
   // the X-Index-Grant the request carried, checked, or one the worker fetched for it (routes/documents.ts). It is
   // the whole of who may do what to a document; null or for another document, nothing.
   grant?: DocumentGrant | null;
+  // The document's Community post's link as the document's room holds it (document-room/community-post.ts): a grant
+  // through `code` is a content-only pass while the post is `open`, and no pass at all otherwise (grantOn). Unset
+  // outside a document's own routes, and null for a document with no post.
+  community?: { code: string; open: boolean } | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real
@@ -104,17 +108,42 @@ export function grantCallerOf(ctx: RouteContext): GrantCaller {
 // What a caller holds on a document (docs/specs/013-workspace/share-roles.md): a level, the one tab it is confined to
 // (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. All of it is the
 // index's grant, read here; a workbench session holds no more than its own level.
+//
+// `community` marks a grant through the document's Community post's link (docs/specs/025-community/community.md
+// "Viewing a post's document"): read-only like any view link, and a content-only pass: no realtime room and no
+// comments.
 export type DocumentAccess = {
   role: ShareRole;
   tabScope: string | null;
   shareCode: string | null;
+  community: boolean;
 };
 
-export function grantOn(ctx: RouteContext, documentId: string): DocumentAccess | null {
+// A Community post's link is refused unless the door passes `COMMUNITY_CONTENT` (docs/specs/025-community/
+// community.md "Viewing a post's document"): the link is a content-only pass, so the document and its tabs serve it,
+// and comments, history, the timeline and any door added later do not. Fail closed, like the tab scope.
+export const COMMUNITY_CONTENT = { community: true } as const;
+type GateOptions = { community?: boolean };
+
+export function grantOn(
+  ctx: RouteContext,
+  documentId: string,
+  opts: GateOptions = {},
+): DocumentAccess | null {
   const grant = ctx.grant;
   if (!grant || grant.item !== documentId) return null;
+  const post = ctx.community ?? null;
+  const community = grant.shareCode !== null && post !== null && grant.shareCode === post.code;
+  // A post hidden after reports, off the Community, or no longer its author's own opens nothing through its link.
+  if (community && (!post.open || !opts.community)) return null;
   const role = ctx.workbench ? capWorkbenchRole(grant.level, ctx.workbench.level) : grant.level;
-  return { role, tabScope: grant.tab, shareCode: grant.shareCode };
+  // A Community post's link opens to view, whatever the index's link says.
+  return {
+    role: community ? 'view' : role,
+    tabScope: grant.tab,
+    shareCode: grant.shareCode,
+    community,
+  };
 }
 
 // The ladder (docs/specs/013-workspace/share-roles.md): every level holds everything below it. `tabId` names the
@@ -168,14 +197,26 @@ export async function gateEdit(
 
 // The caller's grant on a document, scope included, for the doors that narrow
 // what they return to a scoped visitor's tab rather than refuse them
-// (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
+// (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access. A Community post's link answers null
+// unless the door passes `COMMUNITY_CONTENT`.
 export async function gateGrant(
   ctx: RouteContext,
   documentId: string,
-  _documentOwnerId?: string,
+  _documentOwnerId?: string | null,
   _documentTeamId?: string | null,
+  opts: GateOptions = {},
 ): Promise<DocumentAccess | null> {
-  return grantOn(ctx, documentId);
+  return grantOn(ctx, documentId, opts);
+}
+
+// Is `ctx` the document's owner, as the document knows it? Only the doors that show the owner more (publishing to
+// the Community) ask; who may change or share the document is the index's.
+export async function ownsDocument(
+  ctx: RouteContext,
+  liveDoc: { id: string; ownerId: string },
+): Promise<boolean> {
+  const caller = ctx.resolveOwner();
+  return caller !== null && caller === liveDoc.ownerId && grantOn(ctx, liveDoc.id) !== null;
 }
 
 // The resolved caller id, or the 400 to return when no token identifies the caller.

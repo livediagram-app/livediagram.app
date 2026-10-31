@@ -5,3 +5,4 @@ export * from './client';
 export * from './post';
 export * from './owner-route';
 export * from './mine-route';
+export * from './redact';

@@ -3,7 +3,11 @@
 // workspace to whoever presents it. So "who gets to see it" is a security
 // rule, and it gets a suite of its own rather than living inside one route's.
 import { describe, expect, it } from 'vitest';
-import { redactDocumentForReader, redactDocumentForScope } from './redact-document';
+import {
+  redactDocumentForCommunity,
+  redactDocumentForReader,
+  redactDocumentForScope,
+} from './redact-document';
 import type { DocumentDTO } from './types';
 
 // A guest-owned document: the owner id is the UUID that identifies that
@@ -98,5 +102,53 @@ describe('redactDocumentForScope', () => {
 
   it('hands an unscoped reader the document untouched', () => {
     expect(redactDocumentForScope(full, null)).toBe(full);
+  });
+});
+
+// A Community visitor (docs/specs/025-community/community.md "Viewing a post's document"): the post names its author
+// itself, so the document names nobody, and the deck keeps its slides without what the presenter means to say.
+describe('redactDocumentForCommunity', () => {
+  const posted = {
+    ...liveDoc,
+    ownerName: 'Ada',
+    ownerColor: '#f97316',
+    folderId: 'f1',
+    source: 'mcp',
+    presentation: JSON.stringify({
+      decks: [
+        {
+          slides: [
+            { id: 's1', tabId: 't1', elementIds: ['e1'], name: 'Intro', notes: 'Say hello first' },
+            { id: 's2', tabId: 't1', elementIds: [] },
+          ],
+        },
+      ],
+    }),
+  } as DocumentDTO;
+
+  it('names nobody and says nothing of where the document sits or came from', () => {
+    const out = redactDocumentForCommunity(posted);
+    expect(out).toMatchObject({ ownerName: null, ownerColor: null, folderId: null, source: null });
+    expect(out.name).toBe('Plan');
+  });
+
+  it('keeps the slides without their presenter notes', () => {
+    const out = redactDocumentForCommunity(posted);
+    expect(JSON.parse(out.presentation!)).toEqual({
+      decks: [
+        {
+          slides: [
+            { id: 's1', tabId: 't1', elementIds: ['e1'], name: 'Intro' },
+            { id: 's2', tabId: 't1', elementIds: [] },
+          ],
+        },
+      ],
+    });
+    expect(out.presentation).not.toContain('Say hello');
+  });
+
+  it('carries no deck when the document has none, or it does not parse', () => {
+    expect(redactDocumentForCommunity({ ...posted, presentation: null }).presentation).toBeNull();
+    expect(redactDocumentForCommunity({ ...posted, presentation: '{' }).presentation).toBeNull();
   });
 });

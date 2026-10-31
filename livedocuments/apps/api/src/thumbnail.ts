@@ -20,6 +20,7 @@ import {
 import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import { getTab, getTabBody, type StoredTabBody, servableImageIds } from './db';
 import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
+import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { mediaClient } from './media';
 import type { DocumentEnv } from './types';
 
@@ -36,13 +37,36 @@ const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 export type DrawSubject = { id: string; name: string };
 
 // The first tab (or `tabId`) drawn, or null when there is nothing to draw: no tab, an empty or unparseable one.
+// `community`: a Community visitor's drawing (docs/specs/025-community/community.md "Viewing a post's document"),
+// from the redacted tab, so comment threads, their authors and action assignees never reach the public card image.
 export async function drawDocument(
   env: DocumentEnv,
   doc: DrawSubject,
   tabId: string | null,
+  community = false,
 ): Promise<string | null> {
   const body = tabId ? await getTabBody(env, doc.id, tabId) : await getTabBody(env, doc.id);
-  return renderTabBodyToSvg(env, doc, body);
+  return renderTabBodyToSvg(env, doc, body, community);
+}
+
+// Something to show, for a Community post (docs/specs/025-community/community.md "Publishing"): the first tab's first
+// page has at least one element, since that page is the post's card picture. Counted from the stored body, never
+// rendered; a tab with no pages counts its elements.
+export async function firstPageHasElements(env: DocumentEnv, documentId: string): Promise<boolean> {
+  const body = await getTabBody(env, documentId);
+  if (!body) return false;
+  let parsed: Partial<Tab>;
+  try {
+    parsed = JSON.parse(body.data) as Partial<Tab>;
+  } catch {
+    return false;
+  }
+  if (!Array.isArray(parsed.elements) || parsed.elements.length === 0) return false;
+  const tab = migrateStoredTab({ id: documentId, name: '', ...parsed } as Tab);
+  const pages = laidOutPagesOf(tab);
+  const firstPage = pages[0];
+  if (!firstPage) return tab.elements.length > 0;
+  return elementsOnPage(tab.elements, pages, firstPage.id).length > 0;
 }
 
 // One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
@@ -76,6 +100,7 @@ async function renderTabBodyToSvg(
   env: DocumentEnv,
   liveDoc: DrawSubject,
   body: StoredTabBody | null,
+  community = false,
 ): Promise<string | null> {
   if (!body) return null;
   let parsed: Partial<Tab>;
@@ -91,7 +116,8 @@ async function renderTabBodyToSvg(
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
   // Settled like every other stored-tab read (docs/specs/011-theme/retired-schemes.md "Where a stored tab is settled").
-  const tab = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
+  const stored = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
+  const tab = community ? redactTabForCommunity(stored) : stored;
   // A Pages tab previews as its first page alone, drawn as an export draws it
   // (docs/specs/006-document/document-snapshots.md "Pages tabs"): every page side by
   // side on the canvas shrinks to a row of slivers nobody can read at preview size.

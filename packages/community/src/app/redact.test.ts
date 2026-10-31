@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
 import {
   redactElementsForCommunity,
   redactTabDataForCommunity,
   redactTabForCommunity,
-} from './community-redact';
+} from './redact';
 
 // What a Community link sees of a tab and what a copy through it carries
-// (docs/specs/025-community/community.md "Viewing a post's document").
+// (each app's 025-community "Viewing a post's document").
 
 const action = {
   id: 'a1',
@@ -31,7 +30,7 @@ const elements = [
     action,
   },
   { id: 'panel', type: 'actions', actions: [action, { ...action, id: 'a2' }] },
-] as unknown as Element[];
+] as unknown as object[];
 
 describe('redactElementsForCommunity', () => {
   const out = redactElementsForCommunity(elements) as unknown as Record<string, unknown>[];
@@ -105,7 +104,7 @@ describe('the collaboration cards and the dot vote', () => {
       type: 'shape',
       rollCall: [{ name: 'Aisha Khan', color: '#0f0', at: 1 }],
     },
-  ] as unknown as Element[];
+  ] as unknown as object[];
 
   it('keeps the tallies and loses the people', () => {
     const tab = redactTabForCommunity({

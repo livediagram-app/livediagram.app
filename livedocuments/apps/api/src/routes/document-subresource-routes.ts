@@ -2,6 +2,7 @@
 // changesets.
 
 import { handleTabLink } from './tab-link-route';
+import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
@@ -15,6 +16,7 @@ import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import {
+  COMMUNITY_CONTENT,
   deniedOnTab,
   gateEdit,
   gateGrant,
@@ -92,7 +94,8 @@ export async function handleDocumentSubresources(
       // Naming the tab confines a tab-scoped link to its own tab
       // (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab reads as missing: 404, no
       // existence leak.
-      const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId);
+      // The grant itself, not a yes/no: it already says whether the visitor came through a Community link.
+      const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId, COMMUNITY_CONTENT);
       if (!grant || (grant.tabScope !== null && grant.tabScope !== tabId)) {
         return deniedOnTab(ctx, existing);
       }
@@ -105,10 +108,15 @@ export async function handleDocumentSubresources(
       // id (so they can delete-own), never another participant's owner
       // id. The document owner sees everything (viewerId === ownerId is a
       // no-op). Same anti-claim posture as redactOwner on the document.
+      //
+      // A Community visitor gets the tab without its conversation or its people
+      // (docs/specs/025-community/community.md "Viewing a post's document").
       const safe =
         owner === existing.ownerId
           ? tab
-          : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+          : grant.community
+            ? redactTabForCommunity(tab)
+            : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe, owner);
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.

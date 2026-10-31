@@ -33,7 +33,12 @@ import {
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { documentDates, isDocumentSource } from '@livedocuments/api-schema';
-import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
+import {
+  redactDocumentForCommunity,
+  redactDocumentForReader,
+  redactDocumentForScope,
+} from '../redact-document';
+import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { answerOverview, parseViewQuery } from './document-views-route';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { relayDocumentRename } from '../room-client';
@@ -56,6 +61,7 @@ import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleDocumentIndexRoutes, handleDocumentList } from './document-index-routes';
 import { resolveDocumentGrant } from './document-grant';
 import {
+  COMMUNITY_CONTENT,
   gateEdit,
   gateGrant,
   grantCallerOf,
@@ -386,16 +392,20 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       // guessed id can't probe existence.
       const view = parseViewQuery(new URL(request.url), 'document');
       if (view instanceof Response) return view;
-      const grant = await gateGrant(ctx, id);
+      const grant = await gateGrant(ctx, id, null, null, COMMUNITY_CONTENT);
       if (!grant) return notFound();
       const d = await startedDocument(ctx, id);
       if (!d) return missingDocument(ctx, id);
-      // Redacted for every non-owner (redact-document.ts); a tab-scoped visitor
+      // Redacted for every non-owner (redact-document.ts); a Community visitor sees the post's redactions
+      // (docs/specs/025-community/community.md); a tab-scoped visitor
       // (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
       const reader = redactDocumentForReader(d, ctx.resolveOwner());
-      const liveDoc = redactDocumentForScope(reader, grant.tabScope);
+      const liveDoc = redactDocumentForScope(
+        grant.community ? redactDocumentForCommunity(reader) : reader,
+        grant.tabScope,
+      );
       // The overview view (docs/specs/024-agents/document-views.md), after the same gate and scope.
-      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope, grant.community);
       return json({ document: liveDoc });
     }
     if (request.method === 'PUT') {
@@ -450,6 +460,13 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         ctx.waitUntil?.(relayDocumentRename(env, id, liveDoc.name, liveDoc.tabs));
       return json({ document: liveDoc ? redactDocumentForReader(liveDoc, owner) : liveDoc });
     }
+  }
+
+  // /api/documents/<id>/community: publish to, edit in or remove from Community
+  // (docs/specs/025-community/community.md).
+  {
+    const communityResp = await handleCommunityOwnerRoutes(ctx);
+    if (communityResp) return communityResp;
   }
 
   // /api/documents/<id>/shared-tabs — what a delete leaves behind in other
