@@ -105,9 +105,7 @@ describe('the Community tab on liveworkspace.app', () => {
     expect(communityShareOf({ ...canvas, ownerId: 'user_b' }, account, true, '')).toBeUndefined();
     expect(communityShareOf(canvas, null, true, '')).toBeUndefined();
     expect(communityShareOf(canvas, account, false, '')).toBeUndefined();
-    expect(
-      communityShareOf({ ...canvas, app: 'liveplanner' as Item['app'] }, account, true, ''),
-    ).toBeUndefined();
+    expect(communityShareOf({ ...canvas, app: 'liveplanner' }, account, true, '')).toBeUndefined();
     expect(
       communityShareOf({ ...canvas, app: 'nope' as never }, account, true, ''),
     ).toBeUndefined();
