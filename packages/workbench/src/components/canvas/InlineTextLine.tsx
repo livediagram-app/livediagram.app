@@ -78,7 +78,9 @@ export function InlineTextLine({
         dir="auto"
         role="textbox"
         aria-label={ariaLabel}
-        tabIndex={editable ? 0 : -1}
+        // Not focusable at all while inert: the element around it is one `img`, and a focusable
+        // line inside it (even at -1) is a control nested in another (axe nested-interactive).
+        tabIndex={editable ? 0 : undefined}
         onFocus={() => setEditing(true)}
         onBlur={commit}
         // The canvas would otherwise read a press here as the start of a drag
