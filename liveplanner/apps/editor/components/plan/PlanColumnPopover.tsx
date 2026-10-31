@@ -1,7 +1,8 @@
 'use client';
 
 // A column's settings (docs/specs/026-plan/plan-board.md "The board set-up"): the popover a column's cog
-// opens, hanging under the cog. A toolbar on top (Move Left and Move Right at the start, Remove Column at the end),
+// opens, hanging under the cog. A toolbar on top (Move Left and Move Right at the start, then Collapse Column where the
+// board offers it, Remove Column at the end),
 // then its name as the header; colour, WIP limit (a stepper), width and Counts as Done (a switch); add a column
 // after it (the column picker: an existing status, or a new one); delete its status, first asking where its cards
 // go when it has any. Each change is one element edit, made as it happens. Escape or an outside press closes it;
@@ -26,10 +27,12 @@ import {
 } from '@liveplanner/ui';
 import { plural } from '@liveplanner/project';
 import { Portal, Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideBetweenVerticalEnd } from '@liveworkspace/icons/lucide';
+import { lucideBetweenVerticalEnd, lucidePanelLeftClose } from '@liveworkspace/icons/lucide';
 
 // Remove Column's glyph: a column taken out from between its neighbours.
 const ColumnOffIcon = lucideGlyph(lucideBetweenVerticalEnd, 16);
+// Collapse Column's glyph: the column folded to the left, as the chevron on its head.
+const CollapseColumnIcon = lucideGlyph(lucidePanelLeftClose, 16);
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
@@ -100,6 +103,7 @@ export function PlanColumnPopover({
   onMoveCards,
   onTrashCards,
   onDeleteStatus,
+  onCollapse,
   onClose,
 }: {
   getAnchor: () => HTMLElement | null;
@@ -115,6 +119,8 @@ export function PlanColumnPopover({
   onClose: (restoreFocus: boolean) => void;
   // Delete Status: the state's columns come off the project's other boards too.
   onDeleteStatus?: ((status: string) => void) | undefined;
+  // Collapse Column, for this person alone (docs/specs/026-plan/plan-board.md "Collapse Column"); absent on a phone.
+  onCollapse?: (() => void) | undefined;
 }) {
   const mobile = useIsMobileViewport();
   const box = useRef<HTMLDivElement>(null);
@@ -225,23 +231,39 @@ export function PlanColumnPopover({
         aria-label="Column actions"
         className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-2 py-1.5 dark:border-slate-800 dark:bg-slate-800/30"
       >
-        {/* Move Left and Move Right, one segmented control as the width's is. */}
-        <div className="flex h-8 overflow-hidden rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-          <ToolbarButton
-            label="Move Left"
-            disabled={at <= 0}
-            onClick={() => onChange(moveColumn(setup, column.id, -1), 'ColumnReordered')}
-          >
-            <ChevronLeftIcon size={16} />
-          </ToolbarButton>
-          <span aria-hidden className="w-px bg-slate-200 dark:bg-slate-700" />
-          <ToolbarButton
-            label="Move Right"
-            disabled={at >= setup.columns.length - 1}
-            onClick={() => onChange(moveColumn(setup, column.id, 1), 'ColumnReordered')}
-          >
-            <ChevronRightIcon size={16} />
-          </ToolbarButton>
+        <div className="flex items-center gap-1.5">
+          {/* Move Left and Move Right, one segmented control as the width's is. */}
+          <div className="flex h-8 overflow-hidden rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+            <ToolbarButton
+              label="Move Left"
+              disabled={at <= 0}
+              onClick={() => onChange(moveColumn(setup, column.id, -1), 'ColumnReordered')}
+            >
+              <ChevronLeftIcon size={16} />
+            </ToolbarButton>
+            <span aria-hidden className="w-px bg-slate-200 dark:bg-slate-700" />
+            <ToolbarButton
+              label="Move Right"
+              disabled={at >= setup.columns.length - 1}
+              onClick={() => onChange(moveColumn(setup, column.id, 1), 'ColumnReordered')}
+            >
+              <ChevronRightIcon size={16} />
+            </ToolbarButton>
+          </div>
+          {/* Collapse Column: the column becomes a strip for this person; the popover goes with its head. */}
+          {onCollapse && !mobile ? (
+            <div className="flex h-8 overflow-hidden rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+              <ToolbarButton
+                label="Collapse Column"
+                onClick={() => {
+                  onClose(false);
+                  onCollapse();
+                }}
+              >
+                <CollapseColumnIcon />
+              </ToolbarButton>
+            </div>
+          ) : null}
         </div>
         {others.length > 0 ? (
           <Tooltip label="Remove Column">

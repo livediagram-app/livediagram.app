@@ -257,6 +257,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                                                          |
 | Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                                                         |
 | Rows take the kind's roles                                                                 | `apps/editor/components/primitives/PortalMenu.test.tsx`                                                   |
+| Row labels left-aligned, icon level with the first line                                    | `../packages/workbench/src/components/primitives/MenuActionRow.layout.test.tsx`                           |
 | Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
 | Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                                        |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/editor/e2e/menu-keyboard.spec.ts`                                                               |

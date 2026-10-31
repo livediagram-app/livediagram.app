@@ -1,4 +1,4 @@
-import { titleCase } from '@livediagram/api-schema';
+import { isUntitledName, titleCase } from '@livediagram/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
 export type TemplateKind =
@@ -787,5 +787,5 @@ let DEFAULT_NAMES: ReadonlySet<string> | null = null;
  */
 export function isDefaultDocumentName(name: string): boolean {
   DEFAULT_NAMES ??= new Set(TEMPLATES.map((t) => untitledNameForTemplate(t.kind)));
-  return isUntitledDocumentName(name) || DEFAULT_NAMES.has(name);
+  return isUntitledDocumentName(name) || isUntitledName(name) || DEFAULT_NAMES.has(name);
 }

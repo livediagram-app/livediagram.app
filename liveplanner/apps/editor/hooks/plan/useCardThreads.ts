@@ -95,6 +95,9 @@ function trackAction(action: ThreadAction): void {
       return track('Comment', 'Changed', 'Item');
     case 'delete':
       return track('Comment', 'Deleted', 'Item');
+    // Not counted yet (docs/specs/012-collaboration/comment-reactions.md "Telemetry").
+    case 'react':
+      return;
     case 'resolve':
       return action.resolved
         ? track('Comment', 'Resolved', 'Item')
@@ -133,6 +136,15 @@ function localChange(
       };
     case 'delete':
       return { kind: 'remove', commentId: action.commentId };
+    case 'react':
+      return {
+        kind: 'react',
+        commentId: action.commentId,
+        emoji: action.emoji,
+        by: action.key,
+        name: who.by.name,
+        on: action.on,
+      };
     case 'resolve':
       return { kind: 'resolve', resolved: action.resolved, by: who.by.name };
     case 'rename': {

@@ -361,3 +361,66 @@ describe('mergeLedgerAnswersIntoTab (docs/specs/013-workspace/share-roles.md "In
     expect(who(mergeLedgerAnswersIntoTab(cleared, ledger))).toEqual([]);
   });
 });
+
+describe('reactions in the ledger (docs/specs/012-collaboration/comment-reactions.md)', () => {
+  const comment = { id: 'c1', text: 'hi', createdAt: 1, authorName: 'Bea', authorColor: '#f00' };
+  const thread = () => card({ commentThread: { comments: [comment], resolved: false } });
+  const react = (by: string, on = true, emoji = 'thumbs-up') =>
+    delta({ kind: 'comment-react', commentId: 'c1', emoji, by, name: by.toUpperCase(), on });
+  const reactors = (t: Tab) =>
+    ((t.elements[0] as ShapeElement).commentThread?.comments[0]?.reactions ?? []).map(
+      (r) => `${r.emoji}:${r.by}`,
+    );
+
+  it("puts back a reaction the saver hadn't seen, and keeps each person's latest", () => {
+    const ledger = ledgerOf([react('a'), react('b'), react('a', false), react('b', true, 'eyes')]);
+    expect(reactors(mergeLedgerIntoTab(tab([thread()]), ledger, 0))).toEqual([
+      'thumbs-up:b',
+      'eyes:b',
+    ]);
+    // A saver who had seen everything up to seq 4 keeps its own copy.
+    const stored = tab([thread()]);
+    expect(mergeLedgerIntoTab(stored, ledger, 4)).toBe(stored);
+  });
+
+  it('refuses a malformed reaction, and one past the thread bound', () => {
+    expect(ledgerOf([react('a', true, 'rocket')]).elements).toEqual({});
+    expect(
+      ledgerOf([delta({ kind: 'comment-react', commentId: 'c1', emoji: 'eyes', by: 'a' })])
+        .elements,
+    ).toEqual({});
+    const many = Array.from({ length: 500 }, (_, i) => react(`p${i}`));
+    const full = ledgerOf([...many, react('late')]);
+    expect(Object.keys(full.elements.card!.comments!.reacts!)).toHaveLength(500);
+    // A change to a reaction already counted still lands.
+    const changed = ledgerOf([...many, react('p0', false)]);
+    expect(Object.values(changed.elements.card!.comments!.reacts!)[0]!.on).toBe(false);
+  });
+
+  it("writes a Participant's reactions into the stored tab, and nothing else of the thread", () => {
+    const ledger = ledgerOf([react('a'), delta({ kind: 'comment-resolve', resolved: true })]);
+    const merged = mergeLedgerAnswersIntoTab(tab([thread()]), ledger);
+    expect(reactors(merged)).toEqual(['thumbs-up:a']);
+    expect((merged.elements[0] as ShapeElement).commentThread?.resolved).toBe(false);
+    expect(mergeLedgerAnswersIntoTab(merged, ledger)).toBe(merged);
+  });
+
+  it("stamps a reaction with the session's name and key", () => {
+    const op = delta({
+      kind: 'comment-react',
+      commentId: 'c1',
+      emoji: 'eyes',
+      by: 'someone-else',
+      name: 'Boss',
+      on: true,
+    });
+    const stamped = stampCommentAuthor(op, { name: 'Bea', color: '#0f0', key: 'k-bea' }) as {
+      delta: Record<string, unknown>;
+    };
+    expect(stamped.delta).toMatchObject({ name: 'Bea', by: 'k-bea' });
+    const keyless = stampCommentAuthor(op, { name: 'Bea', color: '#0f0' }) as {
+      delta: Record<string, unknown>;
+    };
+    expect(keyless.delta).toMatchObject({ name: 'Bea', by: 'someone-else' });
+  });
+});

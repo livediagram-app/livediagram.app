@@ -180,7 +180,8 @@ describe('inverseItemWrites', () => {
         move: {
           status: 'todo',
           before: b.id,
-          set: { priority: 'low' },
+          // The old column's stamp comes back with it (status-since.ts).
+          set: { priority: 'low', statusSince: 0 },
           clear: ['assignee'],
           type: 'bug',
         },

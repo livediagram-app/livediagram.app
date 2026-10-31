@@ -249,22 +249,23 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 
 ## Testing
 
-| Rule (spec)                                                                                | Test                                                                         |
-| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| Key to intent, wrap, Home/End, typeahead, initial                                          | `../packages/ui/src/menu/menu-keys.test.ts`                                  |
-| Own items, ownership chain, tabbable neighbour                                             | `../packages/ui/src/menu/menu-dom.test.ts`                                   |
-| Focus in, arrows, activate, Escape, Tab, return                                            | `../packages/ui/src/menu/useMenu.test.tsx`                                   |
-| Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                             |
-| Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                            |
-| Rows take the kind's roles                                                                 | `apps/live/components/primitives/PortalMenu.test.tsx`                        |
-| Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx` |
-| Canvas stands down inside a menu                                                           | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`             |
-| Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/live/e2e/menu-keyboard.spec.ts`                                    |
-| Locked element menu focus and Escape                                                       | `apps/live/components/canvas/LockedElementMenu.test.tsx`                     |
-| Row ⋯ opens on Down / Up Arrow                                                             | `../packages/workbench/src/components/primitives/useRowMenu.test.tsx`        |
-| Shape tiles are named                                                                      | `apps/live/lib/element-names.test.ts`                                        |
-| Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/live/e2e/signed-in/menu-keyboard.spec.ts`                          |
-| Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                        |
+| Rule (spec)                                                                                | Test                                                                            |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Key to intent, wrap, Home/End, typeahead, initial                                          | `../packages/ui/src/menu/menu-keys.test.ts`                                     |
+| Own items, ownership chain, tabbable neighbour                                             | `../packages/ui/src/menu/menu-dom.test.ts`                                      |
+| Focus in, arrows, activate, Escape, Tab, return                                            | `../packages/ui/src/menu/useMenu.test.tsx`                                      |
+| Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                                |
+| Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                               |
+| Rows take the kind's roles                                                                 | `apps/live/components/primitives/PortalMenu.test.tsx`                           |
+| Row labels left-aligned, icon level with the first line                                    | `../packages/workbench/src/components/primitives/MenuActionRow.layout.test.tsx` |
+| Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx`    |
+| Canvas stands down inside a menu                                                           | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                |
+| Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/live/e2e/menu-keyboard.spec.ts`                                       |
+| Locked element menu focus and Escape                                                       | `apps/live/components/canvas/LockedElementMenu.test.tsx`                        |
+| Row ⋯ opens on Down / Up Arrow                                                             | `../packages/workbench/src/components/primitives/useRowMenu.test.tsx`           |
+| Shape tiles are named                                                                      | `apps/live/lib/element-names.test.ts`                                           |
+| Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/live/e2e/signed-in/menu-keyboard.spec.ts`                             |
+| Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                           |
 
 ## Constants and configuration
 

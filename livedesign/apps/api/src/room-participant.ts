@@ -11,8 +11,12 @@
 //     flood past PARTICIPANT_PENDING_MAX), and the sender re-hydrates (`catchup { resync: true }`).
 
 import { isRoomOpRef, type ServerMessage } from '@livedesign/api-schema';
-import type { ElementOp } from '@livedesign/design';
-import { writeParticipantOp, type ParticipantWriteResult } from './participant-write';
+import type { ElementDelta, ElementOp } from '@livedesign/design';
+import {
+  writeParticipantOp,
+  writeParticipantReaction,
+  type ParticipantWriteResult,
+} from './participant-write';
 import type { DesignEnv } from './types';
 
 // How many of one socket's writes may wait on the queue (blueprint SR12): far above a person's pace (the autosave
@@ -122,6 +126,34 @@ export class RoomParticipantWrites {
       seq,
       ...(isRoomOpRef(ref) ? { ref } : {}),
     });
+  }
+
+  // A Participant's comment reaction (docs/specs/012-collaboration/comment-reactions.md), already stamped and
+  // relayed: written to the stored tab on the room's tab write queue, since a Participant never saves a whole tab.
+  async writeReaction(designId: string | null, op: unknown): Promise<void> {
+    const env = this.hooks.env;
+    const frame = op as { tabId?: unknown; elementId?: unknown; delta?: unknown } | null;
+    if (!env || !designId || typeof frame?.tabId !== 'string') return;
+    if (typeof frame.elementId !== 'string') return;
+    const { tabId, elementId } = frame;
+    const delta = frame.delta as ElementDelta;
+    try {
+      const result = await this.hooks.enqueue(() =>
+        writeParticipantReaction(env, { designId, tabId, elementId, delta }),
+      );
+      if (!result.ok)
+        console.error('[participant-write] reaction failed', {
+          designId,
+          tabId,
+          status: result.status,
+        });
+    } catch (error) {
+      console.error('[participant-write] reaction failed', {
+        designId,
+        tabId,
+        error: String(error),
+      });
+    }
   }
 
   private resync(sender: ParticipantSender): void {

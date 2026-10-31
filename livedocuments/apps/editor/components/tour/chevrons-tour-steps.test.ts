@@ -20,7 +20,6 @@ const rows = [
 const ctxOf = (over: Partial<ConceptTourContext> = {}): ConceptTourContext => ({
   elementId: 'ch',
   rows,
-  hasMore: true,
   touch: false,
   ...over,
 });

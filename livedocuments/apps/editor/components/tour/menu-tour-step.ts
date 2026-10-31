@@ -4,11 +4,12 @@ import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-s
 
 // What a round-two element tour knows of where it runs (docs/specs/007-editor/element-tours.md "Menu steps on the
 // elements of round two").
-export type MenuTourEnv = { elementId: string; hasMore: boolean; touch: boolean };
+export type MenuTourEnv = { elementId: string; touch: boolean };
 
 // The step on an element's own menu section. These elements are edited mostly from there, so the step is kept for
 // everyone: it opens the menu to the part `path` names and rings it (inTheMenu). `body` follows the words that say how
-// to get there: `More, then ${body}` while More shows, else `Right-click it, then ${body}` (a power user on a desktop).
+// to get there: `Right-click it, then ${body}`, or `Press and hold it, then ${body}` on a touch screen (there is no
+// selection toolbar, so no More button, docs/specs/007-editor/element-tours.md).
 export function menuStep(
   env: MenuTourEnv,
   id: string,
@@ -16,7 +17,12 @@ export function menuStep(
   body: string,
   path: readonly string[],
 ): TourStepOf<ElementTourApi> {
-  return inTheMenu(id, title, `${env.hasMore ? 'More' : 'Right-click it'}, then ${body}`, path);
+  return inTheMenu(
+    id,
+    title,
+    `${env.touch ? 'Press and hold it' : 'Right-click it'}, then ${body}`,
+    path,
+  );
 }
 
 // "Click" or "Tap", as the screen is pressed.

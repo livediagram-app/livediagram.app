@@ -2,6 +2,7 @@
 // multicolour-themes.md): the tab's theme id, its backdrop and its elements' colours, as one pure transform. Picking a
 // theme (useTabTheme.setTheme) and picking a look (useTabCanvas.applyTabLook) both run it, so a look's theme lands
 // exactly as picking that theme does.
+import { withTabStyleOf } from '@liveworkspace/workbench/lib/tab-style-to-all';
 import {
   viewElementInTheme,
   withReadableLabelInks,
@@ -88,3 +89,9 @@ export function withThemeApplied(
 // A stored canvas colour as the applier sees it: the theme's, in their half; any other colour as it is.
 const viewedCanvas = (colour: string, map: ReadonlyMap<string, string>): string =>
   map.get(colour.toLowerCase()) ?? colour;
+
+/** `target` restyled from `source` for Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): `source`'s
+ *  theme applied as picking it does, then its canvas, text defaults and finish exactly (withTabStyleOf). */
+export function withStyleOfTab(target: Tab, source: Tab): Tab {
+  return withTabStyleOf(withThemeApplied(target, source.theme ?? 'brand'), source);
+}

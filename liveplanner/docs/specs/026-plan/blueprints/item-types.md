@@ -69,6 +69,14 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   (`quickFilterMatches(quick, item, types = ITEM_TYPES)`, `quick.mine` matched by `isNotified(typeIn(types,
 item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) and the agents.
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
+- Card Age (spec "Card display"): `age` is a built-in card field (`CARD_FIELDS`, both sizes' `CARD_SIZE_FIELDS`),
+  labelled "Age", in no `DRAWN` slot and so in no default; `typeOffersCardField` offers it on every type. The editor's
+  `AgePill` (`components/plan/card-age.tsx`) reads `cardAgeDays(itemStatusSince(item), today)` with `today` from
+  `useToday()` (one module timeout re-armed at local midnight, shared by every reader), and `cardAgeTone(days)`:
+  `quiet` under `CARD_AGE_WARN_DAYS`, `warn` (amber, semibold) to `CARD_AGE_ALERT_DAYS`, `alert` (red, bold) from
+  there. `PlanCardFace` draws it only when the card is not `muted` (a done column) and has a status. The SVG face
+  (`svg-render-plan-card.ts`) draws the same pill from `Date.now()` at render time, only with the board's `isDone`
+  in hand, and ignores the board's old `cardFields` for it (the spec says a board has no say).
 - `projectBoard(setup, items, quick?, types = ITEM_TYPES)`, `itemAccessibleName(item, types?)`,
   `boardAddTypes(setup, types)`: the catalogue where they name or order types.
 
@@ -494,6 +502,8 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Legacy types only: what an old type could leave out                            |
 | `PLAN_TYPE_COLOURS`                                    | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
 | `ADD_FIELD_POPOVER_PX`                                 | 384    | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
+| `CARD_AGE_WARN_DAYS`                                   | 7      | Spec "Card display": Age turns amber                                           |
+| `CARD_AGE_ALERT_DAYS`                                  | 14     | Spec "Card display": Age turns red, Stale Cards' `STALE_DAYS`                  |
 
 ## Default and ready-made types
 

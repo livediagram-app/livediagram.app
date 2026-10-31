@@ -15,6 +15,7 @@ import {
   lucidePlus,
   lucideRefreshCw,
   lucideScan,
+  lucideSmilePlus,
   lucideTrash2,
   lucideX,
 } from '@liveworkspace/icons/lucide';
@@ -38,6 +39,8 @@ export const PencilIcon = /* @__PURE__ */ lucideGlyph(lucidePencil, 14);
 export const RefreshIcon = /* @__PURE__ */ lucideGlyph(lucideRefreshCw, 14);
 export const PlusIcon = /* @__PURE__ */ lucideGlyph(lucidePlus, 14);
 export const CloseIcon = /* @__PURE__ */ lucideGlyph(lucideX, 14);
+// Add a reaction to a comment (docs/specs/012-collaboration/comment-reactions.md).
+export const SmilePlusIcon = /* @__PURE__ */ lucideGlyph(lucideSmilePlus, 14);
 // Lucide's check sits half a unit above its box's centre line; drawn here half a unit lower, on it
 // (docs/specs/004-interface-design/iconography.md, "Guarding").
 const CENTRED_CHECK: readonly IconPrim[] = [{ t: 'path', d: 'M20 6.5 9 17.5l-5-5' }];

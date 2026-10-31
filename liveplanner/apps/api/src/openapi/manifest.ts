@@ -964,6 +964,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/projects/{id}/threads/{threadId}/comments/{commentId}/reactions',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      'Add or take back your own reaction (one of six emoji) on a comment in a thread; no change answers 204. Needs participate access; agents read reactions but may not leave them.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'CardThreadReactionRequest',
+    responseSchema: 'CardThreadWriteResponse',
+    statuses: [200, 204, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
     path: '/projects/{id}/threads/{threadId}/resolve',
     segment: 'projects',
     tag: 'Items',

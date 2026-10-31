@@ -173,6 +173,12 @@ describe('participantBadges', () => {
       'Following',
     ]);
   });
+  it('tags an agent as one before its level', () => {
+    expect(participantBadges(p('a1', { agent: true, role: 'edit' }), 'me', 'edit')).toEqual([
+      'Agent',
+      'Editor',
+    ]);
+  });
   it('is empty for a peer with no role we are not following', () => {
     expect(participantBadges(p('a'), 'me', 'edit', 'b')).toEqual([]);
   });
@@ -180,23 +186,19 @@ describe('participantBadges', () => {
 
 describe('collaboratorRowDetail', () => {
   const now = 10 * 60_000;
-  it('leads a person’s row with their agent’s status line', () => {
-    expect(
-      collaboratorRowDetail(
-        p('a', { lastActiveAt: now, statusLine: 'adding payment' }),
-        false,
-        now,
-      ),
-    ).toBe('adding payment · Online · Active just now');
+  it('says a person’s status, and how long ago they were active for anyone but you', () => {
+    expect(collaboratorRowDetail(p('a', { lastActiveAt: now }), false, now)).toBe(
+      'Online · Active just now',
+    );
     expect(collaboratorRowDetail(p('me', { lastActiveAt: now }), true, now)).toBe('Online');
   });
 
-  it('says only what an agent row is doing, or that it is online', () => {
+  it('says only what an agent row is doing, or that it is at work on the tab', () => {
     expect(
       collaboratorRowDetail(p('x', { agent: true, statusLine: 'reviewing' }), false, now),
     ).toBe('reviewing');
     expect(collaboratorRowDetail(p('x', { agent: true, lastActiveAt: 0 }), false, now)).toBe(
-      'Online',
+      'Working on this tab',
     );
   });
 });

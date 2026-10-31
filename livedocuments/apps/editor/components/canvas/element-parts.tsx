@@ -117,9 +117,18 @@ type ResizeHandlesProps = {
   // diagonal once the box is turned.
   rotation?: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // Every press on a handle, first: the element's touch long-press, so a finger held still on a handle opens the
+  // element's menu as it would on the element (docs/specs/008-canvas/element-menu-quick-bar.md "Opening it").
+  onHandlePress?: (e: ReactPointerEvent) => void;
 };
 
-export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: ResizeHandlesProps) {
+export function ResizeHandles({
+  elementId,
+  zoom,
+  rotation = 0,
+  onBeginDrag,
+  onHandlePress,
+}: ResizeHandlesProps) {
   return (
     <>
       {HANDLE_POSITIONS.map((pos) => (
@@ -128,6 +137,7 @@ export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: Re
           data-canvas-handle=""
           onPointerDown={(e) => {
             e.stopPropagation();
+            onHandlePress?.(e);
             if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${pos}`, e);
           }}
           style={{
@@ -219,6 +229,7 @@ export function SelectionChromeLayer({
   showHandles,
   showAnchors,
   onBeginDrag,
+  onHandlePress,
 }: {
   elementId: string;
   // The element's box in canvas coordinates.
@@ -227,6 +238,9 @@ export function SelectionChromeLayer({
   showHandles: boolean;
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // A finger near a small element's edge lands on a handle (the browser moves a touch onto the nearest control), so
+  // each handle hands its press to the element's long-press too. See ResizeHandlesProps.
+  onHandlePress?: (e: ReactPointerEvent) => void;
 }) {
   const zoom = useCanvasZoom();
   if (!showHandles && !showAnchors) return null;
@@ -254,6 +268,7 @@ export function SelectionChromeLayer({
             zoom={zoom}
             rotation={rotation}
             onBeginDrag={onBeginDrag}
+            onHandlePress={onHandlePress}
           />
         ) : null}
 
@@ -266,6 +281,7 @@ export function SelectionChromeLayer({
                 zoom={zoom}
                 rotation={rotation}
                 onBeginDrag={onBeginDrag}
+                onHandlePress={onHandlePress}
               />
             ))
           : null}
@@ -292,12 +308,14 @@ export function EdgeResizeHandle({
   zoom,
   rotation = 0,
   onBeginDrag,
+  onHandlePress,
 }: {
   anchor: 'n' | 'e' | 's' | 'w';
   elementId: string;
   zoom: number;
   rotation?: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  onHandlePress?: (e: ReactPointerEvent) => void;
 }) {
   const vertical = anchor === 'n' || anchor === 's';
   return (
@@ -307,6 +325,7 @@ export function EdgeResizeHandle({
       data-canvas-handle=""
       onPointerDown={(e) => {
         e.stopPropagation();
+        onHandlePress?.(e);
         if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${anchor}`, e);
       }}
       style={{

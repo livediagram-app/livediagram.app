@@ -263,7 +263,9 @@ describe('POST /api/auth/sign-out', () => {
       ticket: 'tk.1',
     });
     expect(cookieValue(res, 'lp_refresh')).toBe('');
-    expect(cookieValue(res, 'lp_signed_out')).toBe('1');
+    // Signed out everywhere: no mark, and the page it lands on spends no bounce.
+    expect(cookieValue(res, 'lp_signed_out')).toBe('');
+    expect(cookieValue(res, 'lp_silent')).toBe('1');
   });
 
   it('comes back only to this site', async () => {
@@ -291,7 +293,8 @@ describe('POST /api/auth/sign-out', () => {
       headers: { Cookie: 'lp_refresh=refresh-1' },
     });
     expect(await down.json()).toEqual({ signedIn: false, next: null });
-    expect(cookieValue(down, 'lp_signed_out')).toBe('1');
+    // Signed out of this app alone: remembered, so no silent sign-in undoes it.
+    expect(cookieValue(down, 'lp_signed_out')).toBe('2');
   });
 });
 
@@ -464,7 +467,7 @@ describe('GET /api/auth/silent', () => {
   });
 
   it('goes straight back after the person signed out of this app', async () => {
-    const res = await bounce('/new', { headers: { Cookie: 'lp_signed_out=1' } });
+    const res = await bounce('/new', { headers: { Cookie: 'lp_signed_out=2' } });
     expect(res.headers.get('Location')).toBe('/new');
   });
 
@@ -511,9 +514,9 @@ describe('GET /api/auth/silent', () => {
 });
 
 describe('signing out, and signing in again', () => {
-  it('remembers an explicit sign-out, so no silent sign-in undoes it', async () => {
+  it('remembers a sign-out of this app alone, so no silent sign-in undoes it', async () => {
     const res = await call('/api/auth/sign-out', { method: 'POST' });
-    expect(cookieValue(res, 'lp_signed_out')).toBe('1');
+    expect(cookieValue(res, 'lp_signed_out')).toBe('2');
     const out = setCookies(res).find((c) => c.startsWith('lp_signed_out='))!;
     expect(out).toContain('Path=/');
     expect(out).not.toContain('HttpOnly');

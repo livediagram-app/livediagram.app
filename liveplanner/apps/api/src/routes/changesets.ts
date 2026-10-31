@@ -19,6 +19,7 @@ import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { personTagFor } from '../person-tag';
 import { refreshAgentPresence } from '../room-client';
+import { agentPresenceStamps } from '@liveworkspace/api-kit/agent-presence-stamps';
 import { frontDoorOf } from '../changesets/front-door';
 import { engineLog } from '../changesets/log';
 import { parseChangesetRequest } from '../changesets/request';
@@ -177,6 +178,8 @@ export function refreshAfterWrite(
   const written = (result.body as { changeset?: unknown } | null)?.changeset;
   if (!ctx.token || result.status !== 200 || !written) return;
   const tokenId = ctx.token.id;
+  // A read of this tab inside the stamp window has nothing to add (PR38).
+  agentPresenceStamps.note(projectId, tokenId, tabId, Date.now());
   ctx.waitUntil?.(
     personTagFor(projectId, author.id).then((personTag) =>
       refreshAgentPresence(ctx.env, {
@@ -190,6 +193,43 @@ export function refreshAfterWrite(
         // A changeset passed the edit gate.
         role: 'edit',
       }),
+    ),
+  );
+}
+
+// A token's read of a tab keeps its presence there too (docs/specs/024-agents/agent-presence.md "Presence"): at most
+// once per agent, project and tab every AGENT_PRESENCE_STAMP_MS, checked in memory before anything is looked up
+// (PR38), and off the response path. A session's read leaves presence alone.
+export function refreshAfterRead(
+  ctx: PlanRouteContext,
+  project: { id: string; ownerId: string; teamId: string | null },
+  tabId: string,
+  owner: string,
+): void {
+  const token = ctx.token;
+  if (!token || !ctx.waitUntil) return;
+  if (!agentPresenceStamps.shouldStamp(project.id, token.id, tabId, Date.now())) return;
+  const projectId = project.id;
+  ctx.waitUntil(
+    (async () => {
+      const [author, personTag, edits] = await Promise.all([
+        authorOf(ctx, owner),
+        personTagFor(projectId, owner),
+        // The level the gates resolve for the token, as an explicit set's (PR27).
+        token.readOnly ? false : gateEdit(ctx, projectId, project.ownerId, project.teamId, tabId),
+      ]);
+      await refreshAgentPresence(ctx.env, {
+        projectId,
+        tokenId: token.id,
+        tabId,
+        personTag,
+        shareCode: grantOn(ctx, projectId)?.shareCode ?? null,
+        name: author.name,
+        color: author.color,
+        role: edits ? 'edit' : 'view',
+      });
+    })().catch((err: unknown) =>
+      console.warn('[agent-presence] read stamp failed', { projectId, tabId, error: String(err) }),
     ),
   );
 }

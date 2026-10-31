@@ -23,7 +23,13 @@ import {
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import type { CardRef, CardThread, Comment } from '@liveplanner/project';
+import {
+  reactionSummary,
+  type CardRef,
+  type CardThread,
+  type Comment,
+  type ReactionSummary,
+} from '@liveplanner/project';
 import { apiRefusalOf } from './api-refusal';
 import { planPath } from './plan-state';
 import { itemsPath } from '../verbs/shared';
@@ -54,6 +60,8 @@ export type ListedComment = {
   text: string;
   ai?: true;
   edited?: true;
+  // Who reacted, one entry per emoji used (docs/specs/012-collaboration/comment-reactions.md). Read only.
+  reactions?: ReactionSummary[];
 };
 
 // One thread as an agent reads it.
@@ -86,6 +94,7 @@ export function listedComment(c: Comment): ListedComment {
     text: c.text,
     ...(c.ai ? { ai: true as const } : {}),
     ...(c.editedAt ? { edited: true as const } : {}),
+    ...(c.reactions?.length ? { reactions: reactionSummary(c.reactions) } : {}),
   };
 }
 

@@ -140,7 +140,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - the api refuses an item moved or edited into such a status (`status_excluded`, field `status`), so an agent or
     the CLI is told "the item's card type does not use that status"; making one in it is allowed. Putting a change
     back is never refused: a card restored from the Trash to the status it was trashed from, and an undo or redo
-    (sent with `undo: true`, which the editor's undo and redo always set).
+    (sent with `undo: true`, which the editor's undo and redo always set). Nor is moving a card to the Trash: the
+    Trash is no type's status, so a type's list never refuses it.
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
@@ -164,6 +165,14 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
   - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
     site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
+  - **Long Text** is rich text, edited as the Description is ([Working on a board](plan-board.md#working-on-a-board)):
+    bold, italic, underline, strikethrough, size, colour, headings, links and lists, from the same toolbar and
+    shortcuts. Its value stays plain text (search, the card face, CSV, forms and agents read it), and its formatting
+    is kept beside it as `<field id>Rich` (`f-steps-to-reproduce` → `f-steps-to-reproduceRich`), runs of text with
+    their marks, as `descriptionRich` is the Description's. A value with no formatting (written before Long Text was
+    rich, by a form, a sheet or an agent's plain text) reads as its plain text. Formatting whose text no longer
+    matches the value (the value was rewritten as plain text since) is ignored, so the field never shows an older
+    text. Emptying the field clears both.
   - **Email** is one email address (up to 254 characters, something@domain), kept as typed less surrounding spaces.
     The panel shows it as a mailto link; the card shows the address. A value that is not an address is refused, as
     a Link that is not `https://` is.
@@ -437,8 +446,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   its own fields (a type without a default of its own starts from every field a size draws, less the ones it lacks),
   and a field taken off the type leaves the card, and its Display preview, at once.
 - Each size draws its fields in **slots**, each holding fields in order:
-  - **Minimal**: **Before the Title** and **After the Title**, on its one line; it can draw Number, Priority, Due Date
-    and Assignee. A default type's Minimal card shows none of them by default; a type of the person's own starts
+  - **Minimal**: **Before the Title** and **After the Title**, on its one line; it can draw Number, Priority, Due Date,
+    Age and Assignee. A default type's Minimal card shows none of them by default; a type of the person's own starts
     with its Number Before the Title and its Assignee After the Title (when it has one).
   - **Detailed**: **Header** and **Header End** (one row above the title, at its start and its end), **Under the
     Title** (its own lines), **Footer** (one row at the foot) and **Bottom Right** (the footer's far end); it can
@@ -462,6 +471,16 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   Minimal), the rest in the Footer. A built-in
   type's defaults are read from code by its id, so a project that stored its catalogue before Display
   existed gets them too.
+
+- **Age** is in no default: a type shows it only once someone places it. Every type offers it (every card sits in
+  a column). It reads how long the card has sat in its current status, in whole days ("4d"; "0d" on the day it
+  arrived), counted in local calendar days from the moment it entered that status (`statusSince`,
+  [Fields](items.md#fields)), so it moves on at local midnight with no reload, as Due Soon does, from one shared
+  day tick (never a timer per card). It is quiet under a week; from **7 days** it turns amber and semibold, and from
+  **14 days** (Stale Cards' threshold, [Plan views](plan-views.md)) red and bold. Its spoken label says
+  "In {status} for 4 days" (for a screen reader; the hourglass glyph marks it for the eye). A card in a done column never shows it, and neither does a card with no status. Exports,
+  thumbnails and api or MCP images draw it as the board does (a quiet "4d" pill, amber or red past the
+  thresholds); a lone Plan card element, which has no board to say which columns are done, leaves it out.
 
 ## Editing a type
 

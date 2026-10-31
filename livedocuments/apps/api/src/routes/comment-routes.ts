@@ -1,5 +1,5 @@
 // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments", blueprint "REST"): add, delete-own,
-// reply, resolve and reopen on a tab, and the thread listing across a document. People and agents use the same
+// reply, resolve, reopen and react on a tab, and the thread listing across a document. People and agents use the same
 // endpoints, gated by participation; every write goes through the tab's revision (I8), retried once on a lost
 // race, and reaches the room as an `el-delta` without author or token ids.
 
@@ -11,7 +11,9 @@ import {
   type DocumentCommentsResponse,
 } from '@livedocuments/api-schema';
 import {
+  REACTION_BY_MAX,
   applyElementDelta,
+  isReactionId,
   sanitizeMentions,
   type Comment,
   type Element,
@@ -263,6 +265,59 @@ async function threadVerb(
   return noContent();
 }
 
+// POST .../comments/:commentId/react { emoji, on, key }: a Participant's reaction on a comment
+// (docs/specs/012-collaboration/comment-reactions.md "How it is stored and travels"). The room relays element deltas
+// from an Editor only, so a session that may comment but not edit reacts here, as it comments. The name is the
+// caller's profile's; `key` is their public collab key, the id their reactions are recorded under. People react,
+// agents only read: a token is refused.
+async function reactTo(
+  ctx: DocumentRouteContext,
+  id: string,
+  tabId: string,
+  commentId: string,
+): Promise<Response> {
+  const caller = await participant(ctx, id, tabId);
+  if (caller instanceof Response) return caller;
+  if (ctx.token) return forbidden();
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
+  const { emoji, on, key } = body;
+  if (!isReactionId(emoji)) return badRequest('unknown emoji');
+  if (typeof on !== 'boolean') return badRequest('missing on');
+  if (typeof key !== 'string' || !key || key.length > REACTION_BY_MAX)
+    return badRequest('missing key');
+  const writer = await getParticipant(ctx.env, caller.owner);
+  const delta: ElementDelta = {
+    kind: 'comment-react',
+    commentId,
+    emoji,
+    by: key,
+    name: writer?.name ?? 'Anonymous',
+    on,
+  };
+  const written = await writeTab(ctx, id, tabId, (tab) => {
+    const host = findCommentHost(tab.elements, commentId);
+    if (!host) return notFound();
+    const el = tab.elements.find((e) => e.id === host.elementId)!;
+    const next = applyElementDelta(el, delta);
+    if (next === el) return 'unchanged';
+    return {
+      elements: tab.elements.map((e) => (e.id === el.id ? next : e)),
+      elementId: el.id,
+      delta,
+    };
+  });
+  if (written instanceof Response) return written;
+  console.info(
+    `[comments] ${written.change ? (on ? 'reacted' : 'unreacted') : 'react unchanged'}`,
+    {
+      documentId: id,
+      tabId,
+    },
+  );
+  return noContent();
+}
+
 // GET /api/documents/:id/comments?status=: the threads across the document, one tab read at a time (PR21). A
 // grant confined to one tab lists that tab only.
 async function listThreads(ctx: DocumentRouteContext, id: string): Promise<Response> {
@@ -328,6 +383,8 @@ async function commentRoute(ctx: DocumentRouteContext): Promise<Response | null>
         : segments[7] === 'reopen'
           ? 'reopen'
           : null;
+  if (segments.length === 8 && segments[7] === 'react')
+    return request.method === 'POST' ? reactTo(ctx, id, tabId, segments[6]!) : methodNotAllowed();
   if (segments.length === 8 && verb)
     return request.method === 'POST'
       ? threadVerb(ctx, id, tabId, segments[6]!, verb)

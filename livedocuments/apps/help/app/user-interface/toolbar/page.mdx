@@ -1,42 +1,30 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ContextualToolbar, MultiSelectToolbar } from '@/components/illustrations/user-interface';
+import { MultiSelectToolbar } from '@/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
   title: 'The Toolbar',
   description:
-    'Use the selection toolbar for quick actions on selected elements: edit text, duplicate, change layer order, lock, delete, or open the full More menu.',
+    'Select several elements for a toolbar to filter, duplicate, export, lock or delete them. One element uses its right-click menu.',
   path: '/help/user-interface/toolbar/',
 });
 
 <ArticleLayout
   title="The Toolbar"
-  description="The contextual toolbar that appears when you select one or more elements."
+  description="The toolbar that appears when you select several elements."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-Select something on the canvas and a **toolbar** appears next to it, holding the quick actions for what you have selected. It is contextual: it shows up only when there is a selection, and its contents change to match. A small caption above it names the selection, for example "Selected Square".
-
-<Figure caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, layer order, Lock and Delete.">
-  <ContextualToolbar />
-</Figure>
-
 ## One element selected
 
-From left to right:
+A single selected element has **no toolbar** floating over it, so nothing covers the page you are writing about. Everything the toolbar used to hold is in the element's menu: right-click the element (a long press on a touch screen, or **Shift+F10** with the keyboard). Its first row holds **Edit Text** (or **Add Text**), **Duplicate**, **Stack Front**, **Stack Back**, **Lock** (or **Unlock**) and **Delete**, and the row below **Add Comment** and the rest. See [Context Menus](/help/user-interface/context-menus/).
 
-- **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
-- **Add Text** (or **Edit Text** once the element has some), and **Edit Points** on a path (drawn with the Path tool), to adjust its points and curves.
-- **Duplicate**.
-- **Bring to Front** and **Send to Back**.
-- **Lock** (or **Unlock**) and **Delete**.
-
-Which buttons show depends on the element: an image has no text to add, and a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. To comment on an element, open **More** and press **Add Comment** in the row of buttons along the top of its menu. On a link that can't edit, where there is no element menu, the toolbar holds just a comments button instead: **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds show no comments).
+On a Participant or view-only link the same right-click opens a short menu with what that link may do, such as **Add Comment** or **Show Comments**.
 
 ## Several elements selected
 
-Drag a marquee or Shift-click to select several, and the toolbar switches to the actions that make sense across a group:
+Drag a marquee or Shift-click to select several, and a toolbar floats over them with the actions that make sense across a group:
 
 - **More** (**⋯**): the selection's menu, for styling everything at once.
 - **Filter Selection** (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
@@ -46,7 +34,7 @@ Drag a marquee or Shift-click to select several, and the toolbar switches to the
 
 The caption reads "Selected Elements" with a count.
 
-<Figure caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export, Lock and Delete.">
+<Figure caption="Select a mix of elements and a toolbar offers More, Filter Selection, Duplicate, Export, Lock and Delete.">
   <MultiSelectToolbar />
 </Figure>
 

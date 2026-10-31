@@ -1,5 +1,5 @@
 // A card's comment threads (docs/specs/026-plan/items.md "Comments", blueprint item-store.md "REST"): list, start,
-// reply, edit and delete a comment, resolve, reopen, rename, add to another card and delete, under
+// reply, edit and delete a comment, react to one, resolve, reopen, rename, add to another card and delete, under
 // /api/projects/:id/threads and /api/projects/:id/items/:itemId/threads. `:id` is the plan the caller views the
 // thread through: their role there decides (a Participant or an Editor writes, a Viewer reads), and the thread must
 // be on a card of it the caller reaches. The write itself is the home plan's (plan-room/card-thread-store.ts),
@@ -8,6 +8,8 @@
 import {
   CARD_THREADS_MAX,
   isThreadFieldId,
+  REACTION_BY_MAX,
+  isReactionId,
   isThreadId,
   newThreadId,
   readThreadTitle,
@@ -318,6 +320,34 @@ async function removeComment(
   return answer(r.caller, out.thread);
 }
 
+// POST .../threads/:threadId/comments/:commentId/reactions { emoji, on, key }: the caller's own reaction on one
+// comment (docs/specs/012-collaboration/comment-reactions.md), taking part like a reply. `key` is the caller's
+// public collab key, the id the editor marks its own reactions by; the name is the server's, from their profile.
+async function react(
+  ctx: PlanRouteContext,
+  r: Reached,
+  threadId: string,
+  commentId: string,
+): Promise<Response> {
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
+  const { emoji, on, key } = body;
+  if (!isReactionId(emoji)) return badRequest('unknown emoji');
+  if (typeof on !== 'boolean') return badRequest('missing on');
+  if (typeof key !== 'string' || !key || key.length > REACTION_BY_MAX)
+    return badRequest('missing key');
+  const actor = await actorOf(ctx, r.caller, false);
+  const name = (await getParticipant(ctx.env, r.caller.owner))?.name ?? 'Someone';
+  const out = await throughHome(ctx, r, threadId, {
+    kind: 'change',
+    change: { kind: 'react', commentId, emoji, by: key, name, on },
+    actor,
+  });
+  if (!out.ok) return refusal(out.error);
+  console.info('[threads] comment.reacted', { on, agent: actor.agent });
+  return answer(r.caller, out.thread, commentId);
+}
+
 async function setResolved(
   ctx: PlanRouteContext,
   r: Reached,
@@ -446,5 +476,7 @@ export async function handleThreadRoutes(ctx: PlanRouteContext): Promise<Respons
     if (method === 'DELETE') return write((r) => removeComment(ctx, r, threadId, commentId));
     return methodNotAllowed();
   }
+  if (segments.length === 8 && segments[5] === 'comments' && segments[7] === 'reactions')
+    return post((r) => react(ctx, r, threadId, segments[6]!));
   return null;
 }

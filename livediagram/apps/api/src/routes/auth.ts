@@ -42,6 +42,7 @@ import {
 import {
   finishSilentSignIn,
   signedOutCookie,
+  signOutSilentCookies,
   silentCookiesForHint,
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
@@ -351,7 +352,8 @@ function noStore(cookies: string[] = []): Headers {
 // accounts site ends the liveworkspace session this refresh token came from, and every app's session from it, and
 // answers the hop the page takes through liveworkspace.app, which clears its cookie there and comes back to
 // `?return=` on this site. `next` is null with no refresh token or no answer: then livediagram alone is signed out.
-// It is remembered (the signed-out mark) until the next sign-in here, so signing in without a click never undoes it.
+// Signed out of this app alone (`next` null), that is remembered (the signed-out mark) until the next sign-in here, so
+// signing in without a click never undoes it. Signed out everywhere, nothing is: the next bounce finds no session.
 async function signOut(request: Request, env: Env, config: Configured): Promise<Response> {
   const returnTo = safeReturnPath(new URL(request.url).searchParams.get('return'));
   const next = await signOutEverywhere(
@@ -367,7 +369,12 @@ async function signOut(request: Request, env: Env, config: Configured): Promise<
   );
   return json(
     { signedIn: false, next },
-    { headers: noStore([...signedOutCookies(), signedOutCookie(SILENT_COOKIES, true)]) },
+    {
+      headers: noStore([
+        ...signedOutCookies(),
+        ...signOutSilentCookies(SILENT_COOKIES, next !== null),
+      ]),
+    },
   );
 }
 
