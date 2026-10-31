@@ -47,6 +47,7 @@ const fail = (status: number, error: string): Result<never> => ({ ok: false, sta
 
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { isSettingsApp, type SettingsApp } from './settings.ts';
+import { cleanText } from './text.ts';
 import {
   teamScopes,
   timelineStatement,
@@ -113,19 +114,26 @@ const REV = '(SELECT value FROM team_seq WHERE id = 1)';
 // An organisation line, or null for none. Anything but a string is treated as none.
 export function cleanOrganisation(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  return value.trim().slice(0, ORGANISATION_MAX_LENGTH) || null;
+  return cleanText(value, ORGANISATION_MAX_LENGTH) || null;
 }
 
 export function cleanTeamName(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  const name = value.trim().slice(0, TEAM_NAME_MAX_LENGTH);
+  const name = cleanText(value, TEAM_NAME_MAX_LENGTH);
   return name || null;
 }
+
+// Control characters (C0, C1) and invisible formatting ones (bidi controls, zero-width spaces and joiners, soft hyphens).
+const INVISIBLE = /[\p{Cc}\p{Cf}]/u;
 
 // A plausible address, lower-cased; the invitation email is what proves it.
 export function cleanEmail(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   const email = value.trim().toLowerCase();
+  // No control or invisible formatting character (a bidi override, a zero-width space): such an address can't be
+  // mailed, and in the members list it would pass for another ("\u202Emoc.elpmaxe@evil.com" reads
+  // "moc.live@example.com", "bo\u200Bb@…" as "bob@…").
+  if (INVISIBLE.test(email)) return null;
   return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
 }
 
