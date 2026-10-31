@@ -902,6 +902,8 @@ export function ImportWarning() {
   const cards: [string, string][] = [
     ['JSON', 'json'],
     ['Markdown', 'md'],
+    ['Word', 'docx'],
+    ['PowerPoint', 'pptx'],
   ];
   return (
     <Scene w={W} h={H}>
@@ -942,9 +944,9 @@ export function ImportWarning() {
         {cards.map(([title, badge], i) => (
           <FormatCard
             key={title}
-            x={dx + 16 + (i % 3) * 118}
-            y={dy + 100 + Math.floor(i / 3) * 40}
-            w={112}
+            x={dx + 16 + (i % 2) * 178}
+            y={dy + 100 + Math.floor(i / 2) * 40}
+            w={170}
             title={title}
             badge={badge}
           />

@@ -37,23 +37,23 @@ menu.
 The tab's content is replaced by one article ([Article pages](../007-editor/article-pages.md)) holding the
 document's body, in the order it is written. The article flows onto as many pages as the writing needs.
 
-| In the document                                                              | In the article                                                        |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Title, Subtitle styles                                                       | Title, Subtitle paragraphs                                            |
-| Heading 1, Heading 2, Heading 3 to 9 (by style name or outline level)        | Heading 1, Heading 2, Heading 3                                       |
-| Quote, Intense Quote styles                                                  | Quote paragraphs                                                      |
-| A list paragraph (bulleted or numbered by its numbering definition), level   | A bulleted or numbered list item at that level (deepest 5 levels)     |
-| A paragraph in a code style, or every run of it in a monospace font          | A code block; consecutive ones join into one                          |
-| Bold, italic, underline, strikethrough, superscript, subscript, a code font  | The same marks                                                        |
-| A hyperlink to an http, https or mailto address (relationship or field)      | A link (anything else keeps its text, unlinked)                       |
-| A page break (a break run, or "page break before" on a paragraph)            | A page break                                                          |
-| A line break                                                                 | A line break in the block; a tab is a space                           |
-| A picture, inline or floating                                                | An in-line object zone holding an image, at most the text's width     |
-| Paragraph alignment (centre, right, justify)                                 | The same alignment                                                    |
-| A table                                                                      | Each row a bulleted item, its cells joined by " · " (reported)        |
-| Empty paragraphs (spacing)                                                   | Left out                                                              |
-| Tracked insertions; tracked deletions                                        | Kept as written; left out                                             |
-| Content controls, smart tags, fields                                         | Their content or result                                               |
+| In the document                                                             | In the article                                                    |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Title, Subtitle styles                                                      | Title, Subtitle paragraphs                                        |
+| Heading 1, Heading 2, Heading 3 to 9 (by style name or outline level)       | Heading 1, Heading 2, Heading 3                                   |
+| Quote, Intense Quote styles                                                 | Quote paragraphs                                                  |
+| A list paragraph (bulleted or numbered by its numbering definition), level  | A bulleted or numbered list item at that level (deepest 5 levels) |
+| A paragraph in a code style, or every run of it in a monospace font         | A code block; consecutive ones join into one                      |
+| Bold, italic, underline, strikethrough, superscript, subscript, a code font | The same marks                                                    |
+| A hyperlink to an http, https or mailto address (relationship or field)     | A link (anything else keeps its text, unlinked)                   |
+| A page break (a break run, or "page break before" on a paragraph)           | A page break                                                      |
+| A line break                                                                | A line break in the block; a tab is a space                       |
+| A picture, inline or floating                                               | An in-line object zone holding an image, at most the text's width |
+| Paragraph alignment (centre, right, justify)                                | The same alignment                                                |
+| A table                                                                     | Each row a bulleted item, its cells joined by " · " (reported)    |
+| Empty paragraphs (spacing)                                                  | Left out                                                          |
+| Tracked insertions; tracked deletions                                       | Kept as written; left out                                         |
+| Content controls, smart tags, fields                                        | Their content or result                                           |
 
 What is **not** brought across, and named in the report when the document had it: footnotes and endnotes,
 comments, headers and footers, text boxes and shapes, charts, diagrams (SmartArt), equations, embedded objects
@@ -129,16 +129,16 @@ The file is someone else's work, read in the browser, and never trusted:
 
 Each failure is named and shown in the panel; nothing on the tab changes.
 
-| Failure          | Message                                                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| `too-large`      | This file is over 50 MB, more than an import takes.                                                         |
-| `legacy`         | This file is password protected or in the older .doc format. Save it as a .docx without a password first. |
-| `not-a-package`  | This isn't a Word document (.docx), or it is damaged.                                                       |
-| `wrong-format`   | This is a PowerPoint file. Go back and choose PowerPoint to import it.                                     |
-| `unpacks-too-large` | This file unpacks to more than an import takes.                                                          |
-| `too-many-slides` | This deck has 140 slides; a tab holds at most 100.                                                         |
-| `too-many-blocks` | This document makes 6,200 blocks; an article holds at most 5,000.                                          |
-| `too-large-for-tab` | This is more than one tab holds. Split it into smaller files and import each into its own tab.          |
+| Failure             | Message                                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `too-large`         | This file is over 50 MB, more than an import takes.                                                       |
+| `legacy`            | This file is password protected or in the older .doc format. Save it as a .docx without a password first. |
+| `not-a-package`     | This isn't a Word document (.docx), or it is damaged.                                                     |
+| `wrong-format`      | This is a PowerPoint file. Go back and choose PowerPoint to import it.                                    |
+| `unpacks-too-large` | This file unpacks to more than an import takes.                                                           |
+| `too-many-slides`   | This deck has 140 slides; a tab holds at most 100.                                                        |
+| `too-many-blocks`   | This document makes 6,200 blocks; an article holds at most 5,000.                                         |
+| `too-large-for-tab` | This is more than one tab holds. Split it into smaller files and import each into its own tab.            |
 
 (The PowerPoint messages say "PowerPoint deck (.pptx)", ".ppt" and "Word" in place of their Word wording.)
 

@@ -5,71 +5,72 @@ precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`
 
 Scope, by file (under `apps/editor/lib/office-import/` unless marked):
 
-| File                                       | Role                                                                                         |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `limits.ts`                                | Every number the import uses, named                                                          |
-| `errors.ts`                                | `OfficeImportError`, `OfficeImportFailure`, `officeErrorMessage`                             |
-| `zip.ts`                                   | `openZip`: the central directory read, entries unpacked on demand under one budget           |
-| `xml.ts`                                   | `parseXml`: the bounded XML reader (no DTD), namespaces folded to canonical prefixes        |
-| `package.ts`                               | `openOfficePackage`: zip + content types + relationships, the main part, `OfficePackage`    |
-| `tally.ts`                                 | `SkipTally`: counts of what was left out                                                     |
-| `docx-styles.ts`                           | Paragraph styles, numbering and run properties of a Word package                             |
-| `docx.ts`                                  | `readDocx`: the body walked into `DocxBlock`s and the pictures they name                     |
-| `pptx-shapes.ts`                           | Placeholders, transforms and a text body into a slide's items                                |
-| `pptx.ts`                                  | `readPptx`: slides, their items, notes and hidden flags, the deck size                       |
-| `store-images.ts`                          | `storePictures`: each picture once, three at a time, through an `ImportImageSession`         |
-| `build-article.ts`                         | `buildArticleTab`: blocks + stored images into an article tab (zones parked off the page)    |
-| `build-deck.ts`                            | `buildDeckTab`: slides + stored images into a tab of slide pages, with each page's notes     |
-| `report.ts`                                | `officeImportReport`: the tally and image outcomes as the dialog's report lines              |
-| `index.ts`                                 | `importOfficeFile`: the whole import, file to tab, the one entry the editor imports lazily  |
-| `test-fixtures.ts`                         | A zip writer and Word, Google Docs, PowerPoint and Google Slides package builders (tests)   |
-| `components/dialogs/FileImportPanel.tsx`   | The file panel: drop area, Choose a File, stage line, error                                  |
-| `hooks/persistence/useTabImport.ts`        | `importFileIntoActiveTab(format, file, onStage)`: runs the import and replaces the tab      |
-| `@livedocuments/document` `slide-deck-pages.ts` | `deckWithPageSlideDetails`: imported notes and hidden flags onto the page slides       |
+| File                                            | Role                                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `limits.ts`                                     | Every number the import uses, named                                                        |
+| `errors.ts`                                     | `OfficeImportError`, `OfficeImportFailure`, `officeErrorMessage`                           |
+| `zip.ts`                                        | `openZip`: the central directory read, entries unpacked on demand under one budget         |
+| `xml.ts`                                        | `parseXml`: the bounded XML reader (no DTD), namespaces folded to canonical prefixes       |
+| `package.ts`                                    | `openOfficePackage`: zip + content types + relationships, the main part, `OfficePackage`   |
+| `tally.ts`                                      | `SkipTally`: counts of what was left out                                                   |
+| `docx-styles.ts`                                | Paragraph styles, numbering and run properties of a Word package                           |
+| `docx.ts`                                       | `readDocx`: the body walked into `DocxBlock`s and the pictures they name                   |
+| `pptx-shapes.ts`                                | Placeholders, transforms and a text body into a slide's items                              |
+| `pptx.ts`                                       | `readPptx`: slides, their items, notes and hidden flags, the deck size                     |
+| `store-images.ts`                               | `storePictures`: each picture once, three at a time, through an `ImportImageSession`       |
+| `build-article.ts`                              | `buildArticleTab`: blocks + stored images into an article tab (zones parked off the page)  |
+| `build-deck.ts`                                 | `buildDeckTab`: slides + stored images into a tab of slide pages, with each page's notes   |
+| `report.ts`                                     | `officeImportReport`: the tally and image outcomes as the dialog's report lines            |
+| `index.ts`                                      | `importOfficeFile`: the whole import, file to tab, the one entry the editor imports lazily |
+| `test-fixtures.ts`                              | A zip writer and Word, Google Docs, PowerPoint and Google Slides package builders (tests)  |
+| `components/dialogs/FileImportPanel.tsx`        | The file panel: drop area, Choose a File, stage line, error                                |
+| `lib/drop-import-hint.ts`                       | A `.docx` / `.pptx` dropped on the canvas points to Import in the tab menu                 |
+| `hooks/persistence/useTabImport.ts`             | `importFileIntoActiveTab(format, file, onStage)`: runs the import and replaces the tab     |
+| `@livedocuments/document` `slide-deck-pages.ts` | `deckWithPageSlideDetails`: imported notes and hidden flags onto the page slides           |
 
 Only `index.ts` (through the session factory it is handed) and the panel touch the DOM; every other module runs in
 Node under Vitest (`DecompressionStream`, `Blob` and `TextDecoder` are Node globals).
 
 ## Domain and naming
 
-| Term             | Identifier             | Meaning                                                                                 |
-| ---------------- | ---------------------- | --------------------------------------------------------------------------------------- |
-| File format      | `FileImportFormat`     | `'word' \| 'powerpoint'`, the card chosen                                               |
-| Text format      | `TextImportFormat`     | `'json' \| 'markdown'`                                                                  |
-| Import format    | `ImportFormat`         | `TextImportFormat \| FileImportFormat`                                                  |
-| Package          | `OfficePackage`        | An opened file: `format`, `mainPath`, `readXml(path)`, `readBytes(path, max)`, `rels(path)` |
-| Part             | (a zip entry path)     | One file inside the package, named by its normalised path (`word/document.xml`)         |
-| Relationship     | `OfficeRel`            | `{ id, type, target, external }`, `target` resolved against the part's folder          |
-| Picture          | `OfficePicture`        | `{ path, widthPx, heightPx, alt?, cropped? }`: a picture part an item shows             |
-| Docx block       | `DocxBlock`            | An `ArticleBlock` without its zone, or `{ type: 'picture', picture }`                    |
-| Slide item       | `SlideItem`            | `{ kind: 'text', box, label, sizePt, alignX, alignY, bold, italic }` or `{ kind: 'picture', box, picture }` |
-| Box              | `EmuBox`               | `{ x, y, cx, cy }` in EMU on the deck's slide                                           |
-| Skip tally       | `SkipTally`            | `Partial<Record<SkipKind, number>>`                                                     |
-| Stage            | `OfficeImportStage`    | `{ stage: 'reading' } \| { stage: 'images', done, total }`                              |
-| Failure          | `OfficeImportFailure`  | `too-large`, `legacy`, `not-a-package`, `wrong-format`, `unpacks-too-large`, `too-many-slides`, `too-many-blocks`, `too-large-for-tab` |
+| Term          | Identifier            | Meaning                                                                                                                                |
+| ------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| File format   | `FileImportFormat`    | `'word' \| 'powerpoint'`, the card chosen                                                                                              |
+| Text format   | `TextImportFormat`    | `'json' \| 'markdown'`                                                                                                                 |
+| Import format | `ImportFormat`        | `TextImportFormat \| FileImportFormat`                                                                                                 |
+| Package       | `OfficePackage`       | An opened file: `format`, `mainPath`, `readXml(path)`, `readBytes(path, max)`, `rels(path)`                                            |
+| Part          | (a zip entry path)    | One file inside the package, named by its normalised path (`word/document.xml`)                                                        |
+| Relationship  | `OfficeRel`           | `{ id, type, target, external }`, `target` resolved against the part's folder                                                          |
+| Picture       | `OfficePicture`       | `{ path, widthPx, heightPx, alt?, cropped? }`: a picture part an item shows                                                            |
+| Docx block    | `DocxBlock`           | An `ArticleBlock` without its zone, or `{ type: 'picture', picture }`                                                                  |
+| Slide item    | `SlideItem`           | `{ kind: 'text', box, label, sizePt, alignX, alignY, bold, italic }` or `{ kind: 'picture', box, picture }`                            |
+| Box           | `EmuBox`              | `{ x, y, cx, cy }` in EMU on the deck's slide                                                                                          |
+| Skip tally    | `SkipTally`           | `Partial<Record<SkipKind, number>>`                                                                                                    |
+| Stage         | `OfficeImportStage`   | `{ stage: 'reading' } \| { stage: 'images', done, total }`                                                                             |
+| Failure       | `OfficeImportFailure` | `too-large`, `legacy`, `not-a-package`, `wrong-format`, `unpacks-too-large`, `too-many-slides`, `too-many-blocks`, `too-large-for-tab` |
 
 `SkipKind`, in report order: `tables`, `footnotes`, `comments`, `headersFooters`, `textBoxes`, `charts`,
 `diagrams`, `equations`, `media`, `embedded`, `linkedImages`, `shapes`, `crowded`, `longText`.
 
 ## Constants and configuration
 
-| Constant                         | Value                | Provenance                                    | Safe range        |
-| -------------------------------- | -------------------- | --------------------------------------------- | ----------------- |
-| `OFFICE_MAX_FILE_BYTES`          | `50 * 1024 * 1024`   | Spec: 50 MB (the image pipeline's source cap) | 10 MB to 100 MB   |
-| `OFFICE_MAX_ZIP_ENTRIES`         | `4000`               | Spec                                          | 1,000 to 20,000   |
-| `OFFICE_MAX_PART_BYTES`          | `32 * 1024 * 1024`   | Spec: one XML part                            | 8 MB to 64 MB     |
-| `OFFICE_MAX_UNPACKED_BYTES`      | `256 * 1024 * 1024`  | Spec: everything one import unpacks           | 64 MB to 512 MB   |
-| `OFFICE_INFLATE_SLICE_BYTES`     | `16 * 1024`          | D60: input fed to the inflater per write      | 4 KB to 64 KB     |
-| `OFFICE_XML_MAX_DEPTH`           | `256`                | Spec                                          | 64 to 1,024       |
-| `OFFICE_XML_MAX_ELEMENTS`        | `1_000_000`          | Spec                                          | 100k to 4M        |
-| `OFFICE_MAX_IMAGES`              | `100`                | Spec: the hosted gallery's count              | 20 to 500         |
-| `OFFICE_MAX_SLIDE_ITEMS`         | `300`                | Spec                                          | 100 to 1,000      |
-| `OFFICE_NOTES_MAX`               | `20_000`             | D61: one slide's notes, characters            | 2,000 to 100,000  |
-| `MAX_PAGES` (document)           | `100`                | A tab's page cap                              | shared, not ours  |
-| `MAX_ARTICLE_BLOCKS` (document)  | `5000`               | An article's block cap                        | shared, not ours  |
-| `MAX_TAB_BYTES` (api-schema)     | `1.99 MB`            | A saved tab's cap                             | shared, not ours  |
-| `EMU_PER_PX`                     | `9525`               | OOXML: 914,400 EMU an inch, 96 px an inch     | fixed             |
-| `EMU_PER_PT`                     | `12700`              | OOXML                                         | fixed             |
+| Constant                        | Value               | Provenance                                    | Safe range       |
+| ------------------------------- | ------------------- | --------------------------------------------- | ---------------- |
+| `OFFICE_MAX_FILE_BYTES`         | `50 * 1024 * 1024`  | Spec: 50 MB (the image pipeline's source cap) | 10 MB to 100 MB  |
+| `OFFICE_MAX_ZIP_ENTRIES`        | `4000`              | Spec                                          | 1,000 to 20,000  |
+| `OFFICE_MAX_PART_BYTES`         | `32 * 1024 * 1024`  | Spec: one XML part                            | 8 MB to 64 MB    |
+| `OFFICE_MAX_UNPACKED_BYTES`     | `256 * 1024 * 1024` | Spec: everything one import unpacks           | 64 MB to 512 MB  |
+| `OFFICE_INFLATE_SLICE_BYTES`    | `16 * 1024`         | D60: input fed to the inflater per write      | 4 KB to 64 KB    |
+| `OFFICE_XML_MAX_DEPTH`          | `256`               | Spec                                          | 64 to 1,024      |
+| `OFFICE_XML_MAX_ELEMENTS`       | `1_000_000`         | Spec                                          | 100k to 4M       |
+| `OFFICE_MAX_IMAGES`             | `100`               | Spec: the hosted gallery's count              | 20 to 500        |
+| `OFFICE_MAX_SLIDE_ITEMS`        | `300`               | Spec                                          | 100 to 1,000     |
+| `OFFICE_NOTES_MAX`              | `20_000`            | D61: one slide's notes, characters            | 2,000 to 100,000 |
+| `MAX_PAGES` (document)          | `100`               | A tab's page cap                              | shared, not ours |
+| `MAX_ARTICLE_BLOCKS` (document) | `5000`              | An article's block cap                        | shared, not ours |
+| `MAX_TAB_BYTES` (api-schema)    | `1.99 MB`           | A saved tab's cap                             | shared, not ours |
+| `EMU_PER_PX`                    | `9525`              | OOXML: 914,400 EMU an inch, 96 px an inch     | fixed            |
+| `EMU_PER_PT`                    | `12700`             | OOXML                                         | fixed            |
 
 ## Behaviour and state
 
@@ -163,8 +164,10 @@ Follows the spec's table. Precisely:
   `ctrTitle` is `title`; `subTitle`, `obj` and no type are `body`. A shape with no box anywhere is left out (D65).
 - A text body: each `a:p` a line; runs' `a:t`, `a:fld`'s text, `a:br` a line break. A paragraph's bullet: its own
   `a:buNone` none, `a:buChar` "• ", `a:buAutoNum` its number counted along consecutive numbered paragraphs at that
-  level ("1. "); else a body placeholder's paragraphs are bulleted and every other shape's are not; empty
-  paragraphs never. Two spaces of indent a level (`lvl`). Leading and trailing empty lines are trimmed.
+  level ("1. "); else the level's `a:buNone` / `a:buChar` in the shape's, layout's and master placeholder's
+  `a:lstStyle` (nearest first), then the master's `bodyStyle` for a body placeholder (a subtitle's layout sets
+  `buNone`, so a subtitle is not bulleted); else a body placeholder's paragraphs are bulleted and every other
+  shape's are not; empty paragraphs never. Two spaces of indent a level (`lvl`). Leading and trailing empty lines are trimmed.
 - Size: the first run's `sz`, else the shape's, layout's and master placeholder's `a:lstStyle` level-1
   `a:defRPr sz`, else the master's `p:txStyles` (`titleStyle` for a title, `bodyStyle` for a body,
   `otherStyle` else), else 44 / 28 / 18 pt; times `a:normAutofit fontScale`. As px:
@@ -185,7 +188,7 @@ Follows the spec's table. Precisely:
 
 - Unique paths in first-seen order; past `OFFICE_MAX_IMAGES` each is `'over-cap'`.
 - Three workers (`IMPORT_IMAGE_CONCURRENCY`) each take the next path, read its bytes (`readBytes(path,
-  IMPORT_IMAGE_MAX_SOURCE_BYTES)`, an over-cap read is `too-large`, any other read error `missing-bytes`), give
+IMPORT_IMAGE_MAX_SOURCE_BYTES)`, an over-cap read is `too-large`, any other read error `missing-bytes`), give
   them a MIME type by extension (`png`, `jpg`/`jpeg`, `gif`, `bmp`, `webp`, `svg`, `tif`/`tiff`, `emf`, `wmf`;
   unknown `application/octet-stream`, which the pipeline names `unsupported`) and `session.store` them with the
   picture's size as the display hint. `onProgress(done, total)` after each. At most three pictures' bytes are
@@ -249,24 +252,24 @@ tab slide pages and elements; the deck its slides' `notes` and `hidden`, as the 
 
 ## Errors and edge cases
 
-| Case                                              | Handling                                                        |
-| ------------------------------------------------- | --------------------------------------------------------------- |
-| File over 50 MB                                   | `too-large`, never read                                         |
-| `.doc` / `.ppt` / password protected              | `legacy`                                                        |
-| Not a zip, truncated zip, bad headers             | `not-a-package`                                                 |
-| A spreadsheet or other package                    | `not-a-package`                                                 |
-| The other card's format                           | `wrong-format`                                                  |
-| Zip bomb, lying sizes, too many entries           | `unpacks-too-large`                                             |
-| DTD, entity declarations, malformed XML           | `not-a-package`                                                 |
-| Deeply nested or enormous XML                     | `unpacks-too-large`                                             |
-| Over 100 slides / over 5,000 blocks               | `too-many-slides` / `too-many-blocks`, with the count           |
-| Finished tab over `MAX_TAB_BYTES` (cloud)         | `too-large-for-tab`                                             |
-| A picture part missing                            | Placeholder, `missing-bytes`, reported                          |
-| EMF / WMF / TIFF picture                          | Placeholder, `unsupported`, reported                            |
-| More than 100 pictures                            | The rest placeholders, reported                                 |
-| An empty document / a deck with no slides         | One empty paragraph / one empty slide page (D67)                |
-| A locked tab                                      | Refused before reading, as every import                         |
-| The dialog closed mid-import                      | The import finishes and replaces the tab (D68)                  |
+| Case                                      | Handling                                              |
+| ----------------------------------------- | ----------------------------------------------------- |
+| File over 50 MB                           | `too-large`, never read                               |
+| `.doc` / `.ppt` / password protected      | `legacy`                                              |
+| Not a zip, truncated zip, bad headers     | `not-a-package`                                       |
+| A spreadsheet or other package            | `not-a-package`                                       |
+| The other card's format                   | `wrong-format`                                        |
+| Zip bomb, lying sizes, too many entries   | `unpacks-too-large`                                   |
+| DTD, entity declarations, malformed XML   | `not-a-package`                                       |
+| Deeply nested or enormous XML             | `unpacks-too-large`                                   |
+| Over 100 slides / over 5,000 blocks       | `too-many-slides` / `too-many-blocks`, with the count |
+| Finished tab over `MAX_TAB_BYTES` (cloud) | `too-large-for-tab`                                   |
+| A picture part missing                    | Placeholder, `missing-bytes`, reported                |
+| EMF / WMF / TIFF picture                  | Placeholder, `unsupported`, reported                  |
+| More than 100 pictures                    | The rest placeholders, reported                       |
+| An empty document / a deck with no slides | One empty paragraph / one empty slide page (D67)      |
+| A locked tab                              | Refused before reading, as every import               |
+| The dialog closed mid-import              | The import finishes and replaces the tab (D68)        |
 
 ## Security and trust
 
@@ -313,22 +316,22 @@ logged by the pipeline as `[import-images]`.
 
 ## Testing
 
-| Rule                                           | Test                                                        |
-| ---------------------------------------------- | ----------------------------------------------------------- |
-| Zip read, stored and deflated, bounds          | `zip.test.ts`                                               |
-| Zip bomb and lying sizes stop at the cap       | `zip.test.ts`                                               |
-| DTD refused, entities, namespaces, caps        | `xml.test.ts`                                               |
-| Legacy, wrong format, not a package            | `package.test.ts`                                           |
-| Word mapping (spec table), Google Docs flavour | `docx.test.ts`                                              |
-| PowerPoint placeholders, groups, notes, Google | `pptx.test.ts`                                              |
-| Pictures once each, cap, failures              | `store-images.test.ts`                                      |
-| Zones parked and settled by the editor's pass  | `build-article.test.ts`                                     |
-| Slide pages, scale, sizes                      | `build-deck.test.ts`                                        |
-| Report lines                                   | `report.test.ts`                                            |
-| End to end, sizes, errors                      | `index.test.ts`                                             |
-| 100-page and 50-slide budgets                  | `office-import.perf.test.ts`                                |
-| Deck details                                   | `slide-deck-pages.test.ts` (document)                       |
-| Panel states, drop, choose, errors             | `FileImportPanel.test.tsx`, `ImportTabDialog.test.tsx`       |
+| Rule                                           | Test                                                   |
+| ---------------------------------------------- | ------------------------------------------------------ |
+| Zip read, stored and deflated, bounds          | `zip.test.ts`                                          |
+| Zip bomb and lying sizes stop at the cap       | `zip.test.ts`                                          |
+| DTD refused, entities, namespaces, caps        | `xml.test.ts`                                          |
+| Legacy, wrong format, not a package            | `package.test.ts`                                      |
+| Word mapping (spec table), Google Docs flavour | `docx.test.ts`                                         |
+| PowerPoint placeholders, groups, notes, Google | `pptx.test.ts`                                         |
+| Pictures once each, cap, failures              | `store-images.test.ts`                                 |
+| Zones parked and settled by the editor's pass  | `build-article.test.ts`                                |
+| Slide pages, scale, sizes                      | `build-deck.test.ts`                                   |
+| Report lines                                   | `report.test.ts`                                       |
+| End to end, sizes, errors                      | `index.test.ts`                                        |
+| 100-page and 50-slide budgets                  | `office-import.perf.test.ts`                           |
+| Deck details                                   | `slide-deck-pages.test.ts` (document)                  |
+| Panel states, drop, choose, errors             | `FileImportPanel.test.tsx`, `ImportTabDialog.test.tsx` |
 
 ## Assets and external resources
 
