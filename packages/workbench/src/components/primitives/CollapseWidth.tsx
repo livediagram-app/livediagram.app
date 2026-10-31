@@ -20,7 +20,7 @@ export function CollapseWidth({
 }: {
   open: boolean;
   children: ReactNode;
-  // How long the width and the fade take; a tab's slots use the sliding card's, so both land together.
+  // How long the width takes (the fade stays 180 ms); a tab's slots use the sliding card's, so the width lands with it.
   ms?: number;
   // Centre the content on the box's height (a tab's menu button) instead of standing it on the bottom edge.
   center?: boolean;
@@ -68,8 +68,7 @@ export function CollapseWidth({
       ref={outer}
       inert={!open}
       data-collapse-width={open ? 'open' : 'shut'}
-      style={{ transitionDuration: `${ms}ms` }}
-      className={`flex shrink-0 items-end self-stretch transition-opacity ease-out motion-reduce:transition-none ${
+      className={`flex shrink-0 items-end self-stretch transition-opacity duration-[180ms] ease-out motion-reduce:transition-none ${
         open ? 'opacity-100' : 'opacity-0'
       }`}
     >

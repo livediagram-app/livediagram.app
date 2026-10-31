@@ -193,10 +193,9 @@ function TabSlot({ node, open, lead }: { node: ReactNode; open?: boolean; lead: 
   return (
     <CollapseWidth open={shown} ms={TAB_SLIDE_MS} center>
       <div
-        className={`flex origin-left items-center transition-transform ease-out motion-reduce:transition-none ${lead} ${
+        className={`flex origin-left items-center transition-transform duration-[250ms] ease-out motion-reduce:transition-none ${lead} ${
           shown ? 'scale-100' : 'scale-75'
         }`}
-        style={{ transitionDuration: `${TAB_SLIDE_MS}ms` }}
       >
         {held}
       </div>
