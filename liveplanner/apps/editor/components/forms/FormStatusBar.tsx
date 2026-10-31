@@ -108,7 +108,7 @@ export function FormStatusBar({
             <button
               type="button"
               onClick={onOpenResponses}
-              className="shrink-0 cursor-pointer rounded text-slate-600 underline-offset-2 hover:underline dark:text-slate-300"
+              className="relative shrink-0 cursor-pointer rounded text-slate-600 underline-offset-2 touch-target-y hover:underline dark:text-slate-300"
             >
               {count}
             </button>
