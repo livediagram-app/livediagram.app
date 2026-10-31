@@ -44,6 +44,7 @@ export const CARD_FIELD_LABELS: Readonly<Record<Exclude<CardField, CustomCardFie
   checklist: 'Checklist',
   comments: 'Comments',
   description: 'Description',
+  age: 'Age',
 };
 
 export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot, string>>>> = {
@@ -206,14 +207,14 @@ export function typeCardDisplay(
   return cardLayoutFields(size, typeCardLayout(type, size));
 }
 
-// A field the type can show: one it offers (Number and Type always; the rest when in its fields), a custom field
-// when the type has it.
+// A field the type can show: one it offers (Number, Type and Age always; the rest when in its fields), a custom
+// field when the type has it.
 export function typeOffersCardField(
   type: Pick<ItemTypeDef, 'fields' | 'custom'>,
   field: CardField,
 ): boolean {
   if (isCustomCardField(field)) return (type.custom ?? []).some((c) => c.id === field);
-  return field === 'key' || field === 'type' || type.fields.includes(field);
+  return field === 'key' || field === 'type' || field === 'age' || type.fields.includes(field);
 }
 
 // The type's custom fields a size can place, in the type's order.
