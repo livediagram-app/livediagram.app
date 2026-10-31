@@ -185,21 +185,22 @@ Every write takes what a person would say, and stores the ids:
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
   - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
-    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, onCard?, required? }]`
-    (kinds `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `card`,
+    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, showAs?, onCard?, required? }]`
+    (kinds `text`, `longtext`, `number`, `currency`, `percent`, `date`, `checkbox`, `link`, `email`, `choice`, `card`,
     `calculated`; a `currency` field's code, GBP when absent; a `calculated` field's `calculation`, `childCount` or
-    `childrenDone`, [Calculated fields](item-types.md#calculated-fields)). A Currency value is written as a number, an Email value as the
-    address; `editCustom` also takes `currency`. A `card` field links to `linkTypes`, the card types it may point at
+    `childrenDone`, [Calculated fields](item-types.md#calculated-fields), and `showAs: "percent"` to draw a Children Done as a
+    [Percent](item-types.md#percent-fields) bar). A Currency value is written as a number, a Percent value as a whole
+    number from 0 to 100 (or text like "40%"; outside 0 to 100 is refused), an Email value as the address; `editCustom` also takes `currency`. A `card` field links to `linkTypes`, the card types it may point at
     by name or id (one or more), or to `linkType`, one; both given, they are merged, `linkType` first. Colour and glyph default
     as the type editor's Add Type does.
   - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,
 defaultStatus?, statuses? }`: edit a type. Statuses here are named as above. `statuses` is the whole ordered list
     of the statuses the type uses (its order is every status menu's for its cards); a status left out of it is one
     the type's cards can never move into; absent, a new type uses every status the boards name. Removing a field never deletes
-    values. `editCustom` `[{ field, name?, options?, linkTypes?, calculation?, onCard?, required? }]` edits a custom field in place, as the
+    values. `editCustom` `[{ field, name?, options?, linkTypes?, calculation?, showAs?, onCard?, required? }]` edits a custom field in place, as the
     type editor's field form does: a new name, a Choice field's options replaced whole (any other kind is refused),
     a Card field's card types replaced whole (any other kind is refused), a Calculated field's calculation (any
-    other kind is refused), drawn on the card or not; values on cards
+    other kind is refused) and its `showAs` (`"percent"` or `"number"`; only a Children Done takes `"percent"`), drawn on the card or not; values on cards
     stay. A field ticked `onCard` (added or edited) on a type with a Display of its own
     is placed at the end of its Detailed body, as without one the default layout shows it; unticked, it leaves that
     Display.
@@ -251,8 +252,8 @@ The tool's descriptions carry what an agent needs to design a type well, as fact
 each stores, every Plan glyph id, the card sizes with the slots each draws and the fields it can draw, the panel's
 tabs, and the limits (24 fields, 12 custom, 20 choice options, 6 tabs, 32 types). `list_items` lists each type with
 its Default State, its display per size and its tabs, so a change can build on what is there; a Card field lists
-`linkTypes`, every card type it links to, beside `linkType`, the first. A Calculated field lists its `calculation`
-and `readOnly: true`, and each card lists its worked-out value among its `fields` by the field's name (a count, a
+`linkTypes`, every card type it links to, beside `linkType`, the first. A Calculated field lists its `calculation`,
+`showAs: "percent"` when it shows as a Percent, and `readOnly: true`, and each card lists its worked-out value among its `fields` by the field's name (a count, a
 whole percentage, or null); `change_items` refuses giving one a value (`field_calculated`, "Progress is
 calculated: it can't be set") without writing that change.
 
