@@ -137,7 +137,9 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
               }}
               data-remove-chip
               aria-label={removeLabel(chip)}
-              className={`flex h-4 w-4 items-center justify-center rounded-full transition ${
+              // 16px drawn, 24px to a finger (WCAG 2.5.8): a pad of 4px round it on a touch screen, no wider, so a
+              // tap on the chip's own name never removes it.
+              className={`relative flex h-4 w-4 items-center justify-center rounded-full transition pointer-coarse:before:absolute pointer-coarse:before:-inset-1 pointer-coarse:before:content-[''] ${
                 chipColour
                   ? 'hover:bg-black/10 dark:hover:bg-white/15'
                   : 'text-brand-700 hover:bg-brand-100 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100'
