@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useId, useRef, useState, useCallback } from 'react';
 import { CloseIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import type { CommentMention, CommentThread } from '@livediagram/document';
@@ -63,6 +63,7 @@ export function CommentThreadPopover({
   selfId,
 }: CommentThreadPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const headingId = useId();
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
 
@@ -117,12 +118,14 @@ export function CommentThreadPopover({
       <div
         ref={ref}
         role="dialog"
+        aria-labelledby={headingId}
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{ left: pos.left, top: pos.top, width: WIDTH }}
       >
-        <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-          <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">
+        {/* A div, not a header: portalled to the body, a header is a second page banner. */}
+        <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+          <h3 id={headingId} className="text-xs font-semibold text-slate-800 dark:text-slate-100">
             Comments
             {comments.length > 0 ? (
               <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
@@ -147,7 +150,7 @@ export function CommentThreadPopover({
               <CloseIcon size={12} />
             </button>
           </div>
-        </header>
+        </div>
 
         <CommentThreadList
           thread={thread}

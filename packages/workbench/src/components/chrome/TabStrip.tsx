@@ -100,13 +100,42 @@ export function TabStrip<T extends { id: string }>({
   const order = tabIds.join('|');
   const revealActive = useCallback(() => {
     const strip = stripRef.current;
-    const tab = strip?.querySelector<HTMLElement>('[data-tab][data-active]');
-    if (!strip || !tab) return;
-    const t = tab.getBoundingClientRect();
-    const add = activeId === lastTabId ? strip.querySelector('[data-tour-id="add-tab"]') : null;
-    reveal(t.left, add ? add.getBoundingClientRect().right : t.right);
+    if (!strip) return;
+    const measure = () => {
+      const tab = strip.querySelector<HTMLElement>('[data-tab][data-active]');
+      if (!tab) return;
+      const t = tab.getBoundingClientRect();
+      const add = activeId === lastTabId ? strip.querySelector('[data-tour-id="add-tab"]') : null;
+      reveal(t.left, add ? add.getBoundingClientRect().right : t.right);
+    };
+    measure();
+    // The open tab's slots (its menu button, avatars) and a folder's tabs ease their widths (CollapseWidth), so this
+    // first measure is short of where the tab and Add tab land. Once those widths finish, measure once more.
+    const easing = (strip.getAnimations?.({ subtree: true }) ?? []).filter((run) => {
+      const target = (run.effect as KeyframeEffect | null)?.target;
+      return target instanceof HTMLElement && target.matches('[data-collapse-width]');
+    });
+    if (easing.length > 0)
+      void Promise.all(easing.map((run) => run.finished)).then(measure, () => {});
   }, [activeId, lastTabId, reveal]);
   useEffect(revealActive, [revealActive, tabCount]);
+
+  // A strip that narrows (a panel closing hands a footer control back its room, the window shrinking) can leave the
+  // open tab past its edge with nothing else changed, so narrowing brings it back. Widening never hides it, and
+  // leaves where someone scrolled alone.
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip || typeof ResizeObserver === 'undefined') return;
+    let width = strip.clientWidth;
+    const observer = new ResizeObserver(() => {
+      const next = strip.clientWidth;
+      const narrowed = next < width;
+      width = next;
+      if (narrowed) revealActive();
+    });
+    observer.observe(strip);
+    return () => observer.disconnect();
+  }, [revealActive]);
 
   // The open tab's card slides to each tab you open (useTabSlider); a reorder moves it at once.
   useTabSlider(listRef, sliderRef, activeId, order);
