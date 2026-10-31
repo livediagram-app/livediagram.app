@@ -88,7 +88,10 @@ export function tabsChangedByPeersSince(
   for (const { n, op } of journal.entries) {
     if (n <= mark) continue;
     if (
-      (op.kind === 'el' || op.kind === 'tab' || op.kind === 'tab-meta') &&
+      (op.kind === 'el' ||
+        op.kind === 'tab' ||
+        op.kind === 'tab-meta' ||
+        op.kind === 'dashboard-delta') &&
       savedTabIds.has(op.tabId)
     ) {
       touched.add(op.tabId);

@@ -65,6 +65,15 @@ describe('changesetRoomOp', () => {
   });
 });
 
+// docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's layout travels as deltas".
+describe('a rebuilt Dashboard', () => {
+  it('rides the op whole when it changed, and is absent otherwise', () => {
+    const dashboard = { rows: [{ id: 'r', height: 320, slots: [{ id: 's', span: 12 }] }] };
+    expect(changesetRoomOp({ ...base, elementOps: [], dashboard })).toMatchObject({ dashboard });
+    expect(changesetRoomOp({ ...base, elementOps: [] })).not.toHaveProperty('dashboard');
+  });
+});
+
 describe('agentKeyFor', () => {
   it('is the first 12 hex characters of a one-way digest of the token id', async () => {
     const key = await agentKeyFor('tok_1');

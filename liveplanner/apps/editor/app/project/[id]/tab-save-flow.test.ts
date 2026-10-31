@@ -4,6 +4,7 @@ import {
   mergeLedgerIntoTab,
   recordInLedger,
   tabLedgerFrom,
+  type DashboardLedger,
   type ElementLedger,
   type Tab,
   type VoteLedger,
@@ -63,7 +64,7 @@ const columnNames = (tab: Tab): string[] => {
 // merges in what the room sequenced after the saver's cursor (fetchRoomLedger + applyRoomLedger), then the last write wins.
 function world(initial: Tab) {
   let seq = 0;
-  const ledger = new Map<string, ElementLedger | VoteLedger>();
+  const ledger = new Map<string, ElementLedger | VoteLedger | DashboardLedger>();
   let stored = initial;
   const receive = (op: RoomOp): void => {
     seq += 1;

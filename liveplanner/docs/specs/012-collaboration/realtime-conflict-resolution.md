@@ -151,7 +151,7 @@ The room relays an Editor's op as it was sent and keeps it in the catch-up log, 
 project-changing op's envelope before applying it (`roomOpIsWellFormed`, `room-op-shape.ts`): a `tab` carries a
 tab with its elements, an `el` an element op (an add or update an element with an id and a type, a remove an id, a
 reorder a list, a patch an id and its fields), an `el-delta` an element id and a delta, a `changeset` a list of
-element ops if any, a `vote` an element and a voter, a `tab-meta` a patch, a `project-meta`
+element ops if any, a `vote` an element and a voter, a `tab-meta` a patch, a `dashboard-delta` a patch, a `project-meta`
 a name and a list of tabs with ids and names; each but `project-meta` names its tab. One that does not is dropped
 and logged (`[room] malformed op dropped`), so it never stops every editor in the room, or each one that
 reconnects, from rendering. What an element or a patch holds is the stored-element migrations' to settle; a kind
@@ -230,7 +230,9 @@ verified end-to-end and turned on properly, not carried as dormant code.
   `MUTATION_OP_KINDS` / `SYSTEM_OP_KINDS`, the one classification of every op.
 - `packages/project`: `element-deltas.ts` (`applyElementDelta`,
   `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the
-  save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`).
+  save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`),
+  `dashboard-patch.ts` + `dashboard-ledger.ts` (a Dashboard's layout as deltas:
+  [Collaboration race hardening](collab-race-hardening.md#a-dashboards-layout-travels-as-deltas)).
 - `apps/api/src/plan-room/plan-room.ts`: the role / class gate, seq + epoch
   (persisted as `order-state`), the bounded in-memory op log and the
   `sync` → `catchup` handler (`resolveCatchup` in `project-room-rules.ts`). It

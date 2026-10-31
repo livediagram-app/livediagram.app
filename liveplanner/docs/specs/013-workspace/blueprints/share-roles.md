@@ -73,6 +73,7 @@ Doors by level (server):
 | Items: create, patch, move, patches                                                      | participate (`gateParticipate`)   |
 | Sheets: `writes` of kind `cells`                                                         | participate                       |
 | Tab PUT, tab DELETE, project PUT; room `tab`, `tab-meta`, `project-meta`, `el` `reorder` | edit                              |
+| Room: `dashboard-delta` (a Dashboard's layout)                                           | edit                              |
 | Room: `el-delta` `check`, `board`, `comment-*`; `drag-preview`                           | edit                              |
 | Items: bulk, delete, tally; item types; Sheets: create, delete, `layout`, `title`        | edit                              |
 

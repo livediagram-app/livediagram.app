@@ -43,7 +43,11 @@ import { keepUnsavedTabChanges } from './meta-keep-local';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
-import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
+import {
+  isSupersededByOwnWrite,
+  withoutOwnDashboardWrites,
+  type OwnElementWrites,
+} from './own-element-writes';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
@@ -325,9 +329,17 @@ export function useRoomConnection(opts: {
   const roomOp = useEffectEvent(
     (
       from: Parameters<NonNullable<RoomHandlers['onOp']>>[0],
-      op: Parameters<NonNullable<RoomHandlers['onOp']>>[1],
+      received: Parameters<NonNullable<RoomHandlers['onOp']>>[1],
       presence: PresenceCoalescer,
     ) => {
+      // A peer's layout change without the fields this editor is writing, which the room ordered after it
+      // (collab-race-hardening.md "A Dashboard's layout travels as deltas"); nothing left of it, nothing to do.
+      const op = ownWrites ? withoutOwnDashboardWrites(ownWrites, received) : received;
+      if (op === null) {
+        markSeen(from);
+        debugLog('[room] peer layout change superseded by our pending write');
+        return;
+      }
       // Any op from a peer counts as "they're still here". Bumps
       // the idle timer used by the avatar's away/offline status
       // derivation. Cursor packets are the most frequent so this
@@ -338,6 +350,7 @@ export function useRoomConnection(opts: {
         op.kind === 'el' ||
         op.kind === 'vote' ||
         op.kind === 'el-delta' ||
+        op.kind === 'dashboard-delta' ||
         op.kind === 'tab-meta' ||
         op.kind === 'project-meta'
       ) {
@@ -352,7 +365,11 @@ export function useRoomConnection(opts: {
         // A tab not fetched yet is a placeholder: an element added to it would make it look edited, so
         // its fetch would be thrown away and the next save would write the placeholder over the real
         // tab. Its fetch brings the element. A whole tab from a peer is its content: loaded.
-        if (op.kind === 'el' && !loadedTabIdsRef.current.has(op.tabId)) return;
+        if (
+          (op.kind === 'el' || op.kind === 'dashboard-delta') &&
+          !loadedTabIdsRef.current.has(op.tabId)
+        )
+          return;
         if (op.kind === 'tab') markTabLoaded(op.tabId);
         // A dragger's real change has arrived: their live preview has done its job.
         endPeerDragPreview(from);
