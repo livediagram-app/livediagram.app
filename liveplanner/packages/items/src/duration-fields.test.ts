@@ -103,12 +103,14 @@ describe('reading a duration', () => {
   });
 
   // Timed in CPU time, so a busy machine does not fail it: a long string of parts stays linear.
-  it('stays linear on a long run of parts and spaces', () => {
+  it('stays linear on a long run of parts, spaces or digits', () => {
     const worst = `${'1h '.repeat(20_000)}x`;
     const spaces = `1${' '.repeat(50_000)}h!`;
+    const digits = `${'0'.repeat(50_000)}x`;
     const ms = cpuMsOf(() => {
       expect(parseDuration(worst)).toBeUndefined();
       expect(parseDuration(spaces)).toBeUndefined();
+      expect(parseDuration(digits)).toBeUndefined();
     });
     expect(ms).toBeLessThan(cpuBudgetMs(80));
   });

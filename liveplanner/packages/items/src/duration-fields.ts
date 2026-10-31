@@ -26,7 +26,10 @@ function minutesIn(n: number): number | undefined {
 }
 
 // "2h 30m", "2 hours 30 mins", "1.5h", "90m", "45m" ...: one or more number-and-unit parts.
-const PART = /(\d+(?:\.\d+)?|\.\d+)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes)(?![a-z])/g;
+// Sticky, so each part is read where the last one ended: a scan that retried at every digit was polynomial on a
+// long run of digits (CodeQL js/polynomial-redos).
+const PART = /(\d+(?:\.\d+)?|\.\d+)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes)(?![a-z])/y;
+const SEPARATORS = /[\s,]*/y;
 const HOURS = new Set(['h', 'hr', 'hrs', 'hour', 'hours']);
 const CLOCK = /^(\d+):([0-5]?\d)$/;
 const BARE = /^(\d+(?:\.\d+)?|\.\d+)$/;
@@ -42,15 +45,23 @@ export function parseDuration(v: string | number | undefined | null): number | u
   const clock = CLOCK.exec(text);
   if (clock) return minutesIn(Number(clock[1]) * 60 + Number(clock[2]));
   if (BARE.test(text)) return minutesIn(Number(text));
+  // Parts with only spaces and commas between them, so "2h banana" is refused rather than read as 2h.
   let total = 0;
-  let matched = '';
-  for (const m of text.matchAll(PART)) {
+  let parts = 0;
+  let at = 0;
+  for (;;) {
+    SEPARATORS.lastIndex = at;
+    SEPARATORS.exec(text);
+    at = SEPARATORS.lastIndex;
+    if (at === text.length) break;
+    PART.lastIndex = at;
+    const m = PART.exec(text);
+    if (!m) return undefined;
     total += Number(m[1]) * (HOURS.has(m[2]!) ? 60 : 1);
-    matched += m[0];
+    parts += 1;
+    at = PART.lastIndex;
   }
-  // Every character but spaces and commas must belong to a part, so "2h banana" is refused rather than read as 2h.
-  if (!matched || text.replace(/[\s,]/g, '') !== matched.replace(/\s/g, '')) return undefined;
-  return minutesIn(total);
+  return parts ? minutesIn(total) : undefined;
 }
 
 // A duration as it reads: "2h 30m", "45m", "3h", "0m"; hours past a day stay hours, grouped as the reader's locale
