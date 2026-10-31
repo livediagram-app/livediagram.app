@@ -4,8 +4,9 @@
 // or still busy after the last attempt) carries them (`items`, `rev`, as a success's answer), so the caller keeps
 // them rather than taking the whole request as unwritten, and never sends a landed tally again.
 import type { ItemsResponse } from '@liveplanner/api-schema';
-import { ITEM_WRITE_RETRIES, type Item } from '@liveplanner/items';
+import { ITEM_WRITE_RETRIES, type Item, type ItemHistoryTag } from '@liveplanner/items';
 import { readItems, updateItemsAtRev } from '../db';
+import { appendItemHistory } from '../db/item-history';
 import { json } from '../responses';
 import type { PlanRouteContext } from './context';
 import { forCaller, itemBusy, itemRetryPause, relay, type ItemCaller } from './item-route-kit';
@@ -31,13 +32,15 @@ async function withLanded(
   return json({ ...body, ...answer }, { status: refusal.status });
 }
 
-// The written items, or a refusal (carrying any that landed). An id gone since is left out of the retry.
+// The written items, or a refusal (carrying any that landed). An id gone since is left out of the retry. `history`:
+// each landed card's history entry is kept, with its tag (docs/specs/026-plan/items.md "History"); a tally keeps none.
 export async function writeItemsWithRetry<T extends { id: string }>(
   ctx: PlanRouteContext,
   caller: ItemCaller,
   projectId: string,
   wanted: T[],
   build: BuildItems<T>,
+  history?: { tag?: ItemHistoryTag },
 ): Promise<{ done: Map<string, Item>; rev: number } | Response> {
   const done = new Map<string, Item>();
   let pending = wanted;
@@ -57,6 +60,10 @@ export async function writeItemsWithRetry<T extends { id: string }>(
     rev = written.rev;
     const landed = [...nexts.values()].filter((i) => written.landed.has(i.id));
     if (landed.length) relay(ctx, projectId, landed, [], rev);
+    if (landed.length && history) {
+      const writes = landed.map((after) => ({ before: stored.get(after.id)!, after }));
+      await appendItemHistory(ctx.env, projectId, writes, history.tag);
+    }
     for (const item of landed) done.set(item.id, item);
     pending = pending.filter((p) => !written.landed.has(p.id));
     if (pending.length === 0) break;

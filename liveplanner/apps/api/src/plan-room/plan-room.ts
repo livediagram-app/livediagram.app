@@ -70,8 +70,9 @@ import {
 
 import { CHANGESET_RETENTION_MS } from '@liveplanner/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
+import { deleteOldItemHistory } from '../db/item-history';
 import { getTab, planHasTab } from '../db/tabs';
-import { tabShowsEveryCard } from '@liveplanner/items';
+import { ITEM_HISTORY_MAX_AGE_MS, tabShowsEveryCard } from '@liveplanner/items';
 import { readItem } from '../db/items';
 import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
@@ -478,7 +479,8 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // The plan's daily upkeep, once a day per plan with content: sheets unreferenced for 30 days expire
-  // (sheet-sweep.ts), and changesets past their retention go (CS28).
+  // (sheet-sweep.ts), changesets past their retention go (CS28), and so do card history entries past their age
+  // (db/item-history.ts).
   private async maintain(now: number): Promise<void> {
     const env = this.roomEnv;
     const planId = this.planId;
@@ -489,6 +491,8 @@ export class PlanRoom extends DurableObject<Env> {
       await runSheetExpiry(env, planId, now);
       const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
       if (gone > 0) console.info('[changeset] retention', { planId, deleted: gone });
+      const aged = await deleteOldItemHistory(env, now - ITEM_HISTORY_MAX_AGE_MS);
+      if (aged > 0) console.info('[items] history.retention', { planId, deleted: aged });
     } catch (error) {
       console.warn('[plan-room] upkeep failed', { planId, error: String(error) });
     }

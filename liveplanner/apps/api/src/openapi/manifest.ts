@@ -896,6 +896,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/projects/{id}/items/{itemId}/history',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      "A card's history, newest first: who made, moved and changed it and when, quick changes by one person grouped, at most 200 entries and none over 180 days old. Authors by name and colour; `mine` marks the caller's own. Anyone who may read the card may read it.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    responseSchema: 'ItemHistoryResponse',
+    statuses: [200, 401, 403, 404, 410],
+  },
+  {
+    method: 'GET',
     path: '/projects/{id}/threads',
     segment: 'projects',
     tag: 'Items',

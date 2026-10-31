@@ -46,6 +46,7 @@ export * from './tab-items';
 export * from './tab-import';
 export * from './views';
 export * from './person';
+export * from './item-history';
 export * from './plan-people';
 export * from './sha256';
 export * from './indefinite-article';
