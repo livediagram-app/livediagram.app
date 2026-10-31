@@ -1,30 +1,67 @@
 # Community
 
-Every liveworkspace app with a Community keeps its listings in one service, whose API is
-**liveworkspace.app/api/community**. The service stores them in its own D1 database. It is an API
-only: liveworkspace.app has no Community pages. Each app hosts its own gallery and post pages, in its
-own look, and they show that app's posts only.
+Every liveworkspace product has a Community: **livediagram**, **liveplanner**, **livedocuments** and
+**livedesign**. Each keeps its listings in one service, whose API is **liveworkspace.app/api/community**. The
+service stores them in its own D1 database. It is an API only: liveworkspace.app has no Community pages. Each app
+hosts its own gallery and post pages, in its own look, and they show that app's posts only.
 
 ```
 packages/community               @liveworkspace/community: apps, vocabulary, limits, search grammar, wire shapes
 liveworkspace/apps/community     the API Worker (@liveworkspace/community-service) and its D1 migrations
 ```
 
-Before October 2026, livediagram kept its posts, likes, copies and reports in its own database and
-answered `/api/community/*` itself. Those tables are gone (livediagram migration 0100). Nothing was
-carried over: the service started empty.
+Before October 2026, livediagram, livedocuments and livedesign each kept their posts, likes, copies and reports in
+their own database and answered `/api/community/*` themselves. Those tables are gone (each app's migration 0100), and
+livedocuments and livedesign lost their Community with them while the products split into their own sites. Nothing
+was carried over: the service started empty, and every app's Community now stands on it.
+
+## Every app's Community
+
+Each app offers the same Community, in its own words and look, built from the same shared pieces (below,
+"Shared pieces"). The product specs say what differs: livediagram's
+[025-community](../../../../livediagram/docs/specs/025-community/community.md), liveplanner's
+[025-community](../../../../liveplanner/docs/specs/025-community/community.md), livedocuments'
+[025-community](../../../../livedocuments/docs/specs/025-community/community.md) and livedesign's
+[025-community](../../../../livedesign/docs/specs/025-community/community.md).
+
+- **Publishing**: a signed-in owner shares a document of theirs to the Community from the **Community** tab of
+  the Share dialog, beside Passes. The tab is the same wherever the Share dialog opens: in the app's editor, in the
+  app's Explorer, and in the Explorer on liveworkspace.app, for every app's documents. It is offered for the owner's
+  personal documents; a team library's document says it can't be shared to the Community.
+- **The gallery**: the app's own Community pages at `/community` on its site: search, categories, tags, sorts and
+  My Shares; a post page with a read-only preview, Make a Copy, likes and reports.
+- **The landing page**: the app's home page carries a **From the Community** section, its six featured posts (the
+  most liked over three months, topped up) leading to the gallery.
+- **The link's doors**: the read-only view, the card image and copying, through a community link the post owns.
+- **Moderation**: reports alone, as below, the same for every app.
+- **Categories**: each app has its own closed set (below), so a gallery's filters speak its product's language.
+
+## Categories
+
+Each app has its own closed set, in display order. The id is stored; the label is shown; the type is the
+telemetry value. An id two apps share means the same thing in both and has the same label and type. A post's
+category must be one of its own app's (`invalid_category` otherwise).
+
+| App                 | Categories (id: label)                                                                                                                                                                                                                                                                                      |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `livediagram.app`   | `architecture`: Architecture, `flows`: Flows & Processes, `planning`: Planning, `workshops`: Workshops, `mindmaps`: Mind Maps, `design`: Design & Wireframes, `data`: Data & Databases, `learning`: Learning & Teaching, `infographics`: Infographics, `art`: Drawing & Art, `other`: Something Else        |
+| `liveplanner.app`   | `projects`: Project Plans, `roadmaps`: Roadmaps & Timelines, `workflows`: Kanban & Workflows, `trackers`: Trackers & Sheets, `budgets`: Budgets & Finance, `events`: Events & Schedules, `forms`: Forms & Surveys, `dashboards`: Dashboards & Reports, `personal`: Personal & Home, `other`: Something Else |
+| `livedocuments.app` | `articles`: Articles & Reports, `decks`: Slide Decks, `infographics`: Infographics, `guides`: Guides & How-Tos, `proposals`: Proposals & Briefs, `newsletters`: Newsletters & Updates, `learning`: Learning & Teaching, `other`: Something Else                                                             |
+| `livedesign.app`    | `logos`: Logos & Branding, `wireframes`: Wireframes & Mockups, `photos`: Photo Edits, `social`: Social & Marketing, `posters`: Posters & Flyers, `illustrations`: Icons & Illustrations, `other`: Something Else                                                                                            |
+
+Each category's one-line description (shown under the publish dialog's chips) is in the product spec.
 
 ## What lives where
 
 The service holds the **listing**; the app holds the **document**.
 
-| The service (liveworkspace)                                                  | The app (livediagram)                                               |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| The post: title, description, category, tags, anonymous                      | The document, its tabs and its snapshots                            |
-| How the author is shown (name, colour, picture), as of publish and each edit | Who owns the document, and whether it may be published              |
-| Likes, copies and reports, each counted at most 5 per network                | The post's community link (`share_links.purpose = 'community'`)     |
-| Hidden after reports (final)                                                 | The link's doors: the share resolve, the card image, view, copy     |
-| Where each post's document stands (`document_state`)                         | `community_links`: the link, its post id and title, last state sent |
+| The service (liveworkspace)                                                  | The app (livediagram)                                                                      |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| The post: title, description, category, tags, anonymous                      | The document, its tabs and its snapshots                                                   |
+| How the author is shown (name, colour, picture), as of publish and each edit | Who owns the document, and whether it may be published                                     |
+| Likes, copies and reports, each counted at most 5 per network                | The post's community link (an index share link, view, never expiring)                      |
+| Hidden after reports (final)                                                 | The link's doors: the share resolve, the card image, view, copy                            |
+| Where each post's document stands (`document_state`)                         | The document room's `community_post` row: the link, its post id and title, last state sent |
 
 A post is listed only while its document is public in its app. The app tells the service where each
 document stands, one of three states:
@@ -46,7 +83,7 @@ Every route is under `/api/community`. Answers are JSON; errors are `{ "error": 
 
 ### Public routes
 
-Each one names its app with `?app=livediagram.app` (or `liveplanner.app`); without one the answer is
+Each one names its app with `?app=livediagram.app` (or `liveplanner.app`, `livedocuments.app`, `livedesign.app`); without one the answer is
 `400 invalid_app`, and another app's post answers `404`. Likes and reports carry the browser's
 community key as `X-Community-Key`, never an owner id.
 
@@ -101,21 +138,20 @@ their own per-network rate limits on). livediagram's `@livediagram/api-schema` r
 
 ## Keeping in step
 
-The app keeps a row per post in its own `community_links` table, with the state it last sent. Its
-sync sends whatever differs:
+Each published document keeps its post in its own room (the Durable Object that holds the document), as one
+`community_post` row with the state it last sent. Where the document stands is the index's (its Trash, its team,
+its share password, its owner), so the room asks it as the post's author, and sends the service whatever differs:
 
-- **Right after a change** to a document (trash, restore, purge, a move into or out of a team, a share
-  password, an account deleted), the request that made it sends that document's state, off the
+- **Right after a change** the room hears of (a share password set, the document moved or trashed), off the
   response path.
-- **Every minute**, a cron sends anything still pending (a batch of up to 500, at most 10 batches a
-  run), then asks for the posts hidden after reports since the newest hide it knows, and closes their
-  links.
+- **Every ten minutes** while it has a post, from the room's own alarm, which also reads the post back and hears
+  whether the service hid it after reports, closing its link if so.
 
-So the gallery can lag a document by up to a minute when the inline send fails, and a post hidden
-after reports keeps its link open for up to a minute. A failed send is retried by the next run.
+So the gallery can lag a document by up to ten minutes when the inline send fails, and a post hidden after reports
+keeps its link open for up to ten minutes. A failed send is retried by the next check.
 
-The link's own doors never wait for the service: whether a community link opens is decided in the
-app, from its documents and `community_links`, so a trashed document's link closes at once.
+The link's own doors never wait for the service: whether a community link opens is decided in the app, from its
+document and its `community_post` row, so a trashed document's link closes at once.
 
 ## Configuring an app
 
@@ -153,19 +189,47 @@ databases are `liveworkspace-community` and `liveworkspace-community-staging`, w
 `apps/community/wrangler.toml`.
 
 Secrets are set once per environment with `wrangler secret put` and survive every deploy: one key per app,
-`COMMUNITY_KEY_LIVEDIAGRAM` and `COMMUNITY_KEY_LIVEPLANNER` (each `openssl rand -hex 32`), with the same value
-as that app's api Worker's `COMMUNITY_KEY`.
+`COMMUNITY_KEY_LIVEDIAGRAM`, `COMMUNITY_KEY_LIVEPLANNER`, `COMMUNITY_KEY_LIVEDOCUMENTS` and
+`COMMUNITY_KEY_LIVEDESIGN` (each `openssl rand -hex 32`), with the same value as that app's api Worker's
+`COMMUNITY_KEY`. An app whose key is not set yet answers its app routes 401 and has no Community, the others are
+unaffected.
+
+## Shared pieces
+
+Every app's Community is built from the same pieces, so the four look and behave alike and a fix lands in all of
+them. An app keeps only thin doors: its routes, its storage and its words.
+
+| Piece                           | What it holds                                                                                                                                                                     |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@liveworkspace/community`      | The contract: apps, categories, limits, search grammar, wire shapes; and the app Worker's side of the service (its app routes, the copier hash)                                   |
+| `@liveworkspace/community-ui`   | The Share dialog's **Community** tab (the section, Share to Community, Edit Listing, Remove), the post tile, the landing page's **From the Community** section, the Community bar |
+| `@liveworkspace/community-site` | The gallery and post pages, and the small Worker in front of them (a post's head, the sitemap), on which each app's `apps/community` is a thin shell, as Help is on help-site     |
+
+### The Share dialog's Community tab
+
+The shared Share dialog (`@liveworkspace/explorer` `ShareDialog`) takes the Community as its `appTab`, beside
+Passes. The tab talks to the document's own app: it reads, publishes, edits and removes the post through that app's
+owner route, `/api/documents/<id>/community`, with the person's token, never through the service directly (only the
+app knows who owns the document and whether it may be published).
+
+- **In an app's editor**, the tab is the app's own, for the open document.
+- **In an Explorer** (each app's, and liveworkspace.app's), the host gives the tab per item through its
+  `ShareHost`, for every app whose Community is on. liveworkspace.app reaches each app's owner route at the
+  address its sites registry entry names (`APP_ITEMS[app].share.communityPath`), with the person's workspace token,
+  as it reads an item's tabs. An app without a Community, or switched off, gives no tab.
+- The tab is offered to the document's owner, signed in; a guest sees why and **Sign In to Share**. A team
+  library's document says it can't be shared to the Community.
 
 ## Adding an app
 
-1. Add its site to `COMMUNITY_APPS` in `packages/community/src/apps.ts` (its origins come from
-   `@liveworkspace/sites`), and a `COMMUNITY_KEY_<APP>` secret to `src/env.ts` and `appKey`.
-2. In the app's api: a `community_links` table, the owner routes, the link doors and the sync, as
-   livediagram's (`apps/api/src/community-service.ts`, which holds the `community_links` reads and writes).
-3. Its pages read the public routes with `communityServiceUrl(<app>, path)`.
-
-liveplanner is listed and has a key, and has no Community of its own: its editor doesn't publish, and it
-has no Community pages. Its pages would read this API as livediagram's do.
+1. Add its site to `COMMUNITY_APPS` and its categories to `COMMUNITY_APP_CATEGORIES` in
+   `packages/community/src` (its origins come from `@liveworkspace/sites`), and a `COMMUNITY_KEY_<APP>` secret to
+   the service's `src/env.ts` and `appKey`.
+2. In the app's api: the document room's `community_post` row, the owner routes, the link doors and the check,
+   on the shared server side of `@liveworkspace/community`.
+3. Its pages: `apps/community` on `@liveworkspace/community-site`, the landing section and the Share dialog's tab
+   from `@liveworkspace/community-ui`, and `APP_ITEMS[app].share.communityPath` so liveworkspace.app's Explorer
+   offers the tab.
 
 ## Performance
 

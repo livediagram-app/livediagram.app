@@ -95,6 +95,8 @@ export function testDb(overrides: Partial<Env> = {}): TestDb {
       COMMUNITY_DB: db as unknown as D1Database,
       COMMUNITY_KEY_LIVEDIAGRAM: 'ld-key',
       COMMUNITY_KEY_LIVEPLANNER: 'lp-key',
+      COMMUNITY_KEY_LIVEDOCUMENTS: 'lc-key',
+      COMMUNITY_KEY_LIVEDESIGN: 'ls-key',
       ...overrides,
     },
     sql,
