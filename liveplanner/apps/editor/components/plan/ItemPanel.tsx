@@ -24,6 +24,7 @@ import {
   type ItemPerson,
   type ItemTypeDef,
   type LinkedGroup,
+  type LabelUse,
 } from '@liveplanner/items';
 import { DialogCloseButton } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -62,8 +63,8 @@ type ItemPanelProps = {
   // The statuses this tab's boards use, by name, for the status picker.
   statuses: readonly { status: string; name: string }[];
   people: readonly ItemPerson[];
-  // Every label the project's items carry (the labels field's suggestions).
-  labels: readonly string[];
+  // The plan's labels with how many cards carry each (labelUsage): the Labels field's menu.
+  labels: readonly LabelUse[];
   canEdit: boolean;
   // Archive, Trash and the type editor (ItemPanelMenu); absent: as canEdit.
   canRetire?: boolean;

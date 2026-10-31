@@ -279,9 +279,24 @@ LinkedCards.tsx          LinkedCardGroup (a Linked as {Field} section) and Filte
 ItemTrailCrumbs.tsx      the breadcrumb: the shared BackBar to the card before (its "#key title"), this card's "#key"
                          as the chip, in a row above the header
 item-trail.ts            pure: stepTrail / liveTrail / childrenOf, ItemOpenVia, ITEM_TRAIL_MAX
-ItemDescription.tsx      the description: NoteRichTextEditor (note=false), saved DESCRIPTION_SAVE_MS (800 ms) after
-                         typing, on blur and on close as one patch of description + descriptionRich
-item-field-editors.tsx   editors for text (debounced), priority, labels, number, date, checklist
+RichTextField.tsx        the panel's rich text (the description, every Long Text): reads until clicked, then
+                         NoteRichTextEditor (note=false) on a slate-50 surface; saved RICH_TEXT_SAVE_MS (800 ms) after
+                         typing, on blur and on close; with maxLength, "n characters left" from 90% and "n characters
+                         over, not saved" (amber) past it
+ItemDescription.tsx      the description through RichTextField, one patch of description + descriptionRich
+ParagraphField.tsx       a Long Text through RichTextField (maxLength ITEM_UNKNOWN_STRING_MAX): paragraphRuns
+                         (richRunsOf, else the plain text), paragraphPatch (plain = the runs' text; <id>Rich while
+                         runsAreMarked, else cleared); emptied, ItemFieldEditor clears both, or a required one goes
+                         through onSave(f, undefined) so the host refuses it with its notice
+LabelsEditor.tsx         the Labels ChipField as a combobox (role, aria-expanded, aria-activedescendant, maxLength
+                         ITEM_LABEL_MAX), its menu an AnchoredPopover (initialFocus none, width max(280, field)) open
+                         while the field has focus; matchLabels per keystroke, planSpellingOf on every add, at most
+                         ITEM_LABELS_MAX; ↑/↓ wrap, Enter adds the highlighted option, Tab/blur close
+LabelMenu.tsx            the menu: "Labels on this plan" heading (and ↑↓ hint where there is hover), the matches as
+                         label chips (labelColour tint, a count badge, the typed text bold, a ring when highlighted),
+                         a dashed Create chip, or one note (no labels yet / all on the card / already on it / full);
+                         pointer-down prevented so focus stays in the field
+item-field-editors.tsx   editors for text (debounced), priority, number, date, checklist
 PersonPicker.tsx         the Assignee picker: No one, the plan's people, then + Custom Assignee (editable only), whose
                          CustomAssigneePopover (AnchoredPopover, a Name TextInput of CUSTOM_ASSIGNEE_NAME_MAX, Cancel,
                          Add) saves personNamed(name, people) and closes

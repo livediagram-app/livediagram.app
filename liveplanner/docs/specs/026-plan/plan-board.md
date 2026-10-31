@@ -611,8 +611,21 @@ In Plan mode:
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.
   - **Labels** are coloured chips in one field (each label keeps its colour everywhere: a 12% tint of it, inked with
-    70% of it mixed toward the page's ink, dark in light mode and white in dark, which reads at 4.5:1 for every swatch), with the project's
-    other labels offered as it is typed in; Backspace in an empty field takes the last one off.
+    70% of it mixed toward the page's ink, dark in light mode and white in dark, which reads at 4.5:1 for every swatch); Backspace in an
+    empty field takes the last one off. Focusing the field opens **the label menu** under it, so the plan's labels
+    are reused rather than retyped a little differently:
+    - **Before typing**, it shows the plan's labels the card does not have as the same coloured chips, most used
+      first (then A to Z), each with a small badge of how many cards on the plan carry it, under a quiet
+      **Labels on this plan** heading. A plan with none says "No labels yet. Type one to add it."
+    - **As you type**, it narrows to the labels containing the text (case aside), those starting with it first, the
+      matching letters in bold, and ends with a dashed **+ Create "text"** chip when no label is spelled that way.
+      The first label starting with the text is highlighted, else Create; ↑ and ↓ move the highlight (wrapping),
+      Enter adds the highlighted one, and a click or tap adds any. A comma adds what is typed as it is.
+    - Text that matches a plan label but for case ("bug" for "Bug") takes the plan's spelling, however it is added.
+    - Escape, Tab or a press outside closes the menu (Escape never closes the card); adding a label keeps it open
+      for the next.
+    - A label lives only while a card carries it: removing its last use forgets it, so it is no longer offered.
+      Counts are of the plan's cards outside the Trash; archived cards count.
   - **Checklist**: a progress bar and "2 of 5" over its steps; each step's text is edited in place, ticked with
     a rounded box, and taken off with ×; **Add a step** keeps its place for the next.
   - **Main column**: the title, large, then the type's tabs (see [Item types](item-types.md)) and the fields
@@ -621,6 +634,9 @@ In Plan mode:
     it or the usual shortcuts. Enter on a list item starts the next one; Enter on an empty item ends the list.
     It reads as text until clicked (hovering shows **Edit**); an empty one is a quiet **Add a description…** line (a pencil before it), not a box. Editing, it sits on a raised surface with the shortcuts beneath and **Saving…** then **Saved**;
     focus leaving it, or Escape, returns it to reading.
+    Every **Long Text** custom field is the same rich text, edited the same way, its empty line reading **Add
+    _field name_…**; beneath it, as it nears its 2,000 characters, how many are left (from 90%), and past them
+    "_n_ characters over" in amber, when it does not save until shortened.
   - **Details panel** on the right: the fields in no tab, as label and value rows (Status first, as a coloured
     picker), then **Created by** and **Edited by** (with when), each with the person's disc (initials on
     their colour) beside their name.
