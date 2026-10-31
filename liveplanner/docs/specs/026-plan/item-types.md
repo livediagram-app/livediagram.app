@@ -490,6 +490,15 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   "In {status} for 4 days" (for a screen reader; the hourglass glyph marks it for the eye). A card in a done column never shows it, and neither does a card with no status. Exports,
   thumbnails and api or MCP images draw it as the board does (a quiet "4d" pill, amber or red past the
   thresholds); a lone Plan card element, which has no board to say which columns are done, leaves it out.
+- **Created At, Created By, Last Edited At and Last Edited By** ([Created and Last Edited](items.md#created-and-last-edited))
+  join Age as its family: every type offers them, none is in a default, and Detailed draws them (Minimal's line
+  keeps to its five). **Created At** and **Last Edited At** are quiet pills, a clock and "Created 3 Oct", a pencil and
+  "Edited 31 Oct", the viewer's local day, the full date and time in the spoken label ("Created 3 Oct 2026,
+  14:02"); **Created By** and **Last Edited By** are the person's disc, as a Person field draws, spoken
+  "Created by Sam" and "Last edited by Sam". A card with no stamp for one (a card from before it was kept) draws
+  nothing there. The Display's example card reads them as made two days ago and edited today, by its sample person.
+  **Available Fields** lists them, with Age, under a second small heading, **Filled In Automatically**, after the
+  fields a person fills in. Exports, thumbnails and api or MCP images draw them as the board does.
 
 ## Editing a type
 

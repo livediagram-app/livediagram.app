@@ -77,6 +77,19 @@ item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) 
   there. `PlanCardFace` draws it only when the card is not `muted` (a done column) and has a status. The SVG face
   (`svg-render-plan-card.ts`) draws the same pill from `Date.now()` at render time, only with the board's `isDone`
   in hand, and ignores the board's old `cardFields` for it (the spec says a board has no say).
+- Created and Last Edited (spec items.md "Created and Last Edited"; `card-stamps.ts`): `STAMP_FIELDS`
+  (`createdAt`, `createdBy`, `updatedAt`, `updatedBy`) are built-in card fields after `age` in `CARD_FIELDS` (Detailed
+  only), labelled in `CARD_FIELD_LABELS`, in no `DRAWN` slot, offered on every type by `typeOffersCardField`
+  (`AUTOMATIC_CARD_FIELDS`, Age and the four, which the Display's Available Fields lists under Filled In
+  Automatically). They read the item's own properties: `itemStampTime(item, field)` (a finite moment > 0, else
+  undefined) and `itemStampPerson(item, field)` (an `ItemPerson` with a non-empty id, else undefined: the api's
+  unknown person), `stampDay(ms)` the local `YYYY-MM-DD`. Sort: `BOARD_SORT_BUILT_INS` gains `createdAt` and
+  `updatedAt` (kind `date`, read as the ms number, offered whenever a board shows any type). Lanes: `STAMP_LANE_FIELDS` (two `date`, two
+  `person`, `readOnly`) are in `laneFieldsOf` whenever it is given any type, so Card Search and the card finder filter by them too;
+  `laneOf` reads them from the item (`stampDay`, `itemStampPerson`), `laneDropPatch` sets nothing for them and
+  `boardLanes` adds no empty row. `normaliseBoardSetup` keeps them as a `swimlaneField`. The editor's `StampBit`
+  (`components/plan/card-stamps.tsx`) draws the dates (clock, pencil) and `PersonDisc` the people; the SVG face
+  draws the date as a muted pill and the person as its disc. The panel's `ItemMeta` reads the same helpers.
 - `projectBoard(setup, items, quick?, types = ITEM_TYPES)`, `itemAccessibleName(item, types?)`,
   `boardAddTypes(setup, types)`: the catalogue where they name or order types.
 
