@@ -5,7 +5,7 @@
 // that is not well formed is dropped before anything reads it. Only the envelope is checked: what an element or a
 // patch holds is the stored-element migrations' to settle (room-op-migrate.ts), and a kind this build does not
 // apply passes, as it always has, to be ignored.
-import { isRecord } from '@liveplanner/project';
+import { isDashboardPatch, isRecord } from '@liveplanner/project';
 import type { RoomOp } from '@liveplanner/api-schema';
 
 const isText = (v: unknown): v is string => typeof v === 'string';
@@ -45,6 +45,7 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
       return (
         isText(op.tabId) &&
         (op.tab === undefined || isRecord(op.tab)) &&
+        (op.dashboard === undefined || isRecord(op.dashboard)) &&
         (op.elementOps === undefined ||
           (Array.isArray(op.elementOps) && op.elementOps.every((o) => isElementOpShape(o, false))))
       );
@@ -52,6 +53,8 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
       return isText(op.tabId) && isText(op.elementId) && isText(op.voter);
     case 'tab-meta':
       return isText(op.tabId) && isRecord(op.patch) && isOptionalList(op.clear);
+    case 'dashboard-delta':
+      return isText(op.tabId) && isDashboardPatch(op.patch);
     case 'article':
       return isText(op.tabId) && isText(op.flow);
     case 'project-meta':

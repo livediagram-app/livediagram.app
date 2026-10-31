@@ -81,7 +81,7 @@ describe('classifyRoomOp', () => {
       { kind: 'element', tabId: 't1', elementId: 'a', change: 'changed' },
     ]);
     expect(classifyRoomOp({ kind: 'vote', tabId: 't1' })).toEqual([]);
-    for (const kind of ['tab', 'tab-meta'])
+    for (const kind of ['tab', 'tab-meta', 'dashboard-delta'])
       expect(classifyRoomOp({ kind, tabId: 't1' })).toEqual([{ kind: 'tab', tabId: 't1' }]);
   });
 
