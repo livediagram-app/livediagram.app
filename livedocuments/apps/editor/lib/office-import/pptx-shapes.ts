@@ -112,7 +112,8 @@ export type TextBody = {
   label: string;
   /** The first run's own size, in points, when it states one. */
   sizePt?: number;
-  alignX: TextAlignX;
+  /** The first paragraph's own alignment, when it states one. */
+  alignX?: TextAlignX;
   bold: boolean;
   italic: boolean;
   underline: boolean;
@@ -128,7 +129,7 @@ export function readTextBody(
   if (!txBody) return undefined;
   const lines: string[] = [];
   let sizePt: number | undefined;
-  let alignX: TextAlignX | undefined;
+  let alignX: TextAlignX | 'inherit' | undefined;
   let runs = 0;
   let bold = 0;
   let italic = 0;
@@ -159,10 +160,7 @@ export function readTextBody(
       const sz = intAttr(rPr, 'sz');
       if (sizePt === undefined && sz !== undefined && sz > 0) sizePt = sz / 100;
     }
-    if (alignX === undefined && text.trim() !== '') {
-      const algn = pPr?.attrs.algn;
-      alignX = algn === 'ctr' ? 'center' : algn === 'r' ? 'right' : 'left';
-    }
+    if (alignX === undefined && text.trim() !== '') alignX = alignOf(pPr) ?? 'inherit';
     let marker = '';
     if (text.trim() !== '') {
       if (child(pPr, 'a:buAutoNum')) {
@@ -183,11 +181,36 @@ export function readTextBody(
   return {
     label: lines.join('\n'),
     ...(sizePt !== undefined ? { sizePt } : {}),
-    alignX: alignX ?? 'left',
+    ...(alignX !== undefined && alignX !== 'inherit' ? { alignX } : {}),
     bold: runs > 0 && bold === runs,
     italic: runs > 0 && italic === runs,
     underline: runs > 0 && underline === runs,
   };
+}
+
+/** A paragraph properties' alignment, if it states one. */
+function alignOf(pPr: XmlElement | undefined): TextAlignX | undefined {
+  const algn = pPr?.attrs.algn;
+  if (algn === undefined) return undefined;
+  return algn === 'ctr' ? 'center' : algn === 'r' ? 'right' : 'left';
+}
+
+/** The level-1 alignment a shape's own list style gives, if any. */
+export function listStyleAlignOf(shape: XmlElement | undefined): TextAlignX | undefined {
+  return alignOf(path(shape, 'p:txBody', 'a:lstStyle', 'a:lvl1pPr'));
+}
+
+/** The alignment a master's text styles give a placeholder of this type, if any. */
+export function masterStyleAlign(
+  master: XmlElement | undefined,
+  type: PlaceholderType,
+): TextAlignX | undefined {
+  const styles = child(master, 'p:txStyles');
+  const style = child(
+    styles,
+    type === 'title' ? 'p:titleStyle' : type === 'body' ? 'p:bodyStyle' : 'p:otherStyle',
+  );
+  return alignOf(child(style, 'a:lvl1pPr'));
 }
 
 /** A shape's vertical anchor, if it states one. */

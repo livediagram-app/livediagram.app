@@ -96,6 +96,13 @@ describe('FileImportPanel', () => {
     fireEvent.dragOver(area);
     expect(area.getAttribute('data-over')).toBe('true');
     expect(area.className).toContain('border-brand-400');
+    // Into one of its own children: still lit (jsdom's drag events carry no relatedTarget, so a mouse event's does).
+    const into = new MouseEvent('dragleave', {
+      bubbles: true,
+      relatedTarget: screen.getByRole('button', { name: 'Choose a File' }),
+    });
+    fireEvent(area, into);
+    expect(area.getAttribute('data-over')).toBe('true');
     fireEvent.dragLeave(area);
     expect(area.getAttribute('data-over')).toBeNull();
   });

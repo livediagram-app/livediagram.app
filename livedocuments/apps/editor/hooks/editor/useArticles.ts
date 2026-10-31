@@ -48,6 +48,7 @@ import { articleLocked } from '@/lib/article/article-lock';
 import {
   clearArticleGrow,
   isArticleGrowPending,
+  isArticleSettleClaimed,
   markArticleGrow,
 } from '@/lib/article/article-grow-store';
 import { track } from '@/lib/telemetry';
@@ -256,7 +257,8 @@ export function useArticles(deps: {
   const onLayout = useCallback(
     (layout: FlowLayout) => {
       const d = latest.current;
-      if (!layout.local) {
+      // An article an import here just wrote is this editor's to settle, as its writer.
+      if (!layout.local && !isArticleSettleClaimed(tabId, layout.flow)) {
         growForAbsentWriter(layout);
         return;
       }

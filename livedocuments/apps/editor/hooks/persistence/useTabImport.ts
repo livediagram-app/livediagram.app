@@ -2,7 +2,14 @@
 // re-mint imported elements go through, the single-undo-step content replace, and the format-dispatched importers
 // (JSON / Markdown text, Word / PowerPoint files) with their lazy-loaded parsers.
 
-import { remapElementRefs, savableElements, type Element, type Tab } from '@livedocuments/document';
+import {
+  articlesOf,
+  remapElementRefs,
+  savableElements,
+  type Element,
+  type Tab,
+} from '@livedocuments/document';
+import { markArticleSettle } from '@/lib/article/article-grow-store';
 import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
@@ -90,6 +97,8 @@ export function useTabImport({
     if (dropped > 0) debugLog('[import] dropped unsavable elements', { dropped });
     const imported = { ...raw, elements };
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mergeImportedTab(t, imported) : t)));
+    // The importer is the writer of what came in: this editor lays its articles out (pages, pictures' places).
+    for (const flow of Object.keys(articlesOf(imported))) markArticleSettle(activeId, flow);
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);

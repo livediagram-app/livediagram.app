@@ -17,7 +17,8 @@ opens a **file panel** (`FileImportPanel`) with the same `BackBar`, the warning 
 
 - A **drop area** across the dialog (a dashed, rounded box) naming the format ("Drop a Word document here" /
   "Drop a PowerPoint deck here") with **Choose a File** under it. Dropping a file on it, or choosing one, starts
-  the import. A file dragged over it lights it in the brand colour.
+  the import. A file dragged over it lights it in the brand colour. On a touch screen, with nothing to drag
+  from, it reads "Choose a Word document" / "Choose a PowerPoint deck" over "It is read on this device."
 - A quiet footnote with the Google route ("From Google Docs: File › Download › Microsoft Word") and the help
   link.
 - While importing, the drop area shows a spinner and the stage in words: **Reading the document…**, then
@@ -70,7 +71,9 @@ sits on the slide, scaled from the deck's size to the page's.
   box's place and size, a placeholder with no place of its own taking its layout's, then its master's. A
   paragraph with a bullet starts with "• " (a numbered one with its number), indented two spaces a level; the
   text size is the first run's (or the placeholder's default: a title 44 pt, a body 28 pt, else 18 pt), as px
-  on the page; bold or italic when every run is; the first paragraph's alignment.
+  on the page (past the editor's largest size, 48 px, that size scaled up, as a resized headline is); bold or
+  italic when every run is; the first paragraph's alignment, else its list style's (the shape's, its layout's,
+  its master's), else the master's text style's.
 - **Pictures** become **image** elements in the picture's box; a cropped picture fills its box (cover).
 - **Groups** are opened: their members are placed through the group's own scaling.
 - **Speaker notes** become the slide's notes in the Slide Deck, the same notes the page's **Notes** button and
@@ -88,6 +91,10 @@ the warning above the panel says so. The deck's speaker notes and hidden slides 
 (`page:<tab>:<page>`): an undo takes those slides out with the pages, and a redo brings them back, notes and all,
 as any deleted page's slides come back ([Pages](../007-editor/pages-mode.md) "Slides"). Each import mints new
 page ids, so notes from an earlier import never land on a new page.
+
+The importer is the imported articles' writer ([Article pages](../007-editor/article-pages.md) "Collaboration"):
+their editor lays the article out as it would its own typing, adding the pages the writing needs and placing the
+pictures, for the writer's window from the article's first layout. The same holds for a Markdown or JSON import.
 
 ## Images
 

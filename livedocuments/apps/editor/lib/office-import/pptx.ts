@@ -18,7 +18,9 @@ import {
   fontScaleOf,
   groupMap,
   inheritedShape,
+  listStyleAlignOf,
   listStyleSizeOf,
+  masterStyleAlign,
   masterStyleSize,
   placeholderOf,
   readTextBody,
@@ -108,7 +110,13 @@ function textShape(shape: XmlElement, map: GroupMap, ctx: SlideContext): void {
     box,
     label: body.label,
     sizePt: sizePt * fontScaleOf(shape),
-    alignX: body.alignX,
+    alignX:
+      body.alignX ??
+      listStyleAlignOf(shape) ??
+      listStyleAlignOf(layoutShape) ??
+      listStyleAlignOf(masterShape) ??
+      (ph ? masterStyleAlign(ctx.inherit.master, ph.type) : undefined) ??
+      'left',
     alignY: anchorOf(shape) ?? anchorOf(layoutShape) ?? anchorOf(masterShape) ?? 'top',
     bold: body.bold,
     italic: body.italic,

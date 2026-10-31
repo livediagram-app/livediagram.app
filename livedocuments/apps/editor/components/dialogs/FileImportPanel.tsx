@@ -8,23 +8,25 @@ type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 // What each file format's panel says (docs/specs/020-import-export/office-import.md "How it's triggered").
 const COPY: Record<
   FileImportFormat,
-  { drop: string; reading: string; accept: string; google: string; title: string }
+  { drop: string; touch: string; reading: string; accept: string; google: string; title: string }
 > = {
   word: {
     title: 'Word',
     drop: 'Drop a Word document here',
+    touch: 'Choose a Word document',
     reading: 'Reading the document…',
     accept:
       '.docx,.docm,.dotx,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    google: 'From Google Docs: File › Download › Microsoft Word (.docx)',
+    google: 'From Google Docs: File › Download › Microsoft Word',
   },
   powerpoint: {
     title: 'PowerPoint',
     drop: 'Drop a PowerPoint deck here',
+    touch: 'Choose a PowerPoint deck',
     reading: 'Reading the deck…',
     accept:
       '.pptx,.pptm,.ppsx,.potx,application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    google: 'From Google Slides: File › Download › Microsoft PowerPoint (.pptx)',
+    google: 'From Google Slides: File › Download › Microsoft PowerPoint',
   },
 };
 
@@ -101,7 +103,10 @@ export function FileImportPanel({
           e.preventDefault();
           if (!busy) setOver(true);
         }}
-        onDragLeave={() => setOver(false)}
+        // Moving over the area's own children fires a leave too: only leaving the area itself turns the light off.
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOver(false);
+        }}
         onDrop={busy ? (e) => e.preventDefault() : onDrop}
         className={`flex min-h-[13rem] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors ${
           over
@@ -114,10 +119,25 @@ export function FileImportPanel({
         </span>
         <div aria-live="polite">
           <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-            {busy ? stageLine(format, stage) : copy.drop}
+            {busy ? (
+              stageLine(format, stage)
+            ) : (
+              <>
+                {/* A touch screen has nothing to drag a file from: it names the choice instead. */}
+                <span className="pointer-coarse:hidden">{copy.drop}</span>
+                <span className="hidden pointer-coarse:inline">{copy.touch}</span>
+              </>
+            )}
           </p>
           <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-            {busy ? 'This can take a moment for a large file.' : 'or choose one from your computer'}
+            {busy ? (
+              'This can take a moment for a large file.'
+            ) : (
+              <>
+                <span className="pointer-coarse:hidden">or choose one from your computer</span>
+                <span className="hidden pointer-coarse:inline">It is read on this device.</span>
+              </>
+            )}
           </p>
         </div>
         <Button
@@ -155,7 +175,7 @@ export function FileImportPanel({
       ) : null}
       <div className="mt-4 flex items-center justify-between gap-3">
         <p className="flex min-w-0 items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-          <span className="shrink-0 text-slate-400 dark:text-slate-500">
+          <span className="shrink-0 text-slate-400">
             <InfoGlyph />
           </span>
           <span>{copy.google}</span>

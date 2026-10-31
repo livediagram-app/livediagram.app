@@ -449,7 +449,8 @@ ink").
   an export or thumbnail.
 - Only the writer of a change writes its consequences (zone moves, pages added or removed), so
   two people's views never fight over them. The writer is whoever changed the article within the
-  last 3 s (`WRITER_WINDOW_MS`): typing in it, or a zone, style or page edit of it. Having the
+  last 3 s (`WRITER_WINDOW_MS`): typing in it, or a zone, style or page edit of it, or an import that wrote it
+  (for 3 s from its first layout). Having the
   caret in it is not writing: two people in one article never both add a page for one overflow.
   The exceptions, an agent's write, a Participant's writing (a Participant never adds pages) and
   a writer who left before settling, are grown by the first editor to lay the article out

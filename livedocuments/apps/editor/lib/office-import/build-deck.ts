@@ -4,8 +4,11 @@
 // and hidden flag for the Slide Deck.
 
 import {
+  clampTextPx,
   layOutPages,
   newSlidePage,
+  TEXT_PX_MAX,
+  TEXT_SCALE_MAX,
   nextPageId,
   type Element,
   type Page,
@@ -24,6 +27,14 @@ export type ImportedSlideDetail = { pageId: string; notes?: string; hidden?: tru
 
 // The smallest text a slide brings across, px.
 const MIN_TEXT_PX = 8;
+
+/** A slide's text size, px on the page, as the editor stores it: an exact size up to its largest (TEXT_PX_MAX), and
+ *  past that the largest scaled up (textScale, as a resized headline is), so a 60 pt title keeps its size. */
+export function slideTextSize(px: number): { textSize: number; textScale?: number } {
+  if (px <= TEXT_PX_MAX) return { textSize: clampTextPx(Math.max(MIN_TEXT_PX, px)) };
+  const scale = Math.min(TEXT_SCALE_MAX, Math.round((px / TEXT_PX_MAX) * 100) / 100);
+  return { textSize: TEXT_PX_MAX, textScale: scale };
+}
 
 /** The slide size nearest a deck's shape: 16:9 or the classic 4:3. */
 export function slideSizeFor(cx: number, cy: number): PageSizeId {
@@ -94,7 +105,7 @@ function elementOf(
     type: 'text',
     ...box,
     label: item.label,
-    textSize: Math.max(MIN_TEXT_PX, Math.round(item.sizePt * EMU_PER_PT * scale)),
+    ...slideTextSize(item.sizePt * EMU_PER_PT * scale),
     textAlignX: item.alignX,
     textAlignY: item.alignY,
     ...(item.bold ? { textBold: true } : {}),

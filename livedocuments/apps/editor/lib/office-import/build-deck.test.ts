@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages, pagesOf, type ImageElement, type TextElement } from '@livedocuments/document';
-import { buildDeckTab, slideSizeFor } from './build-deck';
+import { buildDeckTab, slideSizeFor, slideTextSize } from './build-deck';
 import type { PptxRead } from './pptx';
 import type { PictureOutcome } from './store-images';
 
@@ -65,7 +65,9 @@ describe('buildDeckTab', () => {
       y: p0.y,
       width: 960,
       label: 'Title',
-      textSize: 88,
+      // 44 pt on a 1920px slide is 88px: the editor's largest size, scaled up.
+      textSize: 48,
+      textScale: 1.83,
       textAlignX: 'center',
       textAlignY: 'middle',
       textBold: true,
@@ -122,5 +124,15 @@ describe('slideSizeFor', () => {
     expect(slideSizeFor(9144000, 5143500)).toBe('slide');
     expect(slideSizeFor(9144000, 6858000)).toBe('slide-classic');
     expect(slideSizeFor(16, 10)).toBe('slide');
+  });
+});
+
+describe('slideTextSize', () => {
+  it('keeps an exact size up to 48px, at least 8px, and scales the largest past it', () => {
+    expect(slideTextSize(4)).toEqual({ textSize: 8 });
+    expect(slideTextSize(23.6)).toEqual({ textSize: 24 });
+    expect(slideTextSize(48)).toEqual({ textSize: 48 });
+    expect(slideTextSize(120)).toEqual({ textSize: 48, textScale: 2.5 });
+    expect(slideTextSize(100_000)).toEqual({ textSize: 48, textScale: 40 });
   });
 });

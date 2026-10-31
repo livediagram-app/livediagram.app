@@ -31,10 +31,11 @@ describe('readPptx, a PowerPoint deck', () => {
       label: 'Quarterly Review',
       box: { x: 1524000, y: 1122363, cx: 9144000, cy: 2387600 },
       sizePt: 60,
+      alignX: 'center',
       alignY: 'bottom',
     });
     // The subtitle is a body placeholder whose layout's list style turns bullets off.
-    expect(sub).toMatchObject({ label: 'Team update', sizePt: 24 });
+    expect(sub).toMatchObject({ label: 'Team update', sizePt: 24, alignX: 'left' });
     expect(deck.slides[0]!.notes).toBe('Welcome everyone.\nKeep it short.');
 
     const items = deck.slides[1]!.items;

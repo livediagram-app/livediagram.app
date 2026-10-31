@@ -171,9 +171,11 @@ Follows the spec's table. Precisely:
 - Size: the first run's `sz`, else the shape's, layout's and master placeholder's `a:lstStyle` level-1
   `a:defRPr sz`, else the master's `p:txStyles` (`titleStyle` for a title, `bodyStyle` for a body,
   `otherStyle` else), else 44 / 28 / 18 pt; times `a:normAutofit fontScale`. As px:
-  `pt * EMU_PER_PT * scale`, rounded, at least 8.
-- Alignment: the first paragraph's `algn` (`ctr` centre, `r` right, else left); `a:bodyPr anchor` (`ctr` middle,
-  `b` bottom, else top), inherited like the box.
+  `pt * EMU_PER_PT * scale` through `slideTextSize`: at least 8, an exact `textSize` up to `TEXT_PX_MAX` (48),
+  past it `textSize: 48` with `textScale: px / 48` (at most `TEXT_SCALE_MAX`).
+- Alignment: the first paragraph's `algn` (`ctr` centre, `r` right, else left), else the level-1 `algn` of the
+  shape's, layout's and master placeholder's `a:lstStyle`, else the master's `p:txStyles` for its type, else left;
+  `a:bodyPr anchor` (`ctr` middle, `b` bottom, else top), inherited like the box.
 - Bold or italic when every run with text has `b="1"` / `i="1"`.
 - `p:pic`: a picture item (`a:srcRect` with any edge set: `cropped`); a picture carrying `a:videoFile` /
   `a:audioFile` / a media extension is `media`, not a picture; `r:link` `linkedImages`.
@@ -242,6 +244,9 @@ Every `OfficeImportError` becomes its failure; anything else thrown is `not-a-pa
   `PowerPoint`.
 - `useTabActions` passes `ownerId`, `documentId` and `onSlidesImported` through; `useEditorState` wires
   `onSlidesImported` to `slideDeck.adoptImportedSlides`, which commits `deckWithPageSlideDetails`.
+- `replaceActiveTabContent` marks each imported article with `markArticleSettle(tabId, flow)`
+  (`lib/article/article-grow-store.ts`); `useArticles.onLayout` treats a layout as local while
+  `isArticleSettleClaimed` (3 s from the first layout), so the importer adds the pages and settles the parked zones.
 - `ImportTabDialog` takes `onImportFileFormat(format, file, onStage)`; the Word and PowerPoint cards open
   `FileImportPanel`.
 
@@ -294,8 +299,10 @@ never opened; picture bytes are re-encoded by the image pipeline (metadata strip
   (muted) and the primary **Choose a File** button. Drag over: brand border and a brand-50 wash (dark: brand-500
   at 10%). Busy: the glyph becomes a spinner, the line the stage ("Reading the document…" / "Reading the deck…",
   "Saving images (3 of 12)…"), the sub-line "This can take a moment for a large file.", the button disabled.
-- Footer row: left, the Google route (`Glyph` + "From Google Docs: File › Download › Microsoft Word (.docx)" /
-  "From Google Slides: File › Download › Microsoft PowerPoint (.pptx)"); right, the help link.
+- On a coarse pointer (`pointer-coarse:`) the drop lines read "Choose a Word document" / "Choose a PowerPoint
+  deck" over "It is read on this device."
+- Footer row: left, the Google route (`Glyph` + "From Google Docs: File › Download › Microsoft Word" /
+  "From Google Slides: File › Download › Microsoft PowerPoint"); right, the help link.
 - Error: under the drop area, the dialog's rose error box, `role="alert"`.
 - The format grid gains the Word and PowerPoint cards, after Markdown; their glyph boxes read `docx` and `pptx`.
 
