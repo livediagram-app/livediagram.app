@@ -11,6 +11,7 @@ import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 // - The open tab changes: it slides there over MOTION_MS.long on a gentle spring (at once under reduced motion). A
 //   folder easing shut or open in the same commit moves the new tab while the card travels, so the card aims at
 //   where the tab will stand once those widths settle (each easing box already carries its end width inline).
+//   The same goes for the slots inside tabs (avatars, menu button; TabFrame), which ease over the same time.
 // - The strip's layout changes under it (a folder opening before it, a rename, presence avatars arriving, the tabs
 //   reordered): it follows at once, measured by a ResizeObserver, so it never lags its tab.
 // - On mount it appears in place: no slide in from the left edge.
@@ -30,16 +31,22 @@ export function measureSlot(list: HTMLElement, tab: HTMLElement, settled: boolea
   const l = list.getBoundingClientRect();
   const t = tab.getBoundingClientRect();
   let x = t.left - l.left;
+  let w = t.width;
   if (settled) {
     for (const box of list.querySelectorAll<HTMLElement>('[data-collapse-width]')) {
       if (box.contains(tab)) continue;
-      if (!(box.compareDocumentPosition(tab) & Node.DOCUMENT_POSITION_FOLLOWING)) continue;
+      const inside = tab.contains(box);
+      if (!inside && !(box.compareDocumentPosition(tab) & Node.DOCUMENT_POSITION_FOLLOWING))
+        continue;
       const end = parseFloat(box.style.width);
       if (Number.isNaN(end)) continue;
-      x += end - box.getBoundingClientRect().width;
+      const by = end - box.getBoundingClientRect().width;
+      // A slot of the tab itself (its avatars, menu button) easing open widens the card; any other, before it, moves it.
+      if (inside) w += by;
+      else x += by;
     }
   }
-  return { x, y: t.top - l.top, w: t.width, h: t.height + TAB_SLIDER_FOOT_PX };
+  return { x, y: t.top - l.top, w, h: t.height + TAB_SLIDER_FOOT_PX };
 }
 
 const reducedMotion = () =>

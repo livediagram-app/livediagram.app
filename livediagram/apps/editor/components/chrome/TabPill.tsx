@@ -146,6 +146,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           </span>
         ) : null
       }
+      hasPresence={(participantsByTab.get(tab.id)?.length ?? 0) > 0}
       presence={
         <TabPresenceStack
           participants={participantsByTab.get(tab.id) ?? []}
