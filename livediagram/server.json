@@ -2,17 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.livediagram-app/livediagram",
   "title": "livediagram",
-  "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on livediagram.app.",
-  "version": "0.1.0",
-  "websiteUrl": "https://livediagram.app",
+  "description": "Create, edit, share and render real-time collaborative diagrams and mind maps on livediagram.app.",
+  "version": "0.2.0",
+  "websiteUrl": "https://www.livediagram.app",
   "repository": {
     "url": "https://github.com/livediagram-app/livediagram.app",
     "source": "github",
-    "subfolder": "apps/mcp"
+    "subfolder": "livediagram/apps/mcp"
   },
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/livediagram-app/livediagram.app/main/marketing/media/icons/livediagram-icon-512.png",
+      "src": "https://www.livediagram.app/livediagram-icon-512.png",
       "mimeType": "image/png",
       "sizes": ["512x512"]
     }

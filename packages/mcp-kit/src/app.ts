@@ -8,6 +8,7 @@ import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/
 import { bearerTokenOf } from '@liveworkspace/api-kit/request-auth';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { SERVER_CARD_PATH, serverCard, type McpListing } from './listing';
 import { registerOauthRoutes, type OauthServer } from './oauth';
 import type { OauthEnv } from './oauth-clients';
 import { runInRequest } from './request-scope';
@@ -17,8 +18,13 @@ export function createMcpApp<E extends OauthEnv>(options: {
   // each tool, so nothing carries over between requests.
   buildServer: (env: E) => McpServer;
   oauth: OauthServer<E>;
+  // How the server is listed: its serverInfo, server.json and server card (mcp-server.md §4.16).
+  listing: McpListing;
 }): Hono<{ Bindings: E }> {
   const app = new Hono<{ Bindings: E }>();
+  // The server card per origin (production, staging, local): what it lists only changes with a deploy, which
+  // starts new isolates, so one build per isolate and origin serves every later request.
+  const cards = new Map<string, Record<string, unknown>>();
 
   // MCP clients call from arbitrary origins; the Bearer token is the
   // authorization, not the origin, so CORS is permissive.
@@ -32,6 +38,19 @@ export function createMcpApp<E extends OauthEnv>(options: {
   );
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
+
+  // The server card (mcp-server.md §4.16): what a directory or client shows before anyone signs in.
+  app.get(SERVER_CARD_PATH, async (c) => {
+    const origin = new URL(c.req.url).origin;
+    let card = cards.get(origin);
+    if (!card) {
+      // A host header can name any origin, so the cache keeps a handful and starts again past that.
+      if (cards.size >= MAX_CARD_ORIGINS) cards.clear();
+      card = await serverCard(options.listing, options.buildServer(c.env), origin);
+      cards.set(origin, card);
+    }
+    return c.json(card, 200, { 'Cache-Control': 'public, max-age=3600' });
+  });
 
   // OAuth 2.1 discovery / register / authorize / complete / token (mcp-server.md §3).
   registerOauthRoutes(app, options.oauth);
@@ -67,6 +86,8 @@ export function createMcpApp<E extends OauthEnv>(options: {
 
   return app;
 }
+
+const MAX_CARD_ORIGINS = 8;
 
 // Hono's `executionCtx` throws when the runtime supplied none (a unit test
 // calling app.fetch without one), so read it defensively.

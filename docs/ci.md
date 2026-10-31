@@ -66,7 +66,13 @@ result.
   released queries also run against an unchanged `main`. It is an advanced setup, so the repository's
   CodeQL default setup stays off, or GitHub rejects the upload. The `main` ruleset requires its results.
 
-CI publishes no CLI: the CLIs' npm publishing and MCP Registry listing happen outside CI. Each product's CLI builds and
+- **MCP Registry** (`mcp-registry.yml`): only by hand (`workflow_dispatch`), never on a push. It publishes the
+  chosen product's `server.json` (livediagram, liveplanner, livedocuments or livedesign) to the official MCP
+  Registry, signed in with the repository's GitHub OIDC token, which proves the `io.github.livediagram-app`
+  namespace every product lists under; no secret. Each product's MCP spec, "Registry listing", says what the
+  descriptor holds.
+
+CI publishes no CLI: the CLIs' npm publishing happens outside CI. Each product's CLI builds and
 packs on every run that reaches it (Build).
 
 ## Coverage report
