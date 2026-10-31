@@ -159,12 +159,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block,
             and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it
             grows, pictures, charts and tables sit in the text, and teammates comment on the words
-            themselves. Pick one of five looks, then export every page as a PDF. See{' '}
-            <a href="/help/pages/articles/">Articles</a>.
+            themselves. Pick one of five looks, then export every page as a PDF, or the article as a
+            Word document to keep editing. See <a href="/help/pages/articles/">Articles</a>.
           </>
         ),
         aText:
-          'Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and tables sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF. See Articles.',
+          'Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and tables sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF, or the article as a Word document to keep editing. See Articles.',
       },
       {
         q: 'Can I make and present a slide deck?',
@@ -390,7 +390,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export pages as PNG, SVG, one print-ready PDF or an animated GIF, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export pages as PNG, SVG, one print-ready PDF or an animated GIF, a deck as an editable PowerPoint file, an article as an editable Word document, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Can I bring in writing from elsewhere?',
