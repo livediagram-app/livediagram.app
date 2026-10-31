@@ -49,10 +49,10 @@ export function InspectSpacingBox({
           return (
             <span
               key={side}
-              aria-label={`${SIDE_NAME[side]}: nothing to measure to`}
-              className={`${SIDE_PLACE[side]} px-2 py-1 font-mono text-xs text-slate-400 dark:text-slate-500`}
+              className={`${SIDE_PLACE[side]} px-2 py-1 font-mono text-xs text-slate-500 dark:text-slate-400`}
             >
-              –
+              <span aria-hidden>–</span>
+              <span className="sr-only">{`${SIDE_NAME[side]}: nothing to measure to`}</span>
             </span>
           );
         }

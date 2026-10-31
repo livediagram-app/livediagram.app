@@ -84,6 +84,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched the canvas into Isometric view, which renders the canvas at an angle for a 3D-style look.',
   'Canvas|Used|Laser':
     "Someone switched on the Laser pointer, a trail visible to everyone that shows where they're pointing without leaving a mark.",
+  'Canvas|Used|Inspect':
+    'Someone switched on Inspect on a wireframe, to read an element’s size, spacing, colours and type.',
   'Canvas|Used|Spotlight':
     "Someone switched on Spotlight, which dims the rest of the canvas around wherever they're pointing.",
   'Canvas|Zoomed|DoubleTap':
