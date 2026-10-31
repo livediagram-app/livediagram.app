@@ -76,6 +76,7 @@ ingest drops.
 | `Status`    | `/status`                          | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
 | `Dashboard` | `/telemetry`                       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
 | `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
+| `Community` | `/community`, `/community/*`       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
 
 The slots:
 
@@ -86,6 +87,8 @@ The slots:
   ([Start Blank](marketing-site.md#start-blank)); the slots stay so their stored history still reads):
   the menu's rows beside Choose Template. The help centre's header has one Start button, its `Header`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
+- `Community` ([Community](../025-community/community.md)) has the header slots only: its Share Your Own buttons open
+  Explorer Home rather than `/new`, so they are not funnel sources.
 - `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero has no buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them): three hero buttons. On a feature page, `Hero` is the category hero's
   start button.
 - `HeroBuild` (**retired**: no link carries it; the slot stays so its history still

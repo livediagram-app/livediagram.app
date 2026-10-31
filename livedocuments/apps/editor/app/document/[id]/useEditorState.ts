@@ -484,6 +484,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     selfParticipant,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
+    // A Community visitor reads the document, never its conversation (docs/specs/025-community/blueprints/community.md).
+    commentsOff: realtime.sessionCommunity !== null,
   });
   // Per-user editor preferences (docs/specs/007-editor/user-preferences.md): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
@@ -814,6 +816,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
+      setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
       setSharePasswordGate,
       setIdentityPromptOpen,
@@ -923,7 +926,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     documentServerStored: realtime.documentServerStored,
     // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
-    enabled: !workbench?.ended,
+    // A Community visitor never joins the room: no cursors, no presence (blueprints/community.md).
+    enabled: realtime.sessionCommunity === null && !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
     onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
     documentTeamId,

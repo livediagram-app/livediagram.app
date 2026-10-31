@@ -74,7 +74,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/                    the same set minus community
 │  └─ packages/                @liveplanner/*
 ├─ livedocuments/              forked from livediagram in-tree (Pages mode only)
-│  ├─ apps/                    the same set minus community
+│  ├─ apps/                    the same set as livediagram's
 │  └─ packages/                @livedocuments/*
 └─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
    ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, router

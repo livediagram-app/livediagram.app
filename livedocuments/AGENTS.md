@@ -197,6 +197,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the Pages editor app, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
   help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
+  community/    # public gallery of shared documents (Next.js export, /community), on @liveworkspace/community-site
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects, no D1, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livedocuments.app)
   router/       # Cloudflare Worker stitching the apps under one hostname

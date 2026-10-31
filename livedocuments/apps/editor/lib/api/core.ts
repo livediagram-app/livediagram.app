@@ -3,7 +3,7 @@
 // shared DELETE shape, and the module-level token / share-password
 // state. The per-domain call collections (documents, tabs, share, …)
 // import from here; callers go through the lib/api-client.ts barrel.
-import type { LiveDoc, ShareRole } from '@livedocuments/api-schema';
+import type { CommunityShareInfo, LiveDoc, ShareRole } from '@livedocuments/api-schema';
 import {
   BUILD_ID_HEADER,
   DOCUMENT_FORMAT_HEADER,
@@ -150,7 +150,13 @@ export type ParticipantResponse = {
 // password was submitted (vs none yet), so the gate can show an error.
 export type SharedDocumentResolution =
   // `tabId`: the tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  | { document: LiveDoc; role: ShareRole; tabId: string | null }
+  // `community`: set only when the code is a Community post's link (docs/specs/025-community/community.md).
+  | {
+      document: LiveDoc;
+      role: ShareRole;
+      tabId: string | null;
+      community: CommunityShareInfo | null;
+    }
   | { passwordRequired: true; invalid: boolean };
 
 // Identity (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index"). A signed-in page registers a

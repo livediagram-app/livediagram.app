@@ -242,7 +242,11 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     shapeLibrariesPath: null,
     imports: [],
     importPath: null,
-    share: shareOf(itemTabsPath('documents'), 'livedocuments tab'),
+    share: shareOf(
+      itemTabsPath('documents'),
+      'livedocuments tab',
+      itemCommunityPath('documents'),
+    ),
   },
   livedesign: {
     site: 'livedesign.app',

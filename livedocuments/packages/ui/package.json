@@ -42,6 +42,7 @@
     "@livedocuments/telemetry-client": "workspace:*",
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/community-ui": "workspace:^",
     "@liveworkspace/icons": "workspace:^",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",

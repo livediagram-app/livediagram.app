@@ -26,6 +26,7 @@ export const COMMUNITY_APP_WORDS: Record<CommunityApp, CommunityWords> = {
     nouns: 'documents',
     showcase: 'document',
     showcases: 'documents',
+    cover: 'first page',
   },
   'livedesign.app': {
     product: 'livedesign',

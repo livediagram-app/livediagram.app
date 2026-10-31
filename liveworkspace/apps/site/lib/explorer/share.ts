@@ -15,7 +15,7 @@ import type {
   ShareHost,
 } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
-import { APP_ITEMS, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { APP_ITEMS, APP_NAMES, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { appOrigin, pageApp } from './page-app';
 import { trackShare } from './telemetry';
 import { workspaceToken } from './token';
@@ -81,8 +81,18 @@ export function shareHelpHrefFor(app: AppName): ShareHelpHref {
   return (article) => `${url}/help/${help[article]}/`;
 }
 
-/** The app whose items have a Community tab here so far (the others' come with their Communities). */
-export const COMMUNITY_SHARE_APP: AppName = 'livediagram';
+/** The apps whose items have a Community tab here: each with a Community and an owner route to reach it through
+ *  (`APP_ITEMS[app].share.communityPath`). The others' come with their Communities. */
+export const COMMUNITY_SHARE_APPS: readonly AppName[] = APP_NAMES.filter(
+  (app) => APP_ITEMS[app].share.communityPath !== null && isCommunityApp(APP_ITEMS[app].site),
+);
+
+/** The apps the Explorer here can offer the Community tab for: on an app's own address only that app (its token is
+ *  that app's alone), on liveworkspace.app every app with one. */
+export function communityShareAppsHere(here: AppName | null): readonly AppName[] {
+  if (!here) return COMMUNITY_SHARE_APPS;
+  return COMMUNITY_SHARE_APPS.includes(here) ? [here] : [];
+}
 
 /** The signed-in account the Explorer asks as, for the Community tab: its `sub` and the name its listings show. */
 export type ShareAccount = { id: string; name: string | null };
@@ -137,11 +147,14 @@ export function communityShareOf(
 export function shareHostFor(
   app: AppName,
   account: ShareAccount | null = null,
-  communityOn = false,
+  communityOn: (app: AppName) => boolean = () => false,
   signInHref = '',
 ): ShareHost {
   return {
-    community: (item) => communityShareOf(item, account, communityOn, signInHref),
+    community: (item) =>
+      isAppName(item.app)
+        ? communityShareOf(item, account, communityOn(item.app), signInHref)
+        : undefined,
     loadTabs: (item) => loadTabsOf(item),
     handOver: (item) => (isAppName(item.app) ? handOverFor(item.app) : undefined),
     helpHref: shareHelpHrefFor(app),

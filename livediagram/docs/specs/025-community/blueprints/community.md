@@ -222,7 +222,7 @@ Community link behaviour (keyed off the canvas's `community_post.share_code`):
 - `DocumentGrant` carries `community: boolean`. A community grant is refused by every door that has not opted in with
   `COMMUNITY_CONTENT` (`gateGrant`, `apps/api/src/routes/context.ts`), the comment listing included. The document GET
   and the tab GET opt in; the document is redacted with `redactDocumentForCommunity` and the tab with
-  `redactTabForCommunity` (`apps/api/src/community-redact.ts`).
+  `redactTabForCommunity` (`apps/api/src/community-redact.ts`, a binding of `@liveworkspace/community/app`).
 - Copy: the api's copy door (`apps/api/src/routes/document-index-routes.ts`) names a copy through the post's link
   after the post (`communityPostTitle`) and counts it (`countCommunityCopy`, with the copier's network) before the
   index copies; the index's copy (`copy` in `apps/api/src/routes/internal-items.ts`) takes the source through
@@ -235,11 +235,12 @@ shared-ago line), `useCommunityEnabled` / `fetchCommunityEnabled`, `CommunityCou
 `CommunityCopyCount`), and `surfaces.ts` (`COMMUNITY_DOT_GRID`, `COMMUNITY_SKELETON_BAR`: the dot grid behind a
 post's image and the pulsing loading bar, used by the card, its skeleton, `EmbedFrame` and `PostStates`). The landing
 page's section is `CommunityShowcase` from `@liveworkspace/community-ui/landing`, bound in
-`apps/marketing/components/CommunityShowcase.tsx` (livediagram's posts, words, card images and help link).
-livediagram's own (`packages/ui/src/community/`): `CommunityFooterLink` (the shared footer's link, hidden while
-switched off), and `CommunityHelpLink`, which binds the shared help link (`@liveworkspace/community-ui/help-link`) to
-`COMMUNITY_HELP` in `packages/help-registry/src/community.ts` (`sharing` or `finding`, each an article href and its
-telemetry id, sent as `UI·Opened·<id>`).
+`apps/marketing/components/CommunityShowcase.tsx` (livediagram's posts, words, card images and help link). The
+public sites' links are `@liveworkspace/community-ui/links`: `CommunityFooterLink` (the shared footer's link, hidden
+while switched off) and `CommunityHelpLink` (the shared help link, `@liveworkspace/community-ui/help-link`, at an
+article of `COMMUNITY_HELP`, every app's, from `@liveworkspace/help-registry/community`: `sharing` or `finding`, each
+an article href and its telemetry id, sent as `UI·Opened·<id>`). livediagram's own
+`packages/ui/src/community/CommunityHelpLink.tsx` binds it to this site's telemetry.
 
 Picture and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/document-room.ts`,
 `drawDocument` in `apps/api/src/thumbnail.ts`) draws from the redacted board when asked with the open post's code;
@@ -342,7 +343,7 @@ liveworkspace/docs/specs/007-community "An app's Community pages"):
   refuses it unless the door passes `COMMUNITY_CONTENT`. Doors that pass it: the document GET (and its views), the tab
   GET (and its views), images, the copy and the room ticket (which then refuses with 403 `community_link`). Every other
   door (comments, comment pictures, changesets, timeline, Q&A board, and any new one) refuses by default.
-- `redactElementsForCommunity` / `redactTabDataForCommunity` (`apps/api/src/community-redact.ts`): comment threads
+- `redactElementsForCommunity` / `redactTabDataForCommunity` (`apps/api/src/community-redact.ts`, a binding of `@liveworkspace/community/app`): comment threads
   dropped; each action keeps its text and status, its assignee, team, assigner id and assigner name blanked. Applied
   to the tab GET for a community visit and to the copy's source (`exportCopy` in
   `apps/api/src/document-room/document-content.ts`), so the copy is built from the redacted data.
@@ -481,7 +482,7 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Community section state, tag input         | packages/community-ui/src/share/*.test.ts(x)                                                                                                   |
 | Editor api client and error copy           | `apps/editor/lib/api/community.test.ts`                                                                                                        |
 | Network ranges (IPv4 /24, IPv6 /56)        | packages/community/src/network.test.ts                                                                                                         |
-| Redaction for strangers                    | `apps/api/src/community-redact.test.ts`                                                                                                        |
+| Redaction for strangers                    | `packages/community/src/app/redact.test.ts` (the monorepo's)                                                                                   |
 | Community drawing redacted                 | `apps/api/src/thumbnail.test.ts`                                                                                                               |
 | Post row mapping (Anonymous, state)        | liveworkspace/apps/community/src/posts.test.ts                                                                                                 |
 | Community links, sync state                | `apps/api/src/routes/community-routes.test.ts`                                                                                                 |

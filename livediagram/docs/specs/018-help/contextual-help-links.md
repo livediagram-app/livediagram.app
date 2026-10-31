@@ -126,7 +126,7 @@ key and never introduce a second linking pattern.
 ### Outside the editor: the Community
 
 The public sites link the Community's two articles through one shared component, `CommunityHelpLink`
-(`packages/ui/src/community/CommunityHelpLink.tsx`), keyed by `COMMUNITY_HELP`
+(`packages/ui/src/community/CommunityHelpLink.tsx`, this site's telemetry bound to `@liveworkspace/community-ui/links`), keyed by `COMMUNITY_HELP`
 (`packages/help-registry/src/community.ts`, checked against the registry by `apps/help/lib/community-help.test.ts`).
 A click sends the same `UI·Opened·<article id>` as an editor help link.
 

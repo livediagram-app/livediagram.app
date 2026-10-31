@@ -2,6 +2,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@livedocuments/document';
 import type { LiveDoc } from '@livedocuments/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
+import { setCommunityState } from '@/lib/community-state-store';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 import { placeholdersFromSummaries } from './editor-page-helpers';
@@ -126,6 +127,7 @@ export function makeSeedFetchedDocument(deps: {
     }
     setLoadedExistingDocument(true);
     setDocumentShareable(fetched.shareable);
+    setCommunityState(fetched.id, fetched.communityState ?? null);
     setDocumentTeamId(fetched.teamId ?? null);
     setDocumentShareCode(fetched.shareCode);
     setDocumentOwnerId(fetched.ownerId);

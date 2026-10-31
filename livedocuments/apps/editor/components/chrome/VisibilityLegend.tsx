@@ -2,22 +2,23 @@
 
 // The visibility pill's legend (docs/specs/006-document/offline-mode.md "The visibility legend"): who can see
 // this document. A hero in the current state's tone draws its reach as rings around you, lit out to how far
-// the document goes; under it the audiences sit on one scale from Just You to the Team, the current stop
+// the document goes; under it the audiences sit on one scale from Just You to Everyone, the current stop
 // filled to, and hovering a stop shows that audience in the hero. This Browser stands apart below, the
 // deliberate opt-out; then, for someone who may share, Change Who Can See This opens Share. For the eye only:
 // the pill carries the current state's words for assistive technology and opens Share itself.
 import { useState, type ReactNode } from 'react';
 import { ChevronRightIcon, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@livedocuments/ui';
-import { lucideLink, lucideLock, lucideUsers } from '@liveworkspace/icons/lucide';
+import { lucideGlobe, lucideLink, lucideLock, lucideUsers } from '@liveworkspace/icons/lucide';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { SHARE_STATE_META, type ShareState } from './share-states';
 
 const LockGlyph = lucideGlyph(lucideLock, 14);
 const LinkGlyph = lucideGlyph(lucideLink, 14);
 const TeamGlyph = lucideGlyph(lucideUsers, 14);
+const GlobeGlyph = lucideGlyph(lucideGlobe, 14);
 
 // The audiences from narrowest to widest; This Browser is the opt-out beside them.
-const LADDER: readonly ShareState[] = ['private', 'shared', 'team'];
+const LADDER: readonly ShareState[] = ['private', 'shared', 'team', 'community'];
 
 // Each state's look: its glyph, its stop on the scale, the hero's wash, and its ink for the rings.
 const LOOK: Record<
@@ -48,6 +49,14 @@ const LOOK: Record<
     ink: 'text-brand-700 dark:text-brand-300',
     eyebrow: 'text-brand-700 dark:text-brand-300',
   },
+  community: {
+    icon: <GlobeGlyph />,
+    reach: 'Everyone',
+    stop: 'bg-pink-600 text-white ring-pink-200 dark:bg-pink-400 dark:text-pink-950 dark:ring-pink-500/40',
+    hero: 'from-pink-50 to-white dark:from-pink-500/15 dark:to-slate-900',
+    ink: 'text-pink-600 dark:text-pink-300',
+    eyebrow: 'text-pink-700 dark:text-pink-300',
+  },
   offline: {
     icon: <ThisBrowserIcon size={14} />,
     reach: 'This Browser',
@@ -63,7 +72,7 @@ const LOOK: Record<
 function ReachRings({ state }: { state: ShareState }) {
   const lit = LADDER.indexOf(state);
   const look = LOOK[state];
-  const radii = [18, 29];
+  const radii = [14, 22, 30];
   return (
     <svg viewBox="0 0 72 72" aria-hidden className={`h-[72px] w-[72px] shrink-0 ${look.ink}`}>
       {radii.map((r, i) => {
@@ -173,15 +182,18 @@ function ReachScale({
   const fill = at <= 0 ? 0 : (at / (LADDER.length - 1)) * 100;
   return (
     <div className="px-4 pb-1 pt-3">
+      <p className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        From Just You to Everyone
+      </p>
       <div className="relative">
         {/* The track runs between the first and last stops' centres. */}
-        <span className="absolute left-[16.667%] right-[16.667%] top-[13px] h-1 rounded-full bg-slate-100 dark:bg-slate-800">
+        <span className="absolute left-[12.5%] right-[12.5%] top-[13px] h-1 rounded-full bg-slate-100 dark:bg-slate-800">
           <span
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-slate-400 via-emerald-400 to-brand-500 dark:from-slate-500 dark:via-emerald-500 dark:to-brand-400"
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-slate-400 via-emerald-400 to-pink-400 dark:from-slate-500 dark:via-emerald-500 dark:to-pink-500"
             style={{ width: `${fill}%` }}
           />
         </span>
-        <ol className="relative grid grid-cols-3" onMouseLeave={() => onPeek(null)}>
+        <ol className="relative grid grid-cols-4" onMouseLeave={() => onPeek(null)}>
           {LADDER.map((s, i) => {
             const on = s === current;
             const reached = at >= 0 && i <= at;

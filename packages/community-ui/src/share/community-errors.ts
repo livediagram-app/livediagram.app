@@ -15,13 +15,12 @@ import type { CommunityWords } from './host';
 // (`validateCommunityPostInput`'s codes) and the worker's answers, so the two never word the same rule
 // differently.
 function messages(words: CommunityWords): Record<string, string> {
-  const { noun, nouns } = words;
+  const { noun, nouns, cover = 'first tab' } = words;
   return {
     sign_in_required: `Sign in to share your ${noun} with the Community.`,
     team_document: `Team library ${nouns} can't be shared to the Community.`,
     share_password_set: `This ${noun} has a share password. Remove the password to share it to the Community.`,
-    empty_document:
-      'Add something to your first tab before sharing: it is the picture on your Community card.',
+    empty_document: `Add something to your ${cover} before sharing: it is the picture on your Community card.`,
     post_limit: `You have ${COMMUNITY_POSTS_PER_AUTHOR} ${nouns} in the Community already, counting any hidden after reports. Remove a listed one to share another.`,
     already_published: `This ${noun} is already in the Community. Reopen Share to see it.`,
     post_hidden: 'This post was hidden after reports, so it can no longer be changed or removed.',
