@@ -28,13 +28,15 @@ function makeEnv() {
   const live = mockFetcher();
   const api = mockFetcher();
   const help = mockFetcher();
+  const community = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
     LIVE: live.fetcher,
     API: api.fetcher,
     HELP: help.fetcher,
+    COMMUNITY: community.fetcher,
   };
-  return { env, marketing, live, api, help };
+  return { env, marketing, live, api, help, community };
 }
 
 const dispatch = (path: string, env: Env) =>
@@ -57,6 +59,17 @@ describe('production dispatch (service bindings)', () => {
     const { env, help } = makeEnv();
     await dispatch('/help/canvas/themes/', env);
     expect(help.urls).toEqual(['https://www.livedesign.app/canvas/themes/']);
+  });
+
+  it('strips the basePath for the Community, keeping the query', async () => {
+    const { env, community, marketing } = makeEnv();
+    await dispatch('/community/post/?id=p1', env);
+    await dispatch('/community', env);
+    expect(community.urls).toEqual([
+      'https://www.livedesign.app/post/?id=p1',
+      'https://www.livedesign.app/',
+    ]);
+    expect(marketing.urls).toEqual([]);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {

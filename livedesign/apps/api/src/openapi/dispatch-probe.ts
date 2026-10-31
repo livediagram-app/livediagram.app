@@ -174,10 +174,14 @@ export async function probeDispatch(
       },
     );
   // Feature gates open, so a handler reaches its own routing instead of
-  // answering "not configured" for every path: telemetry on.
+  // answering "not configured" for every path: telemetry on, and Community and media keys set.
   // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
   // placeholder design, so a design route reaches its own routing instead of answering "no access".
   const env = {
+    // The Community, which lives in liveworkspace's service (liveworkspace/docs/specs/007-community/community.md);
+    // never reached.
+    COMMUNITY_URL: 'http://community.invalid/api/community',
+    COMMUNITY_KEY: 'probe-key',
     // Images, which live in liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md); never reached.
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',

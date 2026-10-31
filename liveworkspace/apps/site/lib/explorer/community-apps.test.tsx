@@ -29,12 +29,15 @@ function mount(
 describe('which apps’ Community the Explorer offers', () => {
   it('asks nothing until an item of an app is shared, then that app alone, once', async () => {
     const fetchEnabled = vi.fn(async () => true);
-    const { on, root } = mount(['livediagram', 'livedocuments'], true, fetchEnabled);
+    const { on, root } = mount(['livediagram', 'livedocuments', 'livedesign'], true, fetchEnabled);
     expect(fetchEnabled).not.toHaveBeenCalled();
     expect(on('livedocuments')).toBe(true);
     expect(on('livedocuments')).toBe(true);
     expect(fetchEnabled).toHaveBeenCalledTimes(1);
     expect(fetchEnabled).toHaveBeenCalledWith('https://www.livedocuments.app/api');
+    expect(on('livedesign')).toBe(true);
+    expect(fetchEnabled).toHaveBeenCalledTimes(2);
+    expect(fetchEnabled).toHaveBeenLastCalledWith('https://www.livedesign.app/api');
     act(() => root.unmount());
   });
 

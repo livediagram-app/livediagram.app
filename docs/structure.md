@@ -77,7 +77,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/                    the same set as livediagram's
 │  └─ packages/                @livedocuments/*
 └─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
-   ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, router
+   ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, community, router
    └─ packages/                @livedesign/*, with photo-engine of its own
 ```
 

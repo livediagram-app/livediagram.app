@@ -12,7 +12,9 @@ import { VisibilityLegend } from './VisibilityLegend';
 // lie (every joined member can open it); "This Browser" (docs/specs/006-design/offline-mode.md)
 // supersedes "Private" for browser-only designs, matching the Explorer's This Browser pill. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
-// the states can be compared in place instead of hunting each hover card.
+// the states can be compared in place instead of hunting each hover card. "Public" (listed in the Community,
+// docs/specs/025-community/community.md) wins over the rest but This Browser: a design listed in the public
+// Community is the widest audience there is, so "Private" or "Shared" would understate it.
 
 // How long the legend stays after the pointer leaves the pill or the legend (a timer, docs/specs/004-interface-design/motion.md).
 const LEGEND_CLOSE_GRACE_MS = 120;
@@ -40,6 +42,7 @@ export function SharedBadge({
   shareable,
   team,
   offline,
+  community,
   onManage,
   portal = false,
 }: {
@@ -52,8 +55,18 @@ export function SharedBadge({
   shareable: boolean;
   team?: boolean;
   offline?: boolean;
+  // Listed in the Community (a hidden post is not public, so it reads as the design otherwise is).
+  community?: boolean;
 }) {
-  const state: ShareState = offline ? 'offline' : shareable ? 'shared' : team ? 'team' : 'private';
+  const state: ShareState = offline
+    ? 'offline'
+    : community
+      ? 'community'
+      : shareable
+        ? 'shared'
+        : team
+          ? 'team'
+          : 'private';
   const meta = SHARE_STATE_META[state];
   const [open, setOpen] = useState(false);
   const descriptionId = useId();

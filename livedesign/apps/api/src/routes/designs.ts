@@ -27,7 +27,12 @@ import {
 import { getDesign, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { designDates, isDesignSource } from '@livedesign/api-schema';
-import { redactDesignForReader, redactDesignForScope } from '../redact-design';
+import {
+  redactDesignForCommunity,
+  redactDesignForReader,
+  redactDesignForScope,
+} from '../redact-design';
+import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { answerOverview, parseViewQuery } from './design-views-route';
 import { handleDesignSharedTabs } from './design-shared-tabs-route';
 import { relayDesignRename } from '../room-client';
@@ -43,11 +48,13 @@ import {
   renameDesign,
 } from '../design-room/design-content';
 import { identityOf } from '../design-room/design-route';
+import { readOwnerCommunityState } from '../design-room/community-post';
 import { designRoom } from '../design-client';
 import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleDesignIndexRoutes, handleDesignList } from './design-index-routes';
 import { resolveDesignGrant } from './design-grant';
 import {
+  COMMUNITY_CONTENT,
   gateEdit,
   gateGrant,
   grantCallerOf,
@@ -387,16 +394,26 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
       // guessed id can't probe existence.
       const view = parseViewQuery(new URL(request.url), 'design');
       if (view instanceof Response) return view;
-      const grant = await gateGrant(ctx, id);
+      const grant = await gateGrant(ctx, id, null, null, COMMUNITY_CONTENT);
       if (!grant) return notFound();
       const d = await startedDesign(ctx, id);
       if (!d) return missingDesign(ctx, id);
-      // Redacted for every non-owner (redact-design.ts); a tab-scoped visitor
+      // Redacted for every non-owner (redact-design.ts); a Community visitor sees the post's redactions
+      // (docs/specs/025-community/community.md); a tab-scoped visitor
       // (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
-      const reader = redactDesignForReader(d, ctx.resolveOwner());
-      const liveDoc = redactDesignForScope(reader, grant.tabScope);
+      // The owner's read carries their post's state, for the header's Public badge after a reload.
+      const caller = ctx.resolveOwner();
+      const own =
+        caller !== null && caller === d.ownerId
+          ? { ...d, communityState: await readOwnerCommunityState(ctx.env) }
+          : d;
+      const reader = redactDesignForReader(own, caller);
+      const liveDoc = redactDesignForScope(
+        grant.community ? redactDesignForCommunity(reader) : reader,
+        grant.tabScope,
+      );
       // The overview view (docs/specs/024-agents/design-views.md), after the same gate and scope.
-      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope, grant.community);
       return json({ design: liveDoc });
     }
     if (request.method === 'PUT') {
@@ -439,6 +456,13 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
         ctx.waitUntil?.(relayDesignRename(env, id, liveDoc.name, liveDoc.tabs));
       return json({ design: liveDoc ? redactDesignForReader(liveDoc, owner) : liveDoc });
     }
+  }
+
+  // /api/designs/<id>/community: publish to, edit in or remove from Community
+  // (docs/specs/025-community/community.md).
+  {
+    const communityResp = await handleCommunityOwnerRoutes(ctx);
+    if (communityResp) return communityResp;
   }
 
   // /api/designs/<id>/shared-tabs — what a delete leaves behind in other

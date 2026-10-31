@@ -33,10 +33,26 @@ const ALLOWED = new Set([
   'DocumentFragment',
   'createDocumentFragment',
 ]);
-const LOOKALIKE = /documentation|documented|livedocument/i;
+// The Community's help address is the same in every app (@liveworkspace/help-registry/community).
+const LOOKALIKE = /documentation|documented|livedocument|finding-community-documents/i;
 // The shared media contract (@liveworkspace/media) says documents for every app's own word.
 const CONTRACT: Record<string, ReadonlySet<string>> = {
   'apps/api/src/media.ts': new Set(['documents', 'MEDIA_REFS_PER_DOCUMENT_MAX']),
+  // The shared Community contract (@liveworkspace/community, community-ui) says document for every app's item: a
+  // post's documentId, the Share tab's documentName, and the refusal codes.
+  'apps/api/src/openapi/schemas.generated.ts': new Set(['documentId']),
+  'apps/api/src/routes/community-routes.test.ts': new Set([
+    'empty_document',
+    'team_document',
+    'documentId',
+    'document_state',
+  ]),
+  'apps/api/src/design-room/community-post.ts': new Set(['documentId']),
+  'apps/api/src/routes/community-owner-routes.ts': new Set(['documentId']),
+  // @liveworkspace/community-site's binding names its links for every app.
+  'apps/community/lib/community-site.tsx': new Set(['openDocument', 'editDocument']),
+  'docs/specs/025-community/blueprints/community.md': new Set(['empty_document', 'team_document']),
+  'apps/live/lib/community-share-host.tsx': new Set(['documentName']),
 };
 // The platform's shared names, which say document for every app's item: an OpenAPI document, the
 // @liveworkspace/api-schema/document-* modules and the names this product re-exports from them as its own.
@@ -60,7 +76,9 @@ describe('a design is never called a document', () => {
     const found: string[] = [];
     for (const file of files) {
       if (!TEXT.test(file) || join(root, file) === __filename) continue;
-      const text = readFileSync(join(root, file), 'utf8').replace(FOREIGN_URL, '');
+      const text = readFileSync(join(root, file), 'utf8')
+        .replace(FOREIGN_URL, '')
+        .replace(/finding-community-documents/g, '');
       if (!/document/i.test(text)) continue;
       const lines = text.split('\n');
       lines.forEach((line, i) => {

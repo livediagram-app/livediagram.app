@@ -6,6 +6,7 @@ import {
   BUILD_ID_HEADER,
   CHANGESET_SEEN_HEADER,
   CLIENT_HEADER,
+  COMMUNITY_KEY_HEADER,
   DESIGN_CONVERSION_HEADER,
   DESIGN_FORMAT_HEADER,
   DESIGN_TRASHED_ERROR,
@@ -26,6 +27,8 @@ export const CORS_HEADERS = corsHeaders({
     DESIGN_CONVERSION_HEADER,
     CHANGESET_SEEN_HEADER,
     CLIENT_HEADER,
+    // My Shares passes the page's community key on (docs/specs/025-community/community.md "My Shares").
+    COMMUNITY_KEY_HEADER,
   ],
   exposeHeaders: [DESIGN_FORMAT_HEADER, BUILD_ID_HEADER, 'ETag'],
 });

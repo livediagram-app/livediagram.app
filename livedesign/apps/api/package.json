@@ -25,6 +25,7 @@
     "@livedesign/templates": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/community": "workspace:^",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/email": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",
+    "@liveworkspace/community-service": "workspace:^",
     "@liveworkspace/media-service": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",

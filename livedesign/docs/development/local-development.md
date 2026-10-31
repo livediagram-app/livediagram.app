@@ -27,7 +27,7 @@ This installs every workspace at once, including TypeScript 7 ([Contributing](co
 pnpm dev
 ```
 
-Turbo spins up all six dev servers in parallel (the CLI has no dev server):
+Turbo spins up all seven dev servers in parallel (the CLI has no dev server):
 
 | App              | Dev URL                                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
@@ -35,6 +35,7 @@ Turbo spins up all six dev servers in parallel (the CLI has no dev server):
 | `apps/marketing` | `http://localhost:3401`                                                                            |
 | `apps/live`      | `http://localhost:3402` (clean routes: /new, /explorer, ...)                                       |
 | `apps/help`      | `http://localhost:3404/help`                                                                       |
+| `apps/community` | `http://localhost:3405/community`                                                                  |
 | `apps/api`       | `http://localhost:8989/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8990` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 

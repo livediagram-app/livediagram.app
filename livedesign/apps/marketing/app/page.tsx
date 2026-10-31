@@ -15,6 +15,11 @@ import { LANDING_SECTIONS } from '@/lib/landing-content';
 const TemplateGallery = dynamic(() =>
   import('@/components/TemplateGallery').then((m) => m.TemplateGallery),
 );
+// The Community section (docs/specs/025-community/community.md "Featured on the home page") loads its six
+// after the page does, so its chunk is deferred the same way.
+const CommunityShowcase = dynamic(() =>
+  import('@/components/CommunityShowcase').then((m) => m.CommunityShowcase),
+);
 
 // The page tells one story (docs/specs/019-marketing/marketing-site.md): what it is, one click to a real
 // design, its promises (built with your values in mind), then a beat per kind of page and one for
@@ -26,6 +31,7 @@ export default function LandingPage() {
       <main>
         <Hero />
         <TemplateGallery />
+        <CommunityShowcase />
         <PromisePrism />
         {LANDING_SECTIONS.map((section, index) => (
           <StoryBeat key={section.id} section={section} index={index} />

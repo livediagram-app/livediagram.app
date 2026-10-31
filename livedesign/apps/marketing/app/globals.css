@@ -35,6 +35,12 @@
 @source '../../../../packages/account-menu/src';
 /* The shared template-browse art (PreviewFan, @liveworkspace/template-previews) carries its own utility classes. */
 @source '../../../../packages/template-previews/src/PreviewFan.tsx';
+/* The Community's cards, its landing section and help links (@liveworkspace/community-ui's tile, landing and
+ * help-link); its Share tab is not on these pages. */
+@source '../../../../packages/community-ui/src/tile';
+@source '../../../../packages/community-ui/src/landing';
+@source not '../../../../packages/community-ui/src/landing/*.test.*';
+@source '../../../../packages/community-ui/src/help-link';
 
 @media (prefers-reduced-motion: reduce) {
   /* the window veils stay hidden */
