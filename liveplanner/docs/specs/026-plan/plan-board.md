@@ -361,6 +361,32 @@ Where each is set, so a setting lives with what it changes, never in one central
   the column header says so; it never refuses a card.
 - **Column width**: a column is one slot wide, or two or three (its cog's **Width**); the slots share the board's
   width, so a wide column suits a busy stage.
+- **Collapse Column**: a column's head offers **Collapse Column** (a chevron at its right, with that tooltip, shown on
+  hover and focus and always on a touch screen), and for someone who may edit, its cog's toolbar too. Collapsed, the
+  column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** chevron at the
+  top, then its count and its name written top to bottom, the whole strip pressable to expand it. On a board with
+  swimlanes, each open swimlane's part of the strip shows that row's count and the name. The other columns take
+  the room it leaves (maximised or filling its tab, the five slots across are measured from what the strips leave).
+  - **Drops**: a card dragged over a strip lights it (dashed in the focus colour, or in red when the card's type
+    leaves the status out, where letting go is refused and the reason announced) and, let go, moves there at the column's end (in that swimlane's row on a board with
+    swimlanes), as a drop into the open column would; the column stays collapsed. A palette card dropped on it is
+    made there.
+  - **The keyboard**: arrow keys pass over a collapsed column (its cards are not drawn); Shift+Left/Right still moves
+    a card into it.
+  - **Each person's own**, like a collapsed swimlane: nothing is saved to the plan, sent to anyone or undone. It is
+    remembered per board on this browser (`localStorage`, `liveplanner:v2:board-collapsed:<board id>`, the column
+    ids and the swimlane keys shut), so a reload, the tab reopened or the board maximised keeps it; a column removed
+    from the board drops out of it.
+  - **Every role**: an Editor, a Participant and a Viewer may each collapse and expand columns for themselves.
+  - **It animates**: expanding, the column opens out from its strip as its neighbours glide aside; collapsing, the
+    neighbours glide in and the strip fades in (`COLUMN_MOVE_MS`, within the motion budget). Under reduced motion it
+    switches at once.
+  - **Telemetry**: `Plan / Toggled / ColumnCollapsed` and `Plan / Toggled / ColumnExpanded`.
+  - **Not on a phone** (below 640 px): no Collapse Column anywhere, and columns collapsed on a wider screen show
+    open, one a screen as ever ("On a phone"). Nor in a Dashboard slot's compact board, whose columns show open;
+    maximised from the slot, the person's collapsed columns apply.
+  - **Exports** (an image of the tab, the CSV) draw every column open: they are drawn from the board's set-up, which collapsing
+    never touches.
 - **Columns fill the board**: a board resized taller runs its columns to its bottom edge (on a board with
   swimlanes, the last open swimlane takes the spare height); a board shorter than its cards scrolls.
 - **Cards** in rank order (or as the board's [Sort Cards](#the-board-set-up) orders them), at the board's **card size**. A card is a rounded tile with a hairline border and a soft
@@ -381,7 +407,7 @@ Where each is set, so a setting lives with what it changes, never in one central
     Description and Project. A start date reads "From 1 Oct", muted.
 - **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph, a project's
   [Colour](items.md#colour) dot before its name), "No assignee" last.
-  Each swimlane collapses on its own, per person.
+  Each swimlane collapses on its own, per person, remembered per board on this browser with its collapsed columns.
 
 ### Swimlanes by a field
 
@@ -930,6 +956,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 - **Cards are Minimal** on a phone (below 640 px), whatever the board's card size, so a column shows more of them; the
   size is the board's again on a wider screen. Nothing is saved.
+- **No collapsed columns** on a phone: no Collapse Column, and a column collapsed on a wider screen shows open (it is
+  collapsed again there).
 - **The header has no widgets and no card type chips** on a phone: the title, taking the room up to the header's controls (beside widgets
   it keeps to 40% of the header), then the controls. The quick filter the widgets set
   stands down with them, so a filter set on a wider screen never hides cards with nothing on screen saying so.
