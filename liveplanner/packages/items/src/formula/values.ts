@@ -52,7 +52,14 @@ export function dateOf(text: string): FormulaDate | null {
 }
 
 // A date as a stored day: "2026-10-31".
+// The days a date may be, as YYYY-MM-DD writes them: 0000-01-01 to 9999-12-31 (days since 1970-01-01).
+const FIRST_DAY = -719528;
+const LAST_DAY = 2932896;
+
+// A date as a Date field holds it; a day past what YYYY-MM-DD can write (today() + 5000000) is a problem, never a
+// garbled "+015716-05".
 export function dayText(date: FormulaDate): string {
+  if (!(date.day >= FIRST_DAY && date.day <= LAST_DAY)) return fail('The date is out of range');
   return new Date(date.day * DAY_MS).toISOString().slice(0, 10);
 }
 

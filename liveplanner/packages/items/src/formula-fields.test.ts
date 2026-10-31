@@ -156,6 +156,16 @@ describe('formula fields', () => {
     ).toBe(false);
   });
 
+  it('gives a date only within years 0 to 9999, else a problem', () => {
+    expect(formulaOutcome(f('x', 'X', 'today() + 5000000', 'date'), card({}), deal, ctx)).toEqual({
+      ok: false,
+      error: 'The date is out of range',
+    });
+    expect(formulaValue(f('x', 'X', 'today() + 1', 'date'), card({}), deal, ctx)).toBe(
+      '2026-11-01',
+    );
+  });
+
   it('never gives Infinity: a sum too large is a problem', () => {
     const out = formulaOutcome(
       f('x', 'X', '{f-budget} * {f-budget}'),
