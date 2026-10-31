@@ -5,13 +5,19 @@ import type { Item } from './item';
 import { itemTitle } from './item';
 import { isArchived, isTrashed, linkedCard } from './board';
 import { linkTypesOf, type ItemTypeDef } from './item-types';
+import { fieldCardIds, holdsSeveral } from './several-values';
 
-// A link field as a card's panel sees it: the field, its label, and the card types it points at.
+// A link field as a card's panel sees it: the field, its label, the card types it points at, and whether it links to
+// several cards (docs/specs/026-plan/item-types.md "Holds Several").
 export interface LinkField {
   id: string;
   label: string;
   linkTypes: readonly string[];
+  several?: boolean;
 }
+
+// A link field's stored value read as several-values.ts reads it.
+const linkField = (several: boolean | undefined) => ({ kind: 'card' as const, multiple: several });
 
 // The link fields a type offers: its Card fields, in the type's field order.
 export function linkFieldsOfType(type: ItemTypeDef): LinkField[] {
@@ -19,7 +25,13 @@ export function linkFieldsOfType(type: ItemTypeDef): LinkField[] {
   for (const f of type.fields) {
     const c = type.custom?.find((x) => x.id === f);
     const linkTypes = c?.kind === 'card' ? linkTypesOf(c) : [];
-    if (c && linkTypes.length) out.push({ id: c.id, label: c.label, linkTypes });
+    if (c && linkTypes.length)
+      out.push({
+        id: c.id,
+        label: c.label,
+        linkTypes,
+        ...(holdsSeveral(c) ? { several: true } : {}),
+      });
   }
   return out;
 }
@@ -45,6 +57,9 @@ export interface LinkedGroup {
   // The types whose cards link here through this field.
   fromTypes: string[];
   cards: Item[];
+  // The field holds several cards (as the first type offering it has it): a card links here when its list holds this
+  // card, and Link Existing adds to that list rather than moving a link.
+  several?: boolean;
 }
 
 // The cards that point at `target`, grouped by the field they point through: each Card field whose type links to
@@ -63,7 +78,13 @@ export function linkedCardsOf(
         continue;
       let g = byField.get(c.id);
       if (!g) {
-        g = { fieldId: c.id, label: c.label, fromTypes: [], cards: [] };
+        g = {
+          fieldId: c.id,
+          label: c.label,
+          fromTypes: [],
+          cards: [],
+          ...(holdsSeveral(c) ? { several: true } : {}),
+        };
         groups.push(g);
         byField.set(c.id, g);
       }
@@ -73,7 +94,11 @@ export function linkedCardsOf(
   for (const it of items.values()) {
     if (it.id === target.id || isTrashed(it)) continue;
     for (const g of groups)
-      if (it.fields[g.fieldId] === target.id && g.fromTypes.includes(it.type)) g.cards.push(it);
+      if (
+        g.fromTypes.includes(it.type) &&
+        fieldCardIds(linkField(g.several), it.fields[g.fieldId]).includes(target.id)
+      )
+        g.cards.push(it);
   }
   for (const g of groups) g.cards.sort((a, b) => a.key - b.key);
   return groups;
@@ -82,7 +107,8 @@ export function linkedCardsOf(
 // What Link Existing offers for a group (docs/specs/026-plan/item-types.md "Link Existing"): the live (not trashed or
 // archived) cards of the group's types, never the target itself nor a card already linked to it through the
 // group's field. Each says where it links now: `elsewhere` is the card id its field holds when that is another
-// card (gone or not), so picking it moves the link.
+// card (gone or not), so picking it moves the link; a field that holds several never moves one (picking adds to the
+// list), so its cards have none.
 export interface LinkableCard {
   card: Item;
   elsewhere: string | null;
@@ -90,18 +116,30 @@ export interface LinkableCard {
 
 export function linkableCards(
   target: Item,
-  group: Pick<LinkedGroup, 'fieldId' | 'fromTypes'>,
+  group: Pick<LinkedGroup, 'fieldId' | 'fromTypes' | 'several'>,
   items: Iterable<Item>,
 ): LinkableCard[] {
   const out: LinkableCard[] = [];
   for (const it of items) {
     if (it.id === target.id || !group.fromTypes.includes(it.type)) continue;
     if (isTrashed(it) || isArchived(it)) continue;
-    const value = it.fields[group.fieldId];
-    if (value === target.id) continue;
-    out.push({ card: it, elsewhere: typeof value === 'string' && value ? value : null });
+    const ids = fieldCardIds(linkField(group.several), it.fields[group.fieldId]);
+    if (ids.includes(target.id)) continue;
+    out.push({ card: it, elsewhere: group.several ? null : (ids[0] ?? null) });
   }
   return out;
+}
+
+// What linking `card` to `target` through a group's field stores on `card` (Link Existing, New {Type}): the target,
+// or, for a field that holds several, the card's list with the target added at the end.
+export function linkedValue(
+  card: Pick<Item, 'fields'>,
+  group: Pick<LinkedGroup, 'fieldId' | 'several'>,
+  targetId: string,
+): string | string[] {
+  if (!group.several) return targetId;
+  const ids = fieldCardIds(linkField(true), card.fields[group.fieldId]);
+  return ids.includes(targetId) ? ids : [...ids, targetId];
 }
 
 // A linked card as one line ("#3 Sam Reed"), or "Missing card" for a value whose card is gone.

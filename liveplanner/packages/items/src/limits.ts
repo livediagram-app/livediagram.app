@@ -20,6 +20,9 @@ export const ITEM_ATTACHMENT_BYTES_MAX = 10 * 1024 * 1024;
 export const ITEM_ATTACHMENT_ID_MAX = 200;
 export const ITEM_UNKNOWN_STRING_MAX = 2000;
 export const ITEM_UNKNOWN_ARRAY_MAX = 50;
+// The most people or cards a field that holds several keeps (docs/specs/026-plan/item-types.md "Holds Several"): as
+// many as a card's labels.
+export const FIELD_VALUES_MAX = 20;
 export const ITEM_NUMBER_MAX = 999;
 export const ITEM_BULK_MAX = 200;
 export const ITEM_VOTERS_MAX = 500;

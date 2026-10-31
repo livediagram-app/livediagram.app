@@ -11,7 +11,7 @@ import {
   todayNumber,
 } from './plan-view-dates';
 import { liveCards, phaseOf, type StatusPhase } from './plan-views';
-import { laneGroups, type LaneHead, type SwimlaneBy } from './board';
+import { inLane, laneGroups, type LaneHead, type SwimlaneBy } from './board';
 import type { ItemTypeDef } from './item-types';
 import { BUILT_IN_DATES, type ViewDates } from './view-fields';
 
@@ -273,7 +273,7 @@ export function ganttLanes(
   return groups.lanes
     .map((lane) => ({
       lane,
-      rows: rows.filter((r) => groups.laneOfItem.get(r.item.id) === lane.key),
+      rows: rows.filter((r) => inLane(groups, r.item.id, lane.key)),
     }))
     .filter((l) => l.rows.length > 0);
 }
