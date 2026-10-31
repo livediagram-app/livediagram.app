@@ -105,7 +105,7 @@ type SearchPanelProps = {
   onClose: () => void;
 };
 
-// How many the index is asked for: more than the group shows, since this app's own documents (listed above) come back
+// How many the index is asked for: more than the group shows, since this app's own designs (listed above) come back
 // too and are left out.
 const EVERY_APP_ASK = 24;
 

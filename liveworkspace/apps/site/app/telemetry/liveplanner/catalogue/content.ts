@@ -745,6 +745,14 @@ export const PLAN_FILL_TAB = chart(
   { types: ['FillTabOn', 'FillTabOff', 'SheetFillTabOn', 'SheetFillTabOff'], rising: 'neutral' },
 );
 
+export const PLAN_COLUMNS_COLLAPSED = chart(
+  'Plan',
+  'Toggled',
+  'Columns Collapsed',
+  "A board column folded to a narrow strip from its header, or opened again: each person's own view.",
+  { types: ['ColumnCollapsed', 'ColumnExpanded'], rising: 'neutral' },
+);
+
 export const PLAN_CARD_TYPES_DUPLICATED = chart(
   'Plan',
   'Duplicated',
@@ -1041,6 +1049,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_MAXIMISED,
   PLAN_FOCUSED,
   PLAN_FILL_TAB,
+  PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
   PLAN_VIEW_STATUSES,
