@@ -12,6 +12,8 @@ export type PathEditView = {
   frame: Pick<PathElement, 'x' | 'y' | 'width' | 'height' | 'rotation'>;
   anchors: readonly PathAnchor[];
   closed: boolean;
+  // A combined path's other contours, as path data in the same frame (null for a plain path).
+  others?: string | null;
   selected: ReadonlySet<number>;
   box: { from: Point; to: Point } | null;
   guides: PathGuides | null;
@@ -29,6 +31,7 @@ export function PathEditLayer({
   frame,
   anchors,
   closed,
+  others,
   selected,
   box,
   guides,
@@ -52,6 +55,17 @@ export function PathEditLayer({
       data-path-edit=""
     >
       <g transform={rotation % 360 !== 0 ? `rotate(${rotation} ${cx} ${cy})` : undefined}>
+        {others ? (
+          // The contours not being edited: a press on one edits it (path-tool.md "Combined paths").
+          <path
+            data-path-others=""
+            d={others}
+            fill="none"
+            strokeWidth={1 / zoom}
+            strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+            className="stroke-brand-500/70"
+          />
+        ) : null}
         {guides?.x !== undefined ? (
           <line
             data-path-guide="x"

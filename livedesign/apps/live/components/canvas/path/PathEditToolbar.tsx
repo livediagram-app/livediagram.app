@@ -14,6 +14,12 @@ export type PathToolbarView = {
   closed: boolean;
   // Open path cuts at one selected node.
   canOpen: boolean;
+  // Close Path / Open Path is offered (not for a combined path, whose contours share `closed`).
+  canClose?: boolean;
+  // A combined path's contour being edited, of how many (null for a plain path).
+  shape?: { index: number; count: number } | null;
+  // Simplify is offered: the contour is a long run of plain corners (lib/path-simplify).
+  canSimplify?: boolean;
 };
 
 const NODE_TYPES: { id: PathHandleMode; label: string }[] = [
@@ -38,6 +44,8 @@ export function PathEditToolbar({
   onSetType,
   onDelete,
   onToggleClosed,
+  onNextShape,
+  onSimplify,
   onDone,
 }: {
   view: PathToolbarView;
@@ -46,8 +54,11 @@ export function PathEditToolbar({
   onSetType: (type: PathHandleMode) => void;
   onDelete: () => void;
   onToggleClosed: () => void;
+  onNextShape?: () => void;
+  onSimplify?: () => void;
   onDone: () => void;
 }) {
+  const shape = view.shape ?? null;
   return (
     <div
       data-canvas-toolbar=""
@@ -63,6 +74,23 @@ export function PathEditToolbar({
         zoom={zoom}
         title="Edit path"
       >
+        {shape && onNextShape ? (
+          <>
+            {/* A combined path edits one contour at a time; this steps to the next. */}
+            <Tip label="Edit the Next Shape">
+              <button
+                type="button"
+                data-path-shape=""
+                aria-label={`Shape ${shape.index + 1} of ${shape.count}, edit the next shape`}
+                onClick={onNextShape}
+                className={`${BUTTON} tabular-nums`}
+              >
+                Shape {shape.index + 1} of {shape.count}
+              </button>
+            </Tip>
+            <Divider />
+          </>
+        ) : null}
         <div role="radiogroup" aria-label="Node type" className="flex items-center gap-0.5">
           {NODE_TYPES.map((t) => (
             <Tip key={t.id} label={`${t.label} point`}>
@@ -91,17 +119,26 @@ export function PathEditToolbar({
             Delete Point
           </button>
         </Tip>
-        <Tip label={view.closed ? 'Open Path' : 'Close Path'}>
-          <button
-            type="button"
-            aria-keyshortcuts={view.closed ? undefined : 'J'}
-            disabled={view.closed && !view.canOpen}
-            onClick={onToggleClosed}
-            className={BUTTON}
-          >
-            {view.closed ? 'Open Path' : 'Close Path'}
-          </button>
-        </Tip>
+        {view.canSimplify && onSimplify ? (
+          <Tip label="Simplify: Fewer Points, Smooth Curves">
+            <button type="button" onClick={onSimplify} className={BUTTON}>
+              Simplify
+            </button>
+          </Tip>
+        ) : null}
+        {view.canClose === false ? null : (
+          <Tip label={view.closed ? 'Open Path' : 'Close Path'}>
+            <button
+              type="button"
+              aria-keyshortcuts={view.closed ? undefined : 'J'}
+              disabled={view.closed && !view.canOpen}
+              onClick={onToggleClosed}
+              className={BUTTON}
+            >
+              {view.closed ? 'Open Path' : 'Close Path'}
+            </button>
+          </Tip>
+        )}
         <Divider />
         <Tip label="Done">
           <button type="button" aria-keyshortcuts="Escape" onClick={onDone} className={BUTTON}>

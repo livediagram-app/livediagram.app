@@ -7,6 +7,7 @@ import {
   continuedPath,
   createPath,
   isCommittablePath,
+  reshapeContour,
   reshapePath,
   type Element,
   type PathAnchor,
@@ -63,11 +64,14 @@ export function usePathCommits({
     );
   };
 
-  // One edit-mode gesture. A path left with fewer nodes than it needs is deleted.
+  // One edit-mode gesture. A path left with fewer nodes than it needs is deleted. With `contour`,
+  // the gesture reshaped that contour of a combined path (docs/specs/023-draw-mode/path-tool.md
+  // "Combined paths"): a contour left too small goes, and the path with the last one.
   const commitPathEdit = (
     id: string,
     next: { anchors: PathAnchor[]; closed: boolean },
     kind: PathEditKind,
+    contour?: number,
   ) => {
     if (editsBlocked) {
       debugLog('[path] refused: blocked');
@@ -77,11 +81,17 @@ export function usePathCommits({
     commit((els) =>
       els.flatMap((el) => {
         if (el.id !== id || el.type !== 'path') return [el];
+        if (contour !== undefined) {
+          const reshaped = reshapeContour(el, contour, next.anchors);
+          return reshaped ? [reshaped] : [];
+        }
         return keep ? [reshapePath(el, next.anchors, next.closed)] : [];
       }),
     );
     track('Element', 'Changed', kind === 'join' ? 'PathJoin' : 'PathEdit');
-    debugLog(`[path] edit ${keep ? kind : 'deleted'} nodes=${next.anchors.length}`);
+    debugLog(
+      `[path] edit ${keep ? kind : 'deleted'} nodes=${next.anchors.length}${contour === undefined ? '' : ` contour=${contour}`}`,
+    );
   };
 
   return { commitPath, commitPathEdit };

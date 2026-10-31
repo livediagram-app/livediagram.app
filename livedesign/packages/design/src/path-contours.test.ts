@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { PathElement, PathNode } from './element-types';
-import { isCompoundPath, pathContours, pathElementD, pathOfContours } from './path-element';
+import {
+  isCompoundPath,
+  pathAnchors,
+  pathContours,
+  pathElementD,
+  pathOfContours,
+  pathWorldAnchors,
+  reshapeContour,
+} from './path-element';
 import { svgPathElementShape } from './svg-render-shapes';
 import { elementValidationIssue } from './validate';
 
@@ -71,5 +79,47 @@ describe('pathOfContours', () => {
     expect(p).toMatchObject({ x: 0, y: 0, width: 100, height: 20 });
     expect(p.nodes[1]).toMatchObject({ nx: 0.1, ny: 1 });
     expect(p.subpaths![0]![0]).toMatchObject({ nx: 0.9, ny: 0 });
+  });
+});
+
+// docs/specs/023-draw-mode/path-tool.md "Combined paths": one contour edited at a time.
+describe('reshapeContour', () => {
+  const inner = (el: PathElement) => pathAnchors({ ...el, nodes: el.subpaths![0]! });
+
+  it('reshapes one contour and keeps the others where they show', () => {
+    const moved = inner(ring).map((a) => ({ ...a, x: a.x + 10 }));
+    const next = reshapeContour(ring, 1, moved)!;
+    expect(pathAnchors(next)).toEqual(pathAnchors(ring));
+    expect(inner(next).map((a) => a.x)).toEqual(moved.map((a) => a.x));
+  });
+
+  it('grows the box when a contour reaches out of it', () => {
+    const out = pathAnchors(ring).map((a) => ({ ...a, x: a.x * 2 }));
+    const next = reshapeContour(ring, 0, out)!;
+    expect(next.width).toBe(200);
+    expect(inner(next)[0]).toMatchObject({ x: 25, y: 25 });
+  });
+
+  it('drops a contour left too small, and the path with the last one', () => {
+    const next = reshapeContour(ring, 1, inner(ring).slice(0, 2))!;
+    expect(isCompoundPath(next)).toBe(false);
+    expect(next.subpaths).toBeUndefined();
+    expect(reshapeContour(next, 0, pathAnchors(next).slice(0, 1))).toBeNull();
+  });
+
+  it('leaves the path alone for a contour that is gone', () => {
+    expect(reshapeContour(ring, 5, [])).toBe(ring);
+  });
+
+  it('keeps a rotated path’s other contours in place', () => {
+    const turned: PathElement = { ...ring, rotation: 30 };
+    const before = pathWorldAnchors(turned, turned.subpaths![0]);
+    const out = pathAnchors(turned).map((a) => ({ ...a, x: a.x - 40 }));
+    const next = reshapeContour(turned, 0, out)!;
+    const after = pathWorldAnchors(next, next.subpaths![0]);
+    after.forEach((a, i) => {
+      expect(a.x).toBeCloseTo(before[i]!.x, 6);
+      expect(a.y).toBeCloseTo(before[i]!.y, 6);
+    });
   });
 });

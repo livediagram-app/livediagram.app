@@ -37,7 +37,11 @@ describe('useTidyUpStrokes', () => {
   it('cleans the selected unlocked lines in one commit, ids kept', () => {
     const s = setup([line('a'), line('l', true), box], ['a', 'l', 'b']);
     expect(s.result.current.canTidyUp()).toBe(true);
-    act(() => s.result.current.tidyUpSelected());
+    let tidied = false;
+    act(() => {
+      tidied = s.result.current.tidyUpSelected();
+    });
+    expect(tidied).toBe(true);
     expect(s.commit).toHaveBeenCalledTimes(1);
     const [a, l, b] = s.now();
     expect(a).toMatchObject({ id: 'a', type: 'path' });
@@ -58,7 +62,9 @@ describe('useTidyUpStrokes', () => {
         readOnly: false,
       }),
     );
-    act(() => result.current.tidyUpSelected());
+    act(() => {
+      result.current.tidyUpSelected();
+    });
     expect(track).toHaveBeenCalledWith('Element', 'Changed', 'StrokesTidiedUp');
     // The deferred updater still swaps the line for its tidied path.
     const [a] = (commit.mock.calls[0]![0] as (e: Element[]) => Element[])([line('a')]);
@@ -69,7 +75,17 @@ describe('useTidyUpStrokes', () => {
     expect(setup([box], ['b']).result.current.canTidyUp()).toBe(false);
     const ro = setup([line('a')], ['a'], true);
     expect(ro.result.current.canTidyUp()).toBe(false);
-    act(() => ro.result.current.tidyUpSelected());
+    let tidied = true;
+    act(() => {
+      tidied = ro.result.current.tidyUpSelected();
+    });
+    expect(tidied).toBe(false);
     expect(ro.commit).not.toHaveBeenCalled();
+    const empty = setup([box], ['b']);
+    let none = true;
+    act(() => {
+      none = empty.result.current.tidyUpSelected();
+    });
+    expect(none).toBe(false);
   });
 });

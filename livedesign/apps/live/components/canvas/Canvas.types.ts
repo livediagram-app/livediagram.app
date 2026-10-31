@@ -270,6 +270,8 @@ export type CanvasProps = {
     id: string,
     next: { anchors: import('@livedesign/design').PathAnchor[]; closed: boolean },
     kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
+    // The contour of a combined path the gesture reshaped (path-tool.md "Combined paths").
+    contour?: number,
   ) => void;
   onDressPath?: <T extends import('@livedesign/design').Element>(el: T) => T;
   // The line or arrow a draw would land if released now, as the canvas would show it, drawn in
