@@ -3,7 +3,7 @@
 // A column's head on a Plan board (docs/specs/026-plan/plan-board.md "What the board shows"): its colour
 // bar, name, count (against its WIP limit), and, for someone who may edit, a cog at the far right that
 // opens the column's settings (PlanColumnPopover). The cog shows on hover and focus, and always on a
-// touch screen. Collapse Column (CollapsedColumn.tsx) sits before the cog, for everyone, where the board offers it
+// touch screen. Collapse Column (CollapsedColumn.tsx) sits before the cog (both always shown), for everyone, where the board offers it
 // (docs/specs/026-plan/plan-board.md "Collapse Column"); the cog's toolbar has it too. A column just added from another column's settings opens its own, its name selected.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlanBoardSetup, ProjectedColumn } from '@liveplanner/items';

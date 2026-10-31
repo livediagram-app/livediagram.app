@@ -363,8 +363,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   the column header says so; it never refuses a card.
 - **Column width**: a column is one slot wide, or two or three (its cog's **Width**); the slots share the board's
   width, so a wide column suits a busy stage.
-- **Collapse Column**: a column's head offers **Collapse Column** (a chevron at its right, with that tooltip, shown on
-  hover and focus and always on a touch screen), and for someone who may edit, its cog's toolbar too. Collapsed, the
+- **Collapse Column**: a column's head offers **Collapse Column** (a chevron at its right, with that tooltip, always shown,
+  a little quieter at rest and full strength on hover and focus), and for someone who may edit, its cog's toolbar too. Collapsed, the
   column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** chevron at the
   top, then its count and its name written top to bottom, the whole strip pressable to expand it. On a board with
   swimlanes, each open swimlane's part of the strip shows that row's count and the name. The other columns take
