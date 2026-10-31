@@ -167,7 +167,12 @@ describe('BoardWidgetView', () => {
     const top = item({ title: 'Ship it', status: 'todo', priority: 'urgent', votes: { x: 3 } });
     const c = ctx({ items: [top, item({ title: 'z', status: 'todo', assignee: SAM })] });
     draw('priorities', c);
-    fireEvent.click(screen.getByRole('button', { name: /Only Urgent priority/ }));
+    const urgent = screen.getByRole('button', { name: /Only Urgent priority/ });
+    // 22px tall: on a touch screen its tap area reaches 44px, vertically only (its neighbours sit 2px apart).
+    expect(urgent.className.split(' ')).toEqual(
+      expect.arrayContaining(['relative', 'touch-target-y']),
+    );
+    fireEvent.click(urgent);
     expect(c.onQuick).toHaveBeenLastCalledWith({ priority: 'urgent' });
     cleanup();
     draw('unassigned', c);
