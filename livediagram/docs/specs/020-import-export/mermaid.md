@@ -276,6 +276,9 @@ took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119`
   nodes, <m> connections): up to 500 nodes and 1000 connections are supported. Split it into
   several diagrams." A fan-out line is checked before its pairs are built, so the refusal costs no
   more than reading the line.
+- The refusal comes after the parse, so the parse itself is linear in the text: subgraphs and composite states are
+  kept by id and their members filtered once (20 000 composite states each named by a transition took 20 s while
+  every cluster was scanned for each one; `mermaid-clusters-linear.test.ts` holds it under a CPU budget).
 - The MCP's `graph` input carries the same caps in its schema and in `resolveGraphInput`
   ([MCP server](../015-api/mcp-server.md) §4.7).
 - draw.io's graph-only JSON export is truncated to the caps rather than refused
