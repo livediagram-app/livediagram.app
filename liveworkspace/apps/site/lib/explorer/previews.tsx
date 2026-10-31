@@ -16,7 +16,14 @@
 // appearance (previews.md "GET /api/previews/items/:id"), part of its address, so switching appearance asks for the
 // other half and never shows the old one meanwhile.
 
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { RenderThumbnail } from '@liveworkspace/explorer';
 import { PREVIEWS_PATH } from '@liveworkspace/sites/workspace-proxy';
@@ -48,14 +55,19 @@ const entries = new Map<string, Entry>();
 // How many mounted boxes show each key: those entries are kept while the cache has room under the ceiling.
 const mounted = new Map<string, number>();
 const inflight = new Map<string, Promise<Entry>>();
-const listeners = new Set<() => void>();
-let version = 0;
+// Each key's mounted boxes, told when its entry arrives or goes: only they redraw, not the whole grid.
+const listeners = new Map<string, Set<() => void>>();
 let running = 0;
 const waiting: (() => void)[] = [];
+
+function notify(key: string) {
+  for (const l of listeners.get(key) ?? []) l();
+}
 
 function drop(key: string, entry: Entry) {
   entries.delete(key);
   if (entry.status === 'ready') URL.revokeObjectURL(entry.src);
+  notify(key);
 }
 
 // Least recently used out, down to PREVIEW_CACHE_MAX or the mounted boxes' count, whichever is more (capped at the
@@ -83,8 +95,7 @@ function settle(key: string, entry: Entry) {
   entries.delete(key);
   entries.set(key, entry);
   trim();
-  version++;
-  for (const l of listeners) l();
+  notify(key);
 }
 
 function mount(key: string): () => void {
@@ -161,19 +172,20 @@ export function loadPreview(item: Item): Promise<Entry> | null {
 
 const keyOf = (item: Item) => `${previewUrl(item)}|${item.sharedVia ?? ''}`;
 
-function peek(item: Item): Entry | undefined {
-  return entries.get(keyOf(item));
-}
-
 /** For tests: how many previews are held. */
 export function previewCacheSize(): number {
   return entries.size;
 }
 
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => listeners.delete(l);
-};
+function subscribe(key: string, l: () => void): () => void {
+  let set = listeners.get(key);
+  if (!set) listeners.set(key, (set = new Set()));
+  set.add(l);
+  return () => {
+    set.delete(l);
+    if (set.size === 0) listeners.delete(key);
+  };
+}
 
 /** For tests: forget every preview. */
 export function resetPreviews() {
@@ -190,15 +202,12 @@ export function resetPreviews() {
 function Preview({ item }: { item: Item }) {
   // Redrawn when the reader switches appearance: its key (the address) names the other half then.
   useAppearance();
-  useSyncExternalStore(
-    subscribe,
-    () => version,
-    () => version,
-  );
+  const key = keyOf(item);
+  const listen = useCallback((l: () => void) => subscribe(key, l), [key]);
+  const read = () => entries.get(key);
+  const entry = useSyncExternalStore(listen, read, read);
   const box = useRef<HTMLSpanElement>(null);
   const [near, setNear] = useState(false);
-  const entry = peek(item);
-  const key = keyOf(item);
   // Held while this box is mounted, so the cache never evicts what is on screen.
   useEffect(() => mount(key), [key]);
   useEffect(() => {

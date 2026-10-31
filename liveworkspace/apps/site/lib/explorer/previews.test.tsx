@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
-import { act } from 'react';
+import { act, Profiler } from 'react';
 import { createRoot } from 'react-dom/client';
 
 vi.mock('./token', () => ({ workspaceToken: async () => 'tok' }));
@@ -114,11 +114,26 @@ describe('previews on liveworkspace.app', () => {
     expect(previewCacheSize()).toBeLessThanOrEqual(PREVIEW_CACHE_CEILING);
     view.unmount();
   }, 20_000);
+
+  // Each box listens to its own picture, so a grid filling in redraws each box a few times, not once per picture
+  // (which was N redraws per arrival, N squared in all, and timed this file out on a busy machine).
+  it('redraws only the box whose picture arrived', async () => {
+    const fetch = vi.fn(async () => new Response('<svg/>', { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+    const items = Array.from({ length: 40 }, (_, i) => item({ id: `r${i}` }));
+    let commits = 0;
+    const view = mountPreviews(items, () => commits++);
+    await until(() => fetch.mock.calls.length >= items.length);
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(view.images()).toBe(items.length);
+    expect(commits).toBeLessThan(items.length * 4);
+    view.unmount();
+  });
 });
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-function mountPreviews(items: Item[]) {
+function mountPreviews(items: Item[], onCommit?: () => void) {
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
@@ -126,7 +141,9 @@ function mountPreviews(items: Item[]) {
     root.render(
       <div>
         {items.map((it) => (
-          <span key={it.id}>{renderPreview(it, 'card')}</span>
+          <Profiler key={it.id} id={it.id} onRender={() => onCommit?.()}>
+            <span>{renderPreview(it, 'card')}</span>
+          </Profiler>
         ))}
       </div>,
     ),
