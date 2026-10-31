@@ -566,11 +566,11 @@ A card keeps its own **history**: who made it, moved it and changed it, and when
 answers "who moved this?" for one card; it is not a plan-wide log, it offers no Revert, and Undo is unchanged
 ([Undo](#undo), [No activity log](../012-collaboration/README.md#no-activity-log)).
 
-| Term              | Means                                                                              | Never called                      |
-| ----------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| **history**       | Every history entry one card keeps, newest first                                   | log, audit trail, feed            |
-| **history entry** | What one write did to the card: when, by whom, and its changes                     | event, log line, record           |
-| **activity**      | The card's history as the panel's Activity section draws it, grouped               | timeline (that is the Explorer's) |
+| Term              | Means                                                                | Never called                      |
+| ----------------- | -------------------------------------------------------------------- | --------------------------------- |
+| **history**       | Every history entry one card keeps, newest first                     | log, audit trail, feed            |
+| **history entry** | What one write did to the card: when, by whom, and its changes       | event, log line, record           |
+| **activity**      | The card's history as the panel's Activity section draws it, grouped | timeline (that is the Explorer's) |
 
 ### What is kept
 

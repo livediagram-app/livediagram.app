@@ -629,7 +629,7 @@ history.retention` with the count.
   **Activity** section: a divider, the disclosure (`aria-expanded`, controls the body), and, open, the first
   `ACTIVITY_ROWS_SHOWN` `ActivityRow`s (newest first), **Show N More** and `ActivityNote` (loading, none, failed with
   Try Again, This Browser). Open is `useActivityOpen()`: `useLocalStorageValue('liveplanner:v2:card-activity') ===
-  'on'`, its setter sending the telemetry before it writes. `useCardHistory` is enabled only while open. It draws
+'on'`, its setter sending the telemetry before it writes. `useCardHistory` is enabled only while open. It draws
   nothing without `useCardThreadsContext().threads.scope`. `activity-words.ts` words an entry (`activityParts`) from
   the plan's `statusNames`, the card's type (field labels: `BUILT_IN_FIELD_LABELS`, then custom labels) and its
   items (a Card field's title).
