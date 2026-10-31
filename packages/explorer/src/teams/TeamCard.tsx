@@ -64,18 +64,20 @@ export function useTeamDetails(teamId: string) {
   return [current, reload] as const;
 }
 
-/** "Northwind · 3 members · 1 invited · You’re an admin". */
-export function teamHeadline(details: TeamDetails): string {
+/** "3 members · 1 invited · You’re an admin": the headline after the organisation. */
+function teamFacts(details: TeamDetails): string[] {
   const joined = details.members.filter((m) => m.status === 'joined').length;
   const invited = details.members.filter((m) => memberState(m) === 'invited').length;
   return [
-    details.team.organisation,
     `${joined} ${joined === 1 ? 'member' : 'members'}`,
     invited ? `${invited} invited` : null,
     details.team.myRole === 'admin' ? 'You’re an admin' : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  ].filter((part): part is string => part !== null);
+}
+
+/** "Northwind · 3 members · 1 invited · You’re an admin". */
+export function teamHeadline(details: TeamDetails): string {
+  return [details.team.organisation, ...teamFacts(details)].filter(Boolean).join(' · ');
 }
 
 export function initialsOf(name: string): string {
@@ -170,7 +172,14 @@ export function TeamCard({
     <div className={LIST_CARD} data-team-card={team.id}>
       <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900/40">
         <p className="min-w-0 truncate text-xs text-slate-500 dark:text-slate-400">
-          {teamHeadline(details)}
+          {/* The organisation is someone's typing: isolated, so right-to-left text (or an override kept from
+              before they were stripped) never turns the counts after it around. */}
+          {team.organisation ? (
+            <>
+              <bdi>{team.organisation}</bdi> ·{' '}
+            </>
+          ) : null}
+          {teamFacts(details).join(' · ')}
         </p>
         <div className="flex shrink-0 items-center gap-1">
           {admin ? (
@@ -367,9 +376,9 @@ function TeamMemberRow({
       </PictureDisc>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
-          <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+          <bdi className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
             {name}
-          </span>
+          </bdi>
           {self ? (
             <span
               className={`${PILL} bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-600`}
@@ -389,9 +398,7 @@ function TeamMemberRow({
           ) : null}
         </span>
         {m.email ? (
-          <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-            {m.email}
-          </span>
+          <bdi className="block truncate text-xs text-slate-500 dark:text-slate-400">{m.email}</bdi>
         ) : waiting ? (
           <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
             Waiting for them to accept
