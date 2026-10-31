@@ -14,7 +14,7 @@ const classes = (s: string) => s.split(/\s+/);
 describe('tabShapeClass', () => {
   it('stands every tab on the bottom edge: rounded top, square foot, one height', () => {
     for (const active of [true, false]) {
-      const c = classes(tabShapeClass({ active, editing: false, readOnly: false }));
+      const c = classes(tabShapeClass({ active, editing: false }));
       expect(c).toContain('rounded-t-[10px]');
       expect(c).toContain('h-10');
       expect(c).not.toContain('rounded-lg');
@@ -22,7 +22,7 @@ describe('tabShapeClass', () => {
   });
 
   it('shows the card under the open tab, white and slate-800 in dark, its name semibold', () => {
-    const c = classes(tabShapeClass({ active: true, editing: false, readOnly: false }));
+    const c = classes(tabShapeClass({ active: true, editing: false }));
     expect(c).toEqual(
       expect.arrayContaining(['before:opacity-100', 'before:bg-white', 'font-semibold', 'z-[1]']),
     );
@@ -35,7 +35,7 @@ describe('tabShapeClass', () => {
   });
 
   it('keeps the other tabs quiet: no card, slate ink, an inset wash on hover', () => {
-    const c = classes(tabShapeClass({ active: false, editing: false, readOnly: false }));
+    const c = classes(tabShapeClass({ active: false, editing: false }));
     expect(c).toEqual(
       expect.arrayContaining([
         'before:opacity-0',
@@ -50,7 +50,7 @@ describe('tabShapeClass', () => {
   });
 
   it('eases only opacity, and not at all under reduced motion', () => {
-    const c = classes(tabShapeClass({ active: true, editing: false, readOnly: false }));
+    const c = classes(tabShapeClass({ active: true, editing: false }));
     expect(c).toEqual(
       expect.arrayContaining([
         'before:transition-opacity',
@@ -62,28 +62,22 @@ describe('tabShapeClass', () => {
   });
 
   it('draws the keyboard ring on the tab when its name has focus', () => {
-    expect(classes(tabShapeClass({ active: false, editing: false, readOnly: false }))).toContain(
+    expect(classes(tabShapeClass({ active: false, editing: false }))).toContain(
       'has-[[role=tab]:focus-visible]:outline-2',
     );
   });
 
-  it('trims the trailing padding beside the menu button, and sheds it while renaming', () => {
-    expect(tabShapeClass({ active: true, editing: false, readOnly: false })).toContain(
-      'pl-3.5 pr-1',
-    );
-    // A Viewer's open tab has no menu button, so its padding stays even.
-    expect(tabShapeClass({ active: true, editing: false, readOnly: true })).toContain('px-3.5');
-    expect(tabShapeClass({ active: false, editing: false, readOnly: false })).toContain('px-3.5');
-    expect(tabShapeClass({ active: true, editing: true, readOnly: false })).toContain('px-1');
+  it('trims the trailing padding on every tab, and sheds it while renaming', () => {
+    for (const active of [true, false])
+      expect(tabShapeClass({ active, editing: false })).toContain('pl-3.5 pr-1');
+    expect(tabShapeClass({ active: true, editing: true })).toContain('px-1');
   });
 
   it('dims the tab being dragged', () => {
-    expect(
-      classes(tabShapeClass({ active: false, editing: false, readOnly: false, dragging: true })),
-    ).toContain('opacity-50');
-    expect(
-      classes(tabShapeClass({ active: false, editing: false, readOnly: false })),
-    ).not.toContain('opacity-50');
+    expect(classes(tabShapeClass({ active: false, editing: false, dragging: true }))).toContain(
+      'opacity-50',
+    );
+    expect(classes(tabShapeClass({ active: false, editing: false }))).not.toContain('opacity-50');
   });
 });
 

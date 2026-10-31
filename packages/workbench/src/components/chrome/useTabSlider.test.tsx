@@ -218,4 +218,17 @@ describe('measureSlot', () => {
     // The first box eases from 60 to 0: the tab will stand 60px further left.
     expect(measureSlot(l, tab, true).x).toBe(40);
   });
+
+  it('widens the card for a slot of the tab itself easing open, and does not move it', () => {
+    const l = document.createElement('div');
+    l.innerHTML = `
+      <div data-tab data-active data-x="100" data-w="40">
+        <div data-collapse-width="open" data-w="0" style="width: 28px"></div>
+      </div>`;
+    const tab = l.querySelector('[data-active]') as HTMLElement;
+    const box = measureSlot(l, tab, true);
+    expect(box.x).toBe(100);
+    expect(box.w).toBe(68);
+    expect(measureSlot(l, tab, false).w).toBe(40);
+  });
 });

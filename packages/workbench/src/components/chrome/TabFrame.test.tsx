@@ -3,8 +3,9 @@
 // One footer tab (docs/specs/007-editor/editor-app.md "How a tab looks"): the name is the strip's `tab`, the open
 // tab's name takes its accent, a cut-short name shows in full in a Tooltip, and the caret and dimming show a drag.
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { TAB_SLIDE_MS } from './useTabSlider';
 import { TabFrame, type TabFrameProps } from './TabFrame';
 
 afterEach(() => {
@@ -123,5 +124,55 @@ describe('TabFrame', () => {
     render(<TabFrame {...props()} />);
     expect(screen.getByRole('tab').parentElement?.hasAttribute('data-tab')).toBe(true);
     expect(container).toBeTruthy();
+  });
+
+  describe('the trailing slots', () => {
+    const slot = (c: HTMLElement, i: number) =>
+      c.querySelectorAll<HTMLElement>('[data-collapse-width]')[i]!;
+
+    it('keeps the presence, menu and padding slots in every tab, open only when filled', () => {
+      const { container } = render(
+        <TabFrame {...props({ presence: <i data-testid="who" />, hasPresence: false })} />,
+      );
+      expect(slot(container, 0).dataset.collapseWidth).toBe('shut');
+      expect(slot(container, 1).dataset.collapseWidth).toBe('shut');
+      // No menu button: the padding spacer keeps the tab's even padding.
+      expect(slot(container, 2).dataset.collapseWidth).toBe('open');
+    });
+
+    it('opens the presence slot when it shows someone, or whenever presence is given and unsaid', () => {
+      const { container, rerender } = render(
+        <TabFrame {...props({ presence: <i />, hasPresence: true })} />,
+      );
+      expect(slot(container, 0).dataset.collapseWidth).toBe('open');
+      rerender(<TabFrame {...props({ presence: <i /> })} />);
+      expect(slot(container, 0).dataset.collapseWidth).toBe('open');
+      rerender(<TabFrame {...props()} />);
+      expect(slot(container, 0).dataset.collapseWidth).toBe('shut');
+    });
+
+    it('eases the menu button in, and holds it while it eases out, then drops it', () => {
+      vi.useFakeTimers();
+      const menu = <button type="button">More</button>;
+      const { container, rerender } = render(<TabFrame {...props({ active: true })} />);
+      expect(slot(container, 1).dataset.collapseWidth).toBe('shut');
+      rerender(<TabFrame {...props({ active: true, menu })} />);
+      expect(slot(container, 1).dataset.collapseWidth).toBe('open');
+      expect(slot(container, 2).dataset.collapseWidth).toBe('shut');
+      rerender(<TabFrame {...props({ active: false })} />);
+      expect(slot(container, 1).dataset.collapseWidth).toBe('shut');
+      expect(slot(container, 1).querySelector('button')).not.toBeNull();
+      expect(slot(container, 2).dataset.collapseWidth).toBe('open');
+      act(() => {
+        vi.advanceTimersByTime(TAB_SLIDE_MS + 50);
+      });
+      expect(slot(container, 1).querySelector('button')).toBeNull();
+      vi.useRealTimers();
+    });
+
+    it('sheds the padding spacer while renaming', () => {
+      const { container } = render(<TabFrame {...props({ renameField: <input /> })} />);
+      expect(slot(container, 2).dataset.collapseWidth).toBe('shut');
+    });
   });
 });

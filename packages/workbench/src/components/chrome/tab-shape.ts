@@ -55,21 +55,16 @@ export type TabShapeState = {
   active: boolean;
   // Renaming in place: the name field carries the only box, so the tab sheds most of its padding.
   editing: boolean;
-  // A Viewer's open tab has no menu button, so it keeps its even padding.
-  readOnly: boolean;
   // Being dragged: dimmed while it moves.
   dragging?: boolean;
 };
 
-// The tab's classes for its state. The open tab's trailing menu button carries its own padding around the glyph, so
-// the tab trims its own trailing padding (optical-alignment.md).
-export function tabShapeClass({
-  active,
-  editing,
-  readOnly,
-  dragging = false,
-}: TabShapeState): string {
-  const pad = editing ? 'px-1' : active && !readOnly ? 'pl-3.5 pr-1' : 'px-3.5';
+// The tab's classes for its state. The trailing padding is trimmed on every tab: the menu button carries its own
+// padding around the glyph, and a tab without one gets a spacer in its place (optical-alignment.md).
+export function tabShapeClass({ active, editing, dragging = false }: TabShapeState): string {
+  // The trailing 10px an even padding would add live in TabFrame's spacer, which eases away as the menu button eases
+  // in, so the tab's width never jumps when it opens.
+  const pad = editing ? 'px-1' : 'pl-3.5 pr-1';
   return `${BASE} ${active ? ACTIVE : INACTIVE} ${pad}${dragging ? ' opacity-50' : ''}`;
 }
 

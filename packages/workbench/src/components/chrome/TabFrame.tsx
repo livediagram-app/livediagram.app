@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -9,6 +10,8 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@liveworkspace/ui';
+import { CollapseWidth } from '../primitives/CollapseWidth';
+import { TAB_SLIDE_MS } from './useTabSlider';
 import { TAB_CARET_CLASS, TAB_NAME_BUTTON_CLASS, TAB_NAME_CLASS, tabShapeClass } from './tab-shape';
 
 // One footer tab, drawn alike in every editor (docs/specs/007-editor/editor-app.md "How a tab looks"): the shape,
@@ -38,6 +41,10 @@ export type TabFrameProps = {
   afterName?: ReactNode;
   // Inside the tab after the name: presence avatars, then the menu button.
   presence?: ReactNode;
+  // Whether `presence` shows anyone. Its slot eases open and shut with this (the avatars arriving on the tab you
+  // open, leaving the one you left); omitted, the slot is open whenever `presence` is given.
+  hasPresence?: boolean;
+  // Given only while the tab is open; its slot eases in and out with the sliding card.
   menu?: ReactNode;
   // Where a dragged tab would land on this one, and whether this one is the tab being dragged.
   caret?: 'before' | 'after' | null;
@@ -63,6 +70,7 @@ export function TabFrame({
   lockIcon,
   afterName,
   presence,
+  hasPresence,
   menu,
   caret = null,
   dragging = false,
@@ -84,7 +92,7 @@ export function TabFrame({
       {...dragHandlers}
       onContextMenu={onContextMenu}
       style={active && !editing && accent ? { color: accent } : undefined}
-      className={`${tabShapeClass({ active, editing, readOnly, dragging })}${className ? ` ${className}` : ''}`}
+      className={`${tabShapeClass({ active, editing, dragging })}${className ? ` ${className}` : ''}`}
     >
       {caret === 'before' ? (
         <span aria-hidden className={`${TAB_CARET_CLASS} -left-[2px]`} />
@@ -104,8 +112,16 @@ export function TabFrame({
           onDoubleClick={readOnly || !active ? undefined : onRequestRename}
         />
       )}
-      {presence}
-      {menu}
+      {/* The slots ease their width with the strip's sliding card (useTabSlider measures where they will end), so
+          nothing snaps while it travels. The gap-1 before them is cancelled while they are empty. */}
+      <div className="-ml-1 flex items-center">
+        <TabSlot node={presence} open={hasPresence ?? presence != null} lead="pl-1" />
+        <TabSlot node={menu} lead="pl-1" />
+        {/* The padding a tab without a menu button keeps (tabShapeClass trims it on every tab). */}
+        <CollapseWidth open={menu == null && !editing} ms={TAB_SLIDE_MS} center>
+          <span aria-hidden className="block w-2.5" />
+        </CollapseWidth>
+      </div>
     </div>
   );
 }
@@ -160,4 +176,29 @@ function TabName({
     </button>
   );
   return cut ? <Tooltip label={name}>{button}</Tooltip> : button;
+}
+
+// One of the tab's trailing slots (the avatars, the menu button): its width and opacity ease with the card, its
+// content scales a little (transform and opacity only, so it runs on the GPU). A slot that has just emptied keeps its
+// last content for the length of the slide so it can ease away rather than vanish.
+function TabSlot({ node, open, lead }: { node: ReactNode; open?: boolean; lead: string }) {
+  const [held, setHeld] = useState<ReactNode>(node);
+  if (node != null && node !== held) setHeld(node);
+  const shown = open ?? node != null;
+  useEffect(() => {
+    if (shown || held == null) return;
+    const id = window.setTimeout(() => setHeld(null), TAB_SLIDE_MS + 40);
+    return () => window.clearTimeout(id);
+  }, [shown, held]);
+  return (
+    <CollapseWidth open={shown} ms={TAB_SLIDE_MS} center>
+      <div
+        className={`flex origin-left items-center transition-transform duration-[250ms] ease-out motion-reduce:transition-none ${lead} ${
+          shown ? 'scale-100' : 'scale-75'
+        }`}
+      >
+        {held}
+      </div>
+    </CollapseWidth>
+  );
 }

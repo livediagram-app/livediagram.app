@@ -12,7 +12,19 @@ export const COLLAPSE_WIDTH_MS = 180;
 // transition shut (the box jumped to nothing) whenever React committed `inert` and the class in the same frame.
 const EASE_OUT = 'cubic-bezier(0, 0, 0.2, 1)';
 
-export function CollapseWidth({ open, children }: { open: boolean; children: ReactNode }) {
+export function CollapseWidth({
+  open,
+  children,
+  ms = COLLAPSE_WIDTH_MS,
+  center = false,
+}: {
+  open: boolean;
+  children: ReactNode;
+  // How long the width takes (the fade stays 180 ms); a tab's slots use the sliding card's, so the width lands with it.
+  ms?: number;
+  // Centre the content on the box's height (a tab's menu button) instead of standing it on the bottom edge.
+  center?: boolean;
+}) {
   const outer = useRef<HTMLDivElement>(null);
   const inner = useRef<HTMLDivElement>(null);
   const mounted = useRef(false);
@@ -39,7 +51,7 @@ export function CollapseWidth({ open, children }: { open: boolean; children: Rea
     box.style.overflow = 'hidden';
     box.style.width = `${to}px`;
     const run = box.animate([{ width: `${from}px` }, { width: `${to}px` }], {
-      duration: COLLAPSE_WIDTH_MS,
+      duration: ms,
       easing: EASE_OUT,
     });
     run.onfinish = settle;
@@ -49,7 +61,7 @@ export function CollapseWidth({ open, children }: { open: boolean; children: Rea
       box.style.width = getComputedStyle(box).width;
       run.cancel();
     };
-  }, [open]);
+  }, [open, ms]);
 
   return (
     <div
@@ -60,7 +72,10 @@ export function CollapseWidth({ open, children }: { open: boolean; children: Rea
         open ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      <div ref={inner} className="flex w-max shrink-0 items-end self-stretch">
+      <div
+        ref={inner}
+        className={`flex w-max shrink-0 self-stretch ${center ? 'items-center' : 'items-end'}`}
+      >
         {children}
       </div>
     </div>
