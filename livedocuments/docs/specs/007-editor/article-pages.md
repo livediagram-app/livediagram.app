@@ -415,7 +415,9 @@ ink").
   from any mode (a page slide presenting outside Pages shows its writing too).
 - **Export**: PDF, PNG and SVG draw an article page's writing exactly as on screen (text as real
   text in SVG output; rasterised in PNG, and in PDF, whose pages are images), with its zones'
-  elements, its page number and its ruled lines; nothing of the editing chrome.
+  elements, its page number and its ruled lines; nothing of the editing chrome. **Word** writes the
+  article as an editable `.docx`, its headings as Word styles and its zones as images
+  ([PowerPoint and Word export](../020-import-export/office-export.md)).
 - **The Map** shows each page's text as soft grey lines.
 - **Viewers** (a view role, a locked tab) read the writing and cannot change it; no caret, no
   toolbar, no zone bar. **A locked page** makes its whole article read the same way for everyone
