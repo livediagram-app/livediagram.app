@@ -42,7 +42,8 @@ const fieldsArg = z
       '(YYYY-MM-DD), color (a #rrggbb colour, e.g. ' +
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
       '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
-      '("Severity": "S2"; a Card field takes "#12"; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
+      '("Severity": "S2"; a Card field takes "#12"; a field marked multiple takes a list or a comma list, "Sam, Ana" or ' +
+      '"#3, #5"; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
       'change_card_types. A new card must give every custom field list_items marks required. Attachments ' +
       '(pictures) are added in the card panel only: they can be cleared, never set.',
   );
@@ -241,6 +242,13 @@ const notifiesArg = z
   .describe(
     'A person field only: true tells its person when a card is theirs (the Inbox, emails, Only Mine), false stops.',
   );
+// Holds Several (docs/specs/026-plan/item-types.md "Holds Several"): a person or card field holding a list.
+const multipleArg = z
+  .boolean()
+  .describe(
+    'A person or card field only: true holds several people or cards (written as a comma list or a list), false ' +
+      'holds one again (cards keep what they hold).',
+  );
 const assigneeNotifiesArg = z
   .boolean()
   .describe('false stops the Assignee telling its person when a card is theirs; true tells again.');
@@ -253,9 +261,11 @@ const customField = z.object({
       'text (one line), longtext (rich paragraphs, in a panel tab; written as Markdown), number, currency (an amount in the field’s ' +
         'currency, shown as "£12,500"), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
         'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
-        'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12"), ' +
+        'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12", or several ' +
+        'with multiple), ' +
         'calculated (worked out from the cards linking to the card through a card field, by its calculation; ' +
-        'read-only, never given a value), person (someone, by name, as the assignee takes one), labels (a list, ' +
+        'read-only, never given a value), person (someone, by name, as the assignee takes one, or several with ' +
+        'multiple), labels (a list, ' +
         'as labels takes one), colour (#rrggbb), checklist (rows of { text, done }), image (a picture added ' +
         'in the card panel; an agent may clear it, never set one), comments (its own comment threads: start ' +
         'one in it with change_threads) or votes (its own votes, from a session vote that counts in it; never ' +
@@ -297,6 +307,7 @@ const customField = z.object({
       'Every new card of the type must give it a value, and no change may empty it (any kind but checkbox).',
     ),
   notifies: notifiesArg.optional(),
+  multiple: multipleArg.optional(),
 });
 
 const colourArg = z
@@ -362,6 +373,7 @@ const customFieldEdit = z.object({
     .optional()
     .describe('true makes it required (any kind but checkbox), false optional again.'),
   notifies: notifiesArg.optional(),
+  multiple: multipleArg.optional(),
 });
 
 export const cardTypeChangeSchema = z.discriminatedUnion('op', [

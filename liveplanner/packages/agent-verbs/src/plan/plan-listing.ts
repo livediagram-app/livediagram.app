@@ -33,6 +33,10 @@ import {
   doneStatusesOf,
   hasCalculatedFields,
   typeIn,
+  fieldCardIds,
+  fieldPeople,
+  holdsSeveral,
+  type CustomFieldDef,
 } from '@liveplanner/items';
 import type { PlanState } from './plan-state';
 
@@ -96,6 +100,7 @@ export interface ListedType {
     required?: boolean;
     // A Person field that tells its person when a card is theirs (item-types.md "Notifies").
     notifies?: boolean;
+    multiple?: boolean;
   }[];
   // The Assignee tells no one (item-types.md "Notifies"); given only when switched off.
   assigneeNotifies?: false;
@@ -187,16 +192,38 @@ function namedFields(
   for (const [key, value] of Object.entries(fields)) {
     const field = custom.find((f) => f.id === key);
     const label = field?.label;
-    const linked =
-      (key === PARENT_FIELD_ID || field?.kind === 'card') && typeof value === 'string'
-        ? byId.get(value)
-        : undefined;
     // A name a built-in or another field already uses keeps the id, so nothing is overwritten.
-    out[label && !(label in fields) && !(label in out) ? label : key] = linked
-      ? `#${linked.key} ${itemTitle(linked)}`
-      : value;
+    out[label && !(label in fields) && !(label in out) ? label : key] = listedValue(
+      key,
+      field,
+      value,
+      byId,
+    );
   }
   return out;
+}
+
+// A field's value as list_items reads it: a card link as "#12 Fix login", and a field that holds several as a comma
+// list of its cards or people's names (docs/specs/026-plan/item-types.md "Holds Several"); the rest as stored.
+function listedValue(
+  key: string,
+  field: CustomFieldDef | undefined,
+  value: unknown,
+  byId: ReadonlyMap<string, Item>,
+): unknown {
+  const linkText = (id: string) => {
+    const linked = byId.get(id);
+    return linked ? `#${linked.key} ${itemTitle(linked)}` : id;
+  };
+  if (holdsSeveral(field) && field!.kind === 'card')
+    return fieldCardIds(field, value).map(linkText).join(', ');
+  if (holdsSeveral(field))
+    return fieldPeople(field, value)
+      .map((p) => p.name)
+      .join(', ');
+  if ((key === PARENT_FIELD_ID || field?.kind === 'card') && typeof value === 'string')
+    return linkText(value);
+  return value;
 }
 
 // A card type as list_items answers it: everything change_card_types sets, by the names it takes. Its Default
@@ -222,6 +249,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.onCard ? { onCard: true } : {}),
       ...(f.required ? { required: true } : {}),
       ...(f.notifies ? { notifies: true } : {}),
+      ...(holdsSeveral(f) ? { multiple: true } : {}),
     })),
     ...(t.assigneeNotifies === false ? { assigneeNotifies: false as const } : {}),
     ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),
