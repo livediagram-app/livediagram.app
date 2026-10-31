@@ -34,6 +34,7 @@ function handlers(): CommandHandlers {
     openImport: vi.fn(),
     openSettings: vi.fn(),
     openShortcuts: vi.fn(),
+    openFind: vi.fn(),
     setTool: vi.fn(),
   };
 }
@@ -244,6 +245,8 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     expect(ids({ ...base, isReadOnly: true })).toEqual([
       'zen',
       'fit-to-screen',
+      // Finding reads the tab (docs/specs/007-editor/find-and-replace.md); replacing is withheld here.
+      'find',
       'export',
       // Reads the room, writes nothing — a viewer may ask who else is here.
       'collaborators',
@@ -252,6 +255,19 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'tool:spotlight',
       // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
     ]);
+  });
+
+  it('offers Find in Tab to everyone, and Find and Replace to whoever may replace', () => {
+    // docs/specs/007-editor/find-and-replace.md "Opening and closing": the way in without a keyboard.
+    expect(ids({ ...base, isReadOnly: true })).not.toContain('find-replace');
+    expect(ids({ ...base, isReadOnly: true, canReplace: true })).toContain('find-replace');
+    expect(ids(base)).toContain('find');
+    const h = handlers();
+    const all = buildEditorCommands({ ...base, canReplace: true }, h);
+    all.find((c) => c.id === 'find')!.run();
+    all.find((c) => c.id === 'find-replace')!.run();
+    expect(h.openFind).toHaveBeenNthCalledWith(1, false);
+    expect(h.openFind).toHaveBeenNthCalledWith(2, true);
   });
 
   it('offers Collaborators to everyone, shared or not, owner or not', () => {

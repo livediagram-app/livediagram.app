@@ -37,6 +37,7 @@ function editor(over: Record<string, unknown> = {}) {
     canShareDocument: true,
     documentId: 'd1',
     activeTab: { id: 't1', elements: [] },
+    find: { canReplace: true, openBar: vi.fn() },
     editorMode: { mode: 'diagram', setMode: vi.fn(), canSwitch: true },
     canUndo: true,
     canRedo: false,

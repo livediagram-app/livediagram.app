@@ -25,6 +25,7 @@ function view(over: Partial<FindView> = {}): FindView {
     heldCount: 0,
     currentHeld: null,
     focusSeq: 1,
+    openBar: vi.fn(),
     next: vi.fn(),
     previous: vi.fn(),
     replace: vi.fn(),

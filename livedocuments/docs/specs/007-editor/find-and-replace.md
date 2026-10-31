@@ -28,7 +28,10 @@ missing.
   in any other text field (a comment, a panel, a dialog's input, a label being edited), while a
   dialog is open, while a deck presents, and in an embed.
 - **Cmd/Ctrl+Shift+H** opens the bar with the Replace row, for someone who may replace; for a
-  Viewer it opens Find alone. The **chevron** at the bar's left shows or hides the Replace row
+  Viewer it opens Find alone.
+- **The search panel's commands** open it too: **Find in Tab** for everyone and **Find and
+  Replace** for someone who may replace ([Command palette](command-palette.md)). On a touch screen
+  with no keyboard, this is the way in. The **chevron** at the bar's left shows or hides the Replace row
   (an Editor and a Participant only).
 - **Escape** (focus anywhere in the bar) or the bar's **Close** closes it: the highlights go, and
   the keyboard goes back to the canvas. The query and options are kept for the next opening while

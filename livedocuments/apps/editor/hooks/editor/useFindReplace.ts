@@ -71,6 +71,8 @@ export type FindView = {
   currentHeld: FindHeld;
   // Bumped to put the caret in the Find field (an open, or Cmd/Ctrl+F with the bar open).
   focusSeq: number;
+  // Opens the bar (with the Replace row for someone who may replace), as the chords do: the search panel's commands.
+  openBar: (withReplace: boolean) => void;
   next: () => void;
   previous: () => void;
   replace: () => void;
@@ -405,6 +407,7 @@ export function useFindReplace(deps: Deps): FindView {
     heldCount,
     currentHeld: current ? found!.targets[current.target]!.held : null,
     focusSeq,
+    openBar,
     next: () => step(1),
     previous: () => step(-1),
     replace,

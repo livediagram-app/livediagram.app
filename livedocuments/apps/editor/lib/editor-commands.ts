@@ -72,6 +72,9 @@ export type CommandContext = {
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Format.
   tabLocked?: boolean;
+  // This person may replace (an Editor or a Participant, docs/specs/007-editor/find-and-replace.md "Share roles"):
+  // Find and Replace is offered beside Find in Tab.
+  canReplace?: boolean;
 };
 
 // The handlers the commands call. Injected by useEditorCommands; each is the
@@ -107,6 +110,8 @@ export type CommandHandlers = {
   openImport: () => void;
   openSettings: () => void;
   openShortcuts: () => void;
+  // Opens the Find bar, with its Replace row when `withReplace` (docs/specs/007-editor/find-and-replace.md).
+  openFind: (withReplace: boolean) => void;
   // Switches the canvas tool — the same setter the palette's tool dropdown
   // calls, so the pressed state and telemetry are identical either way.
   setTool: (tool: string) => void;
@@ -208,6 +213,24 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       keywords: 'fit zoom overview centre center view all reset viewport',
       run: h.fitToScreen,
     },
+    // Find (docs/specs/007-editor/find-and-replace.md "Opening and closing"): every role finds, so it is view-safe,
+    // and on a touch screen with no keyboard this is the way in.
+    {
+      id: 'find',
+      name: 'Find in Tab',
+      keywords: 'find search look for text words match next previous',
+      run: () => h.openFind(false),
+    },
+    ...(ctx.canReplace
+      ? [
+          {
+            id: 'find-replace',
+            name: 'Find and Replace',
+            keywords: 'find replace swap change words text rename everywhere all',
+            run: () => h.openFind(true),
+          },
+        ]
+      : []),
     {
       id: 'export',
       name: 'Export…',

@@ -78,6 +78,8 @@ painters: a ProseMirror plugin in the writing and a ring overlay on the canvas. 
   inside the writing (`.article-flow`) or the bar itself: `preventDefault`, open (focus and select the field, seeded
   from a writing selection of one line up to `FIND_SEED_MAX`). Cmd/Ctrl+Shift+H, same conditions: open with
   `replaceOpen = can.replace !== false`. Every other case is left to the browser.
+- The search panel's `find` and `find-replace` commands (`lib/editor-commands.ts`, view-safe; `find-replace` only
+  with `CommandContext.canReplace`) call `FindView.openBar(withReplace)`, the chords' own open.
 - Close: `open = false`, highlights cleared, focus to the canvas (`canvasMainRef`). Query, options and `replaceOpen`
   are kept in the hook's state for the next opening.
 
