@@ -202,8 +202,28 @@ them. An app keeps only thin doors: its routes, its storage and its words.
 | Piece                           | What it holds                                                                                                                                                                     |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@liveworkspace/community`      | The contract: apps, categories, limits, search grammar, wire shapes; and the app Worker's side of the service (its app routes, the copier hash)                                   |
-| `@liveworkspace/community-ui`   | The Share dialog's **Community** tab (the section, Share to Community, Edit Listing, Remove), the post tile, the landing page's **From the Community** section, the Community bar |
-| `@liveworkspace/community-site` | The gallery and post pages, and the small Worker in front of them (a post's head, the sitemap), on which each app's `apps/community` is a thin shell, as Help is on help-site     |
+| `@liveworkspace/community-ui`   | The Share dialog's **Community** tab (the section, Share to Community, Edit Listing, Remove), the post tile, the landing page's **From the Community** section, the help deep link, the Community bar |
+| `@liveworkspace/community-site` | The gallery and post pages, and the small Worker in front of them (a post's head, the sitemap), on which each app's `apps/community` is a thin shell, as Help is on help-site                         |
+
+### An app's Community pages
+
+An app's `apps/community` keeps only its layout (its header, footer, boot scripts and metadata), its routes and its
+binding; the pages are `@liveworkspace/community-site`'s, so they look and behave the same in every app, in the app's
+words and brand. The binding is a `CommunitySite`, which the layout's own small client provider hands the pages once:
+
+- **Which posts**: the app (`livedocuments.app`), and its words ("document", "documents", the product's name), from
+  `COMMUNITY_APP_WORDS`.
+- **Its api**: where it is (`/api` behind the router), which answers My Shares, the session and the capabilities;
+  and the Community service the build names, if any (`NEXT_PUBLIC_COMMUNITY_API`).
+- **The browser's community key**: where the app keeps it (its own localStorage key, on its own origin).
+- **Who is signed in**: the app's readable signed-in hint, so a signed-out browser asks nothing.
+- **Its routes**: the read-only viewer, Make a Copy, the embed, a post's card image, the author's own document,
+  sign-in, and where Share Your Own leads (the person's own documents).
+- **Its telemetry** (`Community·…`, as above) and **its help links** (its two Community articles, sent as its own
+  `UI·Opened`).
+
+The Worker is the same factory in every app, bound to the app, its canonical origin and its product name. The
+landing section takes the app, its words, its card images and its help link.
 
 ### The Share dialog's Community tab
 
@@ -234,8 +254,8 @@ app knows who owns the document and whether it may be published).
    the service's `src/env.ts` and `appKey`.
 2. In the app's api: the document room's `community_post` row, the owner routes, the link doors and the check,
    on the shared server side of `@liveworkspace/community`.
-3. Its pages: `apps/community` on `@liveworkspace/community-site`, the landing section and the Share dialog's tab
-   from `@liveworkspace/community-ui`, and `APP_ITEMS[app].share.communityPath` so liveworkspace.app's Explorer
+3. Its pages: `apps/community` on `@liveworkspace/community-site` (its layout, routes and `CommunitySite` binding, as
+   "An app's Community pages" says), the landing section and the Share dialog's tab from `@liveworkspace/community-ui`, and `APP_ITEMS[app].share.communityPath` so liveworkspace.app's Explorer
    offers the tab.
 
 ## Performance

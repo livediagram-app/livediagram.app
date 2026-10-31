@@ -1,10 +1,11 @@
 import { siteTrack } from '@livediagram/telemetry-client';
+import type { CommunitySiteTelemetry } from '@liveworkspace/community-site/client';
 
 // Anonymous, first-party telemetry for the Community app (docs/specs/025-community/community.md
 // "Telemetry"; docs/specs/017-telemetry/telemetry.md). The public sites' shared siteTrack(), the same
 // instance PageViewBoot reports page views through, so the app runs one buffer. Every event is
 // category `Community`; `type` is always a preset value, never post content (no titles, no tags, no
-// search text).
+// search text). The shared pages send them through this binding (lib/community-site.tsx).
 
 export type CommunitySelection = 'Category' | 'Tag' | 'Sort' | 'Mine';
 
@@ -17,4 +18,4 @@ export const communityTelemetry = {
   reported: (reasonType: string) => siteTrack('Community', 'Reported', reasonType),
   searched: () => siteTrack('Community', 'Searched', 'Query'),
   selected: (what: CommunitySelection) => siteTrack('Community', 'Selected', what),
-};
+} satisfies CommunitySiteTelemetry;

@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import '@liveworkspace/tailwind-config';
+/* The Community pages' own styles: the hero's wash and the heart's pop (@liveworkspace/community-site). */
+@import '@liveworkspace/community-site/community.css';
 
 /* Scan the shared UI package so utility classes used only inside its components (the <Brand> mark,
  * the site header and footer) are generated here too. Tailwind v4 skips node_modules, where the
@@ -8,8 +10,12 @@
 /* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
 @source '../../../../packages/ui/src';
 @source '../../../../packages/brand/src';
-/* The Community's cards (@liveworkspace/community-ui's tile); its Share tab is not on these pages. */
+/* The Community's pages (@liveworkspace/community-site), its cards and help links (@liveworkspace/community-ui's tile
+ * and help-link); its Share tab is not on these pages. */
+@source '../../../../packages/community-site/src';
+@source not '../../../../packages/community-site/src/**/*.test.*';
 @source '../../../../packages/community-ui/src/tile';
+@source '../../../../packages/community-ui/src/help-link';
 
 html,
 body {
@@ -21,38 +27,4 @@ body {
 .dark body {
   background-color: var(--color-slate-950);
   color: var(--color-slate-200);
-}
-
-/* The hero's soft brand wash, quietly. */
-.community-hero {
-  background:
-    radial-gradient(60rem 22rem at 15% -10%, rgb(14 165 233 / 0.14), transparent 70%),
-    radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.08), transparent 70%);
-}
-.dark .community-hero {
-  background:
-    radial-gradient(60rem 22rem at 15% -10%, rgb(14 165 233 / 0.16), transparent 70%),
-    radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.07), transparent 70%);
-}
-
-/* The heart's pop on liking. */
-@keyframes heart-pop {
-  0% {
-    transform: scale(1);
-  }
-  45% {
-    transform: scale(1.3);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-.heart-pop {
-  animation: heart-pop var(--transition-duration-long) ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .heart-pop {
-    animation: none;
-  }
 }

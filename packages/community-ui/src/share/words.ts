@@ -1,6 +1,8 @@
 import type { CommunityApp } from '@liveworkspace/community';
 import type { CommunityWords } from './host';
 
+export type { CommunityWords } from './host';
+
 // Each app's words for the Share dialog's Community tab (liveworkspace/docs/specs/007-community/community.md "The
 // Share dialog's Community tab"), one place for the app's editor and every Explorer to say them the same.
 export const COMMUNITY_APP_WORDS: Record<CommunityApp, CommunityWords> = {

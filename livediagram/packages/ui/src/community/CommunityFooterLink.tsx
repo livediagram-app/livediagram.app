@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
-import { useNearViewport } from '../useNearViewport';
+import { useNearViewport } from '@liveworkspace/ui';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 
 // The footer's Community link (docs/specs/025-community/community.md "Turning the Community off"): gone while the

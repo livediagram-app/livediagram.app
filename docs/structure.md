@@ -20,7 +20,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
 │  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
-│  ├─ community-ui             the Community's pieces in every app: the post tile, the Share dialog's Community tab
+│  ├─ community-ui             the Community's pieces in every app: the post tile, the Share dialog's Community tab, the landing section
+│  ├─ community-site           every app's Community pages (gallery, post) and their Worker; each product binds its own
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ diagram-lint             the numbers and line formats livediagram's and livedocuments' diagram lint judge by
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
