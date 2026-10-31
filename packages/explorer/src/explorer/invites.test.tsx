@@ -61,10 +61,22 @@ describe('Invites', () => {
   it('shows a card per invitation, with Accept and Decline', async () => {
     page({ kind: 'invites' }, [invite()]);
     expect(await screen.findByText('Ops Crew')).toBeTruthy();
-    expect(screen.getByText('Acme · 3 members')).toBeTruthy();
-    expect(screen.getByText(/^Ann invited you .*, as an admin\.$/)).toBeTruthy();
+    // A line's whole text, though a name or an organisation in it is its own <bdi>.
+    const text = (want: RegExp) =>
+      screen.getByText((_, el) => el?.tagName === 'SPAN' && want.test(el.textContent ?? ''));
+    expect(text(/^Acme · 3 members$/)).toBeTruthy();
+    expect(text(/^Ann invited you .*, as an admin\.$/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Accept the invitation to Ops Crew' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Decline the invitation to Ops Crew' })).toBeTruthy();
+  });
+
+  it('isolates the organisation and the inviter’s name, so right-to-left text turns nothing around', async () => {
+    page({ kind: 'invites' }, [
+      invite({ organisation: '\u202Eevil org', invitedByName: '\u202Enna' }),
+    ]);
+    expect(await screen.findByText('Ops Crew')).toBeTruthy();
+    expect(screen.getByText('\u202Eevil org').tagName).toBe('BDI');
+    expect(screen.getByText('\u202Enna').tagName).toBe('BDI');
   });
 
   it('accepts in place: the team joins the sidebar and opens', async () => {
