@@ -44,6 +44,9 @@ export const CUSTOM_FIELD_KINDS = [
   'currency',
   // How far along, a whole number from 0 to 100 drawn as a bar (docs/specs/026-plan/item-types.md "Percent").
   'percent',
+  // How long, stored as whole minutes and read "2h 30m"; with `timeSpent` the time people track on the card
+  // (docs/specs/026-plan/item-types.md "Duration", "Time Spent"; duration-fields.ts, time-tracking.ts).
+  'duration',
   'date',
   'checkbox',
   'link',
@@ -166,6 +169,9 @@ export interface CustomFieldDef {
   // A worked-out share drawn as a Percent field is (percent-fields.ts); kept only as 'percent', only where
   // canShowAsPercent allows it.
   showAs?: 'percent';
+  // A Duration field that tracks time (Time Spent, time-tracking.ts): its value is entries and running timers, never
+  // typed in. Kept only as true, only on a Duration field; set when the field is made and never changed.
+  timeSpent?: boolean;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
   // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.

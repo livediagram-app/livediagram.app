@@ -55,19 +55,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## An item type
 
-| Part            | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                                                                                                                                                                                                        |
-| `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                                                                                                                                                                                                                                                                            |
-| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`, a Formula's `formula` and `result`, a Rollup's or Lookup's `through`, `aggregate` and `source` and its `result`, and `showAs: "percent"` when it [shows as a Percent](#percent-fields); `required: true` for a [required field](#required-fields)) |
-| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                                                                                                                                                                                                                                                                        |
-| `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                                                                                                                                                                                                                                                                         |
-| `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                                                                                                                                                                                                                      |
+| Part            | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, timeSpent?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`, a Formula's `formula` and `result`, a Rollup's or Lookup's `through`, `aggregate` and `source` and its `result`, and `showAs: "percent"` when it [shows as a Percent](#percent-fields); `timeSpent: true` on a Duration field that [tracks time](#time-spent); `required: true` for a [required field](#required-fields)) |
+| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                                                                                                                                                                                                                                                                                                                                                            |
+| `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
   Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are.
@@ -145,7 +145,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Percent (a share from 0 to
-  100, drawn as a bar, [below](#percent-fields)), Date, Checkbox, Link (an
+  100, drawn as a bar, [below](#percent-fields)), Duration (hours and minutes, "2h 30m", and the time a team
+  tracks, [below](#duration-fields)), Date, Checkbox, Link (an
   `https://` URL), Email, Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
   options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type, or
   to several, below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
@@ -242,6 +243,99 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       [Formula](#formula-fields) with a **Percent** result; a [Rollup or Lookup](#rollup-and-lookup-fields) whose result is a Percent (an Average of a Percent field, a Lookup of
       one) takes the same switch. One shared reading (`percent-fields.ts`) decides which
       fields show as a Percent and what share they show, so every surface agrees.
+- <a id="duration-fields"></a>**Duration** is how long something takes or took, in hours and minutes: an estimate in
+  hours, a call's length, the time a team spent. Teams that estimate in hours, and agencies and freelancers who bill
+  by time, put "2h 30m" here (Estimate stays story points). It is stored as **whole minutes**, a number under the
+  field's id; 0 is a value ("0m"), no value is no value.
+  - **Typing it**: the card panel's box (and everywhere text is taken: Import CSV, agents, the CLI) reads "2h 30m",
+    "2h30m", "90m", "1.5h", "2:30" (hours and minutes), "2 hours 30 minutes", and a bare number as minutes ("45"),
+    ignoring case and spaces, rounded to a whole minute (`parseDuration`). Up to 99,999 hours
+    (`DURATION_MINUTES_MAX`); a negative or unreadable one is refused. In the panel, Enter or leaving the box saves it
+    (shown back as it reads), Escape puts the box back, emptying it clears the field, and text that is no duration
+    puts the box back and says "Write a duration like 2h 30m, 90m or 1.5h". Its placeholder is "2h 30m".
+  - **Reading it** (`durationText`): hours and minutes, the zeros left out: "2h 30m", "45m", "3h", "0m". Hours past a
+    day stay hours ("26h 15m"; a working day's length differs by team, so there are no days), grouped as the
+    reader's locale groups digits ("1,250h").
+  - **On the card**: a chip of the clock glyph and its value, named "{Field}: 2h 30m".
+  - **Sorts as a number**: Sort Cards orders by it, shortest first. Like a Currency field it lays no swimlanes and
+    Card Search has no filter for it (every card would be its own row).
+  - **Adds up**: a [Rollup](#rollup-and-lookup-fields)'s Sum, Average, Min and Max of it stay a Duration ("12h 30m");
+    a [Formula](#formula-fields) reads it as its minutes; the board's **Time** widget totals it ([Board
+    widgets](board-widgets.md#time)). Cards by Field adds up Numbers only, as before.
+  - **Reading and writing it elsewhere**: `list_items` lists the field with `kind: "duration"` and a card's value as
+    its text ("2h 30m"); `change_items`, the card table and the CLI take that text or a number of minutes, refusing
+    anything else ("Estimate Hours is a duration: write a duration like 2h 30m, 90m or 1.5h."). Export CSV writes its text
+    ("2h 30m"); Import CSV reads any of the typed forms and skips a cell that is none. The api stores a custom
+    field's value without knowing its kind, so a stray value written straight to it (text, a negative) reads as no
+    value everywhere. A form can't ask it (no question maps to it).
+  - It may be [required](#required-fields); 0 counts as a value.
+  - <a id="time-spent"></a>**Time Spent**: a Duration field with **Track Time** on (`timeSpent: true`) holds no typed
+    value: it adds up the time people track on the card, with a start/stop **timer** and **manual entries**, each
+    saying who and when. The switch is set when the field is made and never changes afterwards (the field's form
+    shows it, unchangeable), as a field's kind never does; anything else stored reads as off.
+    - **The value** under the field's id is `{ people, entries, running }` (`time-tracking.ts`): each **entry** a span
+      someone spent, `{ id, by, minutes, at }` (a person id, whole minutes from 1, and when it was recorded, in
+      milliseconds); each **running timer** `{ id, by, start }`, its start stored so a reload or another device keeps
+      counting; and `people`, each person they name once (`{ name, color }` by person id), so a card stays small. Its
+      **total** is its entries' minutes added up; a running timer joins it when it stops. Everything that reads a
+      Duration (the card face, Sort Cards, Rollups, Formulas, the Time widget, Export CSV, sheets and agents) reads a Time Spent field as its total.
+    - **Time writes**: every change is one **time write** made to the card as stored (`POST
+/api/projects/{id}/items/{itemId}/time`, and the same pure step in a This Browser plan), never a whole value
+      written over another, so two people's timers and entries never overwrite each other: **concurrent timers from
+      two people both count**. A time write is one of:
+      - **start**: the caller's own timer on that field of the card, starting now. One timer per person per field: a
+        second start while one runs changes nothing. Several people may run timers on one card at once.
+      - **stop**: ends a timer. The time it ran, rounded to whole minutes, becomes an entry by the timer's person at
+        the moment it stopped. A timer stopped before 30 seconds rounds to 0 and leaves no entry ("Under a minute:
+        nothing recorded" is announced).
+      - **add**: a manual entry by the caller, typed as a Duration ("1h 15m"), recorded now; at least 1 minute.
+      - **remove**: an entry, or a running timer (its **Discard**: the time is not recorded).
+      - **put**: an entry put back as it was (the undo of a remove).
+    - **Limits**: a field holds up to **100** entries and running timers together on a card (`TIME_ENTRIES_MAX`), so
+      a card stays well within its 16 KB of fields. Full, Start and Add Time are disabled ("This card holds the most
+      time entries it can"); a running timer can always stop, since it already counts.
+    - **In the card panel** the field's row reads, top to bottom:
+      - the **total** in large tabular figures ("4h 15m"; "No time yet", muted, with none);
+      - the viewer's own **timer**: **Start Timer** (a play glyph, the brand colour), or while theirs runs a green
+        pulsing dot, its elapsed time ticking each second ("12:05", then "1:02:05") and **Stop** (a square glyph),
+        with **Discard** (a cross, "Discard timer") beside it;
+      - **others' running timers**: each a row of their avatar disc, their name and their elapsed time ticking, "Stop"
+        beside it for an Editor;
+      - **Entries**, newest first: each the person's disc, name, its time ("1h 15m") and when ("Today, 14:02",
+        "Yesterday, 09:30", "3 Oct, 16:45"), with a remove cross ("Remove 1h 15m by Sam") on the viewer's own
+        entries (an Editor's on every entry); past five, **Show All N Entries** opens the rest;
+      - **Add Time**: a dashed row that opens, in place, a small box ("1h 15m") and **Add**: Enter adds, Escape or
+        Cancel closes it, and text that is no duration says so under the box.
+    - **On the card face**: where the Display places it, its total as any Duration ("4h 15m"). And **while anyone's
+      timer runs** the card shows it, at every size, whether or not the Display places the field, at the end of the
+      card's last row (Minimal: after the title): a pill of the runners' avatar discs (the first three overlapping,
+      then "+N"), a green dot that pulses (still with reduced motion), and the elapsed time of the earliest started,
+      ticking ("12:05"); named "Timer running: Sam, 12 minutes" for assistive technology, the full list in its
+      tooltip. Everyone with the plan open sees it.
+    - **Ticking**: one shared clock for the page (`useNowSeconds`) ticks once a second, only while some running timer
+      is drawn; only the elapsed readouts subscribe to it and redraw, never a board, a card or the panel, so a board
+      of 2,000 cards with timers running repaints a few text nodes a second.
+    - **Share roles**: an **Editor** does everything: start and stop their own timer, stop anyone's, add entries and
+      remove anyone's. A **Participant** starts and stops their own timer and adds and removes their own entries
+      only. A **Viewer** sees the total, the entries and the running timers, read-only (no Start, Stop, Add Time or
+      remove cross). The api refuses a Viewer's time write (403) and a Participant's stop or remove of another
+      person's timer or entry (403, `time_not_yours`); a put back of another person's entry is an Editor's.
+    - **Undo**: Add Time and removing an entry are each one undo step (the undo of an add removes it, of a remove
+      puts it back); starting, stopping and discarding a timer are not (a clock, not an edit, as a vote's tally is).
+    - **Card writes leave it alone**: a card change never sets or clears a Time Spent field (refused,
+      `field_time_tracked`: "Time Spent is tracked: add time in the card panel"); a card made again (an undo of a
+      delete, an offline plan's sync, a copy) carries its entries, checked as a time value; Duplicate leaves them
+      behind (the copy's time is its own). Turning a field into one, or one back into a typed Duration, is not
+      possible.
+    - **Elsewhere**: Export CSV writes the total ("4h 15m"); Import CSV skips its column; the SVG and PNG exports and
+      api or MCP images draw the total and, while a timer runs, the runners' discs and "Running". `list_items` lists
+      the field with `kind: "duration"`, `timeSpent: true` and `readOnly: true`, a card's value as its total, and the
+      card's `time`: per field, its entries (who by name, the time as text, when as an ISO time) and running timers
+      (who, since when). Agents read time but never track it (`change_items` refuses a value for it: "Time Spent is
+      tracked: people add time in the card panel"); a person's time is their own record, so no agent starts, stops or
+      adds to it.
+    - Telemetry: `Plan` · `Started` · `Timer` and `Plan` · `Ended` · `Timer` when someone starts and stops their
+      timer, `Plan` · `Added` · `TimeEntry` when they add time by hand.
 - **Fields by role** <a id="fields-by-role"></a>: a feature that reads a field for what it means, not by its name,
   reads the built-in field unless its own settings pick another field of the same kind. Nothing a plan already
   shows changes until someone picks.
@@ -269,7 +363,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   board's **Only Mine** ([Plan board](plan-board.md)). A custom person (an `n-` id) never notifies, as before.
   Telemetry: `Plan` · `Changed` · `FieldNotifies`.
 - **Required fields**: any custom field but a Checkbox (unticked reads as empty), a [Calculated](#calculated-fields) field (the plan
-  works it out), an [Image](#image-fields) field (a picture is added once the card exists) or a
+  works it out), a Duration field that [tracks time](#time-spent) (its entries are recorded, never typed in), an [Image](#image-fields) field (a picture is added once the card exists) or a
   [Comments or Votes](#comments-and-votes-fields) field (threads and votes are not typed in) can be marked **Required**. A
   required field must have a value: empty is no value, an empty or all-space text and an empty Multiple Choice
   included. Stored as `required: true` on the field; absent is optional, so every field saved before reads as
@@ -473,7 +567,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     `or(a, b, ...)`, `not(x)`, `days(x)` (a date: the days from today to it, negative once past; a number: itself),
     `today()`, `concat(a, b, ...)` (the values as text, joined) and `len(x)` (a list's count, a text's characters).
     Names compare ignoring case; a function given the wrong number of values is a syntax error.
-  - **Values**: Number, Currency, Rating and Estimate read as numbers; Date, Start and Due as dates; Checkbox as
+  - **Values**: Number, Currency, Rating and Estimate read as numbers; a [Duration](#duration-fields) as its whole
+    minutes (`{Time Spent} / 60 * Rate` is the bill), a Time Spent field as the minutes its entries add up to; Date, Start and Due as dates; Checkbox as
     true or false; Text, Long Text (its text), Email, Link, Choice, Colour, Priority, Title and Type as text; a Person
     (and the Assignee) as the person's name; a Card field as the linked card's "#12 Title" ("Missing card" when it is
     gone); another Calculated field as its value (Child Count, Children Done, a Rollup's or a Lookup's result, as its result
@@ -490,7 +585,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     concat()").
   - **The result** (`result`, Number when absent) decides how the value reads, sorts and exports:
     **Number** (grouped, up to two decimals, as a Number field), **Currency** (in the field's `currency`, as a
-    Currency field), **Percent** (a share, rounded to a whole number: `Spent / Budget * 100` reads "40%"; its
+    Currency field), **Duration** (a number of minutes, rounded to a whole minute and read as a Duration field reads:
+    `Estimate * 60` reads "5h"; below 0 reads "0m"), **Percent** (a share, rounded to a whole number: `Spent / Budget * 100` reads "40%"; its
     form offers **Show as Percent Bar**, as Children Done's does, and on it draws as a [Percent](#percent-fields)
     does, held to 0 to 100; picking another result turns it off),
     **Text**, **Date** (as a Date field) or **Checkbox** (Yes or No; any value tests true or false). A Number,
@@ -543,8 +639,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     - **Calculate** (`aggregate`): **Sum**, **Average**, **Min**, **Max** (of a number), **Count** (how many
       children), **Count Done** (how many are done, by the boards' rule), **Earliest** and **Latest** (of a date).
     - **Field** (`source`, by id): what Sum, Average, Min and Max read: a Number, Currency, Rating, Estimate or
-      Percent field (never Sum of a Percent: a sum of shares means nothing), or a Calculated field whose result is a
-      number, money or a share; what Earliest and Latest read: a Date, Start Date or Due Date field, or a Calculated
+      Percent field (never Sum of a Percent: a sum of shares means nothing), a [Duration](#duration-fields) field (a
+      Time Spent one too: the minutes its entries add up to), or a Calculated field whose result is a
+      number, money, a share or a duration; what Earliest and Latest read: a Date, Start Date or Due Date field, or a Calculated
       field whose result is a Date. Count and Count Done read none. The menu lists the fields of the card types
       that link here through the chosen field (any of them for All Linked Cards), each once, by name.
     - A child without the field, or with it empty, is skipped; so is a child whose own worked-out value is an error.
@@ -558,8 +655,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **The result** (`result`, as a Formula's, with `currency` beside a Currency one) is taken from what it reads
     when the field is set (the type editor and `change_card_types` write it), never picked: Count and Count Done
     give a **Number**, Earliest and Latest a **Date**, Sum, Average, Min and Max the field's kind (**Currency** in
-    the field's currency, **Percent**, else **Number**: a Rating and Estimate read as numbers). A Lookup gives its
-    field's kind: Number (Rating, Estimate and Number too), Currency, Percent, Date (Start and Due too),
+    the field's currency, **Percent**, **Duration** (Sum, Average, Min and Max of a Duration stay a Duration, "12h 30m",
+    an Average rounded to a whole minute), else **Number**: a Rating and Estimate read as numbers). A Lookup gives its
+    field's kind: Number (Rating, Estimate and Number too), Currency, Percent, Duration, Date (Start and Due too),
     Checkbox, a Calculated field's own result, and **Text** for everything else (a Person's name, a list joined by
     ", ", a Card field's "#12 Title"). Values are rounded as the result reads (money to the penny, a share to a
     whole number). A Percent result offers **Show as Percent Bar**, as a Formula's does.
@@ -594,7 +692,7 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
   - **Agents**: `change_card_types` takes `through` (a Card field by name, or "all" for a Rollup), `aggregate` (by
     id, `countDone`, or name, "Count Done") and `source` (a field by name) on `custom`, `addCustom` and
     `editCustom`, refusing a setting that does not fit with what would ("Total Points can't Sum Status: give a
-    Number, Currency, Rating, Estimate or Percent field."). `list_items` lists their `through` and `source` by name,
+    Number, Currency, Rating, Estimate, Duration or Percent field."). `list_items` lists their `through` and `source` by name,
     `aggregate` and `result`, and each card's value as a Formula's (a number, text, true or false, an ISO date, or
     null).
   - **Share roles**: as any field. An Editor sets a Rollup or Lookup up (the type editor); everyone who can read the
@@ -829,7 +927,7 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
         **score** Rating; **yes/no**, **tick**, **toggle** Checkbox; **parent**, **epic**, **relation** Link to
         Card; **percent**, **progress**, **complete** Percent; **formula**, **rollup** Calculated; **url**, **website** Link; **dropdown**,
         **select**, **option** Choice; **tags**, **multi-select** Multiple Choice and Labels; **notes**,
-        **paragraph** Long Text; **deadline**, **day** Date; **count**, **points** Number; **mail** Email;
+        **paragraph** Long Text; **deadline**, **day** Date; **count**, **points** Number; **time**, **hours**, **timer**, **tracking**, **billable** Duration; **mail** Email;
         **owner**, **reviewer**, **people** Person; **color**, **swatch** Colour; **to-do**, **subtasks** Checklist;
         **discussion**, **thread** Comments; **like**, **upvote** Votes; **picture**, **photo**, **screenshot**,
         **attachment**, **cover** Image, whose Ready to use offers Attachments). With nothing matching it says **No matches for “…”** with "Try a word like money, date or
@@ -839,7 +937,7 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
         **accordion**, one group open at a time (opening one closes the other; pressing the open one closes it; the
         first open to start): **Text & links** (Text "A short line of text", Long Text "Paragraphs of notes", Link
         "A web address", Email "An address that opens your mail app"), **Numbers & dates** (Number "Points, counts
-        and sizes", Currency "An amount, like £12,500", Percent "How far along, drawn as a bar", Rating "Stars out of 3 to 10", Date "A day on the
+        and sizes", Currency "An amount, like £12,500", Percent "How far along, drawn as a bar", Duration "Hours and minutes, or time tracked with a timer", Rating "Stars out of 3 to 10", Date "A day on the
         calendar"), **Choices** (Choice "One option from a list", Multiple Choice "Several options from a list",
         Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name"), **People & teamwork** (Person
         "Someone on the plan, like an owner or a reviewer", Checklist "To-dos ticked off one by one", Comments
@@ -877,14 +975,16 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
       1", "Option 2", … with a remove cross; one empty row to start), **Add an option** (a dashed row, "or paste a
       list" beside it), Enter in a row adding a row after it, Backspace in an empty row removing it, and pasting
       several lines into a row adding one option a line (blanks dropped, at most 20); for Rating **Scale** ("Out of
-      3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for
+      3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for Duration **Track Time** (a switch, off, its line
+      "A start/stop timer on the card, adding up everyone's time."; [Time Spent](#time-spent)); for
       Link to Card **Links To** its card types (at least one); for Calculated **Calculation** (the menu below, the
       first chosen; a Rollup's and a Lookup's own menus, [Rollup and Lookup](#rollup-and-lookup-fields)) and, for
       Children Done or a Formula, Rollup or Lookup with a Percent result, **Show as Percent Bar** (off); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes); then
       **Preview**: a small card as a board's card panel draws it, "Example card" over the field's row: its name as
       typed ("Field name" until then, with the required mark when Required) beside a sample value of its kind
       (Choice its first option, Multiple Choice its first two, Link to Card the linked types' names, "Project or
-      Epic", Rating stars out of its scale, Currency in its currency, Percent its bar at 40% and "40%", Calculated "3" or "40%" (the Percent bar when Show as Percent Bar is on), Person a person's
+      Epic", Rating stars out of its scale, Currency in its currency, Percent its bar at 40% and "40%", Duration "2h 30m" (with Track Time on, a Start
+      button beside it), Calculated "3" or "40%" (the Percent bar when Show as Percent Bar is on), Person a person's
       disc and name, Labels two label chips, Colour a swatch and its name, Checklist "2/5", Image a picture glyph and
       "photo.png", Votes "▲ 3"); updating as you
       type. Last, one full-width primary button **Add {Name}** ("Add {Kind} Field" until named), off until the

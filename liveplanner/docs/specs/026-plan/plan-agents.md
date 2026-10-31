@@ -189,16 +189,18 @@ Every write takes what a person would say, and stores the ids:
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
   - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
-    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, onCard?, required? }]`
-    (kinds `text`, `longtext`, `number`, `currency`, `percent`, `date`, `checkbox`, `link`, `email`, `choice`, `card`,
+    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, timeSpent?, onCard?, required? }]`
+    (kinds `text`, `longtext`, `number`, `currency`, `percent`, `duration`, `date`, `checkbox`, `link`, `email`, `choice`, `card`,
     `calculated`; a `currency` field's code, GBP when absent; a `calculated` field's `calculation`, `childCount`,
     `childrenDone`, `rollup`, `lookup` or `formula`, [Calculated fields](item-types.md#calculated-fields); a `rollup`'s
     `through` (a Card field by name, or "all"), `aggregate` and `source` (a field by name), and a `lookup`'s `through`
     and `source`, [Rollup and Lookup](item-types.md#rollup-and-lookup-fields), each refused with what would fit; a `formula` field's `formula`,
-    written with field names, and its `result`, `number`, `currency`, `percent`, `text`, `date` or `checkbox`,
+    written with field names, and its `result`, `number`, `currency`, `percent`, `duration`, `text`, `date` or `checkbox`,
     [Formula fields](item-types.md#formula-fields), a formula that can't be read refused with its problem; and
     `showAs: "percent"` to draw a Children Done or a Percent result as a [Percent](item-types.md#percent-fields) bar). A Currency value is written as a number, a Percent value as a whole
-    number from 0 to 100 (or text like "40%"; outside 0 to 100 is refused), an Email value as the address; `editCustom` also takes `currency`. A `card` field links to `linkTypes`, the card types it may point at
+    number from 0 to 100 (or text like "40%"; outside 0 to 100 is refused), a Duration value as text like "2h 30m",
+    "90m" or "1.5h" or a number of minutes ([Duration](item-types.md#duration-fields); `timeSpent: true` on a new
+    `duration` field makes it a [Time Spent](item-types.md#time-spent) field, which agents read but never write), an Email value as the address; `editCustom` also takes `currency`. A `card` field links to `linkTypes`, the card types it may point at
     by name or id (one or more), or to `linkType`, one; both given, they are merged, `linkType` first. Colour and glyph default
     as the type editor's Add Type does.
   - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,
@@ -266,7 +268,12 @@ its Default State, its display per size and its tabs, so a change can build on w
 `result`, and `formulaError` when it stopped working; a Rollup or Lookup its `through` and `source` by name, its
 `aggregate` and its `result`), and each card lists its worked-out value among its `fields`
 by the field's name (a count, a whole percentage, a Formula's, Rollup's or Lookup's number, text, true or false or ISO date, or null); `change_items` refuses giving one a value (`field_calculated`, "Progress is
-calculated: it can't be set") without writing that change.
+calculated: it can't be set") without writing that change. A Duration field lists `kind: "duration"` and each card's
+value as its text ("2h 30m"); a Time Spent field adds `timeSpent: true` and `readOnly: true`, its value is the card's
+total, and the card lists `time` by the field's name: its entries (`by`, `time` as text, `at` as an ISO time) and its
+running timers (`by`, `since`). Agents never start, stop or add time: `change_items` refuses a value for a Time Spent
+field ("Time Spent is tracked: people add time in the card panel"), since tracked time is a person's own record of
+their work.
 
 ## Comment threads
 

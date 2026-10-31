@@ -30,7 +30,7 @@ export const WIDGET_GROUPS: readonly {
   {
     title: 'Track Progress',
     line: 'See how the work is going at a glance.',
-    kinds: ['count', 'progress', 'points', 'due', 'top-voted'],
+    kinds: ['count', 'progress', 'points', 'time', 'due', 'top-voted'],
   },
   {
     title: 'Keep It Healthy',

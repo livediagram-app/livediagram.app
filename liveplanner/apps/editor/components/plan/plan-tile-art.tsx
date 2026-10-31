@@ -220,6 +220,13 @@ const WIDGET_ART: Record<BoardWidgetKind, React.ReactNode> = {
   ),
   // A stack of points rising.
   points: <path d="M3 18h16M5 18v-4M9.5 18V10M14 18v-6M18.5 18V5" />,
+  // A stopwatch: time on the board.
+  time: (
+    <>
+      <circle cx="11" cy="12.5" r="6.5" />
+      <path d="M11 9v3.5l2.25 1.5M9 3.5h4M11 3.5V6" />
+    </>
+  ),
   // Three flags, tallest first.
   priorities: <path d="M5 18V5h7l-1.5 2.5L12 10H5M14 18V9" />,
   // A person with a question: nobody yet.

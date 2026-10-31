@@ -4,6 +4,7 @@
 
 import { linkText } from './card-links';
 import { percentText, percentValue } from './percent-fields';
+import { durationMinutes, durationText } from './duration-fields';
 import { CURRENCY_DEFAULT, ratingScaleOf, type CustomFieldDef } from './item-types';
 import type { Item, ItemFieldValue } from './item';
 import { itemColourValue } from './item-colour';
@@ -67,6 +68,11 @@ export function customFieldText(
     case 'percent': {
       const n = percentValue(value);
       return n === undefined ? null : percentText(n);
+    }
+    // "2h 30m"; a Time Spent field its total (docs/specs/026-plan/item-types.md "Duration").
+    case 'duration': {
+      const m = durationMinutes(field, value);
+      return m === undefined ? null : durationText(m);
     }
     case 'email':
       return typeof value === 'string' ? value : null;

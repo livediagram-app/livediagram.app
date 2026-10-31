@@ -59,6 +59,7 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   number: 'Number',
   currency: 'Currency',
   percent: 'Percent',
+  duration: 'Duration',
   date: 'Date',
   checkbox: 'Checkbox',
   link: 'Link',
@@ -230,10 +231,11 @@ export function RequiredSwitch({
   field,
   onChange,
 }: {
-  field: Pick<CustomFieldDef, 'kind' | 'required'>;
+  field: Pick<CustomFieldDef, 'kind' | 'required'> & Partial<Pick<CustomFieldDef, 'timeSpent'>>;
   onChange: (required: boolean | undefined) => void;
 }) {
-  if (!canBeRequired(field.kind)) return null;
+  // A Time Spent field's entries are recorded, never typed in (docs/specs/026-plan/item-types.md "Required fields").
+  if (!canBeRequired(field.kind) || field.timeSpent) return null;
   return (
     <SwitchRow
       checked={field.required === true}
@@ -249,6 +251,43 @@ export function RequiredSwitch({
 // Show as Percent Bar (docs/specs/026-plan/item-types.md "Percent"): a switch on a worked-out share (a Children Done),
 // with its line under it; none for a field whose result is no share. Off is stored as absent.
 export const SHOW_AS_PERCENT_LINE = 'Draw the share as a bar, like a Percent field.';
+// A Duration field's Track Time switch (docs/specs/026-plan/item-types.md "Time Spent"): set when the field is made
+// (Add Field's Shape step), shown fixed in an existing field's form, as a kind is.
+export const TRACK_TIME_LINE = 'A start/stop timer on the card, adding up everyone’s time.';
+export function TrackTimeSwitch({
+  field,
+  onChange,
+  fixed = false,
+}: {
+  field: Pick<CustomFieldDef, 'kind'> & Partial<Pick<CustomFieldDef, 'timeSpent'>>;
+  onChange?: (patch: Pick<CustomFieldDef, 'timeSpent' | 'required'>) => void;
+  // An existing field: the switch shows how it was made and can't change.
+  fixed?: boolean;
+}) {
+  const lineId = useId();
+  if (field.kind !== 'duration') return null;
+  const on = field.timeSpent === true;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={on}
+        disabled={fixed}
+        aria-describedby={lineId}
+        onChange={() =>
+          onChange?.(on ? { timeSpent: undefined } : { timeSpent: true, required: undefined })
+        }
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 enabled:hover:bg-slate-100 dark:text-slate-200 dark:enabled:hover:bg-slate-800"
+      >
+        Track Time
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {fixed ? `${TRACK_TIME_LINE} Set when the field is made.` : TRACK_TIME_LINE}
+      </p>
+    </div>
+  );
+}
+
 export function ShowAsPercentSwitch({
   field,
   onChange,
@@ -421,6 +460,7 @@ export function CustomFieldForm({
         <RollupEditor field={field} draft={formulaDraft} onChange={onChange} />
       ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
+      <TrackTimeSwitch field={field} fixed />
       {hasOptions(field.kind) ? (
         <TextArea
           aria-label="Options, one a line"

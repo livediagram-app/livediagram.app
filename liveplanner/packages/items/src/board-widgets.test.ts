@@ -16,7 +16,7 @@ describe('board widgets', () => {
     expect(readBoardWidgets(['filter', 'nope', 'count', 'filter', 3])).toEqual(['filter', 'count']);
     expect(readBoardWidgets('count')).toBeUndefined();
     expect(isBoardWidgetKind('due')).toBe(true);
-    expect(BOARD_WIDGET_KINDS).toHaveLength(14);
+    expect(BOARD_WIDGET_KINDS).toHaveLength(15);
   });
 
   it('shows the default set on a board that names none, and reads a stored Votes Left past', () => {

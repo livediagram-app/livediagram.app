@@ -464,7 +464,7 @@ describe('settings', () => {
     expect(aggregateFits('sum', { reads: 'text' })).toBe(false);
     expect(aggregateFits('count', { reads: 'number' })).toBe(false);
     expect(aggregateFits('earliest', { reads: 'date' })).toBe(true);
-    expect(aggregateNeeds('sum')).toMatch(/Number, Currency, Rating or Estimate/);
+    expect(aggregateNeeds('sum')).toMatch(/Number, Currency, Rating, Estimate or Duration/);
     expect(aggregateNeeds('min')).toMatch(/Percent/);
     expect(aggregateNeeds('latest')).toMatch(/Date/);
     expect(isAggregate('countDone')).toBe(true);
@@ -877,7 +877,7 @@ describe('the catalogue and agents', () => {
     expect(refused({ calculation: 'rollup', aggregate: 'sum', source: 'title' })).toMatchObject({
       ok: false,
       message: expect.stringMatching(
-        /"N" can't Sum "title": give a Number, Currency, Rating or Estimate field/,
+        /"N" can't Sum "title": give a Number, Currency, Rating, Estimate or Duration field/,
       ),
     });
     expect(refused({ calculation: 'rollup', aggregate: 'sum' })).toMatchObject({

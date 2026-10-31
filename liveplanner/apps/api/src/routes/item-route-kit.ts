@@ -9,6 +9,7 @@ import {
   tabShowsEveryCard,
   itemPersonId,
   calculatedWritten,
+  timeSpentWritten,
   requiredClearedBy,
   statusExcluded,
   typesOf,
@@ -76,6 +77,16 @@ export function calculatedSet(
   undo = false,
 ): string | null {
   return undo ? null : calculatedWritten(typesOf(caller.doc?.itemTypes), next, before);
+}
+
+// A Time Spent field a card write sets, clears or changes (docs/specs/026-plan/item-types.md "Time Spent"): its id, or
+// null. Its entries change only through time writes (item-time-route.ts), an undo's included.
+export function timeTracked(
+  caller: ItemCaller,
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Item,
+): string | null {
+  return timeSpentWritten(typesOf(caller.doc?.itemTypes), next, before);
 }
 
 // A required custom field the change empties (docs/specs/026-plan/item-types.md "Required fields"): its id, or null.

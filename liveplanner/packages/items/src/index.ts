@@ -91,6 +91,8 @@ export {
 } from './formula/references';
 export { FUNCTION_NAMES, type FunctionName } from './formula/functions';
 export * from './percent-fields';
+export * from './duration-fields';
+export * from './time-tracking';
 export * from './view-fields';
 export * from './attachments';
 export * from './label-usage';

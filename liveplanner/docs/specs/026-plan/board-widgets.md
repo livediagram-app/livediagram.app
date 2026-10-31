@@ -47,6 +47,14 @@ header; they are not in the palette.
   every card is done and 0% only when none is: 199 of 200 is 99%, 1 of 300 is 1%. Points counts points, not cards,
   so it reads 100% once every point is done (an unestimated card left open counts for nothing); a dashboard Sheet
   Metric's goal percent reads 100% only once its target is met.
+- <a id="time"></a>**Time** (beside Points) adds up the board's hours: each card's
+  [Duration](item-types.md#duration-fields) field, its type's first **Time Spent** field (the time tracked,
+  [Time Spent](item-types.md#time-spent)), else its type's first Duration field, read as its minutes and written as a
+  Duration ("14h 30m", led by a clock). A card without one counts for nothing. While timers run on the board's cards
+  it adds a green dot and how many ("2 running"), the dot pulsing (still with reduced motion). With no card holding a
+  value it reads **No time yet**. Its accessible name says it whole ("14 hours 30 minutes tracked, 2 timers
+  running"). Running timers join the total when they stop. Its gallery line: "Hours on the board's cards, and the
+  timers running now."
 - **Not done** means a card in a column that does not count as done ([Done columns](plan-board.md#done-columns)).
   Due Soon's overdue and due-soon counts, Stale Cards and their dashboard tiles count only those, and Due Soon's
   narrowing shows only those: a card in Done, Won't Do or any other done column is never overdue or stale. A board
@@ -84,7 +92,7 @@ line:
 | Section         | Line                                                | Widgets                                                       |
 | --------------- | --------------------------------------------------- | ------------------------------------------------------------- |
 | Focus the Board | Narrow the cards to the ones that matter right now. | Filter, Only Mine, People, Priorities, Card Types, Unassigned |
-| Track Progress  | See how the work is going at a glance.              | Item Count, Completion, Points, Due Soon, Top Voted           |
+| Track Progress  | See how the work is going at a glance.              | Item Count, Completion, Points, Time, Due Soon, Top Voted     |
 | Keep It Healthy | Catch what is stuck, overloaded or off the board.   | WIP Alerts, Stale Cards, Not on Board                         |
 
 - Each widget is a **card** two to a row: a strip on top drawing the widget **live**, from this board's own cards in

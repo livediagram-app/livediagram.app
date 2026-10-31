@@ -831,6 +831,31 @@ export const PLAN_CARD_STYLES = chart(
   { types: ['DashboardCardStyle'] },
 );
 
+// Time Spent fields (docs/specs/026-plan/item-types.md "Time Spent"): timers run on cards and time added by hand.
+export const PLAN_TIMERS_STARTED = chart(
+  'Plan',
+  'Started',
+  'Card Timers Started',
+  'A timer started on a card’s Time Spent field. Read against Card Timers Stopped to see how many get discarded.',
+  { types: ['Timer'] },
+);
+
+export const PLAN_TIMERS_STOPPED = chart(
+  'Plan',
+  'Ended',
+  'Card Timers Stopped',
+  'A card’s timer stopped, recording its time as an entry (one stopped in under half a minute records nothing).',
+  { types: ['Timer'] },
+);
+
+export const PLAN_TIME_ENTRIES = chart(
+  'Plan',
+  'Added',
+  'Time Added by Hand',
+  'Time someone worked typed into a card’s Time Spent field with Add Time, rather than timed.',
+  { types: ['TimeEntry'] },
+);
+
 export const SHEET_CHANGES = chart(
   'Sheet',
   'Changed',
@@ -1063,6 +1088,9 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_CALENDAR_MOVES,
   PLAN_VIEW_STATUSES,
   PLAN_CARD_STYLES,
+  PLAN_TIMERS_STARTED,
+  PLAN_TIMERS_STOPPED,
+  PLAN_TIME_ENTRIES,
   PLAN_CARD_TYPES_DUPLICATED,
   PLAN_REVEALED,
   PLAN_CSV_IMPORTED,
@@ -1074,9 +1102,13 @@ export const PLAN_BOARDS: MetricStack = {
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
-  // Calendar moves, chart statuses and card styles are slices of Boards Set Up (every Plan·Changed), so the head
-  // counts them once.
+  // Calendar moves, chart statuses and card styles are slices of Boards Set Up (every Plan·Changed), and time added
+  // by hand a slice of Items Added (every Plan·Added), so the head counts them once.
   headline: PLAN_BOARDS_MEMBERS.filter(
-    (m) => m !== PLAN_CALENDAR_MOVES && m !== PLAN_VIEW_STATUSES && m !== PLAN_CARD_STYLES,
+    (m) =>
+      m !== PLAN_CALENDAR_MOVES &&
+      m !== PLAN_VIEW_STATUSES &&
+      m !== PLAN_CARD_STYLES &&
+      m !== PLAN_TIME_ENTRIES,
   ),
 };

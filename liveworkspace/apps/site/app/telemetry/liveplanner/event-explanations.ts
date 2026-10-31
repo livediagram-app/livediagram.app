@@ -696,6 +696,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
   'Sheet|Searched|Function':
     'Someone searched the functions a Sheet formula can use, from the toolbar’s function picker.',
+  'Plan|Started|Timer': 'Someone started a timer on a card’s Time Spent field.',
+  'Plan|Ended|Timer':
+    'Someone stopped a timer on a card’s Time Spent field, recording its time as an entry.',
+  'Plan|Added|TimeEntry':
+    'Someone added time they worked to a card’s Time Spent field by hand (Add Time).',
   'Plan|Linked|LinkedCard':
     'Someone linked an existing card to this one from a Linked as section (Link Existing).',
   'Plan|Linked|LinkedCardMoved':
@@ -2438,6 +2443,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Moved':
     'Someone moved a card on a Plan board to another column, row or place, or archived it (Archive).',
   'Plan|Restored': 'Someone brought an archived card back onto the boards.',
+  'Plan|Started': 'Someone started something running on a plan, like a card’s timer.',
+  'Plan|Ended': 'Someone stopped something running on a plan, like a card’s timer.',
   'Plan|Removed': 'Someone took a filter off a Card Search view.',
   'Plan|Toggled':
     'Someone flagged a card for attention or took its flag off, or maximised a board, view or sheet or restored it (the value says which).',

@@ -13,6 +13,8 @@ import {
   itemTitle,
   todayNumber,
   typeIn,
+  durationSpoken,
+  durationText,
   type BoardProjection,
   type BoardWidgetKind,
   type Item,
@@ -31,6 +33,7 @@ import {
   DUE_SOON_DAYS,
   STALE_DAYS,
   boardPoints,
+  boardTime,
   priorityCounts,
   staleCount,
   topVoted,
@@ -43,6 +46,7 @@ import {
 } from '@liveplanner/plan-art';
 import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
 import { CountBadge } from '@liveplanner/ui';
+import { RunningDot } from '../time/TimerReadouts';
 
 const PEOPLE_SHOWN = 5;
 const TYPES_SHOWN = 3;
@@ -521,6 +525,34 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
             {done}/{total}
           </strong>
           pts
+        </span>
+      );
+    }
+    // Hours on the board's cards, and the timers running now (docs/specs/026-plan/board-widgets.md "Time").
+    case 'time': {
+      const { minutes, counted, running } = boardTime(ctx.items, ctx.types);
+      if (counted === 0 && running === 0)
+        return (
+          <span className={WIDGET_PILL} style={pill}>
+            <Lead kind="time" color={palette.muted} />
+            No time yet
+          </span>
+        );
+      const spoken = `${durationSpoken(minutes)} tracked${
+        running ? `, ${running} ${running === 1 ? 'timer' : 'timers'} running` : ''
+      }`;
+      return (
+        <span className={WIDGET_PILL} style={pill} role="img" aria-label={spoken}>
+          <Lead kind="time" color={palette.text} />
+          <strong className="font-semibold tabular-nums" style={{ color: palette.text }}>
+            {durationText(minutes)}
+          </strong>
+          {running ? (
+            <span className="inline-flex items-center gap-1">
+              <RunningDot />
+              {running} running
+            </span>
+          ) : null}
         </span>
       );
     }

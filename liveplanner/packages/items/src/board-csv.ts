@@ -5,7 +5,7 @@ import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSet
 import { builtInFieldOf } from './card-source';
 import { customFieldText } from './card-text';
 import { itemColourValue } from './item-colour';
-import { hasResult } from './calculated-result';
+import { calculatedResultOf, hasResult } from './calculated-result';
 import { calculatedReaderOf, type IsDoneStatus } from './calculated-fields';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
@@ -29,6 +29,7 @@ import {
 import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogue';
 import { missingRequiredFields } from './required-fields';
 import { parsePercent } from './percent-fields';
+import { durationText, isTimeSpent, parseDuration } from './duration-fields';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
 const BOARD_CSV_FIELDS = [
@@ -135,7 +136,13 @@ export function boardCsvRows(
           const f = customByLabel(type, label);
           if (!f) return '';
           // A worked-out value, written as its result kind's field would be ("2500", "2026-10-31").
-          if (f.kind === 'calculated') return cellOf(calculated(f, item));
+          if (f.kind === 'calculated') {
+            const v = calculated(f, item);
+            // A Duration result as a Duration field writes it ("2h 30m").
+            return calculatedResultOf(f) === 'duration' && typeof v === 'number'
+              ? durationText(v)
+              : cellOf(v);
+          }
           // Every linked card's title, and every person's name, of a field that holds several, joined by ", "
           // (item-types.md "Holds Several").
           if (f.kind === 'card')
@@ -149,7 +156,8 @@ export function boardCsvRows(
               .map((p) => p.name)
               .join(', ');
           // A Checklist reads as its progress ("2/5") and a Votes field as its total, as the card shows them.
-          if (f.kind === 'checklist' || f.kind === 'votes')
+          // A Duration as it reads ("2h 30m"), a Time Spent field its total (item-types.md "Duration").
+          if (f.kind === 'checklist' || f.kind === 'votes' || f.kind === 'duration')
             return customFieldText(f, item.fields[f.id]) ?? '';
           // An option may hold a comma, so a Multiple Choice's picks are kept apart by semicolons.
           if (f.kind === 'multichoice') {
@@ -255,6 +263,9 @@ function customValue(
     // "40" or "40%", rounded; a cell outside 0 to 100 is skipped, as a Rating out of its scale is.
     case 'percent':
       return parsePercent(text);
+    // "2h 30m", "90m", "1.5h", "2:30" or minutes; a Time Spent field's entries are tracked, never read from a file.
+    case 'duration':
+      return isTimeSpent(f) ? undefined : parseDuration(text);
     // An amount, as the card stores it: a number of up to two decimals, "£12,500" read as 12500.
     case 'currency': {
       const n = Number(text.replace(/[^\d.-]/g, ''));

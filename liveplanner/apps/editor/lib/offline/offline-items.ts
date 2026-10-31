@@ -41,7 +41,7 @@ export async function offlineFetchItems(projectId: string): Promise<ItemStoreSta
   return recordItemStore(await offlineGetRecord(projectId));
 }
 
-const STATUS = { item_not_found: 404, item_exists: 409, items_full: 413 } as const;
+const STATUS = { item_not_found: 404, item_exists: 409, items_full: 413, time_full: 400 } as const;
 
 // A write the api's checks refuse: the 400 the api answers, by the same name.
 function refused(error: string): ApiError {

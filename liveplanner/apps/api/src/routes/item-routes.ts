@@ -56,6 +56,7 @@ import {
 } from './card-thread-cards';
 import {
   calculatedSet,
+  timeTracked,
   clearedRequired,
   excludedStatus,
   forCaller,
@@ -75,6 +76,7 @@ import { historyTagOf, itemHistory } from './item-history-route';
 import { appendItemHistory } from '../db/item-history';
 import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
+import { trackTime } from './item-time-route';
 import { readBody, type PlanRouteContext } from './context';
 
 // A create as read, with the threads it puts the card back on (a restore), each checked as one.
@@ -258,6 +260,9 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   // A Calculated field is worked out, never given (docs/specs/026-plan/item-types.md "Calculated fields").
   const calculated = restores ? null : calculatedSet(caller, read);
   if (calculated) return rejected('field_calculated', calculated);
+  // A Time Spent field's entries come only with a card put back (docs/specs/026-plan/item-types.md "Time Spent").
+  const timed = restores ? null : timeTracked(caller, read);
+  if (timed) return rejected('field_time_tracked', timed);
   // A create naming no status takes its type's Default State (docs/specs/026-plan/item-types.md "An item type");
   // the project is already read for the caller, so this costs no query.
   const types = typesOf(caller.doc?.itemTypes);
@@ -299,6 +304,8 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     restoring ||= restores;
     const calculated = restores ? null : calculatedSet(caller, input);
     if (calculated) return rejected('field_calculated', calculated);
+    const timed = restores ? null : timeTracked(caller, input);
+    if (timed) return rejected('field_time_tracked', timed);
     // A new card missing a required field; a card carried across (a sync, a restore: its number) passes.
     const missing = createRefusal(types, input);
     if (missing) return rejected(missing.error, missing.field);
@@ -341,6 +348,8 @@ export async function writeItem(
       return rejected('status_excluded', 'status');
     const calculated = calculatedSet(caller, next, item, opts.undo === true);
     if (calculated) return rejected('field_calculated', calculated);
+    const timed = timeTracked(caller, next, item);
+    if (timed) return rejected('field_time_tracked', timed);
     const cleared = clearedRequired(caller, next, item, opts.undo === true);
     if (cleared) return rejected('field_required', cleared);
     if (retiresItem(item, next) && !(await isItemEditor(ctx, caller))) return forbidden();
@@ -441,6 +450,9 @@ export async function handleItemRoutes(ctx: PlanRouteContext): Promise<Response 
   // The card's history (docs/specs/026-plan/items.md "History"), read when its panel opens.
   if (segments.length === 6 && segments[5] === 'history')
     return itemHistory(ctx, projectId, itemId);
+  // A time write to a Time Spent field (docs/specs/026-plan/item-types.md "Time Spent").
+  if (segments.length === 6 && segments[5] === 'time')
+    return method === 'POST' ? trackTime(ctx, projectId, itemId) : methodNotAllowed();
   if (segments.length === 6 && segments[5] === 'threads')
     return method === 'POST' ? startOnCard(ctx, projectId, itemId) : methodNotAllowed();
   // A card is voted on through the tab's session vote, its tally added at the end (`/items/tally`); the old

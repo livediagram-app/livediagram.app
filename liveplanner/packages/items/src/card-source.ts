@@ -6,6 +6,7 @@ import type { Item } from './item';
 import type { ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
 import { hasResult } from './calculated-result';
+import { durationMinutes } from './duration-fields';
 import { calculatedReaderOf, type CalculatedRead, type IsDoneStatus } from './calculated-fields';
 
 type Scalar = string | number | boolean | null;
@@ -124,6 +125,8 @@ export function cardSourceOf(
         return asScalar(calculated(def, item));
       }
       const v = item.fields[id];
+      // A Duration as its whole minutes, a Time Spent field as its total (item-types.md "Duration").
+      if (def?.kind === 'duration') return durationMinutes(def, v) ?? null;
       if (id === 'status')
         return typeof v === 'string' && v ? statusLabel(v, opts.statusNames) : null;
       return asScalar(v);

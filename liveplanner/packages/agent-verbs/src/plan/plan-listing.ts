@@ -22,6 +22,7 @@ import {
   typeStatusesOf,
   typeCardLayout,
   type Item,
+  type ItemFieldValue,
   type ItemTypeDef,
   type PlanStatusName,
   type PlanBoardOutline,
@@ -48,6 +49,11 @@ import {
   calculatedResultOf,
   readableFieldsOf,
   rollupProblem,
+  durationMinutes,
+  durationText,
+  isTimeSpent,
+  readTimeValue,
+  timePerson,
   type CalculatedValue,
   type CustomFieldDef,
 } from '@liveplanner/items';
@@ -85,6 +91,41 @@ interface ListedItem {
   column: string | null;
   title: string;
   fields: Record<string, unknown>;
+  // Each Time Spent field's entries and running timers, by the field's name (docs/specs/026-plan/item-types.md "Time
+  // Spent"); only on a card with any.
+  time?: Record<string, ListedTime>;
+}
+
+// A Time Spent field's time as agents read it: who by name, the time as text, when as ISO times.
+interface ListedTime {
+  entries: { by: string; time: string; at: string }[];
+  running: { by: string; since: string }[];
+}
+
+// A card's Time Spent fields with any time, by name; undefined when none has.
+function listedTime(
+  item: Item,
+  type: ItemTypeDef | undefined,
+): Record<string, ListedTime> | undefined {
+  let out: Record<string, ListedTime> | undefined;
+  for (const f of type?.custom ?? []) {
+    if (!isTimeSpent(f) || !type!.fields.includes(f.id)) continue;
+    const value = readTimeValue(item.fields[f.id]);
+    if (value.entries.length === 0 && value.running.length === 0) continue;
+    const name = (id: string) => timePerson(value, id).name;
+    (out ??= {})[f.label] = {
+      entries: value.entries.map((e) => ({
+        by: name(e.by),
+        time: durationText(e.minutes),
+        at: new Date(e.at).toISOString(),
+      })),
+      running: value.running.map((r) => ({
+        by: name(r.by),
+        since: new Date(r.start).toISOString(),
+      })),
+    };
+  }
+  return out;
 }
 
 export interface ListedType {
@@ -120,6 +161,8 @@ export interface ListedType {
     error?: string;
     // A share drawn as a Percent field is (docs/specs/026-plan/item-types.md "Percent").
     showAs?: 'percent';
+    // A Duration field that tracks time, read-only to agents (docs/specs/026-plan/item-types.md "Time Spent").
+    timeSpent?: true;
     readOnly?: true;
     onCard?: boolean;
     // A card of the type must have a value for it (docs/specs/026-plan/item-types.md "Required fields").
@@ -284,8 +327,15 @@ function listedValue(
       .join(', ');
   if ((key === PARENT_FIELD_ID || field?.kind === 'card') && typeof value === 'string')
     return linkText(value);
+  // "2h 30m"; a Time Spent field its total (docs/specs/026-plan/item-types.md "Duration").
+  if (field?.kind === 'duration') {
+    const m = durationMinutes(field, value as ItemFieldValue);
+    return m === undefined ? null : durationText(m);
+  }
   return value;
 }
+
+const withTime = (time: Record<string, ListedTime> | undefined) => (time ? { time } : {});
 
 // A card type as list_items answers it: everything change_card_types sets, by the names it takes. Its Default
 // State by column name when `statuses` has it.
@@ -315,7 +365,8 @@ export function listedType(
       ...(isFormulaField(f) ? listedFormula(f, t) : {}),
       ...(isRollupField(f) || isLookupField(f) ? listedRollup(f, t, types) : {}),
       ...(f.kind === 'calculated' && showsAsPercent(f) ? { showAs: 'percent' as const } : {}),
-      ...(f.kind === 'calculated' ? { readOnly: true as const } : {}),
+      ...(isTimeSpent(f) ? { timeSpent: true as const } : {}),
+      ...(f.kind === 'calculated' || isTimeSpent(f) ? { readOnly: true as const } : {}),
       ...(f.onCard ? { onCard: true } : {}),
       ...(f.required ? { required: true } : {}),
       ...(f.notifies ? { notifies: true } : {}),
@@ -413,6 +464,12 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
               plan.types,
             )
           : undefined,
+      ),
+      ...withTime(
+        listedTime(
+          i,
+          plan.types.find((t) => t.id === i.type),
+        ),
       ),
     }));
   return {

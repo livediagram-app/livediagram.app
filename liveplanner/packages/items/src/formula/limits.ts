@@ -17,6 +17,8 @@ export const FORMULA_RESULTS = [
   'number',
   'currency',
   'percent',
+  // Whole minutes, read as a Duration field reads ("2h 30m"; docs/specs/026-plan/item-types.md "Duration").
+  'duration',
   'text',
   'date',
   'checkbox',
@@ -28,6 +30,7 @@ export const FORMULA_RESULT_LABELS: Readonly<Record<FormulaResult, string>> = {
   number: 'Number',
   currency: 'Currency',
   percent: 'Percent',
+  duration: 'Duration',
   text: 'Text',
   date: 'Date',
   checkbox: 'Checkbox',

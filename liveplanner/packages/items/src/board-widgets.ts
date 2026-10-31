@@ -14,6 +14,8 @@ export const BOARD_WIDGET_KINDS = [
   'wip',
   'due',
   'points',
+  // Hours on the board's cards, and the timers running (docs/specs/026-plan/board-widgets.md "Time").
+  'time',
   'priorities',
   'unassigned',
   'top-voted',
