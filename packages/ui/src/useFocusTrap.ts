@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 
 // Keep keyboard focus inside an open modal and hand it back when the modal
 // closes. Spread the returned ref onto the dialog container (which needs
@@ -44,6 +44,17 @@ export function useFocusTrap(
   active = true,
   initial: FocusTrapInitial = 'first',
 ): void {
+  // What had focus as the modal began to open, read while it renders: by the time the effect below runs, a field
+  // with `autoFocus` has already taken focus inside the modal, so what the effect reads is that field, gone with
+  // the modal when it closes. Focus then goes back to this instead.
+  const focusedNow = () => (typeof document === 'undefined' ? null : document.activeElement);
+  const [opener, setOpener] = useState<Element | null>(() => (active ? focusedNow() : null));
+  const [wasActive, setWasActive] = useState(active);
+  if (active !== wasActive) {
+    setWasActive(active);
+    if (active) setOpener(focusedNow());
+  }
+
   useEffect(() => {
     if (!active) return;
     const node = ref.current;
@@ -100,9 +111,14 @@ export function useFocusTrap(
       // Never yank focus away from somewhere the user has since clicked.
       const now = document.activeElement;
       const lost = now === null || now === document.body;
-      if ((lost || node.contains(now)) && previouslyFocused?.isConnected) {
-        previouslyFocused.focus?.({ preventScroll: true });
+      // What had focus when the effect ran, while it is still on the page; else (an autoFocus field, gone with the
+      // modal) what had it as the modal opened.
+      const back = previouslyFocused?.isConnected
+        ? previouslyFocused
+        : (opener as HTMLElement | null);
+      if ((lost || node.contains(now)) && back?.isConnected) {
+        back.focus?.({ preventScroll: true });
       }
     };
-  }, [ref, active, initial]);
+  }, [ref, active, initial, opener]);
 }

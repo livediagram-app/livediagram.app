@@ -130,6 +130,39 @@ describe('useFocusTrap', () => {
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
   });
 
+  it('gives focus back to the opener when an autoFocus field took it as the modal opened', () => {
+    function AutoModal({ onClose }: { onClose: () => void }) {
+      const ref = useRef<HTMLDivElement>(null);
+      useFocusTrap(ref);
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          <input aria-label="Title" autoFocus />
+          <button type="button" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      );
+    }
+    function AutoPage() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Edit
+          </button>
+          {open ? <AutoModal onClose={() => setOpen(false)} /> : null}
+        </>
+      );
+    }
+    render(<AutoPage />);
+    const trigger = screen.getByRole('button', { name: 'Edit' });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it('focuses the dialog itself on a touch screen, not its first control', () => {
     stubCoarsePointer();
     render(<Page />);
