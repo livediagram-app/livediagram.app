@@ -28,7 +28,7 @@ beforeEach(() => {
   tokens = [TOKEN];
   vi.stubGlobal(
     'fetch',
-    vi.fn((url: string, init?: RequestInit) => {
+    vi.fn((_url: string, init?: RequestInit) => {
       if (init?.method === 'POST')
         return json(201, { ...TOKEN, id: 't2', name: 'New', secret: 'lwt_secret' });
       if (init?.method === 'DELETE') {
