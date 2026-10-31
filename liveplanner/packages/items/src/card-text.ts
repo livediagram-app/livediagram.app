@@ -7,6 +7,7 @@ import { percentText, percentValue } from './percent-fields';
 import { CURRENCY_DEFAULT, ratingScaleOf, type CustomFieldDef } from './item-types';
 import type { Item, ItemFieldValue } from './item';
 import { itemColourValue } from './item-colour';
+import { fieldCardIds, fieldPeople } from './several-values';
 
 const FORMATS = {
   // A board card, where room is tight: "30 Oct".
@@ -69,15 +70,22 @@ export function customFieldText(
     }
     case 'email':
       return typeof value === 'string' ? value : null;
-    case 'card':
-      return linkText(items, value);
+    // Every linked card or person of a field that holds several, joined (item-types.md "Holds Several").
+    case 'card': {
+      const ids = fieldCardIds(field, value);
+      return ids.length ? ids.map((id) => linkText(items, id)).join(', ') : null;
+    }
     case 'multichoice':
       return multiChoiceText(value);
     case 'rating':
       return ratingText(value, ratingScaleOf(field));
     // The built-in fields' kinds read as those fields do (docs/specs/026-plan/item-types.md "Custom field kinds").
-    case 'person':
-      return personName(value);
+    case 'person': {
+      const names = fieldPeople(field, value)
+        .map((p) => personName(p))
+        .filter(Boolean);
+      return names.length ? names.join(', ') : null;
+    }
     case 'labels':
       return multiChoiceText(value);
     case 'colour':

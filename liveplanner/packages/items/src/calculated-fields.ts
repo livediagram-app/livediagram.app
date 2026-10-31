@@ -12,6 +12,7 @@ import {
   type ItemTypeDef,
 } from './item-types';
 import type { PlanBoardOutline } from './plan-outline';
+import { linkedCardIds } from './several-values';
 
 export const CALCULATION_LABELS: Readonly<Record<Calculation, string>> = {
   childCount: 'Child Count',
@@ -42,24 +43,25 @@ interface ChildLink {
 export type ChildIndex = ReadonlyMap<string, readonly ChildLink[]>;
 
 export function childIndexOf(items: Iterable<Item>, types: readonly ItemTypeDef[]): ChildIndex {
-  const cardFields = new Map<string, { id: string; linkTypes: readonly string[] }[]>();
+  const cardFields = new Map<string, { def: CustomFieldDef; linkTypes: readonly string[] }[]>();
   for (const t of types) {
     const fields = (t.custom ?? [])
       .filter((c) => c.kind === 'card' && t.fields.includes(c.id))
-      .map((c) => ({ id: c.id, linkTypes: linkTypesOf(c) }));
+      .map((def) => ({ def, linkTypes: linkTypesOf(def) }));
     if (fields.length) cardFields.set(t.id, fields);
   }
   const out = new Map<string, ChildLink[]>();
   for (const it of items) {
     const fields = cardFields.get(it.type);
     if (!fields || isTrashed(it)) continue;
-    for (const f of fields) {
-      const to = it.fields[f.id];
-      if (typeof to !== 'string' || !to || to === it.id) continue;
-      let list = out.get(to);
-      if (!list) out.set(to, (list = []));
-      list.push({ item: it, linkTypes: f.linkTypes });
-    }
+    // Every card a field links to, each of a list's for a field that holds several (item-types.md "Holds Several").
+    for (const f of fields)
+      for (const to of linkedCardIds(it, f.def)) {
+        if (to === it.id) continue;
+        let list = out.get(to);
+        if (!list) out.set(to, (list = []));
+        list.push({ item: it, linkTypes: f.linkTypes });
+      }
   }
   return out;
 }

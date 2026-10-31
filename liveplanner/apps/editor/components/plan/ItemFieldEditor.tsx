@@ -11,6 +11,7 @@ import {
   customFieldOf,
   isBuiltInFieldId,
   linkCandidates,
+  holdsSeveral,
   linkTypesOf,
   requiredFieldEmptied,
   richFieldOf,
@@ -123,6 +124,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         disabled={disabled}
         onSave={save}
         onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
+        multiple={holdsSeveral(custom)}
       />
     );
   }
@@ -238,6 +240,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           disabled={disabled}
           onSave={save}
           {...(custom ? { label: custom.label } : {})}
+          multiple={holdsSeveral(custom)}
         />
       );
     case 'priority':

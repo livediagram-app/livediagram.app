@@ -9,6 +9,7 @@ import {
   CUSTOM_FIELD_LABEL_MAX,
   canBeRequired,
   canShowAsPercent,
+  holdsSeveralKind,
   linkTypesOf,
   withLinkTypes,
   type CustomFieldDef,
@@ -27,6 +28,7 @@ import {
   calculationPatch,
   ShowAsPercentSwitch,
   CurrencySelect,
+  HoldsSeveralSwitch,
   NotifiesSwitch,
   RatingScaleSelect,
   RequiredSwitch,
@@ -50,6 +52,7 @@ export function addedField(field: NewField): NewField {
     ...(field.showAs === 'percent' && canShowAsPercent(field) ? {} : { showAs: undefined }),
     ...(field.required && canBeRequired(field.kind) ? {} : { required: undefined }),
     ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
+    ...(field.multiple && holdsSeveralKind(field.kind) ? {} : { multiple: undefined }),
   };
 }
 
@@ -267,6 +270,7 @@ function ShapeOwn({
         </div>
       ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => set({ showAs })} />
+      <HoldsSeveralSwitch field={field} onChange={(multiple) => set({ multiple })} />
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
       <CustomFieldPreview

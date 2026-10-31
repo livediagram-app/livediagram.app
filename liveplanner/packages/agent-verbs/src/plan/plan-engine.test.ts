@@ -236,6 +236,73 @@ describe('planListing', () => {
     ]);
   });
 
+  // docs/specs/026-plan/item-types.md "Holds Several": a comma list of names and cards, read and written back.
+  describe('a field that holds several', () => {
+    const SAM = { id: 'n-sam', name: 'Sam', color: '#2563eb' };
+    const ANA = { id: 'n-ana', name: 'Ana', color: '#16a34a' };
+    const TEAM = {
+      ...BUG,
+      id: 'team',
+      label: 'Team',
+      fields: ['title', 'status', 'f-rev', 'f-rel'],
+      custom: [
+        { id: 'f-rev', label: 'Reviewers', kind: 'person' as const, multiple: true },
+        { id: 'f-rel', label: 'Related', kind: 'card' as const, linkType: 'task', multiple: true },
+      ],
+    };
+    const cards = [
+      ...ITEMS.slice(0, 2),
+      item(
+        9,
+        'hhh999',
+        { title: 'T', 'f-rev': [SAM, ANA], 'f-rel': ['aaa111', 'bbb222', 'gone'] },
+        'team',
+      ),
+    ];
+    const plan = { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, TEAM] };
+
+    it('lists it as a comma list, and the switch on its type', async () => {
+      const { api: a } = api({ [`/projects/${D}/items`]: { items: cards, rev: 1 } }, plan);
+      const listing = planListing(await readPlanState(a, D));
+      expect(listing.items.find((i) => i.ref === '#9')!.fields).toMatchObject({
+        Reviewers: 'Sam, Ana',
+        Related: '#1 B, #2 A, gone',
+      });
+      expect(listing.types.find((t) => t.id === 'team')!.custom).toEqual([
+        { id: 'f-rev', name: 'Reviewers', kind: 'person', multiple: true },
+        {
+          id: 'f-rel',
+          name: 'Related',
+          kind: 'card',
+          linkType: 'task',
+          linkTypes: ['task'],
+          multiple: true,
+        },
+      ]);
+    });
+
+    it('reads back what a set stored, by name and number', async () => {
+      const { api: a } = api(
+        {
+          [`/projects/${D}/items`]: (r: Request) =>
+            r.method === 'GET' ? Response.json({ items: cards, rev: 1 }) : Response.json({}),
+          [`/projects/${D}/items/hhh999`]: () =>
+            Response.json({ item: { ...cards[2], rev: 2 }, rev: 2 }),
+        },
+        plan,
+      );
+      const result = await applyItemChanges(
+        a,
+        D,
+        [{ op: 'set', item: '#9', fields: { Reviewers: 'Sam, Ana', Related: ['#1', '#2'] } }],
+        await readPlanState(a, D),
+      );
+      expect(result.refusal).toBeUndefined();
+      expect(result.applied.join('\n')).toContain('Sam, Ana');
+      expect(result.applied.join('\n')).toContain('#1, #2');
+    });
+  });
+
   it('reads a card link as its card’s number and title', async () => {
     const linked = [
       item(3, 'aaa333', { title: 'Epic' }, 'project'),

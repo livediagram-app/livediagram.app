@@ -1,4 +1,4 @@
-import type { Item, LinkedGroup } from '@liveplanner/items';
+import { linkedValue, type Item, type LinkedGroup } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
 import type { PlanContextValue } from './PlanContext';
 
@@ -9,13 +9,16 @@ import type { PlanContextValue } from './PlanContext';
 export async function linkExistingCard(
   plan: Pick<PlanContextValue, 'items' | 'patchItem' | 'announce'>,
   target: Item,
-  group: Pick<LinkedGroup, 'fieldId' | 'label'>,
+  group: Pick<LinkedGroup, 'fieldId' | 'label' | 'several'>,
   cardId: string,
   moved: boolean,
 ): Promise<boolean> {
   const card = plan.items.get(cardId);
   if (!card || cardId === target.id) return false;
-  const done = await plan.patchItem(cardId, { set: { [group.fieldId]: target.id } });
+  // A field that holds several gains the open card at the end of its list (item-types.md "Holds Several").
+  const done = await plan.patchItem(cardId, {
+    set: { [group.fieldId]: linkedValue(card, group, target.id) },
+  });
   if (!done) return false;
   plan.announce(`Linked #${card.key} as ${group.label}`);
   track('Plan', 'Linked', moved ? 'LinkedCardMoved' : 'LinkedCard');

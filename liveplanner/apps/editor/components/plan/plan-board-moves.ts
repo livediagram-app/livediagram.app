@@ -27,25 +27,39 @@ export function cellStatus(
 }
 
 // What a drop into a row sets on the card (or on a new card, `item` absent): the shared rule in
-// @liveplanner/items. A status row moves the card by its status, which the move itself carries.
+// @liveplanner/items. A status row moves the card by its status, which the move itself carries. `from` is the row
+// the card left, so a field holding several swaps that row's value for this one's (item-types.md "Holds Several").
 export function laneMove(
   lane: LaneHead | undefined,
   item?: Pick<Item, 'fields'>,
+  from?: LaneHead,
 ): Pick<ItemMove, 'set' | 'clear' | 'type'> {
-  return laneDropPatch(lane, item);
+  return laneDropPatch(lane, item, from);
 }
 
-// The row the board shows an item in, or undefined when the board does not show it.
-export function laneOfItem(projection: BoardProjection, itemId: string): string | undefined {
+// The row the board shows an item in, or undefined when the board does not show it: `prefer` when the item sits there
+// (a card holding several values sits in several rows; the drag names the one it was picked up in), else the first.
+export function laneOfItem(
+  projection: BoardProjection,
+  itemId: string,
+  prefer?: string,
+): string | undefined {
+  let first: string | undefined;
   for (const c of projection.columns)
-    for (const l of c.lanes) if (l.items.some((i) => i.id === itemId)) return l.laneKey;
-  return undefined;
+    for (const l of c.lanes)
+      if (l.items.some((i) => i.id === itemId)) {
+        if (l.laneKey === prefer) return prefer;
+        first ??= l.laneKey;
+      }
+  return first;
 }
 
-// The card after an item in its cell, or null at the end (or when the board does not show it).
-function nextInCell(projection: BoardProjection, itemId: string): string | null {
+// The card after an item in its cell (in `laneKey`, when given), or null at the end (or when the board does not show
+// it).
+function nextInCell(projection: BoardProjection, itemId: string, laneKey?: string): string | null {
   for (const c of projection.columns)
     for (const l of c.lanes) {
+      if (laneKey !== undefined && l.laneKey !== laneKey) continue;
       const i = l.items.findIndex((x) => x.id === itemId);
       if (i >= 0) return l.items[i + 1]?.id ?? null;
     }
@@ -60,15 +74,17 @@ export function boardMoveFor(
   item: Item | undefined,
   itemId: string,
   slot: PlanDropSlot,
+  // The row the card was picked up in, when the drag knows it.
+  fromLane?: string,
 ): ItemMove | null {
   const withLanes = projection.swimlanes;
   const lane = projection.lanes.find((l) => l.key === slot.laneKey);
-  const currentLane = laneOfItem(projection, itemId);
+  const currentLane = laneOfItem(projection, itemId, fromLane);
   const shown = currentLane !== undefined;
   const status = cellStatus(setup, slot.status, lane);
   const sameCell =
     shown && item?.fields['status'] === status && (!withLanes || currentLane === slot.laneKey);
-  if (sameCell && slot.beforeId === nextInCell(projection, itemId)) return null;
+  if (sameCell && slot.beforeId === nextInCell(projection, itemId, currentLane)) return null;
   // A sorted board is not reordered by hand: a card let go in its own cell stays where the sort puts it.
   if (sameCell && projection.sorted) return null;
   // An All Cards board with no status row under the drop leaves the card's status as it is.
@@ -78,7 +94,13 @@ export function boardMoveFor(
   return {
     status,
     before: slot.beforeId,
-    ...(withLanes && currentLane !== slot.laneKey ? laneMove(lane, item) : {}),
+    ...(withLanes && currentLane !== slot.laneKey
+      ? laneMove(
+          lane,
+          item,
+          projection.lanes.find((l) => l.key === currentLane),
+        )
+      : {}),
   };
 }
 

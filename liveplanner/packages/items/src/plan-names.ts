@@ -3,9 +3,17 @@
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
-import { builtInFieldOfKind, isEmailAddress, ratingScaleOf, type ItemTypeDef } from './item-types';
+import {
+  builtInFieldOfKind,
+  isEmailAddress,
+  ratingScaleOf,
+  type CustomFieldDef,
+  type ItemTypeDef,
+} from './item-types';
+import { holdsSeveral } from './several-values';
 import { knownFieldKind, PRIORITIES, validDate, validateFields } from './fields';
 import {
+  FIELD_VALUES_MAX,
   ITEM_CHECKLIST_MAX,
   ITEM_LABEL_MAX,
   ITEM_LABELS_MAX,
@@ -225,6 +233,13 @@ export function resolveFields(
         'value_invalid',
         `${field.label} is a Votes field: votes come from a session vote.`,
       );
+    // A Person or Card field that holds several takes a comma list or a list (item-types.md "Holds Several").
+    if (holdsSeveral(field)) {
+      const v = severalNamed(field, value, naming);
+      if (!v.ok) return v;
+      out[key] = v.value;
+      continue;
+    }
     const asBuiltIn = builtInFieldOfKind(field.kind);
     if (asBuiltIn) {
       const v = builtInValue(asBuiltIn, value, naming);
@@ -324,6 +339,49 @@ export function resolveFields(
     }
   }
   return { ok: true, fields: out };
+}
+
+// A field that holds several, from "Sam, Ana" or ["Sam", "Ana"] (people by name, cards by number or "#12 Title"), or a
+// value of one: each resolved as one value of its kind is, each once, at most FIELD_VALUES_MAX.
+function severalNamed(
+  field: CustomFieldDef,
+  value: unknown,
+  naming: FieldNaming,
+): Named<{ value: unknown }> {
+  const parts = (
+    Array.isArray(value)
+      ? (value as unknown[])
+      : typeof value === 'string'
+        ? value.split(',')
+        : [value]
+  )
+    .map((p: unknown) => (typeof p === 'string' ? p.trim() : p))
+    .filter((p) => p !== '' && p !== null && p !== undefined);
+  if (parts.length === 0)
+    return refuse('value_invalid', `${field.label}: give at least one, or clear the field.`);
+  if (parts.length > FIELD_VALUES_MAX)
+    return refuse('value_invalid', `${field.label} holds up to ${FIELD_VALUES_MAX}.`);
+  if (field.kind === 'person') {
+    const people: ItemPerson[] = [];
+    for (const p of parts) {
+      const person = isItemPerson(p)
+        ? p
+        : typeof p === 'string'
+          ? personNamed(p, [...people, ...assignedPeople(naming.items)])
+          : undefined;
+      if (!person)
+        return refuse('value_invalid', `${field.label} takes people by name, such as "Sam, Ana".`);
+      if (!people.some((x) => x.id === person.id)) people.push(person);
+    }
+    return { ok: true, value: people };
+  }
+  const ids: string[] = [];
+  for (const p of parts) {
+    const linked = resolveItem(String(p), naming.items);
+    if (!linked.ok) return linked;
+    if (!ids.includes(linked.item.id)) ids.push(linked.item.id);
+  }
+  return { ok: true, value: ids };
 }
 
 function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{ value: unknown }> {

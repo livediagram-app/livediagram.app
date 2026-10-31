@@ -53,7 +53,8 @@ export const CUSTOM_FIELD_KINDS = [
   'multichoice',
   // A whole number from 1 to its `scale`, drawn as stars.
   'rating',
-  // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
+  // A link to one other card, of the type `linkType` names, or to several when it holds several
+  // (docs/specs/026-plan/item-types.md "Card fields").
   'card',
   // A value worked out from the plan by its `calculation`, never stored (docs/specs/026-plan/item-types.md
   // "Calculated fields").
@@ -146,6 +147,9 @@ export interface CustomFieldDef {
   // A Person field tells its person when a card is theirs (docs/specs/026-plan/item-types.md "Notifies"): the
   // Inbox, emails and Only Mine. Kept only as true, only on a Person field.
   notifies?: boolean;
+  // A Person or Card field holds several people or cards (docs/specs/026-plan/item-types.md "Holds Several";
+  // several-values.ts). Kept only as true, only on those two kinds.
+  multiple?: boolean;
 }
 
 // The most card types one Card field links to: every type the catalogue can hold (ITEM_TYPES_MAX).

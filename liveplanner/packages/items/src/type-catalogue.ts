@@ -28,6 +28,7 @@ import {
 } from './item-types';
 import { ITEM_STATUS_MAX, ITEM_TYPE_PATTERN } from './limits';
 import { canBeRequired } from './required-fields';
+import { holdsSeveralKind } from './several-values';
 import { cutSlug, slugText, uniqueSlug } from './slug';
 import { statusNamed } from './status-names';
 import { HEX_COLOUR, isObj } from './validate';
@@ -335,6 +336,8 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
   if (input['required'] === true && canBeRequired(field.kind)) field.required = true;
   // Kept only as true, and only on a Person field.
   if (input['notifies'] === true && field.kind === 'person') field.notifies = true;
+  // Kept only as true, and only on a Person or Card field (docs/specs/026-plan/item-types.md "Holds Several").
+  if (input['multiple'] === true && holdsSeveralKind(field.kind)) field.multiple = true;
   return field;
 }
 

@@ -40,6 +40,7 @@ import {
 } from './type-catalogue';
 import { defaultTypesToAdd } from './brought-types';
 import { canBeRequired } from './required-fields';
+import { holdsSeveralKind } from './several-values';
 import type { CardField } from './board';
 import type { CardLayout } from './card-display';
 import {
@@ -82,6 +83,8 @@ export interface CustomFieldInput {
   required?: boolean;
   // A Person field tells its person when a card is theirs (item-types.md "Notifies"); only a Person field.
   notifies?: boolean;
+  // A Person or Card field holds several people or cards (item-types.md "Holds Several"); only those kinds.
+  multiple?: boolean;
 }
 
 // An existing custom field edited in place: renamed, its options replaced (a Choice field), drawn on the card or not.
@@ -102,6 +105,8 @@ export interface CustomFieldEdit {
   required?: boolean;
   // A Person field: true tells its person when a card is theirs, false stops.
   notifies?: boolean;
+  // A Person or Card field: true holds several, false holds one (the cards' values are kept as they are).
+  multiple?: boolean;
 }
 
 // A type's card face and panel (type-change-face.ts), as `add` and `set` take them.
@@ -268,6 +273,8 @@ function editedCustom(
   if (edit.required === false) delete next.required;
   if (edit.notifies === true) next.notifies = notifiable(field);
   if (edit.notifies === false) delete next.notifies;
+  if (edit.multiple === true) next.multiple = severalable(field);
+  if (edit.multiple === false) delete next.multiple;
   const edited = { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
   // Unticked, it leaves a Detailed Display of the type's own too.
   return edit.onCard === false ? withoutOnDetailed(edited, key) : edited;
@@ -390,6 +397,7 @@ function customOf(
   if (input.onCard) field.onCard = true;
   if (input.required) field.required = requirable(field);
   if (input.notifies) field.notifies = notifiable(field);
+  if (input.multiple) field.multiple = severalable(field);
   return field;
 }
 
@@ -441,6 +449,15 @@ function notifiable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
   if (field.kind !== 'person')
     throw invalid(
       `"${field.label}" is ${withArticle(field.kind)} field: only a person field notifies.`,
+    );
+  return true;
+}
+
+// `true`, for a Person or Card field: no other kind holds several people or cards.
+function severalable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
+  if (!holdsSeveralKind(field.kind))
+    throw invalid(
+      `"${field.label}" is ${withArticle(field.kind)} field: only a person or card field holds several.`,
     );
   return true;
 }

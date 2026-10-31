@@ -109,19 +109,24 @@ export function breakdownModel(
       },
     ]),
   );
+  // A card counts once in each of its rows (each value of a field that holds several, item-types.md "Holds
+  // Several"); the chart's total counts it once.
+  let measured = 0;
   for (const it of cards) {
-    const row = rows.get(groups.laneOfItem.get(it.id) ?? '');
-    if (!row) continue;
     const n = measure ? measureValue(it, measure) : 1;
-    row.counts[phaseOf(it, phases)] += n;
-    row.total += n;
+    measured += n;
+    for (const key of groups.lanesOfItem.get(it.id) ?? []) {
+      const row = rows.get(key)!;
+      row.counts[phaseOf(it, phases)] += n;
+      row.total += n;
+    }
   }
   let list = [...rows.values()];
   // People busiest first: the Assignee, or a Person field (docs/specs/026-plan/plan-views.md "Cards by Field").
   if (groups.by === 'assignee' || groups.field?.kind === 'person')
     list = list.sort((a, b) => b.total - a.total || a.label.localeCompare(b.label));
   list = [...list.filter((r) => !r.empty), ...list.filter((r) => r.empty)];
-  const total = measure ? list.reduce((sum, r) => sum + r.total, 0) : cards.length;
+  const total = measure ? measured : cards.length;
   return { rows: list, max: Math.max(0, ...list.map((r) => r.total)), total };
 }
 

@@ -147,9 +147,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Percent (a share from 0 to
   100, drawn as a bar, [below](#percent-fields)), Date, Checkbox, Link (an
   `https://` URL), Email, Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
-  options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type,
-  below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
-  **Person** (one person, as the Assignee holds one), **Labels** (up to 20 short labels, as Labels holds them),
+  options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type, or
+  to several, below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
+  **Person** (one person, as the Assignee holds one, or several, [below](#holds-several)), **Labels** (up to 20 short labels, as Labels holds them),
   **Colour** (any `#rrggbb` colour, as Colour holds one), **Checklist** (up to 50 to-do rows, each its text and
   whether it is done, as Checklist holds them), **Comments** (its own threads, [below](#comments-and-votes-fields)),
   **Votes** (its own votes, below) and **Image** (one picture, [below](#image-fields)). Each reads and
@@ -203,7 +203,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     - Agents: `list_threads` names each thread's field, and `change_threads`' `start` takes a `field` by name
       ([Plan agents](plan-agents.md#comment-threads)); `list_items` lists a card's votes per Votes field.
   - **A Person field** offers the plan's people, as the Assignee does, and draws its person's avatar disc and name.
-    Whether it **notifies** its person is its own switch ([Notifies](#notifies)).
+    Whether it **notifies** its person is its own switch ([Notifies](#notifies)); whether it holds one person or
+    several is another ([Holds Several](#holds-several)).
   - **A Labels field** reads and is edited as Labels (its chips, coloured by their names), offering the labels the
     plan's cards carry; **a Colour field** as Colour (a swatch and its name, the one colour picker); **a Checklist
     field** as Checklist (its rows, ticked off, and "2/5" on the card).
@@ -262,7 +263,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   person when a card is theirs: the Inbox, emails and Only Mine." The Assignee notifies unless switched off
   (`assigneeNotifies: false` on the type); a custom Person field does not unless switched on (`notifies: true` on
   the field), so nothing a plan does today changes. A card is **someone's** when a notifying Person field holds
-  them, and is then theirs everywhere the Assignee made it so: the Inbox's **Assigned to You** (one row a card,
+  them (one of its people, for a field that [holds several](#holds-several)), and is then theirs everywhere the Assignee made it so: the Inbox's **Assigned to You** (one row a card,
   however many of its fields name them), the assignment event on their timeline and any email it sends, and the
   board's **Only Mine** ([Plan board](plan-board.md)). A custom person (an `n-` id) never notifies, as before.
   Telemetry: `Plan` · `Changed` · `FieldNotifies`.
@@ -297,6 +298,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Severity and Area: give them in fields, by name").
 - **Card fields** link a card to one other card, of any of the card types the field names: an Objective's
   **Owner** links to a Person, and a Task's **Parent** may link to a Project or an Epic. The value is that card's id.
+  A Card field switched to [hold several](#holds-several) links to a list of cards instead (a **Related** or a
+  **Depends On**); everything below reads every card of the list.
   - **Its card types**: one or more (up to the catalogue's 32), in the order they were ticked. Stored as `linkType`,
     the first, and, when there are several, `linkTypes`, all of them (the first included), so a field saved with one
     type reads exactly as before and an older editor or agent reading a field of several still finds a type it can
@@ -363,6 +366,56 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - Deleting, trashing or archiving a linked card never clears the links: they read **Missing card** until the
     card is back or the link is changed. A Card field whose type is gone from the catalogue keeps it among its
     types, and an unticked type is never taken off a card already linked to one of its cards.
+- <a id="holds-several"></a>**Holds Several**: a Person field or a Card field can hold more than one value, by
+  its **Holds Several** switch (stored as `multiple: true` on the field; kept only as true, and only on those two
+  kinds, so every field saved before holds one). Reviewers, Owners and pair work need several people; Related,
+  Depends On and Candidates need several cards. The built-in Assignee and Parent always hold one. One rule serves
+  both kinds:
+  - **The value** is a list: a Person field's people (`[{ id, name, color }, ...]`), a Card field's card ids
+    (`["<id>", ...]`), each once, in the order they were added, at most **20** (`FIELD_VALUES_MAX`). An empty list
+    is no value: the field is cleared instead. A field holding several still reads a single stored value (one
+    person, one card id, every value written before the switch) as a list of one, and a field holding one reads a
+    stored list as its first value, so turning the switch either way never rewrites or loses a card's value: a
+    value changes only when someone next edits it. An older editor reading a list reads the field as empty (never a
+    crash), and its next pick replaces the list with that one value.
+  - **The switch** sits in the field's form in the type editor (and Add Field's Shape step) under the kind's own
+    settings, with the line "Hold more than one person, such as reviewers or a pair." (Person) or "Link more than
+    one card, such as related work." (Card). Telemetry: `Plan` · `Changed` · `FieldHoldsSeveral`.
+  - **The control** (the card panel): one bordered field holding a **chip** per value (a person's disc and name; a
+    card's type glyph, number and title, pressing it opens the card), each with a remove button (accessible name
+    "Remove {name} from {Field}"), then an **Add** button (a plus, accessible name "Add to {Field}") that drops the
+    kind's own list (the plan's people and + Custom {Field}; the candidate cards with their filter). The list
+    stays open for more picks: a pick adds the value, picking one already held removes it (each held row ticked,
+    `aria-selected`), and Escape, a press outside or Tab close it. No one and None leave the list (removing every
+    chip empties the field). Full at 20, Add is disabled with the tooltip "{Field} holds up to 20". A Viewer sees
+    the chips without remove buttons or Add. Removing a chip announces "Removed {name}".
+  - **On the card face**: a Person field draws its people's discs stacked, overlapping by a third, the first three
+    then a "+N" disc for the rest (its accessible name "{Field}: Sam, Ana and 2 more"); a Card field reads its
+    linked cards' numbers ("#3 #5 #8"), the first three then "+N", with the first linked card's glyph (its
+    accessible name lists every number and title).
+  - **Swimlanes and grouping**: a card sits in **each** of its values' rows (Sam's and Ana's rows both show a card
+    Sam and Ana review), the way most planners lay several people, and in **No {Field}** only when it holds none.
+    Dragging a card out of one value's row into another's swaps that value for the new one (from Sam's row to
+    Lee's: Ana and Lee), keeping its others; into a row whose value it already holds just drops the one it left;
+    into **No {Field}** clears the field. A Cards by Field chart, a Gantt chart's swimlanes and a card table's
+    group filters count the card once in each of its rows. Filters by the field match a card holding any of the
+    picked values.
+  - **Notifies**: a notifying field holding several tells each of its people ([Notifies](#notifies)): the Inbox's
+    Assigned to You (one row a card), the assignment event and email, and Only Mine all match any of them. A custom
+    person among them never notifies.
+  - **Linked as and children**: a card in a list links to the card as any link does: its Linked as {Field}
+    section lists every card whose list holds it, Child Count and Children Done count it, and an agent's read of a
+    card names every linked card. **Link Existing** on a field holding several adds this card to the picked card's
+    list, so it never asks to move a link; the picked card's row shows no "Linked to" note. One shared reader
+    returns every card a field links to (`linkedCardIds`), so a later rollup or lookup reads every linked card the
+    same way.
+  - **Agents and CSV**: `list_items` reads a field holding several as a comma list ("Sam Reed, Ana Diaz";
+    "#3 Website, #5 Launch"), and `change_items` and Import CSV take a comma list (or, for agents, a JSON list) of
+    names, numbers or titles back, each resolved as one value would be; one value given sets a list of one. An agent
+    sets the switch with `multiple` on `change_card_types`' `custom`, `addCustom` and `editCustom` (only a Person or
+    Card field). Export CSV writes the list joined by ", ".
+  - **Share roles**: as any field. An Editor sets the switch (the type editor); an Editor and a Participant edit a
+    card's values; a Viewer reads them.
 - <a id="calculated-fields"></a>**Calculated fields**: a custom field of kind **Calculated** works its value out from the plan instead of holding
   one. It is made like any custom field (Add Field's **Calculated** kind, or `change_card_types`), with one
   **calculation** from a fixed menu, stored as `calculation` on the field:
