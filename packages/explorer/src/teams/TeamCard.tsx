@@ -7,7 +7,7 @@
 // place, each removal asked once in words that say who goes. An admin's footer invites an address as a Member or an
 // Admin. The team's members are read when the card opens and again after each change, so it shows what accounts hold.
 
-import { useCallback, useEffect, useId, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { isAbort } from '../data/errors';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
 import { Button, ConfirmDialog, PictureDisc } from '@liveworkspace/ui';
@@ -115,6 +115,7 @@ export function TeamCard({
   const rule = lastAdmin(details.members, team.myMemberId);
   const [asking, setAsking] = useState<Asking>(null);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const optionsRef = useRef<HTMLButtonElement>(null);
   const isSelf = (m: TeamMember) =>
     m.id === team.myMemberId || (m.userId !== null && m.userId === viewerId);
   const me = details.members.find((m) => m.id === team.myMemberId);
@@ -143,6 +144,13 @@ export function TeamCard({
       );
       onGone();
       return;
+    }
+    // Focus was handed back to the Remove button on a row that is about to go: keep it on the card instead, so the
+    // keyboard isn't dropped on the page's body when the list reloads.
+    const active = document.activeElement;
+    const row = active?.closest('[data-team-member]')?.getAttribute('data-team-member');
+    if (active === document.body || row === member.id) {
+      optionsRef.current?.focus({ preventScroll: true });
     }
     reload();
   }
@@ -205,6 +213,7 @@ export function TeamCard({
             </a>
           ) : null}
           <EllipsisTriggerButton
+            ref={optionsRef}
             label={`${team.name} options`}
             expanded={menuAnchor !== null}
             onClick={(e) => setMenuAnchor(menuAnchor ? null : e.currentTarget)}
