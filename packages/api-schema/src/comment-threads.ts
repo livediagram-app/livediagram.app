@@ -3,6 +3,7 @@
 // conversation without reading the tab.
 
 import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
+import type { ReactionSummary } from '@liveworkspace/model-core/comment-reactions';
 
 export const COMMENT_TEXT_MAX = 2000;
 
@@ -27,6 +28,8 @@ export type DocumentCommentThread = {
     authorName: string;
     authorColor: string;
     mentions?: CommentMention[];
+    // Who reacted, one entry per emoji used (docs/specs/012-collaboration/comment-reactions.md). Absent when none.
+    reactions?: ReactionSummary[];
     // The caller's own comments only.
     authorId?: string;
     tokenId?: string;

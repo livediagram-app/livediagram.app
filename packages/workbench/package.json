@@ -69,6 +69,8 @@
     "./components/chrome/useTabReorderDrag": "./src/components/chrome/useTabReorderDrag.ts",
     "./components/colour/colour-metrics": "./src/components/colour/colour-metrics.ts",
     "./components/colour/useColourKeys": "./src/components/colour/useColourKeys.ts",
+    "./components/comments/CommentReactions": "./src/components/comments/CommentReactions.tsx",
+    "./components/comments/CommentReactionsContext": "./src/components/comments/CommentReactionsContext.tsx",
     "./components/dialogs/ApplyToAllTabsRow": "./src/components/dialogs/ApplyToAllTabsRow.tsx",
     "./components/dialogs/ConfirmDialog": "./src/components/dialogs/ConfirmDialog.tsx",
     "./components/dialogs/DeleteAccountDialog": "./src/components/dialogs/DeleteAccountDialog.tsx",

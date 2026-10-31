@@ -6,6 +6,11 @@
 // `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
+import { useReactionTray } from '@liveworkspace/workbench/components/comments/CommentReactions';
+import {
+  ScopedAddReactionButton,
+  ScopedCommentReactions,
+} from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import {
   Button,
   CheckIcon,
@@ -326,6 +331,9 @@ function CommentRow({
   const now = useRelativeNow();
   const comfortable = density === 'comfortable';
   const [editing, setEditing] = useState(false);
+  // Its reactions (docs/specs/012-collaboration/comment-reactions.md): the trigger beside Edit and Delete opens the
+  // tray under the text, where the chips are. The scope (the canvas's, or a card thread's) says how one is sent.
+  const tray = useReactionTray();
   const when = new Date(comment.createdAt).toLocaleString(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -404,7 +412,15 @@ function CommentRow({
             />
           </p>
         )}
+        <ScopedCommentReactions
+          commentId={comment.id}
+          reactions={comment.reactions}
+          tray={tray}
+          density={density}
+          closed={resolved}
+        />
       </div>
+      <ScopedAddReactionButton tray={tray} density={density} closed={resolved || editing} />
       {!resolved && !editing && (onEdit || onDelete) ? (
         <div className="flex shrink-0 gap-0.5 self-start opacity-0 transition focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100">
           {onEdit ? (

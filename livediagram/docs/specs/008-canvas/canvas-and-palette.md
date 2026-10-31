@@ -899,6 +899,7 @@ The popover is portal-rendered (it escapes the canvas transform), anchored to th
 
 - Header: "Comments (n)" + a **Resolve / Resolved** toggle + close button.
 - Scrolling list of comments (oldest first). Each row shows the author's circular initial badge (in their colour), their name, a relative timestamp ("3m ago"), and the text. Hovering a row reveals a delete button (disabled when the thread is resolved).
+- Under each comment's text, its **reactions** (👍 👎 😄 🎉 ❤️ 👀): a chip per emoji with its count, yours highlighted, toggled by a press, with an **Add Reaction** button in the row's actions that opens the six in place ([Comment Reactions](../012-collaboration/comment-reactions.md)).
 - Reply box at the bottom with a textarea + Comment button. **Cmd/Ctrl + Enter** submits.
 
 ### Resolve semantics

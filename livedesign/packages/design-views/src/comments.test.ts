@@ -87,6 +87,27 @@ describe('commentHosts', () => {
 });
 
 describe('threadListingLines', () => {
+  it("prints a comment's reactions after it", () => {
+    const lines = threadListingLines({
+      ref: 'api',
+      label: null,
+      resolved: false,
+      tabName: 'Main',
+      comments: [
+        {
+          authorName: 'Sam',
+          createdAt: Date.UTC(2026, 8, 27),
+          text: 'Ship it',
+          reactions: [
+            { emoji: '👍', count: 2 },
+            { emoji: '👀', count: 1 },
+          ],
+        },
+      ],
+    });
+    expect(lines[1]).toBe('  Sam 2026-09-27: "Ship it" 👍 2 👀 1');
+  });
+
   it('prints a listed thread as the comments view does, with its tab', () => {
     const lines = threadListingLines({
       ref: 'api',

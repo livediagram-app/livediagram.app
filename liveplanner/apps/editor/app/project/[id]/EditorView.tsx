@@ -113,6 +113,7 @@ export function EditorView() {
     projectName: ctx.projectName,
     ownerId: ctx.selfParticipant.id,
     self: ctx.plan.context.self,
+    selfKey: ctx.voteSelfId,
     canComment: ctx.cardThreadsAccess.canComment,
     isEditor: ctx.cardThreadsAccess.isEditor,
     openCard: ctx.plan.context.openItem,

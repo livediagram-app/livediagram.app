@@ -5,7 +5,7 @@
 // (DocumentCommentThread there), declared here so the api's OpenAPI document keeps naming it
 // `DesignCommentThread`.
 
-import type { CommentMention } from '@livedesign/design';
+import type { CommentMention, ReactionSummary } from '@livedesign/design';
 
 export {
   COMMENT_LIST_STATUSES,
@@ -28,6 +28,8 @@ export type DesignCommentThread = {
     authorName: string;
     authorColor: string;
     mentions?: CommentMention[];
+    // Who reacted, one entry per emoji used (docs/specs/012-collaboration/comment-reactions.md). Absent when none.
+    reactions?: ReactionSummary[];
     // The caller's own comments only.
     authorId?: string;
     tokenId?: string;

@@ -117,7 +117,9 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
 // A Participant's socket may send these beside presence; every other mutation from it is dropped, except an `el`
 // op, which the room applies through the participant content rule instead of relaying.
 const PARTICIPATION_OP_KINDS = ['vote'] as const;
-const PARTICIPATION_DELTA_KINDS = ['response'] as const;
+// A comment reaction is taking part too (docs/specs/012-collaboration/comment-reactions.md): whoever may comment
+// may react, and the room writes a Participant's reactions as it writes its answers.
+const PARTICIPATION_DELTA_KINDS = ['response', 'comment-react'] as const;
 
 export function isParticipationOp(op: unknown): boolean {
   if (typeof op !== 'object' || op === null) return false;
