@@ -6639,6 +6639,9 @@ importers:
 
   packages/sites:
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../vitest-config
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
