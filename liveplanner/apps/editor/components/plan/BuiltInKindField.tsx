@@ -5,12 +5,11 @@
 // Labels' chips, Colour's picker and Checklist's rows. The card panel draws them through ItemFieldEditor.
 import { builtInFieldOfKind, type CustomFieldKind, type ItemFieldValue } from '@liveplanner/items';
 import { isHexColour } from '@liveplanner/project';
-import { ChecklistEditor, LabelsEditor } from './item-field-editors';
+import { ChecklistEditor } from './item-field-editors';
+import { LabelsEditor } from './LabelsEditor';
 import { ColourSelect } from './ColourSwatches';
 import { PersonPicker } from './PersonPicker';
 import { usePlan } from './PlanContext';
-
-const NO_LABELS: readonly string[] = [];
 
 export function BuiltInKindField({
   id,
@@ -40,15 +39,7 @@ export function BuiltInKindField({
         />
       );
     case 'labels':
-      return (
-        <LabelsEditor
-          id={id}
-          value={value}
-          disabled={false}
-          suggestions={NO_LABELS}
-          onSave={onSave}
-        />
-      );
+      return <LabelsEditor id={id} value={value} disabled={false} onSave={onSave} />;
     case 'color':
       return (
         <ColourSelect
