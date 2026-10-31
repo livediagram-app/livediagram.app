@@ -4,6 +4,7 @@ import {
   boardItems,
   boardPeople,
   boardPoints,
+  boardTime,
   boardTypeCounts,
   dueCounts,
   overWipColumns,
@@ -12,6 +13,7 @@ import {
   staleCount,
   topVoted,
   unassignedCount,
+  timeFieldOf,
 } from './widget-stats';
 
 let n = 0;
@@ -147,5 +149,53 @@ describe('percentDone', () => {
     expect(percentDone(1, 300)).toBe(1);
     expect(percentDone(0, 300)).toBe(0);
     expect(percentDone(0, 0)).toBe(0);
+  });
+});
+
+// The Time widget (docs/specs/026-plan/board-widgets.md "Time").
+describe('board time', () => {
+  const plain = { id: 'f-est', label: 'Planned', kind: 'duration' as const };
+  const spent = { id: 'f-spent', label: 'Time Spent', kind: 'duration' as const, timeSpent: true };
+  const tracked = {
+    id: 'tracked',
+    label: 'Tracked',
+    newTitle: 'New',
+    glyph: 'task' as const,
+    color: '#71717a',
+    fields: ['title', 'f-est', 'f-spent'],
+    custom: [plain, spent],
+  };
+  const planned = { ...tracked, id: 'planned', fields: ['title', 'f-est'] };
+  const none = { ...tracked, id: 'none', fields: ['title'] };
+  const types = [tracked, planned, none];
+  const time = (entries: number[], running: number) =>
+    ({
+      people: {},
+      entries: entries.map((minutes, i) => ({ id: `entry${i}00`, by: 'sam', minutes, at: i })),
+      running: Array.from({ length: running }, (_, i) => ({
+        id: `timer${i}00`,
+        by: `p${i}`,
+        start: 1,
+      })),
+    }) as unknown as Item['fields'][string];
+
+  it('reads the first Time Spent field, else the first Duration', () => {
+    expect(timeFieldOf(tracked)?.id).toBe('f-spent');
+    expect(timeFieldOf(planned)?.id).toBe('f-est');
+    expect(timeFieldOf(none)).toBeUndefined();
+    expect(timeFieldOf(undefined)).toBeUndefined();
+  });
+
+  it('adds the minutes, counts the cards holding some and the timers running', () => {
+    const items = [
+      item({ 'f-spent': time([60, 30], 2), 'f-est': 999 }, 'tracked'),
+      item({ 'f-spent': time([], 1) }, 'tracked'),
+      item({ 'f-est': 45 }, 'planned'),
+      item({}, 'planned'),
+      item({ 'f-est': 10 }, 'none'),
+      item({ 'f-est': 10 }, 'gone'),
+    ];
+    expect(boardTime(items, types)).toEqual({ minutes: 135, counted: 2, running: 3 });
+    expect(boardTime([], types)).toEqual({ minutes: 0, counted: 0, running: 0 });
   });
 });

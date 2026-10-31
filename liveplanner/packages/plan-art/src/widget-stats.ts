@@ -10,6 +10,12 @@ import {
   itemStatus,
   itemVoteTotal,
   todayNumber,
+  durationMinutes,
+  isTimeSpent,
+  readTimeValue,
+  typeIn,
+  type CustomFieldDef,
+  type ItemTypeDef,
   type Priority,
   type BoardProjection,
   type Item,
@@ -111,6 +117,39 @@ export function boardPoints(
     if (isFinished(finished, it)) done += e;
   }
   return { done, total, estimated };
+}
+
+// The Duration field the Time widget reads on a card of `type` (docs/specs/026-plan/board-widgets.md "Time"): its
+// first Time Spent field, else its first Duration field; none for a type without one.
+export function timeFieldOf(type: ItemTypeDef | undefined): CustomFieldDef | undefined {
+  const offered = (type?.custom ?? []).filter(
+    (f) => f.kind === 'duration' && type!.fields.includes(f.id),
+  );
+  return offered.find((f) => isTimeSpent(f)) ?? offered[0];
+}
+
+// The board's hours: each card's time field (timeFieldOf) as minutes, how many cards hold one, and the timers
+// running in those fields now.
+export function boardTime(
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+): { minutes: number; counted: number; running: number } {
+  let minutes = 0;
+  let counted = 0;
+  let running = 0;
+  const fieldOf = new Map<string, CustomFieldDef | undefined>();
+  for (const it of items) {
+    if (!fieldOf.has(it.type)) fieldOf.set(it.type, timeFieldOf(typeIn(types, it.type)));
+    const f = fieldOf.get(it.type);
+    if (!f) continue;
+    const m = durationMinutes(f, it.fields[f.id]);
+    if (m !== undefined) {
+      minutes += m;
+      counted += 1;
+    }
+    if (isTimeSpent(f)) running += readTimeValue(it.fields[f.id]).running.length;
+  }
+  return { minutes, counted, running };
 }
 
 // Cards per priority, most urgent first, leaving out the priorities nothing has.

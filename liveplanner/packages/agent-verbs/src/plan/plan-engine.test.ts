@@ -236,6 +236,51 @@ describe('planListing', () => {
     ]);
   });
 
+  // docs/specs/026-plan/plan-agents.md: a Duration as it reads, and a Time Spent field's time by who and when.
+  it('lists durations as text and tracked time by name, read-only', async () => {
+    const WORK = {
+      ...BUG,
+      id: 'work',
+      label: 'Work',
+      fields: ['title', 'status', 'f-plan', 'f-spent'],
+      custom: [
+        { id: 'f-plan', label: 'Planned', kind: 'duration' as const },
+        { id: 'f-spent', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+      ],
+    };
+    const spent = {
+      people: { 'n-sam': { name: 'Sam', color: '#2563eb' } },
+      entries: [{ id: 'entry001', by: 'n-sam', minutes: 90, at: Date.UTC(2026, 9, 30, 9) }],
+      running: [{ id: 'timer001', by: 'n-sam', start: Date.UTC(2026, 9, 31, 8) }],
+    };
+    const cards = [
+      item(9, 'hhh999', { title: 'Timed', 'f-plan': 150, 'f-spent': spent }, 'work'),
+      item(10, 'iii000', { title: 'Untimed', 'f-plan': 'soon' }, 'work'),
+    ];
+    const { api: a } = api(
+      { [`/projects/${D}/items`]: { items: cards, rev: 1 } },
+      { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, WORK] },
+    );
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.items[0]!.fields).toEqual({
+      title: 'Timed',
+      Planned: '2h 30m',
+      'Time Spent': '1h 30m',
+    });
+    expect(listing.items[0]!.time).toEqual({
+      'Time Spent': {
+        entries: [{ by: 'Sam', time: '1h 30m', at: '2026-10-30T09:00:00.000Z' }],
+        running: [{ by: 'Sam', since: '2026-10-31T08:00:00.000Z' }],
+      },
+    });
+    expect(listing.items[1]!.fields).toEqual({ title: 'Untimed', Planned: null });
+    expect(listing.items[1]).not.toHaveProperty('time');
+    expect(listing.types.find((t) => t.id === 'work')!.custom).toEqual([
+      { id: 'f-plan', name: 'Planned', kind: 'duration' },
+      { id: 'f-spent', name: 'Time Spent', kind: 'duration', timeSpent: true, readOnly: true },
+    ]);
+  });
+
   // docs/specs/026-plan/item-types.md "Holds Several": a comma list of names and cards, read and written back.
   describe('a field that holds several', () => {
     const SAM = { id: 'n-sam', name: 'Sam', color: '#2563eb' };

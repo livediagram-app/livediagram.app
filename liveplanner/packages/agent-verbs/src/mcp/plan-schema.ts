@@ -313,7 +313,9 @@ const customField = z.object({
     .describe(
       'text (one line), longtext (rich paragraphs, in a panel tab; written as Markdown), number, currency (an amount in the field’s ' +
         'currency, shown as "£12,500"), percent (how far along: a whole number from 0 to 100, ' +
-        'drawn as a bar; "40%" is taken too, and a value outside 0 to 100 is refused), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
+        'drawn as a bar; "40%" is taken too, and a value outside 0 to 100 is refused), duration (hours and ' +
+        'minutes, stored as whole minutes: written "2h 30m", "90m", "1.5h" or a number of minutes, read as "2h 30m"; ' +
+        'with timeSpent it adds up the time people track with a timer, read-only to agents), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
         'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
         'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12", or several ' +
         'with multiple), ' +
@@ -356,6 +358,13 @@ const customField = z.object({
   aggregate: aggregateArg.optional(),
   source: sourceArg.optional(),
   showAs: showAsArg.optional(),
+  timeSpent: z
+    .boolean()
+    .optional()
+    .describe(
+      'A duration field only, set when it is made: true makes it Time Spent, adding up the time people track ' +
+        'on the card with a start/stop timer and manual entries (who and when). Agents read it, never write it.',
+    ),
   onCard: z
     .boolean()
     .optional()
@@ -541,8 +550,8 @@ const listedCustom = z.object({
   kind: z
     .string()
     .describe(
-      'text, longtext, number, currency, percent, date, checkbox, link, email, choice, multichoice, rating, ' +
-        'card, calculated, person, labels, colour, checklist or image.',
+      'text, longtext, number, currency, percent, duration, date, checkbox, link, email, choice, multichoice, ' +
+        'rating, card, calculated, person, labels, colour, checklist or image.',
     ),
   options: z.array(z.string()).optional().describe('A choice or multichoice field’s options.'),
   scale: z.number().optional().describe('A rating field’s top score.'),
@@ -597,6 +606,13 @@ const listedCustom = z.object({
     .optional()
     .describe(
       'A calculated field drawn as a percent field’s bar; its value is still a whole percentage.',
+    ),
+  timeSpent: z
+    .literal(true)
+    .optional()
+    .describe(
+      'A duration field that adds up tracked time: its value is the total ("4h 15m") and each card lists its ' +
+        'entries and running timers under time.',
     ),
   readOnly: z
     .literal(true)
@@ -690,8 +706,22 @@ const listedItem = z.object({
     .describe(
       'Every field, title and status included; custom fields by their names, as change_items takes them. A ' +
         'calculated field’s value is worked out (a count, a whole percentage, a formula’s number, text, ' +
-        'true or false or ISO date, or null) and read-only.',
+        'true or false or ISO date, or null) and read-only. A duration reads as text ("2h 30m").',
     ),
+  time: z
+    .record(
+      z.string(),
+      z.object({
+        entries: z
+          .array(z.object({ by: z.string(), time: z.string(), at: z.string() }))
+          .describe('Time recorded: who, how long ("1h 15m") and when (ISO).'),
+        running: z
+          .array(z.object({ by: z.string(), since: z.string() }))
+          .describe('Timers running now: who, and since when (ISO).'),
+      }),
+    )
+    .optional()
+    .describe('Each Time Spent field with time on the card, by the field’s name.'),
 });
 
 export const listItemsOutput = {

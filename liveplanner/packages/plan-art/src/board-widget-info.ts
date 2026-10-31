@@ -25,6 +25,10 @@ export const BOARD_WIDGET_INFO: Record<BoardWidgetKind, { label: string; descrip
     label: 'Points',
     description: 'Estimate points done out of all on the board: a sprint’s burn-up at a glance.',
   },
+  time: {
+    label: 'Time',
+    description: 'Hours on the board’s cards, and the timers running now.',
+  },
   priorities: {
     label: 'Priorities',
     description: 'How many cards are urgent, high, medium and low; press one to see those.',

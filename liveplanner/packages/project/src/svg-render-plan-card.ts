@@ -46,6 +46,9 @@ import {
   percentShown,
   percentText,
   showsAsPercent,
+  isTimeSpent,
+  readTimeValue,
+  timePerson,
 } from '@liveplanner/items';
 import {
   FLAG_COLOUR,
@@ -250,6 +253,32 @@ function bitOf(
   }
 }
 
+// The green of a running timer (docs/specs/026-plan/item-types.md "Time Spent").
+export const TIMER_RUNNING_GREEN = '#16a34a';
+
+// While anyone's timer runs on the card, at every size whatever the Display: "Running · Sam" (or "Sam +2") after a
+// green dot; null with none running.
+function runningBit(item: Item, type: ItemTypeDef, p: PlanPalette): Bit | null {
+  const names: string[] = [];
+  for (const f of type.custom ?? []) {
+    if (!isTimeSpent(f) || !type.fields.includes(f.id)) continue;
+    const value = readTimeValue(item.fields[f.id]);
+    for (const r of value.running) {
+      const name = timePerson(value, r.by).name;
+      if (!names.includes(name)) names.push(name);
+    }
+  }
+  if (names.length === 0) return null;
+  const who = names.length > 1 ? `${names[0]} +${names.length - 1}` : names[0];
+  return {
+    kind: 'text',
+    text: `Running · ${who}`,
+    color: p.text,
+    pill: true,
+    dot: TIMER_RUNNING_GREEN,
+  };
+}
+
 // A Calculated field's value, worked out from the cards in hand: null without them, and Children Done only with the
 // board's done columns (a Rollup's Count Done too). A Formula reads the card itself, so a lone card draws it too (none
 // when it can't be worked out; docs/specs/026-plan/item-types.md "Formula fields"); a Rollup or Lookup reads the
@@ -345,7 +374,8 @@ export function planCardFace(
   let h: number;
   if (size === 'minimal') {
     const lead = bits('lead');
-    const trail = bits('trail');
+    const running = runningBit(item, type, p);
+    const trail = running ? [...bits('trail'), running] : bits('trail');
     const leadW = lead.reduce((s, b) => s + bitWidth(b) + BIT_GAP, 0);
     const trailW = trail.reduce((s, b) => s + bitWidth(b) + BIT_GAP, 0);
     row(lead, x + PAD, y + 8, x + PAD + leadW);
@@ -396,7 +426,8 @@ export function planCardFace(
     cy += lines.length * TITLE_LINE + 6;
     const body = row(bits('body'), x + PAD, cy, x + w - PAD);
     cy += body ? body + 6 : 0;
-    const footEnd = bits('footEnd');
+    const running = runningBit(item, type, p);
+    const footEnd = running ? [...bits('footEnd'), running] : bits('footEnd');
     const footEndW = rightRow(footEnd, x + w - PAD, cy);
     cy += Math.max(
       row(bits('foot'), x + PAD, cy, x + w - PAD - footEndW),

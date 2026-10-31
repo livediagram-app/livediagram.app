@@ -86,6 +86,22 @@ export type ItemsTallyRequest = {
   field?: string;
 };
 
+// POST /api/projects/:id/items/:itemId/time (docs/specs/026-plan/item-types.md "Time Spent"): one time write to the
+// card's Time Spent field `field`: `start` (the caller's timer, with its id), `stop` (a timer, its time recorded as
+// entry `entry`), `add` (a manual entry of whole `minutes`), `remove` (an entry or a running timer, by id) or `put` (an
+// entry put back as it was, with its person; the undo of a remove). Answered with the card as stored.
+export type ItemTimeRequest = { field: string } & (
+  | { op: 'start'; timer: string }
+  | { op: 'stop'; timer: string; entry: string }
+  | { op: 'add'; entry: string; minutes: number }
+  | { op: 'remove'; entry: string }
+  | {
+      op: 'put';
+      entry: { id: string; by: string; minutes: number; at: number };
+      person: { id: string; name: string; color: string };
+    }
+);
+
 // The room op every item write sends (system kind). `upserts` and `removed` are empty for a
 // session scoped to one tab: it refetches the items its tab shows.
 export type ItemsRoomOp = { kind: 'items'; upserts: Item[]; removed: string[]; rev: number };
