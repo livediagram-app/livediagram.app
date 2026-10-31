@@ -269,14 +269,14 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   a Sheet tab for it, as Start Planning makes one (its kind, opening in Plan, a board drawing its cards Detailed, a
   board bringing its preset's card types), named as Start Planning names it (the board's title, such as "Kanban"; the
   Sheet's, "Sheet" or its template's name), looking like the dashboard's tab, and placed straight after the dashboard
-  in the tab bar. The slot shows that tab (as picking it under This Project’s Tabs does), and the new tab, the slot
+  in the tab bar. The slot shows that tab (as picking it under This Plan’s Tabs does), and the new tab, the slot
   filled and the card types are one undo step. The Sheet is made on its own tab even though it is first drawn in the
   slot. The dashboard stays the open tab. Telemetry: `Plan · Created · BoardTab` or `SheetTab` with the slot's
   `Plan · Changed · DashboardContent`; no new values.
 - **Add to Slot browses in two levels**, as the palette's Tools do. Its heading, **Add to Slot**, sits over both
   with one short line, "What fits here, as it will look.". It opens on its **categories**, only those with something
   that fits the slot: a grid of two columns of cards, each a small picture of what it holds (the slot pictures below,
-  at three quarters: a Sprint board for This Project’s Tabs, a Kanban board for New Board, a sheet, a Completion tile for Metrics, a Gantt for
+  at three quarters: a Sprint board for This Plan’s Tabs, a Kanban board for New Board, a sheet, a Completion tile for Metrics, a Gantt for
   Visualisations, a Trend for From a Sheet, a stack of cards for Utilities), its own glyph in a brand well, its name,
   how many choices it holds (the shared CountBadge) and a line of what is inside, in full, wrapping (never cut off).
   A card lifts on hover with a brand-tinted edge, shows a focus ring, and the cards cascade in when the picker
@@ -303,7 +303,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
 - An **empty slot** shows the site's empty state at slot size: a gradient badge and **Empty Slot**, with no
   description, over an **Add to Slot** button (the dashed add row Add New Card Type wears, kept to 224 px in a wide
   slot) for an Editor; anyone else sees the badge and title alone. **Add to Slot** opens a picker of what a slot
-  takes, by category: **This Project’s Tabs** (every tab but a Dashboard, see Showing a tab), **New Board** (each preset), **New
+  takes, by category: **This Plan’s Tabs** (every tab but a Dashboard, see Showing a tab), **New Board** (each preset), **New
   Sheet**, **Card Metrics**, **Form Metrics** (only while the project has a Form tab), **Visualisations**, **From a Sheet** (Sheet Figure, Column Summary, Trend, Sheet Chart) and **Utilities** (Note, Title, Status, Checklist, Key Date, Links); picking
   one fills that slot. Each fill is one undo step, replacing what the slot held (an element it held leaves the tab
   with it).
@@ -575,7 +575,7 @@ have nothing to offer a dashboard, are not shown (only a Sheet zooms).
 
 ## Showing a tab
 
-Add to Slot's **This Project’s Tabs** offers each of the project's **Board** and **Sheet** tabs, in tab-bar order, as a card named for the tab, drawn as a board or a sheet; picked, it shows that tab in the slot, worked on in place. No other tab goes in a slot: a Dashboard, a Form (a page of its own) and a tab still on Start Planning are not offered, and a slot's tab kind is only ever `board` or `sheet`. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the project has no other tab. A tab may show in several slots and on several dashboards.
+Add to Slot's **This Plan’s Tabs** offers each of the project's **Board** and **Sheet** tabs, in tab-bar order, as a card named for the tab, drawn as a board or a sheet; picked, it shows that tab in the slot, worked on in place. No other tab goes in a slot: a Dashboard, a Form (a page of its own) and a tab still on Start Planning are not offered, and a slot's tab kind is only ever `board` or `sheet`. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the project has no other tab. A tab may show in several slots and on several dashboards.
 
 ## Moving a slot
 
