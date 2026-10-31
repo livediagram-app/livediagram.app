@@ -281,6 +281,32 @@ describe('changing items', () => {
     );
   });
 
+  // When a card entered its status (docs/specs/026-plan/items.md "Fields"): stamped by the api's own writes.
+  it('stamps statusSince on a create and on each change of status, and keeps it otherwise', async () => {
+    const made = item.fields['statusSince'];
+    expect(typeof made).toBe('number');
+    const edited = await call<ItemResponse>({
+      path: `/items/${item.id}`,
+      body: { set: { priority: 'high' } },
+    });
+    expect(edited.body.item.fields['statusSince']).toBe(made);
+    const moved = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'doing' },
+    });
+    expect(moved.body.item.fields['statusSince']).toBeGreaterThanOrEqual(made as number);
+    expect(moved.body.item.updatedAt).toBe(moved.body.item.fields['statusSince']);
+    // An undo names the old stamp, which the move keeps.
+    const undone = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'todo', set: { statusSince: made }, undo: true },
+    });
+    expect(undone.body.item.fields).toMatchObject({ status: 'todo', statusSince: made });
+    expect(
+      (await call({ path: `/items/${item.id}`, body: { set: { statusSince: 'soon' } } })).body,
+    ).toMatchObject({ error: 'field_value_invalid' });
+  });
+
   it('moves between columns and sets or clears a swimlane field', async () => {
     const b = (await add({ title: 'B', status: 'done' })).body.item;
     const res = await call<ItemResponse>({
@@ -1232,7 +1258,7 @@ describe('changing many items at once', () => {
     ]);
     expect([...written.landed]).toEqual([a.id]);
     expect(written.rev).toBe(await db.getItemsRev(sql.env, 'd1'));
-    expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual({ title: 'B' });
+    expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual(b.fields);
   });
 });
 

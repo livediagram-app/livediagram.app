@@ -26,6 +26,8 @@ import {
 } from './limits';
 import { HEX_COLOUR, isObj } from './validate';
 import { itemColourValue } from './item-colour';
+import { STATUS_SINCE_FIELD } from './item';
+import { isStatusSince } from './status-since';
 
 type ItemFieldKind =
   | 'text'
@@ -204,9 +206,15 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
   }
 }
 
+// A custom field's value: a scalar or a list of them, or the two shapes a built-in field's kind keeps that are not
+// (docs/specs/026-plan/item-types.md "Custom field kinds"): a Person field's `{ id, name, color }`, and a Checklist
+// field's `{ text, done }` rows, checked as the Assignee's and the Checklist's are.
 function normaliseUnknown(v: unknown): ItemFieldValue | undefined {
   if (isScalar(v)) return v;
-  if (Array.isArray(v) && v.length <= ITEM_UNKNOWN_ARRAY_MAX && v.every(isScalar)) return v;
+  if (isObj(v)) return normaliseKnown('person', v);
+  if (!Array.isArray(v)) return undefined;
+  if (v.length > 0 && v.every(isObj)) return normaliseKnown('checklist', v);
+  if (v.length <= ITEM_UNKNOWN_ARRAY_MAX && v.every(isScalar)) return v;
   return undefined;
 }
 
@@ -215,7 +223,8 @@ function normaliseUnknown(v: unknown): ItemFieldValue | undefined {
 export function validateFields(input: unknown, mode: 'create' | 'patch'): FieldsResult {
   if (!isObj(input)) return { ok: false, error: 'field_value_invalid' };
   const keys = Object.keys(input);
-  if (keys.length > ITEM_FIELDS_MAX) return { ok: false, error: 'fields_too_many' };
+  if (keys.filter((k) => k !== STATUS_SINCE_FIELD).length > ITEM_FIELDS_MAX)
+    return { ok: false, error: 'fields_too_many' };
   const fields: ItemFields = {};
   for (const key of keys) {
     if (!isValidFieldKey(key)) return { ok: false, error: 'field_key_invalid', field: key };
@@ -235,6 +244,14 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
       const runs = normaliseRichRuns(v, richTextMaxOf(key));
       if (!runs) return { ok: false, error: 'field_value_invalid', field: key };
       fields[key] = runs;
+      continue;
+    }
+    // When the card entered its status (docs/specs/026-plan/items.md "Fields"): a write names it only to put one back
+    // (an undo, a restore, a sync); apply.ts stamps it otherwise. A create drops a bad one (apply.ts stamps it afresh)
+    // rather than refusing a card carried from older data.
+    if (key === STATUS_SINCE_FIELD) {
+      if (isStatusSince(v)) fields[key] = v;
+      else if (mode === 'patch') return { ok: false, error: 'field_value_invalid', field: key };
       continue;
     }
     if (kind === 'long-text') {
@@ -259,9 +276,10 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
 }
 
 // The fields' size against ITEM_FIELDS_BYTES. A comment thread has its own budget (commentsByteSize), so a busy
-// conversation never stops someone editing the card's fields.
+// conversation never stops someone editing the card's fields; the status stamp, which every write adds, is not
+// counted either, so a card at the bounds before it existed is never refused for it.
 export function fieldsByteSize(fields: ItemFields): number {
-  const { comments: _comments, ...rest } = fields;
+  const { comments: _comments, [STATUS_SINCE_FIELD]: _since, ...rest } = fields;
   return new TextEncoder().encode(JSON.stringify(rest)).length;
 }
 
@@ -272,7 +290,8 @@ export function commentsByteSize(fields: ItemFields): number {
 }
 
 export function fieldsWithinBounds(fields: ItemFields): ItemRejection | null {
-  if (Object.keys(fields).length > ITEM_FIELDS_MAX) return 'fields_too_many';
+  if (Object.keys(fields).filter((k) => k !== STATUS_SINCE_FIELD).length > ITEM_FIELDS_MAX)
+    return 'fields_too_many';
   if (fieldsByteSize(fields) > ITEM_FIELDS_BYTES) return 'fields_too_large';
   return null;
 }

@@ -240,8 +240,15 @@ export function CustomFieldEditor({
     }
     // A Card field is drawn by LinkedCardField and a Calculated field by CalculatedFieldValue (ItemFieldEditor),
     // never here.
+    // Drawn by the card panel itself (ItemFieldEditor): a linked card, a worked-out value, a picture, and the built-in
+    // fields' kinds, which it edits as their built-in fields.
     case 'card':
     case 'calculated':
+    case 'image':
+    case 'person':
+    case 'labels':
+    case 'colour':
+    case 'checklist':
       return null;
   }
 }

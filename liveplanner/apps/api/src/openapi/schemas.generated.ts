@@ -1319,6 +1319,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       {
+        "const": "age",
+        "type": "string"
+      },
+      {
         "$ref": "#/components/schemas/CustomCardField"
       }
     ]
@@ -2583,7 +2587,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "multichoice",
       "rating",
       "card",
-      "calculated"
+      "calculated",
+      "person",
+      "labels",
+      "colour",
+      "checklist",
+      "image"
     ],
     "type": "string"
   },

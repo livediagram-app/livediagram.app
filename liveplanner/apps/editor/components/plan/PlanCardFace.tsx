@@ -13,6 +13,7 @@ import {
   isFlagged,
   isPriority,
   itemAssignee,
+  itemStatus,
   itemLabels,
   itemTitle,
   ITEM_TYPES,
@@ -37,10 +38,12 @@ import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
 import { calculatedFieldValue } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
+import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ColourDot } from './ColourSwatches';
+import { AgePill } from './card-age';
 import {
   ChecklistPill,
   CommentsPill,
@@ -199,6 +202,18 @@ export function PlanCardFace({
         ) : null;
       case 'checklist':
         return progress ? <ChecklistPill key={f} progress={progress} palette={palette} /> : null;
+      // How long it has sat in its column; never on a done card (a done column draws it muted).
+      case 'age': {
+        const status = itemStatus(item);
+        return muted || status === undefined ? null : (
+          <AgePill
+            key={f}
+            item={item}
+            statusName={plan?.statusNames.get(status) ?? status}
+            palette={palette}
+          />
+        );
+      }
       case 'comments':
         return <CommentsPill key={f} item={item} palette={palette} />;
       // The votes the card has gathered from ended session votes, read-only.
@@ -227,6 +242,8 @@ export function PlanCardFace({
       default: {
         // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
         const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
+        // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
+        if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
         // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields").
         const text = !def
           ? null

@@ -22,7 +22,7 @@ import {
   withLinkTypes,
 } from '@liveplanner/items';
 import { Select, SwitchRow, TextArea, TextInput } from '@liveplanner/ui';
-import { hasOptions } from './add-field-kinds';
+import { hasOptions, type PickKind } from './add-field-kinds';
 import { optionsFrom } from './ChoiceOptionsEditor';
 import { LinksToPicker } from './LinksToPicker';
 
@@ -59,6 +59,18 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   rating: 'Rating',
   card: 'Link to Card',
   calculated: 'Calculated',
+  person: 'Person',
+  labels: 'Labels',
+  colour: 'Colour',
+  checklist: 'Checklist',
+  image: 'Image',
+};
+
+// Add Field's kinds by name: every custom kind's, and the one-to-a-type built-in fields' (Comments, Votes).
+export const PICK_KIND_LABELS: Record<PickKind, string> = {
+  ...CUSTOM_KIND_LABELS,
+  comments: 'Comments',
+  votes: 'Votes',
 };
 
 // A full-width dashed "add" row (Add Type, Add Field, Add Tab): plain to spot, quiet until hovered.

@@ -6,6 +6,7 @@
 import { useId, useState } from 'react';
 import {
   ITEM_TITLE_MAX,
+  builtInFieldOfKind,
   isEmptyFieldValue,
   linkCandidates,
   linkTypesOf,
@@ -14,6 +15,7 @@ import {
 } from '@liveplanner/items';
 import { Button, CheckIcon, CloseIcon, TextInput } from '@liveplanner/ui';
 import type { RequiredFieldsRequest } from '@/hooks/plan/useRequiredFieldsGate';
+import { BuiltInKindField } from './BuiltInKindField';
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { LinkedCardField } from './LinkedCardField';
 import { ItemDetailsRow } from './ItemPanelLayout';
@@ -89,6 +91,14 @@ export function RequiredFieldsDialog({
                   items={items}
                   types={plan?.types ?? [type]}
                   disabled={false}
+                  onSave={(v) => set(f.id, v)}
+                />
+              ) : builtInFieldOfKind(f.kind) ? (
+                <BuiltInKindField
+                  id={id}
+                  label={f.label}
+                  kind={f.kind}
+                  value={values[f.id]}
                   onSave={(v) => set(f.id, v)}
                 />
               ) : (

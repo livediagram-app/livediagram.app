@@ -5,16 +5,16 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                                                            |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                     |
-| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                       |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required? }`; kinds `CUSTOM_FIELD_KINDS` |
-| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)      |
-| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                          |
-| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                        |
-| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                          |
-| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                         |
+| Spec term         | Identifier                                                                                                                                                                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                          |
+| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                            |
+| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
+| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                           |
+| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                               |
+| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                             |
+| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                               |
+| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                              |
 
 ## Package `@liveplanner/items`
 
@@ -52,6 +52,14 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   value for and `after` leaves empty (so a card already empty is never refused). `requiredFieldsMessage(type, missing)`
   "{Type} cards need {A}, {B} and {C}".
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
+- Card Age (spec "Card display"): `age` is a built-in card field (`CARD_FIELDS`, both sizes' `CARD_SIZE_FIELDS`),
+  labelled "Age", in no `DRAWN` slot and so in no default; `typeOffersCardField` offers it on every type. The editor's
+  `AgePill` (`components/plan/card-age.tsx`) reads `cardAgeDays(itemStatusSince(item), today)` with `today` from
+  `useToday()` (one module timeout re-armed at local midnight, shared by every reader), and `cardAgeTone(days)`:
+  `quiet` under `CARD_AGE_WARN_DAYS`, `warn` (amber, semibold) to `CARD_AGE_ALERT_DAYS`, `alert` (red, bold) from
+  there. `PlanCardFace` draws it only when the card is not `muted` (a done column) and has a status. The SVG face
+  (`svg-render-plan-card.ts`) draws the same pill from `Date.now()` at render time, only with the board's `isDone`
+  in hand, and ignores the board's old `cardFields` for it (the spec says a board has no say).
 - `projectBoard(setup, items, quick?, types = ITEM_TYPES)`, `itemAccessibleName(item, types?)`,
   `boardAddTypes(setup, types)`: the catalogue where they name or order types.
 
@@ -158,6 +166,17 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   (projection), `PlanBoardCells`/`PlanCardView` names,
   the palette's Cards tiles (`planCardTile`, in `PalettePlanCardsTab`, `ToolbarPalette`'s strip and `BoardCardsStrip`),
   SVG export and thumbnails (`itemTypes` render option), the MCP's previews.
+- Built-in kinds: `builtInFieldOfKind` (`packages/items/src/item-types.ts`) maps Person, Labels, Colour and
+  Checklist to `assignee`, `labels`, `color` and `checklist`; the store (`normaliseUnknown`), `customFieldText`
+  (`personName`, `checklistRowsProgress`), the CSV (`board-csv.ts`) and the agents (`plan-names.ts`, refusals named
+  by the field) read the custom field through it. The editor's `ItemFieldEditor` draws the built-in control for it
+  (`PersonPicker` takes the field's name as `label`), `CustomKindPill.tsx` (`isBuiltInKindPill`, `customKindPill`)
+  draws it on `PlanCardFace`, and `BuiltInKindField.tsx` asks it in `RequiredFieldsDialog`.
+- Image fields: `ImageField.tsx` (`ImageFieldControl` in the card panel, `ImageThumb` on the card face, lazy through
+  an `IntersectionObserver`), reading through `apps/editor/lib/api/images.ts` (`apiUploadImage`, `apiImageUrl`,
+  `releaseImageUrl`, `ImageUploadError`) with the plan's `itemsScope` (`PlanContext`, from `usePlanItems`). The api's
+  `routes/images.ts` and the room's `plan-room/image-grants.ts` (api.md "Images"). An upload tracks
+  `Plan · Added · CardImage`.
 - The Card Types segment of `PlanCardsClusterStrip` (a `ClusterPopoverSegment`, from `ClusterPopoverButton.tsx`,
   shared with Slides) opens dock panel `card-types` (`useCardTypesOpener` opens it from Edit Cards);
   `CardTypesPanel` is a `MovablePanel` popover; `ItemTypeEditor` + `ItemTypeLayoutEditor` (forms in `ItemTypeFieldForms`) the modal (`Dialog`,
@@ -178,30 +197,43 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   `'first'`, `onEscape` handed to the form), holding `NewFieldForm` (`NewFieldForm.tsx`), which keeps the step
   (`{ step: 'pick' } | { step: 'shape', kind }`), the search text (kept across the steps) and the open group, and
   answers Escape (`escape()`: shape → pick, then a typed search cleared, then false so the popover closes).
-  - Pure data and matching in `add-field-kinds.ts`: `KIND_GROUPS` (`{ id, label, kinds }[]`: `text` "Text & links"
-    text, longtext, link, email; `numbers` "Numbers & dates" number, currency, rating, date; `choices` "Choices"
-    choice, multichoice, checkbox; `cards` "Linked cards" card, calculated; every `CUSTOM_FIELD_KINDS` member once,
-    test-locked), `KIND_DESCRIPTIONS` and `KIND_ALIASES` (`Record<CustomFieldKind, …>`, the spec's words),
-    `searchKey(q)` (trimmed, lower-cased, runs of spaces one), `kindMatches(kind, q)` (the whole query a substring of
-    the label, the description or an alias, else every word of it a substring of one of them), `builtInMatches(id,
-q)` (its `BUILT_IN_FIELD_LABELS` name holds the query) and `kindReadiness(field)` (`null` when ready, else
-    `'name' | 'options' | 'links'`, in that order) with `READINESS_HINT`.
+  - Pure data and matching in `add-field-kinds.ts`. A **pick kind** (`PickKind`) is a `CustomFieldKind` or one of
+    the built-in-only kinds `'comments' | 'votes'` (one to a type until they can repeat). `KIND_GROUPS`
+    (`{ id, label, kinds: PickKind[] }[]`: `text` "Text & links" text, longtext, link, email; `numbers` "Numbers &
+    dates" number, currency, rating, date; `choices` "Choices" choice, multichoice, checkbox, labels; `people`
+    "People & teamwork" person, checklist, comments, votes; `look` "Colour & images" colour, image; `cards` "Linked
+    cards" card, calculated; every `CUSTOM_FIELD_KINDS` member once, test-locked), `KIND_DESCRIPTIONS` and
+    `KIND_ALIASES` (`Record<PickKind, …>`, the spec's words), `BUILT_INS_OF_KIND` (`Record<PickKind, ItemFieldId[]>`:
+    longtext description; choice priority; number estimate; date start, due; person assignee; labels labels; colour
+    color; checklist checklist; comments comments; votes votes), `BUILT_IN_ROLES` (`Partial<Record<ItemFieldId,
+string>>`, the Ready to use lines), `readyBuiltIns(kind, missing)` (the kind's built-ins the type lacks, in
+    `BUILT_INS_OF_KIND` order), `searchKey(q)` (trimmed, lower-cased, runs of spaces one), `kindMatches(kind, label,
+q)` (the whole query a substring of the label, the description, an alias or the name of a built-in of the kind,
+    else every word of it a substring of one of them), `isOneToAType(kind)` (comments, votes) and
+    `kindReadiness(field)` (`null` when ready, else `'name' | 'options' | 'links'`, in that order) with
+    `READINESS_HINT`.
   - Step 1 is `AddFieldPicker.tsx`: a `sticky top-0` header (search `type="search"`, `aria-label="Search fields"`, a
-    close `IconButton` "Close" calling `onCancel`), then `section`s headed by `h3` **Ready-made**
-    (`data-ready-made`, a `grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))]` of tile buttons, icon from
-    `fieldIconOf(id, undefined)`) and **Your own field**. Each group is an `h4` holding the header button
-    (`aria-expanded`, `aria-controls` its list's id, its name, a count pill, a chevron rotating 180° when open,
-    `motion-safe:transition`), and the list a `ul` of kind buttons (`aria-label` the kind's name, `aria-describedby`
-    its description, `data-kind`). Searching (`searchKey(q)` non-empty), every group with a match renders open and
-    the headers are not toggles (`aria-expanded` true, `aria-disabled`); a group with none is not rendered. No
-    match at all: the empty state, `role="status"`. A visually hidden `aria-live="polite"` line says "N fields match"
-    while searching. Arrow keys: the root's `onKeyDown` takes ↑ ↓ Home End over its `[data-nav]` elements in DOM
-    order (the search, the tiles, the headers, the kinds), `preventDefault`, focusing the next; Enter in the search
-    with a query presses the first `[data-pick]`. `canAddCustom` false renders `CUSTOM_MAX_NOTE` in place of the
-    groups.
+    close `IconButton` "Close" calling `onCancel`), then one list (no Ready-made section, no "Your own field"
+    heading): `CUSTOM_MAX_NOTE` first when `canAddCustom` is false, then the groups. Each group is an `h4` holding the
+    header button (`aria-expanded`, `aria-controls` its list's id, its name, a count pill of the kinds it lists, a
+    chevron rotating 180° when open, `motion-safe:transition`), and the list a `ul` of kind buttons (`aria-label`
+    the kind's name, `aria-describedby` its description, `data-kind`; a **Ready to use** tag after the name when
+    `readyBuiltIns(kind, missing)` is not empty). A one-to-a-type kind (`isOneToAType`) is listed only while the
+    type lacks it, and pressing it calls `onAddBuiltIn(id)`; every other kind calls `onPick(kind)`. With
+    `canAddCustom` false a kind with nothing ready is `aria-disabled`, dimmed and not `data-pick`. Searching
+    (`searchKey(q)` non-empty), every group with a match renders open and the headers are not toggles
+    (`aria-expanded` true, `aria-disabled`); a group with none is not rendered. No match at all: the empty state,
+    `role="status"`. A visually hidden `aria-live="polite"` line says "N fields match" while searching. Arrow keys:
+    the root's `onKeyDown` takes ↑ ↓ Home End over its `[data-nav]` elements in DOM order (the search, the headers,
+    the kinds), `preventDefault`, focusing the next; Enter in the search with a query presses the first
+    `[data-pick]`.
   - Step 2 is `AddFieldShape.tsx`, a `<form>` (`aria-label` "New {Kind} field"; `onSubmit` adds when ready, so Enter
     in Name submits; option rows and selects take their own Enter): a header with the back button (`ChevronLeft`,
-    "All kinds") and the pill (`<span><span class="sr-only">Kind: </span>{label}</span>` with its icon); `TextInput`
+    "All kinds") and the pill (`<span><span class="sr-only">Kind: </span>{label}</span>` with its icon); when
+    `readyBuiltIns(kind, missing)` is not empty, a `section` headed **Ready to use** (`aria-labelledby`) of one
+    button per built-in (`fieldIconOf(id)`, its `BUILT_IN_FIELD_LABELS` name, its `BUILT_IN_ROLES` line, a plus;
+    `onAddBuiltIn(id)`), then a rule labelled **Or make your own**, and only that section when `canAddCustom` is
+    false; `TextInput`
     labelled "Name" (`autoFocus`, `maxLength={CUSTOM_FIELD_LABEL_MAX}`); the kind's controls (`ChoiceOptionsEditor`,
     `RatingScaleSelect`, `CurrencySelect`, `LinksToPicker`, `CalculationSelect`, each with a visible label);
     `RequiredSwitch`; `CustomFieldPreview`; then a `sticky bottom-0` footer: the submit `Button` (full width,
@@ -345,8 +377,8 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 - Panel rows are focusable list items named "<Name>, N items"; Enter or Space opens the editor. Swatches and
   glyphs are radio groups with names ("Cyan", "Chat glyph"). The editor's problems are named in text beside
   Save. Copy: "Card Types", "+ Add Type", "Add Default Types", its confirm "Add {list} to this project’s card types? They go after the ones you have, and nothing you have changes." with "Add Types", "New Card Type", "Edit Card Type",
-  "+ Add Field", "Search fields", "Search fields, like money or date", "Ready-made", "Your own field", the four
-  group names, the thirteen descriptions, "No matches for “…”", "Try a word like money, date or parent.",
+  "+ Add Field", "Search fields", "Search fields, like money or date", "Ready to use", "Or make your own", the six
+  group names, the twenty descriptions, the nine Ready to use lines, "No matches for “…”", "Try a word like money, date or parent.",
   "This type holds the most custom fields it can (12). Remove one to add another.", "All kinds", "Kind: {Kind}",
   "Name", "Field name", "Options", "Add an option", "or paste a list", "Option {n}", "Remove option {n}", "Scale",
   "Currency", "Calculation", "Required", "Preview", "Example card", "Add {Name}", "Add {Kind} Field", "Name the
@@ -384,7 +416,10 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | Required fields: agents list, set, refuse                 | `packages/agent-verbs/src/verbs/plan-verbs.test.ts`, `packages/items/src/type-changes.test.ts`                                           |
 | Required fields: New {Type} dialog, type editor switch    | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                         |
 | Add Field: groups, descriptions, aliases, readiness       | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                    |
-| Add Field: search, accordion, Ready-made, keys, shape     | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                      |
+| Add Field: search, accordion, Ready to use, keys, shape   | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                      |
+| Built-in kinds: store, text, CSV, agents                  | `packages/items/src/built-in-field-kinds.test.ts`                                                                                        |
+| Built-in kinds and Image: panel, card face, required      | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                             |
+| Image fields: upload, read, roles, grants                 | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                |
 | Add Field: option rows, Enter, Backspace, paste           | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                               |
 | Add Field: opened from a group, lands there               | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                         |
 | Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |
@@ -408,6 +443,8 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Legacy types only: what an old type could leave out                            |
 | `PLAN_TYPE_COLOURS`                                    | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
 | `ADD_FIELD_POPOVER_PX`                                 | 384    | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
+| `CARD_AGE_WARN_DAYS`                                   | 7      | Spec "Card display": Age turns amber                                           |
+| `CARD_AGE_ALERT_DAYS`                                  | 14     | Spec "Card display": Age turns red, Stale Cards' `STALE_DAYS`                  |
 
 ## Default and ready-made types
 

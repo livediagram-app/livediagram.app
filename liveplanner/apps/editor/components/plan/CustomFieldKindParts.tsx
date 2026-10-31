@@ -14,15 +14,25 @@ import {
 import { CheckIcon, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalculator,
+  lucideClipboardCheck,
   lucideHash,
+  lucideImage,
   lucideList,
   lucideListChecks,
   lucideLink,
+  lucideMessageSquare,
+  lucidePalette,
+  lucideTag,
   lucideType,
+  lucideVote,
 } from '@liveworkspace/icons/lucide';
-import { CUSTOM_KIND_LABELS } from './ItemTypeFieldForms';
+import type { PickKind } from './add-field-kinds';
+import { PICK_KIND_LABELS } from './ItemTypeFieldForms';
 import { ItemDetailsRow } from './ItemPanelLayout';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { PersonDisc } from './PersonDisc';
+import { LabelChips } from './plan-card-parts';
+import { planColourName } from './ColourSwatches';
 
 const TypeIcon = lucideGlyph(lucideType, 16);
 const HashIcon = lucideGlyph(lucideHash, 16);
@@ -30,6 +40,12 @@ const ListIcon = lucideGlyph(lucideList, 16);
 const LinkIcon = lucideGlyph(lucideLink, 16);
 const ListChecksIcon = lucideGlyph(lucideListChecks, 16);
 const CalculatorIcon = lucideGlyph(lucideCalculator, 16);
+const TagIcon = lucideGlyph(lucideTag, 16);
+const PaletteIcon = lucideGlyph(lucidePalette, 16);
+const ChecklistIcon = lucideGlyph(lucideClipboardCheck, 16);
+const ImageIcon = lucideGlyph(lucideImage, 16);
+const CommentsIcon = lucideGlyph(lucideMessageSquare, 16);
+const VotesIcon = lucideGlyph(lucideVote, 16);
 
 // Each kind's icon: what its value looks like.
 export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
@@ -46,23 +62,36 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   rating: <PlanTypeGlyph glyph="star" size={16} />,
   card: <PlanTypeGlyph glyph="ticket" size={16} />,
   calculated: <CalculatorIcon />,
+  person: <PlanTypeGlyph glyph="person" size={16} />,
+  labels: <TagIcon />,
+  colour: <PaletteIcon />,
+  checklist: <ChecklistIcon />,
+  image: <ImageIcon />,
 };
 
-// What a built-in field holds, as the custom kind closest to it, so every row of the type editor wears the Add
-// Field popover's icons. The Assignee is a person, which no custom kind is (people are assigned there).
-const BUILT_IN_KINDS: Partial<Record<string, CustomFieldKind>> = {
+// Add Field's kinds: every custom kind's icon, and the one-to-a-type built-in fields' (Comments, Votes).
+export const PICK_KIND_ICONS: Record<PickKind, React.ReactNode> = {
+  ...CUSTOM_KIND_ICONS,
+  comments: <CommentsIcon />,
+  votes: <VotesIcon />,
+};
+
+// What a built-in field holds, as its kind (docs/specs/026-plan/item-types.md "Fields and Tabs"), so every row of the
+// type editor wears the Add Field popover's icons: the Assignee a Person, Labels Labels, Comments and Votes their own.
+const BUILT_IN_KINDS: Partial<Record<string, PickKind>> = {
   title: 'text',
   description: 'longtext',
   status: 'choice',
   priority: 'choice',
-  color: 'choice',
-  labels: 'choice',
+  assignee: 'person',
+  color: 'colour',
+  labels: 'labels',
   estimate: 'number',
   start: 'date',
   due: 'date',
-  checklist: 'checkbox',
-  comments: 'longtext',
-  votes: 'number',
+  checklist: 'checklist',
+  comments: 'comments',
+  votes: 'votes',
 };
 
 // A field's icon and the name of what it holds ("Link to Card", "Date", "Person"), for the type editor's rows.
@@ -70,11 +99,12 @@ export function fieldIconOf(
   id: string,
   custom: Pick<CustomFieldDef, 'kind'> | undefined,
 ): { node: React.ReactNode; name: string } {
-  if (!custom && id === 'assignee')
-    return { node: <PlanTypeGlyph glyph="person" size={16} />, name: 'Person' };
   const kind = custom?.kind ?? BUILT_IN_KINDS[id] ?? 'text';
-  return { node: CUSTOM_KIND_ICONS[kind], name: CUSTOM_KIND_LABELS[kind] };
+  return { node: PICK_KIND_ICONS[kind], name: PICK_KIND_LABELS[kind] };
 }
+
+const SAMPLE_PERSON = { id: 'sample', name: 'Sam Rivera', color: '#7c3aed' };
+const SAMPLE_COLOUR = '#0d9488';
 
 // A sample of each kind, drawn as the card's panel draws a value (quietly: it is only a picture).
 function SampleValue({
@@ -161,6 +191,39 @@ function SampleValue({
       return (
         <span className="text-[13px] tabular-nums text-slate-700 dark:text-slate-200">
           {calculation === 'childrenDone' ? '40%' : '3'}
+        </span>
+      );
+    // The built-in fields' kinds, as their fields draw (docs/specs/026-plan/item-types.md "Custom field kinds").
+    case 'person':
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-700 dark:text-slate-200">
+          <PersonDisc person={SAMPLE_PERSON} />
+          {SAMPLE_PERSON.name}
+        </span>
+      );
+    case 'labels':
+      return <LabelChips labels={['Design', 'Urgent']} />;
+    case 'colour':
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-700 dark:text-slate-200">
+          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: SAMPLE_COLOUR }} />
+          {planColourName(SAMPLE_COLOUR)}
+        </span>
+      );
+    case 'checklist':
+      return (
+        <span className="inline-flex items-center gap-1 text-[13px] tabular-nums text-slate-700 dark:text-slate-200 [&_svg]:h-3.5 [&_svg]:w-3.5">
+          <ChecklistIcon />
+          2/5
+        </span>
+      );
+    case 'image':
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-700 dark:text-slate-200">
+          <span className="flex h-7 w-10 items-center justify-center rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            <ImageIcon />
+          </span>
+          photo.png
         </span>
       );
   }

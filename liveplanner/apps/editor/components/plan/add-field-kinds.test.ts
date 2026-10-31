@@ -1,38 +1,66 @@
 import { describe, expect, it } from 'vitest';
-import { CUSTOM_FIELD_KINDS, type CustomFieldKind } from '@liveplanner/items';
+import { BUILT_IN_FIELD_IDS, CUSTOM_FIELD_KINDS } from '@liveplanner/items';
 import {
+  BUILT_INS_OF_KIND,
+  BUILT_IN_ROLES,
   KIND_ALIASES,
   KIND_DESCRIPTIONS,
   KIND_GROUPS,
-  builtInMatches,
   groupOfKind,
+  isOneToAType,
   kindMatches,
   kindReadiness,
+  readyBuiltIns,
   searchKey,
+  type PickKind,
 } from './add-field-kinds';
-import { CUSTOM_KIND_LABELS } from './ItemTypeFieldForms';
+import { BUILT_IN_FIELD_LABELS, PICK_KIND_LABELS } from './ItemTypeFieldForms';
 
 // docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field's groups, lines, words and readiness.
-const found = (query: string): CustomFieldKind[] =>
-  CUSTOM_FIELD_KINDS.filter((k) => kindMatches(k, CUSTOM_KIND_LABELS[k], searchKey(query)));
+const PICK_KINDS: readonly PickKind[] = [...CUSTOM_FIELD_KINDS, 'comments', 'votes'];
+const found = (query: string): PickKind[] =>
+  PICK_KINDS.filter((k) =>
+    kindMatches(
+      k,
+      PICK_KIND_LABELS[k],
+      searchKey(query),
+      (BUILT_INS_OF_KIND[k] ?? []).map((id) => BUILT_IN_FIELD_LABELS[id]),
+    ),
+  );
 
 describe('the kinds’ groups', () => {
-  it('holds every kind once, in the owner’s four groups', () => {
+  it('holds every kind once, built-in and custom alike, in six groups', () => {
     expect(KIND_GROUPS.map((g) => g.label)).toEqual([
       'Text & links',
       'Numbers & dates',
       'Choices',
+      'People & teamwork',
+      'Colour & images',
       'Linked cards',
     ]);
     const grouped = KIND_GROUPS.flatMap((g) => g.kinds);
-    expect([...grouped].sort()).toEqual([...CUSTOM_FIELD_KINDS].sort());
+    expect([...grouped].sort()).toEqual([...PICK_KINDS].sort());
     expect(new Set(grouped).size).toBe(grouped.length);
     expect(KIND_GROUPS.find((g) => g.id === 'cards')!.kinds).toEqual(['card', 'calculated']);
     expect(groupOfKind('rating')).toBe('numbers');
+    expect(groupOfKind('image')).toBe('look');
+  });
+
+  it('offers every built-in field a type can add under one kind, each with what uses it', () => {
+    const offered = Object.values(BUILT_INS_OF_KIND).flat();
+    const addable = BUILT_IN_FIELD_IDS.filter((f) => f !== 'title' && f !== 'status');
+    expect([...offered].sort()).toEqual([...addable].sort());
+    for (const id of offered)
+      if (id !== 'comments' && id !== 'votes') expect(BUILT_IN_ROLES[id]).toBeTruthy();
+    expect(readyBuiltIns('date', ['due', 'assignee'])).toEqual(['due']);
+    expect(readyBuiltIns('date', ['start', 'due'])).toEqual(['start', 'due']);
+    expect(readyBuiltIns('text', ['due'])).toEqual([]);
+    expect(isOneToAType('comments')).toBe(true);
+    expect(isOneToAType('person')).toBe(false);
   });
 
   it('gives every kind a one-line description and some words', () => {
-    for (const k of CUSTOM_FIELD_KINDS) {
+    for (const k of PICK_KINDS) {
       expect(KIND_DESCRIPTIONS[k].length).toBeGreaterThan(5);
       expect(KIND_DESCRIPTIONS[k]).not.toContain('\n');
       expect(KIND_ALIASES[k].length).toBeGreaterThan(0);
@@ -46,7 +74,7 @@ describe('searching', () => {
     expect(found('money')).toEqual(['currency']);
     expect(found('stars')).toEqual(['rating']);
     expect(found('yes/no')).toEqual(['checkbox']);
-    expect(found('tick')).toEqual(['checkbox']);
+    expect(found('tick')).toEqual(['checkbox', 'checklist']);
     expect(found('parent')).toContain('card');
     expect(found('percent')).toEqual(['calculated']);
     expect(found('progress')).toEqual(['calculated']);
@@ -61,10 +89,12 @@ describe('searching', () => {
     expect(found('qwerty')).toEqual([]);
   });
 
-  it('finds every kind with no search, and a built-in by its name', () => {
-    expect(found('')).toEqual([...CUSTOM_FIELD_KINDS]);
-    expect(builtInMatches('Due Date', searchKey('due'))).toBe(true);
-    expect(builtInMatches('Assignee', searchKey('date'))).toBe(false);
+  it('finds every kind with no search, and a kind by its built-ins’ names', () => {
+    expect(found('')).toEqual([...PICK_KINDS]);
+    expect(found('due')).toEqual(['date']);
+    expect(found('assignee')).toEqual(['person']);
+    expect(found('priority')).toEqual(['choice']);
+    expect(found('photo')).toEqual(['image']);
   });
 });
 

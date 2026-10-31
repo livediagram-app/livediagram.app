@@ -242,9 +242,11 @@ const customField = z.object({
       'text (one line), longtext (rich paragraphs, in a panel tab; written as Markdown), number, currency (an amount in the field’s ' +
         'currency, shown as "£12,500"), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
         'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
-        'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12") or ' +
+        'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12"), ' +
         'calculated (worked out from the cards linking to the card through a card field, by its calculation; ' +
-        'read-only, never given a value).',
+        'read-only, never given a value), person (someone, by name, as the assignee takes one), labels (a list, ' +
+        'as labels takes one), colour (#rrggbb), checklist (rows of { text, done }) or image (a picture added ' +
+        'in the card panel; an agent may clear it, never set one).',
     ),
   options: z
     .array(z.string())
@@ -314,8 +316,8 @@ const displayArg = z
   })
   .describe(
     'What its cards show at each card size and where, fields by name (Number, Type, Assignee, Priority, ' +
-      'Labels, Estimate, Start Date, Due Date, Votes, Checklist, Comments, Description, or a custom field by ' +
-      'name). Any size draws custom fields. A size given replaces that size; one left out keeps its own. A field ' +
+      'Labels, Estimate, Start Date, Due Date, Votes, Checklist, Comments, Description, Age (days in its column), ' +
+      'or a custom field by name). Any size draws custom fields. A size given replaces that size; one left out keeps its own. A field ' +
       'shows on a card only when the type has it and the card has a value.',
   );
 const tabsArg = z
@@ -442,8 +444,8 @@ const listedCustom = z.object({
   kind: z
     .string()
     .describe(
-      'text, longtext, number, currency, date, checkbox, link, email, choice, multichoice, rating, card or ' +
-        'calculated.',
+      'text, longtext, number, currency, date, checkbox, link, email, choice, multichoice, rating, card, ' +
+        'calculated, person, labels, colour, checklist or image.',
     ),
   options: z.array(z.string()).optional().describe('A choice or multichoice field’s options.'),
   scale: z.number().optional().describe('A rating field’s top score.'),

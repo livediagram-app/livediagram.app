@@ -30,6 +30,7 @@ import {
   typeOffersCardField,
   customCardFields,
   isCustomCardField,
+  STATUS_SINCE_FIELD,
   type CustomFieldDef,
   type CardDisplay,
   type CardField,
@@ -76,6 +77,7 @@ export function cardZoomFor(width: number | undefined): number {
 }
 
 const SAMPLE_PERSON = { id: 'sample-person', name: 'Sam Rivera', color: '#0d9488' };
+const SAMPLE_REVIEWER = { id: 'sample-reviewer', name: 'Ana Silva', color: '#7c3aed' };
 
 // A card with something in every field, so each placed field shows.
 function sampleCard(type: ItemTypeDef): Item {
@@ -90,6 +92,9 @@ function sampleCard(type: ItemTypeDef): Item {
       priority: 'high',
       due: dayKey(3),
       start: dayKey(-2),
+      // Four days in its column, so a placed Age reads "4d".
+      status: 'In Progress',
+      [STATUS_SINCE_FIELD]: Date.now() - 4 * 86_400_000,
       labels: ['Design'],
       estimate: 3,
       checklist: [
@@ -130,7 +135,25 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
       return [[c.id, 'sam@example.com']];
     case 'choice':
       return c.options?.[0] ? [[c.id, c.options[0]]] : [];
+    // A built-in kind's sample is its built-in field's; an Image has none to fetch, so it reads its name.
+    case 'person':
+      return [[c.id, SAMPLE_REVIEWER]];
+    case 'labels':
+      return [[c.id, ['Urgent']]];
+    case 'colour':
+      return [[c.id, '#0d9488']];
+    case 'checklist':
+      return [
+        [
+          c.id,
+          [
+            { id: 'a', text: 'One', done: true },
+            { id: 'b', text: 'Two', done: false },
+          ],
+        ],
+      ];
     case 'card':
+    case 'image':
       return [];
     default:
       return [[c.id, c.label || 'Sample']];
