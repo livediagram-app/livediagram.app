@@ -143,7 +143,9 @@ missing.
   dark mode in the card's dark surface.
 - **Keyboard**: Tab moves through the bar's controls in the order above; Enter and Shift+Enter step
   from the Find field; Enter in Replace With replaces; Cmd/Ctrl+Enter in Replace With replaces all;
-  Alt+C and Alt+W toggle Match Case and Whole Word; Escape closes.
+  Alt+C and Alt+W toggle Match Case and Whole Word; Escape closes. A control that turns off under the keyboard
+  (Replace All taking the last match, Replace the only one) hands the keyboard back to the Find field, so Escape
+  still closes the bar.
 - **Screen readers**: the bar is a `search` landmark named "Find in Tab"; the count is a polite live
   region ("3 of 12", "No Results").
 - **Touch**: every control is a 44 px target on a touch screen.
