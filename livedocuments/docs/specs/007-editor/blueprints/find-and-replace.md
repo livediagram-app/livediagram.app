@@ -162,7 +162,11 @@ are.` when any held (`1 match ... was left as it is.`).
   `TOOLBAR_CONTROL_PRESSED` controls (36 px, 44 px on touch), `TOOLBAR_DIVIDER`; the shared `Tooltip` and `Button`.
 - `FindHost` places it `fixed` over the canvas column (its rect read through a `ResizeObserver`), `top` the column's
   top plus `toolbarTopClearancePx(1)`. Desktop: 16 px from the column's right, `min(420px, 100vw - 32px)` wide.
-  Phone: 8 px from each side. Lazy-loaded on first open; the error area is the search panel's (`Search`).
+  Phone: 8 px from each side. Lazy-loaded on first open (`React.lazy`); until it arrives
+  `FindBarLoading` stands in its place, the bar's card holding only the Find field (bound to the query, focused in a
+  layout effect, `data-find-loading`), so keys typed meanwhile are the query and the canvas's shortcuts stand down
+  (the target is a text field). The bar, mounting, takes the keyboard from it with the caret at the end rather than
+  the text selected. The error area is the search panel's (`Search`).
 
 ## Accessibility
 

@@ -346,7 +346,7 @@ export function TabBar({
           onReorder={onReorder}
           onRenameFolder={onRenameFolder}
           renderRenameField={(field) => (
-            <NameEditor {...field} className={TAB_RENAME_FIELD_CLASS} />
+            <NameEditor {...field} label="Folder name" className={TAB_RENAME_FIELD_CLASS} />
           )}
           folderPresence={folderPresence}
         />

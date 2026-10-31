@@ -127,6 +127,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       renameField={
         isEditing ? (
           <NameEditor
+            label="Tab name"
             initial={tab.name}
             onCommit={(name) => {
               onRename(tab.id, name.trim() || tab.name);

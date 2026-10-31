@@ -54,7 +54,7 @@ width counts the targets, their gaps, 8 px of padding a side and a 1 px border a
 
 ### Collisions
 
-Never over the other chrome (panels, popovers, the Toolbar strip and
+Never over the other chrome (panels, the Contents panel, popovers, the Toolbar strip and
 the popovers hanging from it, the bottom-right cluster). The placement tries fixed candidate spots in order and
 takes the first that overlaps none of them:
 

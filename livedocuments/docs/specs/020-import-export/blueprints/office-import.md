@@ -127,6 +127,12 @@ Follows the spec's table. Precisely:
 - List: `w:numPr` on the paragraph, else on its style chain; `numId` `0` is none; the level's `w:numFmt`:
   `bullet` is bulleted, `none` is no list, anything else numbered (D63: a level the numbering part lacks is
   bulleted). Level capped at `ARTICLE_LIST_MAX_LEVEL`.
+- To-do: a paragraph (not a code block) whose text, trimmed at its start, begins with `☐`, `☒` or `☑` then a space
+  (or a no-break space) is a `todo` list item: `checked` for `☒` and `☑`, the box and the whitespace after it cut
+  from its first runs. Its level is its list's when it has one, else its indent (`w:ind` `w:left`, else `w:start`,
+  in twips) read back the way the Word export writes it: `round((twips / 15 - 20) / 28)`, clamped to 0 and
+  `ARTICLE_LIST_MAX_LEVEL`. A ticked item's runs drop `strike` (the export strikes a done item through; the
+  article draws that itself).
 - Runs: `w:b`, `w:i`, `w:strike` / `w:dstrike`, `w:u` (not `none`), `w:vertAlign`; a toggle is off when its
   `w:val` is `0`, `false` or `off`. A run's character style adds its own `b` / `i` and the names `strong` and
   `emphasis`. A run in a monospace font (`w:rFonts` ascii or hAnsi, or its character style's) is `code` (D64:
