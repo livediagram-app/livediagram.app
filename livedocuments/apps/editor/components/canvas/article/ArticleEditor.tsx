@@ -31,6 +31,7 @@ import { blocksToDoc, docToBlocks } from '@/lib/article/article-convert';
 import type { ArticleNotePlace } from '@livedocuments/document';
 import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
+import { findHighlightPlugin } from '@/lib/article/article-find-plugin';
 import {
   insertBlocksAfterCaret,
   sameSelectionState,
@@ -439,6 +440,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         decorationsPlugin(isEditable),
         todoTogglePlugin(isEditable),
         articlePeersPlugin,
+        // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
+        findHighlightPlugin(() => latest.current.flow),
         gapCursor(),
       ],
     });

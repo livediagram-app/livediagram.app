@@ -598,6 +598,32 @@ export const EDITOR_SEARCH: MetricStack = {
   headline: SEARCH_OPENED,
 };
 
+// Find and Replace on a tab (docs/specs/007-editor/find-and-replace.md "Telemetry"): the bar opened, and a match
+// replaced or every match at once. The queries and the words are never sent.
+export const FIND_BAR_OPENED = chart(
+  'UI',
+  'Opened',
+  'Find Opened',
+  'The Find bar opened on a tab, from Cmd/Ctrl+F or Cmd/Ctrl+Shift+H.',
+  { typeIn: (t) => t === 'FindBar' },
+);
+
+export const FIND_REPLACES = chart(
+  'UI',
+  'Used',
+  'Replaces',
+  'One match replaced, or every match at once with Replace All.',
+  { types: ['FindReplace', 'FindReplaceAll'] },
+);
+
+export const FIND_AND_REPLACE: MetricStack = {
+  stack: true,
+  title: 'Find and Replace',
+  blurb: 'The Find bar opened on a tab, and its matches replaced one at a time or all at once.',
+  members: [FIND_BAR_OPENED, FIND_REPLACES],
+  headline: FIND_BAR_OPENED,
+};
+
 // The palette beyond adding elements (Palette tab has the rankings).
 export const PALETTE_SEARCHES = chart(
   'UI',
@@ -817,7 +843,7 @@ export const LOCAL_MOVE_OFFERED = opened(
   (t) => t === 'LocalMovePrompt',
 );
 
-OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
+OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!, FIND_BAR_OPENED.typeIn!);
 
 export const OTHER_OPENED = chart(
   'UI',

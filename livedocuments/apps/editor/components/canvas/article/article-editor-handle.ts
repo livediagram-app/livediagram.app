@@ -180,6 +180,35 @@ export function createArticleHandle({
         return null;
       }
     },
+    rangeRect: (blockId, from, to) => {
+      let offset = -1;
+      let size = 0;
+      view.state.doc.forEach((node, at) => {
+        if (offset < 0 && node.attrs.id === blockId) {
+          offset = at;
+          size = node.content.size;
+        }
+      });
+      if (offset < 0 || to > size || from > to) return null;
+      try {
+        const a = view.coordsAtPos(offset + 1 + from, 1);
+        const b = view.coordsAtPos(offset + 1 + to, -1);
+        const toPoint = toCanvas(scale());
+        const start = toPoint(a.left, a.top);
+        const end = toPoint(b.left, b.bottom);
+        // A stretch that wraps onto the next line (or column) is shown by its first line.
+        const oneLine = Math.abs(b.top - a.top) < 1;
+        const startBottom = toPoint(a.left, a.bottom);
+        return {
+          x: start.x,
+          y: start.y,
+          w: oneLine ? Math.max(1, end.x - start.x) : 1,
+          h: Math.max(1, (oneLine ? end.y : startBottom.y) - start.y),
+        };
+      } catch {
+        return null;
+      }
+    },
     blocksByPage: () => {
       const { frame, root, z } = scale();
       const out: string[][] = latest.current.pages.map(() => []);

@@ -1,14 +1,8 @@
 // The words on each page, for Contents' Find a Page (docs/specs/007-editor/pages-mode.md
-// "Contents"). Apart from lib/page-contents.ts so the editor's own framing code, which reads the page in
-// view, never loads the find helpers: only the Contents list does, and only while a search is typed.
-import {
-  buildElementIndex,
-  elementAnchorPoint,
-  rowPageAt,
-  type ArticleFlow,
-  type Element,
-  type LaidOutPage,
-} from '@livedocuments/document';
+// "Contents"). Apart from lib/page-contents.ts so the editor's own framing code, which reads the page in view, never
+// loads the find helpers: only the Contents list does, and only while a search is typed.
+import { elementsByPage } from '@/lib/elements-by-page';
+import { type ArticleFlow, type Element, type LaidOutPage } from '@livedocuments/document';
 import { elementFindTexts } from '@livedocuments/document-views';
 
 /** The words on each page, for Find a Page: the texts of the elements on it (their labels,
@@ -19,17 +13,13 @@ export function pageTexts(
   elements: readonly Element[],
   articles: Readonly<Record<string, ArticleFlow>> = {},
 ): Map<string, string> {
-  const parts = new Map<string, string[]>(pages.map((p) => [p.id, []]));
-  const index = buildElementIndex(elements as Element[]);
-  for (const el of elements) {
-    const page = rowPageAt(pages, elementAnchorPoint(el, index));
-    if (page) parts.get(page.id)!.push(...elementFindTexts(el));
-  }
+  const onPage = elementsByPage(pages, elements);
   const out = new Map<string, string>();
   for (const p of pages) {
     const flow = p.flow ? articles[p.flow] : undefined;
     const writing = flow ? flow.blocks.map(blockText).join(' ') : '';
-    out.set(p.id, `${parts.get(p.id)!.join(' ')} ${writing}`);
+    const words = onPage.get(p.id)!.flatMap(elementFindTexts);
+    out.set(p.id, `${words.join(' ')} ${writing}`);
   }
   return out;
 }

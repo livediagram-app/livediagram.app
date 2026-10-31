@@ -159,6 +159,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone let a badge or step number go from the element it was attached to.',
   'Element|Changed|TabWindowTab':
     'Someone chose which tab a Tab Window shows, so a slide or page shows that tab live.',
+  'UI|Opened|FindBar': 'Someone opened the Find bar on a tab, with Cmd/Ctrl+F or Cmd/Ctrl+Shift+H.',
+  'UI|Used|FindReplace': 'Someone replaced one match from the Find bar.',
+  'UI|Used|FindReplaceAll':
+    'Someone replaced every match on a tab at once with Replace All, as one undo step.',
   'UI|Used|TabWindowOpen':
     'Someone opened the tab a Tab Window shows, from the window or its menu.',
   'Element|Changed|ConceptRows':

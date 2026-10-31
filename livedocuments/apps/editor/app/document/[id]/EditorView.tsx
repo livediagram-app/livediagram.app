@@ -73,6 +73,7 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
+import { FindHost } from '@/components/find/FindHost';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
@@ -530,6 +531,10 @@ export function EditorView() {
                               (contextMenu !== null && contextMenu.mode !== 'canvas')
                             }
                           />
+                        </AreaErrorBoundary>
+                        {/* Find and replace over the canvas (docs/specs/007-editor/find-and-replace.md). */}
+                        <AreaErrorBoundary area="Search">
+                          <FindHost find={ctx.find} canvasMainRef={ctx.canvasMainRef} />
                         </AreaErrorBoundary>
                         {ctx.searchOpen ? (
                           <AreaErrorBoundary area="Search">

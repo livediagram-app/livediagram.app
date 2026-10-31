@@ -478,5 +478,6 @@ ink").
 
 - Tables as part of the text (a table is an object zone holding a table element).
 - Headers and footers beyond page numbers, footnotes, a table of contents, columns, suggestions
-  and tracked changes, find and replace.
+  and tracked changes. (Find and replace across a tab's pages, the writing included, is its own
+  feature: [Find and replace](find-and-replace.md).)
 - Character-level merging of two people typing in the same paragraph at the same moment.

@@ -30,6 +30,7 @@ import {
 } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
+import { FindHighlightOverlay } from '@/components/find/FindHighlightOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { BoxedShared } from '@/components/canvas/boxed-shared';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
@@ -381,6 +382,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}
           <AgentFocusOverlay elements={elements} />
+
+          {/* The Find bar's matches on elements (docs/specs/007-editor/find-and-replace.md "Highlights"). */}
+          <FindHighlightOverlay elements={elements} />
 
           <RemoteCursors cursors={remoteCursors} paint={identityVars} />
 
