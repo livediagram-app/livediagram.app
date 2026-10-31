@@ -31,6 +31,8 @@ import {
   calculatedText,
   calculatedValue,
   calculationOf,
+  formulaValue,
+  isFormulaField,
   childIndexFor,
   cardAgeDays,
   cardAgeText,
@@ -210,16 +212,22 @@ function bitOf(
 }
 
 // A Calculated field's value as text, worked out from the cards in hand: null without them, and Children Done only
-// with the board's done columns.
+// with the board's done columns. A Formula reads the card itself, so a lone card draws it too (none when it can't be
+// worked out; docs/specs/026-plan/item-types.md "Formula fields").
 function calculatedBit(
   def: CustomFieldDef,
   item: Item,
   ctx: CardFaceContext,
   types: readonly ItemTypeDef[],
 ): string | null {
+  const type = typeIn(types, item.type);
+  if (isFormulaField(def) && !ctx.items) return calculatedText(def, formulaValue(def, item, type));
   if (!ctx.items || (calculationOf(def) === 'childrenDone' && !ctx.isDone)) return null;
   const isDone = ctx.isDone ?? (() => false);
-  return calculatedText(def, calculatedValue(def, item, childIndexFor(ctx.items, types), isDone));
+  return calculatedText(
+    def,
+    calculatedValue(def, item, childIndexFor(ctx.items, types), isDone, { type, items: ctx.items }),
+  );
 }
 
 // The face, drawn at (x, y) `w` wide, with the height it took. `measureOnly` skips the markup.

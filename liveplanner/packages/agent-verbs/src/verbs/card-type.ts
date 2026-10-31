@@ -22,6 +22,7 @@ const typeOut = z.object({
         name: z.string(),
         kind: z.string(),
         calculation: z.string().optional(),
+        formula: z.string().optional(),
       })
       .passthrough(),
   ),
@@ -51,7 +52,7 @@ export const typeLs = defineVerb({
           ...t.fields,
           ...t.custom.map(
             (f) =>
-              `${f.name}${f.required ? '*' : ''}:${f.kind}${f.calculation ? `=${f.calculation}` : ''} (${f.id})`,
+              `${f.name}${f.required ? '*' : ''}:${f.kind}${f.calculation ? `=${f.calculation}` : ''}${f.formula ? `(${f.formula})` : ''} (${f.id})`,
           ),
         ].join(', '),
       ]),

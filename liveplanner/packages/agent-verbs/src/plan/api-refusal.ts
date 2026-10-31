@@ -16,8 +16,8 @@ const BY_CODE: Readonly<Record<string, string>> = {
     "the item's card type does not use that column: pick another, or allow it with change_card_types " +
     '(set statuses).',
   field_calculated:
-    'a calculated field is worked out from the cards linking here, never set: leave it out of fields. list_items ' +
-    'lists its value.',
+    'a calculated field is worked out from the plan (the cards linking here, or its formula), never set: leave it ' +
+    'out of fields. list_items lists its value.',
   type_invalid: 'that is not a card type id. list_items lists the card types.',
   title_required: 'an item needs a title.',
   field_required:

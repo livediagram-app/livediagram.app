@@ -7,6 +7,9 @@ import {
   CALCULATION_LABELS,
   CARD_SIZES,
   CUSTOM_FIELD_KINDS,
+  FORMULA_MAX,
+  FORMULA_RESULTS,
+  FUNCTION_NAMES,
   PLAN_BOARD_PRESET_IDS,
   PLAN_COLUMNS_MAX,
   PLAN_GLYPH_IDS,
@@ -233,7 +236,24 @@ const calculationArg = z
   .describe(
     `A calculated field's calculation: ${CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`).join(', ')}. ` +
       'Children are the cards linking to the card through a card field naming its type (Parent, for a Project); ' +
-      'done is a done column’s status. Children Done is a whole percentage, null with no children.',
+      'done is a done column’s status. Children Done is a whole percentage, null with no children. formula works ' +
+      'the value out from the card’s own fields by its formula.',
+  );
+
+// A Formula field's expression and result kind (docs/specs/026-plan/item-types.md "Formula fields").
+const formulaArg = z
+  .string()
+  .describe(
+    `A formula field’s expression over the card’s fields by name (up to ${FORMULA_MAX} characters): ` +
+      'Budget - Spent, Estimate * Rate, days(Due - Start), if(Score >= 8, "Strong", "Weak"). A name with other ' +
+      'characters goes in braces: {Children Done (%)}. Operators + - * / and brackets, comparisons = != < <= > >=; ' +
+      `functions ${FUNCTION_NAMES.join(', ')}. A field holding several reads as a list: len() counts it, ` +
+      'concat() joins it. Refused, with the problem, when it can’t be read.',
+  );
+const resultArg = z
+  .string()
+  .describe(
+    `A formula field’s result: ${FORMULA_RESULTS.join(', ')} (number when left out); currency takes currency.`,
   );
 
 // Notifies (docs/specs/026-plan/item-types.md "Notifies"): a person field, and the Assignee, telling their person.
@@ -296,6 +316,8 @@ const customField = z.object({
     .optional()
     .describe('A currency field’s ISO 4217 code (GBP, USD, EUR...); GBP when left out.'),
   calculation: calculationArg.optional(),
+  formula: formulaArg.optional(),
+  result: resultArg.optional(),
   onCard: z
     .boolean()
     .optional()
@@ -368,6 +390,8 @@ const customFieldEdit = z.object({
     .describe('A card field’s target card types, replaced whole (one or more).'),
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
   calculation: calculationArg.optional(),
+  formula: formulaArg.optional(),
+  result: resultArg.optional(),
   onCard: z.boolean().optional(),
   required: z
     .boolean()
@@ -489,7 +513,21 @@ const listedCustom = z.object({
   calculation: z
     .string()
     .optional()
-    .describe('A calculated field’s calculation: childCount or childrenDone.'),
+    .describe('A calculated field’s calculation: childCount, childrenDone or formula.'),
+  formula: z
+    .string()
+    .optional()
+    .describe('A formula field’s expression, with field names, as change_card_types takes it.'),
+  result: z
+    .string()
+    .optional()
+    .describe(`A formula field’s result: ${FORMULA_RESULTS.join(', ')}.`),
+  formulaError: z
+    .string()
+    .optional()
+    .describe(
+      'Why a formula field stopped working (a field it read was deleted): its values read null.',
+    ),
   readOnly: z
     .literal(true)
     .optional()
@@ -581,7 +619,8 @@ const listedItem = z.object({
     .record(z.string(), z.unknown())
     .describe(
       'Every field, title and status included; custom fields by their names, as change_items takes them. A ' +
-        'calculated field’s value is worked out (a count, a whole percentage, or null) and read-only.',
+        'calculated field’s value is worked out (a count, a whole percentage, a formula’s number, text, ' +
+        'true or false or ISO date, or null) and read-only.',
     ),
 });
 

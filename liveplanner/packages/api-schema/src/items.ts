@@ -41,9 +41,10 @@ export type {
 export type ItemsResponse = {
   items: Item[];
   rev: number;
-  /** Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, or null),
-   *  by card id then field id; only cards whose type has a Calculated field. Worked out as read, never stored. */
-  calculated?: Record<string, Record<string, number | null>>;
+  /** Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, a
+   *  Formula's number, text, true or false or ISO day, or null), by card id then field id; only cards whose type has
+   *  a Calculated field. Worked out as read, never stored. */
+  calculated?: Record<string, Record<string, number | string | boolean | null>>;
 };
 
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.

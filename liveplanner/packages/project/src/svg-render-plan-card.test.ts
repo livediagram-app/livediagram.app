@@ -300,6 +300,38 @@ describe('a Calculated field in an export', () => {
     expect(bare.svg).not.toContain('Stories');
   });
 
+  // docs/specs/026-plan/item-types.md "Formula fields": the card's own fields, with or without the cards in hand.
+  it('draws a Formula from the card, with or without the cards', () => {
+    const deal: ItemTypeDef = {
+      ...task,
+      id: 'deal',
+      label: 'Deal',
+      custom: [
+        { id: 'f-budget', label: 'Budget', kind: 'number' },
+        {
+          id: 'f-twice',
+          label: 'Twice',
+          kind: 'calculated',
+          calculation: 'formula',
+          formula: '{f-budget} * 2',
+          result: 'currency',
+          currency: 'GBP',
+        },
+      ],
+      fields: ['title', 'status', 'f-budget', 'f-twice'],
+      display: { detailed: { body: ['f-twice'] } },
+    };
+    const d = item('deal1', { title: 'Acme', 'f-budget': 1250 }, { type: 'deal' });
+    const lone = planCardFace(d, 0, 0, 240, { palette, types: [deal] });
+    expect(lone.svg).toContain('Twice: £2,500');
+    const inHand = planCardFace(d, 0, 0, 240, {
+      palette,
+      types: [deal],
+      items: new Map([[d.id, d]]),
+    });
+    expect(inHand.svg).toContain('Twice: £2,500');
+  });
+
   it('reads a board’s own done columns', () => {
     const board = {
       ...createShape('plan-board', 0, 0),
