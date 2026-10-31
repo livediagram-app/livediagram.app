@@ -91,18 +91,19 @@ export async function pushImageRefs(env: PlanEnv, planId: string): Promise<boole
   // Never sent and nothing to say: a plan that never held a picture tells the service nothing.
   if (set === (before ?? '[]')) return false;
   if (images.length > MEDIA_REFS_SYNC_MAX) {
-    // Past what one sync carries for a document: the rest stay unreported, so the sweep could take one of them.
-    console.error('[media] a plan holds more pictures than one sync carries', {
+    // Past what one sync carries for a document. Sending part of the set would drop the rest's references, so it
+    // sends nothing: the service keeps what it last had for the plan, and each upload's own claim, and the sweep
+    // takes nothing of this plan's until it is back under the cap.
+    console.error('[media] a plan holds more pictures than one sync carries; not reported', {
       planId,
       images: images.length,
     });
+    return false;
   }
-  const sent = await media.syncRefs({
-    documents: [{ document: planId, images: images.slice(0, MEDIA_REFS_SYNC_MAX) }],
-    // Every plan reports each change of its set as it happens (and a purge an empty one), so the app's report is
-    // always whole.
-    complete: true,
-  });
+  // Never `complete`: plans report one by one as they wake, so liveplanner never knows it has sent every plan. Each
+  // picture is claimed for its plan at upload instead, so a plan that has not reported keeps all of its pictures
+  // (liveworkspace/docs/specs/006-media/media.md "References").
+  const sent = await media.syncRefs({ documents: [{ document: planId, images }] });
   if (!sent.ok) throw new Error(`media refs sync failed: ${sent.status}`);
   await env.PLAN_DB.prepare(
     `INSERT INTO media_refs (plan_id, images) VALUES (?, ?)
@@ -122,9 +123,6 @@ export async function forgetImageRefs(
 ): Promise<void> {
   const media = mediaClient(env);
   if (!media || images === null || images === '[]') return;
-  const sent = await media.syncRefs({
-    documents: [{ document: planId, images: [] }],
-    complete: true,
-  });
+  const sent = await media.syncRefs({ documents: [{ document: planId, images: [] }] });
   if (!sent.ok) throw new Error(`media refs sync failed: ${sent.status}`);
 }

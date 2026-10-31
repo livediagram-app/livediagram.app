@@ -119,11 +119,11 @@ describe('the pictures a plan reports', () => {
     expect(await placedImageIds(p.env, PLAN)).toEqual(['granted', 'm', 'z']);
   });
 
-  it('are sent whole and complete, then only when the set changes', async () => {
+  it('are sent whole, never claiming the app complete, then only when the set changes', async () => {
     const p = plan();
     p.card('a', { attachments: [pic('one')] });
     await p.flush();
-    expect(synced).toEqual([{ documents: [{ document: PLAN, images: ['one'] }], complete: true }]);
+    expect(synced).toEqual([{ documents: [{ document: PLAN, images: ['one'] }] }]);
     p.edit('a', { title: 'Renamed', attachments: [pic('one', true)] });
     await p.flush();
     expect(synced).toHaveLength(1);
@@ -137,17 +137,20 @@ describe('the pictures a plan reports', () => {
     expect(imagesSent(-1)).toEqual([]);
   });
 
-  it('sends at most what one sync carries, and says so', async () => {
+  it('sends nothing past what one sync carries, so no reference is dropped, and says so', async () => {
     const p = plan();
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    p.card('first', { attachments: [pic('kept')] });
+    await p.flush();
+    expect(imagesSent(0)).toEqual(['kept']);
     for (let c = 0; c < 26; c++) {
       p.card(`c${c}`, { attachments: Array.from({ length: 20 }, (_, i) => pic(`p${c}-${i}`)) });
     }
     await p.flush();
-    expect(imagesSent(0)).toHaveLength(500);
+    expect(synced).toHaveLength(1);
     expect(error).toHaveBeenCalledWith(
-      '[media] a plan holds more pictures than one sync carries',
-      expect.objectContaining({ images: 520 }),
+      '[media] a plan holds more pictures than one sync carries; not reported',
+      expect.objectContaining({ images: 521 }),
     );
     error.mockRestore();
   });
@@ -226,7 +229,7 @@ describe('a purged plan', () => {
     await forgetImageRefs({}, PLAN, '["a"]');
     expect(synced).toEqual([]);
     await forgetImageRefs({ MEDIA_KEY: 'k', MEDIA_URL }, PLAN, '["a"]');
-    expect(synced).toEqual([{ documents: [{ document: PLAN, images: [] }], complete: true }]);
+    expect(synced).toEqual([{ documents: [{ document: PLAN, images: [] }] }]);
     refuse = true;
     await expect(forgetImageRefs({ MEDIA_KEY: 'k', MEDIA_URL }, PLAN, '["a"]')).rejects.toThrow();
   });
@@ -237,7 +240,7 @@ describe('a purged plan', () => {
     await room.room.grantImage(PLAN, 'x');
     room.db.prepare('INSERT INTO media_refs (plan_id, images) VALUES (?, ?)').run(PLAN, '["x"]');
     await room.room.purge(PLAN);
-    expect(synced).toEqual([{ documents: [{ document: PLAN, images: [] }], complete: true }]);
+    expect(synced).toEqual([{ documents: [{ document: PLAN, images: [] }] }]);
     const again = open('plan-2');
     await again.room.grantImage('plan-2', 'y');
     again.db

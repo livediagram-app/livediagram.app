@@ -105,6 +105,9 @@ async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> 
     height: Number(request.headers.get('X-Image-Height') ?? '0'),
     originalName: originalNameOf(request.headers.get('X-Image-Original-Name')),
     sha256,
+    // A plan the server holds claims the picture, so the media sweep keeps it until that plan reports it gone. A This
+    // Browser plan names none (media.md "Uploads").
+    document: planId,
   });
   if (!uploaded.ok) return serviceAnswer(uploaded);
   const { image, deduped } = uploaded.value;

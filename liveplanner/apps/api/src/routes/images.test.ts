@@ -202,6 +202,8 @@ describe('POST /api/images?p=', () => {
     expect(body.image).toMatchObject({ id: 'img-1', contentType: 'image/png', width: 4 });
     expect(body.image).not.toHaveProperty('app');
     expect(granted).toEqual(['img-1']);
+    // The plan claims it at the service, so the media sweep keeps it until the plan reports it gone.
+    expect(serviceCalls.at(-1)!.headers.get('X-Media-Document')).toBe(PLAN);
     // A guest is named at the service by a hash of this app and their id, never the id itself.
     expect(stored.get('img-1')!.owner).toBe(await mediaGuestOwner(MEDIA_APP, 'alice'));
   });
@@ -264,6 +266,8 @@ describe('POST /api/images?p=', () => {
     const res = await upload({}, PNG, '/api/images');
     expect(res.status).toBe(200);
     expect(granted).toEqual([]);
+    // No plan the server holds claims it: the service's sweep never takes an unclaimed liveplanner picture.
+    expect(serviceCalls.at(-1)!.headers.has('X-Media-Document')).toBe(false);
     expect(indexGrantAsks).toEqual([]);
     const long = 'p'.repeat(201);
     expect((await upload({ grant }, PNG, `/api/images?p=${long}`)).status).toBe(404);

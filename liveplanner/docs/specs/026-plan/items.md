@@ -127,9 +127,21 @@ use and can take one no card holds any more ([media.md](../../../../liveworkspac
 "References"). The set is every picture a card's Attachments hold, and every Image field value the plan holds a grant
 for. A card write that could change it (made, changed or deleted while the plan holds a grant or a card holds
 attachments) and each upload's grant queue an `images` key in the plan's outbox; the outbox's drain, at most once a
-minute, works the set out and sends it (`POST /app/refs`, under the plan's id, `complete: true`) only when it
-differs from the last one sent. A purged plan sends an empty set. A plan reports on its first wake after this ships
-when it holds a grant, so pictures uploaded before are counted.
+minute, works the set out and sends it (`POST /app/refs`, under the plan's id) only when it differs from the last one
+sent. A purged plan sends an empty set. A plan reports on its first wake after this ships when it holds a grant, so
+pictures uploaded before are counted.
+
+The sweep can never take a picture a plan still holds, whether or not that plan has woken:
+
+- **Claimed at upload.** An upload for a plan the server holds (`POST /api/images?p=`) names the plan to the
+  service (`X-Media-Document`), which records the plan's reference at once. Only that plan's own report can take
+  it away, so a plan that never reports again keeps every picture uploaded for it.
+- **Never `complete`.** Plans report one by one as they wake, so liveplanner never tells the service it has sent
+  every plan. The service then sweeps only pictures claimed for a plan that has since reported them gone (once
+  every other app has reported complete); a picture with no claim, uploaded before claims began or for a This
+  Browser plan (an Image field there, which uploads with no `p`), is never swept.
+- **Past the cap.** A plan holding more pictures than one report carries (500) sends nothing and logs it, so no
+  reference is dropped; it reports again once back under.
 
 ## Item types
 
