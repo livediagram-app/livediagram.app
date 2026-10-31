@@ -153,6 +153,13 @@ export function CommentThreadList({
 // The composer: a textarea with @-mentions (docs/specs/012-collaboration/comment-mentions.md) that grows with its
 // text, and a Comment button that waits for some; Cmd/Ctrl+Enter sends (the hint shows while it has focus), Enter
 // alone keeps newline support. `self` draws your own avatar beside it (the item panel's feed).
+/** What a composer's `secondary` action reads: the typed text (trimmed), its mentions, and a way to empty the field. */
+export interface ComposerDraft {
+  text: string;
+  mentions: () => CommentMention[];
+  clear: () => void;
+}
+
 export function CommentComposer({
   onAddComment,
   fieldRef,
@@ -183,8 +190,10 @@ export function CommentComposer({
   onDraft?: (text: string) => void;
   // A line under the field (the starter's title preview).
   below?: React.ReactNode;
-  // A quieter action on the bottom row, left of the send button (a card thread's Resolve).
-  secondary?: React.ReactNode;
+  // A quieter action on the bottom row, left of the send button (a card thread's Resolve). A function gets the
+  // draft, so the action can send it along (Comment and Resolve): `mentions` reads the picks without spending them,
+  // `clear` empties the field once the text is posted.
+  secondary?: React.ReactNode | ((draft: ComposerDraft) => React.ReactNode);
 }) {
   const [draft, setDraft] = useState('');
   const [focused, setFocused] = useState(false);
@@ -282,7 +291,17 @@ export function CommentComposer({
             {focused ? sendShortcutLabel() : ''}
           </p>
           <span className="flex items-center gap-1.5">
-            {secondary}
+            {typeof secondary === 'function'
+              ? secondary({
+                  text: draft.trim(),
+                  mentions: () => mention.peek(draft.trim()),
+                  clear: () => {
+                    mention.take(draft.trim());
+                    setDraft('');
+                    onDraft?.('');
+                  },
+                })
+              : secondary}
             {onCancel ? (
               <Button
                 size="xs"

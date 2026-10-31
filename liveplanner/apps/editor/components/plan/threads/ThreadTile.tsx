@@ -39,7 +39,11 @@ import {
   CommentReactionsProvider,
   type CommentReactionScope,
 } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
-import { CommentComposer, CommentThreadList } from '@/components/panels/comment-thread-parts';
+import {
+  CommentComposer,
+  CommentThreadList,
+  type ComposerDraft,
+} from '@/components/panels/comment-thread-parts';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { ThreadSharedChip } from './ThreadSharedChip';
@@ -142,6 +146,25 @@ export function ThreadTile({
     void threads.act({ kind: 'resolve', threadId: thread.id, resolved: value }).then((ok) => {
       if (ok !== false) announce(value ? ANNOUNCE.resolved : ANNOUNCE.reopened);
     });
+  };
+
+  // Comment and Resolve: the typed reply first, then the resolve, as one action. A reply that fails resolves nothing
+  // and keeps the draft; a reply that lands clears it even if the resolve then fails.
+  const replyAndResolve = (draft: ComposerDraft) => {
+    const mentions = draft.mentions();
+    void threads
+      .act({
+        kind: 'reply',
+        threadId: thread.id,
+        text: draft.text,
+        ...(mentions.length ? { mentions } : {}),
+      })
+      .then(async (ok) => {
+        if (ok === false) return;
+        draft.clear();
+        const done = await threads.act({ kind: 'resolve', threadId: thread.id, resolved: true });
+        announce(done === false ? ANNOUNCE.replied : ANNOUNCE.repliedAndResolved);
+      });
   };
 
   return (
@@ -351,7 +374,14 @@ export function ThreadTile({
               fieldLabel={`Reply to “${title}”`}
               submitLabel="Reply"
               // Resolve sits on the composer's row, left of Reply: whoever may reply may resolve.
-              secondary={<ResolveButton resolved={false} onClick={() => resolve(true)} />}
+              // With text typed it reads Comment and Resolve and posts the text first.
+              secondary={(draft) => (
+                <ResolveButton
+                  resolved={false}
+                  withComment={draft.text !== ''}
+                  onClick={() => (draft.text ? replyAndResolve(draft) : resolve(true))}
+                />
+              )}
               onAddComment={(text, mentions) =>
                 void threads
                   .act({
@@ -372,8 +402,17 @@ export function ThreadTile({
   );
 }
 
-function ResolveButton({ resolved, onClick }: { resolved: boolean; onClick: () => void }) {
-  return (
+function ResolveButton({
+  resolved,
+  withComment = false,
+  onClick,
+}: {
+  resolved: boolean;
+  // Text is typed in the reply box: the button posts it, then resolves.
+  withComment?: boolean;
+  onClick: () => void;
+}) {
+  const button = (
     <button
       type="button"
       onClick={onClick}
@@ -384,7 +423,12 @@ function ResolveButton({ resolved, onClick }: { resolved: boolean; onClick: () =
       }`}
     >
       {resolved ? <ReopenIcon aria-hidden /> : <CheckIcon size={12} />}
-      {resolved ? 'Reopen' : 'Resolve'}
+      {resolved ? 'Reopen' : withComment ? 'Comment and Resolve' : 'Resolve'}
     </button>
+  );
+  return withComment ? (
+    <Tooltip label="Post your reply, then resolve the thread">{button}</Tooltip>
+  ) : (
+    button
   );
 }
