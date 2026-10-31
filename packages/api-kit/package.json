@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./agent-presence-stamps": "./src/agent-presence-stamps.ts",
     "./api-token": "./src/api-token.ts",
     "./bytes": "./src/bytes.ts",
     "./client-ip": "./src/client-ip.ts",

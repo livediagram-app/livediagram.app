@@ -361,6 +361,32 @@ Where each is set, so a setting lives with what it changes, never in one central
   the column header says so; it never refuses a card.
 - **Column width**: a column is one slot wide, or two or three (its cog's **Width**); the slots share the board's
   width, so a wide column suits a busy stage.
+- **Collapse Column**: a column's head offers **Collapse Column** (a chevron at its right, with that tooltip, shown on
+  hover and focus and always on a touch screen), and for someone who may edit, its cog's toolbar too. Collapsed, the
+  column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** chevron at the
+  top, then its count and its name written top to bottom, the whole strip pressable to expand it. On a board with
+  swimlanes, each open swimlane's part of the strip shows that row's count and the name. The other columns take
+  the room it leaves (maximised or filling its tab, the five slots across are measured from what the strips leave).
+  - **Drops**: a card dragged over a strip lights it (dashed in the focus colour, or in red when the card's type
+    leaves the status out, where letting go is refused and the reason announced) and, let go, moves there at the column's end (in that swimlane's row on a board with
+    swimlanes), as a drop into the open column would; the column stays collapsed. A palette card dropped on it is
+    made there.
+  - **The keyboard**: arrow keys pass over a collapsed column (its cards are not drawn); Shift+Left/Right still moves
+    a card into it.
+  - **Each person's own**, like a collapsed swimlane: nothing is saved to the plan, sent to anyone or undone. It is
+    remembered per board on this browser (`localStorage`, `liveplanner:v2:board-collapsed:<board id>`, the column
+    ids and the swimlane keys shut), so a reload, the tab reopened or the board maximised keeps it; a column removed
+    from the board drops out of it.
+  - **Every role**: an Editor, a Participant and a Viewer may each collapse and expand columns for themselves.
+  - **It animates**: expanding, the column opens out from its strip as its neighbours glide aside; collapsing, the
+    neighbours glide in and the strip fades in (`COLUMN_MOVE_MS`, within the motion budget). Under reduced motion it
+    switches at once.
+  - **Telemetry**: `Plan / Toggled / ColumnCollapsed` and `Plan / Toggled / ColumnExpanded`.
+  - **Not on a phone** (below 640 px): no Collapse Column anywhere, and columns collapsed on a wider screen show
+    open, one a screen as ever ("On a phone"). Nor in a Dashboard slot's compact board, whose columns show open;
+    maximised from the slot, the person's collapsed columns apply.
+  - **Exports** (an image of the tab, the CSV) draw every column open: they are drawn from the board's set-up, which collapsing
+    never touches.
 - **Columns fill the board**: a board resized taller runs its columns to its bottom edge (on a board with
   swimlanes, the last open swimlane takes the spare height); a board shorter than its cards scrolls.
 - **Cards** in rank order (or as the board's [Sort Cards](#the-board-set-up) orders them), at the board's **card size**. A card is a rounded tile with a hairline border and a soft
@@ -381,7 +407,7 @@ Where each is set, so a setting lives with what it changes, never in one central
     Description and Project. A start date reads "From 1 Oct", muted.
 - **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph, a project's
   [Colour](items.md#colour) dot before its name), "No assignee" last.
-  Each swimlane collapses on its own, per person.
+  Each swimlane collapses on its own, per person, remembered per board on this browser with its collapsed columns.
 
 ### Swimlanes by a field
 
@@ -527,9 +553,24 @@ In Plan mode:
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
     its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Edited by close it, small and
     quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
+  - **Maximised**: on a desktop the header holds a **Maximise Card** button (the maximise glyph a board's own
+    Maximise uses) just left of the close button, after the ⋯ menu. Pressed, the panel grows to fill the window
+    less a 1 rem margin on every side (corners kept rounded, the dimmed editor showing as a thin frame, so it
+    still reads as the card over the plan: Escape, the close button and a press on that frame close it as
+    before), and the button becomes **Minimise Card** (the minimise glyph, pressed), which puts it back to its
+    usual size. The size eases between the two (200 ms; at once with reduced motion). Maximised, the room is used
+    rather than stretched: the main column keeps a reading width (at most 52 rem, centred in the space beside
+    Details, with wider side padding), the title grows to 26 px, and **Details** widens to 24 rem (28 rem on
+    a window 1536 px or wider) with an 8 rem label column, so its controls are roomier; the tabs, fields and
+    their order are unchanged. The choice is the person's own, kept with their [preferences](../007-editor/user-preferences.md)
+    (`cardPanelMaximised`) and so following them to every device: every card they open afterwards, in any plan,
+    opens the same way until they press it again. Every role has it (a Viewer reads a card maximised too), since
+    it changes nothing in the plan. A phone (below 640 px wide, or a phone held sideways) has no such button and
+    always opens the card as its sheet, whatever the preference says, as that layout already fills it. Pressing
+    it is tracked as `UI · Toggled · CardMaximisedOn` or `CardMaximisedOff`, before the preference is saved.
   - **Header**: the type (a picker, with its glyph), the key, a **⋯** menu of **Duplicate** (a copy right after
     it, without its votes, as the card menu's), **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Edit Card Type** (closing the panel and opening the card's type in the type
-    editor), then, after a separator, **Copy Card Link** (the card's address, below) and **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
+    editor), then, after a separator, **Copy Card Link** (the card's address, below) and **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then **Maximise Card** on a desktop (above), then the close button. Someone who
     may only view gets a ⋯ of Copy Card Link and Help.
   - **Its address**: while a card is open, the page's address names it beside the tab pin, as
     `#t=<tab>&item=<card id>` (the same fragment an Inbox row opens a card with,
@@ -570,8 +611,21 @@ In Plan mode:
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.
   - **Labels** are coloured chips in one field (each label keeps its colour everywhere: a 12% tint of it, inked with
-    70% of it mixed toward the page's ink, dark in light mode and white in dark, which reads at 4.5:1 for every swatch), with the project's
-    other labels offered as it is typed in; Backspace in an empty field takes the last one off.
+    70% of it mixed toward the page's ink, dark in light mode and white in dark, which reads at 4.5:1 for every swatch); Backspace in an
+    empty field takes the last one off. Focusing the field opens **the label menu** under it, so the plan's labels
+    are reused rather than retyped a little differently:
+    - **Before typing**, it shows the plan's labels the card does not have as the same coloured chips, most used
+      first (then A to Z), each with a small badge of how many cards on the plan carry it, under a quiet
+      **Labels on this plan** heading. A plan with none says "No labels yet. Type one to add it."
+    - **As you type**, it narrows to the labels containing the text (case aside), those starting with it first, the
+      matching letters in bold, and ends with a dashed **+ Create "text"** chip when no label is spelled that way.
+      The first label starting with the text is highlighted, else Create; ↑ and ↓ move the highlight (wrapping),
+      Enter adds the highlighted one, and a click or tap adds any. A comma adds what is typed as it is.
+    - Text that matches a plan label but for case ("bug" for "Bug") takes the plan's spelling, however it is added.
+    - Escape, Tab or a press outside closes the menu (Escape never closes the card); adding a label keeps it open
+      for the next.
+    - A label lives only while a card carries it: removing its last use forgets it, so it is no longer offered.
+      Counts are of the plan's cards outside the Trash; archived cards count.
   - **Checklist**: a progress bar and "2 of 5" over its steps; each step's text is edited in place, ticked with
     a rounded box, and taken off with ×; **Add a step** keeps its place for the next.
   - **Main column**: the title, large, then the type's tabs (see [Item types](item-types.md)) and the fields
@@ -580,6 +634,9 @@ In Plan mode:
     it or the usual shortcuts. Enter on a list item starts the next one; Enter on an empty item ends the list.
     It reads as text until clicked (hovering shows **Edit**); an empty one is a quiet **Add a description…** line (a pencil before it), not a box. Editing, it sits on a raised surface with the shortcuts beneath and **Saving…** then **Saved**;
     focus leaving it, or Escape, returns it to reading.
+    Every **Long Text** custom field is the same rich text, edited the same way, its empty line reading **Add
+    _field name_…**; beneath it, as it nears its 2,000 characters, how many are left (from 90%), and past them
+    "_n_ characters over" in amber, when it does not save until shortened.
   - **Details panel** on the right: the fields in no tab, as label and value rows (Status first, as a coloured
     picker), then **Created by** and **Edited by** (with when), each with the person's disc (initials on
     their colour) beside their name.
@@ -915,6 +972,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 - **Cards are Minimal** on a phone (below 640 px), whatever the board's card size, so a column shows more of them; the
   size is the board's again on a wider screen. Nothing is saved.
+- **No collapsed columns** on a phone: no Collapse Column, and a column collapsed on a wider screen shows open (it is
+  collapsed again there).
 - **The header has no widgets and no card type chips** on a phone: the title, taking the room up to the header's controls (beside widgets
   it keeps to 40% of the header), then the controls. The quick filter the widgets set
   stands down with them, so a filter set on a wider screen never hides cards with nothing on screen saying so.

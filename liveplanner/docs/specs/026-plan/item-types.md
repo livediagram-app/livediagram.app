@@ -140,7 +140,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - the api refuses an item moved or edited into such a status (`status_excluded`, field `status`), so an agent or
     the CLI is told "the item's card type does not use that status"; making one in it is allowed. Putting a change
     back is never refused: a card restored from the Trash to the status it was trashed from, and an undo or redo
-    (sent with `undo: true`, which the editor's undo and redo always set).
+    (sent with `undo: true`, which the editor's undo and redo always set). Nor is moving a card to the Trash: the
+    Trash is no type's status, so a type's list never refuses it.
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
@@ -163,6 +164,14 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
   - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
     site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
+  - **Long Text** is rich text, edited as the Description is ([Working on a board](plan-board.md#working-on-a-board)):
+    bold, italic, underline, strikethrough, size, colour, headings, links and lists, from the same toolbar and
+    shortcuts. Its value stays plain text (search, the card face, CSV, forms and agents read it), and its formatting
+    is kept beside it as `<field id>Rich` (`f-steps-to-reproduce` → `f-steps-to-reproduceRich`), runs of text with
+    their marks, as `descriptionRich` is the Description's. A value with no formatting (written before Long Text was
+    rich, by a form, a sheet or an agent's plain text) reads as its plain text. Formatting whose text no longer
+    matches the value (the value was rewritten as plain text since) is ignored, so the field never shows an older
+    text. Emptying the field clears both.
   - **Email** is one email address (up to 254 characters, something@domain), kept as typed less surrounding spaces.
     The panel shows it as a mailto link; the card shows the address. A value that is not an address is refused, as
     a Link that is not `https://` is.

@@ -43,4 +43,35 @@ describe('RoomParticipantWrites', () => {
     );
     expect(sendTo).toHaveBeenCalledWith(ws, expect.objectContaining({ resync: true }));
   });
+
+  // docs/specs/012-collaboration/comment-reactions.md: a Participant's reaction joins the tab write queue.
+  it('queues a reaction write, and skips one it cannot place', async () => {
+    const results: unknown[] = [
+      { ok: true, changed: true },
+      { ok: false, status: 409 },
+    ];
+    const enqueue = vi.fn(async () => results.shift());
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const writes = new RoomParticipantWrites({
+      env: {} as never,
+      enqueue: enqueue as never,
+      sequence: () => 1,
+      sendTo: vi.fn(),
+      position: () => ({ epoch: 'e', seq: 0 }),
+    });
+    const op = { kind: 'el-delta', tabId: 't1', elementId: 'e1', delta: { kind: 'comment-react' } };
+    await writes.writeReaction('d1', op);
+    await writes.writeReaction('d1', op);
+    expect(errors).toHaveBeenCalledTimes(1);
+    enqueue.mockImplementationOnce(async () => {
+      throw new Error('boom');
+    });
+    await writes.writeReaction('d1', op);
+    expect(errors).toHaveBeenCalledTimes(2);
+    await writes.writeReaction(null, op);
+    await writes.writeReaction('d1', { tabId: 't1' });
+    await writes.writeReaction('d1', null);
+    expect(enqueue).toHaveBeenCalledTimes(3);
+    errors.mockRestore();
+  });
 });

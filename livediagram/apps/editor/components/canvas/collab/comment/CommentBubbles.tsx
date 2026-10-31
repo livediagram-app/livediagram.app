@@ -7,6 +7,7 @@ import type { Comment } from '@livediagram/document';
 import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
+import { reactionDef, reactionGroups } from '@liveworkspace/model-core/comment-reactions';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, stopPointer } from '../qa/qa-parts';
 
@@ -83,7 +84,8 @@ export function CommentBubbles({
               </span>
               {group.map((c) => {
                 const fresh = index++ >= freshFrom;
-                return (
+                const reactions = reactionGroups(c.reactions);
+                return [
                   <span
                     key={c.id}
                     className={`group/bubble relative max-w-full whitespace-pre-wrap break-words px-2.5 py-1.5 text-[11.5px] leading-snug ${
@@ -123,8 +125,33 @@ export function CommentBubbles({
                         <CrossGlyph />
                       </GlyphDisc>
                     ) : null}
-                  </span>
-                );
+                  </span>,
+                  // Its reactions, as a quiet line under the bubble (docs/specs/012-collaboration/comment-reactions.md):
+                  // read here, left from the thread's popover.
+                  reactions.length ? (
+                    <span
+                      key={`${c.id}-reactions`}
+                      className="flex flex-wrap gap-1 px-1 text-[10px] tabular-nums"
+                      style={{ color: textColor }}
+                      role="img"
+                      aria-label={reactions
+                        .map((r) => `${reactionDef(r.emoji).name} ${r.count}`)
+                        .join(', ')}
+                    >
+                      {reactions.map((r) => (
+                        <span
+                          key={r.emoji}
+                          aria-hidden
+                          className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-px"
+                          style={{ backgroundColor: tint(textColor, 0.08) }}
+                        >
+                          {reactionDef(r.emoji).emoji}
+                          <span className="opacity-70">{r.count}</span>
+                        </span>
+                      ))}
+                    </span>
+                  ) : null,
+                ];
               })}
             </div>
           </li>

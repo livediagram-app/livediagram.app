@@ -48,6 +48,13 @@ livediagram's tests), its own docs, and its own AGENTS.md for product-specific r
 format, test and Next.js settings are shared (`packages/oxlint-config`, `prettier-config`,
 `vitest-config`, `next-config`), so a rule changes once for every product.
 
+## Security
+
+Found a vulnerability in liveworkspace.app or any app? Please report it privately through
+[GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public
+issue. [SECURITY.md](SECURITY.md) has the policy, and the specs are in
+[Vulnerability disclosure](liveworkspace/docs/specs/001-platform-scope/vulnerability-disclosure.md).
+
 ## Deploys
 
 Every product deploys from here, from the root `.github/`, to the liveworkspace Cloudflare account

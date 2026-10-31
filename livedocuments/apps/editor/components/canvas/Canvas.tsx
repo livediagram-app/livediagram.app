@@ -35,6 +35,7 @@ import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/C
 import { canvasGestureNow } from '@/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { useKeyboardElementMenu } from '@/hooks/canvas/useKeyboardElementMenu';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
@@ -280,6 +281,9 @@ function CanvasView(props: CanvasProps) {
     onCommitPolygon,
   });
 
+  // Menu key / Shift+F10 on the canvas opens the selected element's menu (no toolbar to Tab to).
+  useKeyboardElementMenu(mainRef, selectionStore.get, handleElementContextSelect);
+
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
   // below mounts its handlers verbatim.
@@ -320,140 +324,141 @@ function CanvasView(props: CanvasProps) {
     node?.focus({ preventScroll: true });
   }, [mainRef]);
   return (
-    // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
-    <CanvasFinishProvider finish={props.tabFinish}>
-      {/* A slide move animates the surface as a View Transition typed by its direction (slide-transition.ts);
+    // The image store's access (page-image-access): the pages' pictures, and the Contents and Slide Deck
+    // thumbnails' pictures in the chrome.
+    <PageImageAccessProvider access={props.imageContext}>
+      {/* This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's. */}
+      <CanvasFinishProvider finish={props.tabFinish}>
+        {/* A slide move animates the surface as a View Transition typed by its direction (slide-transition.ts);
             nothing else animates it. */}
-      <ViewTransition default="none" update={SLIDE_VIEW_TRANSITION_UPDATE}>
-        <main
-          ref={mainRef}
-          // In the tab order (docs/specs/004-interface-design/canvas-accessibility.md): keyboard users Tab to the canvas as
-          // one stop, then Tab / Shift+Tab walk the elements (useCanvasA11y,
-          // engaged only while this surface itself is focused — the marker
-          // attribute below is how the hook recognises it). The role stays
-          // the main landmark (not "application") because the floating
-          // panels render inside it and must keep normal SR navigation.
-          tabIndex={0}
-          aria-label="Canvas"
-          data-region="canvas"
-          data-canvas-a11y-root=""
-          onPointerMove={handlePointerMoveCanvas}
-          onPointerLeave={handlePointerLeaveCanvas}
-          onDragOver={paletteDrop.onDragOver}
-          onDrop={paletteDrop.onDrop}
-          onPointerDownCapture={(e) => {
-            surface.onPointerDownCapture(e);
-            if (!e.isPropagationStopped()) smallElementTap.onPointerDownCapture(e);
-          }}
-          // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
-          // ink is tuned for light paper and vanishes on a dark wall. Flagged
-          // here so the peel's CSS can respond without knowing about themes.
-          data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
-          // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts).
-          data-canvas-root=""
-          onContextMenuCapture={surface.onContextMenuCapture}
-          onContextMenu={surface.onContextMenu}
-          onPointerUp={surface.onContextMenuPointerUp}
-          onPointerDown={surface.onPointerDown}
-          onDoubleClick={(e) => {
-            if (e.target !== e.currentTarget) return;
-            if (handlePolygonDoubleClick()) return;
-            surface.onSurfaceDoubleClick(e);
-          }}
-          // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
-          onDoubleClickCapture={smallElementTap.onDoubleClickCapture}
-          // focus-visible ring only: pointer focus stays outline-free, but a
-          // keyboard user Tabbing to the canvas sees where they landed.
-          // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label
-          // editor past the bottom edge, a scrollIntoView), and the corner chrome positioned in it (the
-          // bottom-right cluster, the Map) rode up the screen by every scroll and stayed there. A
-          // clipped box clips the same and can never scroll (docs/specs/008-canvas/canvas-and-palette.md).
-          className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
-            pendingDraw ? '' : cursorClass
-          }`}
-          style={{
-            // The paper hollow arrowheads fill with (arrow-defs.tsx).
-            ['--lvd-canvas-paper' as string]: tabBackgroundColor,
-            // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
-            ...stickyPeel,
-            // In world space: the pattern pans and zooms with the elements, so
-            // they stay on the same dots at any zoom (worldPatternOrigin).
-            ...tabBackgroundStyle(
-              tabBackgroundPattern,
-              worldPatternOrigin(viewportOffset, viewportZoom, {
-                w: mainSize.width,
-                h: mainSize.height,
-              }),
-              tabBackgroundColor,
-              tabPatternColor,
-              tabBackgroundOpacity,
-              tabBackgroundPatternScale * viewportZoom,
-            ),
-            // Mirror the inner-wrapper cursor on <main>. The inner div is
-            // `absolute inset-0` but its CSS transform scales it (zoom),
-            // so when zoom is below 1 the hit area shrinks and the
-            // surrounding "letterbox" gap falls through to <main>. Without
-            // setting cursor here too, the user would see the OS default
-            // arrow in that gap while a draw-to-size intent is pending.
-            ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
-          }}
-        >
-          {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
-          announcements land here. */}
-          <CanvasLiveRegion />
-          {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
-          canvas content; the static patterns ride the <main> background
-          above. tabBackgroundStyle returns just the backdrop colour for
-          these, so this layer is the only thing that draws their motion. */}
-          {isAnimatedPattern(tabBackgroundPattern) ? (
-            <AnimatedCanvasBackground
-              variant={tabBackgroundPattern}
-              color={tabPatternColor}
-              scale={tabBackgroundPatternScale}
-              speed={tabBackgroundAnimationSpeed}
-              opacity={tabBackgroundOpacity}
-            />
-          ) : null}
-          <div
-            ref={wrapperRef}
-            // The pages and elements, as against the chrome over them.
-            data-canvas-content=""
-            onPointerDown={surface.onWrapperPointerDown}
-            onDoubleClick={(e) => {
-              // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
-              // add-text double-click while the intent is armed.
-              if (handlePolygonDoubleClick()) return;
-              // Off a page nothing is made, but a finger's double-tap still zooms there.
-              if (offPage(e) && !surface.pressedByFinger()) return;
-              surface.onWrapperDoubleClick(e);
+        <ViewTransition default="none" update={SLIDE_VIEW_TRANSITION_UPDATE}>
+          <main
+            ref={mainRef}
+            // In the tab order (docs/specs/004-interface-design/canvas-accessibility.md): keyboard users Tab to the canvas as
+            // one stop, then Tab / Shift+Tab walk the elements (useCanvasA11y,
+            // engaged only while this surface itself is focused — the marker
+            // attribute below is how the hook recognises it). The role stays
+            // the main landmark (not "application") because the floating
+            // panels render inside it and must keep normal SR navigation.
+            tabIndex={0}
+            aria-label="Canvas"
+            data-region="canvas"
+            data-canvas-a11y-root=""
+            onPointerMove={handlePointerMoveCanvas}
+            onPointerLeave={handlePointerLeaveCanvas}
+            onDragOver={paletteDrop.onDragOver}
+            onDrop={paletteDrop.onDrop}
+            onPointerDownCapture={(e) => {
+              surface.onPointerDownCapture(e);
+              if (!e.isPropagationStopped()) smallElementTap.onPointerDownCapture(e);
             }}
-            // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
-            // canvas layer ignore pointer events so NO element kind can be
-            // selected, dragged, or edited (a per-element capture guard can't
-            // catch every select path — boxed elements, arrow hit-bands, labels,
-            // click vs pointerdown). Clicks then fall through to <main>, where the
-            // capture handler turns them into grow / shrink, and middle-mouse or
-            // held-Space still pans.
-            className={`absolute inset-0 origin-center touch-none ${
-              canvasTool === 'spotlight' ? 'pointer-events-none' : ''
-            } ${pendingDraw ? '' : cursorClass}`}
+            // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
+            // ink is tuned for light paper and vanishes on a dark wall. Flagged
+            // here so the peel's CSS can respond without knowing about themes.
+            data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
+            // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts).
+            data-canvas-root=""
+            onContextMenuCapture={surface.onContextMenuCapture}
+            onContextMenu={surface.onContextMenu}
+            onPointerUp={surface.onContextMenuPointerUp}
+            onPointerDown={surface.onPointerDown}
+            onDoubleClick={(e) => {
+              if (e.target !== e.currentTarget) return;
+              if (handlePolygonDoubleClick()) return;
+              surface.onSurfaceDoubleClick(e);
+            }}
+            // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
+            onDoubleClickCapture={smallElementTap.onDoubleClickCapture}
+            // focus-visible ring only: pointer focus stays outline-free, but a
+            // keyboard user Tabbing to the canvas sees where they landed.
+            // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label
+            // editor past the bottom edge, a scrollIntoView), and the corner chrome positioned in it (the
+            // bottom-right cluster, the Map) rode up the screen by every scroll and stayed there. A
+            // clipped box clips the same and can never scroll (docs/specs/008-canvas/canvas-and-palette.md).
+            className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+              pendingDraw ? '' : cursorClass
+            }`}
             style={{
-              // Translate is in canvas-coords (applied first); scale is centred
-              // on the wrapper so zooming keeps the viewport centre stable.
-              transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
-              // Draw-mode cursor: every intent gets a custom inline-SVG
-              // cursor (crosshair at the pointer tip plus a small glyph
-              // hinting at what's about to land). Without this, tool
-              // intents inherited the default arrow cursor because the
-              // wrapper drops its Tailwind cursor- class above when
-              // pendingDraw is set, leaving no cursor specified at all.
+              // The paper hollow arrowheads fill with (arrow-defs.tsx).
+              ['--lvd-canvas-paper' as string]: tabBackgroundColor,
+              // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
+              ...stickyPeel,
+              // In world space: the pattern pans and zooms with the elements, so
+              // they stay on the same dots at any zoom (worldPatternOrigin).
+              ...tabBackgroundStyle(
+                tabBackgroundPattern,
+                worldPatternOrigin(viewportOffset, viewportZoom, {
+                  w: mainSize.width,
+                  h: mainSize.height,
+                }),
+                tabBackgroundColor,
+                tabPatternColor,
+                tabBackgroundOpacity,
+                tabBackgroundPatternScale * viewportZoom,
+              ),
+              // Mirror the inner-wrapper cursor on <main>. The inner div is
+              // `absolute inset-0` but its CSS transform scales it (zoom),
+              // so when zoom is below 1 the hit area shrinks and the
+              // surrounding "letterbox" gap falls through to <main>. Without
+              // setting cursor here too, the user would see the OS default
+              // arrow in that gap while a draw-to-size intent is pending.
               ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
             }}
           >
-            {/* Pages mode's A4 pages, under every element (CanvasPages). */}
-            {staged ? (
-              // The image store's access, for the pages' pictures (page-image-access).
-              <PageImageAccessProvider access={props.imageContext}>
+            {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
+          announcements land here. */}
+            <CanvasLiveRegion />
+            {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
+          canvas content; the static patterns ride the <main> background
+          above. tabBackgroundStyle returns just the backdrop colour for
+          these, so this layer is the only thing that draws their motion. */}
+            {isAnimatedPattern(tabBackgroundPattern) ? (
+              <AnimatedCanvasBackground
+                variant={tabBackgroundPattern}
+                color={tabPatternColor}
+                scale={tabBackgroundPatternScale}
+                speed={tabBackgroundAnimationSpeed}
+                opacity={tabBackgroundOpacity}
+              />
+            ) : null}
+            <div
+              ref={wrapperRef}
+              // The pages and elements, as against the chrome over them.
+              data-canvas-content=""
+              onPointerDown={surface.onWrapperPointerDown}
+              onDoubleClick={(e) => {
+                // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
+                // add-text double-click while the intent is armed.
+                if (handlePolygonDoubleClick()) return;
+                // Off a page nothing is made, but a finger's double-tap still zooms there.
+                if (offPage(e) && !surface.pressedByFinger()) return;
+                surface.onWrapperDoubleClick(e);
+              }}
+              // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
+              // canvas layer ignore pointer events so NO element kind can be
+              // selected, dragged, or edited (a per-element capture guard can't
+              // catch every select path — boxed elements, arrow hit-bands, labels,
+              // click vs pointerdown). Clicks then fall through to <main>, where the
+              // capture handler turns them into grow / shrink, and middle-mouse or
+              // held-Space still pans.
+              className={`absolute inset-0 origin-center touch-none ${
+                canvasTool === 'spotlight' ? 'pointer-events-none' : ''
+              } ${pendingDraw ? '' : cursorClass}`}
+              style={{
+                // Translate is in canvas-coords (applied first); scale is centred
+                // on the wrapper so zooming keeps the viewport centre stable.
+                transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+                // Draw-mode cursor: every intent gets a custom inline-SVG
+                // cursor (crosshair at the pointer tip plus a small glyph
+                // hinting at what's about to land). Without this, tool
+                // intents inherited the default arrow cursor because the
+                // wrapper drops its Tailwind cursor- class above when
+                // pendingDraw is set, leaving no cursor specified at all.
+                ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
+              }}
+            >
+              {/* Pages mode's A4 pages, under every element (CanvasPages). */}
+              {staged ? (
                 <CanvasPages
                   // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
                   // tab's own: page ids repeat across tabs.
@@ -466,116 +471,112 @@ function CanvasView(props: CanvasProps) {
                   placing={!!pendingDraw}
                   onOpenTheme={props.onOpenCanvasTheme}
                 />
-              </PageImageAccessProvider>
-            ) : null}
-            {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
+              ) : null}
+              {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
             zone's elements sit in the room the writing leaves them. */}
-            {staged?.articles ? (
-              <ArticleFlows
-                view={staged}
-                zoom={viewportZoom}
-                interactive={!pendingDraw && canvasTool !== 'spotlight'}
-                elements={elements}
-              />
-            ) : null}
-            <CanvasArrivalProvider
-              tabId={props.activeTabId ?? ''}
-              loaded={props.activeTabLoaded ?? true}
-            >
-              {/* The zoom reaches only the counter-scaled parts of each element
+              {staged?.articles ? (
+                <ArticleFlows
+                  view={staged}
+                  zoom={viewportZoom}
+                  interactive={!pendingDraw && canvasTool !== 'spotlight'}
+                  elements={elements}
+                />
+              ) : null}
+              <CanvasArrivalProvider
+                tabId={props.activeTabId ?? ''}
+                loaded={props.activeTabLoaded ?? true}
+              >
+                {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
-              <CanvasZoomProvider zoom={viewportZoom}>
-                <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
-                  <CanvasElementsLayer
-                    {...props}
-                    hasArrows={hasArrows}
-                    arrowLabels={arrowLabels}
-                    selectionInput={selectionInput}
-                    isPaintMode={isPaintMode}
-                    handleArrowSelect={handleArrowSelect}
-                    handleElementClick={handleElementClick}
-                    handleElementContextSelect={handleElementContextSelect}
-                    quickRingOpen={quickRingOpen}
-                    setQuickRingOpen={setQuickRingOpen}
-                    drawDrag={drawDrag}
-                  />
-                </ElementIndicatorStyleProvider>
-              </CanvasZoomProvider>
-            </CanvasArrivalProvider>
-          </div>
+                <CanvasZoomProvider zoom={viewportZoom}>
+                  <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
+                    <CanvasElementsLayer
+                      {...props}
+                      hasArrows={hasArrows}
+                      arrowLabels={arrowLabels}
+                      selectionInput={selectionInput}
+                      isPaintMode={isPaintMode}
+                      handleArrowSelect={handleArrowSelect}
+                      handleElementClick={handleElementClick}
+                      handleElementContextSelect={handleElementContextSelect}
+                      quickRingOpen={quickRingOpen}
+                      setQuickRingOpen={setQuickRingOpen}
+                      drawDrag={drawDrag}
+                    />
+                  </ElementIndicatorStyleProvider>
+                </CanvasZoomProvider>
+              </CanvasArrivalProvider>
+            </div>
 
-          {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
+            {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
           transformed wrapper so the light stays fixed on screen while the
           canvas pans / zooms underneath. Rendered before CanvasChrome so the
           palette + chrome paint ON TOP and stay reachable to switch tools
           back; pointer-events-none lets clicks fall through to <main>. */}
-          {canvasTool === 'spotlight' ? (
-            <SpotlightOverlay
-              pos={spotlight.pos}
-              radius={spotlight.radius}
-              config={spotlightLook.config}
-            />
-          ) : null}
+            {canvasTool === 'spotlight' ? (
+              <SpotlightOverlay
+                pos={spotlight.pos}
+                radius={spotlight.radius}
+                config={spotlightLook.config}
+              />
+            ) : null}
 
-          <CanvasSelectionToolbars
-            props={props}
-            selectionInput={selectionInput}
-            quickRingOpen={quickRingOpen !== null}
-          />
-          <CanvasChrome
-            {...props}
-            mainSize={mainSize}
-            laserConfig={props.laserConfig}
-            onChangeLaserField={props.onChangeLaserField}
-            spotlightConfig={spotlightLook.config}
-            onChangeSpotlightField={spotlightLook.setField}
-            spotlightRadius={spotlight.radius}
-            onSetSpotlightRadius={spotlight.setRadius}
-            spotlightPanelPosition={props.spotlightPanelPosition}
-            onMoveSpotlightPanel={props.onMoveSpotlightPanel}
-            onResetSpotlightPanel={props.onResetSpotlightPanel}
-            formatConfig={props.formatConfig}
-            onToggleFormatGroup={props.onToggleFormatGroup}
-            onSetFormatMode={props.onSetFormatMode}
-            formatBrushSource={props.formatBrushSource}
-            formatPanelPosition={props.formatPanelPosition}
-            onMoveFormatPanel={props.onMoveFormatPanel}
-            onResetFormatPanel={props.onResetFormatPanel}
-            laserPanelPosition={props.laserPanelPosition}
-            onMoveLaserPanel={props.onMoveLaserPanel}
-            onResetLaserPanel={props.onResetLaserPanel}
-            offscreenContent={offscreenContent}
-            marquee={marquee}
-            drawDrag={drawDrag}
-            drawHover={drawHover}
-            polygonVertices={polygonVertices}
-            polygonCursor={polygonCursor}
-            wrapperRef={wrapperRef}
-            activeDockPanel={activeDockPanel}
-            setActiveDockPanel={setActiveDockPanel}
-            activeDockAnchor={activeDockAnchor}
-            setActiveDockAnchor={setActiveDockAnchor}
-            handleDockButtonClick={handleDockButtonClick}
-            handleZoomIn={handleZoomIn}
-            handleZoomOut={handleZoomOut}
-            handleSetZoom={handleSetZoom}
-          />
-          {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
+            <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
+            <CanvasChrome
+              {...props}
+              mainSize={mainSize}
+              laserConfig={props.laserConfig}
+              onChangeLaserField={props.onChangeLaserField}
+              spotlightConfig={spotlightLook.config}
+              onChangeSpotlightField={spotlightLook.setField}
+              spotlightRadius={spotlight.radius}
+              onSetSpotlightRadius={spotlight.setRadius}
+              spotlightPanelPosition={props.spotlightPanelPosition}
+              onMoveSpotlightPanel={props.onMoveSpotlightPanel}
+              onResetSpotlightPanel={props.onResetSpotlightPanel}
+              formatConfig={props.formatConfig}
+              onToggleFormatGroup={props.onToggleFormatGroup}
+              onSetFormatMode={props.onSetFormatMode}
+              formatBrushSource={props.formatBrushSource}
+              formatPanelPosition={props.formatPanelPosition}
+              onMoveFormatPanel={props.onMoveFormatPanel}
+              onResetFormatPanel={props.onResetFormatPanel}
+              laserPanelPosition={props.laserPanelPosition}
+              onMoveLaserPanel={props.onMoveLaserPanel}
+              onResetLaserPanel={props.onResetLaserPanel}
+              offscreenContent={offscreenContent}
+              marquee={marquee}
+              drawDrag={drawDrag}
+              drawHover={drawHover}
+              polygonVertices={polygonVertices}
+              polygonCursor={polygonCursor}
+              wrapperRef={wrapperRef}
+              activeDockPanel={activeDockPanel}
+              setActiveDockPanel={setActiveDockPanel}
+              activeDockAnchor={activeDockAnchor}
+              setActiveDockAnchor={setActiveDockAnchor}
+              handleDockButtonClick={handleDockButtonClick}
+              handleZoomIn={handleZoomIn}
+              handleZoomOut={handleZoomOut}
+              handleSetZoom={handleSetZoom}
+            />
+            {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
-          {tabLoadState && tabLoadState !== 'ready' ? (
-            <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
-          ) : null}
-          {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape
+            {tabLoadState && tabLoadState !== 'ready' ? (
+              <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
+            ) : null}
+            {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape
           will land, following the cursor over the canvas. */}
-          <PaletteDragGhost zoom={viewportZoom} />
-          {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
+            <PaletteDragGhost zoom={viewportZoom} />
+            {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
           (docs/specs/007-editor/panel-docking.md) so it snaps + stacks like the other floating panels. */}
-          {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
+            {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
             press-and-hold affordance that opens the context menu on touch. */}
-          <LongPressRing point={surface.canvasLongPress.pressPoint} />
-        </main>
-      </ViewTransition>
-    </CanvasFinishProvider>
+            <LongPressRing point={surface.canvasLongPress.pressPoint} />
+          </main>
+        </ViewTransition>
+      </CanvasFinishProvider>
+    </PageImageAccessProvider>
   );
 }

@@ -554,6 +554,9 @@ Migrations, in order:
 | `SILENT_SESSION_KEY`                | `'liveworkspace:silent-sign-in'`                                         | `silent.ts`          |
 | `SILENT_GUARD_MAX_AGE_SECONDS`      | `120`                                                                    | `silent.ts`          |
 | `SIGNED_OUT_MAX_AGE_SECONDS`        | `400 * 24 * 3600`                                                        | `silent.ts`          |
+| `SIGNED_OUT_VALUE`                  | `'2'`                                                                    | `silent.ts`          |
+| `SILENT_RETURN_KEY`                 | `'liveworkspace:silent-return'`                                          | `silent.ts`          |
+| `SILENT_RETURN_ATTRIBUTE`           | `'data-silent-return'`                                                   | `silent.ts`          |
 | `SILENT_RETURN_MAX_LENGTH`          | `1500`                                                                   | `silent.ts`          |
 | `WORKBENCH_SESSION_VALID_FOR_MS`    | `60_000`                                                                 | `workbench.ts`       |
 | `WORKBENCH_SESSION_INVALID_FOR_MS`  | `10_000`                                                                 | `workbench.ts`       |

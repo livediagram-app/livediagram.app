@@ -368,7 +368,17 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/editor/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Project', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: [
+      'Project',
+      'Shared',
+      'Folder',
+      'Team',
+      'Tab',
+      'Element',
+      'Palette',
+      'Command',
+      'Workspace',
+    ],
   },
   'apps/editor/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],

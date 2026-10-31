@@ -176,6 +176,21 @@ describe('writing', () => {
     expect(result.current.threads.get('th-a')).toMatchObject({ resolved: true, resolvedBy: 'Sam' });
     act(() => void result.current.act({ kind: 'rename', threadId: 'th-a', title: 'New name' }));
     expect(result.current.threads.get('th-a')!.title).toBe('New name');
+    const commentId = result.current.threads.get('th-a')!.comments[0]!.id;
+    act(
+      () =>
+        void result.current.act({
+          kind: 'react',
+          threadId: 'th-a',
+          commentId,
+          emoji: 'eyes',
+          on: true,
+          key: 'k-sam',
+        }),
+    );
+    expect(result.current.threads.get('th-a')!.comments[0]!.reactions).toEqual([
+      { emoji: 'eyes', by: 'k-sam', name: 'Sam' },
+    ]);
     act(() => void result.current.act({ kind: 'deleteThread', threadId: 'th-a' }));
     expect(result.current.threads.has('th-a')).toBe(false);
   });

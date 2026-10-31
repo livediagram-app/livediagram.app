@@ -167,6 +167,26 @@ unplaced). Structural input `{ shape?: string; planBoard?: PlanBoardSetup; planC
 underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mailto ≤ 2048, heading? 1|2|3 }`,
   at most `ITEM_RICH_RUNS_MAX` (2000) runs and `ITEM_DESCRIPTION_MAX` characters in all; anything else is
   `field_value_invalid`. `description` stays the plain-text mirror (search, card faces, agents).
+- A Long Text custom field's formatting rides under `richFieldOf(id)` (`<id>Rich`); `isRichFieldKey(key)` accepts
+  `descriptionRich` and `/^f-[a-z0-9-]{1,30}Rich$/` (custom ids are lower case, so no field id ends that way), and
+  `validateFields` holds either to `normaliseRichRuns(v, richTextMaxOf(key))`: `ITEM_DESCRIPTION_MAX` for the
+  description, `ITEM_UNKNOWN_STRING_MAX` (2,000) for a Long Text. The field's own value stays a plain string (≤ 2,000).
+  `richRunsOf(fields, id)` returns the runs only while their text joined equals the plain value (else undefined: the
+  value was rewritten plain since); `runsAreMarked(runs)` says whether any run carries a mark, so unmarked text is
+  stored plain.
+
+### Label usage
+
+- `labelUsage(items)` (`label-usage.ts`) → `LabelUse[]` `{ label, count }`: one pass over the cards, skipping
+  `isTrashed`, each card's labels deduplicated; sorted by count descending, then by lower-cased name, then code
+  point. `planSpellingOf(text, uses)` → the first (most used) plan label equal to `text` case aside, else `text`.
+  `matchLabels(uses, query, taken)` → `{ matches, creatable }`: the query trimmed, a leading `#` dropped, lower-cased;
+  labels the card has (case aside) left out; with no query every label; else those starting with it, then those
+  containing it, each in usage order; `creatable` when no plan or card label equals it.
+- Cost: measured 1.5 ms median (5.5 ms worst of 20, a loaded machine) for 2,000 cards of 12 labels from 300 names;
+  `matchLabels` over those 300 labels 0.03 ms median per keystroke. The host (`PlanSheetsHost`) memoises
+  `labelUsage` on the cards map and the open card, so it runs once per change of the cards while a card is open, never
+  per keystroke; `label-usage.test.ts` holds the 2,000-card case to a 250 ms budget.
 
 ### Colour
 
@@ -298,9 +318,11 @@ true` (comments.ts) and `editedAt?: number`.
   the automatic one from `createdBy.name` and the first comment when it is `''`, as a migrated thread is).
 - **Ids**: `newThreadId(random)`; `isThreadId(s)` (`^th-[a-z0-9]{16}$`, or a migrated `c-<item id>`).
 - **Writes**: `ThreadChange = add { comment } | edit { commentId, text, mentions, now } | remove { commentId } |
-resolve { resolved, by } | rename { title } | addCard { card } | removeCard { projectId, itemId }`;
+resolve { resolved, by } | rename { title } | react { commentId, emoji, by, name, on } | addCard { card } |
+removeCard { projectId, itemId }`;
   `applyThreadChange(thread, change, now)` answers `{ ok, thread }` (rev + 1, `updatedAt` now except for card
-  changes) or a refusal: `comments_full`, `comment_not_found`, `title_too_long`, `thread_on_card`,
+  changes and reactions; `react` goes through `withReaction`/`commentWithReactions` from
+  `@liveworkspace/model-core/comment-reactions`, `comments_full` only when one is added past the byte budget) or a refusal: `comments_full`, `comment_not_found`, `title_too_long`, `thread_on_card`,
   `thread_cards_full`, `unchanged`. `startThread({ id, home, card, comment, title?, now })` makes one (title
   `autoThreadTitle` unless given). Who may is the caller's (routes), never here.
 - **Reads**: `isCardThread(v)` (shape, caps), `openCommentCount(threads, projectId, itemId)` (the face count),
@@ -369,24 +391,25 @@ off `cards` (`[threads] card.gone`).
 
 Rights, against the thread as stored: a comment edit needs `authorId === owner` (and `ai` for an agent); a comment
 delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` or `createdBy.authorId === owner`
-(never an agent); `rename` and `addCard` never an agent. Refused: `403 forbidden`.
+(never an agent); `rename`, `react` and `addCard` never an agent. Refused: `403 forbidden`.
 
 ### REST (`apps/api/src/routes/card-thread-routes.ts`, dispatched by `handleProjects` on `segments[3] ===
 
 'threads'`and by`handleItemRoutes`on`segments[5] === 'threads'`)
 
-| Method | Path                                          | Gate (on `:id`, the plan viewed)   | Body                          | Answers                                                 |
-| ------ | --------------------------------------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------- |
-| GET    | `/projects/:id/threads`                       | read                               | `?item=` narrows to one card  | `CardThreadsResponse`                                   |
-| POST   | `/projects/:id/items/:itemId/threads`         | participate                        | `{ text, mentions?, title? }` | 201 `CardThreadWriteResponse`                           |
-| POST   | `/projects/:id/threads/:threadId/comments`    | participate                        | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
-| PUT    | `/projects/:id/threads/:threadId/comments/:c` | participate; own                   | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId/comments/:c` | participate; own, or edit          | none                          | `CardThreadWriteResponse` (`thread: null` once it went) |
-| POST   | `/projects/:id/threads/:threadId/resolve`     | participate                        | none                          | `CardThreadWriteResponse`, 204 if already               |
-| POST   | `/projects/:id/threads/:threadId/reopen`      | participate                        | none                          | the same                                                |
-| PUT    | `/projects/:id/threads/:threadId/title`       | participate                        | `{ title }` (`''` automatic)  | `CardThreadWriteResponse`                               |
-| POST   | `/projects/:id/threads/:threadId/cards`       | participate here and on the target | `{ projectId?, itemId }`      | `CardThreadWriteResponse`                               |
-| DELETE | `/projects/:id/threads/:threadId`             | participate; every comment own     | none                          | 204                                                     |
+| Method | Path                                                    | Gate (on `:id`, the plan viewed)   | Body                          | Answers                                                 |
+| ------ | ------------------------------------------------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------- |
+| GET    | `/projects/:id/threads`                                 | read                               | `?item=` narrows to one card  | `CardThreadsResponse`                                   |
+| POST   | `/projects/:id/items/:itemId/threads`                   | participate                        | `{ text, mentions?, title? }` | 201 `CardThreadWriteResponse`                           |
+| POST   | `/projects/:id/threads/:threadId/comments`              | participate                        | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
+| PUT    | `/projects/:id/threads/:threadId/comments/:c`           | participate; own                   | `{ text, mentions? }`         | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId/comments/:c`           | participate; own, or edit          | none                          | `CardThreadWriteResponse` (`thread: null` once it went) |
+| POST   | `/projects/:id/threads/:threadId/comments/:c/reactions` | participate                        | `{ emoji, on, key }`          | `CardThreadWriteResponse`, 204 if unchanged             |
+| POST   | `/projects/:id/threads/:threadId/resolve`               | participate                        | none                          | `CardThreadWriteResponse`, 204 if already               |
+| POST   | `/projects/:id/threads/:threadId/reopen`                | participate                        | none                          | the same                                                |
+| PUT    | `/projects/:id/threads/:threadId/title`                 | participate                        | `{ title }` (`''` automatic)  | `CardThreadWriteResponse`                               |
+| POST   | `/projects/:id/threads/:threadId/cards`                 | participate here and on the target | `{ projectId?, itemId }`      | `CardThreadWriteResponse`                               |
+| DELETE | `/projects/:id/threads/:threadId`                       | participate; every comment own     | none                          | 204                                                     |
 
 - The thread is reached through `:id`: a link row of the plan for a card the caller's scope holds, else
   `404 thread_not_found`. Writes count against the write rate limit.
@@ -395,6 +418,9 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
   `?item=` reads one card's.
 - A start, a reply, an edit: `newComment` (comment-routes.ts) stamps author, colour, id, token and `ai` (from
   `ctx.token`); a start or reply then runs `afterCommentPosted(ctx, caller, comment, itemId, threadId)`.
+- **React**: `emoji` one of the six (`isReactionId`), `on` a boolean and `key` the caller's collab key (1 to
+  `REACTION_BY_MAX` characters), else `400` (`unknown emoji`, `missing on`, `missing key`); the name is the caller's profile name
+  (`getParticipant`, else "Someone"). Not activity: no timeline entry, email or Inbox change.
 - **Add to card**: the target is always a card of `:id`; a body naming another plan (`projectId` other than `:id`)
   is refused `400 thread_other_plan` before anything is read. Then the card is linked here (`linkThread`) and the
   home's `addCard` runs (a thread shared in before the rule has another home; it is asked through it). Refusals:
@@ -578,6 +604,8 @@ include `fields` or comment text.
 | Rule                                           | Test                                                                                                                                                                                        |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                         |
+| Long Text formatting: key, limit, stale runs   | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                        |
+| Label usage, spelling, matching, 2,000 cards   | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                               |
 | Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                           |
 | Bulk create grows linearly, keeps column order | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                 |
 | Write checks shared with offline               | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                  |

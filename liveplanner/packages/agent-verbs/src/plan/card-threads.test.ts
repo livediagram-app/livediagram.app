@@ -156,6 +156,28 @@ describe('listing threads', () => {
     });
     expect(listedThread(lone, P, new Map()).cards).toEqual(['#7', 'a card in another plan']);
   });
+
+  // docs/specs/012-collaboration/comment-reactions.md: agents read reactions, per emoji with who.
+  it("shows a comment's reactions, and none when it has none", () => {
+    const reacted = thread('th-rrrr', {
+      comments: [
+        comment('cm-r', {
+          reactions: [
+            { emoji: 'eyes', by: 'k-bo', name: 'Bo' },
+            { emoji: 'thumbs-up', by: 'k-ada', name: 'Ada' },
+            { emoji: 'eyes', by: 'k-ada', name: 'Ada' },
+          ],
+        }),
+        comment('cm-bare'),
+      ],
+    });
+    const [withSome, without] = listedThread(reacted, P, new Map()).comments;
+    expect(withSome!.reactions).toEqual([
+      { emoji: '👍', name: 'Thumbs Up', count: 1, by: ['Ada'] },
+      { emoji: '👀', name: 'Eyes', count: 2, by: ['Bo', 'Ada'] },
+    ]);
+    expect(without).not.toHaveProperty('reactions');
+  });
 });
 
 describe('reading the state', () => {
