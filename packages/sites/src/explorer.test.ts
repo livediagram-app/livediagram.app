@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   APP_ITEMS,
@@ -60,6 +61,18 @@ describe("the site switcher's links on an Explorer page", () => {
     expect(explorerSwitchHref('/help/explorer')).toBeNull();
     expect(explorerSwitchHref('/explorers')).toBeNull();
     expect(explorerSwitchHref('/canvas/abc')).toBeNull();
+  });
+
+  // Timed in CPU time, so a busy machine does not fail it: a long run of slashes stays linear.
+  it('trims a long run of trailing slashes in linear time', () => {
+    const slashes = `/explorer${'/'.repeat(50_000)}x`;
+    const ms = cpuMsOf(() => {
+      expect(explorerSwitchHref(slashes)).not.toBeNull();
+      expect(explorerSwitchHref(`/explorer${'/'.repeat(50_000)}`)!(site('liveplanner.app'))).toBe(
+        'https://www.liveplanner.app/explorer',
+      );
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(80));
   });
 
   it("opens each site's Explorer at the same view, keeping the query", () => {

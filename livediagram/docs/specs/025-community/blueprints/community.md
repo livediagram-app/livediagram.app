@@ -222,21 +222,25 @@ Community link behaviour (keyed off the canvas's `community_post.share_code`):
 - `DocumentGrant` carries `community: boolean`. A community grant is refused by every door that has not opted in with
   `COMMUNITY_CONTENT` (`gateGrant`, `apps/api/src/routes/context.ts`), the comment listing included. The document GET
   and the tab GET opt in; the document is redacted with `redactDocumentForCommunity` and the tab with
-  `redactTabForCommunity` (`apps/api/src/community-redact.ts`).
+  `redactTabForCommunity` (`apps/api/src/community-redact.ts`, a binding of `@liveworkspace/community/app`).
 - Copy: the api's copy door (`apps/api/src/routes/document-index-routes.ts`) names a copy through the post's link
   after the post (`communityPostTitle`) and counts it (`countCommunityCopy`, with the copier's network) before the
   index copies; the index's copy (`copy` in `apps/api/src/routes/internal-items.ts`) takes the source through
   `exportCopy`, which drops comments and the people on actions for a community copy, and counts a copy the api door
   did not.
 
-Shared UI (`packages/ui/src/community/`): `CommunityPostTile` (the card, used by the Community app and the landing
-page's `CommunityShowcase`), `CommunityAuthorBadge`, `communitySharedAgo` (the shared-ago line), `useCommunityEnabled`
-/ `fetchCommunityEnabled`, `CommunityFooterLink` (the shared footer's link, hidden while switched off),
-`CommunityCounts` (`CommunityLikeCount`, `CommunityCopyCount`), and `surfaces.ts` (`COMMUNITY_DOT_GRID`,
-`COMMUNITY_SKELETON_BAR`: the dot grid behind a post's image and the pulsing loading bar, used by the card, its
-skeleton, `EmbedFrame` and `PostStates`), and `CommunityHelpLink` (`packages/ui/src/community/CommunityHelpLink.tsx`:
-a help-glyph link keyed by `COMMUNITY_HELP` in `packages/help-registry/src/community.ts`, `sharing` or `finding`,
-each an article href and its telemetry id, sent as `UI·Opened·<id>`).
+Shared UI, every app's (`@liveworkspace/community-ui`, re-exported by `@livediagram/ui`): `CommunityPostTile` (the
+card, used by the Community pages and the landing section), `CommunityAuthorBadge`, `communitySharedAgo` (the
+shared-ago line), `useCommunityEnabled` / `fetchCommunityEnabled`, `CommunityCounts` (`CommunityLikeCount`,
+`CommunityCopyCount`), and `surfaces.ts` (`COMMUNITY_DOT_GRID`, `COMMUNITY_SKELETON_BAR`: the dot grid behind a
+post's image and the pulsing loading bar, used by the card, its skeleton, `EmbedFrame` and `PostStates`). The landing
+page's section is `CommunityShowcase` from `@liveworkspace/community-ui/landing`, bound in
+`apps/marketing/components/CommunityShowcase.tsx` (livediagram's posts, words, card images and help link). The
+public sites' links are `@liveworkspace/community-ui/links`: `CommunityFooterLink` (the shared footer's link, hidden
+while switched off) and `CommunityHelpLink` (the shared help link, `@liveworkspace/community-ui/help-link`, at an
+article of `COMMUNITY_HELP`, every app's, from `@liveworkspace/help-registry/community`: `sharing` or `finding`, each
+an article href and its telemetry id, sent as `UI·Opened·<id>`). livediagram's own
+`packages/ui/src/community/CommunityHelpLink.tsx` binds it to this site's telemetry.
 
 Picture and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/document-room.ts`,
 `drawDocument` in `apps/api/src/thumbnail.ts`) draws from the redacted board when asked with the open post's code;
@@ -283,36 +287,32 @@ Editor (`apps/editor`):
   session share code, `makeCopy` runs once and the param is stripped.
 - There is no moderation page and no operator route.
 
-Community app (`apps/community`):
+Community app (`apps/community`), a thin shell on every app's Community pages (`@liveworkspace/community-site`,
+liveworkspace/docs/specs/007-community "An app's Community pages"):
 
-- `apps/community/lib/community-key.ts`: reads or mints (`crypto.randomUUID`) the key; SSR-safe; storage failures fall
-  back to an in-memory key for the page's life. Never reads the guest owner id.
-- `apps/community/lib/query-state.ts`: the URL query to and from the gallery's filters (pure, tested), via
-  `parseCommunityListQuery` / `communityQueryParams`.
-- `apps/community/lib/api.ts`: `fetchPosts`, `fetchMine`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`,
-  `reportPost`: every read, like and report straight to the service (`communityServiceUrl` over `communityApi()`),
-  My Shares to this api (`NEXT_PUBLIC_API_BASE ?? '/api'`); `apps/community/lib/useLike.ts` is the optimistic like with rollback.
-- Gallery (`apps/community/components/gallery/`): `GalleryView` over `useGallery`; `CommunityHero`, `SearchBox`
-  (debounced `SEARCH_DEBOUNCE_MS`, Enter commits; the input and the controls in one flex row, so typed text never
-  runs under them) holding Clear Search, the My Shares toggle (`aria-pressed`, where sign-in exists), `CategoryMenu`,
-  `TagFilter` and `SortMenu` in its right edge, each a `SearchControlMenu` (one trigger, keyboard menu and check-marked rows; a pick closes it or, for Tags, leaves it open) over the shared `SearchControlButton` (icon only below `lg`),
-  the menus sharing `MENU_PANEL` and `menuRadioRowClass` (`../packages/ui/src/menu/menu-classes.ts`, also used by the editor mode menus); then `PostGrid` of `PostCard`,
-  `LoadMore`, `GalleryStates`. Clear Search keeps the sort and `is:mine`. Category, tags and sort are words in `q`: `communitySearchCategory`, `communitySearchTags`,
-  `communitySearchSort` and their setters (api-schema) read and write them; the service's list reads them through
-  `parseCommunityListQuery` (a word wins over the old parameter); a legacy `?tag=`, `?category=` or `?sort=` folds into `q` in `readQueryState`. The search form sits on the
-  toolbar layer (`--z-toolbar`): above the grid, below the sticky header and its menus.
-- My Shares: `is:mine` (`COMMUNITY_MINE_TOKEN`) in `q` switches `useGallery` to `fetchMine`, with the signed-in session
-  from `AccountSession` (mounted only when My Shares is on: `POST /api/auth/token` on the same origin, skipped without the
-  signed-in hint);
-  `apps/community/lib/session.ts` holds
-  `SESSION_LOAD_TIMEOUT_MS` and `signInHref`. `MineSummary` shows the **Your Shares** totals above the grid. Waiting
-  past `SESSION_LOAD_TIMEOUT_MS` for the session, `GalleryView` shows `LoadError` ("We couldn't load the
-  Community.") with a reload.
-- Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
-  titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog` (on the shared `Dialog` shell from `@livediagram/ui`, a phone sheet below `sm`), `RelatedPosts`.
-  Links come from `apps/community/lib/links.ts`: Open Canvas `openDocumentHref` (`/document/shared?s=<code>`), Make
-  a Copy `makeCopyHref` (`/document/shared?s=<code>&copy=1`). Once the post loads, `PostView` sets `document.title`
-  and a `link rel="canonical"` to the post's own address (`apps/community/app/post/page.tsx` carries none).
+- `apps/community/app/layout.tsx`: the head, boot scripts, `Header` and `SiteFooter`, around `CommunityProvider`
+  (`apps/community/lib/community-site.tsx`) and the shared `CommunityGate`. `app/page.tsx` renders
+  `CommunityGalleryPage`, `apps/community/app/post/page.tsx` `CommunityPostPage` under its own metadata (no canonical).
+- `apps/community/lib/community-site.tsx`: livediagram's `CommunitySite`: `livediagram.app`, its words, `API_BASE`
+  (`NEXT_PUBLIC_API_BASE ?? '/api'`), `NEXT_PUBLIC_COMMUNITY_API`, `COMMUNITY_KEY_STORAGE`, `signedInHintOf`, the
+  editor's routes (Open Canvas `/document/shared?s=<code>`, Make a Copy `...&copy=1`, the embed `/embed?s=<code>`,
+  the card image `/api/share/<code>/image.svg`, `documentPath`, `/sign-in/?redirect_url=`, Explorer Home),
+  `communityTelemetry` (`apps/community/lib/telemetry.ts`) and `CommunityHelpLink`.
+- `apps/community/worker/index.ts`: `createCommunityWorker({ app: 'livediagram.app', siteUrl: SITE_URL, product })`,
+  its only export the default handler.
+- The pages themselves (in the package): the gallery is `GalleryView` over `useGallery`; `CommunityHero`,
+  `SearchBox` (debounced `SEARCH_DEBOUNCE_MS`, Enter commits; the input and the controls in one flex row) holding
+  Clear Search, the My Shares toggle, `CategoryMenu` (the app's own categories), `TagFilter` and `SortMenu`, each a
+  `SearchControlMenu` over `SearchControlButton`, the menus sharing `MENU_PANEL` and `menuRadioRowClass`; then
+  `PostGrid` of `PostCard`, `LoadMore`, `GalleryStates`. Category, tags and sort are words in `q`; a legacy
+  `?tag=`, `?category=` or `?sort=` folds into `q` in `readQueryState`. The search form sits on the toolbar layer.
+- My Shares: `is:mine` in `q` switches `useGallery` to the app's `fetchMine`, with the session from `AccountSession`
+  (mounted only when My Shares is on: `POST /api/auth/token` on the same origin, skipped without the signed-in
+  hint). `MineSummary` shows **Your Shares**. Waiting past `SESSION_LOAD_TIMEOUT_MS`, `GalleryView` shows
+  `LoadError` ("We couldn't load the Community.") with a reload.
+- The post page: `PostView` over `usePost`, `EmbedFrame` (the binding's embed, lazy, titled, falling back to the card
+  image after 15 s), `PostMeta`, `PostActions`, `ReportDialog` (on the shared `Dialog`, a phone sheet below `sm`),
+  `RelatedPosts`. Once the post loads, `PostView` sets `document.title` and a `link rel="canonical"`.
 
 ## 6. Errors and edge cases
 
@@ -343,7 +343,7 @@ Community app (`apps/community`):
   refuses it unless the door passes `COMMUNITY_CONTENT`. Doors that pass it: the document GET (and its views), the tab
   GET (and its views), images, the copy and the room ticket (which then refuses with 403 `community_link`). Every other
   door (comments, comment pictures, changesets, timeline, Q&A board, and any new one) refuses by default.
-- `redactElementsForCommunity` / `redactTabDataForCommunity` (`apps/api/src/community-redact.ts`): comment threads
+- `redactElementsForCommunity` / `redactTabDataForCommunity` (`apps/api/src/community-redact.ts`, a binding of `@liveworkspace/community/app`): comment threads
   dropped; each action keeps its text and status, its assignee, team, assigner id and assigner name blanked. Applied
   to the tab GET for a community visit and to the copy's source (`exportCopy` in
   `apps/api/src/document-room/document-content.ts`), so the copy is built from the redacted data.
@@ -474,15 +474,15 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Switched off: footer links, fetch          | `packages/ui/src/community/useCommunityEnabled.test.tsx`                                                                                       |
 | Hidden is final (Share dialog)             | packages/community-ui/src/share/CommunitySection.test.tsx                                                                                      |
 | Copy counting                              | liveworkspace/apps/community/src/posts.test.ts, `apps/api/src/routes/community-routes.test.ts`                                                 |
-| Query state round trip                     | `apps/community/lib/query-state.test.ts`                                                                                                       |
-| Community key fallback                     | `apps/community/lib/community-key.test.ts`                                                                                                     |
+| Query state round trip                     | packages/community-site/src/lib/query-state.test.ts                                                                                            |
+| Community key fallback                     | packages/community-site/src/lib/community-key.test.ts                                                                                          |
 | Router forwards `/community`               | `apps/router/src/index.test.ts`                                                                                                                |
-| Optimistic like and rollback               | `apps/community/components/shared/LikeButton.test.tsx`                                                                                         |
+| Optimistic like and rollback               | packages/community-site/src/components/shared/LikeButton.test.tsx                                                                              |
 | Copy once from `?copy=1`                   | `apps/editor/hooks/canvas/useAutoCopyParam.test.tsx`                                                                                           |
 | Community section state, tag input         | packages/community-ui/src/share/*.test.ts(x)                                                                                                   |
 | Editor api client and error copy           | `apps/editor/lib/api/community.test.ts`                                                                                                        |
 | Network ranges (IPv4 /24, IPv6 /56)        | packages/community/src/network.test.ts                                                                                                         |
-| Redaction for strangers                    | `apps/api/src/community-redact.test.ts`                                                                                                        |
+| Redaction for strangers                    | `packages/community/src/app/redact.test.ts` (the monorepo's)                                                                                   |
 | Community drawing redacted                 | `apps/api/src/thumbnail.test.ts`                                                                                                               |
 | Post row mapping (Anonymous, state)        | liveworkspace/apps/community/src/posts.test.ts                                                                                                 |
 | Community links, sync state                | `apps/api/src/routes/community-routes.test.ts`                                                                                                 |
@@ -493,10 +493,11 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Community section, focus follows           | packages/community-ui/src/share/CommunitySection.test.tsx                                                                                      |
 | Publish dialog pieces                      | packages/community-ui/src/share/publish-pieces.test.tsx                                                                                        |
 | Owner post hook                            | packages/community-ui/src/share/useCommunityPost.test.tsx                                                                                      |
-| Gallery states, My Shares, sign-in wait    | `apps/community/components/gallery/GalleryView.test.tsx`                                                                                       |
-| Post page, canonical                       | `apps/community/components/post/PostView.test.tsx`                                                                                             |
-| Sign-in session and switched-off gate      | `apps/community/components/auth-and-gate.test.tsx`                                                                                             |
-| Home page showcase                         | `apps/marketing/components/CommunityShowcase.test.tsx`                                                                                         |
+| Gallery states, My Shares, sign-in wait    | packages/community-site/src/components/gallery/GalleryView.test.tsx                                                                            |
+| Post page, canonical                       | packages/community-site/src/components/post/PostView.test.tsx                                                                                  |
+| Sign-in session and switched-off gate      | packages/community-site/src/components/auth-and-gate.test.tsx                                                                                  |
+| Home page showcase                         | `apps/marketing/components/CommunityShowcase.test.tsx`, packages/community-ui/src/landing/CommunityShowcase.test.tsx                           |
+| Post head, sitemap, entry exports          | packages/community-site/src/worker/*.test.ts, `apps/community/worker/index.test.ts`                                                            |
 | Shared card, counts, author                | `packages/ui/src/community/community-pieces.test.tsx`                                                                                          |
 | Focus restore after an unmounting modal    | `../packages/ui/src/useFocusTrap.test.tsx`                                                                                                     |
 
@@ -507,5 +508,5 @@ See [DEFAULTS.md](DEFAULTS.md), rows C1 to C17.
 ## 15. Assets and external resources
 
 - App icon: `apps/community/app/icon.svg`, hand-authored in this repo (MIT).
-- Glyphs: `apps/community/components/shared/icons.tsx` draws Lucide-derived primitives (`lucide*`) from the shared
+- Glyphs: the Community pages' `icons.tsx` (`../packages/community-site/src/components/shared/`) draws Lucide-derived primitives (`lucide*`) from the shared
   `@liveworkspace/icons` catalogue, under Lucide's ISC licence, credited on the generated `/licences` page.

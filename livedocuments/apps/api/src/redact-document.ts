@@ -25,6 +25,7 @@
 // visitor always has their own code already (the one they arrived with), and
 // only the owner manages links, so nobody else needs it.
 
+import { parseStoredPresentation } from '@livedocuments/document';
 import type { DocumentDTO } from './types';
 
 // `caller` is the resolved owner of the request (account id, API-token owner,
@@ -37,7 +38,34 @@ import type { DocumentDTO } from './types';
 export function redactDocumentForReader(liveDoc: DocumentDTO, caller: string | null): DocumentDTO {
   return caller && caller === liveDoc.ownerId
     ? liveDoc
-    : { ...liveDoc, ownerId: '', shareCode: null };
+    : { ...liveDoc, ownerId: '', shareCode: null, communityState: null };
+}
+
+// A Community visitor's copy (docs/specs/025-community/community.md "Viewing a post's document"), on top of the
+// reader redaction: the post names its author (or "Anonymous") itself, so the document carries nobody's name or
+// colour, and nothing about where it sits in its owner's library or came from. The deck keeps its slides without
+// their presenter notes, which are what the presenter means to say, not what the document shows.
+export function redactDocumentForCommunity(liveDoc: DocumentDTO): DocumentDTO {
+  return {
+    ...liveDoc,
+    ownerName: null,
+    ownerColor: null,
+    folderId: null,
+    source: null,
+    presentation: withoutPresenterNotes(liveDoc.presentation),
+  };
+}
+
+function withoutPresenterNotes(presentation: string | null): string | null {
+  const stored = parseStoredPresentation(presentation);
+  if (!stored) return null;
+  return JSON.stringify({
+    ...stored,
+    decks: stored.decks.map((deck) => ({
+      ...deck,
+      slides: deck.slides.map(({ notes: _notes, ...slide }) => slide),
+    })),
+  });
 }
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps

@@ -100,6 +100,18 @@ import {
   type DesignCopy,
   type DesignOutline,
 } from './design-content';
+import {
+  checkCommunityPost,
+  COMMUNITY_CHECK_MS,
+  communityCheckDueAt,
+  communityPostAuthor,
+  leaveCommunity,
+  openCommunityCode,
+  readCommunityPost,
+  type CommunityPost,
+} from './community-post';
+import type { CommunityListing, CopySource } from '../design-client';
+import type { Copier } from '@liveworkspace/index-app';
 import { notifyDesignJoin } from '../email/notifications';
 import { anonymiseDesign } from './design-anonymise';
 import { DESIGN_OUTBOX, drainOutbox } from './design-outbox';
@@ -262,6 +274,8 @@ export class DesignRoom extends DurableObject<Env> {
   private writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
   private maintenanceAt: number | null = null;
+  // When the design's Community post next asks where it stands (null: no post).
+  private communityAt: number | null = null;
 
   // The tab write queue. Every write this room makes to this design's tabs
   // runs through here ONE AT A TIME. A Durable Object only serialises the
@@ -314,6 +328,8 @@ export class DesignRoom extends DurableObject<Env> {
         );
         console.info('[room] owner or team taken from the grant', { team: h.teamId !== null });
         this.noteWrite();
+        // A new owner or team can open or close a Community post: it asks where it stands now.
+        if (this.communityAt !== null) this.communityAt = Date.now();
       },
     });
     this.participantWrites = new RoomParticipantWrites({
@@ -377,6 +393,11 @@ export class DesignRoom extends DurableObject<Env> {
     if (typeof row?.id === 'string' && this.designId === null) this.designId = row.id;
     if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
     this.shares.restore();
+    // The Community post's next check (community-post.ts), from when it last asked.
+    const post = sql
+      .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
+      .toArray()[0];
+    this.communityAt = post ? post.checked_at + COMMUNITY_CHECK_MS : null;
   }
 
   // Every call names its design; an object answers for one design only.
@@ -529,9 +550,14 @@ export class DesignRoom extends DurableObject<Env> {
     const env = this.requireEnv();
     // Before the write counter is read: taking the owner and team is no edit.
     if (identity.grant?.item === designId) await this.takeHead(identity.grant);
+    const community = await this.communityOf(designId);
     const writesBefore = this.writes;
-    const response = await answerDesignRequest(env, request, identity, (p) =>
-      this.state.waitUntil(p),
+    const response = await answerDesignRequest(
+      env,
+      request,
+      identity,
+      (p) => this.state.waitUntil(p),
+      community,
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
     // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
@@ -549,7 +575,60 @@ export class DesignRoom extends DurableObject<Env> {
       }
       this.noteWrite();
     }
+    // A post published or removed by this request starts or stops its checks.
+    if (request.method !== 'GET' && new URL(request.url).pathname.endsWith('/community')) {
+      this.communityAt = communityCheckDueAt(await readCommunityPost(env));
+      this.armAlarm();
+    }
     return response;
+  }
+
+  // The design's Community post's link as the doors read it: its code, and whether it opens the design now
+  // (community-post.ts openCommunityCode). Null for a design with no post.
+  async community(designId: string): Promise<{ code: string; open: boolean } | null> {
+    this.bindDesign(designId);
+    return this.communityOf(designId);
+  }
+
+  // Never makes a schema: a request for an id nothing has written finds no post.
+  private async communityOf(designId: string): Promise<{ code: string; open: boolean } | null> {
+    if (!this.storedSchema()) return null;
+    const env = this.requireEnv();
+    const post = await readCommunityPost(env);
+    if (!post) return null;
+    const meta = await readDesignMeta(env, designId);
+    return { code: post.shareCode, open: openCommunityCode(env, post, meta) === post.shareCode };
+  }
+
+  // The post when `code` is its link and it opens the design now; null otherwise.
+  private async openPost(designId: string, code: string): Promise<CommunityPost | null> {
+    this.bindDesign(designId);
+    if (!this.storedSchema()) return null;
+    const env = this.requireEnv();
+    const post = await readCommunityPost(env);
+    if (!post || post.shareCode !== code) return null;
+    const meta = await readDesignMeta(env, designId);
+    return openCommunityCode(env, post, meta) === code ? post : null;
+  }
+
+  // What a visitor through the design's Community post's open link is told of the post (docs/specs/025-community/
+  // community.md "Viewing a post's design"): its id at the service and who it shows as author.
+  async communityListing(designId: string, code: string): Promise<CommunityListing | null> {
+    const post = await this.openPost(designId, code);
+    if (!post) return null;
+    return { postId: post.postId, author: await communityPostAuthor(this.requireEnv(), post) };
+  }
+
+  // A copy through the design's Community post's link is named after the post (docs/specs/025-community/
+  // community.md "Viewing a post's design"): its title, when `code` is the post's open link. Null otherwise.
+  async communityPostTitle(designId: string, code: string): Promise<string | null> {
+    return (await this.openPost(designId, code))?.title ?? null;
+  }
+
+  // Whether this object's SQLite holds a design schema: an id nothing has written answers no post.
+  private storedSchema(): boolean {
+    const sql = this.state.storage.sql;
+    return this.schemaReady || (!!sql && hasDesignSchema((q) => sql.exec(q)));
   }
 
   // The design drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md "The export door"): the first tab or
@@ -562,12 +641,23 @@ export class DesignRoom extends DurableObject<Env> {
     const env = this.requireEnv();
     const { meta, savedAt } = await readDesignHead(env, designId);
     if (!meta) return { status: 'not_found' };
+    // Through the design's Community post's link it is the redacted drawing, and nothing while the post does not
+    // open the design (docs/specs/025-community/community.md "Viewing a post's design").
+    let community = false;
+    if (query.code !== null) {
+      const post = await readCommunityPost(env);
+      if (post?.shareCode === query.code) {
+        if (openCommunityCode(env, post, meta) !== query.code) return { status: 'not_found' };
+        community = true;
+      }
+    }
     if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
     if (query.tabId !== null && !(await designHasTab(env, designId, query.tabId))) {
       return { status: 'not_found' };
     }
     const svg = await drawDesign(env, { id: designId, name: meta.name }, query.tabId, {
       defer: (p) => this.state.waitUntil(p),
+      community,
     });
     return svg === null
       ? { status: 'empty', version: savedAt }
@@ -605,13 +695,21 @@ export class DesignRoom extends DurableObject<Env> {
     return heldBlobs(this.requireEnv(), tabId, ids.slice(0, PHOTO_ADOPT_MAX_IDS));
   }
 
+  // The source side of a copy, for whoever copies (design-content.ts exportDesignCopy): anyone but the owner takes
+  // the comments as the tab read serves them to them; a copy through the design's open Community post's link takes it
+  // without its comments or the people on its actions (docs/specs/025-community/community.md). `community` says
+  // which, so the copy is counted toward the post.
   async exportCopy(
     designId: string,
     onlyTabId: string | null,
-    copierId: string | null,
-  ): Promise<DesignCopy | null> {
+    copier: Copier | null,
+  ): Promise<CopySource | null> {
     this.bindDesign(designId);
-    return exportDesignCopy(this.requireEnv(), designId, onlyTabId, copierId);
+    const env = this.requireEnv();
+    const post = copier?.code ? await this.communityOf(designId) : null;
+    const community = post !== null && post.open && post.code === copier?.code;
+    const copy = await exportDesignCopy(env, designId, onlyTabId, copier?.by ?? null, community);
+    return copy ? { copy, community } : null;
   }
 
   async importCopy(designId: string, copy: DesignCopy): Promise<void> {
@@ -1039,6 +1137,9 @@ export class DesignRoom extends DurableObject<Env> {
     this.closeSockets(() => [DESIGN_TRASHED_CLOSE, 'design-purged']);
     this.opLog = [];
     await this.leaveShares();
+    // A design going for good takes its Community post with it: the service hears it is gone.
+    if (this.designId !== null && this.storedSchema())
+      await leaveCommunity(this.requireEnv(), this.designId);
     await this.ledger.settled();
     // What the design holds outside its own storage: its photo blobs' markers (and the blobs no other design
     // holds), and its images' references at the media service.
@@ -1056,7 +1157,29 @@ export class DesignRoom extends DurableObject<Env> {
     this.flushAt = null;
     this.shares.clear();
     this.maintenanceAt = null;
+    this.communityAt = null;
     console.info('[room] purged');
+  }
+
+  // Ask the index where the Community post's design stands, and send the service what changed (community-post.ts).
+  // A failure keeps the post and tries again at the next check.
+  private async checkCommunity(now: number): Promise<void> {
+    const designId = this.designId;
+    this.communityAt = null;
+    if (designId === null || !this.storedSchema()) return;
+    const env = this.requireEnv();
+    let post: CommunityPost | null;
+    try {
+      post = await checkCommunityPost(env, designId, await readDesignMeta(env, designId), now);
+    } catch (error) {
+      console.warn('[community] check failed', { error: String(error) });
+      post = await readCommunityPost(env);
+      if (post) {
+        this.communityAt = now + COMMUNITY_CHECK_MS;
+        return;
+      }
+    }
+    this.communityAt = communityCheckDueAt(post);
   }
 
   // After a design-trashed op has gone out, close every socket
@@ -1380,12 +1503,13 @@ export class DesignRoom extends DurableObject<Env> {
   }
 
   // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
-  // next push, the design's next upkeep. None when nothing is due.
+  // next push, the Community post's next check, the design's next upkeep. None when nothing is due.
   private armAlarm(): void {
     const due = [
       this.agents.nextExpiry(),
       this.flushAt,
       this.shares.at,
+      this.communityAt,
       this.maintenanceAt,
       this.nextGrantDue(),
     ].filter((t): t is number => t !== null);
@@ -1404,6 +1528,7 @@ export class DesignRoom extends DurableObject<Env> {
     // A shared tab written while the push was in flight (its write armed nothing then).
     this.shares.noteWrite();
     if (this.shares.due(now)) await this.drainShares();
+    if (this.communityAt !== null && this.communityAt <= now) await this.checkCommunity(now);
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();
   }

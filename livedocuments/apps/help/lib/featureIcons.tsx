@@ -372,6 +372,23 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A chain whose far ring is a clock: the link, and the deadline on it.
+  // A gallery wall: three framed documents, one with a heart on it.
+  community: (
+    <Glyph>
+      <rect x="2.5" y="4" width="8" height="7" rx="1.5" />
+      <rect x="13.5" y="4" width="8" height="7" rx="1.5" />
+      <rect x="2.5" y="14" width="8" height="6" rx="1.5" />
+      <path d="M17.5 20.5l-2.6-2.5a1.6 1.6 0 012.6-1.9 1.6 1.6 0 012.6 1.9z" />
+    </Glyph>
+  ),
+  // A search glass over a hashtag: finding documents by their tags.
+  'finding-community-documents': (
+    <Glyph>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.5 15.5 21 21" />
+      <path d="M9 7.5 8 13.5M12.5 7.5l-1 6M7 9.5h6M6.5 11.5h6" />
+    </Glyph>
+  ),
   'share-link-expiry': (
     <Glyph>
       <path d="M8.5 12H4.5a3 3 0 010-6h5" />

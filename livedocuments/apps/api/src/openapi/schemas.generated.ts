@@ -1093,6 +1093,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "communityEnabled": {
+        "type": "boolean"
+      },
       "documentFormat": {
         "type": "number"
       },
@@ -1659,6 +1662,303 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CommunityAuthor": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "picture": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "name",
+      "color",
+      "picture"
+    ],
+    "type": "object"
+  },
+  "CommunityCategory": {
+    "enum": [
+      "architecture",
+      "art",
+      "articles",
+      "budgets",
+      "dashboards",
+      "data",
+      "decks",
+      "design",
+      "events",
+      "flows",
+      "forms",
+      "guides",
+      "illustrations",
+      "infographics",
+      "learning",
+      "logos",
+      "mindmaps",
+      "newsletters",
+      "other",
+      "personal",
+      "photos",
+      "planning",
+      "posters",
+      "projects",
+      "proposals",
+      "roadmaps",
+      "social",
+      "trackers",
+      "wireframes",
+      "workflows",
+      "workshops"
+    ],
+    "type": "string"
+  },
+  "CommunityMinePost": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/CommunityPostState"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "anonymous",
+      "author",
+      "category",
+      "copyCount",
+      "description",
+      "documentId",
+      "id",
+      "likeCount",
+      "liked",
+      "publishedAt",
+      "shareCode",
+      "state",
+      "tags",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunityMineResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "nextOffset": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "posts": {
+        "items": {
+          "$ref": "#/components/schemas/CommunityMinePost"
+        },
+        "type": "array"
+      },
+      "totals": {
+        "$ref": "#/components/schemas/CommunityMineTotals"
+      }
+    },
+    "required": [
+      "posts",
+      "nextOffset",
+      "totals"
+    ],
+    "type": "object"
+  },
+  "CommunityMineTotals": {
+    "additionalProperties": false,
+    "properties": {
+      "copies": {
+        "type": "number"
+      },
+      "likes": {
+        "type": "number"
+      },
+      "posts": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "posts",
+      "likes",
+      "copies"
+    ],
+    "type": "object"
+  },
+  "CommunityOwnPost": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/CommunityPostState"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "anonymous",
+      "author",
+      "category",
+      "copyCount",
+      "description",
+      "id",
+      "likeCount",
+      "liked",
+      "publishedAt",
+      "shareCode",
+      "state",
+      "tags",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunityPostInput": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "description": {
+        "type": "string"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "description",
+      "category",
+      "tags",
+      "anonymous"
+    ],
+    "type": "object"
+  },
+  "CommunityPostState": {
+    "enum": [
+      "listed",
+      "hidden"
+    ],
+    "type": "string"
+  },
+  "CommunityShareInfo": {
+    "additionalProperties": false,
+    "properties": {
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "postId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "postId",
+      "author"
+    ],
+    "type": "object"
+  },
   "ConceptAnim": {
     "enum": [
       "build",
@@ -1806,6 +2106,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Document": {
     "additionalProperties": false,
     "properties": {
+      "communityState": {
+        "enum": [
+          "listed",
+          "hidden",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "createdAt": {
         "type": "number"
       },

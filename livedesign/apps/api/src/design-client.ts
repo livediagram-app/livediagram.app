@@ -6,10 +6,12 @@
 // hop there.
 
 import type { PhotoBlobMeta } from './db/photo-blobs';
+import type { CommunityShareInfo } from '@livedesign/api-schema';
 import type { DesignCopy, DesignOutline } from './design-room/design-content';
 import type { DesignFileImport } from './design-room/design-file';
 import type { RouteIdentity } from './design-room/design-route';
 import type {
+  Copier,
   ExportQuery,
   ExportResult,
   ShareAnswer,
@@ -18,6 +20,12 @@ import type {
 } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { Env } from './types';
+
+// The source side of a copy, and whether it went through the design's open Community post's link.
+export type CopySource = { copy: DesignCopy; community: boolean };
+
+// The Community post a visitor through its open link is told of: its id at the service and who it shows as author.
+export type CommunityListing = CommunityShareInfo;
 
 export type DesignRoomClient = {
   // The tabs (no bodies) and what the design knows of itself, for a design read.
@@ -40,9 +48,9 @@ export type DesignRoomClient = {
   // Whether the design places image `imageId` (on `onlyTabId`, for a tab-scoped reader) and may serve it
   // (db/image-grants.ts designServesImage). The caller has checked the reader's grant on this design.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
-  // A copy's two halves (design-content.ts). `copierId`: who copies, so anyone but the owner takes the comments
-  // without other people's author ids.
-  exportCopy(onlyTabId: string | null, copierId: string | null): Promise<DesignCopy | null>;
+  // A copy's two halves (design-content.ts): the source as `copier` may take it (anyone but the owner takes the
+  // comments without other people's author ids), and whether it went through the design's open Community post's link.
+  exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
   importCopy(copy: DesignCopy): Promise<void>;
   // An old livediagram.app document's part, written with its own times (the migration door, docs/migration.md).
   importMigrated(payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
@@ -50,6 +58,12 @@ export type DesignRoomClient = {
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
   revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  // The design's Community post's link (its code, and whether it opens the design now), or null for none.
+  community(): Promise<{ code: string; open: boolean } | null>;
+  // The post's title when `code` is its open link: what a copy through it is named.
+  communityPostTitle(code: string): Promise<string | null>;
+  // The post's id and author, for a visitor through its open link; null otherwise.
+  communityListing(code: string): Promise<CommunityListing | null>;
   // Someone opened the design through a share link for the first time (the index's notice): the owner's
   // "someone joined" email, sent from the room, which keeps its once-per-window claim.
   joined(personId: string): Promise<void>;
@@ -76,11 +90,14 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     hasTab: (tabId) => room.hasTab(designId, tabId),
     heldBlobs: (tabId, ids) => room.heldBlobs(designId, tabId, ids),
     servesImage: (imageId, onlyTabId) => room.servesImage(designId, imageId, onlyTabId),
-    exportCopy: (onlyTabId, copierId) => room.exportCopy(designId, onlyTabId, copierId),
+    exportCopy: (onlyTabId, copier) => room.exportCopy(designId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(designId, copy),
     importMigrated: (payload) => room.importMigrated(designId, payload),
     purge: () => room.purge(designId),
     revokeCodes: (codes, reason) => room.revokeCodes(designId, codes, reason),
+    community: () => room.community(designId),
+    communityPostTitle: (code) => room.communityPostTitle(designId, code),
+    communityListing: (code) => room.communityListing(designId, code),
     joined: (personId) => room.joined(designId, personId),
     anonymise: (personId) => room.anonymise(designId, personId),
     sharedTabCopy: (tabId) => room.sharedTabCopy(designId, tabId),
@@ -102,12 +119,15 @@ export type DesignRoomRpc = {
   exportCopy(
     designId: string,
     onlyTabId: string | null,
-    copierId: string | null,
-  ): Promise<DesignCopy | null>;
+    copier: Copier | null,
+  ): Promise<CopySource | null>;
   importCopy(designId: string, copy: DesignCopy): Promise<void>;
   importMigrated(designId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
   purge(designId: string): Promise<void>;
   revokeCodes(designId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  community(designId: string): Promise<{ code: string; open: boolean } | null>;
+  communityPostTitle(designId: string, code: string): Promise<string | null>;
+  communityListing(designId: string, code: string): Promise<CommunityListing | null>;
   joined(designId: string, personId: string): Promise<void>;
   anonymise(designId: string, personId: string): Promise<number>;
   sharedTabCopy(designId: string, tabId: string): Promise<SharedTabCopy | null>;

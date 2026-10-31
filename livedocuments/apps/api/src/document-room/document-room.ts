@@ -94,6 +94,18 @@ import {
   type DocumentCopy,
   type DocumentOutline,
 } from './document-content';
+import {
+  checkCommunityPost,
+  COMMUNITY_CHECK_MS,
+  communityCheckDueAt,
+  communityPostAuthor,
+  leaveCommunity,
+  openCommunityCode,
+  readCommunityPost,
+  type CommunityPost,
+} from './community-post';
+import type { CommunityListing, CopySource } from '../document-client';
+import type { Copier } from '@liveworkspace/index-app';
 import { notifyDocumentJoin } from '../email/notifications';
 import { anonymiseDocument } from './document-anonymise';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
@@ -260,6 +272,8 @@ export class DocumentRoom extends DurableObject<Env> {
   private writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
   private maintenanceAt: number | null = null;
+  // When the document's Community post next asks where it stands (null: no post).
+  private communityAt: number | null = null;
 
   // The tab write queue. Every write this room makes to this document's tabs
   // runs through here ONE AT A TIME. A Durable Object only serialises the
@@ -326,6 +340,8 @@ export class DocumentRoom extends DurableObject<Env> {
         );
         console.info('[room] owner or team taken from the grant', { team: h.teamId !== null });
         this.noteWrite();
+        // A new owner or team can open or close a Community post: it asks where it stands now.
+        if (this.communityAt !== null) this.communityAt = Date.now();
       },
     });
     this.participantWrites = new RoomParticipantWrites({
@@ -389,6 +405,11 @@ export class DocumentRoom extends DurableObject<Env> {
     if (typeof row?.id === 'string' && this.documentId === null) this.documentId = row.id;
     if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
     this.shares.restore();
+    // The Community post's next check (community-post.ts), from when it last asked.
+    const post = sql
+      .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
+      .toArray()[0];
+    this.communityAt = post ? post.checked_at + COMMUNITY_CHECK_MS : null;
   }
 
   // Every call names its document; an object answers for one document only.
@@ -530,9 +551,14 @@ export class DocumentRoom extends DurableObject<Env> {
     const env = this.requireEnv();
     // Before the write counter is read: taking the owner and team is no edit.
     if (identity.grant?.item === documentId) await this.takeHead(identity.grant);
+    const community = await this.communityOf(documentId);
     const writesBefore = this.writes;
-    const response = await answerDocumentRequest(env, request, identity, (p) =>
-      this.state.waitUntil(p),
+    const response = await answerDocumentRequest(
+      env,
+      request,
+      identity,
+      (p) => this.state.waitUntil(p),
+      community,
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
     // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
@@ -550,7 +576,60 @@ export class DocumentRoom extends DurableObject<Env> {
       }
       this.noteWrite();
     }
+    // A post published or removed by this request starts or stops its checks.
+    if (request.method !== 'GET' && new URL(request.url).pathname.endsWith('/community')) {
+      this.communityAt = communityCheckDueAt(await readCommunityPost(env));
+      this.armAlarm();
+    }
     return response;
+  }
+
+  // The document's Community post's link as the doors read it: its code, and whether it opens the document now
+  // (community-post.ts openCommunityCode). Null for a document with no post.
+  async community(documentId: string): Promise<{ code: string; open: boolean } | null> {
+    this.bindDocument(documentId);
+    return this.communityOf(documentId);
+  }
+
+  // Never makes a schema: a request for an id nothing has written finds no post.
+  private async communityOf(documentId: string): Promise<{ code: string; open: boolean } | null> {
+    if (!this.storedSchema()) return null;
+    const env = this.requireEnv();
+    const post = await readCommunityPost(env);
+    if (!post) return null;
+    const meta = await readDocumentMeta(env, documentId);
+    return { code: post.shareCode, open: openCommunityCode(env, post, meta) === post.shareCode };
+  }
+
+  // The post when `code` is its link and it opens the document now; null otherwise.
+  private async openPost(documentId: string, code: string): Promise<CommunityPost | null> {
+    this.bindDocument(documentId);
+    if (!this.storedSchema()) return null;
+    const env = this.requireEnv();
+    const post = await readCommunityPost(env);
+    if (!post || post.shareCode !== code) return null;
+    const meta = await readDocumentMeta(env, documentId);
+    return openCommunityCode(env, post, meta) === code ? post : null;
+  }
+
+  // What a visitor through the document's Community post's open link is told of the post (docs/specs/025-community/
+  // community.md "Viewing a post's document"): its id at the service and who it shows as author.
+  async communityListing(documentId: string, code: string): Promise<CommunityListing | null> {
+    const post = await this.openPost(documentId, code);
+    if (!post) return null;
+    return { postId: post.postId, author: await communityPostAuthor(this.requireEnv(), post) };
+  }
+
+  // A copy through the document's Community post's link is named after the post (docs/specs/025-community/
+  // community.md "Viewing a post's document"): its title, when `code` is the post's open link. Null otherwise.
+  async communityPostTitle(documentId: string, code: string): Promise<string | null> {
+    return (await this.openPost(documentId, code))?.title ?? null;
+  }
+
+  // Whether this object's SQLite holds a document schema: an id nothing has written answers no post.
+  private storedSchema(): boolean {
+    const sql = this.state.storage.sql;
+    return this.schemaReady || (!!sql && hasDocumentSchema((q) => sql.exec(q)));
   }
 
   // The export door (liveworkspace/docs/specs/006-media/previews.md "The export door"): the document drawn on request for
@@ -566,11 +645,26 @@ export class DocumentRoom extends DurableObject<Env> {
     const env = this.requireEnv();
     const { meta, savedAt } = await readDocumentHead(env, documentId);
     if (!meta) return { status: 'not_found' };
+    // Through the document's Community post's link it is the redacted drawing, and nothing while the post does not
+    // open the document (docs/specs/025-community/community.md "Viewing a post's document").
+    let community = false;
+    if (query.code !== null) {
+      const post = await readCommunityPost(env);
+      if (post?.shareCode === query.code) {
+        if (openCommunityCode(env, post, meta) !== query.code) return { status: 'not_found' };
+        community = true;
+      }
+    }
     if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
     if (query.tabId !== null && !(await documentHasTab(env, documentId, query.tabId))) {
       return { status: 'not_found' };
     }
-    const svg = await drawDocument(env, { id: documentId, name: meta.name }, query.tabId);
+    const svg = await drawDocument(
+      env,
+      { id: documentId, name: meta.name },
+      query.tabId,
+      community,
+    );
     return svg === null
       ? { status: 'empty', version: savedAt }
       : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
@@ -613,14 +707,26 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 
   // The source side of a copy, for whoever copies (document-content.ts exportDocumentCopyFor): anyone but the owner
-  // takes the comments as the tab read serves them to them.
+  // takes the comments as the tab read serves them to them; a copy through the document's open Community post's link
+  // takes it without its comments or the people on its actions (docs/specs/025-community/community.md). `community`
+  // says which, so the copy is counted toward the post.
   async exportCopy(
     documentId: string,
     onlyTabId: string | null,
-    copiedBy: string | null,
-  ): Promise<DocumentCopy | null> {
+    copier: Copier | null,
+  ): Promise<CopySource | null> {
     this.bindDocument(documentId);
-    return exportDocumentCopyFor(this.requireEnv(), documentId, onlyTabId, copiedBy);
+    const env = this.requireEnv();
+    const post = copier?.code ? await this.communityOf(documentId) : null;
+    const community = post !== null && post.open && post.code === copier?.code;
+    const copy = await exportDocumentCopyFor(
+      env,
+      documentId,
+      onlyTabId,
+      copier?.by ?? null,
+      community,
+    );
+    return copy ? { copy, community } : null;
   }
 
   async importCopy(documentId: string, copy: DocumentCopy): Promise<void> {
@@ -1047,6 +1153,9 @@ export class DocumentRoom extends DurableObject<Env> {
     this.closeSockets(() => [DOCUMENT_TRASHED_CLOSE, 'document-purged']);
     this.opLog = [];
     await this.leaveShares();
+    // A document going for good takes its Community post with it: the service hears it is gone.
+    if (this.documentId !== null && this.storedSchema())
+      await leaveCommunity(this.requireEnv(), this.documentId);
     await this.ledger.settled();
     await this.state.storage.deleteAlarm();
     await this.state.storage.deleteAll();
@@ -1055,7 +1164,34 @@ export class DocumentRoom extends DurableObject<Env> {
     this.flushAt = null;
     this.shares.clear();
     this.maintenanceAt = null;
+    this.communityAt = null;
     console.info('[room] purged');
+  }
+
+  // Ask the index where the Community post's document stands, and send the service what changed (community-post.ts).
+  // A failure keeps the post and tries again at the next check.
+  private async checkCommunity(now: number): Promise<void> {
+    const documentId = this.documentId;
+    this.communityAt = null;
+    if (documentId === null || !this.storedSchema()) return;
+    const env = this.requireEnv();
+    let post: CommunityPost | null;
+    try {
+      post = await checkCommunityPost(
+        env,
+        documentId,
+        await readDocumentMeta(env, documentId),
+        now,
+      );
+    } catch (error) {
+      console.warn('[community] check failed', { error: String(error) });
+      post = await readCommunityPost(env);
+      if (post) {
+        this.communityAt = now + COMMUNITY_CHECK_MS;
+        return;
+      }
+    }
+    this.communityAt = communityCheckDueAt(post);
   }
 
   // After a document-trashed op has gone out, close every socket
@@ -1367,12 +1503,13 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 
   // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
-  // next push, the document's next upkeep. None when nothing is due.
+  // next push, the Community post's next check, the document's next upkeep. None when nothing is due.
   private armAlarm(): void {
     const due = [
       this.agents.nextExpiry(),
       this.flushAt,
       this.shares.at,
+      this.communityAt,
       this.maintenanceAt,
       this.nextGrantDue(),
     ].filter((t): t is number => t !== null);
@@ -1391,6 +1528,7 @@ export class DocumentRoom extends DurableObject<Env> {
     // A shared tab written while the push was in flight (its write armed nothing then).
     this.shares.noteWrite();
     if (this.shares.due(now)) await this.drainShares();
+    if (this.communityAt !== null && this.communityAt <= now) await this.checkCommunity(now);
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();
   }

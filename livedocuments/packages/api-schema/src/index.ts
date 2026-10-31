@@ -36,6 +36,9 @@ export type LiveDoc = {
   // rotated when re-shared after a revoke.
   shareable: boolean;
   shareCode: string | null;
+  // The document's Community post (docs/specs/025-community/community.md): 'listed', 'hidden', or
+  // null / absent when it has none. Owner-only: every other reader gets null.
+  communityState?: 'listed' | 'hidden' | null;
   // Folder placement. null means the document sits at the root of its
   // space. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
@@ -279,6 +282,9 @@ export type CapabilitiesResponse = {
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;
+  // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
+  // false hides it, so an older worker that omits it leaves the Community showing.
+  communityEnabled?: boolean;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is
@@ -347,6 +353,11 @@ export * from '@liveworkspace/api-schema/http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './workbench';
+// The Community's shared contract is liveworkspace's (liveworkspace/docs/specs/007-community/community.md); re-exported so the
+// editor, the Community pages and the api read it from here.
+export * from '@liveworkspace/community';
+export * from './community-categories';
+export * from './community-paths';
 export * from './workbench-messages';
 export * from './pages';
 export * from './article-frames';

@@ -65,7 +65,7 @@ reach a deployed artefact, and nothing else.
   all under one origin, and a visitor looking for "what is in livedesign" should not need to know
   the app boundaries. Each entry names the apps that ship it.
 - **Two sections.** "In your browser" lists the works sent to people's browsers by the editor, the
-  website, the help centre and the telemetry dashboard. "On our servers" lists the works bundled
+  website, the help centre, the Community and the telemetry dashboard. "On our servers" lists the works bundled
   into the api, MCP and router workers; they run on Cloudflare, not on anyone's device, and are
   listed in full all the same. A work shipped on both sides appears in both, with each side's apps.
 - **Entries are collapsed.** Each is a native disclosure showing the name, version, licence id and

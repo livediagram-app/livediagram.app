@@ -159,6 +159,10 @@ export const TELEMETRY_CATEGORIES = [
   // see what changed; 'Viewed' for a design view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
+  // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the Share dialog
+  // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
+  // the Community app. Never a title, tag or id.
+  'Community',
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): how long a key moment of the experience took
   // (a design opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
   // 'Measured', `type` the metric and the bucket its value fell in ('DesignLoad.Under1000ms'), checked
@@ -256,6 +260,10 @@ export const TELEMETRY_ACTIONS = [
   'Api',
   'Client',
   'Warning',
+  // Community (docs/specs/025-community/community.md): a post liked or unliked, and a post reported (typed by reason).
+  'Liked',
+  'Unliked',
+  'Reported',
   // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
   // 'Timing' category.
   'Measured',

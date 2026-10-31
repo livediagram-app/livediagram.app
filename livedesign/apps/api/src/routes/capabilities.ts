@@ -1,4 +1,5 @@
 import { DESIGN_FORMAT } from '@livedesign/api-schema';
+import { communityOn } from '../community-service';
 import { emailEnabled } from '../email/client';
 import { json, methodNotAllowed, notFound } from '../responses';
 import type { RouteContext } from './context';
@@ -42,6 +43,9 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // docs/specs/014-identity/profile-and-email-notifications.md: the live app hides the email-notification toggles when
     // the `EMAIL` binding is absent (they'd do nothing). Same gate docs/specs/014-identity/transactional-email.md uses.
     emailEnabled: emailEnabled(env),
+    // docs/specs/025-community/community.md "Turning the Community off": false hides the Community from every page. A
+    // deploy without the liveworkspace Community service's key (COMMUNITY_KEY) has none to show.
+    communityEnabled: communityOn(env),
     ...cliCapabilities(ctx),
   });
 }

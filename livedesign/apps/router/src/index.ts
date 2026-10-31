@@ -24,11 +24,13 @@ export interface Env {
   LIVE?: Fetcher;
   API?: Fetcher;
   HELP?: Fetcher;
+  COMMUNITY?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
   LIVE_ORIGIN?: string;
   API_ORIGIN?: string;
   HELP_ORIGIN?: string;
+  COMMUNITY_ORIGIN?: string;
   // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
@@ -56,6 +58,7 @@ const API_PATH = '/api';
 const INDEX_PATH = '/api/index';
 const TELEMETRY_PATH = '/telemetry';
 const HELP_PATH = '/help';
+const COMMUNITY_PATH = '/community';
 
 // The live app's top-level page route segments. These serve at CLEAN
 // URLs (no `/live` prefix) — the live worker's `out/` files are already
@@ -250,6 +253,11 @@ async function route(request: Request, env: Env): Promise<Response> {
   // Stripped in production — the worker serves them from `out/_next`.
   if (hasPrefix(url.pathname, LIVE_PATH)) {
     return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
+  }
+  if (hasPrefix(url.pathname, COMMUNITY_PATH)) {
+    // The Community (docs/specs/025-community/community.md "The gallery"), a basePath:'/community' static app: the
+    // same prefix-strip as help.
+    return forward(request, url, env.COMMUNITY, env.COMMUNITY_ORIGIN, COMMUNITY_PATH);
   }
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same

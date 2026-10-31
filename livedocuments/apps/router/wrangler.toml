@@ -32,6 +32,10 @@ service = "livedocuments-api"
 binding = "HELP"
 service = "livedocuments-help"
 
+[[services]]
+binding = "COMMUNITY"
+service = "livedocuments-community"
+
 # Local dev (`wrangler dev --env local --port 3300`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
@@ -50,6 +54,7 @@ API_ORIGIN = "http://127.0.0.1:8987"
 # liveworkspace/apps/site; production's needs no var.
 TELEMETRY_DASHBOARD_URL = "http://localhost:3000/telemetry"
 HELP_ORIGIN = "http://127.0.0.1:3304"
+COMMUNITY_ORIGIN = "http://127.0.0.1:3305"
 # The central index `/api/index/*` forwards to (liveworkspace/docs/specs/004-index/one-explorer.md), run locally by
 # liveworkspace/apps/index; production's (https://www.liveworkspace.app) needs no var.
 INDEX_ORIGIN = "http://127.0.0.1:8793"
@@ -94,6 +99,10 @@ service = "livedocuments-api-staging"
 [[env.staging.services]]
 binding = "HELP"
 service = "livedocuments-help-staging"
+
+[[env.staging.services]]
+binding = "COMMUNITY"
+service = "livedocuments-community-staging"
 
 # Marks this router as the staging one. The worker reads it to stamp
 # `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a

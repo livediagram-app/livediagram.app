@@ -56,7 +56,7 @@ import { BrandMark } from '@livediagram/ui';
 import { APP_ITEMS, APP_NAMES, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
-import { appOrigin, pageApp, workspaceHref } from '@/lib/explorer/page-app';
+import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
 import { explorerDrive } from '@/lib/drive/client';
 import { appSignInHref } from '@/lib/explorer/app-session';
 import {
@@ -96,8 +96,8 @@ import { trackExplorerDailyReturn } from '@/lib/explorer/daily-return';
 import { renewIdentity } from '@/lib/explorer/new-team';
 import { offlineHandOver, offlineItemMenu, offlineSyncHref } from '@/lib/explorer/offline-moves';
 import { useExplorerSettings } from '@/lib/explorer/settings';
-import { COMMUNITY_SHARE_APP, shareHostFor } from '@/lib/explorer/share';
-import { useCommunityEnabled } from '@liveworkspace/community-ui';
+import { communityShareAppsHere, shareHostFor } from '@/lib/explorer/share';
+import { useCommunityAppsOn } from '@/lib/explorer/community-apps';
 import {
   setExplorerSender,
   trackHome,
@@ -369,20 +369,20 @@ export function ExplorerShell() {
     }),
     [loaded, app, onFirstRun, signedIn, explorerSignInHref],
   );
-  // The Community tab is livediagram's alone for now (APP_ITEMS[app].share.communityPath), asked only for an
-  // account on a page that can offer it: one request a page load, shared with every other asker.
-  const communityAsk = signedIn && (host === null || host === COMMUNITY_SHARE_APP);
-  const communityOn = useCommunityEnabled(`${appOrigin(COMMUNITY_SHARE_APP)}/api`, communityAsk);
+  // The Community tab, for the apps with one that this page can offer it for (APP_ITEMS[app].share.communityPath),
+  // for an account only. Each app is asked whether its Community is on the first time one of its items is shared.
+  const communityApps = useMemo(() => communityShareAppsHere(host), [host]);
+  const communityOn = useCommunityAppsOn(communityApps, signedIn);
   const accountName = session.state === 'in' ? session.name : null;
   const share = useMemo(
     () =>
       shareHostFor(
         app,
         signedIn && identity ? { id: identity.sub, name: accountName } : null,
-        communityAsk && communityOn,
+        communityOn,
         explorerSignInHref,
       ),
-    [app, signedIn, identity, accountName, communityAsk, communityOn, explorerSignInHref],
+    [app, signedIn, identity, accountName, communityOn, explorerSignInHref],
   );
   // On the app's address, its This Browser rows too, for the person reading (lib/explorer/inbox.tsx).
   const viewerId = identity?.sub ?? null;

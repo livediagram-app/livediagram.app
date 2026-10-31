@@ -18,6 +18,9 @@ export type CommunityWords = {
   // What people show in its gallery, in the guide's heading and first line ("board", "boards").
   showcase: string;
   showcases: string;
+  // The part whose content is the card's picture, which must not be empty ("first tab", the default; livedocuments'
+  // "first page").
+  cover?: string;
 };
 
 /** The owner's side of a document's post, through the document's own app (`/api/<items>/<id>/community`). Each call

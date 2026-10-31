@@ -18,6 +18,7 @@
     "@livediagram/template-previews": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/ui": "workspace:*",
+    "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/comparisons": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/licences": "workspace:*",

@@ -30,7 +30,12 @@ export function CommunityBar({
       className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-brand-100 bg-brand-50/70 px-4 py-1.5 text-sm dark:border-brand-500/20 dark:bg-brand-500/10"
     >
       <p className="flex min-w-0 flex-1 items-center gap-2 text-slate-700 dark:text-slate-200">
-        <CommunityAuthorBadge author={community.author} size={22} showName={false} />
+        <CommunityAuthorBadge
+          author={community.author}
+          size={22}
+          showName={false}
+          className="shrink-0"
+        />
         <span className="truncate">
           Shared to the Community by{' '}
           <span className="font-medium text-slate-900 dark:text-slate-50">

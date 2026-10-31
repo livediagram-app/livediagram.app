@@ -177,7 +177,8 @@ corepack pnpm dev                     # the API, http://localhost:8791/api/commu
 `corepack pnpm dev:workspace` from the repo root runs it behind the site at
 http://localhost:3000/api/community, and `corepack pnpm dev:community` runs it alone. Point livediagram's
 api at it with `COMMUNITY_URL=http://localhost:8791/api/community` and
-`COMMUNITY_KEY=dev-livediagram-community-key` in `apps/api/.dev.vars`, and its pages with
+`COMMUNITY_KEY=dev-livediagram-community-key` in `apps/api/.dev.vars` (livedocuments' and livedesign's apis the same, with
+`dev-livedocuments-community-key` and `dev-livedesign-community-key`), and its pages with
 `NEXT_PUBLIC_COMMUNITY_API=http://localhost:8791/api/community`. Development accepts writes from any
 `localhost` page and skips the edge cache.
 
@@ -199,11 +200,31 @@ unaffected.
 Every app's Community is built from the same pieces, so the four look and behave alike and a fix lands in all of
 them. An app keeps only thin doors: its routes, its storage and its words.
 
-| Piece                           | What it holds                                                                                                                                                                     |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@liveworkspace/community`      | The contract: apps, categories, limits, search grammar, wire shapes; and the app Worker's side of the service (its app routes, the copier hash)                                   |
-| `@liveworkspace/community-ui`   | The Share dialog's **Community** tab (the section, Share to Community, Edit Listing, Remove), the post tile, the landing page's **From the Community** section, the Community bar |
-| `@liveworkspace/community-site` | The gallery and post pages, and the small Worker in front of them (a post's head, the sitemap), on which each app's `apps/community` is a thin shell, as Help is on help-site     |
+| Piece                           | What it holds                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@liveworkspace/community`      | The contract: apps, categories, limits, search grammar, wire shapes; the paths every app's site shares (`/paths`); and the app Worker's side (`/app`): the service's app routes and the copier hash, the room's `community_post` row and its check, the owner and My Shares routes, and what a community link's reads leave out |
+| `@liveworkspace/community-ui`   | The Share dialog's **Community** tab (the section, Share to Community, Edit Listing, Remove), the post tile, the landing page's **From the Community** section, the help deep link, the Community bar                                                                                                                           |
+| `@liveworkspace/community-site` | The gallery and post pages, and the small Worker in front of them (a post's head, the sitemap), on which each app's `apps/community` is a thin shell, as Help is on help-site                                                                                                                                                   |
+
+### An app's Community pages
+
+An app's `apps/community` keeps only its layout (its header, footer, boot scripts and metadata), its routes and its
+binding; the pages are `@liveworkspace/community-site`'s, so they look and behave the same in every app, in the app's
+words and brand. The binding is a `CommunitySite`, which the layout's own small client provider hands the pages once:
+
+- **Which posts**: the app (`livedocuments.app`), and its words ("document", "documents", the product's name), from
+  `COMMUNITY_APP_WORDS`.
+- **Its api**: where it is (`/api` behind the router), which answers My Shares, the session and the capabilities;
+  and the Community service the build names, if any (`NEXT_PUBLIC_COMMUNITY_API`).
+- **The browser's community key**: where the app keeps it (its own localStorage key, on its own origin).
+- **Who is signed in**: the app's readable signed-in hint, so a signed-out browser asks nothing.
+- **Its routes**: the read-only viewer, Make a Copy, the embed, a post's card image, the author's own document,
+  sign-in, and where Share Your Own leads (the person's own documents).
+- **Its telemetry** (`Community·…`, as above) and **its help links** (its two Community articles, sent as its own
+  `UI·Opened`).
+
+The Worker is the same factory in every app, bound to the app, its canonical origin and its product name. The
+landing section takes the app, its words, its card images and its help link.
 
 ### The Share dialog's Community tab
 
@@ -216,7 +237,9 @@ app knows who owns the document and whether it may be published).
 - **In an Explorer** (each app's, and liveworkspace.app's), the host gives the tab per item through its
   `ShareHost`, for every app whose Community is on. liveworkspace.app reaches each app's owner route at the
   address its sites registry entry names (`APP_ITEMS[app].share.communityPath`), with the person's workspace token,
-  as it reads an item's tabs. An app without a Community, or switched off, gives no tab.
+  as it reads an item's tabs. An app without a Community, or switched off, gives no tab. Whether an app's Community
+  is on is asked of that app's `GET /api/capabilities` the first time one of its items is shared there, never on page
+  load, and once per app; until it answers, the tab is offered.
 - The tab is offered for a signed-in owner's personal documents. A guest, someone else's document and a team
   library's document get the Share dialog without it.
 - The tab's pieces are the same everywhere (`@liveworkspace/community-ui/share`); a host binds them once with a
@@ -234,8 +257,8 @@ app knows who owns the document and whether it may be published).
    the service's `src/env.ts` and `appKey`.
 2. In the app's api: the document room's `community_post` row, the owner routes, the link doors and the check,
    on the shared server side of `@liveworkspace/community`.
-3. Its pages: `apps/community` on `@liveworkspace/community-site`, the landing section and the Share dialog's tab
-   from `@liveworkspace/community-ui`, and `APP_ITEMS[app].share.communityPath` so liveworkspace.app's Explorer
+3. Its pages: `apps/community` on `@liveworkspace/community-site` (its layout, routes and `CommunitySite` binding, as
+   "An app's Community pages" says), the landing section and the Share dialog's tab from `@liveworkspace/community-ui`, and `APP_ITEMS[app].share.communityPath` so liveworkspace.app's Explorer
    offers the tab.
 
 ## Performance

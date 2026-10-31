@@ -27,6 +27,7 @@ import { indexService } from '../index-service';
 import { CORS_HEADERS, forbidden, json, notFound } from '../responses';
 import { parsePositiveCap } from '../limits';
 import {
+  COMMUNITY_CONTENT,
   gateEdit,
   gateRead,
   grantCallerOf,
@@ -65,11 +66,14 @@ export async function handlePhotoBlobRoutes(ctx: DesignRouteContext): Promise<Re
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
 
-  // GET .../photo-blobs/<blobId>: the bytes, through a tab the caller may read.
+  // GET .../photo-blobs/<blobId>: the bytes, through a tab the caller may read. A photo's pixels are the design's
+  // content, so a Community post's link reads them too (docs/specs/025-community/community.md "Viewing a post's
+  // design"); every other photo door stays closed to it.
   if (read) {
     const blobId = segments[6]!;
     if (!isBlobId(blobId)) return notFound();
-    if (!(await gateRead(ctx, designId, undefined, undefined, tabId))) return notFound();
+    if (!(await gateRead(ctx, designId, undefined, undefined, tabId, COMMUNITY_CONTENT)))
+      return notFound();
     if (!(await designHasTab(env, designId, tabId))) return notFound();
     const blob = await blobForTab(env, tabId, blobId);
     if (!blob) return notFound();
@@ -163,6 +167,7 @@ async function sourceBlobs(
   const outcome = await indexService.requestGrant(env, grantCallerOf(ctx), fromDesign, null);
   if (!outcome.ok) return null;
   const grant = outcome.grant;
-  if (!levelAtLeast(grant.level, 'view') || (grant.tabId !== null && grant.tabId !== fromTab)) return null;
+  if (!levelAtLeast(grant.level, 'view') || (grant.tabId !== null && grant.tabId !== fromTab))
+    return null;
   return designRoom(env, fromDesign).heldBlobs(fromTab, [...ids]);
 }

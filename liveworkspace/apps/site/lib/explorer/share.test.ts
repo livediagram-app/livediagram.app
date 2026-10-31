@@ -3,7 +3,15 @@ import type { Item, ShareLink } from '@liveworkspace/index-client';
 
 vi.mock('./token', () => ({ workspaceToken: async () => 'tok' }));
 
-import { communityShareOf, handOverFor, loadTabsOf, shareHelpHrefFor, shareHostFor } from './share';
+import {
+  COMMUNITY_SHARE_APPS,
+  communityShareAppsHere,
+  communityShareOf,
+  handOverFor,
+  loadTabsOf,
+  shareHelpHrefFor,
+  shareHostFor,
+} from './share';
 
 const link = { code: 'c/1' } as ShareLink;
 
@@ -111,9 +119,45 @@ describe('the Community tab on liveworkspace.app', () => {
     ).toBeUndefined();
   });
 
-  it('is the Share host’s, per item', () => {
-    const host = shareHostFor('livediagram', account, true, '/sign-in');
+  it('offers livedocuments’ documents through its own owner route, in its own words', async () => {
+    const fetch = vi.fn(async () => Response.json({ post: null }));
+    const doc = { ...canvas, app: 'livedocuments' as Item['app'], id: 'x' };
+    const tab = communityShareOf(doc, account, true, '/sign-in', fetch)!;
+    expect(tab.host.app).toBe('livedocuments.app');
+    expect(tab.host.words.noun).toBe('document');
+    expect(tab.host.postHref('p1')).toBe('https://www.livedocuments.app/community/post/?id=p1');
+    await tab.host.client.get();
+    const [url] = fetch.mock.calls[0] as unknown as [string];
+    expect(url).toBe('https://www.livedocuments.app/api/documents/x/community');
+  });
+
+  it('offers livedesign’s designs through its own owner route, in its own words', async () => {
+    const fetch = vi.fn(async () => Response.json({ post: null }));
+    const design = { ...canvas, app: 'livedesign' as Item['app'], id: 'd' };
+    const tab = communityShareOf(design, account, true, '/sign-in', fetch)!;
+    expect(tab.host.app).toBe('livedesign.app');
+    expect(tab.host.words.noun).toBe('design');
+    expect(tab.host.postHref('p1')).toBe('https://www.livedesign.app/community/post/?id=p1');
+    await tab.host.client.get();
+    const [url] = fetch.mock.calls[0] as unknown as [string];
+    expect(url).toBe('https://www.livedesign.app/api/designs/d/community');
+  });
+
+  it('is the Share host’s, per item, asking whether each item’s app has its Community on', () => {
+    const on = vi.fn((app: string) => app === 'livediagram');
+    const host = shareHostFor('livediagram', account, on, '/sign-in');
     expect(host.community!(canvas as never)?.documentName).toBe('Payments');
+    expect(on).toHaveBeenCalledWith('livediagram');
+    expect(host.community!({ ...canvas, app: 'livedocuments' } as never)).toBeUndefined();
+    expect(host.community!({ ...canvas, app: 'nope' } as never)).toBeUndefined();
     expect(shareHostFor('livediagram').community!(canvas as never)).toBeUndefined();
+  });
+
+  it('lists the apps with a Community tab, and on an app’s own address only that app', () => {
+    expect(COMMUNITY_SHARE_APPS).toEqual(['livediagram', 'livedocuments', 'livedesign']);
+    expect(communityShareAppsHere(null)).toEqual(['livediagram', 'livedocuments', 'livedesign']);
+    expect(communityShareAppsHere('livedocuments')).toEqual(['livedocuments']);
+    expect(communityShareAppsHere('livedesign')).toEqual(['livedesign']);
+    expect(communityShareAppsHere('liveplanner')).toEqual([]);
   });
 });

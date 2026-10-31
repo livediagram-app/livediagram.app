@@ -59,11 +59,17 @@ function tomlTableKeys(toml: string, header: string): string[] {
 }
 
 describe('hosted profile', () => {
-  it('turns telemetry on and points each environment at its media service', async () => {
+  it('turns telemetry on and points each environment at its media and Community services', async () => {
     const { shared, environments } = (await load()).readHostedProfile();
     expect(shared.TELEMETRY_ENABLED).toBe('true');
     expect(environments.production.MEDIA_URL).toBe('https://www.liveworkspace.app/api/media');
     expect(environments.staging.MEDIA_URL).toBe('https://staging.liveworkspace.app/api/media');
+    expect(environments.production.COMMUNITY_URL).toBe(
+      'https://www.liveworkspace.app/api/community',
+    );
+    expect(environments.staging.COMMUNITY_URL).toBe(
+      'https://staging.liveworkspace.app/api/community',
+    );
   });
 
   it('names only vars the worker reads', async () => {

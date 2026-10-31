@@ -1929,6 +1929,27 @@ export const articles: Article[] = [
 
   // ---- Sub-articles: Sharing ----
   {
+    slug: 'finding-community-documents',
+    title: 'Finding Designs in the Community',
+    description:
+      'Search the Community by words, #tags, category and sort, then make a design your own.',
+    keywords:
+      'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden logo wireframe mockup photo poster illustration',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
+    slug: 'community',
+    title: 'Sharing to the Community',
+    description: 'Publish a design to the public gallery for others to view and copy.',
+    keywords:
+      'community gallery public publish showcase inspiration examples share design proud like likes copy copies tags category report moderation discover browse portfolio',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
     slug: 'share-passwords',
     title: 'Share Passwords',
     description: 'Guard every share link to a design with one password.',

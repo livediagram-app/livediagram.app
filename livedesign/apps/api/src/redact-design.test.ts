@@ -3,7 +3,11 @@
 // workspace to whoever presents it. So "who gets to see it" is a security
 // rule, and it gets a suite of its own rather than living inside one route's.
 import { describe, expect, it } from 'vitest';
-import { redactDesignForReader, redactDesignForScope } from './redact-design';
+import {
+  redactDesignForCommunity,
+  redactDesignForReader,
+  redactDesignForScope,
+} from './redact-design';
 import type { DesignDTO } from './types';
 
 // A guest-owned design: the owner id is the UUID that identifies that
@@ -94,5 +98,39 @@ describe('redactDesignForScope', () => {
 
   it('hands an unscoped reader the design untouched', () => {
     expect(redactDesignForScope(full, null)).toBe(full);
+  });
+});
+
+// A Community visitor (docs/specs/025-community/community.md "Viewing a post's design"): the post names its author
+// itself, so the design names nobody and says nothing of where it sits in its owner's library.
+describe('redactDesignForCommunity', () => {
+  const posted = {
+    ...liveDoc,
+    ownerName: 'Ada',
+    ownerColor: '#f97316',
+    folderId: 'f1',
+    source: 'mcp',
+  } as DesignDTO;
+
+  it('names nobody and says nothing of where the design sits or came from', () => {
+    const out = redactDesignForCommunity(posted);
+    expect(out).toMatchObject({ ownerName: null, ownerColor: null, folderId: null, source: null });
+    expect(out.name).toBe('Plan');
+  });
+
+  it('never mutates the design it was handed', () => {
+    redactDesignForCommunity(posted);
+    expect(posted.ownerName).toBe('Ada');
+  });
+});
+
+// The owner's read carries their Community post's state (the header's Public badge); nobody else's does.
+describe('communityState', () => {
+  const owned = { ...liveDoc, communityState: 'listed' } as DesignDTO;
+
+  it('reaches the owner and nobody else', () => {
+    expect(redactDesignForReader(owned, GUEST_OWNER).communityState).toBe('listed');
+    expect(redactDesignForReader(owned, 'some-other-guest').communityState).toBeNull();
+    expect(redactDesignForReader(owned, null).communityState).toBeNull();
   });
 });

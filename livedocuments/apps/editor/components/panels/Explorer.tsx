@@ -21,12 +21,14 @@ import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
 import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
-import { getSessionSharePassword } from '@/lib/api-client';
+import { API_BASE, getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerLibrary } from '@/lib/explorer-library';
 import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-host';
 import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { trackOrganise } from '@/lib/explorer-organise';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
@@ -60,7 +62,7 @@ function ExplorerImpl({
   const isMobile = useIsMobileViewport();
   const sheet = isMobile;
   const router = useAppNavigation();
-  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   // The person: an account, or this browser's guest, as the Explorer page has them, so the Timeline, History and
   // the Inbox name their own doings as theirs.
   const guestId = useSignedGuestId(authLoaded, accountUserId);
@@ -68,7 +70,19 @@ function ExplorerImpl({
   // Take Offline and Sync Document on a document's menu.
   const itemMenu = useOfflineItemMenu(viewerId);
   const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId);
-  const shareHost = useMemo(() => explorerShareHost(viewerId), [viewerId]);
+  // The Community tab for a signed-in account's own documents (lib/explorer-community-host.ts), asked whether the
+  // Community is on only for an account.
+  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  const shareHost = useMemo(
+    () => ({
+      ...explorerShareHost(viewerId),
+      community: explorerCommunity(
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+      ),
+    }),
+    [viewerId, accountUserId, accountDisplayName, communityOn],
+  );
   const inboxBase = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
   // The pane's verbs: this app's threads, and an action on the open document's active tab.
   const inboxActions = useMemo(

@@ -44,7 +44,6 @@ export {
   useCommunityEnabled,
 } from '@liveworkspace/community-ui';
 export { CommunityHelpLink } from './community/CommunityHelpLink';
-export { useNearViewport } from './useNearViewport';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,

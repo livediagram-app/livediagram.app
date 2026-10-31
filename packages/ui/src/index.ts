@@ -75,6 +75,7 @@ export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
 export { prefersReducedMotion } from './motion-preference';
 export { useCopiedFlash } from './useCopiedFlash';
 export { useClickOutside } from './useClickOutside';
+export { useNearViewport } from './useNearViewport';
 export { useEscape } from './useEscape';
 export { useFocusTrap, type FocusTrapInitial } from './useFocusTrap';
 export {

@@ -27,6 +27,7 @@ import {
   servableImageIds,
 } from './db';
 import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
+import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { photoBlobKey, tabHoldsBlobs } from './db/photo-blobs';
 import { photosOf } from '@livedesign/photo-engine';
 import { mediaClient } from './media';
@@ -45,7 +46,9 @@ const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 export type DrawSubject = { id: string; name: string };
 
 // `defer` hands the count stamp (below) to a waitUntil, so the drawing goes out as soon as it is drawn.
-export type DrawOptions = { defer?: (write: Promise<unknown>) => void };
+// `community`: a Community visitor's drawing (docs/specs/025-community/community.md "Viewing a post's design"), from
+// the redacted tab, so comment threads, their authors and action assignees never reach the public card image.
+export type DrawOptions = { defer?: (write: Promise<unknown>) => void; community?: boolean };
 
 // The first tab (or `tabId`) drawn, or null when there is nothing to draw: no tab, an empty or unparseable one.
 export async function drawDesign(
@@ -56,6 +59,37 @@ export async function drawDesign(
 ): Promise<string | null> {
   const body = tabId ? await getTabBody(env, doc.id, tabId) : await getTabBody(env, doc.id);
   return renderTabBodyToSvg(env, doc, body, opts);
+}
+
+// Something to show, for a Community post (docs/specs/025-community/community.md "Publishing"): the first tab's first
+// page has at least one element or a photo, since that page is the post's card picture. Counted from the stored body,
+// never rendered; a tab with no pages counts its elements.
+export async function firstPageHasSomethingToShow(
+  env: DesignEnv,
+  designId: string,
+): Promise<boolean> {
+  const body = await getTabBody(env, designId);
+  if (!body) return false;
+  let parsed: Partial<Tab>;
+  try {
+    parsed = JSON.parse(body.data) as Partial<Tab>;
+  } catch {
+    return false;
+  }
+  const tab = migrateStoredTab({
+    id: designId,
+    name: '',
+    ...parsed,
+    elements: Array.isArray(parsed.elements) ? parsed.elements : [],
+  });
+  const pages = laidOutPagesOf(tab);
+  const firstPage = pages[0];
+  if (!firstPage) return tab.elements.length > 0;
+  // A photo page shows its photo: a picture with at least one layer.
+  if (firstPage.kind === 'photo' && (photosOf(tab)[firstPage.id]?.layers.length ?? 0) > 0) {
+    return true;
+  }
+  return elementsOnPage(tab.elements, pages, firstPage.id).length > 0;
 }
 
 // One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
@@ -126,7 +160,8 @@ async function renderTabBodyToSvg(
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
-  const tab = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
+  const stored = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
+  const tab = opts.community ? redactTabForCommunity(stored) : stored;
   // A Pages tab previews as its first page alone, drawn as an export draws it
   // (docs/specs/006-design/design-snapshots.md "Pages tabs"): every page side by
   // side on the canvas shrinks to a row of slivers nobody can read at thumbnail size.

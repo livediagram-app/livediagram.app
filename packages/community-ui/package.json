@@ -7,7 +7,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./share": "./src/share/index.ts",
-    "./badge": "./src/share/badge.ts"
+    "./badge": "./src/share/badge.ts",
+    "./words": "./src/share/words.ts",
+    "./help-link": "./src/help-link/CommunityHelpLink.tsx",
+    "./landing": "./src/landing/CommunityShowcase.tsx",
+    "./links": "./src/links/index.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -15,9 +19,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/community": "workspace:*",
+    "@liveworkspace/help-registry": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/marketing-site": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },

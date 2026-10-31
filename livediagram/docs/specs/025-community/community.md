@@ -129,7 +129,8 @@ type) and on the worker (authoritative).
 
 ## The Community app
 
-`apps/community` is a static export (`basePath: '/community'`) like Help and Telemetry. It talks to the api at
+`apps/community` is a static export (`basePath: '/community'`) like Help and Telemetry, a thin shell on every app's
+Community pages (`@liveworkspace/community-site`). It talks to the api at
 `/api/community/*` from the browser. Browsing needs no sign-in: the app asks for the session only for My Shares (below). Pages:
 
 ### Gallery (`/community/`)

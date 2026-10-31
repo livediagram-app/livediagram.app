@@ -32,8 +32,12 @@
 /* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
 @source '../../../../packages/ui/src';
 @source '../../../../packages/brand/src';
-/* The Community's cards (@liveworkspace/community-ui's tile); its Share tab is not on these pages. */
+/* The Community's cards, its landing section and help links (@liveworkspace/community-ui's tile, landing and
+ * help-link); its Share tab is not on these pages. */
 @source '../../../../packages/community-ui/src/tile';
+@source '../../../../packages/community-ui/src/landing';
+@source not '../../../../packages/community-ui/src/landing/*.test.*';
+@source '../../../../packages/community-ui/src/help-link';
 /* The comparison pages' shared components (packages/comparisons), in this app's brand ramp. */
 @source '../../../../packages/comparisons/src';
 /* The marketing pages every product shares (@liveworkspace/marketing-site), in this app's brand ramp. */

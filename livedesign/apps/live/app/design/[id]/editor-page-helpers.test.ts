@@ -269,6 +269,25 @@ describe('resolveDesignSession (owner / role / share-code security)', () => {
     expect(s.sessionShareCode).toBeNull();
   });
 
+  it('a Community link is read-only for everyone, the author included', () => {
+    const own = resolveDesignSession({
+      designOwnerId: 'me',
+      selfId: 'me',
+      shareRole: 'view',
+      shareCodeParam: 'POSTLINK',
+      community: true,
+    });
+    expect(own).toEqual({ isOwner: false, sessionRole: 'view', sessionShareCode: 'POSTLINK' });
+    const visitor = resolveDesignSession({
+      designOwnerId: 'someone-else',
+      selfId: 'me',
+      shareRole: 'view',
+      shareCodeParam: 'POSTLINK',
+      community: true,
+    });
+    expect(visitor).toEqual(own);
+  });
+
   it('edit-role visitor: inherits edit, carries their code', () => {
     const s = resolveDesignSession({
       designOwnerId: 'someone-else',

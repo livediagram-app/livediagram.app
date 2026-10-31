@@ -242,7 +242,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     shapeLibrariesPath: null,
     imports: [],
     importPath: null,
-    share: shareOf(itemTabsPath('documents'), 'livedocuments tab'),
+    share: shareOf(itemTabsPath('documents'), 'livedocuments tab', itemCommunityPath('documents')),
   },
   livedesign: {
     site: 'livedesign.app',
@@ -258,7 +258,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     shapeLibrariesPath: null,
     imports: [],
     importPath: null,
-    share: shareOf(itemTabsPath('designs'), 'livedesign tab'),
+    share: shareOf(itemTabsPath('designs'), 'livedesign tab', itemCommunityPath('designs')),
   },
 };
 
@@ -334,7 +334,10 @@ function explorerHasView(site: Site, section: string): boolean {
  *  at the same view: the path and the query kept, arrival-only query dropped, Home where the site lacks the view.
  *  Null off the Explorer, where the switcher links each site's home. */
 export function explorerSwitchHref(pathname: string, search = ''): ((site: Site) => string) | null {
-  const path = pathname.replace(/\/+$/, '');
+  // Trailing slashes trimmed by hand: /\/+$/ is polynomial on a long run of slashes (CodeQL js/polynomial-redos).
+  let end = pathname.length;
+  while (end > 0 && pathname[end - 1] === '/') end -= 1;
+  const path = pathname.slice(0, end);
   if (path !== EXPLORER_PATH && !path.startsWith(`${EXPLORER_PATH}/`)) return null;
   const section = path.slice(EXPLORER_PATH.length + 1);
   const params = new URLSearchParams(search.replace(/^\?/, ''));

@@ -269,8 +269,11 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('DELETE', 'workbench/sessions/current'),
 ];
 
-// Inside an allowed workspace resource, the door that stays closed: an agent's presence.
-const WORKSPACE_CLOSED: readonly RouteShape[] = [shape(ALL_METHODS, 'designs/:p/tabs/:p/presence')];
+// Inside an allowed workspace resource, the doors that stay closed: Community publishing and an agent's presence.
+const WORKSPACE_CLOSED: readonly RouteShape[] = [
+  shape(ALL_METHODS, 'designs/:p/community/**'),
+  shape(ALL_METHODS, 'designs/:p/tabs/:p/presence'),
+];
 
 // Words a `:p` never matches: sibling routes that share a prefix with an allowed shape but are confined
 // (`GET images/usage` beside `GET images/:id`, `GET teams/invites` beside `GET teams/:id`).

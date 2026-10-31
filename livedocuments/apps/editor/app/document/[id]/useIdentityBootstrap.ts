@@ -24,6 +24,7 @@ import type { Participant } from '@/lib/identity';
 import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveDocumentSession } from './editor-page-helpers';
+import type { CommunitySession } from './editor-realtime';
 import { makeSeedFetchedDocument } from './seed-fetched-document';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { documentGrant } from '@/lib/api/document-grants';
@@ -111,6 +112,8 @@ export function useIdentityBootstrap(opts: {
     setSelfParticipant: SetState<Participant>;
     setSessionRole: SetState<ShareRole>;
     setSessionShareCode: SetState<string | null>;
+    // The Community post a community link opened (docs/specs/025-community/community.md).
+    setSessionCommunity: SetState<CommunitySession | null>;
     // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
     setSessionTabScope: (scope: string | null) => void;
     setSharePasswordGate: SetState<{ invalid: boolean } | null>;
@@ -181,6 +184,7 @@ export function useIdentityBootstrap(opts: {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
+      setSessionCommunity,
       setSessionTabScope,
       setSharePasswordGate,
       setIdentityPromptOpen,
@@ -430,12 +434,13 @@ export function useIdentityBootstrap(opts: {
         const accepted = getSessionSharePassword();
         if (accepted) writeCachedSharePassword(shareCodeParam, accepted);
         {
-          const { document: fetched, role, tabId: scopeTabId } = resolution;
+          const { document: fetched, role, tabId: scopeTabId, community } = resolution;
           const session = resolveDocumentSession({
             documentOwnerId: fetched.ownerId,
             selfId: self.id,
             shareRole: role,
             shareCodeParam,
+            community: community !== null,
             embed,
           });
           const codeForVisitor = session.sessionShareCode;
@@ -468,6 +473,15 @@ export function useIdentityBootstrap(opts: {
           // writes can present it as authorisation. Owner accessing
           // via a share URL keeps null.
           setSessionShareCode(session.sessionShareCode);
+          // A Community post's link (docs/specs/025-community/community.md "Viewing a post's
+          // document"): no room, no name prompt, not added to Shared with you.
+          // The author too opens it read-only (resolveDocumentSession), with a way to their own document.
+          const viaCommunity = community !== null;
+          setSessionCommunity(
+            community
+              ? { ...community, ownDocumentId: fetched.ownerId === self.id ? fetched.id : null }
+              : null,
+          );
           // Signed-in user opening their own document via a share URL
           // already has a confirmed identity — never prompt. Visitors
           // (signed in or not) still see the welcome card so they get
@@ -475,7 +489,7 @@ export function useIdentityBootstrap(opts: {
           // is locked downstream when they have an account identity so
           // they can't pretend to be someone else.
           const isOwnerVisit = session.isOwner;
-          if (!isOwnerVisit && !hasConfirmedName()) {
+          if (!isOwnerVisit && !viaCommunity && !hasConfirmedName()) {
             setIdentityPromptOpen(true);
           }
           // Document·Joined is counted by the api worker when it resolves

@@ -24,6 +24,7 @@ import {
   editedOf,
   type OutboxRow,
 } from '@liveworkspace/index-app';
+import { COMMUNITY_LISTED_QUERY } from '@liveworkspace/community/app';
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { MEDIA_REFS_PER_DOCUMENT_MAX } from '@liveworkspace/media';
 import { grantPlacedImages } from '../db/image-grants';
@@ -104,7 +105,7 @@ export async function readContentSummary(
   env: DocumentEnv,
   documentId: string,
 ): Promise<{ summary: ContentSummary; savedAt: number; ownerId: string | null }> {
-  const [tabs, stats, document] = await env.DOCUMENT_DB.batch([
+  const [tabs, stats, document, community] = await env.DOCUMENT_DB.batch([
     env.DOCUMENT_DB.prepare(
       // An article's writing lives in `articles`, not in `elements`, and a body that is not JSON fails safe as
       // content: only a tab whose count is 0 is parsed for either.
@@ -122,6 +123,9 @@ export async function readContentSummary(
     env.DOCUMENT_DB.prepare('SELECT saved_at, owner_id FROM document WHERE id = ?').bind(
       documentId,
     ),
+    // Listed in the Community (community-post.ts): a post not hidden after reports, whose document the listing last
+    // heard was public (nothing heard yet, just after publishing, counts).
+    env.DOCUMENT_DB.prepare(COMMUNITY_LISTED_QUERY),
   ]);
   const tabRows = (tabs?.results ?? []) as {
     tab_id: string;
@@ -143,6 +147,7 @@ export async function readContentSummary(
       tabCounts,
       stats: rawStats ? (JSON.parse(rawStats) as ContentSummary['stats']) : null,
       hasContent,
+      communityListed: (community?.results?.length ?? 0) > 0,
     },
     savedAt: head?.saved_at ?? 0,
     ownerId: head?.owner_id || null,
@@ -161,6 +166,8 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
     // Whether anything is on any tab: false, the index's daily empty clean-up moves the item to the Trash once it has
     // sat unchanged for 30 days (docs/specs/013-workspace/empty-document-cleanup.md).
     hasContent: summary.hasContent,
+    // Listed in the public Community: the Explorer's Public badge (@liveworkspace/explorer VisibilityBadge).
+    ...(summary.communityListed ? { public: true } : {}),
   };
 }
 

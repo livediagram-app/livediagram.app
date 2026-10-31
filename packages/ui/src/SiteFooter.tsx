@@ -92,7 +92,7 @@ export type SiteFooterProps = {
   // The first link, /new: its label ("New Document") and glyph.
   newLabel: string;
   newIcon: ComponentType<IconProps>;
-  // The Community link, drawn by the product (livediagram's CommunityFooterLink, with SITE_FOOTER_LINK).
+  // The Community link, drawn by the product (@liveworkspace/community-ui/links' CommunityFooterLink, with SITE_FOOTER_LINK).
   community?: ReactNode;
   // The source's GitHub link, last under Connect; none without it.
   repoUrl?: string;

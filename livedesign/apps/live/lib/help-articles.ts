@@ -14,6 +14,7 @@
 // help page is a bug, the same way an unregistered help article is - keep
 // these in sync with @livedesign/help-registry.
 
+import { COMMUNITY_HELP } from '@livedesign/help-registry/community';
 import { helpPathTelemetryId } from '@livedesign/help-registry/telemetry';
 
 export const HELP_ARTICLES = {
@@ -21,6 +22,8 @@ export const HELP_ARTICLES = {
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
+  // The Community's own help map holds the path (the public sites link it too).
+  community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
   // The embed's article is linked from the link picker, when it is restricted to a URL
@@ -120,6 +123,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sharePasswords: {
     title: 'Learn about share passwords',
     description: 'How the optional password gate protects every link.',
+  },
+  community: {
+    title: 'Learn about the Community',
+    description: 'Sharing a design publicly, and how people find and copy it.',
   },
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',

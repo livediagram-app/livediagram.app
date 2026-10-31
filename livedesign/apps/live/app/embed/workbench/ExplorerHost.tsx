@@ -29,6 +29,9 @@ import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
+import { API_BASE } from '@/lib/api-client';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderDesignThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/design-delete-undo';
@@ -88,8 +91,14 @@ export type ExplorerChrome = { prefs: UserPreferences; ownerId: string | null; s
 /** The person the Explorer pages are for (an account, or a guest from liveworkspace, which the first visit fetches)
  *  and their synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's
  *  copy merged in once the person is known. */
-function useExplorerChrome(): { chrome: ExplorerChrome; isSignedIn: boolean } {
-  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+function useExplorerChrome(): {
+  chrome: ExplorerChrome;
+  isSignedIn: boolean;
+  // The signed-in account and its name, for the Share dialog's Community tab; null for a guest.
+  accountUserId: string | null;
+  accountDisplayName: string | null;
+} {
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const viewerId = accountUserId ?? guestId ?? null;
   const { userPreferences: prefs } = useEditorPreferences({
@@ -99,6 +108,8 @@ function useExplorerChrome(): { chrome: ExplorerChrome; isSignedIn: boolean } {
   return {
     chrome: { prefs, ownerId: viewerId, signedIn: !!accountUserId },
     isSignedIn: !!isSignedIn,
+    accountUserId: accountUserId ?? null,
+    accountDisplayName: accountDisplayName ?? null,
   };
 }
 
@@ -118,7 +129,7 @@ export function ExplorerHost({
   sidebarLinks?: readonly SidebarLink[];
 }) {
   const router = useAppNavigation();
-  const { chrome, isSignedIn } = useExplorerChrome();
+  const { chrome, isSignedIn, accountUserId, accountDisplayName } = useExplorerChrome();
   const viewerId = chrome.ownerId;
   const prefs = chrome.prefs;
   const teams = useTokenTeams(isSignedIn);
@@ -128,7 +139,18 @@ export function ExplorerHost({
   const onFirstRun = useCallback(() => {
     void loadWelcome().then(setWelcome);
   }, []);
-  const shareHost = useMemo(() => explorerShareHost(viewerId ?? null), [viewerId]);
+  // The Community tab for a signed-in account's own designs (lib/explorer-community-host.ts).
+  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  const shareHost = useMemo(
+    () => ({
+      ...explorerShareHost(viewerId ?? null),
+      community: explorerCommunity(
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+      ),
+    }),
+    [viewerId, accountUserId, accountDisplayName, communityOn],
+  );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // The open design deleted from the editor lands here with its Undo (lib/design-delete-undo.ts), taken once.
   const [trashedOnArrival] = useState(arrivedTrashed);

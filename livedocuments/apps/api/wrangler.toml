@@ -186,6 +186,19 @@ name = "EMAIL"
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
+# COMMUNITY_KEY is livedocuments' secret on the liveworkspace Community service
+# (liveworkspace/docs/specs/007-community/community.md), sent as a bearer token on its app routes, where it proves a
+# publish, a check or a copy is livedocuments'. The service holds the same value as COMMUNITY_KEY_LIVEDOCUMENTS.
+# Never in [vars]:
+#
+#   - Local dev: `COMMUNITY_KEY=dev-livedocuments-community-key` and
+#     `COMMUNITY_URL=http://localhost:8791/api/community` in `apps/api/.dev.vars`.
+#   - Production and staging: set once on each Worker with `wrangler secret put COMMUNITY_KEY` (and `--env
+#     staging`); a deploy keeps it. COMMUNITY_URL comes from hosted-vars.json.
+#
+# Unset = no Community: the capabilities report it off, publishing answers 404, and the checks do nothing.
+# COMMUNITY_ENABLED=false (a secret or dashboard variable) is the off switch that keeps the key.
+
 # DRIVE_KEY is livedocuments' secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md
 # "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEDOCUMENTS. It opens the
 # internal export door's `file` format and the import door, nothing else. Never in [vars]:

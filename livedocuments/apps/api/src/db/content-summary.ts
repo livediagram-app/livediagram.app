@@ -9,6 +9,8 @@ export type ContentSummary = {
   tabCounts: Record<string, number>;
   stats: { elements: number; comments: number; bytes: number } | null;
   hasContent: boolean;
+  // Listed in the public Community (document-outbox.ts readContentSummary); absent where it was not read.
+  communityListed?: boolean;
 };
 
 // No tab, or a counted tab with no elements. A count not yet known is not empty: its preview is asked for.

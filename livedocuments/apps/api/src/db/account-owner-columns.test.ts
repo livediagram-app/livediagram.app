@@ -34,6 +34,13 @@ const OWNER_COLUMNS: OwnerColumn[] = [
       why: "a document's own store; the images themselves go from the media service",
     },
   },
+  // A document's Community post (docs/specs/025-community/community.md), in its own store: the post's check finds
+  // the document gone or no longer its author's, and the post leaves the listing (document-room/community-post.ts).
+  {
+    table: 'community_post',
+    column: 'author_id',
+    deleteKeeps: { when: '1 = 1', why: "a document's own store, withdrawn by the post's check" },
+  },
   // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27), in each document's own store: those on
   // someone else's document stay until its retention ages them out.
   {
@@ -83,6 +90,13 @@ function seed(sql: DatabaseSync, id: string) {
     data: '{"elements":[]}',
     updated_at: T0,
     element_count: 0,
+  });
+  insert(sql, 'community_post', {
+    share_code: `code-${id}`,
+    author_id: id,
+    post_id: `post-${id}`,
+    title: id,
+    checked_at: T0,
   });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,

@@ -1,6 +1,6 @@
 import { lucidePenTool } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, SITE_FOOTER_LINK, SiteFooter as SharedFooter } from '@liveworkspace/ui';
-import { CommunityFooterLink } from './community/CommunityFooterLink';
+import { CommunityFooterLink } from '@liveworkspace/community-ui/links';
 import { BRAND_APP } from './brand-app';
 import { REPO_URL } from './site';
 

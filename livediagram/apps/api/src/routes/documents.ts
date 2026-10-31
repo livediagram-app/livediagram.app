@@ -63,6 +63,7 @@ import {
   setDocumentPresentation,
 } from '../document-room/document-content';
 import { identityOf } from '../document-room/document-route';
+import { readOwnerCommunityState } from '../document-room/community-post';
 import { documentRoom } from '../document-client';
 import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleDocumentIndexRoutes, handleDocumentList } from './document-index-routes';
@@ -391,7 +392,13 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       if (!d) return missingDocument(ctx, id);
       // Redacted for every non-owner (redact-document.ts); a Community visitor sees the post's redactions; a
       // tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
-      const reader = redactDocumentForReader(d, ctx.resolveOwner());
+      // The owner's read carries their post's state, for the header's Public badge after a reload.
+      const caller = ctx.resolveOwner();
+      const own =
+        caller !== null && caller === d.ownerId
+          ? { ...d, communityState: await readOwnerCommunityState(ctx.env) }
+          : d;
+      const reader = redactDocumentForReader(own, caller);
       const liveDoc = redactDocumentForScope(
         grant.community ? redactDocumentForCommunity(reader) : reader,
         grant.tabScope,
