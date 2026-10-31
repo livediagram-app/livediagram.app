@@ -36,7 +36,7 @@ export function useArrowDragHandlers({
 }: ArrowDragHandlerDeps) {
   const resolveArrowDrag = (arrowId: string) => {
     const d = depsRef.current;
-    if (d.formatSourceId !== null || d.formatToolActive) return null;
+    if (d.formatSourceId !== null || d.formatToolActive || d.inspectToolActive) return null;
     const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
     if (!arrow || arrow.type !== 'arrow') return null;
     return { d, arrow };

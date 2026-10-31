@@ -68,6 +68,8 @@ export function canvasCursorClass(input: {
   // and painting onto targets) signals "this click acts on the element".
   if (canvasTool === 'format' && !spaceHeld) return 'cursor-copy';
   if (canvasTool === 'pan' && !spaceHeld) return 'cursor-grab';
+  // Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect"): the plain pointer, a press only selects.
+  if (canvasTool === 'inspect' && !spaceHeld) return 'cursor-default';
   if (canvasTool === 'select') return 'cursor-crosshair';
   if (isPaintMode) return 'cursor-copy';
   return 'cursor-grab';

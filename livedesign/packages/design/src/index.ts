@@ -265,6 +265,9 @@ export * from './tab-stats';
 export * from './page';
 export * from './wireframe-device';
 export * from './wireframe-page';
+// Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect"): a wireframe element's measurements and spacing.
+export * from './inspect-element';
+export * from './inspect-spacing';
 export {
   wireframeFrameOverSvg,
   wireframeFrameTheme,

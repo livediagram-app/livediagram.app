@@ -98,7 +98,7 @@ export function CanvasSelectionToolbars({
           options own the space around the element, and a toolbar on top just
           competes for clicks. Kept mounted and faded out (not unmounted) so
           it animates away as the ring opens and back in when it closes. */}
-      {showPopover && selectionBounds && canvasTool !== 'spotlight' ? (
+      {showPopover && selectionBounds && canvasTool !== 'spotlight' && canvasTool !== 'inspect' ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
@@ -199,7 +199,10 @@ export function CanvasSelectionToolbars({
           than the boxed-only resize box, so an arrow-only / mixed marquee still
           gets the toolbar — and its "More" entry into the Flow / animate menu.
           Gated on a true marquee multi-selection (2+), never in view-only. */}
-      {showMultiToolbar && multiToolbarBounds && canvasTool !== 'spotlight' ? (
+      {showMultiToolbar &&
+      multiToolbarBounds &&
+      canvasTool !== 'spotlight' &&
+      canvasTool !== 'inspect' ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{

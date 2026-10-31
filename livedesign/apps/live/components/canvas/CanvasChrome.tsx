@@ -24,6 +24,7 @@ import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/conten
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PhotoClusterSegment } from './PhotoClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
+import { InspectClusterSegment } from './inspect/InspectClusterSegment';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
@@ -472,6 +473,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.spotlight}
           {panelEls.eraser}
           {panelEls.format}
+          {panelEls.inspect}
         </>
       )}
 
@@ -540,6 +542,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       popoverOpen={activeDockPanel === 'photo-panel'}
                       onTogglePopover={(button) =>
                         handleDockButtonClick('photo-panel', button, true)
+                      }
+                    />
+                  ) : null
+                }
+                inspect={
+                  props.pagesMode.pages[0]?.kind === 'wireframe' ? (
+                    <InspectClusterSegment
+                      active={canvasTool === 'inspect'}
+                      onToggle={() =>
+                        props.onSetCanvasTool(canvasTool === 'inspect' ? 'select' : 'inspect')
                       }
                     />
                   ) : null

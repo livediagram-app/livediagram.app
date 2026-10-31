@@ -28,6 +28,9 @@ export type EditorCapabilities = {
   // Editor's; a Participant may look closer (the read-only Layers tab, the Eyedropper, the info line).
   photoEdit: boolean;
   photoInspect: boolean;
+  // Inspect a wireframe (docs/specs/007-editor/wireframe-pages.md "Inspect"): select any element to read, copy
+  // and export it. Every role's: it writes nothing.
+  inspect: boolean;
 };
 
 const never = () => false;
@@ -56,6 +59,7 @@ export function resolveEditorCapabilities(input: {
       sheetCells: true,
       photoEdit: true,
       photoInspect: true,
+      inspect: true,
     };
   }
   if (level === 'view') {
@@ -72,6 +76,7 @@ export function resolveEditorCapabilities(input: {
       sheetCells: false,
       photoEdit: false,
       photoInspect: false,
+      inspect: true,
     };
   }
   const own = (el: Element) => addedByAdder(el, adderKey);
@@ -90,6 +95,7 @@ export function resolveEditorCapabilities(input: {
     sheetCells: true,
     photoEdit: false,
     photoInspect: true,
+    inspect: true,
   };
 }
 

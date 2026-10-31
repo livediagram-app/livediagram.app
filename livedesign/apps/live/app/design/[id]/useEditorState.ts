@@ -2040,7 +2040,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const quickStyleDeps: QuickStyleDeps = {
     activeTab,
     theme: activeTheme,
-    editsBlocked: structureBlocked,
+    // Inspect reads, never styles (docs/specs/007-editor/wireframe-pages.md "Inspect").
+    editsBlocked: structureBlocked || canvasTool === 'inspect',
     canStyle: participant.participating ? participant.can.recolour : undefined,
     liveElements: liveActiveElements,
     commit,
@@ -2272,6 +2273,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyFormatFromSource,
     formatToolActive,
     setFormatSourceId,
+    inspectToolActive: canvasTool === 'inspect',
     connectSourceId,
     connectArrowTo,
     tick,
@@ -2336,8 +2338,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFormatSourceId,
     readSelection,
     editingId,
-    isReadOnly,
-    participant: participant.participating,
+    // While Inspect is on the keys act as a Viewer's (docs/specs/007-editor/wireframe-pages.md "Inspect").
+    isReadOnly: isReadOnly || canvasTool === 'inspect',
+    participant: participant.participating && canvasTool !== 'inspect',
     deleteSelected,
     deleteMultiSelected,
     undo,

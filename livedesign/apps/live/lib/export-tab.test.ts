@@ -73,6 +73,25 @@ async function blobType(blob: Blob | Promise<Blob>): Promise<string> {
   return (await blob).type;
 }
 
+// docs/specs/007-editor/wireframe-pages.md "The Inspect panel": an element exported on its own.
+describe('renderTabToSvg for Inspect', () => {
+  it('cuts to the content on a clear ground at the scale’s size', () => {
+    const svg = renderTabToSvg(tab({ elements: [shape('a')], backgroundColor: '#fff7ed' }), {
+      scale: 3,
+      padding: 0,
+      transparent: true,
+    });
+    expect(svg).toMatch(/<svg [^>]*width="300" height="240" viewBox="0 0 100 80"/);
+    expect(svg).not.toContain('#fff7ed');
+  });
+
+  it('keeps its padding and ground by default', () => {
+    const svg = renderTabToSvg(tab({ elements: [shape('a')], backgroundColor: '#fff7ed' }));
+    expect(svg).toContain('fill="#fff7ed"');
+    expect(svg).not.toMatch(/viewBox="0 0 100 80"/);
+  });
+});
+
 describe('exportTabAsSvg', () => {
   it('produces an image/svg+xml blob with a viewBox + background', async () => {
     const blob = exportTabAsSvg(tab({ elements: [shape('a')], backgroundColor: '#fff7ed' }));

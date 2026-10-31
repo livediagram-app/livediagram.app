@@ -177,7 +177,7 @@ export function useCanvasChromePanels({
     isMobile,
     closeDockPanel,
   });
-  const { laserEl, spotlightEl, eraserEl, formatEl } = useCanvasToolPanels({
+  const { laserEl, spotlightEl, eraserEl, formatEl, inspectEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
@@ -341,6 +341,7 @@ export function useCanvasChromePanels({
     spotlight: spotlightEl,
     eraser: eraserEl,
     format: formatEl,
+    inspect: inspectEl,
   };
   return {
     panelEls,

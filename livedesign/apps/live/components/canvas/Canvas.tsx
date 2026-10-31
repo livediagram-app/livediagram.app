@@ -70,6 +70,9 @@ import {
   loadPhotoPagesLayer,
 } from '@/lib/editor-deferred-code';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
+import { InspectOverlay } from './inspect/InspectOverlay';
+
+const NO_PAGES: readonly never[] = [];
 
 // Pages mode's pages draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
@@ -127,6 +130,9 @@ function CanvasView(props: CanvasProps) {
   // first click (copy cursor, handles/label-drag/dblclick suppressed on boxed
   // elements AND arrows), not only once a source is armed.
   const isPaintMode = canvasTool === 'format';
+  // Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect"): a press selects to read, so the selection
+  // wears a Viewer's chrome (no handles, no editing toolbars) and the elements take no in-place edits.
+  const inspecting = canvasTool === 'inspect';
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
@@ -220,11 +226,20 @@ function CanvasView(props: CanvasProps) {
       editingId,
       isPaintMode,
       tabLocked,
-      readOnly,
+      readOnly: readOnly || inspecting,
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
     }),
-    [elements, editingId, isPaintMode, tabLocked, readOnly, props.elementMenuOpen, arrowLabels],
+    [
+      elements,
+      editingId,
+      isPaintMode,
+      tabLocked,
+      readOnly,
+      inspecting,
+      props.elementMenuOpen,
+      arrowLabels,
+    ],
   );
   // The one selected element when it is a path: the path tool's edit gesture arms on it.
   const soleSelectedPathId = useSelectionOf(
@@ -512,6 +527,7 @@ function CanvasView(props: CanvasProps) {
                   <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
                     <CanvasElementsLayer
                       {...props}
+                      readOnly={readOnly || inspecting}
                       elements={pathTool.elements}
                       hasArrows={hasArrows}
                       arrowLabels={arrowLabels}
@@ -589,6 +605,15 @@ function CanvasView(props: CanvasProps) {
                 pos={spotlight.pos}
                 radius={spotlight.radius}
                 config={spotlightLook.config}
+              />
+            ) : null}
+            {/* Inspect's outlines and measured lines (docs/specs/007-editor/wireframe-pages.md). */}
+            {inspecting ? (
+              <InspectOverlay
+                elements={elements}
+                pages={props.pagesMode?.pages ?? NO_PAGES}
+                wrapperRef={wrapperRef}
+                mainSize={mainSize}
               />
             ) : null}
 
