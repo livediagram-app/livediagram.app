@@ -68,6 +68,8 @@ export * from './type-catalogue-change';
 export * from './linked-cards';
 export * from './calculated-fields';
 export * from './formula-fields';
+export * from './calculated-result';
+export * from './rollup-fields';
 export {
   FORMULA_DEPTH_MAX,
   FORMULA_MAX,

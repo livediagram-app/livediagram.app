@@ -189,10 +189,12 @@ Every write takes what a person would say, and stores the ids:
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
   - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
-    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, formula?, result?, showAs?, onCard?, required? }]`
+    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, onCard?, required? }]`
     (kinds `text`, `longtext`, `number`, `currency`, `percent`, `date`, `checkbox`, `link`, `email`, `choice`, `card`,
     `calculated`; a `currency` field's code, GBP when absent; a `calculated` field's `calculation`, `childCount`,
-    `childrenDone` or `formula`, [Calculated fields](item-types.md#calculated-fields); a `formula` field's `formula`,
+    `childrenDone`, `rollup`, `lookup` or `formula`, [Calculated fields](item-types.md#calculated-fields); a `rollup`'s
+    `through` (a Card field by name, or "all"), `aggregate` and `source` (a field by name), and a `lookup`'s `through`
+    and `source`, [Rollup and Lookup](item-types.md#rollup-and-lookup-fields), each refused with what would fit; a `formula` field's `formula`,
     written with field names, and its `result`, `number`, `currency`, `percent`, `text`, `date` or `checkbox`,
     [Formula fields](item-types.md#formula-fields), a formula that can't be read refused with its problem; and
     `showAs: "percent"` to draw a Children Done or a Percent result as a [Percent](item-types.md#percent-fields) bar). A Currency value is written as a number, a Percent value as a whole
@@ -203,7 +205,7 @@ Every write takes what a person would say, and stores the ids:
 defaultStatus?, statuses? }`: edit a type. Statuses here are named as above. `statuses` is the whole ordered list
     of the statuses the type uses (its order is every status menu's for its cards); a status left out of it is one
     the type's cards can never move into; absent, a new type uses every status the boards name. Removing a field never deletes
-    values. `editCustom` `[{ field, name?, options?, linkTypes?, calculation?, formula?, result?, showAs?, onCard?, required? }]` edits a custom field in place, as the
+    values. `editCustom` `[{ field, name?, options?, linkTypes?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, onCard?, required? }]` edits a custom field in place, as the
     type editor's field form does: a new name, a Choice field's options replaced whole (any other kind is refused),
     a Card field's card types replaced whole (any other kind is refused), a Calculated field's calculation, a Formula's formula and result (any
     other kind is refused) and its `showAs` (`"percent"` or `"number"`; only a Children Done or a Formula with a
@@ -261,8 +263,9 @@ tabs, and the limits (24 fields, 12 custom, 20 choice options, 6 tabs, 32 types)
 its Default State, its display per size and its tabs, so a change can build on what is there; a Card field lists
 `linkTypes`, every card type it links to, beside `linkType`, the first. A Calculated field lists its `calculation`,
 `showAs: "percent"` when it shows as a Percent, and `readOnly: true` (a Formula also its `formula` by names, its
-`result`, and `formulaError` when it stopped working), and each card lists its worked-out value among its `fields`
-by the field's name (a count, a whole percentage, a Formula's number, text, true or false or ISO date, or null); `change_items` refuses giving one a value (`field_calculated`, "Progress is
+`result`, and `formulaError` when it stopped working; a Rollup or Lookup its `through` and `source` by name, its
+`aggregate` and its `result`), and each card lists its worked-out value among its `fields`
+by the field's name (a count, a whole percentage, a Formula's, Rollup's or Lookup's number, text, true or false or ISO date, or null); `change_items` refuses giving one a value (`field_calculated`, "Progress is
 calculated: it can't be set") without writing that change.
 
 ## Comment threads

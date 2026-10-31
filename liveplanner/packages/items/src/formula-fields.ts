@@ -7,6 +7,7 @@ import { currencyText, dayLabel } from './card-text';
 import { PRIORITY_LABELS, isPriority } from './fields';
 import { itemAssignee, itemLabels, itemTitle, type Item, type ItemFieldValue } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
+import { calculatedResultOf } from './calculated-result';
 import { fieldCardIds, fieldPeople, holdsSeveral } from './several-values';
 import { compileFormula } from './formula/compile';
 import { evaluateTree } from './formula/evaluate';
@@ -46,14 +47,18 @@ export const isFormulaField = (f: Pick<CustomFieldDef, 'kind' | 'calculation'>):
 export const formulaResultOf = (f: Pick<CustomFieldDef, 'result'>): FormulaResult =>
   isFormulaResult(f.result) ? f.result : FORMULA_RESULT_DEFAULT;
 
-// What a formula reads beyond the card: other cards for a Card field's "#12 Title", the child counts a Calculated
-// field gives (worked out by calculated-fields.ts, which passes `calculated`), and today.
+// What a formula reads beyond the card: other cards for a Card field's "#12 Title", the values other Calculated
+// fields give (worked out by calculated-fields.ts, which passes `calculated`), and today.
 export interface FormulaContext {
   items?: ReadonlyMap<string, Item>;
-  // Another Calculated field's value (Child Count, Children Done) on this card; none without it.
-  calculated?: (field: CustomFieldDef) => number | null;
+  // Another Calculated field's value (Child Count, Children Done, a Rollup's or Lookup's) on this card; none without
+  // it. A Date result is a stored day ("2026-10-31").
+  calculated?: (field: CustomFieldDef) => FormulaScalar;
   // Today as a stored day; the runtime's own local day when absent.
   today?: string;
+  // The steps left for the whole value being worked out (calculated-fields.ts, a Rollup reading formulas on many
+  // cards): a formula takes at most FORMULA_STEPS_MAX of them, and what it takes is counted off.
+  steps?: { left: number };
 }
 
 const DAY_MS = 86_400_000;
@@ -126,12 +131,18 @@ function customValue(run: Run, def: CustomFieldDef): FormulaValue {
       return holdsSeveral(def) ? { list: cards, field: def.label } : (cards[0] ?? null);
     }
     case 'calculated':
-      return isFormulaField(def) ? nestedFormula(run, def) : (run.ctx.calculated?.(def) ?? null);
+      return isFormulaField(def) ? nestedFormula(run, def) : calculatedRead(run, def);
     default:
       // Text, Long Text, Email, Link, Choice, Colour, and any kind a later reader adds: as text, or as it is stored.
       if (Array.isArray(raw)) return listValue(raw, def.label);
       return typeof raw === 'number' ? numberValue(raw) : textValue(raw);
   }
+}
+
+// Another Calculated field's value (Child Count, a Rollup, a Lookup) as a formula reads it: a Date result as a date.
+function calculatedRead(run: Run, def: CustomFieldDef): FormulaValue {
+  const v = run.ctx.calculated?.(def) ?? null;
+  return typeof v === 'string' && calculatedResultOf(def) === 'date' ? dateOf(v) : v;
 }
 
 // A built-in field's value on the card.
@@ -219,6 +230,41 @@ function needs(v: FormulaValue, want: string): never {
   return fail(`Gives ${kind}, not ${want}${hint ? `: make the result ${hint}` : ''}`);
 }
 
+// A raw value read as a result kind, or none when it is no value of that kind (a Rollup's or Lookup's reading).
+export function scalarAs(result: FormulaResult, raw: FormulaValue): FormulaScalar {
+  try {
+    return resultOf({ result }, raw);
+  } catch {
+    return null;
+  }
+}
+
+// A field's value on a card as a formula reads it (`id` a built-in or custom field the type offers a formula), or
+// none when the type offers no such field: what a Rollup and a Lookup read on another card. A Calculated field is
+// read through `ctx.calculated` (a Formula too: calculated-fields.ts works every one out).
+export function fieldValueOn(
+  item: Item,
+  type: ItemTypeDef,
+  id: string,
+  ctx: FormulaContext = {},
+): FormulaValue {
+  const scope = formulaScopeOf(type);
+  const f = scope.byId.get(id);
+  if (!f) return null;
+  if (f.custom?.kind === 'calculated') return null;
+  const run: Run = {
+    item,
+    type,
+    scope,
+    ctx,
+    budget: { left: FORMULA_STEPS_MAX },
+    visiting: new Set(),
+    done: new Map(),
+    today: localToday,
+  };
+  return readField(run, id);
+}
+
 // A raw value read as the field's result kind (item-types.md "Formula fields", The result).
 function resultOf(def: Pick<CustomFieldDef, 'result'>, raw: FormulaValue): FormulaScalar {
   const result = formulaResultOf(def);
@@ -258,12 +304,13 @@ export function formulaOutcome(
   const problem = formulaProblem(field, type);
   if (problem) return { ok: false, error: problem };
   let today: FormulaDate | null = null;
+  const start = Math.min(FORMULA_STEPS_MAX, ctx.steps?.left ?? FORMULA_STEPS_MAX);
   const run: Run = {
     item,
     type,
     scope: formulaScopeOf(type),
     ctx,
-    budget: { left: FORMULA_STEPS_MAX },
+    budget: { left: start },
     visiting: new Set(field.id ? [field.id] : []),
     done: new Map(),
     today: () => (today ??= (ctx.today ? dateOf(ctx.today) : null) ?? localToday()),
@@ -274,6 +321,8 @@ export function formulaOutcome(
     if (e instanceof FormulaFail) return { ok: false, error: e.error };
     // Anything else (a value source that threw) is still an outcome, never a throw on a board.
     return { ok: false, error: "This value can't be worked out" };
+  } finally {
+    if (ctx.steps) ctx.steps.left -= start - Math.max(0, run.budget.left);
   }
 }
 
