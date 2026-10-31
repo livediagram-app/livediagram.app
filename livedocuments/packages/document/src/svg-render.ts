@@ -91,6 +91,7 @@ export {
   EXPORT_PADDING,
   exportFontFamily,
   exportFontIds,
+  finishOf,
   type BoxedExportOptions,
   type ExportIconArt,
   type ExportShape,
@@ -121,6 +122,8 @@ import { boundsOfPoints, type Point } from '@liveworkspace/model-core/geometry-p
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
+// The border an element resolves to, for the office exports' native shapes (docs/specs/020-import-export/office-export.md).
+export { borderOf } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 import { isPointerNote, pointerTipOf } from './pointer-note';

@@ -99,6 +99,58 @@ export function FormatIcon({ kind }: { kind: Format }) {
           <path d="M11 9.5v7l6-3.5z" fill="rgb(59 130 246)" />
         </svg>
       );
+    case 'pptx':
+      // A slide: a title bar over a body, in PowerPoint's orange.
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="20"
+            rx="2"
+            fill="rgb(255 237 213)"
+            stroke="rgb(251 146 60)"
+            strokeWidth="1.25"
+          />
+          <rect x="5" y="5" width="14" height="2.5" rx="1" fill="rgb(234 88 12)" />
+          <text
+            x="16"
+            y="17"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="7"
+            fontWeight="700"
+            fill="rgb(194 65 12)"
+          >
+            PPTX
+          </text>
+        </svg>
+      );
+    case 'docx':
+      // A page of writing, in Word's blue.
+      return (
+        <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>
+          <path
+            d="M3 1h11l5 5v20a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"
+            fill="rgb(219 234 254)"
+            stroke="rgb(96 165 250)"
+            strokeWidth="1.25"
+          />
+          <path d="M5 8h8M5 11h11" stroke="rgb(59 130 246)" strokeWidth="1.25" />
+          <text
+            x="11"
+            y="22"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="6"
+            fontWeight="700"
+            fill="rgb(29 78 216)"
+          >
+            DOCX
+          </text>
+        </svg>
+      );
     case 'svg':
       return (
         <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>

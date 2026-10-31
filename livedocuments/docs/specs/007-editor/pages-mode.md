@@ -1518,7 +1518,9 @@ is while the rest of the tab is worked on.
 The Export dialog exports **pages**, not the tab's content bounds.
 
 - **Formats**: **PDF**, **PNG**, **SVG** and **GIF** (an animated GIF of the pages, moving as they
-  move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), plus **JSON** (the tab
+  move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), **PowerPoint** for a
+  slide tab and **Word** for an article tab (editable `.pptx` and `.docx`:
+  [PowerPoint and Word export](../020-import-export/office-export.md)), plus **JSON** (the tab
   itself, a backup that imports back). Markdown is not offered: a page is not an outline.
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
   page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
@@ -1557,7 +1559,8 @@ The Import dialog offers **JSON** (a livedocuments tab, which may carry pages), 
 (and `ArticleAdded`, the article's add), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide`
 (the first page's own choice);
 `Document · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
-`PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages);
+`PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages); `PagesPPTX / PagesDOCX` (a
+PowerPoint deck or a Word document);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
 turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic
 page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page

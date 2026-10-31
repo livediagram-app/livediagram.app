@@ -177,4 +177,4 @@ panel; `useTabImport` runs it. See the [blueprint](blueprints/office-import.md).
 - Importing from Google Drive directly (a sign-in and a picker for what a download already does).
 - Keeping a document's or deck's colours, fonts, backgrounds, animations and transitions.
 - Tables as tables (a table element in a zone) and charts as charts.
-- Exporting to Word or PowerPoint.
+- Exporting to Word or PowerPoint here: that is [PowerPoint and Word export](office-export.md).
