@@ -2,7 +2,13 @@
 // to one card, as the plan keeps it beside the card and the card panel reads it. Pure: the changes a write made, the
 // values kept of them, the grouping of quick runs by one person, and the shape a reader is answered with.
 
-import { ARCHIVED_FIELD, type Item, type ItemFieldValue, type ItemPerson } from './item';
+import {
+  ARCHIVED_FIELD,
+  STATUS_SINCE_FIELD,
+  type Item,
+  type ItemFieldValue,
+  type ItemPerson,
+} from './item';
 import { EXAMPLE_FIELD, TRASHED_FROM_FIELD, TRASH_STATUS, isArchived, isFlagged } from './board';
 import { isRichFieldKey, richFieldOf } from './rich-text-field';
 
@@ -58,6 +64,8 @@ export type ItemHistoryEntry = {
 // Fields that are not a change a reader is asking about, or that read as another change (the status, the flags).
 const SKIPPED = new Set([
   'status',
+  // When the card reached its column: the move stamps it, so it reads as the move.
+  STATUS_SINCE_FIELD,
   TRASHED_FROM_FIELD,
   ARCHIVED_FIELD,
   'flagged',

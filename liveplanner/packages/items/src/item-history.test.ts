@@ -12,7 +12,7 @@ import {
   type StoredHistoryEntry,
 } from './item-history';
 import { ALI, SAM, item } from './test-items';
-import type { Item } from './item';
+import { STATUS_SINCE_FIELD, type Item } from './item';
 
 // docs/specs/026-plan/items.md "History": what a write kept, its values, grouping and the reader's shape.
 
@@ -39,6 +39,11 @@ describe('historyChangesOf', () => {
     expect(historyChangesOf(loose, next(loose, { ...loose.fields, status: 'todo' }))).toEqual([
       { kind: 'moved', from: null, to: 'todo' },
     ]);
+  });
+
+  it('reads a move with its statusSince stamp as the move alone', () => {
+    const moved = next(card, { ...card.fields, status: 'doing', [STATUS_SINCE_FIELD]: 5 });
+    expect(historyChangesOf(card, moved)).toEqual([{ kind: 'moved', from: 'todo', to: 'doing' }]);
   });
 
   it('reads the Trash in and out, never as a move or a trashedFrom change', () => {

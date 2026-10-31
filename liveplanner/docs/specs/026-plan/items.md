@@ -459,7 +459,8 @@ Each write to a card adds one entry, written by the plan as it applies the write
   Description"). A value is cut to 80 characters, a list to its first 12 entries; a person is kept by name alone.
 
 Left out, because they are not a change a reader is asking about: a card's place within its column alone (its
-rank), a vote's tally (its votes), its comment threads (they are shown beside it), and the plan's own upkeep (the
+rank), when it reached its column (`statusSince`, stamped by the move itself), a vote's tally (its votes), its comment
+threads (they are shown beside it), and the plan's own upkeep (the
 schema's moves, a closed account's anonymising, the migration door). A plan made from a copy, a duplicate, a
 sync to the cloud or an import starts its cards with no history: history never travels with a card.
 
