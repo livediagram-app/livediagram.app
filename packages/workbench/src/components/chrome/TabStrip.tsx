@@ -100,11 +100,23 @@ export function TabStrip<T extends { id: string }>({
   const order = tabIds.join('|');
   const revealActive = useCallback(() => {
     const strip = stripRef.current;
-    const tab = strip?.querySelector<HTMLElement>('[data-tab][data-active]');
-    if (!strip || !tab) return;
-    const t = tab.getBoundingClientRect();
-    const add = activeId === lastTabId ? strip.querySelector('[data-tour-id="add-tab"]') : null;
-    reveal(t.left, add ? add.getBoundingClientRect().right : t.right);
+    if (!strip) return;
+    const measure = () => {
+      const tab = strip.querySelector<HTMLElement>('[data-tab][data-active]');
+      if (!tab) return;
+      const t = tab.getBoundingClientRect();
+      const add = activeId === lastTabId ? strip.querySelector('[data-tour-id="add-tab"]') : null;
+      reveal(t.left, add ? add.getBoundingClientRect().right : t.right);
+    };
+    measure();
+    // The open tab's slots (its menu button, avatars) and a folder's tabs ease their widths (CollapseWidth), so this
+    // first measure is short of where the tab and Add tab land. Once those widths finish, measure once more.
+    const easing = (strip.getAnimations?.({ subtree: true }) ?? []).filter((run) => {
+      const target = (run.effect as KeyframeEffect | null)?.target;
+      return target instanceof HTMLElement && target.matches('[data-collapse-width]');
+    });
+    if (easing.length > 0)
+      void Promise.all(easing.map((run) => run.finished)).then(measure, () => {});
   }, [activeId, lastTabId, reveal]);
   useEffect(revealActive, [revealActive, tabCount]);
 
