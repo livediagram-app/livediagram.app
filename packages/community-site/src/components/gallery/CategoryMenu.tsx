@@ -33,15 +33,15 @@ export function CategoryMenu({
       count: facets?.total,
       checked: value === null,
     },
-    ...communityCategories(app).filter(
-      (c) => !facets || (facets.categories[c.id] ?? 0) > 0 || c.id === value,
-    ).map((c) => ({
-      id: c.id,
-      key: c.id,
-      label: c.label,
-      count: facets?.categories[c.id] ?? undefined,
-      checked: c.id === value,
-    })),
+    ...communityCategories(app)
+      .filter((c) => !facets || (facets.categories[c.id] ?? 0) > 0 || c.id === value)
+      .map((c) => ({
+        id: c.id,
+        key: c.id,
+        label: c.label,
+        count: facets?.categories[c.id] ?? undefined,
+        checked: c.id === value,
+      })),
   ];
   return (
     <SearchControlMenu<CommunityCategory | null>

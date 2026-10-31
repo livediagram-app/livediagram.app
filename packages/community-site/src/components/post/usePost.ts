@@ -26,7 +26,8 @@ export function usePost(id: string | null): { load: PostLoad; retry: () => void 
   useEffect(() => {
     if (!id) return;
     const controller = new AbortController();
-    api.fetchPost(id, controller.signal)
+    api
+      .fetchPost(id, controller.signal)
       .then((data) => {
         setResult({
           id,

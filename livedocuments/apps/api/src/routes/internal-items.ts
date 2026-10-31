@@ -67,7 +67,10 @@ export function handleInternalItems(
       personMerged: async (guestId, userId) => {
         const media = mediaClient(env);
         if (media) {
-          const merged = await media.mergeOwner(await mediaOwner(guestId), await mediaOwner(userId));
+          const merged = await media.mergeOwner(
+            await mediaOwner(guestId),
+            await mediaOwner(userId),
+          );
           if (!merged.ok)
             throw new Error(`media: merging the guest's images answered ${merged.status}`);
         }

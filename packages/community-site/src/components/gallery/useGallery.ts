@@ -125,7 +125,8 @@ export function useGallery(session: CommunitySession | null): Gallery {
   // Facets are a nicety: without them the chips simply carry no counts.
   useEffect(() => {
     const controller = new AbortController();
-    api.fetchFacets(controller.signal)
+    api
+      .fetchFacets(controller.signal)
       .then(setFacets)
       .catch((err: unknown) => {
         if (!isAbortError(err)) console.warn('[community] facets load failed', err);

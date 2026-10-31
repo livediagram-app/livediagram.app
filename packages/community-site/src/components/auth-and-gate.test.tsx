@@ -98,7 +98,12 @@ describe('AccountSession', () => {
     setHint('1');
     fetchMock
       .mockResolvedValueOnce(
-        tokenAnswer({ signedIn: true, accessToken: 'old', expiresAt: Date.now(), user: { id: 'u' } }),
+        tokenAnswer({
+          signedIn: true,
+          accessToken: 'old',
+          expiresAt: Date.now(),
+          user: { id: 'u' },
+        }),
       )
       .mockResolvedValueOnce(
         tokenAnswer({

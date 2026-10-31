@@ -15,7 +15,17 @@ The shell keeps its layout (head, boot scripts, header, footer), its routes and 
 'use client';
 import { CommunitySiteProvider, type CommunitySite } from '@liveworkspace/community-site/client';
 
-const SITE: CommunitySite = { app, words, apiBase, communityApi, keyStorage, signedInHint, links, telemetry, HelpLink };
+const SITE: CommunitySite = {
+  app,
+  words,
+  apiBase,
+  communityApi,
+  keyStorage,
+  signedInHint,
+  links,
+  telemetry,
+  HelpLink,
+};
 export function CommunityProvider({ children }) {
   return <CommunitySiteProvider site={SITE}>{children}</CommunitySiteProvider>;
 }
@@ -33,12 +43,12 @@ Each page is its own entry, so a route loads only its page. The telemetry stays 
 
 ## Entries
 
-| Entry            | What                                                                                     |
-| ---------------- | ---------------------------------------------------------------------------------------- |
-| `./client`       | `CommunitySite` and its parts, `CommunitySiteProvider`, `useCommunitySite`               |
-| `./gate`         | `CommunityGate`: nothing while the app's Community is switched off                       |
-| `./gallery`      | `CommunityGalleryPage`                                                                   |
-| `./post`         | `CommunityPostPage`                                                                      |
-| `./worker`       | `createCommunityWorker`, `CommunityWorkerSite`, `CommunityWorkerEnv`                     |
-| `./community.css`| The gallery's hero wash and the heart's pop                                              |
-| `./testing`      | `communityTestSite`, `withCommunitySite`, `quietCommunityTelemetry`, for an app's tests  |
+| Entry             | What                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| `./client`        | `CommunitySite` and its parts, `CommunitySiteProvider`, `useCommunitySite`              |
+| `./gate`          | `CommunityGate`: nothing while the app's Community is switched off                      |
+| `./gallery`       | `CommunityGalleryPage`                                                                  |
+| `./post`          | `CommunityPostPage`                                                                     |
+| `./worker`        | `createCommunityWorker`, `CommunityWorkerSite`, `CommunityWorkerEnv`                    |
+| `./community.css` | The gallery's hero wash and the heart's pop                                             |
+| `./testing`       | `communityTestSite`, `withCommunitySite`, `quietCommunityTelemetry`, for an app's tests |

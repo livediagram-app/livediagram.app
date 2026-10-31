@@ -17,7 +17,11 @@ import type { Env } from '../types';
 
 // A Community visitor never joins the author's room (docs/specs/025-community/community.md "Viewing a post's
 // document"): no presence, no cursors, no live stream. A link visitor's code is checked against the document's post.
-async function isCommunityCode(env: Env, documentId: string, code: string | null): Promise<boolean> {
+async function isCommunityCode(
+  env: Env,
+  documentId: string,
+  code: string | null,
+): Promise<boolean> {
   if (!code) return false;
   const post = await documentRoom(env, documentId).community();
   return post !== null && post.code === code;

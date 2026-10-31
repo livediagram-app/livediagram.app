@@ -129,10 +129,7 @@ export async function answerCommunityOwner(req: CommunityOwnerRequest): Promise<
   const owner = req.accountUserId;
   if (!owner || owner !== doc.ownerId) return reject(r.signInRequired(), 'sign_in_required');
   if (doc.teamId) return reject(r.conflict('team_document'), 'team_document');
-  const parsed = validateCommunityPostInput(
-    await request.json().catch(() => null),
-    service.app,
-  );
+  const parsed = validateCommunityPostInput(await request.json().catch(() => null), service.app);
   if (!parsed.ok) return reject(r.json({ error: parsed.error }, { status: 400 }), parsed.error);
   // A share password and a post exclude each other.
   const sharing = await index.listShareLinks(id);
@@ -170,13 +167,18 @@ export async function answerCommunityOwner(req: CommunityOwnerRequest): Promise<
 
   // Something to show. Counted, not rendered: a deploy without the snapshot store can still publish. The per-author
   // cap is the service's: it counts the posts.
-  if (!(await req.hasSomethingToShow())) return reject(r.conflict('empty_document'), 'empty_document');
+  if (!(await req.hasSomethingToShow()))
+    return reject(r.conflict('empty_document'), 'empty_document');
   // One post per document: a post already kept here (a previous owner's) gives way to this one.
   const previous = await readCommunityPost(db);
   // The community link is made at the index first (its code is the post's), and removed again when the service
   // refuses the post, so a refusal leaves nothing behind. A public link: should the document later take a share
   // password, it closes (404) rather than ask visitors for one.
-  const { link } = await index.createShareLink(id, { level: 'view', expiry: 'never', public: true });
+  const { link } = await index.createShareLink(id, {
+    level: 'view',
+    expiry: 'never',
+    public: true,
+  });
   const shareCode = link.code;
   const res = await service.publishPost(env, id, {
     owner,

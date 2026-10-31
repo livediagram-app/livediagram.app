@@ -56,9 +56,7 @@ describe('CommunityShowcase', () => {
   it('invites the first share in its words when the service cannot be reached', async () => {
     featured = () => Promise.reject(new TypeError('offline'));
     render(showcase());
-    expect(
-      await screen.findByText(/Be one of the first to share a document\./),
-    ).toBeTruthy();
+    expect(await screen.findByText(/Be one of the first to share a document\./)).toBeTruthy();
     expect(vi.mocked(fetch).mock.calls[0]?.[0]).toBe(
       'https://www.liveworkspace.app/api/community/featured?app=livedocuments.app',
     );

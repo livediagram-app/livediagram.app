@@ -115,7 +115,10 @@ export function createCommunityWorker(site: CommunityWorkerSite): CommunityWorke
     const result = await api<CommunitySitemapResponse>(env, '/sitemap');
     // Switched off, or nothing to list: an empty sitemap is still a valid one.
     if (result.status === 'unavailable') {
-      return new Response('Sitemap unavailable', { status: 503, headers: { 'Retry-After': '3600' } });
+      return new Response('Sitemap unavailable', {
+        status: 503,
+        headers: { 'Retry-After': '3600' },
+      });
     }
     const posts = result.status === 'ok' ? result.body.posts : [];
     return new Response(sitemapXml(site, posts), {

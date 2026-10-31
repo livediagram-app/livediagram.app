@@ -72,7 +72,11 @@ const postPath = (id: string) => `/posts/${encodeURIComponent(id)}`;
 export function createCommunityApi(site: CommunityApiSite): CommunityApi {
   function headers(extra?: Record<string, string>): Record<string, string> {
     const key = getCommunityKey(site.keyStorage);
-    return { Accept: 'application/json', ...(key ? { [COMMUNITY_KEY_HEADER]: key } : {}), ...extra };
+    return {
+      Accept: 'application/json',
+      ...(key ? { [COMMUNITY_KEY_HEADER]: key } : {}),
+      ...extra,
+    };
   }
 
   async function request(path: string, init: RequestInit = {}): Promise<Response> {

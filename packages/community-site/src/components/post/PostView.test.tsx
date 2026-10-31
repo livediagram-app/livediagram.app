@@ -33,11 +33,7 @@ vi.mock('next/link', () => ({
 
 import { EmbedFrame } from './EmbedFrame';
 import { PostView } from './PostView';
-import {
-  communityTestSite,
-  quietCommunityTelemetry,
-  withCommunitySite,
-} from '../../test/site';
+import { communityTestSite, quietCommunityTelemetry, withCommunitySite } from '../../test/site';
 
 const wrapper = withCommunitySite(
   communityTestSite({ telemetry: { ...quietCommunityTelemetry, ...h.telemetry } }),

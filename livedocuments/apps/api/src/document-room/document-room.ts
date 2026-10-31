@@ -1177,7 +1177,12 @@ export class DocumentRoom extends DurableObject<Env> {
     const env = this.requireEnv();
     let post: CommunityPost | null;
     try {
-      post = await checkCommunityPost(env, documentId, await readDocumentMeta(env, documentId), now);
+      post = await checkCommunityPost(
+        env,
+        documentId,
+        await readDocumentMeta(env, documentId),
+        now,
+      );
     } catch (error) {
       console.warn('[community] check failed', { error: String(error) });
       post = await readCommunityPost(env);

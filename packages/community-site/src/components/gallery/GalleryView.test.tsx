@@ -9,11 +9,7 @@ import type {
   CommunityPost,
 } from '@liveworkspace/community';
 import type { CommunitySession } from '../../lib/session';
-import {
-  communityTestSite,
-  quietCommunityTelemetry,
-  withCommunitySite,
-} from '../../test/site';
+import { communityTestSite, quietCommunityTelemetry, withCommunitySite } from '../../test/site';
 
 // The gallery end to end (livediagram/docs/specs/025-community/community.md "Gallery", "My Shares"): filters live in the URL
 // and the search box, the controls write their words into it, results load per filter set (a stale answer is

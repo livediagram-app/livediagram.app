@@ -9,11 +9,17 @@ import {
   sitemapXml,
 } from './post-head';
 
-const SITE = { app: 'livediagram.app', siteUrl: 'https://www.livediagram.app', product: 'livediagram' } as const;
+const SITE = {
+  app: 'livediagram.app',
+  siteUrl: 'https://www.livediagram.app',
+  product: 'livediagram',
+} as const;
 
 describe('metaDescription', () => {
   it('keeps a description that fits', () => {
-    expect(metaDescription(SITE, { title: 'T', description: '  How it  works. ' })).toBe('How it works.');
+    expect(metaDescription(SITE, { title: 'T', description: '  How it  works. ' })).toBe(
+      'How it works.',
+    );
   });
 
   it('cuts a long one at a whole word, within a search result', () => {
