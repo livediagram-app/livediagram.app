@@ -6,6 +6,7 @@ import { CALCULATION_LABELS } from './calculated-fields';
 import { isFormulaField } from './formula-fields';
 import { FORMULA_RESULTS, FORMULA_RESULT_DEFAULT } from './formula/limits';
 import { formulaScopeOf, storedFormula } from './formula/references';
+import { canShowAsPercent } from './percent-fields';
 import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
 import {
@@ -81,6 +82,9 @@ export interface CustomFieldInput {
   // "Formula fields").
   formula?: string;
   result?: string;
+  // A share drawn as a Percent field is ('percent'), or as text ('number', the default); only where
+  // canShowAsPercent allows it (docs/specs/026-plan/item-types.md "Percent").
+  showAs?: string;
   onCard?: boolean;
   // Required (docs/specs/026-plan/item-types.md "Required fields"); never a checkbox.
   required?: boolean;
@@ -104,6 +108,8 @@ export interface CustomFieldEdit {
   // A Formula's expression (field names) and result kind.
   formula?: string;
   result?: string;
+  // 'percent' draws its share as a Percent field is, 'number' as text again.
+  showAs?: string;
   onCard?: boolean;
   // true makes it required, false optional again.
   required?: boolean;
@@ -267,6 +273,12 @@ function editedCustom(
     next.calculation = calculationNamed(field.label, edit.calculation);
   }
   withFormula(next, edit, formulas, field.formula === undefined);
+  // A Child Count, or a Formula whose result is no longer a Percent, is no share: it stops showing as a Percent.
+  if (!canShowAsPercent(next)) delete next.showAs;
+  if (edit.showAs !== undefined) {
+    if (showAsNamed(next, edit.showAs)) next.showAs = 'percent';
+    else delete next.showAs;
+  }
   if (edit.onCard === true) next.onCard = true;
   if (edit.onCard === false) delete next.onCard;
   if (edit.required === true) next.required = requirable(field);
@@ -395,6 +407,7 @@ function customOf(
     const code = currencyOf(input.currency);
     if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
+  if (input.showAs !== undefined && showAsNamed(field, input.showAs)) field.showAs = 'percent';
   if (input.onCard) field.onCard = true;
   if (input.required) field.required = requirable(field);
   if (input.notifies) field.notifies = notifiable(field);
@@ -459,6 +472,23 @@ function resolveFormulas(type: ItemTypeDef, formulas: PendingFormulas): ItemType
 // "a, b or c".
 const orList = (xs: readonly string[]) =>
   xs.length > 1 ? `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}` : xs.join('');
+
+// Whether `showAs` asks for a Percent: 'percent' (or "Percent Bar"), on a field whose result is a share; 'number'
+// asks for text. Anything else, or a Percent asked of a field that gives no share, is refused.
+function showAsNamed(
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'result' | 'label'>,
+  named: string,
+): boolean {
+  const key = named.toLowerCase().replace(/[^a-z]/g, '');
+  if (key === 'number' || key === 'text') return false;
+  if (key !== 'percent' && key !== 'percentbar')
+    throw invalid(`"${named}" is not a way to show a field: give percent or number.`);
+  if (!canShowAsPercent(field))
+    throw invalid(
+      `"${field.label}" can't show as a percent: only a share, like Children Done or a Percent formula, can.`,
+    );
+  return true;
+}
 
 // A calculation as an agent names it: its id (`childCount`) or its name ("Child Count"), any case or spacing.
 const calcKey = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');

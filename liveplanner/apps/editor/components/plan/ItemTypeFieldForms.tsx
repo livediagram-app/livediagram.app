@@ -16,6 +16,7 @@ import {
   type Calculation,
   canBeRequired,
   isFormulaField,
+  canShowAsPercent,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
@@ -54,6 +55,7 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   longtext: 'Long Text',
   number: 'Number',
   currency: 'Currency',
+  percent: 'Percent',
   date: 'Date',
   checkbox: 'Checkbox',
   link: 'Link',
@@ -158,11 +160,16 @@ const CALCULATION_LINES: Record<Calculation, string> = {
 
 // The patch picking a calculation makes: a Formula's settings go with any other (item-types.md "Formula fields").
 export function calculationPatch(calculation: Calculation): Partial<CustomFieldDef> {
+  // A new Formula gives a Number until its Result is picked, so it shows no share yet.
   if (calculation === 'formula') {
     track('Plan', 'Changed', 'FieldFormula');
-    return { calculation };
+    return { calculation, showAs: undefined };
   }
-  return { calculation, formula: undefined, result: undefined, currency: undefined };
+  const off = { calculation, formula: undefined, result: undefined, currency: undefined };
+  // A Child Count is no share, so it stops showing as a Percent.
+  return canShowAsPercent({ kind: 'calculated', calculation })
+    ? off
+    : { ...off, showAs: undefined };
 }
 
 // A Calculated field's calculation (docs/specs/026-plan/item-types.md "Calculated fields"): the fixed menu, with what
@@ -217,6 +224,41 @@ export function RequiredSwitch({
     >
       Required
     </SwitchRow>
+  );
+}
+
+// Show as Percent Bar (docs/specs/026-plan/item-types.md "Percent"): a switch on a worked-out share (a Children Done),
+// with its line under it; none for a field whose result is no share. Off is stored as absent.
+export const SHOW_AS_PERCENT_LINE = 'Draw the share as a bar, like a Percent field.';
+export function ShowAsPercentSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'> &
+    Partial<Pick<CustomFieldDef, 'result'>>;
+  onChange: (showAs: 'percent' | undefined) => void;
+}) {
+  const lineId = useId();
+  if (!canShowAsPercent(field)) return null;
+  const on = field.showAs === 'percent';
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={on}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldShowAsPercent');
+          onChange(on ? undefined : 'percent');
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Show as Percent Bar
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {SHOW_AS_PERCENT_LINE}
+      </p>
+    </div>
   );
 }
 
@@ -356,6 +398,7 @@ export function CustomFieldForm({
           }
         />
       ) : null}
+      <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
       {hasOptions(field.kind) ? (
         <TextArea
           aria-label="Options, one a line"

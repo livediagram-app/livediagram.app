@@ -32,6 +32,7 @@ import {
   childIndexOf,
   doneStatusesOf,
   hasCalculatedFields,
+  showsAsPercent,
   typeIn,
   fieldCardIds,
   fieldPeople,
@@ -105,6 +106,8 @@ export interface ListedType {
     formula?: string;
     result?: string;
     formulaError?: string;
+    // A share drawn as a Percent field is (docs/specs/026-plan/item-types.md "Percent").
+    showAs?: 'percent';
     readOnly?: true;
     onCard?: boolean;
     // A card of the type must have a value for it (docs/specs/026-plan/item-types.md "Required fields").
@@ -267,8 +270,10 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.linkType ? { linkType: f.linkType, linkTypes: linkTypesOf(f) } : {}),
       ...(f.kind === 'currency' ? { currency: f.currency ?? CURRENCY_DEFAULT } : {}),
       ...(f.kind === 'rating' ? { scale: ratingScaleOf(f) } : {}),
-      ...(f.kind === 'calculated' ? { calculation: f.calculation, readOnly: true as const } : {}),
+      ...(f.kind === 'calculated' ? { calculation: f.calculation } : {}),
       ...(isFormulaField(f) ? listedFormula(f, t) : {}),
+      ...(f.kind === 'calculated' && showsAsPercent(f) ? { showAs: 'percent' as const } : {}),
+      ...(f.kind === 'calculated' ? { readOnly: true as const } : {}),
       ...(f.onCard ? { onCard: true } : {}),
       ...(f.required ? { required: true } : {}),
       ...(f.notifies ? { notifies: true } : {}),

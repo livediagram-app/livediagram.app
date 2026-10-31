@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES, presetSetup, type Item, type ItemTypeDef } from '@liveplanner/items';
-import { planPalette } from './plan-palette';
+import { PLAN_PERCENT_BAR, planPalette, planPercentInks } from './plan-palette';
 import { planCardFace } from './svg-render-plan-card';
 import { PLAN_LANE_HEAD_H, planBoardLayout } from './plan-board-layout';
 import { svgBoxed } from './svg-render';
@@ -342,5 +342,93 @@ describe('a Calculated field in an export', () => {
     const svg = svgBoxed(board, { items, itemTypes: all });
     expect(svg).toContain('Stories: 2');
     expect(svg).toContain('Progress: 50%');
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Percent": exports draw the bar the card face draws.
+describe('a Percent in an export', () => {
+  const work: ItemTypeDef = {
+    ...task,
+    id: 'work',
+    label: 'Work',
+    custom: [
+      { id: 'f-progress', label: 'Progress', kind: 'percent' },
+      {
+        id: 'f-done',
+        label: 'Done',
+        kind: 'calculated',
+        calculation: 'childrenDone',
+        showAs: 'percent',
+      },
+      { id: 'f-epic', label: 'Epic', kind: 'card', linkType: 'work' },
+    ],
+    fields: ['title', 'status', 'f-progress', 'f-done', 'f-epic'],
+    display: { detailed: { body: ['f-progress', 'f-done'] } },
+  };
+  const all = [...ITEM_TYPES, work];
+  const inks = planPercentInks(palette);
+  const bars = (svg: string) =>
+    [
+      ...svg.matchAll(
+        /<rect x="[\d.]+" y="[\d.]+" width="([\d.]+)" height="4" rx="2" fill="([^"]+)"/g,
+      ),
+    ].map((m) => [Number(m[1]), m[2]]);
+  const face = (fields: Item['fields'], w = 260, types = all) =>
+    planCardFace(item('w', { title: 'A', status: 'todo', ...fields }, { type: 'work' }), 0, 0, w, {
+      palette,
+      types,
+    }).svg;
+
+  it('draws its name, a track with the share filled, and the share', () => {
+    const svg = face({ 'f-progress': 25 });
+    expect(svg).toContain('>Progress</text>');
+    expect(svg).toContain('>25%</text>');
+    expect(bars(svg)).toEqual([
+      [PLAN_PERCENT_BAR.width, inks.track],
+      [8, inks.fill],
+    ]);
+  });
+
+  it('draws 0% as an empty track, a stray value held to 100%, and nothing with no value', () => {
+    expect(bars(face({ 'f-progress': 0 }))).toEqual([[PLAN_PERCENT_BAR.width, inks.track]]);
+    expect(face({ 'f-progress': 140 })).toContain('>100%</text>');
+    expect(face({})).not.toContain('Progress');
+  });
+
+  it('draws a Children Done shown as a Percent as its bar, from the board’s done columns', () => {
+    const parent = item('p1', { title: 'Parent', status: 'todo' }, { type: 'work' });
+    const items = new Map(
+      [
+        parent,
+        item('c1', { title: 'One', status: 'done', 'f-epic': 'p1' }, { type: 'work' }),
+        item('c2', { title: 'Two', status: 'todo', 'f-epic': 'p1' }, { type: 'work' }),
+      ].map((i) => [i.id, i]),
+    );
+    const svg = planCardFace(parent, 0, 0, 260, {
+      palette,
+      types: all,
+      items,
+      isDone: (s) => s === 'done',
+    }).svg;
+    expect(svg).toContain('>Done</text>');
+    expect(svg).toContain('>50%</text>');
+    expect(bars(svg)).toContainEqual([16, inks.fill]);
+    // Without the done columns it draws nothing, never a wrong share.
+    expect(planCardFace(parent, 0, 0, 260, { palette, types: all, items }).svg).not.toContain(
+      '>Done<',
+    );
+  });
+
+  it('keeps the bar and the share on a narrow card, shortening the name', () => {
+    const long: ItemTypeDef = {
+      ...work,
+      custom: [
+        { id: 'f-progress', label: 'A very long progress name', kind: 'percent' },
+        ...work.custom!.slice(1),
+      ],
+    };
+    const svg = face({ 'f-progress': 60 }, 120, [...ITEM_TYPES, long]);
+    expect(svg).toContain('>60%</text>');
+    expect(svg).toContain('…');
   });
 });

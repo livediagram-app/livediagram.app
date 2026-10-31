@@ -7,6 +7,7 @@ import {
   RATING_FIELD_SCALE_DEFAULT,
   currencyText,
   ratingText,
+  canShowAsPercent,
   type CustomFieldDef,
   type Calculation,
   type CustomFieldKind,
@@ -33,6 +34,7 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { PersonDisc } from './PersonDisc';
 import { LabelChips } from './plan-card-parts';
 import { planColourName } from './ColourSwatches';
+import { PercentReading } from './PercentBar';
 
 const TypeIcon = lucideGlyph(lucideType, 16);
 const HashIcon = lucideGlyph(lucideHash, 16);
@@ -53,6 +55,7 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   longtext: <PlanTypeGlyph glyph="project" size={16} />,
   number: <HashIcon />,
   currency: <PlanTypeGlyph glyph="coin" size={16} />,
+  percent: <PlanTypeGlyph glyph="percent" size={16} />,
   date: <PlanTypeGlyph glyph="calendar" size={16} />,
   checkbox: <PlanTypeGlyph glyph="task" size={16} />,
   link: <LinkIcon />,
@@ -108,6 +111,7 @@ export function fieldIconOf(
 
 const SAMPLE_PERSON = { id: 'sample', name: 'Sam Rivera', color: '#7c3aed' };
 const SAMPLE_COLOUR = '#0d9488';
+const SAMPLE_PERCENT = 40;
 
 // A sample of each kind, drawn as the card's panel draws a value (quietly: it is only a picture).
 function SampleValue({
@@ -117,6 +121,7 @@ function SampleValue({
   currency,
   scale,
   calculation,
+  showAs,
 }: {
   kind: CustomFieldKind;
   options: readonly string[];
@@ -124,6 +129,7 @@ function SampleValue({
   currency: string | undefined;
   scale: number | undefined;
   calculation: Calculation | undefined;
+  showAs: 'percent' | undefined;
 }) {
   const box =
     'rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -140,6 +146,9 @@ function SampleValue({
       return <div className={`${box} w-20 tabular-nums`}>42</div>;
     case 'currency':
       return <div className={`${box} w-28 tabular-nums`}>{currencyText(12500, currency)}</div>;
+    // The panel's bar at a sample share (docs/specs/026-plan/item-types.md "Percent").
+    case 'percent':
+      return <PercentReading value={SAMPLE_PERCENT} />;
     case 'email':
       return <span className="text-brand-700 underline dark:text-brand-300">sam@example.com</span>;
     case 'date':
@@ -190,7 +199,10 @@ function SampleValue({
         </div>
       );
     case 'calculated':
-      // A Calculated field's value, worked out and read-only (docs/specs/026-plan/item-types.md "Calculated fields").
+      // A Calculated field's value, worked out and read-only (docs/specs/026-plan/item-types.md "Calculated fields"):
+      // the Percent bar when a share is shown as one.
+      if (showAs === 'percent' && canShowAsPercent({ kind, calculation }))
+        return <PercentReading value={SAMPLE_PERCENT} />;
       return (
         <span className="text-[13px] tabular-nums text-slate-700 dark:text-slate-200">
           {calculation === 'childrenDone' ? '40%' : '3'}
@@ -253,6 +265,7 @@ export function CustomFieldPreview({
   currency,
   scale,
   calculation,
+  showAs,
   required,
 }: {
   label: string;
@@ -266,6 +279,8 @@ export function CustomFieldPreview({
   scale?: number | undefined;
   // A Calculated field's calculation.
   calculation?: Calculation | undefined;
+  // A share drawn as a Percent field is.
+  showAs?: 'percent' | undefined;
   // Drawn with the required mark.
   required?: boolean | undefined;
 }) {
@@ -293,6 +308,7 @@ export function CustomFieldPreview({
             currency={currency}
             scale={scale}
             calculation={calculation}
+            showAs={showAs}
           />
         </ItemDetailsRow>
       </div>

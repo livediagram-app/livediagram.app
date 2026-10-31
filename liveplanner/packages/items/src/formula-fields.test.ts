@@ -25,6 +25,7 @@ import type { Item } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { ALI, SAM, item } from './test-items';
 import { ITEM_TYPE_CATALOGUE_VERSION, validateItemTypeCatalogue } from './type-catalogue';
+import { canShowAsPercent, percentShown, showsAsPercent } from './percent-fields';
 import { applyCardTypeChanges } from './type-changes';
 import { calculatedWritten } from './write-checks';
 
@@ -529,6 +530,63 @@ describe('agents write formulas by name', () => {
       [],
     );
     expect(removed.ok).toBe(true);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Percent" (Shown as a Percent): a Formula with a Percent result is a share.
+describe('a Percent result shown as a Percent', () => {
+  const small: ItemTypeDef = {
+    ...deal,
+    fields: ['title', 'status', 'f-budget', 'f-spent', 'f-left', 'f-share'],
+    custom: ['f-budget', 'f-spent', 'f-left', 'f-share'].map(def),
+  };
+  const base = { version: ITEM_TYPE_CATALOGUE_VERSION, types: [small] };
+  const edit = (editCustom: Record<string, unknown>[]) =>
+    applyCardTypeChanges(base, [{ op: 'set', type: 'Deal', editCustom: editCustom as never }], []);
+  const custom = (out: ReturnType<typeof edit>) => (out.ok ? out.catalogue!.types[0]!.custom! : []);
+
+  it('may show as a Percent, and draws its share held to 0..100', () => {
+    const share = { ...def('f-share'), showAs: 'percent' as const };
+    expect(canShowAsPercent(share)).toBe(true);
+    expect(canShowAsPercent(def('f-left'))).toBe(false);
+    expect(showsAsPercent(share)).toBe(true);
+    expect(percentShown(share, 140)).toBe(100);
+  });
+
+  it('takes showAs from agents with a Percent result, refuses it on another, and drops it when the result changes', () => {
+    const on = edit([{ field: 'Share', showAs: 'percent' }]);
+    expect(custom(on).find((c) => c.id === 'f-share')!.showAs).toBe('percent');
+    expect(edit([{ field: 'Left', showAs: 'percent' }])).toMatchObject({
+      ok: false,
+      message: expect.stringContaining('only a share, like Children Done or a Percent formula'),
+    });
+    // Made a Percent and shown as one in the same edit.
+    const both = edit([{ field: 'Left', result: 'percent', showAs: 'percent' }]);
+    expect(custom(both).find((c) => c.id === 'f-left')!.showAs).toBe('percent');
+    const later = applyCardTypeChanges(
+      on.ok ? on.catalogue : null,
+      [{ op: 'set', type: 'Deal', editCustom: [{ field: 'Share', result: 'number' }] }],
+      [],
+    );
+    expect(custom(later).find((c) => c.id === 'f-share')!.showAs).toBe(undefined);
+  });
+
+  it('keeps a stored showAs only on a Percent result', () => {
+    const read = (result: string) =>
+      validateItemTypeCatalogue({
+        version: ITEM_TYPE_CATALOGUE_VERSION,
+        types: [
+          {
+            ...small,
+            custom: [{ ...def('f-share'), result, showAs: 'percent' }],
+            fields: ['title', 'status', 'f-share'],
+          },
+        ],
+      });
+    const percent = read('percent');
+    expect(percent.ok && percent.catalogue.types[0]!.custom![0]!.showAs).toBe('percent');
+    const text = read('text');
+    expect(text.ok && text.catalogue.types[0]!.custom![0]!.showAs).toBe(undefined);
   });
 });
 

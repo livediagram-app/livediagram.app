@@ -181,8 +181,8 @@ export const changeBoardShape = {
         field: z
           .string()
           .describe(
-            'A field by name or id: Priority, Estimate, Start Date, Due Date, Created At, Last Edited At, or a number, currency, date, ' +
-              'rating or choice field ("Value").',
+            'A field by name or id: Priority, Estimate, Start Date, Due Date, Created At, Last Edited At, or a number, currency, percent, ' +
+              'date, rating or choice field ("Value").',
           ),
         direction: z
           .enum(['ascending', 'descending'])
@@ -256,6 +256,14 @@ const resultArg = z
     `A formula field’s result: ${FORMULA_RESULTS.join(', ')} (number when left out); currency takes currency.`,
   );
 
+// Show As (docs/specs/026-plan/item-types.md "Percent"): a worked-out share drawn as a Percent field is.
+const showAsArg = z
+  .enum(['percent', 'number'])
+  .describe(
+    'A calculated childrenDone field, or a formula field whose result is percent, only: percent draws its share ' +
+      'as a percent field’s bar, number as text ("40%", the default).',
+  );
+
 // Notifies (docs/specs/026-plan/item-types.md "Notifies"): a person field, and the Assignee, telling their person.
 const notifiesArg = z
   .boolean()
@@ -279,7 +287,8 @@ const customField = z.object({
     .enum(CUSTOM_FIELD_KINDS)
     .describe(
       'text (one line), longtext (rich paragraphs, in a panel tab; written as Markdown), number, currency (an amount in the field’s ' +
-        'currency, shown as "£12,500"), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
+        'currency, shown as "£12,500"), percent (how far along: a whole number from 0 to 100, ' +
+        'drawn as a bar; "40%" is taken too, and a value outside 0 to 100 is refused), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
         'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
         'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12", or several ' +
         'with multiple), ' +
@@ -318,6 +327,7 @@ const customField = z.object({
   calculation: calculationArg.optional(),
   formula: formulaArg.optional(),
   result: resultArg.optional(),
+  showAs: showAsArg.optional(),
   onCard: z
     .boolean()
     .optional()
@@ -392,6 +402,7 @@ const customFieldEdit = z.object({
   calculation: calculationArg.optional(),
   formula: formulaArg.optional(),
   result: resultArg.optional(),
+  showAs: showAsArg.optional(),
   onCard: z.boolean().optional(),
   required: z
     .boolean()
@@ -499,8 +510,8 @@ const listedCustom = z.object({
   kind: z
     .string()
     .describe(
-      'text, longtext, number, currency, date, checkbox, link, email, choice, multichoice, rating, card, ' +
-        'calculated, person, labels, colour, checklist or image.',
+      'text, longtext, number, currency, percent, date, checkbox, link, email, choice, multichoice, rating, ' +
+        'card, calculated, person, labels, colour, checklist or image.',
     ),
   options: z.array(z.string()).optional().describe('A choice or multichoice field’s options.'),
   scale: z.number().optional().describe('A rating field’s top score.'),
@@ -527,6 +538,12 @@ const listedCustom = z.object({
     .optional()
     .describe(
       'Why a formula field stopped working (a field it read was deleted): its values read null.',
+    ),
+  showAs: z
+    .literal('percent')
+    .optional()
+    .describe(
+      'A calculated field drawn as a percent field’s bar; its value is still a whole percentage.',
     ),
   readOnly: z
     .literal(true)

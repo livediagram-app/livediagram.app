@@ -96,7 +96,7 @@ describe('type ls and apply', () => {
   // docs/specs/026-plan/item-types.md "Formula fields": a Formula lists with its expression by names.
   it('lists a Formula with its expression, and one not written yet without', async () => {
     const deal = {
-      ...ITEM_TYPES[0]!,
+      ...ITEM_TYPES[0],
       id: 'deal',
       label: 'Deal',
       fields: ['title', 'f-budget', 'f-twice', 'f-blank'],

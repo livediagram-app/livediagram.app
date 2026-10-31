@@ -26,6 +26,7 @@ import {
 import type { ItemMove } from './item';
 import { CUSTOM_FIELD_ID_PATTERN, typeIn } from './type-catalogue';
 import { isNotified } from './notify-fields';
+import { percentText, percentValue } from './percent-fields';
 import { boardSortComparator, normaliseBoardSort, type BoardSortLevel } from './board-sort';
 import {
   ITEM_TYPES,
@@ -251,7 +252,7 @@ export interface LaneHead {
 
 // How a field lane groups (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
 export type LaneFieldKind =
-  'choice' | 'checkbox' | 'number' | 'date' | 'text' | 'labels' | 'card' | 'person';
+  'choice' | 'checkbox' | 'number' | 'percent' | 'date' | 'text' | 'labels' | 'card' | 'person';
 export interface LaneField {
   id: string;
   label: string;
@@ -284,6 +285,8 @@ const GROUPING_KINDS = new Set<string>([
   'choice',
   'checkbox',
   'number',
+  // A share groups as a Number, a row per share (docs/specs/026-plan/item-types.md "Percent").
+  'percent',
   'date',
   'text',
   'card',
@@ -340,6 +343,7 @@ function laneValue(
   const v = item.fields[field.id];
   if (field.kind === 'checkbox') return v === true;
   if (field.kind === 'number') return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+  if (field.kind === 'percent') return typeof v === 'number' ? percentValue(v) : undefined;
   if (typeof v !== 'string') return undefined;
   const s = field.kind === 'text' ? v.trim() : v;
   return s ? s : undefined;
@@ -419,7 +423,14 @@ function fieldLane(field: LaneField, value: string | number | boolean | undefine
   const base = laneBase(field);
   if (value === undefined)
     return { key: NO_LANE, label: `No ${field.label}`, value: null, ...base };
-  const label = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value);
+  const label =
+    typeof value === 'boolean'
+      ? value
+        ? 'Yes'
+        : 'No'
+      : field.kind === 'percent' && typeof value === 'number'
+        ? percentText(value)
+        : String(value);
   return { key: `f:${JSON.stringify(value)}`, label, value, ...base };
 }
 
@@ -715,7 +726,7 @@ const byText = (a: unknown, b: unknown) =>
 // (ISO strings sort as dates). Text and labels: A to Z ignoring case.
 function fieldLaneOrder(field: LaneField, a: unknown, b: unknown): number {
   if (field.kind === 'checkbox') return Number(b === true) - Number(a === true);
-  if (field.kind === 'number') return Number(a) - Number(b);
+  if (field.kind === 'number' || field.kind === 'percent') return Number(a) - Number(b);
   if (field.kind === 'date') return String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0;
   if (field.kind === 'choice') {
     const opts = field.options ?? [];

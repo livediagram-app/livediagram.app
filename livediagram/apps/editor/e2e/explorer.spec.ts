@@ -35,6 +35,18 @@ async function showView(page: Page, name: string): Promise<void> {
 const row = (page: Page, title: string) =>
   page.locator('main').getByRole('link', { name: title, exact: true });
 
+// The Explorer shows a change at once and writes it to the index behind it (optimistic). A step that then leaves the
+// page waits until the index has taken the write: a navigation cancels a write still in flight, and the next page's
+// list, read before the write lands, never shows it. A rename says nothing when it lands, so its answer is waited
+// for. Asked before the step acts.
+const indexWrite = (page: Page, method: string, path: string) =>
+  page.waitForResponse(
+    (r) =>
+      r.request().method() === method &&
+      new URL(r.url()).pathname === `/api/index${path}` &&
+      r.ok(),
+  );
+
 async function openExplorerPanel(page: Page) {
   await page.getByRole('button', { name: 'Explorer', exact: true }).click();
   const current = page.getByRole('region', { name: 'Current canvas' });
@@ -62,8 +74,10 @@ test('the panel names the open canvas, and the Explorer opens it again', async (
   await current.getByRole('button', { name: /^Rename / }).click();
   const input = current.getByRole('textbox', { name: /^Rename / });
   await input.fill('Payments flow');
+  const renamed = indexWrite(page, 'PATCH', `/items/${id}`);
   await input.press('Enter');
   await expect(current.getByRole('button', { name: 'Rename Payments flow' })).toBeVisible();
+  await renamed;
 
   // The Explorer lists it in My Work under that name, and its row is the canvas's address in the editor.
   await page.goto('/explorer');

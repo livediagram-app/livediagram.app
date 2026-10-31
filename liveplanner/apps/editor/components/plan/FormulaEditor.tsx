@@ -61,7 +61,7 @@ export function FormulaEditor({
 }: {
   field: FormulaFieldDraft;
   draft: FormulaDraft;
-  onChange: (patch: Partial<Pick<CustomFieldDef, 'formula' | 'result'>>) => void;
+  onChange: (patch: Partial<Pick<CustomFieldDef, 'formula' | 'result' | 'showAs'>>) => void;
   // An existing field keeps its last working formula while the box holds one that doesn't; a new one has none.
   keepLastWorking: boolean;
   // The Currency menu, for a Currency result.
@@ -128,7 +128,11 @@ export function FormulaEditor({
             value={result}
             onChange={(e) => {
               const next = e.target.value as FormulaResult;
-              onChange({ result: next === 'number' ? undefined : next });
+              // Only a Percent result is a share: any other stops showing as a Percent bar.
+              onChange({
+                result: next === 'number' ? undefined : next,
+                ...(next === 'percent' ? {} : { showAs: undefined }),
+              });
             }}
           >
             {FORMULA_RESULTS.map((r) => (

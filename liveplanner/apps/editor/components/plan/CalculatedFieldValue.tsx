@@ -1,33 +1,29 @@
 'use client';
 
 // A Calculated field in the card panel (docs/specs/026-plan/item-types.md "Calculated fields"): its worked-out value,
-// read-only, never an input. Children Done (and a Formula whose result is a Percent) adds a thin bar of the share; a
-// card without children reads "No linked cards", a Formula with nothing to work out "No value", and a Formula that
-// can't be worked out says why in place of the value ("Formula fields").
+// read-only, never an input. Children Done adds a thin bar of the share done, and a share shown as a Percent (Children
+// Done, or a Formula with a Percent result) draws the Percent field's bar; a card without children reads "No linked
+// cards", a Formula with nothing to work out "No value", and a Formula that can't be worked out says why in place of
+// the value ("Formula fields").
 import {
   calculatedText,
   calculationOf,
-  formulaResultOf,
   isFormulaField,
+  percentShown,
   type CustomFieldDef,
   type FormulaOutcome,
 } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideCalculator, lucideTriangleAlert } from '@liveworkspace/icons/lucide';
+import { PercentReading } from './PercentBar';
 
 const CalculatorIcon = lucideGlyph(lucideCalculator, 13);
 const AlertIcon = lucideGlyph(lucideTriangleAlert, 13);
 
-type ValueField = Pick<CustomFieldDef, 'kind' | 'calculation' | 'label' | 'result' | 'currency'>;
-
-// The share a value draws as a bar, held to 0..100; null when the field shows no share.
-function shareOf(field: ValueField, value: unknown): number | null {
-  if (typeof value !== 'number') return null;
-  const share =
-    calculationOf(field) === 'childrenDone' ||
-    (isFormulaField(field) && formulaResultOf(field) === 'percent');
-  return share ? Math.max(0, Math.min(100, value)) : null;
-}
+type ValueField = Pick<
+  CustomFieldDef,
+  'kind' | 'calculation' | 'label' | 'result' | 'currency' | 'showAs'
+>;
 
 export function CalculatedFieldValue({
   id,
@@ -50,8 +46,20 @@ export function CalculatedFieldValue({
         <span className="min-w-0 break-words">{outcome.error}</span>
       </output>
     );
-  const text = calculatedText(field, outcome.value);
-  const share = shareOf(field, outcome.value);
+  const value = outcome.value;
+  const text = calculatedText(field, value);
+  // A share shown as a Percent draws the Percent field's bar (docs/specs/026-plan/item-types.md "Percent").
+  const asPercent = typeof value === 'number' ? percentShown(field, value) : undefined;
+  if (asPercent !== undefined)
+    return (
+      <div id={id} className="flex min-h-7 items-center gap-2">
+        <span className="flex shrink-0 text-slate-400 dark:text-slate-400" aria-hidden>
+          <CalculatorIcon />
+        </span>
+        <PercentReading value={asPercent} />
+      </div>
+    );
+  const share = calculationOf(field) === 'childrenDone' && typeof value === 'number' ? value : null;
   return (
     <output
       id={id}

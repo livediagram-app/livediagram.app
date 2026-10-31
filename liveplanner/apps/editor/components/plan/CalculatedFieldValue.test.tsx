@@ -51,7 +51,7 @@ describe('CalculatedFieldValue', () => {
   });
 
   // docs/specs/026-plan/item-types.md "Formula fields".
-  it('shows a Formula’s value as its result, a Percent with its bar, and why it can’t be worked out', () => {
+  it('shows a Formula’s value as its result, a Percent bar when it says so, and why it can’t be worked out', () => {
     const share = {
       label: 'Share',
       kind: 'calculated' as const,
@@ -62,7 +62,17 @@ describe('CalculatedFieldValue', () => {
       <CalculatedFieldValue id="v" field={share} outcome={{ ok: true, value: 140 }} />,
     );
     expect(screen.getByText('140%')).toBeTruthy();
-    expect((container.querySelector('.bg-brand-500') as HTMLElement).style.width).toBe('100%');
+    expect(container.querySelector('.bg-brand-500')).toBeNull();
+    // Shown as a Percent, it draws the Percent field's bar, held to 0..100.
+    rerender(
+      <CalculatedFieldValue
+        id="v"
+        field={{ ...share, showAs: 'percent' }}
+        outcome={{ ok: true, value: 140 }}
+      />,
+    );
+    expect(container.querySelector('#v output')?.textContent).toBe('100%');
+    expect((container.querySelector('.bg-brand-600') as HTMLElement).style.width).toBe('100%');
     rerender(<CalculatedFieldValue id="v" field={share} outcome={{ ok: true, value: null }} />);
     expect(screen.getByText('No value')).toBeTruthy();
     rerender(

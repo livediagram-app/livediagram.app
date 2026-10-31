@@ -37,6 +37,21 @@ async function rowAction(page: Page, title: string, action: string): Promise<voi
   await page.getByRole('menuitem', { name: action, exact: true }).click();
 }
 
+// The Explorer shows a change at once and writes it to the index behind it (optimistic). A step that then leaves the
+// page, or reads another list, waits until the index has taken the write: a navigation cancels a write still in
+// flight, and a list read before the write lands never shows it. A move, a delete and a restore say so in a toast;
+// a rename, a star and the editor's open say nothing, so their answer is waited for. Asked before the step acts.
+const indexWrite = (page: Page, method: string, path: string) =>
+  page.waitForResponse(
+    (r) =>
+      r.request().method() === method &&
+      new URL(r.url()).pathname === `/api/index${path}` &&
+      r.ok(),
+  );
+
+const toast = (page: Page, text: string) =>
+  page.getByRole('status').getByText(text, { exact: true });
+
 test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a design', async ({
   page,
   pageErrors,
@@ -79,20 +94,26 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await rowAction(page, firstTitle, 'Rename');
   const input = page.getByRole('textbox', { name: `Rename ${firstTitle}` });
   await input.fill('Roadmap');
+  const renamed = indexWrite(page, 'PATCH', `/items/${id}`);
   await input.press('Enter');
   await expect(row(page, 'Roadmap')).toBeVisible();
+  await renamed;
 
   // Open: the row is the design's address in the editor.
+  const opened = indexWrite(page, 'POST', `/items/${id}/open`);
   await row(page, 'Roadmap').click();
   await page.waitForURL(new RegExp(`/design/${id}`));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
+  await opened;
 
   // The open is recorded, so it is in Recent.
   await openView(page, 'recent', 'Recent');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // Star it: Favourites lists it.
+  const starred = indexWrite(page, 'PUT', `/favourites/${id}`);
   await rowAction(page, 'Roadmap', 'Add to Favourites');
+  await starred;
   await openView(page, 'favourites', 'Favourites');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
@@ -107,17 +128,20 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await move.getByRole('button', { name: 'Move Here' }).click();
   await expect(move).toBeHidden();
   await expect(row(page, 'Roadmap')).toBeHidden();
+  await expect(toast(page, 'Moved “Roadmap” to Q3.')).toBeVisible();
   await page.locator('main').getByText('Q3', { exact: true }).first().click();
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // Delete it: it goes to the Trash, and Restore brings it back.
   await rowAction(page, 'Roadmap', 'Delete Design');
   await expect(row(page, 'Roadmap')).toBeHidden();
+  await expect(toast(page, 'Moved “Roadmap” to the Trash.')).toBeVisible();
   await showView(page, 'Trash');
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeVisible();
   // A Trash row has its own Restore button, no row menu.
   await page.locator('main').getByRole('button', { name: 'Restore Roadmap', exact: true }).click();
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeHidden();
+  await expect(toast(page, '“Roadmap” restored.')).toBeVisible();
   await openView(page, 'recent', 'Recent');
   await expect(row(page, 'Roadmap')).toBeVisible();
 

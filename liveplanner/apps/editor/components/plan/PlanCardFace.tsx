@@ -34,6 +34,8 @@ import {
   isCustomCardField,
   calculatedText,
   FORMULA_ERROR_TEXT,
+  percentShown,
+  showsAsPercent,
   attachmentCover,
   itemAttachments,
   itemHasStamp,
@@ -45,6 +47,7 @@ import { customFieldText } from './custom-field-text';
 import { calculatedFieldOutcome } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
+import { PercentChip } from './PercentBar';
 import { LinkedNumbersPill } from './SeveralValuesPills';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
@@ -283,6 +286,25 @@ export function PlanCardFace({
           );
         // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
         if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
+        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields"); a Formula
+        // that can't be on this card reads "Error", its problem spoken with it and shown in the panel ("Formula
+        // fields").
+        const outcome =
+          def?.kind === 'calculated' && plan ? calculatedFieldOutcome(plan, def, item) : null;
+        // A Percent field, or a share shown as one, draws its bar (docs/specs/026-plan/item-types.md "Percent").
+        if (def && showsAsPercent(def) && outcome?.ok !== false) {
+          const share = percentShown(
+            def,
+            def.kind === 'calculated'
+              ? outcome?.ok && typeof outcome.value === 'number'
+                ? outcome.value
+                : null
+              : item.fields[def.id],
+          );
+          return share === undefined ? null : (
+            <PercentChip key={f} name={def.label} value={share} palette={palette} />
+          );
+        }
         // A Card field that holds several reads its linked cards' numbers (item-types.md "Holds Several").
         if (def?.kind === 'card' && holdsSeveral(def))
           return plan ? (
@@ -295,11 +317,6 @@ export function PlanCardFace({
               palette={palette}
             />
           ) : null;
-        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields"); a Formula
-        // that can't be on this card reads "Error", its problem spoken with it and shown in the panel ("Formula
-        // fields").
-        const outcome =
-          def?.kind === 'calculated' && plan ? calculatedFieldOutcome(plan, def, item) : null;
         if (def && outcome && !outcome.ok)
           return (
             <MetaPill
