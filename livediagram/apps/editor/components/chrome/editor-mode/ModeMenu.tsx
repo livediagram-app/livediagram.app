@@ -154,7 +154,7 @@ export function ModeMenu({
                     technology as the row's description everywhere. */}
                 <span
                   id={describedBy}
-                  className={`${fill ? '' : 'max-w-60'} text-xs font-normal leading-snug text-slate-500 sm:sr-only dark:text-slate-400`}
+                  className={`${fill ? '' : 'max-w-60'} text-xs font-normal leading-snug text-slate-600 sm:sr-only dark:text-slate-400`}
                 >
                   {editorModeDescription(option)}
                 </span>
