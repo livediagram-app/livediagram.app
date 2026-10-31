@@ -50,6 +50,8 @@ type EditorHeaderProps = {
   // Offline Mode (docs/specs/006-design/offline-mode.md): saved only in this browser. Flips the title badge
   // to "This Browser" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
+  // Listed in the public Community (docs/specs/025-community/community.md): the badge reads "Public".
+  community?: boolean;
   // Counterpart to showShare for visitors: when present we render a
   // "Make a copy" button that duplicates the design into the
   // visitor's own files (item #9 / docs/specs/015-api/api.md). Optional so the owner
@@ -81,6 +83,7 @@ export function EditorHeader({
   shareable,
   teamDesign = false,
   offline = false,
+  community = false,
   onMakeCopy,
   copying = false,
   readOnly = false,
@@ -171,6 +174,7 @@ export function EditorHeader({
                 shareable={shareable}
                 team={teamDesign}
                 offline={offline}
+                community={community}
                 onManage={showShare ? onOpenShare : undefined}
               />
               {rolePill ? <span className="ml-1 inline-flex">{rolePill}</span> : null}

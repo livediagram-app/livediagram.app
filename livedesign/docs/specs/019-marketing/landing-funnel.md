@@ -77,6 +77,7 @@ ingest drops.
 | `Status`    | `/status`                          | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                                        |
 | `Dashboard` | `/telemetry`                       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                                        |
 | `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                                        |
+| `Community` | `/community`, `/community/*`       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                                        |
 
 The slots:
 
@@ -84,6 +85,8 @@ The slots:
   pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
   bar has no Start Blank, so it never reports `HeaderBlank`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
+- `Community` ([Community](../025-community/community.md)) has the header slots only: its Share Your Own buttons open
+  Explorer Home rather than `/new`, so they are not funnel sources.
 - `Hero`: on a feature page, the category hero's start button.
 - `HeroSearch`: a template picked from the hero's search (`/new?template=<kind>`).
 - `HeroBlank`: **Start Blank** inside the hero's search bar (`/new?start=blank`).

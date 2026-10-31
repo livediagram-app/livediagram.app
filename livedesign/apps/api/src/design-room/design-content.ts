@@ -5,6 +5,7 @@
 // holds there stays as it is.
 
 import { remapTabLinks, type Element } from '@livedesign/design';
+import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { redactTabDataAuthors } from '../comments';
 import { servableImageIds } from '../db/image-grants';
 import { imageRefAddStatements } from '../db/image-refs';
@@ -253,11 +254,14 @@ export async function readContentTabRows(
 
 // The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only. `copierId`: who copies (null when the index did not say); anyone but the owner
 // copies the comments as the tab read serves them to them, every author id but their own blanked.
+// `community`: a copy through a Community post's open link (docs/specs/025-community/community.md) carries the
+// design without its comments or the people on its actions.
 export async function exportDesignCopy(
   env: DesignEnv,
   designId: string,
   onlyTabId: string | null,
   copierId: string | null,
+  community = false,
 ): Promise<DesignCopy | null> {
   const design = await env.DESIGN_DB.prepare(
     'SELECT opens_in, tab_kind, owner_id FROM design WHERE id = ?',
@@ -279,7 +283,11 @@ export async function exportDesignCopy(
       name: row.name,
       orderIndex: row.order_index,
       folder: row.folder,
-      data: redactAuthorsFor !== null ? redactTabDataAuthors(remapped, redactAuthorsFor) : remapped,
+      data: community
+        ? redactTabDataForCommunity(remapped).data
+        : redactAuthorsFor !== null
+          ? redactTabDataAuthors(remapped, redactAuthorsFor)
+          : remapped,
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       elementCount: row.element_count,
     };

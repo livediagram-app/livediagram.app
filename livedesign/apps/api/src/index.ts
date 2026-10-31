@@ -35,6 +35,7 @@ import { handleParticipants } from './routes/participants';
 import { handlePreferences } from './routes/preferences';
 import { handleFolders } from './routes/folders';
 import { handleShare } from './routes/share';
+import { handleCommunity } from './routes/community';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
 import { resolveWorkbenchSession } from './auth/workbench-session';
@@ -321,6 +322,8 @@ async function routeApiRequest(
       return await handleEvents(ctx);
     case 'share':
       return await handleShare(ctx);
+    case 'community':
+      return await handleCommunity(ctx);
     case 'images':
       return await handleImages(ctx);
     case 'designs':

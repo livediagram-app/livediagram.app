@@ -22,6 +22,8 @@ import {
   ALL_TIMING_TYPES,
   pascalToken,
   isValidTelemetryEvent,
+  COMMUNITY_CATEGORY_TYPES,
+  COMMUNITY_REPORT_REASONS,
 } from '@livedesign/api-schema';
 import { countedVerbs } from '@livedesign/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedesign/agent-verbs/mcp';
@@ -270,6 +272,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Uncaught.Design.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
+  // The Community's help deep links (docs/specs/025-community/community.md "Where Community is linked from"):
+  // COMMUNITY_HELP's two ids.
+  'packages/ui/src/community/CommunityHelpLink.tsx UI·Opened': {
+    values: ['community', 'finding-community-documents'],
+    open: SLUG_WHY,
+  },
   'packages/ui/src/page-view-tracker.tsx Page·View': {
     values: ['/', '/design', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
@@ -323,6 +331,20 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/app/embed/workbench/ExplorerHost.tsx Explorer·Selected': { values: LENS_FACETS },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
+  // Publishing to the Community: the post's category, as communityCategoryType.
+  // Through the Share dialog's Community tab (@liveworkspace/community-ui), bound in lib/community-share-host.tsx.
+  'apps/live/lib/community-share-host.tsx Community·Shared': { values: COMMUNITY_CATEGORY_TYPES },
+  'apps/live/lib/community-share-host.tsx Community·Changed': {
+    values: COMMUNITY_CATEGORY_TYPES,
+  },
+  // The Community app (docs/specs/025-community/community.md "Telemetry"): a report's reason as its closed type, and
+  // the gallery filter kinds its CommunitySelection union names.
+  'apps/community/lib/telemetry.ts Community·Reported': {
+    values: COMMUNITY_REPORT_REASONS.map((r) => r.type),
+  },
+  'apps/community/lib/telemetry.ts Community·Selected': {
+    values: tokensAfter(read('community/lib/telemetry.ts'), 'export type CommunitySelection', ';'),
+  },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
   'apps/live/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/live/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },

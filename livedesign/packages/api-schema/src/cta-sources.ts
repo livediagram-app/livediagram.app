@@ -60,6 +60,9 @@ export const CTA_SOURCES = {
   Status: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession'],
   Dashboard: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession'],
   Help: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession'],
+  // The Community app (docs/specs/025-community/community.md): its header. Its Share Your Own buttons open
+  // Explorer Home, not /new, so they are not funnel sources.
+  Community: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession'],
 } as const satisfies Record<string, readonly string[]>;
 
 export type CtaSurface = keyof typeof CTA_SOURCES;
@@ -133,6 +136,8 @@ export function ctaSurfaceOfPath(path: string): CtaSurface | null {
       return 'Dashboard';
     case 'help':
       return 'Help';
+    case 'community':
+      return 'Community';
     default:
       return null;
   }

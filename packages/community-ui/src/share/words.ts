@@ -34,5 +34,6 @@ export const COMMUNITY_APP_WORDS: Record<CommunityApp, CommunityWords> = {
     nouns: 'designs',
     showcase: 'design',
     showcases: 'designs',
+    cover: 'first page',
   },
 };

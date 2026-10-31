@@ -36,7 +36,22 @@ import type { DesignDTO } from './types';
 export function redactDesignForReader(liveDoc: DesignDTO, caller: string | null): DesignDTO {
   return caller && caller === liveDoc.ownerId
     ? liveDoc
-    : { ...liveDoc, ownerId: '', shareCode: null };
+    : { ...liveDoc, ownerId: '', shareCode: null, communityState: null };
+}
+
+// A Community visitor's copy (docs/specs/025-community/community.md "Viewing a post's design"), on top of the
+// reader redaction: the post names its author (or "Anonymous") itself, so the design carries nobody's name or
+// colour, and nothing about where it sits in its owner's library or came from. Comment threads and the people on
+// actions leave with each tab's read (@liveworkspace/community/app redactTabForCommunity); livedesign has no slide
+// deck, so there are no presenter notes to drop.
+export function redactDesignForCommunity(liveDoc: DesignDTO): DesignDTO {
+  return {
+    ...liveDoc,
+    ownerName: null,
+    ownerColor: null,
+    folderId: null,
+    source: null,
+  };
 }
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps

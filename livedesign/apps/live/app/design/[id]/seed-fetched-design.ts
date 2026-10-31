@@ -2,6 +2,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@livedesign/design';
 import type { LiveDoc } from '@livedesign/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
+import { setCommunityState } from '@/lib/community-state-store';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 import { placeholdersFromSummaries } from './editor-page-helpers';
@@ -122,6 +123,7 @@ export function makeSeedFetchedDesign(deps: {
     }
     setLoadedExistingDesign(true);
     setDesignShareable(fetched.shareable);
+    setCommunityState(fetched.id, fetched.communityState ?? null);
     setDesignTeamId(fetched.teamId ?? null);
     setDesignShareCode(fetched.shareCode);
     setDesignOwnerId(fetched.ownerId);
