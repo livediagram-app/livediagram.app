@@ -104,16 +104,16 @@ describe('the size pill', () => {
     expect(sizePillAt(b, 80, new Set(['top', 'bottom']))).toEqual({ x: 306, y: 146 });
   });
 
-  it('keeps the size pill and the distance pills inside the window', () => {
+  it('keeps the size pill and the distance pills inside the canvas, below the palette', () => {
     // A phone zoomed in on a full-width element put the pill past the window's edge (round 1 saw it clipped).
-    const view = { width: 390, height: 844 };
+    const view = { left: 0, top: 124, right: 390, bottom: 796 };
     const wide = { x: -40, y: 300, w: 470, h: 80 };
     expect(sizePillAt(wide, 64, new Set(['top', 'bottom']), view)).toEqual({ x: 318, y: 386 });
     expect(sizePillAt({ x: 100, y: -200, w: 80, h: 60 }, 64, new Set(['bottom']), view)).toEqual({
       x: 108,
-      y: 8,
+      y: 132,
     });
-    expect(keepPillOnScreen({ x: -30, y: 900 }, 40, view)).toEqual({ x: 8, y: 818 });
-    expect(keepPillOnScreen({ x: 100, y: 100 }, 40, view)).toEqual({ x: 100, y: 100 });
+    expect(keepPillOnScreen({ x: -30, y: 900 }, 40, view)).toEqual({ x: 8, y: 770 });
+    expect(keepPillOnScreen({ x: 100, y: 300 }, 40, view)).toEqual({ x: 100, y: 300 });
   });
 });

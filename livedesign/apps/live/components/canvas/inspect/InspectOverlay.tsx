@@ -12,6 +12,7 @@ import {
   type InspectLine,
   type InspectTarget,
 } from '@/lib/inspect-target';
+import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 
 // The measurement ink: a red that reads on white, grey and dark screens alike, apart from the brand-coloured
 // selection so a line is never mistaken for an outline.
@@ -155,7 +156,7 @@ export function sizePillAt(
   b: { x: number; y: number; w: number; h: number },
   w: number,
   measured: ReadonlySet<string>,
-  view?: { width: number; height: number },
+  view?: PillView,
 ): { x: number; y: number } {
   const at = !measured.has('bottom')
     ? { x: b.x + b.w / 2 - w / 2, y: b.y + b.h + 6 }
@@ -165,23 +166,37 @@ export function sizePillAt(
   return keepPillOnScreen(at, w, view);
 }
 
-// A pill never leaves the window: an element zoomed past a phone's edge, or wider than it, still shows its size
-// and distances, held 8px inside the window's edge.
+// A pill never leaves the canvas: an element zoomed past a phone's edge, or wider than it, still shows its size
+// and distances, held 8px inside the canvas's edges and below the palette strip (so never under the header).
 const PILL_INSET = 8;
+type PillView = { left: number; top: number; right: number; bottom: number };
 export function keepPillOnScreen(
   at: { x: number; y: number },
   w: number,
-  view?: { width: number; height: number },
+  view?: PillView,
 ): { x: number; y: number } {
   if (!view) return at;
-  const clamp = (v: number, max: number) => Math.max(PILL_INSET, Math.min(v, max - PILL_INSET));
-  return { x: clamp(at.x, view.width - w), y: clamp(at.y, view.height - PILL_H) };
+  const clamp = (v: number, min: number, max: number) =>
+    Math.max(min + PILL_INSET, Math.min(v, max - PILL_INSET));
+  return {
+    x: clamp(at.x, view.left, view.right - w),
+    y: clamp(at.y, view.top, view.bottom - PILL_H),
+  };
 }
 
-const windowSize = () =>
-  typeof window === 'undefined'
-    ? undefined
-    : { width: window.innerWidth, height: window.innerHeight };
+// The canvas's box on screen, less the palette strip along its top; the window when there is no canvas.
+function canvasView(): PillView | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const root = document.querySelector('[data-canvas-root]')?.getBoundingClientRect();
+  if (!root || root.width === 0)
+    return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+  return {
+    left: root.left,
+    top: root.top + toolbarTopClearancePx(1),
+    right: root.right,
+    bottom: root.bottom,
+  };
+}
 
 function SelectedOutline({
   b,
@@ -194,7 +209,7 @@ function SelectedOutline({
 }) {
   const label = `${inspectNumber(target.rect.width)} × ${inspectNumber(target.rect.height)}`;
   const w = pillWidth(label);
-  const at = sizePillAt(b, w, measured, windowSize());
+  const at = sizePillAt(b, w, measured, canvasView());
   return (
     <g>
       <rect {...rectAttrs(b)} fill="none" stroke="var(--color-brand-500)" strokeWidth={2} />
@@ -236,7 +251,7 @@ function MeasureLine({
   const mx = (x1 + x2) / 2;
   const my = (y1 + y2) / 2;
   const tick = 4;
-  const pill = keepPillOnScreen({ x: mx - w / 2, y: my - PILL_H / 2 }, w, windowSize());
+  const pill = keepPillOnScreen({ x: mx - w / 2, y: my - PILL_H / 2 }, w, canvasView());
   return (
     <g data-inspect-line={line.side}>
       <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={INSPECT_LINE_COLOUR} strokeWidth={1} />
