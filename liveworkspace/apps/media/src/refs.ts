@@ -45,11 +45,26 @@ export async function syncRefs(
   if (statements.length > 0) await db.batch(statements);
 }
 
-// Whether every app that can use the service has sent all its documents at least once. Until then an
-// unreported app reads as placing nothing, so the sweep must not run.
-export async function refsComplete(env: Env, apps: readonly MediaApp[]): Promise<boolean> {
-  if (apps.length === 0) return false;
+// An upload for a document (liveworkspace/docs/specs/006-media/media.md "Uploads"): that document places the image
+// from now on, until its own report says otherwise. New or deduped alike, so a document that never reports never
+// loses a picture it was uploaded for.
+export async function claimRef(
+  env: Env,
+  app: MediaApp,
+  document: string,
+  imageId: string,
+): Promise<void> {
+  await env.MEDIA_DB.prepare(
+    'INSERT OR IGNORE INTO refs (app, document, image_id) VALUES (?, ?, ?)',
+  )
+    .bind(app, document, imageId)
+    .run();
+}
+
+// Which of these apps (the ones that can use the service) have not yet sent every document at least once. An
+// unreported app reads as placing nothing, so the sweep keeps whatever that app could be placing.
+export async function pendingApps(env: Env, apps: readonly MediaApp[]): Promise<MediaApp[]> {
   const { results } = await env.MEDIA_DB.prepare('SELECT app FROM ref_sync').all<{ app: string }>();
   const done = new Set(results.map((r) => r.app));
-  return apps.every((app) => done.has(app));
+  return apps.filter((app) => !done.has(app));
 }

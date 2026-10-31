@@ -20,6 +20,8 @@ export type ItemFieldId =
   | 'start'
   | 'due'
   | 'checklist'
+  // Pictures on the card, one of them its cover (docs/specs/026-plan/items.md "Attachments").
+  | 'attachments'
   | 'votes'
   // A comment thread (docs/specs/026-plan/items.md "Comments"): the canvas's CommentThread, written only by the
   // comment writes.

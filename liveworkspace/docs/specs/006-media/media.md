@@ -74,8 +74,8 @@ set to `false`, `0` or `off`, every route answers 404.
 ## Uploads
 
 The body is the file's raw bytes. Headers: `Content-Type`, `Content-Length`, `X-Image-Width`,
-`X-Image-Height`, optionally `X-Image-Original-Name` (percent-encoded, cut to 200 characters) and
-`X-Image-Sha256`. The service refuses, cheapest first:
+`X-Image-Height`, optionally `X-Image-Original-Name` (percent-encoded, cut to 200 characters),
+`X-Image-Sha256` and `X-Media-Document`. The service refuses, cheapest first:
 
 1. A declared type not in `ACCEPTED_IMAGE_TYPES` (PNG, JPEG, WebP, GIF; never SVG): `415 unsupported_type`
    with `acceptedTypes`.
@@ -98,6 +98,14 @@ stored with what it should have lost. The row's insert repeats both caps inside 
 uploads racing each other can't together pass one; a refused insert deletes the bytes it just wrote and
 answers `gallery_full`, or `409 upload_conflict` when there is room again by then.
 
+**Uploaded for a document.** `X-Media-Document` (the document's id, at most 200 characters; longer is
+`400 invalid_document`) names the document the picture is uploaded for. The service records a reference
+from that document to the image at once, new or deduped, so the image is placed from the moment it exists,
+and a new image remembers that document as the one it was **claimed** by (a deduped image keeps whatever it
+had, so an older image is never claimed after the fact). Only that document's own report can then take the
+reference away (References, below). An app sends it whenever it knows the document; an upload for a
+document the server never sees (a This Browser plan) leaves it out.
+
 ## References
 
 Each app reports which images its documents place, so the service can tell an image no app places any
@@ -107,7 +115,14 @@ gone. The app's own index stays the source of truth (on livediagram, `image_refs
 to the images, so a reference to a deleted image is harmless.
 
 `complete: true` says the app has now sent every document it holds at least once. Until every app with
-a key has said so, the sweep deletes nothing: an app that hasn't reported reads as placing nothing.
+a key has said so, the sweep deletes nothing that app could be placing: an app that hasn't reported reads
+as placing nothing.
+
+An app whose documents report one by one, as they wake, never says `complete` (liveplanner: a plan that has
+not woken since reporting began has sent nothing). It claims its pictures instead, at upload (above): a
+claimed picture keeps its reference until its own document reports a set without it, so a document that
+never reports never loses one. Its unclaimed pictures (older uploads, and This Browser documents') wait for
+`complete` like any other app's, which it never sends, so the sweep never reaches them.
 
 ### Usage
 
@@ -128,7 +143,10 @@ ago can read "Not used" until that push lands. The Gallery reads the usage each 
 Once a day (03:41 UTC) the service deletes the images that are **older than 30 days** and **placed by no
 document in any app**. It keeps bytes whenever in doubt:
 
-- It waits until every app with a key has reported complete (above).
+- An unclaimed image waits until every app with a key has reported complete (above). A claimed image
+  (uploaded for a document) waits until every keyed app other than the one it was uploaded in has: its
+  own app vouches for it per document, since only its document's own report removed its last reference
+  there. While two or more keyed apps have not reported complete, nothing is deleted.
 - **Tripwire.** When over half of the old images, and more than 20, look unplaced, the run deletes at
   most one page of 1000, oldest first, and logs `[media] sweep tripwire` as an error. A gap in the
   references looks exactly like that.

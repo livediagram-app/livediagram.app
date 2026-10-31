@@ -15,6 +15,8 @@ export type ImageRow = {
   sha256: string;
   original_name: string | null;
   created_at: number;
+  // The document it was uploaded for (migrations/0002_image_document.sql), or null.
+  document: string | null;
 };
 
 // The gallery's view of a row. The owner and the hash never leave the service through it.
@@ -79,8 +81,8 @@ export async function insertImage(
 ): Promise<MediaImage | null> {
   const createdAt = Date.now();
   const result = await env.MEDIA_DB.prepare(
-    `INSERT OR IGNORE INTO images (id, owner, app, content_type, byte_size, width, height, sha256, original_name, created_at)
-     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10
+    `INSERT OR IGNORE INTO images (id, owner, app, content_type, byte_size, width, height, sha256, original_name, created_at, document)
+     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?13
      WHERE (?11 IS NULL OR (SELECT COUNT(*) FROM images WHERE owner = ?2) < ?11)
        AND (?12 IS NULL OR (SELECT COALESCE(SUM(byte_size), 0) FROM images WHERE owner = ?2) + ?5 <= ?12)`,
   )
@@ -97,6 +99,7 @@ export async function insertImage(
       createdAt,
       caps.maxImages,
       caps.maxBytes,
+      row.document,
     )
     .run();
   if (!result.meta.changes) return null;

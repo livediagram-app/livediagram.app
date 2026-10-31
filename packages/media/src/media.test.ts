@@ -6,6 +6,7 @@ import {
   isGuestOwner,
   isMediaApp,
   MEDIA_APPS,
+  MEDIA_DOCUMENT_HEADER,
   mediaGuestOwner,
   sniffImageType,
 } from './index';
@@ -29,7 +30,8 @@ describe('ACCEPTED_IMAGE_TYPES', () => {
 });
 
 describe('sniffImageType', () => {
-  const pad = (bytes: number[]) => new Uint8Array([...bytes, ...Array.from({ length: 16 }, () => 0)]);
+  const pad = (bytes: number[]) =>
+    new Uint8Array([...bytes, ...Array.from({ length: 16 }, () => 0)]);
 
   it('reads each accepted format by its first bytes', () => {
     expect(sniffImageType(pad([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))).toBe('image/png');
@@ -104,5 +106,22 @@ describe('createMediaClient', () => {
       status: 403,
       body: { error: 'gallery_full', reason: 'count', limit: 100, current: 100 },
     });
+  });
+
+  it('names the document an upload is for, and leaves it out when there is none', async () => {
+    const seen: Headers[] = [];
+    const client = createMediaClient({
+      app: 'liveplanner.app',
+      key: 'k',
+      fetch: async (_input, init) => {
+        seen.push(new Headers(init?.headers));
+        return Response.json({ image: {}, deduped: false });
+      },
+    });
+    const file = { owner: 'user_1', contentType: 'image/png', byteSize: 4, width: 1, height: 1 };
+    await client.upload({ ...file, bytes: new ArrayBuffer(4), document: 'plan-1' });
+    await client.upload({ ...file, bytes: new ArrayBuffer(4) });
+    expect(seen[0]!.get(MEDIA_DOCUMENT_HEADER)).toBe('plan-1');
+    expect(seen[1]!.has(MEDIA_DOCUMENT_HEADER)).toBe(false);
   });
 });
