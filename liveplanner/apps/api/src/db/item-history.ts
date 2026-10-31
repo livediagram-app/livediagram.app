@@ -36,7 +36,12 @@ export async function appendItemHistory(
     const changes = historyChangesOf(before, after);
     if (changes.length === 0) continue;
     const by = before ? after.updatedBy : after.createdBy;
-    rows.push({ i: after.id, a: after.updatedAt, b: JSON.stringify(by), c: JSON.stringify(changes) });
+    rows.push({
+      i: after.id,
+      a: after.updatedAt,
+      b: JSON.stringify(by),
+      c: JSON.stringify(changes),
+    });
     if (before) trimmed.add(after.id);
     cutoff = Math.max(cutoff, after.updatedAt - ITEM_HISTORY_MAX_AGE_MS);
   }

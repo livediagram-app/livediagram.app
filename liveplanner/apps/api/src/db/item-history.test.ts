@@ -49,9 +49,11 @@ function planWith(...cards: Item[]): SqliteD1 {
 }
 
 const rowsOf = (db: SqliteD1, itemId = 'card-0001') =>
-  (db.sql.prepare('SELECT COUNT(*) AS n FROM item_history WHERE item_id = ?').get(itemId) as {
-    n: number;
-  }).n;
+  (
+    db.sql.prepare('SELECT COUNT(*) AS n FROM item_history WHERE item_id = ?').get(itemId) as {
+      n: number;
+    }
+  ).n;
 
 // The plan's own storage alone: any other binding read throws, so a history that reached D1, the index or the
 // room would fail here.
@@ -141,7 +143,9 @@ describe('appendItemHistory', () => {
       cards.map((after) => ({ before: null, after })),
     );
     expect(batch.mock.calls[0]![0]).toHaveLength(1);
-    expect((db.sql.prepare('SELECT COUNT(*) AS n FROM item_history').get() as { n: number }).n).toBe(40);
+    expect(
+      (db.sql.prepare('SELECT COUNT(*) AS n FROM item_history').get() as { n: number }).n,
+    ).toBe(40);
   });
 
   it('never throws: a failure is logged and the write stands', async () => {
@@ -221,8 +225,7 @@ describe('cost', () => {
       await appendItemHistory(db.env, 'P', [{ before, after }]);
       before = after;
     }
-    const changes = () =>
-      (db.sql.prepare('SELECT total_changes() AS n').get() as { n: number }).n;
+    const changes = () => (db.sql.prepare('SELECT total_changes() AS n').get() as { n: number }).n;
     const runs = 500;
     const startChanges = changes();
     const start = performance.now();

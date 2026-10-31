@@ -44,9 +44,9 @@ describe('historyChangesOf', () => {
   it('reads the Trash in and out, never as a move or a trashedFrom change', () => {
     const trashed = next(card, { title: 'Ship it', status: 'trash', trashedFrom: 'todo' });
     expect(historyChangesOf(card, trashed)).toEqual([{ kind: 'trashed' }]);
-    expect(historyChangesOf(trashed, next(trashed, { title: 'Ship it', status: 'todo' }))).toEqual(
-      [{ kind: 'untrashed' }],
-    );
+    expect(historyChangesOf(trashed, next(trashed, { title: 'Ship it', status: 'todo' }))).toEqual([
+      { kind: 'untrashed' },
+    ]);
   });
 
   it('reads archive, flag and type changes', () => {
@@ -85,7 +85,10 @@ describe('historyChangesOf', () => {
     const plainGone = next(formatted, { ...card.fields, descriptionRich: [{ text: 'x' }] });
     expect(historyChangesOf(formatted, plainGone)).toEqual([{ kind: 'set', field: 'description' }]);
     expect(
-      historyChangesOf(card, next(card, { ...card.fields, checklist: [{ text: 'a', done: false }] })),
+      historyChangesOf(
+        card,
+        next(card, { ...card.fields, checklist: [{ text: 'a', done: false }] }),
+      ),
     ).toEqual([{ kind: 'set', field: 'checklist' }]);
   });
 
@@ -231,12 +234,20 @@ describe('historyForReader', () => {
     ];
     const read = historyForReader(entries, SAM.id);
     expect(read).toEqual([
-      { at: 2, by: { name: SAM.name, color: SAM.color }, mine: true, tag: 'ai', changes: [{ kind: 'flagged' }] },
+      {
+        at: 2,
+        by: { name: SAM.name, color: SAM.color },
+        mine: true,
+        tag: 'ai',
+        changes: [{ kind: 'flagged' }],
+      },
       { at: 1, by: { name: ALI.name, color: ALI.color }, changes: [{ kind: 'archived' }] },
     ]);
     expect(JSON.stringify(read)).not.toContain(ALI.id);
     // An author with no id (a form's, a deleted account's) is nobody's own.
-    expect(historyForReader([{ ...entries[1]!, by: { ...ALI, id: '' } }], '')[0]!.mine).toBeUndefined();
+    expect(
+      historyForReader([{ ...entries[1]!, by: { ...ALI, id: '' } }], '')[0]!.mine,
+    ).toBeUndefined();
   });
 });
 
@@ -249,7 +260,12 @@ describe('readStoredHistory', () => {
   };
 
   it('reads a row back, keeping only the changes it knows', () => {
-    expect(readStoredHistory(row)).toEqual({ at: 5, by: SAM, tag: 'undo', changes: [{ kind: 'flagged' }] });
+    expect(readStoredHistory(row)).toEqual({
+      at: 5,
+      by: SAM,
+      tag: 'undo',
+      changes: [{ kind: 'flagged' }],
+    });
     expect(readStoredHistory({ ...row, tag: 'weird', by: '{"name":"A","color":"#000"}' })).toEqual({
       at: 5,
       by: { id: '', name: 'A', color: '#000' },

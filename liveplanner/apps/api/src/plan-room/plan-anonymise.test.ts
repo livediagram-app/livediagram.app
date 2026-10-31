@@ -12,7 +12,8 @@ describe('anonymisePlan', () => {
     const db = sqliteD1();
     db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('P', 'user_gone', 'Plan', 0, 1, 1)`);
-    db.sql.exec(`INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at,
+    db.sql
+      .exec(`INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at,
                    created_by, updated_by) VALUES ('P', 'card-0001', 'task', 1, 'i', '{}', 1, 0, 0, '{}', '{}')`);
     const gone = { id: await itemPersonId('user_gone'), name: 'Gone Person', color: '#2563eb' };
     const kept = { id: await itemPersonId('user_kept'), name: 'Kept Person', color: '#dc2626' };

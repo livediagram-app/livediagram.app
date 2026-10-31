@@ -303,7 +303,12 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
   const made = await createMany(ctx, caller, creates);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
-  await appendItemHistory(ctx.env, projectId, made.items.map(created), historyTagOf(ctx, restoring));
+  await appendItemHistory(
+    ctx.env,
+    projectId,
+    made.items.map(created),
+    historyTagOf(ctx, restoring),
+  );
   await restoreThreadsOf(ctx, projectId, made.items, reads);
   console.info('[items] bulk created', { projectId, count: made.items.length });
   const answer: ItemsResponse = { items: forCaller(caller, made.items), rev: made.rev };
@@ -430,7 +435,8 @@ export async function handleItemRoutes(ctx: PlanRouteContext): Promise<Response 
   // A new comment thread on the card (docs/specs/026-plan/items.md "Comments"); the thread's own writes are under
   // /threads (card-thread-routes.ts).
   // The card's history (docs/specs/026-plan/items.md "History"), read when its panel opens.
-  if (segments.length === 6 && segments[5] === 'history') return itemHistory(ctx, projectId, itemId);
+  if (segments.length === 6 && segments[5] === 'history')
+    return itemHistory(ctx, projectId, itemId);
   if (segments.length === 6 && segments[5] === 'threads')
     return method === 'POST' ? startOnCard(ctx, projectId, itemId) : methodNotAllowed();
   // A card is voted on through the tab's session vote, its tally added at the end (`/items/tally`); the old

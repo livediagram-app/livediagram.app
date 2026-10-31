@@ -3,7 +3,12 @@
 // are grouped and redacted here: an author's id reaches only the author (`mine`), as a comment's does.
 
 import type { ItemHistoryResponse } from '@liveplanner/api-schema';
-import { groupHistory, historyForReader, itemPersonId, type ItemHistoryTag } from '@liveplanner/items';
+import {
+  groupHistory,
+  historyForReader,
+  itemPersonId,
+  type ItemHistoryTag,
+} from '@liveplanner/items';
 import { readItem } from '../db';
 import { readItemHistory } from '../db/item-history';
 import { json, methodNotAllowed } from '../responses';

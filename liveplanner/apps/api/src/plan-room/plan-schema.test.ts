@@ -41,11 +41,15 @@ describe('migratePlanSchema', () => {
     const sql = new DatabaseSync(':memory:');
     const exec = nodeItemSql(sql);
     migratePlanSchema((q) => exec.exec(q));
-    sql.exec(`DROP TABLE item_history; UPDATE _plan_schema SET version = ${PLAN_SCHEMA_VERSION - 1}`);
+    sql.exec(
+      `DROP TABLE item_history; UPDATE _plan_schema SET version = ${PLAN_SCHEMA_VERSION - 1}`,
+    );
     migratePlanSchema((q) => exec.exec(q));
     expect(tables(sql)).toContain('item_history');
     sql.exec('UPDATE _plan_schema SET version = 0');
     expect(() => migratePlanSchema((q) => exec.exec(q))).not.toThrow();
-    expect(sql.prepare('SELECT version FROM _plan_schema').get()!.version).toBe(PLAN_SCHEMA_VERSION);
+    expect(sql.prepare('SELECT version FROM _plan_schema').get()!.version).toBe(
+      PLAN_SCHEMA_VERSION,
+    );
   });
 });

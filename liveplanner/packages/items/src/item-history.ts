@@ -129,8 +129,7 @@ export function historyChangesOf(before: Item | null, after: Item): ItemHistoryC
   for (const field of keys) {
     if (SKIPPED.has(field)) continue;
     const next = after.fields[field];
-    const changed =
-      !same(before.fields[field], next) || (field === 'description' && richChanged);
+    const changed = !same(before.fields[field], next) || (field === 'description' && richChanged);
     if (!changed) continue;
     if (isEmpty(next) && !(field === 'description' && !isEmpty(after.fields['descriptionRich']))) {
       out.push({ kind: 'cleared', field });

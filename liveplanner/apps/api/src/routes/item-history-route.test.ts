@@ -81,7 +81,9 @@ beforeEach(() => {
   sql.sql
     .prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Board', ?, 1)`)
     .run(JSON.stringify({ elements: [board] }));
-  sql.sql.exec(`INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('p1', 't1', 0, 1)`);
+  sql.sql.exec(
+    `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('p1', 't1', 0, 1)`,
+  );
   testShareLink(sql, 'p1', 'PART', 'participate');
   testShareLink(sql, 'p1', 'LOOK', 'view');
   testShareLink(sql, 'p1', 'TAB1', 'edit', 'never', 't1');
@@ -114,7 +116,12 @@ describe('what each write keeps', () => {
   it('names the person who made each change, by name and colour, and marks only the reader’s own', async () => {
     const card = await make({ title: 'Login' });
     tick();
-    await call('POST', `/items/${card.id}`, { set: { priority: 'low' } }, { owner: 'visitor', code: 'PART' });
+    await call(
+      'POST',
+      `/items/${card.id}`,
+      { set: { priority: 'low' } },
+      { owner: 'visitor', code: 'PART' },
+    );
     const mine = (await history(card.id)).body.entries;
     expect(mine.map((e) => [e.by.name, e.mine ?? false])).toEqual([
       ['Vee', false],
@@ -123,7 +130,8 @@ describe('what each write keeps', () => {
     const theirs = (await history(card.id, { owner: 'visitor', code: 'PART' })).body.entries;
     expect(theirs.map((e) => e.mine ?? false)).toEqual([true, false]);
     // No author id leaves: only names and colours.
-    for (const e of [...mine, ...theirs]) expect(Object.keys(e.by).sort()).toEqual(['color', 'name']);
+    for (const e of [...mine, ...theirs])
+      expect(Object.keys(e.by).sort()).toEqual(['color', 'name']);
   });
 
   it('tags an agent’s write and an undo, and a restore as an undo', async () => {
@@ -133,7 +141,10 @@ describe('what each write keeps', () => {
     tick();
     await call('POST', `/items/${card.id}/move`, { status: 'todo', undo: true });
     tick();
-    await call('POST', '/items/patches', { undo: true, items: [{ id: card.id, set: { flagged: true } }] });
+    await call('POST', '/items/patches', {
+      undo: true,
+      items: [{ id: card.id, set: { flagged: true } }],
+    });
     expect(await kinds(card.id)).toEqual([
       ['undo', ['flagged']],
       ['undo', ['moved']],
@@ -196,7 +207,12 @@ describe('who may read it', () => {
   });
 
   it('answers an Editor, a Participant, a Viewer and an agent alike', async () => {
-    for (const who of [{}, { owner: 'visitor', code: 'PART' }, { owner: 'visitor', code: 'LOOK' }, { agent: true }]) {
+    for (const who of [
+      {},
+      { owner: 'visitor', code: 'PART' },
+      { owner: 'visitor', code: 'LOOK' },
+      { agent: true },
+    ]) {
       const res = await history(bug.id, who);
       expect(res.status).toBe(200);
       expect(res.body.entries).toHaveLength(1);
@@ -205,13 +221,23 @@ describe('who may read it', () => {
 
   it('confines a tab-scoped link to the cards its tab shows', async () => {
     // A tab holding only a Plan card for the bug: its link reaches that card alone.
-    const planCard = { id: 'c1', type: 'shape', shape: 'plan-card', x: 0, y: 0, width: 240, height: 120 };
+    const planCard = {
+      id: 'c1',
+      type: 'shape',
+      shape: 'plan-card',
+      x: 0,
+      y: 0,
+      width: 240,
+      height: 120,
+    };
     sql.sql
       .prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'`)
       .run(JSON.stringify({ elements: [{ ...planCard, planCard: { itemId: bug.id } }] }));
     const who = { owner: 'visitor', code: 'TAB1' };
     expect((await history(bug.id, who, '?tabId=t1')).status).toBe(200);
-    expect((await history(task.id, who, '?tabId=t1')).body).toMatchObject({ error: 'item_not_found' });
+    expect((await history(task.id, who, '?tabId=t1')).body).toMatchObject({
+      error: 'item_not_found',
+    });
   });
 
   it('refuses someone with no access, and answers a card not in the plan as not found', async () => {
