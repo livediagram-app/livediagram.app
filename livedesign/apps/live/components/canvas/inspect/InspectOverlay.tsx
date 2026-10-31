@@ -155,11 +155,33 @@ export function sizePillAt(
   b: { x: number; y: number; w: number; h: number },
   w: number,
   measured: ReadonlySet<string>,
+  view?: { width: number; height: number },
 ): { x: number; y: number } {
-  if (!measured.has('bottom')) return { x: b.x + b.w / 2 - w / 2, y: b.y + b.h + 6 };
-  if (!measured.has('top')) return { x: b.x + b.w / 2 - w / 2, y: b.y - 6 - PILL_H };
-  return { x: b.x + b.w + 6, y: b.y + b.h + 6 };
+  const at = !measured.has('bottom')
+    ? { x: b.x + b.w / 2 - w / 2, y: b.y + b.h + 6 }
+    : !measured.has('top')
+      ? { x: b.x + b.w / 2 - w / 2, y: b.y - 6 - PILL_H }
+      : { x: b.x + b.w + 6, y: b.y + b.h + 6 };
+  return keepPillOnScreen(at, w, view);
 }
+
+// A pill never leaves the window: an element zoomed past a phone's edge, or wider than it, still shows its size
+// and distances, held 8px inside the window's edge.
+const PILL_INSET = 8;
+export function keepPillOnScreen(
+  at: { x: number; y: number },
+  w: number,
+  view?: { width: number; height: number },
+): { x: number; y: number } {
+  if (!view) return at;
+  const clamp = (v: number, max: number) => Math.max(PILL_INSET, Math.min(v, max - PILL_INSET));
+  return { x: clamp(at.x, view.width - w), y: clamp(at.y, view.height - PILL_H) };
+}
+
+const windowSize = () =>
+  typeof window === 'undefined'
+    ? undefined
+    : { width: window.innerWidth, height: window.innerHeight };
 
 function SelectedOutline({
   b,
@@ -172,7 +194,7 @@ function SelectedOutline({
 }) {
   const label = `${inspectNumber(target.rect.width)} × ${inspectNumber(target.rect.height)}`;
   const w = pillWidth(label);
-  const at = sizePillAt(b, w, measured);
+  const at = sizePillAt(b, w, measured, windowSize());
   return (
     <g>
       <rect {...rectAttrs(b)} fill="none" stroke="var(--color-brand-500)" strokeWidth={2} />
@@ -214,6 +236,7 @@ function MeasureLine({
   const mx = (x1 + x2) / 2;
   const my = (y1 + y2) / 2;
   const tick = 4;
+  const pill = keepPillOnScreen({ x: mx - w / 2, y: my - PILL_H / 2 }, w, windowSize());
   return (
     <g data-inspect-line={line.side}>
       <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={INSPECT_LINE_COLOUR} strokeWidth={1} />
@@ -228,7 +251,7 @@ function MeasureLine({
           <line x1={x2 - tick} y1={y2} x2={x2 + tick} y2={y2} stroke={INSPECT_LINE_COLOUR} />
         </>
       )}
-      <g transform={`translate(${mx - w / 2}, ${my - PILL_H / 2})`}>
+      <g transform={`translate(${pill.x}, ${pill.y})`}>
         <rect width={w} height={PILL_H} rx={4} fill={INSPECT_LINE_COLOUR} />
         <text
           x={w / 2}
