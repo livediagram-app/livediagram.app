@@ -83,6 +83,13 @@ describe('TabStrip', () => {
     expect(screen.getByRole('button', { name: 'Add tab' })).toBeTruthy();
   });
 
+  it('stands in a landmark of its own, the toolbar and Add tab inside it', () => {
+    strip();
+    const nav = screen.getByRole('navigation', { name: 'Tab bar' });
+    expect(nav.contains(screen.getByRole('toolbar', { name: 'Tabs' }))).toBe(true);
+    expect(nav.contains(screen.getByRole('button', { name: 'Add tab' }))).toBe(true);
+  });
+
   it('lays the open tab’s sliding card first in the toolbar, hidden from assistive technology', () => {
     strip();
     const list = screen.getByRole('toolbar', { name: 'Tabs' });
