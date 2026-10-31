@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
+import { ConfirmDialog } from '@liveworkspace/ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MenuActionRow, PortalMenu, placeMenu } from './Menu';
 
@@ -66,6 +68,50 @@ describe('PortalMenu', () => {
     expect(menu.style.overflowY).toBe('auto');
     expect(menu.style.top).toBe('8px');
     anchor.remove();
+  });
+
+  it('hands focus back to its trigger as an item closes it, so the dialog it opens returns there', () => {
+    function Card() {
+      const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+      const [asking, setAsking] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={(e) => setAnchor(e.currentTarget)}>
+            Team options
+          </button>
+          {anchor ? (
+            <PortalMenu anchor={anchor} onClose={() => setAnchor(null)} label="Team options">
+              <MenuActionRow
+                label="Delete Team"
+                icon={null}
+                onClick={() => {
+                  setAnchor(null);
+                  setAsking(true);
+                }}
+              />
+            </PortalMenu>
+          ) : null}
+          <ConfirmDialog
+            open={asking}
+            title="Delete Team?"
+            message="It goes."
+            confirmLabel="Delete Team"
+            onConfirm={() => setAsking(false)}
+            onCancel={() => setAsking(false)}
+          />
+        </>
+      );
+    }
+    render(<Card />);
+    const trigger = screen.getByRole('button', { name: 'Team options' });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(document.activeElement?.textContent).toContain('Delete Team');
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Delete Team' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete Team?' });
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(document.activeElement).toBe(trigger);
   });
 
   it('places a menu that fits without a scroll', () => {
