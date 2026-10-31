@@ -1,12 +1,16 @@
 // A closed account's name off a plan that outlives them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an
 // account"): the index tells the app which plans name them (POST /api/internal/people/:id/purge), and each plan's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments,
-// cards and assignments in each tab, the cards' own fields and comment threads and who made or changed them, the changesets they
+// cards and assignments in each tab, the cards' own fields, comment threads and history and who made or changed them, the changesets they
 // wrote, and the plan's owner when it was their team plan. Only rows that mention them are read and rewritten, in
 // one batch; running it again changes nothing.
 
 import { ANONYMISED_NAME, ANONYMISED_PERSON, anonymiseJsonText } from '@liveworkspace/index-app';
+import { itemPersonId } from '@liveplanner/items';
 import type { PlanEnv } from '../types';
+
+// A closed account as a card's history names them.
+const ANONYMISED_AUTHOR = { id: ANONYMISED_PERSON, name: ANONYMISED_NAME, color: '#94a3b8' };
 
 export async function anonymisePlan(
   env: PlanEnv,
@@ -69,6 +73,13 @@ export async function anonymisePlan(
       );
     }
   }
+  // The cards' history names its authors as the cards do, by their hashed id (docs/specs/026-plan/items.md
+  // "History"): their entries read Deleted account.
+  writes.push(
+    db
+      .prepare(`UPDATE item_history SET by = ? WHERE plan_id = ? AND by ->> '$.id' = ?`)
+      .bind(JSON.stringify(ANONYMISED_AUTHOR), planId, await itemPersonId(personId)),
+  );
   writes.push(
     db
       .prepare('UPDATE items SET created_by = ? WHERE plan_id = ? AND created_by = ?')

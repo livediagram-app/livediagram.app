@@ -23,7 +23,12 @@ Follow the references below only as needed; never upfront.
 
 liveplanner keeps no per-tab activity log: nothing records each undoable commit with its author, and nothing offers a per-entry Revert.
 
-- There is no change-log table, no `/api/projects/:id/log` endpoint, and no `log` / `log-remove` room op.
+- **One exception, per card**: a card keeps its own [History](../026-plan/items.md#history) (who made, moved and
+  changed it), read in its panel, kept in the plan's Durable Object and bounded per card. It is not a tab or plan log,
+  covers cards alone (never canvas elements, tabs or sheets), and offers no Revert. (The owner's decision,
+  2026-10-30.)
+
+- There is no change-log table for tabs, no `/api/projects/:id/log` endpoint, and no `log` / `log-remove` room op.
 - liveplanner has no `activityPanelEnabled` preference and no revert hover preview ([User preferences](../007-editor/user-preferences.md)).
 - **Undo and Redo stay, unchanged in behaviour.** They are snapshot-based (`useProjectHistory`), personal to each editor and session, and sit in the bottom-right cluster and on Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z and Ctrl+Y. A continuous control (a background slider, an element colour or opacity picker) still takes one undo step per burst: the first tick checkpoints and ticks within 500 ms of the last stay in that step (`useBurstCheckpoint`).
 - Project-level history (made, renamed, moved, trashed, who edited) is the [Timeline](../013-workspace/timeline.md), kept by liveworkspace's index; the [Inbox](../013-workspace/inbox.md) is unrelated, and is liveworkspace's index's too.

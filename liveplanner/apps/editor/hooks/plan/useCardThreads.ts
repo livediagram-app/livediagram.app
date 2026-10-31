@@ -50,6 +50,8 @@ export type CardThreads = {
   receive: (op: CardThreadsRoomOp) => void;
   refetch: () => void;
   projectId: string | null;
+  // Where the plan's card reads go (its owner, share code and tab scope): a card's history reads through it too.
+  scope: ItemsScope | null;
   // The thread a link asked to open (#item=…&thread=…): its card's panel expands it and brings it into view, then
   // lets it go.
   focused: string | null;
@@ -339,9 +341,10 @@ export function useCardThreads(opts: {
       receive,
       refetch,
       projectId,
+      scope,
       focused,
       focus,
     }),
-    [status, threads, threadsOf, store, act, receive, refetch, projectId, focused],
+    [status, threads, threadsOf, store, act, receive, refetch, projectId, scope, focused],
   );
 }

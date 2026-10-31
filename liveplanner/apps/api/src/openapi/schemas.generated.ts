@@ -5147,6 +5147,278 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "type": "object"
   },
+  "ItemHistoryChange": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "created",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "const": "moved",
+            "type": "string"
+          },
+          "to": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "trashed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "untrashed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "archived",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unarchived",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "flagged",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unflagged",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "type",
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "set",
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/components/schemas/ItemHistoryValue"
+          }
+        },
+        "required": [
+          "kind",
+          "field"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "cleared",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "field"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "ItemHistoryEntry": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "by": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "color"
+        ],
+        "type": "object"
+      },
+      "changes": {
+        "items": {
+          "$ref": "#/components/schemas/ItemHistoryChange"
+        },
+        "type": "array"
+      },
+      "mine": {
+        "const": true,
+        "type": "boolean"
+      },
+      "tag": {
+        "$ref": "#/components/schemas/ItemHistoryTag"
+      }
+    },
+    "required": [
+      "at",
+      "by",
+      "changes"
+    ],
+    "type": "object"
+  },
+  "ItemHistoryResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "entries": {
+        "items": {
+          "$ref": "#/components/schemas/ItemHistoryEntry"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "entries"
+    ],
+    "type": "object"
+  },
+  "ItemHistoryTag": {
+    "enum": [
+      "ai",
+      "undo",
+      "form"
+    ],
+    "type": "string"
+  },
+  "ItemHistoryValue": {
+    "anyOf": [
+      {
+        "type": "string"
+      },
+      {
+        "type": "number"
+      },
+      {
+        "type": "boolean"
+      },
+      {
+        "items": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        },
+        "type": "array"
+      }
+    ]
+  },
   "ItemMoveRequest": {
     "additionalProperties": false,
     "properties": {

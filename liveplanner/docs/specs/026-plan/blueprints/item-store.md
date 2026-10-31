@@ -527,6 +527,105 @@ text, mentions?, field? } | reply | edit | delete | resolve | rename | addToCard
   custom Comments field placed on the face draws the same chip, named `{Field}: N comments`; the Display tab's sample
   card has a store with two comments in each Comments field; exports get the counts map; `collab-deep-link.ts` reads `thread`.
 
+## History
+
+A card's history (spec items.md "History"): entries the plan appends as it applies each card write, kept in the plan's
+own SQLite, read one card at a time.
+
+### Pure core (`packages/items/src/item-history.ts`)
+
+- **Types**: `ItemHistoryChange` = `{ kind: 'created', status? }` | `{ kind: 'moved', from: string | null, to: string |
+null }` | `{ kind: 'trashed' }` | `{ kind: 'untrashed' }` | `{ kind: 'archived' }` | `{ kind: 'unarchived' }` |
+  `{ kind: 'flagged' }` | `{ kind: 'unflagged' }` | `{ kind: 'type', from, to }` | `{ kind: 'set', field, value? }` |
+  `{ kind: 'cleared', field }`; `ItemHistoryTag` = `'ai' | 'undo' | 'form'`; `StoredHistoryEntry = { at, by:
+ItemPerson, tag?, changes }`; `ItemHistoryEntry = { at, by: { name, color }, mine?: true, tag?, changes }` (the wire).
+- `historyChangesOf(before: Item | null, after: Item)`: `created` (with the status) for no `before`; else, in order, the
+  status (`trash` in or out reads `trashed` / `untrashed`, any other change `moved`), `archived`, `flagged`, the type,
+  then every other key of either `fields` whose JSON differs, skipping `status`, `trashedFrom`, `archived`, `flagged`,
+  `votes`, `comments`, `example` and every formatting key (`isRichFieldKey`: a `descriptionRich` or `<id>Rich` change
+  reads as its field). A set field carries `historyValueOf` of its value, or no value for a field with formatting;
+  `cleared` when the value went (absent, null, '' or an empty list). Rank alone, or votes alone, give `[]`, and an
+  empty list writes no entry. At most `ITEM_HISTORY_CHANGES_MAX` changes an entry.
+- `historyValueOf(field, value)`: `undefined` (named, not copied) for `description`, `checklist`
+  and any object or list of objects but a person; a person (an object with a string `name`) is its name; a string is
+  cut to `ITEM_HISTORY_VALUE_MAX` characters (an ellipsis); a list of scalars keeps its first `ITEM_HISTORY_LIST_MAX`,
+  each string cut to 40; numbers and booleans as they are.
+- `groupHistory(entries)` (newest first in, newest first out): an entry joins the group before it when the author id
+  and tag match and it is within `ITEM_HISTORY_GROUP_MS` of the group's oldest entry. Changes merge by key (`created`,
+  status, `archive`, `flag`, `type`, each field): a `moved` keeps the oldest `from` and the newest `to` and drops out
+  when they meet; an on and off pair (flag, archive, trash) cancels; a field keeps its newest change; `created` stays
+  first. A group left with no changes is dropped. The group's `at` is its newest.
+- `historyForReader(entries, readerId)`: each entry's `by` as `{ name, color }`, and `mine: true` where `by.id` is the
+  reader's `itemPersonId`.
+
+### Storage (plan schema step V8, `plan-room/item-history-schema.ts`)
+
+```sql
+CREATE TABLE IF NOT EXISTS item_history (
+  id      INTEGER PRIMARY KEY,           -- rowid: append order
+  plan_id TEXT    NOT NULL,
+  item_id TEXT    NOT NULL,
+  at      INTEGER NOT NULL,
+  by      TEXT    NOT NULL,              -- JSON ItemPerson, as items.updated_by
+  tag     TEXT    NULL,                  -- 'ai' | 'undo' | 'form'
+  changes TEXT    NOT NULL,              -- JSON ItemHistoryChange[]
+  FOREIGN KEY (plan_id, item_id) REFERENCES items (plan_id, id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS item_history_item ON item_history (plan_id, item_id, id);
+```
+
+- Every statement is `IF NOT EXISTS`, so the step is idempotent: run twice, or renumbered past another step, it
+  changes nothing. A step that lands beside it under the same number must be renumbered so each runs once.
+- The foreign key deletes a card's history with the card (`DELETE /items/:itemId`, Empty Trash) and with the plan.
+- `apps/api/src/db/item-history.ts`:
+  - `appendItemHistory(env, projectId, writes: { before: Item | null; after: Item }[], tag?)`: one batch. A single
+    `INSERT ... SELECT ... FROM json_each(?)` writes every write with changes (by `after.updatedBy`, or `createdBy`
+    for a create; `at` = `after.updatedAt`), so a bulk of 40 cards is still one statement. Then, for each changed
+    (not created) card, `DELETE ... WHERE plan_id = ? AND item_id = ? AND (at < cutoff OR id <= the id
+ITEM_HISTORY_MAX back)`, which reads at most that card's `ITEM_HISTORY_MAX` + 1 index entries. A new card has
+    nothing to trim. Never throws: a failure logs `[items] history.append.failed` and the write stands.
+  - `readItemHistory(env, projectId, itemId, now)`: `SELECT at, by, tag, changes FROM item_history WHERE plan_id = ?
+AND item_id = ? AND at >= ? ORDER BY id DESC LIMIT ITEM_HISTORY_MAX`, rows that do not parse skipped.
+  - `deleteOldItemHistory(env, cutoff)`: the daily upkeep's sweep (`PlanRoom.maintain`): deletes every row before the
+    first (by id) at or after the cutoff, so it reads only the rows it deletes plus one. Logs `[items]
+history.retention` with the count.
+- Callers, in the plan's request path (`routes/`), each after its write landed: `writeItem` (patch, move), `create`
+  and `bulk` (`item-routes.ts`), `patches` (through `writeItemsWithRetry`'s `history` option) and a form's response
+  (`forms/respond.ts`, tag `form`). Tag: `undo` when the body's `undo` is true or a create restores (a key, votes or
+  threads), else `ai` for an API token (`ctx.token !== null`), else none (`historyTagOf`). Not called by: `tally`, a
+  project create's seed (`seedItems`), the copy and file imports (`plan-content.ts`, `project-file.ts`), the migration
+  door, the schema's own steps and `anonymisePlan`.
+- `anonymisePlan` sets the `by` of the rows the person wrote (`by ->> '$.id'` = their hashed `itemPersonId`) to the
+  Deleted account author: history names authors by hashed id, so the raw-id `anonymiseJsonText` would miss them.
+- Copies (`exportPlanCopy`), project files and offline records carry no history: none of them reads the table.
+
+### REST
+
+| Method | Path                     | Gate | Answers                           |
+| ------ | ------------------------ | ---- | --------------------------------- |
+| GET    | `/items/:itemId/history` | read | `ItemHistoryResponse { entries }` |
+
+- `routes/item-history-route.ts`: the caller (`itemCaller(..., 'read')`), a tab-scoped caller only for a card in scope,
+  `404 item_not_found` for a card not in the store; then `readItemHistory`, `groupHistory`, `historyForReader`.
+  Registered in `openapi/manifest.ts` (tag `Items`, token-usable); `ItemHistoryResponse` in
+  `packages/api-schema/src/items.ts`. Logs `[items] history.read` with the entry count.
+
+### Editor
+
+- `lib/api/item-history.ts` `fetchItemHistory(scope, itemId)`: `'offline'` for a This Browser plan (no request), else
+  the entries.
+- `hooks/plan/useCardHistory.ts` `useCardHistory({ scope, itemId, rev, enabled })`: `{ status: 'loading' | 'ready' |
+'error' | 'offline', entries, retry }`; reads when enabled and again when the card's `rev` moves (debounced
+  `ITEM_HISTORY_REFETCH_MS`), dropping an answer for a card no longer shown.
+- `components/plan/threads/CardActivity.tsx`: `ActivityRow` (one entry) and `activityFeed(open threads, entries)`
+  (both by time, newest first; a thread by `updatedAt`); `activity-words.ts` words an entry (`activityParts`)
+  from the plan's `statusNames`, the card's type (field labels: `BUILT_IN_FIELD_LABELS`, then custom labels) and its
+  items (a Card field's title).
+- `CardThreads` draws the **Activity** switch (`SwitchRow`, `xs`) in its header and, on, the feed in place of the
+  open list, the first `ACTIVITY_ROWS_SHOWN` activity rows and **Show N More**; the switch is
+  `useLocalStorageValue('liveplanner:v2:card-activity')` (`'off'` is off, anything else on). `useCardThreads` exposes
+  its `scope` for the read.
+
 ## Live: room op
 
 `packages/api-schema/src/room-messages.ts` adds
@@ -609,6 +708,8 @@ replays the write with the keys the first write was given. Votes push nothing.
 - People on items (authors, voters) are keyed by `itemPersonId`, a one-way hash: a guest's owner id is their
   credential and never reaches an item.
 - Hide writing hides faces only; the api returns full items to anyone who may read.
+- History entries keep their author as an `ItemPerson` (a hashed id); the read answers only name and colour, and
+  `mine` to the author ([History](#history)). Nobody writes history through the api: only the plan's own item writes.
 - Comment author ids are owner ids (a guest's credential): they reach only their author (`itemForViewer`), never
   the room (`itemForRoom`), and a restore cannot claim someone else's (`readRestoredThread`). Author name and
   colour are stamped server-side from the caller.
@@ -628,11 +729,18 @@ replays the write with the keys the first write was given. Votes push nothing.
 - Room op carries only the changed items. A card with a long thread (up to `ITEM_COMMENTS_BYTES`, 128 KB) sends
   its whole thread with every write to it: typical threads are a few KB; the cap bounds the worst case.
 
+- History: a card write adds one batch to its request, of one row insert (one table row and one index entry, about
+  0.2 KB) and one bounded delete per card it changed; measured in `apps/api/src/db/item-history.test.ts` (rows
+  written and time per append, held to a budget). A card at the cap answers `ITEM_HISTORY_MAX` entries before grouping,
+  measured there at its worst case. Storage is bounded at `ITEMS_MAX` x `ITEM_HISTORY_MAX` rows, in practice far
+  fewer (the age limit, and most cards change a few times).
+
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
 `items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
-`comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api). Api logs never
+`comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api), `history.read`,
+`history.append.failed`, `history.retention` (api), `items.history.failed` (editor). Api logs never
 include `fields` or comment text.
 
 ## Testing
@@ -661,6 +769,10 @@ include `fields` or comment text.
 | Thread routes: roles, agents, cross-plan, AI   | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                            |
 | Editor thread writes, room merge, refusals     | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                              |
 | Panel threads, Add to Card, shared chip, words | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                |
+| History: changes, values, grouping, redaction  | `packages/items/src/item-history.test.ts`                                                                                                                                                   |
+| History: storage, bounds, cascade, no D1       | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                        |
+| History: writes tagged, roles, scope, redacted | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                            |
+| History: panel feed, switch, words, offline    | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                                                                   |
 | Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
 | Tab import: parse, plan, land, report          | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
@@ -683,3 +795,11 @@ include `fields` or comment text.
 | `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                               |
 | `ITEM_ID_PATTERN`          | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                     |
 | `ITEM_FIELD_KEY_PATTERN`   | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                    |
+| `ITEM_HISTORY_MAX`         | 200                       | Card #122; a busy card's year of moves; 50 to 1000      |
+| `ITEM_HISTORY_MAX_AGE_MS`  | 180 days                  | What a reader asks about; 30 to 365 days                |
+| `ITEM_HISTORY_GROUP_MS`    | 60000                     | Spec "within a minute"                                  |
+| `ITEM_HISTORY_VALUE_MAX`   | 80                        | One readable line; 40 to 200                            |
+| `ITEM_HISTORY_LIST_MAX`    | 12                        | `ITEM_LABELS_MAX`                                       |
+| `ITEM_HISTORY_CHANGES_MAX` | 16                        | Bounds one entry; a write changes a few fields          |
+| `ITEM_HISTORY_REFETCH_MS`  | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
+| `ACTIVITY_ROWS_SHOWN`      | 8                         | Spec; a panel's worth before Show More                  |

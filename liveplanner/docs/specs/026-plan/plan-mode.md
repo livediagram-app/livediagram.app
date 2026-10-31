@@ -264,7 +264,7 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
 
 - There is no mode switch, Opens in or template mode filter, so nothing sends `ModePlan`, `OpensInPlan` or
   `TemplateModePlan` ([Editor mode](../007-editor/editor-modes.md#telemetry-telemetry)).
-- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
+- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`, and `ActivityOn` / `ActivityOff` for a card panel's Activity switch)
   and `Revealed` (`Board`), never content. A board placed counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The funnel slot `HeaderPlan` is a retired slot: nothing sends it ([Landing funnel](../019-marketing/landing-funnel.md)).
 

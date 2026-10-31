@@ -391,6 +391,10 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
       createdBy: { name: 'Bug Report form', color: '#0284c7' },
     });
     expect(relayed.map((r) => r.op.kind)).toEqual(['items']);
+    // Its history starts with the response (docs/specs/026-plan/items.md "History").
+    expect(
+      sql.sql.prepare('SELECT tag, changes FROM item_history WHERE item_id = ?').all(card!.id),
+    ).toEqual([{ tag: 'form', changes: JSON.stringify([{ kind: 'created', status: 'new' }]) }]);
     expect(
       (await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Again' } })).body,
     ).toEqual({ number: 2 });
