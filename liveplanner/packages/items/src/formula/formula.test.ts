@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { compileFormula } from './compile';
 import { evaluateTree } from './evaluate';
 import { FUNCTION_NAMES, arityText, functionNamed } from './functions';
@@ -490,17 +491,18 @@ describe('fuzz', () => {
 
   it('never throws on random token streams (CPU budget)', () => {
     const next = rng(143);
-    const started = performance.now();
-    for (let i = 0; i < 5000; i += 1) {
-      const n = 1 + Math.floor(next() * 40);
-      let src = '';
-      for (let j = 0; j < n; j += 1) src += PIECES[Math.floor(next() * PIECES.length)];
-      const out = run(src, vars);
-      expect(out === null || ['number', 'string', 'boolean', 'object'].includes(typeof out)).toBe(
-        true,
-      );
-    }
-    expect(performance.now() - started).toBeLessThan(4000);
+    const spent = cpuMsOf(() => {
+      for (let i = 0; i < 5000; i += 1) {
+        const n = 1 + Math.floor(next() * 40);
+        let src = '';
+        for (let j = 0; j < n; j += 1) src += PIECES[Math.floor(next() * PIECES.length)];
+        const out = run(src, vars);
+        expect(out === null || ['number', 'string', 'boolean', 'object'].includes(typeof out)).toBe(
+          true,
+        );
+      }
+    });
+    expect(spent).toBeLessThan(cpuBudgetMs(4000));
   });
 
   it('never throws on random characters', () => {
@@ -514,7 +516,6 @@ describe('fuzz', () => {
   });
 
   it('answers the worst cases at the length limit fast', () => {
-    const started = performance.now();
     const half = Math.floor(FORMULA_MAX / 2);
     const cases = [
       '('.repeat(FORMULA_MAX),
@@ -528,10 +529,12 @@ describe('fuzz', () => {
       'max(' + '1,'.repeat(half - 3) + '1)',
       'concat(' + 'L,'.repeat(63) + 'L)',
     ];
-    for (const src of cases) {
-      expect(src.length).toBeLessThanOrEqual(FORMULA_MAX);
-      expect(() => run(src, vars)).not.toThrow();
-    }
-    expect(performance.now() - started).toBeLessThan(500);
+    const spent = cpuMsOf(() => {
+      for (const src of cases) {
+        expect(src.length).toBeLessThanOrEqual(FORMULA_MAX);
+        expect(() => run(src, vars)).not.toThrow();
+      }
+    });
+    expect(spent).toBeLessThan(cpuBudgetMs(500));
   });
 });

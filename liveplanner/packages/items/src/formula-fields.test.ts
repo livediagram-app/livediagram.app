@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { PlanBoardSetup } from './board';
 import { boardCsvImport, boardCsvRows } from './board-csv';
 import { boardSortComparator, boardSortFieldsOf } from './board-sort';
@@ -659,13 +660,13 @@ describe('where a Formula reads', () => {
         }),
       );
     const fields = ['f-left', 'f-share', 'f-grade', 'f-days'].map(def);
-    const started = performance.now();
     let n = 0;
-    for (const c of many)
-      for (const field of fields) if (formulaValue(field, c, deal, ctx) !== null) n += 1;
-    const ms = performance.now() - started;
+    const spent = cpuMsOf(() => {
+      for (const c of many)
+        for (const field of fields) if (formulaValue(field, c, deal, ctx) !== null) n += 1;
+    });
     expect(n).toBe(8000 - 1);
-    expect(ms).toBeLessThan(1000);
+    expect(spent).toBeLessThan(cpuBudgetMs(1000));
   });
 });
 
