@@ -31,6 +31,11 @@ import { useMentionScope } from '@/components/canvas/collab/comment/MentionConte
 import { initialsOf } from '@/lib/identity';
 import { useOwnPicture } from '@/lib/own-picture';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
+import { conversationRailClass } from '@/components/plan/threads/timeline-parts';
+
+// A card thread's rail (docs/specs/026-plan/items.md "Where it shows"): `through` when the reply composer follows the
+// comments, `end` when the last comment ends it (a resolved thread).
+type CommentRail = 'through' | 'end';
 
 type CommentDensity = 'compact' | 'comfortable';
 
@@ -99,6 +104,7 @@ export function CommentThreadList({
   className = 'max-h-72 overflow-y-auto px-3 py-1',
   canComment = true,
   emptyText,
+  rail,
 }: {
   thread: Pick<CommentThread, 'comments' | 'resolved'> | undefined;
   readOnly: boolean;
@@ -114,6 +120,8 @@ export function CommentThreadList({
   className?: string;
   // What an empty list says, when its host has its own words.
   emptyText?: string;
+  // A card thread draws its comments on a rail from the header's disc; absent, none.
+  rail?: CommentRail;
 }) {
   const resolved = thread?.resolved ?? false;
   const comments = thread?.comments ?? [];
@@ -128,12 +136,13 @@ export function CommentThreadList({
     );
   return (
     <ul className={className}>
-      {comments.map((c) => (
+      {comments.map((c, i) => (
         <CommentRow
           key={c.id}
           comment={c}
           resolved={resolved}
           density={density}
+          rail={rail && (rail === 'end' && i === comments.length - 1 ? 'end' : 'through')}
           onDelete={
             !readOnly || (c.authorId !== undefined && c.authorId === selfId)
               ? () => onDeleteComment(c.id)
@@ -173,6 +182,7 @@ export function CommentComposer({
   onDraft,
   below,
   secondary,
+  rail = false,
 }: {
   onAddComment: (text: string, mentions: CommentMention[]) => void;
   // Lets the host focus the field (the popover does, once placed, on desktop).
@@ -194,6 +204,8 @@ export function CommentComposer({
   // draft, so the action can send it along (Comment and Resolve): `mentions` reads the picks without spending them,
   // `clear` empties the field once the text is posted.
   secondary?: React.ReactNode | ((draft: ComposerDraft) => React.ReactNode);
+  // The end of a card thread's rail, running into your disc.
+  rail?: boolean;
 }) {
   const [draft, setDraft] = useState('');
   const [focused, setFocused] = useState(false);
@@ -235,6 +247,7 @@ export function CommentComposer({
           onPick={mention.pick}
         />
       ) : null}
+      {rail ? <span aria-hidden className={conversationRailClass('into')} /> : null}
       {self ? (
         <PictureDisc
           size={28}
@@ -242,7 +255,7 @@ export function CommentComposer({
           pictureUrl={ownPicture}
           name={self.name}
           style={identityVars(self.color)}
-          className={`mt-1 text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
+          className={`relative mt-1 text-[10px] font-semibold text-white ${IDENTITY_FILL} ${rail ? RAIL_RING : ''}`}
         >
           {initialsOf(self.name)}
         </PictureDisc>
@@ -338,10 +351,12 @@ function CommentRow({
   density,
   onDelete,
   onEdit,
+  rail,
 }: {
   comment: Comment;
   resolved: boolean;
   density: CommentDensity;
+  rail?: 'through' | 'end' | undefined;
   // Undefined when this session may not delete it, so the row never renders a delete affordance.
   onDelete?: () => void;
   // The same for an edit: only on this person's own comment, where its host offers editing.
@@ -359,15 +374,16 @@ function CommentRow({
   });
   return (
     <li
-      className={`group flex ${comfortable ? 'gap-2.5 py-2.5' : 'gap-2 py-2'} ${resolved ? 'opacity-60' : ''}`}
+      className={`group flex ${rail ? 'relative' : ''} ${comfortable ? 'gap-2.5 py-2.5' : 'gap-2 py-2'} ${resolved ? 'opacity-70' : ''}`}
     >
-      <span className="mt-0.5 inline-flex">
+      {rail ? <span aria-hidden className={conversationRailClass(rail)} /> : null}
+      <span className="relative mt-0.5 inline-flex">
         <GlyphDisc
           size={comfortable ? 28 : 24}
           as="div"
           aria-hidden
           style={identityVars(comment.authorColor)}
-          className={`text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
+          className={`text-[10px] font-semibold text-white ${IDENTITY_FILL} ${rail ? (resolved ? RAIL_RING_RESOLVED : RAIL_RING) : ''}`}
         >
           {initialsOf(comment.authorName)}
         </GlyphDisc>
@@ -471,6 +487,10 @@ function CommentRow({
     </li>
   );
 }
+
+// A railed disc's ring, the colour of the thread card behind it, so the rail stops at the disc's edge.
+const RAIL_RING = 'ring-[3px] ring-white dark:ring-slate-900';
+const RAIL_RING_RESOLVED = 'ring-[3px] ring-slate-50 dark:ring-slate-900';
 
 // A row's Edit and Delete: at least 32 px on a touch screen (docs/specs/026-plan/items.md "Keyboard and screen
 // readers"), quiet until hovered or focused with a mouse.

@@ -749,8 +749,8 @@ export const PLAN_CARD_ACTIVITY = chart(
   'Plan',
   'Toggled',
   'Card Activity Opened',
-  "The Activity section below a card's Comments: opened to show the card's history, or closed again.",
-  { types: ['ActivityOn', 'ActivityOff'], rising: 'neutral' },
+  "The Activity tab of a card's panel picked to read the card's history (before it, the Activity section opened).",
+  { types: ['ActivityOn'], rising: 'neutral' },
 );
 
 export const PLAN_COLUMNS_COLLAPSED = chart(

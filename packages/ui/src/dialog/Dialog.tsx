@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { ViewTransition, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { Portal } from '../Portal';
 import { useEscape } from '../useEscape';
 import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
@@ -76,6 +76,10 @@ export type DialogProps = {
   // Where focus lands on open: the first control (default), or the panel itself ('container') when the
   // first control is not where anyone starts.
   initialFocus?: FocusTrapInitial;
+  // A React View Transition type (react-state-and-effects.md "Animating a state change") under which a change to the
+  // panel (its size) morphs: the panel is named for that type alone (its view-transition class is the type), so the
+  // browser animates its old picture into the new one; no other change animates it. Absent, none.
+  resizeTransition?: string;
   children: ReactNode;
 };
 
@@ -137,6 +141,7 @@ export function Dialog({
   backdrop = 'dim',
   phoneSheet = false,
   initialFocus = 'first',
+  resizeTransition,
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -178,6 +183,46 @@ export function Dialog({
 
   if (!open) return null;
 
+  const panelEl = (
+    <div
+      ref={panelRef}
+      role="dialog"
+      aria-modal="true"
+      data-dialog-panel=""
+      aria-labelledby={titleId}
+      aria-label={ariaLabel}
+      tabIndex={-1}
+      // The keyboard band's cap goes last, so a sheet dragged taller still stops above the keyboard.
+      style={
+        phoneSheet
+          ? {
+              paddingBottom: safeInset('bottom'),
+              ...sheet.style,
+              ...fitted.panel,
+            }
+          : fitted.panel
+      }
+      // Default to a viewport-bounded, scrollable panel so a tall dialog on
+      // a short/landscape screen never pushes its footer off the bottom.
+      // Dialogs that set their own max-h (e.g. ShareDialog, Export) opt out
+      // of the default and manage their own scroll region.
+      className={`flex ${WIDTHS[size]} max-w-[92%] animate-dialog-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
+        phoneSheet
+          ? PHONE_SHEET
+          : EDGE_TO_EDGE_SIZES.has(size)
+            ? ' max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0'
+            : ''
+      }${
+        className?.includes('max-h') ? '' : ' max-h-[calc(100dvh-2rem)] overflow-y-auto'
+      }${className ? ` ${className}` : ''}`}
+    >
+      {phoneSheet ? (
+        // The grab handle, phone only (BottomSheet's).
+        <SheetHandle handleProps={sheet.handleProps} className="sm:hidden" />
+      ) : null}
+      {children}
+    </div>
+  );
   return (
     <Portal>
       <div
@@ -205,44 +250,16 @@ export function Dialog({
           pressedBackdrop.current = false;
         }}
       >
-        <div
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          data-dialog-panel=""
-          aria-labelledby={titleId}
-          aria-label={ariaLabel}
-          tabIndex={-1}
-          // The keyboard band's cap goes last, so a sheet dragged taller still stops above the keyboard.
-          style={
-            phoneSheet
-              ? {
-                  paddingBottom: safeInset('bottom'),
-                  ...sheet.style,
-                  ...fitted.panel,
-                }
-              : fitted.panel
-          }
-          // Default to a viewport-bounded, scrollable panel so a tall dialog on
-          // a short/landscape screen never pushes its footer off the bottom.
-          // Dialogs that set their own max-h (e.g. ShareDialog, Export) opt out
-          // of the default and manage their own scroll region.
-          className={`flex ${WIDTHS[size]} max-w-[92%] animate-dialog-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
-            phoneSheet
-              ? PHONE_SHEET
-              : EDGE_TO_EDGE_SIZES.has(size)
-                ? ' max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0'
-                : ''
-          }${
-            className?.includes('max-h') ? '' : ' max-h-[calc(100dvh-2rem)] overflow-y-auto'
-          }${className ? ` ${className}` : ''}`}
-        >
-          {phoneSheet ? (
-            // The grab handle, phone only (BottomSheet's).
-            <SheetHandle handleProps={sheet.handleProps} className="sm:hidden" />
-          ) : null}
-          {children}
-        </div>
+        {resizeTransition ? (
+          <ViewTransition
+            default="none"
+            update={{ [resizeTransition]: resizeTransition, default: 'none' }}
+          >
+            {panelEl}
+          </ViewTransition>
+        ) : (
+          panelEl
+        )}
       </div>
     </Portal>
   );

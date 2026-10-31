@@ -78,7 +78,7 @@ describe('starting a thread', () => {
     // The new thread, open, its reply composer ready.
     expect(screen.getByText('Sam: started')).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Reply to “Sam: started”' })).toBeTruthy();
-    expect(screen.getByText('1 open')).toBeTruthy();
+    expect(screen.getByText('1 Open')).toBeTruthy();
   });
 
   it('cancels with Escape or Cancel', () => {
@@ -108,7 +108,7 @@ describe('the list', () => {
 
   it('puts open threads first, every one closed, and resolved ones under a closed disclosure', () => {
     renderLive(THREADS);
-    expect(screen.getByText('2 open · 1 resolved')).toBeTruthy();
+    expect(screen.getByText('2 Open')).toBeTruthy();
     const open = screen
       .getByRole('list', { name: 'Open threads' })
       .querySelectorAll('[data-thread]');

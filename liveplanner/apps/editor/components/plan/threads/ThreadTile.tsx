@@ -1,14 +1,15 @@
 'use client';
 
-// One comment thread on a card (docs/specs/026-plan/items.md "Where it shows"): a rounded tile whose header opens and
-// closes it (its title, the people in it, how many comments and when it was last active, the shared chip and the ⋯
-// menu), and, open, its comments, Resolve or Reopen, and a reply composer. A resolved thread is drawn quieter, with
-// who resolved it. Rename edits the title in place.
+// One comment thread on a card (docs/specs/026-plan/items.md "Where it shows"): a rounded card whose header opens and
+// closes it (the starter's disc, its title and last activity, the people in it, how many comments, the latest
+// comment's opening words while closed, the shared chip and the ⋯ menu), and, open, one conversation: its comments
+// hang from a rail down from the header's disc to your own beside the reply composer, with Resolve or Reopen. A
+// resolved thread is drawn quieter, a check on its disc and who resolved it. Rename edits the title in place. The
+// disc, rail and time are the Activity timeline's (timeline-parts.tsx).
 
 import { useId, useMemo, useRef, useState } from 'react';
 import {
   CheckIcon,
-  CommentIcon,
   ConfirmPopover,
   GlyphDisc,
   IDENTITY_FILL,
@@ -45,7 +46,8 @@ import {
   type ComposerDraft,
 } from '@/components/panels/comment-thread-parts';
 import { initialsOf } from '@/lib/identity';
-import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
+import { useRelativeNow } from '@/lib/relative-time';
+import { TimelineDisc, TimelineTime, railClass } from './timeline-parts';
 import { ThreadSharedChip } from './ThreadSharedChip';
 import { ThreadTitleEditor } from './ThreadTitleEditor';
 import { ANNOUNCE, commentCount, deleteThreadMessage, resolvedByLabel } from './thread-words';
@@ -71,10 +73,10 @@ function Faces({ thread }: { thread: CardThread }) {
       {shown.map((p, i) => (
         <GlyphDisc
           key={`${p.name}-${p.color}`}
-          size={20}
+          size={18}
           as="span"
           style={identityVars(p.color)}
-          className={`text-[8px] font-semibold tracking-tight text-white ring-2 ring-white dark:ring-slate-900 ${IDENTITY_FILL} ${i ? '-ml-1' : ''}`}
+          className={`text-[7px] font-semibold tracking-tight text-white ring-2 ring-white dark:ring-slate-900 ${IDENTITY_FILL} ${i ? '-ml-1' : ''}`}
         >
           {initialsOf(p.name)}
         </GlyphDisc>
@@ -137,7 +139,12 @@ export function ThreadTile({
   // resolved instead (docs/specs/026-plan/items.md "Deleting a thread").
   const mayDelete = threadOnlyBy(thread, selfId);
   const at = resolved ? (thread.resolvedAt ?? thread.updatedAt) : thread.updatedAt;
-  const when = new Date(at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  // Who started it (its first comment's author), at the rail's head; the latest comment, previewed while closed.
+  const first = thread.comments[0];
+  const starter = first
+    ? { name: first.authorName, color: first.authorColor }
+    : (threadParticipants(thread)[0] ?? { name: '?', color: '#64748b' });
+  const latest = thread.comments.at(-1);
   const run = (fn: () => void) => () => {
     setMenuOpen(false);
     fn();
@@ -172,17 +179,19 @@ export function ThreadTile({
       ref={tileRef}
       data-thread={thread.id}
       data-thread-resolved={resolved ? '' : undefined}
-      className={`rounded-xl border transition-colors motion-reduce:transition-none ${
+      className={`rounded-xl ring-1 transition motion-reduce:transition-none ${
         resolved
-          ? 'border-slate-200/70 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40'
+          ? 'bg-slate-50 ring-slate-200/80 dark:bg-slate-900/60 dark:ring-slate-800'
           : expanded
-            ? 'border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'
-            : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700'
+            ? 'bg-white shadow-sm ring-slate-200 dark:bg-slate-900 dark:ring-slate-700'
+            : 'bg-white ring-slate-200 hover:shadow-sm hover:ring-slate-300 dark:bg-slate-900 dark:ring-slate-800 dark:hover:ring-slate-700'
       }`}
     >
-      <div className="flex items-start gap-1 py-1.5 pl-1.5 pr-1">
+      <div className="relative flex items-start gap-1 py-2 pl-2 pr-1.5">
+        {/* The rail starts at the header's disc and runs down into the conversation. */}
+        {expanded ? <span aria-hidden className={`${railClass(28)} ml-3 mt-1`} /> : null}
         {renaming ? (
-          <div className="flex min-w-0 flex-1 items-center gap-2 px-1.5 py-1">
+          <div className="flex min-w-0 flex-1 items-center gap-2 px-1 py-1">
             <ThreadTitleEditor
               title={threadTitle(thread)}
               onDone={(title) => {
@@ -208,47 +217,57 @@ export function ThreadTile({
                 setRenaming(true);
               }
             }}
-            className="flex min-w-0 flex-1 cursor-pointer items-start gap-2 rounded-lg px-1.5 py-1 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-brand-400/60 motion-reduce:transition-none pointer-coarse:py-2"
+            className="flex min-w-0 flex-1 cursor-pointer items-start gap-3 rounded-lg px-1 py-0.5 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-brand-400/60 motion-reduce:transition-none pointer-coarse:py-1.5"
           >
-            <span
-              aria-hidden
-              className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full ${
-                resolved
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
-                  : 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
-              }`}
-            >
-              {resolved ? <CheckIcon size={11} /> : <CommentIcon size={11} />}
-            </span>
+            <TimelineDisc
+              name={starter.name}
+              color={starter.color}
+              size={28}
+              badge={
+                resolved ? (
+                  <span className="flex size-3.5 items-center justify-center rounded-full bg-emerald-600 text-white ring-2 ring-slate-50 dark:bg-emerald-500 dark:ring-slate-900">
+                    <CheckIcon size={9} />
+                  </span>
+                ) : undefined
+              }
+            />
             <span className="min-w-0 flex-1">
-              <Tooltip label={title}>
-                <span
-                  data-thread-title=""
-                  className={`block truncate text-[13px] font-semibold leading-5 ${
-                    resolved
-                      ? 'text-slate-600 dark:text-slate-300'
-                      : 'text-slate-900 dark:text-slate-50'
-                  }`}
-                >
-                  {title}
-                </span>
-              </Tooltip>
+              <span className="flex items-baseline gap-2">
+                <Tooltip label={title}>
+                  <span
+                    data-thread-title=""
+                    className={`min-w-0 flex-1 truncate text-[13px] font-semibold leading-5 ${
+                      resolved
+                        ? 'text-slate-600 dark:text-slate-300'
+                        : 'text-slate-900 dark:text-slate-50'
+                    }`}
+                  >
+                    {title}
+                  </span>
+                </Tooltip>
+                <TimelineTime at={at} now={now} className="shrink-0" />
+              </span>
               <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400">
                 <Faces thread={thread} />
                 <span>{commentCount(thread.comments.length)}</span>
-                <span aria-hidden>·</span>
                 {resolved ? (
                   <>
-                    <span>{resolvedByLabel(thread.resolvedBy)}</span>
                     <span aria-hidden>·</span>
+                    <span>{resolvedByLabel(thread.resolvedBy)}</span>
                   </>
                 ) : null}
-                <Tooltip label={when}>
-                  <time dateTime={new Date(at).toISOString()}>
-                    {formatRelativeTimeCompact(now - at)}
-                  </time>
-                </Tooltip>
               </span>
+              {!expanded && latest ? (
+                <span
+                  data-thread-preview=""
+                  className="mt-1 block truncate text-[12px] text-slate-500 dark:text-slate-400"
+                >
+                  <span className="font-medium text-slate-600 dark:text-slate-300">
+                    {latest.authorName}:
+                  </span>{' '}
+                  {latest.text}
+                </span>
+              ) : null}
             </span>
             <span
               aria-hidden
@@ -258,7 +277,7 @@ export function ThreadTile({
             </span>
           </button>
         )}
-        <div className="flex shrink-0 items-center gap-0.5 pt-0.5">
+        <div className="flex shrink-0 items-center gap-0.5">
           {thread.cards.length > 1 ? (
             <ThreadSharedChip thread={thread} ctx={ctx} itemId={itemId} titleOf={titleOf} />
           ) : null}
@@ -329,7 +348,7 @@ export function ThreadTile({
         <div
           id={bodyId}
           data-thread-body=""
-          className="animate-card-rise border-t border-slate-100 px-3 pb-3 pt-1 motion-reduce:animate-none dark:border-slate-800"
+          className="animate-card-rise px-3 pb-3 motion-reduce:animate-none"
         >
           <CommentReactionsProvider value={reactions}>
             <CommentThreadList
@@ -338,6 +357,7 @@ export function ThreadTile({
               canComment={canComment}
               selfId={selfId}
               density="comfortable"
+              rail={resolved ? 'end' : 'through'}
               onDeleteComment={(commentId) =>
                 void threads.act({ kind: 'delete', threadId: thread.id, commentId }).then((ok) => {
                   if (ok !== false)
@@ -357,7 +377,7 @@ export function ThreadTile({
                     if (ok !== false) announce(ANNOUNCE.commentEdited);
                   })
               }
-              className="max-h-96 divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800"
+              className="max-h-96 overflow-y-auto"
             />
           </CommentReactionsProvider>
           {resolved ? (
@@ -369,6 +389,7 @@ export function ThreadTile({
           ) : canComment ? (
             <CommentComposer
               density="comfortable"
+              rail
               self={ctx.self}
               placeholder="Reply…"
               fieldLabel={`Reply to “${title}”`}

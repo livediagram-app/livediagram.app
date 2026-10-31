@@ -10,8 +10,8 @@ import type { CardThreads as CardThreadsValue } from '@/hooks/plan/useCardThread
 vi.mock('@/lib/api/item-history', () => ({ fetchItemHistory: () => Promise.resolve([]) }));
 
 // docs/specs/026-plan/items.md "Comments": the card's threads end the item panel's Overview tab, and a type that
-// stops offering comments keeps its threads stored, out of the panel. "History" "Where it shows": the Activity
-// section follows the card's Comments, apart from them.
+// stops offering comments keeps its threads stored, out of the panel; its heading line holds the open count and New
+// Thread. "History" "Where it shows": Activity is a tab of its own, never inside Comments.
 
 afterEach(cleanup);
 
@@ -113,28 +113,18 @@ describe('the item panel’s comments', () => {
   });
 });
 
-describe('the item panel’s activity', () => {
-  const sectionOf = (name: string) => screen.getByText(name).closest('section')!;
-
-  it('follows the Comments section, its own section, closed', () => {
-    panel(card(), ITEM_TYPES, true, true);
-    const activity = screen.getByRole('button', { name: 'Activity' });
-    expect(activity.getAttribute('aria-expanded')).toBe('false');
-    const comments = sectionOf('Comments');
-    expect(comments.contains(activity)).toBe(false);
-    expect(comments.nextElementSibling).toBe(activity.closest('section'));
-    expect(document.querySelectorAll('[data-card-activity]')).toHaveLength(1);
-  });
-
-  it('ends the first tab when the type offers no comments', () => {
-    const plain: ItemTypeDef = { ...ITEM_TYPES[1], fields: ['title', 'status', 'description'] };
-    panel(card(), [plain], true, true);
-    const activity = screen.getByRole('button', { name: 'Activity' }).closest('section')!;
-    expect(activity.nextElementSibling).toBeNull();
-  });
-
-  it('draws no Activity section without a plan to read from', () => {
+describe('the Comments heading', () => {
+  it('holds the label, the open count and New Thread on one line', () => {
     panel(card());
-    expect(screen.queryByRole('button', { name: 'Activity' })).toBeNull();
+    const line = screen.getByText('Comments').parentElement!;
+    expect(line.textContent).toBe('Comments1 OpenNew Thread');
+    expect(line.querySelector('[data-thread-tally]')!.textContent).toBe('1 Open');
+  });
+
+  it('keeps Activity out of Comments: it is a tab of its own', () => {
+    panel(card(), ITEM_TYPES, true, true);
+    const comments = screen.getByText('Comments').closest('section')!;
+    expect(comments.querySelector('[data-card-activity], [data-activity]')).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Activity' })).toBeTruthy();
   });
 });

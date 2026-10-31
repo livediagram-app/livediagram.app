@@ -6,7 +6,8 @@
 // ItemFieldEditor's.
 import { FROM_FORM_FIELD, readFromForm } from '@liveplanner/forms';
 import type { ReactNode } from 'react';
-import { Tooltip, relativeSince } from '@liveplanner/ui';
+import { Tooltip, lucideGlyph, relativeSince } from '@liveplanner/ui';
+import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import {
   dayLabel,
   itemStampPerson,
@@ -45,23 +46,37 @@ export function ItemPanelSection({
   heading,
   htmlFor,
   required,
+  actions,
   children,
 }: {
   heading: string;
   // The control the heading labels, when it labels one.
   htmlFor?: string | undefined;
   required?: boolean;
+  // What sits on the heading's own line after it (the Comments' open count and New Thread): one line, no row of
+  // its own.
+  actions?: ReactNode;
   children: ReactNode;
 }) {
+  const label = (
+    <label
+      htmlFor={htmlFor}
+      className={`${actions ? 'shrink-0' : 'mb-2 block'} text-[13px] font-semibold text-slate-800 dark:text-slate-100`}
+    >
+      {heading}
+      {required ? <RequiredMark /> : null}
+    </label>
+  );
   return (
     <section className="mb-8">
-      <label
-        htmlFor={htmlFor}
-        className="mb-2 block text-[13px] font-semibold text-slate-800 dark:text-slate-100"
-      >
-        {heading}
-        {required ? <RequiredMark /> : null}
-      </label>
+      {actions ? (
+        <div className="mb-2 flex min-h-8 items-center gap-2">
+          {label}
+          {actions}
+        </div>
+      ) : (
+        label
+      )}
       {children}
     </section>
   );
@@ -99,8 +114,9 @@ export function ItemDetailsRow({
   );
 }
 
-// Who made the card and who last edited it, and when, small and quiet at Details' foot (docs/specs/026-plan/items.md
-// "Created and Last Edited"): each line left out when the card holds no one for it, never a guess.
+// Who made the card and who last edited it, and when: a quiet footer pinned to the bottom of Details (its parent is a
+// flex column; docs/specs/026-plan/plan-board.md "Look", items.md "Created and Last Edited"), each row left out when
+// the card holds no one for it, never a guess.
 export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const response = readFromForm(item.fields[FROM_FORM_FIELD]);
   const maker = itemStampPerson(item, 'createdBy');
@@ -109,41 +125,75 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const edited = itemStampTime(item, 'updatedAt');
   if (!maker && !response && !editor) return null;
   return (
-    <div className="mt-5 flex flex-col gap-1.5 border-t border-slate-200/80 pt-3 text-[11px] text-slate-500 dark:text-slate-400 dark:border-slate-700/80">
-      {maker ? (
-        <div className="flex items-center gap-1.5">
-          Created by <PersonDisc person={maker} />
-          <span>
-            <span className="font-medium text-slate-600 dark:text-slate-300">{maker.name}</span>
-            {/* A form's response says when on its own line. */}
-            {made !== undefined && !response ? `, ${stampDayLabel(made)}` : null}
-          </span>
-        </div>
-      ) : null}
-      {response ? (
-        // A form's response (docs/specs/030-forms/forms.md "What a response makes"): its number and when it came.
-        <div>
-          Form response #{response.number}
-          {made !== undefined ? `, ${stampMomentLabel(made)}` : null}
-        </div>
-      ) : null}
-      {editor ? (
-        <div className="flex items-center gap-1.5">
-          Last edited by <PersonDisc person={editor} />
-          <span>
-            <span className="font-medium text-slate-600 dark:text-slate-300">{editor.name}</span>
-            {edited !== undefined ? (
-              <>
-                ,{' '}
-                <Tooltip label={stampMomentLabel(edited)}>
-                  <time dateTime={new Date(edited).toISOString()}>
-                    {relativeSince(edited, now)}
-                  </time>
-                </Tooltip>
-              </>
-            ) : null}
-          </span>
-        </div>
+    <footer
+      data-item-meta=""
+      className="mt-auto flex flex-col gap-0.5 pt-5 text-[12px] text-slate-500 dark:text-slate-400"
+    >
+      <div className="flex flex-col gap-0.5 border-t border-slate-200/80 pt-3 dark:border-slate-700/80">
+        {maker ? (
+          <MetaRow
+            lead={<PersonDisc person={maker} />}
+            // A form's response says when on its own row.
+            at={response ? undefined : made}
+            when={made !== undefined ? stampDayLabel(made) : ''}
+          >
+            Created by <span className={META_NAME}>{maker.name}</span>
+          </MetaRow>
+        ) : null}
+        {response ? (
+          // A form's response (docs/specs/030-forms/forms.md "What a response makes"): its number and when it came.
+          <MetaRow
+            lead={<FormGlyph aria-hidden />}
+            at={made}
+            when={made !== undefined ? stampDayLabel(made) : ''}
+          >
+            Form response <span className={META_NAME}>#{response.number}</span>
+          </MetaRow>
+        ) : null}
+        {editor ? (
+          <MetaRow
+            lead={<PersonDisc person={editor} />}
+            at={edited}
+            when={edited !== undefined ? relativeSince(edited, now) : ''}
+          >
+            Edited by <span className={META_NAME}>{editor.name}</span>
+          </MetaRow>
+        ) : null}
+      </div>
+    </footer>
+  );
+}
+
+const META_NAME = 'font-medium text-slate-700 dark:text-slate-200';
+const FormGlyph = lucideGlyph(lucideClipboardList, 14);
+
+// One footer row: a disc (or a glyph), the words, and when at the row's end, the exact moment on hover.
+function MetaRow({
+  lead,
+  children,
+  at,
+  when,
+}: {
+  lead: ReactNode;
+  children: ReactNode;
+  at: number | undefined;
+  when: string;
+}) {
+  return (
+    <div data-item-meta-row="" className="flex min-h-7 items-center gap-2">
+      <span className="flex size-5 shrink-0 items-center justify-center text-slate-400">
+        {lead}
+      </span>
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      {at !== undefined ? (
+        <Tooltip label={stampMomentLabel(at)}>
+          <time
+            dateTime={new Date(at).toISOString()}
+            className="shrink-0 whitespace-nowrap text-[11px] tabular-nums"
+          >
+            {when}
+          </time>
+        </Tooltip>
       ) : null}
     </div>
   );

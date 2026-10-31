@@ -1,24 +1,20 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ItemHistoryEntry } from '@liveplanner/items';
 import type { CardThreads as CardThreadsValue } from '@/hooks/plan/useCardThreads';
-import { writeLocalStorageValue } from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
-import { CardThreads } from './CardThreads';
-import { CARD_ACTIVITY_KEY, CardActivitySection } from './CardActivity';
+import { ACTIVITY_ENTRIES_SHOWN, CardActivityTab } from './CardActivity';
 import { PlanProvider, type PlanContextValue } from '../PlanContext';
-import { card, contextOf, fakeThreads, PLAN, Provide, thread } from './thread-test-kit';
+import { card, contextOf, fakeThreads, PLAN, Provide } from './thread-test-kit';
 
-// A card's activity in its panel (docs/specs/026-plan/items.md "History" "Where it shows"): its own section below the
-// threads, closed until opened and remembered, its rows newest first, Show N More, the notes, the read on open and on
-// a change, and that a Viewer reads it as anyone does.
+// A card's Activity tab (docs/specs/026-plan/items.md "History" "Where it shows"): its timeline (day groups, runs on a
+// rail, a line per change with chips), Show N More and Show N More Changes, the skeleton and the empty, failed, This
+// Browser and no-plan states, the read on mount and on a change, and that a Viewer reads it as anyone does.
 
 const fetchItemHistory = vi.fn<(...args: unknown[]) => unknown>();
 vi.mock('@/lib/api/item-history', () => ({
   fetchItemHistory: (...args: unknown[]) => fetchItemHistory(...args),
 }));
-const track = vi.fn<(...args: unknown[]) => void>();
-vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => track(...args) }));
 
 const SCOPE = { ownerId: 'owner-me', projectId: PLAN, shareCode: null, tabId: null };
 const NOW = Date.now();
@@ -36,23 +32,20 @@ const plan = {
     ['doing', 'In Progress'],
     ['review', 'Review'],
   ]),
+  statusPhases: new Map([['review', 'done']]),
 } as unknown as PlanContextValue;
 
 const flush = () => act(async () => {});
-const activityButton = () => screen.getByRole('button', { name: 'Activity' });
+const entries = () => document.querySelectorAll('[data-activity]');
+const runs = () => [...document.querySelectorAll('[data-activity-run]')];
 
-function show(
-  threads = [thread('th-a', { updatedAt: NOW - 30 * 60_000 })],
-  extra: Parameters<typeof contextOf>[1] = {},
-  item = card(),
-) {
-  const fake = fakeThreads(threads);
-  const value = { ...fake.threads, scope: SCOPE } as unknown as CardThreadsValue;
+function show(extra: Parameters<typeof contextOf>[1] = {}, item = card()) {
+  const { threads } = fakeThreads([]);
+  const value = { ...threads, scope: SCOPE } as unknown as CardThreadsValue;
   const ui = (it = item) => (
     <PlanProvider value={plan}>
       <Provide value={contextOf(value, extra)}>
-        <CardThreads item={it} />
-        <CardActivitySection item={it} />
+        <CardActivityTab item={it} />
       </Provide>
     </PlanProvider>
   );
@@ -60,90 +53,108 @@ function show(
   return { rerender: (it: typeof item) => view.rerender(ui(it)) };
 }
 
-beforeEach(() => {
-  // The section starts open in every test; the store keeps what a test before it wrote.
-  writeLocalStorageValue(CARD_ACTIVITY_KEY, 'on');
-  fetchItemHistory.mockReset();
-  track.mockReset();
-});
+beforeEach(() => fetchItemHistory.mockReset());
 afterEach(cleanup);
 
-describe('the Activity section', () => {
-  it('lists the card’s activity on its own, newest first, apart from the threads', async () => {
-    fetchItemHistory.mockResolvedValue([
-      entry(5, { mine: true }),
-      entry(60, {
-        by: { name: 'Bo', color: '#16a34a' },
-        tag: 'ai',
-        changes: [{ kind: 'flagged' }],
-      }),
-      entry(90, { tag: 'undo', changes: [{ kind: 'archived' }] }),
-    ]);
+describe('the Activity tab', () => {
+  it('reads the card’s history as it opens, and draws a timeline under Today', async () => {
+    fetchItemHistory.mockResolvedValue([entry(5, { mine: true })]);
     show();
+    expect(screen.getByRole('status', { name: 'Loading activity' })).toBeTruthy();
     await flush();
     expect(fetchItemHistory).toHaveBeenCalledWith(SCOPE, 'card-1');
-    // The threads list holds threads only.
-    const threadsList = screen.getByRole('list', { name: 'Open threads' });
-    expect(
-      within(threadsList)
-        .queryAllByRole('listitem')
-        .some((li) => li.hasAttribute('data-activity')),
-    ).toBe(false);
-    const list = screen.getByRole('list', { name: 'Activity' });
-    const rows = within(list)
-      .getAllByRole('listitem')
-      .map((li) => li.querySelector('p')!.textContent);
-    expect(rows[0]).toMatch(/^You moved this from In Progress to Review ·\s5m ago$/);
-    expect(rows[1]).toMatch(/^Bo flagged this ·\s1h ago$/);
-    expect(within(list).getByRole('img', { name: 'Generated by AI' })).toBeTruthy();
-    expect(rows[2]).toMatch(/^Ada King archived this \(Undo\) ·\s1h ago$/);
+    expect(screen.getByRole('heading', { name: 'Today' })).toBeTruthy();
+    const run = runs()[0]!;
+    expect(run.textContent).toMatch(/^AKYou5m agoMoved In Progress→ to Review$/);
   });
 
-  it('starts closed, reading nothing, unless this browser opened it (or turned the old switch on)', async () => {
-    writeLocalStorageValue(CARD_ACTIVITY_KEY, 'off');
-    show();
-    await flush();
-    expect(fetchItemHistory).not.toHaveBeenCalled();
-    expect(activityButton().getAttribute('aria-expanded')).toBe('false');
-  });
-
-  it('opens and closes from its heading, remembered in this browser', async () => {
-    writeLocalStorageValue(CARD_ACTIVITY_KEY, 'off');
+  it('draws statuses as chips in their stage, the old one muted before the arrow', async () => {
     fetchItemHistory.mockResolvedValue([entry(5)]);
     show();
-    fireEvent.click(activityButton());
-    expect(track).toHaveBeenCalledWith('Plan', 'Toggled', 'ActivityOn');
-    expect(localStorage.getItem(CARD_ACTIVITY_KEY)).toBe('on');
-    expect(screen.getByText('Loading activity…')).toBeTruthy();
     await flush();
-    expect(activityButton().getAttribute('aria-expanded')).toBe('true');
-    expect(document.querySelectorAll('[data-activity]')).toHaveLength(1);
-    fireEvent.click(activityButton());
-    expect(track).toHaveBeenCalledWith('Plan', 'Toggled', 'ActivityOff');
-    expect(localStorage.getItem(CARD_ACTIVITY_KEY)).toBe('off');
-    expect(document.querySelector('[data-activity]')).toBeNull();
-  });
-
-  it('holds rows past the eighth under Show N More', async () => {
-    fetchItemHistory.mockResolvedValue(Array.from({ length: 11 }, (_, i) => entry(i + 1)));
-    show([]);
-    await flush();
-    expect(document.querySelectorAll('[data-activity]')).toHaveLength(8);
-    fireEvent.click(screen.getByRole('button', { name: 'Show 3 More' }));
-    expect(document.querySelectorAll('[data-activity]')).toHaveLength(11);
-    expect(screen.queryByRole('button', { name: /More$/ })).toBeNull();
-  });
-
-  it('shows the card’s activity below the empty state when it has no threads', async () => {
-    fetchItemHistory.mockResolvedValue([
-      entry(1, { changes: [{ kind: 'created', status: 'doing' }] }),
+    const chips = [...document.querySelectorAll('[data-activity-chip]')];
+    expect(chips.map((c) => [c.getAttribute('data-activity-chip'), c.textContent])).toEqual([
+      ['old', 'In Progress'],
+      ['new', 'Review'],
     ]);
-    show([]);
+    // Review's stage is Done: its dot is the Done colour, In Progress (no stage known) Not Started's.
+    const dots = chips.map((c) => (c.querySelector('span') as HTMLElement).style.backgroundColor);
+    expect(dots[0]).not.toBe(dots[1]);
+  });
+
+  it('hangs one person’s close entries from one disc, each with its own time, and an agent’s with the sparkle', async () => {
+    fetchItemHistory.mockResolvedValue([
+      entry(5),
+      entry(10, { changes: [{ kind: 'flagged' }] }),
+      entry(20, {
+        by: { name: 'Bo', color: '#16a34a' },
+        tag: 'ai',
+        changes: [{ kind: 'trashed' }],
+      }),
+      entry(30, { tag: 'undo', changes: [{ kind: 'archived' }] }),
+    ]);
+    show();
     await flush();
-    expect(screen.getByText('No threads yet')).toBeTruthy();
-    expect(document.querySelector('[data-activity]')!.textContent).toMatch(
-      /created this card in In Progress/,
+    expect(runs()).toHaveLength(3);
+    expect(runs()[0]!.querySelectorAll('[data-activity]')).toHaveLength(2);
+    expect(runs()[0]!.querySelectorAll('time')).toHaveLength(2);
+    expect(screen.getByRole('img', { name: 'Generated by AI' })).toBeTruthy();
+    expect(runs()[1]!.textContent).toMatch(/Moved this card to the Trash/);
+    expect(runs()[2]!.textContent).toMatch(/Archived this card \(Undo\)/);
+  });
+
+  it('heads older days with their date and their rows with the time of day', async () => {
+    fetchItemHistory.mockResolvedValue([entry(5), entry(60 * 24 * 3)]);
+    show();
+    await flush();
+    const headings = screen.getAllByRole('heading').map((h) => h.textContent);
+    expect(headings[0]).toBe('Today');
+    expect(headings[1]).not.toMatch(/Today|Yesterday/);
+    expect(runs()[1]!.querySelector('time')!.textContent).not.toMatch(/ago/);
+  });
+
+  it('shows the old value a field held, from the older entries', async () => {
+    fetchItemHistory.mockResolvedValue([
+      entry(5, { changes: [{ kind: 'set', field: 'priority', value: 'high' }] }),
+      entry(600, { changes: [{ kind: 'set', field: 'priority', value: 'low' }] }),
+    ]);
+    show();
+    await flush();
+    expect(entries()[0]!.textContent).toBe('Changed Priority Low→ to High');
+    expect(entries()[1]!.textContent).toBe('Set Priority to Low');
+  });
+
+  it('holds entries past the first under Show N More, and changes past three under Show N More Changes', async () => {
+    const many = Array.from({ length: ACTIVITY_ENTRIES_SHOWN + 3 }, (_, i) =>
+      entry(i * 45 + 1, {
+        by: { name: i % 2 ? 'Bo' : 'Ada', color: '#16a34a' },
+        changes:
+          i === 0
+            ? [
+                { kind: 'flagged' },
+                { kind: 'archived' },
+                { kind: 'cleared', field: 'due' },
+                { kind: 'cleared', field: 'start' },
+                { kind: 'cleared', field: 'estimate' },
+              ]
+            : [{ kind: 'flagged' }],
+      }),
     );
+    fetchItemHistory.mockResolvedValue(many);
+    show();
+    await flush();
+    expect(entries()).toHaveLength(ACTIVITY_ENTRIES_SHOWN);
+    fireEvent.click(screen.getByRole('button', { name: 'Show 3 More' }));
+    expect(entries()).toHaveLength(ACTIVITY_ENTRIES_SHOWN + 3);
+    expect(entries()[0]!.querySelectorAll('li')).toHaveLength(4);
+    fireEvent.click(screen.getByRole('button', { name: 'Show 2 More Changes' }));
+    expect(entries()[0]!.querySelectorAll('li')).toHaveLength(5);
+    const one = Array.from({ length: 4 }, () => ({ kind: 'flagged' }) as const);
+    fetchItemHistory.mockResolvedValue([entry(1, { changes: one })]);
+    cleanup();
+    show();
+    await flush();
+    expect(screen.getByRole('button', { name: 'Show 1 More Change' })).toBeTruthy();
   });
 
   it('reads it again, after a pause, when the card changes', async () => {
@@ -161,22 +172,20 @@ describe('the Activity section', () => {
     vi.useRealTimers();
   });
 
-  it('answers a Viewer as anyone: the section and its rows, no New Thread', async () => {
+  it('answers a Viewer as anyone', async () => {
     fetchItemHistory.mockResolvedValue([entry(5)]);
-    show([], { canComment: false, isEditor: false });
+    show({ canComment: false, isEditor: false });
     await flush();
-    expect(activityButton()).toBeTruthy();
-    expect(document.querySelectorAll('[data-activity]')).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: 'New Thread' })).toBeNull();
+    expect(entries()).toHaveLength(1);
   });
 });
 
-describe('the notes', () => {
+describe('its states', () => {
   it('says when nothing is recorded yet', async () => {
     fetchItemHistory.mockResolvedValue([]);
     show();
     await flush();
-    expect(screen.getByText('No activity recorded yet.')).toBeTruthy();
+    expect(screen.getByText('No Activity Yet')).toBeTruthy();
   });
 
   it('says a This Browser plan keeps no history', async () => {
@@ -190,20 +199,23 @@ describe('the notes', () => {
     fetchItemHistory.mockRejectedValueOnce(new Error('down')).mockResolvedValue([entry(2)]);
     show();
     await flush();
-    expect(screen.getByText(/Couldn’t load this card’s activity/)).toBeTruthy();
+    expect(screen.getByText('Couldn’t Load Activity')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     await flush();
-    expect(document.querySelectorAll('[data-activity]')).toHaveLength(1);
+    expect(entries()).toHaveLength(1);
   });
 
-  it('draws no section without a place to read from', () => {
+  it('says activity shows in a plan when there is nowhere to read from', () => {
     const { threads } = fakeThreads([]);
     render(
       <Provide value={contextOf(threads)}>
-        <CardActivitySection item={card()} />
+        <CardActivityTab item={card()} />
       </Provide>,
     );
-    expect(screen.queryByRole('button', { name: 'Activity' })).toBeNull();
+    expect(screen.getByText('No Activity Here')).toBeTruthy();
+    cleanup();
+    render(<CardActivityTab item={card()} />);
+    expect(screen.getByText('Activity shows on cards in a plan.')).toBeTruthy();
   });
 
   it('words its rows without a plan around it', async () => {
@@ -212,15 +224,10 @@ describe('the notes', () => {
     const value = { ...threads, scope: SCOPE } as unknown as CardThreadsValue;
     render(
       <Provide value={contextOf(value)}>
-        <CardActivitySection item={card()} />
+        <CardActivityTab item={card()} />
       </Provide>,
     );
     await flush();
-    expect(document.querySelector('[data-activity]')!.textContent).toMatch(/flagged this/);
-  });
-
-  it('draws no section without a comments context', () => {
-    render(<CardActivitySection item={card()} />);
-    expect(document.querySelector('[data-card-activity]')).toBeNull();
+    expect(entries()[0]!.textContent).toBe('Flagged this card');
   });
 });
