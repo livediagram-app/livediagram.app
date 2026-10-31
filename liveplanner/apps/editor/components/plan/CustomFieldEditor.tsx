@@ -4,7 +4,7 @@
 // its kind. Every value is a plain string, number or true/false under the field's id; clearing a
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.
-import { CloseIcon, Select, TextInput } from '@liveplanner/ui';
+import { CloseIcon, TextInput } from '@liveplanner/ui';
 import {
   CURRENCY_DEFAULT,
   EMAIL_MAX,
@@ -17,6 +17,7 @@ import {
   type ItemFieldValue,
 } from '@liveplanner/items';
 import { DateField, DebouncedText } from './item-field-editors';
+import { ChoiceField } from './ChoiceField';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { RatingInput } from '../forms/RatingInput';
 import { PercentSlider } from './PercentSlider';
@@ -186,57 +187,13 @@ export function CustomFieldEditor({
           onChange={(e) => void onSave(e.target.checked ? true : undefined)}
         />
       );
-    case 'choice': {
-      const options = field.options ?? [];
+    // Option chips and a list to pick from, one control for both (docs/specs/026-plan/item-types.md "Choice and
+    // Multiple Choice in the card panel").
+    case 'choice':
+    case 'multichoice':
       return (
-        <Select
-          id={id}
-          className="w-full"
-          selectClassName="text-[13px]"
-          disabled={disabled}
-          value={options.includes(text) ? text : ''}
-          onChange={(e) => void onSave(e.target.value || undefined)}
-        >
-          <option value="">None</option>
-          {options.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </Select>
+        <ChoiceField id={id} field={field} value={value} disabled={disabled} onSave={onSave} />
       );
-    }
-    case 'multichoice': {
-      // Checkboxes, one an option; the picks kept in option order (docs/specs/030-forms/forms.md).
-      const options = field.options ?? [];
-      const picks = Array.isArray(value)
-        ? value.filter((v): v is string => typeof v === 'string')
-        : [];
-      return (
-        <div id={id} role="group" aria-label={field.label} className="flex flex-col gap-1">
-          {options.map((o) => (
-            <label
-              key={o}
-              className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-slate-200"
-            >
-              <input
-                type="checkbox"
-                disabled={disabled}
-                className="h-4 w-4 accent-brand-600 enabled:cursor-pointer"
-                checked={picks.includes(o)}
-                onChange={(e) => {
-                  const next = options.filter((x) =>
-                    x === o ? e.target.checked : picks.includes(x),
-                  );
-                  void onSave(next.length ? next : undefined);
-                }}
-              />
-              {o}
-            </label>
-          ))}
-        </div>
-      );
-    }
     case 'rating': {
       const scale = ratingScaleOf(field);
       const n = typeof value === 'number' ? value : undefined;

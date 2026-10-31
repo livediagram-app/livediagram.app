@@ -65,7 +65,8 @@ describe('New {Type}', () => {
     const create = screen.getByRole('button', { name: 'Create' }) as HTMLButtonElement;
     expect(create.disabled).toBe(true);
     expect(screen.getByText('Fill in Severity, Area, Epic')).toBeTruthy();
-    fireEvent.change(screen.getByLabelText(/^Severity/), { target: { value: 'S2' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Severity/ }));
+    fireEvent.click(screen.getByRole('option', { name: 'S2' }));
     const area = screen.getByLabelText(/^Area/);
     fireEvent.change(area, { target: { value: 'Payments' } });
     fireEvent.blur(area);

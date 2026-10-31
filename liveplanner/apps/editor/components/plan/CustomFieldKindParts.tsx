@@ -36,6 +36,8 @@ import { PlayIcon } from './time/TimerReadouts';
 import { LabelChips } from './plan-card-parts';
 import { planColourName } from './ColourSwatches';
 import { PercentReading } from './PercentBar';
+import { OptionChip } from './OptionChip';
+import { choiceColour } from './choice-options';
 
 const TypeIcon = lucideGlyph(lucideType, 16);
 const HashIcon = lucideGlyph(lucideHash, 16);
@@ -185,25 +187,19 @@ function SampleValue({
       );
     case 'link':
       return <span className="text-brand-700 underline dark:text-brand-300">example.com</span>;
+    // The panel's option chips, coloured by place (docs/specs/026-plan/item-types.md "Choice and Multiple Choice in the
+    // card panel").
     case 'choice':
-      return (
-        <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[12px] text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {options[0] ?? 'An option'}
-        </span>
-      );
-    case 'multichoice':
+    case 'multichoice': {
+      const sample = options.length ? options : ['An option', 'Another'];
       return (
         <span className="flex flex-wrap gap-1">
-          {(options.length ? options.slice(0, 2) : ['An option', 'Another']).map((o) => (
-            <span
-              key={o}
-              className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[12px] text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-            >
-              {o}
-            </span>
+          {sample.slice(0, kind === 'choice' ? 1 : 2).map((o) => (
+            <OptionChip key={o} option={o} colour={choiceColour(sample, o)} />
           ))}
         </span>
       );
+    }
     case 'rating':
       return (
         <span className="text-[14px] tracking-wider text-amber-500" aria-hidden>
