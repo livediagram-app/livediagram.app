@@ -49,6 +49,7 @@ import {
   type ItemFieldContext,
 } from './ItemFieldEditor';
 import { ItemDetailsRow, ItemMeta, ItemPanelSection, ItemTypeBand } from './ItemPanelLayout';
+import { CardActivitySection } from './threads/CardActivity';
 
 // The phone's extra first tab, holding what the Details panel holds on a wide screen.
 const DETAILS_TAB = 'details';
@@ -317,17 +318,29 @@ function ItemPanelContent({
     </ItemDetailsRow>
   );
 
+  // The card's Activity section (docs/specs/026-plan/items.md "History" "Where it shows"): one per card, after its first
+  // Comments field in tab order, on that field's tab; a type with none ends its first tab with it.
+  const commentFields = new Set(commentsFieldsOf(type));
+  const activityAfter = tabs.flatMap((t) => t.fields).find((f) => commentFields.has(f));
+  const activityTab = activityAfter
+    ? tabs.find((t) => t.fields.includes(activityAfter))?.id
+    : firstTabId;
+  const activity = <CardActivitySection key="card-activity" item={item} />;
+
   // A main-column field: its name over its editor.
-  const mainField = (f: string) => (
-    <ItemPanelSection
-      key={f}
-      heading={fieldLabel(type, f)}
-      htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
-      required={requiredIds.has(f)}
-    >
-      <ItemFieldEditor f={f} ctx={ctx} />
-    </ItemPanelSection>
-  );
+  const mainField = (f: string): ReactNode => {
+    const section = (
+      <ItemPanelSection
+        key={f}
+        heading={fieldLabel(type, f)}
+        htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
+        required={requiredIds.has(f)}
+      >
+        <ItemFieldEditor f={f} ctx={ctx} />
+      </ItemPanelSection>
+    );
+    return f === activityAfter ? [section, activity] : section;
+  };
 
   const tabPanel = current ? (
     <div
@@ -349,6 +362,7 @@ function ItemPanelContent({
           Nothing on this tab yet. Edit the card type to add fields to it.
         </p>
       )}
+      {!activityAfter && current.id === activityTab ? activity : null}
     </div>
   ) : null;
 

@@ -748,8 +748,8 @@ export const PLAN_FILL_TAB = chart(
 export const PLAN_CARD_ACTIVITY = chart(
   'Plan',
   'Toggled',
-  'Card Activity Shown',
-  "The Activity switch in a card's Comments: the card's history shown among its threads, or hidden again.",
+  'Card Activity Opened',
+  "The Activity section below a card's Comments: opened to show the card's history, or closed again.",
   { types: ['ActivityOn', 'ActivityOff'], rising: 'neutral' },
 );
 

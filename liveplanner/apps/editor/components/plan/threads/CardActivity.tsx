@@ -1,83 +1,115 @@
 'use client';
 
-// A card's activity in its panel (docs/specs/026-plan/items.md "History" "Where it shows"): the Activity switch in the
-// Comments header, the card's history entries as quiet one-line rows interleaved with its open threads by time, the
-// rows past the first few under Show N More, and the notes for no history, a failed read and a This Browser plan.
+// A card's activity in its panel (docs/specs/026-plan/items.md "History" "Where it shows"): its own Activity section
+// below Comments, never mixed with the threads. A disclosure, closed by default and remembered in this browser; open,
+// the card's history entries as quiet one-line rows, newest first, the rows past the first few under Show N More, and
+// the notes for loading, no history, a failed read and a This Browser plan. History is read only while it is open.
 
-import type { ReactNode } from 'react';
-import {
-  GlyphDisc,
-  IDENTITY_FILL,
-  SwitchRow,
-  Tooltip,
-  identityVars,
-  lucideGlyph,
-} from '@liveplanner/ui';
-import { lucideSparkles } from '@liveworkspace/icons/lucide';
+import { useId, useMemo, useState, type ReactNode } from 'react';
+import { GlyphDisc, IDENTITY_FILL, Tooltip, identityVars, lucideGlyph } from '@liveplanner/ui';
+import { lucideChevronDown, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { initialsOf } from '@liveplanner/project';
-import type { CardThread } from '@liveplanner/project';
-import type { ItemHistoryEntry } from '@liveplanner/items';
+import { typeIn, type Item, type ItemHistoryEntry } from '@liveplanner/items';
 import {
   useLocalStorageValue,
   writeLocalStorageValue,
 } from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
-import type { CardHistory } from '@/hooks/plan/useCardHistory';
+import { useCardHistory, type CardHistory } from '@/hooks/plan/useCardHistory';
+import type { ItemsScope } from '@/lib/api/items';
+import { usePlan } from '../PlanContext';
+import { useCardThreadsContext } from './CardThreadsContext';
 import { activityParts, type ActivityContext } from './activity-words';
 
 const AiIcon = lucideGlyph(lucideSparkles, 10);
+const Chevron = lucideGlyph(lucideChevronDown, 13);
 
 // The activity rows drawn before Show N More.
 export const ACTIVITY_ROWS_SHOWN = 8;
 
-// Whether the panel shows activity: on unless switched off, remembered in this browser.
+// Whether the Activity section is open: closed unless opened, remembered in this browser. The key the old Activity
+// switch used, so whoever turned that on (`on`) finds the section open.
 export const CARD_ACTIVITY_KEY = 'liveplanner:v2:card-activity';
 
-export function useActivityOn(): [boolean, (on: boolean) => void] {
-  const on = useLocalStorageValue(CARD_ACTIVITY_KEY) !== 'off';
+export function useActivityOpen(): [boolean, (open: boolean) => void] {
+  const open = useLocalStorageValue(CARD_ACTIVITY_KEY) === 'on';
   const set = (next: boolean) => {
-    // Sent before it is kept, as every switch's event is (docs/specs/017-telemetry/telemetry.md).
+    // Sent before it is kept, as every toggle's event is (docs/specs/017-telemetry/telemetry.md).
     track('Plan', 'Toggled', next ? 'ActivityOn' : 'ActivityOff');
     writeLocalStorageValue(CARD_ACTIVITY_KEY, next ? 'on' : 'off');
   };
-  return [on, set];
+  return [open, set];
 }
 
-// The Activity switch: its word and a small track, one hit target.
-export function ActivitySwitch({ on, onChange }: { on: boolean; onChange: (on: boolean) => void }) {
-  return (
-    <SwitchRow
-      checked={on}
-      onChange={onChange}
-      size="xs"
-      layout="inline-flex items-center gap-1.5 rounded-md"
-      className="px-1.5 py-1 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 motion-reduce:transition-none pointer-coarse:py-2 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-    >
-      Activity
-    </SwitchRow>
+// The card's Activity section, keyed by the card so Show N More starts folded on each one. Nothing without a plan to
+// read from (a preview).
+export function CardActivitySection({ item }: { item: Item }) {
+  const ctx = useCardThreadsContext();
+  const scope = ctx?.threads.scope;
+  if (!scope) return null;
+  return <ActivitySectionOf key={item.id} item={item} scope={scope} />;
+}
+
+function ActivitySectionOf({ item, scope }: { item: Item; scope: ItemsScope }) {
+  const plan = usePlan();
+  const [open, setOpen] = useActivityOpen();
+  const [all, setAll] = useState(false);
+  const bodyId = useId();
+  const history = useCardHistory({
+    scope,
+    itemId: item.id,
+    rev: item.rev,
+    enabled: open,
+  });
+  const activityCtx = useMemo<ActivityContext>(
+    () => ({
+      statusNames: plan?.statusNames ?? new Map(),
+      types: plan?.types ?? [],
+      type: plan ? typeIn(plan.types, item.type) : undefined,
+      items: plan?.items ?? new Map(),
+    }),
+    [plan, item.type],
   );
-}
-
-export type FeedRow =
-  | { kind: 'thread'; thread: CardThread; at: number }
-  | { kind: 'activity'; entry: ItemHistoryEntry; at: number; index: number };
-
-// The open threads and the activity rows shown, both by time, newest first (a thread by its last activity). Rows past
-// `shown` wait under Show N More: `hidden` counts them. Threads are never held back.
-export function activityFeed(
-  threads: readonly CardThread[],
-  entries: readonly ItemHistoryEntry[],
-  shown: number,
-): { rows: FeedRow[]; hidden: number } {
-  const kept = entries.slice(0, shown);
-  const rows: FeedRow[] = [
-    ...threads.map((thread) => ({ kind: 'thread' as const, thread, at: thread.updatedAt })),
-    ...kept.map((entry, index) => ({ kind: 'activity' as const, entry, at: entry.at, index })),
-  ];
-  // Stable: threads keep their own order among themselves, as do entries.
-  rows.sort((a, b) => b.at - a.at);
-  return { rows, hidden: entries.length - kept.length };
+  const shown = all ? history.entries : history.entries.slice(0, ACTIVITY_ROWS_SHOWN);
+  const hidden = history.entries.length - shown.length;
+  return (
+    <section
+      data-card-activity=""
+      className="mb-8 border-t border-slate-200 pt-4 dark:border-slate-700"
+    >
+      <h3 className="mb-2 text-[13px] font-semibold text-slate-800 dark:text-slate-100">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={bodyId}
+          onClick={() => setOpen(!open)}
+          className="-mx-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 transition hover:bg-slate-100 motion-reduce:transition-none pointer-coarse:py-2 dark:hover:bg-slate-800"
+        >
+          <span
+            aria-hidden
+            className={`text-slate-500 transition-transform motion-reduce:transition-none dark:text-slate-400 ${open ? '' : '-rotate-90'}`}
+          >
+            <Chevron />
+          </span>
+          Activity
+        </button>
+      </h3>
+      {open ? (
+        <div id={bodyId} className="flex flex-col gap-1">
+          {shown.length > 0 ? (
+            <ul aria-label="Activity" className="flex flex-col gap-1">
+              {shown.map((entry, i) => (
+                <ActivityRow key={i} entry={entry} ctx={activityCtx} />
+              ))}
+            </ul>
+          ) : null}
+          {hidden > 0 ? <ShowMoreActivity hidden={hidden} onShow={() => setAll(true)} /> : null}
+          <ActivityNote history={history} />
+        </div>
+      ) : null}
+    </section>
+  );
 }
 
 // A small disc of the author's initials on their colour.
@@ -103,7 +135,7 @@ export function ActivityRow({ entry, ctx }: { entry: ItemHistoryEntry; ctx: Acti
   return (
     <li
       data-activity=""
-      className="flex items-start gap-2 py-0.5 pl-[13px] pr-2 text-[12px] leading-5 text-slate-600 dark:text-slate-300"
+      className="flex items-start gap-2 py-0.5 pr-2 text-[12px] leading-5 text-slate-600 dark:text-slate-300"
     >
       <AuthorDisc name={entry.by.name} color={entry.by.color} />
       <p className="min-w-0 flex-1 text-pretty">
@@ -157,7 +189,7 @@ export function ShowMoreActivity({ hidden, onShow }: { hidden: number; onShow: (
     <button
       type="button"
       onClick={onShow}
-      className="inline-flex w-fit cursor-pointer items-center rounded-md px-1.5 py-1 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 motion-reduce:transition-none pointer-coarse:py-2 dark:text-brand-300 dark:hover:bg-brand-500/10"
+      className="-mx-1.5 inline-flex w-fit cursor-pointer items-center rounded-md px-1.5 py-1 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 motion-reduce:transition-none pointer-coarse:py-2 dark:text-brand-300 dark:hover:bg-brand-500/10"
     >
       Show {hidden} More
     </button>
@@ -167,13 +199,11 @@ export function ShowMoreActivity({ hidden, onShow }: { hidden: number; onShow: (
 // What the panel says in place of rows: nothing kept yet, a failed read, or a plan that keeps none.
 export function ActivityNote({ history }: { history: CardHistory }): ReactNode {
   const note = (children: ReactNode) => (
-    <p
-      data-activity-note=""
-      className="px-1.5 text-[12px] leading-5 text-slate-500 dark:text-slate-400"
-    >
+    <p data-activity-note="" className="text-[12px] leading-5 text-slate-500 dark:text-slate-400">
       {children}
     </p>
   );
+  if (history.status === 'loading') return note('Loading activity…');
   if (history.status === 'offline') return note('Plans in This Browser keep no card history.');
   if (history.status === 'error')
     return note(
