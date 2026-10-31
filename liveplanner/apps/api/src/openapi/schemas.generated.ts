@@ -2597,6 +2597,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "scale": {
         "type": "number"
+      },
+      "showAs": {
+        "const": "percent",
+        "type": "string"
       }
     },
     "required": [
@@ -2612,6 +2616,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "longtext",
       "number",
       "currency",
+      "percent",
       "date",
       "checkbox",
       "link",
