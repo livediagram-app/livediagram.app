@@ -205,6 +205,8 @@ Locally it runs with media (`corepack pnpm dev:media`, port 8792, in `dev:worksp
 - **The page's preview cache** holds 200 previews (blob URLs, least recently used out), grown to every mounted card
   while more than that are on the page and shrunk back as they unmount, so a long grid never evicts and refetches its
   own pictures. It never holds more than 1,000; past that a card asks once and stays empty rather than ask again.
+- **A picture arriving redraws its own cards only**, never the rest of the grid, so a grid of N cards filling in costs
+  N redraws, not N for every picture.
 - **A preview on the hit path** is one index read (a service binding, one D1 lookup by id) and one R2 read. The old
   path also woke the item's Durable Object to learn its last save, and minted and signed a grant.
 - **A miss** is one call to the app's door: one Durable Object call, one render, as before.
