@@ -28,7 +28,7 @@ export const KIND_GROUPS: readonly KindGroup[] = [
   {
     id: 'numbers',
     label: 'Numbers & dates',
-    kinds: ['number', 'currency', 'percent', 'rating', 'date'],
+    kinds: ['number', 'currency', 'percent', 'duration', 'rating', 'date'],
   },
   { id: 'choices', label: 'Choices', kinds: ['choice', 'multichoice', 'checkbox', 'labels'] },
   {
@@ -52,6 +52,7 @@ export const KIND_DESCRIPTIONS: Record<PickKind, string> = {
   number: 'Points, counts and sizes',
   currency: 'An amount, like £12,500',
   percent: 'How far along, drawn as a bar',
+  duration: 'Hours and minutes, or time tracked with a timer',
   rating: 'Stars out of 3 to 10',
   date: 'A day on the calendar',
   choice: 'One option from a list',
@@ -90,6 +91,7 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
     '£',
   ],
   percent: ['percentage', 'progress', 'complete', 'completion', '%', 'slider', 'bar'],
+  duration: ['time', 'hours', 'minutes', 'timer', 'tracking', 'billable', 'timesheet', 'spent'],
   rating: ['stars', 'score', 'rank', 'review', 'grade'],
   date: ['day', 'deadline', 'when', 'calendar', 'due', 'time'],
   choice: ['dropdown', 'drop-down', 'select', 'option', 'single', 'picklist', 'enum', 'status'],

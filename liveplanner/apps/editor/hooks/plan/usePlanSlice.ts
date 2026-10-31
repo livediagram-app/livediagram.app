@@ -25,6 +25,7 @@ import {
   settleDoneColumns,
   type PlanBoardSetup,
   type StatusPhase,
+  type TimeOp,
 } from '@liveplanner/items';
 
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
@@ -238,6 +239,18 @@ export function usePlanSlice(opts: {
 
   const patchItem = useCallback(
     (itemId: string, patch: ItemPatch) => write({ kind: 'patch', id: itemId, patch }),
+    [write],
+  );
+
+  // A time write to a card's Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"): an undo step only for
+  // Add Time and an entry's removal (inverseItemWrites decides).
+  const trackTime = useCallback(
+    (itemId: string, field: string, op: TimeOp) => {
+      if (op.op === 'start') track('Plan', 'Started', 'Timer');
+      else if (op.op === 'stop') track('Plan', 'Ended', 'Timer');
+      else if (op.op === 'add') track('Plan', 'Added', 'TimeEntry');
+      return write({ kind: 'time', id: itemId, field, op });
+    },
     [write],
   );
 
@@ -533,6 +546,7 @@ export function usePlanSlice(opts: {
       addItems,
       moveItem,
       patchItem,
+      trackTime,
       deleteItem,
       notify,
       ownerId: planItems.ownerId,
@@ -579,6 +593,7 @@ export function usePlanSlice(opts: {
       addItems,
       moveItem,
       patchItem,
+      trackTime,
       deleteItem,
       notify,
       planItems.ownerId,

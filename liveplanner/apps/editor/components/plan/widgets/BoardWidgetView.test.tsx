@@ -186,4 +186,42 @@ describe('BoardWidgetView', () => {
     );
     expect(screen.getByRole('img').getAttribute('aria-label')).toBe('2 of 5 points done');
   });
+
+  // docs/specs/026-plan/board-widgets.md "Time".
+  it('adds up the board’s time and counts the timers running', () => {
+    const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+    const timed = {
+      ...task,
+      fields: [...task.fields, 'f-spent'],
+      custom: [
+        ...(task.custom ?? []),
+        { id: 'f-spent', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+      ],
+    };
+    const types = ITEM_TYPES.map((t) => (t.id === 'task' ? timed : t));
+    const spent = (minutes: number[], running: string[]) =>
+      ({
+        people: {},
+        entries: minutes.map((m, i) => ({ id: `entry${i}00`, by: 'sam', minutes: m, at: i })),
+        running: running.map((by, i) => ({ id: `timer${i}00`, by, start: 1 })),
+      }) as unknown as Item['fields'][string];
+    draw('time', ctx({ types, items: [item({ title: 'x' })] }));
+    expect(screen.getByText('No time yet')).toBeTruthy();
+    cleanup();
+    draw(
+      'time',
+      ctx({
+        types,
+        items: [
+          item({ title: 'a', 'f-spent': spent([600, 270], ['sam', 'ana']) }),
+          item({ title: 'b', 'f-spent': spent([], ['jo']) }),
+        ],
+      }),
+    );
+    expect(screen.getByRole('img').getAttribute('aria-label')).toBe(
+      '14 hours 30 minutes tracked, 3 timers running',
+    );
+    expect(screen.getByText('14h 30m')).toBeTruthy();
+    expect(screen.getByText(/3 running/)).toBeTruthy();
+  });
 });

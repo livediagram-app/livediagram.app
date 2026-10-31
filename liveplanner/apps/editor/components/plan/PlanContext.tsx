@@ -19,6 +19,7 @@ import type {
   ItemTypeDef,
   PlanBoardSetup,
   StatusPhase,
+  TimeOp,
 } from '@liveplanner/items';
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
 import type { ItemOpenVia } from './item-trail';
@@ -89,6 +90,9 @@ export type PlanContextValue = {
   moveItem: (itemId: string, move: ItemMove) => void;
   // Whether the change landed (false: refused, and the store put back).
   patchItem: (itemId: string, patch: ItemPatch) => Promise<boolean>;
+  // A time write to a card's Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"); whether it landed.
+  // Absent outside the editor's own slice.
+  trackTime?: (itemId: string, field: string, op: TimeOp) => Promise<boolean>;
   deleteItem: (itemId: string) => void;
   // This person's owner id: the author id on their own comments, for the delete-own control.
   ownerId: string;

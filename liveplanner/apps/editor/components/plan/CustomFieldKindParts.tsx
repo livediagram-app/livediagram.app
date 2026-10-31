@@ -32,6 +32,7 @@ import { PICK_KIND_LABELS } from './ItemTypeFieldForms';
 import { ItemDetailsRow } from './ItemPanelLayout';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { PersonDisc } from './PersonDisc';
+import { PlayIcon } from './time/TimerReadouts';
 import { LabelChips } from './plan-card-parts';
 import { planColourName } from './ColourSwatches';
 import { PercentReading } from './PercentBar';
@@ -56,6 +57,7 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   number: <HashIcon />,
   currency: <PlanTypeGlyph glyph="coin" size={16} />,
   percent: <PlanTypeGlyph glyph="percent" size={16} />,
+  duration: <PlanTypeGlyph glyph="clock" size={16} />,
   date: <PlanTypeGlyph glyph="calendar" size={16} />,
   checkbox: <PlanTypeGlyph glyph="task" size={16} />,
   link: <LinkIcon />,
@@ -122,6 +124,7 @@ function SampleValue({
   scale,
   calculation,
   showAs,
+  timeSpent,
 }: {
   kind: CustomFieldKind;
   options: readonly string[];
@@ -130,6 +133,7 @@ function SampleValue({
   scale: number | undefined;
   calculation: Calculation | undefined;
   showAs: 'percent' | undefined;
+  timeSpent?: boolean | undefined;
 }) {
   const box =
     'rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -149,6 +153,21 @@ function SampleValue({
     // The panel's bar at a sample share (docs/specs/026-plan/item-types.md "Percent").
     case 'percent':
       return <PercentReading value={SAMPLE_PERCENT} />;
+    // "2h 30m"; tracking time, the total and the timer's Start beside it (docs/specs/026-plan/item-types.md "Duration").
+    case 'duration':
+      return timeSpent ? (
+        <span className="inline-flex items-center gap-2">
+          <span className="text-[15px] font-semibold tabular-nums text-slate-900 dark:text-slate-50">
+            2h 30m
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-md bg-brand-700 px-2 py-0.5 text-[12px] font-medium text-white dark:bg-brand-600">
+            <PlayIcon />
+            <span className="text-optical-centre">Start</span>
+          </span>
+        </span>
+      ) : (
+        <div className={`${box} w-24 tabular-nums`}>2h 30m</div>
+      );
     case 'email':
       return <span className="text-brand-700 underline dark:text-brand-300">sam@example.com</span>;
     case 'date':
@@ -266,6 +285,7 @@ export function CustomFieldPreview({
   scale,
   calculation,
   showAs,
+  timeSpent,
   required,
 }: {
   label: string;
@@ -281,6 +301,8 @@ export function CustomFieldPreview({
   calculation?: Calculation | undefined;
   // A share drawn as a Percent field is.
   showAs?: 'percent' | undefined;
+  // A Duration field that tracks time.
+  timeSpent?: boolean | undefined;
   // Drawn with the required mark.
   required?: boolean | undefined;
 }) {
@@ -309,6 +331,7 @@ export function CustomFieldPreview({
             scale={scale}
             calculation={calculation}
             showAs={showAs}
+            timeSpent={timeSpent}
           />
         </ItemDetailsRow>
       </div>

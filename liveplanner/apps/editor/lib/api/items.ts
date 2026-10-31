@@ -200,6 +200,9 @@ export async function writeItem(
       );
     case 'move':
       return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
+    // A time write to a Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"); a no-op answers rev -1.
+    case 'time':
+      return one(await post(scope, `${id}/time`, { field: write.field, ...write.op }, 'item time'));
     case 'delete': {
       await apiDelete(itemsUrl(scope, id), scope.ownerId, {
         action: 'item delete',

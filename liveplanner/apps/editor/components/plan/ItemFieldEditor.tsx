@@ -12,6 +12,7 @@ import {
   isBuiltInFieldId,
   linkCandidates,
   holdsSeveral,
+  isTimeSpent,
   linkTypesOf,
   requiredFieldEmptied,
   richFieldOf,
@@ -35,6 +36,7 @@ import { calculatedFieldOutcome } from './calculated-values';
 import { LinkedCardField } from './LinkedCardField';
 import { ImageFieldControl } from './ImageField';
 import { AttachmentsField } from './AttachmentsField';
+import { TimeSpentField } from './time/TimeSpentField';
 import { usePlan } from './PlanContext';
 import { isHexColour } from '@liveplanner/project';
 import { ColourSelect } from './ColourSwatches';
@@ -76,7 +78,8 @@ export function labelsItsControl(type: ItemTypeDef, f: string): boolean {
     as !== 'comments' &&
     kind !== 'checkbox' &&
     kind !== 'image' &&
-    kind !== 'longtext'
+    kind !== 'longtext' &&
+    !isTimeSpent(customFieldOf(type, f))
   );
 }
 
@@ -135,6 +138,22 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         id={id}
         field={custom}
         outcome={plan ? calculatedFieldOutcome(plan, custom, item) : { ok: true, value: null }}
+      />
+    );
+  }
+  // A Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"): its timers and entries, each one time write.
+  if (custom && isTimeSpent(custom)) {
+    const trackTime = plan?.trackTime;
+    return (
+      <TimeSpentField
+        id={id}
+        label={custom.label}
+        value={value}
+        self={plan?.self ?? null}
+        canTrack={!!trackTime && (plan?.canEditCards ?? false)}
+        canEditAll={!!trackTime && (plan?.canEdit ?? false)}
+        onTime={(op) => (trackTime ? trackTime(item.id, f, op) : Promise.resolve(false))}
+        announce={plan?.announce}
       />
     );
   }

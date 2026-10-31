@@ -31,6 +31,7 @@ import {
   CalculationSelect,
   calculationPatch,
   ShowAsPercentSwitch,
+  TrackTimeSwitch,
   CurrencySelect,
   HoldsSeveralSwitch,
   NotifiesSwitch,
@@ -314,6 +315,7 @@ function ShapeOwn({
         />
       ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => set({ showAs })} />
+      <TrackTimeSwitch field={field} onChange={set} />
       <HoldsSeveralSwitch field={field} onChange={(multiple) => set({ multiple })} />
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
@@ -332,6 +334,7 @@ function ShapeOwn({
           scale={field.scale}
           calculation={field.calculation}
           showAs={field.showAs}
+          timeSpent={field.timeSpent}
           required={field.required === true && canBeRequired(kind)}
         />
       )}

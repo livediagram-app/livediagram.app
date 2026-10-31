@@ -39,7 +39,9 @@ import {
   attachmentCover,
   itemAttachments,
   itemHasStamp,
+  runningOnCard,
 } from '@liveplanner/items';
+import { RunningTimerPill } from './time/TimerReadouts';
 import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
@@ -137,6 +139,12 @@ export function PlanCardFace({
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
   // A response's card is New until opened (docs/specs/030-forms/forms.md "Hearing about responses").
   const fresh = useFreshResponse(item);
+  // While anyone's timer runs on the card it shows, at every size, whatever the Display (docs/specs/026-plan/
+  // item-types.md "Time Spent"); never on the Display's example card.
+  const runs = edit ? null : runningOnCard(item, type);
+  const running = runs ? (
+    <RunningTimerPill people={runs.people} start={runs.start} border={palette.cardBorder} />
+  ) : null;
   if (faceDown) {
     return (
       <div
@@ -394,7 +402,7 @@ export function PlanCardFace({
 
   // Minimal: one line, the title between its Before and After slots; stacked, the title first and its bits under it.
   if (size === 'minimal' && stacked) {
-    const bits = [...slotBits('lead'), ...slotBits('trail')];
+    const bits = [...slotBits('lead'), ...slotBits('trail'), ...(running ? [running] : [])];
     return (
       <div className={`${FRAME} ${LIFT} flex-col gap-1.5 px-2.5 py-2`} style={frame}>
         {presenceTag}
@@ -430,6 +438,7 @@ export function PlanCardFace({
           style={{ color: palette.muted }}
         >
           {zone('trail', slotBits('trail'))}
+          {running}
         </span>
       </div>
     );
@@ -479,11 +488,14 @@ export function PlanCardFace({
           {zone('body', body)}
         </div>
       ) : null}
-      {foot.length || footEnd.length || edit ? (
+      {foot.length || footEnd.length || edit || running ? (
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">
           {zone('foot', foot)}
-          {footEnd.length || edit ? (
-            <span className="ml-auto flex items-center gap-1">{zone('footEnd', footEnd)}</span>
+          {footEnd.length || edit || running ? (
+            <span className="ml-auto flex items-center gap-1">
+              {zone('footEnd', footEnd)}
+              {running}
+            </span>
           ) : null}
         </div>
       ) : null}

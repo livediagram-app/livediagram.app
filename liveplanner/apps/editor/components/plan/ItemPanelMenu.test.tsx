@@ -126,6 +126,27 @@ describe('duplicateItem', () => {
     });
     expect(plan.announce).toHaveBeenCalledWith('Card duplicated');
   });
+
+  it('leaves tracked time behind but keeps a plain Duration', () => {
+    const custom = [
+      { id: 'spent', label: 'Time Spent', kind: 'duration', timeSpent: true },
+      { id: 'est', label: 'Estimate', kind: 'duration' },
+    ];
+    const plan = {
+      addItem: vi.fn(),
+      announce: vi.fn(),
+      itemTypes: { types: [{ id: 'task', fields: ['spent', 'est'], custom }] },
+    };
+    const item = {
+      id: 'item0001',
+      type: 'task',
+      fields: { title: 'Ship', spent: { people: {}, entries: [] }, est: 90 },
+    } as unknown as Item;
+    duplicateItem(plan as unknown as Parameters<typeof duplicateItem>[0], item);
+    expect(plan.addItem).toHaveBeenCalledWith(
+      expect.objectContaining({ fields: { title: 'Ship', est: 90 } }),
+    );
+  });
 });
 
 describe('HelpArticleLink labelled', () => {

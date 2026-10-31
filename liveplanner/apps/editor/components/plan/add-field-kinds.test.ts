@@ -67,7 +67,8 @@ describe('the kinds’ groups', () => {
 
 describe('searching', () => {
   it('finds a kind by its name, its line or an everyday word', () => {
-    expect(found('rat')).toEqual(['rating']);
+    // "rat" is in duRATion too.
+    expect(found('rat')).toEqual(['duration', 'rating']);
     expect(found('money')).toEqual(['currency']);
     expect(found('stars')).toEqual(['rating']);
     expect(found('yes/no')).toEqual(['checkbox']);

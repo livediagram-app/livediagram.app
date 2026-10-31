@@ -10,6 +10,7 @@ import {
   EMAIL_MAX,
   ITEM_UNKNOWN_STRING_MAX,
   RATING_STARS_ON_CARD,
+  durationMinutes,
   isEmailAddress,
   ratingScaleOf,
   type CustomFieldDef,
@@ -19,6 +20,7 @@ import { DateField, DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { RatingInput } from '../forms/RatingInput';
 import { PercentSlider } from './PercentSlider';
+import { DurationInput } from './time/DurationInput';
 
 type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
@@ -124,6 +126,18 @@ export function CustomFieldEditor({
           value={value}
           disabled={disabled}
           onSave={(v) => void onSave(v)}
+        />
+      );
+    // "2h 30m", stored as whole minutes (docs/specs/026-plan/item-types.md "Duration"); a Time Spent field is drawn by
+    // the card panel itself (TimeSpentField).
+    case 'duration':
+      return (
+        <DurationInput
+          id={id}
+          label={field.label}
+          minutes={durationMinutes(field, value)}
+          disabled={disabled}
+          onSave={(m) => void onSave(m)}
         />
       );
     case 'email':

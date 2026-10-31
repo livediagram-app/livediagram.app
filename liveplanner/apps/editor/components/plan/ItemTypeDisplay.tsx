@@ -165,6 +165,20 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
       return [[c.id, 12500]];
     case 'percent':
       return [[c.id, 40]];
+    // 2h 30m; a Time Spent field as one entry of it (docs/specs/026-plan/item-types.md "Duration").
+    case 'duration':
+      return [
+        [
+          c.id,
+          c.timeSpent
+            ? {
+                people: { sample: { name: 'Sam', color: '#7c3aed' } },
+                entries: [{ id: 'sample-entry', by: 'sample', minutes: 150, at: 0 }],
+                running: [],
+              }
+            : 150,
+        ],
+      ];
     case 'email':
       return [[c.id, 'sam@example.com']];
     case 'choice':

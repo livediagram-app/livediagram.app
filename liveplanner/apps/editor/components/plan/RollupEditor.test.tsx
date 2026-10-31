@@ -104,7 +104,7 @@ describe('Rollup', () => {
     withPlan(cards());
     render(<Harness start={rollup} draft={projectDraft} />);
     expect(screen.getByRole('status').textContent).toContain(
-      'Pick a Number, Currency, Rating or Estimate field to read.',
+      'Pick a Number, Currency, Rating, Estimate or Duration field to read.',
     );
     expect(screen.getByLabelText('Preview').textContent).toContain('Waiting for a field to read');
     pick('Through', 'parent');
