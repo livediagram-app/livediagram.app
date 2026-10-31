@@ -11,23 +11,24 @@ export function brandAppOf(id: string): BrandApp | null {
 
 // An app's logo as its own header draws it: the prism, the hover shimmer and "live" in its accent.
 // The logo colours "live" with brand-700 (light) and the app's 400 (dark); this site's scales are
-// not the apps', so the wrapper points those at the app's deep and accent colours.
+// not the apps', so the wrapper points those at the app's deep shade and its own 400. Its 500
+// accent is too dim for "live" on a dark card (liveplanner's violet is 4.1:1 there).
+export function appLogoInks(app: ListedApp, brand: BrandApp): CSSProperties {
+  const dark = BRAND_APPS[brand].ramp[400];
+  return {
+    '--color-brand-700': app.deep,
+    '--color-sky-400': dark,
+    '--color-violet-400': dark,
+    '--color-amber-400': dark,
+    '--color-rose-400': dark,
+  } as CSSProperties;
+}
+
 export function AppLogo({ app, size = 'lg' }: { app: ListedApp; size?: 'sm' | 'md' | 'lg' }) {
   const brand = brandAppOf(app.id);
   if (!brand) return <span className="font-semibold">{app.name}</span>;
   return (
-    <span
-      className="inline-flex"
-      style={
-        {
-          '--color-brand-700': app.deep,
-          '--color-sky-400': app.accent,
-          '--color-violet-400': app.accent,
-          '--color-amber-400': app.accent,
-          '--color-rose-400': app.accent,
-        } as CSSProperties
-      }
-    >
+    <span className="inline-flex" style={appLogoInks(app, brand)}>
       <Brand app={brand} size={size} />
     </span>
   );
