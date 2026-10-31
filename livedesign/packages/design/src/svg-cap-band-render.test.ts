@@ -1,6 +1,13 @@
 import { capBandBaselineY } from '@liveworkspace/icons';
 import { describe, expect, it } from 'vitest';
-import { createComponent, createShape, renderElementsToSvg, type Tab } from './index';
+import {
+  createComponent,
+  createShape,
+  PROGRESS_LABEL_PX,
+  progressRingLabelPx,
+  renderElementsToSvg,
+  type Tab,
+} from './index';
 
 // SVG text in a shape sits on its cap band (docs/specs/004-interface-design/optical-alignment.md): the
 // glyph drawn over a disc keeps the alphabetic baseline, half a cap height below the disc's centre.
@@ -48,7 +55,26 @@ describe('SVG progress label', () => {
       expect(open).not.toMatch(/dominant-baseline="central"/);
       const y = Number(/ y="([\d.-]+)"/.exec(open)![1]);
       const top = Number(/<svg[^<>]* viewBox="([\d.-]+) ([\d.-]+)/.exec(svg)![2]);
-      expect(y - top).toBeCloseTo(capBandBaselineY(el.height / 2, 14), 1);
+      const px =
+        kind === 'progress-ring' ? progressRingLabelPx(el.width, el.height) : PROGRESS_LABEL_PX;
+      expect(open).toContain(`font-size="${px}"`);
+      expect(y - top).toBeCloseTo(capBandBaselineY(el.height / 2, px), 1);
     },
   );
+
+  // docs/specs/009-elements/progress.md "The percentage's size".
+  it.each([
+    [40, 14],
+    [130, 26],
+    [180, 36],
+    [1000, 64],
+  ])('draws a %ipx ring at %ipx, as the canvas does', (side, px) => {
+    const el = { ...createShape('progress-ring', 0, 0), width: side, height: side };
+    expect(svgOf([el])).toMatch(new RegExp(`font-size="${px}"[^<>]*>\\d+%</text>`));
+  });
+
+  it('keeps the bar at the fixed size whatever its box', () => {
+    const el = { ...createShape('progress-bar', 0, 0), width: 600, height: 200 };
+    expect(svgOf([el])).toMatch(/font-size="14"[^<>]*>\d+%<\/text>/);
+  });
 });
