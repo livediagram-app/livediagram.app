@@ -1,0 +1,97 @@
+// @vitest-environment jsdom
+import { act, cleanup, render } from '@testing-library/react';
+import { useRef } from 'react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { layOutPages, pageScreenRect, type Element } from '@livedesign/design';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { InspectOverlay } from './InspectOverlay';
+
+// docs/specs/007-editor/wireframe-pages.md "The measurements on the canvas".
+const pages = layOutPages([
+  { id: 'p1', kind: 'wireframe', device: 'iphone', size: 'device' },
+] as never);
+const scr = pageScreenRect(pages[0]!);
+const box = (id: string, y: number) =>
+  ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x: scr.x + 16,
+    y: scr.y + y,
+    width: 120,
+    height: 44,
+  }) as unknown as Element;
+const elements = [box('a', 100), box('b', 164)];
+
+function Harness({ store }: { store: ReturnType<typeof createSelectionStore> }) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  return (
+    <SelectionStoreProvider store={store}>
+      <ViewportStoreProvider store={createViewportStore(1)}>
+        <div ref={wrapperRef} data-testid="wrapper">
+          {elements.map((el) => (
+            <div key={el.id} data-element-id={el.id} data-testid={el.id} />
+          ))}
+        </div>
+        <InspectOverlay
+          elements={elements}
+          pages={pages}
+          wrapperRef={wrapperRef}
+          mainSize={{ width: 800, height: 600 }}
+        />
+      </ViewportStoreProvider>
+    </SelectionStoreProvider>
+  );
+}
+
+const overlay = () => document.querySelector('[data-inspect-overlay]');
+const pills = () =>
+  [...document.querySelectorAll('[data-inspect-overlay] text')].map((t) => t.textContent);
+const hover = (id: string) =>
+  act(() => {
+    document
+      .querySelector(`[data-testid="${id}"]`)!
+      .dispatchEvent(new Event('pointermove', { bubbles: true }));
+  });
+
+afterEach(cleanup);
+
+describe('Inspect on the canvas', () => {
+  it('draws nothing with nothing selected or hovered', () => {
+    render(<Harness store={createSelectionStore()} />);
+    expect(overlay()).toBeNull();
+  });
+
+  it('outlines the selected element with its size and its spacing round it', () => {
+    const store = createSelectionStore();
+    store.setSelectedId('a');
+    render(<Harness store={store} />);
+    expect(overlay()).not.toBeNull();
+    expect(pills()).toContain('120 × 44');
+    expect(pills()).toContain('20');
+    expect(pills()).toContain('16');
+  });
+
+  it('measures between the selected and the hovered, and drops it on leaving', () => {
+    const store = createSelectionStore();
+    store.setSelectedId('a');
+    render(<Harness store={store} />);
+    hover('b');
+    expect(pills()).toEqual(expect.arrayContaining(['120 × 44', '20']));
+    expect(pills()).not.toContain('16');
+    act(() => {
+      document.querySelector('[data-testid="wrapper"]')!.dispatchEvent(new Event('pointerleave'));
+    });
+    expect(pills()).toContain('16');
+  });
+
+  it('measures round the hovered element with nothing selected', () => {
+    render(<Harness store={createSelectionStore()} />);
+    hover('b');
+    expect(overlay()).not.toBeNull();
+    expect(pills()).toContain('20');
+  });
+});
