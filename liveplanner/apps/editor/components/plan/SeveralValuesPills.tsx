@@ -53,12 +53,12 @@ export function PeopleStack({
       className="inline-flex shrink-0 items-center"
     >
       {shown.map((p, i) => (
-        <span key={p.id} className={`inline-flex ${i ? '-ml-1.5' : ''}`} style={ring}>
+        <span key={p.id} className={`inline-flex ${i ? '-ml-1' : ''}`} style={ring}>
           <PersonDisc person={p} />
         </span>
       ))}
       {more > 0 ? (
-        <span className="-ml-1.5 inline-flex" style={ring}>
+        <span className="-ml-1 inline-flex" style={ring}>
           <GlyphDisc
             aria-hidden
             size={20}

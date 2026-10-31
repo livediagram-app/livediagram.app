@@ -186,13 +186,15 @@ export function LinkedCardField({
                 ) : null}
                 {card ? (
                   <>
-                    <span className="shrink-0 tabular-nums text-slate-500 dark:text-slate-400">
+                    <span className="text-optical-line shrink-0 tabular-nums text-slate-500 dark:text-slate-400">
                       #{card.key}
                     </span>
-                    <span className="min-w-0 truncate">{itemTitle(card)}</span>
+                    <span className="text-optical-line min-w-0 truncate">{itemTitle(card)}</span>
                   </>
                 ) : (
-                  <span className="italic text-slate-500 dark:text-slate-400">Missing card</span>
+                  <span className="text-optical-line italic text-slate-500 dark:text-slate-400">
+                    Missing card
+                  </span>
                 )}
               </>
             );
@@ -370,7 +372,7 @@ export function LinkedCardField({
                         {multiple && selected ? (
                           <span
                             aria-hidden
-                            className="mt-[3px] shrink-0 text-brand-600 dark:text-brand-400"
+                            className="mt-[3px] shrink-0 text-brand-700 dark:text-brand-400"
                           >
                             <CheckIcon size={12} />
                           </span>

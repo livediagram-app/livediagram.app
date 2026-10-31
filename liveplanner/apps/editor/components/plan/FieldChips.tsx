@@ -13,6 +13,7 @@ export interface FieldChip {
   key: string;
   // What the chip says, for its remove button's name ("Remove Sam from Reviewers").
   name: string;
+  // Elements only: each kind puts its text through text-optical-line itself, so it centres in the pill.
   content: ReactNode;
 }
 
@@ -70,7 +71,7 @@ export const FieldChips = forwardRef(function FieldChips(
           data-field-chip=""
           className="inline-flex h-6 min-w-0 max-w-full items-center gap-1 rounded-full bg-slate-100 pl-0.5 text-[12px] font-medium text-slate-800 max-sm:h-7 max-sm:text-[14px] dark:bg-slate-800 dark:text-slate-100"
         >
-          {chip.content}
+          <ChipBody>{chip.content}</ChipBody>
           {disabled ? (
             <span aria-hidden className="w-1.5" />
           ) : (
@@ -108,3 +109,9 @@ export const FieldChips = forwardRef(function FieldChips(
     </div>
   );
 });
+
+// A chip's disc or glyph and its text, in a row that may shrink and truncate. The text inside is already trimmed
+// (text-optical-line) by the kind that drew it (docs/specs/004-interface-design/optical-alignment.md).
+function ChipBody({ children }: { children: ReactNode }) {
+  return <span className="flex min-w-0 items-center gap-1">{children}</span>;
+}

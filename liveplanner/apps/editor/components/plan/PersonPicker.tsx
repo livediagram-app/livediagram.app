@@ -162,7 +162,7 @@ export function PersonPicker({
             content: (
               <>
                 <PersonDisc person={p} />
-                <span className="min-w-0 truncate">{p.name}</span>
+                <span className="text-optical-line min-w-0 truncate">{p.name}</span>
               </>
             ),
           }))}
@@ -250,7 +250,7 @@ export function PersonPicker({
                 <span className="min-w-0 flex-1 truncate">{text}</span>
                 {/* Several: each person held is ticked. */}
                 {multiple && selected ? (
-                  <span aria-hidden className="shrink-0 text-brand-600 dark:text-brand-400">
+                  <span aria-hidden className="shrink-0 text-brand-700 dark:text-brand-400">
                     <CheckIcon size={12} />
                   </span>
                 ) : null}
