@@ -107,7 +107,7 @@ export function StickyWindowBar({
               className={
                 'relative cursor-pointer whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-semibold transition touch-target-y sm:px-4 ' +
                 (isActive
-                  ? 'bg-brand-700 text-white shadow-sm dark:bg-brand-600'
+                  ? 'bg-brand-700 text-white shadow-sm'
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
               }
             >
