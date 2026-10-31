@@ -133,7 +133,8 @@ export function ActivityRow({ entry, ctx }: { entry: ItemHistoryEntry; ctx: Acti
         {entry.tag === 'undo' ? (
           <span className="text-slate-500 dark:text-slate-400"> (Undo)</span>
         ) : null}
-        <span className="text-slate-400 dark:text-slate-500"> · </span>
+        {/* A no-break space keeps the dot on the time's line when a row wraps. */}
+        <span className="text-slate-400 dark:text-slate-500">{' · '}</span>
         <Tooltip
           label={when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
         >
