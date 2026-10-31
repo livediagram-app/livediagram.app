@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CollapsedColumnCell } from './CollapsedColumn';
+import { CollapseColumnButton, CollapsedColumnCell } from './CollapsedColumn';
 import { planPalette } from './plan-palette';
 
 // docs/specs/026-plan/plan-board.md "Collapse Column": a strip's cell is lit while a card is held over it, in the
@@ -53,5 +53,22 @@ describe('CollapsedColumnCell', () => {
     cleanup();
     cell(null, false);
     expect(screen.getByText('4').parentElement!.style.color).not.toBe(badge.style.color);
+  });
+});
+
+describe('CollapseColumnButton', () => {
+  it('is always shown, never hidden until hover', () => {
+    const onCollapse = vi.fn();
+    render(
+      <CollapseColumnButton
+        column={{ id: 'done', name: 'Done' }}
+        palette={palette}
+        onCollapse={onCollapse}
+      />,
+    );
+    const button = screen.getByRole('button', { name: 'Collapse Column, Done' });
+    expect(button.className).not.toContain('opacity-0');
+    fireEvent.click(button);
+    expect(onCollapse).toHaveBeenCalledTimes(1);
   });
 });

@@ -95,8 +95,8 @@ PlanColumnHeader.tsx     a column's head: colour bar, name, count, Collapse Colu
                          in a slot), and the cog (PlanColumnPopover, whose toolbar has Collapse Column too, a
                          PanelLeftClose glyph after Move Left/Right; pressing it closes the popover, then collapses)
 CollapsedColumn.tsx      Collapse Column (spec "Collapse Column"): `CollapseColumnButton` (ChevronLeft, tooltip
-                         "Collapse Column", aria-label "Collapse Column, {Name}", aria-expanded, `opacity-0` until
-                         group hover, focus-visible or `(hover: none)`); `CollapsedColumnHead` (sticky like a head:
+                         "Collapse Column", aria-label "Collapse Column, {Name}", aria-expanded, always shown at
+                         `opacity-70`, full on group hover or focus-visible); `CollapsedColumnHead` (sticky like a head:
                          colour bar over an "Expand Column" ChevronRight); `CollapsedColumnCell` (min-h-16, carrying
                          `data-plan-column`, `data-plan-strip`, `data-plan-status`, `data-plan-lane`, so
                          `dropSlotAt` reads it as a cell with no cards, `beforeId` null: the column's end; a button
