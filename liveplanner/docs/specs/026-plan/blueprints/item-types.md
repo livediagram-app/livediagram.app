@@ -363,10 +363,10 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
   - Api: `item-time-route.ts` (`POST /items/:id/time`, participate access, `writeItemsWithRetry`, 403
     `time_not_yours` when a Participant touches another person's timer or entry, no history); OpenAPI
     `ItemTimeRequest`.
-  - Editor: `time/use-now-seconds.ts` (one shared one-second clock through `useSyncExternalStore`, running only
-    while a readout is mounted), `time/TimerReadouts.tsx` (`Elapsed`, the only subscriber; `RunningDot`;
-    `RunningTimerPill` on `PlanCardFace` at every size), `time/DurationInput.tsx` (the panel's box),
-    `time/TimeSpentField.tsx` (total, Start Timer, Stop, Discard, others' timers, entries newest first, Show All,
+  - Editor: `apps/editor/components/plan/time/use-now-seconds.ts` (one shared one-second clock through `useSyncExternalStore`, running only
+    while a readout is mounted), `components/plan/time/TimerReadouts.tsx` (`Elapsed`, the only subscriber; `RunningDot`;
+    `RunningTimerPill` on `PlanCardFace` at every size), `components/plan/time/DurationInput.tsx` (the panel's box),
+    `components/plan/time/TimeSpentField.tsx` (total, Start Timer, Stop, Discard, others' timers, entries newest first, Show All,
     Add Time), routed from `ItemFieldEditor`; `usePlanSlice.trackTime` posts the write and sends the telemetry.
     Add Field's Shape step has the Track Time switch (`TrackTimeSwitch`, fixed in an existing field's form).
   - Exports: `svg-render-plan-card.ts` draws the total and a green running pill (`TIMER_RUNNING_GREEN`).
