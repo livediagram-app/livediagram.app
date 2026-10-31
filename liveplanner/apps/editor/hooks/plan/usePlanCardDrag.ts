@@ -131,6 +131,12 @@ export function holdCardTouch(e: TouchEvent): void {
   if (heldUntil !== null && e.cancelable && performance.now() >= heldUntil) e.preventDefault();
 }
 
+// Whether the finger's held-to-drag press is held long enough to carry its card (now or already): a phone board's
+// sideways swipe (usePhoneColumnSwipe) then stands down, so the pager never fights a card's drag.
+export function cardHeld(): boolean {
+  return heldUntil !== null && performance.now() >= heldUntil;
+}
+
 // The slot under a screen point, inside the board `boardEl`.
 export function dropSlotAt(
   boardEl: HTMLElement,

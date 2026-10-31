@@ -57,6 +57,7 @@ import { useBoardCollapsed } from '@/hooks/plan/useBoardCollapsed';
 import { COLUMN_TOGGLE_ATTR, CollapsedColumnCell, CollapsedColumnHead } from './CollapsedColumn';
 import { boardLook, centreTappedColumn, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
+import { usePhoneColumnSwipe } from '@/hooks/plan/usePhoneColumnSwipe';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { SlotBoardCog } from './SlotBoardCog';
@@ -274,6 +275,22 @@ export function PlanBoardView({
   // Maximised (or filling its tab, or in a Dashboard slot, whose columns scroll sideways when it is narrow), a card
   // dragged near the columns' left or right edge scrolls them sideways.
   useEdgeAutoScroll(bodyRef, (maximised || filled || simplified) && (!!drag.drag || !!incoming));
+  const dragging = drag.drag;
+  // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up"); five
+  // slots across while it covers the canvas, then it scrolls sideways.
+  const look = boardLook(
+    {
+      phone,
+      covering: maximised || filled,
+      inSlot: !!slot,
+      interactive,
+      dragging: !!dragging || !!incoming,
+      simple: simplified,
+    },
+    setup?.cardSize,
+  );
+  // On a phone board that shows one column a screen, a column changes only on a swipe meant for it (phone-swipe.ts).
+  usePhoneColumnSwipe(bodyRef, look.swipe, !!dragging || !!incoming);
   // A slot board's width, read only there (and not on a phone, whose cards are Minimal anyway): its cards turn Minimal
   // when its columns are narrow (slot-board.ts slotCardSize).
   const bodySize = useObservedSize(bodyRef, simplified && !phone);
@@ -359,20 +376,6 @@ export function PlanBoardView({
     }
   };
 
-  const dragging = drag.drag;
-  // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up"); five
-  // slots across while it covers the canvas, then it scrolls sideways.
-  const look = boardLook(
-    {
-      phone,
-      covering: maximised || filled,
-      inSlot: !!slot,
-      interactive,
-      dragging: !!dragging || !!incoming,
-      simple: simplified,
-    },
-    setup.cardSize,
-  );
   // A slot board sizes its columns from its measured width (slot-board.ts), its cards Minimal when they are narrow.
   const slotBoard = look.columns === 'slot';
   const slotUnit = slotBoard ? slotColumnUnit(bodySize?.width ?? null, setup.columns) : null;
@@ -537,7 +540,8 @@ export function PlanBoardView({
         // its tab or in a Dashboard slot, nothing under the board pans, so a finger on empty board scrolls the board
         // (and past its end, the Dashboard's page); each card is touch-none on its own, so a finger on one still
         // picks it up. On a phone its columns snap
-        // centred, one at a time (phone-board.ts), and a tap on a column's empty space glides it to the centre.
+        // centred, one at a time (phone-board.ts), change only on a sideways swipe meant for it (phone-swipe.ts; the
+        // body is pan-y there), and a tap on a column's empty space glides it to the centre.
         className={`min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
           look.snap ? 'snap-x snap-mandatory' : ''
         } ${slotBoard ? 'scroll-edge-fade' : ''}`}
