@@ -687,7 +687,14 @@ next time the project is opened:
 | Viewer      | Looks                                | Looks, and Open                                                 |
 
 A Dashboard's layout is tab metadata; only an Editor's change to it is accepted. Gated on the session's `can.level === 'edit'`,
-never on `isReadOnly`.
+never on `isReadOnly`; the room takes a layout change (`dashboard-delta`) from an Editor's socket only.
+
+**Two Editors at once.** Each layout change travels as a small change to the rows and slots it touched, never as
+the whole layout, so two Editors changing a Dashboard at the same moment (one resizing a row, the other a divider,
+filling a slot, adding a row) both keep their change, on both screens and after a reload, and each one's Undo takes
+back only their own. Two changes to the very same thing (the same row's height) end on the later one everywhere. A
+whole layout from elsewhere (an agent rebuilding the Dashboard) replaces what is there for everyone. How:
+[A Dashboard's layout travels as deltas](../012-collaboration/collab-race-hardening.md#a-dashboards-layout-travels-as-deltas).
 
 A **locked tab** refuses every change, as every edit there is: an Editor sees its Dashboard as a Viewer does (no cog,
 grip, edges or editing in a card), and the Dashboard's writes (a layout change, a slot's content, a new kind from Start
