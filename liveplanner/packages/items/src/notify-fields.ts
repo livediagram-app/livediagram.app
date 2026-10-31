@@ -1,8 +1,9 @@
 // Notifying Person fields (docs/specs/026-plan/item-types.md "Notifies"): which of a type's Person fields tell their
 // person when a card is theirs, and who a card tells. One reading for the Inbox push, emails and Only Mine.
-import { isItemPerson, type Item, type ItemPerson } from './item';
+import type { Item, ItemPerson } from './item';
 import type { ItemTypeDef } from './item-types';
 import { isNamedPerson } from './plan-people';
+import { fieldPeople } from './several-values';
 
 type NotifyingType = Pick<ItemTypeDef, 'fields' | 'custom' | 'assigneeNotifies'>;
 
@@ -24,16 +25,19 @@ export interface NotifiedPerson {
   person: ItemPerson;
 }
 
-// The people a card of `type` tells, once each, by the first notifying field that names them: an empty field and a
-// custom person (an `n-` id, never an account) tell no one.
+// The people a card of `type` tells, once each, by the first notifying field that names them (every person of a field
+// that holds several): an empty field and a custom person (an `n-` id, never an account) tell no one.
 export function notifiedPeople(type: NotifyingType, item: Pick<Item, 'fields'>): NotifiedPerson[] {
   const out: NotifiedPerson[] = [];
   const told = new Set<string>();
   for (const fieldId of notifyingFieldsOf(type)) {
-    const person = item.fields[fieldId];
-    if (!isItemPerson(person) || isNamedPerson(person) || told.has(person.id)) continue;
-    told.add(person.id);
-    out.push({ fieldId, person });
+    // Each of a field's people when it holds several (item-types.md "Holds Several"); the Assignee holds one.
+    const def = type.custom?.find((f) => f.id === fieldId);
+    for (const person of fieldPeople(def, item.fields[fieldId])) {
+      if (isNamedPerson(person) || told.has(person.id)) continue;
+      told.add(person.id);
+      out.push({ fieldId, person });
+    }
   }
   return out;
 }

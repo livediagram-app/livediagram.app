@@ -745,7 +745,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
     move, Enter picks, Escape or a press outside closes it. One inline SVG a row, no image requests.
   - **Never a person to notify**: a custom assignee has no account, so no email, no Inbox row (the cards push skips
     `n-` ids instead of counting them as people it could not name), and **Only Mine** never matches them.
-- **Finding your cards**: an open card that is yours (its Assignee, or any Person field that notifies,
+- **Finding your cards**: an open card that is yours (its Assignee, or any Person field that notifies, one of its
+  people for a field that holds several,
   [Notifies](item-types.md#notifies)) lists under **Assigned to You** on the Explorer's
   [Inbox](../013-workspace/inbox.md) (§2.4 there), in every project you can open; a row opens the card on its board.
 - **Comment** with participate access; edit and delete your own comments, delete any with edit access, and delete a

@@ -429,6 +429,8 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
   linked card, named by its title with the linked card's colour dot when it has a Colour, in the linked cards' number
   order ("Missing card" for a link whose card is gone), then
   **No {Field}**; a drop into a row sets the link (item-types.md "Card fields").
+  A Person or Card field that [holds several](item-types.md#holds-several) puts a card in **each** of its values'
+  rows.
 - **Its name** is the field's label on the first type in the catalogue that offers it (a custom field id is
   unique within a type; two types sharing an id read as one field).
 - **Rows and their order**, each named by its value, then a **No _field_** row last (where every card without a
@@ -443,6 +445,11 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
   - **Labels** (and a Labels field): a card sits in the row of its **first** label; rows A to Z.
   - **Person**: a row per person, named and drawn as the Assignee's rows are (a disc and the name), most cards
     first, then **No _field_**; a drop into a person's row sets the field to them.
+  - **A field that holds several** (Person or Card, item-types.md "Holds Several"): a card sits in the row of
+    **each** value it holds, and in **No _field_** only when it holds none. Dragging it from one value's row into
+    another's swaps the value it left for the row's (keeping its others; if it already holds the row's value, the
+    one it left just goes); into **No _field_** clears the field; from **No _field_** into a row sets a list of
+    that one value.
 - **Dropping a card into a row** sets the field to that row's value, as Sam's row assigns to Sam: a Choice to the
   option, a box ticked (Yes) or cleared (No), a number, a date, the text. Into a **Labels** row it puts that label
   first, adding it if the card did not have it (its other labels are kept). Into **No _field_** it clears the
@@ -905,7 +912,7 @@ column in board order, each column's cards in their order on it. A file named fo
   **Description** (its plain text).
 - Then the custom fields of the board's card types by their label, in catalogue order (a label two types share is one
   column): a Card field (Parent among them) as the linked card's title, a checkbox as "Yes" or empty, the rest as
-  written. A field a card's type does not offer is empty on its row.
+  written; a Person or Card field that holds several as its names or titles joined by ", ". A field a card's type does not offer is empty on its row.
 
 **Import CSV…** (an Editor or a Participant, who may add cards; dimmed for a Viewer, and on an Archive board) opens a
 file picker (`.csv`, `.tsv`). The first row names the columns, matched case-insensitively by the names the Sheet's
@@ -927,7 +934,8 @@ to import. Import CSV reads files up to 5 MB." Each row after it becomes a new c
   two-digit year in this century); a date that is not a real day is left empty.
 - **Labels**: split at commas and semicolons, as many as a card holds. **Description**: plain text, cut to its limit.
 - Custom fields of the row's type by label: a number as a number, a checkbox from Yes/True/1/X, a choice only as one
-  of its options; a Card field is not imported.
+  of its options; a Person field by name (a field that holds several takes a comma list of names); a Card field is
+  not imported.
 - A field the row's type does not offer is ignored, as is a value that does not fit its field.
 
 The rows go in as **one write and one undo step**, each card at the end of its column in file order. At most as many

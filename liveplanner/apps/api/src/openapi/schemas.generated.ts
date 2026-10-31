@@ -2580,6 +2580,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "multiple": {
+        "type": "boolean"
+      },
       "notifies": {
         "type": "boolean"
       },

@@ -7,7 +7,14 @@ import { customFieldText } from './card-text';
 import { itemColourValue } from './item-colour';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
-import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
+import { isItemPerson, itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
+import {
+  fieldCardIds,
+  fieldPeople,
+  holdsSeveral,
+  severalValue,
+  storedPeople,
+} from './several-values';
 import { isEmailAddress, ratingScaleOf, type CustomFieldDef, type ItemTypeDef } from './item-types';
 import {
   ITEM_DESCRIPTION_MAX,
@@ -115,10 +122,18 @@ export function boardCsvRows(
         ...customs.map((label) => {
           const f = customByLabel(type, label);
           if (!f) return '';
-          if (f.kind === 'card') {
-            const linked = linkedCard(items, item.fields[f.id]);
-            return linked ? itemTitle(linked) : '';
-          }
+          // Every linked card's title, and every person's name, of a field that holds several, joined by ", "
+          // (item-types.md "Holds Several").
+          if (f.kind === 'card')
+            return fieldCardIds(f, item.fields[f.id])
+              .map((id) => linkedCard(items, id))
+              .filter((c): c is Item => !!c)
+              .map(itemTitle)
+              .join(', ');
+          if (f.kind === 'person')
+            return fieldPeople(f, item.fields[f.id])
+              .map((p) => p.name)
+              .join(', ');
           // A Checklist reads as its progress ("2/5") and a Votes field as its total, as the card shows them.
           if (f.kind === 'checklist' || f.kind === 'votes')
             return customFieldText(f, item.fields[f.id]) ?? '';
@@ -193,9 +208,18 @@ function customValue(
     case 'votes':
       return undefined;
     // The built-in fields' kinds read as those fields do: a person by name, labels by commas, a colour as #rrggbb.
+    // A Person field that holds several takes a comma list of names.
     case 'person':
+      if (holdsSeveral(f)) {
+        const named = text
+          .split(',')
+          .map((name) => builtInValue('assignee', name, people))
+          .filter((p): p is ItemPerson => isItemPerson(p));
+        return severalValue(f, storedPeople(named));
+      }
+      return builtInValue('assignee', text, people);
     case 'labels':
-      return builtInValue(f.kind === 'person' ? 'assignee' : 'labels', text, people);
+      return builtInValue('labels', text, people);
     case 'colour':
       return itemColourValue(text);
     case 'number': {

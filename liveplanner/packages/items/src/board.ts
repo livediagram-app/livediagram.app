@@ -6,11 +6,18 @@ import { itemColourOf } from './item-colour';
 import { ITEM_TYPE_PATTERN } from './limits';
 import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
 import { statusTitleCase } from './status-title-case';
-import type { Item, ItemPerson } from './item';
+import type { Item, ItemFieldValue, ItemPerson } from './item';
+import {
+  cardKey,
+  fieldCardIds,
+  fieldPeople,
+  holdsSeveral,
+  personKey,
+  swappedValues,
+} from './several-values';
 import {
   ARCHIVED_FIELD,
   LANE_FIELD_BUILT_INS,
-  isItemPerson,
   itemAssignee,
   itemLabels,
   itemStatus,
@@ -238,6 +245,8 @@ export interface LaneHead {
   colour?: string;
   fieldId?: string;
   fieldKind?: LaneFieldKind;
+  // A row of a field that holds several (item-types.md "Holds Several"): a drop swaps values rather than setting one.
+  several?: boolean;
 }
 
 // How a field lane groups (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
@@ -253,6 +262,9 @@ export interface LaneField {
   // A Card field's target types: a row per linked card, of any of them (docs/specs/026-plan/item-types.md "Card
   // fields").
   linkTypes?: readonly string[];
+  // A Person or Card field that holds several: a card sits in each of its values' rows (item-types.md "Holds
+  // Several").
+  several?: boolean;
 }
 
 const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
@@ -306,6 +318,7 @@ function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
         kind: c.kind as LaneFieldKind,
         ...(c.options ? { options: c.options } : {}),
         ...(c.kind === 'card' ? { linkTypes: linkTypesOf(c) } : {}),
+        ...(holdsSeveral(c) ? { several: true } : {}),
       });
     }
   return out;
@@ -340,13 +353,55 @@ function labelsIn(fieldId: string, item: Pick<Item, 'fields'>): string[] {
   return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x !== '') : [];
 }
 
-// A Person field's row: its person, named and drawn as an Assignee row (plan-board.md "Swimlanes by a field").
-function personLane(field: LaneField, item: Pick<Item, 'fields'>): LaneHead {
-  const base = { field: 'field' as const, fieldId: field.id, fieldKind: field.kind };
-  const p = item.fields[field.id];
-  return isItemPerson(p)
-    ? { key: `f:p:${p.id}`, label: p.name, value: { ...p }, person: p, ...base }
-    : { key: NO_LANE, label: `No ${field.label}`, value: null, ...base };
+// A field lane's field as several-values.ts reads it.
+const severalOf = (field: LaneField) => ({
+  kind: field.kind as 'person' | 'card',
+  multiple: field.several === true,
+});
+
+// What every row of a field lane carries.
+const laneBase = (field: LaneField) => ({
+  field: 'field' as const,
+  fieldId: field.id,
+  fieldKind: field.kind,
+  ...(field.several ? { several: true } : {}),
+});
+
+// A Person field's rows: its person's, or each of its people's when it holds several, named and drawn as an Assignee
+// row (plan-board.md "Swimlanes by a field"); No {Field} when it holds none.
+function personLanes(field: LaneField, item: Pick<Item, 'fields'>): LaneHead[] {
+  const base = laneBase(field);
+  const people = fieldPeople(severalOf(field), item.fields[field.id]);
+  if (people.length === 0)
+    return [{ key: NO_LANE, label: `No ${field.label}`, value: null, ...base }];
+  return people.map((p) => ({
+    key: `f:p:${p.id}`,
+    label: p.name,
+    value: { ...p },
+    person: p,
+    ...base,
+  }));
+}
+
+// A Card field's rows: its linked card's, or each linked card's when it holds several, named by the linked card with
+// its colour dot when it has a Colour (docs/specs/026-plan/item-types.md "Card fields"); No {Field} when it links none.
+function cardLanes(
+  field: LaneField,
+  item: Pick<Item, 'fields'>,
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+): LaneHead[] {
+  const ids = fieldCardIds(severalOf(field), item.fields[field.id]);
+  if (ids.length === 0) return [fieldLane(field, undefined)];
+  return ids.map((id) => {
+    const linked = linkedCard(items, id);
+    const colour = linked ? itemColourOf(linked, typeIn(types, linked.type)) : undefined;
+    return {
+      ...fieldLane(field, id),
+      label: linked ? itemTitle(linked) : 'Missing card',
+      ...(colour ? { colour } : {}),
+    };
+  });
 }
 
 // A stamp's row: the person, or the local day of the moment (docs/specs/026-plan/items.md "Created and Last Edited").
@@ -354,14 +409,14 @@ function personLane(field: LaneField, item: Pick<Item, 'fields'>): LaneHead {
 function stampLane(field: LaneField, item: Partial<Item>): LaneHead {
   if (field.id === 'createdBy' || field.id === 'updatedBy') {
     const p = itemStampPerson(item, field.id);
-    return personLane(field, { fields: p ? { [field.id]: { ...p } } : {} });
+    return personLanes(field, { fields: p ? { [field.id]: { ...p } } : {} })[0]!;
   }
   const at = itemStampTime(item, field.id as StampTimeField);
   return fieldLane(field, at === undefined ? undefined : stampDay(at));
 }
 
 function fieldLane(field: LaneField, value: string | number | boolean | undefined): LaneHead {
-  const base = { field: 'field' as const, fieldId: field.id, fieldKind: field.kind };
+  const base = laneBase(field);
   if (value === undefined)
     return { key: NO_LANE, label: `No ${field.label}`, value: null, ...base };
   const label = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value);
@@ -370,10 +425,13 @@ function fieldLane(field: LaneField, value: string | number | boolean | undefine
 
 // What a drop into a lane sets on an item (docs/specs/026-plan/plan-board.md "Moving cards"): the lane's
 // field, a type, or nothing for a status row (the move carries the status). A Labels row puts its label
-// first, keeping the card's others; a Checkbox No row and any No row clear the field.
+// first, keeping the card's others; a Checkbox No row and any No row clear the field. A row of a field that holds
+// several swaps the value of the row the card came `from` for its own, keeping the card's others (item-types.md
+// "Holds Several").
 export function laneDropPatch(
   lane: LaneHead | undefined,
   item?: Pick<Item, 'fields'>,
+  from?: LaneHead,
 ): Pick<ItemMove, 'set' | 'clear' | 'type'> {
   if (!lane || !lane.field || lane.field === 'status') return {};
   if (lane.field === 'type') return typeof lane.value === 'string' ? { type: lane.value } : {};
@@ -386,9 +444,35 @@ export function laneDropPatch(
       const rest = item ? labelsIn(id, item).filter((l) => l !== lane.value) : [];
       return { set: { [id]: [lane.value, ...rest] } };
     }
+    if (lane.several) return { set: { [id]: severalDrop(lane, item, from) } };
     return { set: { [id]: lane.value } };
   }
   return lane.value === null ? { clear: [lane.field] } : { set: { [lane.field]: lane.value } };
+}
+
+// The list a drop into a row of a field holding several leaves: the row the card came from swapped for this one.
+function severalDrop(
+  lane: LaneHead,
+  item: Pick<Item, 'fields'> | undefined,
+  from: LaneHead | undefined,
+): ItemFieldValue {
+  const several = { kind: lane.fieldKind as 'person' | 'card', multiple: true };
+  const stored = item?.fields[lane.fieldId!];
+  const left =
+    from && from.fieldId === lane.fieldId && from.value !== null ? from.value : undefined;
+  if (lane.fieldKind === 'person')
+    return swappedValues(
+      fieldPeople(several, stored),
+      left as ItemPerson | undefined,
+      lane.value as ItemPerson,
+      personKey,
+    ).map((p) => ({ ...p }));
+  return swappedValues(
+    fieldCardIds(several, stored),
+    left as string | undefined,
+    lane.value as string,
+    cardKey,
+  );
 }
 
 export interface ProjectedColumn {
@@ -532,35 +616,15 @@ export function statusLabel(status: string, names?: ReadonlyMap<string, string>)
 function laneOf(
   by: SwimlaneBy,
   item: Item,
-  items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
   statusNames?: ReadonlyMap<string, string>,
   field?: LaneField,
 ): LaneHead {
   switch (by) {
-    case 'field': {
+    case 'field':
       if (!field) return { key: NO_LANE, label: '', field: null, value: null };
-      if (field.readOnly) return stampLane(field, item);
-      if (field.kind === 'person') return personLane(field, item);
-      const lane = fieldLane(field, laneValue(field, item));
-      // A Card field's row is named by the linked card, with its colour dot when it has a Colour
-      // (docs/specs/026-plan/item-types.md "Card fields").
-      if (field.kind === 'card' && typeof lane.value === 'string') {
-        const linked = linkedCard(items, lane.value);
-        const colour = linked
-          ? itemColourOf(
-              linked,
-              types.find((t) => t.id === linked.type),
-            )
-          : undefined;
-        return {
-          ...lane,
-          label: linked ? itemTitle(linked) : 'Missing card',
-          ...(colour ? { colour } : {}),
-        };
-      }
-      return lane;
-    }
+      // A Created or Edited field's row is its stamp's; a Person or Card field's rows are lanesOf's, one per value.
+      return field.readOnly ? stampLane(field, item) : fieldLane(field, laneValue(field, item));
     case 'status': {
       const s = namedStatus(item, statusNames);
       return s
@@ -591,6 +655,23 @@ function laneOf(
         : { key: NO_LANE, label: 'No priority', field: 'priority', value: null };
     }
   }
+}
+
+// The rows an item sits in: one, or one per value of a Person or Card field (each of its values' when the field holds
+// several, item-types.md "Holds Several").
+function lanesOf(
+  by: SwimlaneBy,
+  item: Item,
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+  statusNames?: ReadonlyMap<string, string>,
+  field?: LaneField,
+): LaneHead[] {
+  if (by === 'field' && !field?.readOnly && field?.kind === 'person')
+    return personLanes(field, item);
+  if (by === 'field' && !field?.readOnly && field?.kind === 'card')
+    return cardLanes(field, item, items, types);
+  return [laneOf(by, item, types, statusNames, field)];
 }
 
 function laneSort(
@@ -647,13 +728,21 @@ function fieldLaneOrder(field: LaneField, a: unknown, b: unknown): number {
 
 // Items grouped into swimlanes (docs/specs/026-plan/plan-board.md "Swimlanes"), shared by a board and the Gantt
 // chart (plan-views.md "Swimlanes"): the lanes the items fall in, named and ordered as a board orders them, and each
-// item's lane key. A field lane resolves against the project's types; a field no type offers any more is no lanes.
+// item's lane keys (one, or one per value of a field that holds several). A field lane resolves against the project's
+// types; a field no type offers any more is no lanes.
 interface LaneGroups {
   by: SwimlaneBy;
   field: LaneField | undefined;
   lanes: LaneHead[];
-  laneOfItem: Map<string, string>;
+  lanesOfItem: Map<string, readonly string[]>;
 }
+
+// Whether an item sits in a lane.
+export const inLane = (
+  groups: Pick<LaneGroups, 'lanesOfItem'>,
+  itemId: string,
+  laneKey: string,
+): boolean => groups.lanesOfItem.get(itemId)?.includes(laneKey) ?? false;
 
 export function laneGroups(
   swimlaneBy: SwimlaneBy,
@@ -666,14 +755,17 @@ export function laneGroups(
   const field = swimlaneBy === 'field' ? laneFieldOf(swimlaneField, types) : undefined;
   const by: SwimlaneBy = swimlaneBy === 'field' && !field ? 'none' : swimlaneBy;
   const laneMap = new Map<string, LaneHead>();
-  const laneOfItem = new Map<string, string>();
+  const lanesOfItem = new Map<string, readonly string[]>();
   for (const it of list) {
-    const lane = laneOf(by, it, items, types, statusNames, field);
-    if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
-    laneOfItem.set(it.id, lane.key);
+    const heads = lanesOf(by, it, items, types, statusNames, field);
+    for (const lane of heads) if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
+    lanesOfItem.set(
+      it.id,
+      heads.map((l) => l.key),
+    );
   }
   const lanes = [...laneMap.values()].sort(laneSort(by, items, types, statusNames, field));
-  return { by, field, lanes, laneOfItem };
+  return { by, field, lanes, lanesOfItem };
 }
 
 // A board's lanes: the items' own, then the empty lanes a card can be dropped into.
@@ -692,7 +784,7 @@ function boardLanes(
     types,
     statusNames,
   );
-  const { by, field, laneOfItem } = groups;
+  const { by, field, lanesOfItem } = groups;
   const laneMap = new Map<string, LaneHead>(groups.lanes.map((l) => [l.key, l]));
   // A board with swimlanes always offers the empty group as a drop target (a checkbox has none).
   if (
@@ -703,7 +795,7 @@ function boardLanes(
     !field?.readOnly &&
     !laneMap.has(NO_LANE)
   ) {
-    laneMap.set(NO_LANE, laneOf(by, { fields: {} } as Item, items, types, statusNames, field));
+    laneMap.set(NO_LANE, lanesOf(by, { fields: {} } as Item, items, types, statusNames, field)[0]!);
   }
   // Every option of a Choice, and both Yes and No, are rows to drop into, cards or not.
   if (field?.kind === 'choice' || field?.kind === 'checkbox') {
@@ -728,9 +820,9 @@ function boardLanes(
   }
   // No rows yet: the board's own empty row ("No status" on a status board), never a nameless one.
   if (laneMap.size === 0)
-    laneMap.set(NO_LANE, laneOf(by, { fields: {} } as Item, items, types, statusNames, field));
+    laneMap.set(NO_LANE, lanesOf(by, { fields: {} } as Item, items, types, statusNames, field)[0]!);
   const lanes = [...laneMap.values()].sort(laneSort(by, items, types, statusNames, field));
-  return { by, field, lanes, laneOfItem };
+  return { by, field, lanes, lanesOfItem };
 }
 
 export function projectBoard(
@@ -772,7 +864,8 @@ export function projectBoard(
   if (sorted) scoped.sort(boardSortComparator(setup.sortBy!, types));
   unplaced.sort((a, b) => a.key - b.key);
 
-  const { by, lanes, laneOfItem } = boardLanes(setup, scoped, items, types, statusNames);
+  const groups = boardLanes(setup, scoped, items, types, statusNames);
+  const { by, lanes } = groups;
 
   // Cards in every done column (docs/specs/026-plan/plan-board.md "Done columns").
   let doneCount = 0;
@@ -785,14 +878,15 @@ export function projectBoard(
         : scoped.filter((it) => itemStatus(it) === column.status);
     if (isDoneColumn(setup, column)) doneCount += all.length;
     const shown = all.filter((it) => quickFilterMatches(quick, it, types));
+    // One pass files each card into every lane it sits in (several, for a field that holds several), in order.
+    const byLane = new Map<string, Item[]>(lanes.map((l) => [l.key, []]));
+    for (const it of shown)
+      for (const key of groups.lanesOfItem.get(it.id)!) byLane.get(key)!.push(it);
     return {
       column,
       count: all.length,
       overLimit: column.wipLimit !== undefined && all.length > column.wipLimit,
-      lanes: lanes.map((l) => ({
-        laneKey: l.key,
-        items: shown.filter((it) => laneOfItem.get(it.id) === l.key),
-      })),
+      lanes: lanes.map((l) => ({ laneKey: l.key, items: byLane.get(l.key)! })),
     };
   });
   return {

@@ -31,6 +31,10 @@ src/required-fields.ts canBeRequired, requiredCustomFieldsOf (a type's required 
                        requiredFieldsMessage(type, fields)
 src/notify-fields.ts   notifyingFieldsOf(type): string[], notifiedPeople(type, item): NotifiedPerson[]
                        ({ fieldId, person }), isNotified(type, item, personId): boolean
+src/several-values.ts  holdsSeveralKind(kind), holdsSeveral(field), storedPeople(value), storedCardIds(value),
+                       fieldPeople(field, value), fieldCardIds(field, value), linkedCardIds(item, field),
+                       severalValue(field, values), toggledValues(values, v, keyOf), swappedValues(values, from,
+                       to, keyOf), personKey, cardKey (FIELD_VALUES_MAX = 20 in limits.ts)
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
                        @liveplanner/project's agent element ids)
 ```
@@ -68,6 +72,34 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `isNotified(type, item, personId)` whether that list holds the person. Readers: Only Mine
   (`quickFilterMatches(quick, item, types = ITEM_TYPES)`, `quick.mine` matched by `isNotified(typeIn(types,
 item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) and the agents.
+- Holds Several (spec "Holds Several"): `readCustom` keeps `multiple` only as `true` on a `person` or `card` field
+  (`holdsSeveralKind`); anything else is dropped, never refused. Every reader goes through `several-values.ts`:
+  `storedPeople` / `storedCardIds` read a list or a single value as a list (each once; anything else dropped), and
+  `fieldPeople(field, value)` / `fieldCardIds(field, value)` keep all of it when `holdsSeveral(field)`, else the first
+  (a def-less built-in, the Assignee or Parent, holds one). `severalValue` stores a list (cut to `FIELD_VALUES_MAX`)
+  or the first, `undefined` (clear) for none. Writes: `validateFields`' `normaliseUnknown` takes a non-empty list of
+  objects that each carry `id` as people (each `normaliseKnown('person')`, at most `FIELD_VALUES_MAX`, else
+  `field_value_invalid`); a card id list is a scalar list as before. Readers changed: `notifiedPeople` (each person of
+  each notifying field), `laneGroups` (`lanesOfItem: Map<itemId, laneKey[]>`, `inLane(groups, id, key)`;
+  `personLanes` / `cardLanes` return a head per value, `LaneField.several` and `LaneHead.several` mark them),
+  `laneDropPatch(lane, item, from?)` (a `several` lane sets `swappedValues` of the card's values, `from` the head it
+  left), `projectBoard`, `ganttLanes`, `searchCards` / `searchValues` and `breakdownModel` (a card in each of its
+  lanes; the chart's total counts it once), `linkFieldsOfType` (`several`), `linkedCardsOf` (`LinkedGroup.several`,
+  the list holding the target), `linkableCards` (`elsewhere` null for several), `linkedValue(card, group, targetId)`
+  (Link Existing and New {Type} append to a list), `childIndexOf` (through `linkedCardIds`, the reader a rollup will
+  use), `customFieldText` (names and titles joined by ", "), `resolveFields` (`severalNamed`: a comma list or array of
+  names or numbers, each once, refusing none, over `FIELD_VALUES_MAX`, a non-name or an unknown card),
+  `boardCsvRows` (joined by ", ") and `boardCsvImport` (a Person field holding several splits at commas). Agents:
+  `CustomFieldInput.multiple` / `CustomFieldEdit.multiple` (a field of another kind refused: "only a person or card
+  field holds several"), `listedType` lists `custom[].multiple`, `namedFields` reads a list as a comma list
+  (`listedValue`), and a set line names stored people and cards (`storedText`). The editor: `HoldsSeveralSwitch`
+  (`ItemTypeFieldForms.tsx`, a `SwitchRow` "Holds Several" described by `HOLDS_SEVERAL_LINES[kind]`) in a Person or
+  Card field's `CustomFieldForm` and Add Field's `ShapeOwn` (`addedField` keeps `multiple` only there), tracking
+  `Plan` · `Changed` · `FieldHoldsSeveral`; `FieldChips.tsx` (the chip field, its Add button and remove buttons) used
+  by `PersonPicker` and `LinkedCardField` with `multiple` (their lists toggle, `aria-multiselectable`, no No one /
+  None row, staying open); `SeveralValuesPills.tsx` (`PeopleStack`, `LinkedNumbersPill`, `SEVERAL_ON_CARD = 3`,
+  `severalNames`) drawn by `customKindPill` and `PlanCardFace`; `usePlanCardDrag` carries the press's
+  `data-plan-lane` as `fromLane` to `boardMoveFor(setup, projection, item, itemId, slot, fromLane)`.
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
 - Card Age (spec "Card display"): `age` is a built-in card field (`CARD_FIELDS`, both sizes' `CARD_SIZE_FIELDS`),
   labelled "Age", in no `DRAWN` slot and so in no default; `typeOffersCardField` offers it on every type. The editor's
@@ -475,47 +507,49 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 
 ## Testing
 
-| Rule                                                      | Test                                                                                                                                     |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`                                                                                              |
-| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                                                                                                      |
-| Card fields of several types: read, stored, linked, lanes | `packages/items/src/card-links.test.ts`, `packages/items/src/type-catalogue.test.ts`, `packages/items/src/type-changes.test.ts`          |
-| Links To multi-select                                     | `apps/editor/components/plan/LinksToPicker.test.tsx`                                                                                     |
-| Glyph picker filters, empty state, picks                  | `apps/editor/components/plan/GlyphPicker.test.tsx`                                                                                       |
-| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
-| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
-| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`                                                                                       |
-| Editor: stale resend, failure drops one, undo keeps later | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                            |
-| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                      |
-| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                                                                                                        |
-| Card tiles follow the catalogue                           | `apps/editor/components/palette/palette-plan-tiles.test.ts`                                                                              |
-| Custom values on a card                                   | `apps/editor/components/plan/custom-field-text.test.ts`                                                                                  |
-| Calculated fields: children, done, values, refusals       | `packages/items/src/calculated-fields.test.ts`, `apps/api/src/routes/item-routes.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts` |
-| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`                                                                                              |
-| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
-| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                            |
-| Required fields: read, missing, cleared, message          | `packages/items/src/required-fields.test.ts`                                                                                             |
-| Required fields: api refuses a create or a clear          | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
-| Required fields: agents list, set, refuse                 | `packages/agent-verbs/src/verbs/plan-verbs.test.ts`, `packages/items/src/type-changes.test.ts`                                           |
-| Required fields: New {Type} dialog, type editor switch    | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                         |
-| Notifies: fields, people told, Only Mine, agent changes   | `packages/items/src/notify-fields.test.ts`                                                                                               |
-| Notifies: the Inbox push, one action a person             | `packages/index-app/src/cards.test.ts`, `apps/api/src/plan-room/plan-outbox.test.ts`                                                     |
-| Notifies: agents list it                                  | `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                     |
-| Notifies: Person field switch, Assignee menu, save        | `apps/editor/components/plan/FieldNotifies.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                |
-| Add Field: groups, descriptions, aliases, readiness       | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                    |
-| Add Field: search, accordion, Ready to use, keys, shape   | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                      |
-| Built-in kinds: store, text, CSV, agents                  | `packages/items/src/built-in-field-kinds.test.ts`                                                                                        |
-| Built-in kinds and Image: panel, card face, required      | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                             |
-| Image fields: upload, read, roles, grants                 | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                |
-| Attachments: value, cap, cover, agents                    | `packages/items/src/attachments.test.ts`, `packages/items/src/card-display.test.ts`                                                      |
-| Attachments: panel, roles, drop, paste, cover on the card | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                  |
-| Images in use: triggers, report, purge, serving           | `apps/api/src/plan-room/image-refs.test.ts`                                                                                              |
-| Add Field: option rows, Enter, Backspace, paste           | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                               |
-| Add Field: opened from a group, lands there               | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                         |
-| Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |
-| Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                               |
-| Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                                      |
-| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)                                                                                      |
+| Rule                                                         | Test                                                                                                                                     |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Catalogue checks, ids, read-back, glyphs                     | `packages/items/src/type-catalogue.test.ts`                                                                                              |
+| Glyph categories, keywords, old ids kept, search             | `packages/items/src/glyphs.test.ts`                                                                                                      |
+| Card fields of several types: read, stored, linked, lanes    | `packages/items/src/card-links.test.ts`, `packages/items/src/type-catalogue.test.ts`, `packages/items/src/type-changes.test.ts`          |
+| Links To multi-select                                        | `apps/editor/components/plan/LinksToPicker.test.tsx`                                                                                     |
+| Glyph picker filters, empty state, picks                     | `apps/editor/components/plan/GlyphPicker.test.tsx`                                                                                       |
+| Route: store, relay, null, refusals, gates, copy, create     | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
+| Route: a stale revision refused with what is stored          | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
+| A change rebased onto another editor's catalogue             | `packages/items/src/type-catalogue-change.test.ts`                                                                                       |
+| Editor: stale resend, failure drops one, undo keeps later    | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                            |
+| Agents: a stale save read again and applied again            | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                      |
+| Scoped sessions hear the op                                  | `apps/api/src/room-scope.test.ts`                                                                                                        |
+| Card tiles follow the catalogue                              | `apps/editor/components/palette/palette-plan-tiles.test.ts`                                                                              |
+| Custom values on a card                                      | `apps/editor/components/plan/custom-field-text.test.ts`                                                                                  |
+| Calculated fields: children, done, values, refusals          | `packages/items/src/calculated-fields.test.ts`, `apps/api/src/routes/item-routes.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts` |
+| Left-out statuses: read, refuse, allow                       | `packages/items/src/type-catalogue.test.ts`                                                                                              |
+| Left-out statuses: api refuses moves, patches, makes         | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
+| Left-out statuses: agent refusal message                     | `packages/agent-verbs/src/verbs/item.test.ts`                                                                                            |
+| Required fields: read, missing, cleared, message             | `packages/items/src/required-fields.test.ts`                                                                                             |
+| Required fields: api refuses a create or a clear             | `apps/api/src/routes/item-routes.test.ts`                                                                                                |
+| Required fields: agents list, set, refuse                    | `packages/agent-verbs/src/verbs/plan-verbs.test.ts`, `packages/items/src/type-changes.test.ts`                                           |
+| Required fields: New {Type} dialog, type editor switch       | `apps/editor/components/plan/RequiredFieldsDialog.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                         |
+| Notifies: fields, people told, Only Mine, agent changes      | `packages/items/src/notify-fields.test.ts`                                                                                               |
+| Notifies: the Inbox push, one action a person                | `packages/index-app/src/cards.test.ts`, `apps/api/src/plan-room/plan-outbox.test.ts`                                                     |
+| Notifies: agents list it                                     | `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                     |
+| Notifies: Person field switch, Assignee menu, save           | `apps/editor/components/plan/FieldNotifies.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                |
+| Holds Several: read, store, notify, lanes, links, agents     | `packages/items/src/several-values.test.ts`, `packages/agent-verbs/src/plan/plan-engine.test.ts`                                         |
+| Holds Several: chips, card face, switch, drag, Link Existing | `apps/editor/components/plan/HoldsSeveral.test.tsx`                                                                                      |
+| Add Field: groups, descriptions, aliases, readiness          | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                    |
+| Add Field: search, accordion, Ready to use, keys, shape      | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                      |
+| Built-in kinds: store, text, CSV, agents                     | `packages/items/src/built-in-field-kinds.test.ts`                                                                                        |
+| Built-in kinds and Image: panel, card face, required         | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                             |
+| Image fields: upload, read, roles, grants                    | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                |
+| Attachments: value, cap, cover, agents                       | `packages/items/src/attachments.test.ts`, `packages/items/src/card-display.test.ts`                                                      |
+| Attachments: panel, roles, drop, paste, cover on the card    | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                  |
+| Images in use: triggers, report, purge, serving              | `apps/api/src/plan-room/image-refs.test.ts`                                                                                              |
+| Add Field: option rows, Enter, Backspace, paste              | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                               |
+| Add Field: opened from a group, lands there                  | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                         |
+| Statuses chips, panel Status options                         | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |
+| Editor tabs, Configuration sections, flags, arrow keys       | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                               |
+| Show Me steps open Configuration, scroll to Fields           | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                                      |
+| Panel, editor, card face, palette in a browser               | checked by hand against the dev stack (screenshots)                                                                                      |
 
 ## Constants and configuration
 
