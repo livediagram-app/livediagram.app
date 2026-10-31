@@ -1,10 +1,17 @@
 // @vitest-environment jsdom
+import type { ReactNode } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { configureWorkbench, resetWorkbenchForTests } from '../../bindings';
 import { testBindings } from '../../lib/testing/bindings';
 import { storageEvent } from '../../lib/testing/storage-event';
-import { useHideCursors } from './useHideCursors';
+import {
+  CursorsDrawnContext,
+  HIDE_CURSORS_ROW_KEY,
+  useCursorsDrawn,
+  useHideCursors,
+  useOfferedSettingItems,
+} from './useHideCursors';
 
 afterEach(() => {
   resetWorkbenchForTests();
@@ -58,5 +65,26 @@ describe('useHideCursors', () => {
       window.dispatchEvent(storageEvent({ key: 'test:hide-cursors-e' }));
     });
     expect(result.current.hidden).toBe(true);
+  });
+});
+
+describe('where cursors are drawn', () => {
+  const items = [{ rowKey: 'theme' }, { rowKey: HIDE_CURSORS_ROW_KEY }];
+  const notDrawn = ({ children }: { children: ReactNode }) => (
+    <CursorsDrawnContext.Provider value={false}>{children}</CursorsDrawnContext.Provider>
+  );
+
+  it('are drawn unless an editor says otherwise', () => {
+    expect(renderHook(() => useCursorsDrawn()).result.current).toBe(true);
+    expect(renderHook(() => useCursorsDrawn(), { wrapper: notDrawn }).result.current).toBe(false);
+  });
+
+  it('keep the search settings whole, as the same array, where cursors are drawn', () => {
+    expect(renderHook(() => useOfferedSettingItems(items)).result.current).toBe(items);
+  });
+
+  it('drop the switch from the search settings where none are drawn', () => {
+    const { result } = renderHook(() => useOfferedSettingItems(items), { wrapper: notDrawn });
+    expect(result.current.map((i) => i.rowKey)).toEqual(['theme']);
   });
 });

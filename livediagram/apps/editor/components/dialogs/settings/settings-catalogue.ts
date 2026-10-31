@@ -116,6 +116,9 @@ type SettingsRowContext = {
   preferences?: UserPreferences;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
   workbench?: boolean;
+  // The tab on screen draws other people's cursors (docs/specs/012-collaboration/collaborator-enhancements.md
+  // "Only where cursors are drawn"); absent reads as drawn.
+  cursorsDrawn?: boolean;
   // Documents in This Browser with parts set aside (docs/specs/006-document/offline-mode.md "Moving retired parts
   // to the other apps").
   retiredParts?: number;
@@ -930,6 +933,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'hideCursors',
         key: 'hideCursors',
+        available: (ctx) => ctx.cursorsDrawn !== false,
         label: HIDE_CURSORS_LABEL,
         keywords:
           'cursors pointers names pills participants collaborators hide show busy session distracting',

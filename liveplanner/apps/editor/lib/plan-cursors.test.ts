@@ -8,6 +8,7 @@ describe('participant cursors on Plan tabs', () => {
   it('are hidden on Board and Sheet tabs and any other Plan tab', () => {
     expect(planHidesCursors(tab({ kind: 'board' }))).toBe(true);
     expect(planHidesCursors(tab({ kind: 'sheet' }))).toBe(true);
+    expect(planHidesCursors(tab({ kind: 'form' }))).toBe(true);
     expect(planHidesCursors(tab({}))).toBe(true);
   });
 

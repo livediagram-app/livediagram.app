@@ -6,6 +6,7 @@ import { searchPanelSources } from '@/components/panels/search-panel-sources';
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
+import { useOfferedSettingItems } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
@@ -58,6 +59,9 @@ export function EditorSearchPanel() {
   // kicked the load at mount, so by the time anyone opens search the data is
   // almost always already in.)
   const cataloguesLoaded = useIconCatalogs();
+
+  // Less the Hide Participant Cursors row on a tab that draws no cursors (collaborator-enhancements.md).
+  const settingItems = useOfferedSettingItems(SETTINGS_SEARCH_ITEMS);
 
   if (!searchOpen) return null;
 
@@ -126,7 +130,7 @@ export function EditorSearchPanel() {
         else assignAppLocation(itemHref({ ...item, kind: APP_KINDS[item.app] }));
       }}
       helpItems={HELP_SEARCH_ITEMS}
-      settingItems={SETTINGS_SEARCH_ITEMS}
+      settingItems={settingItems}
       onSelectSetting={openSettingsAt}
       onClose={() => setSearchOpen(false)}
     />

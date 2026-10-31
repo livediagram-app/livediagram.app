@@ -233,7 +233,9 @@ board, so it opens on **Start Planning**.
 - **No participant cursors on any tab but a Dashboard**: a Board tab, a Sheet tab, or any other tab shows no one
   else's cursor: the board or Sheet covers the canvas a cursor would point at, and
   presence there is the avatars and each card's editing ring. A Dashboard (a Visualisation tab included) shows them,
-  as a diagram does (`planHidesCursors`).
+  as a diagram does (`planHidesCursors`). So the Hide Participant Cursors switch shows only on a Dashboard; on any
+  other tab it is absent from Settings, the Collaborators modal and search, its stored value kept
+  ([Collaborator enhancements](../012-collaboration/collaborator-enhancements.md#2-hide-participant-cursors)).
 
 ### Nothing attached to Plan items
 

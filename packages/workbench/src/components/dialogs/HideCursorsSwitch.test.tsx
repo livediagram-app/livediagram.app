@@ -3,7 +3,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { configureWorkbench, resetWorkbenchForTests } from '../../bindings';
 import { testBindings } from '../../lib/testing/bindings';
-import { HideCursorsSwitch } from './HideCursorsSwitch';
+import { CursorsDrawnContext } from '../../hooks/collab/useHideCursors';
+import { HideCursorsFooter, HideCursorsSwitch } from './HideCursorsSwitch';
 
 afterEach(() => {
   resetWorkbenchForTests();
@@ -24,5 +25,25 @@ describe('HideCursorsSwitch', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'HideCursorsOn');
     fireEvent.click(row);
     expect(row.getAttribute('aria-checked')).toBe('false');
+  });
+});
+
+describe('HideCursorsFooter', () => {
+  it('holds the switch where the tab draws cursors (no provider says otherwise)', () => {
+    configureWorkbench(testBindings({ hideCursorsKey: 'test:footer-a' }));
+    render(<HideCursorsFooter />);
+    expect(screen.getByRole('switch', { name: /Hide Participant Cursors/ })).toBeTruthy();
+  });
+
+  it('is nothing at all where the tab draws none, its stored choice kept', () => {
+    configureWorkbench(testBindings({ hideCursorsKey: 'test:footer-b' }));
+    window.localStorage.setItem('test:footer-b', 'true');
+    const { container } = render(
+      <CursorsDrawnContext.Provider value={false}>
+        <HideCursorsFooter />
+      </CursorsDrawnContext.Provider>,
+    );
+    expect(container.innerHTML).toBe('');
+    expect(window.localStorage.getItem('test:footer-b')).toBe('true');
   });
 });
