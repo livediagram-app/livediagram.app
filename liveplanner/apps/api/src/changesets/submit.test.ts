@@ -133,6 +133,77 @@ describe('submitChangeset', () => {
 
 // docs/specs/029-sheets/sheet-store.md "Template starts": a replace that lands a spreadsheet template makes its sheet
 // before the tab is written, and the stored Sheet no longer carries the mark.
+// docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's layout travels as deltas": an agent's rebuild
+// reaches open editors whole, and is written even when no element changed (a layout of notes alone).
+describe('a Dashboard rebuilt', () => {
+  // A plan whose room keeps every op the api relays.
+  async function relaying(tab: Record<string, unknown>) {
+    const relayed: { kind?: string; dashboard?: unknown }[] = [];
+    const db = sqliteD1({
+      PLAN_ROOM: {
+        idFromName: (name: string) => name,
+        get: () => ({
+          fetch: async (url: string, init?: RequestInit) => {
+            if (url.includes('/selections')) return Response.json({ selections: [] });
+            if (init?.body) relayed.push((JSON.parse(init.body as string) as { op: never }).op);
+            return new Response(null, { status: 204 });
+          },
+        }),
+      },
+    } as unknown as Partial<Env>);
+    db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
+                 VALUES ('D', 'user_o', 'Doc', 0, 1, 1)`);
+    await seedTabs(db.env, 'D', [tab as never]);
+    const run = async (body: unknown) => {
+      const parsed = parseChangesetRequest(body);
+      if (!parsed.ok) throw new Error('bad request');
+      return submitChangeset({
+        env: db.env,
+        project: (await getProject(db.env, 'D'))!,
+        tabId: 't1',
+        request: parsed.value,
+        dryRun: false,
+        author: { id: 'user_o', name: 'W', color: '#000' },
+        tokenId: 'tok_1',
+        frontDoor: 'Api',
+      });
+    };
+    const changeset = () => relayed.find((o) => o.kind === 'changeset');
+    return { run, relayed, changeset };
+  }
+
+  it('is written, and relayed with its new layout, when only the layout changed', async () => {
+    const { run, relayed, changeset } = await relaying({
+      id: 't1',
+      name: 'Dash',
+      kind: 'dashboard',
+      elements: [],
+    });
+    const notes = (title: string) => ({ replace: { dashboard: { notes: [{ title, text: '' }] } } });
+    expect((await run(notes('First'))).status).toBe(200);
+    relayed.length = 0;
+    expect((await run(notes('Second'))).status).toBe(200);
+    const op = changeset() as {
+      dashboard?: { rows: { slots: { content?: { title?: string } }[] }[] };
+    };
+    expect(op.dashboard!.rows[0]!.slots[0]!.content!.title).toBe('Second');
+  });
+
+  it('relays no layout when the changeset left it as it was', async () => {
+    const dashboard = { rows: [{ id: 'r', height: 320, slots: [{ id: 's', span: 12 }] }] };
+    const { run, changeset } = await relaying({
+      id: 't1',
+      name: 'T',
+      elements: [box('a')],
+      dashboard,
+    });
+    const res = await run({ operations: [{ op: 'set', target: 'a', fields: { label: 'agent' } }] });
+    expect(res.status).toBe(200);
+    expect(changeset()).toBeDefined();
+    expect(changeset()).not.toHaveProperty('dashboard');
+  });
+});
+
 describe('a template’s Sheets', () => {
   it('makes them when a replace lands the template', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});

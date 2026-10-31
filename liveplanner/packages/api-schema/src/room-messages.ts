@@ -1,5 +1,5 @@
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
-import type { ElementDelta, RoomElementOp, Tab } from '@liveplanner/project';
+import type { DashboardPatch, ElementDelta, RoomElementOp, Tab } from '@liveplanner/project';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
@@ -55,6 +55,10 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'project-meta',
+  // One change to a Dashboard's layout (docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's layout
+  // travels as deltas"). A mutation like `el-delta`: sequenced, logged, recorded in the ledger, and an Editor's alone
+  // (not a participation op, so a Participant's or a Viewer's socket has it dropped).
+  'dashboard-delta',
 ] as const;
 
 // Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
@@ -241,7 +245,11 @@ export type RoomOp =
   // changes and older peers; the granular `el` op (docs/specs/012-collaboration/realtime-conflict-resolution.md) supersedes it
   // for the common single-element edit so concurrent different-element
   // edits stop clobbering.
-  | { kind: 'tab'; tabId: string; tab: Tab }
+  //
+  // `dashboardDeltas`: the sender sends its Dashboard layout changes as `dashboard-delta` ops, so a receiver that has
+  // a layout keeps its own through this copy (docs/specs/012-collaboration/collab-race-hardening.md). Absent from an
+  // older editor, whose whole layout is taken as before.
+  | { kind: 'tab'; tabId: string; tab: Tab; dashboardDeltas?: true }
   // A single element on a tab changed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0): add / update /
   // remove / reorder, applied by id so a peer editing a DIFFERENT element
   // on the same tab merges instead of overwriting the whole tab. `op`
@@ -286,6 +294,10 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // ONE change to a Dashboard's layout, by row and slot id (docs/specs/012-collaboration/collab-race-hardening.md
+  // "A Dashboard's layout travels as deltas"): the `el-delta` reasoning for the one tab field two Editors change at
+  // once. The whole layout used to ride `tab-meta`, so each receiver took the other's layout and lost its own change.
+  | { kind: 'dashboard-delta'; tabId: string; patch: DashboardPatch }
   | {
       kind: 'vote';
       tabId: string;

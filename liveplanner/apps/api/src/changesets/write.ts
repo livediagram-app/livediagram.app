@@ -67,7 +67,11 @@ export async function writeChangeset(env: PlanEnv, w: ChangesetWrite): Promise<W
   // save all say exactly what landed (server rules included).
   const elementOps = diffToElementOps(before, w.next.elements);
   const creates = w.stored === null;
-  if (elementOps.length === 0 && !creates) return { kind: 'unchanged' };
+  // A rebuilt Dashboard's layout (docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's layout travels
+  // as deltas"): relayed whole so open editors take it, and a write on its own even when no element changed (a layout
+  // of notes and tabs has none).
+  const dashboard = rebuiltDashboard(w.stored, w.next);
+  if (elementOps.length === 0 && !creates && !dashboard) return { kind: 'unchanged' };
   const inverse = invertElementOps(before, elementOps);
   const expected = w.stored?.rev ?? 0;
   const rev = expected + 1;
@@ -142,6 +146,7 @@ export async function writeChangeset(env: PlanEnv, w: ChangesetWrite): Promise<W
       elementOps,
       ...(w.tokenId ? { agentKey: await agentKeyFor(w.tokenId) } : {}),
       ...(creates ? { tab: tabFieldsOf(w.next) } : {}),
+      ...(dashboard ? { dashboard } : {}),
       revertOf: w.revertOf,
     }),
   );
@@ -180,6 +185,15 @@ function countsOf(ops: readonly ElementOp[]): ChangesetCounts {
     else if (op.kind === 'remove') counts.removed += 1;
   }
   return counts;
+}
+
+// The layout an existing tab now has, when the changeset changed it; null otherwise (a created tab carries its
+// fields whole in `tab`).
+function rebuiltDashboard(stored: StoredTab | null, next: Tab): Tab['dashboard'] | null {
+  if (!stored || !next.dashboard) return null;
+  return JSON.stringify(stored.tab.dashboard) === JSON.stringify(next.dashboard)
+    ? null
+    : next.dashboard;
 }
 
 function tabFieldsOf(tab: Tab): Omit<Tab, 'elements'> {
