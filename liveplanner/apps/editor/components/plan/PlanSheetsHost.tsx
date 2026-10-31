@@ -7,7 +7,7 @@ import {
   duplicateItemType,
   isArchived,
   isTrashed,
-  itemLabels,
+  labelUsage,
   linkedCardsOf,
   newItemId,
   requiredFieldEmptied,
@@ -49,6 +49,12 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     const open = openId ? ctx.items.get(openId) : undefined;
     return open ? linkedCardsOf(open, ctx.items, ctx.types) : [];
   }, [openId, ctx.items, ctx.types]);
+  // The plan's labels with their counts, for the Labels field's menu (docs/specs/026-plan/plan-board.md "Working on
+  // a board"): one pass over the cards while a card is open, again only when the cards change, never per keystroke.
+  const labelUses = useMemo(
+    () => (openId ? labelUsage(ctx.items.values()) : []),
+    [openId, ctx.items],
+  );
   // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): this person's preference, so every card opens
   // the way they last left one.
   const { maximised, setMaximised } = useCardPanelMaximised(ctx.ownerId);
@@ -112,8 +118,6 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
       );
     }
   }
-  // Every label in use, for the labels field's suggestions.
-  const allLabels = [...new Set([...ctx.items.values()].flatMap((it) => itemLabels(it)))].sort();
   if (item) {
     const linkOf = ctx.cardLink;
     return (
@@ -122,7 +126,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         types={ctx.types}
         statuses={statuses}
         people={ctx.people}
-        labels={allLabels}
+        labels={labelUses}
         canEdit={ctx.canEditCards}
         canRetire={ctx.canEdit}
         onSave={(field, value) => {

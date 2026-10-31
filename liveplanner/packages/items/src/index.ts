@@ -61,3 +61,4 @@ export * from './required-fields';
 export * from './type-catalogue-change';
 export * from './linked-cards';
 export * from './calculated-fields';
+export * from './label-usage';

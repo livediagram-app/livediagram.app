@@ -154,6 +154,14 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
   - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
     site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
+  - **Long Text** is rich text, edited as the Description is ([Working on a board](plan-board.md#working-on-a-board)):
+    bold, italic, underline, strikethrough, size, colour, headings, links and lists, from the same toolbar and
+    shortcuts. Its value stays plain text (search, the card face, CSV, forms and agents read it), and its formatting
+    is kept beside it as `<field id>Rich` (`f-steps-to-reproduce` → `f-steps-to-reproduceRich`), runs of text with
+    their marks, as `descriptionRich` is the Description's. A value with no formatting (written before Long Text was
+    rich, by a form, a sheet or an agent's plain text) reads as its plain text. Formatting whose text no longer
+    matches the value (the value was rewritten as plain text since) is ignored, so the field never shows an older
+    text. Emptying the field clears both.
   - **Email** is one email address (up to 254 characters, something@domain), kept as typed less surrounding spaces.
     The panel shows it as a mailto link; the card shows the address. A value that is not an address is refused, as
     a Link that is not `https://` is.
