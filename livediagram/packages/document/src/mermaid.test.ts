@@ -304,6 +304,22 @@ describe('parseMermaid', () => {
     expect(byId.B!.link).toBe('https://example.com/app');
   });
 
+  it('keeps only a web or mail address as an element link', () => {
+    const r = parseMermaid(`flowchart TD
+  A --> B --> C
+  click A "javascript:alert(1)"
+  click B " JavaScript:alert(1)"
+  click C "mailto:team@example.com"`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const links = graphToElements(r.graph).map((e) => e.link);
+    expect(links.slice(0, 3)).toEqual([
+      undefined,
+      undefined,
+      { kind: 'url', url: 'mailto:team@example.com' },
+    ]);
+  });
+
   it('tolerates a bare header and trailing semicolons', () => {
     const r = parseMermaid('flowchart\n  A --> B;');
     expect(r.ok).toBe(true);

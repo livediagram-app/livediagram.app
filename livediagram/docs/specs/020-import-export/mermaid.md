@@ -101,7 +101,9 @@ only the sweep direction differs).
 - **Click links**: `click A "https://…"` (and the `click A href "https://…"`
   form) imports as the node's element link (`{ kind: 'url' }`), and a node
   whose element carries a URL link exports a matching `click` line. Callback
-  forms (`click A someJsFunction`) are skipped: there's no code to call.
+  forms (`click A someJsFunction`) are skipped: there's no code to call. Only a web or mail address (`http:`,
+  `https:`, `mailto:`) becomes a link, as the link picker allows; `click A "javascript:…"` is dropped (the graph
+  input's node `link` follows the same rule).
 - Lines it doesn't understand (`classDef`, `style`, `linkStyle`,
   `direction`, comments `%%`) are skipped, not fatal: a real-world paste
   imports its graph and ignores the decoration. So is a class written on a node (`a:::hot --> b`, `a[Label]:::hot`):
