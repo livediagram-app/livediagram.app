@@ -327,8 +327,8 @@ const displayArg = z
   })
   .describe(
     'What its cards show at each card size and where, fields by name (Number, Type, Assignee, Priority, ' +
-      'Labels, Estimate, Start Date, Due Date, Votes, Checklist, Comments, Description, or a custom field by ' +
-      'name). Any size draws custom fields. A size given replaces that size; one left out keeps its own. A field ' +
+      'Labels, Estimate, Start Date, Due Date, Votes, Checklist, Comments, Description, Age (days in its column), ' +
+      'or a custom field by name). Any size draws custom fields. A size given replaces that size; one left out keeps its own. A field ' +
       'shows on a card only when the type has it and the card has a value.',
   );
 const tabsArg = z

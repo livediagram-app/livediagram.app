@@ -403,6 +403,8 @@ Where each is set, so a setting lives with what it changes, never in one central
     due date, the estimate, checklist progress ("2/5", green when complete), comments and votes, with the
     assignee's avatar at the end.
   - **Due date pill**: "Due 10 Oct" (as the start pill reads "From 8 Oct"), red once past (unless the card is done), amber when due within two days, otherwise quiet.
+  - **Age pill** (when the type's Display places Age, [Card display](item-types.md#card-display)): how long the card has
+    sat in its column, "4d", quiet under a week, amber from 7 days, red from 14; never on a card in a done column.
   - The fields are Number, Type, Assignee, Priority, Labels, Estimate, Start Date, Due Date, Votes, Checklist,
     Description and Project. A start date reads "From 1 Oct", muted.
 - **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph, a project's

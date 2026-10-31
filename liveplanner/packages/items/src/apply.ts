@@ -11,9 +11,10 @@ import type {
   ItemPerson,
   ItemPlace,
 } from './item';
-import { itemStatus, itemVotes } from './item';
+import { STATUS_SINCE_FIELD, itemStatus, itemVotes } from './item';
 import { compareRank, rankBetween } from './rank';
 import { ITEM_VOTERS_MAX, ITEM_VOTES_PER_PERSON_MAX } from './limits';
+import { stampStatusSince, statusSinceUndo } from './status-since';
 
 export interface WriteContext {
   now: number;
@@ -123,7 +124,7 @@ export function makeItem(
     type: create.type,
     key: ctx.key,
     rank: 'rankFor' in ctx.items ? ctx.items.rankFor(place) : rankForPlace(ctx.items, place),
-    fields,
+    fields: stampStatusSince(undefined, fields, STATUS_SINCE_FIELD in fields, ctx.now),
     rev: 1,
     createdAt: ctx.now,
     updatedAt: ctx.now,
@@ -138,7 +139,7 @@ export function applyPatch(item: Item, patch: ItemPatch, ctx: WriteContext): Ite
   return {
     ...item,
     type: patch.type ?? item.type,
-    fields,
+    fields: stampStatusSince(item, fields, STATUS_SINCE_FIELD in (patch.set ?? {}), ctx.now),
     rev: item.rev + 1,
     updatedAt: ctx.now,
     updatedBy: ctx.by,
@@ -158,7 +159,7 @@ export function applyMove(
   return {
     ...item,
     type: move.type ?? item.type,
-    fields,
+    fields: stampStatusSince(item, fields, STATUS_SINCE_FIELD in (move.set ?? {}), ctx.now),
     rank: rankForPlace(items, { status, after: move.after, before: move.before }, item.id),
     rev: item.rev + 1,
     updatedAt: ctx.now,
@@ -201,6 +202,12 @@ export function inversePatch(before: Item, patch: ItemPatch): ItemPatch {
   if (Object.keys(set).length) inv.set = set;
   if (clear.length) inv.clear = clear;
   if (patch.type !== undefined && patch.type !== before.type) inv.type = before.type;
+  // A status change's undo puts the card's old stamp back with its status (docs/specs/026-plan/items.md "Undo").
+  if (!touched.includes(STATUS_SINCE_FIELD) && touched.includes('status')) {
+    const next = patch.clear?.includes('status') ? undefined : patch.set?.['status'];
+    const since = statusSinceUndo(before, typeof next === 'string' ? next : undefined);
+    if (Object.keys(since).length) inv.set = { ...inv.set, ...since };
+  }
   return inv;
 }
 

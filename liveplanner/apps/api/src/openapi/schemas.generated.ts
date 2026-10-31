@@ -1319,6 +1319,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       {
+        "const": "age",
+        "type": "string"
+      },
+      {
         "$ref": "#/components/schemas/CustomCardField"
       }
     ]

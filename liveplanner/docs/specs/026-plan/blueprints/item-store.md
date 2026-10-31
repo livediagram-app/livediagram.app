@@ -26,6 +26,8 @@ src/limits.ts        named constants (Constants table)
 src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
 src/apply.ts         makeItem, applyPatch, applyMove, applyTally (shared by api and offline store), rankInColumn,
                      itemPlacer (ranks a batch of creates: one sort per column, not one per create)
+src/status-since.ts  STATUS_SINCE_FIELD, itemStatusSince (falls back to updatedAt), stampStatusSince (apply.ts's
+                     stamp), statusSinceUndo (the old value an inverse puts back), cardAgeDays, cardAgeTone
 src/write-checks.ts  readItemPlace, readItemCreate, readItemPatch, readItemMove, statusExcluded, readItemWrite,
                      writtenItemsRefusal: the api's body checks, run by an offline project on its own writes
 src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard
@@ -114,6 +116,7 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 | item ref  | id string matching `ITEM_ID_PATTERN`                               |
 | votes     | rejected in create/patch (`votes_read_only`)                       |
 | comments  | rejected in create/patch and clear (`comments_read_only`)          |
+| timestamp | `statusSince` only: a finite integer ms epoch ≥ 0                  |
 | unknown   | scalar, or array of ≤ 50 scalars; strings ≤ 2,000                  |
 
 - Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`,
@@ -136,6 +139,12 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 - `applyPatch(item, patch, ctx)` merges `set`, deletes `clear`, `rev + 1`, stamps `updatedBy/At`.
 - `applyMove(item, move, items, ctx)` sets status, computes rank against the target neighbours (`after` wins
   over `before`; a missing neighbour id falls back to the column end), merges `set`.
+- `makeItem`, `applyPatch` and `applyMove` pass their result through `stampStatusSince(before, next, written, now)`:
+  a status change (or a create) stamps `statusSince` with `now`; a write that names `statusSince` keeps it; any
+  other write on a card without one backfills it from the card's previous `updatedAt`, so an older card's age
+  never restarts on an edit. `inversePatch` and the move branch of `inverseItemWrites` add the old
+  `itemStatusSince` when the write changes the status, and `isMoveSettable` admits `statusSince` so a move's
+  undo can carry it.
 - `applyTally(item, tally, ctx)` adds each voter's dots to what they had, caps a voter's count at
   `ITEM_VOTES_PER_PERSON_MAX`, admits no new voter past `ITEM_VOTERS_MAX`, `rev + 1`.
 
