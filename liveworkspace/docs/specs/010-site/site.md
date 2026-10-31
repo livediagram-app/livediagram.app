@@ -111,7 +111,8 @@ moves between them, and the one account that joins them.
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
    and a photo being cropped), and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**, **Start Designing**. Below `lg` the window sits between the summary and the three things it does.
    Every logo is the app's own UI package `Brand`, with its hover
-   shimmer, "live" pointed at the app's deep and accent colours (`components/landing/AppLogo.tsx`). The copy is
+   shimmer, "live" in the app's deep shade on light and its own 400 on dark, which reads at AA on a dark card where its 500
+   accent does not (`components/landing/AppLogo.tsx`). The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
    WCAG AA. On a dark page, text in an app's colour (a link, a name, a card's call to action, here and on every
    page of the site) is its light shade, `light` in `@liveworkspace/sites` (its brand-400), which passes AA on every
