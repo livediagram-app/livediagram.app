@@ -46,7 +46,7 @@ const tabWith = (locked: boolean): Tab =>
     articles: { a: { blocks } },
   }) as unknown as Tab;
 
-function setup(tab: Tab) {
+function setup(tab: Tab, onWritten?: (flow: string, blocks: unknown[]) => void) {
   const commitTabs = vi.fn();
   const tickTabs = vi.fn();
   const placeAt = vi.fn();
@@ -60,6 +60,7 @@ function setup(tab: Tab) {
       placeAt,
       canEdit: true,
       canWrite: false,
+      onWritten,
       commitTabs,
       tickTabs,
       undo: vi.fn(),
@@ -107,6 +108,15 @@ describe('a locked page holds its article', () => {
     const update = commitTabs.mock.calls[0]![0] as (ts: Tab[]) => Tab[];
     const locked = tabWith(true);
     expect(update([locked])[0]).toBe(locked);
+  });
+
+  it('tells the editor an accepted writing, and nothing of a refused one', () => {
+    const onWritten = vi.fn();
+    expect(setup(tabWith(false), onWritten).view.onCommit('a', blocks)).toBe(true);
+    expect(onWritten).toHaveBeenCalledWith('a', blocks);
+    onWritten.mockClear();
+    setup(tabWith(true), onWritten).view.onCommit('a', blocks);
+    expect(onWritten).not.toHaveBeenCalled();
   });
 
   it('settles no layout for it: no page added, no zone moved', () => {
