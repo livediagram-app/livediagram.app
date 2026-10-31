@@ -5,6 +5,7 @@
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import { isCalculation } from './calculated-fields';
+import { isAggregate } from './rollup-fields';
 import { FORMULA_MAX, FORMULA_RESULT_DEFAULT, isFormulaResult } from './formula/limits';
 import { canShowAsPercent } from './percent-fields';
 import {
@@ -113,6 +114,9 @@ export function requiredFieldsOf(typeId: string | undefined): readonly string[] 
 
 // A custom field's id: `f-` and a slug, or the reserved `parent` (PARENT_FIELD, a Card field).
 export const CUSTOM_FIELD_ID_PATTERN = /^(?:f-[a-z0-9-]{1,30}|parent)$/;
+// A field a Rollup or Lookup reads through or reads (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"): a
+// custom field's id, a built-in field's, or every card's Number and Type.
+const READ_FIELD_PATTERN = /^(?:f-[a-z0-9-]{1,30}|[a-z]{1,20}|#key|#type)$/;
 
 // What is stored: the catalogue whole, with a version for later shapes.
 export interface ItemTypeCatalogue {
@@ -329,23 +333,40 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     const calculation = input['calculation'];
     if (!isCalculation(calculation)) return `${at}.calculation`;
     field.calculation = calculation;
+    if (calculation === 'rollup' || calculation === 'lookup') {
+      // Its settings (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"): ids kept as written, even ones no
+      // type has any more (the field shows the problem), never a malformed one.
+      for (const k of ['through', 'source'] as const) {
+        const v = input[k];
+        if (v === undefined) continue;
+        if (typeof v !== 'string' || !READ_FIELD_PATTERN.test(v)) return `${at}.${k}`;
+        field[k] = v;
+      }
+      const aggregate = input['aggregate'];
+      if (calculation === 'rollup' && aggregate !== undefined) {
+        if (!isAggregate(aggregate)) return `${at}.aggregate`;
+        field.aggregate = aggregate;
+      }
+    }
+    if (calculation === 'rollup' || calculation === 'lookup' || calculation === 'formula') {
+      // The result kind, and a Currency result's currency, as a Currency field keeps it.
+      const result = input['result'];
+      if (result !== undefined) {
+        if (!isFormulaResult(result)) return `${at}.result`;
+        if (result !== FORMULA_RESULT_DEFAULT) field.result = result;
+      }
+      const code = input['currency'];
+      if (field.result === 'currency' && code !== undefined) {
+        if (typeof code !== 'string' || !CURRENCY_CODE.test(code)) return `${at}.currency`;
+        if (code !== CURRENCY_DEFAULT) field.currency = code;
+      }
+    }
     if (calculation === 'formula') {
       // Its expression as stored (docs/specs/026-plan/item-types.md "Formula fields"): kept as written, even one
       // that no longer works (the field shows the problem); never more than FORMULA_MAX.
       const formula = input['formula'] ?? '';
       if (typeof formula !== 'string' || formula.length > FORMULA_MAX) return `${at}.formula`;
       field.formula = formula;
-      const result = input['result'];
-      if (result !== undefined) {
-        if (!isFormulaResult(result)) return `${at}.result`;
-        if (result !== FORMULA_RESULT_DEFAULT) field.result = result;
-      }
-      // A Currency result's currency, as a Currency field keeps it.
-      const code = input['currency'];
-      if (field.result === 'currency' && code !== undefined) {
-        if (typeof code !== 'string' || !CURRENCY_CODE.test(code)) return `${at}.currency`;
-        if (code !== CURRENCY_DEFAULT) field.currency = code;
-      }
     }
   }
   // Kept only as 'percent', on a field whose result is a share (percent-fields.ts); anything else reads as text.

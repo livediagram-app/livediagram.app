@@ -24,11 +24,15 @@ import {
   itemTitle,
 } from './item';
 import type { ItemMove } from './item';
-import { CUSTOM_FIELD_ID_PATTERN, typeIn } from './type-catalogue';
+import { CUSTOM_FIELD_ID_PATTERN, customFieldOf, typeIn } from './type-catalogue';
+import { calculatedResultOf, hasResult } from './calculated-result';
+import { calculatedReaderOf, type IsDoneStatus } from './calculated-fields';
+import type { FormulaResult } from './formula/limits';
 import { isNotified } from './notify-fields';
 import { percentText, percentValue } from './percent-fields';
 import { boardSortComparator, normaliseBoardSort, type BoardSortLevel } from './board-sort';
 import {
+  type CustomFieldDef,
   ITEM_TYPES,
   LEGACY_PARENT_GROUPING,
   PARENT_FIELD_ID,
@@ -248,6 +252,8 @@ export interface LaneHead {
   fieldKind?: LaneFieldKind;
   // A row of a field that holds several (item-types.md "Holds Several"): a drop swaps values rather than setting one.
   several?: boolean;
+  // A row of a worked-out value (item-types.md "Rollup and Lookup fields", Filters): a drop into it sets nothing.
+  readOnly?: true;
 }
 
 // How a field lane groups (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
@@ -257,8 +263,12 @@ export interface LaneField {
   id: string;
   label: string;
   kind: LaneFieldKind;
-  // One of the item's stamps (card-stamps.ts): read from the item itself, and a drop into its row sets nothing.
+  // One of the item's stamps (card-stamps.ts), or a worked-out value: read, never set, so a drop into its row sets
+  // nothing.
   readOnly?: true;
+  // A Formula, Rollup or Lookup (docs/specs/026-plan/item-types.md "Rollup and Lookup fields", Filters): a row per
+  // worked-out value, laned as its result's kind.
+  calculated?: true;
   options?: readonly string[];
   // A Card field's target types: a row per linked card, of any of them (docs/specs/026-plan/item-types.md "Card
   // fields").
@@ -294,6 +304,18 @@ const GROUPING_KINDS = new Set<string>([
   'labels',
 ]);
 
+// The lane kind of a Formula, Rollup or Lookup's result: Number, Percent, Date, Text and Checkbox lane as those kinds;
+// a Currency, like a Currency field, lanes none.
+const CALCULATED_LANE_KINDS: Partial<Record<FormulaResult, LaneFieldKind>> = {
+  number: 'number',
+  percent: 'percent',
+  date: 'date',
+  text: 'text',
+  checkbox: 'checkbox',
+};
+const calculatedLaneKind = (c: CustomFieldDef): LaneFieldKind | undefined =>
+  hasResult(c) ? CALCULATED_LANE_KINDS[calculatedResultOf(c)!] : undefined;
+
 // The fields a board can lane by, of the types it shows: the built-ins those types offer, then every grouping
 // custom field in catalogue order, each once (named as the first type that offers it names it).
 export function laneFieldsOf(types: readonly ItemTypeDef[]): LaneField[] {
@@ -313,6 +335,11 @@ function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
   const out: LaneField[] = [...BUILT_IN_LANE_FIELDS, ...STAMP_LANE_FIELDS];
   for (const t of types)
     for (const c of t.custom ?? []) {
+      const worked = calculatedLaneKind(c);
+      if (worked && t.fields.includes(c.id) && !out.some((f) => f.id === c.id)) {
+        out.push({ id: c.id, label: c.label, kind: worked, readOnly: true, calculated: true });
+        continue;
+      }
       if (!GROUPING_KINDS.has(c.kind) || !t.fields.includes(c.id)) continue;
       if (out.some((f) => f.id === c.id)) continue;
       out.push({
@@ -334,19 +361,36 @@ export function laneFieldOf(
   return id ? everyLaneField(types).find((f) => f.id === id) : undefined;
 }
 
-// An item's value for a field lane, or undefined for the No row (a checkbox is never undefined).
+// An item's value for a field lane, or undefined for the No row (a checkbox is never undefined); a worked-out field's
+// from `calculated`.
 function laneValue(
   field: LaneField,
-  item: Pick<Item, 'fields'>,
+  item: Item,
+  calc?: LaneCalc,
 ): string | number | boolean | undefined {
   if (field.kind === 'labels') return labelsIn(field.id, item)[0];
-  const v = item.fields[field.id];
+  const v = field.calculated ? calc?.(field.id, item) : item.fields[field.id];
   if (field.kind === 'checkbox') return v === true;
   if (field.kind === 'number') return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
   if (field.kind === 'percent') return typeof v === 'number' ? percentValue(v) : undefined;
   if (typeof v !== 'string') return undefined;
   const s = field.kind === 'text' ? v.trim() : v;
   return s ? s : undefined;
+}
+
+// A worked-out field's value on a card (a Formula, Rollup or Lookup laned by its result), by field id: one reader per
+// grouping, so the child index is made once (calculated-fields.ts).
+type LaneCalc = (fieldId: string, item: Item) => ItemFieldValue | undefined;
+function laneCalcOf(
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+  isDone: IsDoneStatus | undefined,
+): LaneCalc {
+  const read = calculatedReaderOf(items, types, isDone);
+  return (id, item) => {
+    const def = customFieldOf(typeIn(types, item.type), id);
+    return def ? (read(def, item) ?? undefined) : undefined;
+  };
 }
 
 // A Labels field's labels: the built-in's, or a custom Labels field's (docs/specs/026-plan/item-types.md "Custom field
@@ -369,6 +413,7 @@ const laneBase = (field: LaneField) => ({
   fieldId: field.id,
   fieldKind: field.kind,
   ...(field.several ? { several: true } : {}),
+  ...(field.calculated ? { readOnly: true as const } : {}),
 });
 
 // A Person field's rows: its person's, or each of its people's when it holds several, named and drawn as an Assignee
@@ -449,7 +494,7 @@ export function laneDropPatch(
   if (lane.field === 'field') {
     const id = lane.fieldId;
     // Nobody changes who made a card or when: a stamp's row sets nothing.
-    if (!id || isStampField(id)) return {};
+    if (!id || isStampField(id) || lane.readOnly) return {};
     if (lane.value === null || lane.value === false) return { clear: [id] };
     if (lane.fieldKind === 'labels' && typeof lane.value === 'string') {
       const rest = item ? labelsIn(id, item).filter((l) => l !== lane.value) : [];
@@ -630,12 +675,15 @@ function laneOf(
   types: readonly ItemTypeDef[],
   statusNames?: ReadonlyMap<string, string>,
   field?: LaneField,
+  calc?: LaneCalc,
 ): LaneHead {
   switch (by) {
     case 'field':
       if (!field) return { key: NO_LANE, label: '', field: null, value: null };
       // A Created or Edited field's row is its stamp's; a Person or Card field's rows are lanesOf's, one per value.
-      return field.readOnly ? stampLane(field, item) : fieldLane(field, laneValue(field, item));
+      return field.readOnly && !field.calculated
+        ? stampLane(field, item)
+        : fieldLane(field, laneValue(field, item, calc));
     case 'status': {
       const s = namedStatus(item, statusNames);
       return s
@@ -677,12 +725,13 @@ function lanesOf(
   types: readonly ItemTypeDef[],
   statusNames?: ReadonlyMap<string, string>,
   field?: LaneField,
+  calc?: LaneCalc,
 ): LaneHead[] {
   if (by === 'field' && !field?.readOnly && field?.kind === 'person')
     return personLanes(field, item);
   if (by === 'field' && !field?.readOnly && field?.kind === 'card')
     return cardLanes(field, item, items, types);
-  return [laneOf(by, item, types, statusNames, field)];
+  return [laneOf(by, item, types, statusNames, field, calc)];
 }
 
 function laneSort(
@@ -762,13 +811,16 @@ export function laneGroups(
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   statusNames?: ReadonlyMap<string, string>,
+  // The boards' done rule, for a Rollup's Count Done (none without it).
+  isDone?: IsDoneStatus,
 ): LaneGroups {
   const field = swimlaneBy === 'field' ? laneFieldOf(swimlaneField, types) : undefined;
   const by: SwimlaneBy = swimlaneBy === 'field' && !field ? 'none' : swimlaneBy;
   const laneMap = new Map<string, LaneHead>();
   const lanesOfItem = new Map<string, readonly string[]>();
+  const calc = field?.calculated ? laneCalcOf(items, types, isDone) : undefined;
   for (const it of list) {
-    const heads = lanesOf(by, it, items, types, statusNames, field);
+    const heads = lanesOf(by, it, items, types, statusNames, field, calc);
     for (const lane of heads) if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
     lanesOfItem.set(
       it.id,
@@ -785,7 +837,8 @@ function boardLanes(
   scoped: readonly Item[],
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
-  statusNames?: ReadonlyMap<string, string>,
+  statusNames: ReadonlyMap<string, string> | undefined,
+  isDone: IsDoneStatus,
 ): LaneGroups {
   const groups = laneGroups(
     setup.swimlaneBy,
@@ -794,6 +847,7 @@ function boardLanes(
     items,
     types,
     statusNames,
+    isDone,
   );
   const { by, field, lanesOfItem } = groups;
   const laneMap = new Map<string, LaneHead>(groups.lanes.map((l) => [l.key, l]));
@@ -809,7 +863,7 @@ function boardLanes(
     laneMap.set(NO_LANE, lanesOf(by, { fields: {} } as Item, items, types, statusNames, field)[0]!);
   }
   // Every option of a Choice, and both Yes and No, are rows to drop into, cards or not.
-  if (field?.kind === 'choice' || field?.kind === 'checkbox') {
+  if (field?.kind === 'choice' || (field?.kind === 'checkbox' && !field.readOnly)) {
     const values: (string | boolean)[] =
       field.kind === 'checkbox' ? [true, false] : [...(field.options ?? [])];
     for (const v of values) {
@@ -872,10 +926,13 @@ export function projectBoard(
   scoped.sort(byRank);
   // Sort Cards: stable, so rank still orders the cards each level ties.
   const sorted = !!setup.sortBy?.length;
-  if (sorted) scoped.sort(boardSortComparator(setup.sortBy!, types, items));
+  // The board's done columns, for a Rollup's Count Done and a Children Done it sorts or lanes by.
+  const isDone: IsDoneStatus = (s) =>
+    s !== undefined && setup.columns.some((c) => c.status === s && isDoneColumn(setup, c));
+  if (sorted) scoped.sort(boardSortComparator(setup.sortBy!, types, items, isDone));
   unplaced.sort((a, b) => a.key - b.key);
 
-  const groups = boardLanes(setup, scoped, items, types, statusNames);
+  const groups = boardLanes(setup, scoped, items, types, statusNames, isDone);
   const { by, lanes } = groups;
 
   // Cards in every done column (docs/specs/026-plan/plan-board.md "Done columns").

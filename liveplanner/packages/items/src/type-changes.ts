@@ -7,6 +7,9 @@ import { isFormulaField } from './formula-fields';
 import { FORMULA_RESULTS, FORMULA_RESULT_DEFAULT } from './formula/limits';
 import { formulaScopeOf, storedFormula } from './formula/references';
 import { canShowAsPercent } from './percent-fields';
+import { isLookupField, isRollupField } from './calculated-result';
+import { Refused, invalid, type TypeChangeRefusal } from './type-change-refused';
+import { resolveRollups, withRollup, type PendingRollups } from './type-change-rollups';
 import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
 import {
@@ -82,6 +85,11 @@ export interface CustomFieldInput {
   // "Formula fields").
   formula?: string;
   result?: string;
+  // A Rollup's or Lookup's settings by name (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"): the Card
+  // field it reads through ("all" for a Rollup over every child), what a Rollup works out, and the field it reads.
+  through?: string;
+  aggregate?: string;
+  source?: string;
   // A share drawn as a Percent field is ('percent'), or as text ('number', the default); only where
   // canShowAsPercent allows it (docs/specs/026-plan/item-types.md "Percent").
   showAs?: string;
@@ -108,6 +116,10 @@ export interface CustomFieldEdit {
   // A Formula's expression (field names) and result kind.
   formula?: string;
   result?: string;
+  // A Rollup's or Lookup's settings by name.
+  through?: string;
+  aggregate?: string;
+  source?: string;
   // 'percent' draws its share as a Percent field is, 'number' as text again.
   showAs?: string;
   onCard?: boolean;
@@ -168,9 +180,6 @@ export type CardTypeChange =
   | { op: 'add_default_types' }
   | { op: 'restore_built_ins' };
 
-type TypeChangeRefusal =
-  NameRefusal | { code: 'type_change_invalid' | 'display_invalid'; message: string };
-
 type TypeChangesResult =
   | {
       ok: true;
@@ -182,16 +191,6 @@ type TypeChangesResult =
       deleted: string[];
     }
   | ({ ok: false; applied: string[] } & TypeChangeRefusal);
-
-class Refused extends Error {
-  readonly refusal: TypeChangeRefusal;
-  constructor(refusal: TypeChangeRefusal) {
-    super(refusal.message);
-    this.refusal = refusal;
-  }
-}
-
-const invalid = (message: string) => new Refused({ code: 'type_change_invalid', message });
 
 function face<T>(read: FaceRead<T>, code: 'type_change_invalid' | 'display_invalid'): T {
   if (!read.ok) throw new Refused({ code, message: read.message });
@@ -226,6 +225,7 @@ function editedCustom(
   edit: CustomFieldEdit,
   types: readonly ItemTypeDef[],
   formulas: PendingFormulas,
+  rollups: PendingRollups,
 ): ItemTypeDef {
   const key = must(fieldKeyOf(edit.field, type)).key;
   const field = (type.custom ?? []).find((f) => f.id === key);
@@ -273,9 +273,18 @@ function editedCustom(
     next.calculation = calculationNamed(field.label, edit.calculation);
   }
   withFormula(next, edit, formulas, field.formula === undefined);
+  withRollup(next, edit, rollups, next.calculation !== field.calculation);
   // A Child Count, or a Formula whose result is no longer a Percent, is no share: it stops showing as a Percent.
   if (!canShowAsPercent(next)) delete next.showAs;
-  if (edit.showAs !== undefined) {
+  if (
+    edit.showAs !== undefined &&
+    (isRollupField(next) || isLookupField(next)) &&
+    rollups.has(key)
+  ) {
+    // Its result is known once its settings resolve (resolveRollups).
+    if (showAsWanted(edit.showAs)) rollups.set(key, { ...rollups.get(key), showAs: 'percent' });
+    else delete next.showAs;
+  } else if (edit.showAs !== undefined) {
     if (showAsNamed(next, edit.showAs)) next.showAs = 'percent';
     else delete next.showAs;
   }
@@ -356,6 +365,7 @@ function customOf(
   type: ItemTypeDef,
   types: readonly ItemTypeDef[],
   formulas: PendingFormulas,
+  rollups: PendingRollups,
 ): CustomFieldDef {
   const typed = input.kind
     .trim()
@@ -403,11 +413,16 @@ function customOf(
       `"${name}" is ${withArticle(known)} field: only a calculated field has a calculation.`,
     );
   withFormula(field, input, formulas, true);
+  withRollup(field, input, rollups, true);
   if ((known === 'currency' || field.result === 'currency') && input.currency) {
     const code = currencyOf(input.currency);
     if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
-  if (input.showAs !== undefined && showAsNamed(field, input.showAs)) field.showAs = 'percent';
+  if (input.showAs !== undefined && rollups.has(field.id)) {
+    if (showAsWanted(input.showAs))
+      rollups.set(field.id, { ...rollups.get(field.id), showAs: 'percent' });
+  } else if (input.showAs !== undefined && showAsNamed(field, input.showAs))
+    field.showAs = 'percent';
   if (input.onCard) field.onCard = true;
   if (input.required) field.required = requirable(field);
   if (input.notifies) field.notifies = notifiable(field);
@@ -436,7 +451,11 @@ function withFormula(
         `"${field.label}" is no formula: only a calculated field whose calculation is formula has one.`,
       );
     delete field.formula;
-    delete field.result;
+    // A Rollup's or Lookup's result is its own, taken from what it reads (resolveRollups).
+    if (!isRollupField(field) && !isLookupField(field)) {
+      delete field.result;
+      if (field.kind !== 'currency') delete field.currency;
+    }
     return;
   }
   if (input.result !== undefined) {
@@ -472,6 +491,15 @@ function resolveFormulas(type: ItemTypeDef, formulas: PendingFormulas): ItemType
 // "a, b or c".
 const orList = (xs: readonly string[]) =>
   xs.length > 1 ? `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}` : xs.join('');
+
+// Whether `showAs` asks for a Percent, before the field's result is known (a Rollup's or Lookup's).
+function showAsWanted(named: string): boolean {
+  const key = named.toLowerCase().replace(/[^a-z]/g, '');
+  if (key === 'number' || key === 'text') return false;
+  if (key !== 'percent' && key !== 'percentbar')
+    throw invalid(`"${named}" is not a way to show a field: give percent or number.`);
+  return true;
+}
 
 // Whether `showAs` asks for a Percent: 'percent' (or "Percent Bar"), on a field whose result is a share; 'number'
 // asks for text. Anything else, or a Percent asked of a field that gives no share, is refused.
@@ -610,15 +638,16 @@ export function applyCardTypeChanges(
           type = { ...type, fields: [...new Set([...REQUIRED_TYPE_FIELDS, ...extra])] };
         }
         const formulas: PendingFormulas = new Map();
+        const rollups: PendingRollups = new Map();
         for (const input of c.custom ?? []) {
-          const field = customOf(input, type, types, formulas);
+          const field = customOf(input, type, types, formulas, rollups);
           type = {
             ...type,
             custom: [...(type.custom ?? []), field],
             fields: [...type.fields, field.id],
           };
         }
-        type = resolveFormulas(type, formulas);
+        type = resolveRollups(resolveFormulas(type, formulas), [...types, type], rollups);
         // Every status the boards name when none are given, as the type editor's Add Type starts one.
         const every = statuses.map((s) => s.status);
         if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
@@ -662,8 +691,9 @@ export function applyCardTypeChanges(
         // The fields this change ticks Show on Card, by id, so a rename in the same edit still finds them.
         const ticked: string[] = [];
         const formulas: PendingFormulas = new Map();
+        const rollups: PendingRollups = new Map();
         for (const input of c.addCustom ?? []) {
-          const field = customOf(input, type, types, formulas);
+          const field = customOf(input, type, types, formulas, rollups);
           if (input.onCard) ticked.push(field.id);
           type = {
             ...type,
@@ -673,7 +703,7 @@ export function applyCardTypeChanges(
         }
         for (const edit of c.editCustom ?? []) {
           if (edit.onCard === true) ticked.push(must(fieldKeyOf(edit.field, type)).key);
-          type = editedCustom(type, edit, types, formulas);
+          type = editedCustom(type, edit, types, formulas, rollups);
         }
         for (const name of c.removeCustom ?? []) {
           const key = must(fieldKeyOf(name, type)).key;
@@ -690,7 +720,7 @@ export function applyCardTypeChanges(
               : {}),
           };
         }
-        type = resolveFormulas(type, formulas);
+        type = resolveRollups(resolveFormulas(type, formulas), types, rollups);
         if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
         if (c.defaultStatus === null) {
           const { defaultStatus: _gone, ...rest } = type;

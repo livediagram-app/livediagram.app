@@ -31,7 +31,6 @@ import {
   type IsDoneStatus,
   calculatedText,
   calculatedValue,
-  calculationOf,
   formulaValue,
   isFormulaField,
   childIndexFor,
@@ -252,8 +251,9 @@ function bitOf(
 }
 
 // A Calculated field's value, worked out from the cards in hand: null without them, and Children Done only with the
-// board's done columns. A Formula reads the card itself, so a lone card draws it too (none when it can't be worked
-// out; docs/specs/026-plan/item-types.md "Formula fields").
+// board's done columns (a Rollup's Count Done too). A Formula reads the card itself, so a lone card draws it too (none
+// when it can't be worked out; docs/specs/026-plan/item-types.md "Formula fields"); a Rollup or Lookup reads the
+// cards ("Rollup and Lookup fields").
 function calculatedOf(
   def: CustomFieldDef,
   item: Item,
@@ -262,11 +262,11 @@ function calculatedOf(
 ): CalculatedValue {
   const type = typeIn(types, item.type);
   if (isFormulaField(def) && !ctx.items) return formulaValue(def, item, type);
-  if (!ctx.items || (calculationOf(def) === 'childrenDone' && !ctx.isDone)) return null;
-  const isDone = ctx.isDone ?? (() => false);
-  return calculatedValue(def, item, childIndexFor(ctx.items, types), isDone, {
+  if (!ctx.items) return null;
+  return calculatedValue(def, item, childIndexFor(ctx.items, types), ctx.isDone, {
     type,
     items: ctx.items,
+    types,
   });
 }
 

@@ -332,6 +332,62 @@ describe('a Calculated field in an export', () => {
     expect(inHand.svg).toContain('Twice: £2,500');
   });
 
+  // docs/specs/026-plan/item-types.md "Rollup and Lookup fields": worked out from the cards in hand, none without.
+  it('draws a Rollup and a Count Done from the cards in hand', () => {
+    const proj: ItemTypeDef = {
+      ...task,
+      id: 'proj',
+      label: 'Proj',
+      custom: [
+        {
+          id: 'f-sum',
+          label: 'Total',
+          kind: 'calculated',
+          calculation: 'rollup',
+          aggregate: 'sum',
+          source: 'f-n',
+        },
+        {
+          id: 'f-done',
+          label: 'Done',
+          kind: 'calculated',
+          calculation: 'rollup',
+          aggregate: 'countDone',
+        },
+      ],
+      fields: ['title', 'status', 'f-sum', 'f-done'],
+      display: { detailed: { body: ['f-sum', 'f-done'] } },
+    };
+    const job: ItemTypeDef = {
+      ...task,
+      id: 'job',
+      custom: [
+        { id: 'f-up', label: 'Up', kind: 'card', linkType: 'proj' },
+        { id: 'f-n', label: 'N', kind: 'number' },
+      ],
+      fields: ['title', 'status', 'f-up', 'f-n'],
+    };
+    const p = item('proj1', { title: 'P' }, { type: 'proj' });
+    const j = item('job1', { title: 'J', status: 'done', 'f-up': p.id, 'f-n': 4 }, { type: 'job' });
+    const items = new Map([
+      [p.id, p],
+      [j.id, j],
+    ]);
+    const types = [proj, job];
+    const lone = planCardFace(p, 0, 0, 240, { palette, types });
+    expect(lone.svg).not.toContain('Total:');
+    const inHand = planCardFace(p, 0, 0, 240, { palette, types, items });
+    expect(inHand.svg).toContain('Total: 4');
+    expect(inHand.svg).not.toContain('Done:');
+    const withDone = planCardFace(p, 0, 0, 240, {
+      palette,
+      types,
+      items,
+      isDone: (s) => s === 'done',
+    });
+    expect(withDone.svg).toContain('Done: 1');
+  });
+
   it('reads a board’s own done columns', () => {
     const board = {
       ...createShape('plan-board', 0, 0),

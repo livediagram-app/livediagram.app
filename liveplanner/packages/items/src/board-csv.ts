@@ -5,7 +5,8 @@ import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSet
 import { builtInFieldOf } from './card-source';
 import { customFieldText } from './card-text';
 import { itemColourValue } from './item-colour';
-import { formulaValue, isFormulaField } from './formula-fields';
+import { hasResult } from './calculated-result';
+import { calculatedReaderOf, type IsDoneStatus } from './calculated-fields';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
 import { isItemPerson, itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
@@ -51,14 +52,15 @@ const lower = (s: string) => s.trim().toLowerCase();
 
 // The custom fields of the board's types, one per label (the first type naming it wins), in catalogue order. A
 // Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields"),
-// but a Formula, worked out from the card, is written ("Formula fields"); so is an Image field left out, whose value
+// but a Formula, Rollup or Lookup, worked out as its result, is written ("Formula fields", "Rollup and Lookup
+// fields"); so is an Image field left out, whose value
 // is a picture's id (docs/specs/026-plan/item-types.md "Image fields").
 function customColumns(types: readonly ItemTypeDef[]): string[] {
   const out = new Map<string, string>();
   for (const t of types)
     for (const f of t.custom ?? [])
       if (
-        (f.kind !== 'calculated' || isFormulaField(f)) &&
+        (f.kind !== 'calculated' || hasResult(f)) &&
         f.kind !== 'image' &&
         !out.has(lower(f.label))
       )
@@ -101,8 +103,11 @@ export function boardCsvRows(
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
   statusNames?: ReadonlyMap<string, string>,
+  // The boards' done rule, for a Rollup's Count Done (none without it).
+  isDone?: IsDoneStatus,
 ): string[][] {
   const shown = boardAddTypes(setup, types);
+  const calculated = calculatedReaderOf(items, types, isDone);
   const builtIns = BOARD_CSV_FIELDS.filter(([id]) => shown.some((t) => t.fields.includes(id)));
   const customs = customColumns(shown);
   const rows: string[][] = [
@@ -129,8 +134,8 @@ export function boardCsvRows(
         ...customs.map((label) => {
           const f = customByLabel(type, label);
           if (!f) return '';
-          // A Formula's worked-out value, written as its result kind's field would be ("2500", "2026-10-31").
-          if (f.kind === 'calculated') return cellOf(formulaValue(f, item, type, { items }));
+          // A worked-out value, written as its result kind's field would be ("2500", "2026-10-31").
+          if (f.kind === 'calculated') return cellOf(calculated(f, item));
           // Every linked card's title, and every person's name, of a field that holds several, joined by ", "
           // (item-types.md "Holds Several").
           if (f.kind === 'card')

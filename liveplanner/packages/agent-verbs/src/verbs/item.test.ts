@@ -513,6 +513,148 @@ describe('formula fields', () => {
   });
 });
 
+// docs/specs/026-plan/item-types.md "Rollup and Lookup fields".
+describe('rollup and lookup fields', () => {
+  const PROJ = {
+    ...ITEM_TYPES[0],
+    id: 'proj',
+    label: 'Proj',
+    fields: ['title', 'status', 'f-total', 'f-all', 'f-gone'],
+    custom: [
+      {
+        id: 'f-total',
+        label: 'Total',
+        kind: 'calculated',
+        calculation: 'rollup',
+        through: 'f-up',
+        aggregate: 'sum',
+        source: 'f-cost',
+        result: 'currency',
+      },
+      {
+        id: 'f-all',
+        label: 'All',
+        kind: 'calculated',
+        calculation: 'rollup',
+        aggregate: 'countDone',
+      },
+      {
+        id: 'f-gone',
+        label: 'Gone',
+        kind: 'calculated',
+        calculation: 'rollup',
+        aggregate: 'sum',
+        source: 'f-nope',
+      },
+    ],
+  };
+  const JOB = {
+    ...ITEM_TYPES[1],
+    id: 'job',
+    label: 'Job',
+    fields: ['title', 'status', 'f-up', 'f-cost', 'f-name', 'f-unset'],
+    custom: [
+      { id: 'f-up', label: 'Up', kind: 'card', linkType: 'proj' },
+      { id: 'f-cost', label: 'Cost', kind: 'currency' },
+      {
+        id: 'f-name',
+        label: 'Proj Name',
+        kind: 'calculated',
+        calculation: 'lookup',
+        through: 'f-up',
+        source: 'title',
+        result: 'text',
+      },
+      // Not set up yet: nothing to read through.
+      { id: 'f-unset', label: 'Unset', kind: 'calculated', calculation: 'lookup' },
+    ],
+  };
+  const items = [
+    item(1, 'itemproj01', { title: 'Acme', status: 'doing' }, 'proj'),
+    item(
+      2,
+      'itemjob001',
+      { title: 'A', status: 'done', 'f-up': 'itemproj01', 'f-cost': 20 },
+      'job',
+    ),
+    item(
+      3,
+      'itemjob002',
+      { title: 'B', status: 'doing', 'f-up': 'itemproj01', 'f-cost': 5.5 },
+      'job',
+    ),
+  ];
+  const types = [...ITEM_TYPES, PROJ, JOB] as ItemTypeDef[];
+  const withRollups = () =>
+    api({
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, types },
+      [path]: (r: Request) =>
+        r.method === 'GET'
+          ? Response.json({ items, rev: 4 })
+          : Response.json({ item: items[0], rev: 5 }),
+    });
+
+  it('lists each card’s value, and the settings by name with the result', async () => {
+    const { ctx } = withRollups();
+    const out = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
+    expect(out.items.find((i) => i.id === 'itemproj01')!.fields).toMatchObject({
+      Total: 25.5,
+      All: 1,
+      Gone: null,
+    });
+    expect(out.items.find((i) => i.id === 'itemjob001')!.fields).toMatchObject({
+      'Proj Name': 'Acme',
+    });
+    const listed = listedType(PROJ as ItemTypeDef, [], types).custom;
+    expect(listed).toEqual([
+      expect.objectContaining({
+        name: 'Total',
+        calculation: 'rollup',
+        through: 'Up',
+        aggregate: 'sum',
+        source: 'Cost',
+        result: 'currency',
+        currency: 'GBP',
+        readOnly: true,
+      }),
+      expect.objectContaining({
+        name: 'All',
+        through: 'all',
+        aggregate: 'countDone',
+        result: 'number',
+      }),
+      expect.objectContaining({
+        name: 'Gone',
+        source: 'f-nope',
+        error: 'The field it reads is gone',
+      }),
+    ]);
+    expect(listedType(JOB as ItemTypeDef, [], types).custom[2]).toMatchObject({
+      through: 'Up',
+      source: 'Title',
+      result: 'text',
+    });
+    expect(listed[0]).not.toHaveProperty('error');
+    const unset = listedType(JOB as ItemTypeDef, [], types).custom[3];
+    expect(unset).toMatchObject({ name: 'Unset', calculation: 'lookup' });
+    expect(unset!.through).toBeUndefined();
+    expect(unset).not.toHaveProperty('source');
+  });
+
+  it('refuses giving a lookup a value, saying the linked card works it out', async () => {
+    const { ctx, seen } = withRollups();
+    const set = await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#2', fields: ['proj name=x'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(set).toMatchObject({
+      code: 'field_calculated',
+      message: expect.stringMatching(/worked out from the card it links to\.$/),
+    });
+    expect(seen.filter((s) => s.method === 'POST')).toEqual([]);
+  });
+});
+
 // docs/specs/026-plan/item-types.md "Percent".
 describe('percent fields', () => {
   const WORK = {

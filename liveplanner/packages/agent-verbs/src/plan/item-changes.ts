@@ -16,6 +16,7 @@ import {
   resolveFields,
   calculatedWritten,
   isFormulaField,
+  isLookupField,
   resolveItem,
   resolveStatus,
   resolveType,
@@ -222,7 +223,11 @@ export async function applyItemChanges(
     if (calculated) {
       // calculatedWritten names only a field the type has.
       const field = type.custom!.find((f) => f.id === calculated)!;
-      const from = isFormulaField(field) ? 'by its formula' : 'from the cards linking here';
+      const from = isFormulaField(field)
+        ? 'by its formula'
+        : isLookupField(field)
+          ? 'from the card it links to'
+          : 'from the cards linking here';
       throw new Stop(
         'field_calculated',
         `${field.label} is calculated: it can't be set. list_items lists its value, worked out ${from}.`,

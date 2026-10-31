@@ -24,7 +24,24 @@ type CalculatedField = Pick<
   CustomFieldDef,
   'kind' | 'calculation' | 'formula' | 'result' | 'currency'
 > &
-  Partial<Pick<CustomFieldDef, 'id'>>;
+  Partial<Pick<CustomFieldDef, 'id' | 'label' | 'through' | 'aggregate' | 'source'>>;
+
+// The catalogue with `type` as drafted in the type editor (the same array when it is the saved one), so a Rollup or
+// Lookup being written reads the draft's fields; made once per draft.
+const drafts = new WeakMap<
+  ItemTypeDef,
+  { types: readonly ItemTypeDef[]; with: readonly ItemTypeDef[] }
+>();
+function typesWith(types: readonly ItemTypeDef[], type: ItemTypeDef): readonly ItemTypeDef[] {
+  if (types.includes(type)) return types;
+  const hit = drafts.get(type);
+  if (hit && hit.types === types) return hit.with;
+  const out = types.some((t) => t.id === type.id)
+    ? types.map((t) => (t.id === type.id ? type : t))
+    : [...types, type];
+  drafts.set(type, { types, with: out });
+  return out;
+}
 
 // The value, or the problem working it out; `type` is the card's type unless given (the type editor's draft).
 export function calculatedFieldOutcome(
@@ -38,6 +55,6 @@ export function calculatedFieldOutcome(
     item,
     childIndexFor(plan.items, plan.types),
     donePhase(plan.statusPhases),
-    { type, items: plan.items },
+    { type, items: plan.items, types: typesWith(plan.types, type) },
   );
 }

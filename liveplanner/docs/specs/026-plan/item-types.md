@@ -55,19 +55,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## An item type
 
-| Part            | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                                                                                            |
-| `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                                                                                                        |
-| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                                                                                                                                                                |
-| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                              |
-| `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                                                                                                        |
-| `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, showAs?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`, a Formula's `formula` and `result`, and `showAs: "percent"` when it [shows as a Percent](#percent-fields); `required: true` for a [required field](#required-fields)) |
-| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                                                                                                                                                            |
-| `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                                                                                                                                                       |
-| `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                                                                                                                                                             |
-| `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                                                                                                                                                         |
-| `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                                                                                                          |
+| Part            | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                                                                                                                                                                                                        |
+| `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                                                                                                                                                                                                                                                                            |
+| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`, a Formula's `formula` and `result`, a Rollup's or Lookup's `through`, `aggregate` and `source` and its `result`, and `showAs: "percent"` when it [shows as a Percent](#percent-fields); `required: true` for a [required field](#required-fields)) |
+| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                                                                                                                                                                                                                                                                        |
+| `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                                                                                                                                                                                                                                                                         |
+| `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                                                                                                                                                                                                                      |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
   Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are.
@@ -239,7 +239,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     - **Shown as a Percent**: a value the plan works out as a share is drawn exactly as a Percent field is when its
       field says so (`showAs: "percent"`): the same chip on the card, the same bar (read-only) in the panel, the
       same bar in exports. Today that is a [Calculated](#calculated-fields) field's **Children Done (%)** and a
-      [Formula](#formula-fields) with a **Percent** result; rollups that give a share will take the same switch. One shared reading (`percent-fields.ts`) decides which
+      [Formula](#formula-fields) with a **Percent** result; a [Rollup or Lookup](#rollup-and-lookup-fields) whose result is a Percent (an Average of a Percent field, a Lookup of
+      one) takes the same switch. One shared reading (`percent-fields.ts`) decides which
       fields show as a Percent and what share they show, so every surface agrees.
 - **Fields by role** <a id="fields-by-role"></a>: a feature that reads a field for what it means, not by its name,
   reads the built-in field unless its own settings pick another field of the same kind. Nothing a plan already
@@ -426,6 +427,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     in the panel and in exports; off (and for every field made before it), it reads as text ("40%") as before. A
     Child Count is no share, so it never offers the switch, and changing a field's calculation to Child Count turns
     it off.
+  - **Rollup**: one of a card's children's fields totalled, averaged, counted or dated (a Project's **Total
+    Points**, **Total Spend**, **Last Due**), [below](#rollup-and-lookup-fields).
+  - **Lookup**: a field of the card a Card field links to (a Task's **Project Due**, **Client Email**),
+    [below](#rollup-and-lookup-fields).
   - **Formula**: an expression over the card's own fields (`Budget - Spent`), [below](#formula-fields).
 
   **Children** are the cards that link to the card through a Card field naming its type (the cards its panel lists
@@ -444,8 +449,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     `calculation`, `showAs: "percent"` when it shows as a Percent, and `readOnly: true`, and each card's value among its `fields`, by name; `GET /items` answers
     `calculated` (by card id, then field id) when asked with `?include=calculated`.
   - **Where it is left out**: a form can't ask it (no question maps to it), Import CSV skips its column and Export
-    CSV leaves it out, and a board can't sort or lay swimlanes by it. A Formula is the exception for Export CSV and
-    Sort Cards ([below](#formula-fields)).
+    CSV leaves it out, and a board can't sort or lay swimlanes by it. A Formula, a Rollup and a Lookup are the exceptions: they export,
+    sort and filter as their result ([below](#formula-fields), [Rollup and Lookup](#rollup-and-lookup-fields)).
   - A field's kind never changes, so a Calculated field stays one; its calculation can be changed in its form (or
     `editCustom`'s `calculation`), and every card's value follows at once.
 
@@ -471,7 +476,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Values**: Number, Currency, Rating and Estimate read as numbers; Date, Start and Due as dates; Checkbox as
     true or false; Text, Long Text (its text), Email, Link, Choice, Colour, Priority, Title and Type as text; a Person
     (and the Assignee) as the person's name; a Card field as the linked card's "#12 Title" ("Missing card" when it is
-    gone); another Calculated field as its value (Child Count, Children Done, another Formula's result). **Lists**: a
+    gone); another Calculated field as its value (Child Count, Children Done, a Rollup's or a Lookup's result, as its result
+    reads: a Date result as a date, another Formula's result). **Lists**: a
     field that [holds several](#holds-several), a Multiple Choice, Labels and a Checklist (its rows) read as a list:
     `len()` counts it, `concat()` joins it with ", ", and anything else given a list is an error ("Reviewers holds
     several: count them with len()").
@@ -506,8 +512,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Where it reads**: everywhere a Calculated field does (the card face, the panel, the api, the agents, the SVG
     and PNG exports), and also **Export CSV** (its value as a field of its result kind exports: "2500", "2026-10-31", Yes) and a sheet's card functions
     (`CARD`, `CARDS`... read it by name: a number, text, true or false, or a date). A board **sorts** by a Formula
-    whose result is a Number, Currency, Percent or Date (as that kind sorts); swimlanes, forms and Import CSV leave
-    it out.
+    whose result is a Number, Currency, Percent or Date (as that kind sorts), and lays swimlanes (and Card Search
+    filters) by one whose result is a Number, Percent, Date, Text or Checkbox, read-only ([Rollup and
+    Lookup](#rollup-and-lookup-fields), Filters); forms and Import CSV leave it out.
   - **In the type editor**: picking Formula in the field's form (and Add Field's Shape step) opens the formula
     editor: a **Result** menu (and **Currency** for a Currency result, **Show as Percent Bar** for a Percent one), a monospaced **Formula** box, the type's
     fields as chips under it (pressing one writes its name at the caret), and a line that checks the formula as it is
@@ -522,6 +529,76 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     text, true or false, an ISO date, or null).
   - **Share roles**: as any field. An Editor writes the formula (the type editor); everyone who can read the plan
     reads the values.
+
+- <a id="rollup-and-lookup-fields"></a>**Rollup and Lookup fields**: two calculations that read other cards' fields
+  through the links between cards, so a Project totals its tasks' points or spend and a Task shows its Parent's due
+  date without anyone copying values by hand. Like every Calculated field nothing is stored and it is read-only
+  everywhere (the rules above hold); what follows is their own.
+  - **Rollup** works one value out over a card's [children](#calculated-fields) (archived ones counted, trashed ones
+    left out, as Child Count counts them). Its settings:
+    - **Through** (`through`): which children, **All Linked Cards** (every child, stored as no `through`) or the
+      ones linking here through one Card field, by name ("Parent", "Project"). The menu lists every Card field of
+      any type that links to this card's type, each once (a field id names the same field on every type holding
+      it). A card linking through a field that [holds several](#holds-several) is a child of each card it links.
+    - **Calculate** (`aggregate`): **Sum**, **Average**, **Min**, **Max** (of a number), **Count** (how many
+      children), **Count Done** (how many are done, by the boards' rule), **Earliest** and **Latest** (of a date).
+    - **Field** (`source`, by id): what Sum, Average, Min and Max read: a Number, Currency, Rating, Estimate or
+      Percent field (never Sum of a Percent: a sum of shares means nothing), or a Calculated field whose result is a
+      number, money or a share; what Earliest and Latest read: a Date, Start Date or Due Date field, or a Calculated
+      field whose result is a Date. Count and Count Done read none. The menu lists the fields of the card types
+      that link here through the chosen field (any of them for All Linked Cards), each once, by name.
+    - A child without the field, or with it empty, is skipped; so is a child whose own worked-out value is an error.
+      With nothing left Sum, Average, Min, Max, Earliest and Latest read no value; Count and Count Done read 0.
+  - **Lookup** shows one field of the card a Card field links to. Its settings: **Through** (`through`), one of this
+    type's own Card fields (required), and **Field** (`source`), any field of the card types that field links to
+    that a [Formula](#formula-fields) can read (Title, Number, Type, Estimate, Start and Due Date, Priority,
+    Assignee, Labels, Colour, Checklist and every custom field but Image, Comments and Votes), Calculated fields
+    included. A field that holds several reads its first linked card that is still there. No linked card, a
+    missing one or one in the Trash reads no value; an archived one is still read.
+  - **The result** (`result`, as a Formula's, with `currency` beside a Currency one) is taken from what it reads
+    when the field is set (the type editor and `change_card_types` write it), never picked: Count and Count Done
+    give a **Number**, Earliest and Latest a **Date**, Sum, Average, Min and Max the field's kind (**Currency** in
+    the field's currency, **Percent**, else **Number**: a Rating and Estimate read as numbers). A Lookup gives its
+    field's kind: Number (Rating, Estimate and Number too), Currency, Percent, Date (Start and Due too),
+    Checkbox, a Calculated field's own result, and **Text** for everything else (a Person's name, a list joined by
+    ", ", a Card field's "#12 Title"). Values are rounded as the result reads (money to the penny, a share to a
+    whole number). A Percent result offers **Show as Percent Bar**, as a Formula's does.
+  - **Problems** read as an error, as a Formula's do (the panel says why, the card face reads "Error", the api,
+    exports and sheets no value): a Card field or field it reads that no type has any more ("The field it reads is
+    gone"), a value that reads itself through other cards ("Circular: Total Points reads itself"), and one that
+    takes too long ("Too much to work out").
+  - **With Formulas** (the order): a Formula may read a Rollup's or a Lookup's value by name (`{Total Spend} /
+Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it reads. Working out one value, every
+    card and formula it reads included, takes at most 100,000 steps (`CALCULATED_STEPS_MAX`: each card read is a
+    step, and each formula's steps count; one formula still takes at most 10,000) and reads through at most 8
+    values across cards (`CALCULATED_DEPTH_MAX`); past either, it is "Too much to work out". Within one value each
+    card's value is worked out once, however many paths reach it.
+  - **Filters**: a board lays swimlanes by a Formula, a Rollup or a Lookup whose result is a Number, Percent, Date,
+    Text or Checkbox (a row per value, ordered as that kind's rows are; Currency, like a Currency field, lays none),
+    and Card Search filters by one the same way. Its rows are read-only, as a Created row is: a card dropped into one
+    keeps its value (only a drop's column move applies), and no empty row is offered to drop into.
+  - **Where it reads**: everywhere a Formula does: the card face, the panel, Sort Cards (a Number, Currency, Percent
+    or Date result), swimlanes and Card Search (above), Export CSV (its value as a field of its result kind exports),
+    a sheet's card functions, the SVG and PNG exports, `GET /items?include=calculated`, and the agents.
+  - **Performance**: the children index is made once per change to the cards (`childIndexFor`), never a scan per card
+    per field, so a board of 2,000 cards with several Rollups draws in one pass over the cards and one per child
+    link per Rollup.
+  - **In the type editor**: picking Rollup in the field's form (and Add Field's Shape step) shows **Through**,
+    **Calculate** and **Field** menus (Field hidden for Count and Count Done; a field that no longer fits the
+    calculation is dropped, and Add {Name} waits for one: "Pick a field to read"), **Show as Percent Bar** for a
+    Percent result, and **Preview**: the value on the type's first live card that has one ("On #3 Website: 21"),
+    else on its first live card, or "No {Type} card to try it on yet". Picking Lookup shows **Through** (this type's
+    Card fields; "Add a Link to Card field first" when it has none) and **Field**, and the same Preview. With no
+    Card field linking to the type a Rollup's Through offers only All Linked Cards and says "No Link to Card field
+    links here yet". Picking another calculation drops the settings.
+  - **Agents**: `change_card_types` takes `through` (a Card field by name, or "all" for a Rollup), `aggregate` (by
+    id, `countDone`, or name, "Count Done") and `source` (a field by name) on `custom`, `addCustom` and
+    `editCustom`, refusing a setting that does not fit with what would ("Total Points can't Sum Status: give a
+    Number, Currency, Rating, Estimate or Percent field."). `list_items` lists their `through` and `source` by name,
+    `aggregate` and `result`, and each card's value as a Formula's (a number, text, true or false, an ISO date, or
+    null).
+  - **Share roles**: as any field. An Editor sets a Rollup or Lookup up (the type editor); everyone who can read the
+    plan reads the values.
 
 - <a id="image-fields"></a>**Image fields**: a custom field of kind **Image** holds one picture, uploaded from the
   card panel into liveworkspace's media service (`liveworkspace/docs/specs/006-media/media.md`), where every app keeps
@@ -802,7 +879,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       several lines into a row adding one option a line (blanks dropped, at most 20); for Rating **Scale** ("Out of
       3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for
       Link to Card **Links To** its card types (at least one); for Calculated **Calculation** (the menu below, the
-      first chosen) and, for Children Done or a Formula with a Percent result, **Show as Percent Bar** (off); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes); then
+      first chosen; a Rollup's and a Lookup's own menus, [Rollup and Lookup](#rollup-and-lookup-fields)) and, for
+      Children Done or a Formula, Rollup or Lookup with a Percent result, **Show as Percent Bar** (off); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes); then
       **Preview**: a small card as a board's card panel draws it, "Example card" over the field's row: its name as
       typed ("Field name" until then, with the required mark when Required) beside a sample value of its kind
       (Choice its first option, Multiple Choice its first two, Link to Card the linked types' names, "Project or

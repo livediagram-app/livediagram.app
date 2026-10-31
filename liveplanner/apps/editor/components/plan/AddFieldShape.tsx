@@ -10,7 +10,10 @@ import {
   canBeRequired,
   canShowAsPercent,
   holdsSeveralKind,
+  hasResult,
   isFormulaField,
+  isLookupField,
+  isRollupField,
   linkTypesOf,
   withLinkTypes,
   type CustomFieldDef,
@@ -36,6 +39,7 @@ import {
 } from './ItemTypeFieldForms';
 import { LinksToPicker, linkTypeNames } from './LinksToPicker';
 import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
+import { RollupEditor } from './RollupEditor';
 
 export type NewField = Omit<CustomFieldDef, 'id'>;
 
@@ -49,11 +53,15 @@ export function addedField(field: NewField): NewField {
     ...(hasOptions(field.kind) ? {} : { options: undefined }),
     ...(field.kind === 'rating' ? {} : { scale: undefined }),
     ...(field.kind === 'card' ? {} : { linkType: undefined, linkTypes: undefined }),
-    ...(field.kind === 'currency' || (isFormulaField(field) && field.result === 'currency')
+    ...(field.kind === 'currency' || (hasResult(field) && field.result === 'currency')
       ? {}
       : { currency: undefined }),
     ...(field.kind === 'calculated' ? {} : { calculation: undefined }),
-    ...(isFormulaField(field) ? {} : { formula: undefined, result: undefined }),
+    ...(isFormulaField(field) ? {} : { formula: undefined }),
+    ...(hasResult(field) ? {} : { result: undefined }),
+    ...(isRollupField(field) || isLookupField(field)
+      ? {}
+      : { through: undefined, aggregate: undefined, source: undefined }),
     ...(field.showAs === 'percent' && canShowAsPercent(field) ? {} : { showAs: undefined }),
     ...(field.required && canBeRequired(field.kind) ? {} : { required: undefined }),
     ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
@@ -298,12 +306,19 @@ function ShapeOwn({
           }
         />
       ) : null}
+      {isRollupField(field) || isLookupField(field) ? (
+        <RollupEditor
+          field={field}
+          draft={formulaDraft ?? { fields: [], custom: [] }}
+          onChange={set}
+        />
+      ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => set({ showAs })} />
       <HoldsSeveralSwitch field={field} onChange={(multiple) => set({ multiple })} />
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
-      {/* A Formula previews on a real card, in its editor. */}
-      {formula ? null : (
+      {/* A Formula, Rollup or Lookup previews on a real card, in its editor. */}
+      {hasResult(field) ? null : (
         <CustomFieldPreview
           label={field.label}
           kind={kind}

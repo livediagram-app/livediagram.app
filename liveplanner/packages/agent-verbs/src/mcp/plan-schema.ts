@@ -5,6 +5,8 @@ import { z } from 'zod';
 import {
   CALCULATIONS,
   CALCULATION_LABELS,
+  AGGREGATES,
+  AGGREGATE_LABELS,
   CARD_SIZES,
   CUSTOM_FIELD_KINDS,
   FORMULA_MAX,
@@ -236,8 +238,31 @@ const calculationArg = z
   .describe(
     `A calculated field's calculation: ${CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`).join(', ')}. ` +
       'Children are the cards linking to the card through a card field naming its type (Parent, for a Project); ' +
-      'done is a done column’s status. Children Done is a whole percentage, null with no children. formula works ' +
-      'the value out from the card’s own fields by its formula.',
+      'done is a done column’s status. Children Done is a whole percentage, null with no children. rollup works ' +
+      'one of the children’s fields out (aggregate, source, through), lookup shows a field of the card a card ' +
+      'field links to (through, source), and formula works the value out from the card’s own fields by its formula.',
+  );
+
+// A Rollup's or Lookup's settings (docs/specs/026-plan/item-types.md "Rollup and Lookup fields").
+const throughArg = z
+  .string()
+  .describe(
+    'A rollup’s or lookup’s card field, by name: a lookup reads the card its own card field links to (Parent); ' +
+      'a rollup reads the children linking here through a card field (Parent), or every child with "all" (the ' +
+      'default).',
+  );
+const aggregateArg = z
+  .string()
+  .describe(
+    `What a rollup works out over the children: ${AGGREGATES.map((a) => `${a} (${AGGREGATE_LABELS[a]})`).join(', ')}. ` +
+      'sum, average, min and max read a number, currency, rating, estimate or (not sum) percent field; earliest ' +
+      'and latest a date field; count and countDone none.',
+  );
+const sourceArg = z
+  .string()
+  .describe(
+    'The field a rollup aggregates on the children, or a lookup shows from the linked card, by name. Its result ' +
+      '(and a currency’s code) is taken from that field.',
   );
 
 // A Formula field's expression and result kind (docs/specs/026-plan/item-types.md "Formula fields").
@@ -327,6 +352,9 @@ const customField = z.object({
   calculation: calculationArg.optional(),
   formula: formulaArg.optional(),
   result: resultArg.optional(),
+  through: throughArg.optional(),
+  aggregate: aggregateArg.optional(),
+  source: sourceArg.optional(),
   showAs: showAsArg.optional(),
   onCard: z
     .boolean()
@@ -402,6 +430,9 @@ const customFieldEdit = z.object({
   calculation: calculationArg.optional(),
   formula: formulaArg.optional(),
   result: resultArg.optional(),
+  through: throughArg.optional(),
+  aggregate: aggregateArg.optional(),
+  source: sourceArg.optional(),
   showAs: showAsArg.optional(),
   onCard: z.boolean().optional(),
   required: z
@@ -524,7 +555,27 @@ const listedCustom = z.object({
   calculation: z
     .string()
     .optional()
-    .describe('A calculated field’s calculation: childCount, childrenDone or formula.'),
+    .describe(
+      'A calculated field’s calculation: childCount, childrenDone, rollup, lookup or formula.',
+    ),
+  through: z
+    .string()
+    .optional()
+    .describe('A rollup’s or lookup’s card field by name; "all" for a rollup over every child.'),
+  aggregate: z
+    .string()
+    .optional()
+    .describe('What a rollup works out (sum, average, countDone ...).'),
+  source: z
+    .string()
+    .optional()
+    .describe('The field a rollup aggregates or a lookup shows, by name.'),
+  error: z
+    .string()
+    .optional()
+    .describe(
+      'Why a rollup or lookup stopped working (a field it read is gone): its values read null.',
+    ),
   formula: z
     .string()
     .optional()
@@ -532,7 +583,9 @@ const listedCustom = z.object({
   result: z
     .string()
     .optional()
-    .describe(`A formula field’s result: ${FORMULA_RESULTS.join(', ')}.`),
+    .describe(
+      `A formula’s, rollup’s or lookup’s result: ${FORMULA_RESULTS.join(', ')}; the value reads as it.`,
+    ),
   formulaError: z
     .string()
     .optional()

@@ -1,7 +1,7 @@
 // Percent fields (docs/specs/026-plan/item-types.md "Percent"): how far along something is, a whole number from 0 to
 // 100, drawn as a bar. A field shows as a Percent when it is one (`kind: 'percent'`) or when a worked-out field that
 // gives a share says so (`showAs: 'percent'`: a Calculated field's Children Done, or a Formula with a Percent
-// result; Rollup will join PERCENT_SHOWABLE_KINDS). Every surface (the card face, the panel, exports, agents, CSV) reads through these, so
+// result, or a Rollup or Lookup with a Percent result). Every surface (the card face, the panel, exports, agents, CSV) reads through these, so
 // they agree on which fields draw a bar and what share it shows. Pure.
 import { clampPercent } from '@liveworkspace/model-core/progress-label';
 import type { ItemFieldValue } from './item';
@@ -51,7 +51,10 @@ export function canShowAsPercent(field: PercentDef): boolean {
   if (!PERCENT_SHOWABLE_KINDS.includes(field.kind)) return false;
   return (
     field.calculation === 'childrenDone' ||
-    (field.calculation === 'formula' && field.result === 'percent')
+    ((field.calculation === 'formula' ||
+      field.calculation === 'rollup' ||
+      field.calculation === 'lookup') &&
+      field.result === 'percent')
   );
 }
 
