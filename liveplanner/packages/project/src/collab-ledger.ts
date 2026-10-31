@@ -47,6 +47,12 @@ import {
   type CommentReactionId,
 } from '@liveworkspace/model-core/comment-reactions';
 import type { PlanColumn } from '@liveplanner/items';
+import {
+  mergeDashboardLedger,
+  recordDashboardPatch,
+  recordDashboardReset,
+  type DashboardLedger,
+} from './dashboard-ledger';
 
 // One field's latest change: a value, or removed.
 type FieldEntry = { value?: unknown; cleared?: true; seq: number };
@@ -94,7 +100,12 @@ export type VoteLedger = {
   retired?: string[];
 };
 
-export type TabLedger = { vote?: VoteLedger; elements: Record<string, ElementLedger> };
+// `dashboard`: the tab's Dashboard layout changes (dashboard-ledger.ts), one entry per tab.
+export type TabLedger = {
+  vote?: VoteLedger;
+  elements: Record<string, ElementLedger>;
+  dashboard?: DashboardLedger;
+};
 
 // Bounds on what one ledger entry may hold, so a flood of hand-crafted ops
 // can't grow a room's storage without end. Past a bound, new keys are dropped
@@ -130,7 +141,23 @@ export function ledgerKey(op: unknown): string | null {
   if (o.kind === 'el-delta' && isStr(o.elementId, ID_MAX)) {
     return `ledger:${o.tabId}:el:${o.elementId}`;
   }
+  // A Dashboard's layout (docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's layout travels as
+  // deltas"): its deltas, and a whole layout a tab-meta or an agent's changeset carried (a reset).
+  if (o.kind === 'dashboard-delta' || carriesWholeDashboard(op)) return `ledger:${o.tabId}:dash`;
   return null;
+}
+
+// The whole layout a `tab-meta` patch or a `changeset` carries, when it carries one.
+function wholeDashboardOf(op: unknown): unknown {
+  const o = op as { kind?: unknown; patch?: { dashboard?: unknown } | null; dashboard?: unknown };
+  if (o.kind === 'tab-meta') return o.patch?.dashboard;
+  if (o.kind === 'changeset') return o.dashboard;
+  return undefined;
+}
+
+function carriesWholeDashboard(op: unknown): boolean {
+  const d = wholeDashboardOf(op);
+  return !!d && typeof d === 'object';
 }
 
 // Every key a tab's ledger may use starts with this.
@@ -142,14 +169,19 @@ export function ledgerPrefix(tabId: string): string {
 // or null when the op is malformed or not tracked (the caller then leaves
 // storage alone).
 export function recordInLedger(
-  prev: ElementLedger | VoteLedger | undefined,
+  prev: ElementLedger | VoteLedger | DashboardLedger | undefined,
   op: unknown,
   seq: number,
-): ElementLedger | VoteLedger | null {
+): ElementLedger | VoteLedger | DashboardLedger | null {
   const o = op as { kind?: unknown };
+  if (o.kind === 'dashboard-delta') {
+    const patch = (op as { patch?: unknown }).patch;
+    return recordDashboardPatch(prev as DashboardLedger | undefined, patch, seq);
+  }
+  if (carriesWholeDashboard(op)) return recordDashboardReset(wholeDashboardOf(op), seq);
   if (o.kind === 'vote') return recordVote(prev as VoteLedger | undefined, op, seq);
   if (o.kind === 'el-delta') {
-    return recordElement(prev, (op as { delta?: unknown }).delta, seq);
+    return recordElement(prev as ElementLedger | undefined, (op as { delta?: unknown }).delta, seq);
   }
   return null;
 }
@@ -406,6 +438,7 @@ export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]
     if (!key.startsWith(prefix) || !value || typeof value !== 'object') continue;
     const rest = key.slice(prefix.length);
     if (rest === 'vote') ledger.vote = value as VoteLedger;
+    else if (rest === 'dash') ledger.dashboard = value as DashboardLedger;
     else if (rest.startsWith('el:')) ledger.elements[rest.slice(3)] = value;
   }
   return ledger;
@@ -467,8 +500,16 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
       changed = true;
     }
   }
+  // The layout changes the saver had not seen (dashboard-ledger.ts).
+  const dashboard = mergeDashboardLedger(tab.dashboard, ledger.dashboard, since);
+  if (dashboard !== tab.dashboard) changed = true;
   if (!changed) return tab;
-  return { ...tab, elements, ...(vote ? { vote } : {}) };
+  return {
+    ...tab,
+    elements,
+    ...(vote ? { vote } : {}),
+    ...(dashboard !== tab.dashboard ? { dashboard: dashboard as Tab['dashboard'] } : {}),
+  };
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
