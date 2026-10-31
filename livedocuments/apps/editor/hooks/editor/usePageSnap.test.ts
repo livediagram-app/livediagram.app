@@ -16,6 +16,7 @@ import {
 } from '@liveworkspace/workbench/lib/viewport-store';
 import { usePagesMode } from './usePagesMode';
 import { FLICK_WINDOW_MS, VIEW_REST_MS, flickVelocity } from './usePageSnap';
+import { setActiveArticle, type ActiveArticle } from '@/lib/article/article-editor-store';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Glides land at once, so a test reads where the view ends.
@@ -182,6 +183,38 @@ describe('a view moved by anything else', () => {
     act(() => viewport.setView(loose));
     rest();
     expect(viewport.get()).toEqual(loose);
+  });
+
+  it("leaves a view moved for the writing's caret where it is", () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    mount(viewport);
+    act(() =>
+      setActiveArticle({
+        handle: { flow: 'f' },
+        pageId: 'p2',
+        focused: true,
+      } as unknown as ActiveArticle),
+    );
+    // The caret kept in sight: a short pan toward the next page, as a reveal makes it.
+    const revealed = pannedFromP2(300);
+    act(() => viewport.setView(revealed));
+    rest();
+    rest();
+    expect(viewport.get()).toEqual(revealed);
+    // A hand on the canvas still lets go onto a page.
+    act(() => viewport.setView(fitOf('p2')));
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('pan');
+    });
+    act(() => viewport.setView(pannedFromP2(60)));
+    act(() => {
+      vi.advanceTimersByTime(FLICK_WINDOW_MS + 20);
+    });
+    act(() => end());
+    nextFrame();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+    act(() => setActiveArticle(null));
   });
 });
 
