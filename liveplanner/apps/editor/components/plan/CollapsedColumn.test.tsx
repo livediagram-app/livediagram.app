@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CollapseColumnButton, CollapsedColumnCell } from './CollapsedColumn';
+import {
+  CollapseColumnButton,
+  CollapsedColumnCell,
+  STRIP_BUTTON_CLASS,
+  STRIP_LINE_CLASS,
+  STRIP_NAME_CLASS,
+} from './CollapsedColumn';
 import { planPalette } from './plan-palette';
 
 // docs/specs/026-plan/plan-board.md "Collapse Column": a strip's cell is lit while a card is held over it, in the
@@ -53,6 +59,24 @@ describe('CollapsedColumnCell', () => {
     cleanup();
     cell(null, false);
     expect(screen.getByText('4').parentElement!.style.color).not.toBe(badge.style.color);
+  });
+});
+
+// The fit decision is the browser's layout (jsdom has none), so this holds the rules that make it: a wrapping column
+// of full-width lines, the name its own unclipped line, hidden overflow, and the name still said by the button.
+describe('CollapsedColumnCell name fit', () => {
+  it('lays the count and name out as wrapping full-width lines, clipping a name that does not fit whole', () => {
+    cell(null);
+    const button = screen.getByRole('button', { name: 'Expand Column, Done, 4 items' });
+    expect(button.className).toBe(STRIP_BUTTON_CLASS);
+    for (const c of ['flex-col', 'flex-wrap', 'overflow-hidden'])
+      expect(STRIP_BUTTON_CLASS).toContain(c);
+    expect(STRIP_LINE_CLASS).toContain('w-full');
+    expect(STRIP_LINE_CLASS).toContain('shrink-0');
+    expect(STRIP_NAME_CLASS).not.toContain('ellipsis');
+    expect(STRIP_NAME_CLASS).not.toContain('overflow');
+    expect(button.children).toHaveLength(2);
+    expect(button.children[1]!.textContent).toBe('Done');
   });
 });
 

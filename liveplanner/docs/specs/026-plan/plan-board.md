@@ -367,8 +367,12 @@ Where each is set, so a setting lives with what it changes, never in one central
   a little quieter at rest and full strength on hover and focus), and for someone who may edit, its cog's toolbar too. Collapsed, the
   column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** chevron at the
   top, then its count and its name written top to bottom, the whole strip pressable to expand it. On a board with
-  swimlanes, each open swimlane's part of the strip shows that row's count and the name. The other columns take
-  the room it leaves (maximised or filling its tab, the five slots across are measured from what the strips leave).
+  swimlanes, each open swimlane's part of the strip shows that row's count and the name.
+  - **The name only when it fits**: the name is shown whole or not at all, never cut short ("U..."). Under the count it
+    needs its full length; in a part too short for that (a short swimlane row), the part shows the count alone. The
+    column is still named by the part's accessible name and its tooltip ("Expand Column, {Name}"). The browser's own
+    layout decides it (no measuring in script, no flash of a clipped name), on a plain board and in every swimlane row. The other columns take
+    the room it leaves (maximised or filling its tab, the five slots across are measured from what the strips leave).
   - **Drops**: a card dragged over a strip lights it (dashed in the focus colour, or in red when the card's type
     leaves the status out, where letting go is refused and the reason announced) and, let go, moves there at the column's end (in that swimlane's row on a board with
     swimlanes), as a drop into the open column would; the column stays collapsed. A palette card dropped on it is

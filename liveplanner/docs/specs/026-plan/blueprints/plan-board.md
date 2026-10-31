@@ -632,6 +632,10 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 - Drag has the keyboard equivalent (Shift+arrows). Focus ring 2 px, contrast ≥ 3:1; text ≥ 4.5:1 on every
   type colour key fill (the #key text meets 4.5:1 on it).
 - Reduced motion: no placeholder animation, no card lift shadow transition; a column collapses and expands at once.
+- Collapse Column name fit: the cell's button is a wrapping flex column (`STRIP_BUTTON_CLASS`) of two full-width
+  lines (`STRIP_LINE_CLASS`), the count and the name; a name too long for the room left wraps to a second line
+  beside the first, clipped by `overflow-hidden`, so it shows whole or not at all, in CSS alone. A Tooltip names
+  the column.
 - Collapse Column: the chevrons are buttons with `aria-expanded`; the strip's cell is one button whose name says the
   column, the swimlane and the count; arrow keys pass over a collapsed column (`planBoardKey` gets the projection with
   its cells emptied, unless Shift is held, so Shift+Arrows still move a card into it).
