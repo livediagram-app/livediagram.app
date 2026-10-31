@@ -85,9 +85,7 @@ describe('showing as a Percent', () => {
     expect(showsAsPercent({ ...DONE, showAs: 'percent' })).toBe(true);
     // A Child Count is no share: a stray showAs is ignored.
     expect(showsAsPercent({ ...DONE, calculation: 'childCount', showAs: 'percent' })).toBe(false);
-    expect(showsAsPercent({ id: 'f-n', label: 'N', kind: 'number', showAs: 'percent' })).toBe(
-      false,
-    );
+    expect(showsAsPercent({ kind: 'number', showAs: 'percent' })).toBe(false);
     expect(canShowAsPercent(DONE)).toBe(true);
     expect(canShowAsPercent(PROGRESS)).toBe(false);
   });
@@ -163,7 +161,7 @@ describe('the catalogue', () => {
     expect(shown.showAs).toBe('percent');
     const after = (catalogue: typeof on.catalogue, edit: Record<string, unknown>) => {
       const r = applyCardTypeChanges(
-        catalogue!,
+        catalogue,
         [{ op: 'set', type: 'Work', editCustom: [{ field: 'Done', ...edit }] }],
         statuses,
       );
@@ -171,6 +169,8 @@ describe('the catalogue', () => {
       return r.catalogue!.types[0]!.custom!.find((c) => c.id === 'f-done')!;
     };
     expect(after(on.catalogue, { showAs: 'number' }).showAs).toBeUndefined();
+    expect(after(on.catalogue, { showAs: 'text' }).showAs).toBeUndefined();
+    expect(after(on.catalogue, { showAs: 'Percent Bar' }).showAs).toBe('percent');
     expect(after(on.catalogue, { calculation: 'childCount' }).showAs).toBeUndefined();
     expect(after(on.catalogue, { calculation: 'childrenDone' }).showAs).toBe('percent');
   });
