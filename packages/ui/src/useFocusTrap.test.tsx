@@ -153,6 +153,32 @@ describe('useFocusTrap', () => {
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
   });
 
+  it('keeps focus in the dialog when the focused control is swapped out under it', async () => {
+    function Steps() {
+      const ref = useRef<HTMLDivElement>(null);
+      const [step, setStep] = useState<'pick' | 'paste'>('pick');
+      useFocusTrap(ref);
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          {step === 'pick' ? (
+            <button type="button" onClick={() => setStep('paste')}>
+              Mermaid
+            </button>
+          ) : (
+            <textarea aria-label="Mermaid to import" />
+          )}
+        </div>
+      );
+    }
+    render(<Steps />);
+    const card = screen.getByRole('button', { name: 'Mermaid' });
+    expect(document.activeElement).toBe(card);
+    fireEvent.click(card);
+    // The card left the page while focused; focus falls back to the dialog, never to <body>.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.activeElement).toBe(screen.getByRole('dialog'));
+  });
+
   it('focuses the container when asked, and Shift+Tab from it wraps to the last control', () => {
     function ContainerModal() {
       const ref = useRef<HTMLDivElement>(null);
