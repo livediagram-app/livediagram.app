@@ -99,6 +99,11 @@ letter. Its title and a screen-reader label say "<Kind> in <app>". It is a state
 motion, so a list of thousands pays for paths only. Wherever the Explorer names another app (the Details view's Type
 cell, a folder's "isn't empty" note and its counts), it is that mark, never a coloured dot.
 
+Every ⋯ menu (a row's, a card's, a folder's, the panel's) opens below its trigger, or above it when there is no room
+below. When it fits on neither side (a long menu from a card halfway down a short window) it slides up until its
+last row is on screen, over its trigger; one taller than the window keeps to the window and scrolls. A menu never
+runs off the page, so every verb on it can be reached.
+
 Creating is aware of where the person came from: New from liveplanner makes a Plan, from livediagram a
 Canvas, and so on. On liveworkspace.app in no app, where the list shows every app, New (the hero's and the pane's
 Create) is a menu of every app's kind, each with its logo and its app's name; New Folder sits beside them where the
