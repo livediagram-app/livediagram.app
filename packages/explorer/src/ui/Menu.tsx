@@ -99,10 +99,20 @@ export function PortalMenu({
     };
   }, [anchor, close]);
 
-  // The first item takes focus, so the arrow keys work from the start.
+  // The first item takes focus, so the arrow keys work from the start. Closing with focus still in the menu, or lost
+  // with it (an item chosen), hands it back to the trigger, as a menu button does: a dialog the item opens then
+  // returns focus there as it closes, rather than to the page, outside everything.
+  const latestAnchor = useLatest(anchor);
   useEffect(() => {
-    ref.current?.querySelector<HTMLElement>(ITEM)?.focus({ preventScroll: true });
-  }, []);
+    const menu = ref.current;
+    menu?.querySelector<HTMLElement>(ITEM)?.focus({ preventScroll: true });
+    return () => {
+      const now = document.activeElement;
+      const lost = now === null || now === document.body || !!menu?.contains(now);
+      const trigger = latestAnchor.current;
+      if (lost && trigger?.isConnected) trigger.focus({ preventScroll: true });
+    };
+  }, [latestAnchor]);
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
