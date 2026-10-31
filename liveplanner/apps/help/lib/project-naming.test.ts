@@ -31,9 +31,10 @@ const DOM_DOCUMENT =
   /\bdocument\??\.[A-Za-z]|\bdocument\s*$|^\s*document\s*$|typeof document|instanceof Document|\(document[,)]|stubGlobal\('document'|spyOn\(document|defineProperty\(document|= document\b|: Document\b|Document(Timeline|Fragment|OrShadowRoot)|DOM `?document|(HTML|SVG|XML) documents?\b|\(document as\b|\| Document\b|: document;|const document = \{|\{ document \}|^\s*document,$|`document`|document (position|root|element)\b|\.document\b|document\?: \{ createElement|without a document rather than throwing|listener on the document\b/;
 
 // The platform's shared names, which say document for every app's item: an OpenAPI document, the
-// @liveworkspace/api-schema/document-* modules and the names this product re-exports from them as its own.
+// @liveworkspace/api-schema/document-* modules, the media service's X-Media-Document header, and the names this
+// product re-exports from them as its own.
 const SHARED_PLATFORM =
-  /OpenApiDocument|OpenAPI document|@liveworkspace\/api-schema\/document-|\b\w*([Dd]ocument|DOCUMENT)\w*\s+as\s+\w*([Pp]roject|PROJECT)|\bTrashedDocument in @liveworkspace\/|\(typeof DOCUMENT_SOURCES\)|\{ DOCUMENT_SOURCES \}/;
+  /OpenApiDocument|OpenAPI document|X-Media-Document|@liveworkspace\/api-schema\/document-|\b\w*([Dd]ocument|DOCUMENT)\w*\s+as\s+\w*([Pp]roject|PROJECT)|\bTrashedDocument in @liveworkspace\/|\(typeof DOCUMENT_SOURCES\)|\{ DOCUMENT_SOURCES \}/;
 
 // Every app's own items named together (closing an account deletes them all), and the documents of the old
 // livediagram.app that the migration brings over.

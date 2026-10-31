@@ -91,7 +91,7 @@ export async function pushImageRefs(env: PlanEnv, planId: string): Promise<boole
   // Never sent and nothing to say: a plan that never held a picture tells the service nothing.
   if (set === (before ?? '[]')) return false;
   if (images.length > MEDIA_REFS_SYNC_MAX) {
-    // Past what one sync carries for a document. Sending part of the set would drop the rest's references, so it
+    // Past what one sync carries for a plan. Sending part of the set would drop the rest's references, so it
     // sends nothing: the service keeps what it last had for the plan, and each upload's own claim, and the sweep
     // takes nothing of this plan's until it is back under the cap.
     console.error('[media] a plan holds more pictures than one sync carries; not reported', {
