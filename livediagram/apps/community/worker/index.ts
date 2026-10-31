@@ -11,4 +11,8 @@ import { createCommunityWorker } from '@liveworkspace/community-site/worker';
 
 export type { CommunityWorkerEnv as Env } from '@liveworkspace/community-site/worker';
 
-export default createCommunityWorker({ app: 'livediagram.app', siteUrl: SITE_URL, product: 'livediagram' });
+export default createCommunityWorker({
+  app: 'livediagram.app',
+  siteUrl: SITE_URL,
+  product: 'livediagram',
+});
