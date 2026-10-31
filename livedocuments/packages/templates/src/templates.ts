@@ -1,4 +1,4 @@
-import { titleCase } from '@livedocuments/api-schema';
+import { isUntitledName, titleCase } from '@livedocuments/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './untitled';
 
 // The Pages templates (docs/specs/008-canvas/canvas-and-palette.md "Templates"): every template opens in Pages,
@@ -288,5 +288,5 @@ let DEFAULT_NAMES: ReadonlySet<string> | null = null;
  */
 export function isDefaultDocumentName(name: string): boolean {
   DEFAULT_NAMES ??= new Set(TEMPLATES.map((t) => untitledNameForTemplate(t.kind)));
-  return isUntitledDocumentName(name) || DEFAULT_NAMES.has(name);
+  return isUntitledDocumentName(name) || isUntitledName(name) || DEFAULT_NAMES.has(name);
 }

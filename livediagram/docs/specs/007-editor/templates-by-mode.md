@@ -130,7 +130,7 @@ unchanged; only the mode they open in moved from Diagram.
   it is made from: "Untitled Flowchart", "Untitled Retrospective", a blank naming what it makes ("Untitled
   Whiteboard"), Blank Diagram "Untitled document" (`untitledNameForTemplate`).
 - Only while the document still has a default name: one of those untitled names (`isDefaultDocumentName`, any
-  template's, or the legacy "Untitled diagram"). A name someone gave it, or the first element's label the editor
+  template's, or the legacy "Untitled diagram"; a blank's names are the shared `isUntitledName` list, which the first label's naming uses too). A name someone gave it, or the first element's label the editor
   named it after ([Name length](../006-document/name-length.md)), is kept.
 - Only for the document's **first** tab: a template filling a later tab names that tab, not the document.
 - It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed

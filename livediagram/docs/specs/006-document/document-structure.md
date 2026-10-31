@@ -20,6 +20,7 @@ Document
 - Tabs are **ordered**; users can drag-reorder them in the tab bar.
 - A tab has a name (default `"Tab 1"`, `"Tab 2"`, etc.) and is renameable.
 - **Auto-rename on first edit.** While a tab still has its default name (matching `^Tab \d+$`), editing the label of its first element renames the tab to that label. The rename only fires once: as soon as the tab name diverges from the default pattern (auto-rename or manual rename), subsequent label edits leave the tab name alone. This mirrors the document-name auto-fill from the default `Untitled document`.
+- **The first label names the document, in every mode.** While the document still has a default name from a mode's blank (`isUntitledName`: "Untitled canvas" and its legacy "Untitled diagram" and "Untitled document", "Untitled Whiteboard", "Untitled Workshop" and its legacy "Untitled Session"), committing the label of the first tab's first element names the document after it, capped as [Name length](name-length.md) sets. The list is a light shared one (`@liveworkspace/api-schema/untitled-names`), so the editor never loads the template catalogue to ask; a name someone gave it is never replaced.
 
 ## Cross-tab links
 
