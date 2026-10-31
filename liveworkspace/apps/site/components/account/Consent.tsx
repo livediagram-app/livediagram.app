@@ -21,23 +21,28 @@ export function Consent() {
   async function answer(accept: boolean) {
     setError('');
     setBusy(true);
-    const next = nextUrl(
-      await call('/oauth2/consent', {
-        accept,
-        oauth_query: signedOAuthQuery(window.location.search),
-      }),
-    );
+    const result = await call('/oauth2/consent', {
+      accept,
+      oauth_query: signedOAuthQuery(window.location.search),
+    });
+    const next = nextUrl(result);
     // Under an app's address, by way of liveworkspace.app (lib/accounts.ts afterSignIn).
     if (next) return window.location.assign(await afterSignIn(next, window.location.search));
     setBusy(false);
-    setError('That request has expired. Go back to the app and try again.');
+    // No answer at all (status 0) is the connection, not the request: the same answer works once it is back.
+    setError(
+      result.status === 0
+        ? 'Couldn’t reach liveworkspace. Check your connection and try again.'
+        : 'That request has expired. Go back to the app and try again.',
+    );
   }
 
   return (
     <AccountCard narrow>
       <AccountHeading title="Allow access">
-        <strong className="text-slate-900 dark:text-slate-100">{client}</strong> wants to use your
-        liveworkspace account.
+        {/* A client id is one unbroken word, up to whatever its maker chose: it wraps rather than leaving the card. */}
+        <strong className="break-all text-slate-900 dark:text-slate-100">{client}</strong> wants to
+        use your liveworkspace account.
       </AccountHeading>
       {error && <Alert tone="error">{error}</Alert>}
       <div className="flex gap-2">
