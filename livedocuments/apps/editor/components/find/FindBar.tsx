@@ -46,6 +46,10 @@ const HELD_REASON = {
 
 const FIELD =
   'h-9 min-w-0 flex-1 rounded-md border border-slate-200 bg-white text-[13px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-brand-500/25';
+// The Find field: the field's look on a box holding the input and the count side by side, so the count takes only its
+// own width and the typed text keeps the rest (a phone's row is narrow).
+const FIELD_BOX =
+  'flex h-9 min-w-0 flex-1 items-center rounded-md border border-slate-200 bg-white transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:ring-brand-500/25';
 
 function BarButton({
   label,
@@ -144,7 +148,7 @@ export function FindBar({ find }: { find: FindView }) {
             />
           </BarButton>
         ) : null}
-        <div className="relative flex min-w-0 flex-1 items-center">
+        <div className={FIELD_BOX}>
           <input
             ref={field}
             type="text"
@@ -161,12 +165,12 @@ export function FindBar({ find }: { find: FindView }) {
               if (e.shiftKey) find.previous();
               else find.next();
             }}
-            className={`${FIELD} pl-2.5 pr-24`}
+            className="h-full min-w-0 flex-1 rounded-md bg-transparent pl-2.5 pr-1 text-[13px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100"
           />
           <span
             aria-live="polite"
             data-find-count=""
-            className={`pointer-events-none absolute right-2.5 max-w-[5.5rem] truncate text-xs tabular-nums ${
+            className={`pointer-events-none shrink-0 whitespace-nowrap pr-2.5 text-xs tabular-nums ${
               count === 'No Results'
                 ? 'text-rose-700 dark:text-rose-300'
                 : 'text-slate-500 dark:text-slate-400'
@@ -198,7 +202,7 @@ export function FindBar({ find }: { find: FindView }) {
             ab
           </span>
         </BarButton>
-        <span aria-hidden className={TOOLBAR_DIVIDER} />
+        <span aria-hidden className={`${TOOLBAR_DIVIDER} phone:hidden`} />
         <BarButton
           label="Previous Match"
           keys="Shift-Enter"
