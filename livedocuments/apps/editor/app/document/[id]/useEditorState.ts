@@ -1,5 +1,6 @@
 'use client';
 
+import { useFindReplace } from '@/hooks/editor/useFindReplace';
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { setOwnPictureShown } from '@/lib/own-picture';
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
@@ -1624,6 +1625,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mapTab(t) : t)));
   };
 
+  // Find and replace on the open tab (docs/specs/007-editor/find-and-replace.md): a Replace All is one
+  // commitActiveTab, so one undo step, and a Participant's passes its guard.
+  const find = useFindReplace({
+    activeTab,
+    pages: pagesMode.pages,
+    can: participant.can,
+    standsAside: presenting || embedMode,
+    canvasMainRef,
+    getView: () => ({ zoom: zoomRef.current, offset: viewportOffsetRef.current }),
+    focusPage: pagesMode.focusPage,
+    scrollIntoView,
+    commitActiveTab,
+    notify: toast.info,
+  });
+
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): what the panel or the context menu last
   // chose per element kind, applied to the next element the user draws. The
   // style hooks below get `commit` / `tickTabs` wrapped to record into it.
@@ -2787,6 +2803,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.
     can: participant.can,
     participating: participant.participating,
+    find,
     laserTrailRows,
     linkActiveTabTo,
     linkPickerOpenForId,

@@ -31,6 +31,8 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', 'D'], label: 'Duplicate Selection' },
       { keys: ['⌘', '⇧', 'L'], label: 'Lock  /  Unlock Selection' },
       { keys: ['⌘', 'A'], label: 'Select All' },
+      { keys: ['⌘', 'F'], label: 'Find in Tab' },
+      { keys: ['⌘', '⇧', 'H'], label: 'Find and Replace' },
       { keys: ['Del', '/  ⌫'], label: 'Delete Selection' },
       { keys: ['⌘', '⇧', ']'], label: 'Bring to Front' },
       { keys: ['⌘', '⇧', '['], label: 'Send to Back' },
