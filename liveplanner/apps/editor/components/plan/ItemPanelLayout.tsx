@@ -100,7 +100,10 @@ export function ItemDetailsRow({
 }) {
   return (
     <div
-      className={`-mx-2 grid min-h-9 ${wide ? 'grid-cols-[8rem_1fr]' : 'grid-cols-[6.5rem_1fr]'} items-center gap-2 rounded-lg px-2 py-1 max-sm:mx-0 max-sm:grid-cols-1 max-sm:items-start max-sm:gap-1.5 max-sm:px-0 max-sm:py-2`}
+      // shrink-0: Details is a flex column of a fixed height (its footer pinned to the bottom), and a row allowed to
+      // shrink was squeezed to its 36 px floor when the fields outgrew it, its control (a Time Spent field, Labels on
+      // two lines) spilling over the rows below instead of Details scrolling.
+      className={`-mx-2 grid min-h-9 shrink-0 ${wide ? 'grid-cols-[8rem_1fr]' : 'grid-cols-[6.5rem_1fr]'} items-center gap-2 rounded-lg px-2 py-1 max-sm:mx-0 max-sm:grid-cols-1 max-sm:items-start max-sm:gap-1.5 max-sm:px-0 max-sm:py-2`}
     >
       <label
         htmlFor={htmlFor}
@@ -127,7 +130,7 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
   return (
     <footer
       data-item-meta=""
-      className="mt-auto flex flex-col gap-0.5 pt-5 text-[12px] text-slate-500 dark:text-slate-400"
+      className="mt-auto flex shrink-0 flex-col gap-0.5 pt-5 text-[12px] text-slate-500 dark:text-slate-400"
     >
       <div className="flex flex-col gap-0.5 border-t border-slate-200/80 pt-3 dark:border-slate-700/80">
         {maker ? (

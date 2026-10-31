@@ -189,6 +189,19 @@ describe('the item panel’s authorship', () => {
     );
   });
 
+  // Details is a flex column of a fixed height that scrolls: a row or the footer allowed to shrink was squeezed to its
+  // floor when the fields outgrew it (a Time Spent field, Labels on two lines), spilling over the rows below.
+  it('never squeezes a Details row or the footer: Details scrolls instead', () => {
+    const task = item('t', 1, 'task');
+    panel(task, [task], []);
+    const aside = document.querySelector('aside')!;
+    expect(aside.className).toMatch(/\bflex-col\b/);
+    expect(aside.className).toMatch(/\boverflow-y-auto\b/);
+    const rows = [...aside.children].filter((el) => el.tagName !== 'H3');
+    expect(rows.length).toBeGreaterThan(1);
+    for (const row of rows) expect(row.className).toMatch(/\bshrink-0\b/);
+  });
+
   it('leaves out a person the card does not hold, never a guess', () => {
     const lost = { id: '', name: 'Someone', color: '#94a3b8' };
     const task = { ...item('t', 1, 'task'), createdBy: lost, updatedBy: lost };
