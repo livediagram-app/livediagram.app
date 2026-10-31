@@ -8,6 +8,7 @@ import {
   IMAGE_HEIGHT_HEADER,
   IMAGE_NAME_HEADER,
   IMAGE_SHA256_HEADER,
+  MEDIA_DOCUMENT_HEADER,
   IMAGE_WIDTH_HEADER,
   isAcceptedImageType,
   isMediaApp,
@@ -20,6 +21,7 @@ import {
   ORIGINAL_NAME_MAX,
   sniffImageType,
   type MediaApp,
+  type MediaImage,
   type MediaRefsSync,
 } from '@liveworkspace/media';
 import { MAX_JSON_BYTES } from './config';
@@ -40,7 +42,7 @@ import {
 } from './images';
 import { stripJpegMetadata } from './jpeg-strip';
 import { deleteItemPreviews } from './previews/store';
-import { syncRefs } from './refs';
+import { claimRef, syncRefs } from './refs';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
 const isId = (value: unknown): value is string =>
@@ -249,11 +251,18 @@ async function upload(
   const declaredLength = Number(request.headers.get('Content-Length') ?? '0');
   if (!Number.isFinite(declaredLength) || declaredLength <= 0) return badRequest('missing_length');
   if (declaredLength > MAX_IMAGE_BYTES) return tooLarge();
+  const document = documentOf(request.headers.get(MEDIA_DOCUMENT_HEADER));
+  if (document === false) return badRequest('invalid_document');
+  // Every answer with an image, deduped or new, first records the document's reference to it.
+  const answer = async (image: MediaImage, deduped: boolean) => {
+    if (document) await claimRef(env, app, document, image.id);
+    return json({ image, deduped });
+  };
 
   const headerSha = (request.headers.get(IMAGE_SHA256_HEADER) ?? '').toLowerCase();
   if (/^[0-9a-f]{64}$/.test(headerSha)) {
     const known = await findBySha(env, owner, headerSha);
-    if (known) return json({ image: known, deduped: true });
+    if (known) return answer(known, true);
   }
 
   const caps: Caps = {
@@ -281,7 +290,7 @@ async function upload(
   // The hash of the file as picked, so the same file dedupes however its metadata is stripped below.
   const sha256 = await sha256Hex(bytes);
   const existing = await findBySha(env, owner, sha256);
-  if (existing) return json({ image: existing, deduped: true });
+  if (existing) return answer(existing, true);
 
   // A JPEG loses its metadata (GPS, camera serial, comments) before it is stored; the picture is
   // bit-identical. A malformed one is refused rather than stored with what it should have lost.
@@ -313,6 +322,7 @@ async function upload(
         height,
         sha256,
         original_name: originalName,
+        document,
       },
       caps,
     );
@@ -325,7 +335,7 @@ async function upload(
     await bucket.delete(id);
     // The same bytes landed at the same moment from another upload: theirs is the answer.
     const raced = await findBySha(env, owner, sha256);
-    if (raced) return json({ image: raced, deduped: true });
+    if (raced) return answer(raced, true);
     // A racing upload filled the gallery after the check above.
     return (
       galleryFull(caps, await ownerTotals(env, owner), stored.byteLength) ??
@@ -333,12 +343,18 @@ async function upload(
     );
   }
   console.log('[media] stored', { app, id, bytes: stored.byteLength });
-  return json({ image, deduped: false });
+  return answer(image, false);
 }
 
 async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+// The document an upload is for: null when none was named, false when it is longer than an id may be.
+export function documentOf(header: string | null): string | null | false {
+  if (header === null || header === '') return null;
+  return header.length > MEDIA_ID_MAX ? false : header;
 }
 
 // The file's own name: percent-encoded by the app, read raw when it doesn't decode, cut to

@@ -22,6 +22,10 @@ export const IMAGE_NAME_HEADER = 'X-Image-Original-Name';
 // hash would otherwise let anyone acting for the owner probe their gallery (liveworkspace/docs/specs/006-media/media.md
 // "Uploads").
 export const IMAGE_SHA256_HEADER = 'X-Image-Sha256';
+// The document the picture is uploaded for (its id, at most MEDIA_ID_MAX characters). The service records that
+// document's reference at once and remembers the claim, so only that document's own report can let the sweep take
+// it (liveworkspace/docs/specs/006-media/media.md "Uploads"). Left out for a document the server never sees.
+export const MEDIA_DOCUMENT_HEADER = 'X-Media-Document';
 
 // The bytes route names the image's owner in this response header, so an app can apply its own rule
 // ("the image's owner owns this document") from the one request that fetched the bytes.
