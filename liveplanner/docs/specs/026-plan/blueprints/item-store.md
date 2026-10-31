@@ -640,9 +640,11 @@ history.retention` with the count.
 Toggled · ActivityOn`. The tab bar is `ItemPanelTabs.tsx`. `CardThreads` draws comment threads only, its header
   (label, open count, New Thread) on one line through `ItemPanelSection`'s `actions`. `useCardThreads` exposes its
   `scope` for the read.
-- Maximise and Minimise go through `animatePanelResize(apply)` (`item-panel-size.ts`): inside
-  `document.startViewTransition` with `flushSync` when the browser has it and motion is allowed, else `apply()` at
-  once. The panel carries `view-transition-name: item-panel`; the group's animation is 220 ms.
+- Maximise and Minimise go through `useAnimatedMaximise(maximised, save)` (`useAnimatedMaximise.ts`): the panel's
+  size is local state, changed inside `startTypedTransition('item-panel-resize', ...)` (`@liveworkspace/workbench`,
+  which applies it at once under reduced motion), then the preference is saved. `Dialog`'s `resizeTransition` wraps
+  the panel in a React `<ViewTransition>` that animates only on that type; `globals.css` gives the
+  `item-panel-resize` group the `short` duration (200 ms), compositor-only.
 
 ## Live: room op
 
@@ -763,36 +765,37 @@ include `fields` or comment text.
 
 ## Testing
 
-| Rule                                            | Test                                                                                                                                                                                        |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation per kind, every rejection            | `packages/items/src/fields.test.ts`                                                                                                                                                         |
-| Long Text formatting: key, limit, stale runs    | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                        |
-| Label usage, spelling, matching, 2,000 cards    | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                               |
-| Rank always between, stable under repeats       | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                           |
-| Bulk create grows linearly, keeps column order  | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                 |
-| Write checks shared with offline                | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                  |
-| Partial many-item write: answer, client, undo   | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                  |
-| Archive drag-off is one move                    | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                        |
-| apply functions                                 | `apply.test.ts`                                                                                                                                                                             |
-| Projection: columns, lanes, unplaced, quick     | `board.test.ts`                                                                                                                                                                             |
-| Tab-scoped set                                  | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                       |
-| Routes: gates, rejections, keys, cascade, copy  | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                   |
-| Room op redacted for a tab-scoped session       | `apps/api/src/room-scope.test.ts`                                                                                                                                                           |
-| Store transitions, inverses, sync order         | `packages/items/src/store.test.ts`                                                                                                                                                          |
-| Undo interleaving                               | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                          |
-| Agent verbs and tools                           | `agent-verbs/src/verbs/item.test.ts`, `agent-verbs/src/verbs/thread.test.ts`, `agent-verbs/src/plan/card-threads.test.ts`, `apps/mcp/src/output-schema.test.ts`                             |
-| Offline store                                   | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                             |
-| Comments field: read-only, budget, restore      | `packages/items/src/comments-field.test.ts`                                                                                                                                                 |
-| Thread ops, titles, redaction, restore, legacy  | `packages/project/src/card-threads.test.ts`, `apps/api/src/plan-room/card-thread-schema.test.ts`                                                                                            |
-| Thread routes: roles, agents, cross-plan, AI    | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                            |
-| Editor thread writes, room merge, refusals      | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                              |
-| Panel threads, Add to Card, shared chip, words  | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                |
-| History: changes, values, grouping, redaction   | `packages/items/src/item-history.test.ts`                                                                                                                                                   |
-| History: storage, bounds, cascade, no D1        | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                        |
-| History: writes tagged, roles, scope, redacted  | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                            |
-| History: Activity tab, timeline, words, offline | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                                                                   |
-| Tab export: items, catalogue, Markdown, layout  | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
-| Tab import: parse, plan, land, report           | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
+| Rule                                                 | Test                                                                                                                                                                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation per kind, every rejection                 | `packages/items/src/fields.test.ts`                                                                                                                                                         |
+| Long Text formatting: key, limit, stale runs         | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                        |
+| Label usage, spelling, matching, 2,000 cards         | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                               |
+| Rank always between, stable under repeats            | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                           |
+| Bulk create grows linearly, keeps column order       | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                 |
+| Write checks shared with offline                     | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                  |
+| Partial many-item write: answer, client, undo        | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                  |
+| Archive drag-off is one move                         | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                        |
+| apply functions                                      | `apply.test.ts`                                                                                                                                                                             |
+| Projection: columns, lanes, unplaced, quick          | `board.test.ts`                                                                                                                                                                             |
+| Tab-scoped set                                       | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                       |
+| Routes: gates, rejections, keys, cascade, copy       | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                   |
+| Room op redacted for a tab-scoped session            | `apps/api/src/room-scope.test.ts`                                                                                                                                                           |
+| Store transitions, inverses, sync order              | `packages/items/src/store.test.ts`                                                                                                                                                          |
+| Undo interleaving                                    | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                          |
+| Agent verbs and tools                                | `agent-verbs/src/verbs/item.test.ts`, `agent-verbs/src/verbs/thread.test.ts`, `agent-verbs/src/plan/card-threads.test.ts`, `apps/mcp/src/output-schema.test.ts`                             |
+| Offline store                                        | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                             |
+| Comments field: read-only, budget, restore           | `packages/items/src/comments-field.test.ts`                                                                                                                                                 |
+| Thread ops, titles, redaction, restore, legacy       | `packages/project/src/card-threads.test.ts`, `apps/api/src/plan-room/card-thread-schema.test.ts`                                                                                            |
+| Thread routes: roles, agents, cross-plan, AI         | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                            |
+| Editor thread writes, room merge, refusals           | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                              |
+| Panel threads, Add to Card, shared chip, words       | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                |
+| History: changes, values, grouping, redaction        | `packages/items/src/item-history.test.ts`                                                                                                                                                   |
+| History: storage, bounds, cascade, no D1             | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                        |
+| History: writes tagged, roles, scope, redacted       | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                            |
+| History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                                                                   |
+| Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`               |
+| Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
+| Tab import: parse, plan, land, report                | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
 ## Constants and configuration
 
