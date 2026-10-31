@@ -189,6 +189,31 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   by the field) read the custom field through it. The editor's `ItemFieldEditor` draws the built-in control for it
   (`PersonPicker` takes the field's name as `label`), `CustomKindPill.tsx` (`isBuiltInKindPill`, `customKindPill`)
   draws it on `PlanCardFace`, and `BuiltInKindField.tsx` asks it in `RequiredFieldsDialog`.
+- Comments fields (spec "Comments and Votes fields"): `builtInFieldOfKind('comments')` is `comments`, so
+  `ItemFieldEditor` draws `CardThreads` for each, with `type` and `field` (only that field's threads, `threadsInField`;
+  New Thread starts in it). A thread carries its field (`CardThread.field`, absent for the built-in); the thread start
+  route refuses a field the card's type does not offer as `400 field_invalid`, and the agents name it (list_threads'
+  `field`, change_threads' `start { field? }`, `thread start --field`). On the face, `PlanCardFace` draws a placed
+  custom Comments field as `CommentsPill` with its `field` and name (not through `customKindPill`); the built-in's
+  chip counts only the threads it lists. Never required (`canBeRequired`), never a value (`resolveFields`,
+  `customFieldText` null, no CSV value).
+- Votes fields (spec "Comments and Votes fields"): `builtInFieldOfKind('votes')` is `votes`; the value is `{ voter:
+dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes fields; `itemVotes(item, field?)` and
+  `itemVoteTotal(item, field?)` read one (the built-in by default); `voteTotalOf(value)` (card-text.ts) totals a
+  value. On the face, `customKindPill` draws a placed one as `VotesPill` (plan-card-parts.tsx, the built-in's ▲ chip,
+  named "{Field}: N votes"); `svg-render-plan-card` as "{Field} ▲ N"; the Display sample (`sampleCustom`) is
+  `{ 'sample-person': 2 }`; the Shape preview "▲ 3". It lives On the Card: `item-type-layout.ts`' `onCardOnly`
+  (with title and votes) keeps it out of Details and every tab, and `tabsOf` / `detailFieldsOf` leave it out of the
+  panel, as the built-in Votes. Written only by the tally: `resolveFields` refuses it ("votes come from a session
+  vote"), `validateFields` refuses it in a patch (an object that is not a person); a create carries a non-empty
+  voter map across (`carriedVotes`, an undo of a delete, a sync), as `votes` is carried. Never required.
+- Count In (session-tools.md): `vote-count-in.ts`. `voteCountInChoices(boardSetups, types)` is the Votes fields the
+  types the tab's boards take offer (`cardTypesTakenOnTab`, then `votesFieldsAcross`: the built-in first, deduped),
+  as `{ id, label }`, empty when there is only the built-in. `voteTallyWrites(tallies, field, typeOf)` splits a
+  tally: cards whose type offers `field` (`tallyFieldOn`) in one `{ kind: 'tally', field }` write, the rest in one
+  write to the built-in. The editor's `useVoteCountIn` reads the active tab's boards and the plan's types;
+  `VoteSetupBody` shows **Count In** (`StudioSegmented`, as Votable layer) when it has choices and starts the vote
+  with `voteField` (absent for the built-in); `endVoteAndTally` sends `voteTallyWritesOf(vote, items, types)`.
 - Image fields: `ImageField.tsx` (`ImageFieldControl` in the card panel, `ImageThumb` on the card face, lazy through
   an `IntersectionObserver`), reading through `apps/editor/lib/api/images.ts` (`apiUploadImage`, `apiImageUrl`,
   `releaseImageUrl`, `ImageUploadError`) with the plan's `itemsScope` (`PlanContext`, from `usePlanItems`). The api's
@@ -214,8 +239,8 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   `'first'`, `onEscape` handed to the form), holding `NewFieldForm` (`NewFieldForm.tsx`), which keeps the step
   (`{ step: 'pick' } | { step: 'shape', kind }`), the search text (kept across the steps) and the open group, and
   answers Escape (`escape()`: shape → pick, then a typed search cleared, then false so the popover closes).
-  - Pure data and matching in `add-field-kinds.ts`. A **pick kind** (`PickKind`) is a `CustomFieldKind` or one of
-    the built-in-only kinds `'comments' | 'votes'` (one to a type until they can repeat). `KIND_GROUPS`
+  - Pure data and matching in `add-field-kinds.ts`. A **pick kind** (`PickKind`) is a `CustomFieldKind`, Comments
+    and Votes among them: each opens Shape, Ready to use offering its built-in while the type lacks it. `KIND_GROUPS`
     (`{ id, label, kinds: PickKind[] }[]`: `text` "Text & links" text, longtext, link, email; `numbers` "Numbers &
     dates" number, currency, rating, date; `choices` "Choices" choice, multichoice, checkbox, labels; `people`
     "People & teamwork" person, checklist, comments, votes; `look` "Colour & images" colour, image; `cards` "Linked
@@ -226,7 +251,7 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
 string>>`, the Ready to use lines), `readyBuiltIns(kind, missing)` (the kind's built-ins the type lacks, in
     `BUILT_INS_OF_KIND` order), `searchKey(q)` (trimmed, lower-cased, runs of spaces one), `kindMatches(kind, label,
 q)` (the whole query a substring of the label, the description, an alias or the name of a built-in of the kind,
-    else every word of it a substring of one of them), `isOneToAType(kind)` (comments, votes) and
+    else every word of it a substring of one of them) and
     `kindReadiness(field)` (`null` when ready, else `'name' | 'options' | 'links'`, in that order) with
     `READINESS_HINT`.
   - Step 1 is `AddFieldPicker.tsx`: a `sticky top-0` header (search `type="search"`, `aria-label="Search fields"`, a
@@ -235,8 +260,7 @@ q)` (the whole query a substring of the label, the description, an alias or the 
     header button (`aria-expanded`, `aria-controls` its list's id, its name, a count pill of the kinds it lists, a
     chevron rotating 180° when open, `motion-safe:transition`), and the list a `ul` of kind buttons (`aria-label`
     the kind's name, `aria-describedby` its description, `data-kind`; a **Ready to use** tag after the name when
-    `readyBuiltIns(kind, missing)` is not empty). A one-to-a-type kind (`isOneToAType`) is listed only while the
-    type lacks it, and pressing it calls `onAddBuiltIn(id)`; every other kind calls `onPick(kind)`. With
+    `readyBuiltIns(kind, missing)` is not empty). Every kind is listed, and pressing one calls `onPick(kind)`. With
     `canAddCustom` false a kind with nothing ready is `aria-disabled`, dimmed and not `data-pick`. Searching
     (`searchKey(q)` non-empty), every group with a match renders open and the headers are not toggles
     (`aria-expanded` true, `aria-disabled`); a group with none is not rendered. No match at all: the empty state,
@@ -286,7 +310,8 @@ q)` (the whole query a substring of the label, the description, an alias or the 
   at most `ITEM_TYPE_TABS_MAX` (6). `readTabs` rejects a bad id, an empty or repeated label (ignoring case), or
   non-array fields; it drops fields the type does not offer, `title`, `votes`, and any field an earlier tab holds.
 - `tabsOf(type)`: the tabs with unoffered fields filtered; absent, one `OVERVIEW_TAB_ID` tab "Overview" of
-  description, checklist and long-text custom fields. `detailFieldsOf(type)`: the type's fields in no tab, minus
+  description, checklist and long-text custom fields, then every Comments field (the built-in and custom
+  `comments` ones) in the type's order. `detailFieldsOf(type)`: the type's fields in no tab, minus
   title and votes. `newTabId(label, taken)`.
 - Editor: one `LayoutDraft` (`{ fields, custom, tabs }`, `item-type-layout.ts`) edited by `ItemTypeLayoutEditor`,
   grouped by `cardFields` (title, votes), `detailFields` (Details) and each tab. Pure edits: `moveField` (within a

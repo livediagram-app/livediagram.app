@@ -371,11 +371,31 @@ CREATE INDEX IF NOT EXISTS card_image_grants_age ON card_image_grants (plan_id, 
 // statement is IF NOT EXISTS, so it runs again harmlessly wherever it lands.
 const V9 = ITEM_HISTORY_SCHEMA;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8, V9];
+type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
+
+// The Comments field a card's thread belongs to (docs/specs/026-plan/item-types.md "Comments and Votes fields"): null
+// is the built-in Comments, as every thread from before. Its own step, appended; SQLite has no ADD COLUMN IF NOT
+// EXISTS, so it asks first, and runs again harmlessly as every other step does.
+const V10 = (exec: Exec) => {
+  const columns = exec('PRAGMA table_info(card_threads)').toArray();
+  if (!columns.some((c) => c.name === 'field'))
+    exec('ALTER TABLE card_threads ADD COLUMN field TEXT NULL');
+};
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  V9,
+  V10,
+];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
-
-type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // Bring the plan's SQLite up to PLAN_SCHEMA_VERSION. Idempotent: every statement is IF NOT EXISTS, and the
 // version row skips what already ran. Runs inside the caller's transaction when it has one.
@@ -384,7 +404,11 @@ export function migratePlanSchema(exec: Exec): void {
   const row = exec('SELECT version FROM _plan_schema LIMIT 1').toArray()[0];
   const at = typeof row?.version === 'number' ? row.version : 0;
   if (at >= STEPS.length) return;
-  for (let step = at; step < STEPS.length; step++) exec(STEPS[step]!);
+  for (let step = at; step < STEPS.length; step++) {
+    const run = STEPS[step]!;
+    if (typeof run === 'string') exec(run);
+    else run(exec);
+  }
   exec('DELETE FROM _plan_schema');
   exec(`INSERT INTO _plan_schema (version) VALUES (${STEPS.length})`);
 }

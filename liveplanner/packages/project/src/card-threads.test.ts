@@ -8,7 +8,9 @@ import {
   THREAD_TITLE_MAX,
   applyThreadChange,
   autoThreadTitle,
+  fieldCountKey,
   isCardThread,
+  isThreadFieldId,
   isThreadId,
   keepOwnThreadAuthors,
   legacyThreadOf,
@@ -144,6 +146,24 @@ describe('ids and shape', () => {
         cards: [{ projectId: 'p2', itemId: 'i9', key: null, projectName: 'Other' }],
       }),
     ).toBe(true);
+  });
+
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields".
+  it('starts a thread in a Comments field, storing none for the built-in', () => {
+    expect(thread({ field: 'f-review' }).field).toBe('f-review');
+    expect(thread({ field: 'comments' })).not.toHaveProperty('field');
+    expect(thread()).not.toHaveProperty('field');
+  });
+
+  it('keeps a stored thread’s field only when it can name a Comments field', () => {
+    expect(isThreadFieldId('comments')).toBe(true);
+    expect(isThreadFieldId('f-review')).toBe(true);
+    expect(isThreadFieldId('title')).toBe(false);
+    expect(isThreadFieldId('f-')).toBe(false);
+    expect(isThreadFieldId(7)).toBe(false);
+    expect(isCardThread({ ...thread(), field: 'f-review' })).toBe(true);
+    expect(isCardThread({ ...thread(), field: 'Design Review' })).toBe(false);
+    expect(isCardThread({ ...thread(), field: null })).toBe(false);
   });
 });
 
@@ -393,6 +413,18 @@ describe('reads', () => {
       ]),
     );
     expect(openCommentCounts([a], 'p9').size).toBe(0);
+  });
+
+  it('counts each card’s comments in each Comments field a thread names, beside the whole', () => {
+    const review = { ...thread({ id: 'th-dddddddddddddddd', field: 'f-review' }) };
+    const shut = { ...review, id: 'th-eeeeeeeeeeeeeeee', resolved: true };
+    expect(openCommentCounts([a, b, review, shut], 'p1')).toEqual(
+      new Map([
+        ['i1', 4],
+        ['i2', 2],
+        [fieldCountKey('i1', 'f-review'), 1],
+      ]),
+    );
   });
 
   it('sorts open threads first by activity, then resolved ones by when', () => {

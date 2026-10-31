@@ -210,6 +210,8 @@ export function useTabSession(deps: TabSessionDeps) {
       // Absent rather than false when off, so an ordinary vote's wire shape
       // is unchanged.
       ...(setup?.onePerElement ? { onePerElement: true } : {}),
+      // The Votes field the tally counts in (session-tools.md "Count In"); absent = the built-in Votes.
+      ...(setup?.voteField ? { voteField: setup.voteField } : {}),
       // A vote is one person's to run (docs/specs/012-collaboration/session-tools.md): the starter is the only
       // one who can end / reveal / clear it or move the results focus.
       startedBy: selfId,

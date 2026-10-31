@@ -58,10 +58,24 @@ const THREAD: CardThread = {
   rev: 1,
 };
 
+// A Task with a Design Review beside Comments (docs/specs/026-plan/item-types.md "Comments and Votes fields").
+const TASK = {
+  id: 'task',
+  label: 'Task',
+  newTitle: 'New task',
+  glyph: 'task',
+  color: '#71717a',
+  fields: ['title', 'comments', 'f-review'],
+  custom: [{ id: 'f-review', label: 'Design Review', kind: 'comments' }],
+};
+
 function ctxWith(threads: CardThread[] = [THREAD]) {
   const sent: string[] = [];
+  const bodies: unknown[] = [];
   const write = async (r: Request) => {
     sent.push(`${r.method} ${new URL(r.url).pathname.replace(/^\/api/, '')}`);
+    const text = await r.text();
+    if (text) bodies.push(JSON.parse(text));
     return r.url.endsWith('/reopen')
       ? new Response(null, { status: 204 })
       : Response.json({ thread: THREAD, commentId: 'cm-new' });
@@ -72,13 +86,14 @@ function ctxWith(threads: CardThread[] = [THREAD]) {
     ...tabsOfA,
     [`${base}/threads`]: { threads },
     [`${base}/items`]: { items: [CARD], rev: 1 },
+    [`${base}/plan`]: { boards: [], statuses: [], types: [TASK], itemTypesRev: 1 },
     [`${base}/items/card12/threads`]: write,
     [`${base}/threads/${THREAD.id}/comments`]: write,
     [`${base}/threads/${THREAD.id}/comments/cm-agent`]: write,
     [`${base}/threads/${THREAD.id}/resolve`]: write,
     [`${base}/threads/${THREAD.id}/reopen`]: write,
   });
-  return { ctx: contextOf(api), sent };
+  return { ctx: contextOf(api), sent, bodies };
 }
 
 describe('thread ls', () => {
@@ -86,7 +101,9 @@ describe('thread ls', () => {
     const { ctx } = ctxWith();
     const out = await threadLs.run!(ctx, threadLs.input.parse({ project: DOC_A }));
     const lines = threadLs.text!(out);
-    expect(lines[0]).toMatch(/^th-abcd1234abcd1234\s+open\s+"Ada: Basket empties"\s+#12 Basket$/);
+    expect(lines[0]).toMatch(
+      /^th-abcd1234abcd1234\s+open\s+"Ada: Basket empties"\s+Comments\s+#12 Basket$/,
+    );
     expect(lines.slice(1)).toEqual([
       '  cm-person Ada: It empties on switch',
       '  cm-agent Priya [AI] (edited): Keyed by restaurant',
@@ -136,6 +153,13 @@ describe('thread ls', () => {
     ]);
   });
 
+  it('leaves the Comments field blank for a thread on no card of this plan it can read', async () => {
+    const away = { ...THREAD, cards: [{ projectId: 'other', itemId: 'x', key: 4 }] };
+    const out = await threadLs.run!(ctxWith([away]).ctx, threadLs.input.parse({ project: DOC_A }));
+    expect(out.threads[0]).not.toHaveProperty('field');
+    expect(threadLs.text!(out)[0]).toMatch(/"Ada: Basket empties"\s+#4 in another plan$/);
+  });
+
   it('refuses a card it cannot find', async () => {
     await expect(
       threadLs.run!(ctxWith().ctx, threadLs.input.parse({ project: DOC_A, item: '#9' })),
@@ -166,6 +190,18 @@ describe('the thread writes', () => {
       `POST ${base}/threads/${THREAD.id}/reopen`,
       `PUT ${base}/threads/${THREAD.id}/comments/cm-agent`,
     ]);
+  });
+
+  it('starts one in a Comments field named with --field, and refuses one the card’s type lacks', async () => {
+    const { ctx, bodies } = ctxWith();
+    await threadStart.run!(
+      ctx,
+      threadStart.input.parse({ project: DOC_A, item: '#12', text: 'Hi', field: 'Design Review' }),
+    );
+    expect(bodies).toEqual([{ text: 'Hi', field: 'f-review' }]);
+    await expect(
+      threadStart.run!(ctx, { project: DOC_A, item: '#12', text: 'Hi', field: 'QA' }),
+    ).rejects.toMatchObject({ status: 400, code: 'field_unknown' });
   });
 
   it('refuses to delete a person’s comment as a 403, with the way to list them', async () => {

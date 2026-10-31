@@ -85,5 +85,12 @@ describe('the type editor', () => {
     cleanup();
     render(<CustomFieldPreview label="Contact" kind="email" options={[]} />);
     expect(screen.getByText('sam@example.com')).toBeTruthy();
+    cleanup();
+    // A Comments field previews its chip's count (item-types.md "Comments and Votes fields").
+    const { container } = render(
+      <CustomFieldPreview label="QA Notes" kind="comments" options={[]} />,
+    );
+    expect(container.textContent).toContain('2');
+    expect(container.querySelector('svg')).toBeTruthy();
   });
 });

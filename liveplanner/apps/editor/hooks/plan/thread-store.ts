@@ -1,8 +1,15 @@
-// The card faces' comment counts (docs/specs/026-plan/items.md "Comments": the comments in a card's open threads), as
-// a store each face subscribes to by its own card: a thread write tells only the cards whose count it moved, so a
+// The card faces' comment counts (docs/specs/026-plan/items.md "Comments": the comments in a card's open threads, and
+// in each Comments field a thread names, under `fieldCountKey`), as a store each face subscribes to by its own card: a thread write tells only the cards whose count it moved, so a
 // busy board re-renders one or two faces, never all of them.
 
-import { useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
+import {
+  COMMENTS_FIELD,
+  commentsFieldsOf,
+  threadFieldOn,
+  type ItemTypeDef,
+} from '@liveplanner/items';
+import { fieldCountKey } from '@liveplanner/project';
 
 export type ThreadStore = {
   count: (itemId: string) => number;
@@ -52,6 +59,37 @@ export function itemsWithCounts<I extends { id: string; openComments?: number }>
 }
 
 const NO_STORE: ThreadStore = createThreadStore();
+
+/** A card's comment count in one of its type's Comments fields (docs/specs/026-plan/item-types.md "Comments and Votes
+ *  fields"): a field's own threads, the threads its field the type does not offer landing in the field they show
+ *  under (the built-in, else the first). Re-renders only when one of the card's counts changes. */
+export function useFieldThreadCount(
+  store: ThreadStore | null | undefined,
+  itemId: string,
+  type: Pick<ItemTypeDef, 'fields' | 'custom'>,
+  field: string,
+): number {
+  const s = store ?? NO_STORE;
+  const fields = commentsFieldsOf(type);
+  // The field a thread naming no field of this type shows under: it takes the whole, less the type's other fields.
+  const fallback = threadFieldOn({}, type);
+  const others = fields.filter((f) => f !== fallback && f !== COMMENTS_FIELD);
+  const keys = (field === fallback ? others : [field]).map((f) => fieldCountKey(itemId, f));
+  // The keys heard: the whole (the fallback's) and each field's, joined so the subscription is stable across renders.
+  const heard = [itemId, ...keys].join('\n');
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const offs = heard.split('\n').map((k) => s.subscribe(k, onChange));
+      return () => offs.forEach((off) => off());
+    },
+    [s, heard],
+  );
+  const read = () => {
+    const own = keys.reduce((n, k) => n + s.count(k), 0);
+    return field === fallback ? s.count(itemId) - own : own;
+  };
+  return useSyncExternalStore(subscribe, read, read);
+}
 
 /** A card's comment count, re-rendering only when that card's count changes. Zero with no store (an export, the
  *  share view). */

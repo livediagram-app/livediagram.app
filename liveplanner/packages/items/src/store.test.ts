@@ -447,6 +447,28 @@ describe('a tally write', () => {
     expect(inverseItemWrites(two, write)).toBeNull();
   });
 
+  // docs/specs/012-collaboration/session-tools.md "Count In".
+  it('adds the dots to the Votes field the write names, and keeps it when limited to some cards', () => {
+    const write: ItemWrite = {
+      kind: 'tally',
+      field: 'f-pri',
+      tallies: [
+        { id: 'a', votes: { p: 1 } },
+        { id: 'b', votes: { q: 2 } },
+      ],
+    };
+    const s = ok(applyItemWrite(two, write, ctx));
+    expect(s.items.map((i) => [i.fields['votes'], i.fields['f-pri']])).toEqual([
+      [{ p: 2 }, { p: 1 }],
+      [undefined, { q: 2 }],
+    ]);
+    expect(writeLimitedTo(write, new Set(['b']))).toEqual({
+      kind: 'tally',
+      field: 'f-pri',
+      tallies: [{ id: 'b', votes: { q: 2 } }],
+    });
+  });
+
   it('caps a voter’s count and the number of voters', () => {
     const capped = ok(
       applyItemWrite(two, { kind: 'tally', tallies: [{ id: 'a', votes: { p: 500 } }] }, ctx),

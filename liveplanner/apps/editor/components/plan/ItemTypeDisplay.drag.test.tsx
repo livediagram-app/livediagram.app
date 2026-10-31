@@ -149,15 +149,20 @@ describe('custom fields in the Display', () => {
         { id: 'f-tone', label: 'Tone', kind: 'colour' as const },
         { id: 'f-steps', label: 'Steps', kind: 'checklist' as const },
         { id: 'f-shot', label: 'Shot', kind: 'image' as const },
+        { id: 'f-pri', label: 'Priority Vote', kind: 'votes' as const },
       ],
     };
     render(
       <ItemTypeDisplay
         type={review}
-        display={{ detailed: { foot: ['f-rev', 'f-areas', 'f-tone', 'f-steps', 'f-shot'] } }}
+        display={{
+          detailed: { foot: ['f-rev', 'f-areas', 'f-tone', 'f-steps', 'f-shot', 'f-pri'] },
+        }}
         onChange={() => {}}
       />,
     );
+    // A Votes field reads as the built-in Votes' ▲ count (item-types.md "Comments and Votes fields").
+    expect(screen.getByText('Priority Vote: 2 votes')).toBeTruthy();
     expect(screen.getByLabelText('Reviewer: Ana Silva')).toBeTruthy();
     expect(screen.getByText('Areas: Urgent')).toBeTruthy();
     expect(screen.getByText('Tone: Teal')).toBeTruthy();

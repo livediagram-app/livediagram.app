@@ -209,6 +209,33 @@ describe('planListing', () => {
     });
   });
 
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields": a card's votes per Votes field, by name.
+  it('lists a card’s votes per Votes field, the built-in’s as before', async () => {
+    const POLL = {
+      ...BUG,
+      id: 'poll',
+      label: 'Poll',
+      fields: ['title', 'status', 'votes', 'f-pri'],
+      custom: [{ id: 'f-pri', label: 'Priority Vote', kind: 'votes' as const }],
+    };
+    const voted = [
+      item(8, 'ggg888', { title: 'Poll', votes: { p: 1 }, 'f-pri': { p: 2, q: 1 } }, 'poll'),
+    ];
+    const { api: a } = api(
+      { [`/projects/${D}/items`]: { items: voted, rev: 1 } },
+      { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, POLL] },
+    );
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.items[0]!.fields).toEqual({
+      title: 'Poll',
+      votes: { p: 1 },
+      'Priority Vote': { p: 2, q: 1 },
+    });
+    expect(listing.types.find((t) => t.id === 'poll')!.custom).toEqual([
+      { id: 'f-pri', name: 'Priority Vote', kind: 'votes' },
+    ]);
+  });
+
   it('reads a card link as its card’s number and title', async () => {
     const linked = [
       item(3, 'aaa333', { title: 'Epic' }, 'project'),

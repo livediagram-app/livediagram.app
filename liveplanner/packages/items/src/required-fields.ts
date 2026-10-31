@@ -7,8 +7,13 @@ import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types'
 // Every kind but a Checkbox, which reads unticked as empty, so a required one could never be left unticked, a
 // Calculated field, which nobody fills in (item-types.md "Calculated fields"), and an Image, which is added once the
 // card exists (item-types.md "Image fields").
+// A Comments or Votes field holds threads and votes, never typed in (item-types.md "Comments and Votes fields").
 export const canBeRequired = (kind: CustomFieldKind): boolean =>
-  kind !== 'checkbox' && kind !== 'calculated' && kind !== 'image';
+  kind !== 'checkbox' &&
+  kind !== 'calculated' &&
+  kind !== 'image' &&
+  kind !== 'comments' &&
+  kind !== 'votes';
 
 // The required custom fields `type` still offers, in its order: one taken off the type is not enforced.
 export function requiredCustomFieldsOf(

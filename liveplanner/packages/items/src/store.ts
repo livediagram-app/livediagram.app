@@ -31,8 +31,9 @@ export type ItemWrite =
   // Many items changed as one write (a card type's or a removed column's cards to the Trash).
   | { kind: 'patches'; patches: ItemPatchOf[]; undo?: true }
   | { kind: 'move'; id: string; move: ItemMove; undo?: true }
-  // A session vote's tally added to cards' votes when the vote ends (not undoable).
-  | { kind: 'tally'; tallies: ItemTally[] }
+  // A session vote's tally added to cards' votes when the vote ends (not undoable), in the Votes field `field` (the
+  // built-in when absent; the editor sends only cards whose type offers it, and the api checks again).
+  | { kind: 'tally'; tallies: ItemTally[]; field?: string }
   | { kind: 'delete'; id: string };
 
 export type ItemPatchOf = { id: string; patch: ItemPatch };
@@ -94,7 +95,7 @@ export function applyItemWrite(
       const item = byId.get(id);
       // A card gone meanwhile is skipped: the rest of the tally still lands.
       if (!item) continue;
-      byId.set(id, applyTally(item, votes, base));
+      byId.set(id, applyTally(item, votes, base, write.field));
       changed.push(id);
     }
     return {
@@ -184,7 +185,7 @@ export function writeLimitedTo(write: ItemWrite, ids: ReadonlySet<string>): Item
   }
   if (write.kind === 'tally') {
     const tallies = write.tallies.filter((t) => ids.has(t.id));
-    return tallies.length ? { kind: 'tally', tallies } : null;
+    return tallies.length ? { ...write, tallies } : null;
   }
   return ids.has(write.id) ? write : null;
 }

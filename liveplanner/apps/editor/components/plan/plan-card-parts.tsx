@@ -3,10 +3,18 @@
 // The small parts a card face is built from (docs/specs/026-plan/plan-board.md "What the board shows"): the type
 // chip, the number on its type's colour, the priority's signal bars, the footer's pills (due, start, estimate, checklist, comments, votes),
 // label chips, the flag and the vote control. PlanCardFace lays them out per card size.
-import { PRIORITY_LABELS, itemCommentCount, type Item, type Priority } from '@liveplanner/items';
+import {
+  COMMENTS_FIELD,
+  PRIORITY_LABELS,
+  itemCommentCount,
+  threadFieldOn,
+  type Item,
+  type ItemTypeDef,
+  type Priority,
+} from '@liveplanner/items';
 import { contrastRatio } from '@liveplanner/project';
 import { CommentIcon } from '@liveplanner/ui';
-import { useThreadCount } from '@/hooks/plan/thread-store';
+import { useFieldThreadCount } from '@/hooks/plan/thread-store';
 import { useThreadStore } from './threads/CardThreadsContext';
 import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -130,14 +138,51 @@ export function ChecklistPill({
   );
 }
 
-// The comments in the card's open threads (docs/specs/026-plan/items.md "Comments"), read from the thread store by
-// this card alone, so a thread write re-renders only the faces whose count it moved; an export's item carries its own.
-export function CommentsPill({ item, palette }: { item: Item; palette: PlanPalette }) {
-  const live = useThreadCount(useThreadStore(), item.id);
-  const n = live || itemCommentCount(item);
-  if (n === 0) return null;
+// The votes a card has gathered from ended session votes, read-only: the built-in Votes, or a Votes field of the
+// type's own named `name` (item-types.md "Comments and Votes fields"). Not drawn with none.
+export function VotesPill({
+  total,
+  palette,
+  name,
+}: {
+  total: number;
+  palette: PlanPalette;
+  name?: string;
+}) {
+  if (total <= 0) return null;
+  const count = total === 1 ? '1 vote' : `${total} votes`;
   return (
-    <MetaPill palette={palette} label={n === 1 ? '1 comment' : `${n} comments`}>
+    <MetaPill palette={palette} label={name ? `${name}: ${count}` : count}>
+      <span aria-hidden>▲ {total}</span>
+    </MetaPill>
+  );
+}
+
+// The comments in the card's open threads (docs/specs/026-plan/items.md "Comments"), read from the thread store by
+// this card alone, so a thread write re-renders only the faces whose count it moved; an export's item carries its own
+// (the whole, drawn by the field threads naming no field show under). One Comments field's (`field`, named `name`; the
+// built-in when not given) counts only the threads that field lists (item-types.md "Comments and Votes fields").
+const ONLY_BUILT_IN: Pick<ItemTypeDef, 'fields'> = { fields: [COMMENTS_FIELD] };
+
+export function CommentsPill({
+  item,
+  palette,
+  type = ONLY_BUILT_IN,
+  field = COMMENTS_FIELD,
+  name,
+}: {
+  item: Item;
+  palette: PlanPalette;
+  type?: Pick<ItemTypeDef, 'fields' | 'custom'>;
+  field?: string;
+  name?: string;
+}) {
+  const live = useFieldThreadCount(useThreadStore(), item.id, type, field);
+  const n = live || (threadFieldOn({}, type) === field ? itemCommentCount(item) : 0);
+  if (n === 0) return null;
+  const count = n === 1 ? '1 comment' : `${n} comments`;
+  return (
+    <MetaPill palette={palette} label={name ? `${name}: ${count}` : count}>
       <CommentIcon size={11} />
       <span aria-hidden>{n}</span>
     </MetaPill>

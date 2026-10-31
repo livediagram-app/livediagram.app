@@ -255,8 +255,10 @@ const customField = z.object({
         'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12"), ' +
         'calculated (worked out from the cards linking to the card through a card field, by its calculation; ' +
         'read-only, never given a value), person (someone, by name, as the assignee takes one), labels (a list, ' +
-        'as labels takes one), colour (#rrggbb), checklist (rows of { text, done }) or image (a picture added ' +
-        'in the card panel; an agent may clear it, never set one).',
+        'as labels takes one), colour (#rrggbb), checklist (rows of { text, done }), image (a picture added ' +
+        'in the card panel; an agent may clear it, never set one), comments (its own comment threads: start ' +
+        'one in it with change_threads) or votes (its own votes, from a session vote that counts in it; never ' +
+        'set).',
     ),
   options: z
     .array(z.string())

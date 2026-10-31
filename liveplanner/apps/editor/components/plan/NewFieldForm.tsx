@@ -105,7 +105,6 @@ export function NewFieldForm({
           onOpenGroup={setOpenGroup}
           missing={missing}
           canAddCustom={canAddCustom}
-          onAddBuiltIn={onAddBuiltIn}
           onPick={(kind) => setField(freshField(kind, left))}
           onCancel={onCancel}
           focusKind={left?.kind}

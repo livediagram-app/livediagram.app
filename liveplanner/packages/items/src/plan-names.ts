@@ -210,6 +210,17 @@ export function resolveFields(
     const field = type.custom!.find((f) => f.id === key)!;
     // The built-in fields' kinds take what those fields take (docs/specs/026-plan/item-types.md "Custom field kinds"):
     // a person by name, labels by commas, a colour as #rrggbb, checklist rows.
+    // Threads and votes have writes of their own (docs/specs/026-plan/item-types.md "Comments and Votes fields").
+    if (field.kind === 'comments')
+      return refuse(
+        'value_invalid',
+        `${field.label} is a Comments field: start a thread in it with change_threads.`,
+      );
+    if (field.kind === 'votes')
+      return refuse(
+        'value_invalid',
+        `${field.label} is a Votes field: votes come from a session vote.`,
+      );
     const asBuiltIn = builtInFieldOfKind(field.kind);
     if (asBuiltIn) {
       const v = builtInValue(asBuiltIn, value, naming);

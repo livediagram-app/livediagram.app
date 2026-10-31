@@ -168,13 +168,16 @@ export function applyMove(
 }
 
 // A session vote's tally added to a card's votes (docs/specs/026-plan/items.md "Tally"): each voter's dots added to
-// what they had, a voter's count capped at ITEM_VOTES_PER_PERSON_MAX, and no new voter past ITEM_VOTERS_MAX.
+// what they had, a voter's count capped at ITEM_VOTES_PER_PERSON_MAX, and no new voter past ITEM_VOTERS_MAX. The dots
+// land in `field`, the built-in `votes` unless the vote counts in a Votes field of the card's own (item-types.md
+// "Comments and Votes fields"; `tallyFieldOn` picks it).
 export function applyTally(
   item: Item,
   tally: Readonly<Record<string, number>>,
   ctx: WriteContext,
+  field = 'votes',
 ): Item {
-  const votes = itemVotes(item);
+  const votes = itemVotes(item, field);
   for (const [personId, n] of Object.entries(tally)) {
     if (!(n > 0)) continue;
     if (!(personId in votes) && Object.keys(votes).length >= ITEM_VOTERS_MAX) continue;
@@ -182,7 +185,7 @@ export function applyTally(
   }
   return {
     ...item,
-    fields: { ...item.fields, votes },
+    fields: { ...item.fields, [field]: votes },
     rev: item.rev + 1,
     updatedAt: ctx.now,
     updatedBy: ctx.by,

@@ -9,8 +9,20 @@ import type {
   CardThreadWriteResponse,
   CardThreadsResponse,
   ItemsResponse,
+  PlanResponse,
 } from '@liveplanner/api-schema';
-import { itemTitle, resolveItem, type Item } from '@liveplanner/items';
+import {
+  COMMENTS_FIELD,
+  commentsFieldsOf,
+  customFieldOf,
+  itemTitle,
+  resolveItem,
+  statusKey,
+  threadFieldOn,
+  typeIn,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import {
   reactionSummary,
   type CardRef,
@@ -19,6 +31,7 @@ import {
   type ReactionSummary,
 } from '@liveplanner/project';
 import { apiRefusalOf } from './api-refusal';
+import { planPath } from './plan-state';
 import { itemsPath } from '../verbs/shared';
 
 export const threadsPath = (projectId: string) =>
@@ -31,7 +44,8 @@ export type ThreadStatus = (typeof THREAD_STATUSES)[number];
 export const THREAD_PREFIX_MIN = 4;
 
 export type ThreadChange =
-  | { op: 'start'; item: string; text: string }
+  // `field`: the Comments field it starts in, by name or id (the built-in Comments when absent).
+  | { op: 'start'; item: string; text: string; field?: string }
   | { op: 'reply'; thread: string; text: string }
   | { op: 'resolve'; thread: string }
   | { op: 'reopen'; thread: string }
@@ -57,6 +71,8 @@ export type ListedThread = {
   state: 'open' | 'resolved';
   resolvedBy?: string;
   cards: string[];
+  // The Comments field it shows under on its first card here, by name.
+  field?: string;
   comments: ListedComment[];
 };
 
@@ -82,30 +98,73 @@ export function listedComment(c: Comment): ListedComment {
   };
 }
 
+// A Comments field's name (one `commentsFieldsOf(type)` names): the built-in's "Comments", else the field's label.
+const commentsFieldName = (type: ItemTypeDef, field: string): string =>
+  field === COMMENTS_FIELD ? 'Comments' : customFieldOf(type, field)!.label;
+
+// The Comments field a thread shows under (docs/specs/026-plan/item-types.md "Comments and Votes fields"), by name, on
+// its first card in this plan: the plan's types say which; none when no card here has a type with a Comments field.
+function threadFieldName(
+  t: CardThread,
+  projectId: string,
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+): string | undefined {
+  const first = t.cards.find((c) => c.projectId === projectId && items.has(c.itemId));
+  if (!first) return undefined;
+  const type = typeIn(types, items.get(first.itemId)!.type);
+  const field = threadFieldOn(t, type);
+  return field === null ? undefined : commentsFieldName(type, field);
+}
+
 export function listedThread(
   t: CardThread,
   projectId: string,
   items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[] = [],
 ): ListedThread {
+  const field = threadFieldName(t, projectId, items, types);
   return {
     id: t.id,
     title: t.title,
     state: t.resolved ? 'resolved' : 'open',
     ...(t.resolved && t.resolvedBy ? { resolvedBy: t.resolvedBy } : {}),
     cards: t.cards.map((c) => cardName(c, projectId, items)),
+    ...(field ? { field } : {}),
     comments: t.comments.map(listedComment),
   };
 }
 
-export type ThreadsState = { threads: CardThread[]; items: Item[] };
+export type ThreadsState = { threads: CardThread[]; items: Item[]; types: readonly ItemTypeDef[] };
 
-/** The plan's threads (one card's with `item`) and its items, read together. */
+/** The plan's threads, its items and its card types (for each thread's Comments field), read together. */
 export async function readThreadsState(api: ApiClient, projectId: string): Promise<ThreadsState> {
-  const [{ threads }, { items }] = await Promise.all([
+  const [{ threads }, { items }, { types }] = await Promise.all([
     api.json<CardThreadsResponse>(threadsPath(projectId)),
     api.json<ItemsResponse>(itemsPath(projectId)),
+    api.json<PlanResponse>(planPath(projectId)),
   ]);
-  return { threads, items };
+  return { threads, items, types };
+}
+
+/** The Comments field of a card of `type` that `ref` names: by id, or by name (case and spacing aside), the built-in
+ *  as "Comments". Unknown, refused naming the ones there are. */
+export function resolveCommentsField(ref: string, type: ItemTypeDef): Found<string> {
+  const fields = commentsFieldsOf(type);
+  const key = statusKey(ref);
+  const found = fields.find(
+    (f) => f === ref.trim() || statusKey(commentsFieldName(type, f)) === key,
+  );
+  if (found) return { ok: true, value: found };
+  return {
+    ok: false,
+    code: 'field_unknown',
+    message: fields.length
+      ? `${type.label} cards have no Comments field "${ref}". Their Comments fields: ${fields
+          .map((f) => commentsFieldName(type, f))
+          .join(', ')}.`
+      : `${type.label} cards have no Comments field: add one with change_card_types.`,
+  };
 }
 
 type Found<T> = { ok: true; value: T } | { ok: false; code: string; message: string };
@@ -171,7 +230,10 @@ export function threadListing(
   if (status !== 'all') threads = threads.filter((t) => t.resolved === (status === 'resolved'));
   const items = new Map(state.items.map((i) => [i.id, i]));
   const sorted = [...threads].sort((a, b) => b.updatedAt - a.updatedAt);
-  return { ok: true, threads: sorted.map((t) => listedThread(t, projectId, items)) };
+  return {
+    ok: true,
+    threads: sorted.map((t) => listedThread(t, projectId, items, state.types)),
+  };
 }
 
 // Words for a refusal the api gives a thread write (docs/specs/026-plan/plan-agents.md "Errors that teach").
@@ -183,6 +245,7 @@ const THREAD_REFUSALS: Readonly<Record<string, string>> = {
   comments_full: 'that thread holds the most comments it can (200): start a new thread.',
   threads_full: 'that card holds the most threads it can (50).',
   title_too_long: 'a thread title holds up to 120 characters.',
+  field_invalid: 'that card’s type has no such Comments field. list_items lists its card types.',
 };
 
 type Stop = { code: string; message: string };
@@ -242,9 +305,15 @@ export async function applyThreadChanges(
           const found = resolveItem(change.item, initial.items);
           if (!found.ok) stop(found.code, found.message);
           const item = (found as { item: Item }).item;
+          let field: string | undefined;
+          if (change.field !== undefined) {
+            const named = resolveCommentsField(change.field, typeIn(initial.types, item.type));
+            if (!named.ok) stop(named.code, named.message);
+            field = (named as { value: string }).value;
+          }
           const { thread: made } = await post(
             `${itemsPath(projectId)}/${encodeURIComponent(item.id)}/threads`,
-            { text: change.text },
+            { text: change.text, ...(field && field !== COMMENTS_FIELD ? { field } : {}) },
           );
           keep(made, '');
           applied.push(`+ thread ${made!.id} "${made!.title}" on #${item.key}`);

@@ -23,4 +23,7 @@ export type SessionToolsProps = {
   // The tab's layers + the active one, for the vote's layer scope (docs/specs/012-collaboration/vote-layer-scope.md).
   voteLayers: Layer[];
   activeLayerId: string;
+  // The Votes fields a vote can count in (docs/specs/012-collaboration/session-tools.md "Count In"), the built-in
+  // first; empty when there is only the built-in.
+  voteFields?: readonly { id: string; label: string }[];
 };

@@ -150,7 +150,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
   **Person** (one person, as the Assignee holds one), **Labels** (up to 20 short labels, as Labels holds them),
   **Colour** (any `#rrggbb` colour, as Colour holds one), **Checklist** (up to 50 to-do rows, each its text and
-  whether it is done, as Checklist holds them) and **Image** (one picture, [below](#image-fields)). Each reads and
+  whether it is done, as Checklist holds them), **Comments** (its own threads, [below](#comments-and-votes-fields)),
+  **Votes** (its own votes, below) and **Image** (one picture, [below](#image-fields)). Each reads and
   is edited exactly as the built-in field of its kind (the same control in the card panel, the same chip on the
   card): a type may hold the built-in and any number of fields of its kind, each with its own name and value. The
   built-in fields keep their ids (`assignee`, `labels`, `color`, `checklist`, `comments`, `votes`), so every card,
@@ -180,6 +181,26 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     is the Assignee's `{ id, name, color }` and a Checklist the Checklist's rows (`{ text, done }`), which the store
     keeps under any field too. Their values are ordinary entries in the item's `fields`, under the custom
     field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
+  - <a id="comments-and-votes-fields"></a>**Comments and Votes fields.** A type may hold the built-in Comments
+    and Votes and any number of its own (a **Design Review** and a **QA Notes**, a **Priority Vote** beside the
+    Votes).
+    - **A Comments field holds its own threads.** Each thread belongs to one Comments field: its `field`, the
+      field's id, set when the thread is started and never changed; a thread without one (every thread from before
+      this) belongs to the built-in **Comments**. The card panel draws each Comments field as it draws Comments
+      ([Items](items.md#where-it-shows)), under the field's name, listing only its threads, its **New Thread**
+      starting one in it; each field's card chip counts its own open threads. A thread whose field the card's
+      type does not offer (a thread added to a card of another type, a field taken off) shows under the type's
+      first Comments field, the built-in when it has it, so no thread is ever hidden; a type with no Comments field
+      shows none, as before. The Inbox, mentions and every thread rule are unchanged.
+    - **A Votes field holds its own votes**, as the built-in holds them (`{ voter: dots }` under the field's id),
+      drawn as the built-in's ▲ count on the card, its chip named for the field (like the built-in, never in the
+      panel). Votes are still cast only through a session vote ([Session tools](../012-collaboration/session-tools.md#voting-on-plan-cards)): when
+      the tab's card types offer more than one Votes field, the Vote set-up's **Count In** picks which one the
+      tally lands in (the built-in Votes first, the default). Top Voted and sorting by votes read the built-in.
+      A change never sets a Votes field; a card made again (an undo of a delete, an offline plan's sync) carries
+      its votes across, as it carries the built-in's.
+    - Agents: `list_threads` names each thread's field, and `change_threads`' `start` takes a `field` by name
+      ([Plan agents](plan-agents.md#comment-threads)); `list_items` lists a card's votes per Votes field.
   - **A Person field** offers the plan's people, as the Assignee does, and draws its person's avatar disc and name.
     Whether it **notifies** its person is its own switch ([Notifies](#notifies)).
   - **A Labels field** reads and is edited as Labels (its chips, coloured by their names), offering the labels the
@@ -212,7 +233,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   board's **Only Mine** ([Plan board](plan-board.md)). A custom person (an `n-` id) never notifies, as before.
   Telemetry: `Plan` · `Changed` · `FieldNotifies`.
 - **Required fields**: any custom field but a Checkbox (unticked reads as empty), a [Calculated](#calculated-fields) field (the plan
-  works it out) or an [Image](#image-fields) field (a picture is added once the card exists) can be marked **Required**. A
+  works it out), an [Image](#image-fields) field (a picture is added once the card exists) or a
+  [Comments or Votes](#comments-and-votes-fields) field (threads and votes are not typed in) can be marked **Required**. A
   required field must have a value: empty is no value, an empty or all-space text and an empty Multiple Choice
   included. Stored as `required: true` on the field; absent is optional, so every field saved before reads as
   optional. The rule holds wherever a card is made or changed, as one shared check (`missingRequiredFields`):
@@ -509,7 +531,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Fields and Tabs**: one list laid out as the card's panel shows the fields, in groups. On desktop (768 px and
     up) it is two columns as the card's panel: On the Card, then the tabs and Add Tab, on the left, and Details in an
     18 rem column on the right; on a phone, one column in the order below.
-    - **On the Card**: Title (always) and Votes when the type has it; they never go in a tab.
+    - **On the Card**: Title (always), Votes when the type has it and each Votes field of its own; they never go in
+      a tab.
     - **Details**, tagged "Side column" (after On the Card on a phone, beside the main column on desktop): every field in no tab, its name renamed in place in the group's header,
       never moved or removed.
     - Each **tab**, tagged "Tab", in order (Overview first, as the panel reads): renamed in place in its header, moved with ↑ and ↓, and taken off with
@@ -565,8 +588,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
         search is typed the accordion steps aside: every group with a match shows open, listing only its matches
         (its count then the matches'), and a group with none is hidden; clearing the search brings the accordion
         back as it was.
-      - **Comments** and **Votes** are one to a type: each is listed while the type lacks it, and one press adds it
-        at once (Votes on the card) and closes the popover. Every other kind opens Shape.
+      - **Comments** and **Votes** open Shape as every kind does: **Ready to use** offers the built-in while the
+        type lacks it, then a field of your own takes only its name (Votes land on the card).
       - A kind whose built-in field the type lacks carries a quiet **Ready to use** tag after its name (Date while
         the type lacks Start Date or Due Date, Person while it lacks the Assignee, and so on).
       - When the type holds the most custom fields it can (12), a note heads the list: "This type holds the most
@@ -583,7 +606,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       "Filters, swimlanes and coloured chips", Colour "A dot on the card, and its bar on the Gantt chart", Checklist
       "Progress on the card, like 2/5", Start Date "Where its bar starts on the Gantt chart", Due Date "On the
       calendar and the Gantt chart", Estimate "Story points, summed in Workload", Priority "Urgent to Low, for sorting
-      and swimlanes", Description "The card's main notes, with rich text"), each ending in a plus; one press adds that
+      and swimlanes", Description "The card's main notes, with rich text", Comments "Threads on the card, and
+      mentions in the Inbox", Votes "Session votes, Top Voted and sorting"), each ending in a plus; one press adds that
       built-in field, keeping its id, and closes the popover. Then, under a rule reading **Or make your own** (only
       while Ready to use shows), **Name** (a labelled field, focused, "Field name" as its placeholder); then only what
       that kind needs: for Choice and Multiple Choice **Options**, a list of option rows (each a field named "Option
@@ -592,13 +616,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       several lines into a row adding one option a line (blanks dropped, at most 20); for Rating **Scale** ("Out of
       3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for
       Link to Card **Links To** its card types (at least one); for Calculated **Calculation** (the menu below, the
-      first chosen); then **Required** (where the kind may be required: never Checkbox, Calculated or Image); then
+      first chosen); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes); then
       **Preview**: a small card as a board's card panel draws it, "Example card" over the field's row: its name as
       typed ("Field name" until then, with the required mark when Required) beside a sample value of its kind
       (Choice its first option, Multiple Choice its first two, Link to Card the linked types' names, "Project or
       Epic", Rating stars out of its scale, Currency in its currency, Calculated "3" or "40%", Person a person's
       disc and name, Labels two label chips, Colour a swatch and its name, Checklist "2/5", Image a picture glyph and
-      "photo.png"); updating as you
+      "photo.png", Votes "▲ 3"); updating as you
       type. Last, one full-width primary button **Add {Name}** ("Add {Kind} Field" until named), off until the
       field is ready: a name, at least one option for Choice and Multiple Choice, at least one type for Link to
       Card. While it is off, a quiet line under it says what is missing ("Name the field to add it.", "Add at

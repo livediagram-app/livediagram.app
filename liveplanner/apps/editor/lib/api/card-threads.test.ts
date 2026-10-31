@@ -51,6 +51,18 @@ describe('the thread routes', () => {
         { text: 'Hi', mentions },
       ],
       [
+        { kind: 'start', itemId: 'c1', text: 'Hi', field: 'f-review' },
+        'POST',
+        '/items/c1/threads',
+        { text: 'Hi', field: 'f-review' },
+      ],
+      [
+        { kind: 'start', itemId: 'c1', text: 'Hi', field: 'comments' },
+        'POST',
+        '/items/c1/threads',
+        { text: 'Hi' },
+      ],
+      [
         { kind: 'reply', threadId: 'th', text: 'Yes' },
         'POST',
         '/threads/th/comments',

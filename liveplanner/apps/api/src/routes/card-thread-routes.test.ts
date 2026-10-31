@@ -153,6 +153,52 @@ describe('starting a thread', () => {
     expect(t.comments[0]).toMatchObject({ ai: true, tokenId: 'tok-1' });
   });
 
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields".
+  it('starts one in a Comments field of the card’s type, and refuses any other field', async () => {
+    const itemTypes = {
+      version: 1,
+      types: [
+        {
+          id: 'task',
+          label: 'Task',
+          color: '#71717a',
+          glyph: 'task',
+          fields: ['comments', 'f-review', 'f-notes'],
+          custom: [
+            { id: 'f-review', label: 'Design Review', kind: 'comments' },
+            { id: 'f-notes', label: 'Notes', kind: 'text' },
+          ],
+        },
+        { id: 'bug', label: 'Bug', color: '#dc2626', glyph: 'bug', fields: ['title'] },
+      ],
+    };
+    expect((await call('p1', 'PUT', '/item-types', { itemTypes })).status).toBe(200);
+    const inReview = await start('p1', a.id, 'Looks off', {}, { field: 'f-review' });
+    expect(inReview.status).toBe(201);
+    expect(inReview.body.thread?.field).toBe('f-review');
+    expect((await threads('p1')).map((t) => t.field)).toEqual(['f-review']);
+    // The built-in, named or not, is stored as no field.
+    const builtIn = await start('p1', a.id, 'Plain', {}, { field: 'comments' });
+    expect(builtIn.body.thread).not.toHaveProperty('field');
+    for (const field of ['f-notes', 'f-gone', 'not a field', 7]) {
+      const res = await start('p1', a.id, 'Hi', {}, { field });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({
+        error: 'field_invalid',
+        message:
+          "field names a Comments field of the card's type Task: comments (Comments), f-review (Design Review)",
+      });
+    }
+    const bug = (
+      await call<ItemResponse>('p1', 'POST', '/items', { type: 'bug', fields: { title: 'B' } })
+    ).body.item;
+    expect((await start('p1', bug.id, 'Hi', {}, { field: 'comments' })).body).toEqual({
+      error: 'field_invalid',
+      message: 'a Bug card has no Comments field to start a thread in',
+    });
+    expect((await start('p1', bug.id, 'Hi')).status).toBe(201);
+  });
+
   it('is a Participant’s and an Editor’s, never a Viewer’s', async () => {
     expect((await start('p1', a.id, 'Hi', { owner: 'visitor', code: 'PART' })).status).toBe(201);
     expect((await start('p1', a.id, 'Hi', { owner: 'visitor', code: 'EDIT' })).status).toBe(201);

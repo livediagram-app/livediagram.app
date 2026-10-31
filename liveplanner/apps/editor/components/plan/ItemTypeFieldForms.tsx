@@ -65,6 +65,8 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   colour: 'Colour',
   checklist: 'Checklist',
   image: 'Image',
+  comments: 'Comments',
+  votes: 'Votes',
 };
 
 // Add Field's kinds by name: every custom kind's, and the one-to-a-type built-in fields' (Comments, Votes).

@@ -2,8 +2,7 @@
 
 // Add Field's first step, Pick (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field): a search at the
 // top, then one list of field kinds, built-in and custom alike, in six groups, one open at a time. A kind whose
-// built-in field the type lacks is tagged Ready to use; Comments and Votes (one to a type) add at once, every other
-// kind opens Shape. A search filters the kinds and opens every group with a match. ↑ and ↓ move through the search and
+// built-in field the type lacks is tagged Ready to use; every kind, Comments and Votes among them, opens Shape. A search filters the kinds and opens every group with a match. ↑ and ↓ move through the search and
 // every result; Enter in the search picks the first match.
 import { useId, useLayoutEffect, useRef, type KeyboardEvent } from 'react';
 import { ITEM_TYPE_CUSTOM_MAX, type CustomFieldKind, type ItemFieldId } from '@liveplanner/items';
@@ -14,7 +13,6 @@ import {
   CUSTOM_MAX_NOTE,
   KIND_DESCRIPTIONS,
   KIND_GROUPS,
-  isOneToAType,
   kindMatches,
   readyBuiltIns,
   searchKey,
@@ -30,18 +28,16 @@ const Chevron = lucideGlyph(lucideChevronDown, 14);
 const FOCUS_RING =
   'outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900';
 
-// A kind as the list shows it: hidden (a one-to-a-type field the type has), open to press, or dimmed (the type
-// holds the most custom fields and the kind has no built-in field left to add).
-type KindState = 'hidden' | 'open' | 'dimmed';
+// A kind as the list shows it: open to press, or dimmed (the type holds the most custom fields and the kind has no
+// built-in field left to add).
+type KindState = 'open' | 'dimmed';
 
 export function kindState(
   kind: PickKind,
   missing: readonly ItemFieldId[],
   canAddCustom: boolean,
 ): KindState {
-  const ready = readyBuiltIns(kind, missing).length > 0;
-  if (isOneToAType(kind)) return ready ? 'open' : 'hidden';
-  return ready || canAddCustom ? 'open' : 'dimmed';
+  return readyBuiltIns(kind, missing).length > 0 || canAddCustom ? 'open' : 'dimmed';
 }
 
 export function AddFieldPicker({
@@ -51,7 +47,6 @@ export function AddFieldPicker({
   onOpenGroup,
   missing,
   canAddCustom,
-  onAddBuiltIn,
   onPick,
   onCancel,
   focusKind,
@@ -64,7 +59,6 @@ export function AddFieldPicker({
   // The built-in fields the type lacks.
   missing: readonly ItemFieldId[];
   canAddCustom: boolean;
-  onAddBuiltIn: (id: ItemFieldId) => void;
   onPick: (kind: CustomFieldKind) => void;
   onCancel: () => void;
   // The kind to focus on arriving (back from Shape).
@@ -77,15 +71,13 @@ export function AddFieldPicker({
   const searching = key.length > 0;
   const groups = KIND_GROUPS.map((g) => ({
     ...g,
-    shown: g.kinds.filter(
-      (k) =>
-        kindState(k, missing, canAddCustom) !== 'hidden' &&
-        kindMatches(
-          k,
-          PICK_KIND_LABELS[k],
-          key,
-          (BUILT_INS_OF_KIND[k] ?? []).map((id) => BUILT_IN_FIELD_LABELS[id]),
-        ),
+    shown: g.kinds.filter((k) =>
+      kindMatches(
+        k,
+        PICK_KIND_LABELS[k],
+        key,
+        (BUILT_INS_OF_KIND[k] ?? []).map((id) => BUILT_IN_FIELD_LABELS[id]),
+      ),
     ),
   }));
   const kindCount = groups.reduce((n, g) => n + g.shown.length, 0);
@@ -119,14 +111,7 @@ export function AddFieldPicker({
     nav[to]!.focus();
   };
 
-  const press = (kind: PickKind) => {
-    if (isOneToAType(kind)) {
-      const id = readyBuiltIns(kind, missing)[0];
-      if (id) onAddBuiltIn(id);
-      return;
-    }
-    onPick(kind);
-  };
+  const press = (kind: PickKind) => onPick(kind);
 
   return (
     <div ref={root} onKeyDown={onKeyDown} className="flex flex-col">
@@ -233,7 +218,7 @@ export function AddFieldPicker({
                       <KindRow
                         kind={k}
                         descId={`${ids}-${k}-desc`}
-                        ready={!isOneToAType(k) && readyBuiltIns(k, missing).length > 0}
+                        ready={readyBuiltIns(k, missing).length > 0}
                         dimmed={kindState(k, missing, canAddCustom) === 'dimmed'}
                         onPress={press}
                       />

@@ -248,6 +248,7 @@ describe('refusals in words', () => {
       'thread_not_found',
       'item_not_found',
       'forbidden',
+      'field_invalid',
     ])
       expect(threadRefusalMessage(code)).not.toBe(threadRefusalMessage(null));
     expect(threadRefusalMessage(null)).toBe("Couldn't save that comment");

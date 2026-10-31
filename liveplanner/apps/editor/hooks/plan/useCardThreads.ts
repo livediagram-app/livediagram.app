@@ -25,7 +25,7 @@ import {
   type CommentMention,
   type ThreadChange,
 } from '@liveplanner/project';
-import type { ItemPerson } from '@liveplanner/items';
+import { storedThreadField, type ItemPerson } from '@liveplanner/items';
 import { fetchThreads, writeThread, type ThreadAction } from '@/lib/api/card-threads';
 import type { ItemsScope } from '@/lib/api/items';
 import { track } from '@/lib/telemetry';
@@ -79,6 +79,8 @@ export function threadRefusalMessage(code: string | null): string {
       return 'You can’t do that here';
     case 'thread_has_others':
       return 'Others have commented on this thread: resolve it instead';
+    case 'field_invalid':
+      return 'That card’s type no longer has that Comments field';
     default:
       return "Couldn't save that comment";
   }
@@ -284,6 +286,7 @@ export function useCardThreads(opts: {
             { id: ownerId, name: by.name, color: by.color },
             action.mentions,
           ),
+          ...storedThreadField(action.field),
           now: Date.now(),
         });
         settle(pendingId, shown);

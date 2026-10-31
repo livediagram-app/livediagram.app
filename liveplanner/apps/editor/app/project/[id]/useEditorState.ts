@@ -3,7 +3,7 @@
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
-import { voteTallies } from '@/hooks/plan/vote-tally';
+import { voteTallyWritesOf } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { useTypeStatusJoins } from '@/hooks/plan/useTypeStatusJoins';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
@@ -2369,8 +2369,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const endVoteAndTally = () => {
     const vote = activeTab.vote;
     if (!endVote() || !vote) return;
-    void voteTallies(vote).then((tallies) => {
-      if (tallies.length) void planItems.writeQuiet({ kind: 'tally', tallies });
+    // In the Votes field the vote counts in (session-tools.md "Count In"), the built-in for a type without it.
+    void voteTallyWritesOf(vote, planItems.items, itemTypes.types).then((writes) => {
+      for (const write of writes) void planItems.writeQuiet(write);
     });
   };
 

@@ -60,6 +60,8 @@ export * from './slug';
 export * from './write-checks';
 export * from './required-fields';
 export * from './notify-fields';
+export * from './comments-votes-fields';
+export * from './vote-count-in';
 export * from './type-catalogue-change';
 export * from './linked-cards';
 export * from './calculated-fields';

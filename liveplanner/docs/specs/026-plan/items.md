@@ -125,7 +125,10 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 - A create, update or move that changes a card's `status` stamps `statusSince` with the write's moment; one that
   names `statusSince` itself (an undo, a restore, a sync or copy) keeps the value it gives.
 - **Tally**: a session vote's host, ending it, adds each card's dots to the card's `votes` (per voter, as
-  pseudonymous person ids) in one write (`POST /items/tally`, edit access); nothing else writes `votes`. Cards are
+  pseudonymous person ids) in one write (`POST /items/tally`, edit access); nothing else writes `votes`. A vote that
+  counts in a Votes field of the type's own sends its id as `field`, and the dots land there; a card whose type
+  does not offer that field takes them in the built-in `votes` ([Session tools](../012-collaboration/session-tools.md)
+  "Count In"). Cards are
   voted on through the tab's session vote ([Session tools](../012-collaboration/session-tools.md) "Voting on Plan
   cards"), which keeps its own budget and privacy.
 - **Delete**: removes the item. Its key is not reused.
@@ -252,7 +255,9 @@ the same text, mentions, author stamp and author redaction, drawn with the same 
 - **`cards`**: every card it is on (up to 20), each named by its plan and card id, with its number and, for a card in
   another plan, that plan's name as it was when the thread was added there. The first is the card it was started
   on.
-- A card is on up to 50 threads (`threads_full` past it).
+- **`field`**: the Comments field it belongs to ([Comments and Votes fields](item-types.md#comments-and-votes-fields)),
+  set when it is started; absent is the built-in Comments (every thread from before).
+- A card is on up to 50 threads (`threads_full` past it), counted across all its Comments fields.
 
 ### Stored once, on every card
 
@@ -382,17 +387,17 @@ mentions, and the plan's owner, until it is resolved. A thread shared into two p
 
 Every write is applied by the home plan to the thread as stored, so concurrent writes all land:
 
-| Write             | What it does                                                                          | Refusals                                                   |
-| ----------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| **start**         | a new thread on a card, with its first comment and its automatic title                | `threads_full`, `item_not_found`                           |
-| **reply**         | adds a comment (text up to 2,000 characters, mentions); reopens a resolved thread     | `comments_full`, `thread_not_found`                        |
-| **edit**          | replaces one of the caller's own comments' text and mentions, marking it edited       | `comment_not_found`, 403 not theirs                        |
-| **delete**        | deletes a comment (own, or any for an Editor); the last one deletes the thread        | `comment_not_found`, 403                                   |
-| **resolve**       | resolves or reopens; already so changes nothing (an empty answer)                     | `thread_not_found`                                         |
-| **react**         | turns the caller's emoji on or off on a comment; already so changes nothing (empty)   | `comment_not_found`, `comments_full`, 403 agent            |
-| **rename**        | sets the title (trimmed, 1 to 120 characters), or clears it back to the automatic one | `title_too_long`                                           |
-| **add to card**   | puts the thread on another card                                                       | `thread_on_card`, `threads_full`, `thread_cards_full`, 403 |
-| **delete thread** | removes it from every card                                                            | 403                                                        |
+| Write             | What it does                                                                                          | Refusals                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **start**         | a new thread on a card, in one of its Comments fields, with its first comment and its automatic title | `threads_full`, `item_not_found`, `field_invalid`          |
+| **reply**         | adds a comment (text up to 2,000 characters, mentions); reopens a resolved thread                     | `comments_full`, `thread_not_found`                        |
+| **edit**          | replaces one of the caller's own comments' text and mentions, marking it edited                       | `comment_not_found`, 403 not theirs                        |
+| **delete**        | deletes a comment (own, or any for an Editor); the last one deletes the thread                        | `comment_not_found`, 403                                   |
+| **resolve**       | resolves or reopens; already so changes nothing (an empty answer)                                     | `thread_not_found`                                         |
+| **react**         | turns the caller's emoji on or off on a comment; already so changes nothing (empty)                   | `comment_not_found`, `comments_full`, 403 agent            |
+| **rename**        | sets the title (trimmed, 1 to 120 characters), or clears it back to the automatic one                 | `title_too_long`                                           |
+| **add to card**   | puts the thread on another card                                                                       | `thread_on_card`, `threads_full`, `thread_cards_full`, 403 |
+| **delete thread** | removes it from every card                                                                            | 403                                                        |
 
 - A comment's author name, colour and id, its `ai` flag and its token are stamped by the server from the caller. A
   reaction's name is the server's too; its `by` is the caller's collab key, as on the canvas.

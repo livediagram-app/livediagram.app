@@ -241,7 +241,8 @@ export function CustomFieldEditor({
     // A Card field is drawn by LinkedCardField and a Calculated field by CalculatedFieldValue (ItemFieldEditor),
     // never here.
     // Drawn by the card panel itself (ItemFieldEditor): a linked card, a worked-out value, a picture, and the built-in
-    // fields' kinds, which it edits as their built-in fields.
+    // fields' kinds, which it edits as their built-in fields. A Comments field's threads and a Votes field's votes
+    // are never typed in (item-types.md "Comments and Votes fields").
     case 'card':
     case 'calculated':
     case 'image':
@@ -249,6 +250,8 @@ export function CustomFieldEditor({
     case 'labels':
     case 'colour':
     case 'checklist':
+    case 'comments':
+    case 'votes':
       return null;
   }
 }

@@ -7,7 +7,6 @@ import {
   KIND_DESCRIPTIONS,
   KIND_GROUPS,
   groupOfKind,
-  isOneToAType,
   kindMatches,
   kindReadiness,
   readyBuiltIns,
@@ -17,7 +16,7 @@ import {
 import { BUILT_IN_FIELD_LABELS, PICK_KIND_LABELS } from './ItemTypeFieldForms';
 
 // docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field's groups, lines, words and readiness.
-const PICK_KINDS: readonly PickKind[] = [...CUSTOM_FIELD_KINDS, 'comments', 'votes'];
+const PICK_KINDS: readonly PickKind[] = CUSTOM_FIELD_KINDS;
 const found = (query: string): PickKind[] =>
   PICK_KINDS.filter((k) =>
     kindMatches(
@@ -50,13 +49,11 @@ describe('the kinds’ groups', () => {
     const offered = Object.values(BUILT_INS_OF_KIND).flat();
     const addable = BUILT_IN_FIELD_IDS.filter((f) => f !== 'title' && f !== 'status');
     expect([...offered].sort()).toEqual([...addable].sort());
-    for (const id of offered)
-      if (id !== 'comments' && id !== 'votes') expect(BUILT_IN_ROLES[id]).toBeTruthy();
+    for (const id of offered) expect(BUILT_IN_ROLES[id]).toBeTruthy();
     expect(readyBuiltIns('date', ['due', 'assignee'])).toEqual(['due']);
     expect(readyBuiltIns('date', ['start', 'due'])).toEqual(['start', 'due']);
     expect(readyBuiltIns('text', ['due'])).toEqual([]);
-    expect(isOneToAType('comments')).toBe(true);
-    expect(isOneToAType('person')).toBe(false);
+    expect(readyBuiltIns('votes', ['votes'])).toEqual(['votes']);
   });
 
   it('gives every kind a one-line description and some words', () => {

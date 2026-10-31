@@ -9,8 +9,9 @@ import {
   type ItemFieldId,
 } from '@liveplanner/items';
 
-// A kind Add Field lists: every custom field kind, and the built-in fields that are one to a type (Comments, Votes).
-export type PickKind = CustomFieldKind | 'comments' | 'votes';
+// A kind Add Field lists: every custom field kind, Comments and Votes among them (item-types.md "Comments and Votes
+// fields"), each opening Shape.
+export type PickKind = CustomFieldKind;
 
 export type KindGroupId = 'text' | 'numbers' | 'choices' | 'people' | 'look' | 'cards';
 
@@ -32,10 +33,6 @@ export const KIND_GROUPS: readonly KindGroup[] = [
 
 export const groupOfKind = (kind: PickKind): KindGroupId =>
   KIND_GROUPS.find((g) => g.kinds.includes(kind))?.id ?? KIND_GROUPS[0]!.id;
-
-// The kinds a type holds one of: Add Field adds the built-in field at once, and lists it only while the type lacks it.
-export const isOneToAType = (kind: PickKind): kind is 'comments' | 'votes' =>
-  kind === 'comments' || kind === 'votes';
 
 // What each kind holds, in plain words, one line.
 export const KIND_DESCRIPTIONS: Record<PickKind, string> = {
@@ -134,6 +131,8 @@ export const BUILT_IN_ROLES: Partial<Record<ItemFieldId, string>> = {
   assignee: 'Notifies them, and fills My Work and Workload',
   checklist: 'Progress on the card, like 2/5',
   color: 'A dot on the card, and its bar on the Gantt chart',
+  comments: 'Threads on the card, and mentions in the Inbox',
+  votes: 'Session votes, Top Voted and sorting',
 };
 
 /** The built-in fields of `kind` the type lacks (`missing`), in Ready to use's order. */

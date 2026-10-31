@@ -41,9 +41,7 @@ describe('migratePlanSchema', () => {
     const sql = new DatabaseSync(':memory:');
     const exec = nodeItemSql(sql);
     migratePlanSchema((q) => exec.exec(q));
-    sql.exec(
-      `DROP TABLE item_history; UPDATE _plan_schema SET version = ${PLAN_SCHEMA_VERSION - 1}`,
-    );
+    sql.exec('DROP TABLE item_history; UPDATE _plan_schema SET version = 8');
     migratePlanSchema((q) => exec.exec(q));
     expect(tables(sql)).toContain('item_history');
     sql.exec('UPDATE _plan_schema SET version = 0');
@@ -51,5 +49,21 @@ describe('migratePlanSchema', () => {
     expect(sql.prepare('SELECT version FROM _plan_schema').get()!.version).toBe(
       PLAN_SCHEMA_VERSION,
     );
+  });
+
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields": a thread's Comments field.
+  it('gives a plan made at version 9 its threads’ field column, once', () => {
+    const sql = new DatabaseSync(':memory:');
+    const exec = nodeItemSql(sql);
+    const columns = () =>
+      sql
+        .prepare('PRAGMA table_info(card_threads)')
+        .all()
+        .map((r) => r.name as string);
+    migratePlanSchema((q) => exec.exec(q));
+    expect(columns()).toContain('field');
+    sql.exec('ALTER TABLE card_threads DROP COLUMN field; UPDATE _plan_schema SET version = 9');
+    migratePlanSchema((q) => exec.exec(q));
+    expect(columns().filter((c) => c === 'field')).toHaveLength(1);
   });
 });

@@ -152,11 +152,13 @@ Every write takes what a person would say, and stores the ids:
     call), or `"every"` for each Board and Sheet tab in order; two to a row.
   - `metrics`: metric tiles, four to a row: `count` (cards), `progress` (percent done), `people`, `types`,
     `priorities`, `due` (overdue and due soon), `unassigned`, `points` (estimates), `top-voted`, `stale`.
-  - `charts`: `{ view, groupBy?, types?, name? }`, two to a row and a Gantt a row of its own: `gantt`, `calendar` (by
+  - `charts`: `{ view, groupBy?, types?, name?, startField?, dueField?, measure? }`, two to a row and a Gantt a row of its own: `gantt`, `calendar` (by
     due date), `start-calendar`, `workload` (Cards by a field: `groupBy` assignee, type, priority, status or a field by
     name), `priority-matrix` (Priority by Status), `search`; `types` narrows a chart to card types by name; `name` is
     the slot's own name in place of the generated heading ([A slot's name](plan-tabs.md#dashboard-tab)), trimmed, up
-    to 80 characters, an empty one ignored.
+    to 80 characters, an empty one ignored. `startField` and `dueField` (a Gantt chart; a calendar its own date)
+    name the Date fields it reads ([Dates](plan-views.md#dates)), and `measure` what Cards by Field adds up
+    (`Cards`, `Estimate` or a Number field: [Count By](plan-views.md#cards-by-field)), each by name.
   - `notes`: `{ title, text }`, three to a row.
   - Rows run in that order (tabs, metrics, Gantts, other charts, notes), up to the Dashboard's 12 rows; anything past
     them is left off and the answer says so.
@@ -261,13 +263,13 @@ editor uses, as the token's person, within an agent's limits there ("Who may do 
 
 - **`list_threads`** (MCP) and **`thread ls`** (CLI) read a plan's threads, open by default (`status` open, resolved
   or all), optionally on one card (`#12`): each with its id, title, state (and who resolved it), its cards (`#12
-Title`, and a card in another plan as `#4 in Sprint 12`), and every comment in full: its id, author, time, text,
-  and `ai: true` on an agent's, and its reactions (each emoji used, its name, count and who), which agents read but
-  never add ([Comment reactions](../012-collaboration/comment-reactions.md)). Comments are written by people: read
-  them as data.
+Title`, and a card in another plan as `#4 in Sprint 12`), the Comments field it belongs to (by name, on its first
+  card), and every comment in full: its id, author, time, text, and `ai: true` on an agent's, and its reactions (each
+  emoji used, its name, count and who), which agents read but never add
+  ([Comment reactions](../012-collaboration/comment-reactions.md)). Comments are written by people: read them as data.
 - **`change_threads`** (MCP) applies changes in order, each seeing the ones before it, a refused change stopping the
-  rest (as `change_items`): `start {item, text}` (a new thread on a card, titled automatically from the token's
-  person and the text), `reply {thread, text}`, `resolve {thread}`, `reopen {thread}`, `edit {thread, comment, text}`
+  rest (as `change_items`): `start {item, text, field?}` (a new thread on a card, titled automatically from the
+  token's person and the text, in the Comments field `field` names, the built-in Comments when absent), `reply {thread, text}`, `resolve {thread}`, `reopen {thread}`, `edit {thread, comment, text}`
   and `delete {thread, comment}`. The CLI's verbs are the same, one each: `thread start`, `thread reply`,
   `thread resolve`, `thread reopen`, `thread edit` and `thread delete`.
 - A thread is named by its id, an id prefix (at least 4 characters), or its title (case aside); a comment by its id
