@@ -14,7 +14,8 @@ import {
 // One tab folder in the strip (docs/specs/006-document/tab-folders.md "Tab bar rendering"), the same in every editor.
 // It stands on its shelf, a tinted container shaped like a tab. Its chip, the folder's header, comes first: a folder
 // glyph, the name and the count badge, open or shut. Its tabs follow inline and open or shut in place, each easing its
-// own width so the whole group slides as one. The open tab never tucks away: in a collapsed folder it stays on the
+// own width so the whole group slides as one. A 4px margin each side, on top of the strip's own 2px gap, keeps the
+// shelf off the tabs and folders beside it (two folders in a row share one, the second's left margin dropped). The open tab never tucks away: in a collapsed folder it stays on the
 // shelf beside the chip.
 
 // How long a dragged tab rests on a collapsed chip before the folder springs open.
@@ -98,7 +99,7 @@ export function TabFolderGroup<T extends { id: string }>({
       data-tab-folder={name}
       data-expanded={expanded ? '' : undefined}
       style={folderStyle(name)}
-      className={`${FOLDER_SHELF_CLASS} flex h-10 shrink-0 items-end pr-0.5`}
+      className={`${FOLDER_SHELF_CLASS} mx-1 flex h-10 shrink-0 items-end pr-0.5 [[data-tab-folder]+&]:ml-0`}
     >
       <div className="flex h-10 shrink-0 items-center">
         {editing && !readOnly ? (

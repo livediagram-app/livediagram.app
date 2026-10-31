@@ -239,4 +239,11 @@ describe('TabFolderGroup', () => {
     expect(onRename).toHaveBeenCalledOnce();
     expect(screen.queryByRole('textbox')).toBeNull();
   });
+
+  it('keeps clear of the tab or folder beside it: a margin each side, none doubled between two folders', () => {
+    const { container } = render(<TabFolderGroup {...props()} />);
+    const cls = (container.querySelector('[data-tab-folder]') as HTMLElement).className;
+    expect(cls).toContain('mx-1');
+    expect(cls).toContain('[[data-tab-folder]+&]:ml-0');
+  });
 });
