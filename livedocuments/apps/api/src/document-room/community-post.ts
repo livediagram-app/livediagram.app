@@ -7,6 +7,7 @@ import {
   checkCommunityPost as checkPost,
   communityPostAuthor as postAuthor,
   leaveCommunity as leavePost,
+  ownerCommunityState,
   readCommunityPost as readPost,
   type CommunityIndex,
   type CommunityPost,
@@ -26,6 +27,9 @@ export {
 } from '@liveworkspace/community/app';
 
 export const readCommunityPost = (env: DocumentEnv) => readPost(env.DOCUMENT_DB);
+
+// The post's state for the owner's read of the document (the header badge), null with no post.
+export const readOwnerCommunityState = (env: DocumentEnv) => ownerCommunityState(env.DOCUMENT_DB);
 
 // Who a post shows on its link's doors: "Anonymous" when the author chose it, else their display identity.
 export const communityPostAuthor = (env: Env, post: CommunityPost): Promise<CommunityAuthor> =>

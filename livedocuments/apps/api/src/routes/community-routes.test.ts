@@ -443,6 +443,22 @@ describe('My Shares', () => {
 });
 
 describe('keeping in step', () => {
+  it("carries the post's state on the owner's read of the document, for the header badge", async () => {
+    const stateOf = async () =>
+      (
+        await (
+          await handleDocuments(owner('GET', '/api/documents/d1'))
+        ).json<{
+          document: { communityState: string | null };
+        }>()
+      ).document.communityState;
+    expect(await stateOf()).toBeNull();
+    const post = await publish();
+    expect(await stateOf()).toBe('listed');
+    await hideOnService(post.id);
+    expect(await stateOf()).toBe('hidden');
+  });
+
   it('takes a trashed document’s post out of the gallery, and puts it back on restore', async () => {
     const post = await publish();
     index.trashed.add('d1');
@@ -512,6 +528,7 @@ describe('the community link', () => {
     expect(read.status).toBe(200);
     expect((await read.json<{ document: Record<string, unknown> }>()).document).toMatchObject({
       ownerId: '',
+      communityState: null,
       ownerName: null,
       ownerColor: null,
       folderId: null,

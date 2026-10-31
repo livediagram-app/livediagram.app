@@ -114,6 +114,15 @@ export async function readCommunityPost(db: CommunityPostDb): Promise<CommunityP
   return postOf(row ?? null);
 }
 
+// The post's state as the owner's read of the document carries it (`communityState`), so the editor's header badge
+// reads Public after a reload, not only right after publishing: 'listed' unless reports hid it, null with no post.
+export async function ownerCommunityState(
+  db: CommunityPostDb,
+): Promise<'listed' | 'hidden' | null> {
+  const post = await readCommunityPost(db);
+  return post ? (post.hiddenAt === null ? 'listed' : 'hidden') : null;
+}
+
 // The share code that opens the document as its Community post right now, or null: the Community switched on, a post
 // not hidden after reports, and the document still its author's own (not a team's). The index refuses the link
 // itself for a document in the Trash or behind a password, so a grant through it never reaches here then.

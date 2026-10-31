@@ -7,6 +7,7 @@ import {
   checkCommunityPost as checkPost,
   communityPostAuthor as postAuthor,
   deleteCommunityPost as deletePost,
+  ownerCommunityState,
   readCommunityPost as readPost,
   saveCommunityPost as savePost,
   updateCommunityPost as updatePost,
@@ -31,6 +32,10 @@ export {
 const service = communityAppClient(COMMUNITY_APP);
 
 export const readCommunityPost = (env: DocumentEnv) => readPost(env.DOCUMENT_DB);
+
+// The post's state for the owner's read of the document (the header badge), null with no post.
+export const readOwnerCommunityState = (env: DocumentEnv) => ownerCommunityState(env.DOCUMENT_DB);
+
 export const saveCommunityPost = (
   env: DocumentEnv,
   post: Pick<CommunityPost, 'shareCode' | 'authorId' | 'postId' | 'title' | 'anonymous'>,
