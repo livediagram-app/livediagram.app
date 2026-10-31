@@ -22,6 +22,8 @@ import {
   itemColourOf,
   linkedCard,
   cardFieldsAt,
+  fieldCardIds,
+  holdsSeveral,
   type CardField,
   type CardSize,
   type Item,
@@ -41,6 +43,7 @@ import { customFieldText } from './custom-field-text';
 import { calculatedFieldValue } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
+import { LinkedNumbersPill } from './SeveralValuesPills';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -268,6 +271,18 @@ export function PlanCardFace({
           );
         // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
         if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
+        // A Card field that holds several reads its linked cards' numbers (item-types.md "Holds Several").
+        if (def?.kind === 'card' && holdsSeveral(def))
+          return plan ? (
+            <LinkedNumbersPill
+              key={f}
+              label={def.label}
+              ids={fieldCardIds(def, item.fields[def.id])}
+              items={plan.items}
+              types={plan.types}
+              palette={palette}
+            />
+          ) : null;
         // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields").
         const text = !def
           ? null
@@ -280,7 +295,9 @@ export function PlanCardFace({
         // A linked card with its own Colour shows it (a Parent project's colour), else its own type's glyph (a field
         // may link to several types), the field's first type's while the card is missing.
         const linked =
-          def.kind === 'card' && plan ? linkedCard(plan.items, item.fields[def.id]) : undefined;
+          def.kind === 'card' && plan
+            ? linkedCard(plan.items, fieldCardIds(def, item.fields[def.id])[0])
+            : undefined;
         const linkedTypeId = def.kind === 'card' ? (linked?.type ?? def.linkType) : undefined;
         const linkedType = linkedTypeId
           ? typeIn(plan?.types ?? ITEM_TYPES, linkedTypeId)

@@ -159,7 +159,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           const id = newItemId();
           void ctx.addItem({
             type: typeId,
-            fields: { title: type.newTitle, [group.fieldId]: item.id },
+            fields: { title: type.newTitle, [group.fieldId]: group.several ? [item.id] : item.id },
             status,
             after: null,
             id,

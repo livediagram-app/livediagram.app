@@ -8,6 +8,7 @@ import { useId } from 'react';
 import {
   CUSTOM_FIELD_LABEL_MAX,
   canBeRequired,
+  holdsSeveralKind,
   linkTypesOf,
   withLinkTypes,
   type CustomFieldDef,
@@ -24,6 +25,7 @@ import {
   CUSTOM_KIND_LABELS,
   CalculationSelect,
   CurrencySelect,
+  HoldsSeveralSwitch,
   NotifiesSwitch,
   RatingScaleSelect,
   RequiredSwitch,
@@ -46,6 +48,7 @@ export function addedField(field: NewField): NewField {
     ...(field.kind === 'calculated' ? {} : { calculation: undefined }),
     ...(field.required && canBeRequired(field.kind) ? {} : { required: undefined }),
     ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
+    ...(field.multiple && holdsSeveralKind(field.kind) ? {} : { multiple: undefined }),
   };
 }
 
@@ -262,6 +265,7 @@ function ShapeOwn({
           />
         </div>
       ) : null}
+      <HoldsSeveralSwitch field={field} onChange={(multiple) => set({ multiple })} />
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
       <CustomFieldPreview

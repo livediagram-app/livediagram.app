@@ -56,7 +56,7 @@ export function usePlanBoardDrop(opts: {
   // over a slot does not re-render the board on every pointermove (a same-value setState can still render once).
   const lastIncoming = useRef<PlanIncoming | null>(null);
 
-  const drop = (itemId: string, slot: PlanDropSlot) => {
+  const drop = (itemId: string, slot: PlanDropSlot, fromLane?: string) => {
     if (!plan || !setup || !projection) return;
     const item = items.get(itemId);
     // An Archive board (docs/specs/026-plan/items.md "Archive"): a card dropped on it is archived, its
@@ -68,7 +68,7 @@ export function usePlanBoardDrop(opts: {
       track('Plan', 'Moved', 'Archive');
       return;
     }
-    const lands = boardMoveFor(setup, projection, item, itemId, slot);
+    const lands = boardMoveFor(setup, projection, item, itemId, slot, fromLane);
     if (!lands) return;
     // Off an Archive board onto another: it comes back, in the move itself (one write, one undo step).
     const restored = !!item && isArchived(item);

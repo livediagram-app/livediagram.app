@@ -30,7 +30,7 @@ const cardName = (card: Item) => `#${card.key} ${itemTitle(card) || 'Untitled'}`
 /** The rows Link Existing offers, newest change first, each saying where it links now. */
 export function linkExistingRows(
   target: Item,
-  group: Pick<LinkedGroup, 'fieldId' | 'fromTypes'>,
+  group: Pick<LinkedGroup, 'fieldId' | 'fromTypes' | 'several'>,
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
 ): LinkRow[] {

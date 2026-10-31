@@ -9,6 +9,7 @@ import {
   builtInFieldOfKind,
   isEmptyFieldValue,
   linkCandidates,
+  holdsSeveral,
   linkTypesOf,
   type ItemFields,
   type ItemFieldValue,
@@ -92,12 +93,14 @@ export function RequiredFieldsDialog({
                   types={plan?.types ?? [type]}
                   disabled={false}
                   onSave={(v) => set(f.id, v)}
+                  multiple={holdsSeveral(f)}
                 />
               ) : builtInFieldOfKind(f.kind) ? (
                 <BuiltInKindField
                   id={id}
                   label={f.label}
                   kind={f.kind}
+                  multiple={holdsSeveral(f)}
                   value={values[f.id]}
                   onSave={(v) => set(f.id, v)}
                 />
