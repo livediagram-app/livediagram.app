@@ -4,12 +4,13 @@
 // last in the Overview tab. A quiet tally and New Thread over the list; no threads, a soft empty state; the starter at
 // the top when New Thread is pressed; open threads most recently active first, every one closed when the card opens
 // (a thread just started, or one a link names, opens); resolved threads under a Resolved disclosure at the bottom.
-// Drawn for about five threads, and for many more.
+// Drawn for about five threads, and for many more. With the header's Activity switch on, the card's history
+// (CardActivity.tsx, items.md "History") is interleaved with the open threads by time.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CommentIcon, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideChevronDown, lucidePlus } from '@liveworkspace/icons/lucide';
-import { itemTitle, type Item } from '@liveplanner/items';
+import { itemTitle, typeIn, type Item } from '@liveplanner/items';
 import type { CardThread, CommentMention } from '@liveplanner/project';
 import { usePlan } from '../PlanContext';
 import { AddThreadToCardDialog } from './AddThreadToCardDialog';
@@ -17,6 +18,17 @@ import { useCardThreadsContext } from './CardThreadsContext';
 import { ThreadStarter } from './ThreadStarter';
 import { ThreadTile } from './ThreadTile';
 import { ANNOUNCE, threadTally } from './thread-words';
+import { useCardHistory } from '@/hooks/plan/useCardHistory';
+import {
+  ACTIVITY_ROWS_SHOWN,
+  ActivityNote,
+  ActivityRow,
+  ActivitySwitch,
+  ShowMoreActivity,
+  activityFeed,
+  useActivityOn,
+} from './CardActivity';
+import type { ActivityContext } from './activity-words';
 
 const PlusIcon = lucideGlyph(lucidePlus, 13);
 const Chevron = lucideGlyph(lucideChevronDown, 13);
@@ -39,6 +51,24 @@ function CardThreadsOf({ item }: { item: Item }) {
   // has just been started here. Kept only while the panel stays on this card.
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const tiles = useRef(new Map<string, HTMLElement>());
+  // The card's activity: its history, read while the switch is on, the first rows shown until Show N More.
+  const [activityOn, setActivityOn] = useActivityOn();
+  const [allActivity, setAllActivity] = useState(false);
+  const history = useCardHistory({
+    scope: ctx?.threads.scope ?? null,
+    itemId: item.id,
+    rev: item.rev,
+    enabled: activityOn,
+  });
+  const activityCtx = useMemo<ActivityContext>(
+    () => ({
+      statusNames: plan?.statusNames ?? new Map(),
+      types: plan?.types ?? [],
+      type: plan ? typeIn(plan.types, item.type) : undefined,
+      items: plan?.items ?? new Map(),
+    }),
+    [plan, item.type],
+  );
 
   // A link to one of this card's threads (#item=…&thread=…): open it (the Resolved list too), bring it into view.
   const focused = ctx?.threads.focused ?? null;
@@ -108,13 +138,23 @@ function CardThreadsOf({ item }: { item: Item }) {
     </button>
   );
   const tally = threadTally(open.length, resolved.length);
+  const entries = activityOn ? history.entries : [];
+  const feed = activityFeed(open, entries, allActivity ? entries.length : ACTIVITY_ROWS_SHOWN);
+  const activitySwitch = ctx.threads.scope ? (
+    <ActivitySwitch on={activityOn} onChange={setActivityOn} />
+  ) : null;
 
   return (
     <div data-card-threads="" className="flex flex-col gap-2">
-      {threads.length > 0 || starting ? (
+      {threads.length > 0 || starting || activitySwitch ? (
         <div className="flex min-h-7 items-center justify-between gap-2">
-          <span className="text-[12px] text-slate-500 dark:text-slate-400">{tally}</span>
-          {canComment && !starting ? newThread : null}
+          <span className="text-[12px] text-slate-500 dark:text-slate-400">
+            {threads.length > 0 || starting ? tally : null}
+          </span>
+          <span className="flex items-center gap-1">
+            {activitySwitch}
+            {canComment && !starting && threads.length > 0 ? newThread : null}
+          </span>
         </div>
       ) : null}
       {starting ? (
@@ -134,11 +174,24 @@ function CardThreadsOf({ item }: { item: Item }) {
           className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700"
         />
       ) : null}
-      {open.length > 0 ? (
-        <ul aria-label="Open threads" className="flex flex-col gap-2">
-          {open.map(tile)}
+      {feed.rows.length > 0 ? (
+        <ul
+          aria-label={entries.length > 0 ? 'Open threads and activity' : 'Open threads'}
+          className="flex flex-col gap-2"
+        >
+          {feed.rows.map((row) =>
+            row.kind === 'thread' ? (
+              tile(row.thread)
+            ) : (
+              <ActivityRow key={`a-${row.index}`} entry={row.entry} ctx={activityCtx} />
+            ),
+          )}
         </ul>
       ) : null}
+      {feed.hidden > 0 ? (
+        <ShowMoreActivity hidden={feed.hidden} onShow={() => setAllActivity(true)} />
+      ) : null}
+      {activityOn ? <ActivityNote history={history} /> : null}
       {resolved.length > 0 ? (
         <div className="flex flex-col gap-2">
           <button

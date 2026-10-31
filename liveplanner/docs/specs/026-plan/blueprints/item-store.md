@@ -541,11 +541,12 @@ CREATE INDEX IF NOT EXISTS item_history_item ON item_history (plan_id, item_id, 
   changes nothing. A step that lands beside it under the same number must be renumbered so each runs once.
 - The foreign key deletes a card's history with the card (`DELETE /items/:itemId`, Empty Trash) and with the plan.
 - `apps/api/src/db/item-history.ts`:
-  - `appendItemHistory(env, projectId, writes: { before: Item | null; after: Item }[], tag?)`: one batch of an `INSERT`
-    per write with changes (by `after.updatedBy`, or `createdBy` for a create; `at` = `after.updatedAt`), then per card
-    `DELETE ... WHERE plan_id = ? AND item_id = ? AND (at < cutoff OR id <= (the id ITEM_HISTORY_MAX back))`, which
-    reads at most that card's `ITEM_HISTORY_MAX` + n index entries. Never throws: a failure logs
-    `[items] history.append.failed` and the write stands.
+  - `appendItemHistory(env, projectId, writes: { before: Item | null; after: Item }[], tag?)`: one batch. A single
+    `INSERT ... SELECT ... FROM json_each(?)` writes every write with changes (by `after.updatedBy`, or `createdBy`
+    for a create; `at` = `after.updatedAt`), so a bulk of 40 cards is still one statement. Then, for each changed
+    (not created) card, `DELETE ... WHERE plan_id = ? AND item_id = ? AND (at < cutoff OR id <= the id
+ITEM_HISTORY_MAX back)`, which reads at most that card's `ITEM_HISTORY_MAX` + 1 index entries. A new card has
+    nothing to trim. Never throws: a failure logs `[items] history.append.failed` and the write stands.
   - `readItemHistory(env, projectId, itemId, now)`: `SELECT at, by, tag, changes FROM item_history WHERE plan_id = ?
 AND item_id = ? AND at >= ? ORDER BY id DESC LIMIT ITEM_HISTORY_MAX`, rows that do not parse skipped.
   - `deleteOldItemHistory(env, cutoff)`: the daily upkeep's sweep (`PlanRoom.maintain`): deletes every row before the
@@ -557,7 +558,8 @@ history.retention` with the count.
   threads), else `ai` for an API token (`ctx.token !== null`), else none (`historyTagOf`). Not called by: `tally`, a
   project create's seed (`seedItems`), the copy and file imports (`plan-content.ts`, `project-file.ts`), the migration
   door, the schema's own steps and `anonymisePlan`.
-- `anonymisePlan` rewrites the `by` of rows mentioning the person with `anonymiseJsonText`, as the cards' threads.
+- `anonymisePlan` sets the `by` of the rows the person wrote (`by ->> '$.id'` = their hashed `itemPersonId`) to the
+  Deleted account author: history names authors by hashed id, so the raw-id `anonymiseJsonText` would miss them.
 - Copies (`exportPlanCopy`), project files and offline records carry no history: none of them reads the table.
 
 ### REST
@@ -579,7 +581,7 @@ history.retention` with the count.
 'error' | 'offline', entries, retry }`; reads when enabled and again when the card's `rev` moves (debounced
   `ITEM_HISTORY_REFETCH_MS`), dropping an answer for a card no longer shown.
 - `components/plan/threads/CardActivity.tsx`: `ActivityRow` (one entry) and `activityFeed(open threads, entries)`
-  (both by time, newest first; a thread by `updatedAt`); `activity-words.ts` words an entry (`activitySentence`)
+  (both by time, newest first; a thread by `updatedAt`); `activity-words.ts` words an entry (`activityParts`)
   from the plan's `statusNames`, the card's type (field labels: `BUILT_IN_FIELD_LABELS`, then custom labels) and its
   items (a Card field's title).
 - `CardThreads` draws the **Activity** switch (`SwitchRow`, `xs`) in its header and, on, the feed in place of the
@@ -730,10 +732,10 @@ include `fields` or comment text.
 | Thread routes: roles, agents, cross-plan, AI   | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                            |
 | Editor thread writes, room merge, refusals     | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                              |
 | Panel threads, Add to Card, shared chip, words | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                |
-| History: changes, values, grouping, redaction  | `packages/items/src/item-history.test.ts` |
-| History: storage, bounds, cascade, no D1       | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts` |
-| History: writes tagged, roles, scope, redacted | `apps/api/src/routes/item-history-route.test.ts` |
-| History: panel feed, switch, words, offline    | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts` |
+| History: changes, values, grouping, redaction  | `packages/items/src/item-history.test.ts`                                                                                                                                                   |
+| History: storage, bounds, cascade, no D1       | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                        |
+| History: writes tagged, roles, scope, redacted | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                            |
+| History: panel feed, switch, words, offline    | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                                                                   |
 | Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
 | Tab import: parse, plan, land, report          | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
@@ -756,11 +758,11 @@ include `fields` or comment text.
 | `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                               |
 | `ITEM_ID_PATTERN`          | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                     |
 | `ITEM_FIELD_KEY_PATTERN`   | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                    |
-| `ITEM_HISTORY_MAX` | 200 | Card #122; a busy card's year of moves; 50 to 1000 |
-| `ITEM_HISTORY_MAX_AGE_MS` | 180 days | What a reader asks about; 30 to 365 days |
-| `ITEM_HISTORY_GROUP_MS` | 60000 | Spec "within a minute" |
-| `ITEM_HISTORY_VALUE_MAX` | 80 | One readable line; 40 to 200 |
-| `ITEM_HISTORY_LIST_MAX` | 12 | `ITEM_LABELS_MAX` |
-| `ITEM_HISTORY_CHANGES_MAX` | 16 | Bounds one entry; a write changes a few fields |
-| `ITEM_HISTORY_REFETCH_MS` | 400 | As `ITEM_REFETCH_DEBOUNCE_MS` |
-| `ACTIVITY_ROWS_SHOWN` | 8 | Spec; a panel's worth before Show More |
+| `ITEM_HISTORY_MAX`         | 200                       | Card #122; a busy card's year of moves; 50 to 1000      |
+| `ITEM_HISTORY_MAX_AGE_MS`  | 180 days                  | What a reader asks about; 30 to 365 days                |
+| `ITEM_HISTORY_GROUP_MS`    | 60000                     | Spec "within a minute"                                  |
+| `ITEM_HISTORY_VALUE_MAX`   | 80                        | One readable line; 40 to 200                            |
+| `ITEM_HISTORY_LIST_MAX`    | 12                        | `ITEM_LABELS_MAX`                                       |
+| `ITEM_HISTORY_CHANGES_MAX` | 16                        | Bounds one entry; a write changes a few fields          |
+| `ITEM_HISTORY_REFETCH_MS`  | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
+| `ACTIVITY_ROWS_SHOWN`      | 8                         | Spec; a panel's worth before Show More                  |
