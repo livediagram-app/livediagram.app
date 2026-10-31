@@ -5,6 +5,7 @@
 import type { CardField, CardSize } from './board';
 import type { CardSlot } from './card-display';
 import type { PlanGlyphId } from './glyphs';
+import type { FormulaResult } from './formula/limits';
 
 export type ItemFieldId =
   | 'title'
@@ -117,8 +118,9 @@ export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const isEmailAddress = (v: string) => v.length <= EMAIL_MAX && EMAIL_PATTERN.test(v);
 
 // A Calculated field's menu (docs/specs/026-plan/item-types.md "Calculated fields"), in the order it is offered:
-// how many children a card has, and the share of them that are done.
-export const CALCULATIONS = ['childCount', 'childrenDone'] as const;
+// how many children a card has, the share of them that are done, and a formula over the card's own fields
+// (formula-fields.ts).
+export const CALCULATIONS = ['childCount', 'childrenDone', 'formula'] as const;
 export type Calculation = (typeof CALCULATIONS)[number];
 
 export interface CustomFieldDef {
@@ -137,6 +139,10 @@ export interface CustomFieldDef {
   currency?: string;
   // A Calculated field's calculation (calculated-fields.ts).
   calculation?: Calculation;
+  // A Formula's expression as stored, each field its id in braces (`{f-budget} - {f-spent}`; formula/references.ts),
+  // and how its value reads (`result`, Number when absent); only on a Calculated field whose calculation is formula.
+  formula?: string;
+  result?: FormulaResult;
   // A worked-out share drawn as a Percent field is (percent-fields.ts); kept only as 'percent', only where
   // canShowAsPercent allows it.
   showAs?: 'percent';

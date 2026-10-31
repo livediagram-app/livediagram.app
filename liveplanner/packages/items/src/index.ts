@@ -67,6 +67,27 @@ export * from './vote-count-in';
 export * from './type-catalogue-change';
 export * from './linked-cards';
 export * from './calculated-fields';
+export * from './formula-fields';
+export {
+  FORMULA_DEPTH_MAX,
+  FORMULA_MAX,
+  FORMULA_RESULTS,
+  FORMULA_RESULT_DEFAULT,
+  FORMULA_RESULT_LABELS,
+  FORMULA_STEPS_MAX,
+  isFormulaResult,
+  type FormulaResult,
+} from './formula/limits';
+export {
+  formulaScopeOf,
+  nameAsWritten,
+  shownFormula,
+  storedFormula,
+  type FormulaField,
+  type FormulaScope,
+  type StoredFormula,
+} from './formula/references';
+export { FUNCTION_NAMES, type FunctionName } from './formula/functions';
 export * from './percent-fields';
 export * from './view-fields';
 export * from './attachments';

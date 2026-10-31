@@ -6,7 +6,7 @@
 // its group by its handle (or Move Up and Move Down in its ⋯ menu), to another group and off from that menu;
 // Title and Status stay. Each
 // group adds a field into itself. Edits a draft; the type editor saves it.
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { FieldRow } from './ItemTypeFieldRow';
@@ -89,6 +89,11 @@ export function ItemTypeLayoutEditor({
   const addEscape = useRef<(() => boolean) | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const fields = orderedFields(draft.fields);
+  // What a Formula on this type may read as drafted (docs/specs/026-plan/item-types.md "Formula fields").
+  const formulaDraft = useMemo(
+    () => ({ typeId, fields: orderedFields(draft.fields), custom: draft.custom }),
+    [typeId, draft.fields, draft.custom],
+  );
   const kept = requiredFieldsOf(typeId);
   const customOf = (id: string) => draft.custom.find((f) => f.id === id);
   const labelOf = (id: string) =>
@@ -152,6 +157,7 @@ export function ItemTypeLayoutEditor({
                 {c && editing === id ? (
                   <CustomFieldForm
                     field={c}
+                    formulaDraft={formulaDraft}
                     className="mt-2"
                     onChange={(patch) =>
                       onChange({
@@ -198,6 +204,7 @@ export function ItemTypeLayoutEditor({
         >
           <NewFieldForm
             escapeRef={addEscape}
+            formulaDraft={formulaDraft}
             missing={BUILT_IN_FIELD_IDS.filter((f) => !fields.includes(f))}
             canAddCustom={customFieldCount(draft.custom) < ITEM_TYPE_CUSTOM_MAX}
             onAddBuiltIn={(id) => {

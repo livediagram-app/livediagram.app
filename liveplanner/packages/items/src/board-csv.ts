@@ -5,6 +5,7 @@ import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSet
 import { builtInFieldOf } from './card-source';
 import { customFieldText } from './card-text';
 import { itemColourValue } from './item-colour';
+import { formulaValue, isFormulaField } from './formula-fields';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
 import { isItemPerson, itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
@@ -49,13 +50,18 @@ export function boardCsvFileName(title: string): string {
 const lower = (s: string) => s.trim().toLowerCase();
 
 // The custom fields of the board's types, one per label (the first type naming it wins), in catalogue order. A
-// Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields");
-// so is an Image field, whose value is a picture's id (docs/specs/026-plan/item-types.md "Image fields").
+// Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields"),
+// but a Formula, worked out from the card, is written ("Formula fields"); so is an Image field left out, whose value
+// is a picture's id (docs/specs/026-plan/item-types.md "Image fields").
 function customColumns(types: readonly ItemTypeDef[]): string[] {
   const out = new Map<string, string>();
   for (const t of types)
     for (const f of t.custom ?? [])
-      if (f.kind !== 'calculated' && f.kind !== 'image' && !out.has(lower(f.label)))
+      if (
+        (f.kind !== 'calculated' || isFormulaField(f)) &&
+        f.kind !== 'image' &&
+        !out.has(lower(f.label))
+      )
         out.set(lower(f.label), f.label);
   return [...out.values()];
 }
@@ -123,6 +129,8 @@ export function boardCsvRows(
         ...customs.map((label) => {
           const f = customByLabel(type, label);
           if (!f) return '';
+          // A Formula's worked-out value, written as its result kind's field would be ("2500", "2026-10-31").
+          if (f.kind === 'calculated') return cellOf(formulaValue(f, item, type, { items }));
           // Every linked card's title, and every person's name, of a field that holds several, joined by ", "
           // (item-types.md "Holds Several").
           if (f.kind === 'card')

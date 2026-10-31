@@ -10,6 +10,7 @@ import {
   canBeRequired,
   canShowAsPercent,
   holdsSeveralKind,
+  isFormulaField,
   linkTypesOf,
   withLinkTypes,
   type CustomFieldDef,
@@ -34,6 +35,7 @@ import {
   RequiredSwitch,
 } from './ItemTypeFieldForms';
 import { LinksToPicker, linkTypeNames } from './LinksToPicker';
+import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
 
 export type NewField = Omit<CustomFieldDef, 'id'>;
 
@@ -47,8 +49,11 @@ export function addedField(field: NewField): NewField {
     ...(hasOptions(field.kind) ? {} : { options: undefined }),
     ...(field.kind === 'rating' ? {} : { scale: undefined }),
     ...(field.kind === 'card' ? {} : { linkType: undefined, linkTypes: undefined }),
-    ...(field.kind === 'currency' ? {} : { currency: undefined }),
+    ...(field.kind === 'currency' || (isFormulaField(field) && field.result === 'currency')
+      ? {}
+      : { currency: undefined }),
     ...(field.kind === 'calculated' ? {} : { calculation: undefined }),
+    ...(isFormulaField(field) ? {} : { formula: undefined, result: undefined }),
     ...(field.showAs === 'percent' && canShowAsPercent(field) ? {} : { showAs: undefined }),
     ...(field.required && canBeRequired(field.kind) ? {} : { required: undefined }),
     ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
@@ -60,6 +65,7 @@ export function AddFieldShape({
   field,
   onChange,
   types,
+  formulaDraft,
   ready,
   canAddCustom,
   onBack,
@@ -69,6 +75,8 @@ export function AddFieldShape({
   field: NewField;
   onChange: (next: NewField) => void;
   types: readonly ItemTypeDef[];
+  // The type as drafted, for a Formula's names and preview.
+  formulaDraft?: FormulaDraft | undefined;
   // The built-in fields of this kind the type lacks, offered as Ready to use.
   ready: readonly ItemFieldId[];
   // Whether a field of the type's own can still be made (under ITEM_TYPE_CUSTOM_MAX).
@@ -105,7 +113,14 @@ export function AddFieldShape({
         />
       ) : null}
       {canAddCustom ? (
-        <ShapeOwn ids={ids} field={field} set={set} onChange={onChange} types={types} />
+        <ShapeOwn
+          ids={ids}
+          field={field}
+          set={set}
+          onChange={onChange}
+          types={types}
+          formulaDraft={formulaDraft}
+        />
       ) : null}
       {canAddCustom ? (
         <div className="sticky bottom-0 flex flex-col gap-1.5 border-t border-slate-100 bg-white px-3.5 py-2.5 dark:border-slate-800 dark:bg-slate-900">
@@ -206,14 +221,17 @@ function ShapeOwn({
   set,
   onChange,
   types,
+  formulaDraft,
 }: {
   ids: string;
   field: NewField;
   set: (patch: Partial<NewField>) => void;
   onChange: (next: NewField) => void;
   types: readonly ItemTypeDef[];
+  formulaDraft: FormulaDraft | undefined;
 }) {
   const kind = field.kind;
+  const formula = isFormulaField(field);
   return (
     <div className="flex flex-col gap-3.5 px-3.5 pb-3 pt-3">
       <div className="flex flex-col gap-1">
@@ -269,25 +287,39 @@ function ShapeOwn({
           />
         </div>
       ) : null}
+      {formula ? (
+        <FormulaEditor
+          field={field}
+          draft={formulaDraft ?? { fields: [], custom: [] }}
+          keepLastWorking={false}
+          onChange={set}
+          currencySelect={
+            <CurrencySelect value={field.currency} onChange={(currency) => set({ currency })} />
+          }
+        />
+      ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => set({ showAs })} />
       <HoldsSeveralSwitch field={field} onChange={(multiple) => set({ multiple })} />
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
-      <CustomFieldPreview
-        label={field.label}
-        kind={kind}
-        options={field.options ?? []}
-        linkLabel={
-          linkTypeNames(
-            linkTypesOf(field).map((id) => types.find((t) => t.id === id)?.label ?? id),
-          ) || undefined
-        }
-        currency={field.currency}
-        scale={field.scale}
-        calculation={field.calculation}
-        showAs={field.showAs}
-        required={field.required === true && canBeRequired(kind)}
-      />
+      {/* A Formula previews on a real card, in its editor. */}
+      {formula ? null : (
+        <CustomFieldPreview
+          label={field.label}
+          kind={kind}
+          options={field.options ?? []}
+          linkLabel={
+            linkTypeNames(
+              linkTypesOf(field).map((id) => types.find((t) => t.id === id)?.label ?? id),
+            ) || undefined
+          }
+          currency={field.currency}
+          scale={field.scale}
+          calculation={field.calculation}
+          showAs={field.showAs}
+          required={field.required === true && canBeRequired(kind)}
+        />
+      )}
     </div>
   );
 }

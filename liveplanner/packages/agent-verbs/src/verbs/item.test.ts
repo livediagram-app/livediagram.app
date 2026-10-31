@@ -413,6 +413,106 @@ describe('calculated fields', () => {
   });
 });
 
+// docs/specs/026-plan/item-types.md "Formula fields".
+describe('formula fields', () => {
+  const DEAL = {
+    ...ITEM_TYPES[0],
+    id: 'deal',
+    label: 'Deal',
+    fields: ['title', 'status', 'f-budget', 'f-spent', 'f-left', 'f-grade', 'f-broken', 'f-link'],
+    custom: [
+      { id: 'f-budget', label: 'Budget', kind: 'currency' },
+      { id: 'f-spent', label: 'Spent', kind: 'currency' },
+      {
+        id: 'f-left',
+        label: 'Left',
+        kind: 'calculated',
+        calculation: 'formula',
+        formula: '{f-budget} - {f-spent}',
+        result: 'currency',
+      },
+      {
+        id: 'f-grade',
+        label: 'Grade',
+        kind: 'calculated',
+        calculation: 'formula',
+        formula: 'concat({f-link})',
+        result: 'text',
+      },
+      {
+        id: 'f-broken',
+        label: 'Broken',
+        kind: 'calculated',
+        calculation: 'formula',
+        formula: '{f-gone}',
+      },
+      { id: 'f-link', label: 'Link', kind: 'card', linkType: 'deal' },
+    ],
+  };
+  const items = [
+    item(
+      1,
+      'itemdeal01',
+      { title: 'Acme', status: 'doing', 'f-budget': 500, 'f-spent': 120 },
+      'deal',
+    ),
+    item(2, 'itemdeal02', { title: 'Beta', status: 'doing', 'f-link': 'itemdeal01' }, 'deal'),
+  ];
+  const withFormula = () =>
+    api({
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, DEAL] },
+      [path]: (r: Request) =>
+        r.method === 'GET'
+          ? Response.json({ items, rev: 4 })
+          : Response.json({ item: items[0], rev: 5 }),
+    });
+
+  it('lists each card’s value, and the formula by names with its result and any problem', async () => {
+    const { ctx } = withFormula();
+    const out = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
+    expect(out.items.find((i) => i.id === 'itemdeal01')!.fields).toMatchObject({
+      Left: 380,
+      Broken: null,
+    });
+    expect(out.items.find((i) => i.id === 'itemdeal02')!.fields).toMatchObject({
+      Grade: '#1 Acme',
+    });
+    expect(listedType(DEAL as ItemTypeDef).custom).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'Left',
+          calculation: 'formula',
+          formula: 'Budget - Spent',
+          result: 'currency',
+          readOnly: true,
+        }),
+        expect.objectContaining({
+          name: 'Broken',
+          formula: '{deleted field}',
+          result: 'number',
+          formulaError: 'Uses a field that was deleted or taken off the type',
+        }),
+      ]),
+    );
+    expect(
+      listedType(DEAL as ItemTypeDef).custom.find((f) => f.name === 'Left'),
+    ).not.toHaveProperty('formulaError');
+  });
+
+  it('refuses giving one a value, saying its formula works it out', async () => {
+    const { ctx, seen } = withFormula();
+    const set = await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['left=9'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(set).toMatchObject({
+      code: 'field_calculated',
+      message: expect.stringMatching(/worked out by its formula\.$/),
+    });
+    expect(seen.filter((s) => s.method === 'POST')).toEqual([]);
+  });
+});
+
 // docs/specs/026-plan/item-types.md "Percent".
 describe('percent fields', () => {
   const WORK = {

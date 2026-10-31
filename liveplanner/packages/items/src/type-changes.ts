@@ -3,6 +3,9 @@
 // whole result is checked by validateItemTypeCatalogue before anything is saved; any refusal saves nothing.
 import { withArticle } from './indefinite-article';
 import { CALCULATION_LABELS } from './calculated-fields';
+import { isFormulaField } from './formula-fields';
+import { FORMULA_RESULTS, FORMULA_RESULT_DEFAULT } from './formula/limits';
+import { formulaScopeOf, storedFormula } from './formula/references';
 import { canShowAsPercent } from './percent-fields';
 import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
@@ -75,6 +78,10 @@ export interface CustomFieldInput {
   currency?: string;
   // A Calculated field's calculation, by id (`childCount`) or name ("Child Count").
   calculation?: string;
+  // A Formula's expression, written with field names, and its result kind (docs/specs/026-plan/item-types.md
+  // "Formula fields").
+  formula?: string;
+  result?: string;
   // A share drawn as a Percent field is ('percent'), or as text ('number', the default); only where
   // canShowAsPercent allows it (docs/specs/026-plan/item-types.md "Percent").
   showAs?: string;
@@ -98,6 +105,9 @@ export interface CustomFieldEdit {
   currency?: string;
   // A Calculated field's calculation, by id or name.
   calculation?: string;
+  // A Formula's expression (field names) and result kind.
+  formula?: string;
+  result?: string;
   // 'percent' draws its share as a Percent field is, 'number' as text again.
   showAs?: string;
   onCard?: boolean;
@@ -215,6 +225,7 @@ function editedCustom(
   type: ItemTypeDef,
   edit: CustomFieldEdit,
   types: readonly ItemTypeDef[],
+  formulas: PendingFormulas,
 ): ItemTypeDef {
   const key = must(fieldKeyOf(edit.field, type)).key;
   const field = (type.custom ?? []).find((f) => f.id === key);
@@ -246,7 +257,7 @@ function editedCustom(
     Object.assign(next, withLinkTypes(next, cardTypeIds(edit.linkTypes, types)));
   }
   if (edit.currency) {
-    if (field.kind !== 'currency')
+    if (field.kind !== 'currency' && !isFormulaField(field))
       throw invalid(
         `"${field.label}" is ${withArticle(field.kind)} field: only a currency field has a currency.`,
       );
@@ -260,9 +271,10 @@ function editedCustom(
         `"${field.label}" is ${withArticle(field.kind)} field: only a calculated field has a calculation.`,
       );
     next.calculation = calculationNamed(field.label, edit.calculation);
-    // A Child Count is no share: it stops showing as a Percent.
-    if (!canShowAsPercent(next)) delete next.showAs;
   }
+  withFormula(next, edit, formulas, field.formula === undefined);
+  // A Child Count, or a Formula whose result is no longer a Percent, is no share: it stops showing as a Percent.
+  if (!canShowAsPercent(next)) delete next.showAs;
   if (edit.showAs !== undefined) {
     if (showAsNamed(next, edit.showAs)) next.showAs = 'percent';
     else delete next.showAs;
@@ -343,6 +355,7 @@ function customOf(
   input: CustomFieldInput,
   type: ItemTypeDef,
   types: readonly ItemTypeDef[],
+  formulas: PendingFormulas,
 ): CustomFieldDef {
   const typed = input.kind
     .trim()
@@ -384,15 +397,16 @@ function customOf(
       );
     Object.assign(field, withLinkTypes(field, cardTypeIds(named, types)));
   }
-  if (known === 'currency' && input.currency) {
-    const code = currencyOf(input.currency);
-    if (code !== CURRENCY_DEFAULT) field.currency = code;
-  }
   if (known === 'calculated') field.calculation = calculationNamed(name, input.calculation);
   else if (input.calculation !== undefined)
     throw invalid(
       `"${name}" is ${withArticle(known)} field: only a calculated field has a calculation.`,
     );
+  withFormula(field, input, formulas, true);
+  if ((known === 'currency' || field.result === 'currency') && input.currency) {
+    const code = currencyOf(input.currency);
+    if (code !== CURRENCY_DEFAULT) field.currency = code;
+  }
   if (input.showAs !== undefined && showAsNamed(field, input.showAs)) field.showAs = 'percent';
   if (input.onCard) field.onCard = true;
   if (input.required) field.required = requirable(field);
@@ -401,10 +415,68 @@ function customOf(
   return field;
 }
 
+// Formulas written with names this change still has to store with ids, by field id: resolved once the type holds
+// every field the change adds (resolveFormulas), so a formula may name a field added after it.
+type PendingFormulas = Map<string, string>;
+
+const resultKey = (s: string) => s.trim().toLowerCase();
+
+// A Formula's settings from a change (docs/specs/026-plan/item-types.md "Formula fields"): its result kind and its
+// expression (queued for resolveFormulas); refused on a field that is no Formula, and a new Formula needs one.
+function withFormula(
+  field: { -readonly [K in keyof CustomFieldDef]: CustomFieldDef[K] },
+  input: { formula?: string; result?: string },
+  formulas: PendingFormulas,
+  needsFormula: boolean,
+): void {
+  const formula = isFormulaField(field);
+  if (!formula) {
+    if (input.formula !== undefined || input.result !== undefined)
+      throw invalid(
+        `"${field.label}" is no formula: only a calculated field whose calculation is formula has one.`,
+      );
+    delete field.formula;
+    delete field.result;
+    return;
+  }
+  if (input.result !== undefined) {
+    const result = FORMULA_RESULTS.find((r) => r === resultKey(input.result!));
+    if (!result) throw invalid(`A formula's result is one of ${FORMULA_RESULTS.join(', ')}.`);
+    if (result === FORMULA_RESULT_DEFAULT) delete field.result;
+    else field.result = result;
+    if (result !== 'currency') delete field.currency;
+  }
+  if (input.formula !== undefined) formulas.set(field.id, input.formula);
+  else if (needsFormula)
+    throw invalid(
+      `The formula field "${field.label}" needs a formula, written with field names: "Budget - Spent".`,
+    );
+}
+
+// Each queued formula stored with ids against the type as the change leaves it; a field the change removed is
+// skipped, and a formula that can't be read is refused with its problem.
+function resolveFormulas(type: ItemTypeDef, formulas: PendingFormulas): ItemTypeDef {
+  if (formulas.size === 0) return type;
+  const scope = formulaScopeOf(type);
+  const custom = (type.custom ?? []).map((f) => {
+    const text = formulas.get(f.id);
+    if (text === undefined) return f;
+    const stored = storedFormula(text, scope, f.id);
+    if (!stored.ok) throw invalid(`The formula for "${f.label}" doesn't work: ${stored.error}.`);
+    return { ...f, formula: stored.formula };
+  });
+  formulas.clear();
+  return { ...type, custom };
+}
+
+// "a, b or c".
+const orList = (xs: readonly string[]) =>
+  xs.length > 1 ? `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}` : xs.join('');
+
 // Whether `showAs` asks for a Percent: 'percent' (or "Percent Bar"), on a field whose result is a share; 'number'
 // asks for text. Anything else, or a Percent asked of a field that gives no share, is refused.
 function showAsNamed(
-  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'label'>,
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'result' | 'label'>,
   named: string,
 ): boolean {
   const key = named.toLowerCase().replace(/[^a-z]/g, '');
@@ -413,7 +485,7 @@ function showAsNamed(
     throw invalid(`"${named}" is not a way to show a field: give percent or number.`);
   if (!canShowAsPercent(field))
     throw invalid(
-      `"${field.label}" can't show as a percent: only a share, like Children Done, can.`,
+      `"${field.label}" can't show as a percent: only a share, like Children Done or a Percent formula, can.`,
     );
   return true;
 }
@@ -427,7 +499,7 @@ function calculationNamed(field: string, named: string | undefined): Calculation
   );
   if (!found)
     throw invalid(
-      `The calculated field "${field}" needs a calculation: ${CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`).join(' or ')}.`,
+      `The calculated field "${field}" needs a calculation: ${orList(CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`))}.`,
     );
   return found;
 }
@@ -537,14 +609,16 @@ export function applyCardTypeChanges(
           const extra = c.fields.map((f) => builtInFieldOf(f, type));
           type = { ...type, fields: [...new Set([...REQUIRED_TYPE_FIELDS, ...extra])] };
         }
+        const formulas: PendingFormulas = new Map();
         for (const input of c.custom ?? []) {
-          const field = customOf(input, type, types);
+          const field = customOf(input, type, types, formulas);
           type = {
             ...type,
             custom: [...(type.custom ?? []), field],
             fields: [...type.fields, field.id],
           };
         }
+        type = resolveFormulas(type, formulas);
         // Every status the boards name when none are given, as the type editor's Add Type starts one.
         const every = statuses.map((s) => s.status);
         if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
@@ -587,8 +661,9 @@ export function applyCardTypeChanges(
         }
         // The fields this change ticks Show on Card, by id, so a rename in the same edit still finds them.
         const ticked: string[] = [];
+        const formulas: PendingFormulas = new Map();
         for (const input of c.addCustom ?? []) {
-          const field = customOf(input, type, types);
+          const field = customOf(input, type, types, formulas);
           if (input.onCard) ticked.push(field.id);
           type = {
             ...type,
@@ -598,7 +673,7 @@ export function applyCardTypeChanges(
         }
         for (const edit of c.editCustom ?? []) {
           if (edit.onCard === true) ticked.push(must(fieldKeyOf(edit.field, type)).key);
-          type = editedCustom(type, edit, types);
+          type = editedCustom(type, edit, types, formulas);
         }
         for (const name of c.removeCustom ?? []) {
           const key = must(fieldKeyOf(name, type)).key;
@@ -615,6 +690,7 @@ export function applyCardTypeChanges(
               : {}),
           };
         }
+        type = resolveFormulas(type, formulas);
         if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
         if (c.defaultStatus === null) {
           const { defaultStatus: _gone, ...rest } = type;

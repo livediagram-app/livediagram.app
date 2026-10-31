@@ -200,7 +200,7 @@ describe('the catalogue', () => {
       refused({ kind: 'calculated', calculation: 'childCount', showAs: 'percent' }),
     ).toMatchObject({
       ok: false,
-      message: `"V" can't show as a percent: only a share, like Children Done, can.`,
+      message: `"V" can't show as a percent: only a share, like Children Done or a Percent formula, can.`,
     });
     expect(refused({ kind: 'number', showAs: 'percent' }).ok).toBe(false);
     expect(

@@ -5,6 +5,7 @@
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import { isCalculation } from './calculated-fields';
+import { FORMULA_MAX, FORMULA_RESULT_DEFAULT, isFormulaResult } from './formula/limits';
 import { canShowAsPercent } from './percent-fields';
 import {
   CARD_LINK_TYPES_MAX,
@@ -328,6 +329,24 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     const calculation = input['calculation'];
     if (!isCalculation(calculation)) return `${at}.calculation`;
     field.calculation = calculation;
+    if (calculation === 'formula') {
+      // Its expression as stored (docs/specs/026-plan/item-types.md "Formula fields"): kept as written, even one
+      // that no longer works (the field shows the problem); never more than FORMULA_MAX.
+      const formula = input['formula'] ?? '';
+      if (typeof formula !== 'string' || formula.length > FORMULA_MAX) return `${at}.formula`;
+      field.formula = formula;
+      const result = input['result'];
+      if (result !== undefined) {
+        if (!isFormulaResult(result)) return `${at}.result`;
+        if (result !== FORMULA_RESULT_DEFAULT) field.result = result;
+      }
+      // A Currency result's currency, as a Currency field keeps it.
+      const code = input['currency'];
+      if (field.result === 'currency' && code !== undefined) {
+        if (typeof code !== 'string' || !CURRENCY_CODE.test(code)) return `${at}.currency`;
+        if (code !== CURRENCY_DEFAULT) field.currency = code;
+      }
+    }
   }
   // Kept only as 'percent', on a field whose result is a share (percent-fields.ts); anything else reads as text.
   if (input['showAs'] === 'percent' && canShowAsPercent(field)) field.showAs = 'percent';

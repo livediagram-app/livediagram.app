@@ -1231,7 +1231,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Calculation": {
     "enum": [
       "childCount",
-      "childrenDone"
+      "childrenDone",
+      "formula"
     ],
     "type": "string"
   },
@@ -2562,6 +2563,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "currency": {
         "type": "string"
       },
+      "formula": {
+        "type": "string"
+      },
       "id": {
         "type": "string"
       },
@@ -2597,6 +2601,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "required": {
         "type": "boolean"
+      },
+      "result": {
+        "$ref": "#/components/schemas/FormulaResult"
       },
       "scale": {
         "type": "number"
@@ -4285,6 +4292,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "type": "object"
   },
+  "FormulaResult": {
+    "enum": [
+      "number",
+      "currency",
+      "percent",
+      "text",
+      "date",
+      "checkbox"
+    ],
+    "type": "string"
+  },
   "FreehandElement": {
     "additionalProperties": false,
     "properties": {
@@ -5901,12 +5919,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "additionalProperties": {
             "type": [
               "number",
+              "string",
+              "boolean",
               "null"
             ]
           },
           "type": "object"
         },
-        "description": "Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, or null), by card id then field id; only cards whose type has a Calculated field. Worked out as read, never stored.",
+        "description": "Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, a Formula's number, text, true or false or ISO day, or null), by card id then field id; only cards whose type has a Calculated field. Worked out as read, never stored.",
         "type": "object"
       },
       "items": {

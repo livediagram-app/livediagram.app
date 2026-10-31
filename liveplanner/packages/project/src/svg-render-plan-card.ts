@@ -27,10 +27,13 @@ import {
   type Item,
   type ItemTypeDef,
   type CustomFieldDef,
+  type CalculatedValue,
   type IsDoneStatus,
   calculatedText,
   calculatedValue,
   calculationOf,
+  formulaValue,
+  isFormulaField,
   childIndexFor,
   cardAgeDays,
   cardAgeText,
@@ -223,7 +226,7 @@ function bitOf(
         const share = percentShown(
           def,
           def.kind === 'calculated'
-            ? calculatedNumber(def, item, ctx, ctx.types ?? ITEM_TYPES)
+            ? calculatedOf(def, item, ctx, ctx.types ?? ITEM_TYPES)
             : item.fields[def.id],
         );
         return share === undefined
@@ -239,7 +242,7 @@ function bitOf(
       const value = !def
         ? null
         : def.kind === 'calculated'
-          ? calculatedText(def, calculatedNumber(def, item, ctx, ctx.types ?? ITEM_TYPES))
+          ? calculatedText(def, calculatedOf(def, item, ctx, ctx.types ?? ITEM_TYPES))
           : customFieldText(def, item.fields[def.id], ctx.items);
       return def && value
         ? { kind: 'text', text: `${def.label}: ${value}`, color: p.text, pill: true }
@@ -249,16 +252,22 @@ function bitOf(
 }
 
 // A Calculated field's value, worked out from the cards in hand: null without them, and Children Done only with the
-// board's done columns.
-function calculatedNumber(
+// board's done columns. A Formula reads the card itself, so a lone card draws it too (none when it can't be worked
+// out; docs/specs/026-plan/item-types.md "Formula fields").
+function calculatedOf(
   def: CustomFieldDef,
   item: Item,
   ctx: CardFaceContext,
   types: readonly ItemTypeDef[],
-): number | null {
+): CalculatedValue {
+  const type = typeIn(types, item.type);
+  if (isFormulaField(def) && !ctx.items) return formulaValue(def, item, type);
   if (!ctx.items || (calculationOf(def) === 'childrenDone' && !ctx.isDone)) return null;
   const isDone = ctx.isDone ?? (() => false);
-  return calculatedValue(def, item, childIndexFor(ctx.items, types), isDone);
+  return calculatedValue(def, item, childIndexFor(ctx.items, types), isDone, {
+    type,
+    items: ctx.items,
+  });
 }
 
 // The face, drawn at (x, y) `w` wide, with the height it took. `measureOnly` skips the markup.

@@ -15,6 +15,7 @@ import {
   RATING_FIELD_SCALE_MIN,
   type Calculation,
   canBeRequired,
+  isFormulaField,
   canShowAsPercent,
   type CustomFieldDef,
   type CustomFieldKind,
@@ -26,6 +27,7 @@ import { Select, SwitchRow, TextArea, TextInput } from '@liveplanner/ui';
 import { hasOptions, type PickKind } from './add-field-kinds';
 import { optionsFrom } from './ChoiceOptionsEditor';
 import { LinksToPicker } from './LinksToPicker';
+import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
 import { track } from '@/lib/telemetry';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
@@ -147,6 +149,29 @@ export function RatingScaleSelect({
   );
 }
 
+// What each calculation works out from, under the menu.
+const CALCULATION_LINES: Record<Calculation, string> = {
+  childCount:
+    'Worked out from the cards that link here with a Link to Card field. It can\u2019t be typed.',
+  childrenDone:
+    'Worked out from the cards that link here with a Link to Card field. Done means in a done column. It can\u2019t be typed.',
+  formula: 'Worked out from this card\u2019s own fields by a formula. It can\u2019t be typed.',
+};
+
+// The patch picking a calculation makes: a Formula's settings go with any other (item-types.md "Formula fields").
+export function calculationPatch(calculation: Calculation): Partial<CustomFieldDef> {
+  // A new Formula gives a Number until its Result is picked, so it shows no share yet.
+  if (calculation === 'formula') {
+    track('Plan', 'Changed', 'FieldFormula');
+    return { calculation, showAs: undefined };
+  }
+  const off = { calculation, formula: undefined, result: undefined, currency: undefined };
+  // A Child Count is no share, so it stops showing as a Percent.
+  return canShowAsPercent({ kind: 'calculated', calculation })
+    ? off
+    : { ...off, showAs: undefined };
+}
+
 // A Calculated field's calculation (docs/specs/026-plan/item-types.md "Calculated fields"): the fixed menu, with what
 // it works out from under it.
 export function CalculationSelect({
@@ -156,10 +181,12 @@ export function CalculationSelect({
   value: Calculation | undefined;
   onChange: (calculation: Calculation) => void;
 }) {
+  const lineId = useId();
   return (
     <div className="flex flex-col gap-1">
       <Select
         aria-label="Calculation"
+        aria-describedby={lineId}
         className="w-full"
         selectClassName="text-[13px]"
         value={value ?? CALCULATIONS[0]}
@@ -171,9 +198,8 @@ export function CalculationSelect({
           </option>
         ))}
       </Select>
-      <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        Worked out from the cards that link here with a Link to Card field. Done means in a done
-        column. It can&rsquo;t be typed.
+      <p id={lineId} className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {CALCULATION_LINES[value ?? CALCULATIONS[0]]}
       </p>
     </div>
   );
@@ -208,7 +234,8 @@ export function ShowAsPercentSwitch({
   field,
   onChange,
 }: {
-  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'>;
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'> &
+    Partial<Pick<CustomFieldDef, 'result'>>;
   onChange: (showAs: 'percent' | undefined) => void;
 }) {
   const lineId = useId();
@@ -234,12 +261,6 @@ export function ShowAsPercentSwitch({
     </div>
   );
 }
-
-// A calculation's patch: a Child Count is no share, so it stops showing as a Percent.
-export const calculationPatch = (calculation: Calculation): Partial<CustomFieldDef> =>
-  canShowAsPercent({ kind: 'calculated', calculation })
-    ? { calculation }
-    : { calculation, showAs: undefined };
 
 // Notifies (docs/specs/026-plan/item-types.md "Notifies"): what the switch on a Person field, and on the Assignee's
 // row menu, says it does.
@@ -322,10 +343,13 @@ export function HoldsSeveralSwitch({
 export function CustomFieldForm({
   field,
   onChange,
+  formulaDraft,
   className = '',
 }: {
-  field: Omit<CustomFieldDef, 'id'>;
+  field: Omit<CustomFieldDef, 'id'> & Partial<Pick<CustomFieldDef, 'id'>>;
   onChange: (patch: Partial<CustomFieldDef>) => void;
+  // The type as drafted, for a Formula's names and preview (item-types.md "Formula fields").
+  formulaDraft?: FormulaDraft;
   className?: string;
 }) {
   const [optionsText, setOptionsText] = useState((field.options ?? []).join('\n'));
@@ -358,6 +382,20 @@ export function CustomFieldForm({
         <CalculationSelect
           value={field.calculation}
           onChange={(calculation) => onChange(calculationPatch(calculation))}
+        />
+      ) : null}
+      {isFormulaField(field) && formulaDraft ? (
+        <FormulaEditor
+          field={field}
+          draft={formulaDraft}
+          keepLastWorking
+          onChange={onChange}
+          currencySelect={
+            <CurrencySelect
+              value={field.currency}
+              onChange={(currency) => onChange({ currency })}
+            />
+          }
         />
       ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />

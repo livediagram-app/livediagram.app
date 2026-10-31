@@ -37,6 +37,12 @@ import {
   fieldCardIds,
   fieldPeople,
   holdsSeveral,
+  formulaProblem,
+  formulaResultOf,
+  formulaScopeOf,
+  isFormulaField,
+  shownFormula,
+  type CalculatedValue,
   type CustomFieldDef,
 } from '@liveplanner/items';
 import type { PlanState } from './plan-state';
@@ -95,6 +101,11 @@ export interface ListedType {
     // A Calculated field's calculation; such a field is read-only (docs/specs/026-plan/item-types.md "Calculated
     // fields").
     calculation?: string;
+    // A Formula's expression with field names, its result kind, and why it stopped working (docs/specs/026-plan/
+    // item-types.md "Formula fields").
+    formula?: string;
+    result?: string;
+    formulaError?: string;
     // A share drawn as a Percent field is (docs/specs/026-plan/item-types.md "Percent").
     showAs?: 'percent';
     readOnly?: true;
@@ -180,6 +191,17 @@ function columnName(status: string | undefined, state: PlanState): string | null
   return state.plan.statuses.find((s) => s.status === status)?.name ?? null;
 }
 
+// A Formula as an agent reads it: its expression with names (as change_card_types takes it back), its result, and
+// why it stopped working when it has.
+function listedFormula(f: CustomFieldDef, t: ItemTypeDef) {
+  const problem = formulaProblem(f, t);
+  return {
+    formula: shownFormula(f.formula ?? '', formulaScopeOf(t)),
+    result: formulaResultOf(f),
+    ...(problem ? { formulaError: problem } : {}),
+  };
+}
+
 // An item's fields with its custom fields under their names ("Severity"), as writes name them; a custom field its
 // type no longer has keeps its id. A card link (Parent, a Card field) reads as its card's number and title
 // ("#12 Fix login"), which writes take back. A Calculated field's value, worked out (`calculated`), is listed too.
@@ -187,7 +209,7 @@ function namedFields(
   item: Item,
   types: readonly ItemTypeDef[],
   byId: ReadonlyMap<string, Item>,
-  calculated?: Record<string, number | null>,
+  calculated?: Record<string, CalculatedValue>,
 ): Record<string, unknown> {
   const custom = types.find((t) => t.id === item.type)?.custom ?? [];
   const out: Record<string, unknown> = {};
@@ -249,6 +271,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.kind === 'currency' ? { currency: f.currency ?? CURRENCY_DEFAULT } : {}),
       ...(f.kind === 'rating' ? { scale: ratingScaleOf(f) } : {}),
       ...(f.kind === 'calculated' ? { calculation: f.calculation } : {}),
+      ...(isFormulaField(f) ? listedFormula(f, t) : {}),
       ...(f.kind === 'calculated' && showsAsPercent(f) ? { showAs: 'percent' as const } : {}),
       ...(f.kind === 'calculated' ? { readOnly: true as const } : {}),
       ...(f.onCard ? { onCard: true } : {}),
@@ -336,7 +359,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
         plan.types,
         byId,
         calc
-          ? calculatedValuesOf(i, typeIn(plan.types, i.type), calc.index, calc.isDone)
+          ? calculatedValuesOf(i, typeIn(plan.types, i.type), calc.index, calc.isDone, byId)
           : undefined,
       ),
     }));

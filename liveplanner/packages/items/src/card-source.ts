@@ -5,6 +5,7 @@ import { isArchived, isTrashed, statusLabel } from './board';
 import type { Item } from './item';
 import type { ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
+import { formulaValue, isFormulaField } from './formula-fields';
 
 type Scalar = string | number | boolean | null;
 
@@ -86,9 +87,10 @@ export function cardSourceOf(
   types: readonly ItemTypeDef[],
   opts: { statusNames?: ReadonlyMap<string, string>; version?: number } = {},
 ): CardSourceShape {
-  const live = [...items]
-    .filter((i) => !isArchived(i) && !isTrashed(i))
-    .sort((a, b) => a.key - b.key);
+  const all = [...items];
+  const live = all.filter((i) => !isArchived(i) && !isTrashed(i)).sort((a, b) => a.key - b.key);
+  // Every card by id, for a Formula's Card fields ("#12 Title"), made on first need.
+  let byId: Map<string, Item> | undefined;
   const byKey = new Map(live.map((i) => [i.key, i]));
   // Custom fields by label, across the catalogue (the first type naming a label wins).
   const custom = new Map<string, string>();
@@ -106,7 +108,15 @@ export function cardSourceOf(
       const item = byKey.get(card.key);
       if (!id || !item) return undefined;
       if (id === '#key') return item.key;
-      if (id === '#type') return typeIn(types, item.type).label;
+      const type = typeIn(types, item.type);
+      if (id === '#type') return type.label;
+      // A Formula is worked out from the card (docs/specs/026-plan/item-types.md "Formula fields"): a day reads as a
+      // date, as a Date field does.
+      const def = type.custom?.find((f) => f.id === id);
+      if (def && isFormulaField(def) && type.fields.includes(id)) {
+        byId ??= new Map(all.map((i) => [i.id, i]));
+        return asScalar(formulaValue(def, item, type, { items: byId }));
+      }
       const v = item.fields[id];
       if (id === 'status')
         return typeof v === 'string' && v ? statusLabel(v, opts.statusNames) : null;

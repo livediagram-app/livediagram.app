@@ -218,13 +218,23 @@ describe('a share shown as a Percent', () => {
 
   it('draws the Percent bar in the panel when it says so, else the text and thin bar as before', () => {
     const { container, rerender } = render(
-      <CalculatedFieldValue id="v" field={{ ...done, showAs: 'percent' }} value={40} />,
+      <CalculatedFieldValue
+        id="v"
+        field={{ ...done, showAs: 'percent' }}
+        outcome={{ ok: true, value: 40 }}
+      />,
     );
     expect(container.querySelector('#v output')?.textContent).toBe('40%');
     expect((container.querySelector('.bg-brand-600') as HTMLElement).style.width).toBe('40%');
-    rerender(<CalculatedFieldValue id="v" field={{ ...done, showAs: 'percent' }} value={null} />);
+    rerender(
+      <CalculatedFieldValue
+        id="v"
+        field={{ ...done, showAs: 'percent' }}
+        outcome={{ ok: true, value: null }}
+      />,
+    );
     expect(screen.getByText('No linked cards')).toBeTruthy();
-    rerender(<CalculatedFieldValue id="v" field={done} value={40} />);
+    rerender(<CalculatedFieldValue id="v" field={done} outcome={{ ok: true, value: 40 }} />);
     expect(container.querySelector('.bg-brand-600')).toBeNull();
     expect(container.querySelector('.bg-brand-500')).toBeTruthy();
   });

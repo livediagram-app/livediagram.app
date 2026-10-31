@@ -1,7 +1,7 @@
 // Percent fields (docs/specs/026-plan/item-types.md "Percent"): how far along something is, a whole number from 0 to
 // 100, drawn as a bar. A field shows as a Percent when it is one (`kind: 'percent'`) or when a worked-out field that
-// gives a share says so (`showAs: 'percent'`, today a Calculated field's Children Done; Formula and Rollup join
-// PERCENT_SHOWABLE_KINDS). Every surface (the card face, the panel, exports, agents, CSV) reads through these, so
+// gives a share says so (`showAs: 'percent'`: a Calculated field's Children Done, or a Formula with a Percent
+// result; Rollup will join PERCENT_SHOWABLE_KINDS). Every surface (the card face, the panel, exports, agents, CSV) reads through these, so
 // they agree on which fields draw a bar and what share it shows. Pure.
 import { clampPercent } from '@liveworkspace/model-core/progress-label';
 import type { ItemFieldValue } from './item';
@@ -13,7 +13,8 @@ export const PERCENT_MAX = 100;
 // The worked-out kinds whose result may be drawn as a Percent (a share the plan works out, never typed).
 export const PERCENT_SHOWABLE_KINDS: readonly CustomFieldKind[] = ['calculated'];
 
-type PercentDef = Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'>;
+type PercentDef = Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'> &
+  Partial<Pick<CustomFieldDef, 'result'>>;
 
 // A number from a value: a finite number, or numeric text with an optional trailing "%" ("40", " 40 % ").
 function numberOf(v: ItemFieldValue | undefined): number | undefined {
@@ -48,7 +49,10 @@ export const percentText = (n: number): string => `${n}%`;
 // Whether a field's result is a share it may draw as a Percent: a showable kind whose calculation gives a share.
 export function canShowAsPercent(field: PercentDef): boolean {
   if (!PERCENT_SHOWABLE_KINDS.includes(field.kind)) return false;
-  return field.calculation === 'childrenDone';
+  return (
+    field.calculation === 'childrenDone' ||
+    (field.calculation === 'formula' && field.result === 'percent')
+  );
 }
 
 // Whether a field draws as a Percent: a Percent field, or a share whose field says to show it as one.
