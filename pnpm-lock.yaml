@@ -1221,6 +1221,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
@@ -2464,6 +2467,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
@@ -2498,6 +2504,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
+      '@liveworkspace/community-service':
+        specifier: workspace:^
+        version: link:../../../liveworkspace/apps/community
       '@liveworkspace/media-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/media
@@ -3099,6 +3108,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core

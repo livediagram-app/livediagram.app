@@ -6,6 +6,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./paths": "./src/paths.ts",
+    "./app": "./src/app/index.ts",
     "./testing": "./src/testing.ts"
   },
   "scripts": {
