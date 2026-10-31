@@ -51,6 +51,9 @@ export function usePageSnap(deps: {
   cancelGlide: () => void;
   // Following someone or presenting: the view is not this person's to move.
   suspended: () => boolean;
+  // An article's writing has the caret: a view moved by anything but a hand was moved for the caret
+  // (kept in sight, above a phone's keyboard), and is left where it is. A gesture still snaps.
+  writing?: () => boolean;
 }): void {
   const latest = useLatest(deps);
   const { on, viewport } = deps;
@@ -104,6 +107,7 @@ export function usePageSnap(deps: {
     };
     const settleSoon = () => {
       clearTimeout(timer);
+      if (latest.current.writing?.()) return;
       timer = setTimeout(() => snap(false), VIEW_REST_MS);
     };
     // A frame later, so the gesture's own last move (and its pointerup) has landed.
