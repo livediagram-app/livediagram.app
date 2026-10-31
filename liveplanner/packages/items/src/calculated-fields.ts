@@ -1,7 +1,8 @@
 // Calculated fields (docs/specs/026-plan/item-types.md "Calculated fields"): a custom field whose value is worked out
 // from the plan, never typed or stored. Its `calculation`, from a fixed menu, says what it counts: a card's children
-// (the cards whose Card field links to it) or how many of them are done (in a done column, done-columns.ts). The
-// editor, the api and the agents each work it out as they read, with these same functions. Pure.
+// (the cards whose Card field links to it) or how many of them are done (in a done column, done-columns.ts), or a
+// formula over the card's own fields (formula-fields.ts). The editor, the api and the agents each work it out as they
+// read, with these same functions. Pure.
 import { isTrashed } from './board';
 import { itemStatus, type Item } from './item';
 import {
@@ -12,17 +13,37 @@ import {
   type ItemTypeDef,
 } from './item-types';
 import type { PlanBoardOutline } from './plan-outline';
+import {
+  formulaOutcome,
+  formulaText,
+  formulaValue,
+  isFormulaField,
+  type FormulaContext,
+  type FormulaOutcome,
+  type FormulaScalar,
+} from './formula-fields';
 import { linkedCardIds } from './several-values';
 
 export const CALCULATION_LABELS: Readonly<Record<Calculation, string>> = {
   childCount: 'Child Count',
   childrenDone: 'Children Done (%)',
+  formula: 'Formula',
 };
+
+// A Calculated field's value: a count or whole percentage, a Formula's number, text, true or false or day, or none.
+export type CalculatedValue = FormulaScalar;
 
 export const isCalculation = (v: unknown): v is Calculation =>
   (CALCULATIONS as readonly unknown[]).includes(v);
 
-type CalculatedDef = Pick<CustomFieldDef, 'kind' | 'calculation'>;
+type CalculatedDef = Pick<
+  CustomFieldDef,
+  'kind' | 'calculation' | 'formula' | 'result' | 'currency'
+> &
+  Partial<Pick<CustomFieldDef, 'id'>>;
+
+// What a Formula needs beyond the child index: the card's type, and the cards (a Card field's "#12 Title").
+export type FormulaReading = Pick<FormulaContext, 'items' | 'today'> & { type: ItemTypeDef };
 
 // A field's calculation; undefined for a field that is no Calculated field, or one whose calculation is unknown.
 export function calculationOf(field: CalculatedDef): Calculation | undefined {
@@ -116,16 +137,53 @@ export function donePhase(phases: ReadonlyMap<string, string>): IsDoneStatus {
   return (status) => status !== undefined && phases.get(status) === 'done';
 }
 
-// A Calculated field's value on a card: a count, a whole percentage, or null when there is nothing to work out
-// (Children Done on a card without children, or a field that is no Calculated field).
+// A Calculated field's value on a card: a count, a whole percentage, a Formula's value, or null when there is nothing
+// to work out (Children Done on a card without children, a Formula without `formula` to read with or that can't be
+// worked out, or a field that is no Calculated field).
 export function calculatedValue(
+  field: CalculatedDef,
+  item: Item,
+  index: ChildIndex,
+  isDone: IsDoneStatus,
+  formula?: FormulaReading,
+): CalculatedValue {
+  const calc = calculationOf(field);
+  if (!calc) return null;
+  if (calc === 'formula') {
+    if (!formula) return null;
+    return formulaValue(field, item, formula.type, {
+      ...formula,
+      calculated: (f) => childValue(f, item, index, isDone),
+    });
+  }
+  return childValue(field, item, index, isDone);
+}
+
+// The same with a Formula's problem kept (the card face and the panel show it): any other calculation works out.
+export function calculatedOutcome(
+  field: CalculatedDef,
+  item: Item,
+  index: ChildIndex,
+  isDone: IsDoneStatus,
+  formula: FormulaReading,
+): FormulaOutcome {
+  if (calculationOf(field) !== 'formula')
+    return { ok: true, value: childValue(field, item, index, isDone) };
+  return formulaOutcome(field, item, formula.type, {
+    ...formula,
+    calculated: (f) => childValue(f, item, index, isDone),
+  });
+}
+
+// Child Count or Children Done on a card.
+function childValue(
   field: CalculatedDef,
   item: Pick<Item, 'id' | 'type'>,
   index: ChildIndex,
   isDone: IsDoneStatus,
 ): number | null {
   const calc = calculationOf(field);
-  if (!calc) return null;
+  if (calc !== 'childCount' && calc !== 'childrenDone') return null;
   const kids = childrenOf(item, index);
   if (calc === 'childCount') return kids.length;
   if (kids.length === 0) return null;
@@ -138,17 +196,19 @@ export function calculatedFieldsOf(type: Pick<ItemTypeDef, 'fields' | 'custom'>)
   return (type.custom ?? []).filter((f) => !!calculationOf(f) && type.fields.includes(f.id));
 }
 
-// Every Calculated field's value on a card, by field id; undefined when its type has none.
+// Every Calculated field's value on a card, by field id; undefined when its type has none. `items` names a Card
+// field's cards in a Formula.
 export function calculatedValuesOf(
   item: Item,
   type: ItemTypeDef,
   index: ChildIndex,
   isDone: IsDoneStatus,
-): Record<string, number | null> | undefined {
+  items?: ReadonlyMap<string, Item>,
+): Record<string, CalculatedValue> | undefined {
   const fields = calculatedFieldsOf(type);
   if (fields.length === 0) return undefined;
-  const out: Record<string, number | null> = {};
-  for (const f of fields) out[f.id] = calculatedValue(f, item, index, isDone);
+  const out: Record<string, CalculatedValue> = {};
+  for (const f of fields) out[f.id] = calculatedValue(f, item, index, isDone, { type, items });
   return out;
 }
 
@@ -156,11 +216,13 @@ export function calculatedValuesOf(
 export const hasCalculatedFields = (types: readonly ItemTypeDef[]): boolean =>
   types.some((t) => calculatedFieldsOf(t).length > 0);
 
-// A value as a card and the panel show it: "3", "40%"; null when there is nothing to show.
+// A value as a card and the panel show it: "3", "40%", a Formula's by its result ("£2,500"); null when there is
+// nothing to show.
 export function calculatedText(
-  field: CalculatedDef,
-  value: number | null | undefined,
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'result' | 'currency'>,
+  value: CalculatedValue | undefined,
 ): string | null {
   if (value === null || value === undefined) return null;
+  if (isFormulaField(field)) return formulaText(field, value);
   return calculationOf(field) === 'childrenDone' ? `${value}%` : String(value);
 }

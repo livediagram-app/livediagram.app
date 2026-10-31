@@ -2,7 +2,9 @@
 // fields, then by rank. Pure: the board's projection runs it, the menu lists what it can sort by, and the agents'
 // listing orders a column's cards the same way.
 import type { Item } from './item';
-import type { CustomFieldKind, ItemTypeDef } from './item-types';
+import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
+import { formulaResultOf, formulaValue, isFormulaField } from './formula-fields';
+import type { FormulaResult } from './formula/limits';
 import { PRIORITIES } from './fields';
 import { CUSTOM_FIELD_ID_PATTERN, customFieldOf } from './type-catalogue';
 import { isObj } from './validate';
@@ -44,6 +46,16 @@ export const BOARD_SORT_KINDS: readonly CustomFieldKind[] = [
 
 export type BoardSortKind = 'priority' | 'number' | 'currency' | 'date' | 'rating' | 'choice';
 
+// A Formula sorts as its result reads (docs/specs/026-plan/item-types.md "Formula fields"): these results only.
+const FORMULA_SORT_KINDS: Partial<Record<FormulaResult, BoardSortKind>> = {
+  number: 'number',
+  percent: 'number',
+  currency: 'currency',
+  date: 'date',
+};
+const formulaSortKind = (c: CustomFieldDef): BoardSortKind | undefined =>
+  isFormulaField(c) ? FORMULA_SORT_KINDS[formulaResultOf(c)] : undefined;
+
 export interface BoardSortField {
   id: string;
   label: string;
@@ -71,9 +83,12 @@ export function boardSortFieldsOf(types: readonly ItemTypeDef[]): BoardSortField
   ).map((f) => BUILT_IN_SORT_FIELDS[f]);
   for (const t of types)
     for (const c of t.custom ?? []) {
-      if (!BOARD_SORT_KINDS.includes(c.kind) || !t.fields.includes(c.id)) continue;
+      const kind = BOARD_SORT_KINDS.includes(c.kind)
+        ? (c.kind as BoardSortKind)
+        : formulaSortKind(c);
+      if (!kind || !t.fields.includes(c.id)) continue;
       if (out.some((f) => f.id === c.id)) continue;
-      out.push({ id: c.id, label: c.label, kind: c.kind as BoardSortKind });
+      out.push({ id: c.id, label: c.label, kind });
     }
   return out;
 }
@@ -133,7 +148,11 @@ const none: KeyReader = () => undefined;
 
 // How a card of `type` reads `field`: no value when its type does not have the field, or has it as a kind no board
 // sorts by.
-function readerFor(field: string, type: ItemTypeDef | undefined): KeyReader {
+function readerFor(
+  field: string,
+  type: ItemTypeDef | undefined,
+  items: ReadonlyMap<string, Item> | undefined,
+): KeyReader {
   // The stamps, by the moment itself, on any card (an unknown type's too).
   if (field === 'createdAt' || field === 'updatedAt') return (item) => itemStampTime(item, field);
   if (!type || !type.fields.includes(field)) return none;
@@ -150,6 +169,12 @@ function readerFor(field: string, type: ItemTypeDef | undefined): KeyReader {
   if (def.kind === 'number' || def.kind === 'currency' || def.kind === 'rating')
     return (item) => num(item.fields[field]);
   if (def.kind === 'date') return (item) => day(item.fields[field]);
+  // A Formula by its worked-out value: a day as a day, every other sortable result as a number.
+  const formulaKind = formulaSortKind(def);
+  if (formulaKind) {
+    const read = formulaKind === 'date' ? day : num;
+    return (item) => read(formulaValue(def, item, type, { items }));
+  }
   if (def.kind === 'choice') {
     const options = def.options ?? [];
     return (item) => {
@@ -161,7 +186,11 @@ function readerFor(field: string, type: ItemTypeDef | undefined): KeyReader {
 }
 
 // A level's reader, resolved once per card type.
-function levelReader(field: string, types: readonly ItemTypeDef[]): KeyReader {
+function levelReader(
+  field: string,
+  types: readonly ItemTypeDef[],
+  items: ReadonlyMap<string, Item> | undefined,
+): KeyReader {
   const byType = new Map<string, KeyReader>();
   return (item) => {
     let read = byType.get(item.type);
@@ -169,6 +198,7 @@ function levelReader(field: string, types: readonly ItemTypeDef[]): KeyReader {
       read = readerFor(
         field,
         types.find((t) => t.id === item.type),
+        items,
       );
       byType.set(item.type, read);
     }
@@ -184,12 +214,14 @@ function compareKeys(a: SortKey, b: SortKey, dir: BoardSortDir): number {
   return dir === 'asc' ? c : -c;
 }
 
-// A comparator for cards under `sortBy`: each card's keys read once, rank (the order given) breaking ties.
+// A comparator for cards under `sortBy`: each card's keys read once, rank (the order given) breaking ties. `items`
+// names a Card field's cards in a Formula.
 export function boardSortComparator(
   sortBy: readonly BoardSortLevel[],
   types: readonly ItemTypeDef[],
+  items?: ReadonlyMap<string, Item>,
 ): (a: Item, b: Item) => number {
-  const readers = sortBy.map((l) => levelReader(l.field, types));
+  const readers = sortBy.map((l) => levelReader(l.field, types, items));
   const keys = new Map<string, SortKey[]>();
   const keysOf = (item: Item) => {
     let k = keys.get(item.id);

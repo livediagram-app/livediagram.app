@@ -861,7 +861,7 @@ export function projectBoard(
   scoped.sort(byRank);
   // Sort Cards: stable, so rank still orders the cards each level ties.
   const sorted = !!setup.sortBy?.length;
-  if (sorted) scoped.sort(boardSortComparator(setup.sortBy!, types));
+  if (sorted) scoped.sort(boardSortComparator(setup.sortBy!, types, items));
   unplaced.sort((a, b) => a.key - b.key);
 
   const groups = boardLanes(setup, scoped, items, types, statusNames);
