@@ -103,8 +103,22 @@ export function useFocusTrap(
     };
 
     node.addEventListener('keydown', onKey);
+    // A focused control the modal swaps out (a format card that opens its panel, a Back bar that closes it) takes
+    // focus with it to <body>: a screen reader is then reading the page, not the dialog. Each change inside the
+    // modal checks for that and hands focus to the container, so the reader stays in the dialog and Tab enters its
+    // controls from the top. O(1) per mutation batch.
+    const observer =
+      typeof MutationObserver === 'undefined'
+        ? null
+        : new MutationObserver(() => {
+            const now = document.activeElement;
+            if ((now === null || now === document.body) && node.isConnected)
+              node.focus({ preventScroll: true });
+          });
+    observer?.observe(node, { childList: true, subtree: true });
     return () => {
       node.removeEventListener('keydown', onKey);
+      observer?.disconnect();
       // Restore when focus is still inside the (closing) modal, or has been lost
       // to the page: React runs this cleanup after an unmounting modal has left
       // the DOM, by when its focused control is gone and focus sits on <body>.
