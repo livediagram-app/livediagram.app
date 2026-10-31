@@ -41,6 +41,8 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'trash',
   'preferences',
   'participants',
+  // Image fields' pictures (docs/specs/026-plan/item-types.md "Image fields").
+  'images',
 ]);
 
 // The fixed words that appear BELOW a resource in the api's routes

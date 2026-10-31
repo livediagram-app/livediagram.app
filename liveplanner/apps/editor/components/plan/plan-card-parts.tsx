@@ -108,16 +108,19 @@ export function StartPill({ start, palette }: { start: string; palette: PlanPale
 export function ChecklistPill({
   progress,
   palette,
+  name = 'Checklist',
 }: {
   progress: { done: number; total: number };
   palette: PlanPalette;
+  // The field's name, for a Checklist field of the type's own.
+  name?: string;
 }) {
   const complete = progress.done === progress.total;
   return (
     <MetaPill
       palette={palette}
       {...(complete ? { tone: '#16a34a' } : {})}
-      label={`Checklist ${progress.done} of ${progress.total} done`}
+      label={`${name} ${progress.done} of ${progress.total} done`}
     >
       <PlanTypeGlyph glyph="task" size={11} />
       <span aria-hidden>

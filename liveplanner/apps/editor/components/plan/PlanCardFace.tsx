@@ -38,6 +38,7 @@ import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
 import { calculatedFieldValue } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
+import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -241,6 +242,8 @@ export function PlanCardFace({
       default: {
         // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
         const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
+        // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
+        if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
         // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields").
         const text = !def
           ? null

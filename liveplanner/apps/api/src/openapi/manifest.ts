@@ -1360,6 +1360,61 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 503],
   },
 
+  // ---- Images (docs/specs/026-plan/item-types.md "Image fields") ----
+  {
+    method: 'POST',
+    path: '/images',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      "Upload a picture for an Image field of plan p (raw bytes, up to 10 MB; PNG, JPEG, WebP or GIF; X-Image-Width, X-Image-Height and X-Image-Original-Name headers). Into the caller's gallery at liveworkspace's media service; the plan may then serve it. An Editor or a Participant of the plan.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [
+      {
+        name: 'p',
+        required: false,
+        description:
+          "The plan the picture is for; left out (a This Browser plan), it only goes into the caller's gallery.",
+      },
+    ],
+    requestSchema: { type: 'string', format: 'binary' },
+    responseSchema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            contentType: { type: 'string' },
+            byteSize: { type: 'integer' },
+            width: { type: 'integer' },
+            height: { type: 'integer' },
+            originalName: { type: 'string' },
+            createdAt: { type: 'integer' },
+          },
+          required: ['id', 'contentType', 'byteSize', 'width', 'height', 'createdAt'],
+        },
+        deduped: { type: 'boolean' },
+      },
+      required: ['image', 'deduped'],
+    },
+    statuses: [200, 400, 401, 403, 404, 409, 413, 415, 503],
+  },
+  {
+    method: 'GET',
+    path: '/images/{id}',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      "A picture's bytes: to its uploader, or to anyone who may read plan p when one of its cards holds the picture and it was uploaded for that plan.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [{ name: 'p', required: false, description: 'The plan whose card shows the picture.' }],
+    responseSchema: { type: 'string', format: 'binary' },
+    statuses: [200, 404, 503],
+  },
+
   // ---- Preferences ----
   {
     method: 'GET',

@@ -354,7 +354,19 @@ const V6 = migrationSchema();
 // (card-thread-schema.ts; docs/specs/026-plan/items.md "Comments"). Its own step, appended.
 const V7 = CARD_THREADS_SCHEMA;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7];
+// The Image field pictures the plan may serve (image-grants.ts; docs/specs/026-plan/item-types.md "Image fields"):
+// one row per picture uploaded for it, the oldest dropped past IMAGE_GRANTS_MAX. Its own step, appended.
+const V8 = `
+CREATE TABLE IF NOT EXISTS card_image_grants (
+  plan_id    TEXT    NOT NULL,
+  image_id   TEXT    NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (plan_id, image_id)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS card_image_grants_age ON card_image_grants (plan_id, created_at);
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
 

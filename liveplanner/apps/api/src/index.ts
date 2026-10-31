@@ -21,6 +21,8 @@ import {
   UNAVAILABLE_RETRY_AFTER_SECONDS,
 } from '@liveworkspace/api-kit/request-failure';
 import { MAX_BODY_BYTES } from './limits';
+import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
+import { handleImages } from './routes/images';
 import { handleAccount } from './routes/account';
 import { handleEvents } from './routes/events';
 import { handleCatalogues } from './routes/catalogues';
@@ -217,7 +219,10 @@ async function routeApiRequest(
   // in the routes catch the rest; this is the blunt outer bound.
   if (isWrite) {
     const len = Number(request.headers.get('content-length'));
-    if (Number.isFinite(len) && len > MAX_BODY_BYTES) {
+    // An Image field's upload carries raw bytes with its own, larger cap (docs/specs/026-plan/item-types.md
+    // "Image fields"); the route checks it again and answers file_too_large with limitBytes.
+    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
+    if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }
   }
@@ -338,6 +343,9 @@ async function routeApiRequest(
       return await handlePreferences(ctx);
     case 'participants':
       return await handleParticipants(ctx);
+    // Image fields' pictures (docs/specs/026-plan/item-types.md "Image fields").
+    case 'images':
+      return await handleImages(ctx);
   }
 
   return notFound();

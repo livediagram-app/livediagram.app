@@ -20,6 +20,7 @@ import { MAX_TAB_BYTES } from '../limits';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { purgePlanPreviews } from '../db/projects';
+import { mediaClient, mediaOwner } from '../media';
 import { planRoom } from '../plan-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
@@ -65,9 +66,17 @@ export function handleInternalItems(
       // A closed account, wherever it was closed: what liveplanner keeps for them beside their plans, and their name
       // off each plan of someone else's that names them.
       personClosed: (personId) => deleteAccount(env, personId),
-      // No personMerged: when accounts merges a guest into an account, there is nothing here to move. The guest's
-      // plans are the index's; liveplanner keeps no images; and the sender's hourly notification allowance at
-      // liveworkspace is a rolling window not worth carrying over. The kit's merge door then just confirms.
+      // A guest who became an account (accounts merged them; the index tells each app): the pictures they uploaded
+      // for Image fields, in liveworkspace's media service, become the account's. A guest is named there by a hash
+      // of this app and their id (media.ts mediaOwner), so only this app can ask. Their plans are the index's, and
+      // the sender's hourly notification allowance at liveworkspace is a rolling window not worth carrying over.
+      personMerged: async (guestId, userId) => {
+        const media = mediaClient(env);
+        if (!media) return;
+        const merged = await media.mergeOwner(await mediaOwner(guestId), await mediaOwner(userId));
+        if (!merged.ok)
+          throw new Error(`media: merging the guest's images answered ${merged.status}`);
+      },
       anonymise: (id, personId) => planRoom(env, id).anonymise(personId),
       // A workbench pairing's access ended at liveworkspace: its sockets in this plan's room close.
       // An old livediagram.app document's liveplanner part, into its plan's room (plan-room/plan-migration.ts). A tab

@@ -88,6 +88,7 @@ import {
   type ThreadWriteResult,
 } from './card-thread-store';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
+import { planServesImage, recordImageGrant } from './image-grants';
 import {
   exportPlanCopy,
   importPlanCopy,
@@ -595,6 +596,24 @@ export class PlanRoom extends DurableObject<Env> {
   async item(planId: string, itemId: string): Promise<Item | null> {
     this.bindPlan(planId);
     return readItem(this.requireEnv(), planId, itemId);
+  }
+
+  // Image fields (image-grants.ts; docs/specs/026-plan/item-types.md "Image fields"): a picture uploaded for this
+  // plan becomes one it may serve, and whether it serves one now (a grant and a card holding it). Neither is a
+  // content write, so nothing is pushed to the index; a purge drops the grants with the rest (deleteAll).
+  async grantImage(planId: string, imageId: string): Promise<void> {
+    this.bindPlan(planId);
+    this.ensureSchema();
+    recordImageGrant(this.state.storage.sql, planId, imageId, Date.now());
+  }
+
+  // A plan never started serves nothing, and asking does not start it.
+  async servesImage(planId: string, imageId: string): Promise<boolean> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return false;
+    this.bindPlan(planId);
+    this.ensureSchema();
+    return planServesImage(sql, planId, imageId);
   }
 
   async exportCopy(
