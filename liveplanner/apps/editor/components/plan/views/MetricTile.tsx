@@ -13,6 +13,7 @@ import type { PlanPalette } from '../plan-palette';
 import {
   METRIC_SIDE_BY_SIDE_MIN_W,
   heroSize,
+  metricStripFits,
   type MetricModel,
   type MetricTier,
   type MetricVisual,
@@ -96,7 +97,10 @@ export function MetricTile({
     </div>
   );
   const picture =
-    loading || !model.visual || tier === 'compact' ? null : (
+    loading ||
+    !model.visual ||
+    tier === 'compact' ||
+    (tier === 'regular' && !metricStripFits(model.visual, height, size)) ? null : (
       <Visual
         visual={model.visual}
         palette={palette}
