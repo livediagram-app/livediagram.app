@@ -224,7 +224,7 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - **One PR, at most two pushes** (above). (On rework, push to the open PR instead, gated as above.) The PR is
   ready (never draft), against `main`. Once verified, keep `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
   permissions, deleting or migrating user data, worker bindings or deploy config, or a change to what existing
-  data shows people), and say why. A stored-shape change that only adds and still reads old data needs no label. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
+  data shows people), and say why. Use `not-ready` for only two things: a PR that isn't ready yet and that you will un-label yourself (the browser check above), or a risk that really is high. Judge the real risk, not the category: if the PR can't do harm once merged, it gets no label. So a stored-shape change that only adds and still reads old data needs none, and nor does a workflow that only runs when a person starts it. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
   to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. The repo is private, so
   `raw.githubusercontent.com` links 404. The description: one calm paragraph of context, then what it solves, then what was done, then
   **Answers** (one line per question: "<thread title>: <the answer, short> → <how it was built>"), Decisions, Performance
