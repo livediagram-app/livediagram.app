@@ -210,7 +210,18 @@ card-type-chips.ts       pure: `chipsShown({ interactive, canEditCards, phone, s
                          role and place gate) and `chipClickCell(setup, projection, type, statusNames)` (the column
                          of the type's `newCardStatus` when the board has it, else the first; the first row; the
                          status `cellStatus`; the row's `laneMove` set; after the cell's last card)
-phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action) + shownQuick
+phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action, `swipe`) + shownQuick
+phone-swipe.ts           pure: a phone board's sideways swipe (plan-board.md "A column changes only on a swipe meant
+                         for it"): `swipeAxis(dx, dy)` settles a touch across or down once past SWIPE_AXIS_SLOP_PX
+                         (a diagonal is down), `swipeStep(dx, dy, vx, width)` (one column on past SWIPE_COMMIT_SHARE
+                         or a flick, else 0), `nearestStop`, `landingLeft`, and the release speed (`addSample`,
+                         `sampleVelocity`, a 100 ms window). Run by hooks/plan/usePhoneColumnSwipe.ts on the body:
+                         passive touch listeners; a touch that settles down is the browser's (body and cards
+                         `touch-pan-y`); one that settles across reads the `[data-plan-snap]` markers' stops once,
+                         turns snapping off inline, writes scrollLeft once a frame under the finger, and on release
+                         glides (smooth scrollTo, a jump under reduced motion) to the landing stop, snapping again on
+                         `scrollend` or after 600 ms. Two fingers, a carried card (`cardHeld()` from usePlanCardDrag,
+                         or the board's drag) stand it down, gliding back
                          In a Dashboard slot and not maximised (`simplified = useInDashboard() && !maximised`,
                          dashboard-context.ts: DashboardContext present) PlanBoardView draws the compact slot board
                          (plan-tabs.md "A board in a slot is simplified"): `setUpHere = canEdit && !simplified`
@@ -738,6 +749,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Linked as rows, empty state, open                              | `apps/editor/components/plan/LinkedCards.test.tsx`                                                                                                             |
 | Breadcrumb back bar, step back                                 | `apps/editor/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                         |
 | Phone look: Minimal, no widgets, columns, touch                | `apps/editor/components/plan/phone-board.test.ts`, `plan-board-columns.test.ts`                                                                                |
+| Phone swipe: axis lock, commit, flick, glide back, stand down  | `apps/editor/components/plan/phone-swipe.test.ts`, `apps/editor/hooks/plan/usePhoneColumnSwipe.test.tsx`                                                       |
 | Simplified in a Dashboard slot, whole maximised, restored      | `apps/editor/components/plan/PlanBoardView.dashboard.test.tsx`                                                                                                 |
 | Slot board: compact parts, roles, lanes off, card size         | `PlanBoardView.dashboard.test.tsx`, `slot-board.test.ts`, `plan-board-columns.test.ts`, `phone-board.test.ts`                                                  |
 | Phone's shared top row                                         | `apps/editor/lib/canvas-layer-insets.test.ts` (`phoneRow`)                                                                                                     |
@@ -767,6 +779,11 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `PHONE_END_CLEARANCE`      | 8.5rem + safe area | DEFAULTS D45; the phone's bottom controls over a covering board; 6-10rem    |
 | `PHONE_COVER_PAD_PX`       | 8                  | CanvasCover's p-2 on a phone                                                |
 | `PHONE_ROW_MIN_PX`         | 160                | DEFAULTS D46; a short title and Restore and the cog; 120-220                |
+| `SWIPE_AXIS_SLOP_PX`       | 10                 | DEFAULTS D61; a phone touch's travel before its direction settles; 6-16     |
+| `SWIPE_AXIS_RATIO`         | 1.2                | DEFAULTS D61; across only past this many times further across; 1.1-1.6      |
+| `SWIPE_COMMIT_SHARE`       | 0.28               | DEFAULTS D62; share of a column a swipe goes to change it; 0.2-0.4          |
+| `SWIPE_FLICK_PX_PER_MS`    | 0.45               | DEFAULTS D62; a flick's speed at release; 0.3-0.8                           |
+| `SWIPE_FLICK_MIN_PX`       | 24                 | DEFAULTS D62; a flick's least travel; 16-40                                 |
 | `EDGE_SCROLL_ZONE_PX`      | 56                 | DEFAULTS; capped at a quarter of the viewport; 32-96                        |
 | `EDGE_SCROLL_MAX_PX`       | 18                 | DEFAULTS; px per frame at the edge; 8-30                                    |
 | `EDGE_SCROLL_REDUCED_PX`   | 6                  | DEFAULTS; constant under reduced motion; 3-10                               |

@@ -1,7 +1,8 @@
 // How a board is drawn for where it is (docs/specs/026-plan/plan-board.md "On a phone", "Maximised board"): on a phone
 // its cards are Minimal and its widgets stand aside, and a board that scrolls on its own (maximised, filling its tab
 // or in a Dashboard slot) shows one column a screen, snapping each to the centre, its empty space taking a finger as a
-// scroll, and a tap on a column's empty space gliding that column to the centre. Pure but for the tap's scroll.
+// scroll (down natively; across only through the board's own swipe, phone-swipe.ts), and a tap on a column's empty
+// space gliding that column to the centre. Pure but for the tap's scroll.
 import type { CardSize, QuickFilter } from '@liveplanner/items';
 import type { BoardColumnLayout } from './plan-board-columns';
 
@@ -29,12 +30,16 @@ type BoardLook = {
   widgets: boolean;
   // The body's own scroll is a size container (the column template reads 100cqw).
   container: boolean;
-  // The body's touch-action classes.
+  // The body's touch-action classes. On a phone board that shows one column a screen only pan-y: the browser scrolls
+  // it down, and sideways is the board's own swipe (`swipe`), so a scroll down never drifts into the next column.
   touch: string;
   // A card's touch-action classes: touch-none, so a finger on it drags it, except on a phone board that shows one
-  // column a screen, where a column is mostly cards: there a finger on a card scrolls the board like empty space, and
-  // a card is picked up by holding it still for CARD_HOLD_TO_DRAG_MS first (holdToDrag).
+  // column a screen, where a column is mostly cards: there a finger on a card scrolls the board like empty space
+  // (pan-y, as the body), and a card is picked up by holding it still for CARD_HOLD_TO_DRAG_MS first (holdToDrag).
   cardTouch: string;
+  // The body runs the sideways swipe that changes column (usePhoneColumnSwipe), on a phone board that shows one
+  // column a screen in Plan mode.
+  swipe: boolean;
   holdToDrag: boolean;
   // The columns snap to the centre as they scroll sideways (each column's full-height marker, never its sticky head).
   snap: boolean;
@@ -62,8 +67,15 @@ export function boardLook(place: BoardPlace, cardSize: CardSize | undefined): Bo
     cardSize: phone ? 'minimal' : cardSize,
     widgets: !phone && !simple,
     container: covering || oneAScreen,
-    touch: interactive ? (scrolls ? 'touch-pan-x touch-pan-y' : 'touch-none') : '',
-    cardTouch: oneAScreen && interactive ? 'touch-pan-x touch-pan-y' : 'touch-none',
+    touch: interactive
+      ? oneAScreen
+        ? 'touch-pan-y'
+        : scrolls
+          ? 'touch-pan-x touch-pan-y'
+          : 'touch-none'
+      : '',
+    cardTouch: oneAScreen && interactive ? 'touch-pan-y' : 'touch-none',
+    swipe: oneAScreen && interactive,
     holdToDrag: oneAScreen && interactive,
     snap: oneAScreen && !dragging,
     overscroll: oneAScreen ? (covering ? 'overscroll-contain' : 'overscroll-x-contain') : '',

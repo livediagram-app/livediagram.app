@@ -1015,7 +1015,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   "Five slots across"); covering the canvas, its body ends 8.5 rem (and the home indicator's safe area) past its last
   cards, so they scroll up clear of the bottom controls that run across a phone's screen.
 - **One column in focus**: as that board scrolls sideways its columns snap so one sits centred, its neighbours
-  peeking in on either side, and a fling moves one column, never several (mandatory snapping, each column a stop).
+  peeking in on either side, and a swipe or fling moves one column, never several (mandatory snapping, each column a
+  stop, for a mouse or trackpad too).
   The snapping is sideways only: it never moves the board up or down, and scrolling down a column glides freely,
   never pulled back to the top. Each column's snap point is a plain marker spanning the column's full height, not its
   sticky header, so scrolling down moves no snap point and the browser has nothing to re-snap mid-scroll. (The jank
@@ -1024,7 +1025,19 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   keeps its scroll to itself (overscroll contained) while it covers the canvas, so reaching its end never drags the
   page under it; in a Dashboard slot only its sideways scroll is contained, so scrolling down past its end still
   scrolls the Dashboard.
-- **A finger on a card scrolls** that board as empty space does (across and down); held still for
+- **A column changes only on a swipe meant for it**: scrolling down a column never slides to its neighbour, however
+  the thumb drifts sideways. Each touch settles its direction once, after it has moved `SWIPE_AXIS_SLOP_PX`: across
+  only when it went clearly more across than down (`SWIPE_AXIS_RATIO` times as far), otherwise down, and a diagonal
+  counts as down. A touch that went down stays down to its end: whatever it then does sideways, the column holds. A
+  touch that went across carries the columns under the finger, and on release moves **one** column when it went
+  `SWIPE_COMMIT_SHARE` of a column's width, or was a flick (`SWIPE_FLICK_PX_PER_MS` with at least
+  `SWIPE_FLICK_MIN_PX` of travel, the same way), and is still clearly more across than down overall; anything less
+  (a thumb's arc that set off sideways and curved into a scroll down among it) glides back to the column it left. Two fingers, a
+  card being carried, and a board that is not one column a screen leave the gesture alone. The board takes vertical
+  touch scrolling natively (its body and cards are `touch-action: pan-y`), so only the sideways swipe is the board's
+  own; a mouse, trackpad or keyboard scrolls sideways as ever, snapping to each column. Under reduced motion the
+  release jumps to the column instead of gliding.
+- **A finger on a card scrolls** that board as empty space does (down, and across through the swipe above); held still for
   `CARD_HOLD_TO_DRAG_MS` first, it picks the card up and carries it, the board no longer scrolling under it. A finger
   that moves before the hold is up is a scroll: the card neither moves nor opens. A tap still opens the card, and held
   still for `LONG_PRESS_MS` it opens the card's menu. Elsewhere (a desktop, a tablet, a board on a phone's canvas) a

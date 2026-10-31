@@ -28,6 +28,7 @@ describe('boardLook', () => {
       touch: 'touch-none',
       cardTouch: 'touch-none',
       holdToDrag: false,
+      swipe: false,
       snap: false,
       overscroll: '',
       endClearance: '',
@@ -83,8 +84,21 @@ describe('boardLook', () => {
         columns: 'phone',
         container: true,
         snap: true,
-        touch: 'touch-pan-x touch-pan-y',
+        // Down natively, sideways only through the board's own swipe (phone-swipe.ts).
+        touch: 'touch-pan-y',
+        swipe: true,
       });
+    }
+  });
+
+  it('runs the sideways swipe only on a phone board that shows one column a screen, in Plan mode', () => {
+    for (const where of [
+      { phone: true },
+      { covering: true },
+      { inSlot: true },
+      { phone: true, covering: true, interactive: false },
+    ]) {
+      expect(boardLook(place(where), undefined).swipe).toBe(false);
     }
   });
 
@@ -100,7 +114,7 @@ describe('boardLook', () => {
 
   it('lets a finger on a phone board card scroll, the card picked up by a hold, and only there', () => {
     expect(boardLook(place({ phone: true, covering: true }), undefined)).toMatchObject({
-      cardTouch: 'touch-pan-x touch-pan-y',
+      cardTouch: 'touch-pan-y',
       holdToDrag: true,
     });
     for (const where of [
