@@ -185,8 +185,8 @@ export function keepPillOnScreen(
 }
 
 // The canvas's box on screen, less the palette strip along its top; the window when there is no canvas.
-function canvasView(): PillView | undefined {
-  if (typeof window === 'undefined') return undefined;
+// Inspect only renders once someone turns it on, in the browser, so this never runs at build time.
+function canvasView(): PillView {
   const root = document.querySelector('[data-canvas-root]')?.getBoundingClientRect();
   if (!root || root.width === 0)
     return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
