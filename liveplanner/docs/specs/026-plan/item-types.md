@@ -55,19 +55,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## An item type
 
-| Part            | Holds                                                                                                                                                                                                                                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                     |
-| `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                 |
-| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                         |
-| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                       |
-| `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                 |
-| `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`; `required: true` for a [required field](#required-fields)) |
-| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                     |
-| `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                |
-| `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                      |
-| `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                  |
-| `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                   |
+| Part            | Holds                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                |
+| `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                            |
+| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                                                                                    |
+| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                  |
+| `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                            |
+| `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, onCard?, required? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`, and a Formula's `formula` and `result`; `required: true` for a [required field](#required-fields)) |
+| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                                                                                |
+| `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                                                                           |
+| `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                                                                                 |
+| `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                                                                             |
+| `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                              |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
   Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are.
@@ -388,6 +388,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Child Count**: how many children the card has.
   - **Children Done (%)**: the share of its children that are done, a whole percentage ("40%"); nothing when it has
     no children.
+  - **Formula**: an expression over the card's own fields (`Budget - Spent`), [below](#formula-fields).
 
   **Children** are the cards that link to the card through a Card field naming its type (the cards its panel lists
   under **Linked as {Field}**, Parent included): every such field, each child once, an archived child included and a
@@ -405,9 +406,82 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     `calculation` and `readOnly: true`, and each card's value among its `fields`, by name; `GET /items` answers
     `calculated` (by card id, then field id) when asked with `?include=calculated`.
   - **Where it is left out**: a form can't ask it (no question maps to it), Import CSV skips its column and Export
-    CSV leaves it out, and a board can't sort or lay swimlanes by it.
+    CSV leaves it out, and a board can't sort or lay swimlanes by it. A Formula is the exception for Export CSV and
+    Sort Cards ([below](#formula-fields)).
   - A field's kind never changes, so a Calculated field stays one; its calculation can be changed in its form (or
     `editCustom`'s `calculation`), and every card's value follows at once.
+
+- <a id="formula-fields"></a>**Formula fields**: a Calculated field whose calculation is **Formula** works its value
+  out from the card's own fields, so a budget, hiring or sales board does its own sums (`Budget - Spent`,
+  `Estimate * Rate`, `days(Due - Start)`, `if(Score >= 8, "Strong", "Weak")`). Like every Calculated field nothing is
+  stored and it is read-only everywhere (the rules above hold); what follows is its own.
+  - **The expression** names fields by the names the card panel gives them, ignoring case. A name of plain words
+    (letters, digits and `_`, one space between words: `Budget`, `Story Points`) is written as it is; any name may be
+    written in braces (`{Children Done (%)}`), which a name holding other characters, or one that is also `true`,
+    `false` or a function's name, needs. It reads the type's custom fields (all but Image, Comments and Votes), the
+    built-in Title, Estimate (or Points), Start Date (or Start), Due Date (or Due), Priority, Assignee, Labels,
+    Colour and Checklist when the type offers them, and every card's **Number** and **Type**. A custom field's name
+    wins over a built-in's other name. Status is not read (its names belong to the boards). Text is written in
+    double quotes (`"Strong"`, `""` for a quote inside), numbers as `12` or `0.5`, and `true` and `false`.
+  - **Operators**: `+ - * /`, brackets, a leading `-`, and the comparisons `= != < <= > >=` (`==` and `<>` read as
+    `=` and `!=`). `* /` bind before `+ -`, which bind before a comparison.
+  - **Functions**: `round(x)` (or `round(x, places)`, 0 to 10), `min(a, b, ...)`, `max(a, b, ...)`, `abs(x)`,
+    `if(test, then, else)` (else blank when left out; only the branch taken is worked out), `and(a, b, ...)`,
+    `or(a, b, ...)`, `not(x)`, `days(x)` (a date: the days from today to it, negative once past; a number: itself),
+    `today()`, `concat(a, b, ...)` (the values as text, joined) and `len(x)` (a list's count, a text's characters).
+    Names compare ignoring case; a function given the wrong number of values is a syntax error.
+  - **Values**: Number, Currency, Rating and Estimate read as numbers; Date, Start and Due as dates; Checkbox as
+    true or false; Text, Long Text (its text), Email, Link, Choice, Colour, Priority, Title and Type as text; a Person
+    (and the Assignee) as the person's name; a Card field as the linked card's "#12 Title" ("Missing card" when it is
+    gone); another Calculated field as its value (Child Count, Children Done, another Formula's result). **Lists**: a
+    field that [holds several](#holds-several), a Multiple Choice, Labels and a Checklist (its rows) read as a list:
+    `len()` counts it, `concat()` joins it with ", ", and anything else given a list is an error ("Reviewers holds
+    several: count them with len()").
+  - **Blanks**: an empty field reads as 0 in sums, "" as text and false in a test. When every field a formula reads
+    is empty on a card, the card shows no value, so a new card reads blank rather than 0 (a Checkbox, ticked or not,
+    and Number and Type always have a value).
+  - **Dates**: a date less a date is the whole days between them (a number); a date plus or less a number is a date;
+    dates compare earliest first. `today()` is the reader's day (the api's and the agents' in UTC).
+  - **Text** compares ignoring case (`Stage = "won"` matches "Won"); `+` on text is an error ("Join text with
+    concat()").
+  - **The result** (`result`, Number when absent) decides how the value reads, sorts and exports:
+    **Number** (grouped, up to two decimals, as a Number field), **Currency** (in the field's `currency`, as a
+    Currency field), **Percent** (a share, rounded to a whole number: `Spent / Budget * 100` reads "40%"),
+    **Text**, **Date** (as a Date field) or **Checkbox** (Yes or No; any value tests true or false). A Number,
+    Currency or Percent result that is no number is an error ("Gives text: make the result Text"); so is a Date
+    result that is no date. Text takes any value as text.
+  - **Stored**: `formula`, the expression with each field written as its id in braces (`{f-budget} - {f-spent}`),
+    so a renamed field keeps working; the editor and agents show it with names. `result` and, for Currency,
+    `currency` beside it.
+  - **Errors never break a board.** A formula that can't be read (bad syntax, an unknown field, too long, too deep)
+    is refused where it is written: the editor and `change_card_types` name the problem and where ("Unknown field
+    "Spnt" at 10", "Expected ) at 14"). A stored formula that stopped working (a field it reads was deleted or taken off
+    the type, or a field it reads became a kind it can't read) and a value that can't be worked out on one card
+    (dividing by 0, a list in a sum, a formula that reads itself through another) read as an **error**: the card
+    panel shows the message in place of the value, the card face reads "Error" in red (the message spoken with it), and
+    the api, the agents, exports and sheets read no value.
+  - **Safety**: a small hand-written parser and evaluator, never `eval`; a formula holds up to 1,000 characters
+    (`FORMULA_MAX`) nested up to 32 deep, and working one out on a card takes at most 10,000 steps (other formulas it
+    reads included), past which it is an error ("Too much to work out").
+  - **Where it reads**: everywhere a Calculated field does (the card face, the panel, the api, the agents, the SVG
+    and PNG exports), and also **Export CSV** (its value as a field of its result kind exports: "2500", "2026-10-31", Yes) and a sheet's card functions
+    (`CARD`, `CARDS`... read it by name: a number, text, true or false, or a date). A board **sorts** by a Formula
+    whose result is a Number, Currency, Percent or Date (as that kind sorts); swimlanes, forms and Import CSV leave
+    it out.
+  - **In the type editor**: picking Formula in the field's form (and Add Field's Shape step) opens the formula
+    editor: a **Result** menu (and **Currency** for a Currency result), a monospaced **Formula** box, the type's
+    fields as chips under it (pressing one writes its name at the caret), and a line that checks the formula as it is
+    typed: "Works" with a tick, or the problem in red. **Preview** works it out on a real card: the type's first
+    live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Add {Name} waits until the formula
+    works ("Write a formula that works"). In an existing field's form, a formula that doesn't work is not kept: the
+    field keeps its last working one, and the line says so ("Not saved: Unknown field "Spnt""). Picking another
+    calculation drops the formula and its result. Telemetry: `Plan` · `Changed` · `FieldFormula` on picking Formula.
+  - **Agents**: `change_card_types` takes `formula` (by names) and `result` on `custom`, `addCustom` and
+    `editCustom`, refusing a formula that can't be read with its problem; `list_items` lists a Formula field's
+    `formula` by names, its `result`, and `formulaError` when it stopped working, and each card's value (a number,
+    text, true or false, an ISO date, or null).
+  - **Share roles**: as any field. An Editor writes the formula (the type editor); everyone who can read the plan
+    reads the values.
 
 - <a id="image-fields"></a>**Image fields**: a custom field of kind **Image** holds one picture, uploaded from the
   card panel into liveworkspace's media service (`liveworkspace/docs/specs/006-media/media.md`), where every app keeps
