@@ -67,6 +67,16 @@ describe('RichTextField', () => {
     expect(screen.getByLabelText('Steps')).toBeTruthy();
   });
 
+  // docs/specs/004-interface-design/touch-targets.md: the Edit button is shown all the time where nothing hovers (and
+  // on a phone), so it takes a finger's tap area there, and the text keeps clear of it rather than running under it.
+  it('gives its Edit button a tap area and keeps the text clear of it on a touch screen', () => {
+    field([{ text: 'Long enough to reach the button' }]);
+    const edit = screen.getByRole('button', { name: 'Edit the steps' });
+    expect(edit.className.split(' ')).toEqual(expect.arrayContaining(['absolute', 'touch-target']));
+    const box = edit.parentElement!.className.split(' ');
+    expect(box).toEqual(expect.arrayContaining(['max-sm:pr-16', '[@media(hover:none)]:pr-16']));
+  });
+
   it('counts what is left near its limit, and saves nothing past it', () => {
     vi.useFakeTimers();
     const onSave = field([{ text: 'abcdefgh' }], 10);

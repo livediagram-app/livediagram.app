@@ -110,7 +110,7 @@ export function ActionPopover({
         className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{ left: pos.left, top: pos.top, width: WIDTH }}
       >
-        <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+        <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
           <h3 className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100">
             <span className="text-slate-400">
               <ClipboardIcon />
@@ -137,7 +137,7 @@ export function ActionPopover({
               <CloseIcon size={12} />
             </button>
           </div>
-        </header>
+        </div>
 
         <div className={`flex flex-col gap-2.5 px-3 py-3 ${closed ? 'opacity-70' : ''}`}>
           <div>

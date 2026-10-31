@@ -37,7 +37,7 @@ const props = (over: Partial<TabFolderGroupProps<T>> = {}): TabFolderGroupProps<
   readOnly: false,
   onToggle: vi.fn(),
   renderTab: (t) => (
-    <button type="button" role="tab" data-tab-key="">
+    <button type="button" data-tab-key="">
       {t.name}
     </button>
   ),
@@ -56,7 +56,7 @@ const props = (over: Partial<TabFolderGroupProps<T>> = {}): TabFolderGroupProps<
   ...over,
 });
 
-const chip = () => screen.getByRole('tab', { name: /^Planning,/ });
+const chip = () => screen.getByRole('button', { name: /^Planning,/ });
 const shown = (c: HTMLElement) =>
   Array.from(c.querySelectorAll('[data-tab-folder] > [data-collapse-width="open"]')).map(
     (el) => el.textContent,

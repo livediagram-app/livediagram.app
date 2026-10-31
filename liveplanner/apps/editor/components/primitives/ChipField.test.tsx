@@ -57,6 +57,19 @@ describe('ChipField', () => {
     expect(document.activeElement).toBe(field());
   });
 
+  // touch-targets.md: the 16px remove button reaches 24px on a touch screen, a positioned host for its pad.
+  it("gives each chip's remove button a 24px tap area on a touch screen", () => {
+    render(<Harness initial={['a']} />);
+    const remove = screen.getByRole('button', { name: 'Remove a' }).className.split(' ');
+    expect(remove).toEqual(
+      expect.arrayContaining([
+        'relative',
+        'pointer-coarse:before:absolute',
+        'pointer-coarse:before:-inset-1',
+      ]),
+    );
+  });
+
   it('shows only the chips, or the empty text, when read-only', () => {
     render(<Harness readOnly />);
     expect(screen.getByText('None')).toBeTruthy();

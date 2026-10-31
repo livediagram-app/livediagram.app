@@ -27,7 +27,7 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 
 - **State is never a fill alone.** A control whose chosen state is its fill shows it with the system's selection
   colours under forced colours: a checked radio or menu radio (`aria-checked="true"`), a pressed toggle
-  (`aria-pressed="true"`) and a selected tab or option (`aria-selected="true"`) take a 2 px Highlight ring inside
+  (`aria-pressed="true"`), a selected tab or option (`aria-selected="true"`) and the open tab in the editor's tab bar (`aria-current="page"` on its name, a button in a toolbar) take a 2 px Highlight ring inside
   their edge (not while the focus ring, drawn with the same outline, shows). A ring, never a Highlight fill: the
   browser draws a Canvas backplate behind forced text, which hid a filled option's label.
   The shared theme does this for every app, keyed on the ARIA state each control already carries, so a new control

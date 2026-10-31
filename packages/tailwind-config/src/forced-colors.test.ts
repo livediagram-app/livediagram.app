@@ -43,6 +43,7 @@ describe('forced colours', () => {
       "[role='radio'], [role='menuitemradio'])[aria-checked='true']",
       "[aria-pressed='true']",
       "[role='tab'], [role='option'])[aria-selected='true']",
+      "[data-tab-key][aria-current='page']",
     ])
       expect(block).toContain(state);
     expect(block).toContain(':not(:focus-visible)');

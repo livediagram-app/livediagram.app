@@ -63,7 +63,7 @@ describe('tabShapeClass', () => {
 
   it('draws the keyboard ring on the tab when its name has focus', () => {
     expect(classes(tabShapeClass({ active: false, editing: false }))).toContain(
-      'has-[[role=tab]:focus-visible]:outline-2',
+      'has-[[data-tab-key]:focus-visible]:outline-2',
     );
   });
 

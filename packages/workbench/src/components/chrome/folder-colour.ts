@@ -36,7 +36,7 @@ export function folderStyle(name: string): CSSProperties {
 
 // The folder's shelf: a faint tint of its colour behind the chip and its tabs, rounded on top like a tab and standing
 // on the bottom edge like them. Always there, so a folder reads as one container whether it is open or shut. It is a
-// layer under the group in the tablist's own stack (the group itself makes none), so the open tab's sliding card
+// layer under the group in the tab strip's own stack (the group itself makes none), so the open tab's sliding card
 // passes over it.
 export const FOLDER_SHELF_CLASS =
   'relative before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-t-[10px] before:bg-[color-mix(in_srgb,var(--tf)_10%,transparent)] dark:before:bg-[color-mix(in_srgb,var(--tfd)_8%,transparent)]';

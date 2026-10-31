@@ -29,12 +29,12 @@ describe('TabBar strip', () => {
       configurable: true,
     });
     const { container } = render(<TabBar {...props({ onSelect })} />);
-    const strip = container.querySelector('[role="tablist"]')!.parentElement as HTMLElement;
+    const strip = container.querySelector('[role="toolbar"]')!.parentElement as HTMLElement;
     // The strip shows 0 to 100; the open tab (its menu button included) runs 60 to 140, past the right edge.
     vi.spyOn(strip, 'getBoundingClientRect').mockReturnValue({ left: 0, right: 100 } as DOMRect);
     const openTab = container.querySelector('[data-tab][data-active]') as HTMLElement;
     vi.spyOn(openTab, 'getBoundingClientRect').mockReturnValue({ left: 60, right: 140 } as DOMRect);
-    fireEvent.click(screen.getByRole('tab', { name: 'First' }));
+    fireEvent.click(screen.getByRole('button', { name: 'First' }));
     expect(onSelect).not.toHaveBeenCalled();
     // Measured on the whole tab, not its name, and clear of the 20px edge fade.
     expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 68 }));
@@ -43,7 +43,7 @@ describe('TabBar strip', () => {
   it('switches to another tab as before', () => {
     const onSelect = vi.fn();
     render(<TabBar {...props({ onSelect })} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Second' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Second' }));
     expect(onSelect).toHaveBeenCalledWith('t2');
   });
 });
