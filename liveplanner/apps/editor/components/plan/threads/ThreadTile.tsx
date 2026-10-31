@@ -426,5 +426,9 @@ function ResolveButton({
       {resolved ? 'Reopen' : withComment ? 'Comment and Resolve' : 'Resolve'}
     </button>
   );
-  return withComment ? <Tooltip label="Post your reply, then resolve the thread">{button}</Tooltip> : button;
+  return withComment ? (
+    <Tooltip label="Post your reply, then resolve the thread">{button}</Tooltip>
+  ) : (
+    button
+  );
 }
