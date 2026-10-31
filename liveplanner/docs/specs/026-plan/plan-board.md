@@ -570,15 +570,28 @@ In Plan mode:
     sit under 13 px semibold headings with generous space between them. An empty description is one quiet
     line, "Add a description…" with a pencil, not a dashed box. **Details** is a soft rounded panel inset in the
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
-    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Last edited by close it, small and
-    quiet under a hairline: "Created by (disc) Sam, 3 Oct 2026" and "Last edited by (disc) Alex, 2h ago" ([Created and
-    Last Edited](items.md#created-and-last-edited)), each line left out when the card holds no one for it. On a phone the layout is unchanged: one column, Details the first tab.
+    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Who made the card and who last edited it close it as a quiet **footer** pinned to the
+    bottom of the Details panel (however few its rows), under a hairline: two tidy rows, each the person's disc (20 px),
+    "Created by **Sam**" or "Edited by **Alex**", and, at the row's end, when ("3 Oct", "2h ago"; the exact date and time
+    in a tooltip) ([Created and Last Edited](items.md#created-and-last-edited)); a form's response reads "Form
+    response **#12**" with its date. Each row is left out when the card holds no one for it. They are never fields
+    in the middle of the panel: a card type does not place them in its tabs or Details (they are card-face fields
+    only), so the footer is the panel's one place for them. On a phone the layout is one column, the footer ending
+    the Details tab.
+  - **Tabs**: the type's own tabs, then **Activity**, on every card type ([History](items.md#history) "Where it shows").
+    On a phone, the panel's side column becomes a tab too, **Details** (the type's Details name), and it is the
+    **last** tab, at the far right after Activity. A card always opens on the type's **first** tab (Overview), on a
+    phone as on a desktop. The tab bar scrolls sideways when its tabs do not fit; arrow keys move between the tabs.
   - **Maximised**: on a desktop the header holds a **Maximise Card** button (the maximise glyph a board's own
     Maximise uses) just left of the close button, after the ⋯ menu. Pressed, the panel grows to fill the window
     less a 1 rem margin on every side (corners kept rounded, the dimmed editor showing as a thin frame, so it
     still reads as the card over the plan: Escape, the close button and a press on that frame close it as
     before), and the button becomes **Minimise Card** (the minimise glyph, pressed), which puts it back to its
-    usual size. The size eases between the two (200 ms; at once with reduced motion). Maximised, the room is used
+    usual size. The change between the two sizes is animated (`short`, 200 ms, eased): the panel is laid out once at
+    its new size and the browser morphs its old picture into the new one, cross-fading them without stretching (a
+    React View Transition typed `item-panel-resize` on the shared Dialog's panel: only the compositor works each
+    frame, nothing is laid out again mid-way), wherever the panel opens (a board, a sheet row, a dashboard, the card
+    finder). With reduced motion, or a browser without View Transitions, it changes at once. Maximised, the room is used
     rather than stretched: the main column keeps a reading width (at most 52 rem, centred in the space beside
     Details, with wider side padding), the title grows to 26 px, and **Details** widens to 24 rem (28 rem on
     a window 1536 px or wider) with an 8 rem label column, so its controls are roomier; the tabs, fields and
