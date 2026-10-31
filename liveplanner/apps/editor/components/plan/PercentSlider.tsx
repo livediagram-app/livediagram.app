@@ -156,7 +156,7 @@ export function PercentSlider({
             }
           }}
         />
-        <span aria-hidden className="text-slate-400 dark:text-slate-500">
+        <span aria-hidden className="text-slate-400">
           %
         </span>
       </label>
