@@ -32,6 +32,13 @@ export type ArticleEditorHandle = {
   focus: () => void;
   // The caret's place on screen, for a popover under it (a link field).
   caretRect: () => DOMRect | null;
+  // Where a stretch of a block's text is, as a canvas rect (its first line's when it wraps), or null when the block
+  // is not laid out: the Find bar brings a match into view by it (docs/specs/007-editor/find-and-replace.md).
+  rangeRect: (
+    blockId: string,
+    from: number,
+    to: number,
+  ) => { x: number; y: number; w: number; h: number } | null;
   // A zone put into the writing at the block boundary nearest a canvas point (or after the block
   // the caret is in), the writing so far taken as written: its blocks, the zone's id, and where it
   // landed (its page by index among the article's pages, and its spot from that page's corner).
