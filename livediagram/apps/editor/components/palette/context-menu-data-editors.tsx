@@ -80,7 +80,7 @@ export function PieDataEditor({
         {rows.map((s, i) => (
           <div key={i} className="flex items-center gap-1">
             <DataColour
-              label="Slice colour"
+              label={`Slice ${i + 1} colour`}
               value={s.color}
               shown={colorAt(i, s)}
               shape="rounded-[3px]"
@@ -90,6 +90,7 @@ export function PieDataEditor({
               className={`${MENU_CELL_INPUT} flex-1`}
               value={s.label}
               placeholder="Label"
+              aria-label={`Slice ${i + 1} label`}
               onChange={(e) => patch(i, { label: e.target.value })}
               onBlur={() => onChange(rows)}
             />
@@ -98,13 +99,13 @@ export function PieDataEditor({
               type="number"
               min={0}
               value={s.value}
-              aria-label="Value"
+              aria-label={`Slice ${i + 1} value`}
               onChange={(e) => patch(i, { value: Math.max(0, Number(e.target.value) || 0) })}
               onBlur={() => onChange(rows)}
             />
             <button
               type="button"
-              aria-label="Remove slice"
+              aria-label={`Remove slice ${i + 1}`}
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
@@ -147,7 +148,7 @@ export function LegendDataEditor({
         {rows.map((item, i) => (
           <div key={i} className="flex items-center gap-1">
             <DataColour
-              label="Legend colour"
+              label={`Legend row ${i + 1} colour`}
               value={item.color}
               shown={colorAt(i, item)}
               // Round, matching the swatch on the card rather than the pie
@@ -160,6 +161,7 @@ export function LegendDataEditor({
               className={`${MENU_CELL_INPUT} flex-1`}
               value={item.label}
               placeholder="Label"
+              aria-label={`Legend row ${i + 1} label`}
               onChange={(e) =>
                 setRows((r) => r.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))
               }
@@ -167,7 +169,7 @@ export function LegendDataEditor({
             />
             <button
               type="button"
-              aria-label="Remove legend row"
+              aria-label={`Remove legend row ${i + 1}`}
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
@@ -267,6 +269,7 @@ export function ChecklistRowsEditor({
               className={`${MENU_CELL_INPUT} flex-1`}
               value={item.text}
               placeholder="Task"
+              aria-label={`Row ${i + 1} task`}
               maxLength={CHECKLIST_MAX_TEXT}
               onChange={(e) =>
                 setRows((r) => r.map((s, j) => (j === i ? { ...s, text: e.target.value } : s)))
@@ -275,7 +278,7 @@ export function ChecklistRowsEditor({
             />
             <button
               type="button"
-              aria-label="Remove row"
+              aria-label={`Remove row ${i + 1}`}
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
