@@ -118,6 +118,8 @@ export const BUILT_INS_OF_KIND: Partial<Record<PickKind, readonly ItemFieldId[]>
   comments: ['comments'],
   votes: ['votes'],
   colour: ['color'],
+  // A card's pictures, one its cover (items.md "Attachments"): offered beside Image, the kind it is made of.
+  image: ['attachments'],
 };
 
 // What uses each built-in field, one line under its name in Ready to use.
@@ -133,6 +135,7 @@ export const BUILT_IN_ROLES: Partial<Record<ItemFieldId, string>> = {
   color: 'A dot on the card, and its bar on the Gantt chart',
   comments: 'Threads on the card, and mentions in the Inbox',
   votes: 'Session votes, Top Voted and sorting',
+  attachments: 'Pictures on the card, and its cover',
 };
 
 /** The built-in fields of `kind` the type lacks (`missing`), in Ready to use's order. */

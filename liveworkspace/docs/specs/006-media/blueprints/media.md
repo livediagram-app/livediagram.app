@@ -6,26 +6,27 @@ engineering precision, read from the code. Defaults applied where the spec is si
 
 Scope, by file:
 
-| File                                                      | Role                                                                                                                                                                       |
-| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/media/src/index.ts`                   | The Worker: `/api/previews*` to `handlePreviews` (404 when off); `/api/media/app*` to `handleApp`; 404 elsewhere; `scheduled` runs the sweep                               |
-| `liveworkspace/apps/media/src/config.ts`                  | `API_PATH`, `PREVIEWS_PATH`, `MAX_JSON_BYTES`, `UNUSED_IMAGE_AGE_MS`, `SWEEP_PAGE`, the tripwire                                                                           |
-| `liveworkspace/apps/media/src/env.ts`                     | `Env`, `appKey`, `keyedApps`, `mediaEnabled`, `parsePositiveCap`, `appDoor`, `indexAppOf`                                                                                  |
-| `liveworkspace/apps/media/src/http.ts`                    | `ok`, `notFound`, `badRequest`, `forbidden`, `unauthorized`, `unavailable`                                                                                                 |
-| `liveworkspace/apps/media/src/routes.ts`                  | `handleApp`: images, previews purge, usage, refs, owner merge and delete; `upload`; `originalNameOf`                                                                       |
-| `liveworkspace/apps/media/src/images.ts`                  | `images` reads and writes: `listImages`, `getImage`, `findBySha`, `ownerTotals`, `insertImage` (atomic caps), `deleteImageRow`, `usageOf`, `mergeOwner`, `deleteOwnerRows` |
-| `liveworkspace/apps/media/src/refs.ts`                    | `syncRefs`, `refsComplete`                                                                                                                                                 |
-| `liveworkspace/apps/media/src/retention.ts`               | `sweepUnusedImages`, `sweepTripped`, `reap`                                                                                                                                |
-| `liveworkspace/apps/media/src/jpeg-strip.ts`              | `stripJpegMetadata`: drop every APPn and COM segment, keep the image bit-identical                                                                                         |
-| `liveworkspace/apps/media/src/previews/routes.ts`         | `handlePreviews`: the item preview and the three share doors                                                                                                               |
-| `liveworkspace/apps/media/src/previews/access.ts`         | `reachItem`, `reachLink`: the index decides who sees a preview                                                                                                             |
-| `liveworkspace/apps/media/src/previews/store.ts`          | Bucket keys, freshness, `drawing`, `svgText`, `deleteItemPreviews`                                                                                                         |
-| `liveworkspace/apps/media/src/previews/door.ts`           | `callDoor`: the app's export door, `DOOR_TIMEOUT_MS`                                                                                                                       |
-| `liveworkspace/apps/media/src/previews/share-card.ts`     | `shareCardSvg`: fit a drawing on the 1200 x 630 card                                                                                                                       |
-| `liveworkspace/apps/media/src/previews/share-card-png.ts` | `shareCardPng`: resvg, imported on first use                                                                                                                               |
-| `liveworkspace/apps/media/scripts/e2e-media.mjs`          | An end-to-end run against a local Worker                                                                                                                                   |
-| `liveworkspace/apps/media/migrations/0001_media.sql`      | `images`, `refs`, `ref_sync`                                                                                                                                               |
-| `packages/media/src/*`                                    | The contract: `MEDIA_APPS`, limits, `sniffImageType`, owners, wire headers, `createMediaClient`, previews' paths and caches, `createSharePage`, gallery usage              |
+| File                                                          | Role                                                                                                                                                                       |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/media/src/index.ts`                       | The Worker: `/api/previews*` to `handlePreviews` (404 when off); `/api/media/app*` to `handleApp`; 404 elsewhere; `scheduled` runs the sweep                               |
+| `liveworkspace/apps/media/src/config.ts`                      | `API_PATH`, `PREVIEWS_PATH`, `MAX_JSON_BYTES`, `UNUSED_IMAGE_AGE_MS`, `SWEEP_PAGE`, the tripwire                                                                           |
+| `liveworkspace/apps/media/src/env.ts`                         | `Env`, `appKey`, `keyedApps`, `mediaEnabled`, `parsePositiveCap`, `appDoor`, `indexAppOf`                                                                                  |
+| `liveworkspace/apps/media/src/http.ts`                        | `ok`, `notFound`, `badRequest`, `forbidden`, `unauthorized`, `unavailable`                                                                                                 |
+| `liveworkspace/apps/media/src/routes.ts`                      | `handleApp`: images, previews purge, usage, refs, owner merge and delete; `upload`; `originalNameOf`                                                                       |
+| `liveworkspace/apps/media/src/images.ts`                      | `images` reads and writes: `listImages`, `getImage`, `findBySha`, `ownerTotals`, `insertImage` (atomic caps), `deleteImageRow`, `usageOf`, `mergeOwner`, `deleteOwnerRows` |
+| `liveworkspace/apps/media/src/refs.ts`                        | `syncRefs`, `claimRef`, `pendingApps`                                                                                                                                      |
+| `liveworkspace/apps/media/src/retention.ts`                   | `sweepUnusedImages`, `sweepTripped`, `reap`                                                                                                                                |
+| `liveworkspace/apps/media/src/jpeg-strip.ts`                  | `stripJpegMetadata`: drop every APPn and COM segment, keep the image bit-identical                                                                                         |
+| `liveworkspace/apps/media/src/previews/routes.ts`             | `handlePreviews`: the item preview and the three share doors                                                                                                               |
+| `liveworkspace/apps/media/src/previews/access.ts`             | `reachItem`, `reachLink`: the index decides who sees a preview                                                                                                             |
+| `liveworkspace/apps/media/src/previews/store.ts`              | Bucket keys, freshness, `drawing`, `svgText`, `deleteItemPreviews`                                                                                                         |
+| `liveworkspace/apps/media/src/previews/door.ts`               | `callDoor`: the app's export door, `DOOR_TIMEOUT_MS`                                                                                                                       |
+| `liveworkspace/apps/media/src/previews/share-card.ts`         | `shareCardSvg`: fit a drawing on the 1200 x 630 card                                                                                                                       |
+| `liveworkspace/apps/media/src/previews/share-card-png.ts`     | `shareCardPng`: resvg, imported on first use                                                                                                                               |
+| `liveworkspace/apps/media/scripts/e2e-media.mjs`              | An end-to-end run against a local Worker                                                                                                                                   |
+| `liveworkspace/apps/media/migrations/0001_media.sql`          | `images`, `refs`, `ref_sync`                                                                                                                                               |
+| `liveworkspace/apps/media/migrations/0002_image_document.sql` | `images.document`, the document an image was uploaded for                                                                                                                  |
+| `packages/media/src/*`                                        | The contract: `MEDIA_APPS`, limits, `sniffImageType`, owners, wire headers, `createMediaClient`, previews' paths and caches, `createSharePage`, gallery usage              |
 
 ## Domain and naming
 
@@ -36,6 +37,7 @@ Scope, by file:
 | Owner       | account id, or `guest:<sha256(app + "\n" + guestId)>` (`mediaGuestOwner`)                                        | Who uploaded it                                                                                                 |
 | Reference   | `refs (app, document, image_id)`                                                                                 | A document that places an image, as its app last said                                                           |
 | Complete    | `ref_sync (app, completed_at)`                                                                                   | The app has reported every document at least once                                                               |
+| Claim       | `images.document`; `X-Media-Document` (`MEDIA_DOCUMENT_HEADER`) on upload                                        | The document a new image was uploaded for; null for older and This Browser uploads                              |
 | Preview     | `previews/<app>/<itemId>/<view>-<tab>[-<appearance>].svg`                                                        | An item's drawing; `view` `full` or `public`, `tab` `first` or the tab id, `appearance` the reader's when asked |
 | Appearance  | `PreviewAppearance` (`light` \| `dark`, `@liveworkspace/media`); `ExportAppearance` (`@liveworkspace/index-app`) | The reader's appearance a preview is drawn in; `null` when none was asked                                       |
 | Share card  | the same key with `.png`                                                                                         | The 1200 x 630 raster drawn from the SVG beside it                                                              |
@@ -50,7 +52,10 @@ Scope, by file:
    `image/gif`), else `415 { error: 'unsupported_type', acceptedTypes }`.
 2. `Content-Length` must be a positive number (`400 missing_length`) and at most `MAX_IMAGE_BYTES` (10 MiB), else
    `413 { error: 'file_too_large', limitBytes }`.
-3. `X-Image-Sha256` (64 hex): the owner's image with that hash answers `200 { image, deduped: true }` unread.
+3. `X-Media-Document` (`documentOf`): absent or empty is none; longer than `MEDIA_ID_MAX` (200) is
+   `400 { error: 'invalid_document' }`. Every answer with an image below (deduped or new) first records the ref
+   `(app, document, image)` with `INSERT OR IGNORE` (`claimRef`).
+   3a. `X-Image-Sha256` (64 hex): the owner's image with that hash answers `200 { image, deduped: true }` unread.
 4. Caps (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`, each null when unset, blank, 0 or not a number): count
    at the cap, or bytes plus the declared length over it, is `403 { error: 'gallery_full', reason: 'count' | 'bytes',
 limit, current }`.
@@ -62,7 +67,8 @@ limit, current }`.
 8. SHA-256 of the body as sent; the owner's image with it answers `deduped: true`.
 9. A JPEG goes through `stripJpegMetadata`; a malformed one is `415 { error: 'malformed_jpeg' }`.
 10. `bucket.put(uuid, stored, { httpMetadata: { contentType }, customMetadata: { owner, app } })`.
-11. `insertImage`: `INSERT OR IGNORE … SELECT … WHERE` both caps still hold, in one statement. A throw deletes the
+11. `insertImage`: `INSERT OR IGNORE … SELECT … WHERE` both caps still hold, in one statement, with `document` (the
+    claim; a deduped image's row is never changed). A throw deletes the
     bytes and rethrows. No row inserted: delete the bytes; the raced image with that hash answers `deduped: true`;
     else a cap answer, else `409 { error: 'upload_conflict' }`.
 12. `200 { image: MediaImage, deduped: false }`, logged `[media] stored`.
@@ -88,12 +94,14 @@ list clears it). `complete: true` adds the app to `ref_sync` once (`ON CONFLICT 
 ### The daily sweep (`41 3 * * *`)
 
 1. Off or no bucket: nothing.
-2. `refsComplete(keyedApps)`: every app with a key must be in `ref_sync`, else log `sweep paused` and stop.
-3. Count images older than `UNUSED_IMAGE_AGE_MS` (30 days) and how many of them no ref names.
+2. `pendingApps(keyedApps)`: the keyed apps not in `ref_sync`. Two or more: log `sweep paused` and stop.
+3. Count images older than `UNUSED_IMAGE_AGE_MS` (30 days) and how many of them are **sweepable**: no ref names them,
+   and either nothing is pending, or the image is claimed (`document` not null) and the one pending app is the app
+   it was uploaded in (`SWEEPABLE`).
 4. None unplaced: stop. `sweepTripped`: more than `SWEEP_TRIPWIRE_MIN` (20) and over `SWEEP_TRIPWIRE_RATIO` (0.5) of
    the old ones: log an error and reap one page of `SWEEP_PAGE` (1000), oldest first.
 5. Otherwise page by id (`id > after`, 1000 at a time) and reap each page.
-6. `reap`: `DELETE … WHERE id IN (page) AND NOT placed RETURNING id` (re-checked at that instant), then R2 delete;
+6. `reap`: `DELETE … WHERE id IN (page) AND sweepable RETURNING id` (re-checked at that instant), then R2 delete;
    an R2 failure leaves bytes with no row, never a row with no bytes.
 7. Logs `[media] sweep: deleted <n> images older than <iso>`.
 
@@ -176,13 +184,13 @@ must carry an `ETag` that `etagVersion` reads.
 
 ## Data and persistence
 
-| Table      | Key                                   | Columns                                                                                                      | Indexes                                                                                                                                 |
-| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `images`   | `id` TEXT PK                          | `owner`, `app`, `content_type`, `byte_size`, `width`, `height`, `sha256`, `original_name` null, `created_at` | `images_owner_sha_idx` UNIQUE `(owner, sha256)`; `images_owner_created_idx (owner, created_at DESC)`; `images_created_idx (created_at)` |
-| `refs`     | `(app, document, image_id)`, no rowid | no foreign key: a document may place a deleted image                                                         | `refs_image_idx (image_id)`                                                                                                             |
-| `ref_sync` | `app`, no rowid                       | `completed_at`                                                                                               |                                                                                                                                         |
+| Table      | Key                                   | Columns                                                                                                                              | Indexes                                                                                                                                 |
+| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `images`   | `id` TEXT PK                          | `owner`, `app`, `content_type`, `byte_size`, `width`, `height`, `sha256`, `original_name` null, `created_at`, `document` null (0002) | `images_owner_sha_idx` UNIQUE `(owner, sha256)`; `images_owner_created_idx (owner, created_at DESC)`; `images_created_idx (created_at)` |
+| `refs`     | `(app, document, image_id)`, no rowid | no foreign key: a document may place a deleted image                                                                                 | `refs_image_idx (image_id)`                                                                                                             |
+| `ref_sync` | `app`, no rowid                       | `completed_at`                                                                                                                       |                                                                                                                                         |
 
-Written by: `images` upload, delete, merge, owner delete, sweep; `refs` `syncRefs`; `ref_sync` a complete sync.
+Written by: `images` upload, delete, merge, owner delete, sweep; `refs` `syncRefs` and a claimed upload; `ref_sync` a complete sync.
 Read by: galleries, dedupe, caps, usage (refs joined to images), the sweep.
 
 R2 (`MEDIA`, `liveworkspace-media`): image bytes at `<uuid>` (`customMetadata { owner, app }`); previews under
@@ -198,7 +206,8 @@ R2 (`MEDIA`, `liveworkspace-media`): image bytes at `<uuid>` (`customMetadata { 
 | Two uploads race the caps             | the insert re-checks atomically; the loser's bytes deleted     |
 | A row insert throws                   | the bytes deleted, the error rethrown                          |
 | R2 delete fails after the row went    | logged; bytes stay unreferenced                                |
-| Not every keyed app has reported      | the sweep pauses                                               |
+| Two or more keyed apps not complete   | the sweep pauses                                               |
+| One keyed app not complete            | only that app's claimed, unplaced images can go                |
 | A reference gap looks like mass unuse | the tripwire: one page, oldest first, logged as an error       |
 | The app cannot draw (timeout, error)  | a stale private picture, else `503`                            |
 | No door configured for an app         | its items have no previews (`app_not_configured`)              |
@@ -247,7 +256,7 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | Test                                         | Pins                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/media/src/index.test.ts`               | key auth; off and outside paths; 503 without a bucket; store and list newest first; dedupe across apps; the hash shortcut unread; type, size and dimension refusals; JPEG stripping; caps across apps; bytes with the owner header; one image with owner; owner-only delete; owner delete everywhere; refs per document and usage; malformed sync; guest merge keeping held bytes                                                   |
-| `apps/media/src/retention.test.ts`           | waits for every keyed app; keeps young and placed images; the tripwire page; no bucket; the tripwire bounds                                                                                                                                                                                                                                                                                                                         |
+| `apps/media/src/retention.test.ts`           | waits for every keyed app; a claimed image waits only for the other apps; an unclaimed one, and a claim whose document never reported, survive; keeps young and placed images; the tripwire page; no bucket; the tripwire bounds                                                                                                                                                                                                    |
 | `apps/media/src/jpeg-strip.test.ts`          | no SOI unchanged; clean JPEG unchanged; APP0 to APP15 and COM dropped; SOS and scan copied verbatim; RST kept; truncated input throws                                                                                                                                                                                                                                                                                               |
 | `apps/media/src/previews/previews.test.ts`   | draw on a miss then serve fresh; the caller's own credentials, no access as missing; redraw after a change; empty items; one-tab links; stale on failure, 503 without; no door; public links asked each time; share image caching and tabs; unknown codes ask no app; one card per drawing and the brand card; the card's name; purge per app; an appearance drawn and stored on its own key, passed to the door, a bad one refused |
 | `apps/media/src/previews/share-card.test.ts` | fit wide and tall, aspect kept, upscale cap, nested viewBox, the drawing's paint, white fallback, prolog and size-only roots, null with no sized root                                                                                                                                                                                                                                                                               |

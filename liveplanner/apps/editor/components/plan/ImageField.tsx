@@ -4,7 +4,7 @@
 // service and kept on the card as its id. The card panel's control (ImageFieldControl: a drop zone, then the picture
 // with Replace and Remove) and the card face's thumbnail (ImageThumb). Both read the picture through the same cached,
 // authenticated fetch (apiImageUrl), so a picture shown on a board and in its panel is fetched once.
-import { useEffect, useId, useRef, useState, type DragEvent } from 'react';
+import { useId, useRef, useState, type DragEvent } from 'react';
 import type { ItemFieldValue } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
@@ -13,59 +13,15 @@ import {
   lucideRefreshCw,
   lucideTrash2,
 } from '@liveworkspace/icons/lucide';
-import {
-  IMAGE_ACCEPT,
-  IMAGE_THUMB_EDGE,
-  ImageUploadError,
-  apiImageUrl,
-  apiUploadImage,
-  releaseImageUrl,
-  type ImagesScope,
-} from '@/lib/api/images';
+import { IMAGE_ACCEPT, IMAGE_THUMB_EDGE, ImageUploadError, apiUploadImage } from '@/lib/api/images';
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
+import { useImageUrl, useSeen } from './use-image-url';
 
 const AddIcon = lucideGlyph(lucideImagePlus, 20);
 const BrokenIcon = lucideGlyph(lucideImage, 18);
 const ReplaceIcon = lucideGlyph(lucideRefreshCw, 13);
 const RemoveIcon = lucideGlyph(lucideTrash2, 13);
-
-type Shown = { state: 'loading' } | { state: 'shown'; url: string } | { state: 'missing' };
-
-// The picture `imageId` as a URL to show, at most `maxEdge` on its longest side; fetched only while `enabled` (a card
-// face waits until it scrolls into view), and given back when it changes or the element goes.
-function useImageUrl(
-  scope: ImagesScope | null | undefined,
-  imageId: string | null,
-  maxEdge?: number,
-  enabled = true,
-): Shown {
-  // What was fetched, for which picture: a different picture reads as loading until its own answer comes.
-  const key = scope && imageId ? `${scope.projectId}/${imageId}@${maxEdge ?? ''}` : null;
-  const [got, setGot] = useState<{ key: string; url: string | null } | null>(null);
-  useEffect(() => {
-    if (!key || !scope || !imageId || !enabled) return;
-    let live = true;
-    let url: string | null = null;
-    void apiImageUrl(scope, imageId, maxEdge === undefined ? {} : { maxEdge }).then((u) => {
-      url = u;
-      if (!live) {
-        if (u) releaseImageUrl(u);
-        return;
-      }
-      setGot({ key, url: u });
-    });
-    return () => {
-      live = false;
-      if (url) releaseImageUrl(url);
-    };
-  }, [key, scope, imageId, maxEdge, enabled]);
-  if (!scope) return MISSING;
-  if (!got || got.key !== key) return LOADING;
-  return got.url ? { state: 'shown', url: got.url } : MISSING;
-}
-const MISSING: Shown = { state: 'missing' };
-const LOADING: Shown = { state: 'loading' };
 
 const imageIdOf = (value: ItemFieldValue | undefined): string | null =>
   typeof value === 'string' && value ? value : null;
@@ -271,21 +227,7 @@ export function ImageFieldControl({
 /** A card face's Image field: a small thumbnail, fetched once the card scrolls into view. */
 export function ImageThumb({ imageId, label }: { imageId: string; label: string }) {
   const scope = usePlan()?.itemsScope;
-  const ref = useRef<HTMLSpanElement>(null);
-  // Without an IntersectionObserver (an old browser), the thumbnail loads at once.
-  const [seen, setSeen] = useState(() => typeof IntersectionObserver !== 'function');
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || seen) return;
-    const io = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) {
-        setSeen(true);
-        io.disconnect();
-      }
-    });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [seen]);
+  const [ref, seen] = useSeen<HTMLSpanElement>();
   const shown = useImageUrl(scope, imageId, IMAGE_THUMB_EDGE, seen);
   return (
     <span

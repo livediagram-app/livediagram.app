@@ -26,6 +26,7 @@ import { usePlan } from './PlanContext';
 import { PersonDisc } from './PersonDisc';
 import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
+import { useCardFileDrop } from './card-file-drop';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -161,6 +162,8 @@ export function PlanBoardCard({
   // (usePlanCardDrag holdCardTouch). Non-passive from the start, so the browser waits on it.
   const cardRef = useRef<HTMLDivElement>(null);
   const scrolls = touch !== 'touch-none';
+  // A file dropped on it joins its Attachments (card-file-drop.ts).
+  const fileDrop = useCardFileDrop(item, faceDown);
   useEffect(() => {
     const el = cardRef.current;
     if (!el || !scrolls) return;
@@ -186,6 +189,8 @@ export function PlanBoardCard({
           cursor: planCardCursor(interactive, canMove),
           ['--tw-ring-color' as string]: palette.focus,
         }}
+        aria-busy={fileDrop.uploading || undefined}
+        {...fileDrop.handlers}
         onPointerDown={(e) => {
           if (onLongPress && !faceDown) hold.onPointerDown(e);
           onPress(item.id, e);
@@ -218,6 +223,17 @@ export function PlanBoardCard({
           muted={done}
           presence={presence}
         />
+        {fileDrop.over || fileDrop.uploading ? (
+          <span
+            aria-hidden
+            data-card-file-drop=""
+            className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-white/80 ring-2 ring-brand-500 dark:bg-slate-900/80"
+          >
+            <span className="rounded-md bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm dark:bg-brand-600">
+              {fileDrop.uploading ? 'Uploading…' : 'Drop to Attach'}
+            </span>
+          </span>
+        ) : null}
         {cardVote ? (
           <ElementVoteOverlay
             voteKey={itemVoteKey(item.id)}

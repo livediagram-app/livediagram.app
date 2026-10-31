@@ -11,6 +11,13 @@ export const ITEM_LABEL_MAX = 32;
 export const ITEM_CHECKLIST_MAX = 50;
 export const ITEM_CHECKLIST_TEXT_MAX = 200;
 export const ITEM_STATUS_MAX = 40;
+// A card's Attachments (docs/specs/026-plan/items.md "Attachments"): how many pictures, each name's length as the field
+// keeps it (20 at the longest still fit ITEM_FIELDS_BYTES), and the largest a picture may be (the media service's
+// MAX_IMAGE_BYTES, @liveworkspace/media limits.ts, repeated here so this package stays free of dependencies).
+export const ITEM_ATTACHMENTS_MAX = 20;
+export const ITEM_ATTACHMENT_NAME_MAX = 120;
+export const ITEM_ATTACHMENT_BYTES_MAX = 10 * 1024 * 1024;
+export const ITEM_ATTACHMENT_ID_MAX = 200;
 export const ITEM_UNKNOWN_STRING_MAX = 2000;
 export const ITEM_UNKNOWN_ARRAY_MAX = 50;
 export const ITEM_NUMBER_MAX = 999;

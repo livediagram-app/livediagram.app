@@ -42,6 +42,13 @@ export const IMAGE_ACCEPT = ACCEPTED_IMAGE_TYPES.join(',');
 /** The longest side a card face's thumbnail is fetched at (a 20 px chip, sharp on any screen). */
 export const IMAGE_THUMB_EDGE = DISPLAY_EDGE_TILE;
 
+/** The longest side a card's cover is fetched at (docs/specs/026-plan/items.md "Attachments"): a Detailed card is at
+ *  most about 320 px wide, so twice that is sharp on any screen. */
+export const IMAGE_COVER_EDGE = 640;
+
+/** The longest side an Attachments row's 40 px thumbnail is fetched at. */
+export const IMAGE_ROW_EDGE = 160;
+
 /** Why an upload failed, each with the words the card panel shows (docs/specs/026-plan/item-types.md "What it
  *  refuses"). */
 export type ImageUploadFailure =
@@ -154,6 +161,23 @@ export async function apiImageUrl(
     }
   });
   return blob ? shownUrl(blob) : null;
+}
+
+/**
+ * Picture `imageId` of the scope's plan as it was uploaded, for opening or downloading it whole; null when it can't
+ * be read. Not cached: it is asked for only when someone opens or saves one.
+ */
+export async function apiImageOriginal(scope: ImagesScope, imageId: string): Promise<Blob | null> {
+  const local = await isOfflineId(scope.projectId);
+  try {
+    const res = await apiFetch(
+      `${API_BASE}/images/${encodeURIComponent(imageId)}${planQuery(scope, local)}`,
+      { headers: await planHeaders(scope, local) },
+    );
+    return res.ok ? await res.blob() : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Gives back a URL apiImageUrl handed out. */

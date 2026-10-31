@@ -219,6 +219,21 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `releaseImageUrl`, `ImageUploadError`) with the plan's `itemsScope` (`PlanContext`, from `usePlanItems`). The api's
   `routes/images.ts` and the room's `plan-room/image-grants.ts` (api.md "Images"). An upload tracks
   `Plan · Added · CardImage`.
+- Attachments (items.md "Attachments"): the pure value and edits in `packages/items/src/attachments.ts`
+  (`normaliseAttachments`, `itemAttachments`, `attachmentCover`, `withAttachmentsAdded`, `withCover`,
+  `withoutAttachment`, `attachmentSizeText`; caps in `limits.ts`), checked by `validateFields`' `attachments` kind. The
+  panel's `AttachmentsField.tsx` (rows, ⋯ menu from `PortalMenu`, the Add Images zone, the page's paste listener);
+  uploads through `use-attachment-upload.ts` (`useAttachmentUpload`: one upload at a time, one `patchItem` of the
+  whole list read from the card as it is then); a board card's drop through `card-file-drop.ts` (`useCardFileDrop`,
+  in `PlanBoardCard`); the cover and the count chip in `CardCover.tsx`, drawn by `PlanCardFace` when the type's
+  Detailed Header holds `cover`. Both pictures' URLs come from `use-image-url.ts` (`useImageUrl`, `useSeen`, shared
+  with `ImageField.tsx`), at `IMAGE_COVER_EDGE` (640) and `IMAGE_ROW_EDGE` (160). The card fields `attachments` and
+  `cover` are in `CARD_FIELDS`; `cardSlotFits` keeps `cover` to Detailed's `head`, and `typeOffersCardField` offers it
+  while the type has `attachments`. Add Field's Ready to use lists Attachments under Image (`BUILT_INS_OF_KIND`). The
+  api's reporting is `plan-room/image-refs.ts` (schema step V11: `media_refs` and the `outbox_images_*` triggers;
+  `pushImageRefs` from the outbox's drain, never `complete` and nothing past `MEDIA_REFS_SYNC_MAX`; `forgetImageRefs`
+  from the room's purge). `routes/images.ts` names the plan as the upload's `document`, so the media service claims
+  the picture for it (none for a This Browser upload).
 - The Card Types segment of `PlanCardsClusterStrip` (a `ClusterPopoverSegment`, from `ClusterPopoverButton.tsx`,
   shared with Slides) opens dock panel `card-types` (`useCardTypesOpener` opens it from Edit Cards);
   `CardTypesPanel` is a `MovablePanel` popover; `ItemTypeEditor` + `ItemTypeLayoutEditor` (forms in `ItemTypeFieldForms`) the modal (`Dialog`,
@@ -479,6 +494,9 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | Built-in kinds: store, text, CSV, agents                  | `packages/items/src/built-in-field-kinds.test.ts`                                                                                        |
 | Built-in kinds and Image: panel, card face, required      | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                             |
 | Image fields: upload, read, roles, grants                 | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                |
+| Attachments: value, cap, cover, agents                    | `packages/items/src/attachments.test.ts`, `packages/items/src/card-display.test.ts`                                                      |
+| Attachments: panel, roles, drop, paste, cover on the card | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                  |
+| Images in use: triggers, report, purge, serving           | `apps/api/src/plan-room/image-refs.test.ts`                                                                                              |
 | Add Field: option rows, Enter, Backspace, paste           | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                               |
 | Add Field: opened from a group, lands there               | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                         |
 | Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                  |

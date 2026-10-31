@@ -31,6 +31,8 @@ import {
   type CardSlot,
   isCustomCardField,
   calculatedText,
+  attachmentCover,
+  itemAttachments,
 } from '@liveplanner/items';
 import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
@@ -43,6 +45,7 @@ import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ColourDot } from './ColourSwatches';
+import { AttachmentsPill, CardCover } from './CardCover';
 import { AgePill } from './card-age';
 import {
   ChecklistPill,
@@ -226,6 +229,18 @@ export function PlanCardFace({
         ) : null;
       case 'labels':
         return labels.length > 0 ? <LabelChips key={f} labels={labels} /> : null;
+      case 'attachments': {
+        const count = itemAttachments(item).length;
+        return count > 0 ? <AttachmentsPill key={f} count={count} palette={palette} /> : null;
+      }
+      // The cover is drawn across the top of the card (below), never in a row; the Display's editor shows its chip.
+      case 'cover':
+        return edit ? (
+          <MetaPill key={f} palette={palette} label="Cover Image">
+            <PlanTypeGlyph glyph="page" size={11} />
+            <span aria-hidden>Cover</span>
+          </MetaPill>
+        ) : null;
       case 'description':
         return typeof description === 'string' && description.trim() ? (
           <p
@@ -363,9 +378,16 @@ export function PlanCardFace({
   const foot = slotBits('foot');
   // The Bottom Right slot: the footer's far end (the assignee, by default).
   const footEnd = slotBits('footEnd');
+  // The cover (docs/specs/026-plan/items.md "Attachments"): when the type's Display holds Cover Image and the card
+  // has one; the Display's editor draws a placeholder in its place.
+  const coverPlaced = (layout.head ?? []).includes('cover') && show('cover');
+  const cover = coverPlaced ? (attachmentCover(item) ?? null) : null;
   return (
     <div className={`${FRAME} ${headAction ? '' : LIFT} flex-col gap-2 px-3 py-2.5`} style={frame}>
       {presenceTag}
+      {cover || (coverPlaced && edit) ? (
+        <CardCover cover={cover} palette={palette} sample={!!edit} />
+      ) : null}
       {head.length || headEnd.length || ownColour || edit || headAction ? (
         <div
           className="flex items-center gap-1.5 text-[11px] font-medium"

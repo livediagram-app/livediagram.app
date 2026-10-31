@@ -102,22 +102,23 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 `title_required`, `title_too_long`, `field_key_invalid`, `field_value_invalid`, `fields_too_many`,
 `fields_too_large`, `votes_read_only`, `comments_read_only`, `type_invalid`, `id_invalid`, `place_invalid`.
 
-| Kind      | Accepts                                                            |
-| --------- | ------------------------------------------------------------------ |
-| text      | string, trimmed, 1..`ITEM_TITLE_MAX` (title); empty title rejected |
-| long text | string ≤ `ITEM_DESCRIPTION_MAX`                                    |
-| status    | string ≤ 40, trimmed, not empty                                    |
-| person    | `{ id ≤ 64, name ≤ 80, color #rrggbb }`                            |
-| priority  | one of `PRIORITIES`                                                |
-| labels    | ≤ `ITEM_LABELS_MAX` strings ≤ 32, de-duplicated                    |
-| number    | finite, 0..999                                                     |
-| date      | `YYYY-MM-DD` that parses                                           |
-| checklist | ≤ `ITEM_CHECKLIST_MAX` rows `{ text ≤ 200, done boolean }`         |
-| item ref  | id string matching `ITEM_ID_PATTERN`                               |
-| votes     | rejected in create/patch (`votes_read_only`)                       |
-| comments  | rejected in create/patch and clear (`comments_read_only`)          |
-| timestamp | `statusSince` only: a finite integer ms epoch ≥ 0                  |
-| unknown   | scalar, or array of ≤ 50 scalars; strings ≤ 2,000                  |
+| Kind        | Accepts                                                                                                                                                                      |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| text        | string, trimmed, 1..`ITEM_TITLE_MAX` (title); empty title rejected                                                                                                           |
+| long text   | string ≤ `ITEM_DESCRIPTION_MAX`                                                                                                                                              |
+| status      | string ≤ 40, trimmed, not empty                                                                                                                                              |
+| person      | `{ id ≤ 64, name ≤ 80, color #rrggbb }`                                                                                                                                      |
+| priority    | one of `PRIORITIES`                                                                                                                                                          |
+| labels      | ≤ `ITEM_LABELS_MAX` strings ≤ 32, de-duplicated                                                                                                                              |
+| number      | finite, 0..999                                                                                                                                                               |
+| date        | `YYYY-MM-DD` that parses                                                                                                                                                     |
+| checklist   | ≤ `ITEM_CHECKLIST_MAX` rows `{ text ≤ 200, done boolean }`                                                                                                                   |
+| attachments | 1..`ITEM_ATTACHMENTS_MAX` (20) `{ id ≤ 200, name ≤ 120, size 1..10 MB, type PNG/JPEG/WebP/GIF, cover? true }`, ids unique, one cover at most; empty is cleared, never stored |
+| item ref    | id string matching `ITEM_ID_PATTERN`                                                                                                                                         |
+| votes       | rejected in create/patch (`votes_read_only`)                                                                                                                                 |
+| comments    | rejected in create/patch and clear (`comments_read_only`)                                                                                                                    |
+| timestamp   | `statusSince` only: a finite integer ms epoch ≥ 0                                                                                                                            |
+| unknown     | scalar, or array of ≤ 50 scalars; strings ≤ 2,000                                                                                                                            |
 
 - Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`,
   measured without `comments` (`fieldsByteSize`); the thread is measured on its own (`commentsByteSize`).

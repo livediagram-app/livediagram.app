@@ -94,6 +94,7 @@ const BUILT_IN_KINDS: Partial<Record<string, PickKind>> = {
   checklist: 'checklist',
   comments: 'comments',
   votes: 'votes',
+  attachments: 'image',
 };
 
 // A field's icon and the name of what it holds ("Link to Card", "Date", "Person"), for the type editor's rows.

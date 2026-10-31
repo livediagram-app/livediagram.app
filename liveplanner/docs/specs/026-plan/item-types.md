@@ -472,6 +472,15 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   type's defaults are read from code by its id, so a project that stored its catalogue before Display
   existed gets them too.
 
+- **Attachments and Cover Image** (a type that offers [Attachments](items.md#attachments)): Detailed draws two card
+  fields of them. **Attachments** is a picture glyph and the card's count, placed in the Footer by default.
+  **Cover Image** is the card's cover picture across the top of the card, edge to edge, 120 px tall and cropped to
+  fill, above the Header; it is the Display's **option** for covers: it sits only in the **Header** (that is where
+  it is dragged to and listed), and taking it off the card turns covers off for the type. Both are in every type's
+  default Detailed Display while it offers Attachments (Cover Image first in the Header), so adding Attachments to a
+  type with its default Display shows them at once; a type whose Detailed Display was set before finds both under
+  **Available Fields**. Minimal draws neither. The Display's example card draws the cover as a soft striped
+  placeholder labelled "Cover image", and Attachments as "3".
 - **Age** is in no default: a type shows it only once someone places it. Every type offers it (every card sits in
   a column). It reads how long the card has sat in its current status, in whole days ("4d"; "0d" on the day it
   arrived), counted in local calendar days from the moment it entered that status (`statusSince`,
@@ -569,8 +578,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
         **select**, **option** Choice; **tags**, **multi-select** Multiple Choice and Labels; **notes**,
         **paragraph** Long Text; **deadline**, **day** Date; **count**, **points** Number; **mail** Email;
         **owner**, **reviewer**, **people** Person; **color**, **swatch** Colour; **to-do**, **subtasks** Checklist;
-        **discussion**, **thread** Comments; **like**, **upvote** Votes; **picture**, **photo**, **screenshot**
-        Image). With nothing matching it says **No matches for “…”** with "Try a word like money, date or
+        **discussion**, **thread** Comments; **like**, **upvote** Votes; **picture**, **photo**, **screenshot**,
+        **attachment**, **cover** Image, whose Ready to use offers Attachments). With nothing matching it says **No matches for “…”** with "Try a word like money, date or
         parent." under it. How many match is announced.
       - **One list of kinds**, with no Ready-made section: every kind a field can be, built-in or not, each a row
         with its icon on a soft tile, its name, and a one-line description in plain words, in six groups as an
@@ -607,7 +616,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       "Progress on the card, like 2/5", Start Date "Where its bar starts on the Gantt chart", Due Date "On the
       calendar and the Gantt chart", Estimate "Story points, summed in Workload", Priority "Urgent to Low, for sorting
       and swimlanes", Description "The card's main notes, with rich text", Comments "Threads on the card, and
-      mentions in the Inbox", Votes "Session votes, Top Voted and sorting"), each ending in a plus; one press adds that
+      mentions in the Inbox", Votes "Session votes, Top Voted and sorting", and under Image, Attachments "Pictures on
+      the card, and its cover"), each ending in a plus; one press adds that
       built-in field, keeping its id, and closes the popover. Then, under a rule reading **Or make your own** (only
       while Ready to use shows), **Name** (a labelled field, focused, "Field name" as its placeholder); then only what
       that kind needs: for Choice and Multiple Choice **Options**, a list of option rows (each a field named "Option

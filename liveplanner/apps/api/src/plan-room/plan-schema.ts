@@ -12,6 +12,7 @@
 
 import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
+import { IMAGE_REFS_SCHEMA } from './image-refs';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -382,6 +383,10 @@ const V10 = (exec: Exec) => {
     exec('ALTER TABLE card_threads ADD COLUMN field TEXT NULL');
 };
 
+// The pictures the plan's cards hold, reported to liveworkspace's media service (image-refs.ts; docs/specs/026-plan/
+// items.md "Images in use"): the last set sent, and the triggers that queue a report. Its own step, appended.
+const V11 = IMAGE_REFS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -393,6 +398,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V8,
   V9,
   V10,
+  V11,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
