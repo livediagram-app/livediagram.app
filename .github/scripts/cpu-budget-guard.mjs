@@ -35,6 +35,8 @@ export function wallClockAdditions(diff) {
       if (
         TEST_FILE.test(file) &&
         !/\/e2e\//.test(file) &&
+        // This guard's own tests spell the pattern out.
+        !file.endsWith('cpu-budget-guard.test.mjs') &&
         /performance\.now\(\)/.test(added) &&
         !/wall-clock:/.test(added)
       )
