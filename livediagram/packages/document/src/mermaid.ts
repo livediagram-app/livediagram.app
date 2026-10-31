@@ -312,6 +312,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   const implicit = new Set<string>();
   const edges: GraphEdge[] = [];
   const clusters: GraphCluster[] = [];
+  // The clusters by id, for a subgraph opened again (a scan per subgraph was quadratic in them).
+  const clusterById = new Map<string, GraphCluster>();
   let currentCluster: GraphCluster | null = null;
   let subgraphDepth = 0;
   // Subgraphs inside another, folded into it: said back to an agent rather than dropped silently.
@@ -428,8 +430,11 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
           : { id: subId, label: decodeLabel(spec), members: [] };
         // A subgraph opened again by its id carries on the first: two clusters of one id became two frames under
         // one element id, and the second (with its members' frame) was lost.
-        const reopened = clusters.find((c) => c.id === cluster.id);
-        if (!reopened) clusters.push(cluster);
+        const reopened = clusterById.get(cluster.id);
+        if (!reopened) {
+          clusters.push(cluster);
+          clusterById.set(cluster.id, cluster);
+        }
         currentCluster = reopened ?? cluster;
       }
       continue;
@@ -499,8 +504,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     // one, so neither is lost to the other's element id.
     if (!nodes.has(c.id)) return c;
     let id = `${c.id}_subgraph`;
-    for (let n = 2; nodes.has(id) || clusters.some((o) => o.id === id); n += 1)
-      id = `${c.id}_subgraph${n}`;
+    for (let n = 2; nodes.has(id) || clusterById.has(id); n += 1) id = `${c.id}_subgraph${n}`;
     return { ...c, id };
   });
   const frameId = new Map(framed.map((c, i) => [c.id, realClusters[i]!.id]));
