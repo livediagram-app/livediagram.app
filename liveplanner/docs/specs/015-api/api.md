@@ -484,7 +484,7 @@ Every tab the api receives (project create, tab save) is settled by `migrateStor
 
 liveplanner has no D1 and no migrations. Its schema is in its Durable Objects, each created on first use:
 
-- **Plan content** (`plan`, `tabs`, `plan_tabs`, `tab_stats`, `items`, `sheets`, `sheet_cells`, `sheet_refs`, `agent_changesets`, `agent_changeset_parts`, `tab_shares`, `share_outbox`, `outbox`, `notify_claims`, `form_links`, `form_reports`, `card_image_grants`) is in each plan's Durable Object, `apps/api/src/plan-room/plan-schema.ts`, in versioned steps (a later change adds a step). The plan's own row holds its name, owner and provenance.
+- **Plan content** (`plan`, `tabs`, `plan_tabs`, `tab_stats`, `items`, `sheets`, `sheet_cells`, `sheet_refs`, `agent_changesets`, `agent_changeset_parts`, `tab_shares`, `share_outbox`, `outbox`, `notify_claims`, `form_links`, `form_reports`, `card_image_grants`, `item_history`) is in each plan's Durable Object, `apps/api/src/plan-room/plan-schema.ts`, in versioned steps (a later change adds a step). The plan's own row holds its name, owner and provenance.
 - **A person's workbench** (pairing requests, pairings, tickets, sessions and the rooms a workspace session joined) is the person's own Durable Object (`WORKBENCH`, [Workbench embeds](../013-workspace/workbench-embeds.md)).
 
 Where a plan is filed, who it is shared with and whether it is in the Trash are the index's ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)).

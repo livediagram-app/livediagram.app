@@ -49,31 +49,78 @@ export function playColumnMove(before: ColumnPositions, liftId?: string): number
   return played;
 }
 
+// The attribute a collapsed column's strip parts carry (docs/specs/026-plan/plan-board.md "Collapse Column").
+export const STRIP_ATTR = 'data-plan-strip';
+// How long a strip takes to fade in: a small fade.
+export const STRIP_FADE_MS = 150;
+
+// A column collapsed or expanded (docs/specs/026-plan/plan-board.md "Collapse Column"): its neighbours glide from where
+// they were, unlifted; the column's own new parts come in. Expanding, each opens out from the strip's width
+// (`stripPx`) to its own, its right edge keeping pace with the neighbour beside it; collapsing, the strip fades in.
+// The number played.
+export function playColumnResize(
+  root: ParentNode,
+  before: ColumnPositions,
+  columnId: string,
+  stripPx: number,
+): number {
+  let played = playColumnMove(before);
+  for (const el of root.querySelectorAll<HTMLElement>(`[${COLUMN_ATTR}]`)) {
+    if (before.has(el) || el.getAttribute(COLUMN_ATTR) !== columnId) continue;
+    if (typeof el.animate !== 'function') continue;
+    if (el.hasAttribute(STRIP_ATTR))
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: STRIP_FADE_MS, easing: 'ease-out' });
+    else
+      el.animate(
+        [
+          { clipPath: `inset(0 ${Math.max(0, el.offsetWidth - stripPx)}px 0 0)` },
+          { clipPath: 'inset(0 0 0 0)' },
+        ],
+        { duration: COLUMN_MOVE_MS, easing: COLUMN_MOVE_EASING },
+      );
+    played++;
+  }
+  return played;
+}
+
 // The board's half: `beforeMove(columnId)` just before a reorder is written, and the glide plays once the new order lays
 // out (`order` is the columns' ids, joined). `isMoving()` is true from then until the glide ends, so the cards' own
 // glide (usePlanCardFlip) holds still and the cards ride along in their cells. A change of order nobody here asked
 // for (a collaborator's) jumps.
-export function useColumnMoveFlip(grid: RefObject<HTMLElement | null>, order: string) {
-  const pending = useRef<{ at: ColumnPositions; columnId: string } | null>(null);
+export function useColumnMoveFlip(
+  grid: RefObject<HTMLElement | null>,
+  order: string,
+  // A collapsed column's strip width, for `beforeResize`.
+  stripPx = 0,
+) {
+  const pending = useRef<{ at: ColumnPositions; columnId: string; resize: boolean } | null>(null);
   const moving = useRef(false);
   useLayoutEffect(() => {
     const before = pending.current;
     pending.current = null;
-    if (!before || !playColumnMove(before.at, before.columnId)) return;
+    if (!before) return;
+    const played =
+      before.resize && grid.current
+        ? playColumnResize(grid.current, before.at, before.columnId, stripPx)
+        : playColumnMove(before.at, before.columnId);
+    if (!played) return;
     moving.current = true;
     const t = setTimeout(() => (moving.current = false), COLUMN_MOVE_MS);
     return () => {
       clearTimeout(t);
       moving.current = false;
     };
-  }, [order]);
-  const beforeMove = useCallback(
-    (columnId: string) => {
+  }, [order, grid, stripPx]);
+  const capture = useCallback(
+    (columnId: string, resize: boolean) => {
       if (!grid.current || prefersReducedMotion()) return;
-      pending.current = { at: captureColumns(grid.current), columnId };
+      pending.current = { at: captureColumns(grid.current), columnId, resize };
     },
     [grid],
   );
+  const beforeMove = useCallback((columnId: string) => capture(columnId, false), [capture]);
+  // Just before a column collapses or expands (`order` then changes too).
+  const beforeResize = useCallback((columnId: string) => capture(columnId, true), [capture]);
   const isMoving = useCallback(() => moving.current || pending.current !== null, []);
-  return { beforeMove, isMoving };
+  return { beforeMove, beforeResize, isMoving };
 }

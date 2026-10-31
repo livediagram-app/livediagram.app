@@ -35,16 +35,12 @@ export function onionTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourA
       elementSelector(id, `[data-concept-row="${outer}"]`),
     ),
     addRowStep('add', 'Add a Ring', 'Add Ring adds one round the outside, up to six.', 'Add Ring'),
-    ...(ctx.hasMore
-      ? [
-          inTheMenu(
-            'rows',
-            'Reorder in the Menu',
-            'In its menu, Tools › Rows lets you rename, reorder or remove rings.',
-            ['Tools', 'Rows'],
-          ),
-        ]
-      : []),
+    inTheMenu(
+      'rows',
+      'Reorder in the Menu',
+      'In its menu, Tools › Rows lets you rename, reorder or remove rings.',
+      ['Tools', 'Rows'],
+    ),
     onGraphic(
       'animate',
       'Ripple Outward',

@@ -5,8 +5,9 @@ import {
   statusRingColor,
   type Participant,
 } from '@/lib/identity';
+import { agentRowDetail } from '@/lib/agent-presence-rows';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { HoverCard, IDENTITY_FILL, PictureDisc, identityVars } from '@livedesign/ui';
+import { AgentIcon, HoverCard, IDENTITY_FILL, PictureDisc, identityVars } from '@livedesign/ui';
 
 // How far the presence ring paints BEYOND the avatar's layout box, per side.
 //
@@ -56,7 +57,7 @@ export function ParticipantAvatar({
     <PictureDisc
       as="div"
       size={size}
-      pictureUrl={participant.picture}
+      pictureUrl={participant.agent ? null : participant.picture}
       // The disc names them (role="img"); the picture inside is decorative.
       name=""
       role="img"
@@ -68,7 +69,13 @@ export function ParticipantAvatar({
       }}
       className={`font-semibold text-white ${IDENTITY_FILL}`}
     >
-      {initialsOf(participant.name)}
+      {/* An agent wears its mark in its owner's colour, not initials (docs/specs/024-agents/agent-presence.md
+          "Presence"). */}
+      {participant.agent ? (
+        <AgentIcon size={Math.round(size * 0.62)} />
+      ) : (
+        initialsOf(participant.name)
+      )}
     </PictureDisc>
   );
   if (!withHoverCard) return avatar;
@@ -82,11 +89,11 @@ export function ParticipantAvatar({
     participant.lastActiveAt !== undefined
       ? ` · Active ${relativeSince(participant.lastActiveAt, now)}`
       : '';
-  // An agent's status line leads (docs/specs/024-agents/blueprints/agent-presence.md "Presentation and UX"): an
-  // agent row says only what it is doing, an owner's row says it before their own status.
+  // An agent row says only what it is doing (docs/specs/024-agents/blueprints/agent-presence.md "Presentation and
+  // UX"); a person's row their status and how long ago they were active.
   const description = participant.agent
-    ? (participant.statusLine ?? statusLabel(participant.status))
-    : `${participant.statusLine ? `${participant.statusLine} · ` : ''}${statusLabel(participant.status)}${idleSuffix}`;
+    ? agentRowDetail(participant)
+    : `${statusLabel(participant.status)}${idleSuffix}`;
   const title =
     badges && badges.length > 0 ? (
       <span className="flex flex-wrap items-center gap-1">

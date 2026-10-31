@@ -51,4 +51,28 @@ describe('slideThumbFor', () => {
     for (const colour of themeChartPalette(getTheme(undefined)).slice(0, 3))
       expect(thumb.markup).toContain(`fill="${colour}"`);
   });
+
+  it('draws an image element and a picture fill with the pictures it is handed, a placeholder without', () => {
+    const image = {
+      id: 'i',
+      type: 'image',
+      imageId: 'g1',
+      objectFit: 'cover',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    };
+    const pictured = {
+      ...tab({ fill: { kind: 'image', imageId: 'g0', tone: '#334455' } }),
+      elements: [image],
+    } as unknown as Tab;
+    const resolveImageHref = (id: string) => `blob:${id}`;
+    const drawn = slideThumbFor(slide, pictured, { iconsLoaded: true, resolveImageHref })!;
+    expect(drawn.markup).toContain('href="blob:g1"');
+    expect(drawn.markup).toContain('href="blob:g0"');
+    const bare = slideThumbFor(slide, pictured, { iconsLoaded: true })!;
+    expect(bare.markup).not.toContain('<image');
+    expect(bare.markup).toContain('#334455');
+  });
 });

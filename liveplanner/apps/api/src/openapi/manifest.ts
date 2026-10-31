@@ -896,6 +896,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/projects/{id}/items/{itemId}/history',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      "A card's history, newest first: who made, moved and changed it and when, quick changes by one person grouped, at most 200 entries and none over 180 days old. Authors by name and colour; `mine` marks the caller's own. Anyone who may read the card may read it.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    responseSchema: 'ItemHistoryResponse',
+    statuses: [200, 401, 403, 404, 410],
+  },
+  {
+    method: 'GET',
     path: '/projects/{id}/threads',
     segment: 'projects',
     tag: 'Items',
@@ -961,6 +974,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [ITEM_TAB_QUERY],
     responseSchema: 'CardThreadWriteResponse',
     statuses: [200, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/threads/{threadId}/comments/{commentId}/reactions',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      'Add or take back your own reaction (one of six emoji) on a comment in a thread; no change answers 204. Needs participate access; agents read reactions but may not leave them.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'CardThreadReactionRequest',
+    responseSchema: 'CardThreadWriteResponse',
+    statuses: [200, 204, 400, 401, 403, 404, 409, 410, 413],
   },
   {
     method: 'POST',

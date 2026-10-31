@@ -113,7 +113,8 @@ describe('usePlanItems undo', () => {
     expect(api.writeItem.mock.calls[1]![1]).toEqual({
       kind: 'patches',
       undo: true,
-      patches: [{ id: 'item-one', patch: { set: { status: 'done' } } }],
+      // Its old column's stamp comes back with it (docs/specs/026-plan/items.md "Undo").
+      patches: [{ id: 'item-one', patch: { set: { status: 'done', statusSince: 0 } } }],
     });
   });
 });

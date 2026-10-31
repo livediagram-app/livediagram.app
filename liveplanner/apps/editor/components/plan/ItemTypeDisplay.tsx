@@ -32,6 +32,7 @@ import {
   typeOffersCardField,
   customCardFields,
   isCustomCardField,
+  STATUS_SINCE_FIELD,
   type CustomFieldDef,
   type CardDisplay,
   type CardField,
@@ -99,6 +100,9 @@ function sampleCard(type: ItemTypeDef): Item {
       priority: 'high',
       due: dayKey(3),
       start: dayKey(-2),
+      // Four days in its column, so a placed Age reads "4d".
+      status: 'In Progress',
+      [STATUS_SINCE_FIELD]: Date.now() - 4 * 86_400_000,
       labels: ['Design'],
       estimate: 3,
       checklist: [

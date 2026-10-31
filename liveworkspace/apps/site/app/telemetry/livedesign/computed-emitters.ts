@@ -342,7 +342,17 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Design', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: [
+      'Design',
+      'Shared',
+      'Folder',
+      'Team',
+      'Tab',
+      'Element',
+      'Palette',
+      'Command',
+      'Workspace',
+    ],
   },
   'apps/live/hooks/ui/useImageSearch.ts Error·Warning': {
     values: IMAGE_SEARCH_WARNINGS,

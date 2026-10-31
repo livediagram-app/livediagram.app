@@ -101,6 +101,23 @@ describe('cell comment helpers', () => {
     );
   });
 
+  // docs/specs/012-collaboration/comment-reactions.md: a cell comment takes reactions in the thread holding it.
+  it('reacts to a comment in the cell thread that holds it', () => {
+    const el = withThreadAt(withThreadAt(sheet(), B4, thread('a')), undefined, thread('own'));
+    const on = applyElementDelta(el, {
+      kind: 'comment-react',
+      commentId: 'a',
+      emoji: 'eyes',
+      by: 'k-ana',
+      name: 'Ana',
+      on: true,
+    }) as ShapeElement;
+    expect(threadAt(on, B4)?.comments[0]?.reactions).toEqual([
+      { emoji: 'eyes', by: 'k-ana', name: 'Ana' },
+    ]);
+    expect(threadAt(on)?.comments[0]?.reactions).toBeUndefined();
+  });
+
   it('finds the thread holding a comment', () => {
     const el = withThreadAt(withThreadAt(sheet(), B4, thread('a')), undefined, thread('own'));
     expect(threadHolding(el, 'a')?.cell).toBe(B4);

@@ -32,11 +32,19 @@ import {
   calculatedValue,
   calculationOf,
   childIndexFor,
+  cardAgeDays,
+  cardAgeText,
+  cardAgeTone,
+  itemStatus,
+  itemStatusSince,
 } from '@liveplanner/items';
 import { FLAG_COLOUR, PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { personDisc, text as faceText, wrapLines } from './svg-render-face-kit';
 import { initialsOf } from '@liveworkspace/model-core/names';
+
+// Age past its thresholds: the board's amber and red (docs/specs/026-plan/item-types.md "Card display").
+const AGE_INK = { warn: '#d97706', alert: '#dc2626' } as const;
 
 const PRIORITY_LABEL: Readonly<Record<string, string>> = {
   urgent: 'Urgent',
@@ -78,6 +86,8 @@ export type CardFaceContext = {
   isDone?: IsDoneStatus;
   // A standalone card element's own height: its frame keeps the element's bounds rather than its measured need.
   height?: number;
+  // The moment a card's Age is read at; absent, now.
+  now?: number;
 };
 
 // One field's bit, or null when the card has nothing for it.
@@ -135,6 +145,22 @@ function bitOf(
         ? { kind: 'text', text: labels.join(' · '), color: p.muted, pill: true }
         : null;
     }
+    // How long it has sat in its column: only with the board's done columns in hand (a done card shows none).
+    case 'age': {
+      const status = itemStatus(item);
+      if (!ctx.isDone || status === undefined || ctx.isDone(status)) return null;
+      const days = cardAgeDays(itemStatusSince(item), new Date(ctx.now ?? Date.now()));
+      const tone = cardAgeTone(days);
+      return tone === 'quiet'
+        ? { kind: 'text', text: cardAgeText(days), color: p.muted, pill: true }
+        : {
+            kind: 'text',
+            text: cardAgeText(days),
+            color: AGE_INK[tone],
+            weight: tone === 'alert' ? 700 : 600,
+            pill: true,
+          };
+    }
     case 'description':
       return typeof v === 'string' && v.trim()
         ? { kind: 'lines', lines: wrapLines(v.trim(), width - PAD * 2, 12, 2), color: p.muted }
@@ -188,8 +214,9 @@ export function planCardFace(
   const size: CardSize = ctx.size ?? 'detailed';
   const typeShows = typeCardDisplay(type, size);
   const boardShows = ctx.boardFields ? cardFieldsAt(size, ctx.boardFields) : null;
+  // A custom field, and Age (newer than the board's old field list), follow the type's Display alone.
   const show = (f: CardField) =>
-    isCustomCardField(f)
+    isCustomCardField(f) || f === 'age'
       ? typeShows.includes(f)
       : typeShows.includes(f) && (!boardShows || boardShows.includes(f));
   const layout = typeCardLayout(type, size);

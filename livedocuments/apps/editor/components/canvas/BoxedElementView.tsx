@@ -559,6 +559,7 @@ function BoxedElementViewImpl({
         showHandles={showHandles}
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}
+        onHandlePress={longPress.onPointerDown}
       />
     </div>
   );

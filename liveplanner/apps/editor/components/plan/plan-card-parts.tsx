@@ -22,8 +22,9 @@ import { FLAG_COLOUR } from './item-flag';
 import { labelColour } from './label-colour';
 import { dayKey, dayLabel } from './day-label';
 
-const LATE_COLOUR = '#dc2626';
-const SOON_COLOUR = '#d97706';
+// Late and due soon; Age's red and amber too (card-age.tsx).
+export const LATE_COLOUR = '#dc2626';
+export const SOON_COLOUR = '#d97706';
 // A due date this many days away or fewer (and not past) reads as due soon.
 export const DUE_SOON_DAYS = 2;
 

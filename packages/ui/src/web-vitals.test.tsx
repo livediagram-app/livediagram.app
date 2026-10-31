@@ -65,4 +65,12 @@ describe('WebVitalsReporter', () => {
     reported.fn!({ name: 'INP', value: 120 });
     expect(timings).toEqual([['Inp.HELP', 120]]);
   });
+
+  it('reports nothing on the way back from a deferred silent sign-in, whose timings start at the bounce', () => {
+    document.documentElement.setAttribute('data-silent-return', '');
+    render(<WebVitalsReporter track={vi.fn()} report={report} />);
+    reported.fn!({ name: 'LCP', value: 900 });
+    document.documentElement.removeAttribute('data-silent-return');
+    expect(timings).toEqual([]);
+  });
 });

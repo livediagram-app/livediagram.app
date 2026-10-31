@@ -282,6 +282,53 @@ describe('replying and comments', () => {
   });
 });
 
+// docs/specs/012-collaboration/comment-reactions.md "On a card's comment threads".
+describe('reactions', () => {
+  it('reacts from the tray and takes it back from its chip, under this session’s key', async () => {
+    const live = renderLive();
+    openThread('Title of th-a');
+    fireEvent.click(screen.getByRole('button', { name: 'Add Reaction' }));
+    fireEvent.click(
+      screen.getByRole('group', { name: 'Reactions' }).querySelector('[aria-label="Eyes"]')!,
+    );
+    await flush();
+    expect(live.acts).toEqual([
+      {
+        kind: 'react',
+        threadId: 'th-a',
+        commentId: 'th-a-c1',
+        emoji: 'eyes',
+        on: true,
+        key: 'k-me',
+      },
+    ]);
+    const chip = screen.getByRole('button', { name: 'Eyes, 1' });
+    expect(chip.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(chip);
+    await flush();
+    expect(live.acts.at(-1)).toMatchObject({ kind: 'react', emoji: 'eyes', on: false });
+    expect(screen.queryByRole('button', { name: /^Eyes/ })).toBeNull();
+  });
+
+  it('shows a Viewer who reacted, with nothing to press, and a resolved thread takes no new ones', () => {
+    const reacted = comment('c1', { reactions: [{ emoji: 'heart', by: 'k-bo', name: 'Bo' }] });
+    renderLive([thread('th-a', { comments: [reacted] })], { canComment: false, isEditor: false });
+    openThread('Title of th-a');
+    expect(screen.getByRole('button', { name: 'Heart, 1' }).getAttribute('aria-disabled')).toBe(
+      'true',
+    );
+    expect(screen.queryByRole('button', { name: 'Add Reaction' })).toBeNull();
+    cleanup();
+    renderLive([thread('th-a', { comments: [reacted], resolved: true, resolvedBy: 'Bo' })]);
+    fireEvent.click(screen.getByRole('button', { name: /^Resolved/ }));
+    openThread(/^Title of th-a/);
+    expect(screen.getByRole('button', { name: 'Heart, 1' }).getAttribute('aria-disabled')).toBe(
+      'true',
+    );
+    expect(screen.queryByRole('button', { name: 'Add Reaction' })).toBeNull();
+  });
+});
+
 describe('the ⋯ menu', () => {
   const openMenu = () =>
     fireEvent.click(screen.getByRole('button', { name: 'More for the thread “Title of th-a”' }));

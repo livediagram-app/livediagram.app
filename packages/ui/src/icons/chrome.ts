@@ -11,6 +11,7 @@ export {
   RefreshIcon,
   PlusIcon,
   CloseIcon,
+  SmilePlusIcon,
   CheckIcon,
   FormatPainterIcon,
   IndentIcon,
@@ -36,6 +37,7 @@ export {
   PrivateDotIcon,
   TabsLabelIcon,
   SparkleIcon,
+  AgentIcon,
   CircleXIcon,
   TeamIcon,
 } from './status';

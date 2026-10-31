@@ -5,7 +5,7 @@ import { TabFolderStates, AddToFolderMenu } from '@/components/illustrations/tab
 export const metadata = helpMetadata({
   title: 'Tab Folders',
   description:
-    'Group related tabs in a plan under a named folder chip that fans its tabs out on a click, so a long tab bar stays organised and readable.',
+    'Group related tabs in a plan under a named folder that opens in place on the tab bar, so a long tab bar stays organised and readable.',
   path: '/help/tabs/tab-folders/',
 });
 
@@ -20,18 +20,21 @@ A few things are worth knowing about how tab folders behave:
 - **One level.** A folder holds tabs. Folders never contain other folders.
 - **A folder is just a name.** There is no separate folder object to create or delete. A folder exists as long as at least one tab carries its name, and it disappears when the last tab leaves it.
 - **Per-project.** If a tab is [shared into more than one plan](/help/tabs/add-to-project/), it can sit in a folder in one plan and be loose in another. The folder belongs to the plan, not to the tab's content.
-- **Folders are contiguous.** A folder's tabs always sit together in the tab order, behind a single chip with a dashed outline, the folder's name in capitals, and a count of its tabs.
+- **Folders are contiguous.** A folder's tabs always sit together in the tab order, behind a single chip in the folder's colour with its name and a count of its tabs.
 - **Shared with collaborators.** Folder names and membership are part of the plan, so everyone sees the same folders.
 
 ## Opening a folder
 
 A folder takes up one chip on the bar, however many tabs it holds:
 
-- **Click the chip** to fan the folder's tabs out in a small list above it. Pick one to switch to it; the list closes. Clicking away, pressing Escape, or switching tab also closes it.
-- **The tab you are on stays visible.** When the active tab lives in a folder, it sits on the bar right beside the chip, so you can always see where you are. The chip's folder icon is drawn open while the list shows.
-- **Presence comes along.** If collaborators are on tabs tucked inside the folder, their avatars show on the chip.
+- **Click the chip** to open the folder in place: its tabs slide out on the bar right after the chip, in order, and the tabs after the folder slide along to make room. Click the chip again to tuck them away. Nothing pops up over the canvas.
+- **The tab you are on stays visible.** When the open tab lives in a folder, it stays on the bar right beside the chip even while the folder is shut, and a pale wash in the folder's colour behind them shows it belongs there.
+- **Each folder has its own colour**, picked from its name, so "Plans" looks the same every time you come back. The chip shows a count of its tabs while it is shut, and its arrow points the way it opens.
+- **A folder opens for this visit.** Folders start shut each time you open the plan, so the bar starts calm. On a phone, opening a folder scrolls the bar so its tabs are in view.
+- **Presence comes along.** If collaborators are on tabs tucked inside a shut folder, their avatars show beside the chip.
+- **From the keyboard**, the arrow keys move between the tabs and chips on the bar, and Enter or Space opens or shuts the folder you are on.
 
-<Figure caption="A folder on the tab bar: the chip with the tab you are on beside it, and the folder's other tabs fanned out above after a click.">
+<Figure caption="A folder on the tab bar. Shut, its chip counts its tabs and the tab you are on stays beside it; open, all its tabs sit after the chip.">
   <TabFolderStates />
 </Figure>
 
@@ -41,8 +44,9 @@ There are two ways to change which folder a tab belongs to.
 
 <Step n={1}>
   Drag and drop. Drag a tab onto a folder's tabs (or onto its chip, which files it at the front of
-  the folder) to join that folder. Drop it among the loose tabs to make it loose again, or among a
-  different folder's tabs to move it there.
+  the folder) to join that folder. Hold it over a shut folder's chip for a moment and the folder
+  opens, so you can drop it exactly where you want. Drop it among the loose tabs to make it loose
+  again, or among a different folder's tabs to move it there.
 </Step>
 
 <Step n={2}>

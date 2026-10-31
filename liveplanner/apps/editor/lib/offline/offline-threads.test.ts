@@ -51,6 +51,19 @@ describe('offline threads', () => {
     expect('commentId' in reply && reply.commentId).toBeTruthy();
     const id = t.comments[0]!.id;
     await writeThread(scope, { kind: 'edit', threadId: t.id, commentId: id, text: 'Fixed' }, who);
+    // docs/specs/012-collaboration/comment-reactions.md: a This Browser plan keeps its reactions too.
+    const react = {
+      kind: 'react',
+      threadId: t.id,
+      commentId: id,
+      emoji: 'eyes',
+      key: 'k-me',
+    } as const;
+    const reacted = await writeThread(scope, { ...react, on: true }, who);
+    expect('thread' in reacted && reacted.thread?.comments[0]?.reactions).toEqual([
+      { emoji: 'eyes', by: 'k-me', name: 'Gentle Falcon' },
+    ]);
+    expect(await writeThread(scope, { ...react, on: true }, who)).toEqual({ unchanged: true });
     await writeThread(scope, { kind: 'resolve', threadId: t.id, resolved: true }, who);
     // Already resolved: nothing.
     expect(

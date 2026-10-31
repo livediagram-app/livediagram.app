@@ -70,6 +70,8 @@ import {
   type ItemCaller,
 } from './item-route-kit';
 import { patches } from './item-patches-route';
+import { historyTagOf, itemHistory } from './item-history-route';
+import { appendItemHistory } from '../db/item-history';
 import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
 import { readBody, type PlanRouteContext } from './context';
@@ -127,6 +129,9 @@ async function restoreThreadsOf(
 }
 
 const restoresThreads = (c: ReadCreate) => (c.restoredThreads?.length ?? 0) > 0;
+
+// A made card as its history's first entry.
+const created = (item: Item) => ({ before: null, after: item });
 
 // GET /items: the store, or the items a tab-scoped caller's tab shows.
 async function list(ctx: PlanRouteContext, projectId: string): Promise<Response> {
@@ -260,6 +265,7 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
+  await appendItemHistory(ctx.env, projectId, made.items.map(created), historyTagOf(ctx, restores));
   await restoreThreadsOf(ctx, projectId, made.items, [read]);
   console.info('[items] created', { projectId, agent: ctx.token !== null });
   const answer: ItemResponse = { item: forCaller(caller, made.items)[0]!, rev: made.rev };
@@ -277,6 +283,7 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     return badRequest(`items must be 1 to ${ITEM_BULK_MAX} items`);
   const creates: ItemCreate[] = [];
   const reads: ReadCreate[] = [];
+  let restoring = false;
   const types = typesOf(caller.doc?.itemTypes);
   for (const raw of body.items) {
     const read = readCreate(raw, caller.owner);
@@ -285,6 +292,7 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     reads.push(read);
     // A card put back (its number, votes or threads) holds what it held; any other gives no Calculated field a value.
     const restores = input.key !== undefined || input.votes !== undefined || restoresThreads(read);
+    restoring ||= restores;
     const calculated = restores ? null : calculatedSet(caller, input);
     if (calculated) return rejected('field_calculated', calculated);
     // A new card missing a required field; a card carried across (a sync, a restore: its number) passes.
@@ -295,6 +303,12 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
   const made = await createMany(ctx, caller, creates);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
+  await appendItemHistory(
+    ctx.env,
+    projectId,
+    made.items.map(created),
+    historyTagOf(ctx, restoring),
+  );
   await restoreThreadsOf(ctx, projectId, made.items, reads);
   console.info('[items] bulk created', { projectId, count: made.items.length });
   const answer: ItemsResponse = { items: forCaller(caller, made.items), rev: made.rev };
@@ -331,6 +345,12 @@ export async function writeItem(
     const rev = await updateItemAtRev(ctx.env, caller.projectId, next, item.rev);
     if (rev !== null) {
       relay(ctx, caller.projectId, [next], [], rev);
+      await appendItemHistory(
+        ctx.env,
+        caller.projectId,
+        [{ before: item, after: next }],
+        historyTagOf(ctx, opts.undo === true),
+      );
       const answer: ItemResponse = { item: withoutLegacyThread(next), rev };
       return json(answer);
     }
@@ -414,6 +434,9 @@ export async function handleItemRoutes(ctx: PlanRouteContext): Promise<Response 
   }
   // A new comment thread on the card (docs/specs/026-plan/items.md "Comments"); the thread's own writes are under
   // /threads (card-thread-routes.ts).
+  // The card's history (docs/specs/026-plan/items.md "History"), read when its panel opens.
+  if (segments.length === 6 && segments[5] === 'history')
+    return itemHistory(ctx, projectId, itemId);
   if (segments.length === 6 && segments[5] === 'threads')
     return method === 'POST' ? startOnCard(ctx, projectId, itemId) : methodNotAllowed();
   // A card is voted on through the tab's session vote, its tally added at the end (`/items/tally`); the old

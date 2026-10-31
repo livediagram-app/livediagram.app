@@ -35,8 +35,24 @@ describe('migratePlanSchema', () => {
     expect(() => migratePlanSchema((q) => exec.exec(q))).not.toThrow();
   });
 
+  // A card's history (docs/specs/026-plan/items.md "History"): a plan from before gains the table, and the step runs
+  // again harmlessly (every statement IF NOT EXISTS), so a renumbering past another step costs nothing.
+  it('gives a plan from before card history its table, and runs the step again harmlessly', () => {
+    const sql = new DatabaseSync(':memory:');
+    const exec = nodeItemSql(sql);
+    migratePlanSchema((q) => exec.exec(q));
+    sql.exec('DROP TABLE item_history; UPDATE _plan_schema SET version = 8');
+    migratePlanSchema((q) => exec.exec(q));
+    expect(tables(sql)).toContain('item_history');
+    sql.exec('UPDATE _plan_schema SET version = 0');
+    expect(() => migratePlanSchema((q) => exec.exec(q))).not.toThrow();
+    expect(sql.prepare('SELECT version FROM _plan_schema').get()!.version).toBe(
+      PLAN_SCHEMA_VERSION,
+    );
+  });
+
   // docs/specs/026-plan/item-types.md "Comments and Votes fields": a thread's Comments field.
-  it('gives a plan made at version 8 its threads’ field column, once', () => {
+  it('gives a plan made at version 9 its threads’ field column, once', () => {
     const sql = new DatabaseSync(':memory:');
     const exec = nodeItemSql(sql);
     const columns = () =>
@@ -46,7 +62,7 @@ describe('migratePlanSchema', () => {
         .map((r) => r.name as string);
     migratePlanSchema((q) => exec.exec(q));
     expect(columns()).toContain('field');
-    sql.exec('ALTER TABLE card_threads DROP COLUMN field; UPDATE _plan_schema SET version = 8');
+    sql.exec('ALTER TABLE card_threads DROP COLUMN field; UPDATE _plan_schema SET version = 9');
     migratePlanSchema((q) => exec.exec(q));
     expect(columns().filter((c) => c === 'field')).toHaveLength(1);
   });

@@ -81,6 +81,8 @@ export const CARD_FIELDS = [
   // Its cover picture across the top of a Detailed card, placed only in the Header (docs/specs/026-plan/item-types.md
   // "Card display").
   'cover',
+  // How long the card has sat in its status (docs/specs/026-plan/item-types.md "Card display"): in no default.
+  'age',
 ] as const;
 // A card field: a built-in one, or a card type's custom field by its id (`f-…`, or the reserved `parent`), placed
 // by the type's Display (docs/specs/026-plan/item-types.md "Card display").
@@ -105,7 +107,7 @@ export function readCardSize(input: unknown): CardSize {
 // board shows outside its size's set is kept but not drawn, and its tile in the Cards menu says so.
 export const CARD_SIZE_FIELDS: Readonly<Record<CardSize, readonly CardField[]>> = {
   // Minimal's one line can carry these beside the title (a type's Display picks them; none by default).
-  minimal: ['key', 'priority', 'due', 'assignee'],
+  minimal: ['key', 'priority', 'due', 'age', 'assignee'],
   detailed: CARD_FIELDS,
 };
 

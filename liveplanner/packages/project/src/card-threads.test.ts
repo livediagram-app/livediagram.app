@@ -334,6 +334,60 @@ describe('writes', () => {
       applyThreadChange(thread(), { kind: 'removeCard', projectId: 'p1', itemId: 'zz' }, 2),
     ).toEqual({ ok: false, reason: 'unchanged' });
   });
+
+  // docs/specs/012-collaboration/comment-reactions.md "On a card's comment threads".
+  describe('react', () => {
+    const react = (by: string, on = true, commentId = 'c1') =>
+      ({ kind: 'react', commentId, emoji: 'eyes', by, name: by.toUpperCase(), on }) as const;
+
+    it('turns a reaction on and off, raising rev but not activity', () => {
+      const t = thread();
+      const on = applyThreadChange(t, react('k-bo'), 500);
+      expect(on.ok && on.thread?.comments[0]?.reactions).toEqual([
+        { emoji: 'eyes', by: 'k-bo', name: 'K-BO' },
+      ]);
+      expect(on.ok && on.thread).toMatchObject({ rev: t.rev + 1, updatedAt: t.updatedAt });
+      expect(isCardThread(on.ok ? on.thread : null)).toBe(true);
+      const off = applyThreadChange(on.ok ? on.thread! : t, react('k-bo', false), 600);
+      expect(off.ok && off.thread?.comments[0]).toEqual(t.comments[0]);
+      expect(off.ok && off.thread).toMatchObject({ rev: t.rev + 2, updatedAt: t.updatedAt });
+    });
+
+    it('changes nothing when already so, and refuses a missing comment', () => {
+      const t = thread();
+      expect(applyThreadChange(t, react('k-bo', false), 1)).toEqual({
+        ok: false,
+        reason: 'unchanged',
+      });
+      const on = applyThreadChange(t, react('k-bo'), 1);
+      expect(applyThreadChange(on.ok ? on.thread! : t, react('k-bo'), 2)).toEqual({
+        ok: false,
+        reason: 'unchanged',
+      });
+      expect(applyThreadChange(t, react('k-bo', true, 'zz'), 1)).toEqual({
+        ok: false,
+        reason: 'comment_not_found',
+      });
+    });
+
+    it('refuses one past the byte budget, but still takes one back', () => {
+      const big = {
+        ...thread(),
+        comments: [
+          comment('c1', {
+            text: 'x'.repeat(THREAD_BYTES - 400),
+            reactions: [{ emoji: 'eyes', by: 'k-bo', name: 'Bo' }],
+          }),
+        ],
+      };
+      expect(applyThreadChange(big, react('k-' + 'y'.repeat(190)), 1)).toEqual({
+        ok: false,
+        reason: 'comments_full',
+      });
+      const off = applyThreadChange(big, { ...react('k-bo', false), name: 'Bo' }, 1);
+      expect(off.ok && off.thread?.comments[0]?.reactions).toBeUndefined();
+    });
+  });
 });
 
 describe('reads', () => {

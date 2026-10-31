@@ -68,7 +68,7 @@ describe('card display', () => {
       headEnd: ['priority'],
       body: ['parent', 'description', 'labels'],
     });
-    expect(cardDisplayFields('minimal')).toEqual(['key', 'priority', 'due', 'assignee']);
+    expect(cardDisplayFields('minimal')).toEqual(['key', 'priority', 'due', 'age', 'assignee']);
     expect(cardSlotFits('detailed', 'foot', 'description')).toBe(true);
     expect(cardSlotFits('minimal', 'trail', 'description')).toBe(false);
   });

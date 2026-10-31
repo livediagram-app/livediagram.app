@@ -1324,6 +1324,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "const": "cover",
+"type": "string"
+      },
+      {
+        "const": "age",
         "type": "string"
       },
       {
@@ -1541,6 +1545,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "text"
+    ],
+    "type": "object"
+  },
+  "CardThreadReactionRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "emoji": {
+        "$ref": "#/components/schemas/CommentReactionId"
+      },
+      "key": {
+        "type": "string"
+      },
+      "on": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "emoji",
+      "on",
+      "key"
     ],
     "type": "object"
   },
@@ -2237,6 +2261,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "reactions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentReaction"
+        },
+        "type": "array"
+      },
       "text": {
         "type": "string"
       },
@@ -2278,6 +2308,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "handle"
     ],
     "type": "object"
+  },
+  "CommentReaction": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "type": "string"
+      },
+      "emoji": {
+        "$ref": "#/components/schemas/CommentReactionId"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "by",
+      "name"
+    ],
+    "type": "object"
+  },
+  "CommentReactionId": {
+    "enum": [
+      "thumbs-up",
+      "thumbs-down",
+      "laugh",
+      "hooray",
+      "heart",
+      "eyes"
+    ],
+    "type": "string"
   },
   "CommentThread": {
     "additionalProperties": false,
@@ -5094,6 +5155,278 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "type": "object"
   },
+  "ItemHistoryChange": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "created",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "const": "moved",
+            "type": "string"
+          },
+          "to": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "trashed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "untrashed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "archived",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unarchived",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "flagged",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unflagged",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "type",
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "set",
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/components/schemas/ItemHistoryValue"
+          }
+        },
+        "required": [
+          "kind",
+          "field"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "cleared",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "field"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "ItemHistoryEntry": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "by": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "color"
+        ],
+        "type": "object"
+      },
+      "changes": {
+        "items": {
+          "$ref": "#/components/schemas/ItemHistoryChange"
+        },
+        "type": "array"
+      },
+      "mine": {
+        "const": true,
+        "type": "boolean"
+      },
+      "tag": {
+        "$ref": "#/components/schemas/ItemHistoryTag"
+      }
+    },
+    "required": [
+      "at",
+      "by",
+      "changes"
+    ],
+    "type": "object"
+  },
+  "ItemHistoryResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "entries": {
+        "items": {
+          "$ref": "#/components/schemas/ItemHistoryEntry"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "entries"
+    ],
+    "type": "object"
+  },
+  "ItemHistoryTag": {
+    "enum": [
+      "ai",
+      "undo",
+      "form"
+    ],
+    "type": "string"
+  },
+  "ItemHistoryValue": {
+    "anyOf": [
+      {
+        "type": "string"
+      },
+      {
+        "type": "number"
+      },
+      {
+        "type": "boolean"
+      },
+      {
+        "items": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        },
+        "type": "array"
+      }
+    ]
+  },
   "ItemMoveRequest": {
     "additionalProperties": false,
     "properties": {
@@ -7564,6 +7897,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               },
               "type": "array"
             },
+            "reactions": {
+              "items": {
+                "$ref": "#/components/schemas/ReactionSummary"
+              },
+              "type": "array"
+            },
             "text": {
               "type": "string"
             },
@@ -8006,6 +8345,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rock"
     ],
     "type": "string"
+  },
+  "ReactionSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "count": {
+        "type": "number"
+      },
+      "emoji": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "name",
+      "count",
+      "by"
+    ],
+    "type": "object"
   },
   "RefCandidate": {
     "additionalProperties": false,

@@ -1101,6 +1101,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "reactions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentReaction"
+        },
+        "type": "array"
+      },
       "text": {
         "type": "string"
       },
@@ -1142,6 +1148,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "handle"
     ],
     "type": "object"
+  },
+  "CommentReaction": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "type": "string"
+      },
+      "emoji": {
+        "$ref": "#/components/schemas/CommentReactionId"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "by",
+      "name"
+    ],
+    "type": "object"
+  },
+  "CommentReactionId": {
+    "enum": [
+      "thumbs-up",
+      "thumbs-down",
+      "laugh",
+      "hooray",
+      "heart",
+      "eyes"
+    ],
+    "type": "string"
   },
   "CommentThread": {
     "additionalProperties": false,
@@ -1437,6 +1474,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "mentions": {
               "items": {
                 "$ref": "#/components/schemas/CommentMention"
+              },
+              "type": "array"
+            },
+            "reactions": {
+              "items": {
+                "$ref": "#/components/schemas/ReactionSummary"
               },
               "type": "array"
             },
@@ -5248,6 +5291,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rock"
     ],
     "type": "string"
+  },
+  "ReactionSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "count": {
+        "type": "number"
+      },
+      "emoji": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "name",
+      "count",
+      "by"
+    ],
+    "type": "object"
   },
   "RefCandidate": {
     "additionalProperties": false,

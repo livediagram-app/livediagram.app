@@ -3,8 +3,10 @@
 // Who is signed in on an app's own pages (liveworkspace/docs/specs/003-accounts/accounts.md "An app's signed-in cookies"), for the
 // marketing header's account menu. The page is static and loads no session: it reads the app's readable cookies,
 // `<prefix>signed_in` (whether) and `<prefix>account` (who). A visitor with no hint costs nothing, not even a
-// request. Only a session from before the name cookie existed (the hint without the name) asks the app's
-// `POST /api/auth/token` once, whose answer sets it.
+// request. Someone the hint says is signed in is shown at once from the cookies, and the page checks that once,
+// when it is idle, with the app's `POST /api/auth/token`: signing out in another app ends this app's session too
+// but can't reach its cookies, so the hint can outlive the session, and the answer clears it. A session from before
+// the name cookie existed (the hint without the name) asks at once instead, since its answer sets the name.
 
 import { useSyncExternalStore } from 'react';
 import {
@@ -75,8 +77,8 @@ function snapshot(hint: string): AppAccount {
   return last.account;
 }
 
-// The fallback: the app's token endpoint answers from its refresh cookie and sets the name cookie beside the hint
-// (or, with the session gone, clears both). Its access token is not kept: this page has nothing to send it to.
+// The app's token endpoint answers from its refresh cookie and sets the name cookie beside the hint (or, with the
+// session gone, clears both). Its access token is not kept: this page has nothing to send it to.
 function askOnce(): void {
   if (asked || asking) return;
   asking = fetch('/api/auth/token', {
@@ -96,13 +98,34 @@ function askOnce(): void {
     });
 }
 
+// The check for a hint with a name: after the page's own work, off its first paint. A reset since it was scheduled
+// drops it, and so does a menu gone by then (nothing left to show the answer); the next subscribe schedules again.
+let checking = false;
+let generation = 0;
+function checkWhenIdle(): void {
+  if (checking || asked || asking) return;
+  checking = true;
+  const mine = generation;
+  const run = () => {
+    if (mine !== generation) return;
+    checking = false;
+    if (listeners.size > 0) askOnce();
+  };
+  const idle = (globalThis as { requestIdleCallback?: (fn: () => void) => void })
+    .requestIdleCallback;
+  if (idle) idle(run);
+  else setTimeout(run, 200);
+}
+
 /** Who is signed in on this app's page; 'out' in the static HTML and until hydration, so the server and the first
  *  client render agree. */
 export function useAppAccount(hint: string): AppAccount {
   return useSyncExternalStore(
     (listener) => {
       listeners.add(listener);
-      if (snapshot(hint) === 'pending') askOnce();
+      const now = snapshot(hint);
+      if (now === 'pending') askOnce();
+      else if (now !== 'out') checkWhenIdle();
       return () => listeners.delete(listener);
     },
     () => snapshot(hint),
@@ -110,9 +133,10 @@ export function useAppAccount(hint: string): AppAccount {
   );
 }
 
-/** Signs out of the app this page is on, and so of every liveworkspace app in this browser (its API clears its cookies,
- *  remembers not to sign in silently, and ends the liveworkspace session; liveworkspace/docs/specs/003-accounts/
- *  accounts.md "Signing out"), then goes through the accounts site's hop, or straight back to this page, as a visitor.
+/** Signs out of the app this page is on, and so of every liveworkspace app in this browser (its API clears its cookies
+ *  and ends the liveworkspace session, or, should that fail, remembers not to sign in silently here;
+ *  liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"), then goes through the accounts site's hop, or
+ *  straight back to this page, as a visitor.
  *  Resolves false when the API refused, leaving everything as it was. */
 export async function appSignOut(
   go: (to: string) => void = (to) => window.location.assign(to),
@@ -141,6 +165,8 @@ export function pageHere(): string {
 export function resetAppAccount() {
   asked = false;
   asking = null;
+  checking = false;
+  generation += 1;
   last = null;
   listeners.clear();
 }

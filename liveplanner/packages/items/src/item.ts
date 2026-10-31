@@ -96,11 +96,16 @@ export function isSwimlaneSettable(key: string): boolean {
 // The flag an archived item carries (docs/specs/026-plan/items.md "Archive").
 export const ARCHIVED_FIELD = 'archived';
 
-// Whether a move may set or clear this field: a swimlane's (isSwimlaneSettable), or the archived flag, which a card
-// dragged off an Archive board loses in the move itself (one write, one undo step).
+// Whether a move may set or clear this field: a swimlane's (isSwimlaneSettable), the archived flag, which a card
+// dragged off an Archive board loses in the move itself (one write, one undo step), or the status stamp a move's undo
+// puts back.
 export function isMoveSettable(key: string): boolean {
-  return isSwimlaneSettable(key) || key === ARCHIVED_FIELD;
+  return isSwimlaneSettable(key) || key === ARCHIVED_FIELD || key === STATUS_SINCE_FIELD;
 }
+
+// When the card entered its current status, a ms epoch (docs/specs/026-plan/items.md "Fields"; status-since.ts).
+// A move may carry it, so undoing one puts the card's Age back.
+export const STATUS_SINCE_FIELD = 'statusSince';
 
 export function itemTitle(item: Pick<Item, 'fields'>): string {
   const title = item.fields['title'];

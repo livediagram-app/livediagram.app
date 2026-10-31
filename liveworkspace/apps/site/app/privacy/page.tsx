@@ -7,6 +7,7 @@ import {
 } from '@liveworkspace/icons/lucide';
 import type { Metadata } from 'next';
 import { LegalPage, type LegalHighlight, type LegalSection } from '@/components/LegalPage';
+import { SECURITY_ADVISORY_URL } from '@liveworkspace/sites/security';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
 
 export const metadata: Metadata = {
@@ -407,7 +408,9 @@ const SECTIONS: LegalSection[] = [
     body: (
       <p>
         Every request is checked for authentication and access. If you find a security
-        vulnerability, please report it to us privately through the contact form below.
+        vulnerability, please report it to us privately through{' '}
+        <a href={SECURITY_ADVISORY_URL}>GitHub&rsquo;s private advisory form</a>, not the contact
+        form or a public issue.
       </p>
     ),
   },

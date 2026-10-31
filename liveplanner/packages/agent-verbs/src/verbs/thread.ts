@@ -29,7 +29,23 @@ const commentOut = z.object({
   text: z.string(),
   ai: z.literal(true).optional(),
   edited: z.literal(true).optional(),
+  reactions: z
+    .array(
+      z.object({
+        emoji: z.string(),
+        name: z.string(),
+        count: z.number(),
+        by: z.array(z.string()),
+      }),
+    )
+    .optional(),
 });
+
+// A comment's reactions after its text in the listing (` · 👍 2 👀 1`), nothing when it has none.
+function reactionsText(reactions: readonly { emoji: string; count: number }[] | undefined): string {
+  if (!reactions?.length) return '';
+  return ` · ${reactions.map((r) => `${r.emoji} ${r.count}`).join(' ')}`;
+}
 
 const threadOut = z.object({
   id: z.string(),
@@ -108,7 +124,7 @@ export const threadLs = defineVerb({
           ]),
           ...t.comments.map(
             (c) =>
-              `  ${c.id} ${c.author}${c.ai ? ' [AI]' : ''}${c.edited ? ' (edited)' : ''}: ${c.text.replace(/\s+/g, ' ')}`,
+              `  ${c.id} ${c.author}${c.ai ? ' [AI]' : ''}${c.edited ? ' (edited)' : ''}: ${c.text.replace(/\s+/g, ' ')}${reactionsText(c.reactions)}`,
           ),
         ]),
   quiet: ({ threads }) => threads.map((t) => t.id),

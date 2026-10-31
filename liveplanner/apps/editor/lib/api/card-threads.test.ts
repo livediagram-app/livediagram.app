@@ -100,6 +100,12 @@ describe('the thread routes', () => {
         { itemId: 'c2' },
       ],
       [{ kind: 'deleteThread', threadId: 'th' }, 'DELETE', '/threads/th', undefined],
+      [
+        { kind: 'react', threadId: 'th', commentId: 'k', emoji: 'eyes', on: true, key: 'k-me' },
+        'POST',
+        '/threads/th/comments/k/reactions',
+        { emoji: 'eyes', on: true, key: 'k-me' },
+      ],
     ];
     for (const [action, method, path, body] of cases) {
       vi.mocked(apiFetch).mockResolvedValueOnce(Response.json({ thread: null }));

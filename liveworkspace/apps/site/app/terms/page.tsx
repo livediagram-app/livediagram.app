@@ -7,6 +7,7 @@ import {
 } from '@liveworkspace/icons/lucide';
 import type { Metadata } from 'next';
 import { LegalPage, type LegalHighlight, type LegalSection } from '@/components/LegalPage';
+import { SECURITY_ADVISORY_URL } from '@liveworkspace/sites/security';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
 
 export const metadata: Metadata = {
@@ -185,8 +186,9 @@ const SECTIONS: LegalSection[] = [
           <li>abuse it in a way that degrades it for other people.</li>
         </ul>
         <p>
-          Good-faith security research that you report to us privately is authorised and does not
-          breach these rules.
+          Good-faith security research that you report to us privately, through{' '}
+          <a href={SECURITY_ADVISORY_URL}>GitHub&rsquo;s private advisory form</a>, is authorised
+          and does not breach these rules.
         </p>
       </>
     ),

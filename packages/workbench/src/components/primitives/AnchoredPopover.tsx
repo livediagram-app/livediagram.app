@@ -3,7 +3,7 @@
 // A small panel anchored to the control that opened it (Add Field, for one), portal-rendered so a scrolling dialog body or a narrow column never clips or squeezes it. It opens under
 // its anchor, left-aligned, or above it when there is not room below, clamped on-screen. The side is chosen once:
 // as its content grows (a form growing a field) it grows away from the anchor, scrolling past the room it has, and
-// never flips; it follows the anchor as the page scrolls or resizes. Sits above the modal layer,
+// never flips; it follows the anchor as the page scrolls or resizes, or the anchor itself grows. Sits above the modal layer,
 // so it can open from inside a dialog: the dialog closes only on a press that starts on its own backdrop, so a
 // press in here never closes it. Escape (taken before the dialog's own) and a press outside close it; opening
 // focuses its first control and closing hands focus back to the anchor.
@@ -98,8 +98,9 @@ export function AnchoredPopover({
   // press outside.
   keepOpenWithin?: string;
   // What opening focuses: its first control (the default), or the panel itself, so a touch screen opens one whose
-  // first control is a text field without raising a keyboard, focus still inside it.
-  initialFocus?: 'first' | 'panel';
+  // first control is a text field without raising a keyboard, focus still inside it; or nothing, for a list a
+  // field drives as it is typed in (a combobox), focus staying in the field.
+  initialFocus?: 'first' | 'panel' | 'none';
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -138,6 +139,8 @@ export function AnchoredPopover({
     place();
     const grow = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(place);
     if (panel.current) grow?.observe(panel.current);
+    // The anchor growing (a chip field wrapping to a second row) moves the panel with it.
+    grow?.observe(anchor);
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => {
@@ -148,6 +151,7 @@ export function AnchoredPopover({
   }, [anchor, width, beside]);
 
   useEffect(() => {
+    if (initialFocus === 'none') return;
     if (initialFocus === 'panel') panel.current?.focus();
     else panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
     // Opening only.

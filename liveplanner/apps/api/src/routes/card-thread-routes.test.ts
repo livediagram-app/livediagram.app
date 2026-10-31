@@ -430,6 +430,64 @@ describe('the writes on a thread', () => {
     expect((await call('p1', 'DELETE', `/threads/${own.id}`)).status).toBe(204);
   });
 
+  // docs/specs/012-collaboration/comment-reactions.md "On a card's comment threads".
+  describe('reactions', () => {
+    const react = (body: unknown, who: Who = {}, commentId = t.comments[0]!.id) =>
+      call<CardThreadWriteResponse>(
+        'p1',
+        'POST',
+        `/threads/${t.id}/comments/${commentId}/reactions`,
+        body,
+        who,
+      );
+
+    it('lets an Editor and a Participant react under their own name, and relays it', async () => {
+      const mine = await react({ emoji: 'eyes', on: true, key: 'k-owner' });
+      expect(mine.status).toBe(200);
+      const theirs = await react(
+        { emoji: 'eyes', on: true, key: 'k-vee', name: 'Someone Else' },
+        { owner: 'visitor', code: 'PART' },
+      );
+      expect(theirs.status).toBe(200);
+      const edit = await react(
+        { emoji: 'heart', on: true, key: 'k-ed' },
+        { owner: 'visitor', code: 'EDIT' },
+      );
+      expect(edit.status).toBe(200);
+      expect(edit.body.thread?.comments[0]?.reactions).toEqual([
+        { emoji: 'eyes', by: 'k-owner', name: 'Gentle Falcon' },
+        { emoji: 'eyes', by: 'k-vee', name: 'Vee' },
+        { emoji: 'heart', by: 'k-ed', name: 'Vee' },
+      ]);
+      // A reaction is not activity: the thread keeps its place.
+      expect(edit.body.thread?.updatedAt).toBe(t.updatedAt);
+      expect(threadRelays()).toHaveLength(3);
+      const [read] = await threads('p1', { owner: 'visitor', code: 'LOOK' });
+      expect(read!.comments[0]!.reactions).toHaveLength(3);
+    });
+
+    it('takes one back, and answers nothing when nothing changes', async () => {
+      await react({ emoji: 'eyes', on: true, key: 'k-owner' });
+      expect((await react({ emoji: 'eyes', on: true, key: 'k-owner' })).status).toBe(204);
+      const off = await react({ emoji: 'eyes', on: false, key: 'k-owner' });
+      expect(off.body.thread?.comments[0]?.reactions).toBeUndefined();
+      expect((await react({ emoji: 'eyes', on: false, key: 'k-owner' })).status).toBe(204);
+    });
+
+    it('refuses a Viewer, an agent, a bad body and a missing comment', async () => {
+      const body = { emoji: 'eyes', on: true, key: 'k' };
+      expect((await react(body, { owner: 'visitor', code: 'LOOK' })).status).toBe(403);
+      expect((await react(body, { agent: true })).status).toBe(403);
+      expect((await react({ ...body, emoji: 'rocket' })).status).toBe(400);
+      expect((await react({ ...body, on: 'yes' })).status).toBe(400);
+      expect((await react({ ...body, key: '' })).status).toBe(400);
+      expect((await react({ ...body, key: 'k'.repeat(201) })).status).toBe(400);
+      expect((await react(body, {}, 'nope')).status).toBe(404);
+      expect((await call('p1', 'GET', `/threads/${t.id}/comments/x/reactions`)).status).toBe(405);
+      expect((await threads('p1'))[0]!.comments[0]!.reactions).toBeUndefined();
+    });
+  });
+
   it('rejects verbs it does not take', async () => {
     expect((await call('p1', 'POST', '/threads')).status).toBe(405);
     expect((await call('p1', 'GET', `/threads/${t.id}`)).status).toBe(405);

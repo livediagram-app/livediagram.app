@@ -687,20 +687,43 @@ discouraging tool use, not encouraging it.
 
 The hosted server is listed in the official **MCP Registry**
 (`registry.modelcontextprotocol.io`), which other directories (PulseMCP among
-them) ingest from, so one listing reaches several catalogues.
+them) ingest from, so one listing reaches several catalogues. Directories that
+look at a server themselves (Smithery, Glama, a client's add-a-server screen)
+read its server card, because `/mcp` answers only a signed-in caller.
 
-- **Descriptor.** `server.json` at livedesign's root, under the registry's
-  `2025-12-11` schema. Name `io.github.livedesign-app/livedesign`: the
-  `io.github.<org>` namespace is proven by signing in to GitHub as a member of
-  that organisation, so publishing needs no DNS record and no stored secret. One `remotes` entry,
-  `streamable-http` at `https://mcp.livedesign.app/mcp`, with no `headers`:
-  OAuth (§3) is discovered from the server's metadata, not configured by the
-  client. The icon is the 512px mark in `marketing/media/icons`.
-- **Publishing** is a manual step outside CI, and no workflow publishes the
-  listing: after `server.json` changes, `mcp-publisher login github` then
-  `mcp-publisher publish`, run by hand. The registry rejects a version it already
-  holds, so republishing means bumping `version` in `server.json`.
-- **Other hosts** are not listed: the descriptor names the hosted origin only.
+- **Descriptor.** `livedesign/server.json`, under the registry's `2025-12-11` schema.
+  Name `io.github.livediagram-app/livedesign`: every product lists under
+  `io.github.livediagram-app`, the GitHub organisation that owns the monorepo
+  (`livediagram-app/livediagram.app`, public), so a GitHub sign-in as one of its
+  members, or the repo's own GitHub OIDC token, proves the namespace: no DNS
+  record and no stored secret. `title` `livedesign`, a `description` of at most 100
+  characters, `websiteUrl` `https://www.livedesign.app`, `repository` the monorepo with
+  `subfolder` `livedesign/apps/mcp`, the 512px PNG mark the marketing site serves
+  (`https://www.livedesign.app/livedesign-icon-512.png`), and one `remotes` entry,
+  `streamable-http` at `https://mcp.livedesign.app/mcp` (the Worker's custom domain),
+  with no `headers`: OAuth (§3) is discovered from the server's metadata, not
+  configured by the client.
+- **One identity.** The listing is written once, in `apps/mcp/src/listing.ts`
+  (built with `@liveworkspace/mcp-kit/listing`). The `initialize` response's
+  `serverInfo` carries it (name `livedesign`, title, version, website and icon) beside
+  the server instructions, the server card is made from it, and a test checks
+  `server.json` against the registry's schema (vendored in mcp-kit) and against
+  that identity, so the descriptor, the handshake and the card cannot drift.
+- **Server card.** `GET /.well-known/mcp/server-card.json`, with no sign-in and
+  cacheable for an hour: `serverInfo`, the description, icon, website and
+  documentation (the help article Connect an AI Assistant), the transport
+  (`streamable-http` at this origin's `/mcp`), OAuth 2.1 as the required
+  authentication with the protected-resource metadata's address, the
+  instructions, and every tool, resource and prompt with its schema, read from
+  the same server `/mcp` builds, so it is never stale.
+- **Publishing** is manual, never on a push. By hand from `livedesign/`:
+  `mcp-publisher login github`, then `mcp-publisher publish`. Or the root
+  workflow `mcp-registry.yml`, started by hand (`workflow_dispatch`) with the
+  product to publish, which logs in with `github-oidc` and publishes
+  `livedesign/server.json`. The registry rejects a version it already holds, so
+  republishing means bumping `version` in `listing.ts` and `server.json` (the
+  test keeps them equal).
+- Only the hosted origin is listed: the descriptor names it alone.
 
 ### 4.17 Structured output and described parameters
 

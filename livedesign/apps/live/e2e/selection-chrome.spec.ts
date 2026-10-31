@@ -94,7 +94,7 @@ test('the selection chrome follows the selection', async ({ page, pageErrors }) 
   await expect(plus.first()).toBeVisible();
   await page.locator('[data-tour-id="add-tab"]').click();
   await expect(plus).toHaveCount(0);
-  await page.getByRole('button', { name: /^Tab 1$/ }).click();
+  await page.getByRole('tab', { name: /^Tab 1$/ }).click();
   await expect(box('b')).toBeVisible();
   await expect(plus).toHaveCount(0);
   await expect(page.getByTestId('arrow-move-frame')).toHaveCount(0);

@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.livedesign-app/livedesign",
+  "name": "io.github.livediagram-app/livedesign",
   "title": "livedesign",
-  "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on livedesign.app.",
+  "description": "Create, edit, share and render logos, wireframes and photo edits on livedesign.app.",
   "version": "0.1.0",
   "websiteUrl": "https://www.livedesign.app",
   "repository": {
-    "url": "https://github.com/livedesign-app/livedesign.app",
+    "url": "https://github.com/livediagram-app/livediagram.app",
     "source": "github",
-    "subfolder": "apps/mcp"
+    "subfolder": "livedesign/apps/mcp"
   },
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/livedesign-app/livedesign.app/main/marketing/media/icons/livedesign-icon-512.png",
+      "src": "https://www.livedesign.app/livedesign-icon-512.png",
       "mimeType": "image/png",
       "sizes": ["512x512"]
     }

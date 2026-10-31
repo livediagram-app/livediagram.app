@@ -68,30 +68,38 @@ export function splitPresenceFrame(frame: {
   return { participants: frame.participants, agents };
 }
 
-// The rows of a tab without its standalone agent rows: what a head count, a roll call or the Collaborators count
+// An agent row's second line, in its hover card and its Collaborators row: what it said it is doing, else that it is
+// at work on the tab.
+export const AGENT_AT_WORK = 'Working on this tab';
+export function agentRowDetail(row: Pick<Participant, 'statusLine'>): string {
+  return row.statusLine ?? AGENT_AT_WORK;
+}
+
+// The rows of a tab without its agent rows: what a head count, a roll call or the Collaborators count
 // reads.
 export function withoutAgentRows(rows: readonly Participant[]): Participant[] {
   return rows.filter((row) => !row.agent);
 }
 
-// Folds the agents into the per-tab rows. Entries of one person on one tab are one row, the last set's status
-// winning; the status goes on the recipient's own row (their agent on their tab), else on the owner's row on that
-// tab, else on a row of its own in the owner's name. Entries on tabs this editor does not know are skipped (PR16).
+// What an agent's own row is called (docs/specs/024-agents/agent-presence.md "Presence"): "Webber's Agent".
+export function agentRowName(ownerName: string): string {
+  return `${ownerName}'s Agent`;
+}
+
+// Folds the agents into the per-tab rows. Every agent is a row of its own, "{owner}'s Agent" in its owner's colour,
+// shown to everyone on the tab, its owner included, beside the owner's own row when both are there. Entries of one
+// person on one tab are one row, the last set's status winning. Entries on tabs this editor does not know are skipped
+// (PR16).
 export function foldAgentPresence(input: {
   participantsByTab: Map<string, Participant[]>;
   agents: readonly AgentPresence[];
-  selfParticipant: Participant;
-  activeId: string;
   tabIds: readonly string[];
   now: number;
 }): Map<string, Participant[]> {
-  const { participantsByTab, agents, selfParticipant, activeId, tabIds, now } = input;
+  const { participantsByTab, agents, tabIds, now } = input;
   if (agents.length === 0) return participantsByTab;
   const known = new Set(tabIds);
-  const groups = new Map<
-    string,
-    { first: AgentPresence; last: AgentPresence; joins: Set<string> }
-  >();
+  const groups = new Map<string, { first: AgentPresence; last: AgentPresence }>();
   for (const entry of agents) {
     if (!known.has(entry.tabId)) {
       debugLog('[agent-presence] skipped entry', { reason: 'unknown_tab' });
@@ -99,34 +107,23 @@ export function foldAgentPresence(input: {
     }
     const key = `${entry.person}\u0000${entry.tabId}`;
     const group = groups.get(key);
-    if (group) {
-      group.last = entry;
-      for (const id of entry.joins) group.joins.add(id);
-    } else groups.set(key, { first: entry, last: entry, joins: new Set(entry.joins) });
+    if (group) group.last = entry;
+    else groups.set(key, { first: entry, last: entry });
   }
   const out = new Map<string, Participant[]>();
   for (const [tabId, rows] of participantsByTab) out.set(tabId, [...rows]);
-  for (const { first, last, joins } of groups.values()) {
+  for (const { first, last } of groups.values()) {
     const rows = out.get(first.tabId) ?? [];
-    const statusLine = last.status;
-    const ownIndex =
-      first.self && first.tabId === activeId
-        ? rows.findIndex((row) => row.id === selfParticipant.id)
-        : rows.findIndex((row) => joins.has(row.id));
-    if (ownIndex >= 0) {
-      if (statusLine) rows[ownIndex] = { ...rows[ownIndex]!, statusLine };
-    } else {
-      rows.push({
-        id: first.id,
-        name: first.name,
-        color: first.color,
-        role: first.role,
-        status: 'online',
-        lastActiveAt: now,
-        ...(statusLine ? { statusLine } : {}),
-        agent: true,
-      });
-    }
+    rows.push({
+      id: first.id,
+      name: agentRowName(first.name),
+      color: first.color,
+      role: first.role,
+      status: 'online',
+      lastActiveAt: now,
+      ...(last.status ? { statusLine: last.status } : {}),
+      agent: true,
+    });
     out.set(first.tabId, rows);
   }
   return out;

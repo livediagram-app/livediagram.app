@@ -7,6 +7,7 @@
   "exports": {
     "./app": "./src/app.ts",
     "./env": "./src/env.ts",
+    "./listing": "./src/listing.ts",
     "./oauth": "./src/oauth.ts",
     "./oauth-clients": "./src/oauth-clients.ts",
     "./preview-budget": "./src/preview-budget.ts",
@@ -14,6 +15,7 @@
     "./prompts": "./src/prompts.ts",
     "./render": "./src/render.ts",
     "./request-scope": "./src/request-scope.ts",
+    "./server-json": "./src/server-json.ts",
     "./tool-result": "./src/tool-result.ts",
     "./tool-scope": "./src/tool-scope.ts"
   },
@@ -28,6 +30,8 @@
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.1",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "hono": "^4.13.13",
     "zod": "^4.6.7"
   },

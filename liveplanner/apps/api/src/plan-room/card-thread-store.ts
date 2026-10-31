@@ -82,8 +82,10 @@ export function threadRightRefusal(
       return own(change.commentId) ? null : 'forbidden';
     case 'remove':
       return own(change.commentId) || (actor.editor && !actor.agent) ? null : 'forbidden';
+    // Agents read reactions, never leave them (docs/specs/012-collaboration/comment-reactions.md).
     case 'rename':
     case 'addCard':
+    case 'react':
       return actor.agent ? 'forbidden' : null;
     default:
       return null;

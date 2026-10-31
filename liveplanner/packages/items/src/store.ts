@@ -17,6 +17,7 @@ import {
   placeOf,
 } from './apply';
 import { ITEMS_MAX } from './limits';
+import { statusSinceUndo } from './status-since';
 
 export type ItemStoreState = { items: Item[]; rev: number; nextKey: number };
 
@@ -238,7 +239,9 @@ export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): Ite
     type: write.move.type,
   });
   const move: ItemMove = { ...placeOf(item, before.items) };
-  if (lane.set) move.set = lane.set;
+  // A move to another status puts the card's old stamp back with it, so its Age reads as it did.
+  const since = write.move.status === undefined ? {} : statusSinceUndo(item, write.move.status);
+  if (lane.set || Object.keys(since).length) move.set = { ...lane.set, ...since };
   if (lane.clear) move.clear = lane.clear;
   if (lane.type) move.type = lane.type;
   // A card that had no status (dropped on a board from the canvas, made by an agent) loses the one the move gave
@@ -246,7 +249,7 @@ export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): Ite
   if (itemStatus(item) === undefined && write.move.status !== undefined)
     return [
       { kind: 'move', id: item.id, move },
-      { kind: 'patch', id: item.id, patch: { clear: ['status'] } },
+      { kind: 'patch', id: item.id, patch: { set: since, clear: ['status'] } },
     ];
   return [{ kind: 'move', id: item.id, move }];
 }

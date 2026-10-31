@@ -50,6 +50,8 @@ export type CardThreads = {
   receive: (op: CardThreadsRoomOp) => void;
   refetch: () => void;
   projectId: string | null;
+  // Where the plan's card reads go (its owner, share code and tab scope): a card's history reads through it too.
+  scope: ItemsScope | null;
   // The thread a link asked to open (#item=…&thread=…): its card's panel expands it and brings it into view, then
   // lets it go.
   focused: string | null;
@@ -95,6 +97,9 @@ function trackAction(action: ThreadAction): void {
       return track('Comment', 'Changed', 'Item');
     case 'delete':
       return track('Comment', 'Deleted', 'Item');
+    // Not counted yet (docs/specs/012-collaboration/comment-reactions.md "Telemetry").
+    case 'react':
+      return;
     case 'resolve':
       return action.resolved
         ? track('Comment', 'Resolved', 'Item')
@@ -133,6 +138,15 @@ function localChange(
       };
     case 'delete':
       return { kind: 'remove', commentId: action.commentId };
+    case 'react':
+      return {
+        kind: 'react',
+        commentId: action.commentId,
+        emoji: action.emoji,
+        by: action.key,
+        name: who.by.name,
+        on: action.on,
+      };
     case 'resolve':
       return { kind: 'resolve', resolved: action.resolved, by: who.by.name };
     case 'rename': {
@@ -327,9 +341,10 @@ export function useCardThreads(opts: {
       receive,
       refetch,
       projectId,
+      scope,
       focused,
       focus,
     }),
-    [status, threads, threadsOf, store, act, receive, refetch, projectId, focused],
+    [status, threads, threadsOf, store, act, receive, refetch, projectId, scope, focused],
   );
 }

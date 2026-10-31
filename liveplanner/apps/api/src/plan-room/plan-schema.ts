@@ -13,6 +13,7 @@
 import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
+import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -367,12 +368,16 @@ CREATE TABLE IF NOT EXISTS card_image_grants (
 CREATE INDEX IF NOT EXISTS card_image_grants_age ON card_image_grants (plan_id, created_at);
 `;
 
+// A card's history (item-history-schema.ts; docs/specs/026-plan/items.md "History"). Its own step, appended; every
+// statement is IF NOT EXISTS, so it runs again harmlessly wherever it lands.
+const V9 = ITEM_HISTORY_SCHEMA;
+
 type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // The Comments field a card's thread belongs to (docs/specs/026-plan/item-types.md "Comments and Votes fields"): null
 // is the built-in Comments, as every thread from before. Its own step, appended; SQLite has no ADD COLUMN IF NOT
 // EXISTS, so it asks first, and runs again harmlessly as every other step does.
-const V9 = (exec: Exec) => {
+const V10 = (exec: Exec) => {
   const columns = exec('PRAGMA table_info(card_threads)').toArray();
   if (!columns.some((c) => c.name === 'field'))
     exec('ALTER TABLE card_threads ADD COLUMN field TEXT NULL');
@@ -380,7 +385,7 @@ const V9 = (exec: Exec) => {
 
 // The pictures the plan's cards hold, reported to liveworkspace's media service (image-refs.ts; docs/specs/026-plan/
 // items.md "Images in use"): the last set sent, and the triggers that queue a report. Its own step, appended.
-const V10 = IMAGE_REFS_SCHEMA;
+const V11 = IMAGE_REFS_SCHEMA;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -393,6 +398,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V8,
   V9,
   V10,
+  V11,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
