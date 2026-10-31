@@ -18,6 +18,7 @@ function open(outcome: ImportOutcome) {
       tabName="Board"
       onImportFile={vi.fn(async () => outcome)}
       onImportText={onImportText}
+      onImportFileFormat={vi.fn()}
       onClose={onClose}
     />,
   );
@@ -69,13 +70,16 @@ describe('ImportTabDialog, offered formats', () => {
     tabName: 'Poster',
     onImportFile: vi.fn(),
     onImportText: vi.fn(),
+    onImportFileFormat: vi.fn(),
     onClose: vi.fn(),
   };
 
-  it('offers JSON and Markdown', () => {
+  it('offers JSON, Markdown, Word and PowerPoint', () => {
     render(<ImportTabDialog {...props} />);
     expect(screen.getByRole('button', { name: /JSON/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Markdown/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Word.*Google Docs/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /PowerPoint.*Google Slides/ })).toBeTruthy();
   });
 
   it('opens straight at the one format it offers, with no way back to a list', () => {
@@ -94,6 +98,7 @@ describe('ImportTabDialog on a phone', () => {
         tabName="Board"
         onImportFile={vi.fn()}
         onImportText={vi.fn()}
+        onImportFileFormat={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -102,5 +107,55 @@ describe('ImportTabDialog on a phone', () => {
     const keys = screen.getByText(/⌘Z/);
     expect(keys.className).toContain('pointer-coarse:hidden');
     expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
+  });
+});
+
+// docs/specs/020-import-export/office-import.md "How it's triggered": Word and PowerPoint open the file panel.
+describe('ImportTabDialog, Word and PowerPoint', () => {
+  function openFile(card: RegExp, outcome: ImportOutcome) {
+    const onClose = vi.fn();
+    const onImportFileFormat = vi.fn(async () => outcome);
+    render(
+      <ImportTabDialog
+        tabName="Notes"
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        onImportFileFormat={onImportFileFormat}
+        onClose={onClose}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: card }));
+    return { onClose, onImportFileFormat };
+  }
+
+  it('opens the Word file panel, with no paste box, and imports a chosen file', async () => {
+    const { onClose, onImportFileFormat } = openFile(/^Word/, { status: 'done' });
+    expect(screen.getByText('Import a Word file.')).toBeTruthy();
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.getByText('Drop a Word document here')).toBeTruthy();
+    expect(screen.getByText(/From Google Docs: File › Download › Microsoft Word/)).toBeTruthy();
+    const file = new File(['x'], 'notes.docx');
+    fireEvent.change(screen.getByTestId('file-import-input'), { target: { files: [file] } });
+    await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+    expect(onImportFileFormat).toHaveBeenCalledWith('word', file, expect.any(Function));
+  });
+
+  it('shows the report after a PowerPoint import that left something out', async () => {
+    const { onClose } = openFile(/^PowerPoint/, {
+      status: 'done',
+      failures: [{ title: 'Charts', message: '2 charts were left out.' }],
+    });
+    expect(screen.getByText('Drop a PowerPoint deck here')).toBeTruthy();
+    fireEvent.change(screen.getByTestId('file-import-input'), {
+      target: { files: [new File(['x'], 'deck.pptx')] },
+    });
+    expect((await screen.findByTestId('import-report')).textContent).toContain('2 charts');
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('goes back to every format', () => {
+    openFile(/^Word/, { status: 'done' });
+    fireEvent.click(screen.getByRole('button', { name: /All formats/ }));
+    expect(screen.getByRole('button', { name: /PowerPoint/ })).toBeTruthy();
   });
 });
