@@ -199,6 +199,12 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   at a time with `--maxWorkers=2`, because several agents share this machine and a starved CPU makes timing tests
   fail for no real reason. Build a Next app only when you changed its pages, MDX or build
   config; CI builds the rest.
+  `vitest related` misses the app-wide guard tests, which scan every file rather than import yours (palette,
+  contrast, small text, optical centring, aria roles, naming), and the liveworkspace site's
+  `metric-emitters.test.ts`, which fails when a new telemetry event has no chart. Before the first push, run each
+  touched app's guard tests (the `*.test.ts` files at the app's root and in its `app/` folder, plus
+  `lib/small-text-contrast.test.ts`: `dark-palette`, `label-contrast`, `aria-label-roles`, `optical-guard` and the
+  rest) and, when you add a telemetry event, the site's metric-emitters test. They caught most of the red CI on recent PRs.
 - **Push before the browser checks**, so CI runs while you verify. Once the code, spec, the performance review (below) and the checks above pass,
   push and open the PR with the `not-ready` label and "Verifying in the browser" at the top of the description,
   so the pr-loop can't merge it yet. After verification, update the description with the screenshots and remove
