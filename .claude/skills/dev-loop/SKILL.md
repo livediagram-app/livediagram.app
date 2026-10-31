@@ -225,6 +225,10 @@ title, its state, and every comment **verbatim**, with author and date and wheth
     don't build for screenshots.
 - **Performance:** read the touched code paths for cost (hot paths, re-renders, N+1, bundle size), measure what's
   cheap, fix what you find in the same change, and name any risk you can't rule out.
+  Parse typed or pasted text (a value, a duration, a formula, a query) with a left-to-right tokenizer, not a regex
+  with nested or adjacent repeats (`\s*%$`, `(\d+\s*\w+)*`, a `matchAll` over parts): CodeQL flags those as
+  polynomial ReDoS and CI goes red. Add a CPU-time test with a long worst-case input (tens of thousands of digits or
+  spaces).
 - **Commits:** small logical commits, each ending with the Co-Authored-By trailer. Never use em dashes in
   anything you write. Don't commit pnpm-lock.yaml unless the change needs it.
 - **One PR, at most two pushes** (above). (On rework, push to the open PR instead, gated as above.) The PR is
