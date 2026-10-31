@@ -17,6 +17,7 @@ import {
 } from './calculated-fields';
 import { calculatedResultOf, hasResult, isLookupField, isRollupField } from './calculated-result';
 import { cardSourceOf } from './card-source';
+import { currencyText, dayLabel } from './card-text';
 import type { Item } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { canShowAsPercent, percentShown } from './percent-fields';
@@ -250,8 +251,10 @@ describe('Rollup', () => {
   });
 
   it('writes as its result reads', () => {
-    expect(calculatedText(def(project, 'f-spend'), 300.56)).toBe('US$300.56');
-    expect(calculatedText(def(project, 'f-last'), '2026-11-03')).toBe('3 Nov 2026');
+    expect(calculatedText(def(project, 'f-spend'), 300.56)).toBe(currencyText(300.56, 'USD'));
+    expect(calculatedText(def(project, 'f-last'), '2026-11-03')).toBe(
+      dayLabel('2026-11-03', 'medium'),
+    );
     expect(calculatedText(def(project, 'f-avg'), 38)).toBe('38%');
     expect(percentShown(def(project, 'f-avg'), 38)).toBe(38);
     expect(calculatedText(def(project, 'f-count'), 5)).toBe('5');

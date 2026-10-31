@@ -2,7 +2,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import type { CustomFieldDef, Item, ItemTypeDef } from '@liveplanner/items';
+import {
+  currencyText,
+  dayLabel,
+  type CustomFieldDef,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import type { FormulaDraft } from './FormulaEditor';
 import { RollupEditor, rollupPatch, type RollupDraftField } from './RollupEditor';
 import { CustomFieldForm, calculationPatch } from './ItemTypeFieldForms';
@@ -114,7 +120,9 @@ describe('Rollup', () => {
       'Sums Cost over the Task cards linking here through Parent.',
     );
     // The first live Project with a value, not the first one.
-    expect(screen.getByLabelText('Preview').textContent).toContain('On #2 WebsiteUS$20');
+    expect(screen.getByLabelText('Preview').textContent).toContain(
+      `On #2 Website${currencyText(20, 'USD')}`,
+    );
     pick('Calculate', 'countDone');
     expect(stored()).not.toHaveProperty('source');
     expect(stored()).toMatchObject({ aggregate: 'countDone' });
@@ -186,7 +194,9 @@ describe('Lookup', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'Shows Due Date of the card Parent links to.',
     );
-    expect(screen.getByLabelText('Preview').textContent).toContain('On #3 A1 Dec 2026');
+    expect(screen.getByLabelText('Preview').textContent).toContain(
+      `On #3 A${dayLabel('2026-12-01', 'medium')}`,
+    );
   });
 
   it('asks for a Link to Card field first when the type has none', () => {
