@@ -101,10 +101,12 @@ export function PathEditToolbar({
           ) : null}
           <div role="radiogroup" aria-label="Node type" className="flex items-center gap-0.5">
             {NODE_TYPES.map((t) => (
-              <Tip key={t.id} label={`${t.label} point`}>
+              <Tip key={t.id} label={`${t.label} Point`}>
                 <button
                   type="button"
                   role="radio"
+                  // The tooltip's words, so it repeats the name (Tooltip warns when it does not).
+                  aria-label={`${t.label} Point`}
                   aria-checked={view.type === t.id}
                   disabled={!view.hasSelection}
                   onClick={() => onSetType(t.id)}
@@ -129,7 +131,12 @@ export function PathEditToolbar({
           </Tip>
           {view.canSimplify && onSimplify ? (
             <Tip label="Simplify: Fewer Points, Smooth Curves">
-              <button type="button" onClick={onSimplify} className={BUTTON}>
+              <button
+                type="button"
+                aria-label="Simplify: Fewer Points, Smooth Curves"
+                onClick={onSimplify}
+                className={BUTTON}
+              >
                 Simplify
               </button>
             </Tip>
