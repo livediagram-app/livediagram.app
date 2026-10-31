@@ -12,7 +12,9 @@ import { useId } from 'react';
 import {
   animLoops,
   clampPercent,
+  PROGRESS_LABEL_PX,
   PROGRESS_LOOPING_ANIMS,
+  progressRingLabelPx,
   progressLabelInks,
   type ProgressLabelInks,
   type ShapeElement,
@@ -57,6 +59,12 @@ export function ProgressView({
   const anim = element.progressAnim;
   const animStyle = progressAnimStyle(element);
 
+  // The bar's percentage is a fixed readout; the ring's scales with its diameter (progress.md "The
+  // percentage's size"). The export draws both at the same size (svg-render-data.ts).
+  const labelPx =
+    element.shape === 'progress-ring'
+      ? progressRingLabelPx(element.width, element.height)
+      : PROGRESS_LABEL_PX;
   const labelLayer: LabelLayer = (colour, clip, className, hidden) => (
     <div
       className={`pointer-events-none absolute inset-0 flex items-center justify-center ${className ?? ''}`}
@@ -64,7 +72,12 @@ export function ProgressView({
       aria-hidden={hidden || undefined}
     >
       {/* Centred on its cap band, as the export draws it (optical-alignment.md). */}
-      <span className="text-optical-centre text-sm font-semibold tabular-nums">{pct}%</span>
+      <span
+        className="text-optical-centre font-semibold tabular-nums"
+        style={{ fontSize: labelPx }}
+      >
+        {pct}%
+      </span>
     </div>
   );
 

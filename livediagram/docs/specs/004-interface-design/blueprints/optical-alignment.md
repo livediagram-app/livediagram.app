@@ -174,7 +174,7 @@ export const capBandBaselineY = (centreY: number, fontPx: number) =>
   `y={capBandBaselineY(cy, fontPx)}`: process step numbers (`ProcessFace.tsx`, and
   `svg-render-web.ts` through `line(..., { onCapBand: true })`), the callout badge's "i" and the site
   header's monogram (export; the canvas draws them as `GlyphDisc`), the progress percentage
-  (`svg-render-data.ts`, `PROGRESS_LABEL_PX = 14`; its canvas label is `text-optical-centre`), and badge
+  (`svg-render-data.ts`, at `PROGRESS_LABEL_PX` or the ring's `progressRingLabelPx`; its canvas label is `text-optical-centre`), and badge
   stickers (`sticker-markup.ts`: the word on the pill's centre line, `x` moved half the tracking right,
   because SVG centres a word with its trailing letter-space).
 - Emoji glyphs (`icon-glyph.tsx`, `markup.ts` text prims, reaction pads, emoji stickers) keep `central`:
