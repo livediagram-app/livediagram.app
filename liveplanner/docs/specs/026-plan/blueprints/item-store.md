@@ -506,10 +506,11 @@ ItemPerson, tag?, changes }`; `ItemHistoryEntry = { at, by: { name, color }, min
 - `historyChangesOf(before: Item | null, after: Item)`: `created` (with the status) for no `before`; else, in order, the
   status (`trash` in or out reads `trashed` / `untrashed`, any other change `moved`), `archived`, `flagged`, the type,
   then every other key of either `fields` whose JSON differs, skipping `status`, `trashedFrom`, `archived`, `flagged`,
-  `votes`, `comments`, `example` and `descriptionRich` (a `descriptionRich` change reads as `description`). A set field
-  carries `historyValueOf` of its value; `cleared` when the value went (absent, null, '' or an empty list). Rank alone,
-  or votes alone, give `[]`, and an empty list writes no entry. At most `ITEM_HISTORY_CHANGES_MAX` changes an entry.
-- `historyValueOf(field, value)`: `undefined` (named, not copied) for `description`, `descriptionRich`, `checklist`
+  `votes`, `comments`, `example` and every formatting key (`isRichFieldKey`: a `descriptionRich` or `<id>Rich` change
+  reads as its field). A set field carries `historyValueOf` of its value, or no value for a field with formatting;
+  `cleared` when the value went (absent, null, '' or an empty list). Rank alone, or votes alone, give `[]`, and an
+  empty list writes no entry. At most `ITEM_HISTORY_CHANGES_MAX` changes an entry.
+- `historyValueOf(field, value)`: `undefined` (named, not copied) for `description`, `checklist`
   and any object or list of objects but a person; a person (an object with a string `name`) is its name; a string is
   cut to `ITEM_HISTORY_VALUE_MAX` characters (an ellipsis); a list of scalars keeps its first `ITEM_HISTORY_LIST_MAX`,
   each string cut to 40; numbers and booleans as they are.

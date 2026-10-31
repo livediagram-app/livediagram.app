@@ -4,6 +4,7 @@
 
 import { ARCHIVED_FIELD, type Item, type ItemFieldValue, type ItemPerson } from './item';
 import { EXAMPLE_FIELD, TRASHED_FROM_FIELD, TRASH_STATUS, isArchived, isFlagged } from './board';
+import { isRichFieldKey, richFieldOf } from './rich-text-field';
 
 // The newest entries a card keeps, and the oldest an entry may be: each write drops its card's entries past either.
 export const ITEM_HISTORY_MAX = 200;
@@ -63,10 +64,9 @@ const SKIPPED = new Set([
   'votes',
   'comments',
   EXAMPLE_FIELD,
-  'descriptionRich',
 ]);
-// Fields named, never copied: long text, and lists of rows.
-const NAMED_ONLY = new Set(['description', 'descriptionRich', 'checklist']);
+// Fields named, never copied: long text, and lists of rows. A field with formatting (a Long Text) is named too.
+const NAMED_ONLY = new Set(['description', 'checklist']);
 
 const cut = (s: string, max: number) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
 
@@ -123,19 +123,24 @@ export function historyChangesOf(before: Item | null, after: Item): ItemHistoryC
     out.push({ kind: isFlagged(after) ? 'flagged' : 'unflagged' });
   if (before.type !== after.type) out.push({ kind: 'type', from: before.type, to: after.type });
   const keys = new Set([...Object.keys(before.fields), ...Object.keys(after.fields)]);
-  // A description's formatting alone reads as the description changing.
-  const richChanged = !same(before.fields['descriptionRich'], after.fields['descriptionRich']);
-  if (richChanged) keys.add('description');
+  // A field's formatting alone (`descriptionRich`, a Long Text's `<id>Rich`) reads as the field changing.
+  const restyled = new Set<string>();
+  for (const key of keys) {
+    if (isRichFieldKey(key) && !same(before.fields[key], after.fields[key]))
+      restyled.add(key.slice(0, -'Rich'.length));
+  }
+  for (const field of restyled) keys.add(field);
   for (const field of keys) {
-    if (SKIPPED.has(field)) continue;
+    if (SKIPPED.has(field) || isRichFieldKey(field)) continue;
     const next = after.fields[field];
-    const changed = !same(before.fields[field], next) || (field === 'description' && richChanged);
-    if (!changed) continue;
-    if (isEmpty(next) && !(field === 'description' && !isEmpty(after.fields['descriptionRich']))) {
+    if (same(before.fields[field], next) && !restyled.has(field)) continue;
+    const rich = richFieldOf(field);
+    if (isEmpty(next) && isEmpty(after.fields[rich])) {
       out.push({ kind: 'cleared', field });
       continue;
     }
-    const value = historyValueOf(field, next);
+    const formatted = after.fields[rich] !== undefined || before.fields[rich] !== undefined;
+    const value = formatted ? undefined : historyValueOf(field, next);
     out.push(value === undefined ? { kind: 'set', field } : { kind: 'set', field, value });
   }
   return out.slice(0, ITEM_HISTORY_CHANGES_MAX);

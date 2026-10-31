@@ -92,6 +92,26 @@ describe('historyChangesOf', () => {
     ).toEqual([{ kind: 'set', field: 'checklist' }]);
   });
 
+  it('names a Long Text field with formatting without copying it, and reads its formatting as the field', () => {
+    const steps = next(card, {
+      ...card.fields,
+      'f-steps': 'Open the app',
+      'f-stepsRich': [{ text: 'Open the app' }],
+    });
+    expect(historyChangesOf(card, steps)).toEqual([{ kind: 'set', field: 'f-steps' }]);
+    const bold = next(steps, {
+      ...steps.fields,
+      'f-stepsRich': [{ text: 'Open the app', bold: true }],
+    });
+    expect(historyChangesOf(steps, bold)).toEqual([{ kind: 'set', field: 'f-steps' }]);
+    // Plain Long Text (written by a form or a sheet) keeps its value as any text does.
+    expect(historyChangesOf(card, next(card, { ...card.fields, 'f-steps': 'Plain' }))).toEqual([
+      { kind: 'set', field: 'f-steps', value: 'Plain' },
+    ]);
+    const cleared = next(bold, { ...card.fields });
+    expect(historyChangesOf(bold, cleared)).toEqual([{ kind: 'cleared', field: 'f-steps' }]);
+  });
+
   it('keeps nothing for a rank, a tally, the example flag or comments', () => {
     expect(historyChangesOf(card, next(card, card.fields, { rank: 'j' }))).toEqual([]);
     expect(
