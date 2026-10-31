@@ -129,3 +129,24 @@ describe('ElementEllipsisMenu kinds', () => {
     expect(screen.queryByRole('menuitem')).toBeNull();
   });
 });
+
+// A right-anchored panel opens leftward from its trigger. A Timer near the left of the screen put its 288px
+// panel mostly off the left edge; the panel is nudged back inside the viewport instead.
+describe('ElementEllipsisMenu placement', () => {
+  it('nudges a panel that would open past the left edge back on screen', () => {
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        // The trigger sits 20px from the left; the panel, right-anchored to it, is 288px wide.
+        if (this.getAttribute('role') === 'dialog')
+          return DOMRect.fromRect({ x: 40 - 288, y: 60, width: 288, height: 200 });
+        return DOMRect.fromRect({ x: 20, y: 40, width: 20, height: 20 });
+      });
+    mountInFace({});
+    const panel = openMenu();
+    rect.mockRestore();
+    const shift = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(panel.style.transform);
+    expect(shift).not.toBeNull();
+    expect(40 - 288 + Number(shift![1])).toBeGreaterThanOrEqual(0);
+  });
+});

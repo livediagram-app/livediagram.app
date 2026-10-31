@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives/menu-item-props';
+import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import {
   Glyph,
   MenuTreeContext,
@@ -182,6 +183,19 @@ function SurfaceFrame({
     },
     [popoverRef, attach],
   );
+  // Anchored to its trigger's edge, a wide panel can still run off the far side (a Timer near the left of the
+  // screen opens its right-anchored panel leftward, past x = 0): nudged back inside the viewport once measured.
+  // Measured once per anchor (the panel is re-placed only when it opens), so a nudge never feeds its own re-measure.
+  const [adjust, setAdjust] = useState({ x: 0, y: 0 });
+  useLayoutEffect(() => {
+    const el = popoverRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setAdjust((prev) => {
+      const next = clampToViewport(rect, prev);
+      return next.x === prev.x && next.y === prev.y ? prev : next;
+    });
+  }, [popoverRef, at.x, at.y]);
   return (
     <MenuTreeContext.Provider value={tree}>
       <div
@@ -217,6 +231,9 @@ function SurfaceFrame({
           // Anchored by the edge it opened from, so a menu near the right
           // of the screen opens leftward instead of off it.
           ...(align === 'left' ? { left: at.x } : { right: window.innerWidth - at.x }),
+          ...(adjust.x || adjust.y
+            ? { transform: `translate(${adjust.x}px, ${adjust.y}px)` }
+            : null),
         }}
       >
         {children}
