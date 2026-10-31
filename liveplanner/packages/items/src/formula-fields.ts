@@ -24,6 +24,7 @@ import {
   dateOf,
   dayText,
   fail,
+  finite,
   isDate,
   isList,
   kindName,
@@ -195,17 +196,34 @@ function evaluateField(run: Run, def: FormulaDef): FormulaValue {
   const missing = missingFieldProblem(compiled.ids, run.scope, def.id);
   if (missing) return fail(missing);
   let saw = false;
-  const value = evaluateTree(compiled.tree, {
-    read: (id) => {
-      const v = readField(run, id);
-      if (hasValue(v)) saw = true;
-      return v;
-    },
-    today: run.today,
-    budget: run.budget,
-  });
+  // A field it reads that failed (another Formula reading itself, say): that problem stands.
+  let readFailed = false;
+  const blank = () => compiled.ids.length > 0 && !saw;
+  let value: FormulaValue;
+  try {
+    value = evaluateTree(compiled.tree, {
+      read: (id) => {
+        let v: FormulaValue;
+        try {
+          v = readField(run, id);
+        } catch (e) {
+          readFailed = true;
+          throw e;
+        }
+        if (hasValue(v)) saw = true;
+        return v;
+      },
+      today: run.today,
+      budget: run.budget,
+    });
+  } catch (e) {
+    // Every field it reads empty: blank, even where the sum itself can't work with blanks (`{Due} < today()` on a card
+    // with no Due Date compares blank with a date). Running out of steps, or a field read that failed, is still a problem.
+    if (e instanceof FormulaFail && blank() && !readFailed && run.budget.left >= 0) return null;
+    throw e;
+  }
   // Every field it reads empty: no value, so a new card reads blank rather than 0.
-  return compiled.ids.length > 0 && !saw ? null : value;
+  return blank() ? null : value;
 }
 
 // Another Formula this one reads: its result, worked out once per run; reading itself through others is a problem.
@@ -281,6 +299,8 @@ function resultOf(def: Pick<CustomFieldDef, 'result'>, raw: FormulaValue): Formu
   const v = single(raw);
   if (result === 'date') return isDate(v) ? dayText(v) : needs(v, 'a date');
   if (typeof v !== 'number') return needs(v, 'a number');
+  // Never Infinity on a card, in a sheet or a CSV (a sum of huge values a Rollup or a Formula worked out).
+  finite(v);
   if (result === 'currency') return Math.round(v * 100) / 100;
   if (result === 'percent') return Math.round(v);
   // Whole minutes, never below none (item-types.md "Formula fields", The result).

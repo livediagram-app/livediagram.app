@@ -272,13 +272,18 @@ function worked(
 ): FormulaOutcome {
   if (calc === 'childCount' || calc === 'childrenDone')
     return { ok: true, value: childValue(calc, item, w) };
-  if (calc === 'formula')
-    return formulaOutcome(field, item, type, {
+  if (calc === 'formula') {
+    const out = formulaOutcome(field, item, type, {
       items: w.items,
       today: w.today,
       steps: w.steps,
       calculated: (f) => valueIn(w, f, item, type),
     });
+    // The walk's shared steps ran out inside this formula: the whole walk is too much, never a value read as blank
+    // (a Rollup over many Formula children would otherwise skip the rest and total what it reached).
+    if (!out.ok && w.steps.left <= 0) w.stopped ??= TOO_MUCH;
+    return out;
+  }
   // A Rollup or Lookup reads other cards' types: none without the catalogue.
   if (!w.types) return NONE;
   const problem = settingsProblem(field, type, w.types);
