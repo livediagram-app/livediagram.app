@@ -147,6 +147,13 @@ export function PortalMenu({
         aria-label={label}
         tabIndex={-1}
         onKeyDown={onKeyDown}
+        // Choosing an item hands focus to the trigger first, before the item runs: a dialog it opens then remembers
+        // the trigger (not the item, which is about to go) as where to return focus, even when a field in the
+        // dialog takes focus as it opens.
+        onClickCapture={(e) => {
+          const item = (e.target as Element).closest?.(ITEM);
+          if (item && ref.current?.contains(item)) anchor?.focus({ preventScroll: true });
+        }}
         className={`fixed z-50 flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
         style={
           at
