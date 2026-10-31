@@ -185,16 +185,25 @@ function SurfaceFrame({
   );
   // Anchored to its trigger's edge, a wide panel can still run off the far side (a Timer near the left of the
   // screen opens its right-anchored panel leftward, past x = 0): nudged back inside the viewport once measured.
-  // Measured once per anchor (the panel is re-placed only when it opens), so a nudge never feeds its own re-measure.
+  // Measured per anchor and again whenever the panel's size changes: a Timer's panel opens narrow and grows to its
+  // full width once its dial loads, growing leftward past the edge. A nudge moves the panel without resizing it, so
+  // it never feeds its own re-measure.
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
   useLayoutEffect(() => {
     const el = popoverRef.current;
     if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setAdjust((prev) => {
-      const next = clampToViewport(rect, prev);
-      return next.x === prev.x && next.y === prev.y ? prev : next;
-    });
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      setAdjust((prev) => {
+        const next = clampToViewport(rect, prev);
+        return next.x === prev.x && next.y === prev.y ? prev : next;
+      });
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [popoverRef, at.x, at.y]);
   return (
     <MenuTreeContext.Provider value={tree}>

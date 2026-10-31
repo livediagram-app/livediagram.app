@@ -13,7 +13,7 @@
 // put it into text-edit mode, and the re-render took the panel away — the
 // gesture for editing a choice was the gesture that closed the editor.
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ElementEllipsisMenu, ElementMenuItem } from './ElementEllipsisMenu';
 
@@ -145,6 +145,42 @@ describe('ElementEllipsisMenu placement', () => {
     mountInFace({});
     const panel = openMenu();
     rect.mockRestore();
+    const shift = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(panel.style.transform);
+    expect(shift).not.toBeNull();
+    expect(40 - 288 + Number(shift![1])).toBeGreaterThanOrEqual(0);
+  });
+
+  // A Timer's panel opens narrow and grows once its dial loads: measured only on open, the full-width panel still
+  // stood at x = -120.
+  it('nudges the panel again when it grows after opening', () => {
+    let resized: () => void = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          resized = cb;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    let width = 100;
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.getAttribute('role') === 'dialog') {
+          const shift = /translate\((-?[\d.]+)px/.exec(this.style.transform);
+          const x = 40 - width + (shift ? Number(shift[1]) : 0);
+          return DOMRect.fromRect({ x, y: 60, width, height: 200 });
+        }
+        return DOMRect.fromRect({ x: 20, y: 40, width: 20, height: 20 });
+      });
+    mountInFace({});
+    const panel = openMenu();
+    width = 288;
+    act(() => resized());
+    rect.mockRestore();
+    vi.unstubAllGlobals();
     const shift = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(panel.style.transform);
     expect(shift).not.toBeNull();
     expect(40 - 288 + Number(shift![1])).toBeGreaterThanOrEqual(0);
