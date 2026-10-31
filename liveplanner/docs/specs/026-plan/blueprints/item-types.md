@@ -337,6 +337,41 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
   - Agents: `plan-schema.ts` adds `percent` to the kind enum and `showAs` to `add`/`editCustom`; `plan-listing.ts`
     lists `showAs` on a field that shows as a Percent; the OpenAPI schema is regenerated (`gen:openapi`) from
     `CUSTOM_FIELD_KINDS` and `CustomFieldDef`.
+- Duration fields (spec "Duration"): `duration-fields.ts` (packages/items) is the one reading, shared by every
+  surface: `DURATION_HOURS_MAX` 99,999 and `DURATION_MINUTES_MAX`; `parseDuration(v)` (a number is minutes; text
+  "2h 30m", "2h30m", "1.5h", "90m", "2:30" or a bare number of minutes, every character but spaces and commas
+  belonging to a part, rounded to a whole minute, else undefined); `durationText(m)` ("2h 30m", "45m", "3h", "0m");
+  `durationSpoken(m)`; `DURATION_HINT`; `isTimeSpent(field)`; `durationMinutes(field, raw)` (whole minutes, a Time
+  Spent field its entries' total) and `runningOnCard(item, type)` (the card face's runners, earliest first).
+  - `item-types.ts`: `duration` in `CUSTOM_FIELD_KINDS` after `percent`; `timeSpent?: true` on `CustomFieldDef`,
+    kept by `readCustom` only on a Duration; `type-changes.ts` takes `timeSpent` on `add` only (a field of another
+    kind is refused), and a Time Spent field can't be required (`required-fields.ts` and `requirable` skip it).
+  - Values: `plan-names.ts` parses by `parseDuration` ("{Field} is a duration: write a duration like 2h 30m, 90m or
+    1.5h.") and refuses writing a Time Spent field ("{Field} is tracked: people add time in the card panel.");
+    `board-csv.ts` writes `durationText` and imports by `parseDuration` (a Time Spent column is skipped);
+    `card-text.ts`, `card-source.ts` (minutes for Formulas), `board-sort.ts` (`'duration'`, a number);
+    `formula-fields.ts` reads minutes and gains a `duration` result (`limits.ts`, rounded to a whole minute, shown
+    by `durationText`); `rollup-fields.ts` `readsOf`/`aggregateFits` take it, the result staying a Duration.
+  - Time Spent (`time-tracking.ts`): the value `{ people, entries, running }` (`TimeValue`, people by id so 100
+    entries fit the 16KB fields), `TIME_ENTRIES_MAX` 100 (entries plus running), `readTimeValue` (lenient),
+    `carriedTimeValue` (strict, a restore's create), `timeTotal`, `timePerson`, `runningTimerOf`, `elapsedClock`,
+    `readTimeOp` (`start`, `stop`, `add`, `remove`, `put`), `timeOpOwner`, `applyTimeOp` (rev + 1, Last Edited
+    untouched, a stop under 30 seconds recording nothing, `time_full`) and `inverseTimeOp` (only `add` and an
+    entry's `remove` undo). `store.ts` `ItemWrite` `{ kind: 'time', id, field, op }`; `write-checks.ts`
+    `timeWriteRefusal` and `field_time_tracked` for any other write naming the field (create carries it only on a
+    restore). Duplicate (`duplicate-item.ts`) drops it.
+  - Api: `item-time-route.ts` (`POST /items/:id/time`, participate access, `writeItemsWithRetry`, 403
+    `time_not_yours` when a Participant touches another person's timer or entry, no history); OpenAPI
+    `ItemTimeRequest`.
+  - Editor: `time/use-now-seconds.ts` (one shared one-second clock through `useSyncExternalStore`, running only
+    while a readout is mounted), `time/TimerReadouts.tsx` (`Elapsed`, the only subscriber; `RunningDot`;
+    `RunningTimerPill` on `PlanCardFace` at every size), `time/DurationInput.tsx` (the panel's box),
+    `time/TimeSpentField.tsx` (total, Start Timer, Stop, Discard, others' timers, entries newest first, Show All,
+    Add Time), routed from `ItemFieldEditor`; `usePlanSlice.trackTime` posts the write and sends the telemetry.
+    Add Field's Shape step has the Track Time switch (`TrackTimeSwitch`, fixed in an existing field's form).
+  - Exports: `svg-render-plan-card.ts` draws the total and a green running pill (`TIMER_RUNNING_GREEN`).
+  - Agents: `plan-schema.ts` adds `duration` and `timeSpent`; `plan-listing.ts` lists a card's `time` (total,
+    running people) and a Time Spent field as read-only; agents never start, stop or add time.
 - Consumers: `PlanCardFace` (stripe, glyph, custom field chips via `custom-field-text.ts`), `ItemPanel` (the
   type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
   (projection), `PlanBoardCells`/`PlanCardView` names,
