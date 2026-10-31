@@ -19,7 +19,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
 import { safeInlinePadding, safeInset } from '@liveplanner/ui';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
-import { NameEditor } from '@/components/primitives/NameEditor';
+import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
@@ -349,7 +349,7 @@ export function TabBar({
           onReorder={onReorder}
           onRenameFolder={onRenameFolder}
           renderRenameField={(field) => (
-            <NameEditor {...field} className={TAB_RENAME_FIELD_CLASS} />
+            <NameEditor {...field} label="Folder name" className={TAB_RENAME_FIELD_CLASS} />
           )}
           folderPresence={folderPresence}
         />
