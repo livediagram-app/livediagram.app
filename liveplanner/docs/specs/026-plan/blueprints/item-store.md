@@ -118,6 +118,7 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 | votes       | rejected in create/patch (`votes_read_only`)                                                                                                                                 |
 | comments    | rejected in create/patch and clear (`comments_read_only`)                                                                                                                    |
 | timestamp   | `statusSince` only: a finite integer ms epoch ≥ 0                                                                                                                            |
+| stamps      | `createdAt`, `createdBy`, `updatedAt`, `updatedBy` (`STAMP_FIELDS`) refused as keys (`field_key_invalid`): they are the item's own stamps, never in `fields`                 |
 | unknown     | scalar, or array of ≤ 50 scalars; strings ≤ 2,000                                                                                                                            |
 
 - Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`,
@@ -137,7 +138,11 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 
 - `makeItem(create, ctx: { id, key, now, by, items })` places at `place` (default: end of `status`'s column, or
   end of all), ranks from neighbours with `rankBetween`.
-- `applyPatch(item, patch, ctx)` merges `set`, deletes `clear`, `rev + 1`, stamps `updatedBy/At`.
+- `applyPatch(item, patch, ctx)` merges `set`, deletes `clear`, `rev + 1`, stamps `updatedBy/At` when the write is an
+  edit (`isItemEdit(before, fields, type, touched)`, item-edit.ts; spec items.md "Created and Last Edited"): it is not
+  when it touches a link field (`LINKED_FIELDS`, linked-fields.ts: the linked board's heal, a link left, a restore by
+  the heal), or when it changes no field and not the type (a move within its column, a value set to what it was;
+  `statusSince` alone is not a change). `applyMove` follows the same rule.
 - `applyMove(item, move, items, ctx)` sets status, computes rank against the target neighbours (`after` wins
   over `before`; a missing neighbour id falls back to the column end), merges `set`.
 - `makeItem`, `applyPatch` and `applyMove` pass their result through `stampStatusSince(before, next, written, now)`:
@@ -149,7 +154,7 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 - `applyTally(item, tally, ctx, field = 'votes')` adds each voter's dots to what they had in `field`, caps a voter's
   count at `ITEM_VOTES_PER_PERSON_MAX`, admits no new voter past `ITEM_VOTERS_MAX`, `rev + 1`. The route picks
   `field` per card with `tallyFieldOn(type, body.field)` (comments-votes-fields.ts): the vote's field while the
-  card's type offers it, else the built-in `votes`. `itemVotes(item, field?)` / `itemVoteTotal(item, field?)` read
+  card's type offers it, else the built-in `votes`. It keeps `updatedAt`/`updatedBy`: a tally is not an edit. `itemVotes(item, field?)` / `itemVoteTotal(item, field?)` read
   one Votes field (the built-in by default).
 
 ### Board projection (`projectBoard(setup, items, quick?)`)

@@ -7,6 +7,7 @@ import { PRIORITIES } from './fields';
 import { CUSTOM_FIELD_ID_PATTERN, customFieldOf } from './type-catalogue';
 import { isObj } from './validate';
 import { statusKey } from './status-names';
+import { STAMP_FIELD_LABELS, isStampField, itemStampTime } from './card-stamps';
 
 // Sort By and Then By.
 export const BOARD_SORT_LEVELS_MAX = 2;
@@ -21,7 +22,15 @@ export interface BoardSortLevel {
   dir: BoardSortDir;
 }
 
-export const BOARD_SORT_BUILT_INS = ['priority', 'estimate', 'start', 'due'] as const;
+export const BOARD_SORT_BUILT_INS = [
+  'priority',
+  'estimate',
+  'start',
+  'due',
+  // The card's stamps (docs/specs/026-plan/items.md "Created and Last Edited"): every type offers them.
+  'createdAt',
+  'updatedAt',
+] as const;
 type BuiltInSortField = (typeof BOARD_SORT_BUILT_INS)[number];
 
 // The custom field kinds a board sorts by.
@@ -46,6 +55,8 @@ const BUILT_IN_SORT_FIELDS: Readonly<Record<BuiltInSortField, BoardSortField>> =
   estimate: { id: 'estimate', label: 'Estimate', kind: 'number' },
   start: { id: 'start', label: 'Start Date', kind: 'date' },
   due: { id: 'due', label: 'Due Date', kind: 'date' },
+  createdAt: { id: 'createdAt', label: STAMP_FIELD_LABELS.createdAt, kind: 'date' },
+  updatedAt: { id: 'updatedAt', label: STAMP_FIELD_LABELS.updatedAt, kind: 'date' },
 };
 
 const isBuiltIn = (field: string): field is BuiltInSortField =>
@@ -54,8 +65,9 @@ const isBuiltIn = (field: string): field is BuiltInSortField =>
 // The fields a board showing `types` can sort by: the built-ins one of them has, then every sortable custom field in
 // catalogue order, each once (named as the first type that has it names it).
 export function boardSortFieldsOf(types: readonly ItemTypeDef[]): BoardSortField[] {
-  const out: BoardSortField[] = BOARD_SORT_BUILT_INS.filter((f) =>
-    types.some((t) => t.fields.includes(f)),
+  const out: BoardSortField[] = BOARD_SORT_BUILT_INS.filter(
+    // The stamps with any type at all: every type offers them.
+    (f) => (isStampField(f) ? types.length > 0 : types.some((t) => t.fields.includes(f))),
   ).map((f) => BUILT_IN_SORT_FIELDS[f]);
   for (const t of types)
     for (const c of t.custom ?? []) {
@@ -122,6 +134,8 @@ const none: KeyReader = () => undefined;
 // How a card of `type` reads `field`: no value when its type does not have the field, or has it as a kind no board
 // sorts by.
 function readerFor(field: string, type: ItemTypeDef | undefined): KeyReader {
+  // The stamps, by the moment itself, on any card (an unknown type's too).
+  if (field === 'createdAt' || field === 'updatedAt') return (item) => itemStampTime(item, field);
   if (!type || !type.fields.includes(field)) return none;
   if (field === 'priority')
     return (item) => {

@@ -15,6 +15,7 @@ import {
   type CustomCardField,
 } from './board';
 import type { ItemTypeDef } from './item-types';
+import { STAMP_FIELDS, STAMP_FIELD_LABELS } from './card-stamps';
 
 export type CardSlot = 'lead' | 'trail' | 'head' | 'headEnd' | 'body' | 'foot' | 'footEnd';
 export type CardLayout = Partial<Record<CardSlot, readonly CardField[]>>;
@@ -47,7 +48,12 @@ export const CARD_FIELD_LABELS: Readonly<Record<Exclude<CardField, CustomCardFie
   attachments: 'Attachments',
   cover: 'Cover Image',
   age: 'Age',
+  ...STAMP_FIELD_LABELS,
 };
+
+// The card fields filled in automatically, offered on every type (docs/specs/026-plan/item-types.md "Card display"):
+// Age and the card's stamps. The Display lists them apart, after the fields a person fills in.
+export const AUTOMATIC_CARD_FIELDS: readonly CardField[] = ['age', ...STAMP_FIELDS];
 
 export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot, string>>>> = {
   minimal: { lead: 'Before the Title', trail: 'After the Title' },
@@ -226,15 +232,20 @@ export function typeCardDisplay(
   return cardLayoutFields(size, typeCardLayout(type, size));
 }
 
-// A field the type can show: one it offers (Number, Type and Age always; the rest when in its fields), a custom
-// field when the type has it.
+// A field the type can show: one it offers (Number, Type, Age and the stamps always; the rest when in its fields), a
+// custom field when the type has it.
 export function typeOffersCardField(
   type: Pick<ItemTypeDef, 'fields' | 'custom'>,
   field: CardField,
 ): boolean {
   if (isCustomCardField(field)) return (type.custom ?? []).some((c) => c.id === field);
   if (field === 'cover') return type.fields.includes('attachments');
-  return field === 'key' || field === 'type' || field === 'age' || type.fields.includes(field);
+  return (
+    field === 'key' ||
+    field === 'type' ||
+    AUTOMATIC_CARD_FIELDS.includes(field) ||
+    type.fields.includes(field)
+  );
 }
 
 // The type's custom fields a size can place, in the type's order.

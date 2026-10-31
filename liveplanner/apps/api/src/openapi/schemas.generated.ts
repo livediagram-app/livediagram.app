@@ -1331,6 +1331,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       {
+        "const": "createdAt",
+        "type": "string"
+      },
+      {
+        "const": "createdBy",
+        "type": "string"
+      },
+      {
+        "const": "updatedAt",
+        "type": "string"
+      },
+      {
+        "const": "updatedBy",
+        "type": "string"
+      },
+      {
         "$ref": "#/components/schemas/CustomCardField"
       }
     ]

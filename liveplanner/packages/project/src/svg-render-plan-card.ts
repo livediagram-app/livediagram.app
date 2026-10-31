@@ -37,6 +37,10 @@ import {
   cardAgeTone,
   itemStatus,
   itemStatusSince,
+  itemStampPerson,
+  itemStampTime,
+  stampDay,
+  AUTOMATIC_CARD_FIELDS,
 } from '@liveplanner/items';
 import { FLAG_COLOUR, PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -145,6 +149,25 @@ function bitOf(
         ? { kind: 'text', text: labels.join(' · '), color: p.muted, pill: true }
         : null;
     }
+    // The card's stamps (docs/specs/026-plan/items.md "Created and Last Edited"): a day as a muted pill, a person as
+    // their disc; nothing for a card stored without one.
+    case 'createdAt':
+    case 'updatedAt': {
+      const at = itemStampTime(item, f);
+      return at === undefined
+        ? null
+        : {
+            kind: 'text',
+            text: `${f === 'createdAt' ? 'Created' : 'Edited'} ${dayLabel(stampDay(at))}`,
+            color: p.muted,
+            pill: true,
+          };
+    }
+    case 'createdBy':
+    case 'updatedBy': {
+      const who = itemStampPerson(item, f);
+      return who ? { kind: 'person', name: who.name, color: who.color } : null;
+    }
     // How long it has sat in its column: only with the board's done columns in hand (a done card shows none).
     case 'age': {
       const status = itemStatus(item);
@@ -214,9 +237,9 @@ export function planCardFace(
   const size: CardSize = ctx.size ?? 'detailed';
   const typeShows = typeCardDisplay(type, size);
   const boardShows = ctx.boardFields ? cardFieldsAt(size, ctx.boardFields) : null;
-  // A custom field, and Age (newer than the board's old field list), follow the type's Display alone.
+  // A custom field, and Age and the stamps (newer than the board's old field list), follow the type's Display alone.
   const show = (f: CardField) =>
-    isCustomCardField(f) || f === 'age'
+    isCustomCardField(f) || AUTOMATIC_CARD_FIELDS.includes(f)
       ? typeShows.includes(f)
       : typeShows.includes(f) && (!boardShows || boardShows.includes(f));
   const layout = typeCardLayout(type, size);

@@ -76,7 +76,9 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Sort Cards**: off (cards in rank order, as placed by hand), or up to **two levels** of fields, each with a
   direction, shared by everyone. Each column (and each cell, with swimlanes) orders its cards by the first field, then
   the second where the first ties, then rank where both tie. The fields a board can sort by: **Priority**,
-  **Estimate**, **Start Date** and **Due Date**, then every custom **Number**, **Currency**, **Date**, **Rating** and
+  **Estimate**, **Start Date** and **Due Date** (when its types offer them), **Created At** and **Last Edited At**
+  (always: every type offers them, [Items](items.md#created-and-last-edited); sorted by the moment, not the day),
+  then every custom **Number**, **Currency**, **Date**, **Rating** and
   **Choice** field the card types the board shows offer (a Choice by its options' order). A card with no value for a
   level (or whose type does not have the field) comes after those that have one, whichever way that level runs. The
   directions read by kind: Priority **Highest First** or **Lowest First**; a number, currency, estimate or rating
@@ -418,7 +420,10 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
 
 - **Which fields**: every custom field of a kind that groups (Choice, Checkbox, Number, Date, Text, Card, Person,
   Labels) on any type in
-  the project's catalogue, and the built-in **Labels**, **Estimate**, **Start Date** and **Due Date**. Long
+  the project's catalogue, the built-in **Labels**, **Estimate**, **Start Date** and **Due Date**, and the four
+  read-only stamps every type offers, **Created At**, **Created By**, **Last Edited At** and **Last Edited By**
+  ([Items](items.md#created-and-last-edited)): a date row per local day the card was made or last edited, a person
+  row per maker or editor, drawn as a Person field's rows. Long
   text and Link never group (each value is its own row), nor do Description, Checklist, Votes and Title.
   Assignee, Type, Priority and Status keep their own tiles. A **Card** field (Parent among them) gives a row per
   linked card, named by its title with the linked card's colour dot when it has a Colour, in the linked cards' number
@@ -442,7 +447,9 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
   option, a box ticked (Yes) or cleared (No), a number, a date, the text. Into a **Labels** row it puts that label
   first, adding it if the card did not have it (its other labels are kept). Into **No _field_** it clears the
   field (all of a card's labels, for Labels). A card whose type does not offer the field still takes the value,
-  stored but unshown, as for any row.
+  stored but unshown, as for any row. A row of one of the four stamps sets nothing: nobody can change who made a card or when, so a card
+  dropped into another of its rows moves between columns only and stays in its own row, and its board offers no
+  empty **No _field_** row to drop into.
 - **Keyboard**: Shift+Arrows move a card within its row, as on every board with rows; changing row is a drag.
 - **When the field goes**: a board laned by a field no type offers any more (removed from its type, the type
   deleted, or a kind that no longer groups) shows no rows, as if it had none, and keeps the setting, so the rows
@@ -556,8 +563,9 @@ In Plan mode:
     sit under 13 px semibold headings with generous space between them. An empty description is one quiet
     line, "Add a description…" with a pencil, not a dashed box. **Details** is a soft rounded panel inset in the
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
-    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Edited by close it, small and
-    quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
+    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Last edited by close it, small and
+    quiet under a hairline: "Created by (disc) Sam, 3 Oct 2026" and "Last edited by (disc) Alex, 2h ago" ([Created and
+    Last Edited](items.md#created-and-last-edited)), each line left out when the card holds no one for it. On a phone the layout is unchanged: one column, Details the first tab.
   - **Maximised**: on a desktop the header holds a **Maximise Card** button (the maximise glyph a board's own
     Maximise uses) just left of the close button, after the ⋯ menu. Pressed, the panel grows to fill the window
     less a 1 rem margin on every side (corners kept rounded, the dimmed editor showing as a thin frame, so it
@@ -643,7 +651,7 @@ In Plan mode:
     _field name_…**; beneath it, as it nears its 2,000 characters, how many are left (from 90%), and past them
     "_n_ characters over" in amber, when it does not save until shortened.
   - **Details panel** on the right: the fields in no tab, as label and value rows (Status first, as a coloured
-    picker), then **Created by** and **Edited by** (with when), each with the person's disc (initials on
+    picker), then **Created by** and **Last edited by** (each with when), each with the person's disc (initials on
     their colour) beside their name.
   - **On a phone** it is a sheet of one column, as tall as a sheet goes (85% of the screen): the title, then a tab bar whose first tab is
     **Details** (the side panel's fields), then the type's tabs.

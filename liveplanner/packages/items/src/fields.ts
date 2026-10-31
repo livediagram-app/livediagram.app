@@ -29,6 +29,7 @@ import { itemColourValue } from './item-colour';
 import { normaliseAttachments } from './attachments';
 import { STATUS_SINCE_FIELD } from './item';
 import { isStatusSince } from './status-since';
+import { isStampField } from './card-stamps';
 
 type ItemFieldKind =
   | 'text'
@@ -236,7 +237,9 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
     return { ok: false, error: 'fields_too_many' };
   const fields: ItemFields = {};
   for (const key of keys) {
-    if (!isValidFieldKey(key)) return { ok: false, error: 'field_key_invalid', field: key };
+    // The item's own stamps are never a field (docs/specs/026-plan/items.md "Created and Last Edited").
+    if (!isValidFieldKey(key) || isStampField(key))
+      return { ok: false, error: 'field_key_invalid', field: key };
     const v = input[key];
     const kind = knownFieldKind(key);
     if (kind === 'votes') return { ok: false, error: 'votes_read_only', field: key };
