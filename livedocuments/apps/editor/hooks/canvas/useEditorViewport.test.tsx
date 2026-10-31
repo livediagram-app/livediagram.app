@@ -159,3 +159,37 @@ describe('useEditorViewport focus', () => {
     document.documentElement.classList.remove('reduce-motion');
   });
 });
+
+// docs/specs/007-editor/article-pages.md "Writing": the caret stays in sight, above a phone's on-screen keyboard
+// too, which shrinks the visual viewport and leaves the canvas as it was.
+describe('useEditorViewport revealing above the on-screen keyboard', () => {
+  const reveal = (keyboard: number) => {
+    const { view } = setup();
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: { offsetTop: 0, height: 800 - keyboard },
+    });
+    const { zoom: z, offset: off } = view.result.current.viewport.get();
+    // A caret at screen y 600: inside the canvas's band (it ends at 800 - 88), under a 350 px keyboard.
+    const cy = (600 - 400 * (1 - z)) / z - off.y;
+    const cx = (200 - 200 * (1 - z)) / z - off.x;
+    act(() => view.result.current.scrollIntoView(cx, cy, 2 / z, 20 / z));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    const after = view.result.current.viewport.get();
+    Reflect.deleteProperty(window, 'visualViewport');
+    return { before: off.y, after: after.offset.y, z: after.zoom };
+  };
+
+  it('leaves a caret the keyboard does not cover where it is', () => {
+    const r = reveal(0);
+    expect(r.after).toBe(r.before);
+  });
+
+  it('pans a caret under the keyboard up above it', () => {
+    const r = reveal(350);
+    // The caret's foot (620) lands 24 px above the keyboard's top (450).
+    expect(r.after).toBeCloseTo(r.before - (620 - (450 - 24)) / r.z, 0);
+  });
+});
