@@ -11,6 +11,16 @@ import { plural } from '@liveplanner/project';
 import { COLUMN_ATTR, STRIP_ATTR } from './column-move-flip';
 import type { PlanPalette } from './plan-palette';
 
+// The strip's cell button lays the count and the name out as a column that wraps (docs/specs/026-plan/plan-board.md
+// "Collapse Column"): each is a full-width line, so when the name is too long for the room left under the count, it
+// is carried to a second line beside the first, out of the button's width and clipped, never half-drawn as "U...".
+// The browser decides this in layout, with no measuring in script, so there is no flash of a clipped name either.
+export const STRIP_BUTTON_CLASS =
+  'absolute inset-0 flex cursor-pointer flex-col flex-wrap content-start items-center gap-2 overflow-hidden rounded-b-lg pb-2 pt-1 transition hover:bg-black/[0.03] motion-reduce:transition-none dark:hover:bg-white/[0.04]';
+export const STRIP_LINE_CLASS = 'flex w-full shrink-0 justify-center';
+export const STRIP_NAME_CLASS =
+  'whitespace-nowrap text-[13px] font-semibold [writing-mode:vertical-rl]';
+
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 // The red a refused drop is drawn in (PlanBoardCells' DropGap).
@@ -141,31 +151,34 @@ export function CollapsedColumnCell({
         outlineOffset: -2,
       }}
     >
-      <button
-        type="button"
-        aria-label={`Expand Column, ${column.name}${laneLabel ? `, ${laneLabel}` : ''}, ${counted}`}
-        aria-expanded={false}
-        className="absolute inset-0 flex cursor-pointer flex-col items-center gap-2 overflow-hidden rounded-b-lg pb-2 pt-1 transition hover:bg-black/[0.03] motion-reduce:transition-none dark:hover:bg-white/[0.04]"
-        onPointerDown={stop}
-        onClick={(e) => {
-          e.stopPropagation();
-          onExpand();
-        }}
-      >
-        <CountBadge
-          size="md"
-          background={overLimit ? palette.warningBg : palette.surface}
-          color={overLimit ? palette.warning : palette.muted}
+      <Tooltip label={`Expand Column, ${column.name}`}>
+        <button
+          type="button"
+          aria-label={`Expand Column, ${column.name}${laneLabel ? `, ${laneLabel}` : ''}, ${counted}`}
+          aria-expanded={false}
+          className={STRIP_BUTTON_CLASS}
+          onPointerDown={stop}
+          onClick={(e) => {
+            e.stopPropagation();
+            onExpand();
+          }}
         >
-          {count}
-        </CountBadge>
-        <span
-          className="min-h-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-semibold [writing-mode:vertical-rl]"
-          style={{ color: palette.text }}
-        >
-          {column.name}
-        </span>
-      </button>
+          <span className={STRIP_LINE_CLASS}>
+            <CountBadge
+              size="md"
+              background={overLimit ? palette.warningBg : palette.surface}
+              color={overLimit ? palette.warning : palette.muted}
+            >
+              {count}
+            </CountBadge>
+          </span>
+          <span className={STRIP_LINE_CLASS}>
+            <span className={STRIP_NAME_CLASS} style={{ color: palette.text }}>
+              {column.name}
+            </span>
+          </span>
+        </button>
+      </Tooltip>
     </div>
   );
 }
