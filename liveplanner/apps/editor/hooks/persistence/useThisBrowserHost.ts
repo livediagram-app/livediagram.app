@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useThisBrowserList, type ThisBrowserHost } from '@liveworkspace/explorer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
-import { offlineDeleteProject } from '@/lib/offline/offline-store';
+import { removeThisBrowserPlan } from '@/lib/this-browser-remove';
 import { useOfflineConversions } from './useOfflineConversion';
 
 // This Browser in the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md "This Browser"): the plans kept only in this browser, from the
@@ -12,7 +12,11 @@ import { useOfflineConversions } from './useOfflineConversion';
 // host the Explorer page on this address builds (its items, addresses and help), with the editor's own verbs: each
 // opens in the editor without a page load, and Sync (signed in) moves one into the account here, in place. One host per
 // list change; the verbs read the newest conversions when chosen.
-export function useThisBrowserHost(ownerId: string | null, signedIn: boolean): ThisBrowserHost {
+export function useThisBrowserHost(
+  ownerId: string | null,
+  signedIn: boolean,
+  openId: string | null = null,
+): ThisBrowserHost {
   const items = useThisBrowserList('liveplanner');
   const conversions = useLatest(useOfflineConversions(ownerId));
   const router = useAppNavigation();
@@ -28,9 +32,10 @@ export function useThisBrowserHost(ownerId: string | null, signedIn: boolean): T
               conversions.current.syncToCloud({ id: item.id, name: item.title || 'Untitled' }),
           }
         : {}),
-      // Nothing else holds one, so Delete removes it for good (the Explorer asks first).
-      remove: (item) => void offlineDeleteProject(item.id),
+      // Nothing else holds one, so Delete removes it for good (the Explorer asks first); the open one, leaving for the
+      // Explorer (lib/this-browser-remove.ts).
+      remove: (item) => void removeThisBrowserPlan(item.id, openId),
     }),
-    [items, signedIn, conversions, router],
+    [items, signedIn, conversions, router, openId],
   );
 }

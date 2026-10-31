@@ -61,7 +61,11 @@ function ExplorerImpl({
   const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
   // The plans kept only in this browser, as the person (an account, or this browser's guest).
   const guestId = useSignedGuestId(authLoaded, accountUserId);
-  const thisBrowser = useThisBrowserHost(accountUserId ?? guestId, !!accountUserId);
+  const thisBrowser = useThisBrowserHost(
+    accountUserId ?? guestId,
+    !!accountUserId,
+    currentProjectId ?? null,
+  );
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
   const inboxOwner = accountUserId ?? guestId ?? null;
