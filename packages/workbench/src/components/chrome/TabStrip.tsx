@@ -10,7 +10,8 @@ import {
   type ReactNode,
 } from 'react';
 import { scrollLeftToReveal, TAB_REVEAL_PAD } from './tab-strip-scroll';
-import { TAB_ADD_CLASS, TAB_LIST_CLASS, TAB_STRIP_CLASS } from './tab-shape';
+import { TAB_ADD_CLASS, TAB_LIST_CLASS, TAB_SLIDER_CLASS, TAB_STRIP_CLASS } from './tab-shape';
+import { useTabSlider } from './useTabSlider';
 import { TabFolderGroup, type TabFolderGroupProps } from './TabFolderGroup';
 
 // The footer's tab strip, shared by every editor (docs/specs/007-editor/editor-app.md "Tab bar", "How a tab looks";
@@ -49,6 +50,8 @@ export function TabStrip<T extends { id: string }>({
   folderPresence,
 }: TabStripProps<T>) {
   const stripRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   // Which folders are open: this visit's own, never stored or broadcast. Every folder starts collapsed.
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
@@ -93,6 +96,8 @@ export function TabStrip<T extends { id: string }>({
   const tabIds = runs.flatMap((r) => (r.kind === 'loose' ? [r.tab.id] : r.tabs.map((t) => t.id)));
   const tabCount = tabIds.length;
   const lastTabId = tabIds.at(-1);
+  // The strip's order, for the sliding card: a reorder keeps every size, so only this tells it (useTabSlider).
+  const order = tabIds.join('|');
   const revealActive = useCallback(() => {
     const strip = stripRef.current;
     const tab = strip?.querySelector<HTMLElement>('[data-tab][data-active]');
@@ -102,6 +107,9 @@ export function TabStrip<T extends { id: string }>({
     reveal(t.left, add ? add.getBoundingClientRect().right : t.right);
   }, [activeId, lastTabId, reveal]);
   useEffect(revealActive, [revealActive, tabCount]);
+
+  // The open tab's card slides to each tab you open (useTabSlider); a reorder moves it at once.
+  useTabSlider(listRef, sliderRef, activeId, order);
 
   // A folder that opens past the edge comes into view, chip first when it is wider than the strip.
   const revealGroup = useCallback(
@@ -146,6 +154,7 @@ export function TabStrip<T extends { id: string }>({
   return (
     <div ref={stripRef} className={TAB_STRIP_CLASS}>
       <div
+        ref={listRef}
         role="tablist"
         aria-label="Tabs"
         aria-orientation="horizontal"
@@ -153,6 +162,8 @@ export function TabStrip<T extends { id: string }>({
         onClick={onClick}
         className={TAB_LIST_CLASS}
       >
+        {/* First, so every tab and chip paints over it. */}
+        <div ref={sliderRef} aria-hidden data-tab-slider="" className={TAB_SLIDER_CLASS} />
         {runs.map((run) =>
           run.kind === 'loose' ? (
             renderTab(run.tab)
@@ -171,6 +182,7 @@ export function TabStrip<T extends { id: string }>({
               renderRenameField={renderRenameField}
               hiddenPresence={folderPresence}
               onOpened={revealGroup}
+              onClosed={revealActive}
             />
           ),
         )}
