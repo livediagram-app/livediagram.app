@@ -5,18 +5,20 @@ import {
   useEffect,
   useRef,
   useState,
-  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react';
 import { scrollLeftToReveal, TAB_REVEAL_PAD } from './tab-strip-scroll';
 import { TAB_ADD_CLASS, TAB_LIST_CLASS, TAB_SLIDER_CLASS, TAB_STRIP_CLASS } from './tab-shape';
 import { useTabSlider } from './useTabSlider';
+import { useStripRoving } from './useStripRoving';
 import { TabFolderGroup, type TabFolderGroupProps } from './TabFolderGroup';
 
 // The footer's tab strip, shared by every editor (docs/specs/007-editor/editor-app.md "Tab bar", "How a tab looks";
-// docs/specs/006-document/tab-folders.md "Tab bar rendering"): the scroller, the `tablist` of tabs and folders, Add
-// tab, which folders are open this visit, the arrow keys, and keeping the open tab in view.
+// docs/specs/006-document/tab-folders.md "Tab bar rendering"): the scroller, the `toolbar` of tabs and folders, Add
+// tab, which folders are open this visit, the arrow keys, and keeping the open tab in view. A toolbar, not a tablist:
+// a tab holds its avatars and menu button beside its name, and a tablist may own nothing but tabs. Behaviour finds
+// tabs by their data attributes (`data-tab`, `data-tab-key`, `data-active`), never by ARIA.
 
 export type TabRun<T> = { kind: 'loose'; tab: T } | { kind: 'folder'; name: string; tabs: T[] };
 
@@ -152,39 +154,20 @@ export function TabStrip<T extends { id: string }>({
     [reveal],
   );
 
-  // A tap on the tab already open brings all of it into view (a phone's tab half under the fade).
+  // A tap on the name of the tab already open brings all of it into view (a phone's tab half under the fade).
   const onClick = (e: ReactMouseEvent) => {
-    if ((e.target as HTMLElement).closest('[role="tab"][aria-selected="true"]')) revealActive();
+    const key = (e.target as HTMLElement).closest('[data-tab-key]');
+    if (key?.closest('[data-tab]')?.hasAttribute('data-active')) revealActive();
   };
 
-  // Left and Right move between tabs and folder chips (skipping tucked-away members), Home and End to the ends.
-  // Enter and Space are the buttons' own: open a tab, toggle a folder.
-  const onKeyDown = (e: ReactKeyboardEvent) => {
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
-    const from = e.target as HTMLElement;
-    if (!from.matches('[data-tab-key]')) return;
-    const items = Array.from(
-      e.currentTarget.querySelectorAll<HTMLElement>('[data-tab-key]'),
-    ).filter((el) => !el.closest('[inert]'));
-    const i = items.indexOf(from);
-    const last = items.length - 1;
-    const to =
-      e.key === 'Home'
-        ? 0
-        : e.key === 'End'
-          ? last
-          : e.key === 'ArrowLeft'
-            ? Math.max(0, i - 1)
-            : Math.min(last, i + 1);
-    e.preventDefault();
-    items[to]?.focus();
-  };
+  // One Tab stop, the arrows through every control (useStripRoving).
+  const onKeyDown = useStripRoving(listRef);
 
   return (
     <div ref={stripRef} className={TAB_STRIP_CLASS}>
       <div
         ref={listRef}
-        role="tablist"
+        role="toolbar"
         aria-label="Tabs"
         aria-orientation="horizontal"
         onKeyDown={onKeyDown}

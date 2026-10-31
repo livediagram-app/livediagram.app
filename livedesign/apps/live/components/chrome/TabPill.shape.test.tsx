@@ -47,7 +47,9 @@ describe('TabPill look', () => {
     expect(el.className).toMatch(/\brounded-t-\[10px\]/);
     expect(el.style.color).not.toBe('');
     expect(el.querySelector('span[aria-hidden].absolute')).toBeNull();
-    expect(screen.getByRole('tab', { name: 'Roadmap' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Roadmap' }).getAttribute('aria-current')).toBe(
+      'page',
+    );
   });
 
   it('keeps the other tabs quiet, in neutral ink', () => {
@@ -73,7 +75,7 @@ describe('TabPill look', () => {
   it('shows no type icon before the name, open or not', () => {
     for (const id of ['t1', 't2']) {
       const { unmount } = render(<TabPill tab={tab(id, 'Notes')} ctx={ctx()} />);
-      expect(screen.getByRole('tab', { name: 'Notes' }).querySelector('svg')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Notes' }).querySelector('svg')).toBeNull();
       unmount();
     }
   });
