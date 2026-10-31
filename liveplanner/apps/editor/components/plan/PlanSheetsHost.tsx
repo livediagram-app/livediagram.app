@@ -7,7 +7,7 @@ import {
   duplicateItemType,
   isArchived,
   isTrashed,
-  itemLabels,
+  labelUsage,
   linkedCardsOf,
   newItemId,
   requiredFieldEmptied,
@@ -26,6 +26,7 @@ import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
 import { RequiredFieldsDialog } from './RequiredFieldsDialog';
 import { track } from '@/lib/telemetry';
+import { useCardPanelMaximised } from '@/hooks/plan/useCardPanelMaximised';
 
 export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
   const ctx = plan.context;
@@ -48,6 +49,15 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     const open = openId ? ctx.items.get(openId) : undefined;
     return open ? linkedCardsOf(open, ctx.items, ctx.types) : [];
   }, [openId, ctx.items, ctx.types]);
+  // The plan's labels with their counts, for the Labels field's menu (docs/specs/026-plan/plan-board.md "Working on
+  // a board"): one pass over the cards while a card is open, again only when the cards change, never per keystroke.
+  const labelUses = useMemo(
+    () => (openId ? labelUsage(ctx.items.values()) : []),
+    [openId, ctx.items],
+  );
+  // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): this person's preference, so every card opens
+  // the way they last left one.
+  const { maximised, setMaximised } = useCardPanelMaximised(ctx.ownerId);
   // A new card waiting for its required fields comes first (docs/specs/026-plan/item-types.md "Required fields"):
   // the panel of a card opened as it was asked for shows once it is made.
   if (plan.requiredFields) {
@@ -108,8 +118,6 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
       );
     }
   }
-  // Every label in use, for the labels field's suggestions.
-  const allLabels = [...new Set([...ctx.items.values()].flatMap((it) => itemLabels(it)))].sort();
   if (item) {
     const linkOf = ctx.cardLink;
     return (
@@ -118,7 +126,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         types={ctx.types}
         statuses={statuses}
         people={ctx.people}
-        labels={allLabels}
+        labels={labelUses}
         canEdit={ctx.canEditCards}
         canRetire={ctx.canEdit}
         onSave={(field, value) => {
@@ -161,6 +169,8 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         }}
         onLinkExisting={(group, cardId, moved) => linkExistingCard(ctx, item, group, cardId, moved)}
         statusNames={ctx.statusNames}
+        maximised={maximised}
+        onMaximise={setMaximised}
         {...(ctx.linkedActions ? { linkedActions: ctx.linkedActions } : {})}
         onTrash={() => {
           ctx.trashItem(item.id);

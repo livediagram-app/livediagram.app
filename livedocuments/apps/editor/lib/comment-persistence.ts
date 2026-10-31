@@ -1,5 +1,10 @@
 import type { CommentMention } from '@livedocuments/document';
-import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api-client';
+import {
+  apiAddComment,
+  apiDeleteComment,
+  apiReactToComment,
+  apiSetThreadResolved,
+} from '@/lib/api-client';
 
 // How a comment change is kept (docs/specs/008-canvas/canvas-and-palette.md "Comments", docs/specs/013-workspace/share-roles.md):
 // an Editor's rides the room and the tab autosave; a read-only session (a Participant, or a Viewer the popover lets
@@ -34,5 +39,10 @@ export function commentPersisters(session: CommentSession) {
       if (endpoint === null || !first) return undefined;
       return () => apiSetThreadResolved(selfId, endpoint, tabId, first, resolved, shareCode);
     },
+    // A reaction (docs/specs/012-collaboration/comment-reactions.md), under this browser's collab key.
+    react: (commentId: string, reaction: { emoji: string; on: boolean; key: string }) =>
+      endpoint === null
+        ? undefined
+        : () => apiReactToComment(selfId, endpoint, tabId, commentId, reaction, shareCode),
   };
 }

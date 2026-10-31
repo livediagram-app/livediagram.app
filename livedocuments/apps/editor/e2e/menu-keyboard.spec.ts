@@ -43,12 +43,11 @@ test.describe('menus by keyboard', () => {
     await square.click();
     const elementMenu = page.getByRole('dialog', { name: 'Element menu' });
 
-    // From the keyboard (the selection toolbar's More actions on the new square) focus moves in,
-    // and Escape brings it back.
-    const more = page.getByRole('button', { name: 'More actions' });
-    await expect(more).toHaveAttribute('aria-haspopup', 'dialog');
-    await more.focus();
-    await page.keyboard.press('Enter');
+    // From the keyboard (Shift+F10 on the canvas, with the square selected) focus moves in, and
+    // Escape brings it back (docs/specs/004-interface-design/canvas-accessibility.md).
+    const canvas = page.getByRole('main', { name: 'Canvas' });
+    await canvas.focus();
+    await page.keyboard.press('Shift+F10');
     await expect(elementMenu).toBeVisible();
     // Focus lands on the menu's first control: the quick bar's first button, above the categories
     // (docs/specs/008-canvas/element-menu-quick-bar.md).
@@ -67,7 +66,7 @@ test.describe('menus by keyboard', () => {
     await page.keyboard.press('Escape');
     await expect(elementMenu).toHaveCount(0);
     await expect(square).toHaveCount(1);
-    await expect(more).toBeFocused();
+    await expect(canvas).toBeFocused();
 
     // By pointer it opens beside the canvas without taking focus. (The Quick style panel covers
     // the square's left half, so the press lands on its right edge, once the panel has settled.)

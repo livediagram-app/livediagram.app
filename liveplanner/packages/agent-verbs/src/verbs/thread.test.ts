@@ -110,6 +110,32 @@ describe('thread ls', () => {
     expect(threadLs.text!(unnamed)[0]).toMatch(/\sresolved\s+"/);
   });
 
+  // docs/specs/012-collaboration/comment-reactions.md: agents read reactions, never add them.
+  it("prints a comment's reactions after its text", async () => {
+    const reacted: CardThread = {
+      ...THREAD,
+      comments: [
+        {
+          ...THREAD.comments[0]!,
+          reactions: [
+            { emoji: 'thumbs-up', by: 'k-bo', name: 'Bo' },
+            { emoji: 'thumbs-up', by: 'k-ada', name: 'Ada' },
+            { emoji: 'eyes', by: 'k-bo', name: 'Bo' },
+          ],
+        },
+      ],
+    };
+    const out = await threadLs.run!(
+      ctxWith([reacted]).ctx,
+      threadLs.input.parse({ project: DOC_A }),
+    );
+    expect(threadLs.text!(out)[1]).toBe('  cm-person Ada: It empties on switch · 👍 2 👀 1');
+    expect(out.threads[0]!.comments[0]!.reactions).toEqual([
+      { emoji: '👍', name: 'Thumbs Up', count: 2, by: ['Bo', 'Ada'] },
+      { emoji: '👀', name: 'Eyes', count: 1, by: ['Bo'] },
+    ]);
+  });
+
   it('refuses a card it cannot find', async () => {
     await expect(
       threadLs.run!(ctxWith().ctx, threadLs.input.parse({ project: DOC_A, item: '#9' })),

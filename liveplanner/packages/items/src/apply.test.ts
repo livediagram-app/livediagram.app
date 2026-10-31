@@ -78,7 +78,8 @@ describe('item writes', () => {
       clear: ['priority'],
       type: 'task',
     });
-    expect(applyPatch(after, inv, ctx).fields).toEqual(it0.fields);
+    // Its status never changed, so the card keeps its last change as the moment it entered it (status-since.ts).
+    expect(applyPatch(after, inv, ctx).fields).toEqual({ ...it0.fields, statusSince: 0 });
     expect(inversePatch(it0, {})).toEqual({});
   });
 

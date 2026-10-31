@@ -48,10 +48,15 @@ A Participant edits **text**, and nothing else.
 - **A Participant never grows the pages.** When its writing needs another page, an Editor's screen lays the article
   out and adds it, as it does for an agent's writing.
 - **Nothing offers what a session cannot do.** A Participant or Viewer sees no palette, no Slides button or Slide
-  Deck command, no page panel or page actions, no element or tab menu, and in an article no insert menu, zone bars or
-  page toolbar. Empty states describe instead of instructing: a comment thread invites only someone who may add. A
-  Viewer's selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment
-  button on one that has none (a Participant's offers **Add Comment** everywhere).
+  Deck command, no page panel or page actions, no tab menu, and in an article no insert menu, zone bars or page
+  toolbar. Empty states describe instead of instructing: a comment thread invites only someone who may add.
+- **The element menu shows only what the role may do.** A right-click on an element (a long-press on a touch screen)
+  opens its menu for every role ([Element menu for Participants and Viewers](../008-canvas/element-menu-quick-bar.md#element-menu-for-participants-and-viewers)).
+  An Editor's is the full menu. A Participant's offers **Add Comment** (or **View Comments**), **Edit Text** on what
+  it may write on, and **Open Link**, **View Note** and **Copy Text** where the element has them. A Viewer's offers
+  **Show Comments** on an element that has comments and no comment row on one that has none, plus **Open Link**,
+  **View Note** and **Copy Text**. An element with nothing for the role opens no menu. There is no selection toolbar
+  for any role (the element menu holds what it offered).
 - **The server is the rule.** A Participant's changes travel as element and article changes the server applies one
   by one against the stored tab: its words land, every other field stays as stored, and an add, a delete or a
   reorder is refused. A stale screen therefore never writes an old copy of a tab over a newer one.

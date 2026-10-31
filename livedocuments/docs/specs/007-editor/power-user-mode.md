@@ -71,8 +71,7 @@ While searching, a child that matches shows on its own, like any other row.
 On by default when the mode switches on (the preset writes it). Minimal chrome removes words and hints that teach
 the interface, and leaves the controls:
 
-- **Selection kind chip.** The caption above the selection toolbar ("Selected Arrow", "Selected Square", "Selected
-  Elements (3)") is hidden.
+- **Selection kind chip.** The caption above the multi-selection toolbar ("Selected Elements (3)") is hidden.
 - **Palette tile captions.** Palette tiles show their icon only.
 - **Status bar text.** The bottom bar's Start Tour, Search, Settings and appearance controls show their icons only.
 - **Panel titles and help buttons.** Panels (Explorer, Map, Layers, ...) hide their
@@ -81,7 +80,7 @@ the interface, and leaves the controls:
   added to hold it, and the help centre stays one click away in the header's **Editor** menu.
 - **Onboarding notices and hints.** The modifier-key hint banner, the Explorer's sign-in / "saved to this browser"
   notice, and the match-theme nudge are not shown.
-- **The bin** (Delete) in the selection toolbars, on desktop. Touch devices keep it: they have no Delete key.
+- **The bin** (Delete) in the multi-selection toolbar, on desktop. Touch devices keep it: they have no Delete key.
 - **The role pill** leaves the title bar ([Editor app](editor-app.md#role-pill)) and becomes an icon, **first** in the
   bottom-left of the status bar: a pencil while editing, an eye while viewing. Its Tooltip reads "Editing" or
   "Viewing (read-only)". Whoever may toggle the pill may toggle the icon, the same way.
@@ -99,7 +98,7 @@ The mode also makes, whatever the Minimal chrome option says:
 
 And it drops, whatever the Minimal chrome option says:
 
-- **The More button** (`⋯`) in the selection toolbars, on desktop: a power user opens the element menu with a
+- **The More button** (`⋯`) in the multi-selection toolbar, on desktop: a power user opens the element menu with a
   right-click ([Canvas and palette](../008-canvas/canvas-and-palette.md#selection-popover)). Touch devices keep it:
   they cannot right-click.
 

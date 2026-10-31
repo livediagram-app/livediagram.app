@@ -26,8 +26,6 @@ export type SankeyElementTourContext = {
   // The parts each canvas step lifts, as indices into the drawn layout; null leaves the step out.
   band: number | null;
   leftover: number | null;
-  // The selection toolbar's More button is showing (not for a power user on a desktop, who right-clicks).
-  hasMore: boolean;
   // A touch screen, which double-taps where a mouse double-clicks.
   touch: boolean;
   flows: SankeyFlowsTourContext;
@@ -77,13 +75,12 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
         { part: 'band', index: ctx.leftover },
       ),
     );
-  if (ctx.hasMore)
-    steps.push(
-      inTheMenu('style', 'Style It', 'In its menu, Sankey sets colours, labels and the unit.', [
-        'Tools',
-        'Sankey',
-      ]),
-    );
+  steps.push(
+    inTheMenu('style', 'Style It', 'In its menu, Sankey sets colours, labels and the unit.', [
+      'Tools',
+      'Sankey',
+    ]),
+  );
   steps.push(
     canvasStep(
       'flows',

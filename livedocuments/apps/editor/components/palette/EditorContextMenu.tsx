@@ -5,8 +5,8 @@
 // clicked: a single-element menu (link / layer order / note /
 // comment) or a whole-selection 'multi' menu. The canvas (empty-space)
 // right-click opens the tab menu with its canvas sections folded in,
-// rendered by the TabBar — not here. Duplicate lives in the selection
-// toolbar (SelectionPopover), not here.
+// rendered by the TabBar — not here. Duplicate lives in the Element
+// actions row (ElementMenuActionsRow), first in the element menu.
 //
 // Purely presentational: every action is a callback prop, and each
 // item closes the menu after firing (the close-then-act pattern the
@@ -58,7 +58,7 @@ import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
-import { ElementMenuQuickBar } from './ElementMenuQuickBar';
+import { ElementMenuActionsRow, ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
@@ -145,6 +145,10 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         flush
         anchorBottom={anchorBottom}
       >
+        {/* What the selection toolbar held, first (docs/specs/008-canvas/element-menu-quick-bar.md "What it holds"). */}
+        {props.elementActions ? (
+          <ElementMenuActionsRow target={target} actions={props.elementActions} onClose={onClose} />
+        ) : null}
         {/* The quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): Assign Action, Comment, Link and Note, and
             Clear Styles at its right, above every category rather than folded into Collaborate and Resources. */}
         <ElementMenuQuickBar

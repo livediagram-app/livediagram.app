@@ -40,23 +40,25 @@ fields people usually want, and any item may carry other fields. The store never
 
 The fields the shipped types use. Each has a **field kind** that validates and draws it.
 
-| Field             | Kind      | Holds                                                                                                                                                                     |
-| ----------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`           | text      | One line, required, up to 500 characters                                                                                                                                  |
-| `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                                      |
-| `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror         |
-| `status`          | status    | A status value, matched against a board's columns                                                                                                                         |
-| `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                                |
-| `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                                       |
-| `labels`          | labels    | Up to 12 short strings                                                                                                                                                    |
-| `estimate`        | number    | Story points, 0 to 999; the card panel picks it from a dropdown of None, 1, 2, 3, 5, 8, 13 and 21 (`ESTIMATE_POINTS`), keeping any other value a card holds               |
-| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#gantt-chart))                                                     |
-| `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                             |
-| `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                    |
-| `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                            |
-| `parent`          | card link | Another item's id (a Project): the Card field named Parent that Task carries (item-types.md "Card fields"), under its reserved id                                         |
-| `votes`           | votes     | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                                   |
-| `comments`        | comments  | The card's comment threads: stored apart from the card, in the plan's thread store, never in `fields`, and written only through the thread writes ([Comments](#comments)) |
+| Field             | Kind      | Holds                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ----------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`           | text      | One line, required, up to 500 characters                                                                                                                                                                                                                                                                                                                                                                                        |
+| `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                                                                                                                                                                                                                                                                                            |
+| `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror                                                                                                                                                                                                                                                               |
+| `<field>Rich`     | rich text | A Long Text custom field's formatting (`f-steps` → `f-stepsRich`), the same runs; the field's own value stays its plain-text mirror ([Item types](item-types.md#an-item-type))                                                                                                                                                                                                                                                  |
+| `status`          | status    | A status value, matched against a board's columns                                                                                                                                                                                                                                                                                                                                                                               |
+| `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                                                                                                                                                                                                                                                                                      |
+| `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                                                                                                                                                                                                                                                                                             |
+| `labels`          | labels    | Up to 12 short strings                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `estimate`        | number    | Story points, 0 to 999; the card panel picks it from a dropdown of None, 1, 2, 3, 5, 8, 13 and 21 (`ESTIMATE_POINTS`), keeping any other value a card holds                                                                                                                                                                                                                                                                     |
+| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#gantt-chart))                                                                                                                                                                                                                                                                                                           |
+| `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                                                                                                                                                                                                                                                                          |
+| `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `parent`          | card link | Another item's id (a Project): the Card field named Parent that Task carries (item-types.md "Card fields"), under its reserved id                                                                                                                                                                                                                                                                                               |
+| `votes`           | votes     | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                                                                                                                                                                                                                                                                                         |
+| `comments`        | comments  | The card's comment threads: stored apart from the card, in the plan's thread store, never in `fields`, and written only through the thread writes ([Comments](#comments))                                                                                                                                                                                                                                                       |
+| `statusSince`     | timestamp | When the card entered its current status, as a ms epoch: stamped by every write that changes the status (and by a create), from the editor, the api, agents and forms alike, and kept by every other write. A card stored before it existed reads its last change (`updatedAt`) instead, and its next write keeps that moment, so its age never restarts on an edit. A card's [Age](item-types.md#card-display) is read from it |
 
 A card's type may leave statuses out ([Item types](item-types.md#an-item-type)): an item made or moved into one is
 refused (`status_excluded`), from the editor, the api and agents alike. A card already in one is never moved out
@@ -120,6 +122,8 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   each other; the same field resolves to the last write.
 - **Move**: a new `status` and/or a new `rank`, given as "after this item" or "before this item" (or the top or
   end of a column), so a move needs no knowledge of other ranks.
+- A create, update or move that changes a card's `status` stamps `statusSince` with the write's moment; one that
+  names `statusSince` itself (an undo, a restore, a sync or copy) keeps the value it gives.
 - **Tally**: a session vote's host, ending it, adds each card's dots to the card's `votes` (per voter, as
   pseudonymous person ids) in one write (`POST /items/tally`, edit access); nothing else writes `votes`. Cards are
   voted on through the tab's session vote ([Session tools](../012-collaboration/session-tools.md) "Voting on Plan
@@ -244,7 +248,7 @@ the same text, mentions, author stamp and author redaction, drawn with the same 
   Replying to a resolved thread is not offered (the composer is hidden), and a reply that reaches one anyway (an
   agent's, the Inbox's) reopens it, as on the canvas.
 - **`createdBy`**, **`createdAt`**, and **`updatedAt`** (its last activity: a comment added or edited, a resolve, a
-  reopen or a rename).
+  reopen or a rename; a reaction is not activity and leaves it).
 - **`cards`**: every card it is on (up to 20), each named by its plan and card id, with its number and, for a card in
   another plan, that plan's name as it was when the thread was added there. The first is the card it was started
   on.
@@ -287,6 +291,9 @@ or a deleted comment made from any of them changes it everywhere at once. Nothin
 
 - **Only all-own**: a thread every comment in which is the deleting person's own (an agent's posted with their
   token counts as theirs); one holding anyone else's comment is refused `409 thread_has_others`, Editors included.
+- **React** ([Comment reactions](../012-collaboration/comment-reactions.md)) goes with replying: an Editor or a
+  Participant adds and takes back their own six emoji on any comment, a Viewer only sees them and who left them, and
+  an agent reads them (`list_threads`) but never reacts (`403 forbidden`).
 - The card a thread is added to is always in the plan being viewed, so the same role decides.
 - A tab-scoped link reaches a thread only through a card its tab shows.
 - An agent token acts as its person, by that person's role, with the limits in the last row: it edits and deletes
@@ -332,7 +339,10 @@ text. Editing an AI comment keeps the flag; a person cannot set or clear it.
   **Reply** (primary, on the right), the same height, with no row of its own between the comments and the composer.
   Resolve shows only to those who may resolve, who are those who may reply. Your own comment offers **Edit**
   (in place: the text becomes a field, **Save** and **Cancel**, ⌘/Ctrl Enter saves, Escape cancels) and **Delete**; an
-  Editor's row offers Delete on anyone's. Every thread is **closed when the card opens** (its header only: title,
+  Editor's row offers Delete on anyone's. Every comment takes **reactions**
+  ([Comment reactions](../012-collaboration/comment-reactions.md)): **Add Reaction** in its row actions opens the
+  six in place, and chips under the text count each emoji, highlight yours and say who; a resolved thread's
+  comments keep their chips but take no new ones. Every thread is **closed when the card opens** (its header only: title,
   avatars, count, last activity). A thread opens when its header is pressed, when a link names it (below), or when
   the person has just started it with Start Thread (it lands open, so they see what they posted and can go on);
   replying keeps an opened thread open. What is open is remembered only while the panel stays on the card:
@@ -379,11 +389,13 @@ Every write is applied by the home plan to the thread as stored, so concurrent w
 | **edit**          | replaces one of the caller's own comments' text and mentions, marking it edited       | `comment_not_found`, 403 not theirs                        |
 | **delete**        | deletes a comment (own, or any for an Editor); the last one deletes the thread        | `comment_not_found`, 403                                   |
 | **resolve**       | resolves or reopens; already so changes nothing (an empty answer)                     | `thread_not_found`                                         |
+| **react**         | turns the caller's emoji on or off on a comment; already so changes nothing (empty)   | `comment_not_found`, `comments_full`, 403 agent            |
 | **rename**        | sets the title (trimmed, 1 to 120 characters), or clears it back to the automatic one | `title_too_long`                                           |
 | **add to card**   | puts the thread on another card                                                       | `thread_on_card`, `threads_full`, `thread_cards_full`, 403 |
 | **delete thread** | removes it from every card                                                            | 403                                                        |
 
-- A comment's author name, colour and id, its `ai` flag and its token are stamped by the server from the caller.
+- A comment's author name, colour and id, its `ai` flag and its token are stamped by the server from the caller. A
+  reaction's name is the server's too; its `by` is the caller's collab key, as on the canvas.
 - A thread write is not a change to its cards: no card's `rev`, **Edited by** or change time moves.
 - **Author ids** never leave the api except to their author: every read and answer leaves them out of other people's
   comments (and the thread's starter), and the room hears none.
@@ -438,7 +450,9 @@ added into another plan, is no longer sent) and `Comment · Deleted · Thread`.
   a phone) with a list 32 rem tall (less on a short screen) whatever it holds, so the panel keeps its size as a search
   narrows it, of every card type the catalogue has (custom types
   included, each drawn with its own glyph and colour) and of a type it has lost (drawn as the fallback "Item"),
-  newest change first.
+  newest change first. On a phone, where the strip folds into **More Card Tools**, its **Find a Card** row opens
+  the same popover (a press on a row of that menu reaches only the menu, never the canvas under it, which used
+  to take the focus and shut the menu before the row could act, so none of its three rows opened anything).
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title,
   description or card type name ("person" finds every Person card), ignoring case.
 - **All Cards** (the wider: all the room **Not on a Board**, on one line at its own width, leaves) and **Not on a Board** switch between every card and the cards no board in the project shows,
@@ -452,13 +466,20 @@ added into another plan, is no longer sent) and `Comment · Deleted · Thread`.
   listed cards' types offer (Card Type always among them), then one of its values among them with its count, so no
   filter leaves nothing. Every filter must match; Backspace in an empty box takes the last off, and the box's
   **Clear Search** clears the words and the filters. They are the person's own while the panel is open, never saved. Filters matching nothing: **No cards match these filters** (below).
-- At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
-- Each row is the card as a board draws it at **Detailed** size, laid out as its type's Display says, so a card
-  looks the same in the panel as on a board (named for assistive technology "Open {Title}, {Type} #{n}"). Its state is not shown: a state filter
-  narrows by it. Choosing one closes the popover and
-  opens the card in the item panel.
-- Someone who can edit sees a bin beside each row (on hover with a mouse, always on a phone): **Move to Trash**
-  puts that card in the Trash (restorable from there) without leaving the list.
+- At most 200 tiles are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
+- The cards sit in a **grid of tiles**, two across on a desktop (one on a phone), 8 px apart, so the panel shows
+  about twice as many as a list of full-width rows did and no row is a long, mostly empty strip. Tiles in a row
+  share its height. Each tile is the card as a board draws it at **Detailed** size, laid out as its type's
+  Display says, so a card looks the same in the panel as on a board (named for assistive technology "Open
+  {Title}, {Type} #{n}"). Its state is not shown: a state filter narrows by it. Choosing a tile (anywhere but
+  its ⋯) closes the popover and opens the card in the item panel.
+- **The tile's ⋯** sits inside the card, at the end of its header row (after the priority), never beside the
+  card: with a mouse it shows while the pointer is over the tile or the ⋯ has focus, and stays while its menu is
+  open; on a touch screen it always shows. It opens the card's menu (the shared anchored menu, icon-left rows):
+  **Open** and, where the plan has an address to give, **Copy Card Link** (as the item panel's ⋯), then, for
+  someone who may retire cards (an Editor, as the panel's Trash), a separator and **Move to Trash**, which puts
+  that card in the Trash (restorable from there, and announced "#{n} moved to the Trash") without leaving the
+  list. A Participant or Viewer gets Open and Copy Card Link only.
 - Empty: the shared empty state (as the Trash's: an icon badge, a title and a line), filling the list's height:
   **No cards yet** ("Add one from a board, or drag one in from the palette."); a search matching nothing, **No cards
   match “<words>”** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these
@@ -530,7 +551,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 
 - A person can undo their own item changes with the canvas's Undo, in the order they made them, mixed with their
   canvas edits: undoing a card's move puts it back; undoing a delete brings the item back with its id, key and
-  votes.
+  votes. Undoing a move or a status change puts the card's `statusSince` back too, so its Age reads as it
+  did.
 - A tally is not undoable (a session vote's dots are taken back during the vote), matching comments and assigned
   actions. A card's
   threads are not undoable either; undoing a card's delete puts it back on its threads ([Comments](#comments)).

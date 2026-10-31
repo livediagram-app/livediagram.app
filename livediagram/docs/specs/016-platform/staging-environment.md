@@ -180,11 +180,17 @@ staging environment whose deploy has drifted from production's tests nothing.
 `main`), not on `push`. Deploying a red `main` to staging would mean the environment's
 state no longer tells you anything. Every commit on `main` runs CI to the end
 ([Deployment](deployment.md#runs-on-main-are-never-cancelled)), so those runs can finish
-out of order: a first job (**Still main's tip**) lets a run deploy only when its commit
-is still `main`'s tip. An older commit finishing last is skipped rather than putting
-staging behind `main`, and the tip's run deploys both, since the plan diffs against what
-staging last deployed. Runs queue rather than cancel (`cancel-in-progress: false`, for
-staging and production alike), so a deploy is never cut off halfway.
+out of order, and while merges keep landing `main`'s tip rarely has a finished run. A
+first job (**Newest green commit**) therefore deploys the newest commit on `main` whose CI
+passed, whichever run asked, and skips only when staging already runs it or something
+newer. Staging never goes behind `main`, never waits for `main` to sit still, and one run
+deploys every green commit since the last deploy, since the plan diffs against what
+staging last deployed. (It used to deploy only a commit still at `main`'s tip; on
+2026-10-30 a steady stream of merges skipped every run for eight hours, and production,
+shipping what staging runs, shipped nothing new.) Runs queue rather than cancel
+(`cancel-in-progress: false`, for staging and production alike), so a deploy is never cut
+off halfway; a queued run that a newer one replaces loses nothing, as the newer one looks
+up the newest green commit when it starts.
 
 ## One-time setup
 

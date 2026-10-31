@@ -42,7 +42,7 @@ const fieldsArg = z
       '(YYYY-MM-DD), color (a #rrggbb colour, e.g. ' +
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
       '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
-      '("Severity": "S2"; a Card field takes "#12"). A field the card type lacks is refused: add it with ' +
+      '("Severity": "S2"; a Card field takes "#12"; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
       'change_card_types. A new card must give every custom field list_items marks required.',
   );
 
@@ -239,7 +239,7 @@ const customField = z.object({
   kind: z
     .enum(CUSTOM_FIELD_KINDS)
     .describe(
-      'text (one line), longtext (paragraphs, in a panel tab), number, currency (an amount in the field’s ' +
+      'text (one line), longtext (rich paragraphs, in a panel tab; written as Markdown), number, currency (an amount in the field’s ' +
         'currency, shown as "£12,500"), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
         'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
         'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12") or ' +
@@ -314,8 +314,8 @@ const displayArg = z
   })
   .describe(
     'What its cards show at each card size and where, fields by name (Number, Type, Assignee, Priority, ' +
-      'Labels, Estimate, Start Date, Due Date, Votes, Checklist, Comments, Description, or a custom field by ' +
-      'name). Any size draws custom fields. A size given replaces that size; one left out keeps its own. A field ' +
+      'Labels, Estimate, Start Date, Due Date, Votes, Checklist, Comments, Description, Age (days in its column), ' +
+      'or a custom field by name). Any size draws custom fields. A size given replaces that size; one left out keeps its own. A field ' +
       'shows on a card only when the type has it and the card has a value.',
   );
 const tabsArg = z

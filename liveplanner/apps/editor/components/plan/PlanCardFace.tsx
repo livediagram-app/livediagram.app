@@ -13,6 +13,7 @@ import {
   isFlagged,
   isPriority,
   itemAssignee,
+  itemStatus,
   itemLabels,
   itemTitle,
   ITEM_TYPES,
@@ -41,6 +42,7 @@ import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ColourDot } from './ColourSwatches';
+import { AgePill } from './card-age';
 import {
   ChecklistPill,
   CommentsPill,
@@ -74,6 +76,9 @@ type PlanCardFaceProps = {
   // A slot board's narrow column (docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified"): a Minimal card's
   // title on its own lines, full width, and its bits in a row under it rather than beside it.
   stacked?: boolean;
+  // A control at the far end of a Detailed card's header row, inside the card (the Cards panel's ⋯,
+  // docs/specs/026-plan/items.md "Finding a card"); the row is drawn for it even when the card has no header bits.
+  headAction?: ReactNode;
 };
 
 export type CardFaceEdit = {
@@ -83,7 +88,11 @@ export type CardFaceEdit = {
 
 // The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
 const FRAME =
-  'group/card relative flex h-full overflow-hidden rounded-xl border transition-[box-shadow,transform] duration-150 hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0';
+  'group/card relative flex h-full overflow-hidden rounded-xl border transition-[box-shadow,transform] duration-150';
+// The lift under the pointer. Left off a face that carries a headAction: its host draws the hover, since a transform
+// would make the face a stacking context and sink the action under the host's own press target.
+const LIFT =
+  'hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0';
 const REST_SHADOW = '0 1px 2px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04)';
 
 export function PlanCardFace({
@@ -97,6 +106,7 @@ export function PlanCardFace({
   typeOverride,
   edit,
   stacked = false,
+  headAction,
 }: PlanCardFaceProps) {
   const plan = usePlan();
   const faceFinish = useFaceFinish();
@@ -191,6 +201,18 @@ export function PlanCardFace({
         ) : null;
       case 'checklist':
         return progress ? <ChecklistPill key={f} progress={progress} palette={palette} /> : null;
+      // How long it has sat in its column; never on a done card (a done column draws it muted).
+      case 'age': {
+        const status = itemStatus(item);
+        return muted || status === undefined ? null : (
+          <AgePill
+            key={f}
+            item={item}
+            statusName={plan?.statusNames.get(status) ?? status}
+            palette={palette}
+          />
+        );
+      }
       case 'comments':
         return <CommentsPill key={f} item={item} palette={palette} />;
       // The votes the card has gathered from ended session votes, read-only.
@@ -283,7 +305,7 @@ export function PlanCardFace({
   if (size === 'minimal' && stacked) {
     const bits = [...slotBits('lead'), ...slotBits('trail')];
     return (
-      <div className={`${FRAME} flex-col gap-1.5 px-2.5 py-2`} style={frame}>
+      <div className={`${FRAME} ${LIFT} flex-col gap-1.5 px-2.5 py-2`} style={frame}>
         {presenceTag}
         <div className="flex items-start gap-1.5">
           <span className="mt-[5px] flex shrink-0">
@@ -306,7 +328,7 @@ export function PlanCardFace({
   }
   if (size === 'minimal') {
     return (
-      <div className={`${FRAME} items-center gap-2 px-3 py-2.5`} style={frame}>
+      <div className={`${FRAME} ${LIFT} items-center gap-2 px-3 py-2.5`} style={frame}>
         {presenceTag}
         <TypeDot accent={accent} />
         {zone('lead', slotBits('lead'))}
@@ -330,17 +352,20 @@ export function PlanCardFace({
   // The Bottom Right slot: the footer's far end (the assignee, by default).
   const footEnd = slotBits('footEnd');
   return (
-    <div className={`${FRAME} flex-col gap-2 px-3 py-2.5`} style={frame}>
+    <div className={`${FRAME} ${headAction ? '' : LIFT} flex-col gap-2 px-3 py-2.5`} style={frame}>
       {presenceTag}
-      {head.length || headEnd.length || ownColour || edit ? (
+      {head.length || headEnd.length || ownColour || edit || headAction ? (
         <div
           className="flex items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
           {zone('head', head)}
           {ownColour ? <ColourDot colour={ownColour} /> : null}
-          {headEnd.length || edit ? (
-            <span className="ml-auto flex items-center gap-1.5">{zone('headEnd', headEnd)}</span>
+          {headEnd.length || edit || headAction ? (
+            <span className="ml-auto flex items-center gap-1.5">
+              {zone('headEnd', headEnd)}
+              {headAction}
+            </span>
           ) : null}
         </div>
       ) : null}

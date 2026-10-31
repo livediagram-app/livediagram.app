@@ -3,7 +3,7 @@
 // its home plan, and reached through any plan holding one of its cards: `/projects/:id/...` names the plan the
 // caller views it through.
 
-import type { CardThread, CommentMention } from '@liveplanner/project';
+import type { CardThread, CommentMention, CommentReactionId } from '@liveplanner/project';
 
 export type { CardRef, CardThread, ThreadPerson } from '@liveplanner/project';
 
@@ -17,6 +17,11 @@ export type CardThreadStartRequest = { text: string; mentions?: CommentMention[]
 
 // POST /api/projects/:id/threads/:threadId/comments (a reply) and PUT .../comments/:commentId (an edit).
 export type CardThreadCommentRequest = { text: string; mentions?: CommentMention[] };
+
+// POST /api/projects/:id/threads/:threadId/comments/:commentId/reactions: the caller's own reaction on one comment,
+// on or off (docs/specs/012-collaboration/comment-reactions.md). `key` is the caller's public collab key, which
+// their reactions are kept under; the name is the server's. Nothing changing answers 204.
+export type CardThreadReactionRequest = { emoji: CommentReactionId; on: boolean; key: string };
 
 // PUT /api/projects/:id/threads/:threadId/title: '' goes back to the automatic title.
 export type CardThreadRenameRequest = { title: string };

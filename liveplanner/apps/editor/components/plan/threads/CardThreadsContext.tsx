@@ -17,6 +17,9 @@ export type CardThreadsContextValue = {
   selfId: string;
   // Their name and colour, for the avatar beside a composer.
   self: { name: string; color: string } | null;
+  // Their public collab key: what their comment reactions are kept under and marked by
+  // (docs/specs/012-collaboration/comment-reactions.md).
+  selfKey: string;
   // Starting, replying, resolving and renaming: a Participant's and an Editor's (a Viewer reads).
   canComment: boolean;
   // Deleting anyone's comment or any thread: an Editor's.

@@ -147,7 +147,6 @@ export function EditorCanvasHost() {
     commitTable,
     deleteCurvePoint,
     deleteMultiSelected,
-    deleteSelected,
     documentId,
     documentName,
     nameDocument,
@@ -156,9 +155,6 @@ export function EditorCanvasHost() {
     dropPaletteItem,
     duplicateMultiSelected,
     contextMenu,
-    duplicateSelected,
-    stackSelectedFront,
-    stackSelectedBack,
     editCursorAtEnd,
     editingId,
     embedMode,
@@ -233,7 +229,6 @@ export function EditorCanvasHost() {
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
-    toggleLockSelected,
     toggleZenMode,
     undo,
     userPreferences,
@@ -627,47 +622,45 @@ export function EditorCanvasHost() {
                 setContextMenu(null);
               }}
               onSelect={selectElement}
-              onElementContextMenu={
-                isReadOnly
-                  ? undefined
-                  : (id, sx, sy) => {
-                      // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
-                      // element, so it can't be selected, dragged, or edited — don't
-                      // pop a dead context menu on it either. Same gate as
-                      // selectElement.
-                      //
-                      // An Editor's one action on a locked element is freeing it, and that gets
-                      // its own small menu rather than the element's real one, whose every
-                      // other row would be dead. See LockedElementMenu.
-                      if (lockedByOther(id)) {
-                        const holders = remoteSelectionsByElement.get(id);
-                        if (holders?.length) {
-                          setLockedMenu({ elementId: id, at: { x: sx, y: sy }, holders });
-                        }
-                        return;
-                      }
-                      // Right-clicking the element that already owns the menu AT THE
-                      // SAME ANCHOR is a no-op: return the SAME state object so React
-                      // re-renders nothing. Re-opening would restart the entrance
-                      // animation and flash the selection popover in the gap, for a
-                      // gesture that asked for the menu already on screen.
-                      //
-                      // The anchor has to be part of that comparison: selectElement
-                      // runs first and retargets an open menu's elementId in place
-                      // (keeping the old x / y), so an id-only check would see 'same
-                      // element' for a right-click on a DIFFERENT one and strand the
-                      // menu at the previous element's position.
-                      setContextMenu((cur) =>
-                        cur &&
-                        cur.mode === 'element' &&
-                        cur.elementId === id &&
-                        cur.x === sx &&
-                        cur.y === sy
-                          ? cur
-                          : { mode: 'element', elementId: id, x: sx, y: sy },
-                      );
-                    }
-              }
+              onElementContextMenu={(id, sx, sy) => {
+                // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
+                // element, so it can't be selected, dragged, or edited — don't
+                // pop a dead context menu on it either. Same gate as
+                // selectElement.
+                //
+                // An Editor's one action on a locked element is freeing it, and that gets
+                // its own small menu rather than the element's real one, whose every
+                // other row would be dead. See LockedElementMenu. A Participant or a Viewer
+                // still opens its own menu there (comments, a link), less Edit Text
+                // (docs/specs/008-canvas/element-menu-quick-bar.md).
+                if (!isReadOnly && lockedByOther(id)) {
+                  const holders = remoteSelectionsByElement.get(id);
+                  if (holders?.length) {
+                    setLockedMenu({ elementId: id, at: { x: sx, y: sy }, holders });
+                  }
+                  return;
+                }
+                // Right-clicking the element that already owns the menu AT THE
+                // SAME ANCHOR is a no-op: return the SAME state object so React
+                // re-renders nothing. Re-opening would restart the entrance
+                // animation and flash the selection popover in the gap, for a
+                // gesture that asked for the menu already on screen.
+                //
+                // The anchor has to be part of that comparison: selectElement
+                // runs first and retargets an open menu's elementId in place
+                // (keeping the old x / y), so an id-only check would see 'same
+                // element' for a right-click on a DIFFERENT one and strand the
+                // menu at the previous element's position.
+                setContextMenu((cur) =>
+                  cur &&
+                  cur.mode === 'element' &&
+                  cur.elementId === id &&
+                  cur.x === sx &&
+                  cur.y === sy
+                    ? cur
+                    : { mode: 'element', elementId: id, x: sx, y: sy },
+                );
+              }}
               onMultiContextMenu={
                 isReadOnly
                   ? undefined
@@ -687,19 +680,6 @@ export function EditorCanvasHost() {
                       // already-open multi menu instead of reopening it.
                       setContextMenu((cur) =>
                         cur && cur.mode === 'multi' ? null : { mode: 'multi', x: sx, y: sy },
-                      )
-              }
-              onOpenElementContextMenu={
-                isReadOnly
-                  ? undefined
-                  : (id, sx, sy) =>
-                      // Ellipsis is a toggle: clicking it while its menu is already
-                      // open for this element closes it (the ContextMenu ignores the
-                      // trigger's mousedown so this onClick gets to decide).
-                      setContextMenu((cur) =>
-                        cur && cur.mode === 'element' && cur.elementId === id
-                          ? null
-                          : { mode: 'element', elementId: id, x: sx, y: sy },
                       )
               }
               onCanvasContextMenu={
@@ -768,14 +748,9 @@ export function EditorCanvasHost() {
               onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
               onSpawnConnect={spawnConnectSelected}
               onStartArrow={handleStartArrow}
-              onToggleLockSelected={toggleLockSelected}
-              onDeleteSelected={deleteSelected}
               // One gesture, one answer: while the element menu is open the
-              // selection popover stands down (see deriveCanvasSelection).
+              // quick-connect pluses stand down (see deriveCanvasSelection).
               elementMenuOpen={contextMenu?.mode === 'element'}
-              onDuplicateSelected={duplicateSelected}
-              onBringSelectedToFront={stackSelectedFront}
-              onSendSelectedToBack={stackSelectedBack}
               onCanvasDoubleClick={handleCanvasDoubleClick}
               tabLoadState={tabLoadState}
               onRetryTabLoad={retryActiveTabLoad}

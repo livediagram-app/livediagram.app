@@ -59,7 +59,7 @@ The root `codeql.yml` scans the whole repository with CodeQL on every pull reque
 
 `ci.yml` and `e2e.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main` every commit runs to the end, each in a concurrency group of its own (keyed by the commit), because a shared group keeps only one pending run and a burst of merges would still drop the middle ones. Cancelling there left most merges without a result (37 of 42 CI runs on `main` cancelled in the 11 hours to 2026-10-15), so a failure could not be pinned on its commit, and a pull request whose base had no finished run had no coverage to compare against in its [Coverage report](../003-system-architecture/testing.md#coverage-report).
 
-The cost is runner time: a merge on `main` runs CI's jobs and E2E's for every group it reaches, so a burst of merges queues for runners alongside open pull requests' runs. Runs on `main` finishing out of order are handled by the staging deploy, which skips a commit `main` has moved past ([Staging environment](staging-environment.md)).
+The cost is runner time: a merge on `main` runs CI's jobs and E2E's for every group it reaches, so a burst of merges queues for runners alongside open pull requests' runs. Runs on `main` finishing out of order are handled by the staging deploy, which deploys the newest commit on `main` whose CI passed, whichever run finishes ([Staging environment](staging-environment.md)).
 
 ## Deploy
 

@@ -8,6 +8,7 @@
 import type { Element, ShapeElement, Tab } from './index';
 import type { ElementAction } from './element-action';
 import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
+import type { CommentReaction } from '@liveworkspace/model-core/comment-reactions';
 import { isComment, keepLocalTicks } from './element-deltas';
 import { mapElementThreads, type CellCommentThreads } from './cell-comments';
 
@@ -43,6 +44,10 @@ export type Comment = {
   ai?: true;
   // When its author last changed its text (a card thread's edit), else absent.
   editedAt?: number;
+  // Who reacted with which of the six emoji (docs/specs/012-collaboration/comment-reactions.md), in the order
+  // they did; one each per person, under their public collab key. Absent when none, so older comments read as
+  // they always did.
+  reactions?: CommentReaction[];
 };
 
 // Threads live on elements (currently boxed only). `resolved` is sticky:
@@ -140,11 +145,24 @@ function elementOpForTheWire(op: unknown): unknown {
 // the comment's name agree with the session it came from rather than with
 // whatever the frame said. Run after `opForTheWire`, which has already taken
 // any author id out.
+//
+// A reaction (docs/specs/012-collaboration/comment-reactions.md) is stamped the same way: the name the session
+// shows, and the collab key its hello published, so nobody reacts in somebody else's name.
 export function stampCommentAuthor(
   op: unknown,
-  presence: { name: string; color: string },
+  presence: { name: string; color: string; key?: string },
 ): unknown {
   const o = op as { kind?: unknown; delta?: { kind?: unknown; comment?: unknown } };
+  if (o?.kind === 'el-delta' && o.delta?.kind === 'comment-react') {
+    return {
+      ...o,
+      delta: {
+        ...o.delta,
+        name: presence.name,
+        ...(presence.key ? { by: presence.key } : {}),
+      },
+    };
+  }
   if (o?.kind !== 'el-delta' || o.delta?.kind !== 'comment-add') return op;
   if (!isComment(o.delta.comment)) return op;
   return {

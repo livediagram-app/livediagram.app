@@ -55,6 +55,7 @@ import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { currentPageIdNow } from '@/lib/current-page-kind';
 import { useArticles } from '@/hooks/editor/useArticles';
+import { articleTitleName } from '@/lib/article/article-document-name';
 import { usePagesMode } from '@/hooks/editor/usePagesMode';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -103,7 +104,7 @@ import { slideFitOptions } from '@/lib/presentation-config';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
-import type { Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
@@ -123,6 +124,7 @@ import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
+import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { usePerTabLoad } from './usePerTabLoad';
 import { useRoomConnection } from './useRoomConnection';
 import { useRoomResync } from './useRoomResync';
@@ -1009,6 +1011,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
+  // the collab key their presence publishes; a session that may not edit sends them through the comment endpoints.
+  const commentReactions = useCommentReactionScope({
+    applyElementDelta,
+    activeTab,
+    selfKey: participantKey(selfParticipant),
+    selfName: selfParticipant.name,
+    canReact: participant.can.takePart,
+    readOnly: isReadOnly,
+    documentId,
+    selfId: selfParticipant.id,
+    shareCode: sessionShareCode,
+  });
   // The tab's editor mode (docs/specs/007-editor/pages-mode.md "One mode"): Pages, the one mode.
   const editorMode = useEditorMode(canEdit);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
@@ -1698,6 +1713,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canEdit: !isReadOnly,
     // A Participant writes in an article too (docs/specs/013-workspace/share-roles.md), each commit through its guard.
     canWrite: participant.participating && participant.can.writeArticle,
+    // An article's Title names a still-untitled document, as the first label does (a Participant names nothing).
+    onWritten: (flow, blocks) => {
+      if (isReadOnly) return;
+      const name = articleTitleName(documentName, tabs[0], flow, blocks);
+      if (name) setDocumentName(name);
+    },
     commitTabs: participant.participating ? guardedCommitTabs : commitTabs,
     tickTabs,
     undo,
@@ -2778,6 +2799,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // outside the panel and the overlay reads into it.
     slideDeck,
     commentMentions,
+    commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     // What the presentation is showing, or null. The canvas renders THESE

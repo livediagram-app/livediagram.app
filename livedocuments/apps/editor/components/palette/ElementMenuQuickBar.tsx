@@ -6,14 +6,27 @@
 // button reads View / Edit); Clear Styles alone at the right, apart from them, as it changes the element's look rather
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
 import type { ReactNode } from 'react';
-import { isBoxed, type BoxedElement, type Element } from '@livedocuments/document';
-import { Tooltip } from '@livedocuments/ui';
+import {
+  elementHasText,
+  elementSupportsText,
+  isBoxed,
+  type BoxedElement,
+  type Element,
+} from '@livedocuments/document';
+import { LockIcon, Tooltip } from '@livedocuments/ui';
 import {
   ActionMenuIcon,
   CommentMenuIcon,
+  DuplicateMenuIcon,
   LinkMenuIcon,
   NoteMenuIcon,
+  RemoveIcon,
 } from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import {
+  BringToFrontIcon,
+  SendToBackIcon,
+  TextIcon,
+} from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
 import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -66,7 +79,7 @@ export function quickBarItems(
 }
 
 const BUTTON =
-  'relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600';
+  'relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:disabled:text-slate-600';
 const REST =
   'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
 const ON =
@@ -130,6 +143,107 @@ export function ElementMenuQuickBar({
           </button>
         </Tooltip>
       ) : null}
+    </div>
+  );
+}
+
+// The Element actions row (docs/specs/008-canvas/element-menu-quick-bar.md "What it holds"): what livedocuments'
+// selection toolbar held before the menu became the one place for it. Edit Text, Duplicate, Stack Front and Stack
+// Back (within the element's own layer), Lock, and Delete apart at the right. Each acts on the selection, which the
+// right-click or long-press that opened the menu made this element.
+export type ElementMenuActions = {
+  onEditText: (elementId: string) => void;
+  onDuplicate: () => void;
+  onStackFront: () => void;
+  onStackBack: () => void;
+  onToggleLock: () => void;
+  onDelete: () => void;
+};
+
+type ActionButton = {
+  key: string;
+  label: string;
+  icon: ReactNode;
+  run: () => void;
+  pressed?: boolean;
+  disabled?: boolean;
+};
+
+export function ElementMenuActionsRow({
+  target,
+  actions,
+  onClose,
+}: {
+  target: Element;
+  actions: ElementMenuActions;
+  onClose: () => void;
+}) {
+  const locked = target.locked === true;
+  const buttons: ActionButton[] = [];
+  if (elementSupportsText(target))
+    buttons.push({
+      key: 'edit-text',
+      label: elementHasText(target) ? 'Edit Text' : 'Add Text',
+      icon: <TextIcon />,
+      run: () => actions.onEditText(target.id),
+    });
+  buttons.push(
+    { key: 'duplicate', label: 'Duplicate', icon: <DuplicateMenuIcon />, run: actions.onDuplicate },
+    {
+      key: 'stack-front',
+      label: 'Stack Front',
+      icon: <BringToFrontIcon />,
+      run: actions.onStackFront,
+    },
+    { key: 'stack-back', label: 'Stack Back', icon: <SendToBackIcon />, run: actions.onStackBack },
+    {
+      key: 'lock',
+      label: locked ? 'Unlock' : 'Lock',
+      icon: <LockIcon closed={locked} />,
+      run: actions.onToggleLock,
+      pressed: locked,
+    },
+  );
+  return (
+    <div
+      role="toolbar"
+      aria-label="Element actions"
+      data-element-actions=""
+      className="flex items-center gap-0.5 border-b border-slate-100 px-1.5 py-1 dark:border-slate-800"
+    >
+      {buttons.map((b) => (
+        <Tooltip key={b.key} label={b.label}>
+          <button
+            type="button"
+            aria-label={b.label}
+            aria-pressed={b.pressed ?? undefined}
+            data-element-action={b.key}
+            onClick={() => {
+              // Close first, so Edit Text's editor and a new duplicate are not under the menu.
+              onClose();
+              b.run();
+            }}
+            className={`${BUTTON} ${b.pressed ? ON : REST}`}
+          >
+            {b.icon}
+          </button>
+        </Tooltip>
+      ))}
+      <Tooltip label={locked ? 'Locked. Unlock it to delete.' : 'Delete'}>
+        <button
+          type="button"
+          aria-label="Delete"
+          data-element-action="delete"
+          disabled={locked}
+          onClick={() => {
+            onClose();
+            actions.onDelete();
+          }}
+          className={`${BUTTON} ${REST} ml-auto`}
+        >
+          <RemoveIcon />
+        </button>
+      </Tooltip>
     </div>
   );
 }
