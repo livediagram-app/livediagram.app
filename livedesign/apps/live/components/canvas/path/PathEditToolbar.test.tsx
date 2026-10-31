@@ -84,7 +84,7 @@ describe('PathEditToolbar', () => {
   it('steps a combined path to its next shape and offers no closing', () => {
     const h = renderBar({ shape: { index: 1, count: 3 }, canClose: false, closed: true });
     const step = screen.getByRole('button', { name: 'Shape 2 of 3, edit the next shape' });
-    expect(step.textContent).toBe('Shape 2 of 3');
+    expect(step.textContent).toBe('2/3Shape 2 of 3');
     fireEvent.click(step);
     expect(h.onNextShape).toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Open Path' })).toBeNull();

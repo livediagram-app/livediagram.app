@@ -432,7 +432,7 @@ viewportZoom })` holds `press` (the last press on a compound path while nothing 
   `pathOfContours` for the new box (one contour left: no `subpaths`), the box moved as `reshapePath`
   moves a rotated one (`keptInPlace`); null (the element deleted) when none is left; an index past
   the contours returns the element unchanged. The draft shows through the same function.
-- `PathEditLayer` draws `others` dashed (`data-path-others`, 1 px, `stroke-brand-500/70`) under the
+- `PathEditLayer` draws `others` dashed (`data-path-others`, 1.5 px dashed 5/4, `stroke-brand-500`) under the
   nodes. `PathEditToolbar` gains `shape` (`Shape n of m`, `data-path-shape`, steps with
   `onNextShape`), `canClose: false` (no Close/Open Path) and `canSimplify` / `onSimplify`.
 - Simplify (`apps/live/lib/path-simplify.ts`): `isSimplifiable` (at least `SIMPLIFY_MIN_NODES`, all

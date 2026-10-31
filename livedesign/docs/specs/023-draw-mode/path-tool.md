@@ -158,7 +158,7 @@ mirrored stroke) is edited **one contour at a time**, with every tool above.
 - **Entering** by double-click picks the contour whose outline is nearest the pointer; Enter and
   Edit Points pick the one nearest the last press on the path, else the first.
 - The other contours show as a thin dashed outline. **Switching:** a press on another contour's
-  outline or inside it edits that one instead; the edit toolbar's **Shape 2 of 3** button steps to
+  outline or inside it edits that one instead; the edit toolbar's **Shape 2 of 3** button (**2/3** on a phone) steps to
   the next. Escape, Enter, Done or a click off the path leave as for any path.
 - A dragged node also snaps to the other contours' nodes.
 - Closing and opening apply to the whole path, so a path of several contours offers neither.

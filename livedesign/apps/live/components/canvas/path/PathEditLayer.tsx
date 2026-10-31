@@ -61,9 +61,9 @@ export function PathEditLayer({
             data-path-others=""
             d={others}
             fill="none"
-            strokeWidth={1 / zoom}
-            strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-            className="stroke-brand-500/70"
+            strokeWidth={1.5 / zoom}
+            strokeDasharray={`${5 / zoom} ${4 / zoom}`}
+            className="stroke-brand-500"
           />
         ) : null}
         {guides?.x !== undefined ? (
