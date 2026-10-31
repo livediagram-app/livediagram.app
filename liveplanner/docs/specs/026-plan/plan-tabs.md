@@ -644,6 +644,10 @@ the muted ink. Each metric's figure, line and picture:
 | Top Voted   | votes                  | The card's title               | The card, which opens it                        |
 | Stale Cards | stale (amber when any) | Not done, unchanged in 14 days | The five oldest, each opening its card          |
 
+A regular tile's strip of rows (People's top person, Top Voted's card, Stale Cards' oldest) is drawn only where it fits
+whole under the figure and its line, so a short tile (the 160 px metric rows) leaves it out rather than cutting it in half
+at its edge; a meter or a split bar always shows.
+
 With nothing to count a tile says so in its line and draws no picture; while the cards load it says Loading cards….
 
 ## Templates
