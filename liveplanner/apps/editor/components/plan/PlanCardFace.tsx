@@ -33,6 +33,7 @@ import {
   type CardSlot,
   isCustomCardField,
   calculatedText,
+  FORMULA_ERROR_TEXT,
   attachmentCover,
   itemAttachments,
   itemHasStamp,
@@ -41,7 +42,7 @@ import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
-import { calculatedFieldValue } from './calculated-values';
+import { calculatedFieldOutcome } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
 import { LinkedNumbersPill } from './SeveralValuesPills';
@@ -58,6 +59,7 @@ import {
   DuePill,
   FlagMark,
   KeyTag,
+  LATE_COLOUR,
   LabelChips,
   MetaPill,
   PrioritySignal,
@@ -293,12 +295,30 @@ export function PlanCardFace({
               palette={palette}
             />
           ) : null;
-        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields").
+        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields"); a Formula
+        // that can't be on this card reads "Error", its problem spoken with it and shown in the panel ("Formula
+        // fields").
+        const outcome =
+          def?.kind === 'calculated' && plan ? calculatedFieldOutcome(plan, def, item) : null;
+        if (def && outcome && !outcome.ok)
+          return (
+            <MetaPill
+              key={f}
+              palette={palette}
+              tone={LATE_COLOUR}
+              label={`${def.label}: ${FORMULA_ERROR_TEXT}. ${outcome.error}`}
+            >
+              <span className="flex [&_svg]:h-[11px] [&_svg]:w-[11px]">
+                {CUSTOM_KIND_ICONS[def.kind]}
+              </span>
+              <span aria-hidden>{FORMULA_ERROR_TEXT}</span>
+            </MetaPill>
+          );
         const text = !def
           ? null
           : def.kind === 'calculated'
-            ? plan
-              ? calculatedText(def, calculatedFieldValue(plan, def, item))
+            ? outcome?.ok
+              ? calculatedText(def, outcome.value)
               : null
             : customFieldText(def, item.fields[def.id], plan?.items);
         if (!def || !text) return null;

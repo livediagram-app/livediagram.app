@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Item, ItemTypeDef } from '@liveplanner/items';
 import { CalculatedFieldValue } from './CalculatedFieldValue';
-import { calculatedFieldValue } from './calculated-values';
+import { calculatedFieldOutcome } from './calculated-values';
 
 // docs/specs/026-plan/item-types.md "Calculated fields": read-only in the card panel.
 afterEach(cleanup);
@@ -30,7 +30,9 @@ const count = { label: 'Stories', kind: 'calculated' as const, calculation: 'chi
 
 describe('CalculatedFieldValue', () => {
   it('shows a share done with its bar, never an input', () => {
-    const { container } = render(<CalculatedFieldValue id="v" field={progress} value={40} />);
+    const { container } = render(
+      <CalculatedFieldValue id="v" field={progress} outcome={{ ok: true, value: 40 }} />,
+    );
     expect(screen.getByText('40%')).toBeTruthy();
     expect(container.querySelector('input')).toBeNull();
     expect(container.querySelector('output#v')).toBeTruthy();
@@ -39,17 +41,42 @@ describe('CalculatedFieldValue', () => {
 
   it('says when there are no children, and a count has no bar', () => {
     const { container, rerender } = render(
-      <CalculatedFieldValue id="v" field={progress} value={null} />,
+      <CalculatedFieldValue id="v" field={progress} outcome={{ ok: true, value: null }} />,
     );
     expect(screen.getByText('No linked cards')).toBeTruthy();
     expect(container.querySelector('.bg-brand-500')).toBeNull();
-    rerender(<CalculatedFieldValue id="v" field={count} value={3} />);
+    rerender(<CalculatedFieldValue id="v" field={count} outcome={{ ok: true, value: 3 }} />);
     expect(screen.getByText('3')).toBeTruthy();
+    expect(container.querySelector('.bg-brand-500')).toBeNull();
+  });
+
+  // docs/specs/026-plan/item-types.md "Formula fields".
+  it('shows a Formula’s value as its result, a Percent with its bar, and why it can’t be worked out', () => {
+    const share = {
+      label: 'Share',
+      kind: 'calculated' as const,
+      calculation: 'formula' as const,
+      result: 'percent' as const,
+    };
+    const { container, rerender } = render(
+      <CalculatedFieldValue id="v" field={share} outcome={{ ok: true, value: 140 }} />,
+    );
+    expect(screen.getByText('140%')).toBeTruthy();
+    expect((container.querySelector('.bg-brand-500') as HTMLElement).style.width).toBe('100%');
+    rerender(<CalculatedFieldValue id="v" field={share} outcome={{ ok: true, value: null }} />);
+    expect(screen.getByText('No value')).toBeTruthy();
+    rerender(
+      <CalculatedFieldValue id="v" field={share} outcome={{ ok: false, error: 'Divides by 0' }} />,
+    );
+    expect(container.querySelector('output#v')!.textContent).toBe('Divides by 0');
+    const text = { ...share, result: 'text' as const };
+    rerender(<CalculatedFieldValue id="v" field={text} outcome={{ ok: true, value: 'Strong' }} />);
+    expect(screen.getByText('Strong')).toBeTruthy();
     expect(container.querySelector('.bg-brand-500')).toBeNull();
   });
 });
 
-describe('calculatedFieldValue', () => {
+describe('calculatedFieldOutcome', () => {
   const epic: ItemTypeDef = {
     id: 'epic',
     label: 'Epic',
@@ -88,10 +115,25 @@ describe('calculatedFieldValue', () => {
   };
 
   it('works the values out from the plan’s cards and phases', () => {
-    expect(calculatedFieldValue(plan, count, e)).toBe(4);
-    expect(calculatedFieldValue(plan, progress, e)).toBe(50);
+    expect(calculatedFieldOutcome(plan, count, e)).toEqual({ ok: true, value: 4 });
+    expect(calculatedFieldOutcome(plan, progress, e)).toEqual({ ok: true, value: 50 });
     // The same map again reads the index already made.
-    expect(calculatedFieldValue(plan, count, e)).toBe(4);
-    expect(calculatedFieldValue({ ...plan, types: [epic] }, count, e)).toBe(0);
+    expect(calculatedFieldOutcome(plan, count, e)).toEqual({ ok: true, value: 4 });
+    expect(calculatedFieldOutcome({ ...plan, types: [epic] }, count, e)).toEqual({
+      ok: true,
+      value: 0,
+    });
+  });
+
+  it('works a Formula out on the card, with a draft type when given', () => {
+    const twice = {
+      kind: 'calculated' as const,
+      calculation: 'formula' as const,
+      formula: '{#key} * 2',
+    };
+    expect(calculatedFieldOutcome(plan, twice, e)).toEqual({ ok: true, value: 2 });
+    expect(calculatedFieldOutcome(plan, { ...twice, formula: '{f-none}' }, e, epic)).toMatchObject({
+      ok: false,
+    });
   });
 });

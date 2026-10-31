@@ -3,6 +3,7 @@
 // is searched by; the built-in fields of each kind (offered as Ready to use) with what uses them; how a search
 // matches a kind; and what a new field still needs before it can be added.
 import {
+  isFormulaField,
   linkTypesOf,
   type CustomFieldDef,
   type CustomFieldKind,
@@ -176,13 +177,15 @@ export function kindMatches(
 
 export const hasOptions = (kind: CustomFieldKind) => kind === 'choice' || kind === 'multichoice';
 
-export type Readiness = 'name' | 'options' | 'links';
+export type Readiness = 'name' | 'options' | 'links' | 'formula';
 
 /** What a new field still needs before it can be added (null: nothing): a name, an option, a type it links to. */
 export function kindReadiness(field: Omit<CustomFieldDef, 'id'>): Readiness | null {
   if (!field.label.trim()) return 'name';
   if (hasOptions(field.kind) && (field.options?.length ?? 0) === 0) return 'options';
   if (field.kind === 'card' && linkTypesOf(field).length === 0) return 'links';
+  // A Formula holds one only while it works (FormulaEditor): docs/specs/026-plan/item-types.md "Formula fields".
+  if (isFormulaField(field) && !field.formula) return 'formula';
   return null;
 }
 
@@ -190,6 +193,7 @@ export const READINESS_HINT: Record<Readiness, string> = {
   name: 'Name the field to add it.',
   options: 'Add at least one option.',
   links: 'Pick a card type it links to.',
+  formula: 'Write a formula that works.',
 };
 
 export const CUSTOM_MAX_NOTE = (max: number) =>
