@@ -230,7 +230,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   with `ImageField.tsx`), at `IMAGE_COVER_EDGE` (640) and `IMAGE_ROW_EDGE` (160). The card fields `attachments` and
   `cover` are in `CARD_FIELDS`; `cardSlotFits` keeps `cover` to Detailed's `head`, and `typeOffersCardField` offers it
   while the type has `attachments`. Add Field's Ready to use lists Attachments under Image (`BUILT_INS_OF_KIND`). The
-  api's reporting is `plan-room/image-refs.ts` (schema step V10: `media_refs` and the `outbox_images_*` triggers;
+  api's reporting is `plan-room/image-refs.ts` (schema step V11: `media_refs` and the `outbox_images_*` triggers;
   `pushImageRefs` from the outbox's drain, never `complete` and nothing past `MEDIA_REFS_SYNC_MAX`; `forgetImageRefs`
   from the room's purge). `routes/images.ts` names the plan as the upload's `document`, so the media service claims
   the picture for it (none for a This Browser upload).

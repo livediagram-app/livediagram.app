@@ -1324,7 +1324,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "const": "cover",
-"type": "string"
+        "type": "string"
       },
       {
         "const": "age",

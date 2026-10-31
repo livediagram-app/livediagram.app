@@ -15,7 +15,7 @@ import type { PlanEnv } from '../types';
 // The outbox kind, beside the index's (tab, summary, edit).
 export const IMAGES_OUTBOX_KIND = 'images';
 
-// Its own schema step (plan-schema.ts V10). Every statement is IF NOT EXISTS, so it runs again harmlessly. Its last
+// Its own schema step (plan-schema.ts V11). Every statement is IF NOT EXISTS, so it runs again harmlessly. Its last
 // statement queues a report for a plan that already holds a grant (Image fields uploaded before this step), so their
 // pictures are counted on the plan's first wake.
 //

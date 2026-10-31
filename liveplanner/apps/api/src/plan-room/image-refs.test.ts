@@ -103,7 +103,7 @@ describe('the images key', () => {
     db.exec("INSERT INTO card_image_grants (plan_id, image_id, created_at) VALUES ('p', 'x', 1)");
     // Run the reporting step again, as a plan woken after it ships does (every statement is IF NOT EXISTS).
     db.exec('DELETE FROM outbox');
-    db.exec('UPDATE _plan_schema SET version = 9');
+    db.exec('UPDATE _plan_schema SET version = 10');
     migratePlanSchema((q) => sql.exec(q));
     expect(db.prepare("SELECT kind FROM outbox WHERE kind = 'images'").all()).toHaveLength(1);
   });
