@@ -682,7 +682,7 @@ export function PlanCardPanelScene() {
         Created by Sam
       </Label>
       <Label x={288} y={230} size={10} tone="muted">
-        Edited by Alex
+        Last edited by Alex
       </Label>
     </Scene>
   );

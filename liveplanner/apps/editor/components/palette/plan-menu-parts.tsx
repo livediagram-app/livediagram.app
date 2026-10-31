@@ -14,7 +14,9 @@ import {
   type LaneFieldKind,
   type CardSize,
   type SwimlaneBy,
+  isStampField,
 } from '@liveplanner/items';
+import { FIELD_GLYPHS } from '@/components/plan/card-field-glyphs';
 import { OptionRows } from '@/components/plan/OptionRows';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { CardSizeArt } from '@/components/plan/plan-tile-art';
@@ -67,6 +69,8 @@ const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
 // A field lane's tile glyph: a Card field of one type draws that type (Parent, a project), one of several types
 // and any other field its kind's.
 function laneGlyph(f: LaneField, types: readonly ItemTypeDef[]): string {
+  // A stamp reads as its card field does: a clock, a pencil, a person.
+  if (isStampField(f.id)) return FIELD_GLYPHS[f.id];
   const only = f.kind === 'card' && f.linkTypes?.length === 1 ? f.linkTypes[0] : undefined;
   const linked = only ? types.find((t) => t.id === only) : undefined;
   return linked?.glyph ?? LANE_KIND_GLYPHS[f.kind];

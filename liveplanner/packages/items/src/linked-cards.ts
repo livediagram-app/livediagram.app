@@ -21,14 +21,14 @@ import { ITEM_DESCRIPTION_MAX, ITEM_TITLE_MAX } from './limits';
 import { doneColumnsOf } from './done-columns';
 import type { ItemPatchOf, ItemStoreState, ItemWrite } from './store';
 
-// The card's link field: `<kind>/<tab id>/<element id>/<record id>`.
-export const LINKED_FIELD = 'linked';
-// The card's baseline: its record's stamp and its own revision when the two last agreed ("Keeping them together").
-export const LINKED_AT_FIELD = 'linkedAt';
-export const LINKED_REV_FIELD = 'linkedRev';
-// Set on a card the link put in the Trash because its record went (deleted, or its element or tab was): the heal
-// brings it back if the record does (an undo).
-export const LINKED_GONE_FIELD = 'linkedGone';
+import {
+  LINKED_AT_FIELD,
+  LINKED_FIELD,
+  LINKED_GONE_FIELD,
+  LINKED_REV_FIELD,
+} from './linked-fields';
+
+export { LINKED_AT_FIELD, LINKED_FIELD, LINKED_GONE_FIELD, LINKED_REV_FIELD };
 
 // A record's status as the canvas holds it.
 export type LinkedRecordStatus = 'open' | 'done' | 'wont-do';

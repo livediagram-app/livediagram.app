@@ -281,6 +281,38 @@ describe('changing items', () => {
     );
   });
 
+  // Created and Last Edited (docs/specs/026-plan/items.md "Created and Last Edited"): stamped by the api from the
+  // caller, never by what a client sends, and only an edit moves Last Edited.
+  it('stamps who made and last edited a card, and refuses a client naming a stamp', async () => {
+    expect(item.createdAt).toBeGreaterThan(0);
+    expect(item.createdBy.id).not.toBe('');
+    expect(item.updatedAt).toBe(item.createdAt);
+    for (const key of ['createdAt', 'createdBy', 'updatedAt', 'updatedBy']) {
+      expect(
+        (await call({ path: `/items/${item.id}`, body: { set: { [key]: 1 } } })).body,
+      ).toMatchObject({ error: 'field_key_invalid' });
+      expect((await add({ title: 'Forged', [key]: 1 })).body).toMatchObject({
+        error: 'field_key_invalid',
+      });
+    }
+    const edited = await call<ItemResponse>({
+      path: `/items/${item.id}`,
+      body: { set: { priority: 'high' } },
+    });
+    expect(edited.body.item).toMatchObject({
+      createdAt: item.createdAt,
+      createdBy: item.createdBy,
+    });
+    expect(edited.body.item.updatedAt).toBeGreaterThanOrEqual(item.updatedAt);
+    // A move within its own column is no edit.
+    const before = edited.body.item;
+    const kept = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'todo', after: null },
+    });
+    expect(kept.body.item).toMatchObject({ updatedAt: before.updatedAt, rev: before.rev + 1 });
+  });
+
   // When a card entered its status (docs/specs/026-plan/items.md "Fields"): stamped by the api's own writes.
   it('stamps statusSince on a create and on each change of status, and keeps it otherwise', async () => {
     const made = item.fields['statusSince'];
@@ -1281,6 +1313,14 @@ describe('a vote’s tally', () => {
     expect(relayed).toHaveLength(1);
     await call({ path: '/items/tally', body: { items: [{ id: a.id, votes: { p1: 1 } }] } });
     expect((await db.readItem(sql.env, 'd1', a.id))!.fields['votes']).toEqual({ p1: 3, p2: 1 });
+  });
+
+  // A tally is not an edit (docs/specs/026-plan/items.md "Created and Last Edited").
+  it('leaves the card’s Last Edited as it was', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    await call({ path: '/items/tally', body: { items: [{ id: a.id, votes: { p1: 2 } }] } });
+    const after = (await db.readItem(sql.env, 'd1', a.id))!;
+    expect(after).toMatchObject({ updatedAt: a.updatedAt, updatedBy: a.updatedBy, rev: a.rev + 1 });
   });
 
   // A card that keeps changing fails the tally after the others landed: the refusal names the cards tallied, so the

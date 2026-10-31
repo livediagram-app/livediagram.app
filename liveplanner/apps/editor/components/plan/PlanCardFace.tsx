@@ -33,6 +33,7 @@ import {
   calculatedText,
   attachmentCover,
   itemAttachments,
+  itemHasStamp,
 } from '@liveplanner/items';
 import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
@@ -47,6 +48,7 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { ColourDot } from './ColourSwatches';
 import { AttachmentsPill, CardCover } from './CardCover';
 import { AgePill } from './card-age';
+import { StampBit } from './card-stamps';
 import {
   ChecklistPill,
   CommentsPill,
@@ -218,6 +220,14 @@ export function PlanCardFace({
           />
         );
       }
+      // Who made it and last edited it, and when (docs/specs/026-plan/items.md "Created and Last Edited").
+      case 'createdAt':
+      case 'createdBy':
+      case 'updatedAt':
+      case 'updatedBy':
+        return itemHasStamp(item, f) ? (
+          <StampBit key={f} item={item} field={f} palette={palette} />
+        ) : null;
       case 'comments':
         return <CommentsPill key={f} item={item} palette={palette} type={type} />;
       // The votes the card has gathered from ended session votes, read-only.
