@@ -8,7 +8,11 @@ vi.mock('./db', () => db);
 
 import { TabTooLargeError } from './limits';
 import { tabStatsOfData } from './db/tab-stats';
-import { TAB_CAS_MAX_ATTEMPTS, writeParticipantOp } from './participant-write';
+import {
+  TAB_CAS_MAX_ATTEMPTS,
+  writeParticipantOp,
+  writeParticipantReaction,
+} from './participant-write';
 
 const ME = 'a'.repeat(32);
 const box = { x: 0, y: 0, width: 100, height: 80 };
@@ -82,5 +86,52 @@ describe('writeParticipantOp', () => {
     db.getTabData.mockResolvedValue(stored([]));
     db.swapTabData.mockRejectedValue(new TabTooLargeError('t1', 3_000_000, 'swapTabData'));
     expect(await writeParticipantOp({} as never, op)).toEqual({ ok: false, status: 413 });
+  });
+});
+
+// docs/specs/012-collaboration/comment-reactions.md: a Participant's reaction, written by the room.
+describe('writeParticipantReaction', () => {
+  const comment = { id: 'c1', text: 'hi', createdAt: 1, authorName: 'Bea', authorColor: '#f00' };
+  const withThread = sticky('s1', { commentThread: { comments: [comment], resolved: false } });
+  const react = (elementId = 's1', commentId = 'c1') => ({
+    designId: 'd1',
+    tabId: 't1',
+    elementId,
+    delta: {
+      kind: 'comment-react' as const,
+      commentId,
+      emoji: 'eyes' as const,
+      by: 'k',
+      name: 'Kim',
+      on: true,
+    },
+  });
+
+  it('applies the reaction to the stored element', async () => {
+    db.getTabData.mockResolvedValue(stored([sticky('s0'), withThread]));
+    expect(await writeParticipantReaction({} as never, react())).toEqual({
+      ok: true,
+      changed: true,
+    });
+    const next = JSON.parse(db.swapTabData.mock.calls[0]![4] as string) as {
+      elements: { commentThread: { comments: { reactions: unknown }[] } }[];
+    };
+    expect(next.elements[1]!.commentThread.comments[0]!.reactions).toEqual([
+      { emoji: 'eyes', by: 'k', name: 'Kim' },
+    ]);
+  });
+
+  it('writes nothing for a comment not stored yet, and passes a failure on', async () => {
+    db.getTabData.mockResolvedValue(stored([withThread]));
+    expect(await writeParticipantReaction({} as never, react('s1', 'nope'))).toEqual({
+      ok: true,
+      changed: false,
+    });
+    expect(db.swapTabData).not.toHaveBeenCalled();
+    db.getTabData.mockResolvedValue(null);
+    expect(await writeParticipantReaction({} as never, react())).toEqual({
+      ok: false,
+      status: 404,
+    });
   });
 });

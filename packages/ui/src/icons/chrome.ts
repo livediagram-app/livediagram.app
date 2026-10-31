@@ -11,6 +11,7 @@ export {
   RefreshIcon,
   PlusIcon,
   CloseIcon,
+  SmilePlusIcon,
   CheckIcon,
   FormatPainterIcon,
   IndentIcon,

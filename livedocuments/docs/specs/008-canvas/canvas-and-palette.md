@@ -149,7 +149,7 @@ Each boxed element can have its **aspect ratio locked**. Stored as `aspectLocked
 
 > Tab and element controls live in **right-click context menus** (the [Quick style panel](quick-style-panel.md) repeats only the most-used few, beside a selection): the element/multi-selection menu and the **tab menu** (the ellipsis / tab right-click menu, also opened by right-clicking the empty canvas). The tab menu is a **single menu** at every entry point, so the tab and canvas menus are identical; the tab's theme, canvas background and font live in the **Tab Style** dialog ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)), not in the menu. Adding elements is done from the palette and quick-connect, so the menu has no Add section. Right-click is the desktop entry point, and a **press-and-hold (long-press) on the empty canvas** opens the same menu on touch devices. Every context menu shares one width (`w-56`).
 
-> **Element menu anchor:** an element's context menu opens from the element's **top-right corner** rather than the cursor / finger / toolbar, so the menu sits beside the element (down + right) instead of covering the thing being edited. This is shared (one helper, `../packages/workbench/src/lib/context-menu-anchor.ts`) by all three entry points: **right-click** (desktop), **long-press** (touch), and the selection toolbar's **⋯ "More"** button, which keeps the menu clear of itself. If the fixed-width (`w-56`) menu wouldn't fit to the right of the element, it flips to the element's **top-left** corner and opens leftward; either way it's held a few px off the edge so a thick border / selection ring isn't tucked under it, and it still clamps back on-screen vertically near a viewport edge. The empty-canvas / tab menu still opens at the cursor. **Arrows anchor the same way**, using the top-right corner of the arrow's on-screen bounding box (the wide hit band's rect, so zoom / pan are baked in): right-click, long-press, and a right-click on the arrow's label all open beside the arrow rather than under the pointer, falling back to the pointer position only if the arrow's DOM node can't be measured.
+> **Element menu anchor:** an element's context menu opens from the element's **top-right corner** rather than the cursor / finger / toolbar, so the menu sits beside the element (down + right) instead of covering the thing being edited. This is shared (one helper, `../packages/workbench/src/lib/context-menu-anchor.ts`) by both entry points: **right-click** (desktop) and **long-press** (touch). If the fixed-width (`w-56`) menu wouldn't fit to the right of the element, it flips to the element's **top-left** corner and opens leftward; either way it's held a few px off the edge so a thick border / selection ring isn't tucked under it, and it still clamps back on-screen vertically near a viewport edge. The empty-canvas / tab menu still opens at the cursor. **Arrows anchor the same way**, using the top-right corner of the arrow's on-screen bounding box (the wide hit band's rect, so zoom / pan are baked in): right-click, long-press, and a right-click on the arrow's label all open beside the arrow rather than under the pointer, falling back to the pointer position only if the arrow's DOM node can't be measured.
 
 Tab-level styling and tools: **Theme**, **Canvas** (background) and **Font** live in the **Tab Style** dialog ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)); **Auto-align** lives in the canvas / tab context menu; **Remove all content** lives in the tab's context menu. What each does:
 
@@ -163,7 +163,7 @@ Tab-level styling and tools: **Theme**, **Canvas** (background) and **Font** liv
 
 ### Element controls
 
-When an element is selected, these per-element controls are available from its **right-click context menu** (and the floating selection toolbar), grouped into **collapsible categories**. Each category is **closed by default**; clicking its header toggles it open. Category contents follow the house **tile pattern**: options render as icon-over-label `MenuTile` grids (`MenuTileGrid`, 2 to 4 columns), not vertical rows of buttons. Fixed-action dropdown menus app-wide use the same tile grids (the Explorer panel's + New header menu, the folder / team / document row menus, the /explorer page's row and card menus, the marquee toolbar's selection filter); one-per-row lists remain for dynamic list pickers (copy-to-document, move-to-folder), where a scrolling list of user content reads better than a grid, and for the Share dialog's Embed / Live image copy menus, a short list of "Copy …" verbs that reads down like a normal dropdown (plain `MenuActionRow`s, icon left).
+When an element is selected, these per-element controls are available from its **right-click context menu** (a long-press on a touch screen), grouped into **collapsible categories**. Each category is **closed by default**; clicking its header toggles it open. Category contents follow the house **tile pattern**: options render as icon-over-label `MenuTile` grids (`MenuTileGrid`, 2 to 4 columns), not vertical rows of buttons. Fixed-action dropdown menus app-wide use the same tile grids (the Explorer panel's + New header menu, the folder / team / document row menus, the /explorer page's row and card menus, the marquee toolbar's selection filter); one-per-row lists remain for dynamic list pickers (copy-to-document, move-to-folder), where a scrolling list of user content reads better than a grid, and for the Share dialog's Embed / Live image copy menus, a short list of "Copy …" verbs that reads down like a normal dropdown (plain `MenuActionRow`s, icon left).
 
 **Category order is fixed and consistent** across the single-element and multi-selection menus, sorted into visually-separated bands (no band titles). **Markers and Alignment are grouped under a single "Text" category** (in the band between the style and content groups) that, instead of expanding inline, opens them in a **side flyout**: a panel floated to the right of the menu (or the left when there's no room), so the two categories don't lengthen the menu's vertical stack. Inside the flyout they are the same two collapsible categories (Markers, [Shape markers](../009-elements/shape-markers.md); and Alignment: the 3×3 grid) working exactly as before; both only show once the element actually has label text (a marker decorates the label, and there's nothing to align without text), and the whole "Text" row hides when neither applies. The side-flyout is a **reusable primitive** (`MenuFlyoutSection` in `components/primitives/`, honoured by both `ContextMenu` and `PortalMenu`'s outside-click) that any context menu can use to fold a cluster of categories behind one row; flyout sub-categories always start closed (auto-expanding the first one flipped the shared one-open-section state and collapsed whatever accordion was open in the host menu), and the flyout tracks its trigger row per-frame so a host menu that grows or shrinks never strands it. A flyout's own open/closed state is **lifted into the shared menu scaffold** (`flyoutProps(id)` beside `sectionProps(id)` in `useContextMenuScaffold`, at most one flyout open) rather than held locally in the component: conditional sibling sections mean the flyout row can remount when the menu's target element changes, and local state made the open category collapse on every element switch. `MenuFlyoutSection` still falls back to internal state when no controlled props are passed. Its outside-click dismiss also ignores clicks on canvas elements (`[data-element-id]`): those retarget the host menu rather than dismiss it, so the open flyout rides along: and clicks inside a text-edit session (`[data-rich-text-session]`, see the rich-text section). **Presets, Colours, and Border are likewise grouped under a single "Style" flyout row** (the second use of the pattern, replacing their three stacked slots), and **the data-shape controls: Progress (bar / ring), Rating, and the chart Data + Chart sections: fold behind a single "Tools" flyout row **whenever more than one of them applies at once**, which today means charts (Data + Chart) and nothing else: see "A category with one thing in it is not a category" below** (sliders glyph) in the single-element menu, so a data element's menu doesn't grow a band of bespoke rows; the generic Animation row stays top-level. Rows within a band sit **flush** (no per-row hairline); the only rules in the menu are the band separators (a slightly inset, stronger divider), drawn only when the following band has a visible category so an absent band leaves no dangling rule. The bands:
 
@@ -717,7 +717,11 @@ Every boxed element can carry a **comment thread**. Stored as `commentThread?: {
 
 Two entry points open the same `CommentThreadPopover`:
 
-- **Selection popover → comments button** (speech-bubble icon), for **read-only sessions only** (a Participant or a Viewer), who have no element menu. A Participant's reads **Add Comment** and posts; a Viewer's reads **Show Comments**, opens the thread read-only, and is there only on an element that already has comments ([Share roles](../013-workspace/share-roles.md): a Viewer writes no comment). Editors open the thread from the element menu's quick bar **Add Comment** instead (the toolbar button would duplicate it). Absent where the reader has no comments to open (an embed's viewer).
+- **The element menu**: an Editor's quick bar **Add Comment** (or **View Comments**); for a Participant or a Viewer,
+  the element menu for their role ([Element menu for Participants and Viewers](element-menu-quick-bar.md#element-menu-for-participants-and-viewers)).
+  A Participant's row reads **Add Comment** and posts; a Viewer's reads **Show Comments**, opens the thread read-only,
+  and is there only on an element that already has comments ([Share roles](../013-workspace/share-roles.md): a Viewer
+  writes no comment). Absent where the reader has no comments to open (an embed's viewer).
 - **Comment indicator** on the element itself. Shown only when the thread has unresolved comments (resolved threads hide it): a comment glyph with the count beside it, among the element's other indicators (link, note, action), drawn in the style the person picked: along the inside of the element's top by default, in a footer row, or not at all. Where they sit on every shape, the fallback pip for elements too small to hold them, and the zoom rules are in [Element indicators](element-indicators.md).
 
 The popover is portal-rendered (it escapes the canvas transform), anchored to the right edge of the element, and flips to the left edge if it would overflow the viewport. It closes on outside click and on Escape.
@@ -726,6 +730,7 @@ The popover is portal-rendered (it escapes the canvas transform), anchored to th
 
 - Header: "Comments (n)" + a **Resolve / Resolved** toggle + close button.
 - Scrolling list of comments (oldest first). Each row shows the author's circular initial badge (in their colour), their name, a relative timestamp ("3m ago"), and the text. Hovering a row reveals a delete button (disabled when the thread is resolved).
+- Under each comment's text, its **reactions** (👍 👎 😄 🎉 ❤️ 👀): a chip per emoji with its count, yours highlighted, toggled by a press, with an **Add Reaction** button in the row's actions that opens the six in place ([Comment Reactions](../012-collaboration/comment-reactions.md)).
 - Reply box at the bottom with a textarea + Comment button. **Cmd/Ctrl + Enter** submits.
 
 ### Resolve semantics
@@ -764,101 +769,37 @@ Opening and tab switches used to pop every element in. On the 1,000-element refe
 
 ### Selection popover
 
-When a shape is selected, a small **popover menu** appears next to it with action buttons (icon-only).
+livedocuments has **no selection toolbar** on a single selected element, for any role: a page reads best with nothing
+floating over what is being written about, and every action it held lives in the element menu
+([Element menu quick bar](element-menu-quick-bar.md)), opened by a **right-click** on desktop or a **long-press** on a
+touch screen. (livediagram, liveplanner and livedesign keep theirs.)
 
-- **Position:** above the shape if there is room between the shape and the canvas top edge, and it would not sit on the floating chrome over the canvas (the palette toolbar, a panel: any `data-floating-panel`); otherwise below it, as at the header. Horizontally centred on the shape.
-- **Layout:** small rounded panel with the same styling language as the palette (border, shadow).
-- **Overflow:** the buttons sit in a strip at most **95vw** wide. When they outgrow it (on a phone) the strip scrolls sideways under a finger or trackpad, with no visible scrollbar, and the card and its
-  caption stay put. A dropdown in the strip hangs its menu from the card, so
-  the strip's clip never cuts it off; it opens under its trigger however far the strip is scrolled, and closes if the
-  strip scrolls while it is open.
-- The popover follows the shape during drag/resize: its position is derived from the shape's current bounds.
-- Clicking inside the popover never deselects.
+What the toolbar held, and where it is now:
 
-The popover surface itself is kept compact. The fuller action set below is reached via the element's **right-click context menu** (`EditorContextMenu`): "Link Element" in particular lives in the right-click menu, not as a primary popover button.
+- **Edit Text / Add Text**, **Duplicate**, **Stack Front** / **Stack Back** (within the element's layer),
+  **Lock / Unlock** and **Delete**: the quick bar's **Element actions** row, first in the menu.
+- **More**: the menu itself.
+- **Add Comment** (a Participant) and **Show Comments** (a Viewer, on an element with comments): the element menu for
+  Participants and Viewers ([Element menu for Participants and Viewers](element-menu-quick-bar.md#element-menu-for-participants-and-viewers)).
 
-- **More button.** The toolbar's `⋯` **More** ("More actions") button, first on the toolbar, opens the element menu from the same anchor as a right-click. It shows on **every device**: right-click is not something a desktop user finds, so the button is the visible way in. **[Power user mode](../007-editor/power-user-mode.md) drops it on desktop**, where a right-click is the way in; **touch devices** (`(hover: none)`) keep it whatever the mode, since they cannot right-click. The multi-selection toolbar follows the same rule.
-- **Caption.** A small caption names what is selected ("Selected Square", "Selected Elements (3)"); the toolbar carries the same words as its accessible name (`role="toolbar"`). [Minimal chrome](../007-editor/power-user-mode.md#minimal-chrome) hides the caption, and hides the **Delete** button on desktop, where the Delete and Backspace keys do the same.
-- **Delete and Backspace** both delete the selection (single or multi), for everyone who can edit, whenever no text is being edited.
+- **Delete and Backspace** both delete the selection (single or multi), for everyone who can edit, whenever no text is
+  being edited.
+- The multi-selection toolbar stays: a marquee selection is not one element, and its Duplicate, Lock, Export, Filter
+  and Delete act on the whole set ([Selection](#selection)).
 
-Action set (grouped by a thin divider):
-
-Text + duplication:
-
-- **Edit Text / Add Text**: enters inline text-edit mode on the selected element (the same path as a double-click). A serif-`T` icon. **Shown on every text-CAPABLE element** (`elementSupportsText` in `packages/document`: shapes minus the self-drawing data shapes, text / sticky / link-cards / arrows), including elements with no label yet, where it reads **Add Text** so the affordance teaches that text can be added; with a label it reads **Edit Text**. Absent for kinds with no `label` (tables, images, data shapes).
-
-There is **no paintbrush** on the popover: the slot it once held went to **Edit Text** when the Format tool arrived, and copying a look is the Format tool's job ([Format painter](#format-painter)).
-
-Relationships:
-
-- **Link Element** (or **Edit link**): opens the shared `LinkPickerDialog` (Tab / Document / External URL modes, plus Remove). Picking writes `link: { kind: 'tab', tabId }`, `{ kind: 'document', documentId, name }`, or `{ kind: 'url', url }` onto the element; the target opens on a follow-link click. See [Element links](#element-links).
-- **Add Comment** for a Participant, **Show Comments** for a Viewer on an element with comments (read-only sessions only; editors use the element menu's quick bar): opens the `CommentThreadPopover` for the element's comment thread, read-only for a Viewer. See [Comments](#comments).
-
-State + destructive:
-
-- **Lock / Unlock**: toggles the element's locked state. Icon flips between an open and closed padlock.
-- **Delete**: removes the selected element from the active tab and clears selection. Trash icon. Disabled when the element (or its tab) is locked.
-
-Bring to Front, Send to Back, **Lock Aspect Ratio**, and the colour swatches all live in the element's right-click context menu (Layer + Colours categories); they were in the popover at one point and got moved out so the floating widget stays compact.
-
-For **boxed elements** (shapes, text, sticky notes), a separate **plus button** appears just outside the element's right edge while it's selected; see [Quick add + connect](#quick-add--connect).
-
-## Panning the canvas
-
-The canvas can be **panned** to bring off-screen content into view.
-
-- **Hold Space and drag the empty canvas background** (anywhere that isn't an element, palette, or popover) to pan. Same vocabulary as Figma / Excalidraw; leaves the bare drag gesture free for [marquee box-select](#marquee-box-select).
-- Drag offsets the entire canvas content (shapes, arrows, plus buttons, selection popover, dot-grid background) as a unit. The palette and mode banners stay fixed.
-- The cursor switches to `grabbing` while a pan is in progress.
-- A press-and-release of Space+drag without movement counts as a **click** and deselects, as before.
-- Double-click still drops a text element at the click position (now in the panned canvas-coordinate space).
-
-**Fit-to-screen** centres the viewport on the active tab's content and picks the largest zoom level that fits every element with a small margin. Empty tabs reset to (0, 0) at zoom 1. Same gesture as Figma / Excalidraw's "Zoom to fit". Also fires automatically **once per tab entry, when the tab's content has loaded** (on document open and again on each tab switch into a non-empty tab) so a saved tab loads framed rather than at the previous session's pan / zoom. An entry onto an empty tab is spent without fitting, so what the user then adds, the **first element included, stays exactly where it was placed**: the view never jumps to recentre it. Replacing a tab's content wholesale, by picking a template or importing, frames the new content (`requestFit` in `useTabEntryEffects`); the Blank template leaves the view alone.
-
-The bottom-right `ZoomControls` dock is deliberately minimal, with three controls: **−10% / current % / +10%**. **Clicking the percentage readout fires Fit-to-screen** (there is no separate Fit button on desktop), and **hovering it opens a popover above** (`ZoomMenu`) with the preset levels **25% / 50% / 75% / 100% / 125% / 150%** plus a **Fit** entry; the active preset is highlighted. The popover is hover-and-focus driven (mouse enter or keyboard focus opens it, with a short close grace so the pointer can travel into it); on touch there is no hover and below `sm` the percentage readout is hidden anyway, so a plain **Fit** button stands in on mobile. Resetting to exactly 100% goes through the popover's 100% entry (or `⌘0`).
-
-On **mobile**, adding a new element smoothly brings the **whole** element into view (`scrollIntoView` in `useEditorViewport.ts`, gated to the freshly added + selected element so moves / remote changes don't trigger it). If it already fits the visible band (the canvas minus margins for the selection toolbar above and the tab bar / dock below), it just pans the minimum to pull any off-screen edge in; if it's too big to fit at the current zoom (e.g. a wide table or large image at the 60% mobile zoom), it zooms **out** just enough that the entire element shows (floored at `MIN_FIT_ZOOM`) and centres it. Desktop never auto-scrolls on add.
-
-On desktop the viewport also zooms on **Ctrl- or Cmd-scroll** (mouse wheel) and on a **trackpad pinch**, focused on the cursor (`useCanvasPinchZoom`). The handler runs in the capture phase and only acts while the pointer is over the canvas, so it pre-empts the browser's own page zoom there while leaving Ctrl/Cmd-scroll elsewhere (address bar, DevTools) untouched.
-
-A **plain wheel with no modifier pans** the canvas (same `useCanvasPinchZoom` handler): a laptop **two-finger trackpad drag** arrives as modifier-free wheel events, so it scrolls the canvas in both axes (content follows the fingers), matching Figma / Excalidraw. Offset commits are coalesced to one per animation frame and accumulate across the events within a frame (mirroring the pointer-pan flush in `useCanvasPanAndMarquee`), so a fast drag stays smooth and loses no delta. It only acts while the pointer is over the canvas, so a wheel elsewhere keeps normal browser scrolling.
-
-### Touch (iOS / iPad)
-
-On a touch device, the canvas surface declares `touch-action: none` and `user-select: none` (plus the iOS-specific `-webkit-touch-callout: none` and `-webkit-tap-highlight-color: transparent`). Without those, mobile Safari intercepts a one-finger drag for native scrolling, treats a long-press as the system text-selection callout, and shows a tap highlight ring on every element press. Pointer events are then dispatched normally so the same handlers (pan in Hand mode, marquee in Select mode, move / resize on elements) work from a finger or a stylus the same way they work from a mouse. `touch-action` does not carry through a scroll container, so an element face with a scrolling body sets `touch-none` on that body too; otherwise the browser claims a finger on it as a scroll and the element can't be dragged on a phone. Finger scrolling is put back by hand (`useTouchScrollBody`): a finger that lands on the **content** scrolls the body, with a short fling on release; a finger on the body's own padding or the gaps between cards, or on the header or footer, drags the element; and when the content fits (nothing to scroll) every finger drags. A tap on a card inside therefore doesn't select the element, the header does. Mouse and pen are unaffected: a wheel or trackpad scrolls the body as before. The browser's own pinch-to-zoom is off because the canvas owns its zoom: a **two-finger pinch zooms the canvas** about the fingers (`useCanvasPinchZoom`), keeping the canvas point that was between them there and following them as they move together, so one pinch zooms and pans at once, as a phone's maps and photos do. It changes the view at most once a frame, however fast the touch events come.
-
-**A finger moves only an element that fits on the screen.** A finger pressed on an element that runs off the canvas surface on any side (its on-screen box, so zoom and rotation count, with 1px of slack) pans the canvas instead of dragging the element, whatever the tool: on a phone a drag across a big stack, table or image is far more often "show me the rest" than "move this", and the way to move it is to zoom out until it fits, then drag. The press still behaves as a press on that element otherwise: a **tap** selects it (or settles the click on it as a mouse click would, [Selection](#selection)), an armed action (an arrow waiting to connect) still takes the tap, the **long-press** still opens its menu (and its release is not also a tap), and a double-tap still edits. The [format painter](#format-painter) keeps every press, and a mouse or pen always drags. (`../packages/workbench/src/lib/fits-on-screen.ts` measures the element against the `data-canvas-root` surface; `useBoxedElementGestures` marks the press as panning through, `../packages/workbench/src/hooks/canvas/pan-through.ts`, with the tap it runs.)
-
-## Marquee box-select
-
-**Press-and-drag the empty canvas background** (without holding Space) to draw a translucent selection rectangle. On release, every boxed element whose bounding box is **fully enclosed** by the rectangle is multi-selected (containment, not intersection: you must drag a box right around an element to catch it). A rotated element is judged by the box it is **drawn** in: its four corners turned by its rotation (`drawnBounds`, `packages/document`), so a turned element is caught when the rectangle holds what the person sees, never by its unrotated footprint. Releasing inside a sub-4-pixel area is treated as a click and deselects. The rectangle is outlined in the tab theme's accent over a faint wash of it. On light paper that is the accent at full strength (a 12% wash; the app's own `brand-500` when the theme sets no stroke). On dark paper the same saturated accent glares, so the border drops to 80% and the wash to 10%, and a theme with no stroke falls back to `blue-500` (`#3b82f6`), the blue of the dark selection ring, rather than the brand's own. The paper decides, not the viewer's Appearance: a Midnight-schemed tab in light chrome gets the dark treatment. The Map's current-view window uses the same colours ([Map](minimap.md)).
-
-A multi-selection is mutually exclusive with the single-element selection:
-
-- 0 hits → both cleared.
-- 1 hit → single-select that element (the selection popover + right-click context menu still apply).
-- 2 + hits → enter **multi-select** mode. The single-element popover is suppressed (a per-element toolbar doesn't make sense for many at once). Each multi-selected element still shows its selection ring via `BoxedElementView`'s `isSelected` prop.
-
-While multi-selected:
-
-- **Press-and-drag any member** moves the whole selection in lockstep. The drag handler reads `multiSelectedIds` and pre-populates `startBounds` with every member.
-- **Delete / Backspace** removes every multi-selected element and any arrows that reference one of them. **Locked members are kept** (and a locked arrow survives its endpoint going); if every member is locked it's a no-op. Single-element delete falls back to the same logic when there's no multi-selection. The keyboard handler is suppressed while a label is being edited or focus is inside any text input.
-- **Only Shift adds to or takes from a selection.** There is no sticky add mode: a **plain click on a non-member** selects that element alone, replacing the multi-selection. This applies to arrows as well as boxed elements.
-- **A plain click on a member** (a press and release without a drag) selects that member alone; a press that drags moves the whole selection.
-- **Shift-click any element** toggles its membership: adds if absent, removes if present. Folds the current single selection in first so "I had A selected, now also B and C" works without losing A.
-- **Click empty canvas** or **switch tabs** clears the multi-selection.
-
-Marquee hits include both boxed elements (shape, text, sticky) and arrows whose segment AABB is fully enclosed by the rectangle. Duplicating a marquee that contains both carries the connectors across with their endpoints remapped to the duplicated targets.
-
-The floating `MultiSelectionToolbar` appears for **any** 2 + selection, **including an arrow-only one**: it floats over the union bounds of every selected element (arrows contribute their selection extent, the endpoint AABB together with their label, see [Arrow labels](arrow-labels.md) "Selection"), anchored independently of the union **resize** box. The resize box and its handles stay **boxed-only** (there's no box to drag-resize an arrow by), so an arrow-only selection shows the toolbar but no resize handles. This is what makes "select five arrows → toolbar → **More** → **Flow** → animate them all in one action" reachable; the selection-wide setters (`setArrowFlowSelected` et al.) then apply to every matching member.
+For **shapes and concept graphics** a separate **plus button** appears just outside each edge while it's selected; see
+[Quick add + connect](#quick-add--connect).
 
 ## Quick add + connect
 
-When a **boxed element** (shape, text, sticky note) is selected and not in edit/paint mode, **four plus buttons** float around its bounding box, one centred on each edge (right, bottom, left, top).
+When a **shape** (a kind from the palette's Shapes category: square, circle, diamond, cylinder, parallelogram,
+hexagon, document, stadium, cloud, triangle, trapezoid, star, speech bubble) or a **concept graphic** (layer stack,
+pyramid and its variants, cycle, hub, onion, chevrons, timeline) is selected and not in edit/paint mode, **four plus
+buttons** float around its bounding box, one centred on each edge (right, bottom, left, top). Every other element (text,
+a sticky note, a table, an image, a chart, a component, a device frame, an icon) shows none: in a document they are
+placed, not chained (`takesQuickConnect` in `apps/editor/lib/quick-connect-kinds.ts`).
 
 Each plus is a **click trigger** for a **radial quick-action ring**, not an instant action. **Clicking / tapping** a plus animates a ring of options in around the button: each option grows **out of the plus** (slides from the plus centre to its slot + scales up), staggered for a fan effect, fanning **outward** from the element so it never overlaps the shape; closing reverses the same motion back into the plus. The open menu is **kept on screen**: beside an element that reaches the edge of the viewport (a phone, where most elements do) it would fan past the edge, so it is nudged back inside, a viewport margin from the edge, even where that sets it over the element. While open the plus becomes an **×**. The ring closes when the plus (×) is clicked again, when another plus is opened (only one ring is open at a time), or on any pointer-down outside a ring. There is **no hover-to-open**: the trigger is a deliberate click so it doesn't fire while the pointer just passes over the element. The plus has no one-click duplicate; every action is chosen from the ring. Each option carries a tooltip.
-
-A ring open on the **same side as the selection toolbar** would collide with it (the toolbar sits above the element on desktop, below on mobile), so while a top **or** bottom ring is open the toolbar is forced to the **opposite** side.
 
 All three options act on the **clicked side** (the side's anchor is `e` / `s` / `w` / `n`):
 
@@ -870,7 +811,7 @@ Placement (for Duplicate) matches the gap to the nearest in-line neighbour so a 
 
 Each chosen option emits telemetry: Duplicate → `track('Element', 'Duplicated', <kind>)`; Text → `track('Element', 'Added', 'Text')`; Arrow fires its existing creation event (`'Arrow'`).
 
-The plus buttons are hidden while the element is being edited or while the format painter is active. A marquee multi-selection hides them (a transient selection isn't a unit you chain from). The pluses are not shown for arrows. A **stat row, process or header** ([Web components are elements; no groups](../009-elements/web-components-and-no-groups.md)) adds one more option while it has room: **Add stat / Add step / Add link** appends a row, the way a concept graphic's ring offers Add Milestone or Add Stage. **Tables get the pluses with a slimmed table ring**: Duplicate / Text don't apply to a grid, so the ring holds **Arrow** plus that side's structural add (**Add Row** on the bottom plus, **Add Column** on the right one (top/left are Arrow-only)) so a table can grow and connect without the hover ⋯ menus.
+The plus buttons are hidden while the element is being edited or while the format painter is active. A marquee multi-selection hides them (a transient selection isn't a unit you chain from). The pluses are not shown for arrows, nor for any kind outside shapes and concept graphics. A concept graphic's ring offers one more option while it has room (**Add Milestone**, **Add Stage**, ...), appending a row. A table grows from its own hover ⋯ menus and Tab / Enter in its last cell, and a stat row, process or header from its rows edited in place.
 
 ## Layer order
 

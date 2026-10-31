@@ -52,6 +52,7 @@ export const ROOT_TYPES = [
   'CardThreadWriteResponse',
   'CardThreadStartRequest',
   'CardThreadCommentRequest',
+  'CardThreadReactionRequest',
   'CardThreadRenameRequest',
   'CardThreadAddCardRequest',
   'ItemsBulkRequest',

@@ -8,7 +8,8 @@ import {
   assignedPeople,
   boardShowsType,
   descriptionFromMarkdown,
-  DESCRIPTION_RICH_FIELD,
+  isRichFieldKey,
+  richFieldOf,
   isItemPerson,
   itemStatus,
   itemSummary,
@@ -130,21 +131,33 @@ function storedText(value: unknown, items: readonly Item[]): string {
   return cut(String(JSON.stringify(value)));
 }
 
-// A description as an agent writes it is Markdown: stored as its plain text and its formatting. Text with nothing
-// marked drops formatting the card had, so the panel never shows an old description over the new one.
-function withDescription(
+// A description, and a Long Text custom field (docs/specs/026-plan/plan-agents.md "Naming things as people do"), as
+// an agent writes it is Markdown: stored as its plain text and its formatting (`descriptionRich`, `<id>Rich`). Text
+// with nothing marked drops formatting the card had, so the panel never shows an old text over the new one.
+function richFieldsOf(type: ItemTypeDef): string[] {
+  return [
+    'description',
+    ...(type.custom ?? []).filter((f) => f.kind === 'longtext').map((f) => f.id),
+  ];
+}
+
+function withRichText(
   fields: Record<string, unknown>,
+  type: ItemTypeDef,
   had: Readonly<Record<string, unknown>> = {},
 ): { set: Record<string, unknown>; clear: string[] } {
-  const markdown = fields['description'];
-  if (typeof markdown !== 'string') return { set: fields, clear: [] };
-  const { plain, runs } = descriptionFromMarkdown(markdown);
-  if (runs)
-    return { set: { ...fields, description: plain, [DESCRIPTION_RICH_FIELD]: runs }, clear: [] };
-  return {
-    set: { ...fields, description: plain },
-    clear: DESCRIPTION_RICH_FIELD in had ? [DESCRIPTION_RICH_FIELD] : [],
-  };
+  const set = { ...fields };
+  const clear: string[] = [];
+  for (const key of richFieldsOf(type)) {
+    const markdown = fields[key];
+    if (typeof markdown !== 'string') continue;
+    const { plain, runs } = descriptionFromMarkdown(markdown);
+    set[key] = plain;
+    const rich = richFieldOf(key);
+    if (runs) set[rich] = runs;
+    else if (rich in had) clear.push(rich);
+  }
+  return { set, clear };
 }
 
 const cut = (text: string) =>
@@ -157,11 +170,9 @@ function setNote(
   items: readonly Item[],
 ): string[] {
   const name = (key: string) => type.custom?.find((f) => f.id === key)?.label ?? key;
-  // The formatting reads back as the description it belongs to.
-  const set = Object.fromEntries(
-    Object.entries(written).filter(([k]) => k !== DESCRIPTION_RICH_FIELD),
-  );
-  const clear = cleared.filter((k) => k !== DESCRIPTION_RICH_FIELD);
+  // Formatting reads back as the field it belongs to.
+  const set = Object.fromEntries(Object.entries(written).filter(([k]) => !isRichFieldKey(k)));
+  const clear = cleared.filter((k) => !isRichFieldKey(k));
   const parts = [
     ...(Object.keys(set).length
       ? [
@@ -212,7 +223,7 @@ export async function applyItemChanges(
     for (const c of changes) {
       if (c.op === 'add') {
         const type = must(resolveType(c.type ?? 'task', types)).type;
-        const fields = withDescription(fieldsFor(c.fields, type)).set;
+        const fields = withRichText(fieldsFor(c.fields, type), type).set;
         const status = c.status
           ? must(resolveStatus(c.status, state.plan.statuses)).status
           : undefined;
@@ -229,19 +240,17 @@ export async function applyItemChanges(
       } else if (c.op === 'set') {
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
-        const described = withDescription(fieldsFor(c.fields, type), target.fields);
+        const described = withRichText(fieldsFor(c.fields, type), type, target.fields);
         const set = described.set;
         // A value a removed field left on the card is cleared by its key, though the type no longer has it.
         const named = (c.clear ?? []).map((k) =>
           k in target.fields && !fieldKeyOf(k, type).ok ? k : must(fieldKeyOf(k, type)).key,
         );
-        // Clearing the description clears its formatting with it.
+        // Clearing the description, or a Long Text field, clears its formatting with it.
         const clear = [
           ...named,
           ...described.clear,
-          ...(named.includes('description') && DESCRIPTION_RICH_FIELD in target.fields
-            ? [DESCRIPTION_RICH_FIELD]
-            : []),
+          ...named.map(richFieldOf).filter((k) => isRichFieldKey(k) && k in target.fields),
         ];
         const after: Record<string, (typeof target.fields)[string]> = {
           ...target.fields,

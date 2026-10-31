@@ -84,6 +84,7 @@ import { withStyleOfTab } from '@/lib/tab-theme-apply';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
+import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
@@ -100,7 +101,7 @@ import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShor
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
-import type { Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
@@ -1000,6 +1001,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
+  // the collab key this browser's hello publishes.
+  const commentReactions = useCommentReactionScope({
+    applyElementDelta,
+    activeTab,
+    selfKey: participantKey(selfParticipant),
+    selfName: selfParticipant.name,
+    canReact: participant.can.takePart,
+  });
   // The tab's editor mode (docs/specs/007-editor/pages-mode.md "One mode"): Pages, the one mode.
   const editorMode = useEditorMode(canEdit);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
@@ -2639,6 +2649,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyCellLink,
     activeTabLoadState,
     commentMentions,
+    commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     livePresence,

@@ -13,8 +13,9 @@
 //   - dots: the round's votes map (a round starts empty, so its deltas are
 //     the whole map).
 //   - comments: each one posted (as the room stamped it, see
-//     `stampCommentAuthor`), each one removed, and the thread's latest
-//     resolve.
+//     `stampCommentAuthor`), each one removed, the thread's latest
+//     resolve, and each person's latest reaction per comment and emoji
+//     (docs/specs/012-collaboration/comment-reactions.md).
 //   - a Plan board's set-up (phase 6): the latest value of each top-level
 //     field and each column field, each column added or removed, and the
 //     latest column order.
@@ -41,6 +42,10 @@ import { isCellKey } from './cell-comments';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { applyVoteDelta, type TabVote } from './session';
 import { isPlanBoardPatch, type PlanBoardPatch } from './plan-board-patch';
+import {
+  isReactionChange,
+  type CommentReactionId,
+} from '@liveworkspace/model-core/comment-reactions';
 import type { PlanColumn } from '@liveplanner/items';
 
 // One field's latest change: a value, or removed.
@@ -75,6 +80,8 @@ export type ElementLedger = {
     resolved?: { value: boolean; seq: number };
     // Each cell thread's latest resolve, by cell key.
     cells?: Record<string, { value: boolean; seq: number }>;
+    // Reactions, keyed `${commentId}\u0000${emoji}\u0000${by}`: each person's latest on or off.
+    reacts?: Record<string, { on: boolean; name: string; seq: number }>;
   };
   board?: BoardLedger;
 };
@@ -225,9 +232,27 @@ function recordElement(
     }
     case 'comment-add':
     case 'comment-remove':
-    case 'comment-resolve': {
+    case 'comment-resolve':
+    case 'comment-react': {
       const comments = prev?.comments ?? { adds: {}, removes: {} };
-      const events = Object.keys(comments.adds).length + Object.keys(comments.removes).length;
+      const events =
+        Object.keys(comments.adds).length +
+        Object.keys(comments.removes).length +
+        Object.keys(comments.reacts ?? {}).length;
+      if (d.kind === 'comment-react') {
+        const commentId = d.commentId;
+        if (!isStr(commentId, ID_MAX) || !isReactionChange(d)) return null;
+        const key = reactKey(commentId, d.emoji, d.by);
+        const reacts = comments.reacts ?? {};
+        if (!(key in reacts) && events >= COMMENT_EVENTS_MAX) return null;
+        return {
+          ...(prev ?? {}),
+          comments: {
+            ...comments,
+            reacts: { ...reacts, [key]: { on: d.on, name: d.name, seq } },
+          },
+        };
+      }
       // A cell names a Sheet cell's thread; anything else there is malformed.
       if (d.cell !== undefined && !isCellKey(d.cell)) return null;
       const cell = d.cell;
@@ -368,6 +393,11 @@ function boardPatchSince(
   return Object.keys(patch).length ? patch : null;
 }
 
+// The ledger key of one person's reaction on one comment.
+function reactKey(commentId: string, emoji: string, by: string): string {
+  return `${commentId}\u0000${emoji}\u0000${by}`;
+}
+
 // Assemble a tab's ledger from its stored entries (keys under ledgerPrefix).
 export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]>): TabLedger {
   const prefix = ledgerPrefix(tabId);
@@ -442,17 +472,19 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
-// writes a Participant's dots and responses itself, since a Participant never saves a whole tab. Only those
-// two are taken from the ledger, every one the room holds (they are idempotent: a response is the latest per
-// person, the dots are the round's whole map), and only while the stored round still
-// matches; ticks, threads and board changes stay with an Editor's save.
+// writes a Participant's dots, responses and comment reactions itself, since a Participant never saves a whole
+// tab. Only those are taken from the ledger, every one the room holds (they are idempotent: a response or a
+// reaction is the latest per person, the dots are the round's whole map), and only while the stored round still
+// matches; ticks, the rest of a thread and board changes stay with an Editor's save.
 export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
   const elements: Record<string, ElementLedger> = {};
   for (const [id, entry] of Object.entries(ledger.elements)) {
-    if (!entry.responses) continue;
+    const reacts = entry.comments?.reacts;
+    if (!entry.responses && !reacts) continue;
     elements[id] = {
       ...(entry.round !== undefined ? { round: entry.round } : {}),
-      responses: entry.responses,
+      ...(entry.responses ? { responses: entry.responses } : {}),
+      ...(reacts ? { comments: { adds: {}, removes: {}, reacts } } : {}),
     };
   }
   return mergeLedgerIntoTab(tab, { ...(ledger.vote ? { vote: ledger.vote } : {}), elements }, 0);
@@ -489,6 +521,14 @@ function applyCommentEvents<E extends Tab['elements'][number]>(
   for (const [cell, r] of Object.entries(c.cells ?? {})) {
     if (r.seq > since)
       events.push({ seq: r.seq, delta: { kind: 'comment-resolve', resolved: r.value, cell } });
+  }
+  for (const [key, r] of Object.entries(c.reacts ?? {})) {
+    if (r.seq <= since) continue;
+    const [commentId, emoji, by] = key.split('\u0000') as [string, CommentReactionId, string];
+    events.push({
+      seq: r.seq,
+      delta: { kind: 'comment-react', commentId, emoji, by, name: r.name, on: r.on },
+    });
   }
   events.sort((a, b) => a.seq - b.seq);
   return events.reduce<E>((acc, e) => applyElementDelta(acc, e.delta) as E, el);

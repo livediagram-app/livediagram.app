@@ -7,6 +7,11 @@
 import type { Item } from '@liveplanner/items';
 import { sanitizeMentions, type CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import { withoutCommentAuthorId, type Comment, type CommentThread } from './comments';
+import {
+  commentWithReactions,
+  withReaction,
+  type CommentReactionId,
+} from '@liveworkspace/model-core/comment-reactions';
 import { isComment } from './element-deltas';
 
 // ---------- Shape --------------------------------------------------------------------------------------------
@@ -166,7 +171,17 @@ export type ThreadChange =
   | { kind: 'resolve'; resolved: boolean; by: string }
   | { kind: 'rename'; title: string }
   | { kind: 'addCard'; card: CardRef }
-  | { kind: 'removeCard'; projectId: string; itemId: string };
+  | { kind: 'removeCard'; projectId: string; itemId: string }
+  // One person's reaction on one comment, on or off (docs/specs/012-collaboration/comment-reactions.md): `by` is
+  // their public collab key, `name` the name the server stamped. Not activity: the thread keeps its place.
+  | {
+      kind: 'react';
+      commentId: string;
+      emoji: CommentReactionId;
+      by: string;
+      name: string;
+      on: boolean;
+    };
 
 export type ThreadRefusal =
   | 'unchanged'
@@ -254,6 +269,18 @@ export function applyThreadChange(
       if (thread.cards.length >= THREAD_CARDS_MAX)
         return { ok: false, reason: 'thread_cards_full' };
       return next({ cards: [...thread.cards, change.card] }, false);
+    }
+    case 'react': {
+      const at = thread.comments.findIndex((c) => c.id === change.commentId);
+      if (at < 0) return { ok: false, reason: 'comment_not_found' };
+      const before = thread.comments[at]!;
+      const after = commentWithReactions(before, withReaction(before.reactions, change));
+      if (after === before) return { ok: false, reason: 'unchanged' };
+      const comments = thread.comments.map((c, i) => (i === at ? after : c));
+      // Taking one back always fits; adding one keeps to the thread's budget.
+      if (change.on && threadBytes(comments) > THREAD_BYTES)
+        return { ok: false, reason: 'comments_full' };
+      return next({ comments }, false);
     }
     case 'removeCard': {
       if (!thread.cards.some((c) => sameCard(c, change.projectId, change.itemId)))

@@ -89,6 +89,34 @@
   --animate-tour-dim-in: fade-in var(--transition-duration-long) cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-tour-card-in: dialog-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1)
     50ms both;
+  /* A comment reaction landing (docs/specs/012-collaboration/comment-reactions.md "Motion"): the emoji pops from
+   * small with a little overshoot, over long, so your own reaction feels pressed; the six-emoji tray opens from a
+   * slightly narrower, faded pill over short. Both off under Reduce Motion. */
+  --animate-reaction-pop: reaction-pop var(--transition-duration-long)
+    cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-reaction-tray: reaction-tray var(--transition-duration-short)
+    cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes reaction-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes reaction-tray {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
 }
 
 @keyframes view-forward {
@@ -431,7 +459,9 @@
   }
 
   .animate-empty-float,
-  .animate-empty-ring {
+  .animate-empty-ring,
+  .animate-reaction-pop,
+  .animate-reaction-tray {
     animation: none;
   }
 

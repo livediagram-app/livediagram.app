@@ -52,7 +52,9 @@ import { SetupBoardHost } from './SetupBoardHost';
 import { pickableStatuses } from './column-status-picks';
 import { boardItems } from '@liveplanner/plan-art';
 import { trackSetup } from './track-board-setup';
-import { PHONE_COLUMN_WIDTH, boardColumnTemplate } from './plan-board-columns';
+import { COLLAPSED_COLUMN_PX, PHONE_COLUMN_WIDTH, boardColumnTemplate } from './plan-board-columns';
+import { useBoardCollapsed } from '@/hooks/plan/useBoardCollapsed';
+import { COLUMN_TOGGLE_ATTR, CollapsedColumnCell, CollapsedColumnHead } from './CollapsedColumn';
 import { boardLook, centreTappedColumn, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
@@ -97,6 +99,7 @@ function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
 }
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
 const NO_STATUSES: ReadonlyMap<string, string> = new Map();
+const NONE_SHUT: ReadonlySet<string> = new Set();
 
 export function PlanBoardView({
   element,
@@ -135,7 +138,12 @@ export function PlanBoardView({
   const applied = shownQuick(quick, phone || simplified);
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
   const closeAdding = useCallback(() => setAdding(null), []);
-  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
+  // What this person has collapsed here, columns and swimlanes, remembered on this browser (docs/specs/026-plan/
+  // plan-board.md "Collapse Column").
+  const collapse = useBoardCollapsed(element.id);
+  const collapsed = collapse.lanes;
+  // The chevron (or the cog's Collapse Column) whose toggle just ran: focus follows it to its counterpart.
+  const focusToggleRef = useRef<string | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   // A card's right-click menu (PlanCardMenu): the card and where it was asked for.
   const [menu, setMenu] = useState<{ itemId: string; at: { x: number; y: number } } | null>(null);
@@ -227,6 +235,19 @@ export function PlanBoardView({
     focusNextRef.current = null;
     boardRef.current?.querySelector<HTMLElement>(`[data-plan-card="${CSS.escape(id)}"]`)?.focus();
   });
+  useEffect(() => {
+    const id = focusToggleRef.current;
+    if (!id) return;
+    focusToggleRef.current = null;
+    boardRef.current
+      ?.querySelector<HTMLElement>(`[${COLUMN_TOGGLE_ATTR}="${CSS.escape(id)}"]`)
+      ?.focus({ preventScroll: true });
+  });
+  // Columns collapse for this person on a board they work in Plan mode, but not on a phone nor in a Dashboard slot's
+  // compact board, which draw every column open.
+  const canCollapse = interactive && !phone && !simplified;
+  const shutColumns = canCollapse ? collapse.columns : NONE_SHUT;
+  const shutKey = [...shutColumns].join(',');
 
   // Cards glide to where they now sit when the board's arrangement changes (usePlanCardFlip): the signature is each
   // cell's cards in order, so a move, a reorder or a collaborator's change re-measures, and nothing else does.
@@ -237,13 +258,18 @@ export function PlanBoardView({
             .map((c) =>
               c.lanes.map((l) => `${l.laneKey}:${l.items.map((i) => i.id).join(',')}`).join(';'),
             )
-            .join('|') + `|${collapsed.size}`
+            .join('|') + `|${[...collapsed].join(',')}|${shutKey}`
         : '',
-    [projection, collapsed],
+    [projection, collapsed, shutKey],
   );
   // A column moved left or right glides there (column-move-flip.ts), its cards riding along rather than gliding too.
   const gridRef = useRef<HTMLDivElement>(null);
-  const columnMove = useColumnMoveFlip(gridRef, setup?.columns.map((c) => c.id).join('|') ?? '');
+  // Its order and which columns are strips: a column collapsed or expanded glides too.
+  const columnMove = useColumnMoveFlip(
+    gridRef,
+    `${setup?.columns.map((c) => c.id).join('|') ?? ''}/${shutKey}`,
+    COLLAPSED_COLUMN_PX,
+  );
   usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null, columnMove.isMoving);
   // Maximised (or filling its tab, or in a Dashboard slot, whose columns scroll sideways when it is narrow), a card
   // dragged near the columns' left or right edge scrolls them sideways.
@@ -292,7 +318,19 @@ export function PlanBoardView({
     // A sorted board's first field, named when Shift+Up/Down cannot reorder.
     const first = setup.sortBy?.[0]?.field;
     const sortedBy = first ? (boardSortFieldOf(first, plan.types)?.label ?? first) : undefined;
-    const action = planBoardKey(projection, item.id, e.key, e.shiftKey, canEditCards, sortedBy);
+    // Arrows pass over a collapsed column, whose cards are not drawn; Shift+Arrows still move a card into one.
+    const drawn =
+      shutColumns.size && !e.shiftKey
+        ? {
+            ...projection,
+            columns: projection.columns.map((c) =>
+              shutColumns.has(c.column.id)
+                ? { ...c, lanes: c.lanes.map((l) => ({ ...l, items: [] })) }
+                : c,
+            ),
+          }
+        : projection;
+    const action = planBoardKey(drawn, item.id, e.key, e.shiftKey, canEditCards, sortedBy);
     if (!action) return;
     e.preventDefault();
     e.stopPropagation();
@@ -340,7 +378,7 @@ export function PlanBoardView({
   const slotUnit = slotBoard ? slotColumnUnit(bodySize?.width ?? null, setup.columns) : null;
   const columnTemplate = slotBoard
     ? slotColumnTemplate(bodySize?.width ?? null, setup.columns)
-    : boardColumnTemplate(setup.columns, look.columns);
+    : boardColumnTemplate(setup.columns, look.columns, shutColumns);
   const cardSize = slotBoard ? slotCardSize(look.cardSize, slotUnit) : look.cardSize;
   // A slot board's column + (its head's, the cards' Add card row otherwise; rows keep their own rows' buttons, an All
   // Cards board's rows by status being the one kind a slot board keeps).
@@ -362,6 +400,23 @@ export function PlanBoardView({
       });
       plan?.openNewItem(id);
     };
+
+  // Collapse or expand a column, gliding (column-move-flip.ts), focus following to the other chevron.
+  const toggleColumn = (columnId: string) => {
+    columnMove.beforeResize(columnId);
+    focusToggleRef.current = columnId;
+    collapse.toggleColumn(columnId, new Set(setup.columns.map((c) => c.id)));
+  };
+  // The gap a card would land in: one dragged on this board, or one held over it from another board.
+  const held =
+    dragging && !dragging.outside && dragging.slot
+      ? {
+          slot: dragging.slot,
+          height: dragging.height,
+          itemId: dragging.itemId,
+          ...(dragging.refused ? { refused: dragging.refused } : {}),
+        }
+      : incoming;
 
   const board = (
     <div
@@ -547,9 +602,17 @@ export function PlanBoardView({
                     ) : null
                   }
                 />
+              ) : shutColumns.has(col.column.id) ? (
+                <CollapsedColumnHead
+                  key={`${col.column.id}-strip`}
+                  column={col.column}
+                  palette={palette}
+                  onExpand={() => toggleColumn(col.column.id)}
+                />
               ) : (
                 <PlanColumnHeader
                   key={col.column.id}
+                  onCollapse={canCollapse ? () => toggleColumn(col.column.id) : undefined}
                   col={col}
                   setup={setup}
                   palette={palette}
@@ -610,30 +673,33 @@ export function PlanBoardView({
                   span={setup.columns.length}
                   palette={palette}
                   shut={shut}
-                  onToggle={() =>
-                    setCollapsed((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(lane.key)) next.delete(lane.key);
-                      else next.add(lane.key);
-                      return next;
-                    })
-                  }
+                  onToggle={() => collapse.toggleLane(lane.key)}
                 >
                   {shut
                     ? null
                     : projection.columns.map((col) => {
                         const cell = col.lanes.find((l) => l.laneKey === lane.key)?.items ?? [];
-                        // The gap a card would land in: one dragged on this board, or one held
-                        // over it from another board.
-                        const held =
-                          dragging && !dragging.outside && dragging.slot
-                            ? {
-                                slot: dragging.slot,
-                                height: dragging.height,
-                                itemId: dragging.itemId,
-                                ...(dragging.refused ? { refused: dragging.refused } : {}),
-                              }
-                            : incoming;
+                        if (shutColumns.has(col.column.id)) {
+                          const over =
+                            held &&
+                            held.slot.status === col.column.status &&
+                            held.slot.laneKey === lane.key;
+                          return (
+                            <CollapsedColumnCell
+                              key={`${col.column.id}-strip`}
+                              column={col.column}
+                              status={col.column.status}
+                              laneKey={lane.key}
+                              laneLabel={withLanes ? lane.label : undefined}
+                              count={withLanes ? cell.length : col.count}
+                              limit={withLanes ? undefined : col.column.wipLimit}
+                              overLimit={!withLanes && col.overLimit}
+                              palette={palette}
+                              held={over ? (held.refused ? 'refused' : 'over') : null}
+                              onExpand={() => toggleColumn(col.column.id)}
+                            />
+                          );
+                        }
                         const slotHere =
                           held &&
                           held.slot.status === col.column.status &&
