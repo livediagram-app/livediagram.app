@@ -45,7 +45,7 @@ describe('FirstPageChoice', () => {
     render(<FirstPageChoice zoom={1} onChoose={vi.fn()} />);
     const card = document.querySelector('[data-first-page-choice]')!;
     expect(card.className).toContain('overflow-y-auto');
-    expect(card.className).toContain('max-h-[calc(100dvh-12rem)]');
+    expect(card.className).toContain('max-h-[max(12rem,calc(100dvh-20rem))]');
     expect(card.className).toContain('w-[min(420px,calc(100vw-1.5rem))]');
   });
 });
