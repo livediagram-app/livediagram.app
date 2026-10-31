@@ -53,6 +53,7 @@ export const ANNOUNCE = {
   started: 'Thread started',
   replied: 'Reply posted',
   resolved: 'Thread resolved',
+  repliedAndResolved: 'Reply posted, thread resolved',
   reopened: 'Thread reopened',
   renamed: 'Thread renamed',
   deleted: 'Thread deleted',

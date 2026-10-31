@@ -134,8 +134,9 @@ export function useMentionAutocomplete({
   };
 
   // On send: the mentions still in the text, and a fresh start.
+  const peek = (text: string): CommentMention[] => mentionsInText(text, picked);
   const take = (text: string): CommentMention[] => {
-    const kept = mentionsInText(text, picked);
+    const kept = peek(text);
     setPicked([]);
     setDismissed(null);
     return kept;
@@ -150,6 +151,7 @@ export function useMentionAutocomplete({
     onKeyDown,
     onType,
     bind: { onSelect: track, onClick: track, onKeyUp: track },
+    peek,
     take,
   };
 }
