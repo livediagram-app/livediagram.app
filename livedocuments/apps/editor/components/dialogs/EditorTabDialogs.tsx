@@ -52,6 +52,7 @@ export function EditorTabDialogs() {
     importOpen,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importFileIntoActiveTab,
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
@@ -120,6 +121,7 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          onImportFileFormat={importFileIntoActiveTab}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

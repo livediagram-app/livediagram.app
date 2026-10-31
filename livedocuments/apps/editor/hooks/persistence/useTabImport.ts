@@ -1,6 +1,6 @@
-// Tab import (docs/specs/020-import-export/markdown-import.md), lifted out of useTabActions: the id re-mint imported
-// elements go through, the single-undo-step content replace, and the format-dispatched importer (JSON / Markdown)
-// with its lazy-loaded parsers.
+// Tab import (docs/specs/020-import-export/markdown-import.md, office-import.md), lifted out of useTabActions: the id
+// re-mint imported elements go through, the single-undo-step content replace, and the format-dispatched importers
+// (JSON / Markdown text, Word / PowerPoint files) with their lazy-loaded parsers.
 
 import { remapElementRefs, savableElements, type Element, type Tab } from '@livedocuments/document';
 import { mergeImportedTab } from '@/lib/import-merge';
@@ -31,7 +31,20 @@ export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
   return { ...tab, elements: remintElements(tab.elements).elements };
 }
 
-export type ImportFormat = 'json' | 'markdown';
+// The text formats open the paste panel; the file formats (docs/specs/020-import-export/office-import.md) the file panel.
+export type TextImportFormat = 'json' | 'markdown';
+export type FileImportFormat = 'word' | 'powerpoint';
+export type ImportFormat = TextImportFormat | FileImportFormat;
+
+/** Where a Word or PowerPoint import is up to, for the file panel's stage line. */
+export type FileImportStage =
+  { stage: 'reading' } | { stage: 'images'; done: number; total: number };
+
+/** A slide page's speaker notes and hidden flag, for the Slide Deck. */
+type ImportedSlides = (
+  tabId: string,
+  slides: { pageId: string; notes?: string; hidden?: true }[],
+) => void;
 
 type TabImportDeps = {
   tabs: Tab[];
@@ -44,6 +57,11 @@ type TabImportDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Whose gallery an import's images go to, and the open document (an Offline Mode one embeds them).
+  ownerId: string;
+  documentId: string | null;
+  // Hands an imported deck's speaker notes and hidden slides to the Slide Deck.
+  onSlidesImported?: ImportedSlides;
 };
 
 export function useTabImport({
@@ -55,6 +73,9 @@ export function useTabImport({
   setFormatSourceId,
   setImportError,
   requestFit,
+  ownerId,
+  documentId,
+  onSlidesImported,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
   // elements + theme/background, keeping the tab's own id and name.
@@ -81,7 +102,7 @@ export function useTabImport({
   // routes run the exact same parse + replace. The parsers are lazy-loaded so their code stays out of the editor's
   // initial bundle. Never throws — returns the outcome the dialog renders (close / stay / show error).
   const importTextIntoActiveTab = async (
-    format: ImportFormat,
+    format: TextImportFormat,
     text: string,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
@@ -110,7 +131,7 @@ export function useTabImport({
   // Import a FILE into the active tab (docs/specs/020-import-export/markdown-import.md). Picks a file for the
   // chosen format, then hands its text to importTextIntoActiveTab so the file and paste paths converge on one
   // parser. Returns the dialog outcome; 'cancelled' when the file picker is dismissed.
-  const importIntoActiveTab = async (format: ImportFormat): Promise<ImportOutcome> => {
+  const importIntoActiveTab = async (format: TextImportFormat): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
@@ -125,5 +146,47 @@ export function useTabImport({
     return importTextIntoActiveTab(format, picked.text);
   };
 
-  return { replaceActiveTabContent, importIntoActiveTab, importTextIntoActiveTab };
+  // Import a Word or PowerPoint FILE into the active tab (docs/specs/020-import-export/office-import.md): read in the
+  // browser by the lazily loaded reader, its images stored through the import image pipeline, then the same single
+  // undo step as every import. A deck's notes and hidden slides go to the Slide Deck. Never throws.
+  const importFileIntoActiveTab = async (
+    format: FileImportFormat,
+    file: File,
+    onStage?: (stage: FileImportStage) => void,
+  ): Promise<ImportOutcome> => {
+    const active = tabs.find((t) => t.id === activeId);
+    if (active?.locked) {
+      return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
+    }
+    const [{ importOfficeFile, officeErrorMessage }, { isOfflineIdSync }] = await Promise.all([
+      import('@/lib/office-import'),
+      import('@/lib/offline/offline-store'),
+    ]);
+    const offline = !!documentId && isOfflineIdSync(documentId);
+    const result = await importOfficeFile(file, format, {
+      tabName: active?.name ?? '',
+      offline,
+      createSession: async () => {
+        const { createBrowserImportImageSession } = await import('@/lib/import-images/browser');
+        return createBrowserImportImageSession({ ownerId, documentId, offline });
+      },
+      onStage,
+    });
+    if (!result.ok) {
+      return { status: 'error', error: officeErrorMessage(result.failure, format, result.count) };
+    }
+    replaceActiveTabContent(result.tab);
+    if (result.slides) onSlidesImported?.(activeId, result.slides);
+    track('Tab', 'Imported', format === 'word' ? 'Word' : 'PowerPoint');
+    return result.failures.length > 0
+      ? { status: 'done', failures: result.failures }
+      : { status: 'done' };
+  };
+
+  return {
+    replaceActiveTabContent,
+    importIntoActiveTab,
+    importTextIntoActiveTab,
+    importFileIntoActiveTab,
+  };
 }
