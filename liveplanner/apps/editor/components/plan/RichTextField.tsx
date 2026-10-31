@@ -98,10 +98,11 @@ export function RichTextField({
   }
 
   if (!editing) {
-    // The text, its links live, and an Edit button; a click on the text (not a link) edits it too.
+    // The text, its links live, and an Edit button; a click on the text (not a link) edits it too. Where the button
+    // is always shown (a phone, a screen with no hover) the text keeps clear of it, and it takes a finger's tap area.
     return (
       <div
-        className="group relative rounded-xl border border-transparent px-3 py-2.5 transition hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/50"
+        className="group relative rounded-xl border border-transparent px-3 py-2.5 transition max-sm:pr-16 [@media(hover:none)]:pr-16 hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/50"
         onClick={(e) => {
           if (!(e.target as HTMLElement).closest('a, button')) edit();
         }}
@@ -115,7 +116,7 @@ export function RichTextField({
           type="button"
           onClick={edit}
           aria-label={`Edit the ${label.toLowerCase()}`}
-          className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 opacity-0 shadow-sm transition focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-100 [@media(hover:none)]:opacity-100 dark:bg-slate-900 dark:text-slate-400"
+          className="absolute right-2 top-2 flex items-center gap-1 rounded-md touch-target bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 opacity-0 shadow-sm transition focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-100 [@media(hover:none)]:opacity-100 dark:bg-slate-900 dark:text-slate-400"
         >
           <PencilIcon size={11} />
           Edit
