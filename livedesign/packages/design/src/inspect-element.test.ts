@@ -72,7 +72,7 @@ describe('inspectElement', () => {
     expect(typeof spec.radius).toBe('number');
     expect(spec.text).toMatchObject({
       font: 'Inter',
-      weight: 700,
+      weight: 600,
       color: '#FFFFFF',
       align: 'center',
       italic: false,

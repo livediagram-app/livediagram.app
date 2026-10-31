@@ -7,7 +7,7 @@ import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-sto
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
-import { InspectOverlay } from './InspectOverlay';
+import { InspectOverlay, sizePillAt } from './InspectOverlay';
 
 // docs/specs/007-editor/wireframe-pages.md "The measurements on the canvas".
 const pages = layOutPages([
@@ -93,5 +93,14 @@ describe('Inspect on the canvas', () => {
     hover('b');
     expect(overlay()).not.toBeNull();
     expect(pills()).toContain('20');
+  });
+});
+
+describe('the size pill', () => {
+  const b = { x: 100, y: 100, w: 200, h: 40 };
+  it('sits below the element, above it when a line runs down, beside its corner when lines run both ways', () => {
+    expect(sizePillAt(b, 80, new Set(['left']))).toEqual({ x: 160, y: 146 });
+    expect(sizePillAt(b, 80, new Set(['bottom']))).toEqual({ x: 160, y: 76 });
+    expect(sizePillAt(b, 80, new Set(['top', 'bottom']))).toEqual({ x: 306, y: 146 });
   });
 });

@@ -65,4 +65,31 @@ describe('drawBoxed', () => {
     expect(texts.length).toBeGreaterThan(1);
     expect(texts.join('')).toBe('Supercalifragilisticexpialidocious');
   });
+
+  // docs/specs/007-editor/wireframe-pages.md "The Inspect panel": a borderless button exports with no line round it.
+  it('strokes a shape with a border and never one without', () => {
+    const count = (el: BoxedElement) => {
+      let strokes = 0;
+      const ctx = new Proxy<Record<string, unknown>>(
+        {},
+        {
+          get(target, key) {
+            if (key === 'stroke') return () => (strokes += 1);
+            if (key === 'measureText') return (s: string) => ({ width: s.length * 7 });
+            if (key in target) return target[key as string];
+            return () => undefined;
+          },
+          set(target, key, value) {
+            target[key as string] = value;
+            return true;
+          },
+        },
+      ) as unknown as CanvasRenderingContext2D;
+      drawBoxed(ctx, el, undefined, 1);
+      return strokes;
+    };
+    const square = createShape('square', 0, 0);
+    expect(count(square)).toBe(1);
+    expect(count({ ...square, strokeWidth: 'none' } as unknown as BoxedElement)).toBe(0);
+  });
 });

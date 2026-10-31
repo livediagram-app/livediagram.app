@@ -2040,7 +2040,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const quickStyleDeps: QuickStyleDeps = {
     activeTab,
     theme: activeTheme,
-    editsBlocked: structureBlocked,
+    // Inspect reads, never styles (docs/specs/007-editor/wireframe-pages.md "Inspect").
+    editsBlocked: structureBlocked || canvasTool === 'inspect',
     canStyle: participant.participating ? participant.can.recolour : undefined,
     liveElements: liveActiveElements,
     commit,

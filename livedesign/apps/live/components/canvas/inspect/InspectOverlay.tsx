@@ -87,7 +87,8 @@ export function InspectOverlay({
     <svg
       aria-hidden
       data-inspect-overlay=""
-      className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
+      // Beneath the panels (the Inspect panel among them), so a measurement never draws over the values it reads.
+      className="pointer-events-none fixed inset-0 z-[calc(var(--z-panel)-1)] h-screen w-screen"
     >
       {lines.map((l) =>
         l.toElement && l.toElement.id !== hoverOnly?.el.id ? (
@@ -102,7 +103,9 @@ export function InspectOverlay({
           strokeWidth={1.5}
         />
       ) : null}
-      {selected ? <SelectedOutline b={box(selected)} target={selected} /> : null}
+      {selected ? (
+        <SelectedOutline b={box(selected)} target={selected} measured={sidesOf(lines)} />
+      ) : null}
       {lines.map((l) => (
         <MeasureLine key={`${l.side}-${l.axis}`} line={l} sx={sx} sy={sy} />
       ))}
@@ -143,19 +146,37 @@ function TargetOutline({
   );
 }
 
+const sidesOf = (lines: readonly InspectLine[]): ReadonlySet<string> =>
+  new Set(lines.map((l) => l.side));
+
+/** Where the size pill sits clear of the measured lines: centred below the element, else centred above it when a
+ *  line runs down from it, else outside its bottom-right corner when lines run both ways. */
+export function sizePillAt(
+  b: { x: number; y: number; w: number; h: number },
+  w: number,
+  measured: ReadonlySet<string>,
+): { x: number; y: number } {
+  if (!measured.has('bottom')) return { x: b.x + b.w / 2 - w / 2, y: b.y + b.h + 6 };
+  if (!measured.has('top')) return { x: b.x + b.w / 2 - w / 2, y: b.y - 6 - PILL_H };
+  return { x: b.x + b.w + 6, y: b.y + b.h + 6 };
+}
+
 function SelectedOutline({
   b,
   target,
+  measured,
 }: {
   b: { x: number; y: number; w: number; h: number };
   target: InspectTarget;
+  measured: ReadonlySet<string>;
 }) {
   const label = `${inspectNumber(target.rect.width)} × ${inspectNumber(target.rect.height)}`;
   const w = pillWidth(label);
+  const at = sizePillAt(b, w, measured);
   return (
     <g>
       <rect {...rectAttrs(b)} fill="none" stroke="var(--color-brand-500)" strokeWidth={2} />
-      <g transform={`translate(${b.x + b.w / 2 - w / 2}, ${b.y + b.h + 6})`}>
+      <g transform={`translate(${at.x}, ${at.y})`} data-inspect-size="">
         <rect width={w} height={PILL_H} rx={4} fill="var(--color-brand-600)" />
         <text
           x={w / 2}

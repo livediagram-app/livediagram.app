@@ -128,10 +128,15 @@ export function drawBoxed(
     // silhouette: `boxedNeedsSvgRaster` routes every one of them through its
     // own SVG before this drawer is reached (docs/specs/010-palette/stickers.md).
     ctx.fillStyle = shape.fill;
-    ctx.strokeStyle = shape.stroke;
     boxedSilhouettePath(ctx, el, shape.kind);
     ctx.fill();
-    ctx.stroke();
+    // A borderless shape has no line, as the SVG export draws it (stroke="none"): stroking it anyway put a 1.5px
+    // line of the default border colour round every borderless button in a PNG.
+    const borderless = el.type === 'shape' && el.strokeWidth === 'none';
+    if (shape.stroke !== 'none' && !borderless) {
+      ctx.strokeStyle = shape.stroke;
+      ctx.stroke();
+    }
   }
   if (label && !drewImage) {
     ctx.textBaseline = 'middle';

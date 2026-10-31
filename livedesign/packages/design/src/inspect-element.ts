@@ -52,6 +52,8 @@ export type InspectContext = {
 };
 
 // The UI sans every label falls back to when neither it nor its tab names a face.
+// A bold label's weight, as the exporters draw it (svg-render-labels, svg-render-primitives).
+const BOLD_LABEL_WEIGHT = 600;
 const UI_SANS = { label: 'System Sans', stack: 'ui-sans-serif, system-ui, sans-serif' };
 
 /** A colour as a builder reads it: a hex in capitals, anything else as stored; none for an unpainted part. */
@@ -126,7 +128,7 @@ export function inspectElement(el: BoxedElement, ctx: InspectContext): InspectSp
         font: font.label,
         fontFamily: font.stack,
         size: inspectNumber(label.size),
-        weight: el.type === 'text' ? resolvedFontWeight(el) : label.bold ? 700 : 400,
+        weight: el.type === 'text' ? resolvedFontWeight(el) : label.bold ? BOLD_LABEL_WEIGHT : 400,
         italic: label.italic,
         lineHeight: inspectNumber(label.size * LABEL_LINE_HEIGHT),
         color: inspectColour(label.color) ?? label.color,
