@@ -141,7 +141,7 @@ item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) 
   (the card's id) checks `blockingLoop` before a pick adds a card (refused: announce and toast the message, the field
   unchanged) and marks the rows `waitingOn` names "Waits on this card" (worked out once while the list is open); a
   Blocks field's control is read-only unless the plan's `canEdit` (an Editor), whatever `canEditCards`; `refusalMessage('blocks_cycle')` "Those cards would block each other in a loop";
-  `GanttArrows` (`views/gantt-arrows.tsx`) an `aria-hidden`, `pointer-events-none` SVG over the track in px. The SVG
+  `GanttArrows` (`apps/editor/components/plan/views/gantt-arrows.tsx`) an `aria-hidden`, `pointer-events-none` SVG over the track in px. The SVG
   face (`svg-render-plan-card.ts`) draws a `blocked` bit (the link glyph path and count in red) after the title row's
   flag (Detailed) or at the end of the trail (Minimal), from `CardFaceContext.blocking`, made once per board or card
   by `svg-render-plan.ts` from the render's `itemsDone` (the plan-wide done statuses the editor's image exports and tab
