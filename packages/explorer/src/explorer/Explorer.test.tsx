@@ -264,6 +264,17 @@ describe('<Explorer>', () => {
     expect(index.count('restoreItem')).toBe(1);
   });
 
+  it("names an item's own kind on Delete, whatever app the Explorer is in", async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1, { app: 'livediagram', kind: 'canvas' }), makeItem(2)],
+    });
+    renderExplorer(index, { kind: 'all' }, { filter: 'all' });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    fireEvent.click(screen.getByRole('button', { name: 'Menu for Item 1' }));
+    expect(await screen.findByRole('menuitem', { name: 'Delete Canvas' })).toBeTruthy();
+    expect(screen.queryByRole('menuitem', { name: 'Delete Plan' })).toBeNull();
+  });
+
   it('lays a list out as cards until the person picks another layout', async () => {
     localStorage.removeItem('liveworkspace:explorer-view-mode');
     const index = createFakeIndex({ items: [makeItem(1)] });
