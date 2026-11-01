@@ -159,6 +159,7 @@ describe('elementRole', () => {
 
   it('makes an element with controls on its face a group', () => {
     expect(elementRole(shape('checklist'))).toBe('group');
+    expect(elementRole(shape('tab-window'))).toBe('group');
     expect(
       elementRole({
         id: 'i',
@@ -180,5 +181,19 @@ describe('elementRole', () => {
         height: 1,
       } as unknown as Element),
     ).toBe('group');
+  });
+});
+
+describe('elementRole while selected for editing', () => {
+  // Selected by an editor, a face's lines edit in place (focusable), a table shows its Column and Row options and a
+  // pointer note its tip: controls inside a picture are axe's nested-interactive, and unreachable.
+  const shape = (kind: string) =>
+    ({ id: 's', type: 'shape', shape: kind, x: 0, y: 0, width: 10, height: 10 }) as Element;
+  it('makes any selected, editable element a group', () => {
+    expect(elementRole(shape('layer-stack'), true)).toBe('group');
+    expect(elementRole(shape('square'), true)).toBe('group');
+  });
+  it('keeps it a picture otherwise', () => {
+    expect(elementRole(shape('layer-stack'), false)).toBe('img');
   });
 });

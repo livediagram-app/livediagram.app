@@ -48,8 +48,11 @@ delete, undo, label edit via Space) that already work on a selection.
   shared naming helpers in `lib/element-names.ts` (`kindLabel` /
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
-- An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): checklists, an embed, a link card, and an image still waiting for its picture. An img's children are
-  presentational, so as pictures their tick and Ask buttons could not be reached with a screen reader.
+- An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): checklists, a tab
+  window (its Show a Tab and Open), an embed, a link card, and an image still waiting for its picture. So is any
+  element while it is selected by someone who may change it: its lines then edit in place (focusable), a table shows
+  its Column and Row options and a pointer note its tip. An img's children are presentational, so as pictures their
+  tick and Ask buttons could not be reached with a screen reader.
 
 ## Live announcements
 
