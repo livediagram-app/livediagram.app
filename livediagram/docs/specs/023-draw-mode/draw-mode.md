@@ -172,7 +172,9 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   of it (**below** a dock at the top, **above** one at the bottom), and each
   group's own width is fixed per breakpoint, so nothing shifts under the
   pointer (zero layout shift).
-- On narrow screens the dock scrolls horizontally rather than wrapping.
+- On narrow screens the dock scrolls horizontally rather than wrapping. On a phone or a tablet
+  its bar keeps one pinned shape and moves the rest into the Shapes flyout first (see
+  [On a phone or a tablet](#shape-slots)), so a portrait or landscape tablet shows the whole dock.
 - A sticky or a text box placed from the dock opens for typing at once.
 - Selecting an element shows the ordinary on-canvas selection handles; its
   styling is reached through right-click, as on any tab, but the menu offers
@@ -273,13 +275,23 @@ Explorer Home's Jump Back In.
   kinds are dropped on read.
 - **Telemetry:** `Draw` · `Changed` · `ShapePinned` / `ShapeUnpinned`
   (never the kind).
-- **On a phone** (below `sm`, the dock only; `splitPhonePins`), the bar keeps **only the first
-  pinned shape** (Arrow, by default) and the rest move into the **Shapes** flyout as a **Pinned**
-  row above the six slots (Rectangle, by default), so the bar fits the width. They are still
-  pinned and still count as such: none shows twice, and their shape keys work as before. The
-  flyout grows by that row (it stays fixed while typing). Shapes do not drag on or off the bar
-  there; pinning and unpinning go through the slot's menu (long-press). A pinned shape in the
-  flyout has no menu: it is already pinned.
+- **On a phone or a tablet** (a phone, or any window up to **1099 px** wide, the dock only;
+  `splitBarPins`), the bar keeps **only the first pinned shape** (Arrow, by default) and the rest
+  move into the **Shapes** flyout as a **Pinned** row above the six slots (Rectangle, by default),
+  so the bar fits the width. They are still pinned and still count as such: none shows twice, and
+  their shape keys work as before. The flyout grows by that row (it stays fixed while typing).
+  Shapes do not drag on or off the bar there; pinning and unpinning go through the slot's menu
+  (long-press or right-click). A pinned shape in the flyout has no menu: it is already pinned.
+  - **How the bar fits a tablet:** the drawing tools, Shapes and Settings never leave the bar;
+    only pins move, the least likely to be missed (Rectangle is one press away in the flyout's
+    Pinned row, and R still arms it). With one pin, the default bar fits beside the menu card on a
+    portrait tablet from about 800 px wide (an iPad Air or Pro in portrait, 820 to 834), and
+    centred on a landscape tablet (1024). The upper bound is measured: with both default pins and
+    a short tab name the full bar fits centred from about 1060 px, and 1099 leaves room for a
+    longer tab name in the menu card.
+  - Narrower windows (a small tablet in portrait, such as 744 or 768, or a narrow desktop window
+    from 640) have less room beside the menu card than even the trimmed bar needs, so the bar
+    scrolls sideways there, as on a phone, rather than hiding a drawing tool.
 
 ## Pens
 
