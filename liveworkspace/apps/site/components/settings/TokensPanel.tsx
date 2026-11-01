@@ -91,6 +91,7 @@ function CreateToken({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError(null);
     const result = await accountApi<ApiToken & { secret: string }>('/tokens', 'POST', {
@@ -122,7 +123,13 @@ function CreateToken({
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
-          <button type="submit" className={`${BUTTON.primary} shrink-0`} disabled={busy}>
+          {/* Focusable while it makes the token (aria-disabled; submit ignores a second press): disabled, the
+              focused button dropped the keyboard to the top of Settings. */}
+          <button
+            type="submit"
+            className={`${BUTTON.primary} shrink-0`}
+            aria-disabled={busy || undefined}
+          >
             Make token
           </button>
         </div>
