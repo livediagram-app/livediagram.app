@@ -79,8 +79,8 @@ view says so.
   the panel's `thisBrowser`). Each canvas opens in the editor; signed in, each row has **Sync Canvas**; each row has
   **Delete**, which asks first.
 - **`/offline`**, the old This Browser page, only redirects to `/explorer/offline`, its query kept
-  (`@liveworkspace/explorer/offline-redirect`). Take Offline and Sync asked by an address run in the editor at the
-  canvas's own address (`/document/<id>?convert=take-offline|sync&item=<id>`, `apps/editor/components/dialogs/ConversionHandoff.tsx`
+  (`@liveworkspace/explorer/offline-redirect`). Take Offline, Sync and Delete asked by an address run in the editor at the
+  canvas's own address (`/document/<id>?convert=take-offline|sync|delete&item=<id>`, `apps/editor/components/dialogs/ConversionHandoff.tsx`
   over `apps/editor/hooks/persistence/useConversionHandoff.ts`), which checks the canvas is the person's to move and
   asks them to confirm.
 

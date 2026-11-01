@@ -198,8 +198,9 @@ Explorer lists follow after the paint.
 - **Explorer.** Offline documents never reach liveworkspace's index, so none of the index's lists holds them. They are
   the Explorer's **This Browser** view, in the page (`/explorer/offline`) and the editor's Explorer panel alike: every
   one, newest first, read from this browser alone, each opening in the editor, with **Sync Canvas** for a signed-in
-  person and, in the panel, **Delete**, which removes it for good after a confirmation ("Delete this canvas?", "“Roadmap” is kept only in this
-  browser, so deleting it removes it for good."): nothing else holds it, so there is no Trash for it
+  person and **Delete**, which removes it for good after a confirmation ("Delete this canvas from this browser?",
+  "“Roadmap” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in
+  your account changes."): nothing else holds it, so there is no Trash for it
   ([Explorer structure: This Browser](../013-workspace/explorer-structure.md#this-browser)).
 - **Sidebar.** The Explorer on livediagram's address reads the small list the offline store keeps for it (id, title
   and dates, never content) in the shared `localStorage` key (`lib/offline/this-browser.ts`,
@@ -241,7 +242,7 @@ Conversion works **both directions**, from a canvas's menu in the editor's Explo
 **Take Offline** on a canvas in the person's library or a team's, **Sync Canvas** on one this browser holds
 (`hooks/persistence/useOfflineItemMenu.tsx`, the shared Explorer's `itemMenu`), and Sync Canvas on the panel's This
 Browser rows. The Explorer page at livediagram.app/explorer offers both too: it cannot reach this browser's
-store, so it hands each to the editor at the canvas's own address (`/document/<id>?convert=take-offline|sync&item=<id>`, `components/dialogs/ConversionHandoff.tsx` over `hooks/persistence/useConversionHandoff.ts`), over the shared
+store, so it hands each to the editor at the canvas's own address (`/document/<id>?convert=take-offline|sync|delete&item=<id>`, `components/dialogs/ConversionHandoff.tsx` over `hooks/persistence/useConversionHandoff.ts`), over the shared
 `@liveworkspace/explorer/conversion-handoff`, which checks the canvas is the person's to move and asks the same
 confirmation (Sync with its own). A canvas taken offline on purpose is never offered back by the move prompt after
 signing in. In the editor, the offline to cloud
@@ -404,7 +405,7 @@ confirmation:
   best-effort, but a rollback that itself fails still reports the original
   delete failure rather than a success.
 - **Take Offline bypasses the [Trash](../013-workspace/trash.md)** for the document's owner: it is a move, not a delete, so the server copy goes at once. A joined teammate taking a team document offline sends the team's copy to the team Trash instead, since from the team's side it is a deletion.
-- **Deleting an offline document removes it for good**, from the Explorer after a confirmation: the index never held it, so there is no Trash for it. Deleting the canvas open in the editor tombstones it first (`lib/document-tombstones.ts`), so neither the autosave nor the unload flush writes it back, then removes the IndexedDB record and leaves for the Explorer, as deleting an open cloud canvas does (`@liveworkspace/workbench/lib/this-browser-remove`, shared by every editor). Sync Canvas removes the local record outright (a move, like Take Offline).
+- **Deleting an offline document removes it for good**, from the Explorer after a confirmation: the index never held it, so there is no Trash for it. Deleting the canvas open in the editor tombstones it first (`lib/document-tombstones.ts`), so neither the autosave nor the unload flush writes it back, then removes the IndexedDB record and leaves for the Explorer, as deleting an open cloud canvas does (`@liveworkspace/workbench/lib/this-browser-remove`, shared by every editor). The confirmation says it deletes only this browser's copy, the only one, and that nothing in the account changes ("Delete this canvas from this browser?", `thisBrowserDeleteCopy` in `@liveworkspace/explorer/this-browser`). The panel deletes in place; the Explorer page asks the same on the page, then hands the delete to the editor at the canvas's own address (`/document/<id>?convert=delete&item=<id>`, `components/dialogs/ConversionHandoff.tsx`), which deletes it without asking again (the page's note in session storage) and goes back to `/explorer/offline`; the same link without that note asks first. Sync Canvas removes the local record outright (a move, like Take Offline).
 - Because it deletes the cloud copy, taking a _shared_ or _team_ document offline
   first revokes those (a share/team document can't be pulled private silently);
   the confirmation spells this out.
