@@ -224,6 +224,10 @@ the server, which the rest of this spec covers.
   spending its one reload; the same failure reported once back online still
   recovers. The load-error card ships in the editor's bundle for the same
   reason, lazy-loading only its recovery tools, which show online only.
+- **Code not loaded yet waits for the connection.** A layout area whose code cannot load while offline says
+  "You're offline, so the canvas couldn't load. It comes back when you reconnect." with no Try Again (it could only
+  fail again), and comes back on its own when the browser is online again; an overlay that cannot load simply stays
+  closed until then.
 - No telemetry: events cannot leave while offline, and the reload on reconnect
   drops anything buffered.
 
