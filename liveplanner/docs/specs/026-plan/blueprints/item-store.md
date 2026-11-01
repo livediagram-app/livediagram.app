@@ -279,6 +279,7 @@ All under `/projects/:id/items`, auth `guest-or-clerk`, token-usable, registered
 | POST   | `/items`              | edit | `ItemCreate`                                                 | 201 `ItemResponse`  |
 | POST   | `/items/bulk`         | edit | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
 | POST   | `/items/patches`      | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
+| POST   | `/items/moves`        | edit | `{ items: ({ id } & ItemMove)[], undo? }` ≤ `ITEM_BULK_MAX`  | `ItemsResponse`     |
 | POST   | `/items/:itemId`      | edit | `ItemPatch`                                                  | `ItemResponse`      |
 | POST   | `/items/:itemId/move` | edit | `ItemMove`                                                   | `ItemResponse`      |
 | POST   | `/items/tally`        | edit | `{ items: { id, votes }[], field? }` ≤ `ITEM_BULK_MAX`       | `ItemsResponse`     |
@@ -308,6 +309,16 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
   client (`lib/api/items.ts`) throws `ItemWritePartlyLanded { landed, code }` for that, or for a later request of
   a many-item write failing after earlier ones landed; `usePlanItems` keeps what landed and pushes one undo step for
   it alone (`writeLimitedTo`).
+- `/items/moves` (`routes/item-moves-route.ts`, items.md "Move many") moves many items as one write: the body is
+  read as `/items/patches`' is (`readItemMove` per entry, `400` naming the item), the gate is participate, and every
+  id must exist (and be in a tab-scoped grant's scope). Each attempt reads the whole store (`listItems`) for the
+  neighbours, lays each wanted item's stored copy over it, then applies the moves **in order** against that pool
+  (`applyMoves`, packages/items `group-moves.ts`), so a move naming an earlier one (`after: <id>`) ranks after it as
+  moved. Every resulting item is checked as a patch's are (`status_excluded`, `field_calculated`,
+  `field_time_tracked`, `field_required`, `retiresItem` needing an Editor, the field bounds) before any is written;
+  then `writeItemsWithRetry` writes the batch at the revs read, relays one room op, appends history, and retries an
+  item a concurrent write moved on (it ranks again against the store as it then is). Logs `[items] moved` with the
+  count; a refusal logs `[items] items.rejected` with the id.
 - A create, bulk create or seed (`createMany`) reads the store once per attempt: a named key is free when that
   read's keys lack it (a key a racing write took fails the insert, which retries), and one `itemPlacer` ranks every
   create, so n creates cost no per-create query and one sort per column.
@@ -663,7 +674,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 ## Editor slice
 
 - `apps/editor/lib/api/items.ts`: `fetchItems(scope)` and `writeItem(scope, write, by)` (one `ItemWrite`: create,
-  patch, patches, move, vote, delete; a create of many goes to `/items/bulk` and a patch of many to
+  patch, patches, move, moves (to `/items/moves`, in batches of `ITEM_BULK_MAX` like patches), vote, delete; a create of many goes to `/items/bulk` and a patch of many to
   `/items/patches`, each in batches of `ITEM_BULK_MAX`); each dispatches
   `isOfflineId(docId)` to `lib/offline/offline-items.ts`, which applies `applyItemWrite` to the record's store
   inside `serializeOfflineWrite`.
@@ -704,7 +715,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 journal (`hooks/plan/item-undo-journal.ts`, pure): each item step records the depth it was made at; undo runs the
 item step when the depth still matches (no canvas step since), else the canvas's; redo mirrors it by the redo
 side's length and branch. An item step's closures send the inverse writes (`inverseItemWrites`: the old values of
-the touched keys, the old status and neighbour, a delete for a create, a restoring create for a delete, one `patches` of each item's inverse for a `patches`), and redo
+the touched keys, the old status and neighbour, a delete for a create, a restoring create for a delete, one `patches` of each item's inverse for a `patches`, and for a `moves` one `moves` putting each card back before the card it sat before (`inverseMoves`: the cards restored from the last in each column to the first, so each one's old neighbour is back in place first; a card that had no status then loses it in one `patches`)), and redo
 replays the write with the keys the first write was given. Votes push nothing.
 
 ## Errors and edge cases
@@ -829,3 +840,27 @@ include `fields` or comment text.
 | `ITEM_HISTORY_CHANGES_MAX` | 16                        | Bounds one entry; a write changes a few fields          |
 | `ITEM_HISTORY_REFETCH_MS`  | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
 | `ACTIVITY_ENTRIES_SHOWN`   | 20                        | Spec; a tab's worth before Show More                    |
+
+## Many moves (`moves`)
+
+- **Naming**: `ItemMoveOf = { id: string; move: ItemMove }`; the write `{ kind: 'moves'; moves: ItemMoveOf[];
+  undo?: true }` (`store.ts`). `applyMoves(items, moves, ctx)` (`group-moves.ts`) applies them in order against one
+  pool and answers each moved item's last state; `groupMoves(ids, first, perCard?)` builds the chain a group lands
+  with: the first id takes `first` (its status and `before`/`after`), each next one `{ status, after: <previous id> }`,
+  and `perCard(id)` adds that card's own `set` / `clear` / `type` (a swimlane's field, an Archive board's restore).
+- **State**: `applyItemWrite` applies `moves` through `applyMoves`; a missing id answers `item_not_found` and
+  nothing changes. `itemIdsOfWrite` and `writeLimitedTo` treat it as `patches` (by id); `asUndoWrite` marks it.
+- **Undo**: `inverseItemWrites` answers `inverseMoves(before, write)`: for each moved card its `placeOf` in `before`,
+  lane fields put back as a single move's undo puts them (`inversePatch` over its `set`/`clear`/`type`, the status
+  stamp through `statusSinceUndo`), ordered by column and then from the last card to the first, so each card's
+  `before` neighbour is already back; cards that had no status are cleared after, in one `patches`.
+- **Offline**: `checkItemWrite` (write-checks.ts) reads each move as a single move is read and checks each status,
+  so an offline project refuses what the api would.
+- **Limits**: at most `ITEM_BULK_MAX` (200) moves a request; the editor splits a larger write in order (each
+  chunk's first move names the last card of the one before, which has landed). The pool is copied once per attempt;
+  each move sorts one column (`columnItems`), so 200 moves over a 2,000-card store stay well under a Worker's CPU
+  budget (measured in `group-moves.test.ts`, `cpuBudgetMs`).
+- **Tests**: `group-moves.test.ts` (the chain, in-order ranks, lane fields, the inverse putting every card back,
+  cards from several columns, a card with no status), `store.test.ts` (`moves` through `applyItemWrite`, undo),
+  `item-moves-route.test.ts` (participate gate, scope, every refusal naming its id, an Editor needed to archive,
+  one relay, partial landing), `items-moves.test.ts` in the editor client (chunking, `undo` body).

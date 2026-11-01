@@ -834,3 +834,77 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
   (PlanSheetsHost `onAddLinked`). PlanSheetsHost passes `fresh={freshItemId === item.id}` to ItemPanel, whose
   `useTitleFocus` (desktop and `canEdit` only, a frame after the Dialog's `initialFocus="container"` trap)
   focuses the title input with the caret at its end, or selects it when `fresh`.
+
+## Several cards at once (`plan-board.md` "Several cards at once")
+
+- **Naming**: the selection is `BoardSelection { ids: ReadonlySet<string>; anchor: string | null; mode: boolean }`
+  (`components/plan/board-selection.ts`, pure). `mode` is select mode (Select in the card menu). Its hook,
+  `useBoardSelection(projection, enabled)` (`hooks/plan/useBoardSelection.ts`), holds it per board, prunes ids the
+  projection no longer shows (`selectionShown`), and answers `{ ids, mode, ordered, toggle, range, start, clear }`.
+  `ordered` is the selection in board reading order (`selectionOrder`: columns left to right, rows top to bottom,
+  then place in the cell).
+- **Gate**: `enabled = interactive && canEditCards && !simplified`; disabled, every action is a no-op and `ids` is
+  empty. Face-down cards are skipped by `toggle` and `range`.
+- **Pointer** (`PlanBoardView` `onCardPress`): a primary press with Cmd/Ctrl (`e.metaKey || e.ctrlKey`) toggles, with
+  Shift selects the range (`rangeInColumn(projection, anchor, id)`: the column's cells flattened top to bottom, the
+  span between the two; another column: the card alone, the new anchor), and in select mode a plain press toggles;
+  each stops the press (no drag, no open). A plain press on a selected card when two or more are selected starts a
+  **group drag** press; a click without travel clears the selection and opens the card, as ever.
+- **Keyboard** (`planBoardKey` gains a `selection` argument): Shift+Space answers `{ kind: 'select' }`; with the
+  focused card in a selection of 2+, Shift+Left/Right answers `{ kind: 'moveGroup', step }` and Delete/Backspace
+  `{ kind: 'trashGroup' }` (an Editor's), else as before. `groupColumnMoves(projection, ordered, step)` turns a step
+  into each card's column plus or minus one (cards at the edge stay), appended in order. Escape while a selection
+  exists clears it (a `keydown` listener on window, only while `ids.size > 0`, skipped when `defaultPrevented`).
+- **Group drag** (`usePlanCardDrag`): `onCardPointerDown(id, e, holdToDrag, group?)` records `group: string[]` (the
+  ordered selection) on the press; the drag state carries `group`. `dropSlotAt` skips every grouped card, so the slot
+  is never inside the group. The drop calls `onDropGroup(ids, slot)`; another board's target gains `dropMany(ids,
+  slot)`; the Trash calls `onTrash` for each id as one `trashItems`; outside the board it announces "Drop the cards
+  on a board". `PlanDragGhost` draws the card held with up to `GROUP_GHOST_STACK` (2) offset copies behind it and a
+  count badge; each selected card renders `lifted` (opacity 0.35). The drag still re-renders the board only when the
+  slot changes; the pointer moves the ghost through its store.
+- **Group drop** (`usePlanBoardDrop.dropGroup(ids, slot)`, `plan-board-moves.ts` `groupDropMoves`): the cards the
+  target cell's status refuses stay (`cardsMovingRefused`, one announcement); the rest go through `groupMoves(ids,
+  { status, before }, perCard)` where `before` is the first card at or after `slot.beforeId` in the target cell that
+  is not in the group (null: the end), and `perCard` adds the lane patch (`laneMove(lane, item, fromLane)` when the
+  card changes row) and an Archive board's restore (`clear: ['archived']`). A drop onto an Archive board patches
+  `archived: true` on them all (one `patches`). One `plan.moveItems(moves)` write; `track('Plan', 'Moved',
+  'Cards')`; announced "3 cards moved to Done".
+- **Bar** (`components/plan/BoardSelectionBar.tsx`, `PlanBoardHeader`'s second row, `data-selection-bar`): count
+  ("3 cards selected", `aria-live="polite"`), then the actions, each an icon button with a tooltip, labelled beside
+  the icon from a header `SELECTION_BAR_LABELS_PX` (560 px) wide (`@container`), opening `AnchoredPopover` menus of
+  option rows where they pick. The patches each action writes come from pure builders in
+  `board-selection-edits.ts`: `assignPatches`, `priorityPatches`, `labelPatches(add | remove)`, `fieldPatches(fieldId,
+  value | null)`, `flagPatches`, `archivePatches`, each skipping cards whose type lacks the field or already holds the
+  value; `sharedFields(items, types)` lists the custom fields every selected type has, of the kinds Set Field edits
+  (`SET_FIELD_KINDS`). An empty result writes nothing. Each is one `plan.patchItems(patches)` (one `patches` write,
+  one undo step); Move To is one `plan.moveItems`; Move to Trash is `plan.trashItems(ids)`. `track('Plan',
+  'Changed', 'Cards')`.
+- **Context**: `PlanContextValue.moveItems(moves: ItemMoveOf[])` (`usePlanSlice`: one `{ kind: 'moves' }` write, a
+  single `move` for one card).
+- **Card**: `PlanBoardCard` takes `selected`: the ring as a 2 px box-shadow in the board's focus colour on the card
+  wrapper (so every card size and a cover keep their own layout), `data-selected`, and ", selected" on the
+  accessible name.
+- **Menu**: `PlanCardMenu` gains `onSelect` (a **Select** row, after Move to, for anyone who may work on cards),
+  which calls `selection.start(id)`.
+- **Errors and edge cases**: a selected card trashed, moved off, filtered out or deleted by a collaborator leaves the
+  selection on the next projection; a refused write (the api's `status_excluded` for a type changed meanwhile)
+  reverts through `usePlanItems`' refetch and toast; Set Field on a field a type has since dropped skips that card;
+  an empty selection ends select mode.
+- **Security and trust**: the bar hides Archive and Trash from a Participant (`canRetire`), and the api refuses them
+  anyway (`retiresItem` needs an Editor in `/items/patches` and `/items/moves`). A Viewer's board never enables the
+  selection.
+- **Performance and limits**: selection is a `Set` (O(1) per card per render); `selectionShown` and `selectionOrder`
+  are memoised on the projection. A group's move is one `moves` write (one request per 200), never one per card. The
+  group drag adds no per-frame work over a single card's: one hit test a frame, a re-render only when the slot
+  changes. Measured on a 500-card board in the browser (frame times during a scripted group drag, in the PR).
+- **Accessibility**: the bar is `role="toolbar"` named "Selected cards", its count live; every icon action has an
+  accessible name; Escape clears; focus stays on the focused card after a group move (`focusNextRef`).
+- **Observability**: `[plan-board] selection.write` (debugLog) with the action and count; refusals ride
+  `usePlanItems`' existing logs.
+- **Constants**: `GROUP_GHOST_STACK = 2` (cards drawn behind the held one), `SELECTION_BAR_LABELS_PX = 560`.
+- **Testing**: `board-selection.test.ts` (toggle, range in a column and across lanes, another column, face-down
+  skipped, pruning, order), `board-selection-edits.test.ts` (each builder, the skips, shared fields),
+  `plan-board-keys.test.ts` (Shift+Space, group moves, group trash gated), `BoardSelectionBar.test.tsx` (count,
+  every action's write; Editor, Participant and Viewer: Participants see no Archive or Trash, Viewers no bar),
+  `plan-board-moves.test.ts` (`groupDropMoves`: one chain in board order at the drop point, lane fields, refused
+  cards stay), `PlanCardMenu.test.tsx` (Select row by role).
