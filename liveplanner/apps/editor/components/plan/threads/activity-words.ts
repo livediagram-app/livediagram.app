@@ -181,7 +181,11 @@ export function changeLine(
   switch (change.kind) {
     case 'created': {
       const how =
-        entry.tag === 'form' ? 'Created this card from a form response' : 'Created this card';
+        entry.tag === 'form'
+          ? 'Created this card from a form response'
+          : entry.tag === 'repeat'
+            ? 'Created this card from a repeating card'
+            : 'Created this card';
       return {
         glyph: 'created',
         parts: change.status ? [t(`${how} in `), statusChip(ctx, change.status)] : [t(how)],

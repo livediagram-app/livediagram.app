@@ -11,6 +11,7 @@ import { NewResponseMark } from '@/components/forms/NewResponseMark';
 import { useFreshResponse } from '@/components/forms/fresh-responses';
 import {
   isFlagged,
+  hasRepeat,
   isPriority,
   itemAssignee,
   itemStatus,
@@ -63,6 +64,7 @@ import {
   CommentsPill,
   DuePill,
   FlagMark,
+  RepeatMark,
   KeyTag,
   LATE_COLOUR,
   LabelChips,
@@ -183,6 +185,7 @@ export function PlanCardFace({
     <>
       {fresh ? <NewResponseMark /> : null}
       {isFlagged(item) ? <FlagMark /> : null}
+      {hasRepeat(item) ? <RepeatMark color={palette.muted} /> : null}
     </>
   );
   const frame = {

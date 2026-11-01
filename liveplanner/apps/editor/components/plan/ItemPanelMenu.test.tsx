@@ -149,6 +149,54 @@ describe('duplicateItem', () => {
   });
 });
 
+// docs/specs/026-plan/items.md "Repeating cards": Repeat, or Edit Repeat and Stop Repeating, for an Editor alone.
+describe('the Repeat rows', () => {
+  const fns = { onDuplicate: vi.fn(), onFlag: vi.fn(), onArchive: vi.fn(), onTrash: vi.fn() };
+  const menu = (repeating: boolean, canRetire = true, canEdit = true) => {
+    const repeat = { repeating, onRepeat: vi.fn(), onStopRepeat: vi.fn() };
+    render(
+      <ItemPanelMenu
+        itemKey={7}
+        canEdit={canEdit}
+        canRetire={canRetire}
+        archived={false}
+        flagged={false}
+        repeat={repeat}
+        {...fns}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
+    return repeat;
+  };
+  const rows = () => screen.getAllByRole('menuitem').map((m) => m.textContent);
+
+  it('offers an Editor Repeat on a plain card and opens the dialog', () => {
+    const repeat = menu(false);
+    expect(rows()).toContain('Repeat');
+    expect(rows()).not.toContain('Stop Repeating');
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Repeat' }));
+    expect(repeat.onRepeat).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menuitem')).toBeNull();
+  });
+
+  it('offers Edit Repeat and Stop Repeating on a repeating card', () => {
+    const repeat = menu(true);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Stop Repeating' }));
+    expect(repeat.onStopRepeat).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Edit Repeat' }));
+    expect(repeat.onRepeat).toHaveBeenCalledOnce();
+  });
+
+  it('offers a Participant and a Viewer no Repeat row', () => {
+    menu(true, false);
+    expect(rows().some((r) => r?.includes('Repeat'))).toBe(false);
+    cleanup();
+    menu(true, false, false);
+    expect(rows()).toEqual(['Help']);
+  });
+});
+
 describe('HelpArticleLink labelled', () => {
   it('shows the ? with a Help label', () => {
     render(<HelpArticleLink article="planCards" variant="labelled" />);
