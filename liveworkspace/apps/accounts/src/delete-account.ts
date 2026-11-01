@@ -26,6 +26,8 @@ export interface DeleteAccountConfig extends CallerConfig {
   closeWorkbench?: (userId: string) => Promise<void>;
   // The account's Google Drive mirror: disconnected by the Drive service (drive-disconnect.ts). Never fails the close.
   disconnectDrive?: (userId: string) => void;
+  // The account's Download Your Data zip, deleted by the export service (data-export/routes.ts). Never fails the close.
+  removeExport?: (userId: string) => void;
   // Tries at the code, per account (deletion-code.ts).
   checkLimiter?: RateLimit;
 }
@@ -60,5 +62,6 @@ export async function deleteAccount(
   await purgeFromIndex(db, config.index ?? {}, userId);
   await config.closeWorkbench?.(userId);
   config.disconnectDrive?.(userId);
+  config.removeExport?.(userId);
   return Response.json({ deleted: true });
 }

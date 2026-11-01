@@ -4930,6 +4930,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:^
         version: link:../../../packages/brand
+      '@liveworkspace/data-export':
+        specifier: workspace:^
+        version: link:../../../packages/data-export
       '@liveworkspace/email':
         specifier: workspace:*
         version: link:../../../packages/email

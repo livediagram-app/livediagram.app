@@ -35,6 +35,8 @@ workers_dev = false
 #   DRIVE_KEY_ACCOUNTS    accounts' key on the Google Drive mirror (the drive Worker's DRIVE_KEY_ACCOUNTS):
 #                         DELETE /app/people/<id> when an account closes (src/drive-disconnect.ts); optional,
 #                         without it (or the DRIVE binding) nothing is sent
+#   EXPORT_KEY_ACCOUNTS   shared with the export service (its EXPORT_KEY_ACCOUNTS): accounts' calls to it, and its
+#                         call back when an export finishes (src/data-export/); without it Download Your Data is 503
 #   TELEMETRY_KEY_LIVEDIAGRAM, TELEMETRY_KEY_LIVEPLANNER, TELEMETRY_KEY_LIVEDOCUMENTS,
 #   TELEMETRY_KEY_LIVEDESIGN
 #                         each app's key on the telemetry service (the telemetry Worker's values), to
@@ -85,6 +87,12 @@ service = "liveworkspace-telemetry"
 [[services]]
 binding = "DRIVE"
 service = "liveworkspace-drive"
+
+# Download Your Data's service (docs/specs/003-accounts/data-export.md): accounts starts, reads and streams exports
+# through it, with EXPORT_KEY_ACCOUNTS.
+[[services]]
+binding = "EXPORT"
+service = "liveworkspace-export"
 
 [[d1_databases]]
 binding = "AUTH_DB"
@@ -186,6 +194,10 @@ service = "liveworkspace-telemetry-staging"
 [[env.staging.services]]
 binding = "DRIVE"
 service = "liveworkspace-drive-staging"
+
+[[env.staging.services]]
+binding = "EXPORT"
+service = "liveworkspace-export-staging"
 
 [[env.staging.d1_databases]]
 binding = "AUTH_DB"

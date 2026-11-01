@@ -39,6 +39,11 @@ export interface Env {
   // (drive-disconnect.ts): its Worker and the key it takes from accounts. Either unset, nothing is sent.
   DRIVE?: Fetcher;
   DRIVE_KEY_ACCOUNTS?: string;
+  // The data export's service (liveworkspace/docs/specs/003-accounts/data-export.md): its Worker, and the key both
+  // sides share, with which accounts starts and reads exports and the service says one finished. Either unset,
+  // Download Your Data answers 503.
+  EXPORT?: Fetcher;
+  EXPORT_KEY_ACCOUNTS?: string;
 
   // The telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md), told when an onboarding email goes
   // (src/telemetry.ts): its URL, reached through the TELEMETRY service binding when there is one, and

@@ -87,10 +87,11 @@ where it stopped.
 ## The link
 
 When an export is ready, accounts emails whoever started it a link to download it:
-`<accounts>/api/account/data-export/download?key=<export>&exp=<ms>&sig=<hex>`.
+`<accounts>/api/account/data-export/download?key=<export key>&id=<export id>&exp=<ms>&sig=<hex>`.
 
-- **Signed and expiring.** `sig` is an HMAC-SHA-256 over the person who started it, the export and the expiry, with a
-  key only accounts holds (derived from its own secret). The link lapses `EXPORT_LINK_TTL_MS` (3 days) after the
+- **Signed and expiring.** `sig` is an HMAC-SHA-256 over the person the link is for, the export's key and id, and the
+  expiry, with a key only accounts holds (HKDF from its own secret, for this alone). The email's link is for whoever
+  started it; Settings' **Download** is signed for whoever is looking, so any admin of a team may download its export. The link lapses `EXPORT_LINK_TTL_MS` (3 days) after the
   export is ready; so does the file, which the object deletes then (an R2 lifecycle rule deletes anything older than
   4 days, in case it can't).
 - **And signed in as that account.** The download needs the accounts session of the person the link was made for.
@@ -174,7 +175,9 @@ service's `DATA_EXPORT_KEY_<APP>`) on the export door alone, `GET /api/internal/
   other apps answer `404`, having none).
 - `format=comments`: `{ threads: ExportThread[] }`, every thread in the item (`id`, `tabId`, `tabName`, `on`,
   `resolved` and its `comments`, each `id`, `authorId`, `authorName`, `text`, `createdAt`), with each comment's real
-  author, so the service can keep the person's own.
+  author, so the service can keep the person's own. In livediagram, livedocuments and livedesign a thread's `id` is
+  `<tab id>:<element id>` and `on` is the element's id; in liveplanner `on` is the card's. An author who has been
+  anonymised has a null `authorId`.
 
 The `csv` and `comments` formats open to the index's key and the data export's alone, never the media or Drive key.
 The platform calls every door through `@liveworkspace/app-doors`, which the Drive mirror uses too.
