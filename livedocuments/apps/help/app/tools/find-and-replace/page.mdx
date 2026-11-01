@@ -1,0 +1,78 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { FindBarScene } from '@/components/illustrations/find-replace';
+
+export const metadata = helpMetadata({
+  title: 'Find and Replace',
+  description:
+    'Find a word or phrase on every page of a tab, in the writing and on the elements, then replace one match or all of them in one step.',
+  path: '/help/tools/find-and-replace/',
+});
+
+<ArticleLayout title="Find and Replace" description="Find a word on every page of the tab, step through the matches, and replace one or all of them." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("find-and-replace")}>
+
+**Find** looks for a word or phrase on every page of the tab you are on: the writing of its articles and the words on its elements. Every match is highlighted where it sits, a count says how many there are, and the page turns to the one you are on. **Replace** swaps the match in hand, or every match at once, for other words.
+
+## Opening Find
+
+- Press **⌘F** (**Ctrl+F** on Windows and Linux) while you are working on the document: on the canvas, with something selected, or writing in an article. Words you have selected in the writing become the search.
+- Press **⌘⇧H** (**Ctrl+Shift+H**) to open it with the Replace row showing.
+- On a touch screen, open the [search panel](/help/search-panel/the-search-panel/) and run **Find in Tab**, or **Find and Replace**.
+
+Anywhere the editor does not have the keyboard (typing a comment, in a dialog, while a deck presents, or in an embed), ⌘F is your browser's own find, as usual.
+
+The **Find bar** opens at the top right of the canvas, the caret in its field. On a phone it runs across the top of the canvas instead.
+
+<Figure caption="The Find bar with its Replace row open: the search and its count, Match Case and Whole Word, Previous and Next, and Replace and Replace All, over a page with its matches highlighted.">
+  <FindBarScene />
+</Figure>
+
+## Finding
+
+Type in the **Find** field and the matches light up a moment after you stop typing:
+
+- **In the writing**, each match is tinted yellow, and the match in hand is a stronger orange.
+- **On an element**, a dashed ring goes round each element holding a match, and a solid ring round the one holding the match in hand.
+
+The count sits at the end of the field: **3 of 12**, or **No Results**. Press **Enter** or **Next Match** for the next one, and **Shift+Enter** or **Previous Match** for the one before; both wrap round at the ends. A match on another page brings that whole page into view (on a flashcard, it turns to that card), and the keyboard stays in the field so you can keep stepping.
+
+Two options sit beside the field:
+
+- **Match Case** (**Aa**, or **Alt+C**): only matches with the same capital letters.
+- **Whole Word** (**ab**, or **Alt+W**): only whole words, so "plan" no longer finds "planning".
+
+The search follows the tab as it changes: if you or a collaborator edit it, the matches update and the one in hand stays where it was.
+
+## What Find Searches
+
+- Every page of the tab, in page order: on each page, the article writing that starts on it, then the words on its elements, top to bottom.
+- An article's paragraphs, headings, list items, code and table cells.
+- An element's label, its title and subtitle, its code, the cells of a table and the items of a checklist.
+
+It never searches notes, comments, alt text, link addresses or chart data, and it searches only the tab you are on. A search is plain text, never a pattern: every character means itself. Up to 5,000 matches are counted and highlighted; past that the count reads **5,000+**.
+
+## Replacing
+
+Press the chevron at the left of the bar (**Show Replace**) for the Replace row, type the new words in **Replace With**, then:
+
+- **Replace** swaps the match in hand and moves on to the next one. Press **Enter** in the Replace With field to do the same.
+- **Replace All** swaps every match at once (**⌘Enter** in the Replace With field). A message says how many were replaced.
+
+Replacing keeps the formatting: the new words take the formatting of the first letter they replace, so bold stays bold and a link stays a link. An empty Replace With deletes the matches. A **Replace All** is one step, so one **Undo** brings every match back. Collaborators see the change land at once.
+
+## Who Can Find and Replace
+
+- **Editors** find and replace anywhere.
+- **Participants** find everywhere, but replace only in text they can write: an article's writing and the words of elements (labels, table cells, a card's title and subtitle, code). Anything else they find, such as a checklist's items, is shown in grey and passed over, and the bar says how many can't be replaced.
+- **Viewers** can find but not replace: the bar has no chevron and no Replace row.
+
+Nobody replaces text on a locked tab, page, layer or element: those matches are found and shown, but skipped, and **Replace** says "This text is locked".
+
+## Closing Find
+
+Press **Escape** or **Close Find**. The highlights go and the keyboard goes back to the canvas. The bar remembers your search and options while the document is open, so the next ⌘F picks up where you left off. Switching tabs keeps the bar open and searches the new tab.
+
+<Tip>Press the **?** in the Find bar to open this article from the editor.</Tip>
+
+</ArticleLayout>

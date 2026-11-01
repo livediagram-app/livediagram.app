@@ -2,13 +2,16 @@ import type { HeroSceneKey } from '@/components/hero-scene-data';
 import {
   ApiArt,
   ArticleFlowArt,
+  ArticleContentsArt,
   ArticleLooksArt,
   ArticlePagesArt,
+  ArticleTableArt,
   ArticleWrapArt,
   AssignedActionsArt,
   CommentsArt,
   ContentsSidebarArt,
   ExpiryArt,
+  FindReplaceArt,
   FlashcardStackArt,
   FollowAlongArt,
   FontsArt,
@@ -22,6 +25,7 @@ import {
   PagesBackgroundsArt,
   PagesExportArt,
   PagesGifArt,
+  PowerPointImportArt,
   PresenceArt,
   PresentLocallyArt,
   PresenterNotesArt,
@@ -39,6 +43,7 @@ import {
   TidyPageArt,
   TimelineFeedArt,
   UndoRedoArt,
+  WordImportArt,
   ZenModeArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
@@ -83,14 +88,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore articles',
     title: 'Write it up on pages',
     description:
-      'Write on pages like a doc: headings, lists and quotes from the keyboard, pictures and charts in the text, comments in the margin, and five looks to match your house style. The writing flows onto a new page as it grows.',
+      'Write on pages like a doc: headings, lists and tables from the keyboard, a table of contents, headers and footers, pictures and charts in the text, comments in the margin, and five looks to match your house style. The writing flows onto a new page as it grows.',
     metaDescription:
-      'Write articles on pages like a doc: Markdown shortcuts, pictures and charts in the text, margin comments and five looks for your house style.',
+      'Write articles on pages like a doc: tables across pages, a table of contents, headers and footers, margin comments, and Word import and export.',
     highlights: [
       'Write like a doc',
       'Pages that grow',
-      'Pictures and charts in the text',
-      'Comments in the margin',
+      'Tables that run across pages',
+      'Contents, headers and footers',
     ],
     items: [
       {
@@ -115,7 +120,31 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Write',
         title: 'Pictures and charts in the text',
         description:
-          'Pictures, charts and tables sit in the line, wrap left or right, or float free. Drop a shape into the writing and a drawing area opens right there in the text.',
+          'Pictures and charts sit in the line, wrap left or right, or float free. Drop a shape into the writing and a drawing area opens right there in the text.',
+      },
+      {
+        art: <ArticleTableArt />,
+        href: '/help/pages/articles/article-tables/',
+        group: 'Write',
+        title: 'Tables that run across pages',
+        description:
+          'Put a table in the text and Tab through its cells. Add rows and columns, drag a column wider, and let a long table run onto the next page with its header row repeated. Paste one from Google Sheets, Excel or Word and it arrives as a table.',
+      },
+      {
+        art: <ArticleContentsArt />,
+        href: '/help/pages/articles/contents-headers-footers/',
+        group: 'Write',
+        title: 'Contents, headers and footers',
+        description:
+          'A table of contents lists your headings with their page numbers and keeps itself up to date as you write. Give every page a header and footer with the page number, the page count, the document name or the date.',
+      },
+      {
+        art: <WordImportArt />,
+        href: '/help/tabs/import-tabs/#importing-from-word-or-google-docs',
+        group: 'Write',
+        title: 'Bring in Word and Google Docs',
+        description:
+          'Import a Word document, or a Google Doc downloaded as one, and it becomes an article: headings, lists, links, tables and pictures, laid out across its pages. A short report says anything that could not come across.',
       },
       {
         art: <ArticleLooksArt />,
@@ -124,6 +153,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Five looks for an article',
         description:
           'Clean, Classic, Report, Notebook or Bold, then set the accent colour, margins, fonts and page numbers to match your house style.',
+      },
+      {
+        art: <FindReplaceArt />,
+        href: '/help/tools/find-and-replace/',
+        group: 'Review',
+        title: 'Find and replace',
+        description:
+          'Press ⌘F to find a word on every page of the tab, in the writing and on everything on the pages, with each match highlighted. Replace one, or replace them all in one step that a single Undo takes back.',
       },
       {
         art: <MarginCommentsArt />,
@@ -147,7 +184,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Review',
         title: 'A PDF at true page size',
         description:
-          'Export the article as one PDF, each page exactly its sheet, ready to print or attach. A single page goes out as a PNG or SVG.',
+          'Export the article as one PDF, each page exactly its sheet, ready to print or attach, its contents linked to their pages. Or export it as a Word document to keep editing, tables and headers included.',
       },
     ],
   },
@@ -183,6 +220,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Flashcards to speak from',
         description:
           'Rather hold notes than show slides? Make a stack of flashcards: a title and a couple of paragraphs on each, text only. Flip through them as you speak, each card telling you its place and how long its words take to say, and start from a conference talk, a wedding toast or a product pitch.',
+      },
+      {
+        art: <PowerPointImportArt />,
+        href: '/help/tabs/import-tabs/#importing-from-powerpoint-or-google-slides',
+        group: 'Build',
+        title: 'From PowerPoint and back',
+        description:
+          'Import a PowerPoint deck, or Google Slides downloaded as one, and each slide becomes a slide page with its text, pictures and speaker notes. When you are done, export the deck as an editable PowerPoint file.',
       },
       {
         art: <FullScreenSlideArt />,
@@ -381,7 +426,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Comments on anything',
         description:
-          "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
+          "Right-click an element, leave a thread. Replies, emoji reactions, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
       },
       {
         art: <AssignedActionsArt />,

@@ -1,0 +1,62 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ArticleContentsBandsScene } from '@/components/illustrations/article-blocks';
+
+export const metadata = helpMetadata({
+  title: 'Contents, Headers and Footers',
+  description:
+    'Add a table of contents that lists your headings with their pages, and a header and footer with page numbers, the page count, the document name and the date.',
+  path: '/help/pages/articles/contents-headers-footers/',
+});
+
+<ArticleLayout
+  title="Contents, Headers and Footers"
+  description="A table of contents that keeps itself up to date, and a header and footer on every page of an article."
+  categoryTitle="Pages"
+  categorySlug="pages"
+  parentArticle={{ title: "Writing Articles", slug: "articles" }}
+  subArticles={getSubArticles("articles").filter((a) => a.slug !== "contents-headers-footers")}
+>
+
+Long reports and briefs need a way round them. An article can hold a **table of contents** that lists its headings with the page each one is on, and every page can carry a **header** and a **footer**: a line of text in the top and bottom margins, with the page number, the page count, the document's name or today's date in it.
+
+## Adding a Table of Contents
+
+Choose **Table of Contents** from the page toolbar's **Insert** menu, or type **/** at the start of a line and pick **Table of Contents**. It goes in at the caret, usually just after the title.
+
+It shows the word **Contents**, then a line for every Heading 1, Heading 2 and Heading 3 in the article, in order, each indented by its level, with a dotted leader to the page it falls on. The title and subtitle are never listed, and headings with no text are left out.
+
+<Figure caption="An article page with its header along the top, a contents block listing the headings and their pages, and its footer at the foot.">
+  <ArticleContentsBandsScene />
+</Figure>
+
+- **It keeps itself up to date.** Type, rename, move or delete a heading, or let the writing push one onto another page, and the contents changes at once, for everyone, on screen and in every export.
+- **Choose how deep it goes.** Hover or select the contents block and three chips appear in its top-right corner: **H1**, **H1 to H2** and **H1 to H3**.
+- **Jump to a heading.** Press an entry to go to its heading. In a PDF export each entry is a link to its page, and in a Word export the contents is Word's own table of contents.
+- **Remove it** by pressing it to select it, then **Backspace** or **Delete**.
+
+With no headings yet, it says **Headings you add are listed here** while you write, and nothing to a reader. A long contents splits across pages between its entries.
+
+## Adding a Header and Footer
+
+Press **Style** in the article page's title bar, beside its cog, and scroll to **Header and Footer**:
+
+- **Header** and **Footer** each have three fields, **Left**, **Centre** and **Right**. Type in one and it shows on the page as you type; it is kept when you leave the field or press **Enter**.
+- **Fields**: click into a field, then press one of the four field buttons (Page Number, Page Count, Document Name or Date) to put that field at the caret. `Page {page} of {pages}` in the footer's centre reads "Page 2 of 5" on the second of five pages. The date is today's, in the reader's own format, and an export shows the day it was made.
+- **Different First Page**: on, the first page has no header, no footer and no page number, as a title page should; the pages after it count on from 2.
+
+The header sits in the top margin above the writing and the footer in the bottom margin, in small muted type, and they are the same on every page but for their fields. You edit them only from **Style**, never on the page itself.
+
+## Page Numbers and the Footer
+
+**Page Numbers**, also in **Style**, puts the page number in the centre of the footer while the footer's **Centre** field is empty. Type something of your own in **Centre** and it takes the number's place: add **Page Number** to it to keep the number.
+
+## Good to Know
+
+- Choosing a **Look** keeps your header and footer, as it keeps your margins and page numbers.
+- **Exports** (PDF, PNG and SVG) and presenting draw the header and footer. A Word export turns them into Word's own header and footer, with the page number and count as Word fields.
+- Flashcards have no header or footer.
+- Only **Editors** add a contents block or change the header and footer. Participants and Viewers see them as they are.
+
+</ArticleLayout>
