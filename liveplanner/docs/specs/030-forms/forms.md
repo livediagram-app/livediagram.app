@@ -424,6 +424,8 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
       A form already published keeps taking responses when a field becomes required later; the problem is listed
       under "Problems with this Form" until it is fixed.
       The api checks the same (`publishProblems`) and refuses with 409 `form_not_ready` and the problems.
+      Publish Form first waits (up to 5 seconds) for this page's pending save, since the api checks the stored form:
+      a question worded a moment before was otherwise refused as unworded, with nothing listed to fix.
   - Published: any problem since publishing listed the same way under "Problems with this Form"; the link in a
     read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
