@@ -145,7 +145,14 @@ export function WebhooksPanel() {
       {made ? (
         <div className="border-t border-slate-100 px-4 py-4 sm:px-5 dark:border-slate-700/70">
           <SecretReveal
-            title={`“${made.name}” is added. Copy its signing secret now: it won’t be shown again.`}
+            // The name isolated (<bdi>): a right-to-left one, or one kept from before names were cleaned, never
+            // turns the sentence around it.
+            title={
+              <>
+                “<bdi>{made.name}</bdi>” is added. Copy its signing secret now: it won’t be shown
+                again.
+              </>
+            }
             secret={made.secret}
             onDone={() => {
               setMade(null);

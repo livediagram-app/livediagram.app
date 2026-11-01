@@ -181,6 +181,9 @@ describe('what an add checks', () => {
   it.each([
     [{ name: '' }, 'invalid_webhook'],
     [{ name: 'x'.repeat(81) }, 'invalid_webhook'],
+    // Only invisible characters, or only bidi controls: a name that would look blank.
+    [{ name: '\u200B\u2060\uFEFF' }, 'invalid_webhook'],
+    [{ name: '\u202E\u2066' }, 'invalid_webhook'],
     [{ events: [] }, 'invalid_webhook'],
     [{ events: ['edited'] }, 'invalid_webhook'],
     [{ kind: 'discord' }, 'invalid_webhook'],
@@ -258,6 +261,19 @@ describe('changing one', () => {
           .status,
       ).toBe(400);
     }
+  });
+
+  it('keeps a name without bidi controls or invisible ends, as added and as renamed', async () => {
+    const ada = await person('user_wc5');
+    // Left in, the override turned the name and the words drawn after it around ("\u202Eevil" read "live").
+    const { webhook } = await addWebhook(ada.auth, { name: '\u200B \u202Eevil\u202C bot\uFEFF' });
+    expect(webhook.name).toBe('evil bot');
+    const res = await call(`/webhooks/${webhook.id}`, {
+      method: 'PATCH',
+      auth: ada.auth,
+      body: { name: '\u2067ops\u2069 \u00AD' },
+    });
+    expect((await body<{ webhook: Webhook }>(res)).webhook.name).toBe('ops');
   });
 
   it('pauses it (giving up what waited) and resumes it, a team admin resuming becoming its creator', async () => {

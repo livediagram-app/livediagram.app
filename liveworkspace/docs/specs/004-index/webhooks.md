@@ -105,6 +105,9 @@ It is not a Timeline event; the index only hands it to the plan's scope's webhoo
   own webhooks are deleted with its other things, and its team webhooks paused, their creator anonymised
   ([one-explorer-contracts.md "Closing an account"](one-explorer-contracts.md#closing-an-account)).
 - Limits: 10 webhooks per scope, names of at most 80 characters, URLs of at most 2,048.
+- A name is kept as the account names are ([accounts.md "Names and other typed text"](../003-accounts/accounts.md#names-and-other-typed-text)):
+  without bidi controls, and without spaces or invisible characters at its ends, so it can neither turn the words
+  around it backwards nor look blank; one that leaves nothing is refused (400).
 
 ## Managing them
 

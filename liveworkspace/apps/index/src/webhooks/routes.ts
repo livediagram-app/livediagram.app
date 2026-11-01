@@ -10,6 +10,7 @@
 //   POST   /webhooks/:id/test        202: queues a `ping`
 //   GET    /webhooks/:id/deliveries  {deliveries}: its newest, pending and finished
 
+import { trimInvisible, withoutBidiControls } from '@liveworkspace/api-kit/typed-text';
 import { importSealKey, seal } from '@liveworkspace/api-kit/sealed';
 import {
   isWebhookEvent,
@@ -93,9 +94,11 @@ export function webhookOf(row: WebhookRow): Webhook {
 // Events as stored: comma-wrapped, so one `instr` matches a type.
 const storedEvents = (events: readonly WebhookEvent[]) => `,${events.join(',')},`;
 
+// A name as the account names are kept (typed-text): no bidi control to turn the words around it backwards, and no
+// spaces or invisible characters at its ends to make it look blank. Longer than the limit is refused, as before.
 function readName(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  const name = value.trim();
+  const name = trimInvisible(withoutBidiControls(value));
   return name.length > 0 && name.length <= WEBHOOK_NAME_MAX ? name : null;
 }
 

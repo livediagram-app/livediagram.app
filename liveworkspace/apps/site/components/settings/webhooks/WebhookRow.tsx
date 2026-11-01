@@ -206,7 +206,7 @@ export function WebhookRow({
           <div className="min-w-0 flex-1 basis-52">
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
               <h5 className="min-w-0 truncate font-semibold text-slate-900 dark:text-white">
-                {webhook.name}
+                <bdi>{webhook.name}</bdi>
               </h5>
               <Chip
                 data-state={state.tone}
