@@ -58,6 +58,14 @@ describe('TEMPLATES catalogue', () => {
     'talk-flashcards',
     'wedding-toast',
     'pitch-flashcards',
+    'class-presentation',
+    'meeting-notes',
+    'lesson-plan',
+    'business-proposal',
+    'design-doc',
+    'status-report',
+    'cover-letter',
+    'class-lesson',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
@@ -65,15 +73,15 @@ describe('TEMPLATES catalogue', () => {
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 27 templates (1 default + 26 extra)', () => {
-    expect(listed).toHaveLength(27);
+  it('lists exactly 35 templates (1 default + 34 extra)', () => {
+    expect(listed).toHaveLength(35);
   });
 
-  it('splits cleanly into 1 default + 26 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 34 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(26);
+    expect(extras).toHaveLength(34);
   });
 
   it('ships no hidden templates', () => {
@@ -114,7 +122,18 @@ describe('TEMPLATES catalogue', () => {
         isBlankTemplate(kind) ||
         kind === 'article' ||
         kind === 'working-backwards' ||
-        ['talk-flashcards', 'wedding-toast', 'pitch-flashcards'].includes(kind);
+        [
+          'talk-flashcards',
+          'wedding-toast',
+          'pitch-flashcards',
+          'class-presentation',
+          'meeting-notes',
+          'lesson-plan',
+          'business-proposal',
+          'design-doc',
+          'status-report',
+          'cover-letter',
+        ].includes(kind);
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });

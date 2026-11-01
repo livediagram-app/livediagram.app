@@ -8,11 +8,17 @@ import { lucideGlyph } from '@livedocuments/ui';
 import {
   lucideChartPie,
   lucideFileText,
-  lucideImage,
-  lucideLayers,
+  lucideGraduationCap,
+  lucideHouse,
   lucideLightbulb,
-  lucidePenTool,
+  lucideMegaphone,
+  lucideMic,
+  lucidePartyPopper,
+  lucideRocket,
+  lucideSquareDashed,
   lucideStar,
+  lucideUser,
+  lucideUsers,
 } from '@liveworkspace/icons/lucide';
 import type { TemplateKind } from '@livedocuments/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
@@ -28,14 +34,21 @@ import { useStartPalette } from '@/components/start/useStartPalette';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
 
-// Each rail group's glyph (start-template-items.ts OWN_GROUPS).
+// Each rail group's glyph (start-template-items.ts OWN_GROUPS): Recommended, Blank Pages, then one per catalogue
+// category (docs/specs/008-canvas/canvas-and-palette.md "Template categories").
 const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   recommended: glyph(lucideStar),
-  slides: glyph(lucideLayers),
-  infographics: glyph(lucideChartPie),
-  articles: glyph(lucideFileText),
-  posters: glyph(lucideImage),
-  design: glyph(lucidePenTool),
+  'blank-pages': glyph(lucideSquareDashed),
+  careers: glyph(lucideUser),
+  events: glyph(lucidePartyPopper),
+  home: glyph(lucideHouse),
+  learning: glyph(lucideGraduationCap),
+  marketing: glyph(lucideMegaphone),
+  pitches: glyph(lucideRocket),
+  plans: glyph(lucideFileText),
+  reports: glyph(lucideChartPie),
+  speeches: glyph(lucideMic),
+  team: glyph(lucideUsers),
 };
 const FALLBACK_ICON = glyph(lucideLightbulb);
 

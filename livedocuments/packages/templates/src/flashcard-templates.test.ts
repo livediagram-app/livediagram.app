@@ -3,7 +3,12 @@ import { flashcardWordCount, pagesOf, tabPageKind } from '@livedocuments/documen
 import { flashcardTemplateOverrides, isFlashcardTemplate } from './flashcard-templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 
-const KINDS = ['talk-flashcards', 'wedding-toast', 'pitch-flashcards'] as const;
+const KINDS = [
+  'talk-flashcards',
+  'wedding-toast',
+  'pitch-flashcards',
+  'class-presentation',
+] as const;
 
 describe('flashcard templates', () => {
   it('open as stacks of cards, each its own writing, short enough for a card', () => {
@@ -25,7 +30,7 @@ describe('flashcard templates', () => {
       }
       expect(templateCanvasOverrides(kind).pages).toEqual(out.pages);
     }
-    expect(counts).toEqual([6, 5, 5]);
+    expect(counts).toEqual([6, 5, 5, 5]);
   });
 
   it('names only the flashcard stacks', () => {

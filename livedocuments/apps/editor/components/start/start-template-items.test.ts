@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, stepPopularKinds } from '@livedocuments/templates';
+import {
+  EXTRA_BLANK_TEMPLATES,
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  stepPopularKinds,
+  templateCategory,
+} from '@livedocuments/templates';
 import { TEMPLATE_START } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
@@ -41,34 +47,25 @@ describe('the Pages template start', () => {
 });
 
 describe('Start Making Pages', () => {
-  it('groups by what is made: Slides, Flashcards, Infographics, Articles, Posters and Social, Design', () => {
+  it('groups after Recommended and Blank Pages by the catalogue categories, in their order', () => {
     expect(TEMPLATE_START.groups.map((g) => g.name)).toEqual([
       'Recommended',
-      'Slides',
-      'Flashcards',
-      'Infographics',
-      'Articles',
-      'Posters and Social',
-      'Design',
+      'Blank Pages',
+      ...TEMPLATE_CATEGORIES.map((c) => c.label),
     ]);
-    // A carousel is posted, not presented.
-    const group = (id: string) => TEMPLATE_START.groups.find((g) => g.id === id)!.kinds;
-    expect(group('slides')).not.toContain('social-carousel');
-    expect(group('posters')).toContain('social-carousel');
-    expect(group('design')).toEqual(['storyboard', 'floor-plan']);
   });
 
-  it('leads Slides, Infographics and Articles with their blank of a page kind', () => {
+  it('puts the blanks of a page kind in Blank Pages, and every other template under its primary category', () => {
+    const groups = TEMPLATE_START.groups;
+    expect(groups[1]!.kinds).toEqual([...EXTRA_BLANK_TEMPLATES]);
+    for (const g of groups.slice(2))
+      for (const k of g.kinds) expect(templateCategory(k), k).toBe(g.id);
+    const kinds = groups.slice(1).flatMap((g) => g.kinds);
+    expect(new Set(kinds).size).toBe(kinds.length);
+  });
+
+  it('leads Recommended with the blanks of a page kind in place of Blank Illustration and the Project Brief', () => {
     // docs/specs/007-editor/start-diagramming.md "Recommended and groups".
-    const first = Object.fromEntries(TEMPLATE_START.groups.map((g) => [g.id, g.kinds[0]]));
-    expect(first).toMatchObject({
-      slides: 'blank-slide-deck',
-      infographics: 'blank-infographic',
-      articles: 'blank-article',
-      flashcards: 'blank-flashcards',
-    });
-    // Recommended leads with Blank Infographic and Blank Article, then Blank Slide Deck in the Slide Deck's place;
-    // Blank Illustration and the Project Brief template are left out of it.
     const recommended = TEMPLATE_START.groups[0]!.kinds;
     expect(recommended.slice(0, 3)).toEqual([
       'blank-infographic',

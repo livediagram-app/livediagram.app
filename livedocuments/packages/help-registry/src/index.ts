@@ -1155,7 +1155,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start a document from a ready-made template instead of a blank page.',
     keywords:
-      'template templates starter scaffold quick start prebuilt blank slide deck blank article blank infographic blank tab blank illustration empty slide empty page slide deck group card storyboard floor plan working backwards pr faq project brief event poster year in review resume cv recipe card data story how it works versus social carousel launch keynote quarterly review team welcome workshop kickoff design presentations search find a template start making pages recommended',
+      'template templates starter scaffold quick start prebuilt blank slide deck blank article blank infographic blank tab blank illustration empty slide empty page slide deck group card storyboard floor plan working backwards pr faq project brief event poster year in review resume cv recipe card data story how it works versus social carousel launch keynote quarterly review team welcome workshop kickoff conference talk wedding toast product pitch school presentation class lesson meeting notes minutes lesson plan business proposal design doc rfc status report cover letter careers events celebrations home hobbies lessons learning marketing social pitches launches plans proposals reports speeches talks team meetings blank pages search find a template start making pages recommended',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',

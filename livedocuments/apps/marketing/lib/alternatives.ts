@@ -62,7 +62,7 @@ const LIST: Alternative[] = [
       'Export the deck as an editable PowerPoint file, speaker notes included, or as an animated GIF for a chat, an email or a README.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
-      '27 templates to start from, from a launch keynote to a quarterly review.',
+      '35 templates to start from, from a launch keynote and a class lesson to a quarterly review.',
       'Free and MIT-licensed, with no paid tier.',
     ],
     sections: [

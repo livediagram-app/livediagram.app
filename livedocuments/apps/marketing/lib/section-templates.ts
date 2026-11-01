@@ -11,17 +11,27 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  articles: ['article', 'working-backwards', 'year-in-review', 'resume', 'blank-article'],
+  articles: [
+    'article',
+    'business-proposal',
+    'meeting-notes',
+    'design-doc',
+    'status-report',
+    'working-backwards',
+    'lesson-plan',
+    'cover-letter',
+    'blank-article',
+  ],
   slides: [
     'slide-deck',
     'launch-keynote',
     'talk-flashcards',
     'quarterly-review',
     'pitch-flashcards',
+    'class-lesson',
     'team-welcome',
-    'workshop-kickoff',
+    'class-presentation',
     'blank-slide-deck',
-    'blank-flashcards',
   ],
   infographics: [
     'data-story',
@@ -34,7 +44,15 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'live-card',
     'blank-infographic',
   ],
-  collaboration: ['live-card', 'workshop-kickoff', 'article', 'team-welcome', 'storyboard'],
+  collaboration: [
+    'live-card',
+    'meeting-notes',
+    'workshop-kickoff',
+    'article',
+    'design-doc',
+    'team-welcome',
+    'storyboard',
+  ],
 };
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));

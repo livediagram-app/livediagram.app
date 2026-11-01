@@ -1,11 +1,13 @@
 // What an empty tab's template start offers (docs/specs/007-editor/start-diagramming.md): Start Making Pages on a
-// Pages tab. Every listed template, a rail over them (Recommended, then groups) and the search across them. The
-// templates nearly all share one catalogue category (Presentations), so the start groups them by what each makes
-// (OWN_GROUPS). Drawn from the template catalogue, so a new template joins its group with no change here. Pure: the
-// panel draws what these return.
+// Pages tab. Every listed template, a rail over them (Recommended, then groups) and the search across them. The start
+// groups them as the catalogue does, by what each document is for, after Blank Pages (OWN_GROUPS). Drawn from the
+// template catalogue, so a new template joins its group with no change here. Pure: the panel draws what these return.
 import {
   BLANK_TEMPLATE,
+  EXTRA_BLANK_TEMPLATES,
   TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  templateCategory,
   stepPopularKinds,
   templateMatchesQuery,
   type TemplateDescriptor,
@@ -42,53 +44,22 @@ const RECOMMENDED_SWAPS: ReadonlyMap<TemplateKind, TemplateKind> = new Map<
 
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
-// Grouped by what each makes, each group but Posters and Design led by its blank of a page kind (Flashcards by
-// Blank Flashcards). A template in none of
-// the groups is placed in the last.
+// Blank Pages leads with one empty page of each kind, then one group per catalogue category, in the order and with
+// the names every other picker uses (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), each
+// template under its primary category. A template in none of the groups is placed in the last.
 const OWN_GROUPS: readonly OwnGroup[] = [
   {
-    id: 'slides',
-    name: 'Slides',
-    line: 'Decks to present, one idea to a slide.',
-    kinds: [
-      'blank-slide-deck',
-      'slide-deck',
-      'launch-keynote',
-      'quarterly-review',
-      'team-welcome',
-      'workshop-kickoff',
-    ],
+    id: 'blank-pages',
+    name: 'Blank Pages',
+    line: 'One empty page of the kind you mean: a slide, an article, an infographic or a card.',
+    kinds: EXTRA_BLANK_TEMPLATES,
   },
-  {
-    id: 'flashcards',
-    name: 'Flashcards',
-    line: 'Cards to speak from, flipped one at a time.',
-    kinds: ['blank-flashcards', 'talk-flashcards', 'pitch-flashcards', 'wedding-toast'],
-  },
-  {
-    id: 'infographics',
-    name: 'Infographics',
-    line: 'Numbers, comparisons and how-tos told visually.',
-    kinds: ['blank-infographic', 'year-in-review', 'data-story', 'how-it-works', 'versus'],
-  },
-  {
-    id: 'articles',
-    name: 'Articles',
-    line: 'Articles, résumés and cards of text on pages.',
-    kinds: ['blank-article', 'article', 'working-backwards', 'resume', 'recipe-card'],
-  },
-  {
-    id: 'posters',
-    name: 'Posters and Social',
-    line: 'Posters, cards and social posts to print, pin up or share.',
-    kinds: ['event-poster', 'social-carousel', 'live-card'],
-  },
-  {
-    id: 'design',
-    name: 'Design',
-    line: 'Storyboards and floor plans, drawn to show.',
-    kinds: ['storyboard', 'floor-plan'],
-  },
+  ...TEMPLATE_CATEGORIES.map((c) => ({
+    id: c.id,
+    name: c.label,
+    line: c.description,
+    kinds: TEMPLATES.filter((t) => templateCategory(t.kind) === c.id).map((t) => t.kind),
+  })),
 ];
 
 const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));

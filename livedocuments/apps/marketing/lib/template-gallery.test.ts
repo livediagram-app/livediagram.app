@@ -40,7 +40,8 @@ describe('filterGallery', () => {
 
   it('matches the description and the category name', () => {
     expect(filterGallery(all, 'cooking').map((t) => t.kind)).toContain('recipe-card');
-    expect(filterGallery(all, 'design').map((t) => t.kind)).toContain('floor-plan');
+    expect(filterGallery(all, 'hobbies').map((t) => t.kind)).toContain('floor-plan');
+    expect(filterGallery(all, 'minutes').map((t) => t.kind)).toEqual(['meeting-notes']);
   });
 
   it('needs every word to hit somewhere', () => {
@@ -54,7 +55,7 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'storyboard'));
-    expect(groups.map((g) => g.label)).toEqual(['Design']);
+    expect(groups.map((g) => g.label)).toEqual(['Marketing and Social']);
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['storyboard']);
   });
 
@@ -69,8 +70,11 @@ describe('groupGallery', () => {
     const browse = groupGallery(galleryTemplates());
     const holding = (kind: string) =>
       browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('slide-deck')).toEqual(['presentations']);
-    expect(holding('floor-plan')).toEqual(['design']);
+    expect(holding('slide-deck')).toEqual(['pitches']);
+    expect(holding('floor-plan')).toEqual(['home']);
+    expect(holding('lesson-plan')).toEqual(['learning']);
+    // A cross-listed template shows on each of its categories.
+    expect(holding('wedding-toast')).toEqual(['events', 'speeches']);
   });
 
   it('finds a template by its search words, as the editor does', () => {
@@ -122,5 +126,10 @@ describe('the shelf order', () => {
       return g.templates.map((t) => t.kind).join() !== catalogue.join();
     });
     expect(shuffled.length).toBeGreaterThan(first.length / 2);
+    // Every shelf of two or more comes out mixed.
+    const unmixed = first
+      .filter((g) => g.templates.length > 1 && !shuffled.includes(g))
+      .map((g) => g.id);
+    expect(unmixed).toEqual([]);
   });
 });
