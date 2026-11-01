@@ -260,7 +260,7 @@ export async function applyItemChanges(
         const missing = missingRequiredFields(type, fields as ItemFields);
         if (missing.length) throw requiredStop(type, missing);
         loopStop(items, types, {
-          next: { id: '', type: type.id, fields: { ...fields, title: c.title } as ItemFields },
+          next: { id: '', type: type.id, fields: { ...fields, title: c.title } },
         });
         const { item } = await post(base, {
           type: type.id,
