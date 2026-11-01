@@ -218,13 +218,14 @@ export function LinkedCardField({
                 ) : null}
                 {card ? (
                   <>
-                    <span className="text-optical-line shrink-0 tabular-nums text-slate-500 dark:text-slate-400">
+                    {/* slate-600: slate-500 reads 4.3:1 on the chip's slate-100. */}
+                    <span className="text-optical-line shrink-0 tabular-nums text-slate-600 dark:text-slate-400">
                       #{card.key}
                     </span>
                     <span className="text-optical-line min-w-0 truncate">{itemTitle(card)}</span>
                   </>
                 ) : (
-                  <span className="text-optical-line italic text-slate-500 dark:text-slate-400">
+                  <span className="text-optical-line italic text-slate-600 dark:text-slate-400">
                     Missing card
                   </span>
                 )}
