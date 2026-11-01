@@ -250,9 +250,26 @@ const TONE_FALLBACK: Record<TimelineTone, { bold: string; soft: string }> = {
   neutral: { bold: '#64748b', soft: 'rgba(100, 116, 139, 0.10)' },
 };
 
-// The host may set --lw-timeline-<tone>(-soft); these are the fallbacks.
+// The ink each tone's words and dots take on a dark page: the light page's ink is 3.2 to 3.8:1 on a dark card,
+// under the 4.5:1 its 10 to 12px words need, so dark mode lifts each to its 400.
+const TONE_DARK_INK: Record<TimelineTone, string> = {
+  danger: '#f87171',
+  structural: '#fbbf24',
+  create: '#34d399',
+  neutral: '#94a3b8',
+};
+
+/** Classes for any element drawn in toneColor (or holding one): each tone's ink for the page's mode, as
+ *  --lw-timeline-ink-<tone>. Written out whole so Tailwind finds every one. */
+export const TONE_INKS =
+  '[--lw-timeline-ink-danger:#dc2626] [--lw-timeline-ink-structural:#b45309] [--lw-timeline-ink-create:#047857] [--lw-timeline-ink-neutral:#64748b] dark:[--lw-timeline-ink-danger:#f87171] dark:[--lw-timeline-ink-structural:#fbbf24] dark:[--lw-timeline-ink-create:#34d399] dark:[--lw-timeline-ink-neutral:#94a3b8]';
+
+// The host may set --lw-timeline-<tone>(-soft); else the mode's ink from TONE_INKS, else the light page's.
 export const toneColor = (tone: TimelineTone) =>
-  `var(--lw-timeline-${tone}, ${TONE_FALLBACK[tone].bold})`;
+  `var(--lw-timeline-${tone}, var(--lw-timeline-ink-${tone}, ${TONE_FALLBACK[tone].bold}))`;
+
+/** A tone's ink on a dark page (what TONE_INKS sets there). */
+export const toneDarkInk = (tone: TimelineTone) => TONE_DARK_INK[tone];
 export const toneSoftColor = (tone: TimelineTone) =>
   `var(--lw-timeline-${tone}-soft, ${TONE_FALLBACK[tone].soft})`;
 

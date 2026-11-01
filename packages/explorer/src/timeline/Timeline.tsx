@@ -31,6 +31,7 @@ import {
   stackLabel,
   timeLabel,
   TONE_LABELS,
+  TONE_INKS,
   toneColor,
   toneSoftColor,
   WEEKDAY_SHORT,
@@ -443,7 +444,7 @@ export function TimelineCard({
       data-timeline-event={event.id}
       className={`${CARD_SHELL} h-full has-[>button:focus-visible]:ring-2 has-[>button:focus-visible]:ring-brand-500 has-[>button:focus-visible]:ring-offset-1 dark:has-[>button:focus-visible]:ring-offset-slate-900 ${
         focused ? 'ring-2 ring-brand-500 ring-offset-1 dark:ring-offset-slate-900 ' : ''
-      }${interactive ? 'cursor-pointer' : 'opacity-60'}`}
+      } ${TONE_INKS}${interactive ? ' cursor-pointer' : ''}`}
     >
       {interactive ? (
         <button
@@ -456,7 +457,8 @@ export function TimelineCard({
           className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
         />
       ) : null}
-      <div className={`relative ${CARD_PREVIEW}`}>
+      {/* Nothing to open: the picture is faded, never the words, which keep their contrast. */}
+      <div className={`relative ${CARD_PREVIEW}${interactive ? '' : ' opacity-60'}`}>
         {rendered.preview ?? (
           <div
             aria-hidden
@@ -703,7 +705,7 @@ function TimelineCalendarView({
                       title={name}
                       aria-pressed={openCell === key}
                       onClick={() => setOpenCell((open) => (open === key ? null : key))}
-                      className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] transition hover:bg-slate-900/5 dark:hover:bg-white/10"
+                      className={`flex items-center gap-1 rounded px-1 py-0.5 text-[10px] transition hover:bg-slate-900/5 dark:hover:bg-white/10 ${TONE_INKS}`}
                       style={{ color: toneColor(tone) }}
                     >
                       <span
