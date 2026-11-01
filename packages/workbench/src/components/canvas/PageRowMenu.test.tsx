@@ -58,6 +58,7 @@ function List({
     <>
       {Object.entries(models).map(([id, model]) => (
         <div key={id} data-testid={`row-${id}`} {...menu.rowProps(id)} onClick={() => go(id)}>
+          <span data-contents-grip="" data-testid={`grip-${id}`} />
           {stack ? (
             <PageRowStack
               id={id}
@@ -178,6 +179,24 @@ describe('PageRowMenu', () => {
       });
       fireEvent.click(row);
       expect(go).toHaveBeenCalledWith('a');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("opens nothing for a finger held on the row's grip, which is starting a drag", () => {
+    vi.useFakeTimers();
+    try {
+      render(<List models={{ a: model().model }} />);
+      fireEvent.pointerDown(screen.getByTestId('grip-a'), {
+        pointerType: 'touch',
+        clientX: 5,
+        clientY: 5,
+      });
+      act(() => {
+        vi.advanceTimersByTime(LONG_PRESS_MS * 2);
+      });
+      expect(screen.queryByRole('menu')).toBeNull();
     } finally {
       vi.useRealTimers();
     }

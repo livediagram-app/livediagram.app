@@ -96,6 +96,9 @@ function swallowLiftClick() {
   window.addEventListener('pointerup', lifted, true);
 }
 
+// A row's grip carries this: a finger held on it is starting a drag, never a long press for the menu.
+export const PAGE_ROW_GRIP_ATTR = 'data-contents-grip';
+
 /** The one ⋯ menu a Contents list shares: which page's is open and where it hangs, each row's ⋯
  *  as its anchor, and the row's own ways in (a right-click, a finger's long press). */
 export function usePageRowMenu() {
@@ -131,6 +134,7 @@ export function usePageRowMenu() {
         openAt(id);
       },
       onPointerDown: (e: PointerEvent) => {
+        if ((e.target as Element | null)?.closest?.(`[${PAGE_ROW_GRIP_ATTR}]`)) return;
         pressed.current = id;
         longPress.onPointerDown(e);
       },
