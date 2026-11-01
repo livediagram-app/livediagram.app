@@ -153,7 +153,12 @@ describe('tour offers', () => {
     act(() => publishTourOffer('diagram', offer('diagram', 'Diagram', TOUR_OFFER_RANK.mode)));
     const { rerender } = renderHook(
       ({ seen }: { seen: boolean }) =>
-        useOfferTour('avatar', { name: 'Avatar', rank: TOUR_OFFER_RANK.tool, start: vi.fn(), seen }),
+        useOfferTour('avatar', {
+          name: 'Avatar',
+          rank: TOUR_OFFER_RANK.tool,
+          start: vi.fn(),
+          seen,
+        }),
       { initialProps: { seen: false } },
     );
     expect(tourOffer()?.name).toBe('Avatar');

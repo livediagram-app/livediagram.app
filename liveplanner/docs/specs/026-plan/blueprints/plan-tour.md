@@ -75,14 +75,14 @@ an anchor when either is set.
 The host publishes its offer with `useOfferTour('plan', offer)`, re-read every render; it never starts the tour on
 its own (no settle delay, no arming).
 
-| State   | Event                                                        | Guard                                                            | Effect                                                                               |
-| ------- | ------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| State   | Event                                                        | Guard                                                            | Effect                                                                                     |
+| ------- | ------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | idle    | render                                                       | usable, can edit, tab unlocked, has plan work                    | publish `{ name: 'Boards' \| 'Sheets', rank: TOUR_OFFER_RANK.mode, start, onShown, seen }` |
-| idle    | render                                                       | otherwise                                                        | publish `null` (the button names another tour, or is not drawn)                      |
-| idle    | the button first shows this offer in a page load (`onShown`) | none                                                             | `Opened` · `PlanTourOffer`                                                           |
-| idle    | a press (`start`) or relaunch event                          | not active, no other tour, `offerTrack` set (relaunch: on offer) | fix the subject, `tourTrack = offerTrack`, `start()` (sends `Started` · `PlanTour`)  |
-| running | edit rights lost / another tab / subject deleted             | none                                                             | `stop()`, end as skipped                                                             |
-| running | `onFinish(outcome)`                                          | none                                                             | end (below)                                                                          |
+| idle    | render                                                       | otherwise                                                        | publish `null` (the button names another tour, or is not drawn)                            |
+| idle    | the button first shows this offer in a page load (`onShown`) | none                                                             | `Opened` · `PlanTourOffer`                                                                 |
+| idle    | a press (`start`) or relaunch event                          | not active, no other tour, `offerTrack` set (relaunch: on offer) | fix the subject, `tourTrack = offerTrack`, `start()` (sends `Started` · `PlanTour`)        |
+| running | edit rights lost / another tab / subject deleted             | none                                                             | `stop()`, end as skipped                                                                   |
+| running | `onFinish(outcome)`                                          | none                                                             | end (below)                                                                                |
 
 "Usable": `hydrated && !anyWelcomeOpen && !isReadOnly && !embedMode`. "No other tour": `activeTour()` is null or
 `'plan'`. "Has plan work": a `plan-board` or `plan-sheet` shape on `activeTab.elements`. `offerTrack`: of the tracks

@@ -142,7 +142,10 @@ describe('AvatarTourHost offer', () => {
     editor({ isReadOnly: true, can: { takePart: false } });
     const { rerender } = render(<AvatarTourHost />);
     act(() => tourOffer()!.start());
-    expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true, avatarTourSeen: true }, 'me');
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      { tourSeen: true, avatarTourSeen: true },
+      'me',
+    );
     editor({
       isReadOnly: true,
       can: { takePart: false },
@@ -173,7 +176,10 @@ describe('AvatarTourHost offer', () => {
     render(<AvatarTourHost />);
     act(() => tourOffer()!.start());
     expect(writeUserPreferences).toHaveBeenCalledTimes(1);
-    expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true, avatarTourSeen: true }, 'me');
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      { tourSeen: true, avatarTourSeen: true },
+      'me',
+    );
   });
 
   it.each([

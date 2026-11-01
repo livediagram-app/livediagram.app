@@ -9,13 +9,13 @@ dimming spotlight, Skip, Back and a closing card, driven by the tour engine ever
 
 ## Domain language
 
-| Term                   | Means                                                                                    |
-| ---------------------- | ---------------------------------------------------------------------------------------- |
-| **Pages tour**         | This tour, whichever track it runs                                                       |
+| Term                   | Means                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| **Pages tour**         | This tour, whichever track it runs                                                          |
 | **Track**              | One page kind's steps: the **Slides**, **Infographic**, **Article** or **Flashcards** track |
-| **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts |
-| **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md))                 |
-| **Start Making Pages** | An empty tab's template start, [Template start](start-diagramming.md)                    |
+| **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts    |
+| **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md))                    |
+| **Start Making Pages** | An empty tab's template start, [Template start](start-diagramming.md)                       |
 
 ## Where it appears
 
