@@ -110,7 +110,10 @@ It is not a Timeline event; the index only hands it to the plan's scope's webhoo
 
 In the Settings panel's Account section, **Webhooks**, next to API Tokens
 ([../010-site/site.md "Settings"](../010-site/site.md#settings)), on liveworkspace.app and on each app's Explorer
-(both reach the index with the person's token); each editor's Settings links there. The routes, under
+(both reach the index with the person's token); each editor's Settings links there. Like API tokens, they are an
+account's: a guest is never shown the category, an address naming it asks them to sign in first, and a guest's
+editor shows a Webhooks stand-in that says to sign in, as its API Tokens row does
+([../010-site/site.md "Settings", Webhooks](../010-site/site.md#settings)). The routes, under
 `/api/index`, for a signed-in account:
 
 - `GET /webhooks`: `{webhooks}`, the person's own and those of each team they are an admin of now.

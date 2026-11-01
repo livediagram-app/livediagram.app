@@ -602,6 +602,12 @@ and the dialog stays as the one complete, browsable index of them.
   (email footers, the old `/explorer/profile` redirect) and every in-app
   link to them still opens the same pane.
 
+  **Webhooks** are an account's too, made and managed in liveworkspace's Settings
+  ([Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)). Signed in, the Account
+  section's **Webhooks** links there. A guest gets a **Webhooks** category under Account (id `webhooks`, so
+  `?settings=webhooks` opens it) holding one stand-in row, "Sign in to add webhooks." with the **Sign In** link,
+  the same shape as the email stand-in, so it reads the way API Tokens does for a guest. A workbench has neither.
+
   Panels holds Layers, Map, Collaborate and Quick Style,
   one per panel, each its own pane. Each opens with that panel's **Enable
   switch** ("Enable Layers Panel", "Enable Map",
