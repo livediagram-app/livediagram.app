@@ -39,7 +39,7 @@ function state(
     addSelectionToSlide: noop,
     removeFromSlide: noop,
     renameSlide: noop,
-    setSlideNotes: noop,
+    setSlideNoteCards: noop,
     setSlideMinutes: noop,
     deleteSlide: noop,
     toggleSlideHidden: noop,
@@ -172,6 +172,17 @@ describe('the Slide Deck popover', () => {
         slides: [
           { id: 's1', tabId: 'a', elementIds: [], pageId: 'p1', minutes: 3 },
           { id: 's2', tabId: 'a', elementIds: [], pageId: 'p2', minutes: 2, notes: 'Hi' },
+          {
+            id: 's3',
+            tabId: 'a',
+            elementIds: [],
+            pageId: 'p3',
+            noteCards: [
+              { id: 'c1', text: 'One' },
+              { id: 'c2', text: ' ' },
+              { id: 'c3', text: 'Three' },
+            ],
+          },
         ],
       },
       {
@@ -181,8 +192,10 @@ describe('the Slide Deck popover', () => {
       },
     );
     expect(screen.getByText('The next ten years')).toBeTruthy();
-    expect(screen.getByText('2 slides · 5 min')).toBeTruthy();
-    expect(screen.getByLabelText('Has speaker notes')).toBeTruthy();
+    expect(screen.getByText('3 slides · 5 min')).toBeTruthy();
+    // An old note reads as one card; blank cards are not counted (docs/specs/012-collaboration/speaker-note-cards.md).
+    expect(screen.getByLabelText('1 note card')).toBeTruthy();
+    expect(screen.getByLabelText('2 note cards').textContent).toBe('2');
     fireEvent.click(screen.getByRole('button', { name: 'Present from slide 2' }));
     expect(start).toHaveBeenCalledWith('s2');
   });

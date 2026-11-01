@@ -8,10 +8,10 @@ import { PageDeckButton } from './PageDeckButton';
 afterEach(cleanup);
 
 const controls = (slide?: { id: string; hidden: boolean }) => ({
-  slideOf: () => (slide ? { ...slide, notes: '' } : undefined),
+  slideOf: () => (slide ? { ...slide, noteCards: [] } : undefined),
   add: vi.fn(),
   toggleHidden: vi.fn(),
-  setNotes: vi.fn(),
+  setNoteCards: vi.fn(),
 });
 
 describe('PageDeckButton', () => {

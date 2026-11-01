@@ -12,11 +12,11 @@ pages.
 
 ## Domain language
 
-| Term                | Means                                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------------------------- |
-| **note card**       | One card of a slide's speaker notes: plain text, one point to make. "Card" for short in the UI.      |
-| **a slide's cards** | Its note cards in order (`Slide.noteCards`), the slide's own, never a page's or an element's.        |
-| **card in front**   | While presenting, the note card the presenter is on. Every slide starts on its first card.          |
+| Term                | Means                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **note card**       | One card of a slide's speaker notes: plain text, one point to make. "Card" for short in the UI.                                   |
+| **a slide's cards** | Its note cards in order (`Slide.noteCards`), the slide's own, never a page's or an element's.                                     |
+| **card in front**   | While presenting, the note card the presenter is on. Every slide starts on its first card.                                        |
 | **flip**            | Moving to another note card while presenting, turned as a flashcard turns ([Flashcards](../007-editor/flashcards.md) "Flipping"). |
 
 The interface keeps **Notes** for the whole ("Add Notes", "Speaker Notes"), says **card** for one of them ("Add Card",
@@ -120,11 +120,11 @@ they are what the presenter means to say, not what the document shows.
 
 ([Share roles](../013-workspace/share-roles.md))
 
-| Role            | With note cards                                                                                    |
-| --------------- | -------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything above: adds, writes, reorders and removes cards, in the title bar and the Slide Deck.    |
+| Role            | With note cards                                                                                            |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Everything above: adds, writes, reorders and removes cards, in the title bar and the Slide Deck.           |
 | **Participant** | Reads and flips through the cards in the presenter view. Never sees the title-bar Notes or the Slide Deck. |
-| **Viewer**      | The same as a Participant: presenting is every role's, changing the deck is an Editor's.          |
+| **Viewer**      | The same as a Participant: presenting is every role's, changing the deck is an Editor's.                   |
 
 The deck is document metadata saved through the document's PUT, which is `gateEdit`; nothing new reaches the server.
 

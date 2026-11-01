@@ -133,7 +133,7 @@ export function writePptx(deck: PptxDeck, when: Date = new Date()): Uint8Array<A
     slide.items.forEach((item, at) => {
       if (item.kind === 'picture') pictureRids.set(at, image(item.png));
     });
-    if (slide.notes) {
+    if (slide.notes?.length) {
       const notesPath = `ppt/notesSlides/notesSlide${n}.xml`;
       rels.push({
         id: `rId${rels.length + 1}`,

@@ -6,38 +6,38 @@ Derived from [Speaker note cards](../speaker-note-cards.md). The model is pure a
 
 ## Domain and naming
 
-| Term                 | Identifier                                                                                   |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| note card            | `NoteCard` `{ id, text }`, `packages/document/src/slide-notes.ts`                            |
-| a slide's cards      | `Slide.noteCards`; read with `slideNoteCards(slide)` (old `notes` as one card, id `notes`)   |
-| blank                | `isBlankNoteCard(card)` (text has no non-space character)                                    |
-| cards to show        | `spokenNoteCards(slide)` (not blank, in order)                                               |
-| has notes            | `slideHasNotes(slide)` (a card not blank)                                                    |
-| mirror               | `noteCardsText(cards)` (not blank, trimmed, joined by `\n\n`)                                |
-| write                | `withNoteCards(slide, cards)` (sets `noteCards` and `notes`, or removes both when empty)     |
-| speaking time        | `noteCardSpeakingSeconds(text)`; labelled with `speakingTimeLabel` (`flashcards.ts`)         |
-| new id               | `newNoteCardId(cards)` (`c` + base-36 counter past the highest, never reused in the list)     |
-| list edits           | `apps/editor/lib/note-card-edits.ts`: `addNoteCard`, `setNoteCardText`, `moveNoteCard`, `removeNoteCard` |
-| note card list       | `NoteCardList` (`components/slide-notes/NoteCardList.tsx`), its card `NoteCardItem`          |
-| card viewer          | `PresenterNoteCards` (`components/slide-notes/PresenterNoteCards.tsx`)                       |
-| card glyph           | `NoteCardsIcon` (`components/slide-notes/NoteCardsIcon.tsx`)                                 |
-| deck verb            | `useSlideDeck().setSlideNoteCards(slideId, cards)` (replaces `setSlideNotes`)                |
-| page controls        | `PageDeckControls.slideOf(pageId).noteCards`, `PageDeckControls.setNoteCards`                |
+| Term            | Identifier                                                                                               |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| note card       | `NoteCard` `{ id, text }`, `packages/document/src/slide-notes.ts`                                        |
+| a slide's cards | `Slide.noteCards`; read with `slideNoteCards(slide)` (old `notes` as one card, id `notes`)               |
+| blank           | `isBlankNoteCard(card)` (text has no non-space character)                                                |
+| cards to show   | `spokenNoteCards(slide)` (not blank, in order)                                                           |
+| has notes       | `slideHasNotes(slide)` (a card not blank)                                                                |
+| mirror          | `noteCardsText(cards)` (not blank, trimmed, joined by `\n\n`)                                            |
+| write           | `withNoteCards(slide, cards)` (sets `noteCards` and `notes`, or removes both when empty)                 |
+| speaking time   | `noteCardSpeakingSeconds(text)`; labelled with `speakingTimeLabel` (`flashcards.ts`)                     |
+| new id          | `newNoteCardId(cards)` (`c` + base-36 counter past the highest, never reused in the list)                |
+| list edits      | `apps/editor/lib/note-card-edits.ts`: `addNoteCard`, `setNoteCardText`, `moveNoteCard`, `removeNoteCard` |
+| note card list  | `NoteCardList` (`components/slide-notes/NoteCardList.tsx`), its card `NoteCardItem`                      |
+| card viewer     | `PresenterNoteCards` (`components/slide-notes/PresenterNoteCards.tsx`)                                   |
+| card glyph      | `NoteCardsIcon` (`components/slide-notes/NoteCardsIcon.tsx`)                                             |
+| deck verb       | `useSlideDeck().setSlideNoteCards(slideId, cards)` (replaces `setSlideNotes`)                            |
+| page controls   | `PageDeckControls.slideOf(pageId).noteCards`, `PageDeckControls.setNoteCards`                            |
 
 ## Constants and configuration
 
-| Constant                  | Value  | Where                    | Why / safe range                                                               |
-| ------------------------- | ------ | ------------------------ | ------------------------------------------------------------------------------ |
-| `NOTE_CARDS_MAX`          | 20     | `slide-notes.ts`         | A long slide's talking points; 10 to 50. Bounds the list and the deck's size    |
-| `NOTE_CARD_TEXT_MAX`      | 1000   | `slide-notes.ts`         | About 170 words, over a minute spoken; 400 to 4000. Typing only (`maxLength`)   |
-| `NOTE_CARD_COUNTER_FROM`  | 800    | `NoteCardItem.tsx`       | The counter shows from here (80 % of the cap)                                   |
-| `NOTE_CARD_PREVIEW_LINES` | 6      | `NoteCardItem.tsx`       | A closed card's text, then faded                                                |
-| `NOTE_CARD_EDIT_LINES`    | 12     | `NoteCardItem.tsx`       | The open box grows to this many lines, then scrolls                             |
-| `NOTE_CARD_UNDO_MS`       | 6000   | `NoteCardList.tsx`       | Long enough to notice and press Undo                                            |
-| `VIEWER_STACK_MAX`        | 3      | `PresenterNoteCards.tsx` | Sheets behind the card in front; uses `FLASHCARD_STACK_STEP_Y` / `_INSET_X`      |
-| `VIEWER_DOTS_MAX`         | 10     | `PresenterNoteCards.tsx` | Dots between the buttons; more and "Card n of m" says enough                    |
-| `NOTES_POPOVER_WIDTH`     | 360    | `PageNotesButton.tsx`    | Room for a card's line at 13 px                                                 |
-| flip                      | 420 ms | `FLASHCARD_FLIP_MS`      | Shared with flashcards                                                          |
+| Constant                  | Value  | Where                    | Why / safe range                                                              |
+| ------------------------- | ------ | ------------------------ | ----------------------------------------------------------------------------- |
+| `NOTE_CARDS_MAX`          | 20     | `slide-notes.ts`         | A long slide's talking points; 10 to 50. Bounds the list and the deck's size  |
+| `NOTE_CARD_TEXT_MAX`      | 1000   | `slide-notes.ts`         | About 170 words, over a minute spoken; 400 to 4000. Typing only (`maxLength`) |
+| `NOTE_CARD_COUNTER_FROM`  | 800    | `NoteCardItem.tsx`       | The counter shows from here (80 % of the cap)                                 |
+| `NOTE_CARD_PREVIEW_LINES` | 6      | `NoteCardItem.tsx`       | A closed card's text, then faded                                              |
+| `NOTE_CARD_EDIT_LINES`    | 12     | `NoteCardItem.tsx`       | The open box grows to this many lines, then scrolls                           |
+| `NOTE_CARD_UNDO_MS`       | 6000   | `NoteCardList.tsx`       | Long enough to notice and press Undo                                          |
+| `VIEWER_STACK_MAX`        | 3      | `PresenterNoteCards.tsx` | Sheets behind the card in front; uses `FLASHCARD_STACK_STEP_Y` / `_INSET_X`   |
+| `VIEWER_DOTS_MAX`         | 10     | `PresenterNoteCards.tsx` | Dots between the buttons; more and "Card n of m" says enough                  |
+| `NOTES_POPOVER_WIDTH`     | 360    | `PageNotesButton.tsx`    | Room for a card's line at 13 px                                               |
+| flip                      | 420 ms | `FLASHCARD_FLIP_MS`      | Shared with flashcards                                                        |
 
 ## Data and persistence
 
@@ -74,10 +74,16 @@ export function newNoteCardId(cards: readonly NoteCard[]): string;
 export function noteCardSpeakingSeconds(text: string): number;
 
 // apps/editor/lib/note-card-edits.ts (all pure; the same array back when nothing changes)
-export function addNoteCard(cards, afterIndex: number | null): { cards: NoteCard[]; id: string } | null; // null at NOTE_CARDS_MAX
+export function addNoteCard(
+  cards,
+  afterIndex: number | null,
+): { cards: NoteCard[]; id: string } | null; // null at NOTE_CARDS_MAX
 export function setNoteCardText(cards, id, text): NoteCard[];
 export function moveNoteCard(cards, from: number, to: number): NoteCard[];
-export function removeNoteCard(cards, id): { cards: NoteCard[]; removed: { card: NoteCard; index: number } | null };
+export function removeNoteCard(
+  cards,
+  id,
+): { cards: NoteCard[]; removed: { card: NoteCard; index: number } | null };
 export function restoreNoteCard(cards, removed): NoteCard[]; // back at its index (clamped), unless full or present
 ```
 
@@ -125,17 +131,17 @@ card, each line a run joined by `<a:br/>`.
 
 ## Errors and edge cases
 
-| Case                                              | Handling                                                         |
-| ------------------------------------------------- | ---------------------------------------------------------------- |
-| Stored `noteCards` not an array / bad entries     | Field or entries dropped at parse; slide kept                    |
-| More than 20 stored                               | First 20 read                                                    |
-| Old note longer than 1000 chars                   | Kept whole; the box allows deleting, not adding (`maxLength`)    |
-| Add at 20 cards                                   | `addNoteCard` returns null; button disabled with its tooltip     |
-| A card removed by a collaborator while open       | `openId` no longer in the list: nothing open                     |
-| Undo after the list filled up                     | `restoreNoteCard` returns the list unchanged                     |
-| Presenter on a slide whose cards are all blank    | No notes button; the viewer hidden                               |
-| Presenter `cardAt` past the end after an edit     | Clamped to the last card                                         |
-| Read-only session                                 | No `deck` controls, no panel notes; the viewer still shows        |
+| Case                                           | Handling                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------- |
+| Stored `noteCards` not an array / bad entries  | Field or entries dropped at parse; slide kept                 |
+| More than 20 stored                            | First 20 read                                                 |
+| Old note longer than 1000 chars                | Kept whole; the box allows deleting, not adding (`maxLength`) |
+| Add at 20 cards                                | `addNoteCard` returns null; button disabled with its tooltip  |
+| A card removed by a collaborator while open    | `openId` no longer in the list: nothing open                  |
+| Undo after the list filled up                  | `restoreNoteCard` returns the list unchanged                  |
+| Presenter on a slide whose cards are all blank | No notes button; the viewer hidden                            |
+| Presenter `cardAt` past the end after an edit  | Clamped to the last card                                      |
+| Read-only session                              | No `deck` controls, no panel notes; the viewer still shows    |
 
 ## Security and trust
 
@@ -172,17 +178,17 @@ cards, one point each. You flip through them while you present.", "Add First Car
 
 ## Testing
 
-| Rule                                                    | Test                                                        |
-| ------------------------------------------------------- | ----------------------------------------------------------- |
-| Parse, read old notes, mirror, limits                   | `packages/document/src/slide-notes.test.ts`                 |
-| List edits                                              | `apps/editor/lib/note-card-edits.test.ts`                   |
-| The list: empty state, add, open one at a time, blank removed, keys, reorder, remove and undo, limit | `components/slide-notes/NoteCardList.test.tsx` |
-| Title-bar button names, popover, phone sheet            | `components/canvas/PageNotesButton.test.tsx`                |
-| Presenter viewer: buttons, dots, keys, live region, stays open across slides | `components/slide-notes/PresenterNoteCards.test.tsx`, `PresentationOverlay.test.tsx` |
-| Export one paragraph a card; summary counts             | `lib/office-export/pptx.test.ts`, `ExportTabDialog.office.test.tsx` |
-| Import as one card                                      | `packages/document/src/slide-deck-pages.test.ts`            |
-| Community drops cards                                   | `apps/api/src/redact-document.test.ts`                      |
-| Roles: no page controls without edit                    | `lib/page-deck-controls.test.ts`                            |
+| Rule                                                                                                 | Test                                                                                 |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Parse, read old notes, mirror, limits                                                                | `packages/document/src/slide-notes.test.ts`                                          |
+| List edits                                                                                           | `apps/editor/lib/note-card-edits.test.ts`                                            |
+| The list: empty state, add, open one at a time, blank removed, keys, reorder, remove and undo, limit | `components/slide-notes/NoteCardList.test.tsx`                                       |
+| Title-bar button names, popover, phone sheet                                                         | `components/canvas/PageNotesButton.test.tsx`                                         |
+| Presenter viewer: buttons, dots, keys, live region, stays open across slides                         | `components/slide-notes/PresenterNoteCards.test.tsx`, `PresentationOverlay.test.tsx` |
+| Export one paragraph a card; summary counts                                                          | `lib/office-export/pptx.test.ts`, `ExportTabDialog.office.test.tsx`                  |
+| Import as one card                                                                                   | `packages/document/src/slide-deck-pages.test.ts`                                     |
+| Community drops cards                                                                                | `apps/api/src/redact-document.test.ts`                                               |
+| Roles: no page controls without edit                                                                 | `lib/page-deck-controls.test.ts`                                                     |
 
 ## Defaults ledger
 

@@ -2,16 +2,15 @@
 
 // A slide page's speaker notes, in its title bar once the page is in the slide deck
 // (docs/specs/007-editor/pages-mode.md "Slides"): Add Notes while the slide has none, Notes
-// (pressed) once it has. A popover holds the slide's notes, the same notes the Slide Deck panel
-// writes and the presenter view shows: they belong to the deck's slide, not to the page.
-import { useRef } from 'react';
-import { lucideFileText } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@livedocuments/ui';
+// (pressed) once it has. A popover (a bottom sheet on a phone) holds the slide's note cards
+// (docs/specs/012-collaboration/speaker-note-cards.md), the same cards the Slide Deck panel writes
+// and the presenter view flips through: they belong to the deck's slide, not to the page.
+import { slideHasNotes } from '@livedocuments/document';
 import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
 import { track } from '@/lib/telemetry';
+import { NoteCardList } from '@/components/slide-notes/NoteCardList';
+import { NoteCardsIcon } from '@/components/slide-notes/NoteCardsIcon';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
-
-const NotesIcon = lucideGlyph(lucideFileText, 14);
 
 const ADD_NOTES = 'Add Notes';
 export const NOTES = 'Notes';
@@ -20,52 +19,12 @@ export const NOTES = 'Notes';
 // truncates first.
 const NOTES_ROOM = 28;
 const NOTES_LABELLED_ROOM = 88;
-const POPOVER_WIDTH = 320;
+// Room for a card's line at 13 px (blueprint NOTES_POPOVER_WIDTH).
+const POPOVER_WIDTH = 360;
 
 /** The room the button takes in the title bar: named on a desktop, its icon alone on a phone. */
 export function pageNotesRoom(labelled: boolean): number {
   return labelled ? NOTES_LABELLED_ROOM : NOTES_ROOM;
-}
-
-function NotesBody({
-  slideId,
-  notes,
-  deck,
-}: {
-  slideId: string;
-  notes: string;
-  deck: PageDeckControls;
-}) {
-  // One 'notes were written' event per opening, on the first keystroke, as the panel counts them.
-  const tracked = useRef(false);
-  return (
-    <label className="flex flex-col gap-1.5" data-page-notes-popover="">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        Speaker Notes
-      </span>
-      <textarea
-        value={notes}
-        autoFocus
-        rows={6}
-        onChange={(e) => {
-          if (!tracked.current) {
-            tracked.current = true;
-            track('UI', 'Changed', 'SlideNotes');
-          }
-          deck.setNotes(slideId, e.target.value);
-        }}
-        // Typing is the notes', never the editor's shortcuts.
-        onKeyDown={(e) => {
-          if (e.key !== 'Escape') e.stopPropagation();
-        }}
-        placeholder="What you'll say over this slide…"
-        className="w-full resize-y rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs leading-snug text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-      />
-      <span className="text-[11px] text-slate-500 dark:text-slate-400">
-        Shown to you in the presenter view; never on the slide.
-      </span>
-    </label>
-  );
 }
 
 export function PageNotesButton({
@@ -80,7 +39,7 @@ export function PageNotesButton({
 }) {
   const slide = deck.slideOf(pageId);
   if (!slide) return null;
-  const has = slide.notes.trim().length > 0;
+  const has = slideHasNotes(slide);
   return (
     <div
       className="pointer-events-auto flex items-center"
@@ -92,11 +51,21 @@ export function PageNotesButton({
         on={has}
         labelled={labelled}
         className={titleButtonClass}
-        icon={<NotesIcon />}
+        icon={<NoteCardsIcon />}
         width={POPOVER_WIDTH}
         onOpen={() => track('UI', 'Opened', 'PageNotesButton')}
       >
-        <NotesBody slideId={slide.id} notes={slide.notes} deck={deck} />
+        <div className="flex flex-col gap-2 px-4 sm:px-0" data-page-notes-popover="">
+          {/* Keyed by the slide, so another slide's list never inherits this one's open card. */}
+          <NoteCardList
+            key={slide.id}
+            cards={slide.noteCards}
+            onChange={(cards) => deck.setNoteCards(slide.id, cards)}
+          />
+          <span className="px-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+            Shown to you in the presenter view; never on the slide.
+          </span>
+        </div>
       </TitlePopoverButton>
     </div>
   );

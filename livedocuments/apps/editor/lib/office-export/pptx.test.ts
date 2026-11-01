@@ -292,31 +292,39 @@ describe('PowerPoint export', () => {
     ).rejects.toThrow('cancelled');
   });
 
-  it('writes every slide’s notes as their own lines, in a notes slide that names its slide', async () => {
-    const xml = new TextDecoder().decode(
-      writePptx({
-        title: 'A & B',
-        cx: 12_192_000,
-        cy: 6_858_000,
-        slides: [
-          {
-            background: null,
-            items: [
-              {
-                kind: 'picture',
-                name: 'P',
-                box: { x: 0, y: 0, cx: 10, cy: 10 },
-                png: ONE_PIXEL_PNG,
-              },
-            ],
-            notes: 'One\n\nThree <b>',
-          },
-        ],
-      }),
-    );
+  it('writes a slide’s note cards a paragraph each, in a notes slide that names its slide', async () => {
+    const bytes = writePptx({
+      title: 'A & B',
+      cx: 12_192_000,
+      cy: 6_858_000,
+      slides: [
+        {
+          background: null,
+          items: [
+            {
+              kind: 'picture',
+              name: 'P',
+              box: { x: 0, y: 0, cx: 10, cy: 10 },
+              png: ONE_PIXEL_PNG,
+            },
+          ],
+          notes: ['One', 'Three <b>\nand a second line'],
+        },
+      ],
+    });
+    const xml = new TextDecoder().decode(bytes);
     expect(xml).toContain('<dc:title>A &amp; B</dc:title>');
     expect(xml).toContain('<a:t>Three &lt;b&gt;</a:t>');
     expect(xml).toContain('../notesSlides/notesSlide1.xml');
+    // docs/specs/012-collaboration/speaker-note-cards.md "PowerPoint": a card is one paragraph, its line break a
+    // break inside it.
+    // The zip reader names parts in lower case.
+    const notes = (await everyPart(bytes)).get('ppt/notesslides/notesslide1.xml')!;
+    expect(notes.match(/<a:p>/g)).toHaveLength(2);
+    expect(notes).toContain('<a:t>Three &lt;b&gt;</a:t></a:r><a:br>');
+    // The import reads the page back as one card's text.
+    const read = await readPptx(await openOfficePackage(bytes, 'powerpoint'));
+    expect(read.slides[0]!.notes).toBe('One\nThree <b>\nand a second line');
   });
 
   it('stores a background every slide shares once, a JPEG as a JPEG', async () => {
