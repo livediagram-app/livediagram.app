@@ -107,6 +107,7 @@ export function TableView({
     index: number;
     x: number;
     y: number;
+    trigger?: HTMLElement | null;
   } | null>(null);
   // On desktop the column / row ⋯ trigger only shows while hovering
   // that column / row; on touch (no hover) they stay visible.
@@ -297,12 +298,15 @@ export function TableView({
   });
 
   const toggle = (axis: 'col' | 'row', index: number, e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    const trigger = e.currentTarget as HTMLElement;
+    const rect = trigger.getBoundingClientRect();
     const anchor =
       axis === 'col'
         ? { x: rect.left + rect.width / 2, y: rect.bottom + 4 }
         : { x: rect.right + 4, y: rect.top + rect.height / 2 };
-    setMenu((m) => (m && m.axis === axis && m.index === index ? null : { axis, index, ...anchor }));
+    setMenu((m) =>
+      m && m.axis === axis && m.index === index ? null : { axis, index, ...anchor, trigger },
+    );
   };
 
   // Drag the right divider of column c to pin its width; other columns
@@ -452,6 +456,7 @@ export function TableView({
           addRow={addRow}
           moveRow={moveRow}
           delRow={delRow}
+          onClose={() => setMenu(null)}
         />
       ) : null}
       {cellMenuPos && selectedCell && showControls && !editing ? (
