@@ -4,7 +4,7 @@
 
 import { itemColourOf } from './item-colour';
 import { ITEM_TYPE_PATTERN } from './limits';
-import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
+import { readBoardWidgets, type BoardWidgetId } from './board-widgets';
 import type { CardSearchFilter } from './card-search';
 import { readSavedFilters, type SavedBoardFilter } from './saved-filters';
 import { statusTitleCase } from './status-title-case';
@@ -170,7 +170,7 @@ export interface PlanBoardSetup {
   // and the palette add only these, and cards of other types are hidden on it (never moved). Absent is every type.
   addTypes?: string[];
   // The header's widgets in order (docs/specs/026-plan/board-widgets.md); absent is the default set.
-  widgets?: BoardWidgetKind[];
+  widgets?: BoardWidgetId[];
   hideWriting: boolean;
   // Fill Tab (docs/specs/026-plan/plan-board.md "Fill Tab"): the board fills its tab for everyone, every time the tab
   // is shown, and the rest of the canvas cannot be used. Absent is off.

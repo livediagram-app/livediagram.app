@@ -98,3 +98,33 @@ describe('ToolbarExplorerButton', () => {
     ).not.toBeNull();
   });
 });
+
+// docs/specs/007-editor/pages-mode.md "Joined to the menu box": heading the docked Contents sidebar, the box drops its
+// own frame and reaches across the sidebar; its button and name stay as they are.
+describe('the menu box joined to the Contents sidebar', () => {
+  const card = () => document.querySelector<HTMLElement>('[data-toolbar-menu]')!;
+
+  it('is its usual card unjoined', () => {
+    render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
+    expect(card().hasAttribute('data-menu-joined')).toBe(false);
+    expect(card().style.width).toBe('');
+    expect(card().className.split(' ')).not.toContain('border-transparent!');
+  });
+
+  it('joined, drops its frame and spans the sidebar less the strip’s gap, at the toolbar’s scale', () => {
+    act(() => setActiveTabName('Chapter One'));
+    render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} joinedWidth={236} />);
+    expect(card().hasAttribute('data-menu-joined')).toBe(true);
+    expect(card().className.split(' ')).toContain('border-transparent!');
+    expect(card().className.split(' ')).toContain('bg-transparent!');
+    expect(card().style.width).toBe('216px');
+    // The button and the name are as ever.
+    expect(screen.getByRole('button', { name: 'Explorer' }).className).toContain('h-9 w-9');
+    expect(document.querySelector('[data-tab-name-in-box]')?.textContent).toBe('Chapter One');
+  });
+
+  it('never joins inline in the strip’s row', () => {
+    render(<ToolbarExplorerButton open={false} inline onToggle={vi.fn()} joinedWidth={236} />);
+    expect(card().hasAttribute('data-menu-joined')).toBe(false);
+  });
+});

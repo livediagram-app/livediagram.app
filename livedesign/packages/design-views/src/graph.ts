@@ -6,6 +6,7 @@ import { LABEL_CUT_CHARS } from './constants';
 import { edgeJson, endText, type ViewEdge } from './edges';
 import { textField } from './fields';
 import { headerLine, viewHeader } from './header';
+import { instanceSummaryOf } from './instance-summary';
 import type { ViewModel } from './model';
 import { jsonString } from './text';
 import { depthFirst, type ViewNode } from './tree';
@@ -28,8 +29,10 @@ export function graphView(model: ViewModel, options: GraphOptions = {}): ViewRes
   const connected = new Set(model.edges.all.flatMap((edge) => pinnedIds(edge.arrow)));
   const all = depthFirst(model.tree.roots);
   const nodes = all.filter((node) => connected.has(node.el.id));
-  const nodeLine = (node: ViewNode) =>
-    `${model.kindOf(node.el)} ${model.refs.refOf(node.el.id)}${labelText(textField(node.el, 'label'))}`;
+  const nodeLine = (node: ViewNode) => {
+    const instance = instanceSummaryOf(node.el, model.componentOf);
+    return `${model.kindOf(node.el)} ${model.refs.refOf(node.el.id)}${labelText(textField(node.el, 'label'))}${instance === null ? '' : ` ${instance}`}`;
+  };
   const lines: ViewLine[] = [
     ...nodes.map((node) => ({ text: nodeLine(node), noun: NODE })),
     ...(nodes.length > 0 && model.edges.all.length > 0 ? [{ text: '' }] : []),

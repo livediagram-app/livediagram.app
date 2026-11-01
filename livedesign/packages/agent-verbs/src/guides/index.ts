@@ -55,7 +55,10 @@ Or one operation a command; its words are the operation's, and connect needs no 
   livedesign element set "Auth flow" n3 label="Sign in"
   livedesign element connect "Auth flow" n3 n7 label=retry
 
-Operations: add set rm move connect rewire insert wrap unwrap order layout test.
+Operations: add set rm move connect rewire insert wrap unwrap order layout test detach.
+Components: component ls lists the mains; add instance componentId=<id> places one (its main's
+size unless given); componentOverrides= changes one copy; component make <refs…> turns
+elements into a main; component set changes a main; element detach makes an instance plain.
 Select by ref (n3), "label", type:sticky, in:f2, n3->n4, downstream:n3.
 Place an add or a move with right-of:n3, left-of:n3, above:n3, below:n3, after:n3 or inside:f2.
 Values with spaces are quoted: label="Sign in". key= unsets a field.

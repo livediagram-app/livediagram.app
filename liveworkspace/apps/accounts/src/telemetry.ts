@@ -32,6 +32,7 @@ export type TelemetryEnv = Pick<
   | 'TELEMETRY_KEY_LIVEPLANNER'
   | 'TELEMETRY_KEY_LIVEDOCUMENTS'
   | 'TELEMETRY_KEY_LIVEDESIGN'
+  | 'TELEMETRY_KEY_LIVEHUDDLE'
 >;
 
 // Each app's key, named per app as the telemetry Worker names them.
@@ -40,6 +41,7 @@ const KEYS: Record<SettingsApp, keyof TelemetryEnv> = {
   'liveplanner.app': 'TELEMETRY_KEY_LIVEPLANNER',
   'livedocuments.app': 'TELEMETRY_KEY_LIVEDOCUMENTS',
   'livedesign.app': 'TELEMETRY_KEY_LIVEDESIGN',
+  'livehuddle.app': 'TELEMETRY_KEY_LIVEHUDDLE',
 };
 
 type WireEvent = { category: string; action: string; type?: string };

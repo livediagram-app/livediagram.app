@@ -4,9 +4,14 @@
 // shapes down with it. They are render-free and unit-tested now; everything
 // that genuinely needs a rasteriser lives here.
 
-import { embedTabImages } from '@livedesign/api-schema';
+import { embedTabImages, type ComponentsResponse } from '@livedesign/api-schema';
 import {
+  componentRefIds,
+  expandInstances,
   exportFontIds,
+  isValidDesignComponent,
+  libraryLookup,
+  libraryOf,
   renderPageToSvg,
   renderPagesToSvg,
   type LaidOutPage,
@@ -78,14 +83,41 @@ const previewBlocks = (image: ImageBlock, leftOut: number): (TextBlock | ImageBl
   leftOut > 0 ? [{ type: 'text', text: previewLeftOutNote(leftOut, 'design') }, image] : [image];
 const NO_IMAGES: ImageResolver = { leftOut: 0 };
 
+// What a preview needs to fetch with: the caller's token, and the design for its component mains.
+type PreviewAuth = { env: Env; token: string; designId?: string };
+
+// The tab with every instance drawn as its main (docs/specs/015-api/mcp-server.md §4.9e "Previews"): the design's
+// mains read once, only when the tab holds an instance. Any failure draws the instances as the renderer's
+// placeholder rather than failing the tool.
+export async function withMains(tab: Tab, auth?: PreviewAuth): Promise<Tab> {
+  if (!auth?.designId || componentRefIds(tab.elements).length === 0) return tab;
+  try {
+    const res = await apiFetch(
+      auth.env,
+      auth.token,
+      `/designs/${encodeURIComponent(auth.designId)}/components`,
+    );
+    if (!res.ok) return tab;
+    const { components } = (await res.json()) as ComponentsResponse;
+    return expandInstances(
+      tab,
+      libraryLookup(libraryOf(components.filter(isValidDesignComponent))),
+    );
+  } catch (err) {
+    console.warn('[mcp] preview mains unavailable', { error: String(err) });
+    return tab;
+  }
+}
+
 // A PNG preview of the tab, its images and icons resolved as the editor draws them, after a note when some pictures
 // were left out for the budget.
 export async function tabPreview(
-  tab: Tab,
-  auth?: { env: Env; token: string },
+  given: Tab,
+  auth?: PreviewAuth,
   // One page of the tab to draw alone (read_design's `page`); every page when absent.
   page?: LaidOutPage,
 ): Promise<(TextBlock | ImageBlock)[]> {
+  const tab = await withMains(given, auth);
   // A tab draws as its pages (svg-render-pages.ts), as the editor exports them. Its pictures and its faces are
   // fetched together rather than one after another.
   const [{ resolveImageHref, leftOut }, fonts, emoji] = await Promise.all([
@@ -126,7 +158,7 @@ function usesItalic(elements: Tab['elements']): boolean {
 export async function imageResult(
   value: StructuredValue,
   tab: Tab,
-  auth?: { env: Env; token: string },
+  auth?: PreviewAuth,
   notes: readonly string[] = [],
 ): Promise<ToolResult> {
   // The structured result (and its text form) first, then the notes, then the preview.

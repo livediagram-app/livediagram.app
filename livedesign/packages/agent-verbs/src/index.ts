@@ -57,3 +57,4 @@ export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
 export { apiRefusalOf, deleteRefusal } from './api-refusal';
 export * from './pages';
 export * from './images';
+export * from './components';

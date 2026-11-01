@@ -28,6 +28,7 @@ import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends'
 import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
 import { parseStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { shapeValidationIssue } from './validate-shape';
+import { MEMBER_FIELD_CHECKS } from './component-fields';
 import {
   FONT_WEIGHTS,
   isFontWeight,
@@ -122,6 +123,8 @@ export const SHAPE_KINDS = new Set<string>([
   'site-header',
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the design drawn inside it.
   'tab-window',
+  // Instance (docs/specs/009-elements/components.md): one element drawing a main of the component library.
+  'instance',
   'stadium',
   'cloud',
   'triangle',
@@ -177,6 +180,8 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: isElementKey,
     rule: `a string of at most ${ELEMENT_KEY_MAX} characters`,
   })),
+  // An edit session's member (docs/specs/009-elements/components.md "Editing the main").
+  ...MEMBER_FIELD_CHECKS,
   // A Participant's adder key (docs/specs/013-workspace/share-roles.md), stamped by the server.
   {
     field: 'addedBy',

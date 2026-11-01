@@ -1,7 +1,12 @@
 // The Boards and Cards tiles' glyphs (docs/specs/026-plan/plan-mode.md "The palette"): a board drawn
 // as a picture of its kind, and a card drawn with its item type's colour stripe and glyph, at the tile size.
 import { Glyph } from '@liveplanner/ui';
-import { planGlyphPath, type BoardWidgetKind, type CardSize } from '@liveplanner/items';
+import {
+  planGlyphPath,
+  type BoardWidgetKind,
+  type CardSize,
+  type FieldWidgetView,
+} from '@liveplanner/items';
 import { accentVars } from './plan-palette';
 
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/026-plan/
@@ -253,6 +258,68 @@ export function BoardWidgetArt({ kind, size = 18 }: { kind: BoardWidgetKind; siz
   return (
     <Glyph size={size} units={22}>
       {WIDGET_ART[kind]}
+    </Glyph>
+  );
+}
+
+// A picture per field widget view (docs/specs/026-plan/board-widgets.md "Field widgets"), on the same grid.
+const FIELD_VIEW_ART: Record<FieldWidgetView, React.ReactNode> = {
+  // A sigma: the values added up.
+  sum: <path d="M16 5H6l5.5 6L6 17h10" />,
+  // Bars with a line across at their mean.
+  average: <path d="M5 18v-6M9.5 18V8M14 18v-8M18.5 18v-4M3 11h17" />,
+  // A span with its ends marked.
+  range: <path d="M4 7v8M18 7v8M4 11h14" />,
+  // A histogram, high in the middle.
+  spread: <path d="M3.5 18h15M5 18v-3M8 18v-6M11 18V6M14 18v-7M17 18v-4" />,
+  stars: (
+    <path d="m11 3.5 2.3 4.7 5.2.75-3.75 3.65.9 5.15L11 15.3l-4.65 2.45.9-5.15L3.5 8.95l5.2-.75z" />
+  ),
+  // One bar split in three.
+  breakdown: (
+    <>
+      <rect x="2.5" y="8" width="17" height="6" rx="3" />
+      <path d="M9 8v6M14.5 8v6" />
+    </>
+  ),
+  // A ring with a slice out.
+  donut: (
+    <>
+      <path d="M11 3.5a7.5 7.5 0 1 0 7.5 7.5" />
+      <path d="M14 3.9A7.5 7.5 0 0 1 18.1 8" />
+      <circle cx="11" cy="11" r="3" />
+    </>
+  ),
+  ticked: (
+    <>
+      <circle cx="11" cy="11" r="7.5" />
+      <path d="m7.5 11.25 2.5 2.5 4.5-5" />
+    </>
+  ),
+  upcoming: (
+    <>
+      <rect x="3.5" y="5" width="15" height="13.5" rx="2" />
+      <path d="M3.5 9.5h15M7.5 3v4M14.5 3v4" />
+      <circle cx="14" cy="14" r="1.25" />
+    </>
+  ),
+  // Bars along a line of weeks.
+  timeline: <path d="M3 18h16M5.5 18v-2M9 18v-5M12.5 18v-8M16 18v-4M3 5h16" />,
+};
+
+export function FieldWidgetArt({ view, size = 18 }: { view: FieldWidgetView; size?: number }) {
+  return (
+    <Glyph size={size} units={22}>
+      {FIELD_VIEW_ART[view]}
+    </Glyph>
+  );
+}
+
+// A four-point spark: the widget gallery's For You.
+export function SparkArt({ size = 14 }: { size?: number }) {
+  return (
+    <Glyph size={size} units={22}>
+      <path d="M11 3c.6 4.4 3.6 7.4 8 8-4.4.6-7.4 3.6-8 8-.6-4.4-3.6-7.4-8-8 4.4-.6 7.4-3.6 8-8z" />
     </Glyph>
   );
 }

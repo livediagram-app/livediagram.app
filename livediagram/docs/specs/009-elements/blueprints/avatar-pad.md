@@ -6,34 +6,34 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                            | Role                                                                            |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `packages/document/src/avatar-palette.ts`                       | `AVATAR_PALETTE`: the sprite's tones, shared by the sprite and the pad          |
-| `packages/document/src/avatar-pad.ts`                           | Grid, tones, `AVATAR_PAD_PARTS`, `avatarPadArtRect`, `avatarPadCore`, footprint |
-| `packages/document/src/shape-kind.ts`, `validate.ts`            | `'avatar-pad'` in `ShapeKind` and `SHAPE_KINDS`                                 |
-| `packages/document/src/shape-factory.ts`                        | 128 x 80, `label: ''`, `aspectLocked: true`                                     |
-| `packages/document/src/office.ts`                               | `isFloorShape('avatar-pad')`: added behind, painted with the floors             |
-| `packages/document/src/behaviour-shapes.ts`                     | In `BEHAVIOUR_SHAPES`; no shared settings `…`                                   |
-| `packages/document/src/data-shapes.ts`, `element-types.ts`      | Self-drawing, untyped: no label, no caret                                       |
-| `packages/document/src/colors.ts`                               | Transparent skin; in `SELF_PAINTING_SHAPES`                                     |
-| `packages/document/src/animation-membership.ts`                 | Wordless                                                                        |
-| `packages/document/src/svg-render-faces.ts`                     | `avatarPadArt`: the export pixels                                               |
-| `apps/editor/components/canvas/avatar-sprite-palette.ts`          | Re-exports the sprite tones from `AVATAR_PALETTE`                               |
+| File                                                              | Role                                                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `../packages/avatar/src/palette.ts`                               | `AVATAR_PALETTE`: the sprite's tones, shared by the sprite and the pad          |
+| `../packages/avatar/src/pad-art.ts`                               | Grid, tones, `AVATAR_PAD_PARTS`, `avatarPadArtRect`, `avatarPadCore`, footprint |
+| `packages/document/src/shape-kind.ts`, `validate.ts`              | `'avatar-pad'` in `ShapeKind` and `SHAPE_KINDS`                                 |
+| `packages/document/src/shape-factory.ts`                          | 128 x 80, `label: ''`, `aspectLocked: true`                                     |
+| `packages/document/src/office.ts`                                 | `isFloorShape('avatar-pad')`: added behind, painted with the floors             |
+| `packages/document/src/behaviour-shapes.ts`                       | In `BEHAVIOUR_SHAPES`; no shared settings `…`                                   |
+| `packages/document/src/data-shapes.ts`, `element-types.ts`        | Self-drawing, untyped: no label, no caret                                       |
+| `packages/document/src/colors.ts`                                 | Transparent skin; in `SELF_PAINTING_SHAPES`                                     |
+| `packages/document/src/animation-membership.ts`                   | Wordless                                                                        |
+| `packages/document/src/svg-render-faces.ts`                       | `avatarPadArt`: the export pixels                                               |
+| `../packages/avatar/src/components/avatar-sprite-palette.ts`      | Re-exports the sprite tones from `AVATAR_PALETTE`                               |
 | `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas pixels; the shimmering lights group                                  |
 | `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                          |
 | `apps/editor/components/canvas/shape-svg-overlay.tsx`             | Not an SVG-overlay shape                                                        |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                            |
-| `apps/editor/lib/avatar-pad.ts`                                   | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants           |
-| `apps/editor/hooks/canvas/useAvatarWalk.ts`                       | Entry order: pad, button, remembered spot, view centre; camera; telemetry       |
-| `apps/editor/hooks/canvas/useAvatarPadArrivals.ts`                | Arrivals from presence: own and peers'                                          |
-| `apps/editor/components/canvas/AvatarPadArrivals.tsx`             | The beam, floor flash and sparks                                                |
+| `../packages/avatar/src/pad.ts`                                   | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants           |
+| `../packages/avatar/src/hooks/useAvatarWalk.ts`                   | Entry order: pad, button, remembered spot, view centre; camera; telemetry       |
+| `../packages/avatar/src/hooks/useAvatarPadArrivals.ts`            | Arrivals from presence: own and peers'                                          |
+| `../packages/avatar/src/components/AvatarPadArrivals.tsx`         | The beam, floor flash and sparks                                                |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`, `Canvas.tsx` | Compose the arrivals; draw them over the characters                             |
 | `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion               |
 | `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Navigate** (`tileGroup: 'move'`)                        |
 | `apps/editor/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                                 |
 | `apps/editor/components/palette/canvas-tool-options.tsx`          | `BOARD_ONLY_TOOLS`: Avatar listed only while in force                           |
 | `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                        |
-| `packages/api-schema/src/telemetry-schema.ts`                   | `Avatar-pad` element type token                                                 |
+| `packages/api-schema/src/telemetry-schema.ts`                     | `Avatar-pad` element type token                                                 |
 
 ## Domain and naming
 
@@ -80,7 +80,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/avatar-pad.ts
+// ../packages/avatar/src/pad-art.ts
 export const AVATAR_PAD_GRID = { width: 32, height: 20 } as const;
 export const AVATAR_PAD_DEFAULT_SIZE = { width: 128, height: 80 } as const;
 export const AVATAR_PAD_TONES: {
@@ -114,7 +114,7 @@ export function avatarPadArtRect(box: { width: number; height: number }): {
 export function avatarPadCore(pad: PadBox): { x: number; y: number };
 export function avatarPadFootprint(pad: PadBox): { rx: number; ry: number };
 
-// apps/editor/lib/avatar-pad.ts
+// ../packages/avatar/src/pad.ts
 export const AVATAR_PAD_ARRIVAL_MS = 900;
 export const AVATAR_PAD_MAX_ARRIVALS = 8;
 export function avatarPads(elements: readonly Element[]): ShapeElement[];
@@ -199,13 +199,13 @@ the parts table is a few hundred array entries built once. INP: entry adds one O
 | Drawing on its grid, merged, palette, tints            | `packages/document/src/avatar-pad.test.ts`                                                     |
 | Scale whole, centred; core and footprint; rotation     | same                                                                                           |
 | Kind registration, factory, export pixels              | same                                                                                           |
-| Spawn pad: nearest, tie by layer, none, no view        | `apps/editor/lib/avatar-pad.test.ts`                                                             |
+| Spawn pad: nearest, tie by layer, none, no view        | `apps/editor/lib/avatar-pad.test.ts`                                                           |
 | Arrivals: new on a pad, not seen, cap, replace, expiry | same                                                                                           |
-| Entry order, recentre, telemetry, I1, every entry      | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                            |
-| Own and peer beams from presence, once, expiry         | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                         |
-| View pixels and shimmer group; beam placement, colour  | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                       |
+| Entry order, recentre, telemetry, I1, every entry      | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                          |
+| Own and peer beams from presence, once, expiry         | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                       |
+| View pixels and shimmer group; beam placement, colour  | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                     |
 | I5: picker, key, command                               | `canvas-tool-options.test.ts`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts` |
-| A peer walks in from a board button                    | `apps/editor/e2e/realtime-peers.spec.ts`                                                         |
+| A peer walks in from a board button                    | `apps/editor/e2e/realtime-peers.spec.ts`                                                       |
 
 ## Constants and configuration
 

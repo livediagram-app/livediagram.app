@@ -4,14 +4,14 @@ Derived from [platform.md](../platform.md). The spec decides; this file only add
 
 ## Domain and naming
 
-| Term     | Identifier                                                  | Meaning                                                                                      |
-| -------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Platform | liveworkspace                                               | The services and packages every app shares, under `liveworkspace/` and `packages/`           |
-| App      | `livediagram`, `liveplanner`, `livedocuments`, `livedesign` | A product, by its folder; its site is `<app>.app`                                            |
-| Service  | `liveworkspace/apps/<service>`                              | A platform Worker on a path of liveworkspace.app                                             |
-| Account  | `user_[A-Za-z0-9]{1,64}` (`USER_ID`)                        | A person, the same id in every app; new ones `user_` and a UUID's hex, imported ones Clerk's |
-| Guest    | `guest_` and a lower-case v4 UUID (`GUEST_ID`)              | Someone without an account, the same id in every app                                         |
-| Item     | an index row                                                | A document, project or design, whose content stays in its app                                |
+| Term     | Identifier                                                                           | Meaning                                                                                      |
+| -------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| Platform | liveworkspace                                                                        | The services and packages every app shares, under `liveworkspace/` and `packages/`           |
+| App      | `livediagram`, `liveplanner`, `livedocuments`, `livedesign` (and `livehuddle`, held) | A product, by its folder; its site is `<app>.app`                                            |
+| Service  | `liveworkspace/apps/<service>`                                                       | A platform Worker on a path of liveworkspace.app                                             |
+| Account  | `user_[A-Za-z0-9]{1,64}` (`USER_ID`)                                                 | A person, the same id in every app; new ones `user_` and a UUID's hex, imported ones Clerk's |
+| Guest    | `guest_` and a lower-case v4 UUID (`GUEST_ID`)                                       | Someone without an account, the same id in every app                                         |
+| Item     | an index row                                                                         | A document, project or design, whose content stays in its app                                |
 
 ## Behaviour and state
 

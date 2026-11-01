@@ -22,16 +22,16 @@ Workbench pairings, tickets and sessions run in this Worker too; they are bluepr
 
 ## Domain and naming
 
-| Term         | Identifier                                                                                 | Meaning                                                          |
-| ------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| Account      | `user` row, id `user_<32 hex>` (`newUserId`); any `^user_[A-Za-z0-9]{1,64}$` (`USER_ID`)   | A person; the prefix kept from Clerk, so imported ids never move |
-| Guest        | `guest_<v4 uuid>` (`GUEST_ID`), cookie `lw_guest`                                          | One guest identity across every app                              |
-| Session      | Better Auth `session`                                                                      | Signed in on liveworkspace.app                                   |
-| Access token | a JWT from `/api/auth/oauth2/token`, keys at `/api/auth/jwks`                              | What an app's server and the services check offline              |
-| API token    | `lwt_…` (`API_TOKEN_PREFIX`), legacy `lvd_…`                                               | One per integration, on every app's API and MCP                  |
-| Team         | `team`, `team_member`                                                                      | Made on liveworkspace.app, the same in every app                 |
-| Client       | an OAuth client, one per app (`oauth_client_app`)                                          | Registered with `POST /api/auth/internal/clients`                |
-| App          | `SettingsApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app` | The site id the account data is keyed by                         |
+| Term         | Identifier                                                                                                          | Meaning                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Account      | `user` row, id `user_<32 hex>` (`newUserId`); any `^user_[A-Za-z0-9]{1,64}$` (`USER_ID`)                            | A person; the prefix kept from Clerk, so imported ids never move                                                |
+| Guest        | `guest_<v4 uuid>` (`GUEST_ID`), cookie `lw_guest`                                                                   | One guest identity across every app                                                                             |
+| Session      | Better Auth `session`                                                                                               | Signed in on liveworkspace.app                                                                                  |
+| Access token | a JWT from `/api/auth/oauth2/token`, keys at `/api/auth/jwks`                                                       | What an app's server and the services check offline                                                             |
+| API token    | `lwt_…` (`API_TOKEN_PREFIX`), legacy `lvd_…`                                                                        | One per integration, on every app's API and MCP                                                                 |
+| Team         | `team`, `team_member`                                                                                               | Made on liveworkspace.app, the same in every app                                                                |
+| Client       | an OAuth client, one per app (`oauth_client_app`)                                                                   | Registered with `POST /api/auth/internal/clients`                                                               |
+| App          | `SettingsApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, `livehuddle.app` (held) | The site id the account data is keyed by (`REGISTERED_APP_SITES`; `0018_livehuddle.sql` widens every app CHECK) |
 
 ## Behaviour and state
 

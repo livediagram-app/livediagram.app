@@ -4,6 +4,7 @@
 import {
   DESIGN_VIEW_NAMES,
   INVALID_VIEW_VALUE_ERROR,
+  isDesignViewName,
   isTabViewName,
   isViewDoor,
   LINT_VIEW_NAME,
@@ -20,8 +21,9 @@ import {
 } from '@livedesign/api-schema';
 import { formatLintReport, lintTab } from '@livedesign/page-lint';
 import { lintLog } from '../changesets/lint';
-import { isKnownElement } from '@livedesign/design';
+import { componentRefIds, isKnownElement, type DesignComponent } from '@livedesign/design';
 import {
+  componentsView,
   FIND_QUERY_MAX_LENGTH,
   headerFactsOf,
   OVERVIEW_TAB_BATCH,
@@ -38,12 +40,14 @@ import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
+import { readComponents } from '../db/components';
 import { json, textPlain } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import type { DesignDTO, DesignEnv, TabDTO } from '../types';
 import type { DesignRouteContext } from './context';
 
-export type ParsedView = { request: ViewRequest; json: boolean };
+// `design` names the design view asked for on the design GET (`overview` or `components`).
+export type ParsedView = { request: ViewRequest; json: boolean; design?: DesignViewName };
 // `view=lint` (docs/specs/024-agents/page-lint.md): answered by the lint, not by `renderView`.
 type ParsedLintView = { lint: true; json: boolean };
 
@@ -109,8 +113,9 @@ export function parseViewQuery(
   if (view === null) return null;
   if (scope === 'tab' && view === LINT_VIEW_NAME) return parseLintQuery(query);
   const tabView = isTabViewName(view);
-  if (scope === 'tab' ? !tabView : view !== 'overview') return unknownView(view, scope);
-  const name = tabView ? view : 'overview';
+  const designView = !tabView && isDesignViewName(view) ? view : null;
+  if (scope === 'tab' ? !tabView : designView === null) return unknownView(view, scope);
+  const name = tabView ? view : designView!;
   const allowed = VIEW_PARAMETERS[name];
   for (const parameter of new Set(query.keys())) {
     if (!QUERY_PARAMETERS.has(parameter) || !allowed.some((p) => p === parameter)) {
@@ -175,12 +180,17 @@ export function parseViewQuery(
     style: flag('style'),
     all: flag('all'),
   };
-  return { request, json: flag('json') === true };
+  return {
+    request,
+    json: flag('json') === true,
+    ...(designView === null ? {} : { design: designView }),
+  };
 }
 
 const TITLE_CASE: Record<DesignViewName | TabViewName | typeof LINT_VIEW_NAME, string> = {
   lint: 'Lint',
   overview: 'Overview',
+  components: 'Components',
   outline: 'Outline',
   graph: 'Graph',
   layout: 'Layout',
@@ -257,6 +267,19 @@ async function ownerSelection(
   return selected;
 }
 
+// The mains a tab's instances draw (docs/specs/024-agents/design-views.md "The outline"), read only when it holds an
+// instance, so every other view costs no extra read. Only the mains this tab uses: what a tab-scoped reader may see.
+// A read that fails leaves the instances named by id (`main not loaded`) rather than failing the view.
+async function tabComponents(env: DesignEnv, tab: TabDTO): Promise<DesignComponent[] | null> {
+  if (componentRefIds(tab.elements).length === 0) return null;
+  try {
+    return await readComponents(env, { tabIds: [tab.id] });
+  } catch (err) {
+    viewsLog('warn', '[views] components unavailable', { tab: tab.id, error: String(err) });
+    return null;
+  }
+}
+
 // A tab view, after the tab GET's gate and redaction; `owner` is the caller the GET resolved.
 export async function answerTabView(
   ctx: DesignRouteContext,
@@ -266,12 +289,16 @@ export async function answerTabView(
   owner: string,
 ): Promise<Response> {
   if ('lint' in parsed) return answerLintView(ctx, parsed, design, tab);
-  const selected = await ownerSelection(ctx, parsed.request, design.id, tab.id, owner);
+  const [selected, components] = await Promise.all([
+    ownerSelection(ctx, parsed.request, design.id, tab.id, owner),
+    tabComponents(ctx.env, tab),
+  ]);
   const started = Date.now();
   const rendered = renderView(parsed.request, tab, {
     rev: tab.rev,
     tabIds: design.tabs.map((t) => t.id),
     selected,
+    ...(components ? { components } : {}),
   });
   if (!rendered.ok) {
     const { refusal } = rendered;
@@ -340,8 +367,32 @@ async function inScopeFacts(
   }
 }
 
-// The design overview, after the design GET's gate and scope redaction: in-scope tab bodies are
-// read a batch at a time and reduced to their header facts; out-of-scope tabs are never read.
+// The `components` view (docs/specs/024-agents/design-views.md "The views"): the design's library, after the design
+// GET's gate and scope redaction; a tab-scoped reader gets only the mains their tab uses.
+async function answerComponents(
+  ctx: DesignRouteContext,
+  parsed: ParsedView,
+  design: DesignDTO,
+  tabScope: string | null,
+): Promise<Response> {
+  const started = Date.now();
+  const components = await readComponents(ctx.env, tabScope === null ? {} : { tabIds: [tabScope] });
+  const result = componentsView(design, components, {
+    budget: parsed.request.budget,
+    door: parsed.request.door,
+  });
+  viewsLog('info', '[views] components', {
+    doc: design.id,
+    components: components.length,
+    scoped: tabScope !== null,
+    ms: Date.now() - started,
+  });
+  countViewed(ctx, 'components');
+  return parsed.json ? json(result.json) : textPlain(result.text);
+}
+
+// A design view, after the design GET's gate and scope redaction. The overview: in-scope tab bodies are read a batch
+// at a time and reduced to their header facts; out-of-scope tabs are never read. `components` is the library.
 export async function answerOverview(
   ctx: DesignRouteContext,
   parsed: ParsedView,
@@ -349,6 +400,7 @@ export async function answerOverview(
   tabScope: string | null,
   community = false,
 ): Promise<Response> {
+  if (parsed.design === 'components') return answerComponents(ctx, parsed, design, tabScope);
   const started = Date.now();
   const { facts, batches } = await inScopeFacts(ctx.env, design, tabScope, community);
   const tabs: OverviewTabInput[] = design.tabs.flatMap((summary): OverviewTabInput[] => {

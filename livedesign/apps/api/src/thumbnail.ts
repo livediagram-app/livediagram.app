@@ -6,8 +6,12 @@
 
 import { embedTabImages } from '@livedesign/api-schema';
 import {
+  componentRefIds,
   drawnCount,
   elementsOnPage,
+  expandInstances,
+  libraryLookup,
+  libraryOf,
   laidOutPagesOf,
   migrateStoredTab,
   pagesOf,
@@ -29,6 +33,7 @@ import {
 import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
 import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { photoBlobKey, tabHoldsBlobs } from './db/photo-blobs';
+import { readComponentsById } from './db/components';
 import { photosOf } from '@livedesign/photo-engine';
 import { mediaClient } from './media';
 import type { DesignEnv } from './types';
@@ -108,13 +113,26 @@ export async function renderTabSvg(
     return null;
   }
   if (!stored) return null;
-  const tab = migrateStoredTab({ ...stored, elements: stored.elements ?? [] });
+  const tab = await withInstancesExpanded(
+    env,
+    migrateStoredTab({ ...stored, elements: stored.elements ?? [] }),
+  );
   const images = await loadEmbeddedImages(env, designId, tab);
   return renderElementsToSvg(tab, {
     resolveImageHref: (id) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
   });
+}
+
+// A tab with every instance drawn as its main (docs/specs/009-elements/components.md "Exports, thumbnails and
+// agents"): the mains it uses read from the design's library, then expanded as every export expands them. A tab
+// without an instance is returned as it is, with no read.
+export async function withInstancesExpanded(env: DesignEnv, tab: Tab): Promise<Tab> {
+  const ids = componentRefIds(tab.elements);
+  if (ids.length === 0) return tab;
+  const library = libraryOf(await readComponentsById(env, ids));
+  return expandInstances(tab, libraryLookup(library));
 }
 
 // The lazy backfill of tabs.element_count (the baseline migration): a tab stored before the count existed gets it
@@ -160,7 +178,10 @@ async function renderTabBodyToSvg(
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
-  const stored = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
+  const stored = await withInstancesExpanded(
+    env,
+    migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab),
+  );
   const tab = opts.community ? redactTabForCommunity(stored) : stored;
   // A Pages tab previews as its first page alone, drawn as an export draws it
   // (docs/specs/006-design/design-snapshots.md "Pages tabs"): every page side by

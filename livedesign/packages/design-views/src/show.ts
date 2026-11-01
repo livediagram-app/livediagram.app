@@ -9,6 +9,7 @@ import { edgeJson, endText, type ViewEdge } from './edges';
 import { arrayField, boxOf, isObject, numberField, textField, threadOf } from './fields';
 import { headerLine, viewHeader } from './header';
 import { layoutEndText } from './layout';
+import { instanceSummaryOf } from './instance-summary';
 import type { ViewModel } from './model';
 import { commentText, readComment } from './comments';
 import { cellText, jsonString } from './text';
@@ -51,6 +52,8 @@ export const PERSON_ID_FIELDS = [
   // Which Participant added a sticky or text (docs/specs/013-workspace/share-roles.md): the room's record, a key
   // that ties one person's additions together, so it never leaves through a view either.
   'addedBy',
+  // Whose Edit Component session hides an instance (docs/specs/009-elements/components.md "Editing a main").
+  'componentEditBy',
 ] as const;
 
 // `each`: every item of a list (`[]`).
@@ -234,9 +237,11 @@ export function showElement(
     .filter((key) => !SHOWN_ELSEWHERE.has(key) && !BLOCK_FIELDS.has(key))
     .sort()
     .map((key) => ({ text: `  ${key}: ${JSON.stringify(fields[key])}`, noun: LINE }));
+  const instance = instanceSummaryOf(el, model.componentOf);
   const lines: ViewLine[] = [
     { text: `${kind} ${ref}${labelOf(el)}${inPart}`, noun: LINE },
     ...placement.map((text) => ({ text, noun: LINE })),
+    ...(instance === null ? [] : [{ text: `  ${instance}`, noun: LINE }]),
     ...fieldLines,
     ...blockLines(el, fields),
     ...edgeLines(model, incoming, '←'),

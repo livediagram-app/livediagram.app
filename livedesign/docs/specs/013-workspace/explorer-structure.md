@@ -288,9 +288,10 @@ Top to bottom:
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
    line), dismissible as the sign-in notice is. Minimal chrome drops it.
 
-**Size and scrim.** On a desktop or tablet the panel is up to **60rem** wide (kept 1rem inside the window) and
+**Size and scrim.** On a desktop or tablet the panel is up to **64rem** wide (kept 1rem inside the window) and
 **56rem** tall (kept on the canvas below the menu button, 24 px short of its bottom), the rail and pane filling the
-rest; the pane's preview cards run three across once it is 42rem wide. A dimmed **scrim** (translucent slate, a fade
+rest, the rail 13rem wide; the pane's preview cards are compact, three across once it is 24rem wide and four once it
+is 42rem (every desktop popover). A dimmed **scrim** (translucent slate, a fade
 where motion is allowed) sits behind it on every screen size, over the canvas and its chrome and under the panel and
 its menus and dialogs; a press on it closes the panel and focus goes back to the menu button, as Esc does. The rail's
 **New Design** is 36 px tall (44 px on touch), never squeezed.
@@ -327,7 +328,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 
 | Section        | The pane shows                                                                                                                                                                                                                                                                                                                                                                                               | Action     |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
-| Home           | **Jump Back In**: up to six designs (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent); when the open one is the only one, the empty state says "Nothing else yet" rather than "No designs yet". **What Happened**, only when someone else did something: each design's summary sentence under its day, with **See Timeline** (the Timeline in the pane) | None       |
+| Home           | **Jump Back In**: up to eight designs (most used, then most recent), never the one open, as cards (four per row) with **See all** (Recent); when the open one is the only one, the empty state says "Nothing else yet" rather than "No designs yet". **What Happened**, only when someone else did something: each design's summary sentence under its day, with **See Timeline** (the Timeline in the pane) | None       |
 | Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                                                                                                           | None       |
 | Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                                                                                                                                                                | None       |
 | Shared With Me | The designs shared with the reader, as rows                                                                                                                                                                                                                                                                                                                                                                  | None       |

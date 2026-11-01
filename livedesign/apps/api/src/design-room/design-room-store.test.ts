@@ -1034,6 +1034,76 @@ describe('a tab shared between designs', () => {
     expect(labels(w, 'A')).toEqual(['From A']);
   });
 
+  // docs/specs/009-elements/components.md "Sharing, collaboration and storage": the mains a shared tab's instances use
+  // travel with every body, the later `updatedAt` winning, and the refs follow the body taken in.
+  it('carries the mains its instances use, the later one winning, with their refs', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    const nav = (name: string) => ({
+      id: 'c1',
+      name,
+      width: 100,
+      height: 40,
+      elements: [box('e1', name)],
+      updatedAt: 0,
+    });
+    const instance = (id: string) =>
+      ({
+        id,
+        type: 'shape',
+        shape: 'instance',
+        componentId: 'c1',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 40,
+      }) as unknown as Element;
+    await createDesign(w, 'A', [{ id: 't1', name: 'Board', elements: [instance('i1')] }]);
+    await createDesign(w, 'B', [{ id: 'tb', name: 'Own', elements: [] }]);
+    expect((await w.send('PUT', '/api/designs/A/components/c1', nav('Nav'))).status).toBe(200);
+    await w.send('PUT', '/api/designs/A/components/unused', { ...nav('Other'), id: 'unused' });
+    expect((await link(w, 'B', 't1', 'A')).status).toBe(200);
+    const b = w.designs.get('B')!;
+    const mainsOf = () =>
+      b.db
+        .prepare('SELECT id, data FROM components ORDER BY id')
+        .all()
+        .map((r) => `${String(r.id)}:${(JSON.parse(String(r.data)) as { name: string }).name}`);
+    expect(mainsOf()).toEqual(['c1:Nav']);
+    expect(b.db.prepare('SELECT tab_id, component_id FROM component_refs').all()).toEqual([
+      { tab_id: 't1', component_id: 'c1' },
+    ]);
+    await drain(w, 'A', 'B');
+    // A later main in A rides the next body; an older one never overwrites B's.
+    await new Promise((r) => setTimeout(r, 2));
+    await w.send('PUT', '/api/designs/A/components/c1', nav('Nav v2'));
+    const putA = await w.send('PUT', '/api/designs/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [instance('i1'), instance('i2')],
+    });
+    expect(putA.status).toBe(200);
+    await drain(w, 'A');
+    expect(mainsOf()).toEqual(['c1:Nav v2']);
+    await new Promise((r) => setTimeout(r, 2));
+    await w.send('PUT', '/api/designs/B/components/c1', nav('Nav in B'));
+    await w.send('PUT', '/api/designs/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [instance('i1')],
+    });
+    await drain(w, 'A');
+    expect(mainsOf()).toEqual(['c1:Nav in B']);
+    // A body that no longer uses it drops its ref.
+    await new Promise((r) => setTimeout(r, 2));
+    await w.send('PUT', '/api/designs/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [box('a', 'Plain')],
+    });
+    await drain(w, 'A');
+    expect(b.db.prepare('SELECT tab_id FROM component_refs').all()).toEqual([]);
+  });
+
   it('grants the holder taking it in the images its sender may serve, and no others', async () => {
     const w = world();
     const media = mediaServiceFor(w.env);

@@ -13,7 +13,7 @@ const TAB_LESS_DELIVERED = new Set(['share-revoked', 'share-rescoped', 'design-t
 // A follow (docs/specs/012-collaboration/follow-me-viewport.md) names a person, not a tab, so a scoped visitor may follow too.
 const TAB_LESS_SENDABLE = new Set(['follow']);
 
-type LooseOp = { kind?: unknown; tabId?: unknown; tabs?: unknown };
+type LooseOp = { kind?: unknown; tabId?: unknown; tabs?: unknown; tabIds?: unknown };
 
 function asOp(op: unknown): LooseOp | null {
   return typeof op === 'object' && op !== null ? op : null;
@@ -35,6 +35,11 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
   const o = asOp(op);
   if (!o) return null;
   if (o.kind === 'design-meta') return redactDesignMeta(o, tabScope);
+  // A main of the component library (docs/specs/009-elements/components.md): only for a tab that uses it, so a
+  // scoped session never receives a main its tab does not draw. A malformed `tabIds` withholds it.
+  if (o.kind === 'component') {
+    return Array.isArray(o.tabIds) && o.tabIds.includes(tabScope) ? op : null;
+  }
   const mine = onScope(o, tabScope);
   if (mine !== undefined) return mine ? op : null;
   return typeof o.kind === 'string' && TAB_LESS_DELIVERED.has(o.kind) ? op : null;

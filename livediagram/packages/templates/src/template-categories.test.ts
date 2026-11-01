@@ -16,17 +16,22 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the nine job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
+  it('are the fourteen use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
-      'Brainstorm',
-      'Design',
-      'Flowcharts',
-      'Org Charts',
+      'Brainstorming',
+      'Decisions',
+      'Goals & Metrics',
+      'Meetings & Workshops',
+      'People & Teams',
+      'Planning',
+      'Processes & Workflows',
+      'Product & UX',
       'Quizzes & Games',
+      'Retrospectives',
+      'Software & IT',
       'Strategy',
-      'Technical',
-      'Timelines',
-      'Workshops',
+      'Teaching & Learning',
+      'Virtual Spaces',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
@@ -54,15 +59,20 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      meetings: 15,
-      mindmaps: 8,
-      timelines: 7,
-      flowcharts: 5,
-      strategy: 14,
-      hierarchies: 7,
-      design: 8,
-      technical: 10,
-      games: 5,
+      ideas: 7,
+      decisions: 7,
+      goals: 6,
+      meetings: 4,
+      people: 4,
+      planning: 5,
+      processes: 4,
+      product: 11,
+      games: 6,
+      retros: 5,
+      software: 11,
+      strategy: 8,
+      learning: 3,
+      spaces: 4,
     });
   });
 
@@ -75,9 +85,9 @@ describe('template categories', () => {
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
       expect(new Set(also).size, kind).toBe(also.length);
     }
-    expect(isInTemplateCategory('metric-tree', 'strategy')).toBe(true);
-    expect(isInTemplateCategory('doodle-warmup', 'games')).toBe(true);
-    expect(isInTemplateCategory('blank', 'flowcharts')).toBe(false);
+    expect(isInTemplateCategory('okr-tree', 'strategy')).toBe(true);
+    expect(isInTemplateCategory('venn', 'learning')).toBe(true);
+    expect(isInTemplateCategory('blank', 'processes')).toBe(false);
   });
 
   it('leaves no category empty in every mode, and hides one only where a mode has none', () => {
@@ -108,9 +118,17 @@ describe('template search words', () => {
     expect(find('persona')).toContain('user-persona');
     expect(find('erd')).toContain('er-diagram');
     expect(find('org')).toContain('orgchart');
+    // The words the old artefact-shaped labels carried still find their templates.
+    expect(find('flowcharts')).toEqual(expect.arrayContaining(['flowchart', 'swimlane']));
+    expect(find('technical')).toEqual(expect.arrayContaining(['er-diagram', 'network-diagram']));
+    expect(find('classroom')).toEqual(expect.arrayContaining(['kwl-chart', 'concept-map']));
+    expect(find('eisenhower')).toContain('eisenhower-matrix');
+    expect(find('pestel')).toContain('pestle-analysis');
+    expect(find('30 60 90')).toContain('onboarding-plan');
+    expect(find('lan')).toContain('network-diagram');
     // A category label finds what is cross-listed in it; every word must match.
-    expect(find('strategy funnel')).toContain('funnel');
-    expect(find('strategy funnel')).not.toContain('orgchart');
+    expect(find('metrics funnel')).toContain('funnel');
+    expect(find('metrics funnel')).not.toContain('orgchart');
     expect(find('flowchart zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });

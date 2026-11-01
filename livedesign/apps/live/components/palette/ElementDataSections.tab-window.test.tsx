@@ -7,7 +7,10 @@ import { afterEach, expect, it, vi } from 'vitest';
 import type { ShapeElement, Tab } from '@livedesign/design';
 
 const editor = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
-vi.mock('@/app/design/[id]/EditorContext', () => ({ useEditorContext: () => editor.value }));
+vi.mock('@/app/design/[id]/EditorContext', () => ({
+  useEditorContext: () => editor.value,
+  useOptionalEditorContext: () => editor.value,
+}));
 vi.mock('@/app/design/[id]/useSelectTab', () => ({ useSelectTab: () => vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -45,6 +48,8 @@ const flags = {
 
 it("offers a tab window's Shows list, so its tab can be changed", () => {
   editor.value = {
+    // No component actions here: the Component section stays out of the way.
+    componentActions: { canEdit: false },
     tabs,
     activeTab: tabs[0],
     can: { level: 'edit' },

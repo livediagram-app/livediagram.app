@@ -550,7 +550,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Eighty starter templates',
+        title: 'Eighty-eight starter templates',
         description:
           'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and roadmaps, org charts and timelines, meeting agendas and risk matrices, pub quizzes and icebreakers, architecture and UML. Browse them by the job to be done in the picker, edit one, or start blank.',
       },

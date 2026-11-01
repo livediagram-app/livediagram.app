@@ -107,6 +107,12 @@ const ALL_KINDS = [
   'journey-doodle',
   'pre-mortem',
   'idea-garden',
+  'eisenhower-matrix',
+  'pestle-analysis',
+  'kwl-chart',
+  'onboarding-plan',
+  'concept-map',
+  'network-diagram',
   'blank-session',
 ] as const satisfies readonly TemplateKind[];
 

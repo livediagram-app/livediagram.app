@@ -15,7 +15,8 @@ routes = [
 workers_dev = false
 
 # Secrets (wrangler secret put):
-#   INDEX_KEY_LIVEDIAGRAM, INDEX_KEY_LIVEPLANNER, INDEX_KEY_LIVEDOCUMENTS, INDEX_KEY_LIVEDESIGN
+#   INDEX_KEY_LIVEDIAGRAM, INDEX_KEY_LIVEPLANNER, INDEX_KEY_LIVEDOCUMENTS, INDEX_KEY_LIVEDESIGN,
+#   INDEX_KEY_LIVEHUDDLE (livehuddle, held until launch: unset, it can't push)
 #     each shared with that app as INDEX_KEY: the app's server pushes summaries and comments with it,
 #     and the index calls the app's internal routes (copy, purge, revoke) with it.
 #   GRANT_SIGNING_KEY   the private ES256 JWK (with its kid) grants are signed with; its public half
@@ -36,12 +37,13 @@ ENVIRONMENT = "production"
 # grants are issued as `${ACCOUNTS_URL}/api/index`.
 ACCOUNTS_URL = "https://www.liveworkspace.app"
 # Every app's API resource: an access or guest token addressed to any of them is let in.
-INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
+INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api,https://livehuddle.app/api"
 # Where the index calls each app's internal routes.
 APP_ORIGIN_LIVEDIAGRAM = "https://www.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://www.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://www.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://www.livedesign.app"
+APP_ORIGIN_LIVEHUDDLE = "https://www.livehuddle.app"
 
 # Its own database, apart from accounts and every other service's data. The id is a placeholder: the
 # database is created on first deploy (liveworkspace/docs/specs/004-index/index-service.md "First deploy").
@@ -101,11 +103,12 @@ ENVIRONMENT = "staging"
 # Staging's app origins and API resources: check them against each app's staging deploy before the first
 # deploy here.
 ACCOUNTS_URL = "https://staging.liveworkspace.app"
-INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
+INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api,https://staging.livehuddle.app/api"
 APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
+APP_ORIGIN_LIVEHUDDLE = "https://staging.livehuddle.app"
 
 # Created on first deploy, like production's.
 [[env.staging.d1_databases]]

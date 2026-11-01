@@ -368,6 +368,20 @@ originY, fixedSizeIds })`, origin the selection's bounding-box top-left, every s
   `right`→`LR`; omitted, flow detects it (`flowDirectionOf`). Nothing outside the selection moves; a locked arrow
   between selected boxes keeps its ends. A locked element in the selection
   is `element_locked`.
+- **`add instance componentId=<id>`** ([Components](../../009-elements/components.md)). With `options.components`
+  (a `ComponentLookup` the api passes when `operationsNeedComponents(operations)`), a `componentId` it does not
+  hold is `invalid_value` naming the mains; a missing `componentId` is `invalid_value` too. The box is the main's
+  `width` x `height` when neither is named (`SHAPE_DEFAULT_SIZE.instance` without a lookup), never sized for a label
+  or a sibling. A raw-element `add` of an instance without `width` / `height` takes the main's frame the same way.
+- **`detach <instance>`.** One target; not an instance (`isInstance`) is `invalid_value` ("is not a component
+  instance"); a locked one `element_locked`; a main `options.components` does not hold is `invalid_value` ("its main
+  is not in the design"). `detachInstance(currentElements, id, main, newId)` gives the elements: the instance's
+  place in the order takes the main's elements as it draws them (`resolveInstance` with `rotate`, overrides
+  applied), each new id minted as `add` mints one from the main element's label or kind word, in the main's order;
+  arrows pinned to the instance become free at their drawn point (written, as `rm keep-arrows` writes them). Result
+  lines: `-` the instance, `+` each new element, `~` each freed arrow.
+- **`componentEditBy`, `componentMember`** are refused by every field write as `invalid_value` ("an edit session
+  is a person's").
 - **`test <selector> key=value…`.** For each field, the value `set` would write (aliases resolved, no label cap,
   no coercion warning) is compared with the stored value by deep equality; strings exactly; `key=` holds when the
   field is absent; a colour alias compares the swatch slot, or the hex case-insensitively (EO39). Any difference:
@@ -527,6 +541,7 @@ JSON form, one object a line (`?` optional; `fields` values are JSON, `null` uns
 | `order`   | `target`, and one of `to: "front" \| "back"`, `above`, `below`                          |
 | `layout`  | `target`, `style?`, `direction?`                                                        |
 | `test`    | `target`, `fields`                                                                      |
+| `detach`  | `target`                                                                                |
 
 In the JSON form `wrap`'s `targets` lists its selectors explicitly; the line form's word rule produces the same
 list. The MCP's `ops` mode maps onto this form in its adapter: `add` with `element`, `update` as `set` on the

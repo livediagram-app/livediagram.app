@@ -16,6 +16,7 @@ Follow the references below only as needed; never upfront.
 - ./sankey.md - when implementing or changing the Sankey diagram, its layout, labels, Flows dialog, menu or export
 - ./shape-markers.md - when implementing or changing shape status markers, their menu or render
 - ./web-components.md - when implementing or changing web components, their rows, or legacy group migration
+- ./components.md - when implementing or changing components: the library, instances, overrides, Detach, the edit session, their storage, sync and exports
 - ./DEFAULTS.md - when an elements blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an elements blueprint covers
 - ./card.md - when implementing or changing the card, its slots, layout, menu or the callout migration

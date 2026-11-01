@@ -9,6 +9,7 @@ import { isFilledPenLoop } from './stroke-loop-fill';
 import type { FreehandElement, PathElement } from './index';
 import { pathContours, pathWorldAnchors } from './path-element';
 import { samplePath } from './path-geometry';
+import { segmentDistance } from '@liveworkspace/model-core/segment-geometry';
 
 type Point = { x: number; y: number };
 // A point of a pen stroke with its pressure, when the stroke records one.
@@ -98,28 +99,9 @@ function distToSegment(p: Point, a: Point, b: Point): number {
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-function cross(o: Point, a: Point, b: Point): number {
-  return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
-}
-
-function segmentsIntersect(p1: Point, p2: Point, q1: Point, q2: Point): boolean {
-  const d1 = cross(q1, q2, p1);
-  const d2 = cross(q1, q2, p2);
-  const d3 = cross(p1, p2, q1);
-  const d4 = cross(p1, p2, q2);
-  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
-}
-
-/** The shortest distance between segments `p1 p2` and `q1 q2`: 0 when they cross. */
-export function segmentDistance(p1: Point, p2: Point, q1: Point, q2: Point): number {
-  if (segmentsIntersect(p1, p2, q1, q2)) return 0;
-  return Math.min(
-    distToSegment(p1, q1, q2),
-    distToSegment(p2, q1, q2),
-    distToSegment(q1, p1, p2),
-    distToSegment(q2, p1, p2),
-  );
-}
+// The distance between two segments is model-core's, shared with the Avatar-mode walk's collision; re-exported so
+// this package's surface is unchanged.
+export { segmentDistance };
 
 function boxesApart(pts: Point[], a: Point, b: Point, reach: number): boolean {
   let minX = Infinity;

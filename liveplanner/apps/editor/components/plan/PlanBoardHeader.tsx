@@ -8,10 +8,12 @@ import { useRef, useState } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
 import { useKeepOnScreen } from '@/hooks/plan/useKeepOnScreen';
 import {
+  isFieldWidgetKey,
   itemTitle,
+  removeWidget,
   widgetsOf,
   type BoardProjection,
-  type BoardWidgetKind,
+  type BoardWidgetId,
   type Item,
   type ItemTypeDef,
   type PlanBoardSetup,
@@ -21,6 +23,8 @@ import { lucideGripVertical } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';
+import { FieldWidgetView } from './widgets/FieldWidgetView';
+import { useFieldWidgets } from './widgets/use-field-widgets';
 import { BoardTitle } from './BoardTitle';
 import { useInHeaderBand, useMenuNameSlot } from './menu-name-slot';
 import { createPortal } from 'react-dom';
@@ -79,7 +83,7 @@ export function PlanBoardHeader({
   canRename?: boolean;
   // The widgets are shown: not on a phone, whose header has no room for them (phone-board.ts).
   showWidgets?: boolean;
-  onWidgets: (next: BoardWidgetKind[]) => void;
+  onWidgets: (next: BoardWidgetId[]) => void;
   // A set-up change a widget makes (Set Done Column), with its telemetry part.
   onSetup: (next: PlanBoardSetup, part: string) => void;
   onOpenItem: (itemId: string) => void;
@@ -117,6 +121,8 @@ export function PlanBoardHeader({
     planItems,
     statusNames,
   };
+  // The field widgets' fields, reader, names and For You (use-field-widgets.ts).
+  const fieldWidgets = useFieldWidgets({ setup, items, types, widgets, now: today });
   const [renaming, setRenaming] = useState(false);
   // In a header band, the title and widgets ride in the menu box (menu-name-slot).
   const nameSlot = useMenuNameSlot();
@@ -149,7 +155,28 @@ export function PlanBoardHeader({
           if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
           onWidgets(next);
         }}
-        render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
+        labelOf={fieldWidgets.labelOf}
+        fields={fieldWidgets.fields}
+        suggest={fieldWidgets.suggest}
+        render={(id) =>
+          isFieldWidgetKey(id) ? (
+            <FieldWidgetView
+              id={id}
+              ctx={{
+                fields: fieldWidgets.fields,
+                items,
+                setup,
+                palette,
+                now: today,
+                read: fieldWidgets.read,
+                canEdit,
+                onRemove: (gone) => onWidgets(removeWidget(widgets, gone)),
+              }}
+            />
+          ) : (
+            <BoardWidgetView kind={id} ctx={ctx} />
+          )
+        }
       />
     </>
   );

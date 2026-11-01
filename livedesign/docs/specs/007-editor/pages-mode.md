@@ -887,6 +887,18 @@ canvas's ink.
   corner panels' places are ([Panel docking](panel-docking.md)). It stays open while the person
   works; the cluster has no Contents button while it shows, and the corner panels and the
   bottom-right cluster on its side start past it.
+- **Joined to the menu box**: pinned left, the sidebar rises to the canvas's top and the menu box
+  (the menu button and the tab's name, top left) becomes its top row, so the two read as one panel
+  rather than a card floating over a sidebar. The box's own border, fill and shadow fade away
+  (200 ms, none under reduced motion) and the sidebar's surface carries it; the box reaches across
+  the sidebar (8 px short of its inner edge), the tab's name cut short to fit, then a hairline, then
+  the Contents header exactly where it sits without the join. The menu button itself never moves or
+  changes: the same glyph, size, hover and pressed look, and the Explorer still hangs under it. A
+  workspace frame's Back takes the row the same way. The palette strip keeps clear of the whole row
+  and centres in what shows beside the sidebar, as a page is framed beside it, so a laptop's strip
+  keeps its category names. Pinned right, while it is being dragged, minimised, and on a phone
+  (which has no sidebar), the box is its usual card. It is the same for every role: a Viewer's box
+  joins as an Editor's does.
 - **Minimised to its button**: the bottom-right cluster holds **Contents** (a list glyph, named
   beside it on a desktop), left of the Theme & canvas button. It opens the **Contents** popover
   above it, whose header adds **Dock as Sidebar** (a panel-open glyph; HoverCard "Dock as Sidebar",
@@ -927,13 +939,24 @@ Both show the same list:
   has (an Editor's, or a share link's for a Participant or Viewer), once per picture and shared
   with the canvas's own copy. Only the rows drawn so far ask for theirs. Until a picture arrives,
   or where it can't be read, its place shows the image placeholder (a page picture, its tone).
-- **A page's actions** (an Editor's): in the sidebar, a small toolbar at the end of the name's
-  line, shown while the row is hovered, focused or marked: **Duplicate**, **Lock** or **Unlock**,
-  and **Delete** (not on a locked page), each a glyph with its Tooltip. In the popover, one **⋯**
-  button (shown on hover or focus) opens the same as a menu, a header naming the page, with Delete
-  last under its own separator.
-  Each does exactly what the page's title bar does; none glides to the page. A Participant and a
-  Viewer see neither.
+- **A page's actions** (an Editor's), down the row's left, so the picture and its name keep the
+  row's whole width:
+  - **In the sidebar** the column beside the picture stacks, under the page's number, the **grip**
+    (drag to reorder), **Delete** (a bin; not on a locked page) and **⋯** (the page's menu), each a
+    glyph with its Tooltip. They show while the row is hovered, focused or marked, or while its menu
+    is open, and always to a finger, where each keeps a 44 px tap area (the stack spaces itself out
+    under a coarse pointer).
+  - **In the popover** (a bottom sheet on a phone) the rows are compact, one line each: the **⋯**
+    sits under the page's number, and the grip stays at the row's right edge, where a thumb finds
+    it. Delete is in the menu.
+  - **The ⋯ menu** (also a right-click on the row, or a long press on it by a finger) is one menu for
+    the whole list, a header naming the page, then in groups: **Page Settings** (the cog: glides to
+    the page and opens its settings, where it is renamed and resized); **Duplicate** (while the copy
+    fits under the page limit), **Move Up** and **Move Down** (while the page has a neighbour that
+    way), **Lock** or **Unlock**; then, under its own separator, **Delete**, last (not on a locked
+    page), in the menu's own tones. Each does exactly what the page's title bar or cog does; none but
+    Page Settings glides to the page. A Participant and a Viewer see no grip, no Delete and no ⋯, and
+    a right-click or long press opens nothing.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to

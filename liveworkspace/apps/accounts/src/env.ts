@@ -54,6 +54,7 @@ export interface Env {
   TELEMETRY_KEY_LIVEPLANNER?: string;
   TELEMETRY_KEY_LIVEDOCUMENTS?: string;
   TELEMETRY_KEY_LIVEDESIGN?: string;
+  TELEMETRY_KEY_LIVEHUDDLE?: string;
 
   // Phone notifications' VAPID key pair (push/web-push.ts, liveworkspace/docs/specs/003-accounts/push.md), base64url: the
   // uncompressed P-256 public key and the 32-byte private scalar (scripts/generate-vapid-keys.ts makes a pair). Either

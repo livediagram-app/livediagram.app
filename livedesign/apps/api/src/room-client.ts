@@ -10,6 +10,7 @@ import {
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
   type ChangesetRoomOp,
+  type ComponentRoomOp,
   type RoomOp,
 } from '@livedesign/api-schema';
 import type { AgentPresenceWrite } from '@liveworkspace/api-kit/room-agent-presence';
@@ -198,6 +199,32 @@ export async function relayChangeset(
     console.warn('[changeset] relay-failed', { ...fields, error: `status ${res.status}` });
   } catch (err) {
     console.warn('[changeset] relay-failed', { ...fields, error: String(err) });
+  }
+  return false;
+}
+
+// One main of the component library as a write stored it (docs/specs/009-elements/components.md "Sharing,
+// collaboration and storage"), into the room's ordered stream like a changeset: sequenced, kept for catch-up, sent to
+// everyone (a tab-scoped session only when its tab is in `tabIds`, room-scope.ts). It never fails the write: the
+// library already holds the main, and an editor reads it again on an instance it cannot draw.
+export async function relayComponent(
+  env: Env,
+  designId: string,
+  op: ComponentRoomOp,
+): Promise<boolean> {
+  const fields = { designId, componentId: op.component.id };
+  try {
+    const res = await roomFetch(
+      env,
+      designId,
+      '/mutation',
+      mutationInit(op),
+      ROOM_RELAY_TIMEOUT_MS,
+    );
+    if (res.ok) return true;
+    console.warn('[components] relay-failed', { ...fields, error: `status ${res.status}` });
+  } catch (err) {
+    console.warn('[components] relay-failed', { ...fields, error: String(err) });
   }
   return false;
 }

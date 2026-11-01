@@ -6,7 +6,8 @@ export type SiteId =
   | 'livediagram.app'
   | 'liveplanner.app'
   | 'livedocuments.app'
-  | 'livedesign.app';
+  | 'livedesign.app'
+  | 'livehuddle.app';
 
 export type Site = {
   id: SiteId;
@@ -33,6 +34,7 @@ export const LOCAL_PORTS: Record<SiteId, number> = {
   'liveplanner.app': 3200,
   'livedocuments.app': 3300,
   'livedesign.app': 3400,
+  'livehuddle.app': 3500,
 };
 
 // Declared here rather than through @types/node: the apps that compile this source don't all load
@@ -106,6 +108,24 @@ export const APP_SITES: readonly Site[] = [
   },
 ];
 
+// Apps registered with every platform service but not launched (liveworkspace/docs/specs/002-architecture/
+// integrating-an-app.md "Registered before launch"): accounts, the index, media and telemetry accept them, and no list a
+// person sees reads this, so they show nowhere yet. Launch moves the row into APP_SITES.
+export const HELD_APP_SITES: readonly Site[] = [
+  {
+    id: 'livehuddle.app',
+    name: 'livehuddle',
+    url: siteUrl('livehuddle.app', 'https://www.livehuddle.app'),
+    pitch: 'Meet and run workshops together',
+    accent: '#10b981',
+    deep: '#047857',
+    light: '#34d399',
+  },
+];
+
+/** Every app the platform's services accept: the listed ones and the held ones. Never for a list people see. */
+export const REGISTERED_APP_SITES: readonly Site[] = [...APP_SITES, ...HELD_APP_SITES];
+
 export const SITES: readonly Site[] = [PLATFORM_SITE, ...APP_SITES];
 
 // ---------- The apps' items, for the Explorer on liveworkspace.app ----------------------------------------------
@@ -113,7 +133,7 @@ export const SITES: readonly Site[] = [PLATFORM_SITE, ...APP_SITES];
 // items, so it needs each app's word for one item, where the app opens one, where it makes one, and where its own
 // offline view is. Keyed by the app's name as the index knows it (`@liveworkspace/index-client` APPS).
 
-export type AppName = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign';
+export type AppName = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
 
 export type AppItems = {
   // The site, for its name, address and colours.
@@ -268,22 +288,46 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     importPath: null,
     share: shareOf(itemTabsPath('designs'), 'livedesign tab', itemCommunityPath('designs')),
   },
+  // Registered before its launch (HELD_APP_SITES): the index and the services know its items, and no Explorer lists
+  // it until launch. Forked from livediagram, so its addresses are livediagram's; a person reads "Space"
+  // (livehuddle/docs/specs/005-project-roadmap/open-decisions.md D6). No offline items, Community or imports in v1.
+  livehuddle: {
+    site: 'livehuddle.app',
+    noun: 'Space',
+    nouns: 'Spaces',
+    apiNoun: 'document',
+    itemPath: '/document/',
+    newPath: '/new',
+    offlinePath: null,
+    offlineConversions: false,
+    sharePath: '/document/shared?s=',
+    imagesPath: '/api/images',
+    shapeLibrariesPath: null,
+    imports: [],
+    importPath: null,
+    share: shareOf(itemTabsPath('documents'), 'livehuddle tab'),
+  },
 };
 
-export const APP_NAMES = Object.keys(APP_ITEMS) as AppName[];
+/** The listed apps, in APP_SITES' order: what every Explorer list, menu and filter shows. A held app is left out. */
+export const APP_NAMES = (Object.keys(APP_ITEMS) as AppName[]).filter((app) =>
+  APP_SITES.some((site) => site.id === APP_ITEMS[app].site),
+);
 
+/** Whether `value` names a listed app (one of APP_NAMES). A held app is not one until launch, so an address that
+ *  names it (`?from=livehuddle`) shows nothing of it. */
 export const isAppName = (value: unknown): value is AppName =>
-  typeof value === 'string' && Object.hasOwn(APP_ITEMS, value);
+  typeof value === 'string' && (APP_NAMES as readonly string[]).includes(value);
 
-/** An app's site row. */
+/** An app's site row, a held app's too. */
 export function siteOfApp(app: AppName): Site {
   const id = APP_ITEMS[app].site;
-  return APP_SITES.find((s) => s.id === id) ?? PLATFORM_SITE;
+  return REGISTERED_APP_SITES.find((s) => s.id === id) ?? PLATFORM_SITE;
 }
 
-/** The app a site serves, or null for liveworkspace itself. */
+/** The app a site serves (a held app's too), or null for liveworkspace itself. */
 export function appOfSite(id: SiteId): AppName | null {
-  return APP_NAMES.find((app) => APP_ITEMS[app].site === id) ?? null;
+  return (Object.keys(APP_ITEMS) as AppName[]).find((app) => APP_ITEMS[app].site === id) ?? null;
 }
 
 // The Explorer's address on liveworkspace.app, and the query that names the app a visitor came from, so its header

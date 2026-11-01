@@ -7,7 +7,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   blank: ['empty', 'scratch', 'new', 'canvas', 'nothing'],
   whiteboard: ['empty', 'scratch', 'draw', 'sketch', 'freehand', 'pen'],
   'blank-session': ['empty', 'workshop', 'meeting', 'facilitate', 'session'],
-  // Workshops.
   'meeting-agenda': [
     'meeting',
     'agenda',
@@ -32,7 +31,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'session',
   ],
   'town-hall': ['q&a', 'questions', 'all hands', 'ama', 'ask me anything', 'meeting'],
-  // Quizzes & Games.
   'pub-quiz': ['quiz', 'trivia', 'quiz night', 'game', 'teams', 'fun', 'social'],
   'coworking-space': [
     'coworking',
@@ -103,7 +101,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'four-ls': ['retro', 'retrospective', 'liked', 'learned', 'lacked', 'longed for'],
   sailboat: ['retro', 'retrospective', 'speedboat', 'anchors', 'wind', 'risks'],
   'pre-mortem': ['risk', 'failure', 'premortem', 'project', 'what could go wrong'],
-  // Brainstorm.
   mindmap: ['mind map', 'mindmap', 'ideas', 'brainstorm', 'notes', 'concept map', 'radial'],
   'mindmap-tree': ['mind map', 'outline', 'tree', 'ideas', 'brainstorm', 'notes'],
   'mindmap-bubble': ['bubble', 'thinking map', 'describe', 'adjectives', 'brainstorm'],
@@ -112,7 +109,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'affinity-map': ['affinity', 'clustering', 'research', 'synthesis', 'themes', 'stickies'],
   'crazy-eights': ['crazy 8s', 'design sprint', 'sketch', 'ideation', 'ideas', 'ux'],
   'doodle-warmup': ['icebreaker', 'warm up', 'energiser', 'game', 'team building', 'fun'],
-  // Timelines.
   timeline: ['history', 'schedule', 'milestones', 'chronology', 'dates', 'events'],
   'milestone-timeline': ['milestones', 'phases', 'schedule', 'project', 'dates'],
   'milestone-timeline-vertical': ['milestones', 'phases', 'schedule', 'history', 'dates'],
@@ -120,13 +116,11 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   roadmap: ['product roadmap', 'now next later', 'quarters', 'plan', 'strategy', 'releases'],
   'objectives-planner': ['goals', 'personal', 'smart', 'objectives', 'development', 'pdp'],
   'raci-matrix': ['raci', 'roles', 'responsibilities', 'accountable', 'ownership', 'rasci'],
-  // Flowcharts.
   flowchart: ['flow', 'process', 'diagram', 'steps', 'workflow', 'algorithm', 'bpmn'],
   swimlane: ['cross functional', 'process', 'lanes', 'handoffs', 'workflow', 'bpmn'],
   'decision-tree': ['decision', 'yes no', 'choices', 'logic', 'branching'],
   'approval-workflow': ['approval', 'sign off', 'review', 'process', 'workflow'],
   'data-flow': ['dfd', 'data', 'system', 'processes', 'stores'],
-  // Strategy.
   swot: ['strengths', 'weaknesses', 'opportunities', 'threats', 'analysis', 'strategy'],
   'business-model-canvas': ['bmc', 'startup', 'business plan', 'revenue', 'value proposition'],
   'prioritization-matrix': [
@@ -165,7 +159,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'product market fit',
     'strategyzer',
   ],
-  // Org Charts.
   orgchart: ['org', 'organisation', 'organization', 'team', 'hierarchy', 'reporting lines'],
   pyramid: ['hierarchy', 'levels', 'layers', 'maslow', 'tiers'],
   'okr-tree': ['okr', 'goals', 'objectives', 'key results', 'alignment', 'tree'],
@@ -189,7 +182,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'generations',
     'pedigree',
   ],
-  // Design.
   'paper-prototype': ['prototype', 'lo-fi', 'sketch', 'wireframe', 'usability', 'ux'],
   journey: ['customer journey', 'journey map', 'cx', 'experience', 'touchpoints', 'ux'],
   'journey-doodle': ['customer journey', 'journey map', 'cx', 'experience', 'drawn'],
@@ -206,7 +198,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'touchpoints',
   ],
   'comic-strip': ['comic', 'cartoon', 'story', 'panels', 'storyboard'],
-  // Technical.
   'system-architecture': ['architecture', 'system design', 'services', 'components', 'c4'],
   'cloud-architecture': ['aws', 'azure', 'gcp', 'cloud', 'infrastructure', 'devops'],
   'er-diagram': ['erd', 'database', 'schema', 'tables', 'entity relationship', 'sql'],
@@ -234,6 +225,68 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'kaizen',
     'devops',
     'waste',
+  ],
+  // The use-case batch.
+  'eisenhower-matrix': [
+    'eisenhower',
+    'urgent important',
+    'priorities',
+    'to-do',
+    'time management',
+    'productivity',
+    'delegate',
+    'week',
+  ],
+  'pestle-analysis': [
+    'pestle',
+    'pestel',
+    'pest',
+    'political',
+    'economic',
+    'environmental',
+    'market',
+    'macro',
+  ],
+  'kwl-chart': [
+    'kwl',
+    'know want learned',
+    'lesson',
+    'classroom',
+    'students',
+    'topic',
+    'graphic organiser',
+    'graphic organizer',
+  ],
+  'onboarding-plan': [
+    '30 60 90',
+    '30-60-90',
+    'onboarding',
+    'new starter',
+    'new hire',
+    'first 90 days',
+    'hr',
+    'manager',
+  ],
+  'concept-map': [
+    'concept',
+    'linking words',
+    'propositions',
+    'novak',
+    'knowledge map',
+    'study',
+    'revision',
+    'science',
+  ],
+  'network-diagram': [
+    'network',
+    'lan',
+    'vlan',
+    'subnet',
+    'router',
+    'firewall',
+    'wi-fi',
+    'it',
+    'infrastructure',
   ],
 };
 

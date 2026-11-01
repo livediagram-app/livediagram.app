@@ -58,6 +58,11 @@ const RAW_COLOURS: ReadonlySet<string> = new Set(['fillColor', 'strokeColor', 't
 const FORMER_FIELDS: Readonly<Partial<Record<Element['type'], readonly string[]>>> = {
   freehand: ['points', 'pressures'],
 };
+// A component edit session's marks (docs/specs/009-elements/components.md "Editing the main"): a person opens and
+// closes one; an agent changes a main through the library instead.
+const SESSION_FIELDS: ReadonlySet<string> = new Set(['componentEditBy', 'componentMember']);
+const SESSION_HINT =
+  'a main changes through component set; detach makes an instance plain elements';
 const LIVE_HINT = "comments go through the comment commands; responses and ideas are people's";
 
 const hasField = (el: Element, field: string) => isElementFieldName(el.type, field);
@@ -146,6 +151,8 @@ export function writeFieldsOnto<T extends Element>(
         'people change it, not edit operations',
         LIVE_HINT,
       );
+    if (SESSION_FIELDS.has(key))
+      return invalidValue(operation, key, value, "an edit session is a person's", SESSION_HINT);
     const alias = aliases.find((a) => a === key);
     if (alias) {
       const rejection = writeAlias(el, alias, value, theme, ref, operation, patch, warnings);

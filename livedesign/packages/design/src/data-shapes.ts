@@ -191,6 +191,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return (
     // A tab window (docs/specs/009-elements/tab-window.md) draws another tab; it takes no label.
     kind === 'tab-window' ||
+    // An instance (docs/specs/009-elements/components.md) draws its main; it takes no label of its own.
+    kind === 'instance' ||
     kind === 'stat-row' ||
     kind === 'process' ||
     isProgressShape(kind) ||

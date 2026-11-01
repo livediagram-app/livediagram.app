@@ -7,6 +7,7 @@
 // remove is refused with the op that puts the sender's screen back.
 
 import { LIVE_ELEMENT_FIELDS } from './comments';
+import { INSTANCE_SHAPE } from './components';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, Tab } from './index';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
@@ -47,6 +48,7 @@ export type ParticipantRefusal =
   | 'locked'
   | 'not-own'
   | 'reorder'
+  | 'component'
   | 'invalid';
 
 export type ParticipantOpResult =
@@ -58,6 +60,23 @@ export type ParticipantOpResult =
   | { result: 'refused'; correction: ElementOp | null; reason: ParticipantRefusal };
 
 type Bag = Record<string, unknown>;
+
+// The fields that make an element part of a component (docs/specs/009-elements/components.md "Share roles"): an
+// instance's main, overrides and edit session, and a session member's mark. Instances and sessions are an Editor's,
+// never Participant content: a Participant never adds, changes or takes on any of these.
+const COMPONENT_FIELDS = [
+  'componentId',
+  'componentOverrides',
+  'componentEditBy',
+  'componentMember',
+] as const;
+
+// Whether an element is an instance or carries any component field.
+function touchesComponent(el: Element): boolean {
+  if (el.type === 'shape' && el.shape === INSTANCE_SHAPE) return true;
+  const bag = el as Bag;
+  return COMPONENT_FIELDS.some((field) => bag[field] !== undefined);
+}
 
 function isParticipantAddable(type: string): boolean {
   return (PARTICIPANT_ADDABLE_TYPES as readonly string[]).includes(type);
@@ -229,9 +248,13 @@ export function applyParticipantOp(
   const restore: ElementOp = { kind: 'update', element: stored };
   if (incoming.type !== stored.type) return refuse('type-changed', restore);
   if (isHeld(tab, stored)) return refuse('locked', restore);
+  // An instance, or an element of an open edit session, is not Participant content (its words included).
+  if (touchesComponent(stored)) return refuse('component', restore);
   const own = addedByAdder(stored, adderKey);
   const merged = own ? mergeOwn(stored, incoming) : mergeOthers(stored, incoming);
   if (!isValidElement(merged)) return refuse('invalid', restore);
+  // Its own element never becomes part of a component.
+  if (touchesComponent(merged)) return refuse('component', restore);
   // What it added stays something it could add.
   if (own && !addableOn(merged)) return refuse('not-holdable', restore);
   // Its own element moved onto a locked layer would be one it could never touch again.
@@ -265,6 +288,7 @@ function applyAdd(
   if (taken) return refuse('id-taken', undo);
   if (tab.locked === true) return refuse('tab-locked', undo);
   if (!addableOn(element)) return refuse('not-addable', undo);
+  if (touchesComponent(element)) return refuse('component', undo);
   if (adderKey === null || adderKey === '') return refuse('no-adder', undo);
   const stamped: Bag = { ...(element as Bag), addedBy: adderKey };
   // A new element carries no answers or threads of its own yet, and a Participant cannot lock what it adds.

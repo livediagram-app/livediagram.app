@@ -1130,6 +1130,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "BoardWidgetId": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/BoardWidgetKind"
+      },
+      {
+        "$ref": "#/components/schemas/FieldWidgetKey"
+      }
+    ]
+  },
   "BoardWidgetKind": {
     "enum": [
       "count",
@@ -3634,6 +3644,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "key"
     ],
     "type": "object"
+  },
+  "FieldWidgetKey": {
+    "type": "string"
   },
   "FilterCondition": {
     "additionalProperties": false,
@@ -7637,7 +7650,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "widgets": {
         "items": {
-          "$ref": "#/components/schemas/BoardWidgetKind"
+          "$ref": "#/components/schemas/BoardWidgetId"
         },
         "type": "array"
       }

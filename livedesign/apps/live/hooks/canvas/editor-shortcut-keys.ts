@@ -17,6 +17,10 @@ type ShortcutShape =
   'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram' | 'frame';
 
 export type EditorKeyboardShortcutsDeps = {
+  // Components (docs/specs/009-elements/components.md "Shortcuts"): Make Component (Alt+Cmd+K) and Detach
+  // (Alt+Cmd+B), an Editor's. Absent, the chords do nothing.
+  onMakeComponent?: () => void;
+  onDetachComponent?: () => void;
   // Called once per key the editor acted on: the power user mode offer counts
   // them (docs/specs/007-editor/power-user-mode.md).
   onShortcutUsed?: () => void;
@@ -257,6 +261,15 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   if (key === '0') {
     e.preventDefault();
     live.onZoomReset();
+    return true;
+  }
+  // Alt+Cmd+K and Alt+Cmd+B: Make Component and Detach. Matched on `code`, as Alt turns the letter into another
+  // character on a Mac; before the search chord, which would otherwise take Alt+Cmd+K too.
+  if (e.altKey && (e.code === 'KeyK' || e.code === 'KeyB')) {
+    e.preventDefault();
+    if (live.isReadOnly) return false;
+    if (e.code === 'KeyK') live.onMakeComponent?.();
+    else live.onDetachComponent?.();
     return true;
   }
   // Cmd/Ctrl+. and Cmd/Ctrl+K: open the global search panel.

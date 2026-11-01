@@ -67,6 +67,7 @@ import {
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
 import { registerPagesTools } from './pages-tools';
+import { registerComponentsTools } from './components-tools';
 import {
   createDesignTab,
   mcpAddTab,
@@ -85,6 +86,8 @@ import {
 
 export function registerTools(server: McpServer, env: Env): void {
   registerPagesTools(server, env);
+  // The design's component library (docs/specs/015-api/mcp-server.md §4.9e).
+  registerComponentsTools(server, env);
   // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
   registerImageTools(server, env);
   registerTool(server, env, mcpFindDesigns, async (args, extra) => {
@@ -294,7 +297,7 @@ export function registerTools(server: McpServer, env: Env): void {
         lint: lintLineOf(answer.lint),
       },
       tab,
-      { env, token },
+      { env, token, designId: args.designId },
       [lintTextOf(answer.lint)],
     );
   });
@@ -370,7 +373,7 @@ export function registerTools(server: McpServer, env: Env): void {
         lint: lintLineOf(lint),
       },
       next,
-      { env, token },
+      { env, token, designId: args.designId },
       [lintTextOf(lint)],
     );
   });

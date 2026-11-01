@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import {
+  EXPLORER_POPOVER_HEIGHT,
+  EXPLORER_POPOVER_WIDTH,
   ExplorerPanel,
   NEW_BUTTON_CHIP,
   NEW_BUTTON_RAIL,
@@ -95,6 +97,42 @@ describe('<ExplorerPanel>', () => {
       .map((b) => b.textContent);
     expect(names.some((n) => n?.includes(items[0]!.title))).toBe(false);
     expect(index.count('listItems')).toBe(1);
+  });
+
+  it("fills Jump Back In's two rows of four from recent ones alone, the open one left out, in one request", async () => {
+    // Nothing most used yet: the recent ones must fill all eight, with one to spare for the open item.
+    const items = Array.from({ length: 12 }, (_, i) =>
+      makeItem(i + 1, { lastOpenedAt: 5_000_000 - i }),
+    );
+    const index = createFakeIndex({ items });
+    renderPanel(index, { current: items[0], currentId: items[0]!.id });
+    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const cards = within(grid).getAllByRole('listitem');
+    expect(cards).toHaveLength(8);
+    expect(cards.some((c) => c.textContent?.includes(items[0]!.title))).toBe(false);
+    expect(index.count('listItems')).toBe(1);
+  });
+
+  it('runs its preview cards compact: two across, three from 24rem, four from 42rem', async () => {
+    const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
+    renderPanel(createFakeIndex({ items }));
+    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const classes = grid.className.split(' ');
+    for (const c of ['grid-cols-2', '@sm:grid-cols-3', '@2xl:grid-cols-4'])
+      expect(classes).toContain(c);
+    expect(classes).not.toContain('@2xl:grid-cols-3');
+  });
+
+  it('gives the rail room beside the pane: 13rem wide', () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    const classes = rail().className.split(' ');
+    expect(classes).toContain('w-52');
+    expect(classes).not.toContain('w-44');
+  });
+
+  it("names one popover size for every editor's panel", () => {
+    expect(EXPLORER_POPOVER_WIDTH).toBe('w-[64rem]');
+    expect(EXPLORER_POPOVER_HEIGHT).toBe('56rem');
   });
 
   it('says Nothing else yet when the open item is the only one', async () => {
@@ -356,5 +394,44 @@ describe("the panel's This Browser", () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
     expect(index.count('deleteItem')).toBe(0);
+  });
+});
+
+describe('<ExplorerPanel> Inbox filter', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('puts the filter dropdown in the header row once the Inbox has rows, and it filters', async () => {
+    const index = createFakeIndex({ items: [] });
+    index.inbox.actions.push({
+      app: 'liveplanner',
+      itemId: 'p1',
+      itemTitle: 'Plan',
+      itemTeamId: null,
+      tabId: 't1',
+      tabName: 'Board',
+      elementId: 'e1',
+      actionId: 'a1',
+      elementLabel: '',
+      name: 'Chase the quote',
+      description: '',
+      status: 'open',
+      assigneeId: 'user_me',
+      assigneeName: 'Me',
+      assignerId: 'user_ada',
+      assignerName: 'Ada',
+      teamId: null,
+      card: null,
+      createdAt: 1,
+      updatedAt: 2,
+    });
+    renderPanel(index, { viewerId: 'user_me' });
+    fireEvent.click(within(rail()).getByRole('button', { name: /^Inbox/ }));
+    const select = (await screen.findByRole('combobox', {
+      name: 'Inbox filter',
+    })) as HTMLSelectElement;
+    // In the heading's row, not in the scrolling body.
+    expect(select.closest('[data-explorer-pane]')).toBeNull();
+    fireEvent.change(select, { target: { value: 'waiting' } });
+    expect(select.value).toBe('waiting');
   });
 });

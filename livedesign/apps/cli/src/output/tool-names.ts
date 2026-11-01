@@ -18,6 +18,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   restore_design: 'design restore',
   list_images: 'image ls',
   change_pages: 'page set',
+  change_components: 'component make',
 };
 
 const TOOL_WORD = new RegExp(`\\b(${Object.keys(COMMAND_OF_TOOL).join('|')})\\b`, 'g');

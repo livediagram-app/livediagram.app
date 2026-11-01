@@ -34,6 +34,8 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Del', '/  ⌫'], label: 'Delete Selection' },
       { keys: ['⌘', '⇧', ']'], label: 'Bring to Front' },
       { keys: ['⌘', '⇧', '['], label: 'Send to Back' },
+      { keys: ['⌥', '⌘', 'K'], label: 'Make Component' },
+      { keys: ['⌥', '⌘', 'B'], label: 'Detach Instance' },
     ],
   },
   {
