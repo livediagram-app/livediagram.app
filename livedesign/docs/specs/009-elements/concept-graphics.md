@@ -87,7 +87,9 @@ export matches the editor. Text re-wraps and re-sizes with the element; it never
 - **Pyramid.** Tiers share the height with a 4px gap and are cut from one triangle, so their edges line up as one
   silhouette; Inverted flips it. A Funnel's bands narrow from the full width to 35% at the bottom, each band a
   trapezoid. Labels are centred; a label that does not fit its tier's width at the smallest size (10px) is ellipsed,
-  so the apex of a tall pyramid shows "Vis…" rather than spilling out.
+  so the apex of a tall pyramid shows "Vis…" rather than spilling out. A Funnel tier with a value splits its width
+  with it: the label centred in the left half, the value (muted, 70%) in the right, on the canvas and in every
+  export alike.
 - **Cycle.** Steps sit on a circle inscribed in the element, each a disc sized so neighbours never touch (the
   smaller of a quarter of the ring's spacing and a fifth of the element), labels inside the disc. Arcs run clockwise
   between neighbours, stopping short of each disc, with an arrowhead. The centre label sits in the middle.
