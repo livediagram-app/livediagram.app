@@ -24,6 +24,7 @@ import { missingRequiredFields, requiredCleared } from './required-fields';
 import type { ItemWrite } from './store';
 import { isTimeSpent } from './duration-fields';
 import { readTimeOp } from './time-tracking';
+import { blockingCycleOf, blockingLoopMessage, type BlockingChange } from './blocked-by';
 
 export function readItemPlace(raw: unknown): ItemPlace | ItemRejection {
   if (raw === undefined) return {};
@@ -161,7 +162,7 @@ export function timeWriteRefusal(
   return def && isTimeSpent(def) && type.fields.includes(field) ? null : 'time_invalid';
 }
 
-type ItemWriteRefusal = { error: ItemRejection; id?: string; field?: string };
+type ItemWriteRefusal = { error: ItemRejection; id?: string; field?: string; message?: string };
 
 // A new card missing a required custom field (docs/specs/026-plan/item-types.md "Required fields"): the first one,
 // or null. A create that restores a card (an undo, a sync or copy: it carries its number, votes or thread) is let
@@ -251,7 +252,7 @@ export function writtenItemsRefusal(
       if (timed)
         return { error: 'field_time_tracked', field: timed, ...(c.id ? { id: c.id } : {}) };
     }
-    return null;
+    return loopRefusal(before, upserts, types, new Map());
   }
   if (write.kind === 'time') {
     const next = upserts[0];
@@ -276,5 +277,23 @@ export function writtenItemsRefusal(
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return { error: bound, id: next.id };
   }
-  return null;
+  return loopRefusal(before, upserts, types, had);
+}
+
+// A write that closes a Blocked By loop (docs/specs/026-plan/item-types.md "Blocked By"): the card, and the sentence
+// naming the chain. Every write is checked, an undo's too, as the api checks it.
+function loopRefusal(
+  before: readonly Item[],
+  upserts: readonly Item[],
+  types: readonly ItemTypeDef[],
+  had: ReadonlyMap<string, Item>,
+): ItemWriteRefusal | null {
+  const changes: BlockingChange[] = upserts.map((next) => {
+    const was = had.get(next.id);
+    return was ? { before: was, next } : { next };
+  });
+  const loop = blockingCycleOf(before, types, changes);
+  return loop
+    ? { error: 'blocks_cycle', id: loop.itemId, message: blockingLoopMessage(loop.chain) }
+    : null;
 }

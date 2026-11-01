@@ -38,6 +38,15 @@ never told a change worked when it shows on no board.
   (`"Sam Reed, Ana Diaz"`, `"#3 Website, #5 Launch"`); writes take a comma list or a JSON list of names or numbers
   back, each resolved as one value is, and one value sets a list of one. `change_card_types` sets the switch with
   `multiple` (a Person or Card field only; any other kind is refused).
+- A **Blocked By** field (a Card field with Blocks on, [Blocked By](item-types.md#blocked-by)) is listed with
+  `blocks: true` on its card type, and its value reads as any Card field's (`"#3 Website, #5 Launch"`). A card that
+  is blocked carries `blocked`, its count of open blockers (outside the plan-wide done columns; trashed and archived
+  blockers ignored), and a card that blocks others carries `blocks`, the live cards it blocks (`["#7 Copy"]`).
+  `change_items` sets blockers by card number as any Card field (`"Blocked By": "#3, #5"`), and a change that would
+  make a loop (A blocks B blocks A) is refused before the write with the chain it would close
+  (`blocks_cycle`: "#5 Launch already waits on #3 Website, so it can't block it."), as the api refuses it too.
+  `change_card_types` sets the switch with `blocks` on `custom`, `addCustom` and `editCustom` (a Card field only;
+  any other kind is refused), which turns `multiple` on with it.
 - A person named for the first time gets a colour no one on the project has yet, while colours remain.
 - Each board's card types are part of what it shows: a card is on a board only when its column is there and the
   board takes its card type ([Plan board](plan-board.md#the-board-set-up)).

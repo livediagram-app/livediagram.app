@@ -488,3 +488,90 @@ describe('a Percent in an export', () => {
     expect(svg).toContain('…');
   });
 });
+
+// docs/specs/026-plan/item-types.md "Blocked By": a blocked card wears the red link badge in exports and thumbnails,
+// at every size, until every blocker is done.
+describe('the blocked badge', () => {
+  const blocking: ItemTypeDef = {
+    ...task,
+    fields: [...task.fields, 'f-blk'],
+    custom: [
+      ...(task.custom ?? []),
+      {
+        id: 'f-blk',
+        label: 'Blocked By',
+        kind: 'card',
+        linkType: 'task',
+        multiple: true,
+        blocks: true,
+      },
+    ],
+  };
+  const withBlocks = [blocking, ...ITEM_TYPES.filter((t) => t.id !== 'task')];
+  const badge = /stroke="#dc2626"[^>]*>(<path [^>]*\/>)+<\/g><text[^>]*>(\d+)<\/text>/;
+  const cards = (blockerStatus: string) =>
+    new Map(
+      [
+        item('a', { title: 'Blocker', status: blockerStatus }, { key: 1 }),
+        item('o', { title: 'Other', status: 'todo' }, { key: 2 }),
+        item('b', { title: 'Waits', status: 'todo', 'f-blk': ['a', 'o', 'gone'] }, { key: 3 }),
+      ].map((i) => [i.id, i]),
+    );
+  const board = (cardSize: 'minimal' | 'detailed') =>
+    ({
+      ...createShape('plan-board', 0, 0),
+      height: 900,
+      planBoard: { ...presetSetup('kanban'), cardSize },
+    }) as BoxedElement;
+
+  it('draws the count of open blockers on a board, Detailed and Minimal', () => {
+    for (const size of ['detailed', 'minimal'] as const) {
+      const svg = svgBoxed(board(size), { items: cards('todo'), itemTypes: withBlocks });
+      expect(svg.match(badge)?.[2]).toBe('2');
+    }
+    // One blocker done (the board's own Done column): one open.
+    expect(
+      svgBoxed(board('detailed'), { items: cards('done'), itemTypes: withBlocks }).match(
+        badge,
+      )?.[2],
+    ).toBe('1');
+  });
+
+  it('reads the plan-wide done statuses when the caller has them, and clears once all are done', () => {
+    const items = cards('shipped');
+    const doneAll = (s: string | undefined) => s === 'shipped' || s === 'todo';
+    expect(
+      svgBoxed(board('detailed'), { items, itemTypes: withBlocks, itemsDone: doneAll }),
+    ).not.toMatch(badge);
+    // Without them, the board's own columns count "shipped" as not done.
+    expect(svgBoxed(board('detailed'), { items, itemTypes: withBlocks }).match(badge)?.[2]).toBe(
+      '2',
+    );
+  });
+
+  it('draws it on a lone Plan card only with the plan-wide done statuses', () => {
+    const el = {
+      ...createShape('plan-card', 0, 0),
+      planCard: { itemId: 'b' },
+    } as BoxedElement;
+    const items = cards('todo');
+    expect(svgBoxed(el, { items, itemTypes: withBlocks })).not.toMatch(badge);
+    expect(
+      svgBoxed(el, { items, itemTypes: withBlocks, itemsDone: (s) => s === 'done' }).match(
+        badge,
+      )?.[2],
+    ).toBe('2');
+  });
+
+  it('gives a flagged blocked card room for both, and a board without Blocks fields none', () => {
+    const items = cards('todo');
+    const flagged = new Map(items);
+    flagged.set('b', { ...items.get('b')!, fields: { ...items.get('b')!.fields, flagged: true } });
+    const svg = svgBoxed(board('detailed'), { items: flagged, itemTypes: withBlocks });
+    expect(svg).toContain('⚑');
+    expect(svg).toMatch(badge);
+    expect(svgBoxed(board('detailed'), { items })).not.toMatch(badge);
+    const shape = board('detailed') as Parameters<typeof planBoardFitHeight>[0];
+    expect(planBoardFitHeight(shape, items, 'light', withBlocks, () => false)).toBe(900);
+  });
+});

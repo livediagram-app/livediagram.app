@@ -13,6 +13,10 @@ import {
   requiredClearedBy,
   statusExcluded,
   typesOf,
+  blocksValueChanged,
+  blockingCycleOf,
+  blockingLoopMessage,
+  type BlockingChange,
   type Item,
   type ItemPerson,
   type ItemRejection,
@@ -98,6 +102,32 @@ export function clearedRequired(
 ): string | null {
   return requiredClearedBy(typesOf(caller.doc?.itemTypes), next, before, undo);
 }
+// A write changing a Blocked By field (docs/specs/026-plan/item-types.md "Blocked By"): only an Editor sets blockers
+// (403 otherwise), and a link that would close a loop is refused (400 `blocks_cycle`, its sentence). The project's
+// items are read only when a Blocks value changed, so an ordinary card write pays for nothing. Null when it passes.
+export async function blockersRefused(
+  ctx: PlanRouteContext,
+  caller: ItemCaller,
+  changes: readonly BlockingChange[],
+): Promise<Response | null> {
+  const types = typesOf(caller.doc?.itemTypes);
+  const field = changes
+    .map((c) => blocksValueChanged(types, c.before, c.next))
+    .find((f) => f !== null);
+  if (!field) return null;
+  if (!(await isItemEditor(ctx, caller))) {
+    console.info('[items] items.blocks.refused', { projectId: caller.projectId });
+    return forbidden();
+  }
+  const loop = blockingCycleOf(await listItems(ctx.env, caller.projectId), types, changes);
+  if (!loop) return null;
+  console.info('[items] items.blocks.cycle', { projectId: caller.projectId, id: loop.itemId });
+  return json(
+    { error: 'blocks_cycle', id: loop.itemId, field, message: blockingLoopMessage(loop.chain) },
+    { status: 400 },
+  );
+}
+
 // A Participant works with cards but never deletes one (docs/specs/013-workspace/share-roles.md "What a
 // Participant changes"): moving a card into or out of the Trash or the Archive, and restoring one whole (its votes,
 // thread and key, an Editor's undo), needs an Editor. Asked only when a write does that, so an ordinary card edit

@@ -6,6 +6,7 @@ import { itemTitle } from './item';
 import { isArchived, isTrashed, linkedCard } from './board';
 import { linkTypesOf, type ItemTypeDef } from './item-types';
 import { fieldCardIds, holdsSeveral } from './several-values';
+import { isBlocksField } from './blocked-by';
 
 // A link field as a card's panel sees it: the field, its label, the card types it points at, and whether it links to
 // several cards (docs/specs/026-plan/item-types.md "Holds Several").
@@ -14,6 +15,8 @@ export interface LinkField {
   label: string;
   linkTypes: readonly string[];
   several?: boolean;
+  // A Blocked By field: its cards block the card (docs/specs/026-plan/item-types.md "Blocked By").
+  blocks?: boolean;
 }
 
 // A link field's stored value read as several-values.ts reads it.
@@ -31,6 +34,7 @@ export function linkFieldsOfType(type: ItemTypeDef): LinkField[] {
         label: c.label,
         linkTypes,
         ...(holdsSeveral(c) ? { several: true } : {}),
+        ...(isBlocksField(c) ? { blocks: true } : {}),
       });
   }
   return out;
@@ -60,6 +64,8 @@ export interface LinkedGroup {
   // The field holds several cards (as the first type offering it has it): a card links here when its list holds this
   // card, and Link Existing adds to that list rather than moving a link.
   several?: boolean;
+  // A Blocked By field: the group is the card's read-only Blocks list (docs/specs/026-plan/item-types.md "Blocked By").
+  blocks?: boolean;
 }
 
 // The cards that point at `target`, grouped by the field they point through: each Card field whose type links to
@@ -84,6 +90,7 @@ export function linkedCardsOf(
           fromTypes: [],
           cards: [],
           ...(holdsSeveral(c) ? { several: true } : {}),
+          ...(isBlocksField(c) ? { blocks: true } : {}),
         };
         groups.push(g);
         byField.set(c.id, g);

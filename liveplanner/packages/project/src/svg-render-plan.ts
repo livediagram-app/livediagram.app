@@ -14,6 +14,9 @@ import {
   type PlanVisualisation,
   type Item,
   type ItemTypeDef,
+  type IsDoneStatus,
+  blockingIndexOf,
+  hasBlocksFields,
 } from '@liveplanner/items';
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
@@ -57,14 +60,29 @@ function finishedOf(setup: Parameters<typeof finishedStatuses>[0]) {
   return (status: string | undefined) => status !== undefined && finished.has(status);
 }
 
+// The plan's Blocked By lookup for one drawing (docs/specs/026-plan/item-types.md "Blocked By"), made once: open
+// means outside the plan-wide done columns (`itemsDone`) when the caller has them, else `fallback`'s (a board's own).
+function blockingFor(
+  items: ReadonlyMap<string, Item> | undefined,
+  types: readonly ItemTypeDef[],
+  itemsDone: IsDoneStatus | undefined,
+  fallback?: IsDoneStatus,
+): Pick<CardFaceContext, 'blocking'> {
+  const isDone = itemsDone ?? fallback;
+  if (!items || !isDone || !hasBlocksFields(types)) return {};
+  return { blocking: blockingIndexOf(items.values(), types, isDone) };
+}
+
 // A board's card faces: each card as tall as its type's Display needs at the board's card size.
 function boardFaceCtx(
   el: Shape,
   items: ReadonlyMap<string, Item> | undefined,
   surface: CanvasSurface,
   types: readonly ItemTypeDef[],
+  itemsDone?: IsDoneStatus,
 ): CardFaceContext {
   const setupOf = normaliseBoardSetup(el.planBoard);
+  const ownDone = setupOf ? finishedOf(setupOf) : undefined;
   return {
     palette: planPalette(surface, ownColours(el)),
     types,
@@ -73,10 +91,11 @@ function boardFaceCtx(
           boardFields: setupOf.cardFields,
           size: setupOf.cardSize ?? 'detailed',
           // Its own done columns, for a Calculated field's Children Done.
-          isDone: finishedOf(setupOf),
+          isDone: ownDone,
         }
       : {}),
     ...(items ? { items } : {}),
+    ...blockingFor(items, types, itemsDone, ownDone),
   };
 }
 
@@ -92,13 +111,15 @@ export function planBoardFitHeight(
   items: ReadonlyMap<string, Item> | undefined,
   surface: CanvasSurface,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
+  // The plan-wide done statuses, for the blocked badge (as svgPlanBoard).
+  itemsDone?: IsDoneStatus,
 ): number {
   const open = { ...el, height: PLAN_BOARD_FIT_PROBE_H };
   const layout = planBoardLayout(
     open,
     items,
     types,
-    measured(boardFaceCtx(el, items, surface, types)),
+    measured(boardFaceCtx(el, items, surface, types, itemsDone)),
   );
   if (!layout) return el.height;
   const cardsEnd = Math.max(
@@ -117,13 +138,15 @@ export function svgPlanBoard(
   items: ReadonlyMap<string, Item> | undefined,
   surface: CanvasSurface,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
+  // The plan-wide done statuses, for the blocked badge; the board's own done columns without them.
+  itemsDone?: IsDoneStatus,
 ): string {
   const p = planPalette(surface, ownColours(el));
   const parts = [
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="12" fill="${p.surface}" stroke="${p.border}" stroke-width="1.5"/>`,
   ];
   // Each card as tall as its type's Display needs at the board's card size (svg-render-plan-card.ts).
-  const faceCtx = boardFaceCtx(el, items, surface, types);
+  const faceCtx = boardFaceCtx(el, items, surface, types, itemsDone);
   const layout = planBoardLayout(el, items, types, measured(faceCtx));
   if (!layout) return inFont(parts.join(''));
   const { setup, projection } = layout;
@@ -206,6 +229,8 @@ export function svgPlanCard(
   items: ReadonlyMap<string, Item> | undefined,
   surface: CanvasSurface,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
+  // The plan-wide done statuses: a lone card has no board's to fall back on, so it wears no badge without them.
+  itemsDone?: IsDoneStatus,
 ): string {
   const id = el.planCard?.itemId ?? '';
   // Without the store in hand, a neutral placeholder rather than "not found".
@@ -226,7 +251,13 @@ export function svgPlanCard(
   }
   // The same face a board draws, Detailed, inside the element's own bounds.
   return inFont(
-    planCardFace(item, el.x, el.y, el.width, { palette: p, types, items, height: el.height }).svg,
+    planCardFace(item, el.x, el.y, el.width, {
+      palette: p,
+      types,
+      items,
+      height: el.height,
+      ...blockingFor(items, types, itemsDone),
+    }).svg,
   );
 }
 

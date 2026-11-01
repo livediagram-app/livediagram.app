@@ -399,6 +399,91 @@ describe('planListing', () => {
     });
   });
 
+  // docs/specs/026-plan/item-types.md "Blocked By": blockers by card number, the blocked count and the mirror.
+  describe('a Blocked By field', () => {
+    const JOB = {
+      ...BUG,
+      id: 'job',
+      label: 'Job',
+      fields: ['title', 'status', 'f-blk'],
+      custom: [
+        {
+          id: 'f-blk',
+          label: 'Blocked By',
+          kind: 'card' as const,
+          linkType: 'job',
+          multiple: true,
+          blocks: true,
+        },
+      ],
+    };
+    const cards = [
+      item(1, 'jjj111', { title: 'Website', status: 'todo~x' }, 'job'),
+      item(2, 'jjj222', { title: 'Launch', status: 'done~x' }, 'job'),
+      item(3, 'jjj333', { title: 'Copy', status: 'todo~x', 'f-blk': ['jjj111', 'jjj222'] }, 'job'),
+    ];
+    const plan = { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, JOB] };
+    const writes: string[] = [];
+    const engine = () =>
+      api(
+        {
+          [`/projects/${D}/items`]: (r: Request) =>
+            r.method === 'GET'
+              ? Response.json({ items: cards, rev: 1 })
+              : (writes.push('add'), Response.json({ item: { ...cards[0], id: 'new' }, rev: 2 })),
+          [`/projects/${D}/items/jjj111`]: () => {
+            writes.push('set');
+            return Response.json({ item: cards[0], rev: 2 });
+          },
+        },
+        plan,
+      ).api;
+
+    it('lists the switch, the blockers, the open count and what each card blocks', async () => {
+      const listing = planListing(await readPlanState(engine(), D));
+      const copy = listing.items.find((i) => i.ref === '#3')!;
+      expect(copy.fields['Blocked By']).toBe('#1 Website, #2 Launch');
+      // Launch is done, so one blocker is open.
+      expect(copy.blocked).toBe(1);
+      expect(listing.items.find((i) => i.ref === '#1')!.blocks).toEqual(['#3 Copy']);
+      expect(listing.items.find((i) => i.ref === '#1')!.blocked).toBeUndefined();
+      expect(listing.types.find((t) => t.id === 'job')!.custom[0]).toMatchObject({ blocks: true });
+    });
+
+    it('stops a change that closes a loop before it writes, naming the chain', async () => {
+      writes.length = 0;
+      const a = engine();
+      const result = await applyItemChanges(
+        a,
+        D,
+        [{ op: 'set', item: '#1', fields: { 'Blocked By': '#3' } }],
+        await readPlanState(a, D),
+      );
+      expect(result.refusal).toEqual({
+        code: 'blocks_cycle',
+        message: "#3 Copy already waits on #1 Website, so it can't block it.",
+      });
+      expect(writes).toEqual([]);
+      // A link that closes nothing is written, and so is a new card blocked by one.
+      const fine = await applyItemChanges(
+        a,
+        D,
+        [
+          { op: 'set', item: '#1', fields: { 'Blocked By': '#2' } },
+          { op: 'add', title: 'Later', type: 'Job', fields: { 'Blocked By': '#3' } },
+        ],
+        await readPlanState(a, D),
+      );
+      expect(fine.refusal).toBeUndefined();
+      expect(writes).toEqual(['set', 'add']);
+    });
+
+    it('reads the api’s loop refusal in the same words', () => {
+      const refusal = apiRefusalOf(new ApiError(400, '{"error":"blocks_cycle"}'));
+      expect(refusal?.message).toContain('block each other in a loop');
+    });
+  });
+
   it('reads a card link as its card’s number and title', async () => {
     const linked = [
       item(3, 'aaa333', { title: 'Epic' }, 'project'),

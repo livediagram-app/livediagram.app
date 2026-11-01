@@ -66,6 +66,13 @@ A card's type may leave statuses out ([Item types](item-types.md#an-item-type)):
 refused (`status_excluded`), from the editor, the api and agents alike. A card already in one is never moved out
 by it, and putting a change back (a restore from the Trash, an undo or redo) is never refused.
 
+A card can wait on other cards through a **Blocked By** field: a Card field with its Blocks switch on, holding the
+ids of the cards that block it ([Item types](item-types.md#blocked-by)). It is stored like any Card field's value
+(a list of card ids under the field's id); nothing is stored for the mirror (the cards a card **blocks**) or for
+being **blocked** (an open blocker, one outside the plan-wide done columns), both read from the cards. A write that
+would make a card block itself, directly or through others, is refused (`blocks_cycle`), from the editor, the api and
+agents alike, and only an Editor changes a Blocked By field's value.
+
 ### Created and Last Edited
 
 Four built-in fields read the item's own stamps, so people can see who made a card and who last changed it, and

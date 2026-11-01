@@ -192,6 +192,9 @@ export interface CustomFieldDef {
   // A Person or Card field holds several people or cards (docs/specs/026-plan/item-types.md "Holds Several";
   // several-values.ts). Kept only as true, only on those two kinds.
   multiple?: boolean;
+  // A Card field whose cards block the card: a Blocked By field (docs/specs/026-plan/item-types.md "Blocked By";
+  // blocked-by.ts). Kept only as true, only on a Card field.
+  blocks?: boolean;
 }
 
 // The most card types one Card field links to: every type the catalogue can hold (ITEM_TYPES_MAX).

@@ -65,6 +65,7 @@ import {
   itemCaller,
   itemNotFound,
   isItemEditor,
+  blockersRefused,
   rejected,
   relay,
   retiresItem,
@@ -271,6 +272,9 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   // A required custom field left empty (docs/specs/026-plan/item-types.md "Required fields"); a restore passes.
   const missing = createRefusal(types, input);
   if (missing) return rejected(missing.error, missing.field);
+  // Blockers are an Editor's, and never close a loop (docs/specs/026-plan/item-types.md "Blocked By").
+  const blocked = await blockersRefused(ctx, caller, [{ next: { ...input, id: input.id ?? '' } }]);
+  if (blocked) return blocked;
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
@@ -311,6 +315,13 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     if (missing) return rejected(missing.error, missing.field);
     creates.push(input);
   }
+  // A synced card's blockers never close a loop (docs/specs/026-plan/item-types.md "Blocked By").
+  const blocked = await blockersRefused(
+    ctx,
+    caller,
+    creates.map((c) => ({ next: { ...c, id: c.id ?? '' } })),
+  );
+  if (blocked) return blocked;
   const made = await createMany(ctx, caller, creates);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
@@ -355,6 +366,8 @@ export async function writeItem(
     if (retiresItem(item, next) && !(await isItemEditor(ctx, caller))) return forbidden();
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return rejected(bound);
+    const blocked = await blockersRefused(ctx, caller, [{ before: item, next }]);
+    if (blocked) return blocked;
     const rev = await updateItemAtRev(ctx.env, caller.projectId, next, item.rev);
     if (rev !== null) {
       relay(ctx, caller.projectId, [next], [], rev);

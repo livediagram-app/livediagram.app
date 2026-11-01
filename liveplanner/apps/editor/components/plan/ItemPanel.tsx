@@ -28,6 +28,7 @@ import {
   type LinkedGroup,
   type LabelUse,
   type BoardStatusTypes,
+  hasBlocksFields,
 } from '@liveplanner/items';
 import { DialogCloseButton } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -36,6 +37,7 @@ import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
 import { LinkedCardGroup } from './LinkedCards';
+import { BlockedBySections } from './BlockedBy';
 import { LinkedActionBanner } from './LinkedActionBanner';
 import type { PlanContextValue } from './PlanContext';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
@@ -239,11 +241,13 @@ function ItemPanelContent({
     onOpenItem,
   };
 
-  // The Linked as sections sit on the type's first tab, before Comments, even with no cards in them.
+  // The Linked as sections sit on the type's first tab, before Comments, even with no cards in them; a card's Blocked
+  // By sections lead them (docs/specs/026-plan/item-types.md "Blocked By").
   const firstTabId = tabs[0]?.id;
-  const showsChildren = linkedGroups.length > 0;
+  const showsChildren = linkedGroups.length > 0 || hasBlocksFields([type]);
   const childSection = (
     <div key="child-cards">
+      <BlockedBySections item={item} type={type} onOpen={(id) => onOpenItem(id, 'ChildCard')} />
       {linkedGroups.map((g) => (
         <LinkedCardGroup
           key={g.fieldId}

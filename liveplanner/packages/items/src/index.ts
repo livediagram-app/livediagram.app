@@ -4,6 +4,7 @@
 export * from './item';
 export * from './card-text';
 export * from './item-types';
+export * from './blocked-by';
 export * from './glyphs';
 export * from './type-catalogue';
 export * from './type-duplicate';
@@ -27,6 +28,7 @@ export * from './board-widgets';
 export * from './plan-views';
 export * from './plan-view-dates';
 export * from './plan-view-gantt';
+export * from './plan-view-gantt-arrows';
 export * from './gantt-row-order';
 export * from './plan-view-charts';
 export * from './plan-view-statuses';
