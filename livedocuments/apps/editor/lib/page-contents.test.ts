@@ -56,6 +56,12 @@ describe('the Contents list', () => {
     expect(rows[1]!.aspect).toBeGreaterThan(1.7);
   });
 
+  it('marks a page of any kind whose slide the deck skips', () => {
+    const marked = contentsRows(pages, { hiddenInSlides: (id) => id === 'a' || id === 'b' });
+    expect(marked.map((r) => r.hiddenInSlides)).toEqual([true, true, undefined, undefined]);
+    expect(rows.every((r) => r.hiddenInSlides === undefined)).toBe(true);
+  });
+
   it('finds pages by name, kind or number, every word', () => {
     expect(filterContents(rows, 'slide').map((r) => r.id)).toEqual(['b', 'd']);
     expect(filterContents(rows, '3').map((r) => r.id)).toEqual(['c']);

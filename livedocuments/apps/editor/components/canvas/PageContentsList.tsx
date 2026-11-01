@@ -5,33 +5,25 @@
 // (PageContentsSidebar). The state behind them is usePageContents.
 import { Fragment, type CSSProperties } from 'react';
 import {
+  lucideEyeOff,
   lucideGripVertical,
-  lucideCopy,
   lucideLock,
-  lucideLockOpen,
-  lucideTrash2,
   lucideSearch,
 } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, Tooltip, trustedHtml } from '@livedocuments/ui';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
+import { lucideGlyph, trustedHtml } from '@livedocuments/ui';
 import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
-import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
-  MenuActionRow,
-  MenuGroupSeparator,
-  MenuHeader,
-  PortalMenu,
-} from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { useRowMenu } from '@liveworkspace/workbench/components/primitives/useRowMenu';
+  PageRowMenu,
+  PageRowMenuButton,
+  PageRowStack,
+  usePageRowMenu,
+} from '@liveworkspace/workbench/components/canvas/PageRowMenu';
 import { CONTENTS_FIND_AFTER, type ContentsRow } from '@/lib/page-contents';
 import type { SlideThumb } from '@/lib/slide-thumb';
-import type { PageActions, PageContents } from '@/hooks/ui/usePageContents';
+import type { PageContents } from '@/hooks/ui/usePageContents';
 
 const LockIcon = lucideGlyph(lucideLock, 12);
-const LockToolIcon = lucideGlyph(lucideLock, 14);
-const UnlockIcon = lucideGlyph(lucideLockOpen, 14);
-const CopyIcon = lucideGlyph(lucideCopy, 14);
-const DeleteIcon = lucideGlyph(lucideTrash2, 14);
+const HiddenIcon = lucideGlyph(lucideEyeOff, 12);
 const GripIcon = lucideGlyph(lucideGripVertical, 14);
 const FindIcon = lucideGlyph(lucideSearch, 14);
 
@@ -72,8 +64,9 @@ export function ContentsFind({ contents }: { contents: PageContents }) {
 
 // The rows: `list` in the popover (number, small thumbnail, name side by side), `film` in the
 // sidebar (a filmstrip, as a slide editor shows its slides: the number beside a picture as wide as
-// the column, the name under it). Each row's name shares its line with the page's own toolbar (an
-// Editor's), shown while the row is hovered, focused or here, and always to a finger.
+// the column, the name under it). An Editor's page actions sit down the row's left: in the
+// filmstrip the grip, Delete and ⋯ stacked under the number, in the popover's compact rows the ⋯
+// under the number (the grip at the row's end). One ⋯ menu serves the whole list.
 export function ContentsList({
   contents,
   variant,
@@ -101,93 +94,119 @@ export function ContentsList({
     thumbs,
     actionsFor,
   } = contents;
+  const menu = usePageRowMenu();
   const Row = variant === 'film' ? FilmRow : ListRow;
+  // The open menu's page, read afresh each render so its verbs follow the page (locked, moved).
+  const menuRow = menu.openId ? shown.find((r) => r.id === menu.openId) : undefined;
+  const menuModel = menuRow ? actionsFor(menuRow) : null;
   return (
-    <div
-      ref={list}
-      role="list"
-      aria-label="Pages"
-      onKeyDown={onListKey}
-      className={`flex min-h-0 flex-col overflow-y-auto ${className}`}
-      style={style}
-    >
-      {shown.length === 0 ? (
-        <p className="px-2 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-          No page matches “{query}”.
-        </p>
-      ) : null}
-      {shown.map((row, i) => (
-        <Fragment key={row.id}>
-          {reorder.caretBefore(i) ? <DropCaret /> : null}
-          <div
-            role="listitem"
-            data-contents-slot={i}
-            onClick={(e) => go(row, e.timeStamp)}
-            // A mouse or pen drags the whole row; a finger drags its grip, so the list still scrolls.
-            onPointerDown={(e) => {
-              if (e.pointerType !== 'touch') reorder.beginDrag(e, row.id);
-            }}
-            onPointerMove={reorder.moveDrag}
-            onPointerUp={reorder.endDrag}
-            onPointerCancel={reorder.endDrag}
-            // The row wears its button's keyboard focus: the button lies under the row's own content.
-            className={`group relative flex w-full cursor-pointer text-left transition has-[>button:focus-visible]:outline-2 has-[>button:focus-visible]:outline-brand-600 ${
-              reorder.moving && reorder.draggingId === row.id ? 'opacity-50' : ''
-            } ${variant === 'film' ? FILM_ROW_CLASS(row.id === current) : LIST_ROW_CLASS(row.id === current)}`}
-          >
-            {/* The row opens through one button stretched across it; its toolbar and grip sit above that button as
-                controls of their own. An option holding them was a control nested in a control (docs/specs/007-editor/pages-mode.md). */}
-            <button
-              ref={(el) => registerRow(row.id, el)}
-              type="button"
-              aria-label={row.name}
-              aria-current={row.id === current ? 'page' : undefined}
-              data-page-row={row.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                go(row, e.timeStamp);
+    <>
+      <div
+        ref={list}
+        role="list"
+        aria-label="Pages"
+        onKeyDown={onListKey}
+        className={`flex min-h-0 flex-col overflow-y-auto ${className}`}
+        style={style}
+      >
+        {shown.length === 0 ? (
+          <p className="px-2 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            No page matches “{query}”.
+          </p>
+        ) : null}
+        {shown.map((row, i) => {
+          const actions = actionsFor(row);
+          const rowMenu = actions ? menu.rowProps(row.id) : null;
+          const grip = reorderable ? (
+            <span
+              aria-hidden
+              data-contents-grip=""
+              onPointerDown={(e) => {
+                if (e.pointerType === 'touch') reorder.beginDrag(e, row.id);
               }}
-              className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
-            />
-            <Row
-              row={row}
-              here={row.id === current}
-              thumb={thumbs.get(row.id)}
-              actions={
-                <span className="relative z-10 flex">
-                  {variant === 'film' ? (
-                    <PageToolbar
-                      row={row}
-                      actions={actionsFor(row)}
-                      shown={touch || row.id === current}
-                    />
-                  ) : (
-                    <PageMenu row={row} actions={actionsFor(row)} />
-                  )}
-                </span>
-              }
-              grip={
-                reorderable ? (
-                  <span
-                    aria-hidden
-                    data-contents-grip=""
-                    onPointerDown={(e) => {
-                      if (e.pointerType === 'touch') reorder.beginDrag(e, row.id);
-                    }}
-                    className={`relative z-10 flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-slate-400 transition ${
-                      touch ? '' : 'opacity-0 group-hover:opacity-100'
-                    }`}
-                  >
-                    <GripIcon />
-                  </span>
-                ) : null
-              }
-            />
-          </div>
-        </Fragment>
-      ))}
-      {reorder.caretAfterLast ? <DropCaret /> : null}
-    </div>
+              // In the filmstrip it is the top of the row's stack, shown with it.
+              className={`relative z-10 flex w-5 shrink-0 cursor-grab touch-none items-center justify-center text-slate-400 transition ${
+                variant === 'film' ? 'h-6' : 'h-8'
+              } ${touch || variant === 'film' ? '' : 'opacity-0 group-hover:opacity-100'}`}
+            >
+              <GripIcon />
+            </span>
+          ) : null;
+          return (
+            <Fragment key={row.id}>
+              {reorder.caretBefore(i) ? <DropCaret /> : null}
+              <div
+                role="listitem"
+                data-contents-slot={i}
+                onClick={(e) => go(row, e.timeStamp)}
+                onContextMenu={rowMenu?.onContextMenu}
+                // A mouse or pen drags the whole row; a finger drags its grip, so the list still
+                // scrolls, and a finger held still opens the page's menu.
+                onPointerDown={(e) => {
+                  rowMenu?.onPointerDown(e);
+                  if (e.pointerType !== 'touch') reorder.beginDrag(e, row.id);
+                }}
+                onPointerMove={reorder.moveDrag}
+                onPointerUp={reorder.endDrag}
+                onPointerCancel={reorder.endDrag}
+                // The row wears its button's keyboard focus: the button lies under the row's own content.
+                className={`group relative flex w-full cursor-pointer select-none text-left transition [-webkit-touch-callout:none] has-[>button:focus-visible]:outline-2 has-[>button:focus-visible]:outline-brand-600 ${
+                  reorder.moving && reorder.draggingId === row.id ? 'opacity-50' : ''
+                } ${variant === 'film' ? FILM_ROW_CLASS(row.id === current) : LIST_ROW_CLASS(row.id === current)}`}
+              >
+                {/* The row opens through one button stretched across it; its tools and grip sit above that button as
+                    controls of their own. An option holding them was a control nested in a control (docs/specs/007-editor/pages-mode.md). */}
+                <button
+                  ref={(el) => registerRow(row.id, el)}
+                  type="button"
+                  aria-label={row.name}
+                  aria-current={row.id === current ? 'page' : undefined}
+                  data-page-row={row.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    go(row, e.timeStamp);
+                  }}
+                  className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
+                />
+                <Row
+                  row={row}
+                  here={row.id === current}
+                  thumb={thumbs.get(row.id)}
+                  tools={
+                    variant === 'film' ? (
+                      actions ? (
+                        <PageRowStack
+                          id={row.id}
+                          name={row.name}
+                          menu={menu}
+                          grip={grip}
+                          shown={touch || row.id === current}
+                          {...(actions.remove ? { remove: actions.remove } : {})}
+                        />
+                      ) : null
+                    ) : actions ? (
+                      <span className="relative z-10 flex">
+                        <PageRowMenuButton id={row.id} name={row.name} menu={menu} reveal />
+                      </span>
+                    ) : null
+                  }
+                  grip={variant === 'list' ? grip : null}
+                />
+              </div>
+            </Fragment>
+          );
+        })}
+        {reorder.caretAfterLast ? <DropCaret /> : null}
+      </div>
+      {menuRow && menuModel ? (
+        <PageRowMenu
+          title={menuRow.name}
+          model={menuModel}
+          anchor={menu.anchor}
+          onClose={menu.close}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -206,7 +225,9 @@ type RowProps = {
   row: ContentsRow;
   here: boolean;
   thumb: SlideThumb | undefined;
-  actions: React.ReactNode;
+  // The page's tools down the row's left (an Editor's), under its number.
+  tools: React.ReactNode;
+  // The popover's grip, at the row's end.
   grip: React.ReactNode;
 };
 
@@ -249,16 +270,8 @@ function Picture({
   );
 }
 
-// The name, the padlock on a locked page, and the page's toolbar at the line's end.
-function NameLine({
-  row,
-  small,
-  actions,
-}: {
-  row: ContentsRow;
-  small?: boolean;
-  actions: React.ReactNode;
-}) {
+// The name, then the padlock on a locked page and a crossed eye on a page hidden in Slides.
+function NameLine({ row, small }: { row: ContentsRow; small?: boolean }) {
   return (
     <span className="flex h-6 min-w-0 items-center gap-1.5">
       <span
@@ -279,148 +292,21 @@ function NameLine({
           <LockIcon />
         </span>
       ) : null}
-      <span className="ml-auto flex shrink-0 items-center">{actions}</span>
-    </span>
-  );
-}
-
-// A page's own toolbar: Add to Slides (a slide page not yet in the deck), Duplicate, Lock or Unlock
-// and Delete, each a glyph with its Tooltip. None for a Participant or a Viewer. Shown while the row
-// is hovered or focused, and while it is here (or always, to a finger); laid out all along, so the
-// row never shifts as it shows.
-function PageToolbar({
-  row,
-  actions,
-  shown,
-}: {
-  row: ContentsRow;
-  actions: PageActions | null;
-  shown: boolean;
-}) {
-  if (!actions) return null;
-  const tools: { key: string; label: string; icon: React.ReactNode; run: () => void }[] = [];
-  if (actions.addToSlides)
-    tools.push({
-      key: 'slides',
-      label: 'Add to Slides',
-      icon: <SlideDeckIcon />,
-      run: actions.addToSlides,
-    });
-  if (actions.duplicate)
-    tools.push({
-      key: 'duplicate',
-      label: 'Duplicate',
-      icon: <CopyIcon />,
-      run: actions.duplicate,
-    });
-  tools.push({
-    key: 'lock',
-    label: row.locked ? 'Unlock' : 'Lock',
-    icon: row.locked ? <UnlockIcon /> : <LockToolIcon />,
-    run: actions.toggleLock,
-  });
-  if (actions.remove)
-    tools.push({ key: 'delete', label: 'Delete', icon: <DeleteIcon />, run: actions.remove });
-  return (
-    <span
-      role="toolbar"
-      aria-label={`${row.name} actions`}
-      data-page-toolbar=""
-      className={`flex items-center gap-px transition-opacity duration-micro ${
-        shown ? '' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
-      }`}
-    >
-      {tools.map((tool) => (
-        <Tooltip key={tool.key} label={tool.label}>
-          <button
-            type="button"
-            aria-label={`${tool.label} ${row.name}`}
-            data-page-action={tool.key}
-            // A press here is the tool's, not the row's: no glide, no drag.
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              tool.run();
-            }}
-            onKeyDown={(e) => e.stopPropagation()}
-            className={`flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-900/5 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-100 ${
-              tool.key === 'delete' ? 'hover:text-red-700 dark:hover:text-red-300' : ''
-            }`}
-          >
-            {tool.icon}
-          </button>
-        </Tooltip>
-      ))}
-    </span>
-  );
-}
-
-// The popover's rows are narrower to spare: one ⋯ button opens the same actions as a menu, a
-// header naming the page, Delete last under its own separator.
-function PageMenu({ row, actions }: { row: ContentsRow; actions: PageActions | null }) {
-  const menu = useRowMenu();
-  if (!actions) return null;
-  const then = (fn: () => void) => () => {
-    fn();
-    menu.close();
-  };
-  return (
-    // The menu is portalled, but its events still bubble through React to the row: none of its
-    // presses, keys or clicks are the row's (no glide, no drag).
-    <span
-      onPointerDown={(e) => e.stopPropagation()}
-      onKeyDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <EllipsisTriggerButton
-        {...menu.triggerProps}
-        size="md"
-        reveal
-        label={`Menu for ${row.name}`}
-      />
-      {menu.open ? (
-        <PortalMenu anchor={menu.triggerRef.current} placement="below" onClose={menu.close}>
-          <MenuHeader title={row.name} />
-          {actions.addToSlides ? (
-            <MenuActionRow
-              plain
-              icon={<SlideDeckIcon />}
-              label="Add to Slides"
-              onClick={then(actions.addToSlides)}
-            />
-          ) : null}
-          {actions.duplicate ? (
-            <MenuActionRow
-              plain
-              icon={<CopyIcon />}
-              label="Duplicate"
-              onClick={then(actions.duplicate)}
-            />
-          ) : null}
-          <MenuActionRow
-            plain
-            icon={row.locked ? <UnlockIcon /> : <LockToolIcon />}
-            label={row.locked ? 'Unlock' : 'Lock'}
-            onClick={then(actions.toggleLock)}
-          />
-          {actions.remove ? (
-            <>
-              <MenuGroupSeparator />
-              <MenuActionRow
-                plain
-                icon={<DeleteIcon />}
-                label="Delete"
-                onClick={then(actions.remove)}
-              />
-            </>
-          ) : null}
-        </PortalMenu>
+      {row.hiddenInSlides ? (
+        <span
+          role="img"
+          className="shrink-0 text-slate-400"
+          aria-label="Hidden in Slides"
+          data-contents-hidden=""
+        >
+          <HiddenIcon />
+        </span>
       ) : null}
     </span>
   );
 }
 
-function ListRow({ row, here, thumb, actions, grip }: RowProps) {
+function ListRow({ row, here, thumb, tools, grip }: RowProps) {
   const w = Math.min(LIST_MAX_W, Math.round(LIST_THUMB_H * row.aspect));
   const h = Math.round(w / row.aspect);
   return (
@@ -428,12 +314,13 @@ function ListRow({ row, here, thumb, actions, grip }: RowProps) {
       {here ? (
         <span aria-hidden className="absolute inset-y-2 left-0 w-1 rounded-full bg-brand-500" />
       ) : null}
-      <span className="flex w-7 shrink-0 flex-col items-center">
+      <span className="flex w-7 shrink-0 flex-col items-center gap-0.5">
         <span
           className={`text-sm font-semibold tabular-nums ${here ? 'text-brand-700 dark:text-brand-200' : 'text-slate-500 dark:text-slate-400'}`}
         >
           {row.number}
         </span>
+        {tools}
       </span>
       <span
         className="flex shrink-0 items-center justify-center"
@@ -442,14 +329,14 @@ function ListRow({ row, here, thumb, actions, grip }: RowProps) {
         <Picture thumb={thumb} w={w} h={h} here={here} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <NameLine row={row} actions={actions} />
+        <NameLine row={row} />
       </span>
       {grip}
     </>
   );
 }
 
-function FilmRow({ row, here, thumb, actions, grip }: RowProps) {
+function FilmRow({ row, here, thumb, tools }: RowProps) {
   const w = Math.min(FILM_MAX_W, Math.round(FILM_MAX_H * row.aspect));
   const h = Math.round(w / row.aspect);
   return (
@@ -460,14 +347,14 @@ function FilmRow({ row, here, thumb, actions, grip }: RowProps) {
         >
           {row.number}
         </span>
-        {grip}
+        {tools}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
         <span className="flex" style={{ width: FILM_MAX_W }}>
           <Picture thumb={thumb} w={w} h={h} here={here} large />
         </span>
         <span className="flex min-w-0 flex-col pl-0.5" style={{ width: FILM_MAX_W }}>
-          <NameLine row={row} small actions={actions} />
+          <NameLine row={row} small />
         </span>
       </span>
     </>

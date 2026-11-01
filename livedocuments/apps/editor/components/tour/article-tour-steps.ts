@@ -27,8 +27,7 @@ export function articleTourSteps(): PageTourStep[] {
       id: 'toolbar',
       title: 'The Page Toolbar',
       body: `${TOOLBAR_BODY} It acts on what you have selected.`,
-      // The article's own formatting toolbar, by its name: the Contents panel's page rows carry data-page-toolbar too,
-      // and with two pages or more (the panel open) the step rang one of those instead.
+      // The article's own formatting toolbar, by its name, so no other toolbar on screen is taken for it.
       selector: () => ARTICLE_TOOLBAR,
       // The toolbar shows only once the step holds it up: the step needs only its page on screen (spec "Filtering").
       requires: (api) => pageSheet(api.pageId),
