@@ -329,6 +329,20 @@ describe('settings catalogue', () => {
     expect(ids).toContain('tokens');
   });
 
+  it('shows a guest Webhooks as API Tokens is shown them: a stand-in that says to sign in', () => {
+    // Signed in, the Account section's own Webhooks (a link to liveworkspace's Settings) stands in its place.
+    const guest = visibleCategories({ emailEnabled: false, signedIn: false });
+    const webhooks = guest.find((c) => c.id === 'webhooks')!;
+    expect(webhooks.parent).toBe('account');
+    expect(webhooks.rows).toEqual([
+      expect.objectContaining({ kind: 'note', key: 'webhooksSignIn', signIn: true }),
+    ]);
+    const ids = visibleCategories({ emailEnabled: false, signedIn: true }).map((c) => c.id);
+    expect(ids).not.toContain('webhooks');
+    const workbench = visibleCategories({ emailEnabled: false, signedIn: false, workbench: true });
+    expect(workbench.map((c) => c.id)).not.toContain('webhooks');
+  });
+
   it('points every link row at a category that exists', () => {
     const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
     const links = ALL_ROWS.filter((r) => r.kind === 'link');

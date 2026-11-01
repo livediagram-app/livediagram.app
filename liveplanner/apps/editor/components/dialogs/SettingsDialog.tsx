@@ -145,6 +145,8 @@ export function SettingsDialog({
       ...(profile ? { profile } : {}),
       // Sign-in methods and devices are liveworkspace.app's session's.
       securityHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
+      // Webhooks are added and managed in liveworkspace's Settings (liveworkspace/docs/specs/004-index/webhooks.md).
+      webhooksHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=webhooks`,
       emails: emailEnabled,
       cloudSync,
     }),

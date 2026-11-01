@@ -9,14 +9,17 @@
 // written again meanwhile has a new id and stays for the next drain; a drain that fails keeps every key it did not
 // push and retries a minute later.
 //
-// Kinds: `summary` (key ''), `tab` (key: the tab id), `edit` (key: `<person>@<time>`, one per person).
+// Kinds: `summary` (key ''), `tab` (key: the tab id), `edit` (key: `<person>@<time>`, one per person), `card_moved`
+// (key: a plan card's move as JSON, for webhooks: liveworkspace/docs/specs/004-index/webhooks.md "What it sends").
 
 import {
   APP_EVENTS_MAX,
+  CARD_MOVES_MAX,
   COLLAB_MAX_ACTIONS,
   COLLAB_MAX_THREADS,
   IndexError,
   type AppTimelineEvent,
+  type CardMove,
   type CollabPush,
   type IndexAppClient,
   type ItemSummary,
@@ -61,6 +64,50 @@ export function editedOf(key: string): AppTimelineEvent | null {
   return { type: 'edited', actorId, at: time };
 }
 
+// ---------- Card moves ---------------------------------------------------------------------------------------
+
+export const CARD_MOVED_KIND = 'card_moved';
+
+// A card's move as its outbox key: the JSON the index takes, its text cut as the index cuts it.
+const CARD_TEXT_MAX = 200;
+export const cardMoveKeyOf = (move: CardMove): string =>
+  JSON.stringify({
+    cardId: move.cardId,
+    cardKey: move.cardKey,
+    card: move.card.slice(0, CARD_TEXT_MAX),
+    from: move.from.slice(0, CARD_TEXT_MAX),
+    to: move.to.slice(0, CARD_TEXT_MAX),
+    ...(move.actorName ? { actorName: move.actorName.slice(0, CARD_TEXT_MAX) } : {}),
+    at: move.at,
+  } satisfies CardMove);
+
+// The move a key holds, or null for one that doesn't parse (the key is done).
+export function cardMoveOf(key: string): CardMove | null {
+  try {
+    const m = JSON.parse(key) as Partial<CardMove> | null;
+    if (
+      !m ||
+      typeof m.cardId !== 'string' ||
+      typeof m.card !== 'string' ||
+      typeof m.from !== 'string' ||
+      typeof m.to !== 'string' ||
+      typeof m.at !== 'number'
+    )
+      return null;
+    return {
+      cardId: m.cardId,
+      cardKey: typeof m.cardKey === 'number' ? m.cardKey : null,
+      card: m.card,
+      from: m.from,
+      to: m.to,
+      ...(typeof m.actorName === 'string' ? { actorName: m.actorName } : {}),
+      at: m.at,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ---------- The collab push ----------------------------------------------------------------------------------
 
 // A tab's threads and actions capped as the index caps one push: a tab past it keeps its newest.
@@ -98,7 +145,8 @@ async function inBatches(tasks: (() => Promise<void>)[]): Promise<void> {
   }
 }
 
-// One drain over the outbox's rows (oldest first): up to DRAIN_TABS tabs and APP_EVENTS_MAX editors. Without a
+// One drain over the outbox's rows (oldest first): up to DRAIN_TABS tabs, APP_EVENTS_MAX editors and CARD_MOVES_MAX
+// card moves (one push). Without a
 // client (no index configured) every key is done.
 export async function drainIndexOutbox(
   itemId: string,
@@ -119,13 +167,23 @@ export async function drainIndexOutbox(
       .slice(0, APP_EVENTS_MAX)
       .map((r) => r.id),
   );
+  const moved = new Set(
+    rows
+      .filter((r) => r.kind === CARD_MOVED_KIND)
+      .slice(0, CARD_MOVES_MAX)
+      .map((r) => r.id),
+  );
   const pending = rows.filter(
-    (r) => (r.kind !== 'tab' || tabs.has(r.key)) && (r.kind !== 'edit' || editors.has(r.id)),
+    (r) =>
+      (r.kind !== 'tab' || tabs.has(r.key)) &&
+      (r.kind !== 'edit' || editors.has(r.id)) &&
+      (r.kind !== CARD_MOVED_KIND || moved.has(r.id)),
   );
   const done: number[] = [];
   const failures: unknown[] = [];
   const tasks: (() => Promise<void>)[] = [];
   const edits: { id: number; event: AppTimelineEvent }[] = [];
+  const moves: { id: number; move: CardMove }[] = [];
   let activity: Promise<void> | null = null;
 
   const push = (ids: number[], send: () => Promise<void>) =>
@@ -153,6 +211,10 @@ export async function drainIndexOutbox(
       const event = editedOf(row.key);
       if (event) edits.push({ id: row.id, event });
       else done.push(row.id);
+    } else if (row.kind === CARD_MOVED_KIND) {
+      const move = cardMoveOf(row.key);
+      if (move) moves.push({ id: row.id, move });
+      else done.push(row.id);
     } else {
       // A kind no longer pushed.
       done.push(row.id);
@@ -165,6 +227,16 @@ export async function drainIndexOutbox(
         client!.pushEvents(
           itemId,
           edits.map((e) => e.event),
+        ),
+    );
+  }
+  if (moves.length > 0) {
+    push(
+      moves.map((m) => m.id),
+      () =>
+        client!.pushCardMoves(
+          itemId,
+          moves.map((m) => m.move),
         ),
     );
   }

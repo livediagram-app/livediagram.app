@@ -235,6 +235,18 @@ export const INDEX_ERRORS = [
   'invalid_form',
   'invalid_form_seen',
   'invalid_events',
+  // Webhooks (webhooks.md): a malformed body, an address refused, a scope full, no key set, a caller who isn't an
+  // account, card moves malformed.
+  'invalid_webhook',
+  'webhook_url_invalid',
+  'webhook_url_private',
+  'webhook_limit',
+  'webhook_not_found',
+  'webhook_paused',
+  'webhooks_unavailable',
+  'webhooks_need_account',
+  'not_team_admin',
+  'invalid_moves',
   'invalid_password',
   // A new share password shorter than SHARE_PASSWORD_MIN.
   'password_too_short',

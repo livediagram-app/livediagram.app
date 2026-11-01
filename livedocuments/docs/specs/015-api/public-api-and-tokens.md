@@ -233,8 +233,13 @@ An open API magnifies the cost of weak input handling, so every caller's input i
 ## 5. Out of scope
 
 Finer-grained scopes (per-document / per-folder grants, per-verb permissions)
-plus webhooks and any billing or quota tiers (the product has no paid tier,
+and any billing or quota tiers (the product has no paid tier,
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope is
 the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
 OAuth and third-party app authorization are in [MCP server](mcp-server.md).)
 Every full token inherits the owner's read and write access.
+
+**Webhooks** are no longer out of scope: liveworkspace sends them for every app's items, from the index's
+Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. A person adds one for their own
+items, and a team's admins for the team's, in liveworkspace's Settings (this app's Settings links there); a share
+link's Editor never can. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).

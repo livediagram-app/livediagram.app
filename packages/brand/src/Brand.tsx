@@ -15,7 +15,7 @@ import { prismFrame } from './motion';
 import { useBrandShimmer } from './useBrandShimmer';
 import { useBrandSpin, type BrandSpinTargets } from './useBrandSpin';
 
-type BrandSize = 'sm' | 'md' | 'lg';
+type BrandSize = 'xs' | 'sm' | 'md' | 'lg';
 
 export type BrandProps = {
   // Whose logo: its palette, its wordmark and its colours.
@@ -34,8 +34,10 @@ export type BrandProps = {
   wordmarkClassName?: string;
 };
 
-// Type size, and the gap between the mark and the wordmark at that size.
+// Type size, and the gap between the mark and the wordmark at that size. `xs` names an app inside a line of
+// small text (a setting's option, a list's detail).
 const sizeClasses: Record<BrandSize, string> = {
+  xs: 'gap-1 text-[13px] font-semibold tracking-tight',
   sm: 'gap-2 text-base font-semibold tracking-tight',
   md: 'gap-2.5 text-lg font-semibold tracking-tight',
   lg: 'gap-3 text-2xl font-semibold tracking-tight',
@@ -44,6 +46,7 @@ const sizeClasses: Record<BrandSize, string> = {
 // The cube is a solid, so it reads smaller than a line icon at the same box;
 // it sits a size up from the text so it holds its own beside the wordmark.
 const markClasses: Record<BrandSize, string> = {
+  xs: 'size-4',
   sm: 'size-5',
   md: 'size-7',
   lg: 'size-10',

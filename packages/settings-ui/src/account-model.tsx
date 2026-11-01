@@ -4,8 +4,8 @@
 // every app rather than to one, built once here and shown in the All view wherever the panel opens. Its switches
 // are the `all` scope's (@liveworkspace/settings/account), read from and written to whatever holds that scope where
 // the panel is: the accounts API on liveworkspace.app and an app's Explorer, the editor's own preferences in an
-// editor (which sync them). The profile is edited in place by every host (ProfileHost); the API tokens are the host's
-// to draw or link to.
+// editor (which sync them). The profile is edited in place by every host (ProfileHost); the API tokens and the webhooks
+// are the host's to draw or link to.
 import type { ReactNode } from 'react';
 import type { SettingsBlob } from '@liveworkspace/settings';
 import {
@@ -14,6 +14,7 @@ import {
   NOTIFICATION_ROWS,
   PRIVACY_ROWS,
   readAccountToggle,
+  WEBHOOKS_CATEGORY,
   type AccountToggle,
 } from '@liveworkspace/settings/account';
 import { SettingsCategoryTile, SettingsSharedGlyph, SettingsSubcategoryGlyph } from './glyphs';
@@ -44,6 +45,10 @@ export interface AccountSection {
   // link to where they are.
   renderTokens?: () => ReactNode;
   tokensHref?: string;
+  // The webhooks (liveworkspace/docs/specs/004-index/webhooks.md): drawn here where the host can reach the index with the
+  // person's own session (liveworkspace.app, an app's Explorer), else a link to where they are.
+  renderWebhooks?: () => ReactNode;
+  webhooksHref?: string;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
   // Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where the deployment offers Drive and the person is signed
@@ -69,7 +74,15 @@ const TOKENS_KEYWORDS =
 
 /** The Account section's categories, by their own ids (the panel files them under the Account heading). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
-  const { all, set, renderTokens, tokensHref, emails = true } = section;
+  const {
+    all,
+    set,
+    renderTokens,
+    tokensHref,
+    renderWebhooks,
+    webhooksHref,
+    emails = true,
+  } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
     rows.map(toggleRow(all, set, heading));
 
@@ -139,6 +152,41 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
       ),
       ...parent,
       rows: [tokens],
+    });
+  }
+  const webhooks: SettingsRow | null = renderWebhooks
+    ? {
+        kind: 'custom',
+        key: 'webhooks',
+        label: WEBHOOKS_CATEGORY.label,
+        description: WEBHOOKS_CATEGORY.description,
+        keywords: WEBHOOKS_CATEGORY.keywords,
+        section: WEBHOOKS_CATEGORY.label,
+        render: renderWebhooks,
+      }
+    : webhooksHref
+      ? {
+          ...linkOut(
+            'webhooks',
+            WEBHOOKS_CATEGORY.label,
+            WEBHOOKS_CATEGORY.description,
+            webhooksHref,
+            'Manage',
+          ),
+          keywords: WEBHOOKS_CATEGORY.keywords,
+        }
+      : null;
+  if (webhooks) {
+    categories.push({
+      id: 'webhooks',
+      label: WEBHOOKS_CATEGORY.label,
+      icon: (
+        <SettingsSubcategoryGlyph>
+          <SettingsSharedGlyph id="webhooks" />
+        </SettingsSubcategoryGlyph>
+      ),
+      ...parent,
+      rows: [webhooks],
     });
   }
   categories.push(

@@ -15,6 +15,7 @@ the tables, configuration, logs and tests. Each feature has its own file:
 | What items push; the Inbox   | [inbox.md](inbox.md)                     |
 | The Timeline                 | [timeline.md](timeline.md)               |
 | The Trash, purges, closing   | [trash.md](trash.md)                     |
+| Webhooks                     | [webhooks.md](webhooks.md)               |
 | Default folders              | [default-folders.md](default-folders.md) |
 | Guest merge and the handoff  | [guest-merge.md](guest-merge.md)         |
 
@@ -103,10 +104,10 @@ mirrored }`; a guest is `403`, a bad id `400`.
 
 Each step runs in `step()`: a throw is logged `[index] cron step failed: <name>` and the next step runs. Off: nothing.
 
-| Cron           | Steps, in order                                                                                                                                                                                                                               |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*/15 * * * *` | 1. `purges` (`continuePurges`): up to 20 recorded person purges oldest first within 30 s / 300 D1 calls; then up to 300 tombstones never tried or not tried for an hour; then `drainPersonNotices`. 2. `person merges` (`drainPersonMerges`). |
-| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained, loose events swept (≤ 1000). 2. `expiring links` (`sweepExpiringLinks`, ≤ 2000 items).                       |
+| Cron           | Steps, in order                                                                                                                                                                                                                                                               |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*/15 * * * *` | 1. `purges` (`continuePurges`): up to 20 recorded person purges oldest first within 30 s / 300 D1 calls; then up to 300 tombstones never tried or not tried for an hour; then `drainPersonNotices`. 2. `person merges` (`drainPersonMerges`). 3. `webhooks` (`kickWebhooks`). |
+| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained, loose events swept (≤ 1000). 2. `expiring links` (`sweepExpiringLinks`, ≤ 2000 items).                                                       |
 
 Details are in [trash.md](trash.md), [guest-merge.md](guest-merge.md) and [timeline.md](timeline.md).
 
@@ -127,6 +128,8 @@ is `{}`).
 | `/timeline` (`?team=` for a team's Team Activity), `/timeline/seen`, `/timeline/dismiss`                                               | GET, POST                     | [timeline.md](timeline.md)                       |
 | `/trash`                                                                                                                               | GET, DELETE                   | [trash.md](trash.md)                             |
 | `/placement-defaults`, `/placement-defaults/:key`                                                                                      | GET, PUT, DELETE              | [default-folders.md](default-folders.md)         |
+| `/webhooks`, `/webhooks/:id`, `/webhooks/:id/{test,deliveries}`                                                                        | GET, POST, PATCH, DELETE      | [webhooks.md](webhooks.md)                       |
+| `/app/items/:id/card-moves`                                                                                                            | PUT                           | [webhooks.md](webhooks.md)                       |
 | `/app/items/:id/{summary,events,collab/:tab,forms/:tab,forms/:tab/seen}`, `/app/forms/:code`, `/app/items/:id/forms/:tab/seen/:person` | PUT, GET                      | [inbox.md](inbox.md), [timeline.md](timeline.md) |
 | `/app/people/events`                                                                                                                   | PUT                           | [timeline.md](timeline.md)                       |
 | `/app/people/:id/count`                                                                                                                | GET                           | [sharing.md](sharing.md) (notices)               |

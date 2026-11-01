@@ -24,6 +24,10 @@ workers_dev = false
 #   INDEX_KEY_DRIVE     the Drive mirror's INDEX_KEY_DRIVE: it acts for a person on their personal items and
 #                       folders, and sets their drive_mirrored flag (liveworkspace/docs/specs/005-drive/drive.md).
 #   DRIVE_KEY_INDEX     the Drive mirror's DRIVE_KEY_INDEX: the index's change signal carries it.
+#   WEBHOOK_KEY         base64 of 32 random bytes (openssl rand -base64 32), a different one per environment: the AES-GCM
+#                       key webhooks' URLs and signing secrets are sealed with (liveworkspace/docs/specs/004-index/
+#                       webhooks.md). Without it the webhooks routes answer 503 and nothing is sent. Set once: a new
+#                       key leaves every existing webhook unreadable.
 [vars]
 ENVIRONMENT = "production"
 # The accounts origin: access and guest tokens are checked against `${ACCOUNTS_URL}/api/auth`, and
@@ -75,6 +79,16 @@ simple = { limit = 30, period = 60 }
 binding = "DRIVE"
 service = "liveworkspace-drive"
 
+# The webhook dispatcher (src/webhooks/durable-object.ts, liveworkspace/docs/specs/004-index/webhooks.md): one instance,
+# whose alarm sends the deliveries the outbox holds. It stores nothing of its own.
+[[durable_objects.bindings]]
+name = "WEBHOOKS"
+class_name = "WebhookDispatcher"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["WebhookDispatcher"]
+
 [env.staging]
 name = "liveworkspace-index-staging"
 routes = [{ pattern = "staging.liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
@@ -120,3 +134,11 @@ simple = { limit = 30, period = 60 }
 [[env.staging.services]]
 binding = "DRIVE"
 service = "liveworkspace-drive-staging"
+
+[[env.staging.durable_objects.bindings]]
+name = "WEBHOOKS"
+class_name = "WebhookDispatcher"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_sqlite_classes = ["WebhookDispatcher"]

@@ -5,3 +5,4 @@ export * from './types';
 export * from './client';
 export * from './grant';
 export * from './notices';
+export * from './webhooks';

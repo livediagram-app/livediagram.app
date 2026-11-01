@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   ITEM_HISTORY_MAX,
   ITEM_HISTORY_MAX_AGE_MS,
+  TRASH_STATUS,
   groupHistory,
   historyForReader,
   type Item,
@@ -148,6 +149,61 @@ describe('appendItemHistory', () => {
     ).toBe(40);
   });
 
+  it("queues a card's status change for webhooks in the plan's outbox, in the same batch", async () => {
+    const made = card({ id: 'card-0001', key: 7 });
+    const other = card({ id: 'card-0002', key: 8 }, { status: null, title: 3 as never });
+    const db = planWith(made, other);
+    const batch = vi.spyOn(db.env.PLAN_DB, 'batch');
+    await appendItemHistory(db.env, 'P', [
+      { before: null, after: made },
+      {
+        before: made,
+        after: card({ key: 7, updatedAt: NOW + 5, updatedBy: ALI }, { status: 'done' }),
+      },
+      {
+        before: other,
+        after: card({ id: 'card-0002', key: 8, updatedAt: NOW + 6 }, { title: 3 as never }),
+      },
+      // Trashing is not a move.
+      { before: made, after: card({ updatedAt: NOW + 7 }, { status: TRASH_STATUS }) },
+    ]);
+    expect(batch).toHaveBeenCalledTimes(1);
+    const keys = (
+      db.sql
+        .prepare("SELECT key FROM outbox WHERE plan_id = 'P' AND kind = 'card_moved' ORDER BY id")
+        .all() as {
+        key: string;
+      }[]
+    ).map((r) => JSON.parse(r.key) as unknown);
+    expect(keys).toEqual([
+      {
+        cardId: 'card-0001',
+        cardKey: 7,
+        card: 'Ship it',
+        from: 'todo',
+        to: 'done',
+        actorName: 'Ali',
+        at: NOW + 5,
+      },
+      {
+        cardId: 'card-0002',
+        cardKey: 8,
+        card: '',
+        from: 'No Status',
+        to: 'todo',
+        actorName: 'Sam',
+        at: NOW + 6,
+      },
+    ]);
+    // A field change alone queues nothing.
+    await appendItemHistory(db.env, 'P', [
+      { before: made, after: card({ updatedAt: NOW + 9 }, { priority: 'low' }) },
+    ]);
+    expect(
+      db.sql.prepare("SELECT COUNT(*) AS n FROM outbox WHERE kind = 'card_moved'").get(),
+    ).toEqual({ n: 2 });
+  });
+
   it('never throws: a failure is logged and the write stands', async () => {
     const db = planWith(card());
     vi.spyOn(db.env.PLAN_DB, 'batch').mockRejectedValueOnce(new Error('disk full'));
@@ -238,10 +294,11 @@ describe('cost', () => {
       before = after;
     }
     const perAppendMs = (performance.now() - start) / runs;
-    // Each append at the cap inserts one row and trims one: two row changes.
+    // Each append at the cap inserts one row and trims one, and each is a move, so it queues one outbox key for
+    // webhooks: three row changes.
     const rowChanges = (changes() - startChanges) / runs;
     console.info('[measure] history append', { perAppendMs, rowChanges });
-    expect(rowChanges).toBe(2);
+    expect(rowChanges).toBe(3);
     expect(perAppendMs).toBeLessThan(5);
     expect(rowsOf(db)).toBe(ITEM_HISTORY_MAX);
   });

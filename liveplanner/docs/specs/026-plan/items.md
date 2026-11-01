@@ -695,6 +695,11 @@ Each entry is **tagged** by how it was made:
 
 - History lives in the plan's own Durable Object storage, beside its cards, never in D1. The plan writes the entry as
   it applies the card's write, so a write costs no extra database round trip.
+- A **move** (a status change, not the Trash) is also queued, beside its entry, for liveworkspace's webhooks: the
+  plan's outbox pushes it to the index with its other pushes, about a minute later, and a webhook listening for
+  **Card Moved** posts it ("Sam moved Fix sign-in from Doing to Done in Sprint 4"). The card's title, number, both
+  columns and the mover's name go; nothing else of the card does
+  ([Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md)).
 - A card keeps its newest **200 entries** and none older than **180 days**: each write drops its card's entries past
   either, and the plan's daily upkeep drops every card's entries past the age.
 - **Deleting a card for good deletes its history** with it; trashing or archiving keeps it. Undoing a delete brings the

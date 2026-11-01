@@ -1,5 +1,11 @@
 import type { App } from '@liveworkspace/index-client';
 
+// The webhook dispatcher's binding (webhooks/durable-object.ts), as the index calls it.
+export type WebhookNamespace = {
+  idFromName(name: string): DurableObjectId;
+  get(id: DurableObjectId): { kick(): Promise<void> };
+};
+
 export interface Env {
   // 'production', 'staging' or 'development'. Development signs grants with an ephemeral key when
   // GRANT_SIGNING_KEY is unset.
@@ -39,6 +45,11 @@ export interface Env {
   APP_ORIGIN_LIVEPLANNER?: string;
   APP_ORIGIN_LIVEDOCUMENTS?: string;
   APP_ORIGIN_LIVEDESIGN?: string;
+  // Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): the AES-GCM key their URLs and secrets are sealed with
+  // (base64 of 32 bytes; without it the routes answer 503 and nothing is sent), and the one dispatcher whose alarm
+  // sends them. Absent (tests), nothing is woken.
+  WEBHOOK_KEY?: string;
+  WEBHOOKS?: WebhookNamespace;
 }
 
 const KEY_OF: Record<App, keyof Env> = {

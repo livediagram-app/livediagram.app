@@ -375,7 +375,7 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link, the old
   `/account/settings` and `/account/tokens`, a Search result) opens the Settings panel here, in place, once the
   page knows who is here (`settingsOpening` in `lib/explorer/host.ts`): `notifications`, `profile` (or `account`),
-  `tokens`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
+  `tokens`, `webhooks`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
   (`liveplanner`) that app's side, `teams` goes to the Invites, and anything else (an editor's own category) the
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
@@ -502,7 +502,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (making a token, seeing its
   secret once with room to copy it, and revoking one, the AI tools connected in an app among them,
   `components/settings/TokensPanel.tsx`, its own chunk fetched when the category is first shown; on an app's
-  address a link to the same category on liveworkspace.app, since tokens are the session's), then
+  address a link to the same category on liveworkspace.app, since tokens are the session's), **Webhooks** beside
+  them (`components/settings/webhooks/`, its own chunk; on liveworkspace.app and on an app's address alike, since
+  both reach the index with the person's token; an editor's Settings links to it,
+  [webhooks.md](../004-index/webhooks.md#managing-them)), then
   **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
   something in an editor (UI scale, panel opacity and the rest) are left to that editor's own rows.
@@ -535,6 +538,38 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     the merge, a deep link and a link row or readout line that names an old id all land on the merged
     category. The merge is linear in rows and categories, rebuilt only when what it reads changes (40,000 rows
     in about 30 ms; the four apps' catalogues in under 1 ms, with the rest of the panel's model).
+- **Webhooks** is one card, drawn as the Notifications' cards are (the same frame, hairlines between its parts, the
+  same type), in the plain words of someone who has never met a webhook:
+  - **The top** says in a line what a webhook is ("When something happens to your work, post a message to Slack,
+    Microsoft Teams or a service you run"), names the apps it covers by their logos (each app's Living Prism and
+    wordmark, never the name as plain text, as everywhere a product is named in this panel), and holds **Add
+    Webhook** once there is one.
+  - **Each webhook** is a row: its destination's mark (Slack's hash, Teams' people, a service's braces, on a tile
+    in each one's colour), its name, a status badge (**Active**; **Paused**; **Needs Attention** when it paused
+    itself, its reason and a **Resume** beside it in an amber note), whose items it reports on and the address's
+    host, and its last delivery ("Delivered 2 hours ago", or "Failed 31 Oct" in red). **Send Test** is a button;
+    Pause or Resume and Delete are icon buttons with tooltips; Delete asks in a confirmation popover. Send Test's
+    result is shown on the row: "Sending a test…", then the test's own delivery, read back from Recent Deliveries
+    a few times over about 20 seconds ("Test delivered: your endpoint answered 200", or why it failed), or "Test
+    queued" if it hasn't gone yet. Under it, the events it sends as small labels, and **Recent Deliveries**, a
+    section closed by default, read when first opened: each delivery's event, item, outcome in words and time,
+    with a green, red or amber mark.
+  - **Adding one** unfolds a form in the card, in the order a person thinks of it: **Where Should It Post?** (three
+    option tiles: Slack, Microsoft Teams, Your Own Service), the address (labelled for the choice, with the steps
+    to get one from Slack or Teams written out), a **Name**, **Whose Items** (your own, or each team you run, as
+    option tiles; none to choose when you run no team) and **What Should It Send?**: the events as checkable
+    tiles, each with a line saying when it fires, grouped under Items, Sharing and Comments, and Actions and
+    Cards (Card Moved carries liveplanner's logo), with Select All and Clear. All events start chosen. Add Webhook
+    waits for a name, an address and one event. A plain webhook's signing secret then shows once, with how to
+    check a signature; a Slack or Teams one is ready, with a note to send a test.
+  - With none yet, the empty state ("No Webhooks Yet", a line on what they do, **Add Webhook**). Loading shows the
+    card's skeleton; a failed read says why with **Try Again**.
+  - **Signed in only, as API Tokens are.** A guest gets no Webhooks category on liveworkspace.app or on an app's
+    address (a guest's panel there has no Account section); `?settings=webhooks` signed out asks them to sign in
+    and come back to the same address, as `?settings=tokens` does ([The Explorer](#the-explorer), Addresses
+    handed over); and in an editor's own Settings a guest finds a **Webhooks** category under Account holding
+    one stand-in row, "Sign in to add webhooks." with the **Sign In** link, as its API Tokens row says "Sign in to
+    create API tokens." The index refuses a guest's token too (403 `webhooks_need_account`).
 - **The Account section shows once.** Each editor's own Settings has Account, Notifications, API Tokens, Privacy
   and Accessibility categories of its own, and each app's catalogue an Account › Notifications. In All they are
   folded into the Account section rather than listed again under the app: the app's rows the Account section
@@ -605,7 +640,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   token (`/api/workspace/account/profile`), and its Sign-in Methods and API Tokens rows link to liveworkspace.app,
   since sessions and tokens are the session's.
 - **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section and no
-  tokens, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
+  tokens or webhooks, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
   by a device store (`createDeviceSettingsStore` in `@liveworkspace/settings-ui`) under the editor's own key and
   shape: one flat JSON object at `<app>:user-preferences:v1` (`DEVICE_PREFERENCES` in
   `@liveworkspace/settings/device`, pinned to each editor's `STORAGE_KEY` by its catalogue test), the `all` keys
