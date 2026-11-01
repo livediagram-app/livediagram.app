@@ -190,7 +190,7 @@ Every write takes what a person would say, and stores the ids:
   - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
     are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, timeSpent?, onCard?, required? }]`
-    (kinds `text`, `longtext`, `number`, `currency`, `percent`, `duration`, `date`, `checkbox`, `link`, `email`, `choice`, `card`,
+    (kinds `text`, `longtext`, `number`, `currency`, `percent`, `duration`, `date`, `datetime`, `daterange`, `checkbox`, `link`, `email`, `phone`, `choice`, `card`,
     `calculated`; a `currency` field's code, GBP when absent; a `calculated` field's `calculation`, `childCount`,
     `childrenDone`, `rollup`, `lookup` or `formula`, [Calculated fields](item-types.md#calculated-fields); a `rollup`'s
     `through` (a Card field by name, or "all"), `aggregate` and `source` (a field by name), and a `lookup`'s `through`
@@ -200,7 +200,7 @@ Every write takes what a person would say, and stores the ids:
     `showAs: "percent"` to draw a Children Done or a Percent result as a [Percent](item-types.md#percent-fields) bar). A Currency value is written as a number, a Percent value as a whole
     number from 0 to 100 (or text like "40%"; outside 0 to 100 is refused), a Duration value as text like "2h 30m",
     "90m" or "1.5h" or a number of minutes ([Duration](item-types.md#duration-fields); `timeSpent: true` on a new
-    `duration` field makes it a [Time Spent](item-types.md#time-spent) field, which agents read but never write), an Email value as the address; `editCustom` also takes `currency`. A `card` field links to `linkTypes`, the card types it may point at
+    `duration` field makes it a [Time Spent](item-types.md#time-spent) field, which agents read but never write), an Email value as the address, a Phone value as the number, a `datetime` value as an ISO 8601 time with its offset (`2026-10-31T17:00:00Z`; listed back as its UTC instant), a `daterange` value as an ISO 8601 interval (`2026-10-31/2026-11-02`, or a list of its two ends; `withTime: true` on a new `daterange` field gives its ends times, set once) ([Date and Time](item-types.md#date-and-time-fields), [Date Range](item-types.md#date-range-fields)); `editCustom` also takes `currency`. A `card` field links to `linkTypes`, the card types it may point at
     by name or id (one or more), or to `linkType`, one; both given, they are merged, `linkType` first. Colour and glyph default
     as the type editor's Add Type does.
   - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,

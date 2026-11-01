@@ -55,3 +55,18 @@ A card's saved date reads the same way wherever Plan shows it: day, short month 
 panel and its custom fields; day and short month ("30 Oct") on a board card, where room is
 tight; day, long month and year ("30 October 2026") on a card's slide. All of them go through one
 `dayLabel` helper, in the viewer's locale.
+
+## Times and ranges
+
+A [Date and Time](../026-plan/item-types.md#date-and-time-fields) field and a timed
+[Date Range](../026-plan/item-types.md#date-range-fields) use a date-and-time box (`datetime-local`, `DateTimeInput`
+in the editor), a plain Date Range two date boxes (`DateInput`), with the same width rule and the same typing and
+saving rules: a whole value saves at once, a part-typed one waits, leaving puts the saved one back, and clearing
+clears it.
+
+- **Time zones.** The box shows and reads the moment in the viewer's own zone; the stored moment is UTC with the zone
+  it was set in. A plain Date is a day and is never shifted by a viewer's zone; nor are a range's days.
+- **Showing a moment** goes through one `dateTimeText` helper (`@liveplanner/items`), the moment's day as `dayLabel`
+  draws it with its weekday and the time in the viewer's clock: "Fri 31 Oct, 17:00" on a board card, "Fri 31 Oct
+  2026, 17:00" in the card panel. Its tooltip names the viewer's zone. A range goes through `dateRangeText`: "31 Oct to
+  2 Nov".

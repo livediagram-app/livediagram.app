@@ -65,6 +65,13 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   (`BUILT_IN_DATES` by default). `viewMeasureOf` reads `measure` (Estimate or a custom Number field);
   `breakdownModel(..., measure)` adds `measureValue` (positive numbers, else 0) in place of 1 and totals the rows.
   The setters (`planViewSettingsModel.setDate`, `setMeasure`) drop the default rather than store it.
+- Times and ranges (spec "Dates", "Times and ranges"): `viewDatesOf` also takes custom `datetime` and `daterange`
+  fields and answers each role's kind (`ViewDates.kinds`). Every reader goes through `roleValue(item, dates, role)`
+  (a range's start for `start`, its end for `due`) and `dayNumber(value, tz?)` (an instant's day in the viewer's
+  zone); every writer through `roleDays(item, dates, { start?, due? }, tz?)` (`view-dates-write.ts`), which keeps an
+  instant's wall-clock time (`instantOnDay`) and writes a range as one value. `ganttModel(..., dates)` marks a timed
+  Due overdue once `now` passes it; `calendarModel` sets `at` on a timed card and sorts a day's cards untimed first
+  (by key), then by `at`; `calendar-day.tsx` prints `at` before the title in the viewer's clock (`timeOfDayText`).
 - Calendar: `calendarModel(items, phases, year, month, field, dates)` (`field` from `calendarFieldOf(view)`: `due` for
   `calendar`, `start` for `start-calendar`; read through `dates[field]`); the month offset is component state. A day shows
   `floor(((height - 62) / weeks - 20) / 16)` entries, the last line kept for "+N more" when more are due.
