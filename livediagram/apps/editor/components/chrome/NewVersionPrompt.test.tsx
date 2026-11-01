@@ -66,7 +66,8 @@ describe('NewVersionPrompt', () => {
     newer();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Reload' })));
     expect(screen.getByRole('status').textContent).toContain('Saving your changes…');
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Reload' }).disabled).toBe(true);
+    // Busy, not disabled: the keyboard stays on Reload (busy-buttons.md).
+    expect(screen.getByRole('button', { name: 'Reload' }).getAttribute('aria-busy')).toBe('true');
     expect(reload).not.toHaveBeenCalled();
     unsaved = false;
     await act(async () => vi.advanceTimersByTimeAsync(400));
@@ -84,7 +85,7 @@ describe('NewVersionPrompt', () => {
     expect(screen.getByRole('status').textContent).toContain(
       "Your latest changes aren't saved yet. Reload once they are.",
     );
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Reload' }).disabled).toBe(false);
+    expect(screen.getByRole('button', { name: 'Reload' }).hasAttribute('aria-busy')).toBe(false);
   });
 
   it('hides on Not now until a still newer number arrives', () => {

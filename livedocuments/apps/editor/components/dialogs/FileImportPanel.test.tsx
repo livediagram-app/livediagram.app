@@ -50,8 +50,9 @@ describe('FileImportPanel', () => {
     expect(onImportFile).toHaveBeenCalledWith(file, expect.any(Function));
     expect(screen.getByText('Reading the document…')).toBeTruthy();
     expect(screen.getByText('This can take a moment for a large file.')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Choose a File' }).hasAttribute('disabled')).toBe(
-      true,
+    // Busy, not disabled: a keyboard press keeps focus on it (busy-buttons.md).
+    expect(screen.getByRole('button', { name: 'Choose a File' }).getAttribute('aria-busy')).toBe(
+      'true',
     );
     expect(screen.getByRole('button', { name: /All formats/ }).hasAttribute('disabled')).toBe(true);
     // A second drop while busy is ignored.
@@ -78,7 +79,7 @@ describe('FileImportPanel', () => {
     drop(docx());
     expect((await screen.findByRole('alert')).textContent).toContain('This is a PowerPoint file');
     expect(screen.getByText('Drop a Word document here')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Choose a File' }).hasAttribute('disabled')).toBe(
+    expect(screen.getByRole('button', { name: 'Choose a File' }).hasAttribute('aria-busy')).toBe(
       false,
     );
     drop(docx());
