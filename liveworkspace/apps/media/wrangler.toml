@@ -27,6 +27,8 @@ globs = ["**/*.ttf", "**/*.otf"]
 #   MEDIA_KEY_LIVEDIAGRAM, MEDIA_KEY_LIVEPLANNER, MEDIA_KEY_LIVEDOCUMENTS, MEDIA_KEY_LIVEDESIGN
 #   shared with that app's api Worker as MEDIA_KEY. An app without one can't use the service, and the
 #   unused-image sweep doesn't wait for it. Previews call that app's export door with the same key.
+#   MEDIA_KEY_EXPORT the data export service's MEDIA_KEY_EXPORT: with X-Media-App: export it reads an owner's
+#   gallery and an image's bytes alone (liveworkspace/docs/specs/003-accounts/data-export.md).
 [vars]
 # Per person, across every app: 100 images and 100 MB, as livediagram.app has today.
 IMAGE_MAX_PER_OWNER = "100"

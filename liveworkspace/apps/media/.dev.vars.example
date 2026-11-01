@@ -4,6 +4,8 @@ MEDIA_KEY_LIVEDIAGRAM=dev-livediagram-media-key
 MEDIA_KEY_LIVEPLANNER=dev-liveplanner-media-key
 MEDIA_KEY_LIVEDOCUMENTS=dev-livedocuments-media-key
 MEDIA_KEY_LIVEDESIGN=dev-livedesign-media-key
+# The data export's service: the same as its MEDIA_KEY_EXPORT.
+MEDIA_KEY_EXPORT=dev-media-export-key
 # Previews (liveworkspace/docs/specs/006-media/previews.md): the local index, and where each app's router answers its export door.
 INDEX_URL=http://localhost:8793/api/index
 APP_ORIGIN_LIVEDIAGRAM=http://localhost:3100

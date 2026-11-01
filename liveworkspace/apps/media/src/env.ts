@@ -17,6 +17,9 @@ export interface Env {
   MEDIA_KEY_LIVEPLANNER?: string;
   MEDIA_KEY_LIVEDOCUMENTS?: string;
   MEDIA_KEY_LIVEDESIGN?: string;
+  // The data export's service (liveworkspace/docs/specs/003-accounts/data-export.md): with X-Media-App: export, it
+  // reads an owner's gallery and an image's bytes, nothing else.
+  MEDIA_KEY_EXPORT?: string;
   // Previews (liveworkspace/docs/specs/006-media/previews.md). The index, asked who may see an item: its service binding (a
   // Worker's fetch to another Worker's route on its own zone isn't routed to it), else INDEX_URL.
   INDEX?: Fetcher;

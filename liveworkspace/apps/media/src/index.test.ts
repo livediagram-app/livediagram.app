@@ -396,3 +396,52 @@ describe('when D1 is unavailable', () => {
     error.mockRestore();
   });
 });
+
+describe('the data export', () => {
+  const asExport = (path: string, init: RequestInit = {}, key = 'export-key', env?: Env) =>
+    call(
+      path,
+      {
+        ...init,
+        headers: { Authorization: `Bearer ${key}`, 'X-Media-App': 'export', ...init.headers },
+      },
+      env ?? { ...db.env, MEDIA_KEY_EXPORT: 'export-key' },
+    );
+
+  it('reads an owner’s gallery and an image’s bytes', async () => {
+    const image = await uploaded(png(7));
+    const list = (await (await asExport('/app/images?owner=user_1')).json()) as MediaListResponse;
+    expect(list.images.map((i) => i.id)).toEqual([image.image.id]);
+    const bytes = await asExport(`/app/images/${image.image.id}/bytes`);
+    expect(bytes.status).toBe(200);
+    expect(new Uint8Array(await bytes.arrayBuffer())).toEqual(png(7));
+    expect((await asExport('/app/images/missing/bytes')).status).toBe(404);
+    expect((await asExport('/app/images')).status).toBe(400);
+  });
+
+  it('reaches nothing else', async () => {
+    const image = await uploaded(png(8));
+    expect((await asExport(`/app/images/${image.image.id}`)).status).toBe(404);
+    expect(
+      (await asExport(`/app/images/${image.image.id}?owner=user_1`, { method: 'DELETE' })).status,
+    ).toBe(404);
+    expect((await asExport('/app/usage?owner=user_1')).status).toBe(404);
+    expect((await asExport('/app/owners/user_1', { method: 'DELETE' })).status).toBe(404);
+    expect((await asExport('/app/images/%E0%A4%A/bytes')).status).toBe(404);
+    expect((await asExport(`/app/images/${image.image.id}/other`)).status).toBe(404);
+  });
+
+  it('is refused with a wrong key or none set, and answers 503 without the bucket', async () => {
+    expect((await asExport('/app/images?owner=user_1', {}, 'wrong')).status).toBe(401);
+    expect((await asExport('/app/images?owner=user_1', {}, 'export-key', db.env)).status).toBe(401);
+    expect(
+      (
+        await asExport('/app/images?owner=user_1', {}, 'export-key', {
+          ...db.env,
+          MEDIA_KEY_EXPORT: 'export-key',
+          MEDIA: undefined,
+        })
+      ).status,
+    ).toBe(503);
+  });
+});
