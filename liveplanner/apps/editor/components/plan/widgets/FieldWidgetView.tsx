@@ -170,8 +170,11 @@ function FieldPill({
       'no values yet',
       <>
         {lead(palette.muted)}
-        {name}
-        <span>: no values yet</span>
+        {/* One run, so the pill's gap never opens before the colon ("Budget : no values yet"). */}
+        <span className="flex min-w-0 items-center">
+          {name}
+          <span className="whitespace-nowrap">: no values yet</span>
+        </span>
       </>,
     );
   switch (summary.shape) {
