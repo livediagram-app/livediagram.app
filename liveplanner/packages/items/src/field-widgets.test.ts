@@ -17,8 +17,12 @@ import type { CustomFieldDef, ItemTypeDef } from './item-types';
 
 // docs/specs/026-plan/board-widgets.md "Field widgets".
 
-const f = (id: string, kind: CustomFieldDef['kind'], extra: Partial<CustomFieldDef> = {}) =>
-  ({ id, label: id.slice(2), kind, ...extra });
+const f = (id: string, kind: CustomFieldDef['kind'], extra: Partial<CustomFieldDef> = {}) => ({
+  id,
+  label: id.slice(2),
+  kind,
+  ...extra,
+});
 
 const type = (id: string, custom: CustomFieldDef[], hidden: string[] = []): ItemTypeDef => ({
   id,
