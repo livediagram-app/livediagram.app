@@ -7,51 +7,52 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 
 ## Domain and naming
 
-| Term                     | Identifier                                                                                                                                                                               |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Table block              | `ArticleTableBlock` (`{ id, type: 'table', header?: true, cols, rows }`), `packages/document/src/article-table.ts`                                                                         |
-| Column                   | `ArticleTableColumn` (`{ id, w }`, `w` the column's share of the text width, the shares summing to 1)                                                                                     |
-| Row, cell                | `ArticleTableRow` (`{ id, cells: ArticleRun[][] }`): a cell is its runs, one per column in `cols` order                                                                                   |
-| Reading a table          | `parseArticleTable(b, id)` (from `parseArticleBlock`); `normaliseShares`; `newArticleTable(rows, cols, header)`; `tableFromGrid(grid, header)`                                               |
-| Table text               | `articleTableText(block)` (cells tab-joined, rows newline-joined: find, word counts, the Map)                                                                                             |
-| Cell op                  | `ArticleOp` `{ kind: 'cell'; block; row; col; runs }` (`article-flow-ops.ts`); `tableCellOps(before, after)` (`article-table.ts`)                                                       |
-| Contents block           | `ArticleTocBlock` (`{ id, type: 'toc', depth?: 1 \| 2 }`, absent depth 3); `ArticleTocDepth`                                                                                            |
-| Contents entries         | `ArticleTocEntry` (`{ id, level, text }`), `articleTocEntries(blocks, depth)`, `packages/document/src/article-toc.ts`                                                                     |
-| Header, footer           | `ArticleBand` (`{ left?, center?, right? }`), `ArticleStyle.header`, `.footer`, `.differentFirstPage` (`true`: Different First Page); `parseArticleBand`                                      |
-| Band fields              | `ARTICLE_BAND_FIELDS` (`{page}`, `{pages}`, `{name}`, `{date}`); `fillBand(text, values)`; `articleBandsFor(style, index, count, name, date)` → `PageBands`, `packages/document/src/article-bands.ts` |
-| Header room              | `ARTICLE_HEADER_BAND_PX`; `articleTopMarginPx(style)` takes it into account; `articleHeaderBandPx(style)`                                                                                  |
-| Editor nodes             | `table`, `table_row`, `table_cell`, `table_header` (cells `inline*`, prosemirror-tables roles), `toc` (atom) in `articleSchema`                                                            |
-| Table editing            | `tableEditing()`, `goToNextCell`, `addRowBefore/After`, `addColumnBefore/After`, `deleteRow`, `deleteColumn`, `toggleHeaderRow`, `CellSelection` (prosemirror-tables)                   |
-| Table commands           | `insertTable`, `tableCommand(name)`, `tableTab(dir, reshape)`, `cellEnter`, `cellBackspace`, `cellDelete`, `canTableCommand`, `TableCommandName` (`lib/article/article-table-commands.ts`) |
-| Table keys, normaliser   | `tableKeymap(host)`, `tableColsPlugin` (`lib/article/article-table-plugins.ts`)                                                                                                          |
-| Table node view          | `ArticleTableView` (`lib/article/article-table-view.ts`): the grid template from `cols`, the resize grips                                                                                 |
-| Repeated header          | `repeatHeaderPlugin`, `setRepeatBreaks`, `repeatBreaks(input)` (pure), `RepeatInput` (`lib/article/article-table-repeat.ts`)                                                                |
-| Table paste              | `tablePasteHTML(html)`, `tsvTable(text)`, `looksLikeTsv(text)` (`lib/article/article-table-paste.ts`)                                                                                    |
-| Contents view            | `TocView`, `tocPlugin`, `setTocPages`, `tocPagesKey` (`lib/article/article-toc-view.ts`)                                                                                                  |
-| Toolbar menu             | `TablePanel` (`components/canvas/article/page-toolbar-table.tsx`), shown while `selection.inTable`                                                                                        |
-| Bands on the page        | `PageBandsView` (`components/canvas/article/PageBands.tsx`), from `CanvasPages`                                                                                                           |
-| Bands in the Style popover | `ArticleBandsSection` (`components/canvas/article/ArticleBandsSection.tsx`)                                                                                                            |
-| PDF link areas           | `ArticleLink` (`{ x, y, w, h, href? , target? }`), handle `links()`; `PdfLink`, `pdfLinksForPage` (`lib/export-pdf-links.ts`)                                                           |
+| Term                       | Identifier                                                                                                                                                                                                                                                                                                                               |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table block                | `ArticleTableBlock` (`{ id, type: 'table', header?: true, cols, rows }`), `packages/document/src/article-table.ts`                                                                                                                                                                                                                       |
+| Column                     | `ArticleTableColumn` (`{ id, w }`, `w` the column's share of the text width, the shares summing to 1)                                                                                                                                                                                                                                    |
+| Row, cell                  | `ArticleTableRow` (`{ id, cells: ArticleRun[][] }`): a cell is its runs, one per column in `cols` order                                                                                                                                                                                                                                  |
+| Reading a table            | `parseArticleTable(b, id)` (from `parseArticleBlock`); `normaliseShares`; `newArticleTable(id, rows, cols, header)`; `tableFromGrid(id, grid, header)`                                                                                                                                                                                   |
+| Table text                 | `articleTableText(block)` (cells tab-joined, rows newline-joined: find, word counts, the Map)                                                                                                                                                                                                                                            |
+| Cell op                    | `ArticleOp` `{ kind: 'cell'; block; row; col; runs }` (`article-flow-ops.ts`); `tableCellOps(before, after)` (`article-table.ts`)                                                                                                                                                                                                        |
+| Contents block             | `ArticleTocBlock` (`{ id, type: 'toc', depth?: 1 \| 2 }`, absent depth 3); `ArticleTocDepth`                                                                                                                                                                                                                                             |
+| Contents entries           | `ArticleTocEntry` (`{ id, level, text }`), `articleTocEntries(blocks, depth)`, `packages/document/src/article-toc.ts`                                                                                                                                                                                                                    |
+| Header, footer             | `ArticleBand` (`{ left?, center?, right? }`), `ArticleStyle.header`, `.footer`, `.differentFirstPage` (`true`: Different First Page); `parseArticleBand`                                                                                                                                                                                 |
+| Band fields                | `ARTICLE_BAND_FIELDS` (`{page}`, `{pages}`, `{name}`, `{date}`); `fillBand(text, values)`; `articleBandsFor(style, pageNumbers, index, count, name, date)` → `PageBands`; `bandDate(date)`, `packages/document/src/article-bands.ts`                                                                                                     |
+| Header room                | `ARTICLE_HEADER_BAND_PX`; `articleTopMarginPx(style)` takes it into account; `articleHeaderBandPx(style)`                                                                                                                                                                                                                                |
+| Editor nodes               | `table`, `table_row`, `table_cell`, `table_header` (cells `inline*`, prosemirror-tables roles), `toc` (atom) in `articleSchema`                                                                                                                                                                                                          |
+| Table editing              | `tableEditing()`, `goToNextCell`, `addRowBefore/After`, `addColumnBefore/After`, `deleteRow`, `deleteColumn`, `toggleHeaderRow`, `CellSelection` (prosemirror-tables)                                                                                                                                                                    |
+| Table commands             | `insertTable`, `tableCommand(name)`, `tableCommandBlock(state, name)` (why one cannot run), `tableTab(dir, reshape)`, `cellArrow(dir)`, `cellEnter`, `cellEdge('start' \| 'end')`, `inlineForCell(fragment)`, `TableCommandName` (`lib/article/article-table-commands.ts`)                                                               |
+| Table keys, normaliser     | `tableKeymap(reshape)`, `tableColsPlugin`, `fittedCols` (`lib/article/article-table-plugins.ts`)                                                                                                                                                                                                                                         |
+| Table node view            | `ArticleTableView` (`lib/article/article-table-view.ts`): the grid template from `cols` (`columnTemplate`), the resize grip (`gripAt`, `sharesDragged`)                                                                                                                                                                                  |
+| Repeated header            | `repeatHeaderPlugin`, `repeatHeaderKey` (its meta), `measureRepeats(view, rootTop, z)`, `repeatBreaks(input)` (pure), `RepeatInput` (`lib/article/article-table-repeat.ts`)                                                                                                                                                              |
+| Table paste                | `normalisePastedTables(html)`, `tsvGrid(text)`, `tsvSlice(text)`, `pasteIntoCell`, `trackTablePaste` (`lib/article/article-table-paste.ts`); composed over the writing's paste by `articleTablePasteProps(base)` (`lib/article/article-table-editor.ts`, beside `tablePlugins`, `tableKeyPlugins`, `tableNodeViews` and `jumpToHeading`) |
+| Table look                 | `app/article-tables.css` (tables, the repeated header row, the grip, contents)                                                                                                                                                                                                                                                           |
+| Contents view              | `TocView`, `tocPlugin`, `tocKey` (its meta: the pages), `hasToc`, `measureTocPages(view, pageOf)`, `headingPages` (`lib/article/article-toc-view.ts`)                                                                                                                                                                                    |
+| Toolbar menu               | `TablePanel` (`components/canvas/article/page-toolbar-table.tsx`), shown while `selection.inTable`                                                                                                                                                                                                                                       |
+| Bands on the page          | `PageBands` (`components/canvas/article/PageBands.tsx`), from `CanvasPages`; places from `pageBandLayout` (`lib/article/article-band-layout.ts`, with `setBandDocumentName` / `useBandDocumentName` for `{name}`)                                                                                                                        |
+| Bands in the Style popover | `ArticleBandsSection` (`components/canvas/article/ArticleBandsSection.tsx`)                                                                                                                                                                                                                                                              |
+| PDF link areas             | `ArticleLinkArea` (`{ x, y, w, h, href?, target? }`), handle `links()` and `headingPages()`; `pdfLinksFor`, `pdfLinksOn`, `linkAnnotation` (`lib/export-pdf-links.ts`); `assemblePdf` writes them                                                                                                                                        |
 
 "Table" alone in the writing's code is the table block; the canvas's own is "table element" (`TableElement`).
 "Contents" is the interface's word for the table of contents and `toc` the block type.
 
 ## Constants and configuration
 
-| Constant                   | Value             | Where / provenance                                                                    |
-| -------------------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| `MAX_ARTICLE_TABLE_ROWS`   | 500               | `article-table.ts`; spec "Tables"                                                     |
-| `MAX_ARTICLE_TABLE_COLS`   | 20                | `article-table.ts`; spec                                                              |
-| `MAX_ARTICLE_TABLE_CHARS`  | 150,000           | `article-table.ts`; spec, under `ARTICLE_FRAME_CHARS` (200,000) so a table put fits a frame |
-| `MAX_ARTICLE_CELL_TEXT`    | 2,000 characters  | `article-table.ts`; spec                                                              |
-| `MAX_ARTICLE_CELL_RUNS`    | 64 runs a cell    | `article-table.ts`; D99                                                               |
-| `ARTICLE_TABLE_MIN_SHARE`  | 0.05              | `article-table.ts`; spec "Column widths"                                              |
-| New table                  | 3 x 3, header on  | `insertTable`; spec "Putting one in"                                                  |
-| Cell padding               | 6 px / 10 px      | `article-pages.css`; spec "Look"                                                      |
-| `ARTICLE_TOC_INDENT_PX`    | 20 px a level     | `article-pages.css` (`--toc-level`); spec "What it shows"                             |
-| `ARTICLE_BAND_MAX`         | 200 characters    | `article-bands.ts`; spec "Headers and footers"                                        |
-| `ARTICLE_HEADER_BAND_PX`   | 32 px             | `article-style.ts`; spec "Where"                                                      |
-| Repeat tolerance           | 1 px              | `article-table-repeat.ts` `REPEAT_SLACK`; D100                                        |
+| Constant                  | Value            | Where / provenance                                                                          |
+| ------------------------- | ---------------- | ------------------------------------------------------------------------------------------- |
+| `MAX_ARTICLE_TABLE_ROWS`  | 500              | `article-table.ts`; spec "Tables"                                                           |
+| `MAX_ARTICLE_TABLE_COLS`  | 20               | `article-table.ts`; spec                                                                    |
+| `MAX_ARTICLE_TABLE_CHARS` | 150,000          | `article-table.ts`; spec, under `ARTICLE_FRAME_CHARS` (200,000) so a table put fits a frame |
+| `MAX_ARTICLE_CELL_TEXT`   | 2,000 characters | `article-table.ts`; spec                                                                    |
+| `MAX_ARTICLE_CELL_RUNS`   | 64 runs a cell   | `article-table.ts`; D99                                                                     |
+| `ARTICLE_TABLE_MIN_SHARE` | 0.05             | `article-table.ts`; spec "Column widths"                                                    |
+| New table                 | 3 x 3, header on | `insertTable`; spec "Putting one in"                                                        |
+| Cell padding              | 6 px / 10 px     | `article-tables.css`; spec "Look"                                                           |
+| `ARTICLE_TOC_INDENT_PX`   | 20 px a level    | `article-tables.css` (`--toc-level`); spec "What it shows"                                  |
+| `ARTICLE_BAND_MAX`        | 200 characters   | `article-bands.ts`; spec "Headers and footers"                                              |
+| `ARTICLE_HEADER_BAND_PX`  | 32 px            | `article-style.ts`; spec "Where"                                                            |
+| Repeat tolerance          | 1 px             | `article-table-repeat.ts` `REPEAT_SLACK`; D100                                              |
 
 ## Data and persistence
 
@@ -100,8 +101,13 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 - `blockIdsPlugin` leaves rows alone (the plugin above owns them).
 - `tableKeymap` (before `articleKeymap`), only inside a cell: Tab `goToNextCell(1)`, in the last cell
   `addRowAfter` then into it when `reshape`, else stays; Shift-Tab `goToNextCell(-1)`; Enter and Shift-Enter
-  a `hard_break`; Backspace at a cell's start and Delete at its end swallowed; Mod-Enter falls through. With a
-  `CellSelection`, Backspace / Delete empty the cells (prosemirror-tables' `deleteCellSelection`).
+  a `hard_break`; Backspace at a cell's start and Delete at its end swallowed (`cellEdge`); Mod-Enter falls
+  through. With a `CellSelection`, Backspace / Delete empty the cells. Up and Down (`cellArrow`): on a cell's
+  first or last line (`view.endOfTextblock`), the cell above or below (`TableMap.nextCell`), past the first or
+  last row the block before or after the table; within a cell's lines the browser's. prosemirror-tables' own
+  arrows assume block cells, so they never reach an `inline*` cell's neighbour.
+- `table` and `table_row` set `allowGapCursor: false`: an `inline*` cell is a textblock, so the gap cursor
+  would otherwise stop between cells.
 - `backspaceAtStart` with a table before the caret's block moves the caret to the end of the table's last cell,
   deleting the block when it is an empty text block.
 - `slashPlugin` never opens inside a cell (`$from.parent` a cell).
@@ -110,9 +116,9 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 - `tableCommand(name)` wraps prosemirror-tables' command, refusing `addRow*` at `MAX_ARTICLE_TABLE_ROWS` and
   `addColumn*` at `MAX_ARTICLE_TABLE_COLS`; `deleteRow` / `deleteColumn` on the only row or column delete the
   table (`deleteTable`); `toggleHeaderRow`. Each one transaction, one commit; `ArticleTableShape` tracked.
-- `ArticleTableView` (node view, `ignoreMutation` for its grips): sets `--article-table-cols` on update;
-  while `reshape`, a grip (`.article-table-grip`, `aria-hidden`, `contenteditable=false`) over each inner column
-  line; pointerdown captures the pointer and moves the share between the two columns in screen px divided by
+- `ArticleTableView` (node view, `ignoreMutation` for its own attributes): sets `--article-table-cols` on
+  update; while `reshape` (and never for a touch), a pointer within 5 px of an inner column line marks the table
+  `data-grip` with `--article-grip-x`, which the stylesheet draws as the grip line; pointerdown captures the pointer and moves the share between the two columns in screen px divided by
   the table's screen width, each kept at `ARTICLE_TABLE_MIN_SHARE`, previewed on the DOM only; pointerup
   dispatches one `setNodeAttribute(pos, 'cols', …)`; Escape restores the old template and dispatches nothing.
 
@@ -122,9 +128,9 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
   `y0`, the header row's height `hh` and each row's height, walks the rows from row 1: a row that would end past
   `H - REPEAT_SLACK` while something other than a repeated header is above it in its column starts a new column,
   where `y` restarts at `hh`. Returns the indexes of the rows that start a page.
-- `ArticleEditor.measure` calls `measureRepeats(view, frame)` for every table with `header`: the first row's
+- `ArticleEditor.measure` calls `measureRepeats(view, rootTop, z)` for every table with `header`: the first row's
   rect against the box top (divided by the screen scale) for `y0`, each row's `offsetHeight`, the box's height
-  for `H`. When the result differs from `repeatHeaderPlugin`'s state it dispatches `setRepeatBreaks` (meta only,
+  for `H`. When the result differs from `repeatHeaderPlugin`'s state it dispatches the breaks as `repeatHeaderKey` meta (only,
   never committed); the plugin draws, before each break row, a widget `tr.article-table-repeat`
   (`contenteditable=false`, `aria-hidden`, `break-before: column`) holding a copy of the header row's cells
   (`DOMSerializer`), keyed by the table id, the row id and the header's text, so an unchanged repeat is reused.
@@ -134,17 +140,18 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 ### Contents
 
 - Schema: `toc` (`group: 'block'`, atom, selectable, attrs `id`, `depth`); DOM `<nav class="article-block
-  article-toc" data-block-id aria-label="Contents">`.
-- `tocPlugin`: state `{ pages: Map<blockId, number> }`, set by `setTocPages` (meta). Its decorations put on every
+article-toc" data-block-id aria-label="Contents">`.
+- `tocPlugin`: state `{ pages: Map<blockId, number>, decos }`, the pages set by a `tocKey` meta. Its decorations put on every
   `toc` node a node decoration whose spec carries the entries (`articleTocEntries` over the doc's paragraphs) and
   the page of each; the entries are recomputed only on a doc change, and only when the doc holds a `toc`.
 - `TocView` (node view): renders "Contents", then an entry per heading (`button.article-toc-entry`,
   `data-toc-target` the heading id, `--toc-level`), its text, a leader and its page number; the depth chips while
   `reshape` (`.article-toc-depth`, buttons, `aria-pressed`), each dispatching `setNodeAttribute(pos, 'depth', …)`.
-  A press on an entry: editable, the caret to the heading's start and `onRevealCaret`; read-only, the heading's
-  canvas rect to `onRevealCaret` all the same (the view moves for any reader).
-- `ArticleEditor.measure` reads each heading's first client rect's column (`columnAt`) for the page index and
-  dispatches `setTocPages` when it changed (only when the doc has a `toc`).
+  A press on an entry (`jumpToHeading`): editable, the caret to the heading's start; for any reader the
+  heading's rect to `onRevealCaret` (the view moves for a Viewer too). The chips and the empty hint are
+  `.article-chrome`, left out of snapshots and exports.
+- `ArticleEditor.measure` calls `measureTocPages(view, pageOf)`: each heading's first client rect's column for
+  the page index, dispatched as a `tocKey` meta when it changed (only when the doc has a `toc`, `hasToc`).
 
 ### Headers and footers
 
@@ -154,19 +161,22 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 - `articleBandsFor(style, index, count, name, date)` → `{ header?: {left, center, right}, footer?: … } | null`:
   null on the first page when `differentFirstPage`; the footer's centre is the page number when Page
   Numbers is on and the footer has no centre; fields filled by `fillBand`.
-- `PageBandsView` draws them in `CanvasPages` (replacing the page number span), each part `aria-hidden`, in the
-  page number's look; `pageWriting` pushes the same text as `text` ops for the exports.
+- `PageBands` draws them in `CanvasPages` (replacing the page number span) from `pageBandLayout`, which
+  returns null at once with no header, footer or page numbers; each line `data-page-band`, `aria-hidden`, in the
+  page number's look. `pageWriting` pushes the same layout as `text` ops (`bandOps`) for the exports. Today's
+  date for `{date}` is worked out once a day (`toLocaleDateString` costs about 1 ms).
 - `ArticleBandsSection` in the Style popover: two rows of three inputs, the field buttons, the Different First
   Page switch; a draft per field previewed through `stylePreview`, committed on blur or Enter as one
-  `withArticleStyleChanged` patch.
+  `withArticleStyleChanged` patch. A field button puts its field at the caret of the box last focused.
 
 ## Interfaces and contracts
 
 - `ArticleOp` gains `cell`; the room relays it inside `article` frames unchanged (frames are op lists).
 - `ArticleEditorHandle.links()` → `ArticleLink[]` in canvas px: contents entries (`target` the heading id) and
   `a.article-link` rects (`href`), from the live DOM.
-- `exportPagesAsPdf(tab, pages, opts)` adds `/Annots` to each page from `pdfLinksForPage`: a `target` resolves to
-  the page holding the heading's rect and its y (`/Dest [page /XYZ 0 y null]`); an `href` to a `/URI` action.
+- The PDF export adds `/Annots` to each page from `pdfLinksFor` (`assemblePdf` writes the link objects after
+  the pages): a `target` resolves to the page holding the heading (`/Dest [page /Fit]`); an `href` to a `/URI`
+  action.
 - OpenAPI: `ArticleTableBlock`, `ArticleTocBlock`, `ArticleBand` generated from `@livedocuments/api-schema`.
 - Markdown (agents, import): a pipe table ↔ a table block; `[TOC]` / `[TOC 1]` / `[TOC 2]` ↔ a contents block
   (`article-markdown.ts`, `article-markdown-io.ts`).
@@ -191,7 +201,7 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 
 - Cells' runs go through `normaliseRuns` (links only `isSafeArticleHref`, colours only hex); band text is plain
   text, drawn as text nodes, never HTML; the field names are a closed set.
-- A pasted table is parsed by the schema's `parseDOM` after `tablePasteHTML` rewrites cell blocks into line
+- A pasted table is parsed by the schema's `parseDOM` after `normalisePastedTables` rewrites cell blocks into line
   breaks in a detached document (`DOMParser`, no scripts run, nothing attached).
 - PDF link annotations carry only `http`, `https` and `mailto` addresses (escaped as PDF strings).
 - The table caps keep one table under a frame, so the room never drops one.
@@ -225,7 +235,7 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 - Contents is a `nav` named "Contents", each entry a button named "<heading>, page <n>".
 - The grips and chips are pointer affordances; every table command is in the keyboard-reachable Table menu and the
   depth chips are buttons with names ("List Heading 1 to Heading 2").
-- Band inputs are labelled ("Header left", ...); the field chips name the field they add.
+- Band inputs are labelled ("Header Left", ...); the field buttons name the field they add.
 
 ## Web Experience
 
@@ -234,8 +244,9 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 
 ## Observability
 
-- `debugLog('[article-table] repeat breaks', { table, breaks })` when the breaks change; `'[article-toc] pages'`
-  when the contents pages change; `'[article-table] paste', { rows, cols, cut }` for a pasted table.
+- `debugLog('[article-table] repeat breaks', …)` when the breaks change; `'[article-toc] pages'` when the
+  contents pages change. Telemetry: `ArticleTable` and `ArticleContents` (inserted), `ArticleTableShape` (a row,
+  column, header or width change), `ArticleTablePaste` (a paste that makes a table block).
 
 ## Testing
 
@@ -245,14 +256,15 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
   shape change wins.
 - `participant-article.test.ts`: a Participant's cell op applies; a table put or a toc put is refused.
 - `article-toc.test.ts`, `article-bands.test.ts`, style tests for the header top margin.
-- Editor: convert round trip (`article-convert.test.ts`), table commands and keys
-  (`article-table-commands.test.ts`), paste (`article-table-paste.test.ts`), `repeatBreaks`
-  (`article-table-repeat.test.ts`), contents view (`article-toc-view.test.ts`), the toolbar's Table menu and the
-  bands section (component tests), PDF links (`export-pdf-links.test.ts`), slash items.
+- Editor: convert round trip, table commands and keys (`article-table-commands.test.ts`); `repeatBreaks`, column
+  helpers, TSV, the contents plugin, band layout and PDF links (`article-table-layout.test.ts`); the table and
+  contents views, Up and Down, paste and jumps in a real view (`article-table-view.test.ts`); the toolbar's Table
+  menu, the bands section and the page bands (component tests); slash items.
 - Markdown: pipe tables and `[TOC]` read and written (`article-markdown.test.ts`, `article-markdown-io.test.ts`).
 - Word: export of a table, a contents and bands; import of a table (`docx.test.ts` in both).
 - Roles: Editor shapes a table; Participant writes a cell but has no Table menu, no Tab-adds-a-row, no grips, no
-  depth chips; Viewer edits nothing (`article-table-roles.test.tsx`).
+  depth chips; Viewer edits nothing, and a contents entry still moves the view (`article-table-view.test.ts`,
+  the toolbar's tests).
 
 ## Defaults ledger
 

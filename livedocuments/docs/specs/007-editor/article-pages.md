@@ -12,24 +12,24 @@ The text here is the page's own, one continuous piece of writing, never elements
 
 ## Domain language
 
-| Term              | Means                                                                                                                                         |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **article page**  | A page of kind `article` (`Page.kind`).                                                                                                       |
-| **article**       | One or more article pages in a row, linked by one **flow** id (`Page.flow`), and the writing that flows through them (`ArticleFlow`).         |
-| **lead page**     | An article's first page in the row. Positions inside the article are measured from its top-left corner.                                       |
-| **writing**       | The article's text: its **blocks** in order (`ArticleFlow.blocks`).                                                                           |
-| **block**         | One unit of the writing, with an id (`ArticleBlock`): a paragraph, a list item, a code block, a divider, a page break, a table, a contents block or a zone. |
-| **table**         | A block of rows and columns of **cells**, each cell a stretch of runs; its first row may be a **header row**, repeated on every page the table reaches. |
-| **contents**      | A table of contents: a block listing the article's headings with the page each is on (`toc`).                                                |
-| **header**, **footer** | A line of text in the top or bottom margin of every page of an article, with fields for the page number, page count, document name and date. |
-| **run**           | A stretch of a block's text with the same formatting (`ArticleRun`).                                                                          |
-| **zone**          | A block that holds canvas elements instead of text: an **object zone** hugs one object; a **drawing zone** is an area to draw and connect in. |
-| **wrap**          | How a zone sits in the writing: **In Line** (on its own line), **Wrap Left** or **Wrap Right** (the text runs down beside it).                |
-| **article style** | The article's look (`ArticleFlow.style`): fonts, accent, text size, spacing, heading rules, margins, page numbers.                            |
-| **look**          | A named article style to start from (Clean, Classic, Report, Notebook, Bold).                                                                 |
-| **page toolbar**  | The formatting bar at the top of the page being written on.                                                                                   |
-| **margin note**   | A comment thread or an action on a stretch of the writing: a marker in the page's right margin beside that text, which carries a `note` mark. |
-| **writer**        | The person whose edit changed the writing's layout; only they write the layout's consequences (zone moves, pages added or removed).           |
+| Term                   | Means                                                                                                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **article page**       | A page of kind `article` (`Page.kind`).                                                                                                                     |
+| **article**            | One or more article pages in a row, linked by one **flow** id (`Page.flow`), and the writing that flows through them (`ArticleFlow`).                       |
+| **lead page**          | An article's first page in the row. Positions inside the article are measured from its top-left corner.                                                     |
+| **writing**            | The article's text: its **blocks** in order (`ArticleFlow.blocks`).                                                                                         |
+| **block**              | One unit of the writing, with an id (`ArticleBlock`): a paragraph, a list item, a code block, a divider, a page break, a table, a contents block or a zone. |
+| **table**              | A block of rows and columns of **cells**, each cell a stretch of runs; its first row may be a **header row**, repeated on every page the table reaches.     |
+| **contents**           | A table of contents: a block listing the article's headings with the page each is on (`toc`).                                                               |
+| **header**, **footer** | A line of text in the top or bottom margin of every page of an article, with fields for the page number, page count, document name and date.                |
+| **run**                | A stretch of a block's text with the same formatting (`ArticleRun`).                                                                                        |
+| **zone**               | A block that holds canvas elements instead of text: an **object zone** hugs one object; a **drawing zone** is an area to draw and connect in.               |
+| **wrap**               | How a zone sits in the writing: **In Line** (on its own line), **Wrap Left** or **Wrap Right** (the text runs down beside it).                              |
+| **article style**      | The article's look (`ArticleFlow.style`): fonts, accent, text size, spacing, heading rules, margins, page numbers.                                          |
+| **look**               | A named article style to start from (Clean, Classic, Report, Notebook, Bold).                                                                               |
+| **page toolbar**       | The formatting bar at the top of the page being written on.                                                                                                 |
+| **margin note**        | A comment thread or an action on a stretch of the writing: a marker in the page's right margin beside that text, which carries a `note` mark.               |
+| **writer**             | The person whose edit changed the writing's layout; only they write the layout's consequences (zone moves, pages added or removed).                         |
 
 An **article** is named so to keep **document** for what it already means across the app: the
 livedocuments file that holds tabs ([Document](../006-document/document.md)). The interface says
@@ -219,8 +219,8 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   - **Table** (a menu, shown only while the caret or a cell selection is in a table: Insert Row
     Above, Insert Row Below, Insert Column Left, Insert Column Right, Delete Row, Delete Column,
     Header Row (on or off), Delete Table);
-  - **Comment** (⌘⌥M) and **Assign Action**, usable while text is selected (see "Comments and
-    actions").
+  - **Comment** (⌘⌥M) and **Assign Action**, usable while text is selected outside a table (see
+    "Comments and actions"; a margin note never sits in a cell, the buttons' tooltips saying so).
 - No undo or redo (the canvas controls have them) and no word count.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar fixed along the top of the canvas, across it (its controls
@@ -320,7 +320,8 @@ of runs (every text format, links and line breaks), never another block.
 - **Moving through it**: **Tab** moves to the next cell (along the row, then down the rows),
   **Shift+Tab** to the one before; Tab in the last cell adds a row and moves into it, for someone who
   may reshape (otherwise it stays). **Enter** is a line break in the cell. The arrow keys move through
-  the text and across cell edges. **Backspace** at the start of a cell and **Delete** at its end do
+  the text and across cell edges; **Up** and **Down** on a cell's first or last line move to the cell
+  above or below, and past the first or last row out of the table. **Backspace** at the start of a cell and **Delete** at its end do
   nothing, so cells never run together. A drag across cells selects whole cells (shown tinted);
   Backspace or Delete then empties them, and a copy of them pastes into another table from the
   cell the caret is in.
@@ -343,12 +344,14 @@ of runs (every text format, links and line breaks), never another block.
   opacity; cells padded 6 px by 10 px, their text the article's body text, top aligned.
 - **Paste**: a table copied from a spreadsheet (Google Sheets, Excel, Numbers), a web page, Word or
   Google Docs becomes a table block, as does tab-separated text of at least two lines and two columns
-  and a Markdown pipe table. Its rows and cells come in order, each cell's text with its bold, italic,
+  (with no header row: plain text never says which row is one) and a Markdown pipe table. Column
+  widths are not brought over: the columns share the width equally. Its rows and cells come in order, each cell's text with its bold, italic,
   underline, strikethrough and links (the formatting the writing keeps from any paste), several
   paragraphs in one cell joined by line breaks. A first row of header cells (`th`, a `thead`, a
   Markdown header line) turns the header row on. A merged cell is read as one cell, the rows padded
   so every row has as many cells as the widest. Rows past 500 and columns past 20 are left out.
-  Pasted into a table's cells, cells (copied from a table) fill the cells from the caret's.
+  Pasted into a table's cells, cells (copied from a table) fill the cells from the caret's; anything
+  else goes into the caret's cell as its text, several blocks joined by line breaks.
 - **Big tables stay bounded**: a table's stored size is at most 150,000 characters
   (`MAX_ARTICLE_TABLE_CHARS`, so one table always fits in one sync frame), a cell's text at most
   2,000 characters (`MAX_ARTICLE_CELL_TEXT`); rows past the size are not kept.
@@ -557,11 +560,11 @@ ink").
 
 ([Share roles](../013-workspace/share-roles.md))
 
-| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything on this page: writes, formats, inserts (tables and contents included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                      |
+| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Everything on this page: writes, formats, inserts (tables and contents included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                                                                                  |
 | **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed, and the text of a table's cells. Never formats the article's style (its header and footer included), inserts (a table or contents included), adds or removes a table's rows or columns, sets its header row or widths, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. |
-| **Viewer**      | Reads the writing and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                              |
+| **Viewer**      | Reads the writing and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ## Collaboration
 
