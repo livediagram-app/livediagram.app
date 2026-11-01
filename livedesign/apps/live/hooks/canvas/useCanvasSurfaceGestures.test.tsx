@@ -362,3 +362,54 @@ describe('a double press on the bare canvas', () => {
     expect(onCanvasDoubleClick).not.toHaveBeenCalled();
   });
 });
+
+// A press inside a portal whose owner sits under <main> (a menu from the phone's photo Layers sheet) reaches the
+// canvas's bubble handler through React's tree: it must not focus the canvas, which would close the menu under it.
+describe('a press inside a portal', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('leaves focus where it is and arms nothing', () => {
+    const main = document.createElement('main');
+    main.tabIndex = -1;
+    const menuItem = document.createElement('button');
+    document.body.append(main, menuItem);
+    menuItem.focus();
+    const setMarquee = vi.fn();
+    const setPan = vi.fn();
+    const { result } = renderHook(() =>
+      useCanvasSurfaceGestures({
+        canvasTool: 'select',
+        middleMousePan: true,
+        pendingDraw: null,
+        viewportOffset: { x: 0, y: 0 },
+        viewportZoom: 1,
+        mainRef: { current: main },
+        wrapperRef: { current: null },
+        spaceHeldRef: { current: false },
+        setPan,
+        setMarquee,
+        spotlight: {},
+        beginPendingDrawGesture: () => false,
+        onDeselect: vi.fn(),
+        onCanvasDoubleClick: vi.fn(),
+      } as never),
+    );
+    const press = {
+      button: 0,
+      pointerType: 'touch',
+      clientX: 5,
+      clientY: 5,
+      target: menuItem,
+      currentTarget: main,
+      nativeEvent: new Event('pointerdown'),
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+    } as unknown as ReactPointerEvent;
+    act(() => result.current.onPointerDown(press));
+    expect(document.activeElement).toBe(menuItem);
+    expect(setPan).not.toHaveBeenCalled();
+    expect(setMarquee).not.toHaveBeenCalled();
+  });
+});
