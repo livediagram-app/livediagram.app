@@ -61,6 +61,21 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD, heading }: CardThre
   // has just been started here. Kept only while the panel stays on this card.
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const tiles = useRef(new Map<string, HTMLElement>());
+  // Where the keyboard goes once the starter has gone (docs/specs/004-interface-design/busy-buttons.md: what takes a
+  // control's place takes its focus): into the new thread's reply box once it lands, or back to New Thread on Cancel
+  // (or when the start fails), never down to the page.
+  const newThreadRef = useRef<HTMLButtonElement>(null);
+  const [focusNext, setFocusNext] = useState<{ reply: string } | 'new-thread' | null>(null);
+  useEffect(() => {
+    if (!focusNext) return;
+    const target =
+      focusNext === 'new-thread'
+        ? newThreadRef.current
+        : tiles.current.get(focusNext.reply)?.querySelector<HTMLElement>('textarea');
+    if (!target) return;
+    target.focus();
+    setFocusNext(null);
+  }, [focusNext, expanded, threads]);
 
   // A link to one of this card's threads (#item=…&thread=…): open it (the Resolved list too), bring it into view.
   const focused = ctx?.threads.focused ?? null;
@@ -115,6 +130,8 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD, heading }: CardThre
   );
   const start = (text: string, mentions: CommentMention[]) => {
     setStarting(false);
+    // Kept in the panel (on New Thread) while the thread is made: its reply box takes it once it lands.
+    setFocusNext('new-thread');
     void ctx.threads
       .act({
         kind: 'start',
@@ -124,13 +141,15 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD, heading }: CardThre
         ...(field !== COMMENTS_FIELD ? { field } : {}),
       })
       .then((made) => {
-        if (!made) return;
+        if (!made) return setFocusNext('new-thread');
         setExpanded((prev) => new Set([...prev, made.id]));
+        setFocusNext({ reply: made.id });
         ctx.announce(ANNOUNCE.started);
       });
   };
   const newThread = (
     <button
+      ref={newThreadRef}
       type="button"
       onClick={() => setStarting(true)}
       className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 motion-reduce:transition-none pointer-coarse:py-2 dark:text-brand-300 dark:hover:bg-brand-500/10"
@@ -163,7 +182,14 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD, heading }: CardThre
         <div className="flex min-h-7 items-center gap-2">{actions}</div>
       ) : null}
       {starting ? (
-        <ThreadStarter self={ctx.self} onStart={start} onCancel={() => setStarting(false)} />
+        <ThreadStarter
+          self={ctx.self}
+          onStart={start}
+          onCancel={() => {
+            setStarting(false);
+            setFocusNext('new-thread');
+          }}
+        />
       ) : null}
       {threads.length === 0 && !starting ? (
         <CompactEmptyState
