@@ -76,15 +76,17 @@ replaced, is the same `404 invite_not_found`.
 ### Reminders and expiry
 
 An invitation nobody answers is followed up three times, then closes on its own. The accounts
-Worker's daily cron (`17 9 * * *`, `sweepInvitations` in `src/teams.ts`):
+Worker's hourly cron (`17 * * * *`, `sweepInvitations` in `src/teams.ts`):
 
 1. **Expires** every invitation still `invited` 28 days after its clock started (`clockStartedAt`,
    when it was sent): it becomes `declined` with `expiredAt` stamped, shown to the admins as
    expired. Nobody is emailed. At most 500 a run, oldest first, whether or not email is set up.
 2. **Reminds** the rest at 1, 7 and 21 days. The windows don't overlap, so an invitation hears at
    most one email a run: the latest it is due, with any it skipped stamped `0`. Each reminder
-   carries a fresh decline token. At most 100 per stage a run; a failed send is tried again the
-   next day, three times at most (`reminderAttempts`).
+   carries a fresh decline token. A reminder waits for the [send window](#the-send-window) of the
+   account at the invited address (London's for an address with no account), so it goes in the first
+   run inside it. At most 100 per stage a run; a failed send is tried again in the next run inside the
+   window, three times at most (`reminderAttempts`).
 
 Reminders stop the moment the row is no longer `invited`.
 
@@ -179,16 +181,18 @@ message, so it can't be turned off.
   expires, says what stops working when it lapses, and gives the three steps: make a fresh token,
   update whatever uses the old one, revoke the old one. Its button, "Manage your tokens", goes to
   `<BASE_URL>/explorer?settings=tokens` (the Settings panel on API Tokens). Tokens last six months, and this is the only reminder sent for each.
-- **Sending.** The daily cron (`17 9 * * *`) picks the live tokens (not revoked, not expired) that
-  expire within seven days and haven't been warned, whose owner has a verified address: at most 100
-  a run, the soonest to expire first, in one query on a partial index holding only those not yet
-  warned, each joined by primary key to its owner. The emails go one at a time, then one write
-  stamps every token whose email went (`api_token.expiryWarnedAt`), so none is warned twice. A failed
-  send isn't stamped, and the next day's run tries it again while the token is still in its week.
+- **Sending.** The hourly cron (`17 * * * *`) picks the live tokens (not revoked, not expired) that
+  expire within seven days and haven't been warned, whose owner has a verified address and is inside
+  the [send window](#the-send-window): at most 100 a run, the soonest to expire first, in one query on
+  a partial index holding only those not yet warned, each joined by primary key to its owner. The
+  emails go one at a time, then one write stamps every token whose email went
+  (`api_token.expiryWarnedAt`), so none is warned twice. A failed send isn't stamped, and the next run
+  inside the window tries it again while the token is still in its week. Waiting for the window costs
+  at most a weekend, so the warning still comes four days or more before the token lapses.
 - **Telemetry.** Each warning sent is counted as `Email·Sent·TokenExpiring`, the kind the apps used,
   under the app the token's owner signed up through, as the team emails are; an owner who signed up
   on liveworkspace.app, or before the sign-up app was recorded, isn't counted. The events go with the
-  daily run's one batch per app.
+  run's one batch per app.
 
 ## On the Timeline
 
@@ -859,7 +863,7 @@ per guest), and so does an app reading the guest's settings or writing its profi
 already knows is kept alive however it came by the id. A guest still using an app gets a fresh token before its year is up, so it is never
 more than a year unseen. Once a guest id has gone 400 days unseen its token has lapsed and browsers have
 dropped its cookie (Chrome keeps one at most 400 days), so no app can be handed it again, and the
-daily cron (`17 9 * * *`, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
+daily run (the hourly cron's 09:17 UTC run, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
 run, the longest unseen first, checked again in the deletes so a guest seen meanwhile keeps everything.
 Its items stay in the index, as every guest's do, until someone deletes them
 ([one-explorer-contracts.md](../004-index/one-explorer-contracts.md#guests)). Signing in removes the guest's stamp
@@ -993,13 +997,15 @@ every other email it sends, with the same timings and tips each app's own series
   wouldn't move. A guest's is accepted and ignored. Until the first one the account counts as having
   made nothing.
 - **Sending.** The welcome goes from the request that made the account, in `waitUntil`; the
-  15-minute cron catches up one that failed, and the daily cron (`17 9 * * *`) runs every stage, up
-  to 100 accounts a stage, the longest-waiting first, one email at a time. Each stage is claimed
+  15-minute cron catches up one that failed. The hourly cron (`17 * * * *`) runs every stage, up to
+  100 accounts a stage, the longest-waiting first, one email at a time. Every stage after the welcome
+  waits for the recipient's [send window](#the-send-window); the welcome never waits. Each stage is claimed
   (stamped) before it is sent, so two runs can't both send it; a failed send takes the stamp back
   and counts against the row, and after three in a row the account leaves every list (a dead
   address). A success resets the count. Only a verified address is ever sent to.
 - **Each due list** is one query on a partial index holding only the accounts still owed that stage,
-  joined by primary key to the account, its `all` settings and its first app.
+  joined by primary key to the account, its `all` settings and its first app, and kept to the
+  accounts inside their send window.
 - **Telemetry.** Each email sent is counted as `Email·Sent·<kind>` (`Welcome`, `Activation`,
   `Week1`, `Week2`, `WinBack`, the kinds the apps' own series used) on the telemetry service
   ([telemetry.md](../008-telemetry/telemetry.md)), under the app the email speaks for (its links' app) with that app's
@@ -1013,6 +1019,42 @@ every other email it sends, with the same timings and tips each app's own series
 
 An app's own one-time milestones (its tenth item, its first share link) stay that app's to send:
 [Sign-ups and milestones per app](#sign-ups-and-milestones-per-app).
+
+## The send window
+
+The emails that can wait, wait for the recipient's daytime, so nobody is woken by a tip at 4am. The
+window is **`SEND_WINDOW`: Monday to Friday, 09:00 to 21:00 in the recipient's own time zone**
+(`src/send-window.ts`). 09:00 is inside and 21:00 is not; Saturday and Sunday are outside all day.
+
+- **What waits:** the onboarding series after the welcome (activation, week 1, week 2, win-back),
+  [invitation reminders](#reminders-and-expiry) and the [token expiry warning](#expiry-warnings).
+  Everything else goes at once: the welcome, sign-in and deletion codes, an invitation itself, the
+  answer to one, and every app's own notifications (comments, mentions, assignments, joins,
+  milestones).
+- **The recipient's zone** is the IANA name kept on the account (`user.timeZone`,
+  `migrations/0016_user_time_zone.sql`). liveworkspace.app's pages send the browser's zone
+  (`Intl.DateTimeFormat().resolvedOptions().timeZone`) in an `X-Time-Zone` header on their
+  `GET /api/auth/get-session`: the sign-in page does at the end of every sign-in, whichever app it is
+  for, and the site's header on every page. When the session has an account, the Worker checks the
+  name (`parseTimeZone`: at most 64 characters, a zone the runtime knows, kept under the runtime's own
+  name for it, so `Asia/Calcutta` and `Asia/Kolkata` are kept as one) and writes it in the same round
+  trip as the session's colour read, only when it changed. A missing or unknown name is ignored and
+  leaves the stored zone as it was.
+- **No zone known:** an account with none stored, and an invited address with no account, are timed
+  by **`Europe/London`** (`DEFAULT_TIME_ZONE`).
+- **How a sweep keeps to it.** The windowed sweeps run hourly. Each run works out from the instant
+  which zones are inside the window (every zone the runtime knows, and `UTC`), and each due list's
+  query keeps only the recipients whose zone is one of them, bound as one JSON list; while London is
+  inside, the list is the zones outside instead, so a recipient with no zone, or one the runtime no
+  longer knows, is kept too. When no zone is inside (most of a weekend), the query isn't run. Someone
+  due outside their window stays on the list and goes in the first run inside it, and the claim or
+  stamp each sweep already keeps means it goes once. A weekend's emails go on Monday morning, local
+  time, up to each sweep's limit a run.
+- **Self-hosting.** `EMAIL_SEND_WINDOW` (a Worker var) sets the window as `<Day>-<Day> HH:00-HH:00`,
+  `Mon-Fri 09:00-21:00` by default (a day range may wrap, as `Sat-Mon`), or `always` to send at any
+  hour. `EMAIL_DEFAULT_TIME_ZONE` sets the zone used when none is known. A value that won't parse falls
+  back to the default and is logged. Without an `EMAIL` binding outside development, the windowed
+  sweeps send nothing and stamp nothing: they don't run (invitations still expire).
 
 ## Closing an account
 

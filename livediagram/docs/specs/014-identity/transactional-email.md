@@ -14,7 +14,10 @@ livediagram sends the emails about what happens in livediagram. The account's ow
 emails come from liveworkspace, once for every app: the welcome, the onboarding
 series (week 1, week 2, the activation nudge, win-back, all opt-out `notifyTips`),
 team invitations, their reminders and answers, and API-token notices
-(liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"). livediagram tells
+(liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"). The series after the welcome, invitation reminders and the token warning wait
+for the recipient's weekday daytime (Monday to Friday, 09:00 to 21:00 in their
+own time zone, Europe/London when it isn't known; accounts.md "The send
+window"). livediagram's own emails below are never held. livediagram tells
 liveworkspace what it needs for them: each signed-in account it sees (a sighting,
 which also counts sign-ups) and each save of a document someone owns (activity,
 once a minute a document, `apps/api/src/liveworkspace/activity.ts`).
