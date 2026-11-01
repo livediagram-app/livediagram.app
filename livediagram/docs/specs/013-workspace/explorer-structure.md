@@ -52,7 +52,7 @@ The editor's floating Explorer panel is the package's `ExplorerPanel`, with the 
 page, inside the editor's movable panel, which docks in a corner or opens as the menu button's popover
 (`apps/editor/components/panels/Explorer.tsx`). The open canvas shows on top, read once from the index when the
 panel opens (the package's `useOpenItem`), or from This Browser's list for a canvas kept only in this browser, with
-the This Browser pill and This Browser's menu ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address) "The Explorer on each app's address": the editors' panel). On a desktop or tablet the popover is up to 60rem
+the This Browser pill and This Browser's menu ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address) "The Explorer on each app's address": the editors' panel). On a desktop or tablet the popover is up to 64rem (its rail 13rem, its preview cards four across)
 wide and 56rem tall, inside the window, over a dimmed scrim on every screen size (a press on it closes the panel and
 focus goes back to the menu button); on a phone it stays the sheet. Every list is one request a page, loaded only once its section is chosen. It is wrapped in `React.memo`
 so the editor's per-frame churn never re-renders it.
