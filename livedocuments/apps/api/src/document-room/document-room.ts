@@ -11,6 +11,7 @@ import {
   roomGrantStep,
   owesShares,
   ShareSchedule,
+  type ExportCommentsResult,
   type ExportQuery,
   type ExportResult,
 } from '@liveworkspace/index-app';
@@ -112,6 +113,7 @@ import { notifyDocumentJoin } from '../email/notifications';
 import { anonymiseDocument } from './document-anonymise';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
+import { exportDocumentComments } from './document-comments';
 import { importMigratedDocument } from './document-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
@@ -682,6 +684,18 @@ export class DocumentRoom extends DurableObject<Env> {
     }
     this.bindDocument(documentId);
     return exportDocumentFile(this.requireEnv(), documentId, query.ifVersion);
+  }
+
+  // The export door's `comments` format (liveworkspace/docs/specs/003-accounts/data-export.md "The apps' doors",
+  // document-comments.ts): every thread in the document with its real authors, for the data export. A document never
+  // started is not found, and asking does not start it.
+  async exportComments(documentId: string): Promise<ExportCommentsResult> {
+    const sql = this.state.storage.sql;
+    if (this.documentId === null && !hasDocumentSchema((q) => sql.exec(q))) {
+      return { status: 'not_found' };
+    }
+    this.bindDocument(documentId);
+    return exportDocumentComments(this.requireEnv(), documentId);
   }
 
   // A new document from a Drive file (routes/internal-file.ts read it): its tabs land as a copy's do, and it starts

@@ -84,7 +84,7 @@ import {
 } from '../db/photo-blobs';
 import { forgetDesignMediaRefs } from '../media';
 import { drawDesign } from '../thumbnail';
-import type { ExportQuery, ExportResult } from '@liveworkspace/index-app';
+import type { ExportCommentsResult, ExportQuery, ExportResult } from '@liveworkspace/index-app';
 import {
   designShares,
   type ShareAnswer,
@@ -118,6 +118,7 @@ import { notifyDesignJoin } from '../email/notifications';
 import { anonymiseDesign } from './design-anonymise';
 import { DESIGN_OUTBOX, drainOutbox } from './design-outbox';
 import { exportDesignFile, importDesignFile, type DesignFileImport } from './design-file';
+import { exportDesignComments } from './design-comments';
 import { importMigratedDesign } from './design-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { answerDesignRequest, isDesignCreate, type RouteIdentity } from './design-route';
@@ -678,6 +679,16 @@ export class DesignRoom extends DurableObject<Env> {
     const sql = this.state.storage.sql;
     if (!hasDesignSchema((q) => sql.exec(q))) return { status: 'not_found' };
     return exportDesignFile(this.requireEnv(), designId, query.ifVersion);
+  }
+
+  // The export door's `comments` format (liveworkspace/docs/specs/003-accounts/data-export.md "The apps' doors",
+  // design-comments.ts): every thread in the design with its real authors, for the data export. A design never started
+  // is not found, and asking does not start it.
+  async exportComments(designId: string): Promise<ExportCommentsResult> {
+    this.bindDesign(designId);
+    const sql = this.state.storage.sql;
+    if (!hasDesignSchema((q) => sql.exec(q))) return { status: 'not_found' };
+    return exportDesignComments(this.requireEnv(), designId);
   }
 
   // A new design from a Drive file (routes/internal-file.ts read it): its tabs land as a copy's do, and it starts as

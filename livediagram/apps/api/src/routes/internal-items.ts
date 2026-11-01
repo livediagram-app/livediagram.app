@@ -11,7 +11,9 @@
 // path: a share link made (the first-share milestone), or someone's first time in through a link (the owner's
 // "someone joined" email). The export door draws the canvas for liveworkspace's previews, which call it with
 // MEDIA_KEY, and answers its whole file for liveworkspace's Drive mirror, which calls it and the import door with
-// DRIVE_KEY (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", routes/internal-file.ts). The migration's two doors
+// DRIVE_KEY (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", routes/internal-file.ts), and its comment
+// threads for liveworkspace's data export, which calls with DATA_EXPORT_KEY
+// (liveworkspace/docs/specs/003-accounts/data-export.md). The migration's two doors
 // take MIGRATION_KEY (docs/migration.md "Tooling"): a document's part into its room, and a person's shape libraries.
 import {
   JOINED_TELEMETRY_TYPE,
@@ -41,6 +43,7 @@ export function handleInternalItems(
     app: 'livediagram',
     exportKey: env.MEDIA_KEY,
     driveKey: env.DRIVE_KEY,
+    dataExportKey: env.DATA_EXPORT_KEY,
     migrationKey: env.MIGRATION_KEY,
     waitUntil,
     handlers: {
@@ -92,6 +95,9 @@ export function handleInternalItems(
         query.format === 'file'
           ? documentRoom(env, id).exportFile(query)
           : documentRoom(env, id).exportImage(query),
+      // Every comment thread in the canvas with its real authors, for the data export (document-room.ts
+      // `exportComments`). It has no boards or sheets, so the door's `csv` format is a 404.
+      exportComments: (id) => documentRoom(env, id).exportComments(),
       // A new canvas from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDocumentFileFor(env, input),
       // An old livediagram.app document's livediagram part, into its canvas's room (document-migration.ts). A tab over

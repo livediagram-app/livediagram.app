@@ -81,6 +81,11 @@ export type Env = {
   // same value as the service's DRIVE_KEY_LIVEDESIGN: it opens the internal export door (its `file` format) and the
   // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
   DRIVE_KEY?: string;
+  // livedesign's secret on liveworkspace's data export (liveworkspace/docs/specs/003-accounts/data-export.md "The apps'
+  // doors"), the same value as the service's DATA_EXPORT_KEY_LIVEDESIGN: it opens the internal export door alone, in every
+  // format (its `comments` format is the data export's own). A secret (wrangler secret put DATA_EXPORT_KEY); unset,
+  // the data export has no way in.
+  DATA_EXPORT_KEY?: string;
   // The migrate tool's key on the migration door (docs/migration.md "The apps' migration door"): it opens
   // PUT /api/internal/items/:id/migration and nothing else. A secret set only while the migration runs (wrangler
   // secret put MIGRATION_KEY), removed after; unset, the door takes INDEX_KEY alone (the index's handoff).

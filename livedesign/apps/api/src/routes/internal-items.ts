@@ -10,7 +10,8 @@
 // first-share milestone), or someone's first time in through a link (the owner's "someone joined" email). The export
 // door draws the design for liveworkspace's previews, which call it with MEDIA_KEY, and answers its whole file for
 // liveworkspace's Drive mirror, which calls it and the import door with DRIVE_KEY (liveworkspace/docs/specs/005-drive/drive.md
-// "Contracts > The apps", routes/internal-file.ts).
+// "Contracts > The apps", routes/internal-file.ts), and its comment threads for liveworkspace's data export, which calls
+// with DATA_EXPORT_KEY (liveworkspace/docs/specs/003-accounts/data-export.md).
 import {
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
@@ -37,6 +38,7 @@ export function handleInternalItems(
     key: env.INDEX_KEY,
     exportKey: env.MEDIA_KEY,
     driveKey: env.DRIVE_KEY,
+    dataExportKey: env.DATA_EXPORT_KEY,
     app: 'livedesign',
     migrationKey: env.MIGRATION_KEY,
     waitUntil,
@@ -102,6 +104,9 @@ export function handleInternalItems(
         query.format === 'file'
           ? designRoom(env, id).exportFile(query)
           : designRoom(env, id).exportImage(query),
+      // Every comment thread in the design with its real authors, for the data export (design-room.ts
+      // `exportComments`). It has no boards or sheets, so the door's `csv` format is a 404.
+      exportComments: (id) => designRoom(env, id).exportComments(),
       // A new design from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDesignFileFor(env, input),
     },
