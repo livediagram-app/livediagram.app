@@ -57,7 +57,7 @@ export function WidgetGalleryRail({
         >
           <span
             aria-hidden
-            className={`flex shrink-0 ${on ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}`}
+            className={`flex shrink-0 ${on ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400'}`}
           >
             <RailIcon icon={s.icon} />
           </span>

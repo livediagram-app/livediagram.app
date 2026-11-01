@@ -126,7 +126,7 @@ export function WidgetGalleryTile({
         <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-800 dark:text-slate-100">
           <span
             aria-hidden
-            className={`flex shrink-0 ${on ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400 group-hover:text-brand-600 dark:group-hover:text-brand-300'}`}
+            className={`flex shrink-0 ${on ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400 group-hover:text-brand-700 dark:group-hover:text-brand-300'}`}
           >
             {glyph}
           </span>
@@ -138,7 +138,7 @@ export function WidgetGalleryTile({
       </span>
       {/* On Board, or Add on hover, at the strip's top right where it never squeezes the name. */}
       {on ? (
-        <span className="pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-brand-600 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm dark:bg-brand-500">
+        <span className="pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-brand-700 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm dark:bg-brand-600">
           <CheckIcon size={9} />
           On Board
         </span>

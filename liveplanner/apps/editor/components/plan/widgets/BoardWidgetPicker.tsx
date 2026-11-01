@@ -251,7 +251,7 @@ function Section({
           className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-800 dark:text-slate-100"
         >
           {section.key === 'for-you' ? (
-            <span aria-hidden className="flex text-brand-500 dark:text-brand-300">
+            <span aria-hidden className="flex text-brand-700 dark:text-brand-300">
               <SparkArt size={13} />
             </span>
           ) : null}
