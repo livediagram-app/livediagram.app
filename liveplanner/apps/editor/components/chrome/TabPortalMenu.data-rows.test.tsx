@@ -97,4 +97,19 @@ describe('the tab menu’s Import and Export rows', () => {
     expect(row?.getAttribute('aria-disabled')).toBe('true');
     expect(rowLabels()).toEqual(['Export']);
   });
+
+  // docs/specs/026-plan/tracker-import.md "Where it lives", "Who may".
+  it('offers Import from Another Tool… after Import to an Editor', () => {
+    const onImportFromTool = vi.fn();
+    render(<PortalMenu {...props({ point: { x: 10, y: 10 }, onImportFromTool })} />);
+    expect(rowLabels()).toEqual(['Import', 'Import from Another Tool…', 'Export']);
+    fireEvent.click(screen.getByRole('button', { name: 'Import from Another Tool…' }));
+    expect(onImportFromTool).toHaveBeenCalledOnce();
+  });
+
+  it('dims Import from Another Tool… for a Participant or a Viewer', () => {
+    render(<PortalMenu {...props({ point: { x: 10, y: 10 } })} />);
+    const row = screen.getByText('Import from Another Tool…').closest('[aria-disabled]');
+    expect(row?.getAttribute('aria-disabled')).toBe('true');
+  });
 });

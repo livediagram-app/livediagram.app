@@ -26,6 +26,7 @@ export function EllipsisMenuButton({
   onDuplicate,
   onClearContent,
   onImport,
+  onImportFromTool,
   onExport,
   onCopyTo,
   onToggleLock,
@@ -57,6 +58,8 @@ export function EllipsisMenuButton({
   onDuplicate: () => void;
   onClearContent: () => void;
   onImport: () => void;
+  // The Import dialog on Another Tool; absent dims its row (docs/specs/026-plan/tracker-import.md).
+  onImportFromTool?: (() => void) | undefined;
   onExport: () => void;
   onCopyTo: (targetProjectId: string) => void;
   onToggleLock: () => void;
@@ -90,6 +93,7 @@ export function EllipsisMenuButton({
             onDuplicate={onDuplicate}
             onClearContent={onClearContent}
             onImport={onImport}
+            onImportFromTool={onImportFromTool}
             onExport={onExport}
             onCopyTo={onCopyTo}
             onToggleLock={onToggleLock}

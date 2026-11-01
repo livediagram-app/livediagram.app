@@ -50,6 +50,9 @@ export function EditorTabDialogs() {
     importIntoActiveTab,
     importTextIntoActiveTab,
     setImportOpen,
+    importView,
+    setImportView,
+    trackerImport,
     shareDialogOpen,
     selfParticipant,
     projectId,
@@ -106,6 +109,9 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          view={importView}
+          onView={setImportView}
+          tracker={trackerImport}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

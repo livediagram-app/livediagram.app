@@ -55,6 +55,8 @@ export type CommandHandlers = {
   toggleZen: () => void;
   openExport: () => void;
   openImport: () => void;
+  // The Import dialog on Another Tool (docs/specs/026-plan/tracker-import.md "Where it lives").
+  openTrackerImport: () => void;
   openSettings: () => void;
   openShortcuts: () => void;
 };
@@ -162,6 +164,12 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     name: 'Import…',
     keywords: 'import markdown upload load open file',
     run: h.openImport,
+  });
+  out.push({
+    id: 'import-tracker',
+    name: 'Import from Another Tool…',
+    keywords: 'import trello asana jira linear board export csv json move migrate',
+    run: h.openTrackerImport,
   });
   out.push({
     id: 'settings',

@@ -10,6 +10,9 @@ import { ImportTabDialog } from './ImportTabDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
+// A session that may not import from another tool: the dialog is its file view alone.
+const NO_TRACKER = { canImport: false, contextFor: vi.fn(), importPlan: vi.fn() };
+
 function open(outcome: ImportOutcome) {
   const onClose = vi.fn();
   const onImportText = vi.fn(async () => outcome);
@@ -18,6 +21,9 @@ function open(outcome: ImportOutcome) {
       tabName="Board"
       onImportFile={vi.fn(async () => outcome)}
       onImportText={onImportText}
+      view="file"
+      onView={vi.fn()}
+      tracker={NO_TRACKER}
       onClose={onClose}
     />,
   );
@@ -55,11 +61,68 @@ describe('ImportTabDialog', () => {
         tabName="Board"
         onImportFile={vi.fn()}
         onImportText={vi.fn()}
+        view="file"
+        onView={vi.fn()}
+        tracker={NO_TRACKER}
         onClose={vi.fn()}
       />,
     );
     const keys = screen.getByText(/⌘Z/);
     expect(keys.className).toContain('pointer-coarse:hidden');
     expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
+  });
+
+  // docs/specs/026-plan/tracker-import.md "Where it lives", "Who may".
+  it('switches between a liveplanner file and another tool for an Editor', () => {
+    const onView = vi.fn();
+    const tracker = { canImport: true, contextFor: vi.fn(), importPlan: vi.fn() };
+    const { rerender } = render(
+      <ImportTabDialog
+        tabName="Board"
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        view="tracker"
+        onView={onView}
+        tracker={tracker}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Import from Another Tool')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Choose a File/ })).toBeTruthy();
+    expect(screen.queryByText(/This replaces everything/)).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: 'liveplanner File' }));
+    expect(onView).toHaveBeenCalledWith('file');
+    rerender(
+      <ImportTabDialog
+        tabName="Board"
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        view="file"
+        onView={onView}
+        tracker={tracker}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Import to Tab')).toBeTruthy();
+    expect(
+      screen.getByRole('radio', { name: 'liveplanner File' }).getAttribute('aria-checked'),
+    ).toBe('true');
+  });
+
+  it('is the file view alone, with no switch, for a Participant or a Viewer', () => {
+    render(
+      <ImportTabDialog
+        tabName="Board"
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        view="tracker"
+        onView={vi.fn()}
+        tracker={NO_TRACKER}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Import to Tab')).toBeTruthy();
+    expect(screen.queryByRole('radiogroup', { name: 'Import from' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Choose a File/ })).toBeNull();
   });
 });

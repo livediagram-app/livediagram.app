@@ -17,6 +17,7 @@ function handlers(): CommandHandlers {
     toggleZen: vi.fn(),
     openExport: vi.fn(),
     openImport: vi.fn(),
+    openTrackerImport: vi.fn(),
     openSettings: vi.fn(),
     openShortcuts: vi.fn(),
   };
@@ -83,6 +84,7 @@ describe('buildEditorCommands — Plan tabs', () => {
         'open-theme',
         'share',
         'import',
+        'import-tracker',
         'settings',
         'shortcuts',
         'zen',
@@ -150,6 +152,9 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     run('export');
     run('collaborators');
     run('shortcuts');
+    // A board from another tool: an Editor's alone, read-only sessions never see it (above).
+    run('import-tracker');
+    expect(h.openTrackerImport).toHaveBeenCalledOnce();
     expect(h.undo).toHaveBeenCalledOnce();
     expect(h.openExport).toHaveBeenCalledOnce();
     expect(h.openCollaborators).toHaveBeenCalledOnce();

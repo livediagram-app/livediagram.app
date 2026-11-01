@@ -99,6 +99,9 @@ type TabBarProps = {
   // out of the Palette's Import/Export accordion so the per-tab actions
   // all live in one place).
   onImportTab: () => void;
+  // The Import dialog on Another Tool (docs/specs/026-plan/tracker-import.md); absent for a session that may not
+  // make tabs, which dims its row.
+  onImportFromTool?: (() => void) | undefined;
   onExportTab: () => void;
   // The user's other projects (excluding the current one). Drives the
   // "Add to Project" submenu in the tab ellipsis; savedAt versions the
@@ -161,6 +164,7 @@ export function TabBar({
   onDelete,
   onClearContent,
   onImportTab,
+  onImportFromTool,
   onExportTab,
   otherProjects,
   onCopyTabTo,
@@ -254,6 +258,12 @@ export function TabBar({
       onImportTab();
       close();
     },
+    onImportFromTool: onImportFromTool
+      ? () => {
+          onImportFromTool();
+          close();
+        }
+      : undefined,
     onExport: () => {
       onExportTab();
       close();

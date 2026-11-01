@@ -7,7 +7,11 @@ import { BottomSheet } from '@liveworkspace/workbench/components/primitives/Bott
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
-import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
+import {
+  FileExportIcon,
+  FileImportIcon,
+  TrackerImportIcon,
+} from '@/components/palette/palette-icons';
 import {
   ClearIcon,
   FolderMenuIcon,
@@ -49,6 +53,7 @@ export function PortalMenu({
   onDuplicate,
   onClearContent,
   onImport,
+  onImportFromTool,
   onExport,
   onCopyTo,
   onToggleLock,
@@ -79,6 +84,9 @@ export function PortalMenu({
   onDuplicate: () => void;
   onClearContent: () => void;
   onImport: () => void;
+  // The Import dialog on Another Tool (docs/specs/026-plan/tracker-import.md): absent, the row is dimmed (an import
+  // makes a tab, columns and a card type, an Editor's).
+  onImportFromTool?: (() => void) | undefined;
   onExport: () => void;
   onCopyTo: (targetProjectId: string) => void;
   onToggleLock: () => void;
@@ -345,6 +353,13 @@ export function PortalMenu({
             label={dataRows?.importLabel ?? 'Import'}
             onClick={dataRows ? () => (dataRows.onImport?.(), onClose()) : onImport}
             disabled={locked || (!!dataRows && !dataRows.onImport)}
+          />
+          <MenuActionRow
+            plain
+            icon={<TrackerImportIcon />}
+            label="Import from Another Tool…"
+            onClick={() => onImportFromTool?.()}
+            disabled={!onImportFromTool}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
           <MenuActionRow
