@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { blockingCycleOf, blockingIndexOf, blockingLoop } from './blocked-by';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { blockingCycleOf, blockingIndexOf, blockingLoop, waitingOn } from './blocked-by';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { ITEMS_MAX, FIELD_VALUES_MAX } from './limits';
 import type { Item } from './item';
@@ -43,16 +44,7 @@ function plan(n: number, links: number): Item[] {
   return out;
 }
 
-// Node's CPU clock; this package carries no Node types, so only what is read is declared.
-type CpuUsage = { user: number; system: number };
-declare const process: { cpuUsage(since?: CpuUsage): CpuUsage };
-
-const cpuMs = (run: () => void): number => {
-  const start = process.cpuUsage();
-  run();
-  const used = process.cpuUsage(start);
-  return (used.user + used.system) / 1000;
-};
+const cpuMs = cpuMsOf;
 
 describe('Blocked By at the limits', () => {
   it('builds the lookup for a 500-card board with five links a card', () => {
@@ -64,14 +56,14 @@ describe('Blocked By at the limits', () => {
     });
     expect(open).toBeGreaterThan(300);
     // Measured at about 1.8 ms of CPU a build on an M-series laptop.
-    expect(ms / 20).toBeLessThan(50);
+    expect(ms / 20).toBeLessThan(cpuBudgetMs(50));
   });
 
   it('builds it for a full plan of linked cards, and checks the worst loop', () => {
     const cards = plan(ITEMS_MAX, FIELD_VALUES_MAX);
     const ms = cpuMs(() => void blockingIndexOf(cards, TYPES, (s) => s === 'done'));
     // Measured at about 20 ms of CPU for 2,000 cards with 20 links each (40,000 links).
-    expect(ms).toBeLessThan(400);
+    expect(ms).toBeLessThan(cpuBudgetMs(400));
     // The first card blocked by the last walks every card upstream before it finds the loop.
     const first = cards[0]!;
     const last = cards[cards.length - 1]!;
@@ -82,9 +74,14 @@ describe('Blocked By at the limits', () => {
     });
     expect(found).not.toBeNull();
     // Measured at about 1.5 ms (and 4 ms for the panel's pick check below).
-    expect(loopMs).toBeLessThan(400);
+    expect(loopMs).toBeLessThan(cpuBudgetMs(400));
     const byId = new Map(cards.map((c) => [c.id, c]));
     const pickMs = cpuMs(() => void blockingLoop(byId, TYPES, first.id, last.id));
-    expect(pickMs).toBeLessThan(400);
+    expect(pickMs).toBeLessThan(cpuBudgetMs(400));
+    // The panel's list marks every card waiting on the first: one inversion and one walk.
+    let waiting = 0;
+    const listMs = cpuMs(() => void (waiting = waitingOn(byId, TYPES, first.id).size));
+    expect(waiting).toBe(cards.length - 1);
+    expect(listMs).toBeLessThan(cpuBudgetMs(400));
   });
 });

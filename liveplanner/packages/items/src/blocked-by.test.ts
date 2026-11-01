@@ -8,6 +8,7 @@ import {
   blockingCycleOf,
   blockingIndexOf,
   blockingLoop,
+  waitingOn,
   blockingLoopMessage,
   hasBlocksFields,
   isBlocksField,
@@ -53,7 +54,7 @@ const card = (title: string, blockers: string[] = [], extra: Record<string, unkn
     status: 'todo',
     ...(blockers.length ? { [BLOCKED_BY.id]: blockers } : {}),
     ...extra,
-  } as Item['fields']);
+  });
 
 describe('Blocks fields', () => {
   it('is a Card field with blocks on, offered by the type', () => {
@@ -208,6 +209,23 @@ describe('loops', () => {
     // A chain through a card that is gone ends there.
     const d = card('D', ['gone']);
     expect(blockingLoop(map([a, d]), TYPES, a.id, d.id)).toBeNull();
+  });
+
+  it('lists every card that already waits on a card, through others and loops', () => {
+    const a = card('Website');
+    const b = card('Launch', [a.id]);
+    const c = card('Copy', [b.id]);
+    const free = card('Free');
+    // A loop already in the data ends the walk.
+    const loopX = card('X', [c.id]);
+    const loopY = card('Y', [loopX.id]);
+    loopX.fields[BLOCKED_BY.id] = [c.id, loopY.id];
+    const items = map([a, b, c, free, loopX, loopY]);
+    expect([...waitingOn(items, TYPES, a.id)].sort()).toEqual(
+      [b.id, c.id, loopX.id, loopY.id].sort(),
+    );
+    expect(waitingOn(items, TYPES, free.id).size).toBe(0);
+    expect(waitingOn(items, ITEM_TYPES, a.id).size).toBe(0);
   });
 
   it('says the chain in words', () => {

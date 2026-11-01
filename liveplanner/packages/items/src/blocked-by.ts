@@ -177,6 +177,33 @@ export function blockingLoop(
   return path ? path.map((id) => items.get(id)!) : null;
 }
 
+// Every card that already waits on `itemId`, directly or through other cards (every card followed, trashed and
+// archived ones too): the cards a Blocked By pick on it would refuse. One pass to invert the links, then one walk
+// down from it, so the panel's list marks all its rows for the price of one check.
+export function waitingOn(
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+  itemId: string,
+): Set<string> {
+  const out = new Set<string>();
+  if (!hasBlocksFields(types)) return out;
+  const blocks = new Map<string, string[]>();
+  for (const it of items.values())
+    for (const b of blockerIdsOf(it, typeIn(types, it.type))) {
+      const theirs = blocks.get(b);
+      if (theirs) theirs.push(it.id);
+      else blocks.set(b, [it.id]);
+    }
+  const stack = [itemId];
+  while (stack.length)
+    for (const next of blocks.get(stack.pop()!) ?? [])
+      if (next !== itemId && !out.has(next)) {
+        out.add(next);
+        stack.push(next);
+      }
+  return out;
+}
+
 // A card as a loop check reads it: a card about to be made has no number yet.
 export type BlockingCard = Pick<Item, 'id' | 'type' | 'fields'> & { key?: number };
 

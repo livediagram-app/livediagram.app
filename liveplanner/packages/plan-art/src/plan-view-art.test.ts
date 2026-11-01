@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from '@liveplanner/project';
+import { ITEM_TYPES } from '@liveplanner/items';
 import { planViewArt } from './plan-view-art';
 import { NOW, artData, card, shape } from './test-fixtures';
 
@@ -52,6 +53,49 @@ describe('a plan view’s picture', () => {
     expect(svg).toContain('Launch');
     expect(svg).not.toContain('Ship it');
     expect(svg).toContain('#dc2626');
+  });
+
+  // docs/specs/026-plan/plan-views.md "Dependency arrows".
+  it('draws an arrow from each blocker to the row it blocks, a done one fainter', () => {
+    const blockedBy = {
+      id: 'f-bb',
+      label: 'Blocked By',
+      kind: 'card' as const,
+      linkType: 'project',
+      multiple: true,
+      blocks: true,
+    };
+    const types = ITEM_TYPES.map((t) =>
+      t.id === 'project'
+        ? { ...t, fields: [...t.fields, blockedBy.id], custom: [...(t.custom ?? []), blockedBy] }
+        : t,
+    );
+    const site = card(
+      { title: 'Site', status: 'doing', start: '2026-10-01', due: '2026-10-08' },
+      'project',
+    );
+    const done = card(
+      { title: 'Copy', status: 'done', start: '2026-10-01', due: '2026-10-04' },
+      'project',
+    );
+    const launch = card(
+      {
+        title: 'Go',
+        status: 'todo',
+        start: '2026-10-12',
+        due: '2026-10-20',
+        [blockedBy.id]: [site.id, done.id],
+      },
+      'project',
+    );
+    const linked = { ...artData([site, done, launch]), types };
+    const svg = planViewArt(view('gantt'), linked, 'light');
+    expect(svg.match(/<g opacity="1" color=/g)).toHaveLength(1);
+    expect(svg.match(/<g opacity="0.4" color=/g)).toHaveLength(1);
+    // Without the field, no arrows.
+    expect(planViewArt(view('gantt'), artData([site, done, launch]), 'light')).not.toContain(
+      '<g opacity=',
+    );
   });
 
   it('draws a Due Calendar’s month with the cards on their days', () => {
