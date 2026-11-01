@@ -5,7 +5,7 @@
 // over its cluster button (a bottom sheet on a phone, which never has the sidebar). Where it sits is
 // the person's own choice, in their synced preferences (lib/contents-placement.ts).
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import {
@@ -62,6 +62,9 @@ export function useContentsChrome({
   contentsDocked: boolean;
   // The side it is pinned to.
   contentsSide: ContentsSide;
+  // The menu box heads the sidebar as its top row (docs/specs/007-editor/pages-mode.md "Joined to the menu box"):
+  // docked on the left, the menu box's side, and not mid-drag.
+  menuJoined: boolean;
   contentsSidebarEl: ReactNode;
   contentsPopoverEl: ReactNode;
 } {
@@ -76,6 +79,9 @@ export function useContentsChrome({
     placement === 'sidebar' &&
     (pagesMode?.pages.length ?? 0) >= CONTENTS_SIDEBAR_MIN_PAGES;
   const contentsSide = readContentsSide(useLocalStorageValue(CONTENTS_SIDE_STORAGE_KEY));
+  // Set at a drag's start and end only, never per pointer move.
+  const [dragging, setDragging] = useState(false);
+  const menuJoined = contentsDocked && contentsSide === 'left' && !dragging;
   // The popover belongs to Pages mode's button: leaving the mode (Shift+D, a tab switch) or
   // docking the sidebar closes it rather than leaving it floating with no button under it.
   const popoverOpen = activeDockPanel === 'contents' && shown && !contentsDocked;
@@ -107,6 +113,7 @@ export function useContentsChrome({
     return {
       contentsDocked: false,
       contentsSide,
+      menuJoined: false,
       contentsSidebarEl: null,
       contentsPopoverEl: null,
     };
@@ -123,6 +130,7 @@ export function useContentsChrome({
   return {
     contentsDocked,
     contentsSide,
+    menuJoined,
     contentsSidebarEl: contentsDocked ? (
       <PageContentsSidebar
         // A tab switch starts the list afresh, on the new tab's page in view.
@@ -133,6 +141,8 @@ export function useContentsChrome({
         side={contentsSide}
         onMoveToSide={onMoveToSide}
         onMinimise={onMinimise}
+        joined={menuJoined}
+        onDraggingChange={setDragging}
       />
     ) : null,
     contentsPopoverEl: popoverOpen ? (
