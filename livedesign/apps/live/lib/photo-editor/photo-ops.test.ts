@@ -207,7 +207,7 @@ describe('changing the size', () => {
       },
       'Text',
     );
-    expect(coverSize(h.s, 2, 2)).toBeNull();
+    expect(await coverSize(h.s, 2, 2)).toBeNull();
     await h.s.settled();
     expect([h.s.photo.width, h.s.photo.height]).toEqual([2, 2]);
     expect(pixel(h, 0, 0)).toEqual([255, 0, 0, 255]);
@@ -218,10 +218,10 @@ describe('changing the size', () => {
     expect((h.s.photo.layers[1] as TextLayer).text).toMatchObject({ at: { x: 1, y: 0 } });
     expect(lastCommit(h)?.label).toBe('Make Sizes');
     // Twice as big: every layer and its text scaled with it.
-    expect(coverSize(h.s, 4, 4)).toBeNull();
+    expect(await coverSize(h.s, 4, 4)).toBeNull();
     await h.s.settled();
     expect((h.s.photo.layers[1] as TextLayer).text).toMatchObject({ size: 24, boxWidth: 8 });
-    expect(coverSize(h.s, 0, 4)).toMatch(/at least one pixel/);
+    expect(await coverSize(h.s, 0, 4)).toMatch(/at least one pixel/);
   });
 
   it('crops to a rect and trims transparent edges', async () => {

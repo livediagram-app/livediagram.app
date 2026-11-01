@@ -203,6 +203,11 @@ describe('the photo tasks', () => {
     hole[12 * 24 + 4] = 1;
     const filled = await runPhotoTask({ kind: 'fill', raster: pic, hole, seed: 3 });
     expect(filled.kind).toBe('fill');
+    // Make Sizes' resampling (image-ops.ts coverSize).
+    const resized = await runPhotoTask({ kind: 'resize', raster: pic, width: 6, height: 3 });
+    expect(resized.kind === 'resize' && [resized.raster.width, resized.raster.height]).toEqual([
+      6, 3,
+    ]);
   });
 
   it('name the buffers each can move', () => {
@@ -213,10 +218,11 @@ describe('the photo tasks', () => {
       { kind: 'decode', raster },
       { kind: 'filter', raster },
       { kind: 'fill', raster },
+      { kind: 'resize', raster },
       { kind: 'mask', mask: bytes },
       { kind: 'selection', selection: createMask({ x: 0, y: 0, width: 1, height: 1 }, 1) },
     ];
-    expect(results.map((r) => transfersOf(r).length)).toEqual([1, 1, 1, 1, 1, 0]);
+    expect(results.map((r) => transfersOf(r).length)).toEqual([1, 1, 1, 1, 1, 1, 0]);
     expect(transfersOf(encodeTask())).toHaveLength(1);
     expect(transfersOf({ kind: 'decode', bytes, type: 'image/png' })).toEqual([]);
   });

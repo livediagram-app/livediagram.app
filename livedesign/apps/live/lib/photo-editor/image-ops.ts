@@ -28,6 +28,7 @@ import {
   type Rect,
 } from '@livedesign/photo-engine';
 import { coarsePointer } from './coarse-pointer';
+import { photoWorkers } from './photo-worker-client';
 import type { PhotoSession } from './session';
 import { rasterizeText, textBox } from './text-raster';
 
@@ -76,7 +77,7 @@ function rework(
   s: PhotoSession,
   label: string,
   size: { width: number; height: number },
-  map: (p: Placed, kind: 'layer' | 'mask') => Placed | null,
+  map: (p: Placed, kind: 'layer' | 'mask', layerId: string) => Placed | null,
   move: (layer: PhotoLayer) => PhotoLayer,
   // Last touches to the reworked pixels before the commit, given where each pixel layer now sits.
   finish?: (offsets: ReadonlyMap<string, { x: number; y: number }>) => void,
@@ -86,7 +87,7 @@ function rework(
   for (const l of s.photo.layers) {
     if (l.layerKind === 'pixel') {
       const p = picture(s.raster(l.id), offsetOf(l));
-      const next = p ? map(p, 'layer') : null;
+      const next = p ? map(p, 'layer', l.id) : null;
       // A layer's pixels sit at its origin; its offset carries where.
       const t = next ? TiledRaster.fromRaster(next.raster) : new TiledRaster();
       s.replacePixels(l.id, 'layer', t);
@@ -97,7 +98,7 @@ function rework(
       const at = l.mask.linked === false ? (l.mask.offset ?? { x: 0, y: 0 }) : offsetOf(l);
       // A mask's white beyond its tiles: worked as a grey picture of its tiles' extent.
       const p = picture(s.raster(l.id, 'mask'), at);
-      const next = p ? map(p, 'mask') : null;
+      const next = p ? map(p, 'mask', l.id) : null;
       const t = new TiledRaster(1, 255);
       if (next) {
         // What a turn or a crop left empty is the mask's white, not black.
@@ -240,23 +241,47 @@ export function coverPlan(
   };
 }
 
+export type Resample = (r: Raster, width: number, height: number) => Promise<Raster>;
+
+/** Bicubic resampling in the photo worker (on the page where a worker cannot start). */
+export const workerResample: Resample = async (raster, width, height) => {
+  const res = await photoWorkers().run({ kind: 'resize', raster, width, height }).result;
+  if (res.kind !== 'resize') throw new Error('resize failed');
+  return res.raster;
+};
+
 /** Make Sizes' one step: Image Size by the cover scale, then Canvas Size about the centre, every layer
- *  reworked once. The pixels past the new edges are kept, so the Move tool can choose another crop. */
-export function coverSize(s: PhotoSession, width: number, height: number): string | null {
+ *  reworked once. The pixels past the new edges are kept, so the Move tool can choose another crop.
+ *  Each layer's and mask's picture is resampled off the main thread first (blueprint "Make Sizes"),
+ *  so a large photo never holds the page for a whole size. */
+export async function coverSize(
+  s: PhotoSession,
+  width: number,
+  height: number,
+  resample: Resample = workerResample,
+): Promise<string | null> {
   const refused = sizeRefused(width, height);
   if (refused) return refused;
   const { k, dx, dy } = coverPlan(s.photo, { width, height });
+  const scaled = new Map<string, Raster>();
+  const scale = async (key: string, r: TiledRaster) => {
+    const b = r.contentBounds();
+    if (!b) return;
+    const w = Math.max(1, Math.round(b.width * k));
+    const h = Math.max(1, Math.round(b.height * k));
+    scaled.set(key, await resample(r.read(b), w, h));
+  };
+  for (const l of s.photo.layers) {
+    if (l.layerKind === 'pixel') await scale(`${l.id}:layer`, s.raster(l.id));
+    if (l.mask) await scale(`${l.id}:mask`, s.raster(l.id, 'mask'));
+  }
   rework(
     s,
     'Make Sizes',
     { width, height },
-    (p) => ({
-      raster: resizeRaster(
-        p.raster,
-        Math.max(1, Math.round(p.raster.width * k)),
-        Math.max(1, Math.round(p.raster.height * k)),
-        'bicubic',
-      ),
+    // Every picture rework reads was resampled above: the same bounds, so the same key.
+    (p, kind, id) => ({
+      raster: scaled.get(`${id}:${kind}`)!,
       x: Math.round(p.x * k) + dx,
       y: Math.round(p.y * k) + dy,
     }),

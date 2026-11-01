@@ -247,8 +247,9 @@ tiles are loaded (`whenLoaded`):
 1. For each format, a **transient session** (`new PhotoSession(source.photo, ...)`, its page id the new page's,
    its `commit` capturing the photo instead of writing the tab) over the same pixels store, so the source's
    decoded tiles are read from memory, never fetched again.
-2. `coverSize(s, w, h)` reworks it: every pixel layer and mask resampled by `k = max(w / W, h / H)` (Bicubic) and
-   placed at `round(x * k) + dx`, `round(y * k) + dy`, where `dx = round((w - W * k) / 2)` and
+2. `coverSize(s, w, h)` reworks it: every pixel layer and mask resampled by `k = max(w / W, h / H)` (Bicubic, in
+   the photo worker: the `resize` task of `worker-tasks.ts`, so a 12 MP photo never holds the page for its
+   resample; the page only reads the pictures and lays the results into tiles) and placed at `round(x * k) + dx`, `round(y * k) + dy`, where `dx = round((w - W * k) / 2)` and
    `dy = round((h - H * k) / 2)` (`coverPlan`); text layers scaled and moved as Image Size does; the photo's size
    set to the format. Its tiles encode in the photo worker and go to the upload queue (`deps.enqueue`), as any
    commit's do.

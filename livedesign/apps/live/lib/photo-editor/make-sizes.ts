@@ -137,7 +137,7 @@ export async function makeSizes(
     });
     try {
       await s.whenLoaded();
-      if (coverSize(s, f.width, f.height)) return null;
+      if (await coverSize(s, f.width, f.height)) return null;
       await s.settled();
       const r = await deps.previewRaster(s.photo, s.lookup());
       const entry = r ? await deps.encodePreview(r) : null;
