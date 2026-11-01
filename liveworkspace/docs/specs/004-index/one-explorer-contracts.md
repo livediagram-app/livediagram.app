@@ -573,7 +573,10 @@ component on the page and in every editor's panel:
   **Assigned by Me** (waiting on others), **Comments** (mentions, threads on my items, threads I replied in) and
   **Form Responses**, each with its count. The choice is kept per viewer on this device
   (`liveworkspace:explorer-inbox-filter:<viewer id>`), as the Explorer keeps its other view choices, and sits beside
-  the header's app filter (this app or All), which still decides which rows are read. Each change is
+  the header's app filter (this app or All), which still decides which rows are read. In the editor's panel the bar
+  is a compact dropdown (`Select`, `@liveworkspace/ui`, a native select named **Inbox filter**) in the pane's header
+  row, on the right beside the app filter, each option reading its name and count ("My Actions (3)"), so the pane
+  keeps one quiet row of controls; it shows only while the list does. Each change is
   `Activity·Changed` (`All`, `MyActions`, `AssignedByMe`, `Comments`, `FormResponses`).
 - **The reading pane**, labelled by its title: where it is (the Living Prism, the team glyph, the item › the tab ›
   the element or board), the title, who and why in a sentence ("Priya mentioned you · 25 mins ago · Task"), the verbs
@@ -608,8 +611,8 @@ component on the page and in every editor's panel:
   open row disappears (done elsewhere, gone from a re-read), the pane closes and steps back off that entry, so the
   next Back leaves the list; opening a row while the pane's entry is still on top replaces it rather than adding
   another. The
-  filter bar becomes a strip of chips that scrolls sideways within itself, so the page never does; chips, rows and
-  Back are at least 44 px tall; the page keeps its 16 px gutter.
+  filter bar becomes a strip of chips that scrolls sideways within itself, so the page never does (in the panel, the
+  header's dropdown instead); chips, rows and Back are at least 44 px tall (the dropdown 36 px); the page keeps its 16 px gutter.
 
 The sidebar's badge counts My Actions, 0 included once read. Coming back to the browser tab reads it again (at most
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in
