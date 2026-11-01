@@ -43,6 +43,32 @@ describe('listedType', () => {
     expect(listedType(ITEM_TYPES[1])).not.toHaveProperty('assigneeNotifies');
   });
 
+  // docs/specs/026-plan/item-types.md "Inherited types".
+  it('lists an inherited type’s base by name and its own fields by name', () => {
+    const r = applyCardTypeChanges(
+      defaultCatalogue(),
+      [
+        {
+          op: 'add',
+          name: 'Bug',
+          inherits: 'Task',
+          custom: [{ name: 'Severity', kind: 'choice', options: ['S1'] }],
+        },
+      ],
+      statuses,
+    );
+    if (!r.ok) throw new Error(r.message);
+    const types = listedTypes(r.catalogue!.types, statuses);
+    const bug = types.find((t) => t.id === 'bug')!;
+    expect(bug.inherits).toBe('Task');
+    expect(bug.ownFields).toEqual(['Severity']);
+    expect(bug.custom.map((c) => c.name)).toEqual(['Parent', 'Severity']);
+    expect(types.find((t) => t.id === 'task')).not.toHaveProperty('inherits');
+    // A base the list lacks reads by its id.
+    const { ownFields: _own, ...unresolved } = r.catalogue!.types.find((t) => t.id === 'bug')!;
+    expect(listedType(unresolved)).toMatchObject({ inherits: 'task', ownFields: [] });
+  });
+
   it('lists what change_card_types set, the Default State by column name', () => {
     const r = applyCardTypeChanges(
       defaultCatalogue(),
