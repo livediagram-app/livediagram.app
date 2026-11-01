@@ -27,7 +27,9 @@ in its header.
   (`trustedTypesBootScript`), before any other script can reach a sink. It is what the browser calls for a sink
   given a plain string by code that has no policy. It allows a script URL on the page's own origin under the app's
   own `<asset prefix>/_next/` (`/_next/` for marketing, `/live/_next/`, `/help/_next/` and so on), one on an origin in
-  "Third parties", and a worker from the page's own `blob:` URL; it refuses everything else: HTML, script text, and
+  "Third parties", a worker from the page's own `blob:` URL, and the push-only service worker at exactly
+  `/push-worker.js` on the page's own origin, for `navigator.serviceWorker.register` alone
+  (liveworkspace/docs/specs/003-accounts/push.md); it refuses everything else: HTML, script text, and
   any other URL. A `blob:` URL can only be minted by script already running on the page, and a worker has no DOM.
   For HTML it allows exactly `<script></script>`, the empty script React DOM parses to create a `<script>` element on
   a client render (a script inserted through `innerHTML` never runs); any other HTML string is refused.
@@ -57,14 +59,15 @@ file to this.
 
 ## Third parties
 
-| Code                                             | Needs                                                                           | Allowed by                                       |
-| ------------------------------------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------ |
-| React DOM, rendering a `<script>` in the browser | `innerHTML = '<script></script>'` on a scratch element (an empty, inert script) | `default`, that exact string alone               |
-| Next.js and Turbopack's chunk loading            | Script URLs under `/_next/` (`/live/_next/` in the editor)                      | `default`                                        |
-| Next.js's own script helper                      | Its pass-through policy                                                         | The `nextjs` policy name                         |
-| ProseMirror (the article editor)                 | Parsing pasted HTML into an inert template                                      | The `ProseMirrorClipboard` policy name           |
-| Our web workers                                  | Their script URLs under `/_next/`                                               | `default`                                        |
-| Nothing today (Clerk's session timers did)       | A `Worker` from the page's own `blob:` URL; the rule is kept                    | `default`, for the Worker constructor sink alone |
+| Code                                             | Needs                                                                             | Allowed by                                       |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------------ |
+| React DOM, rendering a `<script>` in the browser | `innerHTML = '<script></script>'` on a scratch element (an empty, inert script)   | `default`, that exact string alone               |
+| Next.js and Turbopack's chunk loading            | Script URLs under `/_next/` (`/live/_next/` in the editor)                        | `default`                                        |
+| Next.js's own script helper                      | Its pass-through policy                                                           | The `nextjs` policy name                         |
+| ProseMirror (the article editor)                 | Parsing pasted HTML into an inert template                                        | The `ProseMirrorClipboard` policy name           |
+| Our web workers                                  | Their script URLs under `/_next/`                                                 | `default`                                        |
+| Nothing today (Clerk's session timers did)       | A `Worker` from the page's own `blob:` URL; the rule is kept                      | `default`, for the Worker constructor sink alone |
+| The push-only service worker                     | `/push-worker.js` on the page's own origin, to `navigator.serviceWorker.register` | `default`, for that sink and path alone          |
 
 Sign-in loads no third-party script: it is a full-page hand-off to the liveworkspace accounts site, so no third-party
 origin is allowed. When the editor signed in through Clerk, its script origin and Cloudflare Turnstile's (for sign-up
