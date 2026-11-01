@@ -44,10 +44,7 @@ export const OFFICE_EXPORT_MESSAGES: Readonly<Record<OfficeExportFailure, string
 // The page each heading fell on in the article's editor, for a contents block's page numbers; none while no editor
 // has laid the article out.
 const articleHeadingPages = (flow: string): ReadonlyMap<string, number> | undefined =>
-  (
-    articleHandleOf(flow) as
-      { headingPages?: () => ReadonlyMap<string, number> | undefined } | undefined
-  )?.headingPages?.();
+  articleHandleOf(flow)?.headingPages();
 
 export async function exportOfficeFile(
   input: OfficeExportInput,
