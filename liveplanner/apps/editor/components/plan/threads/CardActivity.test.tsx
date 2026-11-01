@@ -17,7 +17,8 @@ vi.mock('@/lib/api/item-history', () => ({
 }));
 
 const SCOPE = { ownerId: 'owner-me', projectId: PLAN, shareCode: null, tabId: null };
-const NOW = Date.now();
+// The clock is pinned at midday, so hours-ago fixtures never cross midnight into Yesterday.
+const NOW = new Date(2026, 9, 15, 12, 0, 0).getTime();
 const entry = (minsAgo: number, extra: Partial<ItemHistoryEntry> = {}): ItemHistoryEntry => ({
   at: NOW - minsAgo * 60_000,
   by: { name: 'Ada King', color: '#f97316' },
@@ -53,8 +54,16 @@ function show(extra: Parameters<typeof contextOf>[1] = {}, item = card()) {
   return { rerender: (it: typeof item) => view.rerender(ui(it)) };
 }
 
-beforeEach(() => fetchItemHistory.mockReset());
-afterEach(cleanup);
+beforeEach(() => {
+  fetchItemHistory.mockReset();
+  // Only the date is faked: the tab's reads and React's effects keep real timers.
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(NOW);
+});
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe('the Activity tab', () => {
   it('reads the card’s history as it opens, and draws a timeline under Today', async () => {
