@@ -15,7 +15,7 @@ import {
   type PlanColumn,
   type Priority,
 } from '@liveplanner/items';
-import { BackBar, TextInput } from '@liveplanner/ui';
+import { BackBar, Button, TextInput } from '@liveplanner/ui';
 import { OptionRows, type OptionRow } from './OptionRows';
 import { PersonDisc } from './PersonDisc';
 import { PRIORITY_COLOURS } from './plan-palette';
@@ -279,13 +279,9 @@ export function SetFieldMenu({
           onChange={(e) => setRaw(e.target.value)}
           onKeyDown={(e) => e.stopPropagation()}
         />
-        <button
-          type="submit"
-          disabled={value === undefined}
-          className="h-7 shrink-0 cursor-pointer rounded-md bg-brand-700 px-2.5 text-[12px] font-semibold text-white transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-brand-600"
-        >
+        <Button type="submit" size="sm" disabled={value === undefined}>
           Set
-        </button>
+        </Button>
       </form>
       <OptionRows
         kind="action"

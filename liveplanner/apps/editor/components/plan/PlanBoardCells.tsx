@@ -15,6 +15,7 @@ import {
   type PlanDragPointerStore,
 } from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
+import { CountBadge } from '@liveplanner/ui';
 import {
   ITEM_TYPES,
   itemAccessibleName,
@@ -320,12 +321,14 @@ export function PlanDragGhost({
         <PlanCardFace item={item} palette={palette} fields={fields} size={size} stacked={stacked} />
       </div>
       {count > 1 ? (
-        <span
-          className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[12px] font-semibold text-white shadow"
-          style={{ backgroundColor: palette.focus }}
-        >
-          {count}
-        </span>
+        // The board's surface on its focus colour: the pair each theme already keeps apart.
+        <CountBadge
+          count={count}
+          size="md"
+          background={palette.focus}
+          color={palette.surface}
+          className="absolute -right-2 -top-2 shadow"
+        />
       ) : null}
     </div>,
     document.body,

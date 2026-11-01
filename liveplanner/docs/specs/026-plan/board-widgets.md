@@ -94,7 +94,8 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
 - **Resolved for whoever applies it, on the day**: **Only Mine** keeps the cards that are the viewer's (not the
   saver's); a saved **Overdue** or **Due Soon** narrowing (from the Due Soon widget) is a window counted from today,
   not the day it was saved, with the board's done columns left out as they are now.
-- **Save Filter**: while anything narrows the board and the board holds fewer than 8, an Editor sees **Save Filter**
+- **Save Filter**: while anything narrows the board, the board holds fewer than 8 and no chip is pressed (the
+  board is not showing a saved filter as saved), an Editor sees **Save Filter**
   (a bookmark-plus button with a tooltip) after the chips. It opens a small popover, **Save Filter**: a **Name** field
   (focused, 1 to 40 characters) and **Save**; Enter saves, Escape or a press outside closes it. A name another saved
   filter on the board already has (case aside) says "A saved filter already has this name." and saves nothing. Saving
@@ -102,7 +103,7 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
   everyone), and shows its chip pressed. Telemetry: `Plan` · `Added` · `SavedFilter`.
 - **The chip's menu**: for an Editor each chip ends in a small chevron (**Saved Filter Options**) opening its menu:
   **Rename** (the same popover, titled Rename Filter, filled with its name), **Update to Current Filters** (keeps
-  today's quick filter under the chip; shown while something narrows the board) and **Delete** (at once; undo brings
+  today's quick filter under the chip; shown while something narrows the board and the chip is not the one pressed) and **Delete** (at once; undo brings
   it back). Telemetry: `Plan` · `Renamed` / `Changed` / `Removed` · `SavedFilter`.
 - **Share roles**: an Editor saves, renames, updates and deletes; a Participant and a Viewer see and apply the chips,
   without chevrons or Save Filter.

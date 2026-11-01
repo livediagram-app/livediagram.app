@@ -749,14 +749,15 @@ change them together.
   - **Select** in a card's menu (a right-click, or a long press on a phone) starts **select mode** with that card
     picked: while it lasts, a click or tap on a card adds it or takes it out rather than opening it. Select mode ends
     when the selection is cleared.
-  - **Clearing**: Escape, the bar's **Clear Selection**, or a plain click on a card (which opens it, as ever) clears
-    the selection. A selected card that leaves the board (moved off it, trashed, filtered out, deleted by someone
+  - **Clearing**: Escape, the bar's **Clear Selection**, or a plain click on a card that is not selected (which opens
+    it, as ever) clears the selection. A plain click on one of two or more selected cards opens it and keeps the
+    selection, since a press there is how the group is picked up. A selected card that leaves the board (moved off it, trashed, filtered out, deleted by someone
     else) leaves the selection; a selection left with no card ends.
 - **How a selected card looks**: the brand ring (2 px, the board's focus colour) round the card, on every card size,
   and its accessible name ends ", selected". Each change of selection is announced ("3 cards selected").
-- **The selection bar**: while one or more cards are selected, the board's header gains a second row, a quiet bar
-  (the header's surface, a hairline above) that names the count, **3 cards selected**, then its actions, then
-  **Clear Selection** (a cross, with a tooltip) at its end. Each action changes every selected card as **one write
+- **The selection bar**: while one or more cards are selected, a strip sits under the board's header (where the
+  Example cards notice sits: the board's column colour, outlined in its focus colour) that names the count, **3 cards
+  selected**, then its actions, each a button with a tooltip, then **Clear Selection** (a cross) at its end. Each action changes every selected card as **one write
   and one undo step**, reaching collaborators as one change:
   - **Move To**: a menu of the board's columns; the cards go to the end of that column, in the order they sit on the
     board.
@@ -771,9 +772,10 @@ change them together.
   - **Archive** (or **Restore**, when every selected card is archived) and **Move to Trash**: an Editor's alone.
   - A card whose type does not offer the field changed (Assign on a Note with no Assignee) is left as it is; a
     column whose status a card's type leaves out keeps that card where it is, with one announcement for all of them
-    ("2 cards stayed: their types don't use Done"). When no card takes the change, nothing is written.
-  - On a phone, and in a narrow header, the actions show as icons (named by their tooltips and accessible names), and
-    the bar scrolls sideways when they do not fit.
+    ("2 cards stayed: their types can't be Done"). When no card takes the change, nothing is written and "No
+    selected card changed" is announced.
+  - On a board under 560 px wide (a phone among them) the actions show as icons alone (named by their tooltips and
+    accessible names); wider, each icon has its name beside it. The bar wraps to a second line when they do not fit.
 - **Dragging a group**: pressing a selected card and dragging carries the whole selection. The card under the pointer
   is drawn with the others stacked behind it (up to two more) and a count badge ("3"); the selected cards fade where
   they were; the placeholder opens where they will land. Letting go lands them together, **in the order they sat on

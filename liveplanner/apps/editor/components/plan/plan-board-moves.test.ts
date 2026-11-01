@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES, presetSetup, projectBoard, type Item } from '@liveplanner/items';
-import { boardMoveFor, sortedSlot } from './plan-board-moves';
+import { boardMoveFor, groupDropMoves, sortedSlot } from './plan-board-moves';
 
 let n = 0;
 const item = (status: string, rank: string, extra: Item['fields'] = {}, type = 'task'): Item => {
@@ -167,5 +167,56 @@ describe('a sorted board', () => {
         ITEM_TYPES,
       ).beforeId,
     ).toBeNull();
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Several cards at once".
+describe('groupDropMoves', () => {
+  it('lands the group together in order before the first card at the slot that is not one of them', () => {
+    const a = item('todo', 'a');
+    const b = item('todo', 'b');
+    const c = item('doing', 'a');
+    const d = item('doing', 'b');
+    const setup = threeColumns();
+    const p = projectBoard(setup, mapOf(a, b, c, d));
+    const slot = { status: 'doing', laneKey: '', beforeId: c.id };
+    expect(
+      groupDropMoves(setup, p, mapOf(a, b, c, d), [c.id, a.id, b.id], slot, () => false),
+    ).toEqual({
+      moves: [
+        { id: c.id, move: { status: 'doing', before: d.id } },
+        { id: a.id, move: { status: 'doing', after: c.id } },
+        { id: b.id, move: { status: 'doing', after: a.id } },
+      ],
+      stayed: 0,
+    });
+    expect(
+      groupDropMoves(setup, p, mapOf(a, b, c, d), [a.id], { ...slot, beforeId: null }, () => false)
+        .moves,
+    ).toEqual([{ id: a.id, move: { status: 'doing', before: null } }]);
+  });
+
+  it('keeps refused and unknown cards where they are, restores archived ones, and gives a row its field', () => {
+    const sam = { id: 's', name: 'Sam', color: '#0ea5e9' };
+    const a = item('todo', 'a', { archived: true });
+    const b = item('todo', 'b', {}, 'note');
+    const setup = presetSetup('sprint');
+    const p = projectBoard(setup, mapOf(a, b, item('doing', 'a', { assignee: sam })));
+    const slot = { status: 'doing', laneKey: 'a:s', beforeId: null };
+    const out = groupDropMoves(
+      setup,
+      p,
+      mapOf(a, b),
+      [a.id, b.id, 'gone'],
+      slot,
+      (it) => it.type === 'note',
+    );
+    expect(out.stayed).toBe(1);
+    expect(out.moves).toEqual([
+      {
+        id: a.id,
+        move: { status: 'doing', before: null, set: { assignee: sam }, clear: ['archived'] },
+      },
+    ]);
   });
 });

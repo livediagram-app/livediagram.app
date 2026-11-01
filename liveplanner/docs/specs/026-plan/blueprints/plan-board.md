@@ -858,27 +858,28 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 - **Group drag** (`usePlanCardDrag`): `onCardPointerDown(id, e, holdToDrag, group?)` records `group: string[]` (the
   ordered selection) on the press; the drag state carries `group`. `dropSlotAt` skips every grouped card, so the slot
   is never inside the group. The drop calls `onDropGroup(ids, slot)`; another board's target gains `dropMany(ids,
-  slot)`; the Trash calls `onTrash` for each id as one `trashItems`; outside the board it announces "Drop the cards
+slot)`; the Trash calls `onTrash` for each id as one `trashItems`; outside the board it announces "Drop the cards
   on a board". `PlanDragGhost` draws the card held with up to `GROUP_GHOST_STACK` (2) offset copies behind it and a
   count badge; each selected card renders `lifted` (opacity 0.35). The drag still re-renders the board only when the
   slot changes; the pointer moves the ghost through its store.
 - **Group drop** (`usePlanBoardDrop.dropGroup(ids, slot)`, `plan-board-moves.ts` `groupDropMoves`): the cards the
   target cell's status refuses stay (`cardsMovingRefused`, one announcement); the rest go through `groupMoves(ids,
-  { status, before }, perCard)` where `before` is the first card at or after `slot.beforeId` in the target cell that
+{ status, before }, perCard)` where `before` is the first card at or after `slot.beforeId` in the target cell that
   is not in the group (null: the end), and `perCard` adds the lane patch (`laneMove(lane, item, fromLane)` when the
   card changes row) and an Archive board's restore (`clear: ['archived']`). A drop onto an Archive board patches
   `archived: true` on them all (one `patches`). One `plan.moveItems(moves)` write; `track('Plan', 'Moved',
-  'Cards')`; announced "3 cards moved to Done".
-- **Bar** (`components/plan/BoardSelectionBar.tsx`, `PlanBoardHeader`'s second row, `data-selection-bar`): count
+'Cards')`; announced "3 cards moved to Done".
+- **Bar** (`components/plan/BoardSelectionBar.tsx`, drawn by `PlanBoardView` straight under the header, before
+  `ExampleCardsNotice`, `data-selection-bar`; its pickers in `SelectionBarMenus.tsx`): count
   ("3 cards selected", `aria-live="polite"`), then the actions, each an icon button with a tooltip, labelled beside
   the icon from a header `SELECTION_BAR_LABELS_PX` (560 px) wide (`@container`), opening `AnchoredPopover` menus of
   option rows where they pick. The patches each action writes come from pure builders in
   `board-selection-edits.ts`: `assignPatches`, `priorityPatches`, `labelPatches(add | remove)`, `fieldPatches(fieldId,
-  value | null)`, `flagPatches`, `archivePatches`, each skipping cards whose type lacks the field or already holds the
+value | null)`, `flagPatches`, `archivePatches`, each skipping cards whose type lacks the field or already holds the
   value; `sharedFields(items, types)` lists the custom fields every selected type has, of the kinds Set Field edits
   (`SET_FIELD_KINDS`). An empty result writes nothing. Each is one `plan.patchItems(patches)` (one `patches` write,
   one undo step); Move To is one `plan.moveItems`; Move to Trash is `plan.trashItems(ids)`. `track('Plan',
-  'Changed', 'Cards')`.
+'Changed', 'Cards')`.
 - **Context**: `PlanContextValue.moveItems(moves: ItemMoveOf[])` (`usePlanSlice`: one `{ kind: 'moves' }` write, a
   single `move` for one card).
 - **Card**: `PlanBoardCard` takes `selected`: the ring as a 2 px box-shadow in the board's focus colour on the card
