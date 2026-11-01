@@ -401,7 +401,9 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
   its teams, read and run (making, renaming, inviting, roles, the join link, leaving, deleting, answering an
   invitation); nothing else.
 - **Signing in.** The app's silent sign-in script is inlined in the Explorer's layout, one per switched-on app
-  behind a check of the host (`lib/explorer/silent.ts`); Sign In and Sign Out are the app's
+  behind a check of the host (`lib/explorer/silent.ts`), and the page's first token answer lets it ask again when the
+  app's hint outlived its session (`retrySilentSignIn`, liveworkspace/docs/specs/003-accounts/accounts.md "A hint that
+  outlived its session"); Sign In and Sign Out are the app's
   (`components/explorer/AppAccountControl.tsx`). Teams are run here as on liveworkspace.app; after a change the
   page asks the app for a fresh token (`renewIdentity`), which names them.
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin

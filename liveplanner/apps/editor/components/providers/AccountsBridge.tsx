@@ -12,6 +12,7 @@
 // DeferredAuthState the app tree already consumes.
 
 import { askSignOut } from '@liveworkspace/auth-client/sign-out';
+import { retrySilentSignIn } from '@liveworkspace/auth-client/silent';
 import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
@@ -150,7 +151,14 @@ function stateOf(session: Session | null): DeferredAuthState {
 // it with it (lib/signed-in-hint.ts), so a browser without it has no session to find: a guest settles
 // at once, with no request on every page load. A stale hint only costs the one request it saves.
 async function initialSession(): Promise<Session | null> {
-  return readSignedInHint() ? refresh() : null;
+  if (!readSignedInHint()) return null;
+  const session = await refresh();
+  // A hint that outlived its session (it ended in another app): the answer cleared the hint, and the silent sign-in
+  // asks again, once, in case the person has signed in elsewhere since (liveworkspace/docs/specs/003-accounts/
+  // accounts.md "A hint that outlived its session"). Only here, on the page's first answer: a session ending under
+  // an open page never reloads it.
+  if (!session) retrySilentSignIn();
+  return session;
 }
 
 export function AccountsBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {

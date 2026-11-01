@@ -387,6 +387,18 @@ It never bounces:
 Whatever goes wrong on the way (no sign-in configured, rate limited, the accounts site down), the
 route and the callback go back to the page rather than to an error.
 
+**A hint that outlived its session.** Signing out in one app ends every app's session but can't reach
+the other apps' cookies, so their hints still say `1` over sessions that are gone (as can a refresh
+token that ran out). Sign in again anywhere, then open one of those apps, and the page sees its hint,
+doesn't bounce, and finds out only from its first token answer (`POST /api/auth/token`), which clears
+the hint. So the page asks again there and then: the boot script leaves a function on the page
+(`retrySilentSignIn` calls it), which bounces when the hint said `1` as the page loaded and no longer
+does, under the same guards apart from the tab's mark (the session ending is news the mark predates).
+The editors' accounts bridge, the Explorer on an app's address and the marketing header's idle check
+call it after their first token answer, and never later, so a session that ends under an open page
+never reloads it; the marketing pages still leave a visitor who started using the page alone. A guest,
+whose hint was never `1`, never bounces this way.
+
 **The cost.** One bounce per new tab for a person with no session in the app, and one more on a tab's
 next full page load after it comes back into view or is opened from another site, never more than once
 in two minutes: four extra requests (the
@@ -429,7 +441,8 @@ signed-in visitor sees their menu with no request, and a visitor makes none at a
 ([site.md](../010-site/site.md#the-header)), whose menu code is fetched only once the pointer or focus reaches it. Signed in, the
 page checks once, when it is idle, with the app's `POST /api/auth/token`: signing out in another app ends this
 app's session too but can't reach this site's cookies, so the hint can outlive the session; the answer clears it
-and the menu turns to Guest. A session from before the name cookie existed (the hint without the name) asks at
+and the menu turns to Guest, and the page then asks the accounts site once
+([A hint that outlived its session](#signing-in-without-a-click)), so someone signed in elsewhere since is signed in here. A session from before the name cookie existed (the hint without the name) asks at
 once instead, since the answer sets the name.
 
 ## Signing out

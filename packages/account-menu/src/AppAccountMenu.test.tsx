@@ -5,6 +5,7 @@ import { AccountMenu } from './AccountMenu';
 import { AppAccountMenu } from './AppAccountMenu';
 import { appAccountOf, appSignOut, resetAppAccount } from './app-account';
 import { avatarColour } from './initials';
+import { SILENT_RETRY_GLOBAL } from '@liveworkspace/auth-client/silent';
 import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } from './placeholder';
 
 const HINT = 'lp_signed_in';
@@ -214,6 +215,30 @@ describe('AppAccountMenu', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/token');
     expect(screen.getAllByRole('button', { name: 'Guest, account menu' })).toHaveLength(2);
+  });
+
+  it('lets the silent sign-in look again after that answer, once', async () => {
+    // The function the silent sign-in's boot script leaves on the page (@liveworkspace/auth-client/silent).
+    const again = vi.fn();
+    vi.stubGlobal(SILENT_RETRY_GLOBAL, again);
+    vi.useFakeTimers();
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    fetchMock.mockImplementation(async () => {
+      document.cookie = 'lp_signed_in=0; path=/';
+      return new Response('{"signedIn":false}', { status: 401 });
+    });
+    render(
+      <>
+        <AppAccountMenu hint={HINT} />
+        <AppAccountMenu hint={HINT} />
+      </>,
+    );
+    expect(again).not.toHaveBeenCalled();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+    });
+    vi.useRealTimers();
+    expect(again).toHaveBeenCalledTimes(1);
   });
 
   it('waits for an idle moment where the browser offers one, and keeps a live session as it is', async () => {

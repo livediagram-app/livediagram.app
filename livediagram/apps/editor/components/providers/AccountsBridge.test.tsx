@@ -8,6 +8,10 @@
 
 import { cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// The silent sign-in's second look (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session").
+const retrySilentSignIn = vi.hoisted(() => vi.fn());
+vi.mock('@liveworkspace/auth-client/silent', () => ({ retrySilentSignIn }));
 import type { DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
 
 vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: vi.fn(async () => {}) }));
@@ -64,6 +68,19 @@ describe('AccountsBridge', () => {
       '/api/auth/token',
       expect.objectContaining({ method: 'POST' }),
     );
+  });
+
+  it('lets the silent sign-in look again when the first answer finds the hinted session gone, and only then', async () => {
+    retrySilentSignIn.mockClear();
+    fetchMock.mockResolvedValue(new Response('{"signedIn":false}', { status: 401 }));
+    await mount();
+    expect(retrySilentSignIn).toHaveBeenCalledTimes(1);
+    cleanup();
+    resetAccountsSessionForTests();
+    retrySilentSignIn.mockClear();
+    fetchMock.mockResolvedValue(signedIn('access-1'));
+    expect(await mount()).toMatchObject({ isSignedIn: true });
+    expect(retrySilentSignIn).not.toHaveBeenCalled();
   });
 
   it('settles as a guest when the api cannot be reached', async () => {
