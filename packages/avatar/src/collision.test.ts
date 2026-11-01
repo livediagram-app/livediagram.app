@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   FENCE_REACH,
   fenceReachFor,
@@ -165,10 +166,11 @@ describe('fenceStep', () => {
       a: { x: i * 30, y: 500 },
       b: { x: i * 30 + 20, y: 500 },
     }));
-    const started = performance.now();
-    for (let i = 0; i < 60; i++) fenceStep({ x: 15, y: 0 }, { x: 15, y: 13 }, fences);
+    const spent = cpuMsOf(() => {
+      for (let i = 0; i < 60; i++) fenceStep({ x: 15, y: 0 }, { x: 15, y: 13 }, fences);
+    });
     // 60 frames of walking against 2000 fences: well under a frame's budget each.
-    expect((performance.now() - started) / 60).toBeLessThan(4);
+    expect(spent / 60).toBeLessThan(cpuBudgetMs(4));
   });
 });
 

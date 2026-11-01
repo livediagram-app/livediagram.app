@@ -14,7 +14,7 @@ const bubble = (over: Partial<SpeechBubble> = {}): SpeechBubble => ({
   tabId: 't1',
   x: 10,
   y: 20,
-  bornAt: performance.now(),
+  bornAt: performance.now(), // wall-clock: a bubble's birth time, as the store stamps it, not a speed budget
   flightMs: 4000,
   ...over,
 });
