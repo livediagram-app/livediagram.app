@@ -15,6 +15,7 @@ const PLACEHOLDER_TYPES: ReadonlySet<FormQuestion['type']> = new Set([
   'number',
   'email',
   'link',
+  'phone',
 ]);
 
 export const takesPlaceholder = (q: FormQuestion): boolean => PLACEHOLDER_TYPES.has(q.type);
