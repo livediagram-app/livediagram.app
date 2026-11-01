@@ -775,12 +775,12 @@ export function ImportMenu() {
  *  under Into This Tab, then the four tools under A Board from Another Tool, each with its mark and what file to
  *  bring. */
 export function ImportChooser() {
-  const W = 420;
-  const H = 286;
+  const W = 440;
+  const H = 302;
   const dx = 20;
   const dy = 8;
   const x = dx + 16;
-  const w = 348;
+  const w = 368;
   const ROW = 32;
   const row = (
     y: number,
@@ -853,7 +853,7 @@ export function ImportChooser() {
   const toolsY = dy + 128;
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={272} title="Import" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={400} h={288} title="Import" sceneW={W} sceneH={H}>
         <Label x={x} y={dy + 52} size={8.5} weight={700} tone="muted">
           INTO THIS TAB
         </Label>
