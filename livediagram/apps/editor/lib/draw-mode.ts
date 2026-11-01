@@ -225,6 +225,18 @@ export function isHeldToolIntent(intent: PendingDraw | null | undefined): boolea
   return isHeldPenIntent(intent) || isFillIntent(intent);
 }
 
+// Whether a tap places the armed intent (docs/specs/008-canvas/canvas-and-palette.md "Adding elements"): every
+// box, line and component does; a pen, the polygon, the Path and Fill tools are gestures with no tap.
+export function dropsOnTap(intent: PendingDraw | null | undefined): intent is PendingDraw {
+  if (!intent) return false;
+  return (
+    intent.type !== 'freehand' &&
+    intent.type !== 'polygon' &&
+    intent.type !== 'path' &&
+    intent.type !== 'fill'
+  );
+}
+
 // The Path tool in hand (docs/specs/023-draw-mode/path-tool.md).
 export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
   return intent?.type === 'path';

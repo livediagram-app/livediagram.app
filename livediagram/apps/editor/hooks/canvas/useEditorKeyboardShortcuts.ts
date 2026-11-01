@@ -76,6 +76,23 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // A closer handler already claimed this keystroke (e.g. the table's
       // selected-cell layer) — don't double-act on it.
       if (e.defaultPrevented) return;
+      // Enter drops an armed tile at the middle of the view, the keyboard's tap: a tile armed from the
+      // keyboard otherwise waited for a pointer it would never get (docs/specs/008-canvas/canvas-and-palette.md
+      // "Adding elements"). A focused control or a text field keeps its own Enter.
+      if (
+        e.key === 'Enter' &&
+        !e.repeat &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        !e.shiftKey &&
+        liveRef.current.pendingDraw !== null &&
+        !isTypingTarget(e.target) &&
+        !isPressableControl(e.target)
+      ) {
+        if (liveRef.current.onDropDrawAtCentre()) e.preventDefault();
+        return;
+      }
       if (e.key === 'Escape') {
         const live = liveRef.current;
         // Claim the key when it cancelled something, so a later listener

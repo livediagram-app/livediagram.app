@@ -34,6 +34,9 @@ export type EditorKeyboardShortcutsDeps = {
   // discriminated union type itself.
   pendingDraw: unknown;
   onCancelDraw: () => void;
+  // Enter's tap: drops the armed tile at the middle of the view. False when the intent has no tap
+  // (a pen, the Path or Fill tool), so the key is left alone.
+  onDropDrawAtCentre: () => boolean;
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
   // Read when a key is pressed (docs/specs/008-canvas/blueprints/selection-store.md).
