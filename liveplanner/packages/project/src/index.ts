@@ -599,6 +599,8 @@ export * from './session';
 // to paint a label in the face the canvas painted it in, and they run in the
 // mcp worker as well as the browser.
 export * from '@liveworkspace/model-core/fonts';
+// The faces liveplanner's own pickers offer (docs/specs/004-interface-design/fonts.md "Not offered in liveplanner").
+export * from './planner-fonts';
 
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/project-views.md):
 // how views, edit operations and the lint name and place elements alike.
