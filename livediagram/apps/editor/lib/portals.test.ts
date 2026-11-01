@@ -6,7 +6,6 @@ import {
   portalsOnTab,
   resolvePortalDestination,
   resolvePortalTarget,
-  viewportOffsetCentredOn,
 } from './portals';
 
 const portal = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
@@ -155,26 +154,5 @@ describe('portalExitPoint', () => {
       x: 136,
       y: 312,
     });
-  });
-});
-
-describe('viewportOffsetCentredOn', () => {
-  it('centres the portal in the viewport', () => {
-    const offset = viewportOffsetCentredOn(
-      { x: 500, y: 300, width: 100, height: 100 },
-      { width: 1000, height: 800 },
-      1,
-    );
-    // Portal centre (550, 350) lands at the viewport centre (500, 400).
-    expect(offset).toEqual({ x: -50, y: 50 });
-  });
-
-  it('accounts for zoom, since the offset is applied before the scale', () => {
-    const offset = viewportOffsetCentredOn(
-      { x: 0, y: 0, width: 100, height: 100 },
-      { width: 1000, height: 800 },
-      2,
-    );
-    expect(offset).toEqual({ x: 200, y: 150 });
   });
 });

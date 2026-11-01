@@ -27,6 +27,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 // The editor code every editor shares (@liveworkspace/workbench), which app/globals.css points Tailwind at too.
 const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
+// And Avatar mode's shared code (@liveworkspace/avatar), which it points Tailwind at as well.
+const AVATAR = join(ROOT, '../../../packages/avatar/src');
 
 // Everything Tailwind is pointed at. Build output is excluded: it CONTAINS the
 // compiled result, so scanning it would report the rule we are preventing.
@@ -56,7 +58,7 @@ const PLACEHOLDER_CLASS = new RegExp(
 );
 
 describe('no placeholder class names anywhere Tailwind can see them', () => {
-  const files = [ROOT, WORKBENCH].flatMap((dir) => sourceFiles(dir));
+  const files = [ROOT, WORKBENCH, AVATAR].flatMap((dir) => sourceFiles(dir));
 
   it('scans a real tree (guard against this test going blind)', () => {
     expect(files.length).toBeGreaterThan(200);
