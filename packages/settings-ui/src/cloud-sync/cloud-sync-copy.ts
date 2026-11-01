@@ -186,7 +186,9 @@ export function driveSyncCopy(
     ? { text: DRIVE_OFFLINE, action: null }
     : notice
       ? {
-          text: `${notice.name}${more > 0 ? ` and ${more} more` : ''}: ${DRIVE_NOTICE_TEXT}`,
+          // The name isolated (FSI … PDI): a right-to-left one, or one holding an override, never turns the
+          // sentence after it around.
+          text: `\u2068${notice.name}\u2069${more > 0 ? ` and ${more} more` : ''}: ${DRIVE_NOTICE_TEXT}`,
           action: null,
         }
       : null;
