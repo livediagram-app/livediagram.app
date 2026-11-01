@@ -129,13 +129,16 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a checklist's ticks.
-const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>(['checklist']);
+// The kinds whose face carries controls of its own: a checklist's ticks, a tab window's Show a Tab and Open.
+const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>(['checklist', 'tab-window']);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture
  *  (`img`, one concise name) for an element that is only drawn, and a named `group` for one whose face holds
- *  controls, since an img's children are presentational and a screen reader could not reach the controls. */
-export function elementRole(el: Element): 'img' | 'group' {
+ *  controls, since an img's children are presentational and a screen reader could not reach the controls.
+ *  `faceLive`: the element is selected by someone who may change it, so its face shows controls whatever its kind
+ *  (its lines edit in place, a table's Column and Row options, a pointer note's tip). */
+export function elementRole(el: Element, faceLive = false): 'img' | 'group' {
+  if (faceLive) return 'group';
   if (el.type === 'video' || el.type === 'link-card') return 'group';
   if (el.type === 'image') return el.imageId ? 'img' : 'group';
   if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';
