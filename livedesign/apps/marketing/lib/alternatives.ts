@@ -4,7 +4,7 @@ import { SITE_URL } from '@livedesign/ui';
 // livedesign's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livedesign"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-10-23');
+const UPDATED = new Date('2026-11-01');
 
 const LIST: Alternative[] = [
   {
@@ -36,7 +36,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Wireframes',
-        us: 'Phone, tablet, browser, laptop and watch frames with ready-made screens',
+        us: 'Phone, tablet, browser, laptop and watch frames with ready-made screens, and Inspect for handoff',
         them: 'Frames, components, auto layout and clickable prototypes',
       },
       {
@@ -59,7 +59,7 @@ const LIST: Alternative[] = [
     usBest: [
       'Logos, wireframes and photos in one design: each a kind of page, side by side as tabs.',
       'Logo pages with construction guides, Mirror drawing, 25 logo layouts and a Logo Kit: an SVG, PNGs from 16 to 1024 pixels and a favicon in one .zip.',
-      'Wireframe pages that draw the phone, tablet, browser, laptop or watch round the screen, starting from ready-made screens.',
+      'Wireframe pages that draw the phone, tablet, browser, laptop or watch round the screen, starting from ready-made screens, with Inspect to hand every size, gap and colour to whoever builds them.',
       'A layered photo editor on the page: masks, blend modes, adjustments, 44 filters, selection and retouching tools, and PSD in and out.',
       'A laser pointer, a spotlight and Zen mode for walking people through a design, live.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
@@ -91,7 +91,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Can livedesign replace Figma?',
-        a: 'For logos, wireframes and photo edits made together, often yes. If you need a component library, auto layout, clickable prototypes or developer handoff, Figma is the deeper product design tool.',
+        a: 'For logos, wireframes and photo edits made together, often yes. If you need a component library, auto layout or clickable prototypes, Figma is the deeper product design tool. Developers can read a livedesign wireframe’s sizes, spacing and colours with Inspect.',
       },
       {
         q: 'Can I import Figma files?',

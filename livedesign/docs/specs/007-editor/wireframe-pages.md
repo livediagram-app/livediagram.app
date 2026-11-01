@@ -268,7 +268,8 @@ them as CSS or as plain values, and export a picture of it, with nothing on the 
 ### The Inspect panel
 
 While Inspect is on, the **Inspect** panel is open: a mode panel ([Panel corner docking](panel-docking.md)),
-homed bottom-right like the Format and Laser panels. With nothing selected it reads "Select an element
+homed bottom-right like the Format and Laser panels, its header carrying the `?` to its help article
+([Contextual help links](../018-help/contextual-help-links.md)). With nothing selected it reads "Select an element
 to see its size, spacing, colours and type."; with several, "<n> elements selected. Select one to
 inspect it." With one, under the element's name (its kind, and its words when it has some):
 

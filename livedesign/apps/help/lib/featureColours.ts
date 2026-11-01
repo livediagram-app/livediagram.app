@@ -20,6 +20,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'working-with-pages': '#e11d48',
   'logo-pages': '#0891b2',
   'wireframe-pages': '#7c3aed',
+  inspect: '#dc2626',
   'photo-pages': '#c026d3',
   articles: '#0d9488',
   'exporting-pages': '#9333ea',

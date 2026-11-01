@@ -235,6 +235,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.5 15h7M8.5 18h4" />
     </Glyph>
   ),
+  // A button with its width measured under it, end ticks and all: reading a wireframe's numbers off it.
+  inspect: (
+    <Glyph>
+      <rect x="4" y="4.5" width="16" height="8" rx="4" />
+      <path d="M4 18h16" />
+      <path d="M4 16v4M20 16v4" />
+      <path d="M12 12.5v3" strokeDasharray="1 1.5" />
+    </Glyph>
+  ),
   // Two stacked layers of a photo, the front one a landscape: a picture made of layers.
   'photo-pages': (
     <Glyph>

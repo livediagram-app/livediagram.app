@@ -7,6 +7,7 @@ import {
   ExpiryArt,
   FollowAlongArt,
   FontsArt,
+  InspectArt,
   LaserArt,
   LiveImageArt,
   LogoLayoutsArt,
@@ -76,14 +77,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore logos and wireframes',
     title: 'Design a logo, sketch the screens',
     description:
-      'A logo page is a square artboard with construction guides: start from a layout, draw with Mirror for a symmetrical mark, then download every size you need. Wireframe pages put a phone, a tablet or a browser round the screens you are planning.',
+      'A logo page is a square artboard with construction guides: start from a layout, draw with Mirror for a symmetrical mark, then download every size you need. Wireframe pages put a phone, a tablet or a browser round the screens you are planning, and Inspect hands their sizes, spacing and colours to whoever builds them.',
     metaDescription:
-      'Design a logo on an artboard with guides and Mirror, download a logo kit, and sketch app and website screens on wireframe pages.',
+      'Design a logo on an artboard with guides and Mirror, download a logo kit, sketch app and website screens, and inspect them for developer handoff.',
     highlights: [
       'Design a logo',
       'Start from a logo layout',
       'Wireframe the screens',
-      'Preset themes',
+      'Hand the screens to developers',
     ],
     items: [
       {
@@ -92,7 +93,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Logos',
         title: 'Design a logo',
         description:
-          'A logo page is a square artboard with construction guides to build on. Draw with Mirror and one side mirrors the other, or round the centre; combine shapes into one, and set the name in wordmark type. Then export a Logo Kit: an SVG, PNGs from 16 to 1024 pixels and a favicon, in one .zip.',
+          'A logo page is a square artboard with construction guides to build on. Draw with Mirror and one side mirrors the other, or round the centre; combine shapes into one and refine its points an outline at a time, fill a hand-drawn loop with the paint bucket, and set the name in wordmark type. Then export a Logo Kit: an SVG, PNGs from 16 to 1024 pixels and a favicon, in one .zip.',
       },
       {
         art: <LogoLayoutsArt />,
@@ -109,6 +110,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Wireframe the screens',
         description:
           'A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning. Start from a ready-made screen, a sign-in, a feed or a checkout, and lay out the flow page by page.',
+      },
+      {
+        art: <InspectArt />,
+        href: '/help/pages/wireframe-pages/inspect/',
+        group: 'Wireframes',
+        title: 'Hand the screens to developers',
+        description:
+          'Turn on Inspect and click anything on a wireframe: its size, position, spacing to its neighbours, colours, border and type, in points. Copy it as CSS, export it at 1x, 2x or 3x, and send a link that opens with Inspect on. Viewers get all of it, and nothing can change.',
       },
       {
         art: <PagesArt />,
@@ -274,7 +283,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Comments on anything',
         description:
-          "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
+          "Right-click an element, leave a thread. Reply, react with an emoji, resolve or delete. Comments carry the author's name and colour so it's clear who said what.",
       },
       {
         art: <AssignedActionsArt />,
