@@ -133,7 +133,7 @@ export function InspectPanel({
   };
 
   return (
-    <ModePanel title="Inspect" width="w-auto sm:w-72" {...placement}>
+    <ModePanel helpArticle="inspect" title="Inspect" width="w-auto sm:w-72" {...placement}>
       <div className="flex flex-col gap-3 px-3 pb-3" data-inspect-panel="">
         {!spec || !target ? (
           <p className="rounded-lg bg-slate-50 px-3 py-4 text-center text-xs leading-relaxed text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">

@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Comments',
   description:
-    'Comment on a card or a Sheet cell to give feedback, ask questions and record decisions, then resolve the thread once it is handled.',
+    'Comment on a card or a Sheet cell to give feedback, ask questions and record decisions, react with an emoji, then resolve the thread once it is handled.',
   path: '/help/collaboration/comments/',
 });
 
@@ -17,23 +17,24 @@ There are two places a comment can live: on a **card**, and on a **cell** of a S
 
 ## Commenting on a card
 
-Every card has a conversation at the end of the **Overview** tab of its card panel, under **Comments**.
+A card holds **comment threads** at the end of the **Overview** tab of its card panel, under **Comments**: as many separate conversations as it needs, each with its own title and replies.
 
 <Step n={1}>
   Click a card to open its panel. Scroll to **Comments** at the end of the **Overview** tab.
 </Step>
 
 <Step n={2}>
-  Type in the **Add a comment…** box and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter** on a
-  Mac). A plain **Enter** starts a new line.
+  Press **New Thread**, type your comment and press **Start Thread** (or **Ctrl+Enter**,
+  **Cmd+Enter** on a Mac).
 </Step>
 
 <Step n={3}>
-  The comment appears in the thread with your name, colour and how long ago it was posted. On the
-  board, the card shows a speech-bubble with the number of comments while its thread is open.
+  The thread appears with your name, colour and how long ago it was posted. Others reply in the box
+  at its foot and press **Reply**. On the board, the card shows how many comments its open threads
+  hold.
 </Step>
 
-You can delete your own comments with the bin that appears when you hover one; people who can edit the plan can delete anyone's. See [Cards](/help/plan/cards/) for everything else the card panel holds.
+You can edit and delete your own comments; people who can edit the plan can delete anyone's. See [Comment Threads](/help/plan/cards/#comment-threads) for renaming threads, putting one thread on several cards, and everything else.
 
 ## Commenting on a Sheet cell
 
@@ -52,9 +53,18 @@ A mention does two things for the person you tag:
 
 You can mention the members of the team whose library holds the plan, as long as you are a member of that team too, including people who have been invited but not joined yet. On a personal plan there is nobody to mention; move it into a team library first. You need to be signed in to mention anyone.
 
+## Reacting to a comment
+
+Agree, cheer or say "I've seen this" with one press instead of a reply. Hover a comment (on a touch screen it's always there) and press **Add Reaction**, the smile with a plus: six emoji open under its text, 👍 👎 😄 🎉 ❤️ 👀. Pick one and it shows as a chip with a count. You can leave several different emoji on one comment, each once.
+
+- Your reactions are highlighted. Press a chip to add yours, or press it again to take yours back. Nobody can take away anyone else's.
+- Hover a chip, focus it, or hold your finger on it to see who reacted ("You, Ana and Sam reacted").
+- Reactions work on card threads and on Sheet cell comments. A comment in a resolved thread keeps its chips but takes no new ones until the thread is reopened.
+- Editors and Participants react; a Viewer sees the reactions and who left them, but can't add one.
+
 ## Resolving comments
 
-Once a comment has been actioned, press **Resolve** at the top of its thread to clear it from the working view while keeping the record. It becomes a green **Resolved** badge and the reply box is hidden; on a card the comment count goes away, and on a cell the amber triangle does. **Reopen** beside the badge opens the thread again, and so does a new comment. Use comments to:
+Once a comment has been actioned, resolve its thread to clear it from the working view while keeping the record. On a card, **Resolve** sits beside **Reply** at the foot of the thread; with a reply typed it reads **Comment and Resolve**, posting your reply and resolving the thread in one press, and the thread moves under **Resolved** at the bottom of the list. On a Sheet cell, press **Resolve** at the top of the thread. A resolved thread is drawn quieter, with who resolved it, and has no reply box; on a card its comments leave the card's count, and on a cell the amber triangle goes. **Reopen** brings the thread back. Use comments to:
 
 - **Request changes** during a review without editing someone else's work directly.
 - **Ask a question** on the exact card or cell it is about.
@@ -64,7 +74,7 @@ Once a comment has been actioned, press **Resolve** at the top of its thread to 
 
 New comments appear for everyone in the plan as they are posted. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the owner to pick up later. Open threads you are part of are gathered on your [Inbox](/help/explorer/activity/), across every plan.
 
-Because liveplanner works without signing in, a guest you hand a share link to can read and join the conversation too. Commenting needs a **Participant** or **Editor** share link: someone on a **Viewer** link can read the threads but not add to them, resolve them or delete anything.
+Because liveplanner works without signing in, a guest you hand a share link to can read and join the conversation too. Commenting needs a **Participant** or **Editor** share link: someone on a **Viewer** link can read the threads but not add to them, react, resolve them or delete anything.
 
 A few things to know:
 

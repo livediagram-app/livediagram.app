@@ -182,12 +182,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the
             screen you are planning, and starts from a ready-made screen. Five templates lay out
-            whole flows, from a mobile app to a web dashboard. See{' '}
+            whole flows, from a mobile app to a web dashboard. When it is agreed,{' '}
+            <a href="/help/pages/wireframe-pages/inspect/">Inspect</a> shows whoever builds it every
+            size, gap, colour and font, ready to copy as CSS. See{' '}
             <a href="/help/pages/wireframe-pages/">wireframe pages</a>.
           </>
         ),
         aText:
-          'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. See wireframe pages.',
+          'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. When it is agreed, Inspect shows whoever builds it every size, gap, colour and font, ready to copy as CSS. See wireframe pages.',
       },
       {
         q: 'Can I edit photos?',
@@ -256,7 +258,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I leave comments and assign follow-ups?',
-        a: 'Yes. Comment on anything on a page and reply in threads, then resolve them when they are done. You can also attach an action and assign it to a teammate, so the follow-ups stay with the design instead of getting lost.',
+        a: 'Yes. Comment on anything on a page, reply in threads or react with an emoji, then resolve them when they are done. You can also attach an action and assign it to a teammate, so the follow-ups stay with the design instead of getting lost.',
       },
       {
         q: 'Can I set up a team with shared designs?',

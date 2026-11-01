@@ -268,7 +268,7 @@ export const articles: Article[] = [
     title: 'The Title Bar',
     description: 'Rename the canvas, see who can see it, preview as a viewer, and Share or Copy.',
     keywords:
-      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account canvas',
+      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account canvas untitled auto name automatic name named after first label site switcher logo',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -862,7 +862,7 @@ export const articles: Article[] = [
     title: 'Avatar Mode',
     description: 'Walk a pixel character around the canvas while you talk through it.',
     keywords:
-      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb',
+      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb change tab switch tab leave avatar mode',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -1405,9 +1405,9 @@ export const articles: Article[] = [
     slug: 'draw-mode',
     title: 'Draw Mode',
     description:
-      'Freehand drawing on any tab: switch modes, then a dock of pens, a Path tool, erasers and shapes.',
+      'Freehand drawing on any tab: switch modes, then a dock of pens, a Path tool, a Fill bucket, erasers and shapes.',
     keywords:
-      'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
+      'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad fill tool fill bucket paint bucket bucket pour colour in color in fill shape fill loop flood fill no fill snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1541,7 +1541,8 @@ export const articles: Article[] = [
     slug: 'comments',
     title: 'Comments',
     description: 'Leave threaded comments on the canvas and resolve them.',
-    keywords: 'thread feedback reply resolve discussion note annotate mention',
+    keywords:
+      'thread feedback reply resolve discussion note annotate mention reaction reactions react emoji thumbs up like heart hooray eyes laugh',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2413,7 +2414,7 @@ export const articles: Article[] = [
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog and browse themes by category.',
     keywords:
-      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes',
+      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes apply to all tabs every tab all tabs same style match tabs consistent',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',
@@ -2477,7 +2478,7 @@ export const articles: Article[] = [
     title: 'Sharing to the Community',
     description: 'Publish a canvas to the public gallery for others to view and copy.',
     keywords:
-      'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse canvas',
+      'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse canvas explorer share from explorer',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -2514,7 +2515,8 @@ export const articles: Article[] = [
     slug: 'embeds',
     title: 'Embeds',
     description: 'Drop a live canvas into another page, read-only or editable by link role.',
-    keywords: 'iframe embed website notion confluence wiki blog integrate document',
+    keywords:
+      'iframe embed website notion confluence wiki blog integrate document session strip timer vote poll',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',

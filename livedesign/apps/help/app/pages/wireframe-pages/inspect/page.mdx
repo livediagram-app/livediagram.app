@@ -1,0 +1,116 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { InspectScene, InspectSpacingScene } from '@/components/illustrations/inspect';
+
+export const metadata = helpMetadata({
+  title: 'Inspect',
+  description:
+    'Hand a wireframe to the people who build it: Inspect shows any element’s size, position, spacing, colours, border and type, copies them as CSS, and exports it.',
+  path: '/help/pages/wireframe-pages/inspect/',
+});
+
+<ArticleLayout
+  title="Inspect"
+  description="Read every size, gap, colour and font straight off a wireframe, copy it as CSS, and export any part of the screen."
+  categoryTitle="Pages"
+  categorySlug="pages"
+  parentArticle={{ title: 'Wireframe Pages', slug: 'wireframe-pages' }}
+  subArticles={getSubArticles('wireframe-pages').filter((a) => a.slug !== 'inspect')}
+>
+
+A wireframe is where a screen gets agreed before someone builds it. **Inspect** is how the person building it reads it: click any element on a [wireframe page](/help/pages/wireframe-pages/) to see how big it is, where it sits, how far it is from its neighbours, and which colours, border and type it uses, then copy those values or export a picture of it. Nothing on the page can change while Inspect is on, so it is safe to hand to anyone.
+
+## Turning Inspect On
+
+<Step n={1}>
+  Open a tab of wireframe pages. An **Inspect** button joins the bottom-right corner of the editor,
+  after **Contents** in the pages strip. It only appears on a wireframe tab.
+</Step>
+
+<Step n={2}>
+  Press **Inspect**. The canvas switches to Inspect and the **Inspect** panel opens. You can also
+  search for **Inspect Tool** in the [search
+  panel](/help/search-panel/the-search-panel/command-palette/) (`⌘K` or `Ctrl+K`).
+</Step>
+
+<Step n={3}>
+  Press **Inspect** again, press `Escape`, or pick another tool (`V` for Select, `H` for Hand) to
+  leave it. Moving to a tab that is not a wireframe tab leaves it too.
+</Step>
+
+While Inspect is on, a press only selects. It never moves, resizes, turns or edits anything, even for an Editor: there are no handles, no selection toolbars, double-clicking opens no editor, and the keyboard behaves as it does on a view-only link. A press on empty canvas clears the selection.
+
+<Figure caption="Inspect on a phone wireframe: the Sign In button outlined, its spacing measured in red, and its values in the Inspect panel.">
+  <InspectScene />
+</Figure>
+
+## Measuring on the Canvas
+
+- **Hover** an element to outline it.
+- **Select** an element and a red line runs out from each of its sides to the nearest edge on that side: the next element's facing edge, the inside edge of an element it sits in, or else the edge of the screen. Each line carries its distance in a pill.
+- **Hover another element** while one is selected to measure between the two: the gap across and the gap down when they stand apart, or the four insets when one sits inside the other.
+- With nothing selected, hovering an element shows its spacing to its neighbours.
+
+The lines are drawn over the canvas at the same size at every zoom. They are only on your screen: they are never part of the design or an export, and nobody else sees them.
+
+## The Inspect Panel
+
+With nothing selected, the panel reads "Select an element to see its size, spacing, colours and type." With several selected, it asks you to select one. With one, it shows the element's name (its kind, and its words when it has some) and then:
+
+- **Layout**: **W** and **H**, then **X** and **Y** from the top-left of the screen, plus **Rotation** when it is turned and **Opacity** when it is less than 100%.
+- **Spacing**: **Top**, **Right**, **Bottom** and **Left**, the same distances the canvas draws, each with what it is measured to (another element's kind, or **Screen**).
+- **Colours**: **Fill** and **Border**, each a swatch and its hex code, the colour the element is actually drawn in (its own, or the theme's when it has none). A part with no colour reads **None**.
+- **Border**: its **Width**, **Style** and **Radius** (the corners as drawn, so a pill's radius is half its height).
+- **Text**, when the element has words: **Font**, **Size**, **Weight**, **Line Height**, **Colour** and **Align**.
+
+Every value is in **points**, the device's own units, so a value reads the way the screen would be built: an iPhone screen is 393 points wide. Values are rounded to a tenth.
+
+<Figure caption="The Spacing box: the element in the middle, and each side's distance with what it is measured to.">
+  <InspectSpacingScene />
+</Figure>
+
+## Copying Values
+
+- **Press any value** to copy it on its own. "Copied" flashes on it.
+- **Copy CSS** copies the element as CSS, in px: its width, height, position, rotation, opacity, background, border, corner radius and, for text, its colour, font, size, weight, line height and alignment.
+- **Copy Values** copies every value in the panel as plain lines of `Name: value`, handy for a ticket or a chat.
+
+## Exporting an Element
+
+Under **Export**, pick **1x**, **2x** or **3x** and press **PNG** or **SVG**. You get the element, with everything that sits inside it, as a picture on a clear background cut to its own box, at that scale. An SVG keeps its drawing and takes the scale as its size. The file is named after the design and the element, ending in its scale (`@2x.png`, say).
+
+To export whole pages or the whole device instead, see [Exporting Pages](/help/pages/exporting-pages/).
+
+## Sharing a Link That Opens With Inspect
+
+**Copy Inspect Link**, at the foot of the panel, copies a link that opens the design with Inspect already on, so a developer lands ready to measure.
+
+- If you came in on a share link, it copies that link with Inspect added.
+- If you own the design (or can share it), it copies the design's live **Viewer** link with Inspect added: the link for the whole design first, otherwise the one for this tab. It never copies a Community post's public link, and it never makes a new link. With no Viewer link yet, the Share dialog opens with the note "Make a Viewer link, then copy the Inspect link."
+- A design kept only in This Browser has no link to share, so the button is not there.
+
+A link with Inspect opens with Inspect on only when its tab is a wireframe tab; on any other tab it opens as usual.
+
+## Who Can Inspect
+
+Inspect reads the design and changes nothing, so every role gets all of it:
+
+| Role        | Inspect, measure and copy | Export an element | Copy Inspect Link |
+| ----------- | ------------------------- | ----------------- | ----------------- |
+| Editor      | Yes                       | Yes               | Yes               |
+| Participant | Yes                       | Yes               | Yes               |
+| Viewer      | Yes                       | Yes               | Yes               |
+
+Viewers have no palette, which is why Inspect lives in the pages strip rather than in the tool menu. See [Sharing](/help/collaboration/sharing/) for what each role can do elsewhere.
+
+## On a Phone or Tablet
+
+Inspect works on a touch screen too: tap an element to select it. On a phone the Inspect panel starts collapsed, like the other tool panels, so your first tap selects; tap the panel to open it. While it is open it covers part of the device frame, so collapse it again to see the whole screen.
+
+<Tip>
+  Send a developer the Inspect link alongside the wireframe review. They can check a gap or a colour
+  themselves at any time, without asking the designer for every number.
+</Tip>
+
+</ArticleLayout>

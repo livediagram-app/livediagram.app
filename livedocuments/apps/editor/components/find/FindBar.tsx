@@ -2,7 +2,7 @@
 
 // The Find bar (docs/specs/007-editor/find-and-replace.md "The bar"; blueprint "Presentation and UX"): a card over
 // the canvas, the toolbar strip's surface. The Find row (the Replace chevron, the field with its count, Match Case and
-// Whole Word, Previous and Next, Close) and, for someone who may replace, the Replace row. It renders the find state
+// Whole Word, Previous and Next, the help `?`, Close) and, for someone who may replace, the Replace row. It renders the find state
 // (useFindReplace) and owns nothing but focus.
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Button, lucideGlyph, Tooltip } from '@livedocuments/ui';
@@ -16,6 +16,7 @@ import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { FIND_QUERY_MAX } from '@/lib/find/find-text';
 import { FIND_MATCHES_MAX } from '@/lib/find/find-matches';
 import type { FindView } from '@/hooks/editor/useFindReplace';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { takeLoadingHandover } from './FindBarLoading';
 import {
   TOOLBAR_CARD,
@@ -238,6 +239,8 @@ export function FindBar({ find }: { find: FindView }) {
         <BarButton label="Next Match" keys="Enter" disabled={none} onPress={find.next}>
           <DownIcon />
         </BarButton>
+        {/* The article on all this, in a new tab; a phone's row has no room (the header's Help is there). */}
+        <HelpArticleLink article="findAndReplace" size="md" className="phone:hidden" />
         <BarButton label="Close Find" keys="Escape" onPress={find.close}>
           <CloseIcon />
         </BarButton>

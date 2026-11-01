@@ -1150,7 +1150,7 @@ export const articles: Article[] = [
     description:
       'Design a logo on a square artboard with guides, mirror, wordmarks, combined shapes and a logo kit.',
     keywords:
-      'logo logos brand branding draw drawing pen bezier path freehand pencil sketch shape pen mark wordmark lettermark monogram icon favicon app icon avatar artboard guides keyline grid safe area symmetry mirror reflect flip radial rotational kaleidoscope four way horizontal vertical axis copies merge combine boolean union unite subtract intersect exclude merge shapes tracking letter spacing kerning arc curved text circle text badge emblem logo kit export png svg ico transparent',
+      'logo logos brand branding draw drawing pen bezier path freehand pencil sketch marker markers fill tool paint bucket colour in color in shape pen mark wordmark lettermark monogram icon favicon app icon avatar artboard guides keyline grid safe area symmetry mirror reflect flip radial rotational kaleidoscope four way horizontal vertical axis copies merge combine boolean union unite subtract intersect exclude merge shapes tracking letter spacing kerning arc curved text circle text badge emblem logo kit export png svg ico transparent',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Kinds of Page',
@@ -1161,7 +1161,7 @@ export const articles: Article[] = [
     description:
       'Wireframe a screen inside a phone, tablet, laptop, desktop, browser or watch frame, from ready-made screens.',
     keywords:
-      'wireframe wireframes mockup mock up mockups prototype ui ux screen screens app design device frame phone iphone android mobile tablet ipad laptop desktop monitor browser website web page watch smartwatch status bar dynamic island notch home indicator landscape portrait safe area sign in login onboarding dashboard settings profile checkout pricing chat feed landing page button text field input search switch toggle placeholder',
+      'wireframe wireframes mockup mock up mockups prototype ui ux screen screens app design device frame phone iphone android mobile tablet ipad laptop desktop monitor browser website web page watch smartwatch status bar dynamic island notch home indicator landscape portrait safe area sign in login onboarding dashboard settings profile checkout pricing chat feed landing page button text field input search switch toggle placeholder inspect measure spacing handoff developer css',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Kinds of Page',
@@ -1292,7 +1292,8 @@ export const articles: Article[] = [
     slug: 'comments',
     title: 'Comments',
     description: 'Leave threaded comments on the canvas and resolve them.',
-    keywords: 'thread feedback reply resolve discussion note annotate mention',
+    keywords:
+      'thread feedback reply resolve discussion note annotate mention reaction reactions react emoji like thumbs up heart',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1889,7 +1890,7 @@ export const articles: Article[] = [
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog and browse themes by category.',
     keywords:
-      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes',
+      'apply browse switch restyle apply to all tabs every tab all tabs match tabs same style colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',
@@ -2058,6 +2059,19 @@ export const articles: Article[] = [
     category: 'Palette',
     categorySlug: 'palette/concept-graphics',
     parentSlug: 'concept-graphics',
+  },
+
+  // ---- Sub-articles: Wireframe Pages ----
+  {
+    slug: 'inspect',
+    title: 'Inspect',
+    description:
+      'Read any element’s size, spacing, colours and type off a wireframe, copy it as CSS, and export it.',
+    keywords:
+      'inspect inspector measure measurement measurements redline redlines spacing gap gaps distance padding margin size width height position developer developers dev handoff hand off hand-off build spec specs specification css copy css copy values points pt px colour color hex fill border radius corner font typography line height export element png svg 1x 2x 3x link viewer',
+    category: 'Pages',
+    categorySlug: 'pages/wireframe-pages',
+    parentSlug: 'wireframe-pages',
   },
 
   // ---- Sub-articles: Layout Cleanup ----

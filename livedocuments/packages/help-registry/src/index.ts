@@ -169,8 +169,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 4,
+      'Do more with less effort using the editor helpers: find and replace, zen mode, light and dark mode, Markdown import, and cleanup.',
+    articleCount: 5,
     kind: 'feature',
   },
   {
@@ -1550,6 +1550,16 @@ export const articles: Article[] = [
     categorySlug: 'tools',
   },
   {
+    slug: 'find-and-replace',
+    title: 'Find and Replace',
+    description:
+      'Find a word on every page of the tab, step through the matches, and replace one or all of them.',
+    keywords:
+      'find replace search find in tab find and replace replace all match case whole word ctrl f cmd f command f ctrl shift h search and replace look for word phrase text highlight matches next previous count change every rename',
+    category: 'Tools',
+    categorySlug: 'tools',
+  },
+  {
     slug: 'markdown-import',
     title: 'Markdown Import',
     description:
@@ -1562,7 +1572,8 @@ export const articles: Article[] = [
     slug: 'style-presets',
     title: 'Style Presets',
     description: 'One-click colour and line-style variations for shapes and arrows.',
-    keywords: 'markdown md paste article headings lists bullet formatting import text convert',
+    keywords:
+      'style preset presets variation variations quick style colour color line style dashed dotted fill outline one click shape arrow look',
     category: 'Palette',
     categorySlug: 'palette/shapes',
     parentSlug: 'shapes',
@@ -1757,6 +1768,29 @@ export const articles: Article[] = [
     parentSlug: 'the-canvas',
   },
 
+  // ---- Sub-articles: Writing Articles ----
+  {
+    slug: 'article-tables',
+    title: 'Tables in Articles',
+    description:
+      'A table in the writing: Tab through its cells, add rows and columns, and repeat its header row on every page.',
+    keywords:
+      'table tables article writing rows columns row column cell cells grid spreadsheet header row repeat repeated insert row above below insert column left right delete row delete column delete table resize column width tab paste google sheets excel numbers word google docs markdown pipe table tab separated split across pages',
+    category: 'Pages',
+    categorySlug: 'pages/articles',
+    parentSlug: 'articles',
+  },
+  {
+    slug: 'contents-headers-footers',
+    title: 'Contents, Headers and Footers',
+    description:
+      'A table of contents that lists your headings with their pages, and a header and footer on every page.',
+    keywords:
+      'table of contents toc contents index headings outline page numbers page number page count document name date header footer running header running footer different first page title page leader dotted jump link pdf word h1 h2 h3 depth style',
+    category: 'Pages',
+    categorySlug: 'pages/articles',
+    parentSlug: 'articles',
+  },
   // ---- Sub-articles: Shapes ----
   {
     slug: 'shape-markers',

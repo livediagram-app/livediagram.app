@@ -39,7 +39,7 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideUndo2, 20),
     title: 'Live, and undoable',
-    body: 'Changes land on an open canvas as they happen, outlined so you can see them, with Undo one click away.',
+    body: 'Changes land on an open canvas as they happen, outlined so you can see them, with Undo one click away. Your agent shows as its own avatar on the tab it is working on.',
   },
 ];
 

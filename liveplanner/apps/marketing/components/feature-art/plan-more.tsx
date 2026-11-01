@@ -206,7 +206,7 @@ export function CardCommentsArt() {
         <Caret x={170} y={69} h={8} />
         <rect className="fill-brand-700" x="248" y="68" width="28" height="10" rx="2.5" />
         <text x="262" y="74.8" fontSize="5" fontWeight="700" fill="#fff" textAnchor="middle">
-          Comment
+          Reply
         </text>
       </Scene>
     </Frame>
@@ -327,6 +327,108 @@ export function BoardCsvArt() {
         <text className={TEXT_MUTED} x="156" y="80" fontSize="5">
           Import CSV… · Export: CSV, PNG, PDF, Markdown
         </text>
+      </Scene>
+    </Frame>
+  );
+}
+
+// Several cards changed at once: two cards picked on a board (ringed in the brand colour), the
+// selection bar over the board naming the count and its actions, and the pair being dragged as one
+// stack with its count badge into the next column.
+export function SelectCardsArt() {
+  const RING = '#8b5cf6';
+  // Each action's pill sits 4 after the last, at the width Pill gives its text.
+  let at = 80;
+  const actions = ['Move To', 'Assign', 'Priority', 'Labels', 'Flag'].map((text) => {
+    const x = at;
+    at += text.length * 3.9 + 12;
+    return { text, x };
+  });
+  return (
+    <Frame canvas>
+      <Scene>
+        {/* The selection bar: the count, then the actions, then Clear Selection. */}
+        <rect
+          className="fill-brand-500/10 stroke-brand-500 dark:stroke-brand-400"
+          x="14"
+          y="4"
+          width="272"
+          height="14"
+          rx="3"
+          strokeWidth="0.8"
+        />
+        <text
+          className="fill-brand-700 dark:fill-brand-300"
+          x="20"
+          y="13"
+          fontSize="5.6"
+          fontWeight="700"
+        >
+          2 cards selected
+        </text>
+        {actions.map((a, i) => (
+          <Pill key={a.text} x={a.x} y={6.5} text={a.text} tone={i === 0 ? 'brand' : 'neutral'} />
+        ))}
+        <path
+          className="stroke-slate-400"
+          d="M276.5 8.5l4 4M280.5 8.5l-4 4"
+          strokeWidth="0.9"
+          strokeLinecap="round"
+        />
+        {/* The board: three columns, two cards picked in the first. */}
+        <ColumnHead x={16} y={28} name="Triage" count="3" />
+        <ColumnHead x={112} y={28} name="This Week" count="1" />
+        <ColumnHead x={208} y={28} name="Done" count="2" />
+        <PlanCard
+          x={14}
+          y={33}
+          w={84}
+          title="Login fails"
+          id="#57"
+          type="bug"
+          who={AK}
+          ring={RING}
+        />
+        <PlanCard x={14} y={54} w={84} title="Slow search" id="#58" type="bug" who={SM} />
+        <PlanCard
+          x={14}
+          y={75}
+          w={84}
+          title="Broken link"
+          id="#60"
+          type="bug"
+          who={JR}
+          ring={RING}
+        />
+        <PlanCard x={110} y={33} w={84} title="Pricing page" id="#18" who={TM} />
+        <PlanCard x={206} y={33} w={84} title="New logo" id="#12" type="idea" who={AK} />
+        <PlanCard x={206} y={54} w={84} title="Alt text" id="#14" who={SM} />
+        {/* The pair, dragged as one stack with its count, landing in This Week. */}
+        <g className="fa-d-land">
+          <rect
+            className="fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-600"
+            x="113"
+            y="57"
+            width="84"
+            height="19"
+            rx="2.5"
+            strokeWidth="0.8"
+          />
+          <PlanCard
+            x={110}
+            y={54}
+            w={84}
+            title="Login fails"
+            id="#57"
+            type="bug"
+            who={AK}
+            ring={RING}
+          />
+          <circle cx="194" cy="54" r="4.6" fill={RING} />
+          <text x="194" y="56" fontSize="5.4" fontWeight="700" fill="#fff" textAnchor="middle">
+            2
+          </text>
+        </g>
       </Scene>
     </Frame>
   );
