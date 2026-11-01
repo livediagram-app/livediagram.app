@@ -36,11 +36,20 @@ describe('form templates', () => {
     ]);
   });
 
-  it('files Blank Form with the blanks and the rest under Forms', () => {
+  it('files Blank Form with the blanks and the rest with the job their answers feed', () => {
     expect(isBlankTemplate('blank-form')).toBe(true);
     expect(templateCategory('blank-form')).toBeNull();
-    for (const kind of FORM_TEMPLATE_KINDS.filter((k) => k !== 'blank-form'))
-      expect(templateCategory(kind)).toBe('forms');
+    const filed = Object.fromEntries(
+      FORM_TEMPLATE_KINDS.filter((k) => k !== 'blank-form').map((k) => [k, templateCategory(k)]),
+    );
+    expect(filed).toEqual({
+      'bug-report-form': 'product',
+      'feedback-form': 'support',
+      'feature-request-form': 'product',
+      'rsvp-form': 'events',
+      'job-application-form': 'hiring',
+      'contact-form': 'support',
+    });
   });
 
   it('makes one empty tab, for the editor to start the form on', () => {

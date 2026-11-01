@@ -14,18 +14,19 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
   boards: [
     'kanban',
     'project-planner',
+    'sales-crm',
     'bug-triage',
-    'product-launch',
-    'okrs',
+    'help-desk',
     'hiring-pipeline',
+    'event-planner',
     'content-calendar',
-    'weekly-planner',
     'blank-plan',
   ],
   // Each of these opens with a Dashboard tab of its own (template-builders-plan.ts).
   dashboards: [
     'product-launch',
     'project-planner',
+    'sales-crm',
     'okrs',
     'bug-triage',
     'kanban',
@@ -55,7 +56,9 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
   ],
   collaboration: [
     'team-retro',
+    'meeting-agenda',
     'feedback-board',
+    'event-planner',
     'product-launch',
     'project-planner',
     'weekly-planner',

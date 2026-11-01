@@ -83,7 +83,7 @@ export function filterGallery(items: GalleryTemplate[], query: string): GalleryT
 // were added, so like ones bunch together; the gallery mixes them, with a fixed seed, so the order
 // is shuffled once and the same on every build and every visit (no layout shift, nothing to
 // hydrate differently). Change the seed to deal a new order.
-const SHUFFLE_SEED = 20261004;
+const SHUFFLE_SEED = 20261122;
 
 // Each template's place on its shelf, dealt once from the whole catalogue.
 const SHELF_RANK: ReadonlyMap<string, number> = (() => {

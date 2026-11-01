@@ -166,9 +166,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <TemplatesArt />,
         href: '/help/plan/planning-basics/',
-        title: 'Ten plans, twelve spreadsheets',
+        title: 'Sixteen plans, twelve spreadsheets',
         description:
-          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; twelve spreadsheets, from a Budget Planner and an Invoice to a Sales Pipeline, a Grade Book and a Loan Calculator, many with charts already in; or a blank plan. New Plan lays them out by kind, with search.',
+          'Sixteen plans, from a Project Planner, Kanban Board and Bug Tracker to an Event Planner, Sales CRM, Help Desk, Meeting Agenda and Study Planner, each set up with its boards; twelve spreadsheets, from a Budget Planner and an Invoice to a Sales Pipeline, a Grade Book and a Loan Calculator, many with charts already in; or a blank plan. New Plan lays them out by kind, with search.',
       },
       {
         art: <McpArt />,

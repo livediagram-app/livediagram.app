@@ -554,6 +554,8 @@ export const READY_MADE_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = 
   objective: 'Draft',
   'key-result': 'Not Started',
   'launch-check': 'Not Checked',
+  deal: 'Lead',
+  ticket: 'New',
 };
 
 // The built-in default's state in this project (`statusNames`: status id to name), or undefined: not a built-in

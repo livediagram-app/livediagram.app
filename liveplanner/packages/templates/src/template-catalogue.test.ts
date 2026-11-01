@@ -6,8 +6,9 @@ import { TEMPLATE_CATEGORIES } from './template-categories';
 describe('templateCatalogue', () => {
   it('lists the categories and every visible template with its category', () => {
     const { categories, templates } = templateCatalogue();
-    // Every category but one holding only editor-only templates (Forms), in order.
-    expect(categories.slice(0, -1)).toEqual(TEMPLATE_CATEGORIES.filter((c) => c.id !== 'forms'));
+    // Every category, in order: each holds a template an agent can make (a form sits beside a board or a sheet of
+    // its job), though a category of editor-only templates alone would be left out.
+    expect(categories.slice(0, -1)).toEqual(TEMPLATE_CATEGORIES);
     expect(categories.every((c) => templates.some((t) => t.category === c.id))).toBe(true);
     expect(categories.at(-1)!.id).toBe('blanks');
     expect(templates.find((t) => t.kind === 'blank')!.category).toBe('blanks');

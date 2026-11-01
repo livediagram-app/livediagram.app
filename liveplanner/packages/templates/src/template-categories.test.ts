@@ -15,13 +15,19 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the five job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
+  it('are the eleven use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
+      'Customer Support',
+      'Education',
+      'Events',
       'Finance',
-      'Forms',
+      'Hiring and People',
+      'Marketing',
       'Meetings',
-      'Planning',
-      'Spreadsheets',
+      'Personal',
+      'Product and Engineering',
+      'Projects and Teams',
+      'Sales',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
@@ -49,11 +55,17 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      planning: 9,
+      support: 3,
+      education: 2,
+      events: 3,
       finance: 6,
-      spreadsheets: 5,
-      forms: 6,
+      hiring: 2,
+      marketing: 2,
       meetings: 2,
+      personal: 3,
+      product: 5,
+      planning: 3,
+      sales: 3,
     });
   });
 
@@ -66,7 +78,7 @@ describe('template categories', () => {
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
       expect(new Set(also).size, kind).toBe(also.length);
     }
-    expect(isInTemplateCategory('invoice', 'spreadsheets')).toBe(true);
+    expect(isInTemplateCategory('sales-pipeline', 'finance')).toBe(true);
     expect(isInTemplateCategory('team-retro', 'planning')).toBe(true);
     expect(isInTemplateCategory('blank', 'planning')).toBe(false);
   });
@@ -93,8 +105,17 @@ describe('template search words', () => {
     expect(find('kpi')).toContain('okrs');
     expect(find('retro')).toContain('team-retro');
     // A category label finds what is cross-listed in it; every word must match.
-    expect(find('spreadsheets invoice')).toContain('invoice');
-    expect(find('spreadsheets invoice')).not.toContain('kanban');
+    expect(find('personal budget')).toContain('budget-planner');
+    expect(find('personal budget')).not.toContain('kanban');
+    // A category's search words find its templates; "spreadsheet" and "form" still find the sheets and forms by
+    // their descriptions, though neither is a category any more.
+    expect(find('helpdesk')).toContain('help-desk');
+    expect(find('school')).toEqual(expect.arrayContaining(['study-planner', 'grade-book']));
+    expect(find('spreadsheet')).toEqual(
+      expect.arrayContaining(['invoice', 'inventory', 'guest-list', 'habit-tracker']),
+    );
+    expect(find('form')).toEqual(expect.arrayContaining(['rsvp-form', 'contact-form']));
+    expect(find('wedding')).toEqual(expect.arrayContaining(['event-planner', 'guest-list']));
     expect(find('kanban zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });

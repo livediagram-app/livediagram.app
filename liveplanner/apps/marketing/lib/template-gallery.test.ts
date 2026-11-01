@@ -66,8 +66,8 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'kanban'));
-    expect(groups.map((g) => g.label)).toEqual(['Planning']);
-    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['kanban']);
+    expect(groups.map((g) => g.label)).toEqual(['Product and Engineering', 'Projects and Teams']);
+    expect(groups.map((g) => g.templates.map((t) => t.kind))).toEqual([['kanban'], ['kanban']]);
   });
 
   it('runs the categories alphabetically by name, Blank Slate first', () => {
@@ -81,7 +81,8 @@ describe('groupGallery', () => {
     const browse = groupGallery(galleryTemplates());
     const holding = (kind: string) =>
       browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('invoice')).toEqual(['finance', 'spreadsheets']);
+    expect(holding('sales-pipeline')).toEqual(['finance', 'sales']);
+    expect(holding('invoice')).toEqual(['finance']);
   });
 
   it('finds a template by its search words, as the editor does', () => {
@@ -122,13 +123,14 @@ describe('the shelf order', () => {
         new Set(catalogue.map((t) => t.kind)),
       );
     }
-    // ...but not in the order they were added.
-    const shuffled = first.filter((g) => {
+    // ...but not in the order they were added: every shelf with more than one template is mixed.
+    const mixable = first.filter((g) => g.templates.length > 1);
+    expect(mixable.length).toBeGreaterThan(0);
+    for (const g of mixable) {
       const catalogue = galleryTemplates()
         .filter((t) => t.categories.includes(g.id as never))
         .map((t) => t.kind);
-      return g.templates.map((t) => t.kind).join() !== catalogue.join();
-    });
-    expect(shuffled.length).toBeGreaterThan(first.length / 2);
+      expect(g.templates.map((t) => t.kind).join(), g.id).not.toBe(catalogue.join());
+    }
   });
 });

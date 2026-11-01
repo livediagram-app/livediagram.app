@@ -118,8 +118,9 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
         The first takes the Overview layout's place in Recommended. A tab still on its default name takes the
         Dashboard's name. Archive and All Cards boards suggest nothing.
     - **Inspiration** ("Ready-made ways to run real work, from hiring to launches, set up across tabs for you."): the
-      Plan templates that set up boards, the most eye-opening first: Hiring Pipeline, Content Calendar, Product Launch,
-      OKRs, Feedback Board, Project Planner, Bug Tracker, Team Retro, Weekly Planner and Kanban, then Task Tracker
+      Plan templates that set up boards, the most eye-opening first: Hiring Pipeline, Content Calendar, Event Planner,
+      Sales CRM, Product Launch, OKRs, Help Desk, Feedback Board, Project Planner, Bug Tracker, Team Retro, Meeting
+      Agenda, Personal Goals, Weekly Planner, Study Planner and Kanban, then Task Tracker
       (Blank Plan left out, and a [spreadsheet template](plan-templates.md#spreadsheet-templates) that makes one tab
       too: it is one Sheet that **Spreadsheets** above already offers, so no choice shows twice; one that sets up more
       tabs, as Task Tracker's Sheet and Overview, stays; `INSPIRATION_TEMPLATES`), each its template preview and a badge of how many tabs it

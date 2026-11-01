@@ -3,10 +3,15 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { TEMPLATES, isBlankTemplate, isPlanTemplate } from '@liveplanner/templates';
+import {
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  isBlankTemplate,
+  isPlanTemplate,
+} from '@liveplanner/templates';
 
 import { faqAnswerText, filterFaq } from '@liveworkspace/marketing-site/lib/faq';
-import { FAQ_CATEGORIES, TEMPLATE_COUNT } from './faq-content';
+import { FAQ_CATEGORIES, TEMPLATE_CATEGORY_COUNT, TEMPLATE_COUNT } from './faq-content';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
 
@@ -48,6 +53,7 @@ describe('FAQ content', () => {
 describe('template counts in marketing copy', () => {
   it('matches the Plan templates in the FAQ', () => {
     expect(TEMPLATE_COUNT).toBe(PLAN_TEMPLATES.length);
+    expect(TEMPLATE_CATEGORY_COUNT).toBe(TEMPLATE_CATEGORIES.length);
   });
 });
 
