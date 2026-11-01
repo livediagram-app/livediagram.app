@@ -20,6 +20,7 @@ Design
 - A design has **one or more tabs**. New designs start with a single empty tab.
 - Each tab has its own independent canvas: pages, elements, layout, theme, optional lock state. Pages are themselves elements on the tab's canvas ([Pages mode](../007-editor/pages-mode.md)).
 - Tabs are **ordered**; users can drag-reorder them in the tab bar.
+- A design also holds a **component library** ([Components](../009-elements/components.md)): the mains its instances draw, the design's and not any tab's, so every tab can place them.
 - A tab has a name (default `"Tab 1"`, `"Tab 2"`, etc.) and is renameable.
 - **Auto-rename on first edit.** While a tab still has its default name (matching `^Tab \d+$`), editing the label of its first element renames the tab to that label. The rename only fires once: as soon as the tab name diverges from the default pattern (auto-rename or manual rename), subsequent label edits leave the tab name alone. This mirrors the design-name auto-fill from the default `Untitled design`.
 
