@@ -21,6 +21,12 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   (`normaliseBoardSetup` null); statuses from `statusColumnsOfSetups` (first board's name wins; All Cards and
   Archive name none); types `typesOf(catalogue)`. The editor's `usePlanStatusNames` imports the same
   `statusColumnsOfSetups`.
+- Blocked By ([item-types.md "Blocked By"](../item-types.md#blocked-by)): `listedType` lists `custom[].blocks`;
+  `planListing` makes one `blockingIndexOf(state.items, plan.types, doneStatusesOf(plan.boards))` and adds `blocked`
+  (open blockers, when any) and `blocks` (`ref`s of the cards it blocks, when any) to each item; `applyItemChanges`
+  builds an add's or set's next card and stops on `blockingCycleOf` (code `blocks_cycle`, `blockingLoopMessage`)
+  before posting; `apiRefusalOf` reads `blocks_cycle` as the same sentence. `change_card_types`' `blocks` (Zod
+  `blocksArg`) reaches `CustomFieldInput.blocks` / `CustomFieldEdit.blocks`.
 - Names resolve in this order: exact id, then `statusKey` match on the name (case, spacing, punctuation aside).
 - `resolveFields` keys: built-in id, `statusKey` of an id, alias (`duedate`, `startdate`, `colour`, `label`,
   `assignedto`, `owner`), custom field id or name on the item's type. Values: `status` by column name, `assignee`
@@ -141,6 +147,7 @@ types? }`, `change_card_types { projectId, changes[1..32] }`; outputs `listItems
 | outline order, statuses once, types    | `packages/items/src/plan-outline.test.ts`                                    |
 | naming and refusals                    | `packages/items/src/plan-names.test.ts`                                      |
 | card type changes                      | `packages/items/src/type-changes.test.ts`                                    |
+| Blocked By: listing, set by number, loop stop, switch | `packages/agent-verbs/src/plan/plan-engine.test.ts`, `packages/items/src/type-changes.test.ts` |
 | board placement                        | `packages/items/src/board-place.test.ts`                                     |
 | plan route gate, scope, batching       | `apps/api/src/routes/plan-route.test.ts`                                     |
 | engine: listing, changes, types, board | `packages/agent-verbs/src/plan/plan-engine.test.ts`                          |

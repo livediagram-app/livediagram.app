@@ -171,6 +171,15 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   top), drawing `GanttLaneHead` and `GanttNameRow` (gantt-rows.tsx). Lane collapse is per person, component state keyed by lane key. Set from `PlanViewMenuSection` (a View
   flyout for a gantt plan view holding two `MenuAccordionSection`s, Card Types and Swimlanes, each with the
   scaffold's `sectionProps` id; the board menu's Swimlanes grid), tracking `('Plan', 'Changed', 'GanttSwimlanes')`.
+- Gantt dependency arrows (spec "Dependency arrows"): `ganttArrows(entries, index, isDone)` (items,
+  plan-view-gantt-arrows.ts) pairs each row entry's live blockers (`BlockingIndex.blockers`) that are row entries
+  too, both with a mark, `done` when the blocker's phase is done; `ganttArrowPath(from, to, rowH)` gives the path
+  (out `GANTT_ARROW_STEP` 8 px from the blocker's right end, down or up to the blocked row, in to its left end; back
+  along the row gap at `from.top + rowH` or `to.top` when the blocked mark starts left of the step) and the head
+  (`GANTT_ARROW_HEAD` 5 px). `GanttArrows` (views/gantt-arrows.tsx) draws them in one `aria-hidden`,
+  `pointer-events-none` SVG over the track, `axisPx` wide, x from `ganttAt(view, day) * axisPx`, the dragged row's
+  preview dates and lift applied; stroke `palette.muted` at 1.25 px, done at 40% opacity. The index is
+  `planBlocking(plan)`. The export (`ganttArt`) draws the same pairs among the rows it fits.
 - Gantt row order: `planView.rowOrder` (card ids), validated by `isPlanViewSettings` (an array of `isValidItemId`
   strings, none repeated, at most `GANTT_ROW_ORDER_MAX` (2000)). `ganttOrderRows(rows, order)` (gantt-row-order.ts)
   puts named rows first in the order's sequence and the rest after in their date order (stable). `ganttReorder(

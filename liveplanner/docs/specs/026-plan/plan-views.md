@@ -167,6 +167,14 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   (either way), named above it as it grows (**6 Oct → 12 Oct**). It is one change (start and due together), after
   which the bar's ends and body drag as any bar's. A press on that row's timeline draws; it does not open the card
   (its name does). Escape or a cancelled pointer drops the draw. Telemetry: `Plan` · `Changed` · `GanttDrawn`.
+- **Dependency arrows**: the chart draws an arrow from each blocker's row to each row it blocks, through any
+  [Blocked By](item-types.md#blocked-by) field (both cards must be rows the chart shows, in an open lane, and both
+  must have a bar or diamond). It leaves the blocker's mark at its right end, at its row's middle, steps 8 px right,
+  then runs down or up to the blocked row and in to the left end of its mark, ending in a small arrowhead; when the
+  blocked mark starts before that step, the line turns back along the gap between the rows first. An open blocker's
+  arrow is drawn in the muted ink, a done one's fainter (40%); an arrow never takes a press (the bars under it do),
+  and it is hidden from assistive technology, where the item panel's Blocked By and Blocks lists say the same. A
+  dragged bar's arrows follow it. The image export draws the same arrows for the rows it fits.
 - A project not done whose due date has passed draws its bar or diamond in red (its edge; red wins over a
   project's Colour).
 - **Dragging dates** (to someone who may edit): each end of a bar is a handle. Dragged sideways it moves that
