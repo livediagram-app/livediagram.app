@@ -10,6 +10,7 @@ import { canvasGestureNow, subscribeCanvasGesture } from '@/lib/canvas-gesture';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { pageInView } from '@/lib/page-contents';
 import { pageSnap, type SnapBand, type SnapFrame } from '@/lib/page-snap';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { track } from '@/lib/telemetry';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -19,6 +20,14 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 export const VIEW_REST_MS = 250;
 // A pan's last this-many ms of movement give its speed as the hand lets go.
 export const FLICK_WINDOW_MS = 80;
+
+/** Whether the caret is in text on the canvas (a label, a table cell, an inline line), so a view that moved without a
+ *  hand moved to keep that caret in sight (a phone's keyboard rising) and must stay. */
+export function textHasCaretIn(canvas: HTMLElement | null, focused: Element | null): boolean {
+  return (
+    !!canvas && !!focused && canvas.contains(focused) && isTypingTarget(focused, { select: false })
+  );
+}
 
 export type SnapMeasure = {
   screen: { width: number; height: number };
@@ -50,6 +59,9 @@ export function usePageSnap(deps: {
   cancelGlide: () => void;
   // Following someone: the view is not this person's to move.
   suspended: () => boolean;
+  // Text on the canvas has the caret (a label being written on): a view moved by anything but a hand was moved for
+  // the caret (kept in sight, above a phone's keyboard), and is left where it is. A gesture still snaps.
+  writing?: () => boolean;
 }): void {
   const latest = useLatest(deps);
   const { on, viewport } = deps;
@@ -103,6 +115,7 @@ export function usePageSnap(deps: {
     };
     const settleSoon = () => {
       clearTimeout(timer);
+      if (latest.current.writing?.()) return;
       timer = setTimeout(() => snap(false), VIEW_REST_MS);
     };
     // A frame later, so the gesture's own last move (and its pointerup) has landed.
