@@ -1,0 +1,8 @@
+Summary,Issue key,Issue id,Issue Type,Status,Project key,Project name,Priority,Resolution,Assignee,Assignee Id,Reporter,Reporter Id,Creator,Creator Id,Created,Updated,Due date,Labels,Labels,Description,Sprint,Sprint,Component/s,Component/s,Custom field (Story Points),Custom field (Start date),Attachment,Attachment,Comment,Comment,Comment
+Checkout fails for EU cards,SHOP-101,10101,Bug,In Progress,SHOP,Shop,Highest,,Ana Lopez,712020:aaaa1111-bbbb-2222,Ben Okafor,712020:bbbb2222-cccc-3333,Ben Okafor,712020:bbbb2222-cccc-3333,12/Mar/25 9:30 AM,14/Mar/25 4:10 PM,20/Mar/25,payments,eu,"Steps:
+1. Add an item
+2. Pay with a German card",Sprint 7,Sprint 8,Checkout,API,5,13/Mar/25,13/Mar/25 10:00 AM;712020:bbbb2222-cccc-3333;trace.log;https://shop.atlassian.net/secure/attachment/1/trace.log,13/Mar/25 10:05 AM;712020:bbbb2222-cccc-3333;screenshot.png;file:///C:/x.png,12/Mar/25 10:15 AM;712020:aaaa1111-bbbb-2222;Looking into it now.,13/Mar/25 3:45 PM;712020:bbbb2222-cccc-3333;Still failing; see the attached log.,14/Mar/25 9:00 AM;557058:ffffeeee-dddd-cccc;Fixed in staging.
+Add Apple Pay,SHOP-102,10102,Story,To Do,SHOP,Shop,Medium,,,,Ben Okafor,712020:bbbb2222-cccc-3333,Ben Okafor,712020:bbbb2222-cccc-3333,10/Mar/25 2:00 PM,10/Mar/25 2:00 PM,,,,Customers keep asking.,,,Checkout,,8,,,,Plain note with no date,,
+Refresh product photos,SHOP-103,10103,Task,Done,SHOP,Shop,Low,Done,Dana Smith,712020:dddd4444,,,,,01/Mar/2025 11:00,05/Mar/2025 17:30,,design,,,Sprint 6,,,,abc,,,,,,
+Clean up old coupons,SHOP-104,10104,Task,,SHOP,Shop,,,,,,,,,02/Mar/25,02/Mar/25,,,,,,,,,,,,,,,
+,SHOP-105,10105,Task,To Do,SHOP,Shop,,,,,,,,,02/Mar/25,02/Mar/25,,,,,,,,,,,,,,,
