@@ -396,3 +396,42 @@ describe("the panel's This Browser", () => {
     expect(index.count('deleteItem')).toBe(0);
   });
 });
+
+describe('<ExplorerPanel> Inbox filter', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('puts the filter dropdown in the header row once the Inbox has rows, and it filters', async () => {
+    const index = createFakeIndex({ items: [] });
+    index.inbox.actions.push({
+      app: 'liveplanner',
+      itemId: 'p1',
+      itemTitle: 'Plan',
+      itemTeamId: null,
+      tabId: 't1',
+      tabName: 'Board',
+      elementId: 'e1',
+      actionId: 'a1',
+      elementLabel: '',
+      name: 'Chase the quote',
+      description: '',
+      status: 'open',
+      assigneeId: 'user_me',
+      assigneeName: 'Me',
+      assignerId: 'user_ada',
+      assignerName: 'Ada',
+      teamId: null,
+      card: null,
+      createdAt: 1,
+      updatedAt: 2,
+    });
+    renderPanel(index, { viewerId: 'user_me' });
+    fireEvent.click(within(rail()).getByRole('button', { name: /^Inbox/ }));
+    const select = (await screen.findByRole('combobox', {
+      name: 'Inbox filter',
+    })) as HTMLSelectElement;
+    // In the heading's row, not in the scrolling body.
+    expect(select.closest('[data-explorer-pane]')).toBeNull();
+    fireEvent.change(select, { target: { value: 'waiting' } });
+    expect(select.value).toBe('waiting');
+  });
+});
