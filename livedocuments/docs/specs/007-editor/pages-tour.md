@@ -78,8 +78,7 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 
 ### Slides track
 
-1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it;
-   Change Theme restyles every page.
+1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it.
 2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
    pictures, a pattern on top; hover to preview, press to keep it.
 3. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).

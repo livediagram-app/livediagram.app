@@ -215,7 +215,7 @@ an article does not offer, the 16:9 Slide, becomes A4);
 **Flashcards** makes it the first card of a stack (`kind: 'flashcard'`, Flashcard (5:3)), the caret in its title. One
 edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
-empty page's layout invitation waits until the choice is made. Not offered in zen,
+empty page offers nothing on itself, so the choice is the only card on it. Not offered in zen,
 nor on a second page (a page added from the + is of the tab's kind).
 The **Project Brief** template (kind `article`) in /new starts a tab with one article.
 
@@ -755,12 +755,9 @@ Pressing it is tracked as `Tab / Aligned / PageTidyUp`.
 
 A **layout** is placed onto one page from its panel's **Layouts** tab, by category.
 
-**Change Theme** sits at the top right of the title bar's Layout popover (never on the in-page
-Start From a Layout card, which keeps to its layouts), left of its X: it closes the picker and opens the Tab Style
-popover, as the dock's Theme button does, so a layout and the look it wears are chosen together.
-It shows wherever the session may restyle the tab (an Editor; never for a Participant or a Viewer,
-who see no layout picker anyway). On a phone the Layout sheet keeps Change Theme and closes by a
-swipe, with no X.
+The Layout popover keeps to its layouts: it has no **Change Theme** button (the Tab Style popover is
+the dock's Theme button and the tab's Style button, and a layout is placed in the tab's theme either
+way). On a phone the Layout sheet closes by a swipe, with no X.
 
 - **Ninety-two layouts**, each a complete, editable starting point in the tab's theme: a layout is built without
   colours where it means the theme's, and placing it (in the editor or by an agent) fills each of those from the
@@ -1133,8 +1130,7 @@ swipe, with no X.
     words afterwards, by element id.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
-- **The layout gallery** is how every picker offers a page's layouts (the Layout popover, the empty
-  page's card, Choose a Layout's dialog), all of them at once:
+- **The layout gallery** is how every picker offers a page's layouts (the title bar's Layout popover), all of it at once:
   - Along the top, a **search** ("Search n layouts") and **Surprise Me**. The search narrows every
     category at once: each word typed must appear in a layout's name, its description or its
     category's name. Nothing matches: "No layouts match" with Clear Search.
@@ -1164,25 +1160,12 @@ swipe, with no X.
   Hovering a tile previews it on the page; pressing one places it (over anything there, at once)
   and closes the popover; closing it takes any preview away. Opening it is tracked as
   `UI / Opened / PageLayoutsButton`. These pages' panels hold no Layouts tab: the button is their
-  one way in, besides an empty page's own card.
-- **An empty page offers its layouts**: while an infographic or slide page is empty, on a tab
-  the viewer can edit, a **Start From a Layout** card sits centred on the page, held at its screen
-  size whatever the zoom, as large as the page on screen leaves room for inside a 16 px margin (at
-  most 900 by 660 px): a header (a sparkles badge where the card is 520 px or wider, **Start From a
-  Layout**, "n slide layouts in your theme. Pick one, then make it yours." naming the page's kind,
-  and Hide; no Change Theme, the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
-  so at once, as one undo step); there is no hover preview here, since drawn over the page it
-  would cover the card's own tiles. The card goes as
-  soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
-  the tab is next opened; the title bar's Layout button still opens the layouts. It
-  never shows while the first page offers its kind, while the page's panel is open, while a palette tile is armed
-  (tap to drop or drag to draw: the page is where the element will land, so the card steps aside and comes back when
-  the tool is put down with the page still empty), when presenting or in zen, or when the page is too small on
-  screen to hold it (less than 340 by 380 px inside its margin). There, a phone or a page zoomed out
-  small, the page shows a **Choose a Layout** button in its middle instead (brand-filled, a
-  sparkles icon, held at its screen size), which opens the layout gallery on its own: a bottom
-  sheet on a phone, a centred dialog on a desktop, headed like the card (no Change Theme either); a press or Surprise Me
-  places the layout and closes it. Opening it is tracked as `UI / Opened / EmptyPageInvite`.
+  one way in.
+- **An empty page offers nothing on itself**: no card, no Choose a Layout button. An empty page
+  is left alone to be drawn on, and a person who wants a layout presses the title bar's **Layout**
+  button (always there for an Editor, empty page or not). The earlier in-page **Start From a Layout**
+  card and its **Choose a Layout** fallback were retired on 2026-11-01 (Work Tracker #172): shown
+  unasked on every empty page they got in the way of people who meant to start blank.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
   page's own content is hidden meanwhile (left out of the page clip), so the two never mix. The
@@ -1571,9 +1554,7 @@ The Import dialog offers **JSON** (a livedocuments tab, which may carry pages), 
 PowerPoint deck or a Word document);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
 turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic
-page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page
-**Start From a Layout** card's Hide); `UI · Opened · EmptyPageInvite` (Choose a Layout, where the
-card has no room). Never a colour, name or layout content.
+page's Tidy). Never a colour, name or layout content.
 
 ## Into pages
 
