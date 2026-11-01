@@ -54,7 +54,7 @@ export function TrackerChooseView({
             : 'border-slate-200 bg-slate-50/60 enabled:hover:border-brand-300 enabled:hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-900/40 dark:enabled:hover:border-brand-500/60'
         }`}
       >
-        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:text-brand-300 dark:ring-slate-700">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:text-brand-300 dark:ring-slate-700">
           <ChooseFileIcon />
         </span>
         <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
@@ -73,7 +73,7 @@ export function TrackerChooseView({
             className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2 text-[12px] dark:border-slate-700"
           >
             <span className="font-semibold text-slate-700 dark:text-slate-200">{s.name}</span>
-            <span className="text-slate-400 dark:text-slate-500">{s.file}</span>
+            <span className="text-slate-400 dark:text-slate-400">{s.file}</span>
           </li>
         ))}
       </ul>

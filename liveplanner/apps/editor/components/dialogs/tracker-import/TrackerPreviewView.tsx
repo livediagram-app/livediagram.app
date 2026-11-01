@@ -35,7 +35,7 @@ function Section({
   return (
     <section className="flex flex-col gap-2" aria-label={title}>
       <h3 className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-700 dark:text-slate-200">
-        <span aria-hidden className="text-slate-400 dark:text-slate-500">
+        <span aria-hidden className="text-slate-400 dark:text-slate-400">
           {icon}
         </span>
         {title}
@@ -101,7 +101,7 @@ export function TrackerPreviewView({
               className="flex max-w-full items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[12px] text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200"
             >
               <span className="truncate">{c.name}</span>
-              <span className="text-slate-400 tabular-nums dark:text-slate-500">
+              <span className="text-slate-400 tabular-nums dark:text-slate-400">
                 {count(c.cards)}
               </span>
             </li>
