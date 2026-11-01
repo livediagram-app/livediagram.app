@@ -21,6 +21,8 @@ is about.
 | **unplaced**     | Items whose status is none of the board's columns                                    | orphans, hidden           |
 | **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)      | filter setting            |
 | **face-down**    | A card drawn as its colour and author only, while its board hides writing            | hidden, private           |
+| **selection**    | The cards one person has picked on one board to change together (theirs, unsaved)    | multi-select, batch       |
+| **saved filter** | A named quick filter kept on the board set-up, shared, that anyone may apply         | view, preset, smart list  |
 
 ## The board set-up
 
@@ -104,6 +106,10 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Voting** is not a board setting: a vote is the tab's session vote (Collaborate, Vote), cast on the cards the
   board shows ([Session tools](../012-collaboration/session-tools.md) "Voting on Plan cards"); a card shows the
   votes it has gathered.
+- **Saved filters**: up to 8 named quick filters ([Board widgets](board-widgets.md#saved-filters)), shown as
+  chips in the Filter widget. Each keeps the words, Only Mine, the field chips and the widget narrowings it was
+  saved with; saving, renaming, updating and deleting one is an Editor's set-up change (undone as any), while
+  applying one is each person's own quick filter.
 - **Hide writing**: off, or on: each person's cards on this board are face-down to everyone else until the board
   is revealed. It hides the face, not the data; it is a facilitation aid, not a privacy boundary.
 
@@ -552,8 +558,8 @@ In Plan mode:
 - **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** last and styled as the rest, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Edit Card Type** (the card's type in the type editor),
-  **Move to** another column of the board, and **Trash** (to the [Trash](items.md#trash), restorable there). Someone who may only view gets
-  Open alone; a Participant gets Open, Duplicate, Move to and Flag (or Remove Flag), as the item panel's ⋯ menu gives it; a face-down card has no menu. It is the shared context menu, so it opens at the pointer, stays
+  **Move to** another column of the board, **Select** (starts [selecting several cards](#several-cards-at-once) with this one), and **Trash** (to the [Trash](items.md#trash), restorable there). Someone who may only view gets
+  Open alone; a Participant gets Open, Duplicate, Move to, Select and Flag (or Remove Flag), as the item panel's ⋯ menu gives it; a face-down card has no menu. It is the shared context menu, so it opens at the pointer, stays
   inside the window as it grows and is a bottom sheet on a phone, as the element menu is.
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
   item's type is edited in place and saved as it changes, except votes, which live on the card face only. It
@@ -718,6 +724,71 @@ card to the previous or next column; **Shift+Up/Down** moves it within the colum
 and says why); Delete moves it to the
 Trash, focus going on to the next card in its cell (else the one before; a cell left empty hands it to the nearest card on the board, the next in reading order, else the one before); **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In Progress,
 position 2 of 4").
+
+**Shift+Space** adds the focused card to the selection or takes it out ([Several cards at once](#several-cards-at-once)).
+While the focused card is one of two or more selected, **Shift+Left/Right** moves every selected card a column
+left or right (each from its own column; a card already at the board's edge stays), as one write, and **Delete**
+moves them all to the Trash (an Editor's); **Shift+Up/Down** still reorders the focused card alone. **Escape**
+clears the selection.
+
+### Several cards at once
+
+Triage and sprint planning change many cards at once, so a board lets a person **select** several of its cards and
+change them together.
+
+- **Who**: an Editor or a Participant, in Plan mode, on a board on the canvas, maximised or filling its tab (not a
+  board in a Dashboard slot, which is simplified). A Viewer never selects: a modifier click opens the card as a click
+  does, and no selection bar shows. A face-down card is never selected.
+- **Selecting**:
+  - **Cmd-click** (Ctrl-click off a Mac) adds a card to the selection or takes it out.
+  - **Shift-click** selects the range from the last card picked to this one, within one column (its swimlanes'
+    cells read top to bottom); a card in another column than the last one picked is added alone and becomes the
+    start of the next range.
+  - **Shift+Space** on a focused card adds it or takes it out (see [Keyboard](#keyboard)). Shift+Arrows keep moving
+    a card, as before.
+  - **Select** in a card's menu (a right-click, or a long press on a phone) starts **select mode** with that card
+    picked: while it lasts, a click or tap on a card adds it or takes it out rather than opening it. Select mode ends
+    when the selection is cleared.
+  - **Clearing**: Escape, the bar's **Clear Selection**, or a plain click on a card that is not selected (which opens
+    it, as ever) clears the selection. A plain click on one of two or more selected cards opens it and keeps the
+    selection, since a press there is how the group is picked up. A selected card that leaves the board (moved off it, trashed, filtered out, deleted by someone
+    else) leaves the selection; a selection left with no card ends.
+- **How a selected card looks**: the brand ring (2 px, the board's focus colour) round the card, on every card size,
+  and its accessible name ends ", selected". Each change of selection is announced ("3 cards selected").
+- **The selection bar**: while one or more cards are selected, a strip sits under the board's header (where the
+  Example cards notice sits: the board's column colour, outlined in its focus colour) that names the count, **3 cards
+  selected**, then its actions, each a button with a tooltip, then **Clear Selection** (a cross) at its end. Each action changes every selected card as **one write
+  and one undo step**, reaching collaborators as one change:
+  - **Move To**: a menu of the board's columns; the cards go to the end of that column, in the order they sit on the
+    board.
+  - **Assign**: the people a card can be assigned to (as the Assignee picker lists them), and **Unassign**.
+  - **Priority**: Urgent, High, Medium, Low and **No Priority**.
+  - **Labels**: the plan's labels, each adding it to every selected card that lacks it; under **Remove**, the labels
+    the selection carries, each taking it off them all.
+  - **Set Field**: any custom field that every selected card's type has and a person can type a value into (Choice,
+    Checkbox, Number, Currency, Percent, Rating, Date, Text and Person); picking one shows its value editor, and
+    **Clear** empties it on them all.
+  - **Flag** (or **Remove Flag**, when every selected card is flagged).
+  - **Archive** (or **Restore**, when every selected card is archived) and **Move to Trash**: an Editor's alone.
+  - A card whose type does not offer the field changed (Assign on a Note with no Assignee) is left as it is; a
+    column whose status a card's type leaves out keeps that card where it is, with one announcement for all of them
+    ("2 cards stayed: their types can't be Done"). When no card takes the change, nothing is written and "No
+    selected card changed" is announced.
+  - On a board under 560 px wide (a phone among them) the actions show as icons alone (named by their tooltips and
+    accessible names); wider, each icon has its name beside it. The bar wraps to a second line when they do not fit.
+- **Dragging a group**: pressing a selected card and dragging carries the whole selection. The card under the pointer
+  is drawn with the others stacked behind it (up to two more) and a count badge ("3"); the selected cards fade where
+  they were; the placeholder opens where they will land. Letting go lands them together, **in the order they sat on
+  the board** (columns left to right, rows top to bottom, then their place), at the drop point, as one write and one
+  undo step; dropping on a swimlane sets its field on each, as a single card's drop does. Onto another board they
+  land the same way (each card that board does not show stays); onto the Trash they all go there (an Editor's);
+  onto the canvas nothing moves ("Drop the cards on a board" is announced). A sorted board places each where its
+  sort puts it. Pressing an unselected card drags it alone and clears the selection.
+- **Phone**: a long press opens the card's menu, which has **Select**; in select mode taps pick cards, and the bar sits
+  under the board's title.
+- The selection is this person's own, on this board, and never saved or sent: a collaborator sees only the changes it
+  makes. Telemetry: `Plan` · `Selected` · `Cards` when a selection starts; `Plan` · `Moved` · `Cards` for a group's
+  move; `Plan` · `Changed` · `Cards` for a bar action.
 
 ## Option lists
 
@@ -1061,7 +1132,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 - **A finger on a card scrolls** that board as empty space does (down, and across through the swipe above); held still for
   `CARD_HOLD_TO_DRAG_MS` first, it picks the card up and carries it, the board no longer scrolling under it. A finger
   that moves before the hold is up is a scroll: the card neither moves nor opens. A tap still opens the card, and held
-  still for `LONG_PRESS_MS` it opens the card's menu. Elsewhere (a desktop, a tablet, a board on a phone's canvas) a
+  still for `LONG_PRESS_MS` it opens the card's menu, whose **Select** row starts select mode
+  ([Several cards at once](#several-cards-at-once)). Elsewhere (a desktop, a tablet, a board on a phone's canvas) a
   finger on a card picks it up at once, as below.
 - **A tap on a column's empty space** (its background, between and below its cards, or its header outside the cog) on
   that board glides the column to the centre, as a tap on a page does in Pages; across only, never up or down.

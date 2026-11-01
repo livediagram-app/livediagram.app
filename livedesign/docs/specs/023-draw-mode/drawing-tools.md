@@ -3,8 +3,8 @@
 Status: specified
 
 The hand-drawing tools a logo page offers beside the Pen ([Path tool](path-tool.md)): the three
-**markers**, shape recognition while a marker draws, how a marker stroke is picked, and the quick
-style panel's marker rows. Where they sit in the palette is [Logo pages](../007-editor/logo-pages.md)
+**markers**, shape recognition while a marker draws, how a marker stroke is picked, the quick
+style panel's marker rows, and the **Fill tool**, a paint bucket. Where they sit in the palette is [Logo pages](../007-editor/logo-pages.md)
 "The Logo palette"; the Freehand Pencil, the Shape Pen and the Polygon are
 [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) and
 [Multi-point line / polygon tool](../008-canvas/polygon-tool.md); the eraser is the canvas's
@@ -46,7 +46,8 @@ style panel's marker rows. Where they sit in the palette is [Logo pages](../007-
 - **A marker lines up as the pencil does**: its first point snaps to nearby alignments and its
   stroke shows alignment guides as it grows; on a logo page with Show Guides on, its start and end
   land on a shown guide ([Logo pages](../007-editor/logo-pages.md) "Construction guides").
-- **Strokes stay open**: a stroke that ends near its start is ink, not a filled shape.
+- **Strokes stay open**: a stroke that ends near its start is ink, not a filled shape, until the
+  Fill tool fills it (below).
 - **Input:** only the pointer that started a stroke draws it; a stroke a second finger turns into a
   pinch, or the browser cancels, is discarded; putting the marker down mid-stroke (Escape) discards
   it.
@@ -115,6 +116,52 @@ strokes in its own rows:
 - A caption above the rows names whose style it is ("Marker 2", "Marker stroke", "3 marker
   strokes"); a mixed selection counts every element styled. Power user mode leaves it out.
 
+## The Fill tool
+
+The paint bucket livediagram's whiteboards have ([livediagram's Fill tool](../../../../livediagram/docs/specs/023-draw-mode/fill-tool.md)),
+on a logo page: the same rules, from the same shared code, so a filled mark behaves alike in both.
+
+- **Where it sits:** a logo page's Draw, its own group **Fill** after the Markers. A press picks it
+  up; it **stays in hand** until another tool or Escape puts it down (the exception to a logo tool's
+  one use, [Logo pages](../007-editor/logo-pages.md) "The Logo palette"). No keyboard key: F is the
+  Frame. Not in the Toolbar strip's Search.
+- **Its colour:** the one colour picker ([Colour picker](../004-interface-design/colour-picker.md)),
+  **No fill** first, the theme's colours, the **soft** standard colours drawn for the canvas, Custom
+  colours from the design and **+**. In the palette's Draw tab, pressed again while held, its row
+  opens the picker in its flyout, **Fill**, below it, and a pick re-arms it at once. In the category
+  bar's Draw flyout, resting on (or focusing) its tile opens the picker in the side panel beside
+  it, as a presets tile's does, and a pick there picks the bucket up in that colour; a phone cannot
+  rest, so there a tap on the tile opens the panel and a colour picks it up. The bucket shows the
+  colour in hand as a bar (No fill as the no-colour chip's slash), the same on every surface.
+  Device-local (`livedesign:v2:fill`), never on the design; until one is picked it pours the soft
+  **Blue** for the canvas it is on.
+- **What a press fills**, top first, past open ink, lines, text boxes and any outline the press is
+  outside, and stopped by a note, an image, a table or any element that fills its box:
+  1. **A closed element: its fill is set**, as a picked Background colour sets it (a shape loses its
+     swatch binding and colour preset): a shape with a fill, a closed path (holes excluded), a closed
+     stroke. The same colour again changes nothing.
+  2. **A single marker stroke whose ends meet: it becomes a filled shape.** The same element, closed
+     and filled; where its ends did not quite touch its first point is added at its end, so the ink
+     closes the outline, and the fill is drawn **under** the ink along its centre line, so the ink
+     stays the outline exactly as drawn. **Ends meet** when the stroke has at least 4 points, the gap
+     between its ends is at most the largest of 16 canvas px, three times its width and 15% of its
+     box's longer side, and the loop it makes is round enough to hold something (its area at least a
+     tenth of a circle's of the same length).
+  3. **Anything else: nothing changes**, and a small hint says why: "Click inside a closed shape, or
+     a loop whose ends meet, to fill it." or, on something locked, "That's locked, so its fill
+     stays." Elements on a hidden or locked layer are not there for it.
+- **After a fill:** a filled loop is a closed stroke: the bucket refills it or clears it with No
+  fill; it is picked, and erased, by its line or its fill. **One press is one edit**: one undo step,
+  and it reaches every collaborator at once.
+- **Input:** a click or a tap, filled on release where it went down, when the pointer moved less
+  than 6 screen px; a drag, a second finger or a cancelled pointer fills nothing, and a pinch still
+  zooms. Its cursor is a crosshair with a small bucket, over anything.
+- **Share roles:** an **Editor** fills. A **Participant** and a **Viewer** never do: the fill is
+  gated on the session's right to change the page's structure (a read-only session has none) and to
+  recolour the element (`can.recolour`), so a press of theirs changes nothing.
+- **Export:** a filled loop draws its fill under its ink in every export, thumbnail and preview, from
+  the canvas's own function.
+
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 | Event                                    | Category · Action · Type                                   |
@@ -122,9 +169,15 @@ strokes in its own rows:
 | A marker's colour or width changed       | `Draw` · `Changed` · `PenColour` / `PenWidth`              |
 | A stroke flipped between ink and a shape | `Draw` · `Toggled` · `RecogniseOnce…` / `BreakShape…`      |
 | A marker stroke landed                   | `Element` · `Added` · `Freehand` (or the recognised shape) |
+| The Fill tool picked up                  | `Draw` · `Toggled` · `Fill`                                |
+| The Fill tool's colour changed           | `Draw` · `Changed` · `FillColour`                          |
+| A press that filled nothing              | `Draw` · `Changed` · `FillMissed`                          |
+| A closed element filled                  | `Element` · `Changed` · `FillBucket`                       |
+| A marker loop closed and filled          | `Element` · `Changed` · `FillLoop`                         |
 
 ## Non-goals
 
 - Shape recognition that snaps on its own: a stroke becomes a shape only when asked (Alt or the
   chip).
 - A partial (stroke-splitting) eraser: the canvas's eraser removes whole elements.
+- Filling a region bounded by several strokes or shapes, a gradient or pattern from the bucket.

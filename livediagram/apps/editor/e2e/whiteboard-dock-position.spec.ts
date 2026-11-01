@@ -134,6 +134,22 @@ test.describe('whiteboard dock position', () => {
     expect(overflow).toBe(0);
     const menu = (await page.getByRole('button', { name: 'Explorer' }).boundingBox())!;
     expect((await dock(page).boundingBox())!.x).toBeGreaterThan(menu.x + menu.width);
+    // A tablet's bar keeps one pin (draw-mode.md "On a phone or a tablet"); Rectangle waits in
+    // the Shapes flyout's Pinned row.
+    const shapes = dock(page).locator('[data-dock-group="shapes"]');
+    await expect(shapes.getByRole('button', { name: 'Arrow', exact: true })).toHaveCount(1);
+    await expect(shapes.getByRole('button', { name: 'Rectangle', exact: true })).toHaveCount(0);
+    // The other tablet widths it fits: an iPad Pro in portrait, a landscape tablet (centred), and
+    // the widest window still trimmed; then the first wide one, with both pins on the bar.
+    for (const width of [834, 1024, 1099, 1100]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect
+        .poll(() => scroller.evaluate((el) => el.scrollWidth - el.clientWidth), {
+          message: `overflow at ${width}`,
+        })
+        .toBe(0);
+    }
+    await expect(shapes.getByRole('button', { name: 'Rectangle', exact: true })).toHaveCount(1);
     expectNoPageErrors(pageErrors);
   });
 });

@@ -183,6 +183,7 @@ export function EditorCanvasHost() {
     commitFreehand,
     commitPolygon,
     commitPath,
+    paintBucket,
     commitPathEdit,
     styleNewElement,
     commitLabel,
@@ -763,6 +764,7 @@ export function EditorCanvasHost() {
             onCommitFreehand={commitFreehand}
             onCommitPolygon={commitPolygon}
             onCommitPath={commitPath}
+            onPaintBucket={paintBucket}
             onCommitPathEdit={commitPathEdit}
             onDressPath={styleNewElement}
             settings={userPreferences}

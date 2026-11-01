@@ -3,8 +3,11 @@ import { EMBED_PROVIDERS } from '@livediagram/document';
 import {
   drawBannerMessage,
   drawIntentCursor,
+  isFillIntent,
   isHeldPenIntent,
+  isHeldToolIntent,
   isPathIntent,
+  isWhiteboardOnlyIntent,
   opensForTyping,
   type PendingDraw,
 } from './draw-mode';
@@ -28,6 +31,7 @@ const FREEHAND_VARIANTS: Record<FreehandVariant, PendingDraw> = {
 const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   shape: [{ type: 'shape', kind: 'square' }],
   text: [{ type: 'text' }],
+  fill: [{ type: 'fill', fill: '#dbeafe' }],
   sticky: [{ type: 'sticky' }],
   image: [{ type: 'image' }],
   table: [{ type: 'table' }],
@@ -307,6 +311,26 @@ describe('opensForTyping', () => {
 describe('the Highlighter (docs/specs/008-canvas/highlighter.md)', () => {
   it('is a one-shot arm, not a held pen: it wears the mode banner', () => {
     expect(isHeldPenIntent({ type: 'freehand', variant: 'highlighter' })).toBe(false);
+  });
+});
+
+describe('the Fill tool (docs/specs/023-draw-mode/fill-tool.md)', () => {
+  const fill: PendingDraw = { type: 'fill', fill: '#dbeafe' };
+  it('is held, with no one-shot banner, but is not an inking tool, and lives on a whiteboard', () => {
+    expect(isFillIntent(fill)).toBe(true);
+    expect(isFillIntent({ type: 'path' })).toBe(false);
+    expect(isHeldToolIntent(fill)).toBe(true);
+    expect(isHeldToolIntent({ type: 'path' })).toBe(true);
+    expect(isHeldToolIntent({ type: 'polygon' })).toBe(false);
+    expect(isHeldPenIntent(fill)).toBe(false);
+    expect(isWhiteboardOnlyIntent(fill)).toBe(true);
+  });
+
+  it('has its own bucket cursor and screen-reader copy', () => {
+    expect(drawIntentCursor(fill)).toMatch(/^url\(/);
+    expect(drawIntentCursor(fill)).not.toBe(drawIntentCursor({ type: 'path' }));
+    expect(drawBannerMessage(fill, false)).toBe('Click inside a closed shape to fill it');
+    expect(drawBannerMessage(fill, true)).toBe('Tap inside a closed shape to fill it');
   });
 });
 

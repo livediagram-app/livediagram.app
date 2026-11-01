@@ -78,6 +78,11 @@ export type ItemsBulkRequest = { items: ItemCreate[] };
 // cards to the Trash), optionally marked as an undo or redo.
 export type ItemsPatchRequest = { items: (ItemPatch & { id: string })[] } & ItemUndoFlag;
 
+// POST /api/projects/:id/items/moves: up to 200 items moved in one write, in order (a group dragged on a board, a
+// selection's Move To; docs/specs/026-plan/items.md "Move many"), optionally marked as an undo or redo. A move may name
+// an item moved earlier in the list as its neighbour, so the group lands together.
+export type ItemsMoveRequest = { items: (ItemMove & { id: string })[] } & ItemUndoFlag;
+
 // POST /api/projects/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it. `field` is
 // the Votes field it counts in (the built-in `votes` when absent, or a custom Votes field's id); a card whose type
 // does not offer it takes its dots in the built-in.

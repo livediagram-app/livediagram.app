@@ -843,6 +843,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/projects/{id}/items/moves',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      'Move up to 200 items in one write, in order: each an item id with a move (a status, and `before` or `after` a card, which may be one moved earlier in the list, so a group lands together). Every item is checked first, so one refusal (naming its item) moves nothing. Needs participate access; archiving or trashing needs edit.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemsMoveRequest',
+    responseSchema: 'ItemsResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'POST',
     path: '/projects/{id}/items/tally',
     segment: 'projects',
     tag: 'Items',

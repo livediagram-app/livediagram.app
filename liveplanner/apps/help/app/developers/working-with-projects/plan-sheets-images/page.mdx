@@ -88,6 +88,11 @@ curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/$ITEM/move \
 curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/patches \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "items": [ { "id": "'"$A"'", "set": { "flagged": true } }, { "id": "'"$B"'", "clear": ["labels"] } ] }'
+
+# Move up to 200 cards at once, in order: the first to the end of Done, the next right after it
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/moves \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "items": [ { "id": "'"$A"'", "status": "done", "before": null }, { "id": "'"$B"'", "status": "done", "after": "'"$A"'" } ] }'
 ```
 
 A move takes a `status` and `after` or `before` (`after` wins; neither puts the card at the end of the column). Its `set` and `clear` reach only the fields a swimlane can change (`assignee`, `priority`, `labels`, `estimate`, `start`, `due`, a custom field, or `archived`). A change never clears a card's `title`. `DELETE /projects/$DOC/items/$ITEM` deletes one card.

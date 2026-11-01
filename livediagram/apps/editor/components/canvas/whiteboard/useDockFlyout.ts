@@ -9,7 +9,7 @@ import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { SlotSource } from '@/lib/whiteboard-shape-slots';
 import { useHoverClose } from './useHoverClose';
 
-export type DockFlyoutKind = WhiteboardPenId | 'eraser' | 'settings' | 'shapes' | 'slot';
+export type DockFlyoutKind = WhiteboardPenId | 'eraser' | 'fill' | 'settings' | 'shapes' | 'slot';
 
 export type DockFlyout = {
   kind: DockFlyoutKind;

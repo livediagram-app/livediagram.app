@@ -6,6 +6,8 @@ import {
   freehandCanvasPoints,
   isPenStroke,
   penStrokeSvg,
+  isFilledPenLoop,
+  penLoopFillPath,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   type FreehandElement,
@@ -191,6 +193,9 @@ export function FreehandSvg({
   );
   if (pen) {
     const { viewBox, d: outline } = penStrokeSvg(element);
+    // A marker loop the Fill tool closed (docs/specs/023-draw-mode/fill-tool.md): its fill under its
+    // ink, along the centre line, so the ink stays the outline; picked by its fill too.
+    const loopFill = isFilledPenLoop(element) ? penLoopFillPath(element) : '';
     return (
       <>
         <svg
@@ -200,6 +205,15 @@ export function FreehandSvg({
           aria-hidden
         >
           {anim.defs}
+          {loopFill ? (
+            <path
+              d={loopFill}
+              fill={fill}
+              stroke="none"
+              data-loop-fill=""
+              style={hitPenWidth !== undefined ? { pointerEvents: 'all' } : undefined}
+            />
+          ) : null}
           <path d={outline} fill={stroke} stroke="none" {...anim.mainProps} />
           {hitPenWidth !== undefined ? (
             // Only the drawn line picks the stroke (docs/specs/023-draw-mode/draw-mode.md "Selecting"):

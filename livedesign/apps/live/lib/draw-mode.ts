@@ -93,7 +93,11 @@ export type PendingDraw =
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen, held in the hand. Clicks
   // place corner nodes and drags pull out curves; the canvas keeps the path being drawn
   // (usePathDrawGesture) and the tool stays in hand after each path lands.
-  | { type: 'path' };
+  | { type: 'path' }
+  // The Fill tool (docs/specs/023-draw-mode/drawing-tools.md "The Fill tool"): a paint bucket held in
+  // the hand. A press fills the closed element or marker loop under it with `fill`, a `#rrggbb` or
+  // `transparent`; it stays in hand after each fill.
+  | { type: 'fill'; fill: string };
 
 /** The choices a tile hands `addShape` along with its kind: they ride the shape intent through the gesture. */
 export type AddShapeOptions = Pick<Extract<PendingDraw, { type: 'shape' }>, 'variant' | 'name'>;
@@ -148,6 +152,19 @@ export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
   return intent?.type === 'path';
 }
 
+// The Fill tool in hand (docs/specs/023-draw-mode/drawing-tools.md "The Fill tool").
+export function isFillIntent(
+  intent: PendingDraw | null | undefined,
+): intent is Extract<PendingDraw, { type: 'fill' }> {
+  return intent?.type === 'fill';
+}
+
+// A tool held in the hand, so no one-shot banner: a held pen, or the Fill tool, whose tile says it
+// is in hand.
+export function isHeldToolIntent(intent: PendingDraw | null | undefined): boolean {
+  return isHeldPenIntent(intent) || isFillIntent(intent);
+}
+
 // Banner copy per draw intent. Shape intents include the kind name
 // so the user can see which palette button they queued ("Drag to
 // draw Rectangle"); tools read in plain English ("Drag to draw an
@@ -199,6 +216,9 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
     case 'path':
       // Held like a pen: its tile says it is in hand, so this reaches a screen reader.
       return 'Click to place points, drag to curve';
+    case 'fill':
+      // Held like a pen: its tile says it is in hand, so this reaches a screen reader.
+      return `${press} inside a closed shape to fill it`;
     case 'polygon':
       // The close / finish affordances overflow a phone-width banner,
       // same trade-off as the freehand close hint above.
@@ -322,6 +342,13 @@ export function drawIntentCursor(intent: PendingDraw): string {
     // A pen nib over a curve with one anchor: reads as "place points, pull curves".
     return drawCursorFromGlyph(
       `<path d='M12 25 C 13 18 19 15 25 15' stroke='black' stroke-width='1.3' fill='none' /><rect x='16.3' y='16.8' width='2.6' height='2.6' fill='white' stroke='black' stroke-width='1' /><path d='M14 21 L21 15' stroke='black' stroke-width='1' />`,
+    );
+  }
+  if (intent.type === 'fill') {
+    // A paint bucket tipping: reads as "pour a fill here" (docs/specs/023-draw-mode/drawing-tools.md
+    // "The Fill tool").
+    return drawCursorFromGlyph(
+      `<path d='M13 18 L18 13 L24 19 L19 24 Z' stroke='black' stroke-width='1.3' stroke-linejoin='round' fill='white' /><path d='M13 18 L24 19' stroke='black' stroke-width='1.1' /><path d='M24.5 20.5 C 25.5 22 26 23 25 24 C 24 25 23 24 23.6 22.6 Z' fill='black' />`,
     );
   }
   if (intent.type === 'component') {

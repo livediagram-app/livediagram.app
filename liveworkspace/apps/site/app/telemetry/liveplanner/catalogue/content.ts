@@ -684,7 +684,29 @@ export const PLAN_REMOVED = chart(
   'Plan',
   'Removed',
   'Filters Removed',
-  'A filter taken off a Card Search view.',
+  "A filter taken off a Card Search view, or one of a board's saved filters deleted.",
+  { rising: 'neutral' },
+);
+
+export const PLAN_CARDS_SELECTED = chart(
+  'Plan',
+  'Selected',
+  'Cards Selected',
+  'A selection of several cards started on a board, to move or change them together. Once per selection, not per card.',
+);
+
+export const PLAN_SAVED_FILTERS_USED = chart(
+  'Plan',
+  'Used',
+  'Saved Filters Applied',
+  "One of a board's saved filters applied by pressing its chip.",
+);
+
+export const PLAN_SAVED_FILTERS_RENAMED = chart(
+  'Plan',
+  'Renamed',
+  'Saved Filters Renamed',
+  "One of a board's saved filters renamed.",
   { rising: 'neutral' },
 );
 
@@ -1086,6 +1108,9 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_ITEMS_DELETED,
   PLAN_ITEMS_RESTORED,
   PLAN_REMOVED,
+  PLAN_CARDS_SELECTED,
+  PLAN_SAVED_FILTERS_USED,
+  PLAN_SAVED_FILTERS_RENAMED,
   PLAN_FLAGS,
   PLAN_MAXIMISED,
   PLAN_FOCUSED,

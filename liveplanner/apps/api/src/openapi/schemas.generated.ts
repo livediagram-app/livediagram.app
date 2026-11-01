@@ -6073,6 +6073,62 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemsMoveRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "after": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "before": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "clear": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "id": {
+              "type": "string"
+            },
+            "set": {
+              "$ref": "#/components/schemas/ItemFields"
+            },
+            "status": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "undo": {
+        "const": true,
+        "description": "Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out.",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "items"
+    ],
+    "type": "object"
+  },
   "ItemsPatchRequest": {
     "additionalProperties": false,
     "properties": {
@@ -7549,6 +7605,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hideWriting": {
         "type": "boolean"
       },
+      "savedFilters": {
+        "items": {
+          "$ref": "#/components/schemas/SavedBoardFilter"
+        },
+        "type": "array"
+      },
       "sortBy": {
         "items": {
           "$ref": "#/components/schemas/BoardSortLevel"
@@ -7961,6 +8023,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "status-mix",
       "priority-matrix",
       "search"
+    ],
+    "type": "string"
+  },
+  "Priority": {
+    "enum": [
+      "urgent",
+      "high",
+      "medium",
+      "low"
     ],
     "type": "string"
   },
@@ -8946,6 +9017,54 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "value",
       "percent",
       "none"
+    ],
+    "type": "string"
+  },
+  "SavedBoardFilter": {
+    "additionalProperties": false,
+    "properties": {
+      "due": {
+        "$ref": "#/components/schemas/SavedDueWindow"
+      },
+      "filters": {
+        "items": {
+          "$ref": "#/components/schemas/CardSearchFilter"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "mine": {
+        "const": true,
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "person": {
+        "type": "string"
+      },
+      "priority": {
+        "$ref": "#/components/schemas/Priority"
+      },
+      "text": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
+  "SavedDueWindow": {
+    "enum": [
+      "overdue",
+      "soon"
     ],
     "type": "string"
   },

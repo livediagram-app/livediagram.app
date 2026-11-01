@@ -125,3 +125,48 @@ describe('planBoardKey on a sorted board', () => {
     });
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Several cards at once" (Keyboard).
+describe('planBoardKey with a selection', () => {
+  const a = item('todo', 'A', 'a');
+  const b = item('doing', 'B', 'a');
+  const p = projectBoard(threeColumns(), new Map([a, b].map((i) => [i.id, i])));
+  const sel = { canSelect: true, grouped: true, canRetire: true };
+
+  it('picks the focused card with Shift+Space', () => {
+    expect(planBoardKey(p, a.id, ' ', true, true, undefined, sel)).toEqual({ kind: 'select' });
+    expect(
+      planBoardKey(p, a.id, ' ', true, true, undefined, { ...sel, canSelect: false })?.kind,
+    ).toBe('open');
+  });
+
+  it('moves and trashes the whole group when the focused card is among it', () => {
+    expect(planBoardKey(p, a.id, 'ArrowRight', true, true, undefined, sel)).toEqual({
+      kind: 'moveGroup',
+      step: 1,
+    });
+    expect(planBoardKey(p, b.id, 'ArrowLeft', true, true, undefined, sel)).toEqual({
+      kind: 'moveGroup',
+      step: -1,
+    });
+    expect(planBoardKey(p, a.id, 'Delete', false, true, undefined, sel)).toEqual({
+      kind: 'trashGroup',
+    });
+    expect(planBoardKey(p, a.id, 'Backspace', false, true, undefined, sel)).toEqual({
+      kind: 'trashGroup',
+    });
+  });
+
+  it('works the focused card alone for a Participant’s Delete and for Shift+Up/Down', () => {
+    const participant = { ...sel, canRetire: false };
+    expect(planBoardKey(p, a.id, 'Delete', false, true, undefined, participant)?.kind).not.toBe(
+      'trashGroup',
+    );
+    expect(planBoardKey(p, a.id, 'ArrowDown', true, true, undefined, sel)?.kind).not.toBe(
+      'moveGroup',
+    );
+    expect(
+      planBoardKey(p, a.id, 'ArrowRight', true, true, undefined, { ...sel, grouped: false })?.kind,
+    ).toBe('move');
+  });
+});

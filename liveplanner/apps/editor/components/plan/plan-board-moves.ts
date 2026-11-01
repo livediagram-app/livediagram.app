@@ -2,8 +2,12 @@
 // pure functions of the board: the move a drop makes (its column, its place, and its row's field when
 // the board has rows).
 import {
+  ARCHIVED_FIELD,
   boardSortComparator,
+  groupMoves,
+  isArchived,
   laneDropPatch,
+  type ItemMoveOf,
   type BoardProjection,
   type ItemTypeDef,
   type Item,
@@ -131,4 +135,52 @@ export function sortedSlot(
       ?.items.filter((x) => x.id !== item.id) ?? [];
   const compare = boardSortComparator(setup.sortBy, types);
   return { ...slot, beforeId: cell.find((x) => compare(landed, x) < 0)?.id ?? null };
+}
+
+// A group of selected cards let go at `slot` (docs/specs/026-plan/plan-board.md "Several cards at once"): one chain of
+// moves landing them together, in the order given, before the first card at or after the slot's neighbour that is not
+// one of them (the end of the cell when there is none). Each card changing row takes the row's field; a card coming off
+// an Archive board is restored in the same move. `refused` names the cards whose type leaves the cell's status out:
+// they stay where they are.
+export function groupDropMoves(
+  setup: PlanBoardSetup,
+  projection: BoardProjection,
+  items: ReadonlyMap<string, Item>,
+  ids: readonly string[],
+  slot: PlanDropSlot,
+  refused: (item: Item, move: ItemMove) => boolean,
+): { moves: ItemMoveOf[]; stayed: number } {
+  const lane = projection.lanes.find((l) => l.key === slot.laneKey);
+  const status = cellStatus(setup, slot.status, lane);
+  const group = new Set(ids);
+  const cell =
+    projection.columns
+      .find((c) => c.column.status === slot.status)
+      ?.lanes.find((l) => l.laneKey === slot.laneKey)?.items ?? [];
+  const at = slot.beforeId ? cell.findIndex((i) => i.id === slot.beforeId) : -1;
+  const before = at < 0 ? null : (cell.slice(at).find((i) => !group.has(i.id))?.id ?? null);
+  const perCard = (id: string): Pick<ItemMove, 'set' | 'clear' | 'type'> => {
+    const item = items.get(id);
+    const from = laneOfItem(projection, id);
+    const lanePatch =
+      projection.swimlanes && from !== slot.laneKey
+        ? laneMove(
+            lane,
+            item,
+            projection.lanes.find((l) => l.key === from),
+          )
+        : {};
+    if (!item || !isArchived(item)) return lanePatch;
+    return { ...lanePatch, clear: [...(lanePatch.clear ?? []), ARCHIVED_FIELD] };
+  };
+  const landing: string[] = [];
+  let stayed = 0;
+  for (const id of ids) {
+    const item = items.get(id);
+    if (!item) continue;
+    const patch = perCard(id);
+    if (refused(item, { status, ...(patch.type ? { type: patch.type } : {}) })) stayed += 1;
+    else landing.push(id);
+  }
+  return { moves: groupMoves(landing, { status, before }, perCard), stayed };
 }
