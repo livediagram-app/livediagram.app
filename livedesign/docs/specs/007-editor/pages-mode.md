@@ -960,7 +960,8 @@ Both show the same list:
     Page Settings glides to the page. A Participant and a Viewer see no grip, no Delete and no ⋯, and
     a right-click or long press opens nothing.
     A row's tools keep its arrows their own, but a Cmd or Ctrl chord (undo, redo, search) still
-    reaches the editor from them.
+    reaches the editor from them. Deleting a page from its row (its bin or its menu) moves focus to
+    the row before it (the next, when the first goes), never to the page's body.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to
