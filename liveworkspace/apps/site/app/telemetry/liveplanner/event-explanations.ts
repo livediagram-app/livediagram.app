@@ -699,6 +699,18 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
   'Sheet|Searched|Function':
     'Someone searched the functions a Sheet formula can use, from the toolbar’s function picker.',
+  'Plan|Selected|Cards':
+    'Someone started selecting several cards on a board, to change them together. Counted once per selection, not per card.',
+  'Plan|Moved|Cards':
+    'Someone moved several selected cards at once, by dragging them as a group, a keyboard move or Move To.',
+  'Plan|Changed|Cards':
+    'Someone changed several selected cards at once from the selection bar (assign, priority, labels, a field, flag, archive or trash).',
+  'Plan|Used|SavedFilter': "Someone applied one of a board's saved filters by pressing its chip.",
+  'Plan|Added|SavedFilter': "Someone saved the board's current filter as a named saved filter.",
+  'Plan|Renamed|SavedFilter': 'Someone renamed one of a board’s saved filters.',
+  'Plan|Changed|SavedFilter':
+    'Someone updated a saved filter to the filters showing on the board now.',
+  'Plan|Removed|SavedFilter': 'Someone deleted one of a board’s saved filters.',
   'Plan|Started|Timer': 'Someone started a timer on a card’s Time Spent field.',
   'Plan|Ended|Timer':
     'Someone stopped a timer on a card’s Time Spent field, recording its time as an entry.',
@@ -2448,7 +2460,11 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Restored': 'Someone brought an archived card back onto the boards.',
   'Plan|Started': 'Someone started something running on a plan, like a card’s timer.',
   'Plan|Ended': 'Someone stopped something running on a plan, like a card’s timer.',
-  'Plan|Removed': 'Someone took a filter off a Card Search view.',
+  'Plan|Removed':
+    "Someone took a filter off a Card Search view, or deleted one of a board's saved filters.",
+  'Plan|Selected': 'Someone started selecting several cards on a board, to change them together.',
+  'Plan|Used': "Someone applied one of a board's saved filters.",
+  'Plan|Renamed': "Someone renamed one of a board's saved filters.",
   'Plan|Toggled':
     'Someone flagged a card for attention or took its flag off, or maximised a board, view or sheet or restored it (the value says which).',
   'Sheet|Changed':
