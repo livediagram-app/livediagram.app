@@ -844,7 +844,7 @@ include `fields` or comment text.
 ## Many moves (`moves`)
 
 - **Naming**: `ItemMoveOf = { id: string; move: ItemMove }`; the write `{ kind: 'moves'; moves: ItemMoveOf[];
-  undo?: true }` (`store.ts`). `applyMoves(items, moves, ctx)` (`group-moves.ts`) applies them in order against one
+undo?: true }` (`store.ts`). `applyMoves(items, moves, ctx)` (`group-moves.ts`) applies them in order against one
   pool and answers each moved item's last state; `groupMoves(ids, first, perCard?)` builds the chain a group lands
   with: the first id takes `first` (its status and `before`/`after`), each next one `{ status, after: <previous id> }`,
   and `perCard(id)` adds that card's own `set` / `clear` / `type` (a swimlane's field, an Archive board's restore).
