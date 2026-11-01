@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } fr
 const track = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
-const recover = vi.fn();
+const recover = vi.fn<(...a: unknown[]) => void>();
 vi.mock('@liveworkspace/workbench/lib/stale-build-navigation', () => ({
   browserNavigationDeps: () => ({}),
   recoverInBrowser: (...a: unknown[]) => recover(...a),
