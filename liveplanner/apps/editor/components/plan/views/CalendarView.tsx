@@ -79,8 +79,9 @@ export function CalendarView({
   const copy = CALENDAR_COPY[field];
   const phases = plan?.statusPhases ?? NO_PHASES;
   const types = plan?.types ?? ITEM_TYPES;
-  // The fields it reads for each role: Start and Due unless picked (plan-views.md "Dates").
-  const { start: startField, due: dueField } = viewDatesOf(settings, types);
+  // The fields it reads for each role: Start and Due unless picked (plan-views.md "Dates"), with their shapes (a Date
+  // and Time, a Date Range), kept while the settings and types are so the model is too.
+  const dates = useMemo(() => viewDatesOf(settings, types), [settings, types]);
   // Today, as a store that moves on at midnight (useToday); never the clock read while rendering.
   const now = useToday();
   const [offset, setOffset] = useState(0);
@@ -88,12 +89,8 @@ export function CalendarView({
   const thisMonth = now.getFullYear() * 12 + now.getMonth();
   const shown = shiftMonth(Math.floor(thisMonth / 12), thisMonth % 12, offset);
   const model = useMemo(
-    () =>
-      calendarModel(items.values(), phases, shown.year, shown.month, field, {
-        start: startField,
-        due: dueField,
-      }),
-    [items, phases, shown.year, shown.month, field, startField, dueField],
+    () => calendarModel(items.values(), phases, shown.year, shown.month, field, dates),
+    [items, phases, shown.year, shown.month, field, dates],
   );
   const today = todayNumber(now);
   const rows = model.weeks.length;
@@ -118,13 +115,12 @@ export function CalendarView({
   // The card a keyboard move just carried, focused again where it lands (once its move shows in the model).
   const refocus = useRef<string | null>(null);
   const move = (item: Item, toDay: number): boolean => {
-    const dates = { start: startField, due: dueField };
     const m = calendarMove(item, field, toDay, dates);
     if (!m || !plan) return false;
     void plan.patchItem(item.id, { set: m.set });
     track('Plan', 'Changed', field === 'due' ? 'CalendarDue' : 'CalendarStart');
     const other = dates[field === 'due' ? 'start' : 'due'];
-    const carried = m.set[other] ? `, its ${viewDateName(types, other)} too` : '';
+    const carried = m.carried ? `, its ${viewDateName(types, other)} too` : '';
     plan.announce(`Moved #${item.key} ${itemTitle(item)} to ${dayLabel(toDay)}${carried}`);
     return true;
   };

@@ -6,8 +6,11 @@
 import { useState } from 'react';
 import {
   BUILT_IN_DATES,
+  dayNumber,
   newItemId,
+  roleDays,
   typeIn,
+  type ItemFieldValue,
   type ItemTypeDef,
   type ViewDates,
 } from '@liveplanner/items';
@@ -26,14 +29,15 @@ const GANTT_NEW_CARD_DAYS = 7;
 const day = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-// A new card's dates: today, and a week on.
+// A new card's dates: today, and a week on, each in its field's own shape (a day, a moment at the default hour, or a
+// range's two ends; plan-views.md "Times and ranges").
 export function ganttNewCardDates(
   now: Date,
   // The fields the chart reads (plan-views.md "Dates"): the new card's dates go there.
   dates: ViewDates = BUILT_IN_DATES,
-): Record<string, string> {
-  const due = new Date(now.getFullYear(), now.getMonth(), now.getDate() + GANTT_NEW_CARD_DAYS);
-  return { [dates.start]: day(now), [dates.due]: day(due) };
+): Record<string, ItemFieldValue> {
+  const today = dayNumber(day(now))!;
+  return roleDays({ fields: {} }, dates, { start: today, due: today + GANTT_NEW_CARD_DAYS });
 }
 
 export function GanttAddCard({

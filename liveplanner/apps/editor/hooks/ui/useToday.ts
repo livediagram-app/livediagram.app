@@ -54,3 +54,35 @@ export function useToday(): Date {
   const instant = useSyncExternalStore(subscribe, getSeen, getSeen);
   return useMemo(() => new Date(instant), [instant]);
 }
+
+// The clock to the minute, for a reading that turns at a time of day (a timed Due going overdue on the Gantt chart;
+// plan-views.md "Times and ranges"); 0 while off. One interval for every reader while any is on, none otherwise, so a
+// chart with no timed dates never ticks.
+let minute = 0;
+const minuteListeners = new Set<() => void>();
+let minuteTimer: number | null = null;
+
+function subscribeMinute(listener: () => void): () => void {
+  minuteListeners.add(listener);
+  if (minuteListeners.size === 1) {
+    minute = Date.now();
+    minuteTimer = window.setInterval(() => {
+      minute = Date.now();
+      for (const l of minuteListeners) l();
+    }, 60_000);
+  }
+  return () => {
+    minuteListeners.delete(listener);
+    if (minuteListeners.size > 0 || minuteTimer === null) return;
+    window.clearInterval(minuteTimer);
+    minuteTimer = null;
+  };
+}
+
+const noSubscribe = () => () => {};
+const getMinute = () => minute;
+const getOff = () => 0;
+
+export function useMinute(on: boolean): number {
+  return useSyncExternalStore(on ? subscribeMinute : noSubscribe, on ? getMinute : getOff, getOff);
+}

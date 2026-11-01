@@ -28,6 +28,25 @@ describe('Add Card on a Gantt chart', () => {
     });
   });
 
+  it('starts a range of days, or a timed range at the default hour, in its one field', () => {
+    expect(
+      ganttNewCardDates(new Date(2026, 9, 28), {
+        start: 'f-when',
+        due: 'f-when',
+        shapes: { start: 'daterange', due: 'daterange' },
+      }),
+    ).toEqual({ 'f-when': ['2026-10-28', '2026-11-04'] });
+    const timed = ganttNewCardDates(new Date(2026, 9, 28), {
+      start: 'start',
+      due: 'f-at',
+      shapes: { due: 'datetime' },
+    });
+    expect(timed['start']).toBe('2026-10-28');
+    const at = timed['f-at'];
+    expect(typeof at).toBe('string');
+    expect(new Date(Date.parse((at as string).replace(/\[.*\]$/, ''))).getHours()).toBe(9);
+  });
+
   it('offers the chart’s own types and adds a dated card, opened to be named', () => {
     const p = plan();
     render(

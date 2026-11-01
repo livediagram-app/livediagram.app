@@ -18,7 +18,6 @@ import {
   viewMeasureOf,
   viewMeasureOptions,
   type ItemTypeDef,
-  type ViewDates,
   type ViewFieldOption,
   type SwimlaneBy,
 } from '@liveplanner/items';
@@ -55,7 +54,7 @@ export function planViewSettingsModel(
   const storedStatuses = settings.statuses;
   // Fields by role (plan-views.md "Dates"): a Gantt chart picks both its dates, a calendar the one it places by.
   const calendar = calendarFieldOf(view);
-  const roles: (keyof ViewDates)[] = gantt ? ['start', 'due'] : calendar ? [calendar] : [];
+  const roles: ('start' | 'due')[] = gantt ? ['start', 'due'] : calendar ? [calendar] : [];
   const dates = viewDatesOf(settings, plan.types);
   // What Cards by Field adds up ("Count By"): cards, then Estimate and the Number fields.
   const measures: ViewFieldOption[] =
@@ -73,7 +72,7 @@ export function planViewSettingsModel(
       options: viewDateOptions(plan.types, role),
       selected: dates[role],
     })),
-    setDate: (role: keyof ViewDates, id: string) => {
+    setDate: (role: 'start' | 'due', id: string) => {
       const key = role === 'start' ? 'startField' : 'dueField';
       const { [key]: _field, ...rest } = settings;
       // The built-in field is the default, dropped rather than stored.
