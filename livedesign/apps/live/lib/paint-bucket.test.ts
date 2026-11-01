@@ -76,9 +76,7 @@ describe('what a press fills', () => {
     expect(paintBucketTarget([rect('r'), note], P).kind).toBe('none');
     const chart = { ...rect('c'), shape: 'pie-chart' } as Element;
     expect(paintBucketTarget([rect('r'), chart], P).kind).toBe('none');
-    expect(paintBucketTarget([rect('r', { locked: true })], P).kind).toBe(
-      'locked',
-    );
+    expect(paintBucketTarget([rect('r', { locked: true })], P).kind).toBe('locked');
   });
 
   it('does not see what is on a hidden or locked layer, or outside every box', () => {
