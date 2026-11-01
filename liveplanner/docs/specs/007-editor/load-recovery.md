@@ -130,6 +130,9 @@ cache, cached share passwords, and the stale-build reload guards.
   past answers and votes are matched against;
 - the offline store (IndexedDB `liveplanner-offline`): Offline Mode projects
   exist nowhere else;
+- every plan's queue of waiting card and sheet changes (keys under
+  `liveplanner:offline-queue:`, [Offline changes](offline-changes.md)): work
+  that has not reached the server yet;
 - cookies and the sign-in provider's own storage: repair never signs anyone
   out.
 
@@ -195,8 +198,10 @@ the server, which the rest of this spec covers.
 - **In the editor.** While offline a banner sits at the top of the canvas
   stack: "You're offline. Changes stay in this tab and save when you
   reconnect." for someone who can edit, "You're offline. You'll see changes
-  when you reconnect." for a viewer. Changes are held in memory only, so the
-  banner says "in this tab": closing it while offline loses them. The words
+  when you reconnect." for a viewer. Tab changes are held in memory only, so the
+  banner says "in this tab": closing it while offline loses them. Card and
+  Sheet changes are kept in this browser instead and the banner counts them
+  while they wait ([Offline changes](offline-changes.md)). The words
   say it all: no coloured dot beside them (never a dot standing for a status), and not the This
   Browser pill's teal, since a dropped connection is not where a project lives. The save
   failure toast reads "You're offline. Keep this tab open to save when you

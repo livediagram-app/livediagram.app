@@ -75,7 +75,8 @@ Invariant: on every path the bootstrap leaves `loadingProject` false or the watc
   `ApiErrorPage` with the offline eyebrow / title / message while offline, `LoadRecoveryCard` unless
   `embed`. A ref notes having been offline; the online transition after it calls `reload` once.
 - `OfflineBanner` (`components/chrome/`): first child of `TopCenterStack` in `TopCenterChrome`,
-  `TopCenterBanner tone="neutral"` with an amber dot, copy by `readOnly`, `role="status"`.
+  `TopCenterBanner tone="neutral"` with an amber dot, copy by `readOnly`, `role="status"`; with changes waiting, their
+  count ([Offline changes](offline-changes.md) "Banner").
 - `useAutosave`: an `online` listener clears a pending retry timer and bumps `retryTick`; nothing
   happens when no retry is pending.
 - `editor-persistence`: the `'error'` toast picks the offline copy when `getOnline()` is false.
@@ -101,7 +102,8 @@ Invariant: on every path the bootstrap leaves `loadingProject` false or the watc
 - Writes one sessionStorage key, `AUTO_RELOAD_KEY` (page → time map, entries older than the window
   dropped by `claimReloadIn`).
 - A repair removes keys; it never writes. Scope: keys starting `liveplanner:` or `liveplanner-`.
-  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`, `collab-secret`).
+  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`, `collab-secret`) and every key under
+  `REPAIR_KEPT_PREFIXES` (`liveplanner:offline-queue:`, [Offline changes](offline-changes.md)).
   IndexedDB and cookies are never touched.
 - The browser probe opens and deletes its own database, `liveplanner-probe`.
 
