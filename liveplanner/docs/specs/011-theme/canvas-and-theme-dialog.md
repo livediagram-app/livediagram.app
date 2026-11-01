@@ -270,6 +270,13 @@ that left hand-coloured connectors on the old hue read as broken, so
 palette-aware (each arrow snaps to its branch's stroke), reusing the same
 per-element resolution every theme transform uses.
 
+**A tab style overrides a board's or sheet's style preset.** A Plan board or sheet
+on a calm-hue preset ([Style presets](../010-palette/style-presets.md) "Boards and sheets") is bound to that
+preset, which is drawn over the tab's own colours, so a theme pick used to change nothing on it. Picking a theme
+now clears the binding and the colours the preset wrote (`switchThemeElements`), so the board takes the new tab
+style at once; picking a preset afterwards wins again. Decision: only preset-bound boards and sheets are cleared,
+a hand-set colour stays the user's, as for any element.
+
 ### Formal themes / per-shape colours
 
 Most themes paint every shape the same fill / stroke / text. A **Formal** theme instead colours each shape **kind** by its conventional meaning, so a diagram reads as a standard notation at a glance.
