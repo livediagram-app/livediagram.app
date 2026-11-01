@@ -25,6 +25,21 @@ describe('StartFromTemplates', () => {
     expect(onTemplate).toHaveBeenCalledWith('logo-design');
   });
 
+  // Blank Illustration lands one unchosen page, which leaves the tab empty: the start must not stay up over it.
+  it('closes when the blank is chosen, as the × does', () => {
+    const onTemplate = vi.fn();
+    mount(onTemplate);
+    fireEvent.click(document.querySelector('[data-start-card="blank-illustration"]')!);
+    expect(onTemplate).toHaveBeenCalledWith('blank-illustration');
+    expect(screen.queryByRole('heading', { name: 'Start Making Pages' })).toBeNull();
+  });
+
+  it('stays open for a template that lands content', () => {
+    mount();
+    fireEvent.click(document.querySelector('[data-start-card="logo-design"]')!);
+    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
+  });
+
   it('remembers a close per tab', () => {
     mount();
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));

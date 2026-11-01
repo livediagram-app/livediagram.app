@@ -51,7 +51,9 @@ first**. The groups (`components/start/start-template-items.ts`), by what each m
 one empty page of the kind meant.
 
 A template in none of the groups is placed in the last group, so every listed template is reachable. Blank
-Illustration is not offered: closing the panel leaves the same empty tab.
+Illustration is in no group: closing the panel leaves the same empty tab. On Recommended, where it leads, choosing it
+lands its one unchosen page and closes the start, as the × does; without that the tab stayed empty, the start stayed
+up over it and the card looked dead.
 
 ## When it shows
 
