@@ -1163,8 +1163,11 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   would not read on the fill is swapped for a readable one, and muted text leans toward the ink until it reads at
   4.5:1 on the column, a card and the board alike (`readableMuted`). With no colours of their own (the Default theme)
   they take the canvas surface's neutral set, light or dark, whose muted text meets the same bar.
-- Corners follow Quick Style's Corners (12 px by default), text follows the tab's font (or the element's own),
-  and a shadow sits under the board like any shape's.
+- Corners follow Quick Style's Corners (12 px by default), and a shadow sits under the board like any shape's.
+- Its headings (the board's title, column and swimlane names, card titles) follow the tab's font (or the element's
+  own); its small text (chips, pills, fields, numbers, counts, buttons) is always the editor's own face, so every
+  font reads on a card ([Fonts](../004-interface-design/fonts.md) "On boards and cards"). A face liveplanner does
+  not offer draws its headings in the editor's face too.
 - The same colours draw the board in exports, thumbnails and images.
 - A board keeps its layers to itself: its sticky column heads never draw over another element, even where boards
   overlap.
