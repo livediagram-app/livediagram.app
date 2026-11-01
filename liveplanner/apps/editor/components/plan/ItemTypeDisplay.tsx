@@ -21,6 +21,7 @@ import {
   CARD_SIZES,
   COMMENTS_FIELD,
   commentsFieldsOf,
+  fromLocalInput,
   CARD_SLOTS,
   CARD_SLOT_LABELS,
   cardDisplayFields,
@@ -157,6 +158,20 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
       return [[c.id, 5]];
     case 'date':
       return [[c.id, dayKey(7)]];
+    // A week away at 17:00 in the viewer's zone; a range of that day to two days later, 09:00 to 17:00 with times.
+    case 'datetime':
+      return [[c.id, fromLocalInput(`${dayKey(7)}T17:00`) ?? dayKey(7)]];
+    case 'daterange':
+      return [
+        [
+          c.id,
+          c.withTime
+            ? [fromLocalInput(`${dayKey(7)}T09:00`), fromLocalInput(`${dayKey(9)}T17:00`)]
+            : [dayKey(7), dayKey(9)],
+        ],
+      ];
+    case 'phone':
+      return [[c.id, '+44 20 7946 0958']];
     case 'checkbox':
       return [[c.id, true]];
     case 'link':

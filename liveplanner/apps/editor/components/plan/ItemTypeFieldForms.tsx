@@ -61,9 +61,12 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   percent: 'Percent',
   duration: 'Duration',
   date: 'Date',
+  datetime: 'Date and Time',
+  daterange: 'Date Range',
   checkbox: 'Checkbox',
   link: 'Link',
   email: 'Email',
+  phone: 'Phone',
   choice: 'Choice',
   multichoice: 'Multiple Choice',
   rating: 'Rating',
@@ -288,6 +291,42 @@ export function TrackTimeSwitch({
   );
 }
 
+// A Date Range field's Include Time switch (docs/specs/026-plan/item-types.md "Date Range"): set when the field is made
+// (Add Field's Shape step), shown fixed in an existing field's form, as Track Time is.
+export const INCLUDE_TIME_LINE =
+  'Each end has a time of day too. Chosen once: it can’t change later.';
+export function IncludeTimeSwitch({
+  field,
+  onChange,
+  fixed = false,
+}: {
+  field: Pick<CustomFieldDef, 'kind'> & Partial<Pick<CustomFieldDef, 'withTime'>>;
+  onChange?: (patch: Pick<CustomFieldDef, 'withTime'>) => void;
+  // An existing field: the switch shows how it was made and can't change.
+  fixed?: boolean;
+}) {
+  const lineId = useId();
+  if (field.kind !== 'daterange') return null;
+  const on = field.withTime === true;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={on}
+        disabled={fixed}
+        aria-describedby={lineId}
+        onChange={() => onChange?.({ withTime: on ? undefined : true })}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 enabled:hover:bg-slate-100 dark:text-slate-200 dark:enabled:hover:bg-slate-800"
+      >
+        Include Time
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {INCLUDE_TIME_LINE}
+      </p>
+    </div>
+  );
+}
+
 export function ShowAsPercentSwitch({
   field,
   onChange,
@@ -461,6 +500,7 @@ export function CustomFieldForm({
       ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
       <TrackTimeSwitch field={field} fixed />
+      <IncludeTimeSwitch field={field} fixed />
       {hasOptions(field.kind) ? (
         <TextArea
           aria-label="Options, one a line"
