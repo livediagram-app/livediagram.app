@@ -162,6 +162,39 @@ describe('what each write keeps', () => {
     expect(await kinds(back.body.item.id)).toEqual([['undo', ['created']]]);
   });
 
+  it('tags a bulk card put back by its number as an undo, and an imported card with its thread as new', async () => {
+    const thread = {
+      id: 'th-aaaaaaaaaaaaaaaa',
+      title: 'Imported comments',
+      resolved: false,
+      comments: [
+        {
+          id: 'c0',
+          text: 'Ana · 1 Mar 2025\nHi',
+          createdAt: 1,
+          authorName: 'Jira import',
+          authorColor: '#71717a',
+        },
+      ],
+      createdAt: 1,
+      createdBy: { name: 'Jira import', color: '#71717a' },
+      updatedAt: 1,
+      home: 'p1',
+      cards: [{ projectId: 'p1', itemId: 'imported1', key: null }],
+      rev: 1,
+    };
+    const imported = await call<ItemsResponse>('POST', '/items/bulk', {
+      items: [{ type: 'task', id: 'imported1', fields: { title: 'Imported' }, threads: [thread] }],
+    });
+    expect(imported.status).toBe(201);
+    expect(await kinds('imported1')).toEqual([['', ['created']]]);
+    const back = await call<ItemsResponse>('POST', '/items/bulk', {
+      items: [{ type: 'task', id: 'putback01', key: 41, fields: { title: 'Back' } }],
+    });
+    expect(back.status).toBe(201);
+    expect(await kinds('putback01')).toEqual([['undo', ['created']]]);
+  });
+
   it('keeps nothing for a tally, a rank-only move or a project create’s seed', async () => {
     const card = await make({ title: 'Vote on me', status: 'todo' }, 'note');
     const other = await make({ title: 'Above', status: 'todo' }, 'note');
