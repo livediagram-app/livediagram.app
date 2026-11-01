@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_PUSH_DEVICES, type PushNotification } from '@liveworkspace/settings/push';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { handleAccountApi } from '../account-api.ts';
 import type { Auth } from '../auth.ts';
 import { __setBearerVerifier } from '../bearer.ts';
@@ -494,13 +495,14 @@ describe('an app asking for notifications', () => {
       return new Response(null, { status: 201 });
     }) as unknown as typeof fetch;
     const many = Array.from({ length: 25 }, () => note());
-    const started = performance.now();
-    const summary = await deliverPush(env, 'liveplanner.app', many, fetcher);
-    const elapsed = performance.now() - started;
+    let summary!: Awaited<ReturnType<typeof deliverPush>>;
+    const cpuMs = await cpuMsOfAsync(async () => {
+      summary = await deliverPush(env, 'liveplanner.app', many, fetcher);
+    });
     expect(posts).toBe(MAX_PUSH_SENDS_PER_CALL);
     expect(summary.skipped).toBe(25 * MAX_PUSH_DEVICES - MAX_PUSH_SENDS_PER_CALL);
     // The worst case one request can ask for (200 encryptions and posts) stays well inside a Worker's budget.
-    expect(elapsed).toBeLessThan(5_000);
+    expect(cpuMs).toBeLessThan(cpuBudgetMs(5_000));
   });
 
   it('has a hook for quiet hours that holds nothing yet', () => {
