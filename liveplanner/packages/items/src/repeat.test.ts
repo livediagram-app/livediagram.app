@@ -300,7 +300,7 @@ describe('repeat words', () => {
 
 describe('agents', () => {
   it('change_items refuses a repeat with where to set one, and a custom field named Repeat is still that field', () => {
-    const task = ITEM_TYPES[1]!;
+    const task = ITEM_TYPES[1];
     expect(resolveFields({ Repeat: 'weekly' }, task, { statuses: [], items: [] })).toEqual({
       ok: false,
       code: 'value_invalid',
