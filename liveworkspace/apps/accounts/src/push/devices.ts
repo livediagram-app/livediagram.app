@@ -7,7 +7,7 @@ import {
   PUSH_LABEL_MAX,
   type PushDeviceApp,
 } from '@liveworkspace/settings/push';
-import { cleanText } from '../text.ts';
+import { cleanText } from '@liveworkspace/api-kit/typed-text';
 import { fromBase64Url } from './web-push.ts';
 
 export interface PushDevice {
