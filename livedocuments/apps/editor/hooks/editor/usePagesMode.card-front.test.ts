@@ -13,13 +13,12 @@ import { usePagesMode } from './usePagesMode';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/flashcard-flip', () => ({ flipCard: vi.fn(), pictureCard: vi.fn(() => null) }));
 
-const stack = (...ids: string[]): Tab =>
-  ({
-    id: 't',
-    name: 't',
-    elements: [],
-    pages: ids.map((id) => newFlashcardPage(id, `f-${id}`)),
-  });
+const stack = (...ids: string[]): Tab => ({
+  id: 't',
+  name: 't',
+  elements: [],
+  pages: ids.map((id) => newFlashcardPage(id, `f-${id}`)),
+});
 
 function mount(tab: Tab) {
   const canvas = document.createElement('main');
