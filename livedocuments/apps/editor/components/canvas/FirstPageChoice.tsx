@@ -5,7 +5,8 @@
 // page and puts the choice away; Article makes it the first page of an article, the caret in its
 // title; Slide turns it into a 16:9 landscape slide; Flashcards makes it the first card of a stack
 // (docs/specs/007-editor/flashcards.md "Making flashcards").
-// Held at one screen size, centred on the page.
+// Held at one screen size, centred on the page, never wider than the screen less a 16 px gutter a
+// side (a 375 px phone would otherwise cut both edges off).
 import type { PageKind } from '@livedocuments/document';
 import { useRef } from 'react';
 import { kindCardIsWide, moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
@@ -25,7 +26,7 @@ export function FirstPageChoice({
         role="group"
         aria-labelledby="first-page-choice-title"
         data-first-page-choice=""
-        className="pointer-events-auto w-[420px] animate-fade-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
+        className="pointer-events-auto w-[min(420px,calc(100vw-32px))] animate-fade-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
         style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
         onPointerDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}

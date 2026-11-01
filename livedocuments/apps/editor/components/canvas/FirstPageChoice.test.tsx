@@ -41,4 +41,12 @@ describe('FirstPageChoice', () => {
     expect(kindCardIsWide(2, 3)).toBe(true);
     expect(kindCardIsWide(1, 3)).toBe(false);
   });
+
+  // A 375 px phone cut both edges off a fixed 420 px card: it keeps a 16 px gutter a side.
+  it('is never wider than the screen less a 16 px gutter a side', () => {
+    render(<FirstPageChoice zoom={0.4} onChoose={vi.fn()} />);
+    const card = document.querySelector('[data-first-page-choice]')!;
+    expect(card.className).toContain('w-[min(420px,calc(100vw-32px))]');
+    expect(card.className).not.toMatch(/(^|\s)w-\[420px\]/);
+  });
 });
