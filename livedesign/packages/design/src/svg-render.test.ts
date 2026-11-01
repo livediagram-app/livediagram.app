@@ -482,11 +482,12 @@ describe('renderElementsToSvg', () => {
 
     it('wraps a code line of wide characters at the card, and plain text at its spaces', () => {
       const lines = (code: string) =>
-        [
-          ...renderElementsToSvg(
-            tab([shape('cb', { shape: 'code-block', width: 107, height: 400, code })]),
-          ).matchAll(/xml:space="preserve">([^<]*)</g),
-        ].map((m) => m[1]);
+        renderElementsToSvg(
+          tab([shape('cb', { shape: 'code-block', width: 107, height: 400, code })]),
+        )
+          .split('xml:space="preserve">')
+          .slice(1)
+          .map((line) => line.slice(0, line.indexOf('<')));
       // CJK characters are wide too.
       expect(lines('漢字漢字漢字漢字')).toEqual(['漢字漢字漢', '字漢字']);
       expect(lines('const total = sum')).toEqual(['const total', '= sum']);
