@@ -52,6 +52,21 @@ export const MAX_PUSH_DEVICES = 10;
 // A device's label in the list.
 export const PUSH_LABEL_MAX = 80;
 
+// Where a device was turned on: liveworkspace.app or an app. Only what the device list shows beside it (each with
+// its logo); a device still hears from every app.
+export const PUSH_DEVICE_APPS = [
+  'liveworkspace',
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+] as const;
+export type PushDeviceApp = (typeof PUSH_DEVICE_APPS)[number];
+
+export function isPushDeviceApp(value: unknown): value is PushDeviceApp {
+  return typeof value === 'string' && (PUSH_DEVICE_APPS as readonly string[]).includes(value);
+}
+
 // The account API's paths for the person's own devices, under /api/account (the session on liveworkspace.app, the
 // app's bearer through `/api/workspace/account` on an app's address): GET lists them with the deployment's VAPID
 // public key, POST registers this browser, DELETE `<id>` removes one.

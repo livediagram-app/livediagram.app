@@ -130,8 +130,15 @@ describe('registering a device', () => {
       endpoint: endpoint(1),
       ...keys,
       label: 'iPhone',
+      app: 'liveworkspace',
     });
     expect(readRegistration({ endpoint: endpoint(1), keys })).toMatchObject({ label: 'A device' });
+    expect(readRegistration({ endpoint: endpoint(1), keys, app: 'liveplanner' })).toMatchObject({
+      app: 'liveplanner',
+    });
+    expect(readRegistration({ endpoint: endpoint(1), keys, app: 'evil' })).toMatchObject({
+      app: 'liveworkspace',
+    });
     expect(readRegistration({ endpoint: 'https://evil.example/x', keys })).toEqual({
       error: 'invalid_endpoint',
     });
@@ -149,26 +156,31 @@ describe('registering a device', () => {
     const one = await registerDevice(
       db,
       'user_ada',
-      { endpoint: endpoint(1), ...keys, label: 'Phone' },
+      { endpoint: endpoint(1), ...keys, app: 'liveworkspace' as const, label: 'Phone' },
       1,
     );
     const again = await registerDevice(
       db,
       'user_ada',
-      { endpoint: endpoint(1), ...keys, label: 'Phone 2' },
+      { endpoint: endpoint(1), ...keys, app: 'liveworkspace' as const, label: 'Phone 2' },
       2,
     );
     expect(again.id).toBe(one.id);
     expect(await listDevices(db, 'user_ada')).toEqual([
-      { id: one.id, label: 'Phone 2', createdAt: 2, lastSentAt: null },
+      { id: one.id, label: 'Phone 2', app: 'liveworkspace', createdAt: 2, lastSentAt: null },
     ]);
-    await registerDevice(db, 'user_bea', { endpoint: endpoint(1), ...keys, label: 'Shared' }, 3);
+    await registerDevice(
+      db,
+      'user_bea',
+      { endpoint: endpoint(1), ...keys, app: 'liveworkspace' as const, label: 'Shared' },
+      3,
+    );
     expect(await listDevices(db, 'user_ada')).toEqual([]);
     for (let i = 0; i < MAX_PUSH_DEVICES + 2; i += 1)
       await registerDevice(
         db,
         'user_ada',
-        { endpoint: endpoint(`a${i}`), ...keys, label: `D${i}` },
+        { endpoint: endpoint(`a${i}`), ...keys, app: 'liveworkspace' as const, label: `D${i}` },
         10 + i,
       );
     const kept = await listDevices(db, 'user_ada');
@@ -255,14 +267,14 @@ describe('the device routes', () => {
     const headers = { authorization: 'Bearer tok-ada', origin: 'https://www.liveplanner.app' };
     const made = await call('/push/devices', {
       method: 'POST',
-      body: { endpoint: endpoint(2), keys, label: 'Pixel' },
+      body: { endpoint: endpoint(2), keys, label: 'Pixel', app: 'liveplanner' },
       headers,
     });
     expect(made.status).toBe(201);
     const listed = (await (await call('/push/devices', { headers })).json()) as {
-      devices: { label: string }[];
+      devices: { label: string; app: string }[];
     };
-    expect(listed.devices.map((d) => d.label)).toEqual(['Pixel']);
+    expect(listed.devices.map((d) => [d.label, d.app])).toEqual([['Pixel', 'liveplanner']]);
     expect(
       (await call('/push/devices', { headers: { authorization: 'Bearer tok-guest' } })).status,
     ).toBe(401);
@@ -328,7 +340,12 @@ describe('an app asking for notifications', () => {
     const fetcher = vi.fn(async () => new Response(null, { status: 201 }));
     vi.stubGlobal('fetch', fetcher);
     const keys = await subscriptionKeys();
-    await registerDevice(db, 'user_bea', { endpoint: endpoint('b'), ...keys, label: 'Bea' });
+    await registerDevice(db, 'user_bea', {
+      endpoint: endpoint('b'),
+      ...keys,
+      app: 'liveworkspace' as const,
+      label: 'Bea',
+    });
     const internal = (body: unknown, authorization = PLANNER) =>
       call('/internal/push', { method: 'POST', body, headers: { authorization } });
     const answer = await internal({ notifications: [note()] });
@@ -345,9 +362,24 @@ describe('an app asking for notifications', () => {
 
   it('sends to every device whose switch is on, encrypted and signed, and forgets the ones gone', async () => {
     const keys = await subscriptionKeys();
-    await registerDevice(db, 'user_bea', { endpoint: endpoint('b1'), ...keys, label: 'Phone' });
-    await registerDevice(db, 'user_bea', { endpoint: endpoint('b2'), ...keys, label: 'Tablet' });
-    await registerDevice(db, 'user_ada', { endpoint: endpoint('a1'), ...keys, label: 'Ada' });
+    await registerDevice(db, 'user_bea', {
+      endpoint: endpoint('b1'),
+      ...keys,
+      app: 'liveworkspace' as const,
+      label: 'Phone',
+    });
+    await registerDevice(db, 'user_bea', {
+      endpoint: endpoint('b2'),
+      ...keys,
+      app: 'liveworkspace' as const,
+      label: 'Tablet',
+    });
+    await registerDevice(db, 'user_ada', {
+      endpoint: endpoint('a1'),
+      ...keys,
+      app: 'liveworkspace' as const,
+      label: 'Ada',
+    });
     // Ada turned replies in her threads off.
     await writeSettings(db, 'user_ada', null, { all: { pushThreadReplies: false } });
     const posted: { url: string; init: RequestInit }[] = [];
@@ -375,8 +407,18 @@ describe('an app asking for notifications', () => {
 
   it('counts a refusal or a failed post, and sends nothing without a VAPID pair', async () => {
     const keys = await subscriptionKeys();
-    await registerDevice(db, 'user_bea', { endpoint: endpoint('b1'), ...keys, label: 'Phone' });
-    await registerDevice(db, 'user_bea', { endpoint: endpoint('b2'), ...keys, label: 'Tablet' });
+    await registerDevice(db, 'user_bea', {
+      endpoint: endpoint('b1'),
+      ...keys,
+      app: 'liveworkspace' as const,
+      label: 'Phone',
+    });
+    await registerDevice(db, 'user_bea', {
+      endpoint: endpoint('b2'),
+      ...keys,
+      app: 'liveworkspace' as const,
+      label: 'Tablet',
+    });
     const fetcher = (async (url: string) => {
       if (url.endsWith('b2')) throw new Error('offline');
       return new Response(null, { status: 500 });
@@ -409,7 +451,12 @@ describe('an app asking for notifications', () => {
 
   it('removes a device whose stored keys no longer encrypt, and never throws', async () => {
     const keys = await subscriptionKeys();
-    await registerDevice(db, 'user_bea', { endpoint: endpoint('b1'), ...keys, label: 'Phone' });
+    await registerDevice(db, 'user_bea', {
+      endpoint: endpoint('b1'),
+      ...keys,
+      app: 'liveworkspace' as const,
+      label: 'Phone',
+    });
     // A point that is no point on the curve, written straight into the row.
     const offCurve = toBase64Url(Uint8Array.from({ length: 65 }, (_, i) => (i === 0 ? 4 : 1)));
     await db.prepare('UPDATE push_device SET p256dh = ?').bind(offCurve).run();
@@ -438,7 +485,7 @@ describe('an app asking for notifications', () => {
       await registerDevice(
         db,
         'user_bea',
-        { endpoint: endpoint(`c${i}`), ...keys, label: `D${i}` },
+        { endpoint: endpoint(`c${i}`), ...keys, app: 'liveworkspace' as const, label: `D${i}` },
         i,
       );
     let posts = 0;

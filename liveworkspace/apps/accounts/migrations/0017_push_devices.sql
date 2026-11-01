@@ -11,8 +11,11 @@ CREATE TABLE push_device (
   -- The subscription's keys, base64url: its P-256 public key (65 bytes) and its 16-byte auth secret.
   p256dh       TEXT    NOT NULL CHECK (length(p256dh) BETWEEN 86 AND 88),
   auth         TEXT    NOT NULL CHECK (length(auth) BETWEEN 22 AND 24),
-  -- What the device list calls it, as the browser described itself ("iPhone, Safari (liveplanner)").
+  -- What the device list calls it, as the browser described itself ("Safari on iOS").
   label        TEXT    NOT NULL CHECK (length(label) BETWEEN 1 AND 80),
+  -- Where it was turned on, which the list shows by its logo. The device hears from every app all the same.
+  app          TEXT    NOT NULL DEFAULT 'liveworkspace' CHECK (
+                 app IN ('liveworkspace', 'livediagram', 'liveplanner', 'livedocuments', 'livedesign')),
   created_at   INTEGER NOT NULL,
   -- When a push last reached its service; null until one has.
   last_sent_at INTEGER

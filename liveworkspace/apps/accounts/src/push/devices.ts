@@ -1,12 +1,19 @@
 // The devices an account gets phone notifications on (liveworkspace/docs/specs/003-accounts/push.md "Devices"):
-// `push_device`, migrations/0017_push_devices.sql. One registration serves every app, so a row names no app.
-import { MAX_PUSH_DEVICES, PUSH_LABEL_MAX } from '@liveworkspace/settings/push';
+// `push_device`, migrations/0017_push_devices.sql. One registration serves every app; the app it names is only where
+// it was turned on, for the list.
+import {
+  isPushDeviceApp,
+  MAX_PUSH_DEVICES,
+  PUSH_LABEL_MAX,
+  type PushDeviceApp,
+} from '@liveworkspace/settings/push';
 import { cleanText } from '../text.ts';
 import { fromBase64Url } from './web-push.ts';
 
 export interface PushDevice {
   id: string;
   label: string;
+  app: PushDeviceApp;
   createdAt: number;
   lastSentAt: number | null;
 }
@@ -45,9 +52,16 @@ export function isPushEndpoint(value: unknown): value is string {
   );
 }
 
-export type Registration = { endpoint: string; p256dh: string; auth: string; label: string };
+export type Registration = {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  label: string;
+  app: PushDeviceApp;
+};
 
-/** A registration from a request body (`{ endpoint, keys: { p256dh, auth }, label }`), or the error it answers. */
+/** A registration from a request body (`{ endpoint, keys: { p256dh, auth }, label, app }`), or the error it answers.
+ *  An unknown or missing app reads as liveworkspace. */
 export function readRegistration(body: Record<string, unknown>): Registration | { error: string } {
   if (!isPushEndpoint(body.endpoint)) return { error: 'invalid_endpoint' };
   const keys = body.keys as Record<string, unknown> | null | undefined;
@@ -58,10 +72,11 @@ export function readRegistration(body: Record<string, unknown>): Registration | 
   if (!point || point.length !== 65 || point[0] !== 4) return { error: 'invalid_keys' };
   if (!secret || secret.length !== 16) return { error: 'invalid_keys' };
   const label = cleanText(typeof body.label === 'string' ? body.label : '', PUSH_LABEL_MAX);
-  return { endpoint: body.endpoint, p256dh, auth, label: label || 'A device' };
+  const app = isPushDeviceApp(body.app) ? body.app : 'liveworkspace';
+  return { endpoint: body.endpoint, p256dh, auth, label: label || 'A device', app };
 }
 
-const LIST_COLUMNS = 'id, label, created_at AS createdAt, last_sent_at AS lastSentAt';
+const LIST_COLUMNS = 'id, label, app, created_at AS createdAt, last_sent_at AS lastSentAt';
 
 /** The account's devices, newest first. */
 export async function listDevices(db: D1Database, userId: string): Promise<PushDevice[]> {
@@ -87,11 +102,11 @@ export async function registerDevice(
   const [inserted] = await db.batch<PushDevice>([
     db
       .prepare(
-        `INSERT INTO push_device (id, user_id, endpoint, p256dh, auth, label, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+        `INSERT INTO push_device (id, user_id, endpoint, p256dh, auth, label, app, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
          ON CONFLICT (endpoint) DO UPDATE SET
            user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth,
-           label = excluded.label, created_at = excluded.created_at
+           label = excluded.label, app = excluded.app, created_at = excluded.created_at
          RETURNING ${LIST_COLUMNS}`,
       )
       .bind(
@@ -101,6 +116,7 @@ export async function registerDevice(
         registration.p256dh,
         registration.auth,
         registration.label,
+        registration.app,
         now,
       ),
     db
