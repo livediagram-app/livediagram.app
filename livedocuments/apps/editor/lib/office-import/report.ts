@@ -1,7 +1,11 @@
 // What an import left out, as the Import dialog's report lines (docs/specs/020-import-export/office-import.md "The
 // report"): one line per kind of thing, with its count, then one per reason pictures could not be stored.
 
-import { MAX_ARTICLE_BLOCK_TEXT } from '@livedocuments/document';
+import {
+  MAX_ARTICLE_BLOCK_TEXT,
+  MAX_ARTICLE_TABLE_COLS,
+  MAX_ARTICLE_TABLE_ROWS,
+} from '@livedocuments/document';
 import type { ImportImageFailure } from '../import-images';
 import type { FileImportFormat } from './errors';
 import { OFFICE_MAX_IMAGES, OFFICE_MAX_SLIDE_ITEMS } from './limits';
@@ -21,7 +25,7 @@ function skipLine(kind: SkipKind, count: number, format: FileImportFormat): Repo
       return format === 'word'
         ? {
             title: 'Tables',
-            message: `${plural(count, 'table was', 'tables were')} written as lists: an article's text holds no tables.`,
+            message: `${plural(count, 'table was', 'tables were')} cut to fit: a table holds at most ${n(MAX_ARTICLE_TABLE_ROWS)} rows and ${MAX_ARTICLE_TABLE_COLS} columns.`,
           }
         : { title: 'Tables', message: `${plural(count, 'table was', 'tables were')} left out.` };
     case 'footnotes':

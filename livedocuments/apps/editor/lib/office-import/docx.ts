@@ -10,6 +10,7 @@ import {
   isSafeArticleHref,
   nextArticleBlockId,
   normaliseRuns,
+  tableFromGrid,
   type ArticleAlign,
   type ArticleBlock,
   type ArticleListKind,
@@ -128,7 +129,6 @@ class DocxWalker {
         this.paragraph(el);
         return;
       case 'w:tbl':
-        addSkip(this.tally, 'tables');
         this.table(el);
         return;
       case 'w:sdt':
@@ -453,9 +453,48 @@ class DocxWalker {
     addSkip(this.tally, 'textBoxes');
   }
 
-  /** A table: each row a bulleted item of its cells' runs, joined by " · ". */
+  /** A table in the body: a table block (docs/specs/020-import-export/office-import.md), its rows and cells, each
+   *  cell's paragraphs joined by line breaks, a repeated first row as its header row, merged cells read as one. A
+   *  table cut to the table's caps is counted for the report. */
+  private gridTable(tbl: XmlElement): void {
+    this.flush();
+    const saved = { para: this.para, allMono: this.allMono };
+    this.inTable += 1;
+    const grid: ArticleRun[][][] = [];
+    let header = false;
+    for (const tr of kids(tbl)) {
+      if (tr.name !== 'w:tr') continue;
+      if (grid.length === 0) {
+        const flag = child(child(tr, 'w:trPr'), 'w:tblHeader')?.attrs['w:val'];
+        header = !!child(child(tr, 'w:trPr'), 'w:tblHeader') && flag !== 'false' && flag !== '0';
+      }
+      const row: ArticleRun[][] = [];
+      for (const tc of kids(tr)) {
+        if (tc.name !== 'w:tc') continue;
+        this.runs = [];
+        this.cell(tc, '\n');
+        row.push(trimRuns(this.runs));
+      }
+      // A row with no cell at all holds nothing to keep.
+      if (row.length > 0) grid.push(row);
+    }
+    this.inTable -= 1;
+    this.para = saved.para;
+    this.allMono = saved.allMono;
+    this.runs = [];
+    const block = tableFromGrid(nextArticleBlockId(), grid, header);
+    if (!block) return;
+    const width = grid.reduce((n, r) => Math.max(n, r.length), 0);
+    if (block.rows.length < grid.length || block.cols.length < width) addSkip(this.tally, 'tables');
+    this.push(block);
+  }
+
+  /** A table inside a table's cell: its rows read as text into the cell, cells joined by " · ". */
   private table(tbl: XmlElement): void {
-    if (this.inTable === 0) this.flush();
+    if (this.inTable === 0) {
+      this.gridTable(tbl);
+      return;
+    }
     const saved = { para: this.para, runs: this.runs, allMono: this.allMono };
     this.inTable += 1;
     for (const tr of kids(tbl)) {
@@ -464,36 +503,28 @@ class DocxWalker {
       for (const tc of kids(tr)) {
         if (tc.name !== 'w:tc') continue;
         this.runs = [];
-        this.cell(tc);
+        this.cell(tc, ' ');
         const cell = trimRuns(this.runs);
         if (cell.length === 0) continue;
         if (row.length > 0) row.push({ text: ' · ' });
         row.push(...cell);
       }
       this.runs = [];
-      if (this.inTable === 1 && row.length > 0) {
-        this.push({
-          id: nextArticleBlockId(),
-          type: 'list',
-          list: 'bullet',
-          runs: normaliseRuns(row),
-        });
-      } else if (row.length > 0) {
-        saved.runs.push({ text: ' ' }, ...row);
-      }
+      if (row.length > 0) saved.runs.push({ text: ' ' }, ...row);
     }
     this.inTable -= 1;
     this.para = saved.para;
-    this.runs = this.inTable > 0 ? saved.runs : [];
+    this.runs = saved.runs;
     this.allMono = saved.allMono;
   }
 
-  private cell(tc: XmlElement): void {
+  /** A cell's paragraphs into the runs, `between` them (a line break in a table block's cell). */
+  private cell(tc: XmlElement, between: string): void {
     let first = true;
     for (const el of kids(tc)) {
       if (el.name === 'w:p') {
         const before = this.runs.length;
-        if (!first) this.runs.push({ text: ' ' });
+        if (!first) this.runs.push({ text: between });
         for (const c of kids(el)) this.inline(c, undefined);
         if (this.runs.length > before) first = false;
       } else if (el.name === 'w:tbl') {
@@ -501,7 +532,7 @@ class DocxWalker {
         this.table(el);
         this.runs = outer;
       } else if (el.name === 'w:sdt') {
-        this.cell({ ...el, children: child(el, 'w:sdtContent')?.children ?? [] });
+        this.cell({ ...el, children: child(el, 'w:sdtContent')?.children ?? [] }, between);
       }
     }
   }

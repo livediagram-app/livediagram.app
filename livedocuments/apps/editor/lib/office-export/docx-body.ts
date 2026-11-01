@@ -3,7 +3,7 @@
 // the numbering definitions, and drawn zones as inline or floating pictures. Collects the relationships (links and
 // images) and the numbered runs the other parts need. Pure string building.
 
-import type { ArticleAlign, ArticleRun } from '@livedocuments/document';
+import type { ArticleAlign, ArticleRun, ArticleTableBlock } from '@livedocuments/document';
 import { REL, xmlText, type OoxmlRel } from './ooxml';
 import {
   BULLET_NUM_ID,
@@ -14,9 +14,11 @@ import {
   LIST_STYLE_ID,
   PARAGRAPH_STYLE_ID,
   ruleUnder,
+  TOC_HEADING_STYLE_ID,
+  tocStyleId,
   TWIPS_PER_PX,
 } from './docx-styles';
-import type { DocxBlock, DocxImage, DocxLook } from './docx-types';
+import type { DocxBlock, DocxImage, DocxLook, DocxToc } from './docx-types';
 
 /** EMU per page px (96 px an inch). */
 export const DOCX_EMU_PER_PX = 9525;
@@ -25,8 +27,30 @@ const WRAP_CLEAR_PX = 14;
 // A to-do's box, open and ticked.
 const TODO_OPEN = '☐ ';
 const TODO_DONE = '☒ ';
-// The rule a divider draws, slate-300.
+// The rule a divider draws, slate-300; a table's hairlines too.
 const DIVIDER_HEX = 'CBD5E1';
+// A table cell's padding, px (docs/specs/007-editor/article-pages.md "Tables", Look): 6 above and below, 10 beside.
+const CELL_PAD_Y_PX = 6;
+const CELL_PAD_X_PX = 10;
+// The header row's tint: the accent at this share over the white page.
+const HEADER_TINT = 0.1;
+// The text's width when the paper is not known (A4 less Normal margins).
+const FALLBACK_TEXT_WIDTH_PX = 602;
+// Heading styles a contents block can link to: their paragraphs carry a bookmark.
+const LINKED_HEADINGS = new Set(['h1', 'h2', 'h3']);
+
+/** A heading's bookmark name: `_Toc` and its block id, Word's own prefix, in the characters a name may hold. */
+export const tocBookmark = (id: string) => `_Toc${id.replace(/[^A-Za-z0-9_]/g, '_')}`.slice(0, 40);
+
+/** `hex` (six digits) mixed with white, `share` of it kept. */
+function tint(hex: string, share: number): string {
+  const n = parseInt(hex, 16);
+  const mix = (c: number) =>
+    Math.round(c * share + 255 * (1 - share))
+      .toString(16)
+      .padStart(2, '0');
+  return (mix((n >> 16) & 255) + mix((n >> 8) & 255) + mix(n & 255)).toUpperCase();
+}
 
 export type DocxBodyOut = {
   xml: string;
@@ -58,12 +82,76 @@ class BodyWriter {
   // Floating pictures waiting for the next paragraph to anchor in.
   private pendingAnchors: string[] = [];
 
+  private bookmarkId = 0;
+
   private readonly look: DocxLook;
   private readonly firstRelId: number;
+  private readonly textWidthPx: number;
 
-  constructor(look: DocxLook, firstRelId: number) {
+  constructor(look: DocxLook, firstRelId: number, textWidthPx: number) {
     this.look = look;
     this.firstRelId = firstRelId;
+    this.textWidthPx = textWidthPx;
+  }
+
+  /** A table (docs/specs/007-editor/article-pages.md "Tables"): across the text width, its columns in their shares,
+   *  ruled in hairlines; a header row repeated on every page, bold on a tint of the accent. */
+  table(t: ArticleTableBlock): string {
+    const width = Math.round(this.textWidthPx * TWIPS_PER_PX);
+    const cols = t.cols.map((c) => Math.round(c.w * width));
+    const line = (side: string) =>
+      `<w:${side} w:val="single" w:sz="4" w:space="0" w:color="${DIVIDER_HEX}"/>`;
+    const tblPr =
+      `<w:tblPr><w:tblW w:w="${width}" w:type="dxa"/>` +
+      `<w:tblBorders>${['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(line).join('')}</w:tblBorders>` +
+      '<w:tblLayout w:type="fixed"/>' +
+      `<w:tblCellMar><w:top w:w="${Math.round(CELL_PAD_Y_PX * TWIPS_PER_PX)}" w:type="dxa"/>` +
+      `<w:left w:w="${Math.round(CELL_PAD_X_PX * TWIPS_PER_PX)}" w:type="dxa"/>` +
+      `<w:bottom w:w="${Math.round(CELL_PAD_Y_PX * TWIPS_PER_PX)}" w:type="dxa"/>` +
+      `<w:right w:w="${Math.round(CELL_PAD_X_PX * TWIPS_PER_PX)}" w:type="dxa"/></w:tblCellMar>` +
+      '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr>';
+    const grid = `<w:tblGrid>${cols.map((w) => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`;
+    const fill = tint(this.look.accent, HEADER_TINT);
+    const rows = t.rows
+      .map((row, r) => {
+        const head = r === 0 && t.header === true;
+        const cells = row.cells
+          .map((runs, c) => {
+            const tcPr = `<w:tcPr><w:tcW w:w="${cols[c]}" w:type="dxa"/>${head ? `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>` : ''}</w:tcPr>`;
+            const content = this.runs(head ? runs.map((x) => ({ ...x, b: true as const })) : runs);
+            return `<w:tc>${tcPr}<w:p><w:pPr><w:spacing w:after="0"/></w:pPr>${content}</w:p></w:tc>`;
+          })
+          .join('');
+        return `<w:tr>${head ? '<w:trPr><w:cantSplit/><w:tblHeader/></w:trPr>' : '<w:trPr><w:cantSplit/></w:trPr>'}${cells}</w:tr>`;
+      })
+      .join('');
+    return `<w:tbl>${tblPr}${grid}${rows}</w:tbl>`;
+  }
+
+  /** A contents block (docs/specs/007-editor/article-pages.md "Table of contents"): a "Contents" heading, then Word's
+   *  table of contents field, its cached result the entries as the page shows them, each a link to its heading's
+   *  bookmark with its page number on a dotted right tab, so it reads at once and Update Field refreshes it. */
+  toc(t: DocxToc): string {
+    const tab = `<w:tabs><w:tab w:val="right" w:leader="dot" w:pos="${Math.round(this.textWidthPx * TWIPS_PER_PX)}"/></w:tabs>`;
+    const begin =
+      '<w:r><w:fldChar w:fldCharType="begin"/></w:r>' +
+      `<w:r><w:instrText xml:space="preserve"> TOC \\o "1-${t.depth}" \\h \\z \\u </w:instrText></w:r>` +
+      '<w:r><w:fldChar w:fldCharType="separate"/></w:r>';
+    const end = '<w:r><w:fldChar w:fldCharType="end"/></w:r>';
+    let out = this.paragraph(
+      `<w:pStyle w:val="${TOC_HEADING_STYLE_ID}"/>`,
+      this.run({ text: 'Contents' }),
+    );
+    if (t.entries.length === 0) return out + this.paragraph('', begin + end);
+    t.entries.forEach((e, i) => {
+      const page = e.page === undefined ? '' : `<w:r><w:tab/></w:r><w:r><w:t>${e.page}</w:t></w:r>`;
+      const link = `<w:hyperlink w:anchor="${tocBookmark(e.id)}" w:history="1">${this.run({ text: e.text })}${page}</w:hyperlink>`;
+      out += this.paragraph(
+        `<w:pStyle w:val="${tocStyleId(e.level)}"/>${tab}`,
+        (i === 0 ? begin : '') + link + (i === t.entries.length - 1 ? end : ''),
+      );
+    });
+    return out;
   }
 
   private relId(): string {
@@ -193,7 +281,16 @@ class BodyWriter {
           const pPr =
             (style !== 'body' ? `<w:pStyle w:val="${PARAGRAPH_STYLE_ID[style]}"/>` : '') +
             (b.align && b.align !== 'left' ? `<w:jc w:val="${JC[b.align]}"/>` : '');
-          out += this.paragraph(pPr, this.runs(b.runs));
+          // A heading carries a bookmark, so a contents entry in Word can link to it.
+          let content = this.runs(b.runs);
+          if (LINKED_HEADINGS.has(style)) {
+            const id = this.bookmarkId++;
+            content =
+              `<w:bookmarkStart w:id="${id}" w:name="${tocBookmark(b.id)}"/>` +
+              content +
+              `<w:bookmarkEnd w:id="${id}"/>`;
+          }
+          out += this.paragraph(pPr, content);
           break;
         }
         case 'list': {
@@ -239,6 +336,14 @@ class BodyWriter {
         case 'image':
           out += this.image(b);
           break;
+        case 'table':
+          // Word runs two tables straight after each other together, and a body ends on a paragraph: an empty
+          // paragraph follows each table.
+          out += this.table(b) + '<w:p><w:pPr><w:spacing w:after="0"/></w:pPr></w:p>';
+          break;
+        case 'docxToc':
+          out += this.toc(b);
+          break;
       }
     }
     return out + this.flushAnchors();
@@ -250,8 +355,9 @@ export function docxBody(
   blocks: readonly DocxBlock[],
   look: DocxLook,
   firstRelId: number,
+  textWidthPx: number = FALLBACK_TEXT_WIDTH_PX,
 ): DocxBodyOut {
-  const w = new BodyWriter(look, firstRelId);
+  const w = new BodyWriter(look, firstRelId, textWidthPx);
   const xml = w.blocks(blocks);
   return { xml, rels: w.rels, media: w.media, numberedRuns: w.numberedRuns };
 }

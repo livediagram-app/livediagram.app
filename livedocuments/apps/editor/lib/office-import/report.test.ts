@@ -38,7 +38,7 @@ describe('officeImportReport', () => {
       },
       {
         title: 'Tables',
-        message: "2 tables were written as lists: an article's text holds no tables.",
+        message: '2 tables were cut to fit: a table holds at most 500 rows and 20 columns.',
       },
       { title: 'Footnotes', message: '1 footnote was left out.' },
     ]);

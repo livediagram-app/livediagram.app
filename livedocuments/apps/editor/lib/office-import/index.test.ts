@@ -41,7 +41,6 @@ describe('importOfficeFile', () => {
     expect(result.tab.elements).toHaveLength(1);
     expect(result.slides).toBeUndefined();
     expect(result.failures.map((f) => f.title)).toEqual([
-      'Tables',
       'Footnotes',
       'Comments',
       'Headers and footers',
