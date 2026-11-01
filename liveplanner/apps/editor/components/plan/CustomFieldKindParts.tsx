@@ -15,6 +15,8 @@ import {
 import { CheckIcon, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalculator,
+  lucideCalendarClock,
+  lucideCalendarRange,
   lucideClipboardCheck,
   lucideHash,
   lucideImage,
@@ -23,6 +25,7 @@ import {
   lucideLink,
   lucideMessageSquare,
   lucidePalette,
+  lucidePhone,
   lucideTag,
   lucideType,
   lucideVote,
@@ -50,6 +53,9 @@ const PaletteIcon = lucideGlyph(lucidePalette, 16);
 const ChecklistIcon = lucideGlyph(lucideClipboardCheck, 16);
 const ImageIcon = lucideGlyph(lucideImage, 16);
 const CommentsIcon = lucideGlyph(lucideMessageSquare, 16);
+const DateTimeIcon = lucideGlyph(lucideCalendarClock, 16);
+const DateRangeIcon = lucideGlyph(lucideCalendarRange, 16);
+const PhoneIcon = lucideGlyph(lucidePhone, 16);
 const VotesIcon = lucideGlyph(lucideVote, 16);
 
 // Each kind's icon: what its value looks like.
@@ -61,9 +67,12 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   percent: <PlanTypeGlyph glyph="percent" size={16} />,
   duration: <PlanTypeGlyph glyph="clock" size={16} />,
   date: <PlanTypeGlyph glyph="calendar" size={16} />,
+  datetime: <DateTimeIcon />,
+  daterange: <DateRangeIcon />,
   checkbox: <PlanTypeGlyph glyph="task" size={16} />,
   link: <LinkIcon />,
   email: <PlanTypeGlyph glyph="mail" size={16} />,
+  phone: <PhoneIcon />,
   choice: <ListIcon />,
   multichoice: <ListChecksIcon />,
   rating: <PlanTypeGlyph glyph="star" size={16} />,
@@ -127,6 +136,7 @@ function SampleValue({
   calculation,
   showAs,
   timeSpent,
+  withTime,
 }: {
   kind: CustomFieldKind;
   options: readonly string[];
@@ -136,6 +146,7 @@ function SampleValue({
   calculation: Calculation | undefined;
   showAs: 'percent' | undefined;
   timeSpent?: boolean | undefined;
+  withTime?: boolean | undefined;
 }) {
   const box =
     'rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -172,12 +183,28 @@ function SampleValue({
       );
     case 'email':
       return <span className="text-brand-700 underline dark:text-brand-300">sam@example.com</span>;
+    case 'phone':
+      return <span className="text-brand-700 underline dark:text-brand-300">+44 20 7946 0958</span>;
     case 'date':
       return (
         <div className={`${box} inline-flex items-center gap-1.5`}>
           <PlanTypeGlyph glyph="calendar" size={13} />
           12 Oct 2026
         </div>
+      );
+    case 'datetime':
+      return <div className={`${box} whitespace-nowrap tabular-nums`}>Fri 31 Oct, 17:00</div>;
+    case 'daterange':
+      return (
+        <span className="inline-flex flex-wrap items-center gap-1.5">
+          <span className={`${box} whitespace-nowrap tabular-nums`}>
+            {withTime ? '31 Oct, 09:00' : '31 Oct'}
+          </span>
+          <span className="text-[12px] text-slate-500 dark:text-slate-400">to</span>
+          <span className={`${box} whitespace-nowrap tabular-nums`}>
+            {withTime ? '2 Nov, 17:00' : '2 Nov'}
+          </span>
+        </span>
       );
     case 'checkbox':
       return (
@@ -282,6 +309,7 @@ export function CustomFieldPreview({
   calculation,
   showAs,
   timeSpent,
+  withTime,
   required,
 }: {
   label: string;
@@ -299,6 +327,8 @@ export function CustomFieldPreview({
   showAs?: 'percent' | undefined;
   // A Duration field that tracks time.
   timeSpent?: boolean | undefined;
+  // A Date Range whose ends carry times.
+  withTime?: boolean | undefined;
   // Drawn with the required mark.
   required?: boolean | undefined;
 }) {
@@ -328,6 +358,7 @@ export function CustomFieldPreview({
             calculation={calculation}
             showAs={showAs}
             timeSpent={timeSpent}
+            withTime={withTime}
           />
         </ItemDetailsRow>
       </div>

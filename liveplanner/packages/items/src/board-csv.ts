@@ -30,6 +30,9 @@ import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogu
 import { missingRequiredFields } from './required-fields';
 import { parsePercent } from './percent-fields';
 import { durationText, isTimeSpent, parseDuration } from './duration-fields';
+import { instantIso, parseDateTime } from './date-time-fields';
+import { isTimedRange, parseDateRange, rangeIso } from './date-range-fields';
+import { isPhoneNumber } from './phone-fields';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
 const BOARD_CSV_FIELDS = [
@@ -159,6 +162,10 @@ export function boardCsvRows(
           // A Duration as it reads ("2h 30m"), a Time Spent field its total (item-types.md "Duration").
           if (f.kind === 'checklist' || f.kind === 'votes' || f.kind === 'duration')
             return customFieldText(f, item.fields[f.id]) ?? '';
+          // ISO 8601: a moment as its UTC instant, a range as its interval "start/end" (item-types.md "Date and
+          // Time", "Date Range").
+          if (f.kind === 'datetime') return instantIso(item.fields[f.id]) ?? '';
+          if (f.kind === 'daterange') return rangeIso(item.fields[f.id]) ?? '';
           // An option may hold a comma, so a Multiple Choice's picks are kept apart by semicolons.
           if (f.kind === 'multichoice') {
             const v = item.fields[f.id];
@@ -273,6 +280,16 @@ function customValue(
     }
     case 'email':
       return isEmailAddress(text) ? text : undefined;
+    // As typed; a leading ' an older download (or a spreadsheet) put before a + is dropped (item-types.md "Phone").
+    case 'phone': {
+      const number = text.replace(/^'/, '').trim();
+      return isPhoneNumber(number) ? number : undefined;
+    }
+    // ISO 8601, or a time with no offset read in the importer's zone (item-types.md "Date and Time").
+    case 'datetime':
+      return parseDateTime(text, { local: true });
+    case 'daterange':
+      return parseDateRange(text, isTimedRange(f), { local: true, readDay: cardDateOf });
     default:
       return text.slice(0, ITEM_UNKNOWN_STRING_MAX);
   }

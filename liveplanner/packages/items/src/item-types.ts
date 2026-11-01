@@ -48,10 +48,17 @@ export const CUSTOM_FIELD_KINDS = [
   // (docs/specs/026-plan/item-types.md "Duration", "Time Spent"; duration-fields.ts, time-tracking.ts).
   'duration',
   'date',
+  // A moment, stored as its UTC instant and the zone it was set in, read in each viewer's zone
+  // (docs/specs/026-plan/item-types.md "Date and Time"; date-time-fields.ts).
+  'datetime',
+  // A start and an end, two days or, with `withTime`, two moments (item-types.md "Date Range"; date-range-fields.ts).
+  'daterange',
   'checkbox',
   'link',
   // One email address.
   'email',
+  // One phone number, kept as typed and called through a tel: link (item-types.md "Phone"; phone-fields.ts).
+  'phone',
   'choice',
   // Several of its named options (docs/specs/030-forms/forms.md "New card field kinds").
   'multichoice',
@@ -172,6 +179,9 @@ export interface CustomFieldDef {
   // A Duration field that tracks time (Time Spent, time-tracking.ts): its value is entries and running timers, never
   // typed in. Kept only as true, only on a Duration field; set when the field is made and never changed.
   timeSpent?: boolean;
+  // A Date Range whose ends carry a time (date-range-fields.ts). Kept only as true, only on a Date Range; set when the
+  // field is made and never changed.
+  withTime?: boolean;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
   // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.

@@ -105,6 +105,15 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
           />
         </div>
       ) : null}
+      {q.type === 'daterange' ? (
+        <SwitchRow
+          checked={!!q.withTime}
+          onChange={(on) => set({ withTime: on || undefined })}
+          className="py-1 text-[13px]"
+        >
+          Include Time
+        </SwitchRow>
+      ) : null}
       {q.type === 'single' ? (
         <SwitchRow
           checked={!!q.dropdown}
@@ -186,4 +195,4 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
 
 // Whether a question has settings beyond its card's own controls (Required sits in the card's footer).
 export const hasQuestionSettings = (q: FormQuestion): boolean =>
-  ['number', 'multi', 'single', 'rating'].includes(q.type);
+  ['number', 'multi', 'single', 'rating', 'daterange'].includes(q.type);

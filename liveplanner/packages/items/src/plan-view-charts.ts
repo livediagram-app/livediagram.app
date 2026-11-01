@@ -4,7 +4,8 @@ import type { Item, ItemPerson } from './item';
 import { PRIORITIES, isPriority, type Priority } from './fields';
 import { laneGroups, namedStatus, statusLabel, type SwimlaneBy } from './board';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
-import { dayNumber, dayParts, MONTH_LONG, monthStart, shiftMonth } from './plan-view-dates';
+import { dayParts, MONTH_LONG, monthStart, shiftMonth } from './plan-view-dates';
+import { roleDay, roleMoment } from './view-dates-write';
 import { STATUS_PHASES, liveCards, phaseOf, type StatusPhase } from './plan-views';
 import type { CalendarField } from './calendar-move';
 import { BUILT_IN_DATES, measureValue, type ViewDates } from './view-fields';
@@ -17,7 +18,9 @@ export interface CalendarDay {
   day: number;
   date: number;
   inMonth: boolean;
-  cards: { item: Item; done: boolean }[];
+  // `at`: a timed card's moment (a Date and Time, or a timed range's end), printed before its title
+  // (docs/specs/026-plan/plan-views.md "Times and ranges").
+  cards: { item: Item; done: boolean; at?: number }[];
 }
 
 interface CalendarModel {
@@ -45,7 +48,7 @@ export function calendarModel(
   const gridTo = last + (6 - dayParts(last).weekday);
   const byDay = new Map<number, Item[]>();
   for (const it of liveCards(items)) {
-    const d = dayNumber(it.fields[dates[field]]);
+    const d = roleDay(it, dates, field);
     if (d === undefined || d < gridFrom || d > gridTo) continue;
     const list = byDay.get(d);
     if (list) list.push(it);
@@ -56,9 +59,14 @@ export function calendarModel(
   for (let day = gridFrom; day <= gridTo; day += 1) {
     if ((day - gridFrom) % 7 === 0) weeks.push([]);
     const inMonth = day >= first && day <= last;
+    // Cards with no time first (by number), then timed ones by their moment.
     const cards = (byDay.get(day) ?? [])
-      .sort(byKey)
-      .map((item) => ({ item, done: phaseOf(item, phases) === 'done' }));
+      .map((item) => {
+        const at = roleMoment(item, dates, field);
+        const done = phaseOf(item, phases) === 'done';
+        return at === undefined ? { item, done } : { item, done, at };
+      })
+      .sort((a, b) => (a.at ?? -Infinity) - (b.at ?? -Infinity) || byKey(a.item, b.item));
     if (inMonth) count += cards.length;
     weeks[weeks.length - 1]!.push({ day, date: dayParts(day).date, inMonth, cards });
   }

@@ -24,6 +24,22 @@ describe('questionFrom', () => {
     expect(rating.ok && rating.question).toMatchObject({ scale: 5, style: 'stars' });
   });
 
+  // docs/specs/030-forms/forms.md "Question types": a Date Range's Include Time, a Phone's placeholder.
+  it('takes a Date Range’s withTime and a Phone’s placeholder, and refuses withTime elsewhere', () => {
+    expect(questionFrom({ type: 'daterange', prompt: 'When', withTime: true }, 'q')).toEqual({
+      ok: true,
+      question: { id: 'q', type: 'daterange', prompt: 'When', withTime: true },
+    });
+    expect(questionFrom({ type: 'phone', prompt: 'Phone', placeholder: 'Mobile' }, 'q')).toEqual({
+      ok: true,
+      question: { id: 'q', type: 'phone', prompt: 'Phone', placeholder: 'Mobile' },
+    });
+    expect(questionFrom({ type: 'datetime', prompt: 'When', withTime: true }, 'q')).toMatchObject({
+      ok: false,
+      code: 'setting_not_for_type',
+    });
+  });
+
   it('refuses an unknown type, naming the types', () => {
     const made = questionFrom({ type: 'slider' as never, prompt: 'x' }, 'q');
     expect(made).toMatchObject({ ok: false, code: 'type_unknown' });

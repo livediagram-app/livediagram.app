@@ -315,8 +315,11 @@ const customField = z.object({
         'currency, shown as "£12,500"), percent (how far along: a whole number from 0 to 100, ' +
         'drawn as a bar; "40%" is taken too, and a value outside 0 to 100 is refused), duration (hours and ' +
         'minutes, stored as whole minutes: written "2h 30m", "90m", "1.5h" or a number of minutes, read as "2h 30m"; ' +
-        'with timeSpent it adds up the time people track with a timer, read-only to agents), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
-        'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
+        'with timeSpent it adds up the time people track with a timer, read-only to agents), date (YYYY-MM-DD), datetime (a moment: ' +
+        'written as ISO 8601 with its offset, 2026-10-31T17:00:00Z, listed as its UTC instant, shown in each viewer’s ' +
+        'time zone), daterange (a start and an end: an ISO 8601 interval 2026-10-31/2026-11-02 or a list of two; ' +
+        'with withTime each end is a datetime), checkbox, link (a URL, shown as its site), email (one ' +
+        'address), phone (a phone number as typed: digits, spaces, brackets, dashes and a leading +), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
         'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12", or several ' +
         'with multiple), ' +
         'calculated (worked out from the cards linking to the card through a card field, by its calculation; ' +
@@ -364,6 +367,12 @@ const customField = z.object({
     .describe(
       'A duration field only, set when it is made: true makes it Time Spent, adding up the time people track ' +
         'on the card with a start/stop timer and manual entries (who and when). Agents read it, never write it.',
+    ),
+  withTime: z
+    .boolean()
+    .optional()
+    .describe(
+      'A daterange field only, set when it is made: true gives each end a time of day (a datetime), false days.',
     ),
   onCard: z
     .boolean()
@@ -550,7 +559,8 @@ const listedCustom = z.object({
   kind: z
     .string()
     .describe(
-      'text, longtext, number, currency, percent, duration, date, checkbox, link, email, choice, multichoice, ' +
+      'text, longtext, number, currency, percent, duration, date, datetime, daterange, checkbox, link, email, ' +
+        'phone, choice, multichoice, ' +
         'rating, card, calculated, person, labels, colour, checklist or image.',
     ),
   options: z.array(z.string()).optional().describe('A choice or multichoice field’s options.'),
@@ -607,6 +617,10 @@ const listedCustom = z.object({
     .describe(
       'A calculated field drawn as a percent field’s bar; its value is still a whole percentage.',
     ),
+  withTime: z
+    .literal(true)
+    .optional()
+    .describe('A daterange field whose ends are datetimes; its value reads "start/end" in UTC.'),
   timeSpent: z
     .literal(true)
     .optional()

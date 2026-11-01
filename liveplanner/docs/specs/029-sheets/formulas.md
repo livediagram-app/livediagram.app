@@ -117,7 +117,9 @@ the Trash), whatever board they are on, as a [plan view](../026-plan/plan-views.
   field's name. `fields` in `CARDS` is one text of names separated by commas (`"Number, Title, State"`).
 - A **value** matches as a criterion does in `COUNTIF` (`"Done"`, `">3"`, `"<>"`, `"*login*"`).
 - Values read as: State by its column name, Assignee by the person's name, Labels joined with `, `, dates as date
-  numbers, Type by the card type's name, Number as the number.
+  numbers, Type by the card type's name, Number as the number, a Date and Time as its UTC instant's text
+  (`2026-10-31T17:00:00Z`) and a Date Range as its ISO 8601 interval (`2026-10-31/2026-11-02`), as Export CSV
+  writes them.
 - An unknown field is `#NAME?` (hovering names it); a card number no card has is `#N/A`.
 - A sheet using these functions loads the project's items, as a board does; until they arrive the cells show
   **Loading…**. They recalculate as cards change, live for everyone.

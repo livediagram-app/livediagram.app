@@ -1,6 +1,7 @@
 // Mapping (docs/specs/030-forms/forms.md "Mapping: where an answer goes", blueprint §5): which card fields a
 // question's answer may be kept in, and where it goes when its field is gone.
 import {
+  isTimedRange,
   ratingScaleOf,
   type CustomFieldDef,
   type CustomFieldKind,
@@ -16,8 +17,11 @@ export const MAPPABLE_KINDS: Readonly<Record<QuestionType, readonly CustomFieldK
   paragraph: ['longtext'],
   number: ['number', 'currency'],
   email: ['email', 'text'],
+  phone: ['phone', 'text'],
   link: ['link', 'text'],
   date: ['date'],
+  datetime: ['datetime'],
+  daterange: ['daterange'],
   single: ['choice', 'text'],
   multi: ['multichoice', 'longtext'],
   rating: ['rating', 'number'],
@@ -25,7 +29,14 @@ export const MAPPABLE_KINDS: Readonly<Record<QuestionType, readonly CustomFieldK
 };
 
 // The question types whose answer may be a card's title.
-export const TITLE_TYPES: readonly QuestionType[] = ['short', 'email', 'number', 'single', 'date'];
+export const TITLE_TYPES: readonly QuestionType[] = [
+  'short',
+  'email',
+  'phone',
+  'number',
+  'single',
+  'date',
+];
 
 // The kind of field New Field makes for a question.
 export const NEW_FIELD_KIND: Readonly<Record<QuestionType, CustomFieldKind>> = {
@@ -33,8 +44,11 @@ export const NEW_FIELD_KIND: Readonly<Record<QuestionType, CustomFieldKind>> = {
   paragraph: 'longtext',
   number: 'number',
   email: 'email',
+  phone: 'phone',
   link: 'link',
   date: 'date',
+  datetime: 'datetime',
+  daterange: 'daterange',
   single: 'choice',
   multi: 'multichoice',
   rating: 'rating',
@@ -46,6 +60,8 @@ export const NEW_FIELD_KIND: Readonly<Record<QuestionType, CustomFieldKind>> = {
 export function fieldTakes(q: FormQuestion, field: CustomFieldDef): boolean {
   if (!MAPPABLE_KINDS[q.type].includes(field.kind)) return false;
   if (field.kind === 'rating') return ratingScaleOf(field) >= (q.scale ?? RATING_SCALE_DEFAULT);
+  // A range's ends are days or moments on both sides, never one of each (forms.md "Mapping").
+  if (field.kind === 'daterange') return isTimedRange(field) === (q.withTime === true);
   if (field.kind === 'choice' || field.kind === 'multichoice') {
     if (q.other) return false;
     const options = new Set((field.options ?? []).map((o) => o.toLowerCase()));
@@ -105,5 +121,6 @@ export function newFieldFor(q: FormQuestion, id: string, label: string): CustomF
     return { ...field, options: [...(q.options ?? [])] };
   if (kind === 'rating' && (q.scale ?? RATING_SCALE_DEFAULT) !== RATING_SCALE_DEFAULT)
     return { ...field, scale: q.scale };
+  if (kind === 'daterange' && q.withTime) return { ...field, withTime: true };
   return field;
 }
