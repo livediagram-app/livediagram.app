@@ -201,7 +201,8 @@ describe('showing a moment', () => {
     const v = '2026-10-31T17:00:00Z';
     const short = dateTimeText(v, 'short', { tz: LONDON, now })!;
     expect(short).toContain('31');
-    expect(short).toContain('17');
+    // 17:00 on a 24-hour clock, 05:00 PM on a 12-hour one (CI runs en-US).
+    expect(short).toMatch(/17|0?5:00/);
     expect(short).not.toContain('2026');
     expect(dateTimeText(v, 'medium', { tz: LONDON, now })).toContain('2026');
     // Another year shows its year even on a card.
