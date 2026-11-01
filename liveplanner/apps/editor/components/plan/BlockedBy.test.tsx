@@ -278,6 +278,14 @@ describe('the Blocked By control', () => {
     return ctx.onSave as ReturnType<typeof vi.fn>;
   };
 
+  it('draws a chip’s number at AA contrast on the chip', () => {
+    const a = card('Website', 'doing');
+    const launch = card('Launch', 'todo', [a.id]);
+    draw(launch, [a, launch], EDITOR);
+    const key = screen.getByText(`#${a.key}`);
+    expect(key.className.split(/\s+/)).toContain('text-slate-600');
+  });
+
   it('refuses a pick that closes a loop, says why, and marks such cards', () => {
     announce.mockClear();
     notify.mockClear();
