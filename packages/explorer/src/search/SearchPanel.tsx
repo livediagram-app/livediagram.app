@@ -249,8 +249,10 @@ export function SearchPanel({
       <div
         ref={scrollTo}
         id={listId}
-        role="listbox"
-        aria-label="Results"
+        // A listbox only while it holds options: its hint ("Start typing", "Nothing matches") is plain text, which a
+        // listbox may not hold and a screen reader would skip.
+        role={groups.length > 0 ? 'listbox' : undefined}
+        aria-label={groups.length > 0 ? 'Results' : undefined}
         className="min-h-0 flex-1 overflow-y-auto py-1"
       >
         {groups.map((group) => (
