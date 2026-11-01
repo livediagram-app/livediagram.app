@@ -40,12 +40,12 @@ beforeEach(() => {
 
 const REDIRECT = 'https://client.test/cb';
 
-async function register(): Promise<string> {
+async function register(clientName: unknown = 'Claude'): Promise<string> {
   const res = await app.request(
     '/oauth/register',
     {
       method: 'POST',
-      body: JSON.stringify({ redirect_uris: [REDIRECT], client_name: 'Claude' }),
+      body: JSON.stringify({ redirect_uris: [REDIRECT], client_name: clientName }),
       headers: { 'Content-Type': 'application/json' },
     },
     env,
@@ -194,6 +194,31 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
       redirectHost: 'client.test',
       clientId: expect.any(String),
     });
+  });
+
+  // The name is whatever a client sent, drawn in the consent screen's own sentence: an override in it turned the
+  // words after it backwards, and a blank one read "Connect  wants to act as you".
+  it.each([
+    ['\u202EClaude', 'Claude'],
+    [' \u200BClaude\uFEFF ', 'Claude'],
+    ['\u2067\u2069', 'MCP client'],
+    ['   ', 'MCP client'],
+    [42, 'MCP client'],
+    [`${'a'.repeat(119)}😀`, 'a'.repeat(119)],
+  ])('shows the client name %j as %j', async (sent, shown) => {
+    const session = await startAuthorize(await register(sent));
+    const res = await app.request(`/oauth/session/${session}`, {}, env);
+    expect(await res.json()).toMatchObject({ clientName: shown });
+  });
+
+  it('cleans a name a client registered before names were cleaned', async () => {
+    await env.OAUTH_KV.put(
+      'client:old',
+      JSON.stringify({ redirectUris: [REDIRECT], clientName: '\u202Eevil' }),
+    );
+    const session = await startAuthorize('old');
+    const res = await app.request(`/oauth/session/${session}`, {}, env);
+    expect(await res.json()).toMatchObject({ clientName: 'evil' });
   });
 
   it('404s an unknown or expired session', async () => {
