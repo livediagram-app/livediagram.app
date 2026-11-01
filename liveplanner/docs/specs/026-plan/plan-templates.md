@@ -25,7 +25,8 @@ board of the template shows some, and every plan view on its Dashboard has somet
   Check's Workstream) names the card made with it.
 - **Dates count from today.** Start and Due are days from the day the project is made, so a Gantt chart, a due chip
   and a Calendar never open stale: a project started two weeks ago and due in three.
-- **Archived examples.** Team Retro's **Past Retros** board shows two archived notes from the sprint before.
+- **Archived examples.** Team Retro's **Past Retros** board shows two archived notes from the sprint before, and
+  Meeting Agenda's **Past Meetings** two topics from the meeting before.
 - **They are marked.** Every example card carries the `example` flag ([Items](items.md#example-cards)), so the
   project knows which cards a template made however they have since moved.
 - **Where they are made.** Only where a **person** makes the template: the New Project wizard (the cards ride the
@@ -66,6 +67,10 @@ board of the template shows some, and every plan view on its Dashboard has somet
 
 - **Every Plan template but Blank Plan and the spreadsheet templates makes several tabs**, in the order below; those
   make one, as do the blank and the form templates.
+- **A template may mix boards and a Sheet.** Event Planner's **Guest List**, Sales CRM's **Contacts** and Personal
+  Goals' **Habits** are Sheet tabs among the boards, each filled from its sheet template and filling its tab, made on
+  every path exactly as a [spreadsheet template's](#spreadsheet-templates) Sheet is; the template's Dashboard shows
+  them beside its boards.
 - **Where a person makes one**:
   - **The New Project wizard** makes the project with all the template's tabs, named as the template names
     them; the first is the one that opens.
@@ -130,27 +135,29 @@ The catalogue below still lists, per tab, the metrics, charts and rail it brings
   Role), never a type that would always fall in the "No Role" row.
 - **A board of dated cards has a Gantt chart of them under it**: the chart's card types are the board's
   (`types` on the view), not only Projects.
-- **A ready-made type's Default State** is a state name ([Item types](item-types.md#an-item-type)): for the ten
+- **A ready-made type's Default State** is a state name ([Item types](item-types.md#an-item-type)): for the twelve
   below, the first column of the board it is made for.
 
 ### Ready-made card types
 
-The five default types (Project, Task, Note, Idea, Action: [Items](items.md#item-types)) and these ten. Colours from
+The five default types (Project, Task, Note, Idea, Action: [Items](items.md#item-types)) and these twelve. Colours from
 the Plan palette. Every type also offers Comments, last. Card fields link to the type named. "On the card" is what
 its Detailed cards add Under the Title.
 
-| Type            | Id                | Glyph     | Colour           | Fields                                                                                                                                                                                                      | On the card     | Default State  |
-| --------------- | ----------------- | --------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------- |
-| Bug             | `bug`             | bug       | red `#dc2626`    | A Task's (Parent among them), then **Steps to Reproduce** (Long Text) and **Environment** (Text)                                                                                                            |                 | New            |
-| Story           | `story`           | story     | violet `#7c3aed` | A Task's                                                                                                                                                                                                    |                 | Backlog        |
-| Request         | `request`         | inbox     | orange `#ea580c` | Description, Status, Assignee, Priority, Votes, Labels; **Requested By** (Text)                                                                                                                             | Requested By    | New            |
-| Content         | `content`         | megaphone | pink `#db2777`   | Description, Status, Assignee, Votes, Labels, Due, Checklist; **Channel** (Choice: Blog, Newsletter, Social, Video, Podcast), **Link** (Link)                                                               | Channel         | Ideas          |
-| Role            | `role`            | briefcase | cyan `#0891b2`   | Description, Status, Assignee (the hiring manager), Priority, Colour, Start, Due, Labels; **Team** (Text), **Location** (Text), **Employment** (Choice: Full-time, Part-time, Contract, Internship)         | Team            | Opening Soon   |
-| Candidate       | `candidate`       | user-plus | pink `#db2777`   | Description, Status, Assignee (who looks after them), Labels, Due (the next step), Checklist; **Role** (Card: Role), **Source** (Choice: Referral, Job Board, Inbound, Agency, Sourced), **Profile** (Link) |                 | Applied        |
-| Onboarding Task | `onboarding-task` | checklist | green `#16a34a`  | Description, Status, Assignee, Due, Checklist; **New Starter** (Card: Candidate)                                                                                                                            |                 | Before Day One |
-| Objective       | `objective`       | target    | amber `#d97706`  | Description, Status, Assignee, Priority, Colour, Start, Due, Labels                                                                                                                                         |                 | Draft          |
-| Key Result      | `key-result`      | trend     | teal `#0d9488`   | Description, Status, Assignee, Due, Checklist; **Objective** (Card: Objective), **Baseline**, **Target**, **Current** (Numbers)                                                                             | Current, Target | Not Started    |
-| Launch Check    | `launch-check`    | flag      | green `#16a34a`  | Description, Status, Assignee, Priority; **Workstream** (Card: Project)                                                                                                                                     | Workstream      | Not Checked    |
+| Type            | Id                | Glyph     | Colour           | Fields                                                                                                                                                                                                                             | On the card     | Default State  |
+| --------------- | ----------------- | --------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------- |
+| Bug             | `bug`             | bug       | red `#dc2626`    | A Task's (Parent among them), then **Steps to Reproduce** (Long Text) and **Environment** (Text)                                                                                                                                   |                 | New            |
+| Story           | `story`           | story     | violet `#7c3aed` | A Task's                                                                                                                                                                                                                           |                 | Backlog        |
+| Request         | `request`         | inbox     | orange `#ea580c` | Description, Status, Assignee, Priority, Votes, Labels; **Requested By** (Text)                                                                                                                                                    | Requested By    | New            |
+| Content         | `content`         | megaphone | pink `#db2777`   | Description, Status, Assignee, Votes, Labels, Due, Checklist; **Channel** (Choice: Blog, Newsletter, Social, Video, Podcast), **Link** (Link)                                                                                      | Channel         | Ideas          |
+| Role            | `role`            | briefcase | cyan `#0891b2`   | Description, Status, Assignee (the hiring manager), Priority, Colour, Start, Due, Labels; **Team** (Text), **Location** (Text), **Employment** (Choice: Full-time, Part-time, Contract, Internship)                                | Team            | Opening Soon   |
+| Candidate       | `candidate`       | user-plus | pink `#db2777`   | Description, Status, Assignee (who looks after them), Labels, Due (the next step), Checklist; **Role** (Card: Role), **Source** (Choice: Referral, Job Board, Inbound, Agency, Sourced), **Profile** (Link)                        |                 | Applied        |
+| Onboarding Task | `onboarding-task` | checklist | green `#16a34a`  | Description, Status, Assignee, Due, Checklist; **New Starter** (Card: Candidate)                                                                                                                                                   |                 | Before Day One |
+| Objective       | `objective`       | target    | amber `#d97706`  | Description, Status, Assignee, Priority, Colour, Start, Due, Labels                                                                                                                                                                |                 | Draft          |
+| Key Result      | `key-result`      | trend     | teal `#0d9488`   | Description, Status, Assignee, Due, Checklist; **Objective** (Card: Objective), **Baseline**, **Target**, **Current** (Numbers)                                                                                                    | Current, Target | Not Started    |
+| Launch Check    | `launch-check`    | flag      | green `#16a34a`  | Description, Status, Assignee, Priority; **Workstream** (Card: Project)                                                                                                                                                            | Workstream      | Not Checked    |
+| Deal            | `deal`            | coin      | green `#16a34a`  | Description, Status, Assignee (the deal's owner), Due (the expected close), Checklist, Labels; **Company** (Text), **Value** (Currency, GBP), **Contact** (Text), **Source** (Choice: Inbound, Referral, Outbound, Event, Partner) | Company, Value  | Lead           |
+| Ticket          | `ticket`          | ticket    | blue `#2563eb`   | Description, Status, Assignee, Priority, Due (when it is promised by), Checklist, Labels; **Customer** (Text), **Email** (Email), **Channel** (Choice: Email, Chat, Phone, Form)                                                   | Customer        | New            |
 
 - A Role and an Objective offer Start and Due, so the Gantt chart draws them; a Candidate's Role, a Key Result's
   Objective and an Onboarding Task's New Starter are what their boards lay their rows by.
@@ -293,6 +300,91 @@ Requests from users, voted on and reviewed, and the ones planned followed to shi
 - How this works: add each request as a Request; vote on what matters; review the top voted each week; Planned
   moves it to Delivery.
 
+### Event Planner
+
+An event's workstreams on a timeline, the tasks under each, and the guest list, with what is due on a calendar.
+
+| Tab        | Holds                                                                                                                                                                             |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Timeline   | Board **Workstreams**: Planned, In Progress, At Risk (red), Confirmed (green, done); Projects (one per workstream: Venue, Catering...); start and due dates. Gantt Chart under it |
+| Tasks      | Board **Tasks**: To Do, Doing, Waiting On (amber), Done (done); a row per workstream (Parent); Tasks; due dates. Due Soon, Completion, Unassigned; Due Calendar. How this works   |
+| Guest List | Sheet **Guest List**, filling the tab: the Guest List sheet template (invitations, RSVPs, plus-ones and dietary needs, the headcount and a pie chart)                             |
+| Overview   | Dashboard: the views and note above, beside each tab                                                                                                                              |
+
+- How this works: add a Workstream for each part of the event (venue, catering, speakers), with its dates; break each
+  into Tasks on Tasks, under its workstream; keep the Guest List as replies come in; watch what is due on Overview.
+
+### Sales CRM
+
+Deals moved from lead to won, each with its company and value, the people behind them on a contact list, and the
+pipeline on a dashboard.
+
+| Tab      | Holds                                                                                                                                                                                |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Deals    | Board **Deals**: Lead, Qualified, Proposal, Negotiation (amber), Won (green, done), Lost; a row per person (the deal's owner); Deals; due dates (the expected close). How this works |
+| Contacts | Sheet **Contacts**, filling the tab: the Contacts sheet template (people with stages, days since contact and who is due a follow-up)                                                 |
+| Overview | Dashboard: Item Count, Completion, People, Stale Cards; Cards by Field and Due Calendar, beside each tab                                                                             |
+
+- How this works: add a Deal for each opportunity, with its company and value; move it along as it progresses; set
+  Due to when you expect it to close; keep the people you speak to on Contacts.
+
+### Help Desk
+
+A support queue: tickets by priority from new to closed, and the help articles they lead to.
+
+| Tab            | Holds                                                                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tickets        | Board **Tickets**: New, Open, Waiting on Customer (amber), Resolved (green, done), Closed; a row per priority; Tickets; due dates. How we work the queue |
+| Knowledge Base | Board **Knowledge Base**: To Write, Drafting, In Review, Published (done); Notes (one per article); labels                                               |
+| Overview       | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status and Cards by Field, beside each tab                                       |
+
+- How we work the queue: every new ticket gets an owner and a priority; urgent first, then the oldest; Waiting on
+  Customer while you need their reply; Resolved once they confirm, Closed a week later; a question asked twice
+  becomes an article on Knowledge Base.
+
+### Meeting Agenda
+
+A recurring meeting's topics, voted into order and discussed one at a time, the actions they lead to, and past
+meetings archived.
+
+| Tab      | Holds                                                                                                                                                                  |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Agenda   | Board **Agenda**: To Discuss, Discussing (WIP 1), Discussed (done); Notes (one per topic); votes. How we run it, a 10 minute timer and a **Vote** button (3 dots each) |
+| Actions  | Board **Actions**: To Do, Doing, Done (done); Actions only; a row per person; due dates                                                                                |
+| Archive  | An Archive board, **Past Meetings**                                                                                                                                    |
+| Overview | Dashboard: the note above, beside each tab                                                                                                                             |
+
+- How we run it: add topics to To Discuss before the meeting; press Vote (3 dots each) to put them in order; take one
+  topic at a time into Discussing; write the decision in a comment; turn every follow-up into an Action; archive the
+  topics when done.
+
+### Personal Goals
+
+A person's goals for the year, the key results that show progress on each, and the daily habits behind them.
+
+| Tab         | Holds                                                                                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Goals       | Board **Goals**: Someday, This Year, Working On (teal), Achieved (green, done); Objectives; start and due dates. Gantt Chart of the Objectives under it        |
+| Key Results | Board **Key Results**: Not Started, On Track (green), Behind (amber), Done (done); a row per goal (Objective); Key Results; checklist progress. How this works |
+| Habits      | Sheet **Habit Tracker**, filling the tab: the Habit Tracker sheet template (a week of ticks against each habit's goal and a bar chart)                         |
+| Overview    | Dashboard: the chart and note above, beside each tab                                                                                                           |
+
+- How this works: write each goal on Goals, with when you want it by; give it two or three Key Results you can
+  measure; each Sunday, update every key result's Current; tick your habits on Habits each day.
+
+### Study Planner
+
+A student's coursework and revision, by subject, with every deadline on a calendar.
+
+| Tab         | Holds                                                                                                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Assignments | Board **Assignments**: To Do, In Progress, Submitted (teal, done), Graded (green); Tasks, labelled by subject; due dates and checklists |
+| Revision    | Board **Revision**: Not Started, Revising (amber), Confident (green, done); Notes (one per topic), labelled by subject. How this works  |
+| Calendar    | Dashboard: Due Soon, Completion, Item Count; Due Calendar across the full width                                                         |
+
+- How this works: add each assignment with its subject as a label and its due date; break big ones into steps on its
+  checklist; add a card per exam topic on Revision; move a topic to Confident once you can explain it without notes.
+
 ## Spreadsheet templates
 
 Twelve Plan templates are a spreadsheet rather than boards: each makes its tabs with a **Sheet** already filled from one
@@ -331,8 +423,9 @@ templates, and bring no card types. Whether the Sheet fills its tab is decided p
   is there for everyone, an agent's `read_sheet` included, the moment the project is.
 - The eight added with the template catalogue's categories (Invoice, Expense Report, Loan Calculator, Sales Pipeline,
   Inventory, Guest List, Grade Book, Habit Tracker) each make the sheet template of the same name, filling its tab;
-  the four Money sheets and the Sales Pipeline sit in the picker's **Finance** category, the rest in
-  **Spreadsheets** ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
+  each sits in the category of the job it does (Inventory with the Money sheets in **Finance**, Guest List in
+  **Events**, Grade Book in **Education**), as every template does
+  ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 - Start Planning's **Inspiration** leaves out the spreadsheet templates that make one tab: each is one Sheet that
   Start Planning's **Spreadsheets** already offers as a sheet template, so it would show the same thing twice. One
   that sets up more tabs (Task Tracker, its Sheet and an Overview) stays in it

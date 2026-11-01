@@ -20,7 +20,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **built-in field**  | A field liveplanner knows by its own id (`assignee`, `due`, `labels`...), which the features using that role read; one per type     | ready-made field, preset    |
 | **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards           | (no other name)             |
 | **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a project made before card types started empty reads as | built-in types              |
-| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the ten more a template uses                  | preset type, built-in type  |
+| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the twelve more a template uses               | preset type, built-in type  |
 | **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                | parent type, super type     |
 | **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own             | subtype, child type         |
 

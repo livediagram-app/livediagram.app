@@ -71,7 +71,43 @@ describe('plan templates', () => {
       'guest-list': ['Guest List'],
       'grade-book': ['Grade Book'],
       'habit-tracker': ['Habit Tracker'],
+      'event-planner': ['Timeline', 'Tasks', 'Guest List'],
+      'sales-crm': ['Deals', 'Contacts'],
+      'help-desk': ['Tickets', 'Knowledge Base'],
+      'meeting-agenda': ['Agenda', 'Actions', 'Archive'],
+      'personal-goals': ['Goals', 'Key Results', 'Habits'],
+      'study-planner': ['Assignments', 'Revision', 'Calendar'],
     });
+  });
+
+  // docs/specs/026-plan/plan-templates.md "How a template with tabs is made": a Sheet tab among the boards.
+  it('makes the use-case templates’ tabs in their kinds, a Sheet tab among the boards and the Overview last', () => {
+    const kinds = (kind: (typeof PLAN_TEMPLATE_KINDS)[number]) => {
+      const ids = planTemplateTabs(kind).map((_, i) => `t${i}`);
+      return planTemplateTabs(kind).map((d) => [d.name, d.tab?.(ids).kind]);
+    };
+    expect(kinds('event-planner')).toEqual([
+      ['Timeline', 'board'],
+      ['Tasks', 'board'],
+      ['Guest List', 'sheet'],
+      ['Overview', 'dashboard'],
+    ]);
+    expect(kinds('sales-crm')).toEqual([
+      ['Deals', 'board'],
+      ['Contacts', 'sheet'],
+      ['Overview', 'dashboard'],
+    ]);
+    expect(kinds('personal-goals').map(([, k]) => k)).toEqual([
+      'board',
+      'board',
+      'sheet',
+      'dashboard',
+    ]);
+    expect(kinds('study-planner').map(([, k]) => k)).toEqual(['board', 'board', 'dashboard']);
+    expect(kinds('meeting-agenda').at(-1)).toEqual(['Overview', 'dashboard']);
+    expect(kinds('help-desk').at(-1)).toEqual(['Overview', 'dashboard']);
+    for (const kind of ['event-planner', 'sales-crm', 'personal-goals'] as const)
+      expect(planTemplateTabCount(kind), kind).toBe(planTemplateTabs(kind).length);
   });
 
   it('make a set-up that survives normaliseBoardSetup unchanged', () => {
@@ -237,6 +273,12 @@ describe('plan templates', () => {
     expect(takes('feedback-board')).toEqual([['request'], ['request', 'task']]);
     expect(takes('content-calendar')).toEqual([['content'], ['content', 'task']]);
     expect(takes('product-launch')).toEqual([['project'], ['task'], ['launch-check']]);
+    expect(takes('event-planner')).toEqual([['project'], ['task']]);
+    expect(takes('sales-crm')).toEqual([['deal']]);
+    expect(takes('help-desk')).toEqual([['ticket'], ['note']]);
+    expect(takes('meeting-agenda')).toEqual([['note'], ['action'], undefined]);
+    expect(takes('personal-goals')).toEqual([['objective'], ['key-result']]);
+    expect(takes('study-planner')).toEqual([['task'], ['note']]);
   });
 
   // docs/specs/026-plan/plan-tabs.md "Templates": a Board tab per board, a Sheet tab per Sheet, and a Dashboard.

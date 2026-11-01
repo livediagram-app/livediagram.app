@@ -101,9 +101,10 @@ export const mcpListTemplates = mcpTool('list_templates', {
   title: 'List templates',
   description:
     'Browse the template library: the Plan templates the editor offers (kanban, project planner, bug ' +
-    'triage, sprint boards, budget sheets, forms, ...). Returns categories plus { kind, title, ' +
-    'description, category } per template. Pass a kind as "template" on create_project or add_tab to ' +
-    'start a plan or a tab from it.',
+    'triage, sales CRM, help desk, event planner, budget sheets, ...), in categories by what the work ' +
+    'is for (sales, customer support, events, hiring, personal, ...). Returns categories plus { kind, ' +
+    'title, description, category } per template. Pass a kind as "template" on create_project or ' +
+    'add_tab to start a plan or a tab from it.',
   inputSchema: {},
   outputSchema: listTemplatesOutput,
 });

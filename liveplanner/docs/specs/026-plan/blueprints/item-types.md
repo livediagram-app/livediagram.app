@@ -933,7 +933,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 
 `ITEM_TYPES` (the default types): `project` (#18181b), `task` (#71717a), `note` (#2563eb), `idea` (#eab308),
 `action` (#dc2626). `READY_MADE_CARD_TYPES` (`packages/items/src/brought-types.ts`, pure data, the table in
-[Plan templates](../plan-templates.md#ready-made-card-types)) is those five then the ten more. Presets set the types
+[Plan templates](../plan-templates.md#ready-made-card-types)) is those five then the twelve more. Presets set the types
 a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug Triage: Bugs, Roadmap: Projects).
 
 - `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`; nothing for one that names none (Blank), Archive or

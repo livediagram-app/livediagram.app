@@ -309,7 +309,9 @@ passes every element of every template, so a tab read back as JSON writes again 
 Browse the template library: the same hand-tuned catalogue the editor's
 template starts ship ([Canvas and palette](../008-canvas/canvas-and-palette.md)), served from the shared
 `@liveplanner/templates` package so the worker and the editor can't drift.
-No input. Returns the categories plus one row per template:
+No input. Returns the categories (grouped by what the work is for: Customer Support, Events, Sales and the rest,
+[Template categories](../008-canvas/canvas-and-palette.md#template-categories), in display order, only those holding
+a template it lists, then `blanks`) plus one row per template:
 `{ kind, title, description, category }`, enough for the model to pick a
 `kind` and pass it as `template` on `create_project` / `add_tab` (a template of several tabs, such as the
 Plan templates and the three with a companion Sheet, adds them all on `create_project`, the first named as given; `add_tab` takes its first;
