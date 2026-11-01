@@ -186,6 +186,12 @@ describe('elementRole', () => {
       'agenda',
       'quiz',
       'reaction-pad',
+      'estimate',
+      'idea-box',
+      'done-check',
+      'comment-pin',
+      'action-card',
+      'page',
     ])
       expect(elementRole(shape(kind))).toBe('group');
     expect(
@@ -209,5 +215,12 @@ describe('elementRole', () => {
         height: 1,
       } as unknown as Element),
     ).toBe('group');
+  });
+
+  // Indicator buttons (a note, a link, an action, comments) are controls on any element's face: axe's
+  // nested-interactive, and unreachable inside a picture.
+  it('makes an element showing indicator buttons a group', () => {
+    expect(elementRole(shape('square'), true)).toBe('group');
+    expect(elementRole(shape('square'), false)).toBe('img');
   });
 });
