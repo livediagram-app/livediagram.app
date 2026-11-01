@@ -16,6 +16,8 @@ const DIRS = [
   'lib',
   // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
   '../../../packages/workbench/src',
+  // Avatar mode's shared code (@liveworkspace/avatar) renders here too.
+  '../../../packages/avatar/src',
 ];
 // JSX text on the tag's line (`<p>No links yet.</p>`) or wrapped onto its own line by Prettier.
 const BARE_EMPTY = [

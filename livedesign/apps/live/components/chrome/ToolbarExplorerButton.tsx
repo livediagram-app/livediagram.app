@@ -22,9 +22,12 @@ export function ToolbarExplorerButton({
   open,
   onToggle,
   inline = false,
+  joinedWidth,
 }: {
   open: boolean;
   inline?: boolean;
+  // Heading Pages mode's docked Contents sidebar (ToolbarMenuCard).
+  joinedWidth?: number;
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
 }) {
@@ -50,7 +53,12 @@ export function ToolbarExplorerButton({
     </button>
   );
   return (
-    <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
+    <ToolbarMenuCard
+      inline={inline}
+      dockButton
+      tourId="dock-explorer"
+      {...(joinedWidth === undefined ? {} : { joinedWidth })}
+    >
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
       {button}
       {/* The open tab's name (not on a phone). */}

@@ -21,18 +21,18 @@ the tables, configuration, logs and tests. Each feature has its own file:
 
 ## Domain and naming
 
-| Term       | Identifier                                                         | Meaning                                                                       |
-| ---------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| App        | `App`: `livediagram`, `liveplanner`, `livedocuments`, `livedesign` | Each makes one `Kind`: `canvas`, `plan`, `document`, `design`                 |
-| Item       | `items` row, id a UUID (or one the client minted)                  | One Canvas, Plan, Document or Design; its content stays in its app            |
-| Scope      | `p:<owner id>` or `t:<team id>`                                    | The space an item or folder lives in; every list walks an index starting here |
-| Person     | `Person { id, kind, teams, app?, drive? }`                         | Who a request acts for                                                        |
-| Access     | `Access { level, tabId, via, code, public? }`                      | `via`: `owner`, `team` or `link`                                              |
-| Level      | `view` < `participate` < `edit`                                    | `levelAtLeast(have, need)`                                                    |
-| Grant      | ES256 JWT, 10 minutes                                              | The index's word that someone may open an item                                |
-| Share code | 14 characters of `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`                | A link; any `[A-Za-z0-9]{4,64}` is read, upper-cased                          |
-| Id         | `^[A-Za-z0-9_-]{1,128}$` (`isId`)                                  | Items, folders, teams, people; a part id (`isPartId`) is any 1 to 128 chars   |
-| Cursor     | base64url of `[at, id]`, at most 400 chars                         | Keyset paging                                                                 |
+| Term       | Identifier                                                                       | Meaning                                                                       |
+| ---------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| App        | `App`: `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, `livehuddle` | Each makes one `Kind`: `canvas`, `plan`, `document`, `design`, `space`        |
+| Item       | `items` row, id a UUID (or one the client minted)                                | One Canvas, Plan, Document or Design; its content stays in its app            |
+| Scope      | `p:<owner id>` or `t:<team id>`                                                  | The space an item or folder lives in; every list walks an index starting here |
+| Person     | `Person { id, kind, teams, app?, drive? }`                                       | Who a request acts for                                                        |
+| Access     | `Access { level, tabId, via, code, public? }`                                    | `via`: `owner`, `team` or `link`                                              |
+| Level      | `view` < `participate` < `edit`                                                  | `levelAtLeast(have, need)`                                                    |
+| Grant      | ES256 JWT, 10 minutes                                                            | The index's word that someone may open an item                                |
+| Share code | 14 characters of `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`                              | A link; any `[A-Za-z0-9]{4,64}` is read, upper-cased                          |
+| Id         | `^[A-Za-z0-9_-]{1,128}$` (`isId`)                                                | Items, folders, teams, people; a part id (`isPartId`) is any 1 to 128 chars   |
+| Cursor     | base64url of `[at, id]`, at most 400 chars                                       | Keyset paging                                                                 |
 
 ## Behaviour and state
 
@@ -350,6 +350,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Var `APP_ORIGIN_LIVEPLANNER`             | `https://www.liveplanner.app`                                      |
 | Var `APP_ORIGIN_LIVEDOCUMENTS`           | `https://www.livedocuments.app`                                    |
 | Var `APP_ORIGIN_LIVEDESIGN`              | `https://www.livedesign.app`                                       |
+| Var `APP_ORIGIN_LIVEHUDDLE`              | `https://www.livehuddle.app`                                       |
 
 **`env.staging`**
 
@@ -370,8 +371,9 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Var `APP_ORIGIN_LIVEPLANNER`             | `https://staging.liveplanner.app`                      |
 | Var `APP_ORIGIN_LIVEDOCUMENTS`           | `https://staging.livedocuments.app`                    |
 | Var `APP_ORIGIN_LIVEDESIGN`              | `https://staging.livedesign.app`                       |
+| Var `APP_ORIGIN_LIVEHUDDLE`              | `https://staging.livehuddle.app`                       |
 
-Env fields (`env.ts`): `ACCOUNTS_URL`, `APP_ORIGIN_LIVEDESIGN`, `APP_ORIGIN_LIVEDIAGRAM`, `APP_ORIGIN_LIVEDOCUMENTS`, `APP_ORIGIN_LIVEPLANNER`, `DRIVE_KEY_INDEX`, `ENVIRONMENT`, `GRANT_SIGNING_KEY`, `INDEX_AUDIENCES`, `INDEX_ENABLED`, `INDEX_KEY_DRIVE`, `INDEX_KEY_LIVEDESIGN`, `INDEX_KEY_LIVEDIAGRAM`, `INDEX_KEY_LIVEDOCUMENTS`, `INDEX_KEY_LIVEPLANNER`, `MERGE_KEY`.
+Env fields (`env.ts`): `ACCOUNTS_URL`, `APP_ORIGIN_LIVEDESIGN`, `APP_ORIGIN_LIVEDIAGRAM`, `APP_ORIGIN_LIVEDOCUMENTS`, `APP_ORIGIN_LIVEHUDDLE`, `APP_ORIGIN_LIVEPLANNER`, `DRIVE_KEY_INDEX`, `ENVIRONMENT`, `GRANT_SIGNING_KEY`, `INDEX_AUDIENCES`, `INDEX_ENABLED`, `INDEX_KEY_DRIVE`, `INDEX_KEY_LIVEDESIGN`, `INDEX_KEY_LIVEDIAGRAM`, `INDEX_KEY_LIVEDOCUMENTS`, `INDEX_KEY_LIVEHUDDLE`, `INDEX_KEY_LIVEPLANNER`, `MERGE_KEY`.
 
 ## Data and persistence
 
@@ -419,149 +421,149 @@ Migrations, in order:
 
 ## Constants and configuration: named constants
 
-| Constant                        | Value                                                                    | File                                  |
-| ------------------------------- | ------------------------------------------------------------------------ | ------------------------------------- |
-| `ANONYMISED_PERSON`             | `'deleted'`                                                              | `account-purge.ts`                    |
-| `CHUNK`                         | `500`                                                                    | `account-purge.ts`                    |
-| `LINGER_MS`                     | `2 * 60 * 60 * 1000`                                                     | `account-purge.ts`                    |
-| `FREQUENT_CRON`                 | `'*/15 * * * *'`                                                         | `account-purge.ts`                    |
-| `TOMBSTONES_PER_FREQUENT_RUN`   | `300`                                                                    | `account-purge.ts`                    |
-| `TOMBSTONE_RETRY_AFTER_MS`      | `60 * 60 * 1000`                                                         | `account-purge.ts`                    |
-| `CALL_BUDGET`                   | `{ ms: 5_000, calls: 300 }`                                              | `account-purge.ts`                    |
-| `CRON_BUDGET`                   | `{ ms: 30_000, calls: 300 }`                                             | `account-purge.ts`                    |
-| `DRIVE_DELEGATE`                | `'drive'`                                                                | `auth.ts`                             |
-| `SHARE_CODE_LENGTH`             | `14`                                                                     | `codec.ts`                            |
-| `D1_COMPOUND_MAX`               | `5`                                                                      | `packages/api-kit/src/d1-compound.ts` |
-| `API_PATH`                      | `INDEX_API_PATH`                                                         | `config.ts`                           |
-| `MAX_BODY_BYTES`                | `512 * 1024`                                                             | `config.ts`                           |
-| `ID_MAX`                        | `128`                                                                    | `config.ts`                           |
-| `INTENT_MAX`                    | `100`                                                                    | `config.ts`                           |
-| `DEFAULT_KEY_MAX`               | `100`                                                                    | `config.ts`                           |
-| `JWKS_MAX_AGE_S`                | `300`                                                                    | `config.ts`                           |
-| `SWEEP_ITEMS_MAX`               | `500`                                                                    | `config.ts`                           |
-| `TOMBSTONES_PER_RUN`            | `200`                                                                    | `config.ts`                           |
-| `EMPTY_SWEEP_MAX`               | `1000`                                                                   | `config.ts`                           |
-| `PURGE_NOW_MAX`                 | `25`                                                                     | `config.ts`                           |
-| `APP_CALL_CONCURRENCY`          | `6`                                                                      | `config.ts`                           |
-| `APP_CALL_TIMEOUT_MS`           | `10_000`                                                                 | `config.ts`                           |
-| `HANDOFF_MAX_BYTES`             | `32 * 1024 * 1024`                                                       | `config.ts`                           |
-| `HANDOFF_APP_TIMEOUT_MS`        | `30_000`                                                                 | `config.ts`                           |
-| `INBOX_LIMIT_DEFAULT`           | `100`                                                                    | `config.ts`                           |
-| `OPEN_MEMORY_MAX`               | `5_000`                                                                  | `config.ts`                           |
-| `PASSWORD_MEMORY_MAX`           | `1_000`                                                                  | `config.ts`                           |
-| `SHARE_GUESS_RETRY_AFTER_S`     | `60`                                                                     | `config.ts`                           |
-| `SHARE_PASSWORD_ITERATIONS`     | `100_000`                                                                | `password-hash.ts`                    |
-| `PERSON_ITEMS_PER_CALL`         | `100`                                                                    | `person-notices.ts`                   |
-| `NOTICE_RETRY_AFTER_MS`         | `60 * 60 * 1000`                                                         | `person-notices.ts`                   |
-| `NOTICE_GIVE_UP_MS`             | `7 * 24 * 60 * 60 * 1000`                                                | `person-notices.ts`                   |
-| `LOOSE_EVENTS_SWEEP_MAX`        | `1000`                                                                   | `purge.ts`                            |
-| `ITEM_COLUMNS`                  | `'i.id, i.app, i.kind, i.owner_id, i.team_id, i.scope, i.fold…`          | `rows.ts`                             |
-| `LIVE_LINK`                     | `(alias: string) =>`                                                     | `rows.ts`                             |
-| `EXPIRY_SWEEP_MAX`              | `2_000`                                                                  | `share-expiry.ts`                     |
-| `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                          | `timeline.ts`                         |
-| `WORKBENCH_CLOSE_MAX_ITEMS`     | `500`                                                                    | `workbench-close.ts`                  |
-| `WORKBENCH_CLOSE_CONCURRENCY`   | `10`                                                                     | `workbench-close.ts`                  |
-| `GUEST_TOKEN_REFRESH_BEFORE_MS` | `30 * 24 * 3600 * 1000`                                                  | `guest-token.ts`                      |
-| `GUEST_HANDOFF_BACKOFF_MS`      | `5 * 60_000`                                                             | `guest-token.ts`                      |
-| `GRANT_RENEW_BEFORE_MS`         | `60_000`                                                                 | `item-grants.ts`                      |
-| `GRANT_REFUSAL_MEMORY_MS`       | `30_000`                                                                 | `item-grants.ts`                      |
-| `GRANT_RETRY_MS`                | `15_000`                                                                 | `item-grants.ts`                      |
-| `GRANTS_HELD_MAX`               | `32`                                                                     | `item-grants.ts`                      |
-| `APPS`                          | `['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const` | `constants.ts`                        |
-| `KINDS`                         | `['canvas', 'plan', 'document', 'design'] as const`                      | `constants.ts`                        |
-| `APP_KINDS`                     | `(object or list, see file)`                                             | `constants.ts`                        |
-| `LEVELS`                        | `['view', 'participate', 'edit'] as const`                               | `constants.ts`                        |
-| `FOLDER_PREVIEW_IDS_MAX`        | `60`                                                                     | `constants.ts`                        |
-| `FOLDER_PREVIEW_ITEMS`          | `4`                                                                      | `constants.ts`                        |
-| `FOLDER_PREVIEW_COUNT_CAP`      | `1000`                                                                   | `constants.ts`                        |
-| `INDEX_API_PATH`                | `'/api/index'`                                                           | `constants.ts`                        |
-| `INDEX_API_URL`                 | `https://www.liveworkspace.app${INDEX_API_PATH}`                         | `constants.ts`                        |
-| `INDEX_APP_HEADER`              | `'X-Index-App'`                                                          | `constants.ts`                        |
-| `INDEX_PERSON_HEADER`           | `'X-Index-Person'`                                                       | `constants.ts`                        |
-| `INDEX_TEAMS_HEADER`            | `'X-Index-Teams'`                                                        | `constants.ts`                        |
-| `DELEGATED_TEAMS_MAX`           | `50`                                                                     | `constants.ts`                        |
-| `ITEM_GRANT_HEADER`             | `'X-Index-Grant'`                                                        | `constants.ts`                        |
-| `SHARE_CODE_HEADER`             | `'X-Share-Code'`                                                         | `constants.ts`                        |
-| `SHARE_PASSWORD_HEADER`         | `'X-Share-Password'`                                                     | `constants.ts`                        |
-| `GRANT_LIFETIME_S`              | `600`                                                                    | `constants.ts`                        |
-| `GRANT_RENEW_BEFORE_S`          | `60`                                                                     | `constants.ts`                        |
-| `GRANT_ALG`                     | `'ES256'`                                                                | `constants.ts`                        |
-| `GRANT_ISSUER`                  | `INDEX_API_URL`                                                          | `constants.ts`                        |
-| `GRANT_JWKS_URL`                | `${INDEX_API_URL}/jwks`                                                  | `constants.ts`                        |
-| `LIST_LIMIT_DEFAULT`            | `50`                                                                     | `constants.ts`                        |
-| `LIST_LIMIT_MAX`                | `200`                                                                    | `constants.ts`                        |
-| `SUMMARY_MAX_BYTES`             | `2048`                                                                   | `constants.ts`                        |
-| `COLLAB_MAX_THREADS`            | `500`                                                                    | `constants.ts`                        |
-| `COLLAB_MAX_ACTIONS`            | `500`                                                                    | `constants.ts`                        |
-| `COLLAB_CARDS_TAB`              | `'~cards'`                                                               | `constants.ts`                        |
-| `TITLE_MAX`                     | `500`                                                                    | `constants.ts`                        |
-| `FOLDER_NAME_MAX`               | `500`                                                                    | `constants.ts`                        |
-| `SHARE_PASSWORD_MAX`            | `256`                                                                    | `constants.ts`                        |
-| `SHARE_PASSWORD_MIN`            | `6`                                                                      | `constants.ts`                        |
-| `SHARE_LINKS_PER_ITEM`          | `100`                                                                    | `constants.ts`                        |
-| `SEARCH_MAX`                    | `200`                                                                    | `constants.ts`                        |
-| `SEARCH_WORDS_MAX`              | `16`                                                                     | `constants.ts`                        |
-| `FILTER_VALUES_MAX`             | `8`                                                                      | `constants.ts`                        |
-| `INTENT_WORD`                   | `/^[a-z0-9-]{1,32}$/`                                                    | `constants.ts`                        |
-| `ITEM_OWNERS`                   | `['me', 'others'] as const`                                              | `constants.ts`                        |
-| `TRASH_RETENTION_MS`            | `30 * 24 * 60 * 60 * 1000`                                               | `constants.ts`                        |
-| `EMPTY_ITEM_STALE_MS`           | `30 * 24 * 60 * 60 * 1000`                                               | `constants.ts`                        |
-| `OPEN_DEBOUNCE_MS`              | `60 * 1000`                                                              | `constants.ts`                        |
-| `USE_WINDOW_DAYS`               | `90`                                                                     | `constants.ts`                        |
-| `MOST_USED_MAX`                 | `8`                                                                      | `constants.ts`                        |
-| `ITEM_TIMELINE_EVENT_TYPES`     | `(object or list, see file)`                                             | `constants.ts`                        |
-| `PERSON_TIMELINE_EVENT_TYPES`   | `['image_uploaded', 'taken_offline'] as const`                           | `constants.ts`                        |
-| `ACCOUNT_TIMELINE_EVENT_TYPES`  | `(object or list, see file)`                                             | `constants.ts`                        |
-| `TIMELINE_EVENT_TYPES`          | `(object or list, see file)`                                             | `constants.ts`                        |
-| `APP_TIMELINE_EVENT_TYPES`      | `['edited'] as const`                                                    | `constants.ts`                        |
-| `APP_PERSON_EVENT_TYPES`        | `['image_uploaded'] as const`                                            | `constants.ts`                        |
-| `TIMELINE_PLATFORM`             | `'liveworkspace' as const`                                               | `constants.ts`                        |
-| `ACCOUNT_EVENT_SCOPES_MAX`      | `250`                                                                    | `constants.ts`                        |
-| `SHARE_EXPIRY_WARNING_MS`       | `7 * 24 * 60 * 60 * 1000`                                                | `constants.ts`                        |
-| `ACCOUNT_EVENT_AHEAD_MS`        | `8 * 24 * 60 * 60 * 1000`                                                | `constants.ts`                        |
-| `COLLAB_EVENTS_MAX`             | `100`                                                                    | `constants.ts`                        |
-| `TIMELINE_PAGE`                 | `30`                                                                     | `constants.ts`                        |
-| `TIMELINE_LIMIT_MAX`            | `100`                                                                    | `constants.ts`                        |
-| `APP_EVENTS_MAX`                | `100`                                                                    | `constants.ts`                        |
-| `TIMELINE_DISMISS_MAX`          | `100`                                                                    | `constants.ts`                        |
-| `TIMELINE_NEW_CAP`              | `99`                                                                     | `constants.ts`                        |
-| `SHARE_LINK_EXPIRIES`           | `['never', 'week', 'month', 'sixMonths'] as const`                       | `constants.ts`                        |
-| `SHARE_LINK_EXPIRY_MS`          | `(object or list, see file)`                                             | `constants.ts`                        |
-| `DEFAULT_LINK_LEVEL`            | `'edit'`                                                                 | `constants.ts`                        |
-| `ITEM_SOURCES`                  | `['person', 'ai', 'import', 'template'] as const`                        | `constants.ts`                        |
-| `ITEM_VIEWS`                    | `(object or list, see file)`                                             | `constants.ts`                        |
-| `INDEX_ERRORS`                  | `(object or list, see file)`                                             | `constants.ts`                        |
-| `OWNED_COUNT_MAX`               | `1000`                                                                   | `notices.ts`                          |
-| `ANONYMISED_PERSON`             | `'deleted'`                                                              | `anonymise.ts`                        |
-| `ANONYMISED_NAME`               | `'Deleted account'`                                                      | `anonymise.ts`                        |
-| `FORM_PLACE_TTL_MS`             | `60_000`                                                                 | `forms.ts`                            |
-| `FORM_PLACE_CACHE_MAX`          | `1_000`                                                                  | `forms.ts`                            |
-| `IMAGE_GRANT_SCHEMA`            | `(object or list, see file)`                                             | `image-grants.ts`                     |
-| `JOINED_TELEMETRY_TYPE`         | `(object or list, see file)`                                             | `internal.ts`                         |
-| `EXPORT_FORMATS`                | `['svg', 'file'] as const`                                               | `internal.ts`                         |
-| `IMPORT_MAX_BYTES`              | `32 * 1024 * 1024`                                                       | `internal.ts`                         |
-| `IMPORT_NAME_MAX`               | `1000`                                                                   | `internal.ts`                         |
-| `PERSON_ITEMS_MAX`              | `100`                                                                    | `internal.ts`                         |
-| `MIGRATION_MAX_BYTES`           | `IMPORT_MAX_BYTES`                                                       | `internal.ts`                         |
-| `LIST_PAGES`                    | `5`                                                                      | `lists.ts`                            |
-| `NOTIFY_QUOTA_KIND`             | `'notify-email'`                                                         | `notify-claims.ts`                    |
-| `FLUSH_IDLE_MS`                 | `2_000`                                                                  | `outbox.ts`                           |
-| `FLUSH_MIN_GAP_MS`              | `60_000`                                                                 | `outbox.ts`                           |
-| `FLUSH_RETRY_MS`                | `60_000`                                                                 | `outbox.ts`                           |
-| `DRAIN_TABS`                    | `50`                                                                     | `outbox.ts`                           |
-| `PUSH_CONCURRENCY`              | `6`                                                                      | `outbox.ts`                           |
-| `ROOM_PURGE_TIMEOUT_MS`         | `3_000`                                                                  | `purge.ts`                            |
-| `ROOM_PURGE_CONCURRENCY`        | `10`                                                                     | `purge.ts`                            |
-| `BULK_PURGE_MAX`                | `100`                                                                    | `purge.ts`                            |
-| `ROOM_GRANT_MAX_LENGTH`         | `8192`                                                                   | `room-ticket.ts`                      |
-| `GRANT_CACHE_MAX`               | `1000`                                                                   | `service.ts`                          |
-| `MAX_TAB_HOLDERS`               | `20`                                                                     | `tab-shares.ts`                       |
-| `DRAIN_SHARES`                  | `50`                                                                     | `tab-shares.ts`                       |
-| `ITEM_TABS_SEGMENT`             | `'tabs'`                                                                 | `tabs.ts`                             |
-| `MISS_RECHECK_MS`               | `2_000`                                                                  | `teams.ts`                            |
-| `FRESH_TEAMS_MS`                | `30_000`                                                                 | `teams.ts`                            |
-| `TEAM_NAME_MAX`                 | `80`                                                                     | `teams.ts`                            |
-| `TEAM_ORGANISATION_MAX`         | `80`                                                                     | `teams.ts`                            |
+| Constant                        | Value                                                                                  | File                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------- |
+| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `account-purge.ts`                    |
+| `CHUNK`                         | `500`                                                                                  | `account-purge.ts`                    |
+| `LINGER_MS`                     | `2 * 60 * 60 * 1000`                                                                   | `account-purge.ts`                    |
+| `FREQUENT_CRON`                 | `'*/15 * * * *'`                                                                       | `account-purge.ts`                    |
+| `TOMBSTONES_PER_FREQUENT_RUN`   | `300`                                                                                  | `account-purge.ts`                    |
+| `TOMBSTONE_RETRY_AFTER_MS`      | `60 * 60 * 1000`                                                                       | `account-purge.ts`                    |
+| `CALL_BUDGET`                   | `{ ms: 5_000, calls: 300 }`                                                            | `account-purge.ts`                    |
+| `CRON_BUDGET`                   | `{ ms: 30_000, calls: 300 }`                                                           | `account-purge.ts`                    |
+| `DRIVE_DELEGATE`                | `'drive'`                                                                              | `auth.ts`                             |
+| `SHARE_CODE_LENGTH`             | `14`                                                                                   | `codec.ts`                            |
+| `D1_COMPOUND_MAX`               | `5`                                                                                    | `packages/api-kit/src/d1-compound.ts` |
+| `API_PATH`                      | `INDEX_API_PATH`                                                                       | `config.ts`                           |
+| `MAX_BODY_BYTES`                | `512 * 1024`                                                                           | `config.ts`                           |
+| `ID_MAX`                        | `128`                                                                                  | `config.ts`                           |
+| `INTENT_MAX`                    | `100`                                                                                  | `config.ts`                           |
+| `DEFAULT_KEY_MAX`               | `100`                                                                                  | `config.ts`                           |
+| `JWKS_MAX_AGE_S`                | `300`                                                                                  | `config.ts`                           |
+| `SWEEP_ITEMS_MAX`               | `500`                                                                                  | `config.ts`                           |
+| `TOMBSTONES_PER_RUN`            | `200`                                                                                  | `config.ts`                           |
+| `EMPTY_SWEEP_MAX`               | `1000`                                                                                 | `config.ts`                           |
+| `PURGE_NOW_MAX`                 | `25`                                                                                   | `config.ts`                           |
+| `APP_CALL_CONCURRENCY`          | `6`                                                                                    | `config.ts`                           |
+| `APP_CALL_TIMEOUT_MS`           | `10_000`                                                                               | `config.ts`                           |
+| `HANDOFF_MAX_BYTES`             | `32 * 1024 * 1024`                                                                     | `config.ts`                           |
+| `HANDOFF_APP_TIMEOUT_MS`        | `30_000`                                                                               | `config.ts`                           |
+| `INBOX_LIMIT_DEFAULT`           | `100`                                                                                  | `config.ts`                           |
+| `OPEN_MEMORY_MAX`               | `5_000`                                                                                | `config.ts`                           |
+| `PASSWORD_MEMORY_MAX`           | `1_000`                                                                                | `config.ts`                           |
+| `SHARE_GUESS_RETRY_AFTER_S`     | `60`                                                                                   | `config.ts`                           |
+| `SHARE_PASSWORD_ITERATIONS`     | `100_000`                                                                              | `password-hash.ts`                    |
+| `PERSON_ITEMS_PER_CALL`         | `100`                                                                                  | `person-notices.ts`                   |
+| `NOTICE_RETRY_AFTER_MS`         | `60 * 60 * 1000`                                                                       | `person-notices.ts`                   |
+| `NOTICE_GIVE_UP_MS`             | `7 * 24 * 60 * 60 * 1000`                                                              | `person-notices.ts`                   |
+| `LOOSE_EVENTS_SWEEP_MAX`        | `1000`                                                                                 | `purge.ts`                            |
+| `ITEM_COLUMNS`                  | `'i.id, i.app, i.kind, i.owner_id, i.team_id, i.scope, i.fold…`                        | `rows.ts`                             |
+| `LIVE_LINK`                     | `(alias: string) =>`                                                                   | `rows.ts`                             |
+| `EXPIRY_SWEEP_MAX`              | `2_000`                                                                                | `share-expiry.ts`                     |
+| `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                                        | `timeline.ts`                         |
+| `WORKBENCH_CLOSE_MAX_ITEMS`     | `500`                                                                                  | `workbench-close.ts`                  |
+| `WORKBENCH_CLOSE_CONCURRENCY`   | `10`                                                                                   | `workbench-close.ts`                  |
+| `GUEST_TOKEN_REFRESH_BEFORE_MS` | `30 * 24 * 3600 * 1000`                                                                | `guest-token.ts`                      |
+| `GUEST_HANDOFF_BACKOFF_MS`      | `5 * 60_000`                                                                           | `guest-token.ts`                      |
+| `GRANT_RENEW_BEFORE_MS`         | `60_000`                                                                               | `item-grants.ts`                      |
+| `GRANT_REFUSAL_MEMORY_MS`       | `30_000`                                                                               | `item-grants.ts`                      |
+| `GRANT_RETRY_MS`                | `15_000`                                                                               | `item-grants.ts`                      |
+| `GRANTS_HELD_MAX`               | `32`                                                                                   | `item-grants.ts`                      |
+| `APPS`                          | `['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'] as const` | `constants.ts`                        |
+| `KINDS`                         | `['canvas', 'plan', 'document', 'design'] as const`                                    | `constants.ts`                        |
+| `APP_KINDS`                     | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `LEVELS`                        | `['view', 'participate', 'edit'] as const`                                             | `constants.ts`                        |
+| `FOLDER_PREVIEW_IDS_MAX`        | `60`                                                                                   | `constants.ts`                        |
+| `FOLDER_PREVIEW_ITEMS`          | `4`                                                                                    | `constants.ts`                        |
+| `FOLDER_PREVIEW_COUNT_CAP`      | `1000`                                                                                 | `constants.ts`                        |
+| `INDEX_API_PATH`                | `'/api/index'`                                                                         | `constants.ts`                        |
+| `INDEX_API_URL`                 | `https://www.liveworkspace.app${INDEX_API_PATH}`                                       | `constants.ts`                        |
+| `INDEX_APP_HEADER`              | `'X-Index-App'`                                                                        | `constants.ts`                        |
+| `INDEX_PERSON_HEADER`           | `'X-Index-Person'`                                                                     | `constants.ts`                        |
+| `INDEX_TEAMS_HEADER`            | `'X-Index-Teams'`                                                                      | `constants.ts`                        |
+| `DELEGATED_TEAMS_MAX`           | `50`                                                                                   | `constants.ts`                        |
+| `ITEM_GRANT_HEADER`             | `'X-Index-Grant'`                                                                      | `constants.ts`                        |
+| `SHARE_CODE_HEADER`             | `'X-Share-Code'`                                                                       | `constants.ts`                        |
+| `SHARE_PASSWORD_HEADER`         | `'X-Share-Password'`                                                                   | `constants.ts`                        |
+| `GRANT_LIFETIME_S`              | `600`                                                                                  | `constants.ts`                        |
+| `GRANT_RENEW_BEFORE_S`          | `60`                                                                                   | `constants.ts`                        |
+| `GRANT_ALG`                     | `'ES256'`                                                                              | `constants.ts`                        |
+| `GRANT_ISSUER`                  | `INDEX_API_URL`                                                                        | `constants.ts`                        |
+| `GRANT_JWKS_URL`                | `${INDEX_API_URL}/jwks`                                                                | `constants.ts`                        |
+| `LIST_LIMIT_DEFAULT`            | `50`                                                                                   | `constants.ts`                        |
+| `LIST_LIMIT_MAX`                | `200`                                                                                  | `constants.ts`                        |
+| `SUMMARY_MAX_BYTES`             | `2048`                                                                                 | `constants.ts`                        |
+| `COLLAB_MAX_THREADS`            | `500`                                                                                  | `constants.ts`                        |
+| `COLLAB_MAX_ACTIONS`            | `500`                                                                                  | `constants.ts`                        |
+| `COLLAB_CARDS_TAB`              | `'~cards'`                                                                             | `constants.ts`                        |
+| `TITLE_MAX`                     | `500`                                                                                  | `constants.ts`                        |
+| `FOLDER_NAME_MAX`               | `500`                                                                                  | `constants.ts`                        |
+| `SHARE_PASSWORD_MAX`            | `256`                                                                                  | `constants.ts`                        |
+| `SHARE_PASSWORD_MIN`            | `6`                                                                                    | `constants.ts`                        |
+| `SHARE_LINKS_PER_ITEM`          | `100`                                                                                  | `constants.ts`                        |
+| `SEARCH_MAX`                    | `200`                                                                                  | `constants.ts`                        |
+| `SEARCH_WORDS_MAX`              | `16`                                                                                   | `constants.ts`                        |
+| `FILTER_VALUES_MAX`             | `8`                                                                                    | `constants.ts`                        |
+| `INTENT_WORD`                   | `/^[a-z0-9-]{1,32}$/`                                                                  | `constants.ts`                        |
+| `ITEM_OWNERS`                   | `['me', 'others'] as const`                                                            | `constants.ts`                        |
+| `TRASH_RETENTION_MS`            | `30 * 24 * 60 * 60 * 1000`                                                             | `constants.ts`                        |
+| `EMPTY_ITEM_STALE_MS`           | `30 * 24 * 60 * 60 * 1000`                                                             | `constants.ts`                        |
+| `OPEN_DEBOUNCE_MS`              | `60 * 1000`                                                                            | `constants.ts`                        |
+| `USE_WINDOW_DAYS`               | `90`                                                                                   | `constants.ts`                        |
+| `MOST_USED_MAX`                 | `8`                                                                                    | `constants.ts`                        |
+| `ITEM_TIMELINE_EVENT_TYPES`     | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `PERSON_TIMELINE_EVENT_TYPES`   | `['image_uploaded', 'taken_offline'] as const`                                         | `constants.ts`                        |
+| `ACCOUNT_TIMELINE_EVENT_TYPES`  | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `TIMELINE_EVENT_TYPES`          | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `APP_TIMELINE_EVENT_TYPES`      | `['edited'] as const`                                                                  | `constants.ts`                        |
+| `APP_PERSON_EVENT_TYPES`        | `['image_uploaded'] as const`                                                          | `constants.ts`                        |
+| `TIMELINE_PLATFORM`             | `'liveworkspace' as const`                                                             | `constants.ts`                        |
+| `ACCOUNT_EVENT_SCOPES_MAX`      | `250`                                                                                  | `constants.ts`                        |
+| `SHARE_EXPIRY_WARNING_MS`       | `7 * 24 * 60 * 60 * 1000`                                                              | `constants.ts`                        |
+| `ACCOUNT_EVENT_AHEAD_MS`        | `8 * 24 * 60 * 60 * 1000`                                                              | `constants.ts`                        |
+| `COLLAB_EVENTS_MAX`             | `100`                                                                                  | `constants.ts`                        |
+| `TIMELINE_PAGE`                 | `30`                                                                                   | `constants.ts`                        |
+| `TIMELINE_LIMIT_MAX`            | `100`                                                                                  | `constants.ts`                        |
+| `APP_EVENTS_MAX`                | `100`                                                                                  | `constants.ts`                        |
+| `TIMELINE_DISMISS_MAX`          | `100`                                                                                  | `constants.ts`                        |
+| `TIMELINE_NEW_CAP`              | `99`                                                                                   | `constants.ts`                        |
+| `SHARE_LINK_EXPIRIES`           | `['never', 'week', 'month', 'sixMonths'] as const`                                     | `constants.ts`                        |
+| `SHARE_LINK_EXPIRY_MS`          | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `DEFAULT_LINK_LEVEL`            | `'edit'`                                                                               | `constants.ts`                        |
+| `ITEM_SOURCES`                  | `['person', 'ai', 'import', 'template'] as const`                                      | `constants.ts`                        |
+| `ITEM_VIEWS`                    | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `INDEX_ERRORS`                  | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `OWNED_COUNT_MAX`               | `1000`                                                                                 | `notices.ts`                          |
+| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `anonymise.ts`                        |
+| `ANONYMISED_NAME`               | `'Deleted account'`                                                                    | `anonymise.ts`                        |
+| `FORM_PLACE_TTL_MS`             | `60_000`                                                                               | `forms.ts`                            |
+| `FORM_PLACE_CACHE_MAX`          | `1_000`                                                                                | `forms.ts`                            |
+| `IMAGE_GRANT_SCHEMA`            | `(object or list, see file)`                                                           | `image-grants.ts`                     |
+| `JOINED_TELEMETRY_TYPE`         | `(object or list, see file)`                                                           | `internal.ts`                         |
+| `EXPORT_FORMATS`                | `['svg', 'file'] as const`                                                             | `internal.ts`                         |
+| `IMPORT_MAX_BYTES`              | `32 * 1024 * 1024`                                                                     | `internal.ts`                         |
+| `IMPORT_NAME_MAX`               | `1000`                                                                                 | `internal.ts`                         |
+| `PERSON_ITEMS_MAX`              | `100`                                                                                  | `internal.ts`                         |
+| `MIGRATION_MAX_BYTES`           | `IMPORT_MAX_BYTES`                                                                     | `internal.ts`                         |
+| `LIST_PAGES`                    | `5`                                                                                    | `lists.ts`                            |
+| `NOTIFY_QUOTA_KIND`             | `'notify-email'`                                                                       | `notify-claims.ts`                    |
+| `FLUSH_IDLE_MS`                 | `2_000`                                                                                | `outbox.ts`                           |
+| `FLUSH_MIN_GAP_MS`              | `60_000`                                                                               | `outbox.ts`                           |
+| `FLUSH_RETRY_MS`                | `60_000`                                                                               | `outbox.ts`                           |
+| `DRAIN_TABS`                    | `50`                                                                                   | `outbox.ts`                           |
+| `PUSH_CONCURRENCY`              | `6`                                                                                    | `outbox.ts`                           |
+| `ROOM_PURGE_TIMEOUT_MS`         | `3_000`                                                                                | `purge.ts`                            |
+| `ROOM_PURGE_CONCURRENCY`        | `10`                                                                                   | `purge.ts`                            |
+| `BULK_PURGE_MAX`                | `100`                                                                                  | `purge.ts`                            |
+| `ROOM_GRANT_MAX_LENGTH`         | `8192`                                                                                 | `room-ticket.ts`                      |
+| `GRANT_CACHE_MAX`               | `1000`                                                                                 | `service.ts`                          |
+| `MAX_TAB_HOLDERS`               | `20`                                                                                   | `tab-shares.ts`                       |
+| `DRAIN_SHARES`                  | `50`                                                                                   | `tab-shares.ts`                       |
+| `ITEM_TABS_SEGMENT`             | `'tabs'`                                                                               | `tabs.ts`                             |
+| `MISS_RECHECK_MS`               | `2_000`                                                                                | `teams.ts`                            |
+| `FRESH_TEAMS_MS`                | `30_000`                                                                               | `teams.ts`                            |
+| `TEAM_NAME_MAX`                 | `80`                                                                                   | `teams.ts`                            |
+| `TEAM_ORGANISATION_MAX`         | `80`                                                                                   | `teams.ts`                            |
 
 ## Testing
 

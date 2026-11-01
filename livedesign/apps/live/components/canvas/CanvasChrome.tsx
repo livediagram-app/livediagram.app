@@ -252,22 +252,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     chromeHidden,
     onSetCanvasTool: props.onSetCanvasTool,
   });
-  // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
-  const { workbenchBack } = props;
-  const explorerMenuButton = workbenchBack ? (
-    <WorkbenchBackButton
-      onBack={workbenchBack.back}
-      backTitle={workbenchBack.backTitle}
-      inline={menuInStrip}
-    />
-  ) : props.explorerHidden ? null : (
-    <ToolbarExplorerButton
-      open={activeDockPanel === 'explorer'}
-      onToggle={(button) => handleDockButtonClick('explorer', button)}
-      inline={menuInStrip}
-    />
-  );
-
   // Panel elements + their wiring live in useCanvasChromePanels.
   const {
     panelEls,
@@ -280,6 +264,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     contentsSidebarEl,
     contentsDocked,
     contentsSide,
+    menuJoined,
     paletteTint,
   } = useCanvasChromePanels({
     props,
@@ -299,6 +284,28 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // bottom-right cluster are drawn at it, so the clearances around them follow.
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
+  // Heading Pages mode's Contents sidebar while it is docked beneath it (docs/specs/007-editor/pages-mode.md "Joined
+  // to the menu box"); never from the strip's row, where a phone (which has no sidebar) puts it.
+  const menuJoin =
+    menuJoined && !menuInStrip ? { joinedWidth: CONTENTS_SIDEBAR_WIDTH * panelScale } : {};
+  // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
+  const { workbenchBack } = props;
+  const explorerMenuButton = workbenchBack ? (
+    <WorkbenchBackButton
+      onBack={workbenchBack.back}
+      backTitle={workbenchBack.backTitle}
+      inline={menuInStrip}
+      {...menuJoin}
+    />
+  ) : props.explorerHidden ? null : (
+    <ToolbarExplorerButton
+      open={activeDockPanel === 'explorer'}
+      onToggle={(button) => handleDockButtonClick('explorer', button)}
+      inline={menuInStrip}
+      {...menuJoin}
+    />
+  );
+
   const cornerScale = useUiScale('cornerButtons');
   // Beside Pages mode's Contents sidebar when it is pinned right (useContentsChrome), never under it.
   const clusterX =
@@ -443,6 +450,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           pendingDraw={pendingDraw}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
+          {...(menuJoin.joinedWidth === undefined ? {} : { besideWidth: menuJoin.joinedWidth })}
           tabElements={elements}
         />
       ) : null}

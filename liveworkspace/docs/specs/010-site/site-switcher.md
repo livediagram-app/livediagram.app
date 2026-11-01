@@ -65,11 +65,14 @@ app whose address the page is on is the one marked; on liveworkspace.app it is l
 
 `@liveworkspace/sites` (`packages/sites`) holds the list: each site's name, URL, one-line pitch and
 accent colour. Every app's switcher reads it, so adding an app is one row there, not an edit in each
-app. It lists livediagram, liveplanner, livedocuments and livedesign.
+app. It lists livediagram, liveplanner, livedocuments and livedesign (`APP_SITES`). An app registered but not yet
+launched keeps its row in `HELD_APP_SITES` instead, which no switcher reads, so it has no row until its launch moves
+it ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)): livehuddle,
+whose row is ready (pitch "Meet and run workshops together", emerald `#10b981`, deep `#047857`, light `#34d399`).
 
 Running locally, every link between the sites stays on this machine: `siteUrl` gives each site its
 port block's first port (`LOCAL_PORTS`: liveworkspace 3000, livediagram 3100, liveplanner 3200,
-livedocuments 3300, livedesign 3400, as in the root AGENTS.md) whenever a dev server renders it
+livedocuments 3300, livedesign 3400, livehuddle 3500, as in the root AGENTS.md) whenever a dev server renders it
 (`NODE_ENV=development`), and its live address in a build. The switcher, the landing page, the app
 footers' liveworkspace links and the Explorer's cross-app items all read it.
 

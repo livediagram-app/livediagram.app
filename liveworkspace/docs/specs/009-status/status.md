@@ -105,6 +105,12 @@ checked. Every app, livediagram included, is on its own custom domains, so the W
 any app. Locally (`ENVIRONMENT = "development"`) everything is fetched on this machine's ports: the site on 3000 and
 each app's router and MCP Worker.
 
+The MCP server is optional per app: an app is checked for one only when it ships one (it has an MCP Worker's local
+port in `MCP_DEV_PORTS`). An app without one has no MCP row at all, rather than a row that is always down or
+skipped. Every app listed today ships one; livehuddle, registered but held until launch
+([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)), ships none in
+its first version and is not on the page until it launches.
+
 ## The database
 
 `liveworkspace-status` (production) and `liveworkspace-status-staging`, bound as `STATUS_DB`. The schema is

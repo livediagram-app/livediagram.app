@@ -1,11 +1,18 @@
 // The index's fixed names and numbers (liveworkspace/docs/specs/004-index/one-explorer-contracts.md). Both sides read
 // these, so the Explorer, the apps and the index can never disagree on a limit.
 
-// The four apps, and the one kind of item each makes: the word people see.
-export const APPS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const;
+// The apps, and the one kind of item each makes: the word people see. livehuddle (a Space) is registered before its
+// launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md "Registered before launch").
+export const APPS = [
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+  'livehuddle',
+] as const;
 export type App = (typeof APPS)[number];
 
-export const KINDS = ['canvas', 'plan', 'document', 'design'] as const;
+export const KINDS = ['canvas', 'plan', 'document', 'design', 'space'] as const;
 export type Kind = (typeof KINDS)[number];
 
 export const APP_KINDS: Record<App, Kind> = {
@@ -13,6 +20,7 @@ export const APP_KINDS: Record<App, Kind> = {
   liveplanner: 'plan',
   livedocuments: 'document',
   livedesign: 'design',
+  livehuddle: 'space',
 };
 
 export const isApp = (value: unknown): value is App =>

@@ -9,14 +9,22 @@ side imports, so a change here is a change there.
 | Term   | Meaning                                                                                      |
 | ------ | -------------------------------------------------------------------------------------------- |
 | item   | One Canvas, Plan, Document or Design. Its id is a UUID the index gives it when it is made.   |
-| app    | `livediagram`, `liveplanner`, `livedocuments` or `livedesign`.                               |
-| kind   | `canvas`, `plan`, `document` or `design`: one per app, the word people see.                  |
+| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, or `livehuddle` (held, below).  |
+| kind   | `canvas`, `plan`, `document`, `design` or `space`: one per app, the word people see.         |
 | person | Who is asking: an account (`user_…`) or a guest (`guest_…`). The same id in every app.       |
 | index  | The service at `liveworkspace.app/api/index` and its database. The only record of everything |
 |        | about an item except its content.                                                            |
 | grant  | A short-lived token, signed by the index, saying a person (or a link visitor) may open an    |
 |        | item at a level.                                                                             |
 | level  | `view` < `participate` < `edit`, as every app uses.                                          |
+
+livehuddle (its kind `space`, a person's "Space") is registered before its launch
+([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)): the contracts
+and the service take it as an app, and no Explorer lists it (`APP_NAMES` in `@liveworkspace/sites` holds the listed
+apps). The `items` table's CHECK constraints still name the four apps and kinds, so the index refuses a livehuddle
+item until that table is rebuilt; it is the parent of a dozen tables that cascade on delete, and D1 can't turn
+foreign keys off inside a migration, so that rebuild is a migration of its own, rehearsed on a copy of the data,
+before livehuddle's first deploy. Until then livehuddle has no `INDEX_KEY_LIVEHUDDLE` either, so nothing can push one.
 
 ## Reaching the index
 
@@ -573,7 +581,10 @@ component on the page and in every editor's panel:
   **Assigned by Me** (waiting on others), **Comments** (mentions, threads on my items, threads I replied in) and
   **Form Responses**, each with its count. The choice is kept per viewer on this device
   (`liveworkspace:explorer-inbox-filter:<viewer id>`), as the Explorer keeps its other view choices, and sits beside
-  the header's app filter (this app or All), which still decides which rows are read. Each change is
+  the header's app filter (this app or All), which still decides which rows are read. In the editor's panel the bar
+  is a compact dropdown (`Select`, `@liveworkspace/ui`, a native select named **Inbox filter**) in the pane's header
+  row, on the right beside the app filter, each option reading its name and count ("My Actions (3)"), so the pane
+  keeps one quiet row of controls; it shows only while the list does. Each change is
   `Activity·Changed` (`All`, `MyActions`, `AssignedByMe`, `Comments`, `FormResponses`).
 - **The reading pane**, labelled by its title: where it is (the Living Prism, the team glyph, the item › the tab ›
   the element or board), the title, who and why in a sentence ("Priya mentioned you · 25 mins ago · Task"), the verbs
@@ -608,8 +619,8 @@ component on the page and in every editor's panel:
   open row disappears (done elsewhere, gone from a re-read), the pane closes and steps back off that entry, so the
   next Back leaves the list; opening a row while the pane's entry is still on top replaces it rather than adding
   another. The
-  filter bar becomes a strip of chips that scrolls sideways within itself, so the page never does; chips, rows and
-  Back are at least 44 px tall; the page keeps its 16 px gutter.
+  filter bar becomes a strip of chips that scrolls sideways within itself, so the page never does (in the panel, the
+  header's dropdown instead); chips, rows and Back are at least 44 px tall (the dropdown 36 px); the page keeps its 16 px gutter.
 
 The sidebar's badge counts My Actions, 0 included once read. Coming back to the browser tab reads it again (at most
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in

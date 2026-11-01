@@ -73,6 +73,7 @@ export function useCanvasChromePanels({
   contentsSidebarEl: ReactNode;
   contentsDocked: boolean;
   contentsSide: import('@/lib/contents-placement').ContentsSide;
+  menuJoined: boolean;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -171,12 +172,13 @@ export function useCanvasChromePanels({
   // The four tool-config panels (laser / spotlight / eraser / format), see useCanvasToolPanels. They
   // share one contract: on screen only while their own tool is active.
   // Contents, likewise, belongs to Pages mode: its popover, or the sidebar docked in its place.
-  const { contentsDocked, contentsSide, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
-    props,
-    chromeHidden,
-    isMobile,
-    closeDockPanel,
-  });
+  const { contentsDocked, contentsSide, menuJoined, contentsSidebarEl, contentsPopoverEl } =
+    useContentsChrome({
+      props,
+      chromeHidden,
+      isMobile,
+      closeDockPanel,
+    });
   const { laserEl, spotlightEl, eraserEl, formatEl, inspectEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -354,6 +356,7 @@ export function useCanvasChromePanels({
     contentsSidebarEl,
     contentsDocked,
     contentsSide,
+    menuJoined,
     layersEl,
     paletteTint,
   };

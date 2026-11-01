@@ -26,6 +26,7 @@ const ITEM_PATHS: Record<App, string> = {
   liveplanner: '/project/',
   livedocuments: '/document/',
   livedesign: '/design/',
+  livehuddle: '/document/',
 };
 
 const siteOf = (app: App) => APP_SITES.find((site) => site.id === `${app}.app`)?.url ?? '';

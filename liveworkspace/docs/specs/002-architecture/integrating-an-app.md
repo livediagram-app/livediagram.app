@@ -192,3 +192,29 @@ Locally, against a development accounts Worker, the redirect is
 
 An app's anonymous product events go to liveworkspace too, not to its own API. See
 [telemetry.md](../008-telemetry/telemetry.md) for the batch format, the settings, and the steps for adding an app.
+
+## Registered before launch
+
+A new app is registered with every platform service before anyone can see it, so its build runs against the real
+services and its launch is one small change. Until then it is **held**: every service accepts it, and nothing a
+person sees lists it.
+
+- **Accepted:** accounts takes its API resource, its OAuth client, its sign-in hand-off origins, its settings scope,
+  its sign-ups and its phone devices; the index takes its items; media takes its uploads and previews; telemetry takes
+  its events and its Workers' key; its browser settings keys are known.
+- **Held out of every list:** the site switcher, the sign-in pages' "one account for ..." line and the sign-in
+  email's list of apps, the Explorer's apps (its New menu, filters, search and welcome), the telemetry dashboard's
+  app picker, the status page, the settings panel's apps, and liveworkspace.app's landing and legal pages.
+- **In code:** its site is in `SiteId` and `LOCAL_PORTS`, and its site row in `HELD_APP_SITES`
+  (`@liveworkspace/sites`), not `APP_SITES`, which every list reads. Services that accept every app read
+  `REGISTERED_APP_SITES` (both). Telemetry's held senders are `HELD_TELEMETRY_APPS` beside `TELEMETRY_APPS`.
+- **Secrets** (owner only) come with the app's first deploy: its accounts client, and its `INDEX_KEY_<APP>`,
+  `MEDIA_KEY_<APP>` and `TELEMETRY_KEY_<APP>`. Until each is set, that service refuses the app's Workers, as for any
+  app without its key.
+- **Launch** moves the row from `HELD_APP_SITES` into `APP_SITES` and the app from `HELD_TELEMETRY_APPS` into
+  `TELEMETRY_APPS`; the sign-in email's line names it in the same change.
+
+Held today: **livehuddle** (`livehuddle.app`, port block 3500, its item a **Space**, its index kind `space`), by
+[livehuddle's platform registration](../../../../livehuddle/docs/specs/016-platform/platform-registration.md).
+It ships no MCP server in its first version, so the status checks treat the MCP server as optional per app
+([status.md](../009-status/status.md#where-the-checks-go)).

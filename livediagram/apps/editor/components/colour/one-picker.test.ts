@@ -7,10 +7,15 @@ import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const LIVE = join(__dirname, '..', '..');
-// With the editor code every editor shares (@liveworkspace/workbench).
-const ROOTS = ['app', 'components', 'hooks', 'lib', '../../../packages/workbench/src'].map((d) =>
-  join(LIVE, d),
-);
+// With the editor code every editor shares (@liveworkspace/workbench) and Avatar mode's (@liveworkspace/avatar).
+const ROOTS = [
+  'app',
+  'components',
+  'hooks',
+  'lib',
+  '../../../packages/workbench/src',
+  '../../../packages/avatar/src',
+].map((d) => join(LIVE, d));
 // The picker itself, and Quick Style's custom swatch popover, which holds the same editor by spec
 // (colour-picker.md "Picking a colour of your own").
 const EDITOR_ALLOWED = ['components/colour/', 'components/canvas/SwatchOverridePopover.tsx'];

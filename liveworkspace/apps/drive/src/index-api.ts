@@ -125,22 +125,21 @@ export function createIndexApi(env: Env): IndexApi {
             ),
           ]);
           return {
-            items: items
-              .filter(
-                (i) =>
-                  i.teamId === null &&
-                  i.trashedAt === null &&
-                  i.sharedVia === null &&
-                  isAppName(i.app),
-              )
-              .map((i) => ({
-                id: i.id,
-                app: i.app,
-                name: i.title,
-                folderId: i.folderId,
-                updatedAt: i.updatedAt,
-                createdAt: i.createdAt,
-              })),
+            // Only the apps the mirror writes files for (a held app, livehuddle, is none of them).
+            items: items.flatMap((i) =>
+              i.teamId === null && i.trashedAt === null && i.sharedVia === null && isAppName(i.app)
+                ? [
+                    {
+                      id: i.id,
+                      app: i.app,
+                      name: i.title,
+                      folderId: i.folderId,
+                      updatedAt: i.updatedAt,
+                      createdAt: i.createdAt,
+                    },
+                  ]
+                : [],
+            ),
             folders: folders
               .filter((f) => f.teamId === null)
               .map((f) => ({
@@ -149,9 +148,11 @@ export function createIndexApi(env: Env): IndexApi {
                 parentId: f.parentId,
                 updatedAt: f.updatedAt,
               })),
-            trash: trash
-              .filter((i) => i.teamId === null && i.trashedAt !== null && isAppName(i.app))
-              .map((i) => ({ id: i.id, app: i.app, name: i.title, trashedAt: i.trashedAt ?? 0 })),
+            trash: trash.flatMap((i) =>
+              i.teamId === null && i.trashedAt !== null && isAppName(i.app)
+                ? [{ id: i.id, app: i.app, name: i.title, trashedAt: i.trashedAt ?? 0 }]
+                : [],
+            ),
           };
         },
         renameItem: async (id, name) => void (await client.updateItem(id, { title: name })),

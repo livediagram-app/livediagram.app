@@ -992,6 +992,8 @@ function Pane({
       ? folderId
       : null;
   const pendingRename = useRef<((id: string) => void) | null>(null);
+  // The Inbox's filter dropdown is drawn into the header row, beside the app filter.
+  const [inboxSlot, setInboxSlot] = useState<HTMLElement | null>(null);
   const newFolder = space
     ? () =>
         void folders
@@ -1006,7 +1008,7 @@ function Pane({
     section.kind === 'home' ? (
       <HomeSection currentId={currentId} onOpenExplorer={onOpenExplorer} />
     ) : section.kind === 'inbox' ? (
-      <InboxPane compact />
+      <InboxPane compact filterSlot={inboxSlot} />
     ) : section.kind === 'timeline' ? (
       <PanelTimeline />
     ) : section.kind === 'library' ? (
@@ -1045,6 +1047,9 @@ function Pane({
           <HeaderIconButton label="Members" onClick={() => setMembers(true)}>
             <TeamIcon size={16} />
           </HeaderIconButton>
+        ) : null}
+        {section.kind === 'inbox' ? (
+          <span ref={setInboxSlot} className="flex max-w-[8.5rem] shrink-0 max-sm:max-w-[9rem]" />
         ) : null}
         {/* This Browser holds only this app's items, and the Library is the app's own. */}
         {section.kind === 'library' || section.kind === 'offline' ? null : (

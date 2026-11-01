@@ -6,28 +6,28 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                      | Role                                                                  |
-| --------------------------------------------------------- | --------------------------------------------------------------------- |
-| `packages/document/src/shape-kind.ts`                     | `'fence'` in `ShapeKind`                                              |
-| `packages/document/src/fence.ts`                          | `fenceRun`, `fencePostCentres`, `fenceParts`, `fenceLine`, constants  |
-| `packages/document/src/shape-factory.ts`                  | `SHAPE_DEFAULT_SIZE.fence` 240x24                                     |
-| `packages/document/src/colors.ts`                         | `behaviourSkin`: transparent box, `FENCE_WOOD` stroke; self-painting  |
-| `packages/document/src/data-shapes.ts`                    | `isSelfDrawingShape('fence')`: no label, no text align                |
-| `packages/document/src/element-types.ts`                  | `UNTYPED_SHAPES`: no caret                                            |
-| `packages/document/src/behaviour-shapes.ts`               | In `BEHAVIOUR_SHAPES`; `carriesSharedSettingsMenu('fence') === false` |
-| `packages/document/src/validate.ts`                       | Accepts the kind                                                      |
-| `packages/document/src/svg-render-faces.ts`               | `fenceArt`: the export fence                                          |
-| `packages/document/src/animation-membership.ts`           | Wordless                                                              |
+| File                                                        | Role                                                                  |
+| ----------------------------------------------------------- | --------------------------------------------------------------------- |
+| `packages/document/src/shape-kind.ts`                       | `'fence'` in `ShapeKind`                                              |
+| `../packages/avatar/src/fence.ts`                           | `fenceRun`, `fencePostCentres`, `fenceParts`, `fenceLine`, constants  |
+| `packages/document/src/shape-factory.ts`                    | `SHAPE_DEFAULT_SIZE.fence` 240x24                                     |
+| `packages/document/src/colors.ts`                           | `behaviourSkin`: transparent box, `FENCE_WOOD` stroke; self-painting  |
+| `packages/document/src/data-shapes.ts`                      | `isSelfDrawingShape('fence')`: no label, no text align                |
+| `packages/document/src/element-types.ts`                    | `UNTYPED_SHAPES`: no caret                                            |
+| `packages/document/src/behaviour-shapes.ts`                 | In `BEHAVIOUR_SHAPES`; `carriesSharedSettingsMenu('fence') === false` |
+| `packages/document/src/validate.ts`                         | Accepts the kind                                                      |
+| `packages/document/src/svg-render-faces.ts`                 | `fenceArt`: the export fence                                          |
+| `packages/document/src/animation-membership.ts`             | Wordless                                                              |
 | `apps/editor/components/canvas/collab/FenceView.tsx`        | The canvas fence                                                      |
 | `apps/editor/components/canvas/BoxedElementView.tsx`        | Mounts `FenceView` with the resolved stroke                           |
 | `apps/editor/components/canvas/shape-svg-overlay.tsx`       | Not an SVG-overlay shape (box path, transparent)                      |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                  |
-| `apps/editor/lib/avatar-fence.ts`                           | `fenceSegments`, `fenceRefuses`, `fenceStep`, `FENCE_REACH`           |
-| `apps/editor/lib/avatar-walk.ts`                            | `elementUnderFeet` skips fences                                       |
-| `apps/editor/hooks/canvas/useAvatarWalk.ts`                 | Memoised segments; every walk step goes through `fenceStep`           |
+| `../packages/avatar/src/collision.ts`                       | `fenceSegments`, `fenceRefuses`, `fenceStep`, `FENCE_REACH`           |
+| `../packages/avatar/src/walk.ts`                            | `elementUnderFeet` skips fences                                       |
+| `../packages/avatar/src/hooks/useAvatarWalk.ts`             | Memoised segments; every walk step goes through `fenceStep`           |
 | `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:fence` in **Navigate** (`tileGroup: 'move'`)                   |
 | `apps/editor/components/palette/palette-icons.tsx`          | `FenceIcon`                                                           |
-| `packages/api-schema/src/telemetry-schema.ts`             | `Fence` element type token                                            |
+| `packages/api-schema/src/telemetry-schema.ts`               | `Fence` element type token                                            |
 
 ## Domain and naming
 
@@ -76,7 +76,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/fence.ts
+// ../packages/avatar/src/fence.ts
 export type FencePoint = { x: number; y: number };
 export const FENCE_DEFAULT_SIZE = { width: 240, height: 24 };
 export const FENCE_POST_SPACING = 40;
@@ -108,7 +108,7 @@ export function fenceLine(box: {
   rotation?: number;
 }): { a: FencePoint; b: FencePoint };
 
-// apps/editor/lib/avatar-fence.ts
+// ../packages/avatar/src/collision.ts
 export const FENCE_REACH = 12;
 export const FENCE_STALL = 0.25;
 export type FenceSegment = { a: FencePoint; b: FencePoint };
@@ -204,20 +204,20 @@ click-walk stops against a fence.
 
 ## Testing
 
-| Rule                                        | Test                                             | File                                            |
-| ------------------------------------------- | ------------------------------------------------ | ----------------------------------------------- |
-| Run follows the longer side                 | "runs along the longer side, across when square" | `packages/document/src/fence.test.ts`           |
-| End posts inset; even spacing               | `fencePostCentres` block                         | `packages/document/src/fence.test.ts`           |
-| Rails full length; corner posts coincide    | `fenceParts` block                               | `packages/document/src/fence.test.ts`           |
-| Fence line, rotated                         | `fenceLine` block                                | `packages/document/src/fence.test.ts`           |
-| Refused from either side; open past the end | `fenceRefuses` block                             | `apps/editor/lib/avatar-fence.test.ts`            |
-| Escape but not cross from inside (I3)       | "lets a character inside the reach step away …"  | `apps/editor/lib/avatar-fence.test.ts`            |
-| No tunnelling (I2)                          | "cannot tunnel through with one long step"       | `apps/editor/lib/avatar-fence.test.ts`            |
-| Slide                                       | "slides along a fence walked into at an angle"   | `apps/editor/lib/avatar-fence.test.ts`            |
-| Enclosure keeps people out, outside open    | "walks all the way round the outside …"          | `apps/editor/lib/avatar-fence.test.ts`            |
-| Narrow gaps sealed, wide gaps open          | "seals a gap …", "leaves a gap …"                | `apps/editor/lib/avatar-fence.test.ts`            |
-| Worst-case budget                           | "keeps a frame within budget …"                  | `apps/editor/lib/avatar-fence.test.ts`            |
-| Self-drawing (no label)                     | "claims exactly the kinds its members claim …"   | `packages/document/src/data-shapes.test.ts`     |
+| Rule                                        | Test                                             | File                                              |
+| ------------------------------------------- | ------------------------------------------------ | ------------------------------------------------- |
+| Run follows the longer side                 | "runs along the longer side, across when square" | `../packages/avatar/src/fence.test.ts`            |
+| End posts inset; even spacing               | `fencePostCentres` block                         | `../packages/avatar/src/fence.test.ts`            |
+| Rails full length; corner posts coincide    | `fenceParts` block                               | `../packages/avatar/src/fence.test.ts`            |
+| Fence line, rotated                         | `fenceLine` block                                | `../packages/avatar/src/fence.test.ts`            |
+| Refused from either side; open past the end | `fenceRefuses` block                             | `../packages/avatar/src/collision.test.ts`        |
+| Escape but not cross from inside (I3)       | "lets a character inside the reach step away …"  | `../packages/avatar/src/collision.test.ts`        |
+| No tunnelling (I2)                          | "cannot tunnel through with one long step"       | `../packages/avatar/src/collision.test.ts`        |
+| Slide                                       | "slides along a fence walked into at an angle"   | `../packages/avatar/src/collision.test.ts`        |
+| Enclosure keeps people out, outside open    | "walks all the way round the outside …"          | `../packages/avatar/src/collision.test.ts`        |
+| Narrow gaps sealed, wide gaps open          | "seals a gap …", "leaves a gap …"                | `../packages/avatar/src/collision.test.ts`        |
+| Worst-case budget                           | "keeps a frame within budget …"                  | `../packages/avatar/src/collision.test.ts`        |
+| Self-drawing (no label)                     | "claims exactly the kinds its members claim …"   | `packages/document/src/data-shapes.test.ts`       |
 | Walk loop stops a click-walk at a fence     | "stops a click-walk at a fence"                  | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx` |
 
 ## Constants and configuration

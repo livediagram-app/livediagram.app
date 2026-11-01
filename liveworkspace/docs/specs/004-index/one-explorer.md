@@ -399,7 +399,7 @@ are sent from liveworkspace too.
 The Inbox reads as a list and a reading pane (one-explorer-contracts.md "Inbox"): every row newest first under
 Today, Earlier This Week and Older, a filter bar over it (All, My Actions, Assigned by Me, Comments, Form
 Responses, each with its count), and the chosen row read in full beside it. On a phone and in the editor's panel the
-pane takes the list's place, with Back. The pane offers only what the page can really do through the owning app's
+pane takes the list's place, with Back; in the panel the filter is a dropdown in the pane's header row. The pane offers only what the page can really do through the owning app's
 own routes or editor (Reply and Resolve on a thread, Mark Done on an action in the editor that has it open); Open in
 the app is always there.
 

@@ -1,9 +1,9 @@
 'use client';
 
 import { answerMachine } from '@/lib/machine-answer';
-import { useAvatarStatus } from '@/hooks/canvas/useAvatarStatus';
+import { useAvatarStatus } from '@liveworkspace/avatar/hooks/useAvatarStatus';
 import { useByValue } from '@/hooks/ui/useByValue';
-import { sameSitters, sittersByChair } from '@/lib/chair-sitters';
+import { sameSitters, sittersByChair } from '@liveworkspace/avatar/chair-sitters';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
@@ -12,13 +12,13 @@ import {
   visibleLayerElements,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
-import { useSpeechBubbles } from '@/lib/avatar-speech-store';
-import { avatarScale } from '@/lib/avatar-config';
-import { useAvatarActionKeys } from '@/hooks/canvas/useAvatarActionKeys';
-import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
-import { useAvatarPadArrivals } from '@/hooks/canvas/useAvatarPadArrivals';
-import { avatarSpawnFromButton, type AvatarPoint } from '@/lib/avatar-walk';
+import { useAvatarSpeech } from '@liveworkspace/avatar/hooks/useAvatarSpeech';
+import { useSpeechBubbles } from '@liveworkspace/avatar/speech-store';
+import { avatarScale } from '@liveworkspace/avatar/config';
+import { useAvatarActionKeys } from '@liveworkspace/avatar/hooks/useAvatarActionKeys';
+import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
+import { useAvatarPadArrivals } from '@liveworkspace/avatar/hooks/useAvatarPadArrivals';
+import { avatarSpawnFromButton, type AvatarPoint } from '@liveworkspace/avatar/walk';
 import {
   CHAIR_SITTER_FACING,
   isSeatingShape,
@@ -26,12 +26,17 @@ import {
   drinkFrom,
   seatingFacing,
 } from '@livediagram/document';
-import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
+import { useAvatarConfig } from '@liveworkspace/avatar/hooks/useAvatarConfig';
 import type { Reaction } from '@livediagram/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
+import { bindAvatar } from '@/lib/avatar-bindings';
+
+// This editor's facts for Avatar mode (lib/avatar-bindings.ts), before any of it renders: every avatar view and
+// hook is reached through the canvas, which loads this module first.
+bindAvatar();
 
 type CanvasAvatarInput = {
   props: CanvasProps;

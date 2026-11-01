@@ -22,6 +22,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 // The editor code every editor shares (@liveworkspace/workbench) is scanned beside this app's own.
 const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
+// And Avatar mode's shared code (@liveworkspace/avatar).
+const AVATAR = join(ROOT, '../../../packages/avatar/src');
 const SKIP_DIRS = new Set([
   'node_modules',
   '.next',
@@ -51,7 +53,7 @@ describe('apps/editor source files are text', () => {
     // else below 0x20 is what makes a file read as binary.
     const allowed = new Set([0x09, 0x0a, 0x0d]);
     const offenders: string[] = [];
-    for (const file of [ROOT, WORKBENCH].flatMap((dir) => sourceFiles(dir))) {
+    for (const file of [ROOT, WORKBENCH, AVATAR].flatMap((dir) => sourceFiles(dir))) {
       const bytes = readFileSync(file);
       for (const byte of bytes) {
         if (byte < 0x20 && !allowed.has(byte)) {

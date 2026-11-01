@@ -48,9 +48,9 @@ const PAGE_SEARCH_WORDS = /^\s*page: '[^']*\bdocument\b[^']*',$/;
 // "documentation" are taken out.
 const DOM_WORDS =
   /ownerDocument|contentDocument|documentElement|compareDocumentPosition|DOCUMENT_POSITION_\w+|createDocumentFragment|DocumentFragment|DocumentTimeline|DocumentOrShadowRoot|[Dd]ocumentation|[Uu]ndocumented|[Dd]ocumented|[Dd]ocumenting/g;
-// Another liveworkspace app's own address for its items (livediagram's and livedocuments' `/document/`), which the
+// Another liveworkspace app's own address for its items (livediagram's, livedocuments' and livehuddle's `/document/`), which the
 // shared Explorer opens on that app's site.
-const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments): '\/document\/',$/;
+const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments|livehuddle): '\/document\/',$/;
 // livedocuments, the liveworkspace app whose items are Documents, named as the app it is.
 const OTHER_APP_NAME = /\blivedocuments(\.app)?\b/g;
 // A line stating the rule itself.

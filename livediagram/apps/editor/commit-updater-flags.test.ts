@@ -17,6 +17,8 @@ const DIRS = [
   'lib',
   // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
   '../../../packages/workbench/src',
+  // Avatar mode's shared code (@liveworkspace/avatar) renders here too.
+  '../../../packages/avatar/src',
 ];
 // A call whose first argument is an updater: commit(), commitTabs(), drawCommit(), rawCommitTabs(), tickTabs(), and
 // every setState-shaped setter (setHistory(), setPos(), ...); never a timer's callback (setTimeout, setInterval).

@@ -69,6 +69,7 @@ export function useCanvasChromePanels({
   contentsSidebarEl: ReactNode;
   contentsDocked: boolean;
   contentsSide: import('@/lib/contents-placement').ContentsSide;
+  menuJoined: boolean;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -173,12 +174,13 @@ export function useCanvasChromePanels({
     if (activeDockPanel === 'slides' && !props.pagesMode) closeDockPanel();
   }, [activeDockPanel, props.pagesMode, closeDockPanel]);
   // Contents, likewise, belongs to Pages mode: its popover, or the sidebar docked in its place.
-  const { contentsDocked, contentsSide, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
-    props,
-    chromeHidden,
-    isMobile,
-    closeDockPanel,
-  });
+  const { contentsDocked, contentsSide, menuJoined, contentsSidebarEl, contentsPopoverEl } =
+    useContentsChrome({
+      props,
+      chromeHidden,
+      isMobile,
+      closeDockPanel,
+    });
   const { laserEl, spotlightEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -337,6 +339,7 @@ export function useCanvasChromePanels({
     contentsSidebarEl,
     contentsDocked,
     contentsSide,
+    menuJoined,
     layersEl,
     paletteTint,
   };
