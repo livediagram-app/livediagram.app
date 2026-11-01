@@ -48,6 +48,23 @@ describe('cleanText', () => {
     expect(cleanText('  \u202Eevil org  ', 80)).toBe('evil org');
     expect(cleanText(`${'a'.repeat(79)}😀`, 80)).toBe('a'.repeat(79));
   });
+
+  it('takes invisible characters off either end, so no name looks blank', () => {
+    for (const blank of ['\u200B\u200B', '\u2060', '\uFEFF', '\u00AD', ' \u200C\u200D ']) {
+      expect(cleanText(blank, 80)).toBe('');
+    }
+    expect(cleanText('\uFEFF x \u200B', 80)).toBe('x');
+    // A joined emoji keeps its joiners inside.
+    expect(cleanText(' 🧑‍🤝‍🧑 Ops\u200B', 80)).toBe('🧑‍🤝‍🧑 Ops');
+  });
+
+  it('trims a long run of invisible characters in linear time', () => {
+    const long = `${'\u200B'.repeat(200_000)}x${'\u200B'.repeat(200_000)}`;
+    const start = process.cpuUsage();
+    expect(cleanText(long, 80)).toBe('x');
+    const { user, system } = process.cpuUsage(start);
+    expect((user + system) / 1000).toBeLessThan(500);
+  });
 });
 
 describe('typed names, as each door keeps them', () => {
@@ -64,6 +81,9 @@ describe('typed names, as each door keeps them', () => {
     expect(isWellFormed(cleanOrganisation(overLong)!)).toBe(true);
     expect(cleanOrganisation('\u202Eevil org')).toBe('evil org');
     expect(cleanTeamName('\u2067\u2069')).toBeNull();
+    expect(cleanTeamName('\u200B\u200B')).toBeNull();
+    expect(cleanOrganisation('\u2060')).toBeNull();
+    expect(cleanTokenName('\u200B', 'API token')).toBe('API token');
   });
 
   it('an account name keeps no half emoji and no override', () => {
@@ -74,6 +94,11 @@ describe('typed names, as each door keeps them', () => {
 
   it('a display name keeps no override', () => {
     expect(checkProfilePatch({ name: '\u202Eada' })).toEqual({ ok: true, patch: { name: 'ada' } });
+    expect(checkProfilePatch({ name: '\u200Bada\uFEFF' })).toEqual({
+      ok: true,
+      patch: { name: 'ada' },
+    });
+    expect(checkProfilePatch({ name: '\u200B' })).toEqual({ ok: true, patch: { name: null } });
   });
 });
 

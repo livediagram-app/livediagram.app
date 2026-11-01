@@ -874,7 +874,8 @@ with the rest of the guest.
 Token names, team names and organisations, account names and display names are kept as typed, with three things
 taken out (`src/text.ts`): the bidi embeddings, overrides and isolates (U+202A to U+202E, U+2066 to U+2069), which
 would turn the text drawn after a name around or make one name pass for another (right-to-left letters need none of
-them); spaces at either end; and anything past the field's limit, cut between whole characters, never half an
+them); spaces and invisible formatting characters (zero-width spaces and joiners, word joiners, byte order marks,
+soft hyphens) at either end, so no name can look blank; and anything past the field's limit, cut between whole characters, never half an
 emoji. An invitation's address with a control or invisible formatting character in it (a bidi override, a
 zero-width space) is turned down as `400 email_invalid`.
 
