@@ -3,14 +3,14 @@
 // Invite by Link (livediagram's TeamInviteLinkDialog; liveworkspace/docs/specs/003-accounts/accounts.md "The join link"): off until an
 // admin turns it on; then the link to copy, when it ends, New Link (the old stops working) and Turn Off.
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { teamErrorMessage, type InviteLink, type TeamResult } from '../data/teams';
 import { Button } from '@liveworkspace/ui';
+import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import { TEAM_FIELD } from './TeamFormDialog';
 
-const formatDate = (at: number) =>
-  new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+const formatDate = (at: number) => DAY_MONTH_YEAR.format(at);
 
 export function InviteLinkDialog({
   teamName,
@@ -29,8 +29,20 @@ export function InviteLinkDialog({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const fieldId = useId();
+  // Turning the link on or off swaps the buttons: the one pressed goes. The keyboard follows to what took its
+  // place (Copy once it's on, Turn On Link once it's off) rather than dropping to the dialog's top.
+  const copyRef = useRef<HTMLButtonElement>(null);
+  const turnOnRef = useRef<HTMLButtonElement>(null);
+  const changed = useRef(false);
+  const on = link !== null;
+  useEffect(() => {
+    if (!changed.current) return;
+    changed.current = false;
+    (on ? copyRef : turnOnRef).current?.focus();
+  }, [on]);
 
   async function change(run: () => Promise<TeamResult<unknown>>) {
+    changed.current = true;
     setBusy(true);
     setError(null);
     setCopied(false);
@@ -78,7 +90,7 @@ export function InviteLinkDialog({
                 onFocus={(e) => e.currentTarget.select()}
                 className={`${TEAM_FIELD} font-mono text-xs`}
               />
-              <Button size="sm" onClick={() => void copy()} className="shrink-0">
+              <Button ref={copyRef} size="sm" onClick={() => void copy()} className="shrink-0">
                 {copied ? 'Copied' : 'Copy'}
               </Button>
             </div>
@@ -92,7 +104,7 @@ export function InviteLinkDialog({
             ) : null}
           </>
         ) : (
-          <Button size="sm" disabled={busy} onClick={() => void change(onReset)}>
+          <Button ref={turnOnRef} size="sm" busy={busy} onClick={() => void change(onReset)}>
             Turn On Link
           </Button>
         )}
@@ -108,17 +120,13 @@ export function InviteLinkDialog({
             <Button
               variant="secondary"
               size="sm"
-              disabled={busy}
+              // Keeps the keyboard while it works (busy-buttons.md): disabled, it dropped to the dialog's top.
+              busy={busy}
               onClick={() => void change(onClear)}
             >
               Turn Off
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={busy}
-              onClick={() => void change(onReset)}
-            >
+            <Button variant="secondary" size="sm" busy={busy} onClick={() => void change(onReset)}>
               New Link
             </Button>
           </>

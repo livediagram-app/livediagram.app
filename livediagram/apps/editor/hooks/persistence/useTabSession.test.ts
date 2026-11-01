@@ -244,3 +244,25 @@ describe('dot-vote telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
     expect(h.tab().vote?.votes.a ?? []).toEqual([]);
   });
 });
+
+describe('whether a dot moved (docs/specs/012-collaboration/blueprints/vote-keys.md)', () => {
+  it('says true for a dot cast or taken back, false for one refused', () => {
+    const h = harness();
+    h.session().startVote(1, { hideCursors: false, hideCounts: false });
+    expect(h.session().castVote('a')).toBe(true);
+    expect(h.session().castVote('b')).toBe(false);
+    expect(h.session().retractVote('b')).toBe(false);
+    expect(h.session().retractVote('a')).toBe(true);
+  });
+
+  it('says false on a locked tab, and keeps a closed vote’s dots', () => {
+    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: { a: ['me'] } };
+    const locked = harness({ vote }, { editsBlocked: true });
+    expect(locked.session().castVote('a')).toBe(false);
+    expect(locked.session().retractVote('a')).toBe(false);
+
+    const ended = harness({ vote: { ...vote, active: false } });
+    expect(ended.session().retractVote('a')).toBe(false);
+    expect(ended.tab().vote?.votes.a).toEqual(['me']);
+  });
+});

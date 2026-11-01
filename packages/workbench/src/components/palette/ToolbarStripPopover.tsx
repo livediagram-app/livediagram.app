@@ -94,6 +94,7 @@ export function StripPopover({
   isMobile,
   scale,
   label,
+  name,
   dataAttr,
   widthClass = 'w-[26rem]',
   glide = false,
@@ -106,6 +107,9 @@ export function StripPopover({
   scale: number;
   // The small heading over the body; absent for a body that names itself.
   label?: ReactNode;
+  // Opened from a button that says it opens a dialog (aria-haspopup="dialog"): the card is that dialog, named so, and
+  // a screen reader announces what the button promised.
+  name?: string;
   // Marks the card for its popover's ownSelector.
   dataAttr: string;
   // Its width on a desktop.
@@ -144,6 +148,7 @@ export function StripPopover({
       ref={ref}
       {...{ [dataAttr]: '' }}
       {...(seeThrough ? { 'data-drop-through': '' } : {})}
+      {...(name ? { role: 'dialog', 'aria-label': name } : {})}
       // Chrome, not canvas, like the strip it hangs from.
       data-floating-panel=""
       // A menu, so it stays at design size while the strip is scaled

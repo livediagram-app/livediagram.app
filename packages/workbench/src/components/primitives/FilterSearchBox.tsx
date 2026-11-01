@@ -67,6 +67,8 @@ export function FilterSearchBox({
   return (
     <div
       role="search"
+      // Named, so two on one page (a board's Filter widget and Find a Card) are told apart.
+      aria-label={ariaLabel}
       className={`flex w-full min-w-0 items-center gap-1.5 border transition-colors duration-micro ${shell} ${colours}`}
       style={
         tone

@@ -1,4 +1,10 @@
-import { Children, forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import {
+  Children,
+  forwardRef,
+  type ButtonHTMLAttributes,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { SOLID_BRAND_DARK_CONTROL } from './brand-classes';
 
 // The shared button primitive. Before this, every dialog / panel /
@@ -82,21 +88,50 @@ export function ButtonContent({ children }: { children: ReactNode }) {
   );
 }
 
+// `variant="none"`: the look is the caller's own class string (liveworkspace.app's round buttons, a dialog's own
+// footer), so nothing is added but the disabled look `busy` needs.
+const NONE = 'aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
+
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: ButtonVariant;
+  variant?: ButtonVariant | 'none';
   size?: ButtonSize;
+  // Working on what it started (docs/specs/004-interface-design/busy-buttons.md): it keeps focus and its place in
+  // the tab order, reads as disabled and busy, and ignores a press (a submit button does not submit). `disabled`
+  // would drop the keyboard to the page body, so it is only for a button that cannot run yet.
+  busy?: boolean;
 };
 
+// A press on a busy button: nothing, and no form submission either.
+function ignorePress(event: MouseEvent<HTMLButtonElement>) {
+  event.preventDefault();
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant, size, className, type = 'button', children, ...rest },
+  { variant, size, className, type = 'button', busy = false, onClick, children, ...rest },
   ref,
 ) {
+  const busyProps = busy
+    ? { 'aria-disabled': true, 'aria-busy': true, onClick: ignorePress }
+    : { onClick };
+  if (variant === 'none')
+    return (
+      <button
+        ref={ref}
+        type={type}
+        className={className ? `${NONE} ${className}` : NONE}
+        {...rest}
+        {...busyProps}
+      >
+        {children}
+      </button>
+    );
   return (
     <button
       ref={ref}
       type={type}
       className={buttonClassName({ variant, size, className })}
       {...rest}
+      {...busyProps}
     >
       <ButtonContent>{children}</ButtonContent>
     </button>

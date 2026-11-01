@@ -897,7 +897,8 @@ with the rest of the guest.
 ## Names and other typed text
 
 Token names, team names and organisations, account names and display names are kept as typed, with three things
-taken out (`src/text.ts`): the bidi embeddings, overrides and isolates (U+202A to U+202E, U+2066 to U+2069), which
+taken out (`@liveworkspace/api-kit/typed-text`, which the index's webhook names and the MCP servers' client
+names go through too): the bidi embeddings, overrides and isolates (U+202A to U+202E, U+2066 to U+2069), which
 would turn the text drawn after a name around or make one name pass for another (right-to-left letters need none of
 them); spaces and invisible formatting characters (zero-width spaces and joiners, word joiners, byte order marks,
 soft hyphens) at either end, so no name can look blank; and anything past the field's limit, cut between whole characters, never half an

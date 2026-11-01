@@ -163,6 +163,18 @@ describe('<ExplorerPanel>', () => {
     );
   });
 
+  it("deletes from its Trash in the Explorer page's words: Delete Forever, the same confirmation", async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1, { trashedAt: Date.now(), trashReason: 'deleted' })],
+    });
+    renderPanel(index);
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Trash' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Forever' }));
+    const confirm = screen.getByRole('dialog');
+    expect(within(confirm).getByRole('heading').textContent).toBe('Delete “Item 1” for good?');
+    expect(within(confirm).getByText('This cannot be undone.')).toBeTruthy();
+  });
+
   it("opens a phone's sheet on Home and remembers nothing", () => {
     localStorage.setItem(panelSectionStorageKey('liveplanner'), 'trash');
     renderPanel(createFakeIndex({ items: [] }), { layout: 'sheet', open: true });
@@ -394,6 +406,80 @@ describe("the panel's This Browser", () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
     expect(index.count('deleteItem')).toBe(0);
+  });
+
+  it('says when each changed in words, its full date on hover, and the page’s sentence with none', () => {
+    const now = Date.now();
+    renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: host({ items: [local('l1', 'Kept here', { updatedAt: now - 3 * 3_600_000 })] }),
+    });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (1)' }));
+    const when = screen.getByText('Changed 3 hours ago');
+    expect(when.tagName).toBe('TIME');
+    expect(when.getAttribute('title')).toBe(
+      new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
+        now - 3 * 3_600_000,
+      ),
+    );
+    cleanup();
+    // A stored date no Date can hold still reads, with no full date.
+    renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: host({ items: [local('l1', 'Kept here', { updatedAt: 9e15 })] }),
+    });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (1)' }));
+    expect(screen.getByText('Changed').tagName).toBe('SPAN');
+  });
+
+  it('lists the opened ones in Home’s Jump Back In beside the index’s, with the pill and its menu', async () => {
+    const indexed = makeItem(1, { lastOpenedAt: 1_000 });
+    const open = vi.fn();
+    const remove = vi.fn();
+    renderPanel(createFakeIndex({ items: [indexed] }), {
+      thisBrowser: host({
+        open,
+        remove,
+        items: [
+          local('l1', 'Kept here', { lastOpenedAt: 2_000 }),
+          local('l2', 'Never opened'),
+          local('l3', 'Gone', { trashedAt: 5, lastOpenedAt: 3_000 }),
+        ],
+      }),
+    });
+    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const cards = within(grid).getAllByRole('listitem');
+    // Last opened first: this browser's, then the index's; never the unopened or trashed one.
+    expect(cards.map((c) => c.textContent)).toEqual([
+      expect.stringContaining('Kept here'),
+      expect.stringContaining(indexed.title),
+    ]);
+    expect(within(cards[0]!).getByText('This Browser')).toBeTruthy();
+    expect(cards[0]!.hasAttribute('data-this-browser-card')).toBe(true);
+    fireEvent.click(within(cards[0]!).getByRole('button', { name: 'Kept here' }));
+    expect(open).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
+    fireEvent.click(within(cards[0]!).getByRole('button', { name: 'Menu for Kept here' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Delete Plan/ }));
+    const dialog = await screen.findByRole('dialog', {
+      name: /Delete this plan from this browser/,
+    });
+    expect(dialog.textContent).toContain('Nothing in your account changes.');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('never says No plans yet while this browser keeps opened ones, and leaves the open one out', async () => {
+    renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: host({ items: [local('l1', 'Kept here', { lastOpenedAt: 2_000 })] }),
+    });
+    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    expect(within(grid).getByText('Kept here')).toBeTruthy();
+    expect(screen.queryByText('No plans yet')).toBeNull();
+    cleanup();
+    // The open one is the only one: nothing else, as for the index's.
+    renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: host({ items: [local('l1', 'Kept here', { lastOpenedAt: 2_000 })] }),
+      currentId: 'l1',
+    });
+    expect(await screen.findByText('Nothing else yet')).toBeTruthy();
   });
 });
 

@@ -33,6 +33,9 @@ delete, undo, label edit via Space) that already work on a selection.
   is skipped. It works from anywhere on the page but a modal dialog (whose focus trap keeps it) and with focus in a
   text field, where F6 still moves on: typing never uses it. Each region is marked `data-region` with its name, and
   the tab order inside a region is unchanged. (`../packages/workbench/src/hooks/ui/useRegionCycle.ts`.)
+- **Panels are named regions.** Every floating panel and the popovers hung from the bottom controls (Layers, the
+  Explorer, the Map and the rest) is a `region` named by its title, so a screen reader moving into one hears which
+  panel it is in rather than a nameless group of controls.
 - Traversal is **selection**: the existing selection ring is the focus
   indicator (one concept, not two). Works in read-only views (it's
   navigation); the guarded verbs (nudge / delete / …) stay edit-only as
@@ -51,7 +54,7 @@ delete, undo, label edit via Space) that already work on a selection.
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
 - An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): the session
-  buttons (timer, vote), checklists, temperature checks, pickers, decision records, an embed, a link card, and an image still waiting for its picture. An
+  buttons (timer, vote), checklists, temperature checks, pickers, decision records, comment pins, action cards, pages, tab windows, a table (its cells edit in place, and selected it shows its column and row options), an embed, a link card, an image still waiting for its picture, and any element showing indicator buttons (its link, note, action or comments, [Element indicators](../008-canvas/element-indicators.md)). An
   img's children are presentational, so as pictures their Start, tick and answer buttons could
   not be reached with a screen reader.
 - A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Dot vote`), never the generic

@@ -38,4 +38,22 @@ describe('PollPanel', () => {
     );
     expect(screen.getByText('No answers yet').closest('[data-empty-state]')).toBeTruthy();
   });
+
+  // A question or text answer of one long word wraps inside the panel instead of running off it.
+  it('breaks a long unbroken question and text answer inside the panel', () => {
+    const word = 'x'.repeat(200);
+    const said = 'z'.repeat(280);
+    render(
+      <PollPanel
+        poll={{ ...poll, question: word }}
+        answers={new Map([['a', said]])}
+        isHost
+        onEnd={vi.fn()}
+        onDismiss={vi.fn()}
+        onPopoverClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(word).className).toContain('[overflow-wrap:anywhere]');
+    expect(screen.getByText(said).className).toContain('[overflow-wrap:anywhere]');
+  });
 });

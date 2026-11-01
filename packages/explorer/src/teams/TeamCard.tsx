@@ -466,6 +466,7 @@ function InviteFooter({ teamId, onInvited }: { teamId: string; onInvited: () => 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fieldId = useId();
+  const inviteRef = useRef<HTMLButtonElement>(null);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -479,6 +480,8 @@ function InviteFooter({ teamId, onInvited }: { teamId: string; onInvited: () => 
       setError(teamErrorMessage(result.error));
       return;
     }
+    // The emptied field disables Invite: the keyboard goes back to the field, ready for the next address.
+    if (document.activeElement === inviteRef.current) document.getElementById(fieldId)?.focus();
     setEmail('');
     toast.show(`Invitation sent to ${sent}.`, { tone: 'success' });
     onInvited();
@@ -511,7 +514,7 @@ function InviteFooter({ teamId, onInvited }: { teamId: string; onInvited: () => 
         <option value="member">Member</option>
         <option value="admin">Admin</option>
       </select>
-      <Button type="submit" size="xs" disabled={busy || !email.trim()}>
+      <Button ref={inviteRef} type="submit" size="xs" disabled={!email.trim()} busy={busy}>
         {busy ? 'Sending…' : 'Invite'}
       </Button>
       {error ? (

@@ -100,7 +100,7 @@ export function PollPromptSheet({
             <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
               Quick poll
             </span>
-            <h2 className="text-base font-semibold leading-snug text-slate-800 dark:text-slate-100">
+            <h2 className="text-base font-semibold leading-snug text-slate-800 [overflow-wrap:anywhere] dark:text-slate-100">
               {poll.question}
             </h2>
           </div>
@@ -140,7 +140,7 @@ export function PollPromptSheet({
                   key={token}
                   type="button"
                   onClick={() => onAnswer(token)}
-                  className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-100"
+                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition [overflow-wrap:anywhere] hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-100"
                 >
                   {token}
                 </button>

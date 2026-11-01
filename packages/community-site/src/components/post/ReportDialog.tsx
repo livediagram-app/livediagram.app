@@ -145,7 +145,8 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
                 type="submit"
                 variant="primary"
                 size="md"
-                disabled={!reason || phase === 'sending' || phase === 'gone'}
+                disabled={!reason || phase === 'gone'}
+                busy={phase === 'sending'}
               >
                 {phase === 'sending' ? 'Sending...' : 'Send Report'}
               </Button>

@@ -16,7 +16,7 @@ import type { Env } from '../env.ts';
 import { USER_ID } from '../ids.ts';
 import { readNotifySettings, type NotifySettings } from '../notify.ts';
 import type { SettingsApp } from '../settings.ts';
-import { cleanText } from '../text.ts';
+import { cleanText } from '@liveworkspace/api-kit/typed-text';
 import { devicesOf, settleDevices, type DeviceTarget } from './devices.ts';
 import { encryptPayload, vapidAuthorization, vapidSigningKey, type VapidKeys } from './web-push.ts';
 

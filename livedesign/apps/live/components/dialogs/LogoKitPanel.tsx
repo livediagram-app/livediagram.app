@@ -116,7 +116,7 @@ export function LogoKitPanel({
         </p>
       ) : null}
       <div className="flex justify-end">
-        <Button size="sm" onClick={() => void download()} disabled={busy}>
+        <Button size="sm" onClick={() => void download()} busy={busy}>
           {busy ? 'Making the kit…' : 'Download .zip'}
         </Button>
       </div>

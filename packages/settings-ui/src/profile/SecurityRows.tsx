@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Button } from '@liveworkspace/ui';
+import { DAY_LONG_MONTH, DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 
 // The Profile's Sign-in and Security (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): how the person signs in and
@@ -175,10 +177,11 @@ export function SignInMethodsRows({
             ) : google === 'connected' ? (
               <StatusPill on>Connected</StatusPill>
             ) : (
-              <button
-                type="button"
+              <Button
+                variant="none"
                 className={SETTINGS_ROW_BUTTON}
-                disabled={connecting || load.state === 'error'}
+                disabled={load.state === 'error'}
+                busy={connecting}
                 onClick={async () => {
                   setConnecting(true);
                   setFailed(false);
@@ -190,7 +193,7 @@ export function SignInMethodsRows({
                 }}
               >
                 {connecting ? 'Connecting…' : 'Connect'}
-              </button>
+              </Button>
             )
           }
         >
@@ -249,7 +252,7 @@ function lastActive(iso: string, now: number): string {
   if (hours < 24) return `Active ${hours} hour${hours === 1 ? '' : 's'} ago`;
   const days = Math.round(hours / 24);
   if (days < 30) return `Active ${days} day${days === 1 ? '' : 's'} ago`;
-  return `Active ${new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`;
+  return `Active ${DAY_MONTH.format(at)}`;
 }
 
 const LaptopGlyph = () => (
@@ -268,7 +271,7 @@ const PhoneGlyph = () => (
 function signedInSince(iso: string): string {
   const at = Date.parse(iso);
   if (Number.isNaN(at)) return 'Signed in here';
-  return `Signed in here since ${new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}`;
+  return `Signed in here since ${DAY_LONG_MONTH.format(at)}`;
 }
 
 /** Where You're Signed In: each session, this device first, signing out of any other. */
@@ -356,10 +359,10 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
             session.current ? (
               <StatusPill on>This device</StatusPill>
             ) : (
-              <button
-                type="button"
+              <Button
+                variant="none"
                 className={SETTINGS_ROW_BUTTON}
-                disabled={busy !== null}
+                busy={busy !== null}
                 aria-label={`Sign out of ${deviceName(session.userAgent)}`}
                 data-session-sign-out=""
                 onClick={(e) =>
@@ -367,7 +370,7 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
                 }
               >
                 {busy === session.id ? 'Signing out…' : 'Sign Out'}
-              </button>
+              </Button>
             )
           }
         />
@@ -380,15 +383,15 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
             description: `Ends ${others === 1 ? 'the other session' : `all ${others} other sessions`}. This device stays signed in.`,
           }}
           control={
-            <button
-              type="button"
+            <Button
+              variant="none"
               className={SETTINGS_ROW_BUTTON}
-              disabled={busy !== null}
+              busy={busy !== null}
               data-session-sign-out=""
               onClick={(e) => void act('others', security.revokeOtherSessions, e.currentTarget)}
             >
               {busy === 'others' ? 'Signing out…' : 'Sign Out Others'}
-            </button>
+            </Button>
           }
         >
           {failed ? (

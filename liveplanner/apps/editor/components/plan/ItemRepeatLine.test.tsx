@@ -68,20 +68,36 @@ describe('ItemRepeatLine', () => {
     render(<ItemRepeatLine rule={RULE} now={NOW} offline />);
     expect(screen.getByText('Repeats only in plans saved to your account')).toBeTruthy();
   });
+
+  it('pads Edit and Stop to a 44px tap height on a touch screen', () => {
+    render(
+      <ItemRepeatLine rule={RULE} now={NOW} offline={false} onEdit={vi.fn()} onStop={vi.fn()} />,
+    );
+    for (const name of ['Edit', 'Stop']) {
+      const classes = screen.getByRole('button', { name }).className.split(' ');
+      expect(classes).toEqual(expect.arrayContaining(['touch-target-y', 'relative']));
+    }
+  });
 });
 
 function Harness({
   item,
   canSet,
   onSave,
+  excludedStatuses,
 }: {
   item: Item;
   canSet: boolean;
   onSave: (field: string, value: ItemFieldValue | undefined) => void;
+  excludedStatuses?: string[];
 }) {
   const repeat = useItemRepeat({
     item,
-    statuses: [{ status: 'doing', name: 'Doing' }],
+    type: excludedStatuses ? { excludedStatuses } : {},
+    statuses: [
+      { status: 'doing', name: 'Doing' },
+      { status: 'declined', name: 'Declined' },
+    ],
     canSet,
     now: NOW,
     onSave,
@@ -144,6 +160,15 @@ describe('useItemRepeat', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Stop' }));
     expect(track).toHaveBeenCalledTimes(2);
     expect(track).toHaveBeenCalledWith('Plan', 'Toggled', 'RepeatOff');
+  });
+
+  it("offers Lands In only the states the card's type uses", () => {
+    render(<Harness item={card({})} canSet onSave={vi.fn()} excludedStatuses={['declined']} />);
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Repeat' }));
+    const landsIn = screen.getByRole('combobox', { name: 'Lands In' });
+    const names = [...landsIn.querySelectorAll('option')].map((o) => o.textContent);
+    expect(names).toEqual(['Starting State', 'Doing']);
   });
 
   it('shows a Participant or Viewer the line alone', () => {

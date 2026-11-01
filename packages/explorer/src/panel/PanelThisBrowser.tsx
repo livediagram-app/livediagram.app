@@ -10,15 +10,23 @@
 import { useExplorer } from '../explorer/context';
 import { BrowserIcon } from '../explorer/host';
 import {
+  ChangedAgo,
   LocalPreview,
   openThisBrowserItem,
+  THIS_BROWSER_EMPTY,
+  ThisBrowserItemMenu,
+  ThisBrowserPill,
   thenReload,
   useThisBrowserItems,
 } from '../explorer/ThisBrowser';
+import { memo } from 'react';
+import { useThisBrowserDrag } from '../drag/drag';
+import { jumpBackInLine } from '../data/viewLists';
 import type { ThisBrowserItem } from '../this-browser';
-import { relativeSince, useNow } from '../time';
+import { useNow } from '../time';
+import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { TrashIcon } from '../ui/icons';
-import { PaneEmpty, PaneIconButton, PaneList, PaneRow } from './pane-parts';
+import { PaneCard, PaneEmpty, PaneIconButton, PaneList, PaneRow } from './pane-parts';
 
 // Sync, in words: the one verb a row spells out, since it moves the item somewhere.
 const SYNC_BUTTON =
@@ -27,12 +35,11 @@ const SYNC_BUTTON =
 export function PanelThisBrowser() {
   const { app, words, kind, reloadLists, openDialog } = useExplorer();
   const { host, live } = useThisBrowserItems();
-  const now = useNow();
   if (!host || live.length === 0)
     return (
       <PaneEmpty
         icon={<BrowserIcon size={20} />}
-        title="Nothing here"
+        title={THIS_BROWSER_EMPTY}
         description={`${words.many} you keep only in this browser show up here.`}
       />
     );
@@ -54,7 +61,7 @@ export function PanelThisBrowser() {
               }
               title={name}
               label={name}
-              meta={`Changed ${relativeSince(item.updatedAt, now || Date.now())}`}
+              meta={<ChangedAgo at={item.updatedAt} />}
               onActivate={() => open(item)}
               rowProps={{ 'data-this-browser-row': item.id } as React.HTMLAttributes<HTMLLIElement>}
               trailing={
@@ -89,3 +96,52 @@ export function PanelThisBrowser() {
     </div>
   );
 }
+
+/** Home's Jump Back In card for an item kept only in this browser, as the page's Home shows one: This Browser's
+ *  picture, the pill and when it was opened, This Browser's menu (Open, Sync, Delete) and its drag. */
+export const PanelLocalCard = memo(function PanelLocalCard({ item }: { item: ThisBrowserItem }) {
+  const { app, kind } = useExplorer();
+  const { host } = useThisBrowserItems();
+  const menu = useRowMenu();
+  const drag = useThisBrowserDrag(item);
+  const now = useNow();
+  const name = item.title || `Untitled ${kind.lowerOne}`;
+  return (
+    <PaneCard
+      preview={<LocalPreview app={app} iconSize={28} className="h-full w-full" />}
+      title={name}
+      label={name}
+      meta={
+        <span className="flex min-w-0 items-center gap-1.5">
+          <ThisBrowserPill inLink />
+          <span className="truncate">{jumpBackInLine(item, now || Date.now())}</span>
+        </span>
+      }
+      onActivate={host ? () => openThisBrowserItem(host, item) : undefined}
+      rowProps={
+        {
+          'data-this-browser-card': '',
+          onContextMenu: menu.onContextMenu,
+          ...drag,
+        } as React.HTMLAttributes<HTMLLIElement>
+      }
+      trailing={
+        <>
+          <EllipsisTriggerButton
+            {...menu.triggerProps}
+            size="md"
+            reveal
+            label={`Menu for ${name}`}
+          />
+          {menu.open ? (
+            <ThisBrowserItemMenu
+              item={item}
+              anchor={menu.triggerRef.current}
+              onClose={menu.close}
+            />
+          ) : null}
+        </>
+      }
+    />
+  );
+});

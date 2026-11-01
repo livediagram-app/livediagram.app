@@ -9,13 +9,25 @@ import {
   eventCategory,
   eventLabel,
   eventTone,
+  formatDay,
+  formatMonth,
   groupByDay,
   isNewEvent,
+  timeLabel,
   stackLabel,
 } from './model';
 
 const DAY = 24 * 60 * 60_000;
 const noon = new Date(2026, 9, 21, 12).getTime();
+
+// The reader's locale words a day; these say what it must hold, in whatever order the locale gives.
+const dayIn = (y: number, m: number, d: number, year = false) =>
+  new Intl.DateTimeFormat(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    ...(year ? { year: 'numeric' } : {}),
+  }).format(new Date(y, m - 1, d));
 
 describe('the Timeline’s rules', () => {
   it('groups by the reader’s day, newest first, and marks today', () => {
@@ -29,7 +41,7 @@ describe('the Timeline’s rules', () => {
       ['2026-10-21', 2, true],
       ['2026-10-20', 1, false],
     ]);
-    expect(groups[0]!.label).toBe('Wed, 21 Oct');
+    expect(groups[0]!.label).toBe(dayIn(2026, 10, 21));
   });
 
   it('puts a day still to come in the Upcoming band, never today or before', () => {
@@ -151,5 +163,24 @@ describe('the Timeline’s rules', () => {
     expect(groups.length).toBeGreaterThan(60);
     expect(stacks).toBeGreaterThan(groups.length);
     expect(ms).toBeLessThan(250);
+  });
+});
+
+describe('dates in the reader’s locale', () => {
+  it('words a day, its year, a month and a time as the locale does, never a forced one', () => {
+    expect(formatDay('2025-12-30')).toEqual({
+      label: dayIn(2025, 12, 30),
+      year: '2025',
+      withYear: dayIn(2025, 12, 30, true),
+    });
+    expect(formatDay('not-a-day')).toEqual({ label: 'not-a-day', year: '', withYear: 'not-a-day' });
+    expect(formatMonth('2026-10')).toBe(
+      new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(
+        new Date(2026, 9, 1),
+      ),
+    );
+    expect(timeLabel(noon)).toBe(
+      new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(noon),
+    );
   });
 });

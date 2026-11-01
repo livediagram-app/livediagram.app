@@ -131,7 +131,7 @@ export function ImageExportPanel({
           variant="primary"
           size="md"
           onClick={() => onExport({ pattern, hiddenLayers })}
-          disabled={busy}
+          busy={busy}
         >
           {busy ? 'Exporting…' : `Download ${label}`}
         </Button>

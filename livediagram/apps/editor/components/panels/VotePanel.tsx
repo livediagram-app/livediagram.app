@@ -22,6 +22,7 @@
 
 import { votesSpentBy, type Element, type TabVote } from '@livediagram/document';
 import { describeOne } from '@/lib/element-names';
+import { dotsLeftText } from '@/lib/vote-by-key';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
@@ -198,7 +199,7 @@ function YourDots({ vote, selfId }: { vote: TabVote; selfId: string }) {
   return (
     <div className="flex items-center justify-between gap-2 rounded-md bg-brand-50 px-2 py-1.5 dark:bg-brand-500/15">
       <span className="text-[11px] font-medium text-brand-700 dark:text-brand-100">
-        {remaining} of {budget} {budget === 1 ? 'dot' : 'dots'} left
+        {dotsLeftText(remaining, budget)}
       </span>
       <span className="flex flex-wrap items-center gap-0.5" aria-hidden>
         {Array.from({ length: budget }, (_, d) => (

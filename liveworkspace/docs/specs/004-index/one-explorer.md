@@ -226,8 +226,14 @@ on, the root AGENTS.md), so the page an app's E2E stack serves on its own port (
   to the app's own `/explorer/offline` (the registry's `offlinePath`). That view is the only This Browser page: the
   apps' old `/offline` pages only redirect to it, their query kept. Each of its rows has **Sync** (signed in) and
   **Delete**, asked first and for good, since nothing else holds the item: the same verbs and confirmation as the
-  panel's This Browser rows. Every app's host deletes in place (`remove`, its offline store's delete), so Delete is
-  never missing in one app and there in another. The view takes the filter lens like My Work (the field and chip
+  panel's This Browser rows. The confirmation says it deletes only this browser's copy, the one there is, and that
+  nothing in the account changes (`thisBrowserDeleteCopy`, the editors' handed-over Delete words it the same). Every
+  host has `remove`, so Delete is never missing in one app and there in another: the editor's panel deletes in place
+  (its offline store's delete); the page, which can't reach the app's offline store, asks on the page and then hands
+  over to the editor (`?convert=delete`, below), which deletes it without asking again and comes back to
+  `/explorer/offline`. Each row says when it last changed in relative words ("Changed 3 hours ago"), its full date
+  and time in the browser's locale on hover (`title`), as the panel's rows do; with none, the page and the panel both
+  say "Nothing is kept only in this browser." The view takes the filter lens like My Work (the field and chip
   row), matched in the browser over the list, since the index never sees these items.
 - **This Browser in the Inbox.** The Inbox's rows from those offline items (actions, cards and threads, which the
   index never holds) are worked out by the app's own code. The editor's panel reads them from the offline store
@@ -237,24 +243,28 @@ on, the root AGENTS.md), so the page an app's E2E stack serves on its own port (
   out again about 1.5 s after its offline store last writes, once a page load and as the panel's Inbox reads, and
   drops it when no offline items are left. The page lists it, with the This Browser pill, only to the person it
   names, and hears it change. liveworkspace.app can't read it, as it can't read the list.
-- **Take Offline and Sync.** Where the app's editor runs them (the registry's `offlineConversions`), each of the
-  app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live This Browser
-  row has **Sync** for a person signed in. Only the app can write its offline store: in the editor's panel both run
-  in place; the page hands over to the app's editor at the item's own address
-  (`<itemPath><id>?convert=take-offline|sync&item=<id>`, `thisBrowserConvertHref`), which takes the request out of
-  the address, checks the item is the person's to move, asks them to confirm, and runs the app's own conversion. A
-  request that reaches This Browser's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on
-  to the editor the same way. A link alone never moves anything.
+- **Take Offline, Sync and Delete.** Where the app's editor runs them (the registry's `offlineConversions`), each of
+  the app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live This
+  Browser row has **Sync** for a person signed in and **Delete** for anyone. Only the app can write its offline
+  store: in the editor's panel all three run in place; the page hands over to the app's editor at the item's own
+  address (`<itemPath><id>?convert=take-offline|sync|delete&item=<id>`, `thisBrowserConvertHref`), which takes the
+  request out of the address, checks the item is the person's to move (or, for Delete, one this browser keeps), asks
+  them to confirm, and runs the app's own conversion or delete. The page's Delete has already asked, on the page: it
+  leaves a note for that one item in this tab's session storage (`markThisBrowserDeleteConfirmed`), and the editor
+  takes the note (once, for that item) in place of asking again. A link without the note asks first. A request that
+  reaches This Browser's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on to the
+  editor the same way. A link alone never moves or deletes anything.
 - **This Browser in Jump Back In.** An opened This Browser item is one card among Home's others, the same size and
   shape as the rest of its group (a thumbnail area, the title, and a line with the **This Browser** badge and when it
   was opened). It has no snapshot (none leaves the browser), so its thumbnail is a picture of the browser it lives in,
   tinted in the accent of the app that owns it (`LocalPreview`): the same picture on its This Browser rows, on the page
   and in the panel. The **This Browser** badge, in teal (no app's accent and no status colour, with its icon and words), says where it lives; the tint says whose it is. It has the same ⋯ menu and right-click as any card, with This Browser's own verbs: **Open**, **Sync**
   (signed in, as This Browser's rows offer it: in place in the panel, handed over to the editor on the page) and,
-  where the host deletes in place (`remove`), **Delete**, asked first. It drags as the others do, and each target
-  means what it can for an item the account doesn't hold. On the **Trash** it is deleted for good after a
-  confirmation, since nothing else holds it; where the host can't delete it (the page, which can't reach the
-  editor's store) the drop says so and offers Open, as the Trash's This Browser group does. On a **folder**, My Work
+  where the host has `remove`, **Delete**, asked first (in place in the panel, handed over on the page). It drags as
+  the others do, and each target means what it can for an item the account doesn't hold. On the **Trash** it is
+  deleted for good after a confirmation, since nothing else holds it; a host without `remove` (none today, kept for
+  a host that can't reach the app's editor) makes the drop say so and offer Open, as the Trash's This Browser group
+  does. On a **folder**, My Work
   or a team it has to be synced to the account first, so the drop asks to Sync: in place, it then moves there; on
   the page Sync hands over to the editor, and the dialog says it can be moved once it's in the account. Signed out,
   the drop says to sign in and sync it first.
@@ -286,6 +296,10 @@ moves one into the account and the panel asks before deleting one for good). Eac
 in full, never cut short, beside quiet glyphs: **New Folder** (New Subfolder inside a folder) in a space, a team's
 **Members**, each named by its label and tooltip, and the app switch (the app's logo and name, All with
 liveworkspace's). There is no Open Page: the full Explorer is the menu button's own link and Home's See all.
+The panel's Home lists This Browser's opened items among Jump Back In by the page's rule (`mergeOpened`: last opened
+first, among the index's), each a card with This Browser's picture (`LocalPreview`), the **This Browser** pill, when
+it was opened and This Browser's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
+open item is left out there, as the index's is.
 
 **The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **64rem** (1024 px) wide, kept 1rem
 inside the window, and up to **56rem** (896 px) tall, kept on the canvas below its button and 24 px short of the
@@ -364,6 +378,15 @@ is fresher than the token's claim. A team's members and its join link are read o
 its team's Members dialog opens. A change is shown at once: a team made, joined, renamed, left or deleted is laid
 over the token's list for the rest of the page's life (in the panel too), and the host renews its token so the
 next one names it.
+
+**Dates.** Every date the Explorer, the Settings panel and liveworkspace.app's own pages show is written in the
+browser's locale (its language and region order: "3 Nov 2026" in the UK, "Nov 3, 2026" in the US), never a fixed
+one, through one shared formatter (`@liveworkspace/ui/date-format`). It keeps one `Intl.DateTimeFormat` per set of
+options and locale, made the first time it is asked for, so a list of thousands of rows makes none per row. A date
+that has to be a given zone's day keeps its zone (the status page's days are UTC). Text a prerender would write
+can't know the reader's locale, so dates are written only in the browser: the lists that carry them read their data
+in the browser (the Explorer's items, This Browser's list, the status history, the Settings rows), and a prerender
+shows none.
 
 ### 5. Comments, actions and the Inbox live in liveworkspace
 

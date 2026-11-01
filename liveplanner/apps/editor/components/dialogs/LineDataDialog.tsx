@@ -112,7 +112,7 @@ export function LineDataDialog({
                     <input
                       className={`${cell} w-full font-medium`}
                       value={s.name}
-                      aria-label="Series name"
+                      aria-label={`Series ${si + 1} name`}
                       onChange={(e) =>
                         setRows((r) =>
                           r.map((x, j) => (j === si ? { ...x, name: e.target.value } : x)),
@@ -122,7 +122,7 @@ export function LineDataDialog({
                     />
                     <button
                       type="button"
-                      aria-label="Remove series"
+                      aria-label={`Remove series ${si + 1}`}
                       disabled={rows.length <= 1}
                       onClick={() =>
                         commit(
@@ -161,7 +161,7 @@ export function LineDataDialog({
                   <input
                     className={`${cell} w-28`}
                     value={c}
-                    aria-label="Category"
+                    aria-label={`Category ${i + 1}`}
                     onChange={(e) =>
                       setCats((cc) => cc.map((v, j) => (j === i ? e.target.value : v)))
                     }
@@ -197,7 +197,7 @@ export function LineDataDialog({
                 <td className="text-center">
                   <button
                     type="button"
-                    aria-label="Remove row"
+                    aria-label={`Remove row ${i + 1}`}
                     disabled={cats.length <= 1}
                     onClick={() =>
                       commit(

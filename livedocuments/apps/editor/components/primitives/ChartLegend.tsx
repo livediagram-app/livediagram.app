@@ -56,7 +56,9 @@ export function ChartLegend({
       aria-hidden
     >
       {items.map((item, i) => (
-        <div key={i} className="flex items-center gap-1 leading-tight">
+        // max-w-full: a name longer than the strip is cut with an ellipsis (its span's `truncate`) rather than
+        // widening its row past the chart, where the strip's overflow would clip its swatch and both ends.
+        <div key={i} className="flex max-w-full items-center gap-1 leading-tight">
           <span
             className="inline-block shrink-0 rounded-[2px]"
             style={{ width: swatch, height: swatch, backgroundColor: colorAt(i, item) }}

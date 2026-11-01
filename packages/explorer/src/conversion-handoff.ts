@@ -3,8 +3,9 @@
 // Take Offline and Sync handed over by the Explorer on an app's address (liveworkspace's shared Explorer, which
 // can't write the app's offline store): the app's editor, opened at the item's own address, reads
 // `?convert=…&item=…` once (./this-browser), takes it out of the address, checks the item is the person's to move, and
-// runs the conversion through the same code the editor's Explorer panel uses. Both ask first: Take Offline with its
-// own confirm, Sync with one here, since a link alone must never move an item.
+// runs the conversion through the same code the editor's Explorer panel uses. Each asks first: Take Offline with its
+// own confirm, Sync with one here, since a link alone must never move an item. Delete (an item kept only in this
+// browser) asks here too, unless the page already asked in this tab (its note in session storage, taken once).
 //
 // Every app's editor calls this with its own pieces: its conversions, confirm and toast, its offline list, the index
 // read, and the word for its items.
@@ -15,6 +16,8 @@ import { useLatest } from './ui/useLatest';
 import {
   dropThisBrowserConversion,
   readThisBrowserConversion,
+  takeThisBrowserDeleteConfirmed,
+  thisBrowserDeleteCopy,
   type ThisBrowserConversion,
 } from './this-browser';
 
@@ -38,6 +41,8 @@ export type ConversionHandoffOptions = {
   getItem: (id: string) => Promise<{ item: Pick<Item, 'app' | 'sharedVia' | 'access' | 'title'> }>;
   // The items this browser keeps (the app's offline store).
   listKept: () => Promise<readonly { id: string; name?: string | null }[]>;
+  // Deletes one kept only in this browser, for good (the editor's This Browser delete, which leaves the item).
+  remove: (id: string) => Promise<unknown>;
 };
 
 const capitalised = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
@@ -53,19 +58,26 @@ export function useConversionHandoff(options: ConversionHandoffOptions): void {
     if (!asked) return;
     taken.current = true;
     dropThisBrowserConversion();
+    // Read (and cleared) at once, whatever follows, so a later link never finds it.
+    const askedOnPage = asked.conversion === 'delete' && takeThisBrowserDeleteConfirmed(asked.id);
     void (async () => {
-      const { conversions, confirm, toastError, noun } = latest.current;
+      const { conversions, confirm, toastError, noun, remove } = latest.current;
       const doc = await movable(asked.conversion, asked.id, latest.current);
       if (!doc) {
         toastError(
-          asked.conversion === 'sync'
-            ? `Couldn’t find that ${noun} in this browser.`
-            : `You can’t take that ${noun} offline.`,
+          asked.conversion === 'take-offline'
+            ? `You can’t take that ${noun} offline.`
+            : `Couldn’t find that ${noun} in this browser.`,
         );
         return;
       }
       if (asked.conversion === 'take-offline') {
         await conversions.takeOffline(doc);
+        return;
+      }
+      if (asked.conversion === 'delete') {
+        if (askedOnPage || (await confirm(thisBrowserDeleteCopy(noun, doc.name))))
+          await remove(doc.id);
         return;
       }
       const ok = await confirm({
@@ -80,15 +92,16 @@ export function useConversionHandoff(options: ConversionHandoffOptions): void {
   }, [ownerId, latest]);
 }
 
-/** The item the request names, when it may be moved that way: Sync, one this browser keeps (signed in); Take
- *  Offline, one of this app's the person can edit in their own library or a team's (not one reached by a link). */
+/** The item the request names, when it may be moved that way: Sync, one this browser keeps (signed in); Delete, one
+ *  this browser keeps (anyone: it is theirs, in their browser); Take Offline, one of this app's the person can edit in
+ *  their own library or a team's (not one reached by a link). */
 async function movable(
   conversion: ThisBrowserConversion,
   id: string,
   { signedIn, app, getItem, listKept }: ConversionHandoffOptions,
 ): Promise<HandoffDoc | null> {
-  if (conversion === 'sync') {
-    if (!signedIn) return null;
+  if (conversion !== 'take-offline') {
+    if (conversion === 'sync' && !signedIn) return null;
     const kept = (await listKept().catch(() => [])).find((d) => d.id === id);
     return kept ? { id, name: kept.name || 'Untitled' } : null;
   }

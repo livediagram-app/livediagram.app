@@ -232,7 +232,7 @@ export function ImageBackgroundChoices({
         variant="secondary"
         size="xs"
         className="mt-2 w-full"
-        disabled={busy}
+        busy={busy}
         onClick={() => fileInput.current?.click()}
       >
         {busy ? 'Uploading…' : 'Upload an Image'}

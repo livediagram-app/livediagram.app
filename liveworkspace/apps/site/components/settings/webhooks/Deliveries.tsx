@@ -1,4 +1,5 @@
 import { CompactEmptyState } from '@liveworkspace/ui';
+import { dateFormat } from '@liveworkspace/ui/date-format';
 import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
 import type { WebhookDelivery, WebhookEvent } from '@liveworkspace/index-client';
 import { AppName, DeliveredGlyph, FailedGlyph, WaitingGlyph } from './marks';
@@ -7,12 +8,8 @@ import { deliveryLine, EVENT_APP, eventName } from './webhooks-api';
 // A webhook's Recent Deliveries (webhooks.md "Delivery"): newest first, each its event and item, what happened in
 // words, how many tries, and when, marked green, red or amber.
 
-const TIME = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-});
+// In the reader's locale, made once (@liveworkspace/ui/date-format).
+const TIME = dateFormat({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 const MARKS: Record<WebhookDelivery['state'], { Glyph: typeof DeliveredGlyph; tone: string }> = {
   delivered: { Glyph: DeliveredGlyph, tone: 'text-emerald-600 dark:text-emerald-400' },

@@ -6,6 +6,7 @@ import { signInHref, signUpHref } from '@/lib/accounts';
 import { joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
 import { Footer } from '../Footer';
 import { Header } from '../Header';
+import { Button } from '@liveworkspace/ui';
 import { BUTTON } from '../settings/account-ui';
 import { TeamAvatar } from './Avatars';
 
@@ -113,15 +114,15 @@ export function JoinPage() {
           </p>
           {state.preview.signedIn ? (
             <div className="mt-8 flex w-full flex-col gap-2 sm:w-auto sm:flex-row-reverse">
-              <button
-                type="button"
+              <Button
+                variant="none"
                 autoFocus
-                disabled={busy}
+                busy={busy}
                 className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}
                 onClick={() => void join()}
               >
                 {busy ? 'Joining…' : `Join ${state.preview.teamName}`}
-              </button>
+              </Button>
               <a
                 href={INVITES_PATH}
                 className={`${BUTTON.secondary} relative touch-target-y py-2.5`}

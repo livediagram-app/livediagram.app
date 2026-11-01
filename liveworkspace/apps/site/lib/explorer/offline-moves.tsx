@@ -9,6 +9,7 @@
 
 import type { ItemMenuHost, ThisBrowserItem } from '@liveworkspace/explorer';
 import {
+  markThisBrowserDeleteConfirmed,
   thisBrowserConvertHref,
   type ThisBrowserConversion,
 } from '@liveworkspace/explorer/this-browser';
@@ -55,4 +56,19 @@ export function offlineSyncHref(
   const handOver = offlineHandOver(host);
   if (!handOver || !signedIn) return undefined;
   return (item) => handOver('sync', item.id);
+}
+
+/** Delete on each of This Browser's rows, for anyone: the Explorer has asked by now (its `delete-local` dialog), so it
+ *  notes that for the editor in this tab and hands over; the editor deletes it without asking again and comes back
+ *  to `/explorer/offline`. Undefined where the app converts none. */
+export function offlineRemove(
+  host: AppName | null,
+  assign: (href: string) => void = (href) => window.location.assign(href),
+): ((item: ThisBrowserItem) => void) | undefined {
+  const handOver = offlineHandOver(host);
+  if (!handOver) return undefined;
+  return (item) => {
+    markThisBrowserDeleteConfirmed(item.id);
+    assign(handOver('delete', item.id));
+  };
 }

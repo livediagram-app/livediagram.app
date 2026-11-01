@@ -14,7 +14,7 @@ import {
   type ItemAttachment,
   type ItemFieldValue,
 } from '@liveplanner/items';
-import { Tooltip, TrashIcon, lucideGlyph } from '@liveplanner/ui';
+import { Button, lucideGlyph, Tooltip, TrashIcon } from '@liveplanner/ui';
 import {
   lucideDownload,
   lucideExternalLink,
@@ -152,12 +152,13 @@ export function AttachmentsField({
               e.target.value = '';
             }}
           />
-          <button
+          <Button
+            variant="none"
             id={id}
-            type="button"
-            disabled={!canAdd || busy}
+            // Busy, not disabled, while it uploads: the keyboard is back on it from the file picker (busy-buttons.md).
+            disabled={!canAdd}
+            busy={busy}
             aria-describedby={hintId}
-            aria-busy={busy || undefined}
             onClick={() => fileRef.current?.click()}
             className={`flex w-full cursor-pointer items-center gap-3 rounded-lg border border-dashed px-3 py-2.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 disabled:cursor-not-allowed motion-reduce:transition-none pointer-coarse:min-h-11 ${
               over
@@ -185,7 +186,7 @@ export function AttachmentsField({
                 {upload.blocked ?? 'PNG, JPEG, WebP or GIF, up to 10 MB · or paste'}
               </span>
             </span>
-          </button>
+          </Button>
         </>
       ) : null}
       {message ? (

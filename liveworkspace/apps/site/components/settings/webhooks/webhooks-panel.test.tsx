@@ -182,7 +182,8 @@ describe('Settings › Webhooks', () => {
     expect(row().textContent).toContain('Slack · Design’s items');
     expect(row().querySelector('[data-state="live"]')?.textContent).toBe('Active');
     expect(row().textContent).toContain('hooks.slack.com');
-    expect(row().textContent).toMatch(/Delivered \d+ \w{3}/);
+    // The date in the reader's locale: "21 Sept" or "Sep 21".
+    expect(row().textContent).toMatch(/Delivered (\d+ \w{3,4}|\w{3,4} \d+)/);
     const sends = row().querySelector('[aria-label="What it sends"]')!;
     expect(sends.textContent).toContain('Item Created');
     expect(sends.textContent).toContain('Card Moved');
@@ -277,6 +278,17 @@ describe('Settings › Webhooks', () => {
     expect(row('w2').textContent).toContain('Added. Send a test to check it reaches your service.');
   });
 
+  it('isolates each name (<bdi>), so a right-to-left or overriding one never turns the words around it', async () => {
+    webhooks = [{ ...HOOK, name: '\u202Eevil' }];
+    await render();
+    expect(row().querySelector('h5 > bdi')?.textContent).toBe('\u202Eevil');
+    await press('Add Webhook');
+    type(field('Slack Webhook URL'), 'https://hooks.slack.com/services/T/B/x');
+    type(field('Name'), 'Mine');
+    await press('Add Webhook', container.querySelector('form')!);
+    expect(container.querySelector('[role=status] bdi')?.textContent).toBe('Mine');
+  });
+
   it('says what was wrong with the address, by where it sends', async () => {
     answer = (c) => (c.method === 'POST' ? json(400, { error: 'webhook_url_invalid' }) : null);
     await render();
@@ -327,7 +339,14 @@ describe('Settings › Webhooks', () => {
       await wait(0);
       expect(calls.some((c) => c.url === '/api/index/webhooks/w1/test')).toBe(true);
       expect(row().querySelector('[role=status]')?.textContent).toBe('Sending a test…');
-      expect(button('Send Test', row()).disabled).toBe(true);
+      // Pressed again while it sends, nothing more is queued; and the keyboard stays on it (aria-disabled, never
+      // disabled, which dropped focus out of Settings).
+      const sendTest = button('Send Test', row());
+      expect(sendTest.getAttribute('aria-disabled')).toBe('true');
+      expect(sendTest.disabled).toBe(false);
+      expect(document.activeElement).toBe(sendTest);
+      await press('Send Test', row());
+      expect(calls.filter((c) => c.url.endsWith('/test'))).toHaveLength(1);
       await wait(READ_AT[0]);
       expect(reads).toBe(1);
       expect(row().querySelector('[role=status]')?.textContent).toBe('Sending a test…');
@@ -390,6 +409,37 @@ describe('Settings › Webhooks', () => {
     await press('Resume Webhook', row());
     expect(calls.filter((c) => c.method === 'PATCH').at(-1)?.body).toEqual({ paused: false });
     expect(button('Pause Webhook', row())).toBeTruthy();
+  });
+
+  it('keeps the keyboard on Pause as it turns into Resume, and on Pause after Resume in the note', async () => {
+    await render();
+    await press('Pause Webhook', row());
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Resume Webhook');
+    const note = [...row().querySelectorAll('button')].find((b) => b.textContent === 'Resume')!;
+    note.focus();
+    await act(async () => note.click());
+    await settle();
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Pause Webhook');
+  });
+
+  it('puts the keyboard on Copy once added with a secret, and keeps it on Add Webhook when refused', async () => {
+    await render();
+    await press('Add Webhook');
+    act(() => choice('Your Own Service').click());
+    type(field('Name'), 'Mine');
+    type(field('HTTPS Address'), 'https://hooks.example.com/in');
+    await press('Add Webhook', container.querySelector('form')!);
+    expect(document.activeElement?.textContent).toBe('Copy');
+    await press('Done');
+    answer = (c) => (c.method === 'POST' ? json(400, { error: 'webhook_url_invalid' }) : null);
+    await press('Add Webhook');
+    act(() => choice('Your Own Service').click());
+    type(field('Name'), 'Again');
+    type(field('HTTPS Address'), 'https://hooks.example.com/in');
+    const form = container.querySelector('form')!;
+    await press('Add Webhook', form);
+    expect(container.querySelector('[role=alert]')).toBeTruthy();
+    expect(document.activeElement).toBe(button('Add Webhook', form));
   });
 
   it('deletes after asking in a popover, and keeps it on Cancel', async () => {
@@ -461,8 +511,11 @@ describe('words', () => {
   it('says when, relatively within a week and by date past it', () => {
     const now = Date.UTC(2026, 9, 30, 12);
     expect(whenOf(now - 2 * 3_600_000, now)).toMatch(/2 hours ago|2h/);
-    expect(whenOf(now - 10 * 86_400_000, now)).toBe('20 Oct');
-    expect(whenOf(now + 60_000, now)).toBe('30 Oct');
+    // Past a week, the date in the reader's locale ("20 Oct", "Oct 20").
+    const day = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
+    expect(whenOf(now - 10 * 86_400_000, now)).toBe(day.format(now - 10 * 86_400_000));
+    expect(whenOf(now - 10 * 86_400_000, now)).toMatch(/20/);
+    expect(whenOf(now + 60_000, now)).toBe(day.format(now + 60_000));
   });
 
   it('finds the test this row sent, never an older one', () => {

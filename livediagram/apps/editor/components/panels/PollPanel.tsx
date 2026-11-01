@@ -73,7 +73,7 @@ export function PollPanel({
       onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2 px-2 pb-2">
-        <p className="text-[12px] font-medium leading-snug text-slate-800 dark:text-slate-100">
+        <p className="text-[12px] font-medium leading-snug text-slate-800 [overflow-wrap:anywhere] dark:text-slate-100">
           {poll.question}
         </p>
 
@@ -91,7 +91,7 @@ export function PollPanel({
                 {textAnswers.map((text, i) => (
                   <li
                     key={i}
-                    className="rounded-md bg-slate-50 px-2 py-1 text-[11px] leading-snug text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    className="rounded-md bg-slate-50 px-2 py-1 text-[11px] leading-snug text-slate-700 [overflow-wrap:anywhere] dark:bg-slate-800 dark:text-slate-200"
                   >
                     {text}
                   </li>

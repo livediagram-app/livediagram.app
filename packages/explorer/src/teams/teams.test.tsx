@@ -205,6 +205,32 @@ describe('a team’s view', () => {
     expect(await screen.findByText('Invitation sent to zoe@x.test.')).toBeTruthy();
   });
 
+  it('keeps the keyboard on Invite while it sends, then hands it to the emptied field', async () => {
+    let finish: () => void = () => {};
+    const invite = vi.fn(
+      () =>
+        new Promise<{ ok: true; value: undefined }>(
+          (r) => (finish = () => r({ ok: true, value: undefined })),
+        ),
+    );
+    const host = fakeHost(details(), { invite } as unknown as Partial<TeamsHost>);
+    page({ kind: 'team', id: 't1' }, host);
+    await card();
+    const field = screen.getByLabelText('Email address to invite');
+    fireEvent.change(field, { target: { value: 'zoe@x.test' } });
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Invite' });
+    button.focus();
+    fireEvent.click(button);
+    await waitFor(() => expect(button.getAttribute('aria-busy')).toBe('true'));
+    expect(button.disabled).toBe(false);
+    expect(document.activeElement).toBe(button);
+    fireEvent.click(button);
+    expect(invite).toHaveBeenCalledTimes(1);
+    finish();
+    await screen.findByText('Invitation sent to zoe@x.test.');
+    expect(document.activeElement).toBe(field);
+  });
+
   it('turns the join link on, and copies it', async () => {
     const team = details();
     const host = fakeHost(team, {
@@ -221,8 +247,12 @@ describe('a team’s view', () => {
     page({ kind: 'team', id: 't1' }, host);
     await card();
     fireEvent.click(screen.getByRole('button', { name: 'Invite by Link' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Turn On Link' }));
+    const turnOn = await screen.findByRole('button', { name: 'Turn On Link' });
+    turnOn.focus();
+    fireEvent.click(turnOn);
     await waitFor(() => expect(host.resetInviteLink).toHaveBeenCalledWith('t1'));
+    // Turn On Link goes as the link shows: the keyboard moves to Copy, not to the dialog's top.
+    await waitFor(() => expect(document.activeElement?.textContent).toBe('Copy'));
     fireEvent.click(await screen.findByRole('button', { name: 'Copy' }));
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith('https://liveworkspace.app/join?token=abc'),
@@ -328,8 +358,10 @@ describe('New Team', () => {
 
   it('is not offered to a guest, nor without a TeamsHost', async () => {
     page({ kind: 'all' }, fakeHost(), { signedIn: false, signInHref: '/sign-in' });
-    expect(await screen.findByRole('link', { name: /Sign in to access Teams/ })).toBeTruthy();
+    const nudge = await screen.findByRole('link', { name: /Sign in to access Teams/ });
     expect(screen.queryByRole('treeitem', { name: 'New Team' })).toBeNull();
+    // Outside the Spaces tree, which holds only treeitems (axe aria-required-children).
+    expect(nudge.closest('[role="tree"]')).toBeNull();
   });
 
   it('reads the teams list once as the page opens, and a team only when its view opens', async () => {

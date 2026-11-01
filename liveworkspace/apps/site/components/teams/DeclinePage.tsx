@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { accountApi, errorMessage } from '@/lib/account-api';
 import { joinTokenFrom, INVITES_PATH } from '@/lib/teams';
+import { Button } from '@liveworkspace/ui';
 import { BUTTON } from '../settings/account-ui';
 import { JoinShell, Notice } from './JoinPage';
 
@@ -87,14 +88,14 @@ export function DeclinePage() {
           title={`Decline the invitation to ${state.teamName}?`}
           body="You won’t join the team, and its admins will see you declined. To accept instead, sign in with the address it was sent to."
         >
-          <button
-            type="button"
-            disabled={busy}
-            className="relative touch-target-y inline-flex cursor-pointer items-center justify-center rounded-full bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors duration-micro hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+          <Button
+            variant="none"
+            busy={busy}
+            className="relative touch-target-y inline-flex cursor-pointer items-center justify-center rounded-full bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors duration-micro hover:bg-rose-700"
             onClick={() => void decline()}
           >
             {busy ? 'Declining…' : 'Decline invitation'}
-          </button>
+          </Button>
           <a href={INVITES_PATH} className={`${BUTTON.secondary} relative touch-target-y py-2.5`}>
             See your invitations
           </a>

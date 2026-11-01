@@ -76,6 +76,29 @@ describe('the Make Sizes dialog', () => {
     expect(make().textContent).toBe('Make Sizes');
   });
 
+  it('keeps the focus in the dialog when Select All or Clear turns itself off', () => {
+    // Each disables itself once pressed, which dropped the focus on the page: it moves to the other one.
+    open();
+    const all = screen.getByRole('button', { name: 'Select All' });
+    const clear = screen.getByRole('button', { name: 'Clear' });
+    all.focus();
+    fireEvent.click(all);
+    expect((all as HTMLButtonElement).disabled).toBe(true);
+    expect(document.activeElement).toBe(clear);
+    fireEvent.click(clear);
+    expect((clear as HTMLButtonElement).disabled).toBe(true);
+    expect(document.activeElement).toBe(all);
+  });
+
+  it('writes the Custom fields’ unit in an ink that reads on the dark dialog too', () => {
+    // slate-500 alone is 3.6:1 on the dark dialog (axe colour-contrast in dark mode).
+    open();
+    fireEvent.click(tile(/^Custom/));
+    const units = screen.getAllByText('px');
+    expect(units.length).toBeGreaterThan(0);
+    for (const u of units) expect(u.className).toContain('dark:text-slate-400');
+  });
+
   it('holds the ticks to the room the tab has left', () => {
     sizeTicks.set({ ticked: ['x-post', 'x-header', 'custom'], custom: { width: 10, height: 10 } });
     open({ photoRoom: 2 });

@@ -78,3 +78,12 @@ describe('ImportTabDialog', () => {
     expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
   });
 });
+
+// A screen reader hears what the paste field is for, and why an import did not land.
+describe('ImportTabDialog for a screen reader', () => {
+  it('names the paste field for its format and announces an error', async () => {
+    open({ status: 'error', error: 'Not a livedesign tab.' });
+    expect(screen.getByRole('textbox', { name: 'JSON to import' })).toBeTruthy();
+    expect((await screen.findByRole('alert')).textContent).toBe('Not a livedesign tab.');
+  });
+});

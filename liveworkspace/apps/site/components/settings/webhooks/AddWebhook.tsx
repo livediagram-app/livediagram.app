@@ -9,6 +9,7 @@ import {
   type WebhookEvent,
   type WebhookKind,
 } from '@liveworkspace/index-client';
+import { Button } from '@liveworkspace/ui';
 import { BUTTON, ErrorNote, INPUT } from '../account-ui';
 import { DestinationPicker, EventPicker, FormStep, ScopePicker, type TeamChoice } from './pickers';
 import { attempt, KINDS, webhookError, webhooksClient } from './webhooks-api';
@@ -194,13 +195,17 @@ export function AddWebhook({
           <button type="button" className={BUTTON.secondary} onClick={onCancel}>
             Cancel
           </button>
-          <button
+          <Button
             type="submit"
+            variant="none"
             className={BUTTON.primary}
-            disabled={busy || events.size === 0 || missing !== null}
+            // Only what the form lacks disables it. While it adds, it keeps the keyboard (busy-buttons.md): a
+            // disabled button drops it to the dialog's top, and an error then left the person nowhere near it.
+            disabled={events.size === 0 || missing !== null}
+            busy={busy}
           >
             {busy ? 'Adding…' : 'Add Webhook'}
-          </button>
+          </Button>
         </div>
       </div>
     </form>

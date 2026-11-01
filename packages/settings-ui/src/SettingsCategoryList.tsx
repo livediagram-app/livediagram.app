@@ -11,6 +11,11 @@ type ListCategory = SettingsCategory & { matchCount?: number };
 const ROOT_CARD =
   'flex flex-col divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700';
 
+// A row's focus ring, drawn inside its box. A group's rows sit in a body that clips (overflow-hidden, for its
+// open-and-shut ease) and the phone's card clips at its rounded edge, so a ring outside the row lost its sides and
+// foot, leaving a keyboard user a thin line over the row; the next row's highlight covered a heading's foot too.
+export const FOCUS_INSIDE = 'focus-visible:-outline-offset-2';
+
 function childrenOf<C extends SettingsCategory>(categories: readonly C[], id: string): C[] {
   return categories.filter((c) => c.parent === id);
 }
@@ -218,7 +223,7 @@ export function SettingsCategoryList({
                 aria-expanded={open}
                 aria-controls={bodyId}
                 onClick={() => toggleGroup(group.id)}
-                className={`flex w-full cursor-pointer items-center gap-3 text-left transition ${
+                className={`flex w-full cursor-pointer items-center gap-3 text-left transition ${FOCUS_INSIDE} ${
                   isRoot
                     ? 'rounded-lg px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                     : 'rounded-lg px-2.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -347,7 +352,7 @@ function CategoryRow({
       // what aria-current names. The root list is navigation, so its
       // rows make no such claim.
       aria-current={lit ? 'page' : undefined}
-      className={`flex min-w-0 flex-1 items-center gap-3 text-left transition ${
+      className={`flex min-w-0 flex-1 items-center gap-3 text-left transition ${FOCUS_INSIDE} ${
         empty ? 'cursor-default opacity-40' : ''
       } ${
         isRoot
@@ -391,7 +396,7 @@ function CategoryRow({
         aria-expanded={disclosure.open}
         aria-controls={disclosure.controls}
         aria-label={disclosure.label}
-        className="mr-0.5 flex h-8 w-8 shrink-0 items-center justify-center text-slate-400 transition hover:text-slate-700 disabled:cursor-default disabled:opacity-40 disabled:hover:text-slate-400 dark:hover:text-slate-200"
+        className="mr-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition focus-visible:-outline-offset-2 hover:text-slate-700 disabled:cursor-default disabled:opacity-40 disabled:hover:text-slate-400 dark:hover:text-slate-200"
       >
         <NavChevron
           className={`transition-transform motion-reduce:transition-none ${disclosure.open ? 'rotate-90' : ''}`}

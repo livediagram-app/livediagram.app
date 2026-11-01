@@ -127,14 +127,18 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a checklist's ticks.
-const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>(['checklist']);
+// The kinds whose face carries controls of its own: a checklist's ticks, a tab window's Show a Tab and Open.
+const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>(['checklist', 'tab-window']);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture
  *  (`img`, one concise name) for an element that is only drawn, and a named `group` for one whose face holds
- *  controls, since an img's children are presentational and a screen reader could not reach the controls. */
-export function elementRole(el: Element): 'img' | 'group' {
-  if (el.type === 'video' || el.type === 'link-card') return 'group';
+ *  controls, since an img's children are presentational and a screen reader could not reach the controls.
+ *  `hasIndicators`: the element shows indicator buttons (its link, note, action or comments,
+ *  docs/specs/008-canvas/element-indicators.md), which are controls on its face too. */
+export function elementRole(el: Element, hasIndicators = false): 'img' | 'group' {
+  if (hasIndicators) return 'group';
+  // A table's cells edit in place and, selected, it shows its column and row options buttons.
+  if (el.type === 'video' || el.type === 'link-card' || el.type === 'table') return 'group';
   if (el.type === 'image') return el.imageId ? 'img' : 'group';
   if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';
   return 'img';

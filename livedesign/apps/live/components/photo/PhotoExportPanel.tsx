@@ -210,7 +210,7 @@ export function PhotoExportPanel({
       ) : null}
       {error ? <p className="text-xs text-rose-600 dark:text-rose-400">{error}</p> : null}
       <div className="flex justify-end">
-        <Button size="sm" disabled={busy || !page} onClick={() => void run()}>
+        <Button size="sm" disabled={!page} busy={busy} onClick={() => void run()}>
           {busy ? 'Exporting…' : 'Download'}
         </Button>
       </div>

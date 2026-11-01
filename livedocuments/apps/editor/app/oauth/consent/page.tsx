@@ -6,6 +6,7 @@
 // (signed-in) and hand it to the MCP's /oauth/complete bound to a one-time
 // PKCE code, then bounce the browser to the client's redirect. Signed-in only.
 import { Suspense, use, useEffect, useState } from 'react';
+import { Button } from '@livedocuments/ui';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livedocuments/api-schema';
@@ -221,14 +222,15 @@ function Consent() {
         </p>
       ) : null}
       <div className="mt-5 flex items-center gap-2">
-        <button
-          type="button"
+        {/* Keeps the keyboard while it connects (busy-buttons.md); a failure's alert is then beside it. */}
+        <Button
+          variant="none"
           onClick={() => void approve()}
-          disabled={status === 'connecting'}
+          busy={status === 'connecting'}
           className={OAUTH_PRIMARY}
         >
           {status === 'connecting' ? 'Connecting…' : 'Connect'}
-        </button>
+        </Button>
         <button
           type="button"
           onClick={() => setStatus('cancelled')}

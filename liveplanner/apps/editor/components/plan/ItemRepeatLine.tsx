@@ -11,8 +11,10 @@ import {
   localDay,
   repeatNext,
   repeatRuleWords,
+  typeStatusesOf,
   type Item,
   type ItemFieldValue,
+  type ItemTypeDef,
   type RepeatRule,
 } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
@@ -25,7 +27,7 @@ import { RepeatDialog } from './RepeatDialog';
 export const browserTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const LINK =
-  'cursor-pointer rounded px-1 text-[12px] font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/10';
+  'touch-target-y relative cursor-pointer rounded px-1 text-[12px] font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/10';
 
 export function ItemRepeatLine({
   rule,
@@ -92,12 +94,16 @@ export interface ItemRepeatParts {
 
 export function useItemRepeat({
   item,
+  type,
   statuses,
   canSet,
   now,
   onSave,
 }: {
   item: Item;
+  // The card's type: a copy is of the same type, so Lands In offers only the states it uses (item-types.md "The
+  // statuses a type uses"), as the Status picker does.
+  type: Pick<ItemTypeDef, 'statuses' | 'excludedStatuses'>;
   statuses: readonly { status: string; name: string }[];
   // An Editor's (canRetire).
   canSet: boolean;
@@ -111,6 +117,11 @@ export function useItemRepeat({
   const rule = itemRepeat(item);
   const may = canSet && !offline;
   const timeZone = browserTimeZone();
+  const byId = new Map(statuses.map((s) => [s.status, s]));
+  const landIn = typeStatusesOf(type, byId.keys()).flatMap((id) => {
+    const s = byId.get(id);
+    return s ? [s] : [];
+  });
   const stop = () => {
     setOpenDay(null);
     track('Plan', 'Toggled', 'RepeatOff');
@@ -131,7 +142,7 @@ export function useItemRepeat({
       openDay !== null && may ? (
         <RepeatDialog
           rule={rule}
-          statuses={statuses}
+          statuses={landIn}
           today={openDay}
           timeZone={timeZone}
           onClose={() => setOpenDay(null)}

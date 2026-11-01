@@ -938,7 +938,9 @@ Both show the same list:
   picture itself, as on the canvas, fetched from the image store with the same access the canvas
   has (an Editor's, or a share link's for a Participant or Viewer), once per picture and shared
   with the canvas's own copy. Only the rows drawn so far ask for theirs. Until a picture arrives,
-  or where it can't be read, its place shows the image placeholder (a page picture, its tone).
+  or where it can't be read, its place shows the image placeholder (a page picture, its tone). A **photo page**
+  shows its picture, its preview ([Photo store](../031-photo/photo-store.md) "Previews") from the copy the canvas
+  shows unfocused photo pages with; until it has one, the checkerboard and a picture glyph.
 - **A page's actions** (an Editor's), down the row's left, so the picture and its name keep the
   row's whole width:
   - **In the sidebar** the column beside the picture stacks, under the page's number, the **grip**

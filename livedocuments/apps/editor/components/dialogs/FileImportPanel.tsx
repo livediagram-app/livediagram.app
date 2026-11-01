@@ -144,7 +144,7 @@ export function FileImportPanel({
           variant="primary"
           size="md"
           onClick={() => input.current?.click()}
-          disabled={busy}
+          busy={busy}
           className="mt-1"
         >
           Choose a File

@@ -124,7 +124,7 @@ export function NewDocumentWizard({
         <Button
           size="xs"
           onClick={() => create(mode)}
-          disabled={busy}
+          busy={busy}
           className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
         >
           {busy ? <Spinner /> : <SparkleIcon />}

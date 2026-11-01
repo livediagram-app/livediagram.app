@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useId, useRef, useState, useCallback } from 'react';
 import { CloseIcon, useClickOutside, useEscape, Portal } from '@liveplanner/ui';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import type { CommentMention, CommentThread } from '@liveplanner/project';
@@ -72,6 +72,7 @@ export function CommentThreadPopover({
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const titleId = useId();
 
   // Focus the composer when the popover opens, but only on desktop.
   // On mobile, autofocus would pop the soft keyboard the instant the
@@ -124,12 +125,13 @@ export function CommentThreadPopover({
       <div
         ref={ref}
         role="dialog"
+        aria-labelledby={titleId}
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{ left: pos.left, top: pos.top, width: WIDTH }}
       >
         <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-          <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">
+          <h3 id={titleId} className="text-xs font-semibold text-slate-800 dark:text-slate-100">
             {title}
             {comments.length > 0 ? (
               <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
@@ -149,7 +151,7 @@ export function CommentThreadPopover({
               type="button"
               aria-label="Close comments"
               onClick={onClose}
-              className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="relative touch-target-y cursor-pointer rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <CloseIcon size={12} />
             </button>

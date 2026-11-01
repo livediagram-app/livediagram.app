@@ -7,7 +7,10 @@ import { createFakeIndex, makeItem } from '../test/fakeClient';
 import {
   dropThisBrowserConversion,
   dropThisBrowserItem,
+  markThisBrowserDeleteConfirmed,
   putThisBrowserItem,
+  takeThisBrowserDeleteConfirmed,
+  thisBrowserDeleteCopy,
   readThisBrowser,
   readThisBrowserConversion,
   subscribeThisBrowser,
@@ -59,7 +62,10 @@ function page(
   return onNavigate;
 }
 
-afterEach(() => localStorage.clear());
+afterEach(() => {
+  localStorage.clear();
+  sessionStorage.clear();
+});
 
 describe('the list an app keeps', () => {
   it('round-trips, newest change first, and drops what is malformed', () => {
@@ -177,16 +183,42 @@ describe('This Browser in the Explorer', () => {
     expect(screen.queryByRole('link', { name: /^Sync/ })).toBeNull();
   });
 
-  it('deletes a live row for good where the host can, asking first', async () => {
+  it('deletes a live row for good where the host can, asking first and saying only the local copy goes', async () => {
     const remove = vi.fn();
     page({ kind: 'offline' }, { ...host([local(2), local(1, { trashedAt: 5 })]), remove });
     fireEvent.click(await screen.findByRole('button', { name: 'Delete Local 2' }));
     expect(remove).not.toHaveBeenCalled();
-    const dialog = await screen.findByRole('dialog');
-    expect(dialog.textContent).toContain('removes it for good');
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete this plan from this browser?',
+    });
+    expect(dialog.textContent).toContain(
+      '“Local 2” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
+    );
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'local-2' }));
     expect(screen.queryByRole('button', { name: 'Delete Local 1' })).toBeNull();
+  });
+
+  it('keeps the row when the person cancels the delete', async () => {
+    const remove = vi.fn();
+    page({ kind: 'offline' }, { ...host([local(2)]), remove });
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Local 2' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(remove).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Delete Local 2' })).toBeTruthy();
+  });
+
+  it('says when each row changed in words, its full date in the reader’s locale on hover', async () => {
+    const at = Date.now() - 3 * 3_600_000;
+    page({ kind: 'offline' }, host([local(1, { updatedAt: at })]));
+    const when = await screen.findByText('Changed 3 hours ago');
+    expect(when.tagName).toBe('TIME');
+    expect(when.getAttribute('dateTime')).toBe(new Date(at).toISOString());
+    expect(when.getAttribute('title')).toBe(
+      new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(at),
+    );
   });
 
   it('has no Delete where the host offers none', async () => {
@@ -307,6 +339,54 @@ describe('This Browser in the Explorer', () => {
   });
 });
 
+describe('deleting one kept in this browser', () => {
+  it('words the confirmation once for the page, the panel and the editor', () => {
+    expect(thisBrowserDeleteCopy('canvas', '')).toEqual({
+      title: 'Delete this canvas from this browser?',
+      message:
+        '“Untitled” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
+      confirmLabel: 'Delete',
+    });
+  });
+
+  it('notes the page asked, for one item, taken once', () => {
+    expect(takeThisBrowserDeleteConfirmed('a')).toBe(false);
+    markThisBrowserDeleteConfirmed('a');
+    expect(takeThisBrowserDeleteConfirmed('b')).toBe(false);
+    // Taken by the wrong item: gone all the same, so it can't be reused.
+    expect(takeThisBrowserDeleteConfirmed('a')).toBe(false);
+    markThisBrowserDeleteConfirmed('a');
+    expect(takeThisBrowserDeleteConfirmed('a')).toBe(true);
+    expect(takeThisBrowserDeleteConfirmed('a')).toBe(false);
+  });
+
+  it('asks again where session storage is blocked or missing', () => {
+    const blocked = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+      removeItem: () => {},
+    } as unknown as Storage;
+    expect(() => markThisBrowserDeleteConfirmed('a', blocked)).not.toThrow();
+    expect(takeThisBrowserDeleteConfirmed('a', blocked)).toBe(false);
+    markThisBrowserDeleteConfirmed('a', null);
+    expect(takeThisBrowserDeleteConfirmed('a', null)).toBe(false);
+  });
+
+  it('hands a Delete over like the other conversions', () => {
+    expect(thisBrowserConvertHref('/project/p1', 'delete', 'p1')).toBe(
+      '/project/p1?convert=delete&item=p1',
+    );
+    expect(readThisBrowserConversion('?convert=delete&item=p1')).toEqual({
+      conversion: 'delete',
+      id: 'p1',
+    });
+  });
+});
+
 describe('moving an item in or out of this browser', () => {
   it("names the conversion and the item in the app's address, and reads them back", () => {
     const href = thisBrowserConvertHref('/document/doc%201', 'take-offline', 'doc 1');
@@ -325,7 +405,7 @@ describe('moving an item in or out of this browser', () => {
   });
 
   it('reads nothing from an unknown conversion or a missing item', () => {
-    expect(readThisBrowserConversion('?convert=delete&item=d1')).toBeNull();
+    expect(readThisBrowserConversion('?convert=purge&item=d1')).toBeNull();
     expect(readThisBrowserConversion('?convert=sync')).toBeNull();
     expect(readThisBrowserConversion('')).toBeNull();
   });

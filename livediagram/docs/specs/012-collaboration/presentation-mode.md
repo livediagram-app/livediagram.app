@@ -165,7 +165,7 @@ A deck should feel like a deck, and the transitions are what sell it.
 
 Top-right, carrying: the position (`7 / 23`), the slide's name, **previous** and **next** buttons, a **jump button**, a **notes button**, a **settings cog**, and a **close button**. The two nav buttons exist because a presenter on a projector often has a mouse and no keyboard within reach, and "click anywhere to advance" is neither discoverable nor able to go back. It **fades out when the pointer is idle and returns on any pointer movement**, so a still screen is clean for the room and every control is one twitch of the mouse away.
 
-The HUD does not fade while a popover is open, or the popover would be left orphaned over the slide.
+The HUD does not fade while a popover is open, or the popover would be left orphaned over the slide. To a screen reader it is a region named "Presentation controls", so the position and name it shows belong to a landmark while the editor's own are hidden.
 
 **Jumping to a slide.** `→` and `←` walk the deck and `Home` / `End` reach its ends, which is everything you need while the talk goes to plan. It goes to plan until somebody asks about the part of the canvas you showed nine slides ago, and arrowing back through nine slides in front of a room is the moment a deck feels like a toy.
 
