@@ -49,9 +49,10 @@ delete, undo, label edit via Space) that already work on a selection.
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
 - An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): checklists, a tab
-  window (its Show a Tab and Open), an embed, a link card, and an image still waiting for its picture. So is any
-  element while it is selected by someone who may change it: its lines then edit in place (focusable), a table shows
-  its Column and Row options and a pointer note its tip. An img's children are presentational, so as pictures their
+  window (its Show a Tab and Open), an embed, a link card, and an image still waiting for its picture. So is a face
+  that edits in place while it is selected by someone who may change it: a concept's or web component's lines, a
+  table's Column and Row options, a pointer note's tip and a hero's caption. A plain shape, icon or sticker stays a
+  picture when selected, so it is read and found the same way selected or not. An img's children are presentational, so as pictures their
   tick and Ask buttons could not be reached with a screen reader.
 
 ## Live announcements

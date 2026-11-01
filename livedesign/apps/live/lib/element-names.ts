@@ -6,6 +6,8 @@
 import {
   CHART_TYPE_LABELS,
   chartTypeOf,
+  isConceptShape,
+  isWebComponentShape,
   type BoxedElement,
   type Element,
   type ShapeKind,
@@ -135,10 +137,19 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>(['checklist'
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture
  *  (`img`, one concise name) for an element that is only drawn, and a named `group` for one whose face holds
  *  controls, since an img's children are presentational and a screen reader could not reach the controls.
- *  `faceLive`: the element is selected by someone who may change it, so its face shows controls whatever its kind
- *  (its lines edit in place, a table's Column and Row options, a pointer note's tip). */
+ *  `faceLive`: the element is selected by someone who may change it. A face that edits in place while selected (a
+ *  concept's or web component's lines, a table's Column and Row options, a pointer note's tip, a hero's caption)
+ *  then holds controls, so it is a group; a plain shape, icon or sticker stays a picture. */
+// The faces that show controls only while selected by an editor (ElementFaceRouter's `editable={isSelected ...}`).
+function editsInPlaceWhenSelected(el: Element): boolean {
+  if (el.type === 'table') return true;
+  if (el.type === 'image') return !!el.heroCaption;
+  if (el.type !== 'shape') return false;
+  return el.shape === 'pointer-note' || isConceptShape(el.shape) || isWebComponentShape(el.shape);
+}
+
 export function elementRole(el: Element, faceLive = false): 'img' | 'group' {
-  if (faceLive) return 'group';
+  if (faceLive && editsInPlaceWhenSelected(el)) return 'group';
   if (el.type === 'video' || el.type === 'link-card') return 'group';
   if (el.type === 'image') return el.imageId ? 'img' : 'group';
   if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';

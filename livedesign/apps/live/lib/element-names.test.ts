@@ -189,9 +189,15 @@ describe('elementRole while selected for editing', () => {
   // pointer note its tip: controls inside a picture are axe's nested-interactive, and unreachable.
   const shape = (kind: string) =>
     ({ id: 's', type: 'shape', shape: kind, x: 0, y: 0, width: 10, height: 10 }) as Element;
-  it('makes any selected, editable element a group', () => {
+  it('makes a selected face that edits in place a group', () => {
     expect(elementRole(shape('layer-stack'), true)).toBe('group');
-    expect(elementRole(shape('square'), true)).toBe('group');
+    expect(elementRole(shape('pointer-note'), true)).toBe('group');
+    expect(
+      elementRole({ id: 't', type: 'table', x: 0, y: 0, width: 10, height: 10 } as Element, true),
+    ).toBe('group');
+  });
+  it('keeps a selected plain shape a picture, so it is still found and read as one', () => {
+    expect(elementRole(shape('square'), true)).toBe('img');
   });
   it('keeps it a picture otherwise', () => {
     expect(elementRole(shape('layer-stack'), false)).toBe('img');
