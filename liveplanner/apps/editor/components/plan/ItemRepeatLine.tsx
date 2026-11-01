@@ -27,7 +27,7 @@ import { RepeatDialog } from './RepeatDialog';
 export const browserTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const LINK =
-  'cursor-pointer rounded px-1 text-[12px] font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/10';
+  'touch-target-y relative cursor-pointer rounded px-1 text-[12px] font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/10';
 
 export function ItemRepeatLine({
   rule,
