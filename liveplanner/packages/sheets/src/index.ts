@@ -16,6 +16,7 @@ export * from './cards';
 export * from './sort';
 export * from './fill';
 export * from './csv';
+export * from './sheet-csv';
 export * from './filter';
 export * from './find';
 export * from './clipboard';

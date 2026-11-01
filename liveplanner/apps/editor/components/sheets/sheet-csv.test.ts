@@ -4,6 +4,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   emptyLayout,
+  sheetCsvText,
   single,
   typeInto,
   type Selection,
@@ -14,13 +15,7 @@ import { track } from '@/lib/telemetry';
 import { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';
 import { SheetStore } from './sheet-store-client';
 import type { SheetController } from './sheet-controller';
-import {
-  CSV_TRUNCATED,
-  csvWrites,
-  downloadSheetCsv,
-  importCsvText,
-  sheetCsvText,
-} from './sheet-csv';
+import { CSV_TRUNCATED, csvWrites, downloadSheetCsv, importCsvText } from './sheet-csv';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@liveworkspace/workbench/lib/download-blob', () => ({ downloadBlob: vi.fn() }));

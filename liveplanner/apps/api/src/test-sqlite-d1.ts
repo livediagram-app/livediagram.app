@@ -287,6 +287,11 @@ function testPlanRooms(
         (await import('./plan-room/project-file')).exportProjectFile(env, planId, query.ifVersion),
       importFile: async (planId: string, file: unknown) =>
         (await import('./plan-room/project-file')).importProjectFile(env, planId, file as never),
+      // The data export's two formats (plan-room.ts exportTables and exportComments).
+      exportTables: async (planId: string) =>
+        (await import('./plan-room/plan-export')).exportPlanTables(env, planId),
+      exportComments: async (planId: string) =>
+        (await import('./plan-room/plan-export')).exportPlanComments(env, planId),
       hasTab: async (planId: string, tabId: string) =>
         (await import('./db/tabs')).planHasTab(env, planId, tabId),
       item: async (planId: string, itemId: string) =>
