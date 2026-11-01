@@ -44,6 +44,12 @@ Priority: **Critical, High, Medium, Low, then unset**. Ties keep their board ord
 
 If nothing is selected, say so in one line and stop.
 
+**Blocked cards wait.** A Work Item's **Blocked By** field (id `f-blocked-by`, a list of cards) names the cards that
+must land first. Leave a selected card where it is, untouched and with no thread, while any card it names is not in
+**Implemented** or its Pull Request is not yet merged (`gh pr view <url> -R "$REPO" --json state -q .state` is
+`MERGED`). Work built on top of an unmerged PR would be cut from code main doesn't have. List waiting cards in the
+report as "Blocked by #N". A blocker in Development Failure or Cancelled is worth one line in the report too.
+
 Also note every card in **In Progress** that has no Pull Request link. Those were left by a pass that died.
 Never touch them. List them in the report. The exception is a **Large** card between parts (step 3): it is In
 Progress with its last part's PR link and an open build plan thread, and this pass may pick up its next part.
