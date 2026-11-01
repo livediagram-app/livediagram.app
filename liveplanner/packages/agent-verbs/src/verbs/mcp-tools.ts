@@ -284,12 +284,15 @@ export const mcpChangeCardTypes = mcpTool('change_card_types', {
     'Add, edit or delete a plan’s card types (the kinds of card its boards hold, like Task ' +
     'or Bug), with custom fields by name: add {name, color, glyph, fields, custom, defaultStatus, ' +
     'statuses (its columns, in order), display, tabs, detailsLabel}, set {type, ...; editCustom renames a field, replaces a ' +
-    'choice field’s options or a card field’s linkTypes in place}, delete {type} (its cards go to the Trash), add_default_types ' +
+    'choice field’s options or a card field’s linkTypes in place; inherits names a base type, null detaches}, delete {type} ' +
+    '(its cards go to the Trash; types inheriting from it are detached), add_default_types ' +
     '(any of Project, Task, Note, Idea and Action it lacks). ' +
     'A type is a name, a colour, a glyph, built-in fields (Title and Status always), up to 12 custom fields, ' +
     'a card face per size (display: Minimal is one line, Detailed a header, the title, what sits under it and ' +
     'a footer; a board picks its size) and its item panel’s tabs. Up to 32 types ' +
-    'and 24 fields each. A type renamed earlier in the same call still answers to its former name. ' +
+    'and 24 fields each. A type may inherit from one base type that inherits from none: it takes the base’s ' +
+    'fields (same ids), tabs, statuses, Default State and display, adds fields of its own, and follows every change ' +
+    'to the base. A type renamed earlier in the same call still answers to its former name. ' +
     'Checked and saved together; answers the ids it made and each type as list_items lists it. A board shows ' +
     'a new type only once it takes it: see change_board.',
   inputSchema: changeCardTypesShape,

@@ -206,6 +206,10 @@ export interface ListedType {
   display: Record<string, Record<string, string[]>>;
   tabs: { name: string; fields: string[] }[];
   detailsLabel: string;
+  // An inherited type's base type by name and its own fields by name (docs/specs/026-plan/item-types.md "Inherited
+  // types"); every other part is the base's.
+  inherits?: string;
+  ownFields?: string[];
 }
 
 interface PlanListing {
@@ -411,6 +415,12 @@ export function listedType(
     display: namedDisplay(t, (size) => typeCardLayout(t, size)),
     tabs: tabsOf(t).map((tab) => ({ name: tab.label, fields: tab.fields.map(fieldName) })),
     detailsLabel: detailsLabelOf(t),
+    ...(t.inherits
+      ? {
+          inherits: types.find((b) => b.id === t.inherits)?.label ?? t.inherits,
+          ownFields: (t.ownFields ?? []).map(fieldName),
+        }
+      : {}),
   };
 }
 

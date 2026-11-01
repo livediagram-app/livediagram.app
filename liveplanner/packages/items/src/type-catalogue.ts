@@ -33,6 +33,8 @@ import { canBeRequired } from './required-fields';
 import { holdsSeveralKind } from './several-values';
 import { cutSlug, slugText, uniqueSlug } from './slug';
 import { statusNamed } from './status-names';
+import { REQUIRED_TYPE_FIELDS, TYPE_REQUIRED_FIELDS } from './type-required-fields';
+import { inheritanceProblem, withInheritance } from './type-inheritance';
 import { HEX_COLOUR, isObj } from './validate';
 
 export const ITEM_TYPES_MAX = 32;
@@ -97,20 +99,8 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'votes',
 ];
 
-// Every type offers these, first, and they cannot be removed.
-export const REQUIRED_TYPE_FIELDS: readonly ItemFieldId[] = ['title', 'status'];
-
-// What a particular type always offers besides (docs/specs/026-plan/item-types.md "An item type"): a Project
-// is drawn on the Gantt chart from its Start and Due, so it always has both. They can move, never come off.
-const TYPE_REQUIRED_FIELDS: Readonly<Record<string, readonly ItemFieldId[]>> = {
-  project: ['start', 'due'],
-};
-
-// Every field a type can never lose: Title and Status, then the type's own.
-export function requiredFieldsOf(typeId: string | undefined): readonly string[] {
-  const own = typeId ? TYPE_REQUIRED_FIELDS[typeId] : undefined;
-  return own ? [...REQUIRED_TYPE_FIELDS, ...own] : REQUIRED_TYPE_FIELDS;
-}
+// Title and Status first in every type, and a type's own kept fields (type-required-fields.ts).
+export { REQUIRED_TYPE_FIELDS, requiredFieldsOf } from './type-required-fields';
 
 // A custom field's id: `f-` and a slug, or the reserved `parent` (PARENT_FIELD, a Card field).
 export const CUSTOM_FIELD_ID_PATTERN = /^(?:f-[a-z0-9-]{1,30}|parent)$/;
@@ -464,6 +454,25 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     typeof colourIn === 'string' && custom.some((f) => f.id === colourIn && f.kind === 'colour')
       ? colourIn
       : undefined;
+  // Its base type (type-inheritance.ts), by id, and the fields of its own, kept only beside one; validateItemTypeCatalogue
+  // resolves it against the base once every type is read.
+  const inheritsIn = input['inherits'];
+  if (
+    inheritsIn !== undefined &&
+    (typeof inheritsIn !== 'string' || !ITEM_TYPE_PATTERN.test(inheritsIn))
+  )
+    return `${at}.inherits`;
+  let ownFields: string[] | undefined;
+  if (inheritsIn !== undefined && input['ownFields'] !== undefined) {
+    const own = input['ownFields'];
+    if (
+      !Array.isArray(own) ||
+      own.length > ITEM_TYPE_FIELDS_MAX ||
+      own.some((f) => typeof f !== 'string')
+    )
+      return `${at}.ownFields`;
+    ownFields = [...new Set(own as string[])].filter((f) => fields.includes(f));
+  }
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -484,6 +493,8 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     ...(display ? { display } : {}),
     ...(input['assigneeNotifies'] === false ? { assigneeNotifies: false } : {}),
     ...(colourField ? { colourField } : {}),
+    ...(inheritsIn !== undefined ? { inherits: inheritsIn } : {}),
+    ...(ownFields ? { ownFields } : {}),
   };
 }
 
@@ -603,7 +614,18 @@ export function validateItemTypeCatalogue(input: unknown): Result {
       return { ok: false, reason: `types[${i}].label` };
     types.push(type);
   }
-  const catalogue: ItemTypeCatalogue = { version: ITEM_TYPE_CATALOGUE_VERSION, types };
+  // Inherited types (docs/specs/026-plan/item-types.md "Inherited types"): one level only, each resolved against its
+  // base (a type whose base is gone detached), then held to the caps as resolved.
+  const chain = inheritanceProblem(types);
+  if (chain) return { ok: false, reason: chain };
+  const resolved = withInheritance(types);
+  for (const [i, t] of resolved.entries()) {
+    if (!t.inherits) continue;
+    if (t.fields.length > ITEM_TYPE_FIELDS_MAX) return { ok: false, reason: `types[${i}].fields` };
+    if (customFieldCount(t.custom ?? []) > ITEM_TYPE_CUSTOM_MAX)
+      return { ok: false, reason: `types[${i}].custom` };
+  }
+  const catalogue: ItemTypeCatalogue = { version: ITEM_TYPE_CATALOGUE_VERSION, types: resolved };
   if (new TextEncoder().encode(JSON.stringify(catalogue)).length > ITEM_TYPES_BYTES)
     return { ok: false, reason: 'too large' };
   return { ok: true, catalogue };

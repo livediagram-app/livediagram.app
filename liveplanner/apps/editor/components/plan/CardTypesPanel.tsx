@@ -70,6 +70,10 @@ export function CardTypesPanel({
           <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
             {fields} {fields === 1 ? 'field' : 'fields'}
             {t.custom?.length ? `, ${t.custom.length} custom` : ''}
+            {/* An inherited type names its base (docs/specs/026-plan/item-types.md "Inherited types"). */}
+            {t.inherits
+              ? ` · Inherits ${types.find((b) => b.id === t.inherits)?.label ?? t.inherits}`
+              : ''}
           </span>
         </span>
       </span>

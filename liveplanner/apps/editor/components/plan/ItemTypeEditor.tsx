@@ -16,6 +16,11 @@ import {
   DETAILS_LABEL_DEFAULT,
   typeStatusesOf,
   validateItemTypeCatalogue,
+  baseOf,
+  basesFor,
+  inheritFrom,
+  inheritedFieldIds,
+  inheritingTypesOf,
   type ItemTypeDef,
 } from '@liveplanner/items';
 import {
@@ -41,6 +46,7 @@ import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
 import { ItemTypeStatuses } from './ItemTypeStatuses';
 import { ItemTypeDisplay, type CardDisplayDraft } from './ItemTypeDisplay';
 import { ItemTypeCardColour } from './ItemTypeCardColour';
+import { InheritedPartNotice, InheritsFromRow } from './ItemTypeInheritance';
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { withoutEmptyTabs, type LayoutDraft } from './item-type-layout';
@@ -121,6 +127,16 @@ export function ItemTypeEditor({
   // Show Me: the tour of making a card type, run on this editor (docs/specs/026-plan/item-types.md).
   const tour = useCardTypeTour(setTab);
   const others = types.filter((t) => t.id !== type?.id);
+  // Its base type (docs/specs/026-plan/item-types.md "Inherited types"), the types it may inherit from, and those
+  // inheriting from it.
+  const [inherits, setInherits] = useState(start.inherits);
+  const base = baseOf({ id: type?.id ?? '', inherits }, types);
+  const bases = useMemo(() => basesFor(type?.id, types), [type?.id, types]);
+  const heirs = useMemo(() => (type ? inheritingTypesOf(type.id, types) : []), [type, types]);
+  const inheritedIds = useMemo(
+    () => (base ? inheritedFieldIds({ id: '', inherits: base.id }, types) : undefined),
+    [base, types],
+  );
 
   const removedSome = start.fields.some((f) => !layout.fields.includes(f));
   const clash = others.some((t) => t.label.toLowerCase() === label.trim().toLowerCase());
@@ -148,8 +164,14 @@ export function ItemTypeEditor({
       layout.fields.includes(colourField)
         ? { colourField }
         : {}),
+      // Its base and its own fields; the check below resolves the rest from the base.
+      ...(base && inheritedIds
+        ? { inherits: base.id, ownFields: layout.fields.filter((f) => !inheritedIds.has(f)) }
+        : {}),
     };
   }, [
+    base,
+    inheritedIds,
     type,
     types,
     label,
@@ -169,24 +191,37 @@ export function ItemTypeEditor({
     : new Set(tabNames).size !== tabNames.length
       ? 'Two tabs have the same name.'
       : null;
-  // The same check the api makes, on this type alone: a bad custom field never reaches a save.
-  const check = useMemo(
-    () => validateItemTypeCatalogue({ version: ITEM_TYPE_CATALOGUE_VERSION, types: [draft] }),
-    [draft],
+  // The same check the api makes, on the catalogue with this draft in place: a bad custom field never reaches a save,
+  // an inherited type comes back resolved from its base, and a base whose change takes a type inheriting from it past
+  // a cap says so.
+  const all = useMemo(
+    () => (type ? types.map((t) => (t.id === type.id ? draft : t)) : [...types, draft]),
+    [type, types, draft],
   );
+  const check = useMemo(
+    () => validateItemTypeCatalogue({ version: ITEM_TYPE_CATALOGUE_VERSION, types: all }),
+    [all],
+  );
+  const at = all.indexOf(draft);
+  const saved = check.ok ? check.catalogue.types[at] : undefined;
+  // The type a refusal names, when it is another (one inheriting from this one).
+  const refusedAt = check.ok ? -1 : Number(/^types\[(\d+)\]/.exec(check.reason)?.[1] ?? at);
+  const heirProblem = refusedAt >= 0 && refusedAt !== at ? all[refusedAt] : undefined;
   // Too many statuses on (kept ids a board no longer names count too): its own message.
-  const statusesProblem = !check.ok && check.reason.endsWith('.statuses');
+  const statusesProblem = !check.ok && !heirProblem && check.reason.endsWith('.statuses');
   const problem = !draft.label
     ? 'Give the type a name.'
     : clash
       ? 'Another type has this name.'
       : tabProblem
         ? tabProblem
-        : statusesProblem
-          ? `Too many states on: a type can use at most ${ITEM_TYPE_STATUSES_MAX}.`
-          : !check.ok
-            ? 'A custom field needs a name, and a Choice field at least one option.'
-            : null;
+        : heirProblem
+          ? `${heirProblem.label} inherits from this type and can’t hold any more fields.`
+          : statusesProblem
+            ? `Too many states on: a type can use at most ${ITEM_TYPE_STATUSES_MAX}.`
+            : !check.ok
+              ? 'A custom field needs a name, and a Choice field at least one option.'
+              : null;
 
   // The tabs holding what stops Save (a status list problem is States'; a clashing name, a tab or a custom field
   // problem is Configuration's). A missing name is not flagged: a new type starts without one, and Save says so.
@@ -197,6 +232,33 @@ export function ItemTypeEditor({
         ? ['statuses']
         : ['configuration'],
   );
+
+  // A base chosen: the draft laid out from it at once, any fields only this type had kept as its own.
+  const chooseBase = (next: ItemTypeDef) => {
+    // Moving from one base to another keeps only this type's own fields, never the old base's.
+    const own =
+      base && inheritedIds
+        ? {
+            ...draft,
+            fields: draft.fields.filter((f) => !inheritedIds.has(f)),
+            custom: (draft.custom ?? []).filter((c) => !inheritedIds.has(c.id)),
+          }
+        : draft;
+    const resolved = inheritFrom(own, next);
+    setInherits(next.id);
+    setLayout({
+      fields: [...resolved.fields],
+      custom: [...(resolved.custom ?? [])],
+      tabs: tabsOf(resolved).map((t) => ({ ...t, fields: [...t.fields] })),
+      ...(resolved.assigneeNotifies === false ? { assigneeNotifies: false as const } : {}),
+    });
+    setDetailsLabel(detailsLabelOf(resolved));
+    setUsed([...typeStatusesOf(resolved, statusNames?.keys() ?? [])]);
+    setDefaultStatus(resolved.defaultStatus ?? '');
+    setDisplay({ ...resolved.display });
+    setColourField(resolved.colourField);
+  };
+  const inherited = base && inheritedIds ? { from: base.label, ids: inheritedIds } : undefined;
 
   return (
     <Dialog
@@ -246,40 +308,72 @@ export function ItemTypeEditor({
               detailsLabel={detailsLabel}
               onDetailsLabel={setDetailsLabel}
               removedSome={removedSome}
+              inherited={inherited}
+              inheritance={
+                <InheritsFromRow
+                  id={`${titleId}-inherits`}
+                  base={base}
+                  bases={bases}
+                  heirs={heirs}
+                  onBase={chooseBase}
+                  onDetach={() => setInherits(undefined)}
+                />
+              }
             />
           ),
           display: (
             <div data-tour-id="card-type-display">
-              <SheetRow label="Display">
-                <ItemTypeDisplay type={draft} display={display} onChange={setDisplay} />
-              </SheetRow>
-              <ItemTypeCardColour
-                type={draft}
-                onChange={(field) => {
-                  setColourField(field);
-                  track('Plan', 'Changed', 'CardColourField');
-                }}
-              />
+              {base ? (
+                <InheritedPartNotice typeLabel={label} baseLabel={base.label} part="display">
+                  <ItemTypeDisplay type={draft} display={display} onChange={setDisplay} />
+                </InheritedPartNotice>
+              ) : (
+                <>
+                  <SheetRow label="Display">
+                    <ItemTypeDisplay type={draft} display={display} onChange={setDisplay} />
+                  </SheetRow>
+                  <ItemTypeCardColour
+                    type={draft}
+                    onChange={(field) => {
+                      setColourField(field);
+                      track('Plan', 'Changed', 'CardColourField');
+                    }}
+                  />
+                </>
+              )}
             </div>
           ),
           statuses: (
             <>
               <div data-tour-id="card-type-states">
-                <SheetRow label="States">
-                  <ItemTypeStatuses
-                    statuses={statuses}
-                    used={used}
-                    onChange={(next) => {
-                      setUsed(next);
-                      // Turning the Default State off clears it.
-                      if (!next.includes(defaultStatus)) setDefaultStatus('');
-                    }}
-                    defaultStatus={defaultStatus}
-                    onDefaultStatus={setDefaultStatus}
-                    {...(type ? { typeId: type.id } : {})}
-                    {...(plan?.statusBoards ? { boards: plan.statusBoards } : {})}
-                  />
-                </SheetRow>
+                {base ? (
+                  <InheritedPartNotice typeLabel={label} baseLabel={base.label} part="states">
+                    <ItemTypeStatuses
+                      statuses={statuses}
+                      used={used}
+                      onChange={setUsed}
+                      defaultStatus={defaultStatus}
+                      onDefaultStatus={setDefaultStatus}
+                      {...(plan?.statusBoards ? { boards: plan.statusBoards } : {})}
+                    />
+                  </InheritedPartNotice>
+                ) : (
+                  <SheetRow label="States">
+                    <ItemTypeStatuses
+                      statuses={statuses}
+                      used={used}
+                      onChange={(next) => {
+                        setUsed(next);
+                        // Turning the Default State off clears it.
+                        if (!next.includes(defaultStatus)) setDefaultStatus('');
+                      }}
+                      defaultStatus={defaultStatus}
+                      onDefaultStatus={setDefaultStatus}
+                      {...(type ? { typeId: type.id } : {})}
+                      {...(plan?.statusBoards ? { boards: plan.statusBoards } : {})}
+                    />
+                  </SheetRow>
+                )}
               </div>
             </>
           ),
@@ -320,7 +414,13 @@ export function ItemTypeEditor({
             variant="primary"
             data-tour-id="card-type-save"
             disabled={!!problem}
-            onClick={() => check.ok && onSave(check.catalogue.types[0]!)}
+            onClick={() => {
+              if (!saved) return;
+              if (saved.inherits && saved.inherits !== type?.inherits)
+                track('Plan', 'Linked', 'CardTypeBase');
+              else if (!saved.inherits && type?.inherits) track('Plan', 'Unlinked', 'CardTypeBase');
+              onSave(saved);
+            }}
           >
             <CheckIcon size={14} />
             Save
@@ -331,7 +431,11 @@ export function ItemTypeEditor({
       {confirmingAt && type ? (
         <ConfirmPopover
           anchor={confirmingAt}
-          message={deleteMessage(type.label, itemCount)}
+          message={deleteMessage(
+            type.label,
+            itemCount,
+            heirs.map((t) => t.label),
+          )}
           confirmLabel="Delete"
           onConfirm={() => {
             setConfirmingAt(null);
@@ -347,8 +451,15 @@ export function ItemTypeEditor({
   );
 }
 
-// The delete confirmation: the type, and its cards going to the Trash with it when it has any.
-export function deleteMessage(label: string, cards: number): string {
-  if (cards === 0) return `Delete the ${label} type?`;
-  return `Delete the ${label} type? Its ${cards === 1 ? 'card' : `${cards} cards`} will be moved to the Trash too.`;
+// The delete confirmation: the type, its cards going to the Trash with it when it has any, and the types inheriting
+// from it keeping a copy of its settings (docs/specs/026-plan/item-types.md "Inherited types").
+export function deleteMessage(label: string, cards: number, heirs: readonly string[] = []): string {
+  const ask =
+    cards === 0
+      ? `Delete the ${label} type?`
+      : `Delete the ${label} type? Its ${cards === 1 ? 'card' : `${cards} cards`} will be moved to the Trash too.`;
+  if (heirs.length === 0) return ask;
+  const names =
+    heirs.length > 1 ? `${heirs.slice(0, -1).join(', ')} and ${heirs[heirs.length - 1]}` : heirs[0];
+  return `${ask} ${names} will keep a copy of its settings.`;
 }
