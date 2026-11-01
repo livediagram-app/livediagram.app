@@ -198,16 +198,22 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       undoing.current = false;
     }, UNDO_SETTLE_MS);
   };
-  // An undo or redo asked for from the writing: what was typed goes first, as its own step. The
-  // commit and the undo of it land in one render, the tab's article back to the very object it was:
-  // `undoSeq` has the writing look at the tab again all the same.
+  // An undo or redo asked for from the writing: what was typed goes first, as its own step, then
+  // the undo of it, the tab's article back to the very object it was: `undoSeq` has the writing look
+  // at the tab again all the same.
   const [undoSeq, setUndoSeq] = useState(0);
   const undoRedo = (which: 'undo' | 'redo') => {
-    flush();
-    markUndoing();
-    if (which === 'undo') latest.current.onUndo();
-    else latest.current.onRedo();
-    setUndoSeq((n) => n + 1);
+    const run = () => {
+      markUndoing();
+      if (which === 'undo') latest.current.onUndo();
+      else latest.current.onRedo();
+      setUndoSeq((n) => n + 1);
+    };
+    // The host decides whether there is anything to undo from its last render, so an undo that
+    // follows a commit made just now waits for that render: else ⌘Z within a pause of a session's
+    // first typing found nothing to undo and the typing stayed.
+    if (flush()) window.setTimeout(run, 0);
+    else run();
   };
   const blurTimer = useRef<number | null>(null);
   // The writing runs past the last page while the tab is at its page limit.
@@ -262,19 +268,21 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   });
 
   // Everything below reads the view through the ref; created once, below.
-  const flush = () => {
+  // Writes what was typed since the last commit; true when it wrote something.
+  const flush = (): boolean => {
     const view = viewRef.current;
     if (idle.current !== null) {
       window.clearTimeout(idle.current);
       idle.current = null;
     }
-    if (!view) return;
+    if (!view) return false;
     const blocks = docToBlocks(view.state.doc, committed.current.blocks);
-    if (blocks === committed.current.blocks) return;
+    if (blocks === committed.current.blocks) return false;
     // Taken as written only once the host accepts it (a tab locked meanwhile refuses): refused,
     // it stays local and goes with the next commit.
-    if (latest.current.onCommit(latest.current.flow, blocks) === false) return;
+    if (latest.current.onCommit(latest.current.flow, blocks) === false) return false;
     committed.current = { ...committed.current, blocks };
+    return true;
   };
   const scheduleCommit = () => {
     if (idle.current !== null) window.clearTimeout(idle.current);
