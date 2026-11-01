@@ -59,9 +59,11 @@ export function FilterSearchBox({
   const colours = tone
     ? 'bg-transparent focus-within:ring-2'
     : 'border-slate-200 bg-white focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-400/25 dark:border-slate-700 dark:bg-slate-800';
+  // Compact, a chip keeps its one line and the row scrolls; else it may wrap to the box's width.
+  const chipWidth = compact ? 'whitespace-nowrap' : 'max-w-full';
   const chipClass = tone
-    ? 'inline-flex max-w-full shrink-0 items-center gap-1 rounded-full py-0.5 pl-2 pr-1 text-[12px] ring-1 ring-inset'
-    : 'inline-flex max-w-full shrink-0 items-center gap-1 rounded-full bg-brand-50 py-0.5 pl-2 pr-1 text-[12px] text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/10 dark:text-brand-100 dark:ring-brand-500/30';
+    ? `inline-flex ${chipWidth} shrink-0 items-center gap-1 rounded-full py-0.5 pl-2 pr-1 text-[12px] ring-1 ring-inset`
+    : `inline-flex ${chipWidth} shrink-0 items-center gap-1 rounded-full bg-brand-50 py-0.5 pl-2 pr-1 text-[12px] text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/10 dark:text-brand-100 dark:ring-brand-500/30`;
   return (
     <div
       role="search"
@@ -110,7 +112,7 @@ export function FilterSearchBox({
             }
           >
             <span className="font-medium">{chip.field}:</span>
-            <span className="truncate">{chip.value}</span>
+            <span className={`truncate ${compact ? 'max-w-[9rem]' : ''}`}>{chip.value}</span>
             {onRemoveChip ? (
               <Tooltip label={`Remove ${chip.field}: ${chip.value}`}>
                 <button

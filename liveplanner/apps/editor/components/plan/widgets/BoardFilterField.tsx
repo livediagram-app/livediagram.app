@@ -63,7 +63,7 @@ export function BoardFilterField({
     onQuick(q);
   };
   return (
-    <span className="flex w-64 min-w-0 shrink-0 items-center">
+    <span className="flex w-72 min-w-0 shrink-0 items-center">
       <FilterSearchBox
         compact
         tone={{

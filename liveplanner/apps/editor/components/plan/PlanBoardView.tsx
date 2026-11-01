@@ -310,6 +310,8 @@ export function PlanBoardView({
   // dragged near the columns' left or right edge scrolls them sideways.
   useEdgeAutoScroll(bodyRef, (maximised || filled || simplified) && (!!drag.drag || !!incoming));
   const dragging = drag.drag;
+  // The cards a group drag carries, for a look-up per card drawn (one Set per drag, not a scan per card).
+  const carried = useMemo(() => new Set(dragging?.group ?? []), [dragging?.group]);
   // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up"); five
   // slots across while it covers the canvas, then it scrolls sideways.
   const look = boardLook(
@@ -825,10 +827,7 @@ export function PlanBoardView({
                                       ? held?.height
                                       : undefined
                                   }
-                                  lifted={
-                                    dragging?.itemId === item.id ||
-                                    !!dragging?.group?.includes(item.id)
-                                  }
+                                  lifted={dragging?.itemId === item.id || carried.has(item.id)}
                                   selected={selection.ids.has(item.id)}
                                   done={done}
                                   // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
