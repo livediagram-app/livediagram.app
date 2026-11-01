@@ -49,7 +49,7 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
     title: 'Viewer',
     blurb: 'Watches along. Can’t comment or change a thing.',
     Icon: () => <EyeIcon />,
-    solid: 'bg-violet-500 text-white dark:bg-violet-500/60',
+    solid: 'bg-violet-600 text-white dark:bg-violet-500/60',
     button: 'bg-violet-600 hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600',
     selected: 'border-violet-500 bg-violet-50/70 dark:border-violet-400 dark:bg-violet-500/10',
     text: 'text-violet-700 dark:text-violet-300',
