@@ -89,6 +89,23 @@ describe('API Tokens', () => {
     expect(window.getSelection()?.toString()).toBe('lwt_secret');
   });
 
+  it('keeps Make token focusable while it makes one, and makes only one for a second press', async () => {
+    act(() => root.render(<TokensPanel />));
+    await settle();
+    const make = button('Make token');
+    make.focus();
+    // Two presses before the answer: the second is ignored, and the button never turns disabled (which dropped
+    // the keyboard to the top of Settings).
+    act(() => make.click());
+    act(() => make.click());
+    expect(make.disabled).toBe(false);
+    expect(make.getAttribute('aria-disabled')).toBe('true');
+    await settle();
+    const posts = vi.mocked(fetch).mock.calls.filter(([, init]) => init?.method === 'POST');
+    expect(posts).toHaveLength(1);
+    expect(document.activeElement).toBe(make);
+  });
+
   it('returns focus to the name field when the new token is put away', async () => {
     act(() => root.render(<TokensPanel />));
     await settle();
