@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import type { PushNotification, TeamPerson } from '@liveworkspace/auth-client';
 import {
   createPusher,
+  freshCommentsInThreads,
+  PUSH_COMMENTS_PER_SAVE_MAX,
   pushTitle,
   PUSH_RECIPIENTS_MAX,
   roomPersonTag,
@@ -219,5 +221,32 @@ describe('pushActionAssigned', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     await expect(pusher.pushActionAssigned({}, action)).resolves.toBeUndefined();
     warn.mockRestore();
+  });
+});
+
+describe('freshCommentsInThreads', () => {
+  const c = (id: string, authorId?: string) => ({ id, authorId });
+  it('finds the author’s new comments, with their thread and who wrote earlier in it', () => {
+    const previous = [{ at: 'e1', comments: [c('1', 'user_bea'), c('2', 'user_cy')] }];
+    const next = [
+      {
+        at: 'e1',
+        comments: [c('1', 'user_bea'), c('2', 'user_cy'), c('3', 'user_ada'), c('4', 'user_bea')],
+      },
+      { at: 'e2', comments: [c('5', 'user_ada'), c('6')] },
+    ];
+    expect(freshCommentsInThreads(next, previous, 'user_ada')).toEqual([
+      { at: 'e1', comment: c('3', 'user_ada'), threadAuthorIds: ['user_bea', 'user_cy'] },
+      { at: 'e2', comment: c('5', 'user_ada'), threadAuthorIds: [] },
+    ]);
+    // A peer's comment arriving in the writer's save is not the writer's.
+    expect(freshCommentsInThreads(next, previous, 'user_cy')).toEqual([]);
+  });
+
+  it('stops at the per-save bound', () => {
+    const comments = Array.from({ length: 20 }, (_, i) => c(String(i), 'user_ada'));
+    expect(freshCommentsInThreads([{ at: 'e', comments }], [], 'user_ada')).toHaveLength(
+      PUSH_COMMENTS_PER_SAVE_MAX,
+    );
   });
 });

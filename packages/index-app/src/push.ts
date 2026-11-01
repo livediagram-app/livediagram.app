@@ -91,6 +91,44 @@ export async function roomPersonTag(itemId: string, personId: string): Promise<s
   return Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** One comment thread as an app's save holds it: where it is (the app's own key, for the link) and its comments in
+ *  order. */
+export type PushThread<C> = {
+  at: string;
+  comments: readonly C[];
+};
+
+type ThreadComment = { id: string; authorId?: string | null };
+
+/** The most new comments one save or changeset notifies about: past any real save, and it bounds the work. */
+export const PUSH_COMMENTS_PER_SAVE_MAX = 5;
+
+/**
+ * The comments `next` adds over `previous` that `authorId` wrote, each with where its thread is and who wrote earlier
+ * in it (their replies): what a save's phone notifications are about. One pass over each side; at most
+ * PUSH_COMMENTS_PER_SAVE_MAX.
+ */
+export function freshCommentsInThreads<C extends ThreadComment>(
+  next: Iterable<PushThread<C>>,
+  previous: Iterable<PushThread<C>>,
+  authorId: string,
+): { at: string; comment: C; threadAuthorIds: string[] }[] {
+  const seen = new Set<string>();
+  for (const thread of previous) for (const c of thread.comments) seen.add(c.id);
+  const out: { at: string; comment: C; threadAuthorIds: string[] }[] = [];
+  for (const thread of next) {
+    const earlier: string[] = [];
+    for (const c of thread.comments) {
+      if (!seen.has(c.id) && c.authorId === authorId) {
+        out.push({ at: thread.at, comment: c, threadAuthorIds: [...new Set(earlier)] });
+        if (out.length >= PUSH_COMMENTS_PER_SAVE_MAX) return out;
+      }
+      if (c.authorId) earlier.push(c.authorId);
+    }
+  }
+  return out;
+}
+
 export function createPusher<E>(deps: PusherDeps<E>): Pusher<E> {
   // Who of these may read the item: the owner, its team's joined people, and anyone the index grants it. One team read
   // and one index ask a person outside the team, whatever the count.
