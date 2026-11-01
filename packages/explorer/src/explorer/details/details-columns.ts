@@ -3,6 +3,7 @@
 // ties go by name, then id.
 
 import type { Folder, Level } from '@liveworkspace/index-client';
+import { compareNames } from '../../data/name-order';
 import type { ShownItem } from '../../data/overlay';
 
 export type DetailsColumnId =
@@ -107,8 +108,6 @@ function folderKey(f: Folder, column: DetailsColumnId, itemCount: number | undef
   }
 }
 
-const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
-
 function compareKeys(a: Key, b: Key, direction: SortDirection): number {
   if (a === undefined || b === undefined) {
     if (a === b) return 0;
@@ -116,13 +115,13 @@ function compareKeys(a: Key, b: Key, direction: SortDirection): number {
   }
   const order =
     typeof a === 'string' && typeof b === 'string'
-      ? collator.compare(a, b)
+      ? compareNames(a, b)
       : (a as number) - (b as number);
   return direction === 'asc' ? order : -order;
 }
 
 function byNameThenId(an: string, ai: string, bn: string, bi: string): number {
-  return collator.compare(an, bn) || (ai < bi ? -1 : ai > bi ? 1 : 0);
+  return compareNames(an, bn) || (ai < bi ? -1 : ai > bi ? 1 : 0);
 }
 
 /**

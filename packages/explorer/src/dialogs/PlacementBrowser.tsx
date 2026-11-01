@@ -10,6 +10,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { FOLDER_NAME_MAX } from '@liveworkspace/index-client';
 import { BackBar } from '@liveworkspace/ui';
+import { compareNames } from '../data/name-order';
 import {
   ChevronRightIcon,
   FolderPlaceIcon,
@@ -184,7 +185,7 @@ export function PlacementBrowser({
   const open = openId ? byId.get(openId) : undefined;
   const children = spaceFolders
     .filter((f) => f.parentId === (open?.id ?? null))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((a, b) => compareNames(a.name, b.name));
   const hasKids = (id: string) => spaceFolders.some((f) => f.parentId === id);
   const valueFor = (folderId: string | null) => placementValue(teamId, folderId);
   const chain = new Set(
