@@ -49,10 +49,10 @@ const TYPES = resolved([
 ]);
 const [WORK, BUG, IDEA] = TYPES as [ItemTypeDef, ItemTypeDef, ItemTypeDef];
 
-function editor(type: ItemTypeDef | null) {
+function editor(type: ItemTypeDef | null, types: readonly ItemTypeDef[] = TYPES) {
   for (const key of Object.keys(plan)) delete plan[key];
   Object.assign(plan, {
-    types: TYPES,
+    types,
     items: new Map(),
     statusNames: new Map([
       ['todo', 'To Do'],
@@ -63,7 +63,7 @@ function editor(type: ItemTypeDef | null) {
   render(
     <ItemTypeEditor
       type={type}
-      types={TYPES}
+      types={types}
       itemCount={0}
       onSave={onSave}
       onDelete={() => {}}
@@ -83,10 +83,39 @@ describe('Inherits From', () => {
     expect(menu().value).toBe('');
   });
 
-  it('is disabled on a base type, naming the types inheriting from it', () => {
+  it('sits on the same row as Name', () => {
+    editor(IDEA);
+    const name = screen.getByLabelText('Name');
+    const rowOf = (el: HTMLElement) => el.closest('div.flex-wrap');
+    expect(rowOf(menu())).not.toBeNull();
+    expect(rowOf(menu())).toBe(rowOf(name));
+  });
+
+  it('is not drawn on a base type, which only names the types inheriting from it', () => {
     editor(WORK);
-    expect(menu().disabled).toBe(true);
+    expect(screen.queryByLabelText('Inherits From')).toBeNull();
     expect(screen.getByText('Bug inherits from this type.')).toBeTruthy();
+  });
+
+  it('is not drawn when no other type exists, new type or not', () => {
+    editor(IDEA, [IDEA]);
+    expect(screen.queryByLabelText('Inherits From')).toBeNull();
+    cleanup();
+    editor(null, []);
+    expect(screen.queryByLabelText('Inherits From')).toBeNull();
+    expect(screen.queryByText(/Share fields, tabs, states and display/)).toBeNull();
+    expect(screen.getByLabelText('Name')).toBeTruthy();
+  });
+
+  it('is not drawn while the only other types already inherit', () => {
+    editor(IDEA, [IDEA, BUG]);
+    expect(screen.queryByLabelText('Inherits From')).toBeNull();
+  });
+
+  it('stays drawn on an inheriting type, to change its base or pick None', () => {
+    editor(BUG);
+    expect(menu().value).toBe('work');
+    expect([...menu().options].map((o) => o.textContent)).toContain('None');
   });
 
   it('lays the draft out from a chosen base, keeping its own fields, and saves it inheriting', () => {

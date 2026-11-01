@@ -27,6 +27,7 @@ export function ItemTypeConfiguration({
   onDetailsLabel,
   removedSome,
   inheritance,
+  inheritanceNote,
   inherited,
 }: {
   // The Name input's id (its label points at it).
@@ -46,8 +47,10 @@ export function ItemTypeConfiguration({
   onDetailsLabel: (next: string) => void;
   // A field the type had is gone from the draft (the layout editor says what that means).
   removedSome: boolean;
-  // The Inherits From row (ItemTypeInheritance.tsx), under Name.
+  // The Inherits From menu (ItemTypeInheritance.tsx), beside Name; absent with nothing to pick.
   inheritance?: ReactNode;
+  // The line under the Name row: what Inherits From does, or who inherits from this type.
+  inheritanceNote?: ReactNode;
   // An inherited type's base name and the fields it takes, locked in the layout.
   inherited?: { from: string; ids: ReadonlySet<string> } | undefined;
 }) {
@@ -56,23 +59,27 @@ export function ItemTypeConfiguration({
       {/* General opens the panel, so it needs no visible heading: the Name field says what it is. Still named for
           assistive tech and the tour. */}
       <ConfigurationSection title="General" tourId="card-type-general" hideTitle>
-        <SheetRow label="Name" htmlFor={nameId}>
-          {/* One field: pick the glyph at its start, type the name after it, pick the colour at its end. */}
-          <div className="flex max-w-xs items-center gap-1 rounded-lg border border-slate-200 bg-white px-1 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-900">
-            <GlyphPicker value={glyph} colour={color} onChange={onGlyph} inline />
-            <input
-              id={nameId}
-              value={label}
-              maxLength={ITEM_TYPE_LABEL_MAX}
-              placeholder="Customer call"
-              autoFocus={isNew}
-              onChange={(e) => onLabel(e.target.value)}
-              className="h-9 min-w-0 flex-1 bg-transparent text-[13px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100"
-            />
-            <TypeColourButton value={color} onChange={onColor} />
-          </div>
-        </SheetRow>
-        {inheritance}
+        {/* Name, and Inherits From beside it where there is room (two rows on a phone). */}
+        <div className="flex flex-wrap items-start gap-x-3">
+          <SheetRow label="Name" htmlFor={nameId} className="min-w-0 max-w-xs flex-[2_1_14rem]">
+            {/* One field: pick the glyph at its start, type the name after it, pick the colour at its end. */}
+            <div className="flex max-w-xs items-center gap-1 rounded-lg border border-slate-200 bg-white px-1 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-900">
+              <GlyphPicker value={glyph} colour={color} onChange={onGlyph} inline />
+              <input
+                id={nameId}
+                value={label}
+                maxLength={ITEM_TYPE_LABEL_MAX}
+                placeholder="Customer call"
+                autoFocus={isNew}
+                onChange={(e) => onLabel(e.target.value)}
+                className="h-9 min-w-0 flex-1 bg-transparent text-[13px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100"
+              />
+              <TypeColourButton value={color} onChange={onColor} />
+            </div>
+          </SheetRow>
+          {inheritance}
+        </div>
+        {inheritanceNote}
       </ConfigurationSection>
       <ConfigurationSection
         title="Fields"
