@@ -7,7 +7,7 @@
 // the + turns on) or Delete. The + at the zone's end opens the widget gallery (BoardWidgetPicker): a widget pressed
 // there is added at the end, or taken off when the board has it, and the gallery stays open. For You is worked out
 // as it opens (`suggest`).
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   placeWidget,
   removeWidget,
@@ -133,6 +133,18 @@ export function BoardWidgetZone({
     (document.activeElement as HTMLElement | null)?.blur();
     onChange(removeWidget(widgets, kind));
   };
+  // The widget Alt+← or Alt+→ just moved: React moves its node (or the board redraws it), which drops the focus, so it is
+  // put back once the new order lands (board-widgets.md "Reorder").
+  const refocus = useRef<BoardWidgetId | null>(null);
+  useLayoutEffect(() => {
+    const kind = refocus.current;
+    if (!kind) return;
+    refocus.current = null;
+    const el = [...(zone.current?.querySelectorAll<HTMLElement>('[data-widget]') ?? [])].find(
+      (w) => w.dataset.widget === kind,
+    );
+    if (el && document.activeElement !== el) el.focus();
+  }, [widgets]);
   const suppressClick = useRef(false);
   // The + the widget picker hangs from, while it is open.
   const [pickerAt, setPickerAt] = useState<HTMLElement | null>(null);
@@ -280,7 +292,10 @@ export function BoardWidgetZone({
                 if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
                   e.preventDefault();
                   e.stopPropagation();
-                  onChange(nudgeWidget(widgets, kind, e.key === 'ArrowLeft' ? -1 : 1));
+                  const next = nudgeWidget(widgets, kind, e.key === 'ArrowLeft' ? -1 : 1);
+                  if (next.join() === widgets.join()) return;
+                  refocus.current = kind;
+                  onChange(next);
                 } else if (e.key === 'Delete' || e.key === 'Backspace') {
                   e.preventDefault();
                   e.stopPropagation();
