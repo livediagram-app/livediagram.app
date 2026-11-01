@@ -145,7 +145,7 @@ export const TELEMETRY_CATEGORIES = [
   // question; never a design or team name.
   'Trash',
   // The markers and the Fill tool (docs/specs/023-draw-mode/drawing-tools.md): a marker 'Changed'
-  // ('PenColour' | 'PenWidth'), the Fill tool 'Selected' ('Fill') and 'Changed' ('FillColour', and
+  // ('PenColour' | 'PenWidth'), the Fill tool picked up, 'Toggled' ('Fill') and 'Changed' ('FillColour', and
   // 'FillMissed' for a press that filled nothing), and a stroke flipped between ink and a shape, 'Toggled' ('RecogniseOnceKey' |
   // 'RecogniseOnceChip' | 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',

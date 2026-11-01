@@ -53,7 +53,7 @@ export function useLogoFillTool(): {
     tile: fillToolTile(fill),
     begin: (next) => {
       editor.beginDraw({ type: 'fill', fill: next });
-      track('Draw', 'Selected', 'Fill');
+      track('Draw', 'Toggled', 'Fill');
     },
   };
 }
@@ -101,7 +101,7 @@ export function FillToolRow({
   const held = isFillIntent(pendingDraw);
   const pick = () => {
     beginDraw({ type: 'fill', fill });
-    track('Draw', 'Selected', 'Fill');
+    track('Draw', 'Toggled', 'Fill');
   };
   return (
     <>

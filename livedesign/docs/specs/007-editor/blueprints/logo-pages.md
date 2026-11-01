@@ -178,7 +178,7 @@ Exclude), **Wordmark**, **Logo Kit**.
   - The category flyout: `usePaletteCatalogue` appends the tile from `useLogoFillTool()` (null
     outside an editor) after the markers, the markers ending their group (`withGroupEnd`), and
     `category-flyout-groups` names its group **Fill** (`logo:fill`). `tileActions.beginFill` is
-    the hook's `begin` (`beginDraw` plus `Draw` · `Selected` · `Fill`) wrapped in `armed`, so a
+    the hook's `begin` (`beginDraw` plus `Draw` · `Toggled` · `Fill`) wrapped in `armed`, so a
     pick-up closes the flyout as any tool's does; `tileHandler`'s `fill` case calls it with the
     tile's colour (a no-op without it). `opensSide` counts the `fill` tile, so a rest or focus
     opens `CategoryFlyoutSide`, which for `fill` holds `FillColourPicker` (tagline "Pick a colour to

@@ -169,7 +169,7 @@ on a logo page: the same rules, from the same shared code, so a filled mark beha
 | A marker's colour or width changed       | `Draw` · `Changed` · `PenColour` / `PenWidth`              |
 | A stroke flipped between ink and a shape | `Draw` · `Toggled` · `RecogniseOnce…` / `BreakShape…`      |
 | A marker stroke landed                   | `Element` · `Added` · `Freehand` (or the recognised shape) |
-| The Fill tool picked up                  | `Draw` · `Selected` · `Fill`                               |
+| The Fill tool picked up                  | `Draw` · `Toggled` · `Fill`                                |
 | The Fill tool's colour changed           | `Draw` · `Changed` · `FillColour`                          |
 | A press that filled nothing              | `Draw` · `Changed` · `FillMissed`                          |
 | A closed element filled                  | `Element` · `Changed` · `FillBucket`                       |

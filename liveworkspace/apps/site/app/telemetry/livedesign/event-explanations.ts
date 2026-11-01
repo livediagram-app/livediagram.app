@@ -22,12 +22,12 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
   );
 
 export const EXACT: Readonly<Record<string, string>> = {
-  'Draw|Selected|Fill': 'Someone picked up the Fill tool, the paint bucket, on a logo page.',
   'Draw|Changed|FillColour': "Someone changed the Fill tool's colour. Never the colour.",
   'Draw|Changed|FillMissed':
     'Someone pressed with the Fill tool where there was nothing it fills: the bare page, open ink or something locked.',
   'Draw|Changed|PenColour': 'Someone gave the second or third marker a new colour.',
   'Draw|Changed|PenWidth': 'Someone changed the width of one of the markers.',
+  'Draw|Toggled|Fill': 'Someone picked up the Fill tool, the paint bucket, on a logo page.',
   'Draw|Toggled|RecogniseOnceKey':
     'Someone pressed Alt (Option) while drawing to turn that one stroke into a clean shape at once.',
   'Draw|Toggled|RecogniseOnceChip':
@@ -1624,9 +1624,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timing|Measured':
     'A key moment was timed: a design opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Element|Created': 'Someone made an element in a way other than placing it from the palette.',
-  'Draw|Selected': 'Someone picked up the Fill tool on a logo page.',
   'Draw|Changed': "Someone changed a marker's colour or width, or the Fill tool's colour.",
-  'Draw|Toggled': 'Someone flipped the stroke they were drawing between ink and a shape.',
+  'Draw|Toggled':
+    'Someone flipped the stroke they were drawing between ink and a shape, or picked up the Fill tool.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Design page.',
   'Cta|Created':

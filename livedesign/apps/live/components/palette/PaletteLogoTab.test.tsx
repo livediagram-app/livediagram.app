@@ -136,7 +136,7 @@ describe('PaletteLogoTab', () => {
     );
     fireEvent.click(fill);
     expect(ctx.beginDraw).toHaveBeenCalledWith({ type: 'fill', fill: defaultFill('light') });
-    expect(track).toHaveBeenCalledWith('Draw', 'Selected', 'Fill');
+    expect(track).toHaveBeenCalledWith('Draw', 'Toggled', 'Fill');
   });
 
   it('opens a held Fill tool’s colour picker, whose pick is remembered and re-arms it', () => {
