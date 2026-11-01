@@ -474,6 +474,10 @@ tokens issued on the session, then Better Auth deletes the session and its cooki
 another device and Sign Out Others (Better Auth's `revoke-session`, `revoke-other-sessions`, and `revoke-sessions`)
 do the same for the sessions they end, so that device's apps are signed out with it.
 
+**When it doesn't go.** A sign-out the server refuses, or one that never reaches it (offline), leaves the person
+signed in. The account menu stays open and its Sign Out item says "Couldn't sign out. Check your connection and try
+again." in place of its hint, read out to a screen reader too, until the menu closes (`@liveworkspace/account-menu`).
+
 **Deleted, not revoked.** The tokens are deleted rather than marked revoked: the provider takes a revoked refresh
 token shown again as a stolen one and deletes every refresh token that app holds for the account, on every device. A
 deleted one is only unknown (`invalid_grant`).

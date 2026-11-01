@@ -88,6 +88,8 @@ type Guest = { guest: GuestAccount };
 export function AccountMenu(props: Common & (SignedIn | Guest)) {
   const { openOnMount = false, focusOnMount = false } = props;
   const [leaving, setLeaving] = useState(false);
+  // The last Sign Out was refused or never reached the server: said on the item and read out, until the menu closes.
+  const [refused, setRefused] = useState(false);
   const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
   const ref = useRef<HTMLDivElement>(null);
@@ -130,11 +132,17 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
       <GuestAvatar large={large} />
     );
 
+  useEffect(() => {
+    if (!open) setRefused(false);
+  }, [open]);
+
   async function leave(onSignOut: () => Promise<boolean>) {
     setLeaving(true);
-    const left = await onSignOut();
+    setRefused(false);
+    const left = await onSignOut().catch(() => false);
     setLeaving(false);
     if (left) close();
+    else setRefused(true);
   }
 
   return (
@@ -218,8 +226,10 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
                     (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"), so the item says so. */}
                 <span className="min-w-0">
                   <span className="block">{leaving ? 'Signing Out…' : 'Sign Out'}</span>
-                  <span className="block text-xs text-slate-500 dark:text-slate-400">
-                    {SIGN_OUT_HINT}
+                  <span
+                    className={`block text-xs ${refused ? 'text-red-700 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}
+                  >
+                    {refused ? SIGN_OUT_REFUSED : SIGN_OUT_HINT}
                   </span>
                 </span>
               </button>
@@ -227,12 +237,18 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
           )}
         </div>
       )}
+      {/* Outside the menu, which may hold only its items: read out when a sign-out is refused. */}
+      <p role="status" className="sr-only">
+        {refused ? SIGN_OUT_REFUSED : ''}
+      </p>
     </div>
   );
 }
 
 // Under Sign out: it ends the liveworkspace session, so every app in this browser signs out with it.
 const SIGN_OUT_HINT = 'Every app in this browser';
+// In its place when the sign-out was refused or never got through, so the click is never met with nothing.
+export const SIGN_OUT_REFUSED = 'Couldn’t sign out. Check your connection and try again.';
 
 const ITEM =
   'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm text-slate-700 outline-none transition-colors hover:bg-slate-100 focus-visible:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:hover:bg-slate-700/60 dark:focus-visible:bg-slate-700/60';
