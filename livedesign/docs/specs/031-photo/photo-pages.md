@@ -311,7 +311,8 @@ has no Make Sizes ([Pages](../007-editor/pages-mode.md) "One kind a tab").
   in their shape; a size past the cap is refused under the fields and the Make button waits.
 - **Room**: a tab holds at most 10 photo pages. While the ticks fill the room, the unticked tiles are disabled,
   each with the tooltip "A tab holds up to 10 photo pages.", and a line under the grid says how many more fit.
-- **Select All** and **Clear** sit over the grid (Select All ticks as many as fit, in order).
+- **Select All** and **Clear** sit over the grid (Select All ticks as many as fit, in order). Each turns itself
+  off once pressed, so the focus moves to the other one rather than falling out of the dialog.
 - The ticks are remembered in this browser for the next time. None are ticked the first time.
 - **Footer**: **Cancel** and **Make <n> Sizes** ("Make 1 Size"), disabled with nothing ticked. While the sizes are
   made the button reads "Making…" and the dialog stays; Escape and Cancel still close it, and the work stops.

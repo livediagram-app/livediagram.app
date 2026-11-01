@@ -76,6 +76,20 @@ describe('the Make Sizes dialog', () => {
     expect(make().textContent).toBe('Make Sizes');
   });
 
+  it('keeps the focus in the dialog when Select All or Clear turns itself off', () => {
+    // Each disables itself once pressed, which dropped the focus on the page: it moves to the other one.
+    open();
+    const all = screen.getByRole('button', { name: 'Select All' });
+    const clear = screen.getByRole('button', { name: 'Clear' });
+    all.focus();
+    fireEvent.click(all);
+    expect((all as HTMLButtonElement).disabled).toBe(true);
+    expect(document.activeElement).toBe(clear);
+    fireEvent.click(clear);
+    expect((clear as HTMLButtonElement).disabled).toBe(true);
+    expect(document.activeElement).toBe(all);
+  });
+
   it('holds the ticks to the room the tab has left', () => {
     sizeTicks.set({ ticked: ['x-post', 'x-header', 'custom'], custom: { width: 10, height: 10 } });
     open({ photoRoom: 2 });
