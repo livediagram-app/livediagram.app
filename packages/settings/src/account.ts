@@ -70,6 +70,36 @@ export const NOTIFICATION_ROWS: AccountToggle[] = [
   ),
 ];
 
+// Phone notifications, one switch per kind (./push.ts PUSH_SETTING_KEYS), beside the email ones they mirror. They
+// matter only once a device is registered (the Phone section's Turn On Phone Notifications), so they are on unless
+// turned off.
+export const PUSH_ROWS: AccountToggle[] = [
+  on(
+    'pushComments',
+    'Someone Comments on My Work',
+    'Someone leaves a comment on a diagram, plan, document or design you own.',
+    'phone push mobile comment feedback',
+  ),
+  on(
+    'pushMentions',
+    'Someone Mentions Me in a Comment',
+    'A teammate @mentions you in a comment.',
+    'phone push mobile mention tag at',
+  ),
+  on(
+    'pushActionAssigned',
+    'Someone Assigns Me an Action',
+    'A teammate assigns you an action or a card.',
+    'phone push mobile action assigned task todo card',
+  ),
+  on(
+    'pushThreadReplies',
+    'Replies to Threads I Commented In',
+    'Someone replies in a comment thread you started or replied to.',
+    'phone push mobile reply replies thread conversation',
+  ),
+];
+
 export const IN_APP_ROWS: AccountToggle[] = [
   on(
     'notificationsEnabled',
@@ -102,6 +132,7 @@ export const ACCESSIBILITY_ROWS: AccountToggle[] = [
 // Every switch the Account section shows.
 export const ACCOUNT_TOGGLES: readonly AccountToggle[] = [
   ...NOTIFICATION_ROWS,
+  ...PUSH_ROWS,
   ...IN_APP_ROWS,
   ...PRIVACY_ROWS,
   ...ACCESSIBILITY_ROWS,

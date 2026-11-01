@@ -156,8 +156,14 @@ describe('SettingsPanel', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /^All/ }));
     await waitFor(() => expect(screen.getByRole('group', { name: 'Account' })).toBeTruthy());
-    // Every other app is read once; the editor's own app is not.
-    expect(calls.map((c) => c.path).sort()).toEqual([
+    // Every other app is read once; the editor's own app is not. (The Phone section, on show in Notifications, reads
+    // the account's devices.)
+    expect(
+      calls
+        .map((c) => c.path)
+        .filter((path) => path !== '/push/devices')
+        .sort(),
+    ).toEqual([
       '/settings/livedesign.app',
       '/settings/livediagram.app',
       '/settings/livedocuments.app',
@@ -213,7 +219,7 @@ describe('SettingsPanel', () => {
     renderWithKit(<Host request={request} initial="all" />);
     await waitFor(() => expect(screen.getByRole('group', { name: 'Account' })).toBeTruthy());
     // No editor here: all four apps are read.
-    expect(calls.filter((c) => c.method === 'GET')).toHaveLength(4);
+    expect(calls.filter((c) => c.method === 'GET' && c.path !== '/push/devices')).toHaveLength(4);
     const account = () => within(rail()).getByRole('group', { name: 'Account' });
     fireEvent.click(within(account()).getByRole('button', { name: 'Account' }));
     fireEvent.click(within(account()).getByRole('button', { name: /^Notifications/ }));

@@ -23,6 +23,7 @@
     "@liveworkspace/email": "workspace:*",
     "@liveworkspace/index-client": "workspace:^",
     "@liveworkspace/migration": "workspace:^",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "better-auth": "1.7.12",

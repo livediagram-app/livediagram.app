@@ -38,6 +38,11 @@ export async function apiNotifyActionAssigned(
     documentId: string;
     actionName: string;
     description?: string;
+    // False: the phone notification alone, no email (docs/specs/014-identity/phone-notifications.md).
+    email?: boolean;
+    // Where the action is, for the notification's link.
+    tabId?: string;
+    elementId?: string;
   },
 ): Promise<void> {
   const res = await apiFetch(`${API_BASE}/teams/${teamId}/notify-action`, {

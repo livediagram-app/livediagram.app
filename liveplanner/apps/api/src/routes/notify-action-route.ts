@@ -2,7 +2,11 @@
 // (docs/specs/012-collaboration/assigned-actions.md "The email"). Answered inside the plan's Durable Object, which
 // keeps the email's once-only claim. The assignment itself is already in the plan (the tab save); this only says so.
 //
-//   body: { teamId, assigneeUserId? | assigneeMemberId?, actionName, description? }
+//   body: { teamId, assigneeUserId? | assigneeMemberId?, actionName, description?, email?, tabId?, elementId? }
+//
+// `email: false` (the dialog's Email box unticked) sends no email; the phone notification goes either way, to an
+// assignee with an account who can open the plan, linking `tabId` and `elementId` when given
+// (docs/specs/014-identity/phone-notifications.md).
 //
 // The server establishes every fact that matters itself. The caller is a signed-in person (never an API token)
 // who can open the plan (its grant) and has joined `teamId` (their token's teams). The assignee is one of that
@@ -18,6 +22,8 @@ import { requestGrant } from '../index-service';
 import { teamPeople } from '../person/notify';
 import { isAccountId } from '@liveworkspace/auth-client';
 import { getParticipant } from '../person/profiles';
+import { elementUrl, pusher, pushItemOf, pushTag } from '../person/push';
+import { appBaseUrl } from '../email/client';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import { gateRead, readBody, requireOwner, type PlanRouteContext } from './context';
 
@@ -75,6 +81,9 @@ export async function handleNotifyAction(ctx: PlanRouteContext, id: string): Pro
   const actionName = typeof body.actionName === 'string' ? body.actionName.trim() : '';
   const description =
     typeof body.description === 'string' && body.description.trim() ? body.description : null;
+  const email = body.email !== false;
+  const tabId = optionalId(body.tabId);
+  const elementId = optionalId(body.elementId);
   if (!teamId || assigneeUserId === false || assigneeMemberId === false) {
     return badRequest('missing teamId');
   }
@@ -103,11 +112,27 @@ export async function handleNotifyAction(ctx: PlanRouteContext, id: string): Pro
     assigneeCanOpen(ctx, plan, teamId, assignee),
     getParticipant(ctx.env, userId),
   ]);
+  const assignerName = assigner?.name ?? ctx.accountEmail ?? null;
+  if (canOpen && assignee.userId)
+    ctx.waitUntil?.(
+      pusher.pushActionAssigned(ctx.env, {
+        item: pushItemOf(plan),
+        assignerId: userId,
+        assignerName,
+        assigneeUserId: assignee.userId,
+        url:
+          tabId && elementId
+            ? elementUrl(ctx.env, plan.id, tabId, elementId)
+            : `${appBaseUrl(ctx.env)}/project/${encodeURIComponent(plan.id)}`,
+        tag: pushTag(plan.id, elementId || 'action'),
+      }),
+    );
+  if (!email) return json({ ok: true }, { status: 202 });
   ctx.waitUntil?.(
     notifyActionAssigned(ctx.env, {
       assignee,
       assignerUserId: userId,
-      assignerName: assigner?.name ?? ctx.accountEmail ?? null,
+      assignerName,
       project: { id: plan.id, name: plan.name },
       assigneeCanOpen: canOpen,
       actionName,

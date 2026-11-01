@@ -127,4 +127,6 @@ export type Env = {
 // worker's bindings plus `PLAN_DB`, the plan's own SQLite behind the D1 surface (plan-room/plan-db.ts).
 // Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
 // the worker reaches content through the plan's Durable Object instead.
-export type PlanEnv = Env & { PLAN_DB: D1Database };
+// `ROOM_PEOPLE`: the person tags of the sessions in the plan's room right now, so a phone notification skips someone
+// already looking at it (docs/specs/014-identity/phone-notifications.md).
+export type PlanEnv = Env & { PLAN_DB: D1Database; ROOM_PEOPLE?: () => ReadonlySet<string> };

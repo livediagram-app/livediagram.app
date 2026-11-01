@@ -89,6 +89,24 @@ describe('isAllowedScriptUrl', () => {
     expect(isAllowedScriptUrl('/_next/static/chunks/a.js', page, '/community', [])).toBe(false);
   });
 
+  it('lets the push-only service worker register, from its one path on the page itself, and no other', () => {
+    const sink = 'ServiceWorkerContainer register';
+    expect(isAllowedScriptUrl('/push-worker.js', page, '/live', [], sink)).toBe(true);
+    expect(isAllowedScriptUrl(`${page}/push-worker.js`, page, '', [], sink)).toBe(true);
+    expect(isAllowedScriptUrl('/push-worker.js?v=2', page, '', [], sink)).toBe(false);
+    expect(isAllowedScriptUrl('/other-worker.js', page, '', [], sink)).toBe(false);
+    expect(isAllowedScriptUrl('/live/_next/static/chunks/a.js', page, '/live', [], sink)).toBe(
+      false,
+    );
+    expect(isAllowedScriptUrl('https://evil.example/push-worker.js', page, '', [], sink)).toBe(
+      false,
+    );
+    // As a script, the path is no build script.
+    expect(isAllowedScriptUrl('/push-worker.js', page, '', [], 'HTMLScriptElement src')).toBe(
+      false,
+    );
+  });
+
   it("lets a worker start from the page's own blob: URL (Clerk's session timers), nothing else from one", () => {
     const blob = 'blob:https://www.livediagram.app/1234';
     expect(isAllowedScriptUrl(blob, page, '', [], 'Worker constructor')).toBe(true);

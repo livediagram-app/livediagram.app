@@ -23,3 +23,7 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | ACC17 | accounts              | checking and closing with a deletion code share `CODE_IP_LIMITER`'s 10 a minute, keyed by account, since the caller is always an app's server.                       |
 | ACC18 | email                 | the send window is whole hours (the sweeps run hourly); a window that would cross midnight (`21:00-09:00`) doesn't parse and the default is used.                    |
 | ACC19 | email                 | an invited address is timed by the zone of the account with that address, else the default.                                                                          |
+| ACC20 | push                  | an account keeps at most 10 devices; registering an eleventh drops the oldest.                                                                                       |
+| ACC21 | push                  | one request to accounts sends at most 200 posts across its people and devices, 8 at a time, 10 seconds each; the rest are dropped and logged.                        |
+| ACC22 | push                  | a message lives 4 hours at the push service (`TTL`), at `Urgency: normal`; the VAPID subject is the Worker's `BASE_URL`.                                             |
+| ACC23 | push                  | comments and assignments made with an API token send no phone notification, and one event reaches at most 50 people.                                                 |

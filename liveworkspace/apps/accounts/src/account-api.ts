@@ -91,6 +91,7 @@ import {
   revokeApiTokenBySecret,
   verifyApiToken,
 } from './tokens.ts';
+import { pushDeviceRoutes, pushInternal } from './push/routes.ts';
 import { reportServerEvent } from './telemetry.ts';
 import { handleWorkbenchInternal } from './workbench/internal.ts';
 import { endTokenWorkbench, tokenBySecret } from './workbench/revoke.ts';
@@ -339,6 +340,10 @@ async function handleSignedIn(
   if (section === 'people' && !id && method === 'GET') {
     return peopleNames(request, db, { pictures: true });
   }
+
+  // The devices they get phone notifications on (push/routes.ts).
+  const push = await pushDeviceRoutes(request, env, actor.id, parts);
+  if (push) return push;
 
   // Their display name and colour, the ones collaborators see in every app.
   if (section === 'profile' && !id) {
@@ -611,6 +616,9 @@ async function handleBearer(
     const answered = await profileRoute(request, db, actor.id);
     if (answered) return answered;
   }
+  // And its Phone section registers this device and lists and removes the rest (push/routes.ts).
+  const push = await pushDeviceRoutes(request, env, actor.id, parts);
+  if (push) return push;
   return error(404, 'not_found');
 }
 
@@ -936,6 +944,9 @@ async function handleInternal(
     if (typeof userId !== 'string' || !USER_ID.test(userId)) return error(400, 'invalid_user');
     return json({ teams: await teamsClaim(db, userId) });
   }
+
+  // Phone notifications an app has decided on, sent after the answer (push/routes.ts).
+  if (route === 'POST push') return pushInternal(request, env, client.app, waitUntil);
 
   if (route === 'GET teams/changes') {
     return json(await teamChanges(db, url.searchParams.get('cursor')));

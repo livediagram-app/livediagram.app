@@ -23,6 +23,7 @@ import { getParticipant } from '../accounts/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { storeTab } from '../limits';
+import { pushItemOf, pushNewComments } from '../accounts/push';
 import {
   badRequest,
   forbidden,
@@ -164,6 +165,28 @@ function afterCommentPosted(ctx: DesignRouteContext, caller: Caller, comment: Co
     );
 }
 
+// The phone notifications a comment posted on a tab sends (docs/specs/014-identity/phone-notifications.md), email or
+// not: a signed-in person's, never an API token's.
+function pushPosted(
+  ctx: DesignRouteContext,
+  caller: Caller,
+  comment: Comment,
+  tabId: string,
+  written: { tab: TabDTO; change: Change | null },
+): void {
+  if (ctx.token || !written.change) return;
+  ctx.waitUntil?.(
+    pushNewComments(ctx.env, {
+      design: pushItemOf(caller.doc),
+      tabId,
+      authorId: caller.owner,
+      authorName: comment.authorName ?? null,
+      next: written.change.elements,
+      previous: written.tab.elements,
+    }),
+  );
+}
+
 async function addComment(ctx: DesignRouteContext, id: string, tabId: string): Promise<Response> {
   const caller = await participant(ctx, id, tabId);
   if (caller instanceof Response) return caller;
@@ -176,6 +199,7 @@ async function addComment(ctx: DesignRouteContext, id: string, tabId: string): P
   const written = await writeTab(ctx, id, tabId, (tab) => appended(tab, elementId, comment));
   if (written instanceof Response) return written;
   afterCommentPosted(ctx, caller, comment);
+  pushPosted(ctx, caller, comment, tabId, written);
   console.info('[comments] added', {
     designId: id,
     tabId,
@@ -228,6 +252,7 @@ async function threadVerb(
     });
     if (written instanceof Response) return written;
     afterCommentPosted(ctx, caller, comment);
+    pushPosted(ctx, caller, comment, tabId, written);
     console.info('[comments] replied', { designId: id, tabId, agent: ctx.token !== null });
     return json({ comment }, { status: 201 });
   }

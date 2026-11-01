@@ -1694,6 +1694,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         documentId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
+        email: input.email,
+        tabId: input.tabId,
+        elementId: input.elementId,
       }).catch(() => {});
     },
   });

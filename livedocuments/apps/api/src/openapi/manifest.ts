@@ -706,7 +706,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "Email a teammate that an action on this document was assigned to them (docs/specs/012-collaboration/assigned-actions.md). The caller has joined the team and can open the document; the assignee is one of the team's joined or invited people. Best-effort; the assignee may have turned these emails off.",
+      "Email a teammate that an action on this document was assigned to them (docs/specs/012-collaboration/assigned-actions.md). The caller has joined the team and can open the document; the assignee is one of the team's joined or invited people. Best-effort; the assignee may have turned these emails off. `email: false` sends only the phone notification, which links `tabId` and `elementId` when given.",
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -716,6 +716,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         assigneeMemberId: { type: 'string' },
         actionName: { type: 'string' },
         description: { type: 'string' },
+        email: { type: 'boolean' },
+        tabId: { type: 'string' },
+        elementId: { type: 'string' },
       },
       required: ['teamId', 'actionName'],
     },

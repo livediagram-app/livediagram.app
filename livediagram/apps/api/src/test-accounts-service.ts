@@ -1,7 +1,7 @@
 // A stand-in for the liveworkspace accounts Worker's app API (liveworkspace/docs/specs/003-accounts/accounts.md "The API",
 // the routes an app's server calls with its client credentials) for tests, in this process: settings
 // in their two scopes, profiles, sightings, milestones, emails, activity, making a team and a sender's
-// notification allowance (liveworkspace/docs/specs/011-workbench/workbench.md), answered
+// notification allowance (liveworkspace/docs/specs/011-workbench/workbench.md) and phone notifications, answered
 // from in-memory records through a stubbed `fetch`, with the same semantics the real Worker has (a
 // settings patch per key, null deleting; an account's profile falling back to its account name). Not a
 // `.test.ts` file, so vitest doesn't collect it.
@@ -27,6 +27,8 @@ export type TestAccountsService = {
   teams: { id: string; name: string; organisation: string | null; admin: string }[];
   // Each sender's allowance uses, by `<personId> <kind>`: when each was taken.
   allowances: Map<string, number[]>;
+  // Every phone notification asked for (POST internal/push), in order.
+  pushes: { userId: string; kind: string; title: string; url: string; tag?: string }[];
   // Every call this api made, as `METHOD /route`.
   calls: string[];
   // When set, every call answers this status.
@@ -52,6 +54,7 @@ export function accountsServiceFor(env: Partial<Env>): TestAccountsService {
     activity: [],
     teams: [],
     allowances: new Map(),
+    pushes: [],
     calls: [],
     failWith: null,
   };
@@ -170,6 +173,11 @@ function answer(service: TestAccountsService, route: string, body: Record<string
       const taken = Math.max(0, Math.min(body.count as number, (body.max as number) - used.length));
       service.allowances.set(key, [...used, ...Array.from({ length: taken }, () => now)]);
       return json({ taken });
+    }
+    case '/push': {
+      const notifications = body.notifications as TestAccountsService['pushes'];
+      service.pushes.push(...notifications);
+      return json({ accepted: notifications.length }, 202);
     }
     case '/activity':
       service.activity.push({ userId: String(body.userId), at: body.at as number | undefined });

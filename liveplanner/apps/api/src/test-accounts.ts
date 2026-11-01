@@ -40,6 +40,8 @@ export type FakeAccounts = {
   planCounts: Map<string, number>;
   // Each sender's allowance uses, by `<personId> <kind>`: when each was taken.
   allowances: Map<string, number[]>;
+  // Every phone notification asked for (POST internal/push), in order.
+  pushes: { userId: string; kind: string; title: string; url: string; tag?: string }[];
   // Every internal call, as `<path> <json body>`.
   calls: { path: string; body: Record<string, unknown> }[];
   telemetry: TelemetryBatch['events'];
@@ -70,6 +72,7 @@ export function stubAccounts(): FakeAccounts {
     madeTeams: [],
     planCounts: new Map(),
     allowances: new Map(),
+    pushes: [],
     calls: [],
     telemetry: [],
     failWith: null,
@@ -213,6 +216,11 @@ export function stubAccounts(): FakeAccounts {
         );
         fake.allowances.set(key, [...used, ...Array.from({ length: taken }, () => now)]);
         return answer({ taken });
+      }
+      case '/push': {
+        const notifications = body.notifications as FakeAccounts['pushes'];
+        fake.pushes.push(...notifications);
+        return answer({ accepted: notifications.length }, 202);
       }
       case '/activity':
         fake.activity.push(body as { userId: string; at?: number });

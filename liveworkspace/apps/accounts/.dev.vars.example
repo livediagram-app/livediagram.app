@@ -37,3 +37,8 @@ DRIVE_KEY_ACCOUNTS=
 # The migration's returning guests (src/legacy-guests.ts): the old livediagram.app's GUEST_ID_HMAC_SECRET. Optional:
 # without it, POST /api/account/internal/legacy-guests/claim is a plain 404.
 LEGACY_GUEST_ID_HMAC_SECRET=
+
+# Phone notifications (src/push/): the VAPID key pair, from `node scripts/generate-vapid-keys.ts`. Optional: without
+# both, devices can't register and nothing is sent.
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=

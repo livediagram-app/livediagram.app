@@ -11,4 +11,5 @@ Follow the references below only as needed; never upfront.
 - ./nextjs.md - when upgrading Next.js or React, changing a `next.config.ts` or `@liveworkspace/next-config`, or weighing a Next.js feature: versions, the one shared configuration, the Turbopack cache, features used and declined
 - ./secure-context.md - when an API is secure-context only (`crypto.randomUUID`, `crypto.subtle`, the clipboard) or the editor runs in an embed on an http page or a plain-http instance: the randomUUID boot shim, the SHA-256 fallback and what still needs HTTPS
 - ./trusted-types.md - when adding `dangerouslySetInnerHTML`, an inline script, a third-party script or a response header: the enforced Trusted Types header, the two policies, third parties and violations
+- ./installable-app.md - when working on installing the app to a home screen or the push-only service worker: the manifest (start at the Explorer), its icons, `/push-worker.js` with no fetch handler, iPhone's Add to Home Screen
 - ./blueprints/README.md - when implementing or changing a platform feature from its blueprint

@@ -50,6 +50,12 @@ export interface Env {
   TELEMETRY_KEY_LIVEDOCUMENTS?: string;
   TELEMETRY_KEY_LIVEDESIGN?: string;
 
+  // Phone notifications' VAPID key pair (push/web-push.ts, liveworkspace/docs/specs/003-accounts/push.md), base64url: the
+  // uncompressed P-256 public key and the 32-byte private scalar (scripts/generate-vapid-keys.ts makes a pair). Either
+  // unset, phone notifications are off: devices can't register and nothing is sent.
+  VAPID_PUBLIC_KEY?: string;
+  VAPID_PRIVATE_KEY?: string;
+
   AUTH_DB: D1Database;
   // Workbench pairings, tickets and sessions (liveworkspace/docs/specs/011-workbench/workbench.md): one store per person, and the limit
   // on a token's mints and pairing requests. Absent (tests that don't need them), the workbench routes answer 503.

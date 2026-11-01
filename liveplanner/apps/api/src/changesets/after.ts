@@ -2,6 +2,7 @@ import type { Tab } from '@liveplanner/project';
 import { newCommentsBy } from '../comments';
 import { emailEnabled } from '../email/client';
 import { notifyMentions, notifyNewComment } from '../email/notifications';
+import { pushItemOf, pushNewComments } from '../person/push';
 import { reportServerEvent } from '../server-telemetry';
 import type { ProjectDTO, Env, PlanEnv } from '../types';
 import type { FrontDoor } from './front-door';
@@ -66,6 +67,19 @@ async function run(
       }),
     );
   }
+  // Phone notifications for the author's new comments (docs/specs/014-identity/phone-notifications.md): a person's
+  // own changeset only.
+  if (!w.agent)
+    work.push(
+      pushNewComments(env, {
+        plan: pushItemOf(w.project),
+        tabId: w.next.id,
+        authorId: w.author.id,
+        authorName: w.author.name,
+        next: w.next.elements,
+        previous,
+      }),
+    );
   if (w.agent) work.push(telemetry(env, w.action, w.frontDoor));
   const settled = await Promise.allSettled(work);
   for (const s of settled) {

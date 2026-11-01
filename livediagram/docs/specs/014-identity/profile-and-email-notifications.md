@@ -26,6 +26,8 @@ preference, so the email switches are found where every other setting is.
 - **Email notifications** are the seven switches in **Notifications > Email** (§3). Absent unless email is
   configured AND the reader is signed in, since a guest has no address to send to; a guest sees one row saying to
   sign in to choose.
+- **Phone notifications** are **Notifications > Phone**: Turn On, the device list and four switches, signed in
+  only, and not behind the `EMAIL` binding ([Phone notifications](phone-notifications.md)).
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**, which opens `DeleteAccountDialog`
   (type your email, then the code emailed to the account, to confirm).
 

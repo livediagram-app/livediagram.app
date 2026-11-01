@@ -54,6 +54,7 @@ import {
   type ThreadWriteResult,
 } from '../plan-room/card-thread-store';
 import { badRequest, json, methodNotAllowed, noContent } from '../responses';
+import { pushCardComment, pushItemOf } from '../person/push';
 import { afterCommentPosted, newComment } from './comment-routes';
 import { gateEdit, readBody, type PlanRouteContext } from './context';
 import { itemCaller, itemNotFound, type ItemCaller } from './item-route-kit';
@@ -242,6 +243,16 @@ export async function startOnCard(
   });
   await insertThread(ctx.env, thread, defer(ctx));
   afterCommentPosted(ctx, asCommenter(caller), comment, mentionPart(itemId, thread.id));
+  if (!ctx.token)
+    ctx.waitUntil?.(
+      pushCardComment(ctx.env, {
+        plan: pushItemOf(asCommenter(caller).doc),
+        comment,
+        cardId: itemId,
+        threadId: thread.id,
+        thread: [],
+      }),
+    );
   console.info('[threads] started', { agent: ctx.token !== null });
   const res = answer(caller, thread, comment.id);
   return new Response(res.body, { status: 201, headers: res.headers });
@@ -275,6 +286,16 @@ async function reply(ctx: PlanRouteContext, r: Reached, threadId: string): Promi
     comment,
     mentionPart(r.links[0]!.itemId, threadId),
   );
+  if (!ctx.token)
+    ctx.waitUntil?.(
+      pushCardComment(ctx.env, {
+        plan: pushItemOf(asCommenter(r.caller).doc),
+        comment,
+        cardId: r.links[0]!.itemId,
+        threadId,
+        thread: out.thread?.comments ?? [],
+      }),
+    );
   console.info('[threads] replied', { agent: actor.agent });
   return answer(r.caller, out.thread, comment.id);
 }

@@ -1,64 +1,22 @@
 import { MARKETING_DESCRIPTION } from '@/lib/site-copy';
+import { appIcons, installManifest } from '@liveworkspace/marketing-site/lib/install';
 import type { MetadataRoute } from 'next';
 
-// Required for `output: 'export'`: route handlers must declare
-// themselves fully static so Next resolves them at build time, same
-// rule that applies to robots.ts and sitemap.ts.
+// Required for `output: 'export'`: route handlers must declare themselves fully static so Next resolves them at build
+// time, the same rule robots.ts and sitemap.ts follow.
 export const dynamic = 'force-static';
 
-// Next.js convention: app/manifest.ts → /manifest.webmanifest at build
-// time. See docs/specs/019-marketing/marketing-site.md "SEO and metadata".
-//
-// What this unlocks:
-//   - Android Chrome "Add to Home Screen" prompt + a proper standalone
-//     launch experience (no URL bar) once installed.
-//   - iOS Safari "Add to Home Screen" picks the manifest icon + name
-//     for the homescreen tile.
-//   - Lighthouse PWA audit gets the basic-installability check.
-//
-// Icons, in increasing specificity. /icon.svg is the scalable master
-// (Next.js also auto-emits a <link> for app/icon.svg). The raster
-// PNGs from public/ (liveplanner-icon-{256,512}.png) are listed at
-// explicit sizes because some Android installers + the Lighthouse PWA
-// audit prefer a concrete PNG over an SVG. All are purpose: 'any':
-// the Living Prism's corners reach outside the maskable safe zone
-// (the centre 80% circle), so declaring 'maskable' would let an
-// Android circle/squircle mask clip the cube. An opaque,
-// iOS-friendly home-screen tile is handled separately by
-// app/apple-icon.tsx (iOS renders transparency as black, so the
-// transparent PNGs here would tile badly on iOS).
-//
-// theme_color matches the viewport export in layout.tsx so the
-// installed-app chrome stays brand violet. background_color paints the
-// splash screen behind the icon at launch.
+// Next.js convention: app/manifest.ts → /manifest.webmanifest, linked by every page on the address (the editor's
+// layout too). What makes liveplanner installable to a home screen (docs/specs/016-platform/installable-app.md): standalone,
+// opening at the Explorer rather than this marketing page, and the icons. Built once for every app
+// (@liveworkspace/marketing-site/lib/install). The PNGs are purpose `any`: the Living Prism's corners reach outside
+// the maskable safe zone. iOS's opaque home-screen tile is app/apple-icon.tsx. theme_color matches layout.tsx's
+// viewport, so the installed app's chrome stays brand violet.
 export default function manifest(): MetadataRoute.Manifest {
-  return {
+  return installManifest({
     name: 'liveplanner',
-    short_name: 'liveplanner',
     description: MARKETING_DESCRIPTION,
-    start_url: '/',
-    display: 'standalone',
-    theme_color: '#8B5CF6',
-    background_color: '#ffffff',
-    icons: [
-      {
-        src: '/icon.svg',
-        sizes: 'any',
-        type: 'image/svg+xml',
-        purpose: 'any',
-      },
-      {
-        src: '/liveplanner-icon-256.png',
-        sizes: '256x256',
-        type: 'image/png',
-        purpose: 'any',
-      },
-      {
-        src: '/liveplanner-icon-512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'any',
-      },
-    ],
-  };
+    themeColor: '#8B5CF6',
+    icons: appIcons('liveplanner'),
+  });
 }

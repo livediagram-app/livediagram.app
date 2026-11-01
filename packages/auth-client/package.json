@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "jose": "^6.2.12"
   },

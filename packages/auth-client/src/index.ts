@@ -100,6 +100,8 @@ export {
   teamTargets,
   type NotifyTarget,
 } from './notify';
+export { sendPush } from './push';
+export type { PushKind, PushNotification } from '@liveworkspace/settings/push';
 export { appApiResources, audiencesFor, isExplorerRead } from './explorer-reads';
 export {
   createWorkbenchRoomNoter,

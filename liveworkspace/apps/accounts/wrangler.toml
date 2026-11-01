@@ -44,6 +44,10 @@ workers_dev = false
 #                         the old livediagram.app's GUEST_ID_HMAC_SECRET (from its repository's GitHub secrets), for
 #                         the migration's returning guests (src/legacy-guests.ts); unset, that route is a plain 404.
 #                         Set for the migration and removed after it (docs/migration.md step 6)
+#   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
+#                         phone notifications' VAPID key pair (src/push/web-push.ts), from
+#                         `node scripts/generate-vapid-keys.ts`, one pair per environment, kept for good; unset, devices
+#                         can't register and nothing is sent
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://www.liveworkspace.app"
