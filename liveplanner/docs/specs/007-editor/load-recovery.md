@@ -231,6 +231,12 @@ the server, which the rest of this spec covers.
   spending its one reload; the same failure reported once back online still
   recovers. The load-error card ships in the editor's bundle for the same
   reason, lazy-loading only its recovery tools, which show online only.
+- **Code not loaded yet waits for the connection.** Much of the editor loads when first opened (a card's panel, the
+  Trash, Find, Card Types, the Timer and Vote popovers, a Sheet tab). Opened while offline, its code cannot come, and
+  it never takes the board with it: a card's panel or a popover simply does not open (a popover's button lets go),
+  and opens once the connection is back if it is still wanted (a card stays the open card). A layout area that
+  cannot load (the canvas, for a Sheet tab first opened offline) says "You're offline, so the canvas couldn't load.
+  It comes back when you reconnect." with no Try Again, and comes back on its own when the browser is online again.
 - No telemetry: events cannot leave while offline, and the reload on reconnect
   drops anything buffered.
 

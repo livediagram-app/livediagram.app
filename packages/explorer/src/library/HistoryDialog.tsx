@@ -27,6 +27,7 @@ import {
   eventLabel,
   eventTone,
   timeLabel,
+  TONE_INKS,
   toneColor,
   toneSoftColor,
   type TimelineCategory,
@@ -500,7 +501,7 @@ const HistoryEntry = memo(function HistoryEntry({
         className="relative z-[1] h-8 w-8 shrink-0 rounded-full bg-white ring-4 ring-white dark:bg-slate-900 dark:ring-slate-900"
       >
         <span
-          className="flex h-full w-full items-center justify-center rounded-full"
+          className={`flex h-full w-full items-center justify-center rounded-full ${TONE_INKS}`}
           style={{ background: toneSoftColor(tone), color: toneColor(tone) }}
         >
           {eventIcon(event.type, event.detail?.source)}

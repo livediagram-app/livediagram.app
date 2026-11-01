@@ -359,8 +359,13 @@ goes to the app's fallback page instead (`safeReturnPath`).
 
 It never bounces:
 
-- more than once per tab (`sessionStorage`), nor again in any tab of the app within two minutes (the
-  guard cookie, `<prefix>silent`, which the route also refuses to bounce past, so it can't loop);
+- more than once per tab (`sessionStorage`) while the person can't have signed in anywhere else since,
+  nor again in any tab of the app within two minutes (the guard cookie, `<prefix>silent`, which the route
+  also refuses to bounce past, so it can't loop). The tab's mark is dropped when the tab comes back into
+  view after being hidden (the person was in another tab or app, where they may have signed in) and when
+  the page was opened from another site (the same tab may have been through a sign-in there), so the
+  tab's next full page load asks again. Without that, a tab that asked as a guest stayed a guest after
+  the person signed in on another app, however often it reloaded;
 - with a session in the app already (its hint cookie, `<prefix>signed_in=1`);
 - after the person signed out of that app alone. Signing out ends the liveworkspace session and every
   app's session in that browser ([Signing out](#signing-out)), so a bounce from any app finds no
@@ -382,11 +387,25 @@ It never bounces:
 Whatever goes wrong on the way (no sign-in configured, rate limited, the accounts site down), the
 route and the callback go back to the page rather than to an error.
 
-**The cost.** One bounce per new tab for a person with no session in the app: four extra requests (the
+**A hint that outlived its session.** Signing out in one app ends every app's session but can't reach
+the other apps' cookies, so their hints still say `1` over sessions that are gone (as can a refresh
+token that ran out). Sign in again anywhere, then open one of those apps, and the page sees its hint,
+doesn't bounce, and finds out only from its first token answer (`POST /api/auth/token`), which clears
+the hint. So the page asks again there and then: the boot script leaves a function on the page
+(`retrySilentSignIn` calls it), which bounces when the hint said `1` as the page loaded and no longer
+does, under the same guards apart from the tab's mark (the session ending is news the mark predates).
+The editors' accounts bridge, the Explorer on an app's address and the marketing header's idle check
+call it after their first token answer, and never later, so a session that ends under an open page
+never reloads it; the marketing pages still leave a visitor who started using the page alone. A guest,
+whose hint was never `1`, never bounces this way.
+
+**The cost.** One bounce per new tab for a person with no session in the app, and one more on a tab's
+next full page load after it comes back into view or is opened from another site, never more than once
+in two minutes: four extra requests (the
 stopped page, the app's route, the accounts site, the callback, which for a signed-in person also
 swaps the code). Measured locally against the dev stacks (median of seven cold loads), it adds about
 85 ms to a signed-in person's first load and about 50 ms to a guest's; on the deployed apps each hop is
-a round trip to the edge, so it costs more. Later loads in the same tab add nothing, and a person
+a round trip to the edge, so it costs more. Later loads in a tab that stays in view add nothing, and a person
 already signed in to the app never bounces. FedCM and the Storage Access API could make this a
 background request one day, but neither works in every browser, so the bounce stays.
 
@@ -422,7 +441,8 @@ signed-in visitor sees their menu with no request, and a visitor makes none at a
 ([site.md](../010-site/site.md#the-header)), whose menu code is fetched only once the pointer or focus reaches it. Signed in, the
 page checks once, when it is idle, with the app's `POST /api/auth/token`: signing out in another app ends this
 app's session too but can't reach this site's cookies, so the hint can outlive the session; the answer clears it
-and the menu turns to Guest. A session from before the name cookie existed (the hint without the name) asks at
+and the menu turns to Guest, and the page then asks the accounts site once
+([A hint that outlived its session](#signing-in-without-a-click)), so someone signed in elsewhere since is signed in here. A session from before the name cookie existed (the hint without the name) asks at
 once instead, since the answer sets the name.
 
 ## Signing out
@@ -473,6 +493,10 @@ fail (the accounts site down), step 1 has already ended the session in every app
 tokens issued on the session, then Better Auth deletes the session and its cookie. Settings › Security's Sign Out of
 another device and Sign Out Others (Better Auth's `revoke-session`, `revoke-other-sessions`, and `revoke-sessions`)
 do the same for the sessions they end, so that device's apps are signed out with it.
+
+**When it doesn't go.** A sign-out the server refuses, or one that never reaches it (offline), leaves the person
+signed in. The account menu stays open and its Sign Out item says "Couldn't sign out. Check your connection and try
+again." in place of its hint, read out to a screen reader too, until the menu closes (`@liveworkspace/account-menu`).
 
 **Deleted, not revoked.** The tokens are deleted rather than marked revoked: the provider takes a revoked refresh
 token shown again as a stolen one and deletes every refresh token that app holds for the account, on every device. A
@@ -874,7 +898,8 @@ with the rest of the guest.
 Token names, team names and organisations, account names and display names are kept as typed, with three things
 taken out (`src/text.ts`): the bidi embeddings, overrides and isolates (U+202A to U+202E, U+2066 to U+2069), which
 would turn the text drawn after a name around or make one name pass for another (right-to-left letters need none of
-them); spaces at either end; and anything past the field's limit, cut between whole characters, never half an
+them); spaces and invisible formatting characters (zero-width spaces and joiners, word joiners, byte order marks,
+soft hyphens) at either end, so no name can look blank; and anything past the field's limit, cut between whole characters, never half an
 emoji. An invitation's address with a control or invisible formatting character in it (a bidi override, a
 zero-width space) is turned down as `400 email_invalid`.
 

@@ -124,18 +124,24 @@ export function TabStrip<T extends { id: string }>({
 
   // A strip that narrows (a panel closing hands a footer control back its room, the window shrinking) can leave the
   // open tab past its edge with nothing else changed, so narrowing brings it back. Widening never hides it, and
-  // leaves where someone scrolled alone.
+  // leaves where someone scrolled alone. The open tab growing does the same: renamed to a longer name, it ran past
+  // the strip's edge under the footer's Search.
   useEffect(() => {
     const strip = stripRef.current;
     if (!strip || typeof ResizeObserver === 'undefined') return;
+    const tab = strip.querySelector<HTMLElement>('[data-tab][data-active]');
     let width = strip.clientWidth;
+    let tabWidth = tab?.offsetWidth ?? 0;
     const observer = new ResizeObserver(() => {
       const next = strip.clientWidth;
-      const narrowed = next < width;
+      const nextTab = tab?.offsetWidth ?? 0;
+      const moved = next < width || nextTab > tabWidth;
       width = next;
-      if (narrowed) revealActive();
+      tabWidth = nextTab;
+      if (moved) revealActive();
     });
     observer.observe(strip);
+    if (tab) observer.observe(tab);
     return () => observer.disconnect();
   }, [revealActive]);
 

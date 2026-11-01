@@ -3,6 +3,7 @@ import { EMBED_PROVIDERS } from '@livediagram/document';
 import {
   drawBannerMessage,
   drawIntentCursor,
+  dropsOnTap,
   isFillIntent,
   isHeldPenIntent,
   isHeldToolIntent,
@@ -344,5 +345,37 @@ describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('has its own cursor and screen-reader copy', () => {
     expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
     expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
+  });
+});
+
+// Enter drops an armed tile at the middle of the view, as a tap would (docs/specs/008-canvas/canvas-and-palette.md
+// "Adding elements"); a gesture with no tap leaves Enter alone.
+describe('dropsOnTap', () => {
+  it('holds for every box, line and component', () => {
+    const taps: PendingDraw[] = [
+      { type: 'shape', kind: 'circle' },
+      { type: 'text' },
+      { type: 'sticky' },
+      { type: 'image' },
+      { type: 'table' },
+      { type: 'link-card' },
+      { type: 'video' },
+      { type: 'arrow' },
+      { type: 'component', kind: 'banner' },
+    ];
+    for (const intent of taps) expect(dropsOnTap(intent)).toBe(true);
+  });
+
+  it('fails for the pens, the polygon, the Path and Fill tools, and nothing armed', () => {
+    const gestures: PendingDraw[] = [
+      { type: 'freehand' },
+      { type: 'freehand', variant: 'shape-pen' },
+      { type: 'freehand', variant: 'highlighter' },
+      { type: 'polygon' },
+      { type: 'path' },
+      { type: 'fill', fill: '#000' },
+    ];
+    for (const intent of gestures) expect(dropsOnTap(intent)).toBe(false);
+    expect(dropsOnTap(null)).toBe(false);
   });
 });

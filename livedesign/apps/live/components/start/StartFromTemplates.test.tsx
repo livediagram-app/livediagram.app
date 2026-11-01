@@ -25,6 +25,12 @@ describe('StartFromTemplates', () => {
     expect(onTemplate).toHaveBeenCalledWith('logo-design');
   });
 
+  it('stays open for a template that lands content', () => {
+    mount();
+    fireEvent.click(document.querySelector('[data-start-card="logo-design"]')!);
+    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
+  });
+
   it('remembers a close per tab', () => {
     mount();
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));

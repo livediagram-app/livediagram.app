@@ -10,6 +10,7 @@ import {
 } from '@livedocuments/document';
 import { blocksToDoc, docToBlocks } from './article-convert';
 import { articleSchema as S } from './article-schema';
+import { GapCursor } from 'prosemirror-gapcursor';
 import { cellArrow } from './article-table-commands';
 import { blockIdsPlugin } from './article-plugins';
 import {
@@ -241,6 +242,19 @@ describe('Up and Down in a cell', () => {
     expect(view.state.selection.$from.parent.textContent).toBe('Before');
   });
 
+  it('leave a table that ends the writing for the gap after it, where typing starts a paragraph', () => {
+    const { view } = mount([
+      { id: 'a', type: 'paragraph', runs: [{ text: 'Before' }] },
+      table(2, 2),
+    ]);
+    view.dispatch(
+      view.state.tr.setSelection(TextSelection.create(view.state.doc, cellPos(view, 1, 0))),
+    );
+    expect(arrow(view, 1)).toBe(true);
+    expect(view.state.selection).toBeInstanceOf(GapCursor);
+    expect(view.state.selection.from).toBe(view.state.doc.content.size);
+  });
+
   it('leave a line within a cell, a range and the writing outside a table to the browser', () => {
     const { view } = mount([{ id: 'a', type: 'paragraph', runs: [{ text: 'x' }] }, table(2, 2)]);
     view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 1)));
@@ -267,6 +281,18 @@ describe('a contents block as drawn', () => {
     Array.from(view.dom.querySelectorAll('.article-toc-entry')).map((e) =>
       e.getAttribute('aria-label'),
     );
+
+  it('offers each entry as a button inside a list item', () => {
+    const { view } = mount(doc());
+    const items = Array.from(view.dom.querySelectorAll('.article-toc-list > *'));
+    expect(items).toHaveLength(3);
+    for (const item of items) {
+      expect(item.getAttribute('role')).toBe('listitem');
+      const entry = item.querySelector('.article-toc-entry')!;
+      expect(entry.tagName).toBe('BUTTON');
+      expect(entry.hasAttribute('role')).toBe(false);
+    }
+  });
 
   it('lists the headings to its depth, with their pages once measured', () => {
     const { view } = mount(doc());
@@ -318,6 +344,16 @@ describe('a contents block as drawn', () => {
     chips[0]!.click();
     expect(view.state.doc.firstChild!.attrs.depth).toBe(1);
     expect(entries(view)).toEqual(['Intro']);
+  });
+
+  it('writes a chip press as its own edit at once, and a press on the pressed chip not at all', () => {
+    const commit = vi.fn();
+    const { view } = mount(doc(), { ...ROLES.editor, commit });
+    view.dom.querySelector<HTMLButtonElement>('[data-toc-depth="3"]')!.click();
+    expect(commit).not.toHaveBeenCalled();
+    view.dom.querySelector<HTMLButtonElement>('[data-toc-depth="2"]')!.click();
+    expect(view.state.doc.firstChild!.attrs.depth).toBe(2);
+    expect(commit).toHaveBeenCalledTimes(1);
   });
 
   it('jumps to a heading from its entry, the buttons its own', () => {

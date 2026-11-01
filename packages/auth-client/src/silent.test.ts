@@ -6,9 +6,11 @@ import {
   silentCookieNames,
   silentCookiesForHint,
   silentSignInBootScript,
+  SILENT_RETRY_GLOBAL,
   SILENT_RETURN_ATTRIBUTE,
   SILENT_RETURN_KEY,
   SILENT_SESSION_KEY,
+  retrySilentSignIn,
   startSilentSignIn,
 } from './silent';
 
@@ -47,6 +49,8 @@ type Page = {
   readyState?: 'loading' | 'complete';
   prerendering?: boolean;
   idleCallback?: boolean;
+  // The page that opened this one (`document.referrer`); the page itself is on https://liveplanner.app.
+  referrer?: string;
 };
 
 function boot(page: Page = {}) {
@@ -95,6 +99,8 @@ function boot(page: Page = {}) {
   window.self = window;
   window.top = page.inFrame ? {} : window;
   const location = {
+    protocol: 'https:',
+    host: 'liveplanner.app',
     pathname: page.path ?? '/explorer/home',
     search: page.search ?? '',
     hash: page.hash ?? '',
@@ -102,8 +108,14 @@ function boot(page: Page = {}) {
     reload: () => {},
   };
   const attributes = new Map<string, string>();
+  const documentListeners: Record<string, (() => void)[]> = {};
   const document = {
     cookie: page.cookie ?? '',
+    referrer: page.referrer ?? '',
+    visibilityState: 'visible',
+    addEventListener: (type: string, fn: () => void) => {
+      (documentListeners[type] ??= []).push(fn);
+    },
     readyState: page.readyState ?? 'loading',
     prerendering: page.prerendering ?? false,
     documentElement: {
@@ -131,9 +143,26 @@ function boot(page: Page = {}) {
   const fire = (type: string) => {
     for (const fn of listeners[type] ?? []) fn();
   };
+  // The tab hidden, then shown again (the person was in another tab or app).
+  const comeBack = () => {
+    for (const state of ['hidden', 'visible']) {
+      document.visibilityState = state;
+      for (const fn of documentListeners.visibilitychange ?? []) fn();
+    }
+  };
+  // What the page's first token answer does (retrySilentSignIn): whatever the page went to by then, or null.
+  const retry = () => {
+    const again = window[SILENT_RETRY_GLOBAL];
+    if (typeof again === 'function') (again as () => void)();
+    return went[0] ?? null;
+  };
   return {
     to: went[0] ?? null,
+    went,
     stopped,
+    comeBack,
+    retry,
+    hasRetry: () => typeof window[SILENT_RETRY_GLOBAL] === 'function',
     storage,
     scheme: document.documentElement.style.colorScheme,
     attributes,
@@ -254,10 +283,48 @@ describe('the boot script', () => {
     expect((storage as Map<string, string>).get(SILENT_SESSION_KEY)).toBe('1');
   });
 
-  it('bounces once per browser session', () => {
+  it('bounces once per tab', () => {
     const storage = new Map<string, string>();
     expect(boot({ storage }).to).not.toBeNull();
     expect(boot({ storage }).to).toBeNull();
+    // A page reached from the app's own pages keeps the mark.
+    expect(boot({ storage, referrer: 'https://liveplanner.app/project/abc' }).to).toBeNull();
+    expect(boot({ storage, referrer: 'https://liveplanner.app' }).to).toBeNull();
+  });
+
+  it('asks again on the next load after the tab comes back into view, since the person may have signed in elsewhere', () => {
+    const storage = new Map<string, string>();
+    expect(boot({ storage }).to).not.toBeNull();
+    const page = boot({ storage });
+    expect(page.to).toBeNull();
+    page.comeBack();
+    // Not under the person's hands: the page they are on stays, the next one asks.
+    expect(page.went).toEqual([]);
+    expect(boot({ storage }).to).not.toBeNull();
+    expect(boot({ storage }).to).toBeNull();
+  });
+
+  it('asks again on a page opened from another site, since the tab may have been through a sign-in there', () => {
+    const storage = new Map<string, string>();
+    expect(boot({ storage }).to).not.toBeNull();
+    expect(boot({ storage, referrer: 'https://www.livediagram.app/' }).to).not.toBeNull();
+    // The way back from a bounce (the guard up) is no visit to another site, whatever the accounts site's address.
+    expect(
+      boot({ storage, cookie: 'lp_silent=1', referrer: 'https://www.liveworkspace.app/' }).to,
+    ).toBeNull();
+    expect(storage.get(SILENT_SESSION_KEY)).toBe('1');
+    // Another site whose address only starts with this one's.
+    storage.set(SILENT_SESSION_KEY, '1');
+    expect(boot({ storage, referrer: 'https://liveplanner.app.example/' }).to).not.toBeNull();
+  });
+
+  it('still never asks again within two minutes of a bounce, nor in a tab whose storage is blocked', () => {
+    const storage = new Map<string, string>([[SILENT_SESSION_KEY, '1']]);
+    const page = boot({ storage, cookie: 'lp_silent=1', referrer: 'https://www.livediagram.app/' });
+    expect(page.to).toBeNull();
+    page.comeBack();
+    expect(boot({ storage, cookie: 'lp_silent=1' }).to).toBeNull();
+    expect(boot({ storage: 'blocked', referrer: 'https://www.livediagram.app/' }).to).toBeNull();
   });
 
   it('stays put with a session here already', () => {
@@ -471,5 +538,87 @@ describe('the callback, coming back from a bounce', () => {
     const { pkce } = await bounced();
     expect(await finish('code=c1&state=someone-else', pkce)).toBeNull();
     expect(await finish('code=c1&state=x', '')).toBeNull();
+  });
+});
+
+describe('a hint that outlived its session (retrySilentSignIn)', () => {
+  const asked = new Map<string, string>([[SILENT_SESSION_KEY, '1']]);
+
+  it('asks once the first token answer clears a hint the page loaded with, past the tab mark', () => {
+    const page = boot({
+      cookie: 'lp_signed_in=1',
+      storage: new Map(asked),
+      path: '/explorer/home',
+      search: '?a=1',
+    });
+    expect(page.to).toBeNull();
+    page.setCookie('lp_signed_in=0');
+    expect(page.retry()).toBe(
+      `/api/auth/silent?return=${encodeURIComponent('/explorer/home?a=1')}`,
+    );
+    // Once per page, whoever calls.
+    page.retry();
+    expect(page.went).toHaveLength(1);
+    expect((page.storage as Map<string, string>).get(SILENT_SESSION_KEY)).toBe('1');
+  });
+
+  it('stays put while the session holds, or for a guest whose hint was never 1', () => {
+    const signedIn = boot({ cookie: 'lp_signed_in=1' });
+    expect(signedIn.retry()).toBeNull();
+    // A session that holds uses the retry up, so a later refusal (the session ending under the open page) can't
+    // reload it.
+    signedIn.setCookie('lp_signed_in=0');
+    expect(signedIn.retry()).toBeNull();
+    const guest = boot({ storage: new Map(asked) });
+    expect(guest.to).toBeNull();
+    expect(guest.retry()).toBeNull();
+  });
+
+  it('keeps every other guard: the signed-out mark, the loop guard, skipped pages, frames and crawlers', () => {
+    for (const after of ['lp_signed_in=0; lp_signed_out=2', 'lp_signed_in=0; lp_silent=1']) {
+      const page = boot({ cookie: 'lp_signed_in=1' });
+      page.setCookie(after);
+      expect(page.retry()).toBeNull();
+    }
+    const share = boot({ cookie: 'lp_signed_in=1', search: '?s=CODE' });
+    share.setCookie('lp_signed_in=0');
+    expect(share.retry()).toBeNull();
+    expect(boot({ cookie: 'lp_signed_in=1', path: '/sign-in' }).hasRetry()).toBe(false);
+    expect(boot({ cookie: 'lp_signed_in=1', inFrame: true }).hasRetry()).toBe(false);
+    expect(boot({ cookie: 'lp_signed_in=1', webdriver: true }).hasRetry()).toBe(false);
+    const long = boot({ cookie: 'lp_signed_in=1', search: `?q=${'x'.repeat(2000)}` });
+    long.setCookie('lp_signed_in=0');
+    expect(long.retry()).toBeNull();
+    const blocked = boot({ cookie: 'lp_signed_in=1', storage: 'blocked' });
+    blocked.setCookie('lp_signed_in=0');
+    expect(blocked.retry()).toBeNull();
+  });
+
+  it('on a marketing page, goes at once unless the visitor started using it, and marks the way back', () => {
+    const page = boot({ afterPaint: true, cookie: 'lp_signed_in=1', path: '/pricing' });
+    page.setCookie('lp_signed_in=0');
+    expect(page.retry()).toBe(`/api/auth/silent?return=${encodeURIComponent('/pricing')}`);
+    expect((page.storage as Map<string, string>).get(SILENT_RETURN_KEY)).toBe('/pricing');
+    const used = boot({ afterPaint: true, cookie: 'lp_signed_in=1' });
+    used.fire('pointerdown');
+    used.setCookie('lp_signed_in=0');
+    expect(used.retry()).toBeNull();
+  });
+
+  it('calls the function the boot script left, and is a no-op on a page without one', () => {
+    const global = globalThis as Record<string, unknown>;
+    const again = vi.fn();
+    global[SILENT_RETRY_GLOBAL] = again;
+    try {
+      retrySilentSignIn();
+      expect(again).toHaveBeenCalledTimes(1);
+      global[SILENT_RETRY_GLOBAL] = () => {
+        throw new Error('boom');
+      };
+      expect(() => retrySilentSignIn()).not.toThrow();
+    } finally {
+      delete global[SILENT_RETRY_GLOBAL];
+    }
+    expect(() => retrySilentSignIn()).not.toThrow();
   });
 });

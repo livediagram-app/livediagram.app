@@ -46,6 +46,7 @@ import {
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
 import { useSnapColours } from '@/hooks/canvas/useSnapColours';
 import { isPathEditing } from '@/lib/path-edit';
+import { dropsOnTap } from '@/lib/draw-mode';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
 import { usePaintBucket } from '@/hooks/canvas/usePaintBucket';
 import { applySwatchOverrides } from '@/lib/swatch-overrides';
@@ -3138,6 +3139,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onTypeIntoSelected: typeIntoSelected,
     pendingDraw,
     onCancelDraw: cancelDrawShape,
+    onDropDrawAtCentre: () => {
+      if (!dropsOnTap(pendingDraw)) return false;
+      const centre = getViewportCenter();
+      commitDraw(pendingDraw, centre.x, centre.y, centre.x, centre.y);
+      return true;
+    },
     onToggleLock: () => {
       if (readSelection().multiSelectedIds.size > 0) {
         toggleLockMultiSelected();

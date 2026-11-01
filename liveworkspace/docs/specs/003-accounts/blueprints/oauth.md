@@ -74,13 +74,15 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
 - `authorizeUrl`: `response_type=code`, `scope` the four, `code_challenge` S256, `state`, optional `prompt` `create`,
   `login` or `none`; `exchangeCode` and `refreshTokens` send the client secret, so they run in the app's Worker;
   the refresh token returned replaces the one sent.
-- Silent sign-in: once per browser session, never in a frame, for a crawler or a Lighthouse audit, on sign-in pages,
+- Silent sign-in: once per tab until the tab comes back into view or is opened from another site, never in a frame, for a crawler or a Lighthouse audit, on sign-in pages,
   embeds or share links, or after a sign-out of the app alone (the global sign-out failed; mark `2`, remembered 400 days;
   a successful one sets the 120 s guard instead, and the old mark `1` is ignored); the editors bounce before paint, the
   marketing pages (`afterPaint`) once loaded and idle and only while untouched, marking the page they land back on
   (`data-silent-return`) so its page view and Web Vitals are skipped; a 120 s guard cookie stops loops; the PKCE verifier and return
   path ride in cookies for 600 s; a return longer than 1,500 characters is not bounced. `prompt=none` answers a code or
-  `login_required` at once.
+  `login_required` at once. The boot script also leaves `window.__liveworkspaceSilentSignIn` (`SILENT_RETRY_GLOBAL`), which
+  `retrySilentSignIn` calls after a page's first token answer: it bounces once when the hint was `1` at load and no longer
+  is (the session ended in another app), past the tab mark but under every other guard.
 - Signing out: `endAccountsSession` (`POST /api/auth/end-session` with the client secret and the refresh token, so it
   runs in the app's Worker) answers the ticket, or null on any failure or after 5 s; `endSessionUrl` builds the browser's hop
   (`client_id`, `post_logout_redirect_uri`, `ticket`) ([sessions-and-guests.md](sessions-and-guests.md#ending-a-session-end-sessionts)).
@@ -150,7 +152,7 @@ User codes are 8 characters of `BCDFGHJKLMNPQRSTVWXZ`.
 (`resources.ts`): production `https://livediagram.app/api`, `https://liveplanner.app/api`,
 `https://livedocuments.app/api`, `https://livedesign.app/api`; staging their `staging.` twins;
 development `http://localhost/api`. `SILENT_SESSION_KEY`, `SILENT_GUARD_MAX_AGE_SECONDS` 120,
-`SIGNED_OUT_MAX_AGE_SECONDS` 400 d, `SIGNED_OUT_VALUE` `2`, `SILENT_RETURN_KEY`, `SILENT_RETURN_ATTRIBUTE`,
+`SIGNED_OUT_MAX_AGE_SECONDS` 400 d, `SIGNED_OUT_VALUE` `2`, `SILENT_RETURN_KEY`, `SILENT_RETURN_ATTRIBUTE`, `SILENT_RETRY_GLOBAL`,
 `SILENT_RETURN_MAX_LENGTH` 1,500, `GUEST_STATE_PATTERN`,
 `END_SESSION_TIMEOUT_MS` 5 s
 (`packages/auth-client`); `DEVICE_CODE_TTL_S` 600, `DEVICE_POLL_INTERVAL_S` 5, `DEVICE_SLOW_DOWN_S` 5,

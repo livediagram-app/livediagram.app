@@ -13,6 +13,7 @@ export function EmptyState({
   description,
   children,
   compact = false,
+  heading: Heading = 'h2',
 }: {
   icon: ReactNode;
   title: string;
@@ -21,6 +22,8 @@ export function EmptyState({
   // Inside a narrow pane (the editor's Explorer): the same parts, smaller and without the card frame, so it sits
   // calmly in the pane rather than filling it.
   compact?: boolean;
+  // The page's own heading (h1) where the empty state is all the page says, as a page whose item is gone.
+  heading?: 'h1' | 'h2';
 }) {
   return (
     <div
@@ -33,11 +36,11 @@ export function EmptyState({
     >
       <EmptyStateArt icon={icon} compact={compact} spaced />
 
-      <h2
+      <Heading
         className={`relative font-semibold text-slate-900 dark:text-slate-100 ${compact ? 'text-sm' : 'text-base'}`}
       >
         {title}
-      </h2>
+      </Heading>
       <p
         className={`relative mt-1.5 max-w-sm leading-relaxed text-slate-500 dark:text-slate-400 ${compact ? 'text-xs' : 'text-sm'}`}
       >

@@ -142,6 +142,18 @@ describe('<ExplorerPanel>', () => {
     expect(index.count('deleteItem')).toBe(0);
   });
 
+  // AA for its small text: the unpressed option sits on the group's slate-100, where slate-500 read 4.3:1.
+  it("reads the app filter's unpressed option at AA on its slate-100 group", () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    const group = screen.getByRole('group', { name: 'Show' });
+    expect(group.className.split(' ')).toContain('bg-slate-100');
+    for (const option of within(group).getAllByRole('button')) {
+      if (option.getAttribute('aria-pressed') === 'true') continue;
+      expect(option.className.split(' ')).not.toContain('text-slate-500');
+      expect(option.className.split(' ')).toContain('text-slate-600');
+    }
+  });
+
   it('has no Open Page: every section stays in the panel', () => {
     renderPanel(createFakeIndex({ items: [] }), { teams: [{ id: 't1', name: 'Design' }] });
     for (const name of ['Home', 'Timeline', 'My Work', 'Design', 'Trash']) {

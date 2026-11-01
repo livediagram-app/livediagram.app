@@ -535,3 +535,50 @@ describe('undo and redo from the start search', () => {
     input.remove();
   });
 });
+
+// Enter is the keyboard's tap on an armed tile (docs/specs/008-canvas/canvas-and-palette.md "Adding elements"): a tile
+// armed from the keyboard waited for a pointer press, so a keyboard user could not place anything.
+describe('Enter with a tile armed', () => {
+  it('drops it at the middle of the view and claims the key', () => {
+    const onDropDrawAtCentre = vi.fn(() => true);
+    const { bag } = deps({
+      pendingDraw: { type: 'shape', kind: 'circle' },
+      selectedId: null,
+      onDropDrawAtCentre,
+    });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('Enter').defaultPrevented).toBe(true);
+    expect(onDropDrawAtCentre).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the key alone for a gesture with no tap', () => {
+    const onDropDrawAtCentre = vi.fn(() => false);
+    const { bag } = deps({
+      pendingDraw: { type: 'freehand' },
+      selectedId: null,
+      onDropDrawAtCentre,
+    });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('Enter').defaultPrevented).toBe(false);
+  });
+
+  it('does nothing with nothing armed, on a repeat, with a modifier, or in a text field', () => {
+    const onDropDrawAtCentre = vi.fn(() => true);
+    const idle = deps({ selectedId: null, onDropDrawAtCentre });
+    renderHook(() => useEditorKeyboardShortcuts(idle.bag));
+    press('Enter');
+    cleanup();
+    const armed = deps({ pendingDraw: { type: 'text' }, selectedId: null, onDropDrawAtCentre });
+    renderHook(() => useEditorKeyboardShortcuts(armed.bag));
+    press('Enter', { repeat: true });
+    press('Enter', { shiftKey: true });
+    press('Enter', { metaKey: true });
+    const input = document.createElement('input');
+    document.body.append(input);
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    input.remove();
+    expect(onDropDrawAtCentre).not.toHaveBeenCalled();
+  });
+});

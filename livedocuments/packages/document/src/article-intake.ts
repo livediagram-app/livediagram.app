@@ -144,7 +144,8 @@ export function withElementsIntoZone(
 }
 
 /** Of `ids` (just added), the ones on an article page and inside no zone of its article, grouped
- *  by article. An arrow pinned at both ends to elements already in a zone is left alone. */
+ *  by article. An arrow pinned at both ends to elements already in a zone is left alone, and a margin
+ *  note's marker (it sits in the page's margin beside its text, never in the writing) is never taken. */
 export function looseOnArticles(
   elements: readonly Element[],
   ids: readonly string[],
@@ -167,7 +168,7 @@ export function looseOnArticles(
   const out = new Map<string, string[]>();
   for (const id of ids) {
     const el = byId.get(id);
-    if (!el) continue;
+    if (!el || el.type === 'article-note') continue;
     const at = zoneAnchorOf(el, elements);
     const page = pages.find(
       (p) =>

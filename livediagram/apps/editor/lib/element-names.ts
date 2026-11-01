@@ -144,7 +144,8 @@ export function elementAriaLabel(el: Element): string {
 
 // The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, a Q&A board's
 // note field, an agenda's items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
-// record's settings and a mode button.
+// record's settings, a mode button, an estimate card's scales, an idea box's field, a done check's button, a comment
+// pin's reply field, an action card's Add Action and a page's title and subtitle lines.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'session-button',
   'checklist',
@@ -157,13 +158,23 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'reveal',
   'decision',
   'mode-button',
+  'estimate',
+  'idea-box',
+  'done-check',
+  'comment-pin',
+  'action-card',
+  'page',
 ]);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture
  *  (`img`, one concise name) for an element that is only drawn, and a named `group` for one whose face holds
- *  controls, since an img's children are presentational and a screen reader could not reach the controls. */
-export function elementRole(el: Element): 'img' | 'group' {
-  if (el.type === 'video' || el.type === 'link-card') return 'group';
+ *  controls, since an img's children are presentational and a screen reader could not reach the controls.
+ *  `hasIndicators`: the element shows indicator buttons (its link, note, action or comments, a mind root's
+ *  commands, docs/specs/008-canvas/element-indicators.md), which are controls on its face too. */
+export function elementRole(el: Element, hasIndicators = false): 'img' | 'group' {
+  if (hasIndicators) return 'group';
+  // A table's cells edit in place and, selected, it shows its column and row options buttons.
+  if (el.type === 'video' || el.type === 'link-card' || el.type === 'table') return 'group';
   if (el.type === 'image') return el.imageId ? 'img' : 'group';
   if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';
   return 'img';

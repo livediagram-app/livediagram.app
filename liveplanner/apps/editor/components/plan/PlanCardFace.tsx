@@ -420,7 +420,7 @@ export function PlanCardFace({
   const zone = (slot: CardSlot, bits: ReactNode[]) => (edit ? edit.slot(slot, bits) : bits);
   const titleText = (lines: 2 | 3, px: number) => (
     <span
-      className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold leading-snug`}
+      className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold leading-snug [overflow-wrap:anywhere]`}
       style={{ color: palette.text, fontSize: px }}
     >
       {title}

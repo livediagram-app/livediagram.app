@@ -498,7 +498,11 @@ export function EditorView() {
                                           {ctx.plan.openItemId ||
                                           ctx.plan.editingType ||
                                           ctx.plan.requiredFields ? (
-                                            <PlanSheetsHost plan={ctx.plan} />
+                                            // Its own boundary: a card opened offline before this code came
+                                            // must not take the board with it (load-recovery.md "Offline").
+                                            <AreaErrorBoundary area="Modals">
+                                              <PlanSheetsHost plan={ctx.plan} />
+                                            </AreaErrorBoundary>
                                           ) : null}
                                         </AreaErrorBoundary>
                                         {embedMode ? (

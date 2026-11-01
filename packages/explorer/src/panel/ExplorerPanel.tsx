@@ -1095,7 +1095,8 @@ function FilterToggle() {
         className={`flex h-6 cursor-pointer items-center rounded px-1.5 text-[11px] font-medium transition focus-visible:outline-2 focus-visible:outline-brand-500 ${
           filter === value
             ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-200'
-            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+            : // slate-600, not 500: the group's slate-100 ground left slate-500 at 4.3:1, under AA for this 11px text.
+              'text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
         }`}
       >
         {logo ? (

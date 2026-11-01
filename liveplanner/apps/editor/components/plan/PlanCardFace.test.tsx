@@ -132,6 +132,16 @@ describe('the card face', () => {
     expect(screen.getByText('Frontend')).toBeTruthy();
   });
 
+  // A title of one long word (an API's, a pasted URL) wraps inside its lines instead of running off the card.
+  it('breaks a long unbroken title onto its lines, at every size', () => {
+    const word = 'Supercalifragilistic'.repeat(25);
+    for (const size of ['minimal', 'detailed'] as const) {
+      face(card({ title: word }), size);
+      expect(screen.getByText(word).className).toContain('[overflow-wrap:anywhere]');
+      cleanup();
+    }
+  });
+
   it('shows four labels and counts the rest', () => {
     face(card({ labels: ['a', 'b', 'c', 'd', 'e', 'f'] }));
     expect(screen.getByText('+2')).toBeTruthy();

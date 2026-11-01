@@ -10,6 +10,7 @@ import type { Folder, IndexClient } from '@liveworkspace/index-client';
 import { LIST_LIMIT_MAX } from '@liveworkspace/index-client';
 import type { OrganiseTelemetry } from '../types';
 import { failureText, isAbort } from './errors';
+import { compareNames } from './name-order';
 
 export type FolderStore = {
   folders: Folder[];
@@ -82,7 +83,7 @@ export function useFolderStore(
       if (list) list.push(f);
       else map.set(key, [f]);
     }
-    for (const list of map.values()) list.sort((a, b) => a.name.localeCompare(b.name));
+    for (const list of map.values()) list.sort((a, b) => compareNames(a.name, b.name));
     return map;
   }, [folders]);
   const childrenOf = useCallback(

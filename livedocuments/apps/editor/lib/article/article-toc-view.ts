@@ -130,6 +130,9 @@ export type TocHost = {
   editable: () => boolean;
   reshape: () => boolean;
   onJump: (headingId: string) => void;
+  // Writes the change at once: a chip's press is one edit, and the writing has no caret to commit it
+  // later, so an undo straight after it would undo the edit before.
+  commit: () => void;
 };
 
 const linesOf = (decorations: readonly Decoration[]): readonly TocLine[] =>
@@ -209,9 +212,12 @@ export class TocView implements NodeView {
       const list = el('div', 'article-toc-list');
       list.setAttribute('role', 'list');
       for (const line of lines) {
+        // A list item holding a button: a button given the listitem role stopped being a button to a
+        // screen reader (axe aria-allowed-role), so its press was never offered.
+        const item = el('div', 'article-toc-item');
+        item.setAttribute('role', 'listitem');
         const b = el('button', 'article-toc-entry');
         b.type = 'button';
-        b.setAttribute('role', 'listitem');
         b.dataset.tocTarget = line.id;
         b.style.setProperty('--toc-level', String(line.level - 1));
         b.setAttribute(
@@ -223,7 +229,8 @@ export class TocView implements NodeView {
           el('span', 'article-toc-leader'),
           el('span', 'article-toc-page', line.page === null ? '' : String(line.page)),
         );
-        list.appendChild(b);
+        item.appendChild(b);
+        list.appendChild(item);
       }
       parts.push(list);
     }
@@ -238,7 +245,9 @@ export class TocView implements NodeView {
       const pos = this.getPos();
       if (pos === undefined || !this.host.reshape()) return;
       const depth = Number(chip.dataset.tocDepth);
+      if (tocDepthOf(this.node.attrs) === depth) return;
       this.view.dispatch(this.view.state.tr.setNodeAttribute(pos, 'depth', depth));
+      this.host.commit();
       return;
     }
     const entry = target?.closest?.<HTMLElement>('[data-toc-target]');

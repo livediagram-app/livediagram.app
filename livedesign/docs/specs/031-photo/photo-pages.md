@@ -62,7 +62,7 @@ store](photo-store.md).
   - **Open a Picture**: the image picker ([Images](../009-elements/images.md) "Image picker modal": Upload, Gallery,
     Search). The picked picture becomes the photo's first layer, **Background**, at its own pixel size (scaled
     down to the pixel cap, keeping its shape, when larger), and the page takes its size.
-  - **Blank**: preset tiles, each drawn to scale: **HD (1920 x 1080)**, **4K (3840 x 2160)**, **Square (1080 x 1080)**, **Portrait Post (1080 x 1350)**, **Story (1080 x 1920)**, **A4 Print (2480 x 3508)**, **Icon (1024 x 1024)**, and **Custom** (width and height fields, 1 to the pixel cap, a chain to keep the shape). One press
+  - **Blank**: preset tiles, each drawn to scale: **HD (1920 x 1080)**, **4K (3840 x 2160)**, **Square (1080 x 1080)**, **Portrait Post (1080 x 1350)**, **Story (1080 x 1920)**, **A4 Print (2480 x 3508)**, **Icon (1024 x 1024)**, and **Custom** (width and height fields, 1 to the pixel cap, a chain to keep the shape: the shape the size had when Custom or Keep Shape was turned on, so retyping a side keeps it; a field can be emptied and retyped, and Create waits, saying "Enter a whole number of pixels.", until it holds one). One press
     of **Create** makes the photo with one layer, **Background**, transparent (the checkerboard). The card offers no fill choice;
     a different background is painted afterwards (Paint Bucket, Fill).
   - Escape or the card's close keeps the page as a blank transparent 1920 x 1080 photo.
@@ -188,7 +188,8 @@ on the chrome surface, over the canvas, so the page never shifts for it.
   the tool and hide the card.
 
 Each tool's options are the person's own, kept in this browser; a brush's size and hardness also change with `[` and
-`]` (Shift for hardness). On a phone they are the bottom sheet the tools row opens.
+`]` (Shift for hardness). On a phone they are the bottom sheet the tools row opens, closed as the card is: a press
+outside it, Escape, or its grab handle dragged down.
 
 ### The quick panel
 

@@ -287,6 +287,11 @@ export function useCanvasSurfaceGestures({
   const onContextMenuPointerUp = rightClick.onPointerUp;
 
   const onPointerDown = (e: ReactPointerEvent) => {
+    // A press inside a portal (a row's ⋯ menu from the phone's photo Layers sheet, which lives under <main> in the
+    // React tree) reaches here through React's tree, not the DOM's. It is not the canvas's: focusing the canvas
+    // pulled focus out of the menu, which closed it before its item's click, so Rename on a layer did nothing.
+    const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
+    if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
     // A finger on a board's empty space, or on an element too big for the screen, pans, whatever the tool, and
     // never opens the canvas menu (@liveworkspace/workbench/hooks/canvas/pan-through.ts).
     if (isPanThrough(e)) {
