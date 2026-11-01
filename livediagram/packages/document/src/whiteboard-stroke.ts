@@ -5,6 +5,7 @@ import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveworkspace/model-co
 import { createFreehand } from './factories';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { PEN_MID_PRESSURE, penPressureWidth } from './pen-stroke';
+import { isFilledPenLoop } from './stroke-loop-fill';
 import type { FreehandElement, PathElement } from './index';
 import { pathContours, pathWorldAnchors } from './path-element';
 import { samplePath } from './path-geometry';
@@ -148,7 +149,8 @@ export function strokeTouchesBrush(el: FreehandElement, a: Point, b: Point, r: n
   for (let i = 1; i < pts.length; i++) {
     if (segmentDistance(pts[i - 1]!, pts[i]!, a, b) <= reach) return true;
   }
-  return false;
+  // A filled marker loop is touched on its fill too (docs/specs/023-draw-mode/fill-tool.md "After a fill").
+  return isFilledPenLoop(el) && (insidePolygon(a, pts) || insidePolygon(b, pts));
 }
 
 /** Even-odd: whether `p` lies inside the closed polyline. */
