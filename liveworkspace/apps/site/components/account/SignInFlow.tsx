@@ -12,6 +12,7 @@ import {
   nextUrl,
   returnPath,
   signedOAuthQuery,
+  timeZoneHeader,
   type SignInOptions,
 } from '@/lib/accounts';
 import { workspaceOrigin } from '@/lib/explorer/page-app';
@@ -206,7 +207,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
       );
     }
     continueTo.current = typeof result.data.url === 'string' ? result.data.url : null;
-    const session = await call('/get-session');
+    const session = await call('/get-session', undefined, timeZoneHeader());
     const user = session.ok
       ? (session.data.user as { givenName?: unknown } | undefined)
       : undefined;
@@ -322,7 +323,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     // Back from Google: signed in, or with Google's refusal in the query.
     if (storage((st) => st.getItem(GOOGLE_MARK)) === '1') {
       storage((st) => st.removeItem(GOOGLE_MARK));
-      void call('/get-session').then((session) => {
+      void call('/get-session', undefined, timeZoneHeader()).then((session) => {
         if (cancelled) return;
         if (session.ok && session.data.user) void finish();
         else if (new URLSearchParams(window.location.search).has('error'))

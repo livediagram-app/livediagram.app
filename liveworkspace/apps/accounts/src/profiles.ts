@@ -192,8 +192,14 @@ export async function storeAccountPicture(
 
 // `/get-session`'s answer with the account's presence colour on its user (`user.color`), so
 // liveworkspace.app's header paints its avatar in it without a request of its own. Any other answer
-// (signed out, an error) is passed on as it was.
-export async function withSessionColour(response: Response, db: D1Database): Promise<Response> {
+// (signed out, an error) is passed on as it was. `timeZone`, the browser's zone the page sent (already checked by
+// parseTimeZone), is kept on the account for the send window (accounts.md "The send window") in the same round
+// trip, written only when it changed.
+export async function withSessionColour(
+  response: Response,
+  db: D1Database,
+  timeZone: string | null = null,
+): Promise<Response> {
   if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
     return response;
   }
@@ -204,7 +210,9 @@ export async function withSessionColour(response: Response, db: D1Database): Pro
   const user = body?.user;
   if (!user || typeof user.id !== 'string') return response;
   const id = user.id;
-  const color = await readProfileColour(db, id).catch(() => null);
+  const color = await (
+    timeZone ? readColourNotingZone(db, id, timeZone) : readProfileColour(db, id)
+  ).catch(() => null);
   const headers = new Headers(response.headers);
   headers.delete('content-length');
   return new Response(JSON.stringify({ ...body, user: { ...user, color } }), {
@@ -212,6 +220,21 @@ export async function withSessionColour(response: Response, db: D1Database): Pro
     statusText: response.statusText,
     headers,
   });
+}
+
+// The colour read and the zone's write in one batch: a sighting that changes nothing writes nothing.
+async function readColourNotingZone(
+  db: D1Database,
+  owner: string,
+  timeZone: string,
+): Promise<string | null> {
+  const [read] = await db.batch<{ color: string | null }>([
+    db.prepare('SELECT color FROM profile WHERE owner_id = ?').bind(owner),
+    db
+      .prepare('UPDATE "user" SET timeZone = ?2 WHERE id = ?1 AND timeZone IS NOT ?2')
+      .bind(owner, timeZone),
+  ]);
+  return read?.results?.[0]?.color ?? null;
 }
 
 // Sets the fields the patch names and leaves the rest, in one upsert, then answers the profile as it
