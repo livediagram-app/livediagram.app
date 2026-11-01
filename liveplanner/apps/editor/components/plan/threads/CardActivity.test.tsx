@@ -17,7 +17,9 @@ vi.mock('@/lib/api/item-history', () => ({
 }));
 
 const SCOPE = { ownerId: 'owner-me', projectId: PLAN, shareCode: null, tabId: null };
-const NOW = Date.now();
+// A fixed midday, so entries minutes or hours ago stay under Today whenever the suite runs (a run just after midnight
+// put them under Yesterday).
+const NOW = new Date(2026, 5, 15, 12, 0, 0).getTime();
 const entry = (minsAgo: number, extra: Partial<ItemHistoryEntry> = {}): ItemHistoryEntry => ({
   at: NOW - minsAgo * 60_000,
   by: { name: 'Ada King', color: '#f97316' },
@@ -53,8 +55,15 @@ function show(extra: Parameters<typeof contextOf>[1] = {}, item = card()) {
   return { rerender: (it: typeof item) => view.rerender(ui(it)) };
 }
 
-beforeEach(() => fetchItemHistory.mockReset());
-afterEach(cleanup);
+beforeEach(() => {
+  fetchItemHistory.mockReset();
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(NOW);
+});
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe('the Activity tab', () => {
   it('reads the card’s history as it opens, and draws a timeline under Today', async () => {
