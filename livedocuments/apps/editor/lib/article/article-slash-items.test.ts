@@ -8,7 +8,7 @@ describe('the slash menu on a card', () => {
     expect(ids).toEqual(
       expect.arrayContaining(['text', 'h1', 'bullet', 'todo', 'quote', 'code', 'divider']),
     );
-    for (const id of ['pageBreak', 'image', 'table', 'chart', 'drawing'])
+    for (const id of ['pageBreak', 'image', 'table', 'toc', 'chart', 'drawing'])
       expect(ids).not.toContain(id);
     expect(filterSlashItems('', true).length).toBeLessThan(filterSlashItems('').length);
   });

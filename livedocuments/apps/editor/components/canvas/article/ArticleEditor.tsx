@@ -76,6 +76,23 @@ import type { ArticleInsert } from '@/hooks/editor/useArticles';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { slashInsertEvent } from '@/lib/article/article-telemetry';
+import {
+  articleTablePasteProps,
+  jumpToHeading,
+  tableKeyPlugins,
+  tableNodeViews,
+  tablePlugins,
+  type TableRights,
+} from '@/lib/article/article-table-editor';
+import { insertTable } from '@/lib/article/article-table-commands';
+import { measureRepeats } from '@/lib/article/article-table-repeat';
+import { measureTocPages } from '@/lib/article/article-toc-view';
+
+// How many times one change may re-measure for repeated header rows settling (each copy drawn can move
+// the rows after it); a guard, two is the most a real layout needs.
+const REPEAT_SETTLE_TRIES = 4;
+// The writing's paste, tables composed over it.
+const pasteProps = articleTablePasteProps(articlePasteProps);
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/article-pages.md
 // "Writing", "Commits").
@@ -123,6 +140,8 @@ export type ArticleEditorProps = {
   ink: ArticleInk;
   themeAccent: string;
   margin: number;
+  // The least top margin: the toolbar's room, and a header's band above it (ARTICLE_TOP_MIN_PX when absent).
+  topMin?: number;
   // A style shown in place of the article's own while a Style tab choice is hovered.
   styleOverride?: ArticleFlow['style'];
   // The writing's blocks, written to the tab (one undo step, one sync).
@@ -161,6 +180,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   const idle = useRef<number | null>(null);
   const lastLocal = useRef(0);
   const measureFrame = useRef<number | null>(null);
+  const repeatTries = useRef(0);
   // Whether this writing's layout has been announced to the pictures drawn from it (the Map).
   const announced = useRef(false);
   // Set while an undo or redo from the writing is under way: the change it brings back takes the
@@ -219,11 +239,15 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     let done = false;
     if (a.kind === 'style') done = setBlockStyle(a.style)(view.state, view.dispatch, view);
     else if (a.kind === 'list') done = toggleList(a.list)(view.state, view.dispatch, view);
+    else if (a.kind === 'block' && a.block === 'table')
+      done = insertTable(view.state, view.dispatch, view);
     else if (a.kind === 'block')
       done = insertBlocksAfterCaret(
         a.block === 'divider'
           ? [articleSchema.nodes.divider.create()]
-          : [articleSchema.nodes.page_break.create(), articleSchema.nodes.paragraph.create()],
+          : a.block === 'toc'
+            ? [articleSchema.nodes.toc.create(), articleSchema.nodes.paragraph.create()]
+            : [articleSchema.nodes.page_break.create(), articleSchema.nodes.paragraph.create()],
       )(view.state, view.dispatch, view);
     else latest.current.onInsert(latest.current.flow, a.what);
     // A block put in from the menu counts as the toolbar's Insert does, once it went in; an
@@ -265,6 +289,18 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const p = latest.current;
     if (!view || p.pages.length === 0) return;
     const { frame, root, z } = writingScale(view, p);
+    // Repeated header rows first: a copy drawn moves the rows after it, so the rest is measured once
+    // they have settled (a frame later).
+    if (measureRepeats(view, root.top, z) && repeatTries.current < REPEAT_SETTLE_TRIES) {
+      repeatTries.current++;
+      scheduleMeasure();
+      return;
+    }
+    repeatTries.current = 0;
+    // The contents' page numbers, from where each heading landed.
+    measureTocPages(view, (x) =>
+      Math.min(p.pages.length - 1, columnAt(frame, (x - root.left) / z)),
+    );
     let right = 0;
     for (const child of Array.from(view.dom.children)) {
       for (const r of Array.from(child.getClientRects())) {
@@ -395,6 +431,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const mount = host.current;
     if (!mount) return;
     const isEditable = () => latest.current.editable;
+    const rights: TableRights = {
+      editable: isEditable,
+      reshape: () => latest.current.reshape !== false,
+    };
     const bridge: SlashBridge = {
       onChange: (s, v) => {
         if (!s.active) {
@@ -425,6 +465,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       plugins: [
         // First, so its keys come before Enter's and the arrows'.
         slashPlugin(bridge),
+        // A cell's keys before the writing's (Tab, Enter and Backspace mean other things there).
+        ...tableKeyPlugins(rights),
         ...articleKeymap({
           undo: () => undoRedo('undo'),
           redo: () => undoRedo('redo'),
@@ -442,6 +484,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         articlePeersPlugin,
         // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
         findHighlightPlugin(() => latest.current.flow),
+        ...tablePlugins(),
         gapCursor(),
       ],
     });
@@ -450,7 +493,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       editable: isEditable,
       attributes: () => {
         const p = latest.current;
-        const frame = flowFrame(p.pages, p.margin);
+        const frame = flowFrame(p.pages, p.margin, p.topMin);
         const { vars, rules } = articleStyleVars(
           p.styleOverride ?? p.doc.style,
           p.themeAccent,
@@ -496,7 +539,19 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       },
       // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
       handleScrollToSelection: () => true,
-      ...articlePasteProps,
+      ...pasteProps,
+      nodeViews: tableNodeViews(rights, (v, id) =>
+        jumpToHeading(v, id, latest.current.editable, (r) => {
+          const p = latest.current;
+          const { frame, root, z } = writingScale(v, p);
+          p.onRevealCaret?.({
+            x: frame.x + (r.left - root.left) / z,
+            y: frame.y + (r.top - root.top) / z,
+            w: Math.max(1, r.width / z),
+            h: Math.max(1, r.height / z),
+          });
+        }),
+      ),
       dispatchTransaction(tr: Transaction) {
         const v = viewRef.current;
         if (!v) return;
@@ -640,6 +695,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     props.ink,
     props.themeAccent,
     props.margin,
+    props.topMin,
     props.editable,
     props.interactive,
     props.styleOverride,
