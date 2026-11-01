@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   dateFormat,
   DAY_LONG_MONTH,
@@ -53,9 +54,10 @@ describe('dateFormat', () => {
   });
 
   it('formats a 3,000-row list well inside a frame', () => {
-    const started = performance.now();
-    for (let k = 0; k < 3000; k++) MEDIUM_DATE_TIME.format(AT + k * 3_600_000);
-    expect(performance.now() - started).toBeLessThan(50);
+    const spent = cpuMsOf(() => {
+      for (let k = 0; k < 3000; k++) MEDIUM_DATE_TIME.format(AT + k * 3_600_000);
+    });
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
   });
 
   it('declares the shared formats once', () => {
