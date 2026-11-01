@@ -5,6 +5,7 @@
 // (pressed) once it has. A popover (a bottom sheet on a phone) holds the slide's note cards
 // (docs/specs/012-collaboration/speaker-note-cards.md), the same cards the Slide Deck panel writes
 // and the presenter view flips through: they belong to the deck's slide, not to the page.
+import { useRef } from 'react';
 import { slideHasNotes } from '@livedocuments/document';
 import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
 import { track } from '@/lib/telemetry';
@@ -37,6 +38,8 @@ export function PageNotesButton({
   // Named beside its icon (a desktop).
   labelled: boolean;
 }) {
+  // An open card takes Escape before the popover does (NoteCardList's takeEscape).
+  const takeEscape = useRef<(() => boolean) | null>(null);
   const slide = deck.slideOf(pageId);
   if (!slide) return null;
   const has = slideHasNotes(slide);
@@ -54,6 +57,7 @@ export function PageNotesButton({
         icon={<NoteCardsIcon />}
         width={POPOVER_WIDTH}
         onOpen={() => track('UI', 'Opened', 'PageNotesButton')}
+        onEscape={() => takeEscape.current?.() ?? false}
       >
         <div className="flex flex-col gap-2 px-4 sm:px-0" data-page-notes-popover="">
           {/* Keyed by the slide, so another slide's list never inherits this one's open card. */}
@@ -61,6 +65,7 @@ export function PageNotesButton({
             key={slide.id}
             cards={slide.noteCards}
             onChange={(cards) => deck.setNoteCards(slide.id, cards)}
+            takeEscape={takeEscape}
           />
           <span className="px-0.5 text-[11px] text-slate-500 dark:text-slate-400">
             Shown to you in the presenter view; never on the slide.

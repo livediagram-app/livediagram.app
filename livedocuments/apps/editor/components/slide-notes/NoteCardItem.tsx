@@ -97,7 +97,7 @@ function SpeakingTime({ text }: { text: string }) {
 }
 
 const NUMBER_CHIP =
-  'flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-50 px-1.5 text-[10px] font-semibold tabular-nums text-brand-700 dark:bg-brand-500/15 dark:text-brand-200';
+  'flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-50 px-1.5 text-[10px] font-semibold tabular-nums text-brand-700 dark:bg-brand-400/25 dark:text-brand-100';
 
 export function NoteCardItem(props: NoteCardItemProps) {
   const { card, index, count, open, touch, dragging } = props;

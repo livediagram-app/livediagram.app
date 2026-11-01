@@ -4,7 +4,7 @@
 // the list the title bar's Notes popover (or a phone's bottom sheet) and the Slide Deck panel both show. One card open
 // for writing at a time; add, reorder (drag by the grip, the Move buttons or Alt+arrows) and remove with an Undo.
 // Every change hands the whole list to `onChange`, which writes the deck.
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
 import { lucidePlus } from '@liveworkspace/icons/lucide';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -54,6 +54,7 @@ export function NoteCardList({
   onChange,
   compact = false,
   heading = true,
+  takeEscape,
 }: {
   cards: readonly NoteCard[];
   onChange: (cards: readonly NoteCard[]) => void;
@@ -61,6 +62,9 @@ export function NoteCardList({
   compact?: boolean;
   // The "Speaker Notes" heading and summary; off where the surface names it (a phone's sheet, the panel).
   heading?: boolean;
+  // Filled with what Escape does here, for a surface whose own Escape is taken first (a popover, a sheet): closes
+  // the open card and says so, else says it left Escape alone.
+  takeEscape?: RefObject<(() => boolean) | null>;
 }) {
   const touch = useCoarsePointer();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -152,6 +156,19 @@ export function NoteCardList({
       ?.focus();
   };
 
+  const escape = useEffectEvent(() => {
+    if (openId === null) return false;
+    close(true);
+    return true;
+  });
+  useEffect(() => {
+    if (!takeEscape) return;
+    takeEscape.current = () => escape();
+    return () => {
+      takeEscape.current = null;
+    };
+  }, [takeEscape]);
+
   // The Undo bar goes on its own after a while.
   useEffect(() => {
     if (!undo) return;
@@ -227,7 +244,14 @@ export function NoteCardList({
       className={`flex flex-col ${compact ? 'gap-1.5' : 'gap-2'}`}
     >
       {heading ? <ListHeading summary={summary} /> : null}
-      <div className={`flex flex-col ${compact ? 'gap-1.5' : 'gap-2'}`}>
+      {/* A long stack scrolls inside the popover or panel rather than running off the screen; no text is
+          selected while a card is dragged. */}
+      <div
+        data-note-card-scroller=""
+        className={`-mx-1 flex max-h-[min(55vh,30rem)] flex-col overflow-y-auto overscroll-contain px-1 py-0.5 ${
+          compact ? 'gap-1.5' : 'gap-2'
+        } ${drag.draggingId ? 'select-none' : ''}`}
+      >
         {cards.map((card, i) => (
           <div key={card.id} className="flex flex-col gap-1">
             {drag.caretBefore(i) ? <DropCaret /> : null}
