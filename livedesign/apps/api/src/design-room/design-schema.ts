@@ -266,7 +266,25 @@ BEGIN
 END;
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4];
+// The design's component library (docs/specs/009-elements/components.md "Sharing, collaboration and storage"):
+// one row per main, its JSON and when it was stored, and which mains each tab's instances use, kept from the tab
+// bodies in the same transaction as each write (db/components.ts), as image_refs is. No foreign keys: the delete
+// paths prune it. Its own step, appended: every statement is IF NOT EXISTS.
+const V5 = `
+CREATE TABLE IF NOT EXISTS components (
+  id         TEXT    PRIMARY KEY,
+  data       TEXT    NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS component_refs (
+  tab_id       TEXT NOT NULL,
+  component_id TEXT NOT NULL,
+  PRIMARY KEY (tab_id, component_id)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component_id);
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
 
 export const DESIGN_SCHEMA_VERSION = STEPS.length;
 

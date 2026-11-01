@@ -11,27 +11,38 @@ import {
   DESIGN_FORMAT_HEADER,
   DESIGN_TRASHED_ERROR,
 } from '@livedesign/api-schema';
-import { corsHeaders, createResponses } from '@liveworkspace/api-kit/responses';
+import { corsHeaders, createResponses, type CorsHeaders } from '@liveworkspace/api-kit/responses';
 
 // The headers this product's editor sends beyond every product's (`BASE_ALLOWED_HEADERS`), and the ones a page on
 // another origin may read: the server release signal (docs/specs/016-platform/new-version-prompt.md,
 // stale-builds.md) and the tab revision as an ETag (docs/specs/024-agents/agent-changesets.md).
-export const CORS_HEADERS = corsHeaders({
-  allowHeaders: [
-    // Image upload's own headers (docs/specs/009-elements/images.md).
-    'X-Image-Sha256',
-    'X-Image-Width',
-    'X-Image-Height',
-    'X-Image-Original-Name',
-    // Take Offline and Sync Design declare themselves with the conversion header.
-    DESIGN_CONVERSION_HEADER,
-    CHANGESET_SEEN_HEADER,
-    CLIENT_HEADER,
-    // My Shares passes the page's community key on (docs/specs/025-community/community.md "My Shares").
-    COMMUNITY_KEY_HEADER,
-  ],
-  exposeHeaders: [DESIGN_FORMAT_HEADER, BUILD_ID_HEADER, 'ETag'],
-});
+// PATCH beside every product's methods: the component library's per-element change
+// (docs/specs/009-elements/components.md), for the local editor on another port.
+export const CORS_HEADERS = withPatch(
+  corsHeaders({
+    allowHeaders: [
+      // Image upload's own headers (docs/specs/009-elements/images.md).
+      'X-Image-Sha256',
+      'X-Image-Width',
+      'X-Image-Height',
+      'X-Image-Original-Name',
+      // Take Offline and Sync Design declare themselves with the conversion header.
+      DESIGN_CONVERSION_HEADER,
+      CHANGESET_SEEN_HEADER,
+      CLIENT_HEADER,
+      // My Shares passes the page's community key on (docs/specs/025-community/community.md "My Shares").
+      COMMUNITY_KEY_HEADER,
+    ],
+    exposeHeaders: [DESIGN_FORMAT_HEADER, BUILD_ID_HEADER, 'ETag'],
+  }),
+);
+
+function withPatch(headers: CorsHeaders): CorsHeaders {
+  return {
+    ...headers,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+  };
+}
 
 export const {
   json,

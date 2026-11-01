@@ -83,6 +83,20 @@ const SAMPLES: Sample[] = [
   { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: TEXT },
   { name: 'video', el: theirs(createVideo(0, 0), 'vi'), allowed: TEXT },
   { name: 'arrow (free)', el: theirs(createArrow(0, 0, 100, 100), 'af'), allowed: TEXT },
+  // Instances are not Participant content (docs/specs/009-elements/components.md "Share roles"): nothing lands.
+  {
+    name: 'instance',
+    el: theirs(
+      {
+        ...createShape('square', 0, 0),
+        shape: 'instance',
+        componentId: 'cmp-1',
+        componentOverrides: { e1: { label: 'Home' } },
+      },
+      'in',
+    ),
+    allowed: [],
+  },
 ];
 
 // Values a field is offered: the kind a real client would send for it, and some it would not.
@@ -146,6 +160,48 @@ describe('the participant content rule never leaks', () => {
       const ok = ['sticky', 'text', 'image'].includes(s.el.type);
       expect(verdict(fresh as Element), s.name).toBe(ok ? 'applied' : 'refused');
     }
+  });
+
+  it('never lets a component field onto an element, added or its own', () => {
+    const fields: Bag[] = [
+      { componentId: 'cmp-1' },
+      { componentOverrides: { e1: { label: 'x' } } },
+      { componentEditBy: 'session-1' },
+      { componentMember: { instanceId: 'in', elementId: 'e1' } },
+    ];
+    const empty = { id: 't', name: 't', elements: [] } as Tab;
+    const mine = { ...createSticky(0, 0), id: 'own', addedBy: ME } as Element;
+    const withMine = { id: 't', name: 't', elements: [mine] } as Tab;
+    for (const extra of fields) {
+      const label = JSON.stringify(extra);
+      const added = { ...createSticky(0, 0), id: 'new', ...extra } as Element;
+      expect(applyParticipantOp(empty, { kind: 'add', element: added, at: 0 }, ME), label).toEqual({
+        result: 'refused',
+        correction: { kind: 'remove', id: 'new' },
+        reason: 'component',
+      });
+      const changed = { ...mine, ...extra };
+      expect(applyParticipantOp(withMine, { kind: 'update', element: changed }, ME), label).toEqual(
+        { result: 'refused', correction: { kind: 'update', element: mine }, reason: 'component' },
+      );
+    }
+    // Someone's open edit session: its members are the main being edited, so not even their words change.
+    const member = {
+      ...createSticky(0, 0),
+      id: 'mem',
+      addedBy: THEM,
+      componentMember: { instanceId: 'in', elementId: 'e1' },
+    } as Element;
+    const session = { id: 't', name: 't', elements: [member] } as Tab;
+    const relabelled = { ...member, label: 'changed' } as Element;
+    expect(applyParticipantOp(session, { kind: 'update', element: relabelled }, ME)).toMatchObject({
+      result: 'refused',
+      reason: 'component',
+    });
+    const instance = { ...createShape('square', 0, 0), id: 'i2', shape: 'instance' } as Element;
+    expect(applyParticipantOp(empty, { kind: 'add', element: instance, at: 0 }, ME).result).toBe(
+      'refused',
+    );
   });
 
   it("removes nothing of someone else's", () => {

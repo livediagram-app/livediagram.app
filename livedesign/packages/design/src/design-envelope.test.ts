@@ -116,3 +116,40 @@ describe('copyDesignEnvelope', () => {
     expect(copyDesignEnvelope(parsed.envelope)).not.toHaveProperty('presentation');
   });
 });
+
+// docs/specs/009-elements/components.md: the library rides beside the tabs, so an import draws the instances.
+describe('the component library in the file', () => {
+  const main = {
+    id: 'cmp-1',
+    name: 'Header',
+    width: 100,
+    height: 40,
+    elements: [],
+    updatedAt: 5,
+  };
+
+  it('writes it only when the design has one, and reads it back', () => {
+    const without = JSON.parse(designToEnvelopeText({ id: 'd', name: 'n' }, [tab], 1)) as {
+      design: object;
+    };
+    expect(without.design).not.toHaveProperty('components');
+    const text = designToEnvelopeText({ id: 'd', name: 'n' }, [tab], 1, [main]);
+    const parsed = parseDesignEnvelope(text);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    expect(parsed.envelope.design.components).toEqual([main]);
+    expect(copyDesignEnvelope(parsed.envelope).components).toEqual([main]);
+  });
+
+  it('leaves a malformed main behind and reads the rest', () => {
+    const text = JSON.stringify({
+      kind: DESIGN_ENVELOPE_KIND,
+      schemaVersion: 1,
+      exportedAt: 1,
+      design: { id: 'd', name: 'n', tabs: [tab], components: [{ id: 'bad' }] },
+    });
+    const parsed = parseDesignEnvelope(text);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    expect(parsed.envelope.design).not.toHaveProperty('components');
+    expect(copyDesignEnvelope(parsed.envelope).components).toEqual([]);
+  });
+});

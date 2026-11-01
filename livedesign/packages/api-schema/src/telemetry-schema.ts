@@ -248,7 +248,8 @@ export const TELEMETRY_ACTIONS = [
   'Present',
   'Held',
   // Design views (docs/specs/024-agents/design-views.md): a view the api answered, typed by the
-  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Pages' | 'Lint').
+  // view ('Overview' | 'Components' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Pages' |
+  // 'Lint').
   'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
@@ -383,6 +384,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Card',
     'Badge',
     'Step',
+    // An instance of the design's own component (docs/specs/009-elements/components.md), placed from In This Design.
+    'Instance',
   ],
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the Concepts category.
   concepts: ['LayerStack', 'Pyramid', 'Cycle', 'Hub', 'Onion', 'Chevrons'],

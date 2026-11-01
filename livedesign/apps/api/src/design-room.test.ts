@@ -1723,6 +1723,39 @@ describe('DesignRoom and agent changesets', () => {
     expect(peer.sent).toEqual([]);
   });
 
+  // docs/specs/009-elements/components.md "Sharing, collaboration and storage": a main the api stored is sequenced
+  // for everybody, a tab-scoped session hears it only for a main its tab uses, and no client may send one.
+  describe('a component op', () => {
+    const main = { id: 'cmp-1', name: 'Header', width: 10, height: 10, elements: [], updatedAt: 1 };
+    const op = { kind: 'component', component: main, tabIds: ['t1'] };
+    function joinScoped(room: DesignRoom, id: string, tabScope: string) {
+      const ws = makeSocket();
+      room.acceptSession(asWs(ws), 'edit', tabScope);
+      sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#abc' } });
+      ws.sent.length = 0;
+      return ws;
+    }
+
+    it('is sequenced for everybody, and for a scoped session only on a tab that uses it', async () => {
+      const { room } = newRoom();
+      const peer = join(room, 'p');
+      const onTab = joinScoped(room, 's1', 't1');
+      const offTab = joinScoped(room, 's2', 't2');
+      expect((await room.fetch(mutation(op))).status).toBe(204);
+      expect(received(peer).at(-1)).toMatchObject({ kind: 'op', from: 'system', op, seq: 1 });
+      expect(received(onTab).at(-1)).toMatchObject({ op });
+      expect(received(offTab).filter((m) => (m as { kind?: string }).kind === 'op')).toEqual([]);
+    });
+
+    it('is never relayed from a client socket', () => {
+      const { room } = newRoom();
+      const sender = join(room, 's');
+      const peer = join(room, 'p');
+      sendFrame(room, sender, { kind: 'op', op });
+      expect(peer.sent).toEqual([]);
+    });
+  });
+
   // docs/specs/024-agents/agent-changesets.md "Held elements": a Viewer's selection holds nothing.
   it("answers the selections on the tab that hold, never a viewer's, marking the agent owner's own", async () => {
     const { room } = newRoom();
