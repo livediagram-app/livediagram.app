@@ -14,7 +14,8 @@ import { fullNameOf } from '../accounts';
 import { pageApp } from './page-app';
 
 // Each app's readable "this browser has a session here" cookie (`1`), set beside its refresh cookie.
-export const SIGNED_IN_HINTS: Record<AppName, string> = {
+// A held app (livehuddle) has none until its fork brings its api-schema; no Explorer lists it before then.
+export const SIGNED_IN_HINTS: Partial<Record<AppName, string>> = {
   livediagram: DIAGRAM_HINT,
   liveplanner: PLANNER_HINT,
   livedocuments: DOCUMENTS_HINT,
@@ -150,7 +151,8 @@ export function appAccount(now = Date.now()): Promise<AppAccount | null> {
   const e2e = e2eAccount(app);
   if (e2e) return Promise.resolve(e2e);
   if (account && account.expiresAt - RENEW_BEFORE_MS > now) return Promise.resolve(account);
-  if (cookie(SIGNED_IN_HINTS[app]) !== '1') {
+  const hint = SIGNED_IN_HINTS[app];
+  if (!hint || cookie(hint) !== '1') {
     account = null;
     return Promise.resolve(null);
   }

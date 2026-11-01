@@ -27,6 +27,7 @@ The liveworkspace monorepo. Read README.md and docs/structure.md first.
   | liveplanner                   | 3200 onward |
   | livedocuments (was livepages) | 3300 onward |
   | livedesign                    | 3400 onward |
+  | livehuddle                    | 3500 onward |
 
   Each product's router (or the liveworkspace site) takes the first port of its block, and its
   other apps the next ones. If a port is taken, find what holds it rather than shifting into

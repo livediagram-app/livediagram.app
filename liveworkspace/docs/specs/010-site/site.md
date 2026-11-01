@@ -226,7 +226,7 @@ chosen to be cheap (no database read where one can be avoided, or one the edge c
 |               | Marketing site     | `HEAD <app>/robots.txt`                            | the browser reaches it       |
 |               | Help centre        | `HEAD <app>/help/robots.txt`                       | the browser reaches it       |
 |               | Community pages    | `HEAD <app>/community/` (livediagram only)         | the browser reaches it       |
-|               | MCP server         | `GET mcp.<app>/health` (CORS `*`)                  | 200, JSON                    |
+|               | MCP server         | `GET mcp.<app>/health` (CORS `*`), apps with one   | 200, JSON                    |
 
 liveworkspace's own checks are on this origin, so the page reads their answers. Each app's API and MCP server
 answer any origin (CORS `*`), so those are read too. An app's pages send no CORS headers, so the browser can only

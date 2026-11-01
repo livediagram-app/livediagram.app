@@ -9,14 +9,22 @@ side imports, so a change here is a change there.
 | Term   | Meaning                                                                                      |
 | ------ | -------------------------------------------------------------------------------------------- |
 | item   | One Canvas, Plan, Document or Design. Its id is a UUID the index gives it when it is made.   |
-| app    | `livediagram`, `liveplanner`, `livedocuments` or `livedesign`.                               |
-| kind   | `canvas`, `plan`, `document` or `design`: one per app, the word people see.                  |
+| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, or `livehuddle` (held, below).  |
+| kind   | `canvas`, `plan`, `document`, `design` or `space`: one per app, the word people see.         |
 | person | Who is asking: an account (`user_…`) or a guest (`guest_…`). The same id in every app.       |
 | index  | The service at `liveworkspace.app/api/index` and its database. The only record of everything |
 |        | about an item except its content.                                                            |
 | grant  | A short-lived token, signed by the index, saying a person (or a link visitor) may open an    |
 |        | item at a level.                                                                             |
 | level  | `view` < `participate` < `edit`, as every app uses.                                          |
+
+livehuddle (its kind `space`, a person's "Space") is registered before its launch
+([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)): the contracts
+and the service take it as an app, and no Explorer lists it (`APP_NAMES` in `@liveworkspace/sites` holds the listed
+apps). The `items` table's CHECK constraints still name the four apps and kinds, so the index refuses a livehuddle
+item until that table is rebuilt; it is the parent of a dozen tables that cascade on delete, and D1 can't turn
+foreign keys off inside a migration, so that rebuild is a migration of its own, rehearsed on a copy of the data,
+before livehuddle's first deploy. Until then livehuddle has no `INDEX_KEY_LIVEHUDDLE` either, so nothing can push one.
 
 ## Reaching the index
 

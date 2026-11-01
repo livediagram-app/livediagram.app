@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-const APPS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const;
+const APPS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'] as const;
 const DATABASE = 'liveworkspace-accounts';
 
 const { values } = parseArgs({
