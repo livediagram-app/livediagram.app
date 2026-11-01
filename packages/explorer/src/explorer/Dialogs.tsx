@@ -13,6 +13,7 @@ import { DefaultFoldersDialog } from '../defaults/DefaultFolders';
 import { folderDefaultEntries, folderDeleteConfirmation } from '../defaults/entries';
 import { UseAsDefaultDialog } from '../defaults/UseAsDefaultDialog';
 import type { ShareUrl } from '../types';
+import { thisBrowserDeleteCopy } from '../this-browser';
 import type { ShareTelemetry } from '../dialogs/share/types';
 import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
@@ -206,14 +207,13 @@ export function ExplorerDialogs() {
         </Suspense>
       );
     case 'delete-local': {
-      // Nothing else holds it (the index never saw it), so this is for good, as This Browser's Delete always asks.
+      // Nothing else holds it (the index never saw it), so this is for good, as This Browser's Delete always asks, in
+      // the words the editor's handed-over Delete uses too.
       const item = dialog.item;
       return (
         <ConfirmDialog
           open
-          title={`Delete this ${ctx.kind.lowerOne}?`}
-          message={`“${item.title || 'Untitled'}” is kept only in this browser, so deleting it removes it for good.`}
-          confirmLabel="Delete"
+          {...thisBrowserDeleteCopy(ctx.kind.lowerOne, item.title)}
           onCancel={close}
           onConfirm={() => {
             close();

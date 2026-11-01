@@ -1,10 +1,12 @@
-// Take Offline and Sync in the Explorer on an app's own address: offered only where the app's editor runs them (the
-// registry's offlineConversions), only on the app's own items the person edits and holds themselves, and Sync only
-// for a person signed in. Each hands over to the item's own address in the editor.
+// Take Offline, Sync and Delete in the Explorer on an app's own address: offered only where the app's editor runs them
+// (the registry's offlineConversions), only on the app's own items the person edits and holds themselves, and Sync
+// only for a person signed in; Delete for anyone, once the Explorer has asked. Each hands over to the item's own
+// address in the editor.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
 import { APP_NAMES } from '@liveworkspace/sites';
-import { offlineHandOver, offlineItemMenu, offlineSyncHref } from './offline-moves';
+import { takeThisBrowserDeleteConfirmed } from '@liveworkspace/explorer/this-browser';
+import { offlineHandOver, offlineItemMenu, offlineRemove, offlineSyncHref } from './offline-moves';
 
 const item = (extra: Partial<Item> = {}) =>
   ({ id: 'd1', app: 'livedocuments', access: 'edit', sharedVia: null, ...extra }) as Item;
@@ -53,5 +55,30 @@ describe('A request that reaches This Browser', () => {
       '/document/a%20b?convert=take-offline&item=a+b',
     );
     expect(offlineHandOver(null)).toBeNull();
+  });
+});
+
+describe('Delete', () => {
+  it('notes in this tab that the Explorer asked, then hands over to the item in the editor', () => {
+    const kept = new Map<string, string>();
+    const session = {
+      getItem: (k: string) => kept.get(k) ?? null,
+      setItem: (k: string, v: string) => void kept.set(k, v),
+      removeItem: (k: string) => void kept.delete(k),
+    } as unknown as Storage;
+    const assign = vi.fn();
+    vi.stubGlobal('window', { location: { assign }, sessionStorage: session });
+    offlineRemove('liveplanner')!({ id: 'p 1' } as never);
+    expect(assign).toHaveBeenCalledWith('/project/p%201?convert=delete&item=p+1');
+    expect(takeThisBrowserDeleteConfirmed('p 1', session)).toBe(true);
+    // Its own way out, for a caller that hands one in.
+    const to = vi.fn();
+    offlineRemove('livedesign', to)!({ id: 'x' } as never);
+    expect(to).toHaveBeenCalledWith('/design/x?convert=delete&item=x');
+  });
+
+  it("is on every app's address and not on liveworkspace.app", () => {
+    for (const app of APP_NAMES) expect(offlineRemove(app)).toBeDefined();
+    expect(offlineRemove(null)).toBeUndefined();
   });
 });
