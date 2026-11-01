@@ -112,6 +112,7 @@ export function ElementVoteOverlay({
           >
             <VoteStepButton
               label={`Remove a dot from ${name}`}
+              keyShortcut="-"
               disabled={myVotes === 0}
               onClick={() => onRetractVote?.(voteKey)}
             >
@@ -133,6 +134,7 @@ export function ElementVoteOverlay({
             </span>
             <VoteStepButton
               label={`Add a dot to ${name}`}
+              keyShortcut="+"
               disabled={!canCast}
               onClick={() => onCastVote?.(voteKey)}
             >
@@ -179,11 +181,15 @@ export function ElementVoteOverlay({
 // never shifts under the pointer mid-vote.
 function VoteStepButton({
   label,
+  keyShortcut,
   disabled,
   onClick,
   children,
 }: {
   label: string;
+  // The key that does the same on the selected element (docs/specs/012-collaboration/session-tools.md "Casting from
+  // the keyboard"): Tab walks elements inside the canvas, so the key is the keyboard's way to this button.
+  keyShortcut: string;
   disabled: boolean;
   onClick: () => void;
   children: React.ReactNode;
@@ -194,6 +200,7 @@ function VoteStepButton({
       as="button"
       type="button"
       aria-label={label}
+      aria-keyshortcuts={keyShortcut}
       disabled={disabled}
       onClick={(e) => {
         e.stopPropagation();
