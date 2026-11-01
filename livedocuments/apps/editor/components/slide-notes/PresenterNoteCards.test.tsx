@@ -109,4 +109,19 @@ describe('PresenterNoteCards', () => {
     rerender(<PresenterNoteCards cards={cards(3)} at={1} slideId="s1" onCard={vi.fn()} />);
     expect(document.querySelector('[data-note-card-flip]')).toBeNull();
   });
+
+  it('keeps presses on the viewer from reaching the slide under it', () => {
+    const onClick = vi.fn();
+    const onPointerDown = vi.fn();
+    render(
+      <div onClick={onClick} onPointerDown={onPointerDown}>
+        <PresenterNoteCards cards={cards(2)} at={0} slideId="s1" onCard={vi.fn()} />
+      </div>,
+    );
+    const viewer = screen.getByRole('dialog', { name: 'Presenter notes' });
+    fireEvent.pointerDown(viewer);
+    fireEvent.click(viewer);
+    expect(onClick).not.toHaveBeenCalled();
+    expect(onPointerDown).not.toHaveBeenCalled();
+  });
 });

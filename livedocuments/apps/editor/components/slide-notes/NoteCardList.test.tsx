@@ -222,6 +222,24 @@ describe('NoteCardList', () => {
     fireEvent.pointerUp(grip, { clientX: 10, clientY: 135 });
     expect(ids()).toBe('c2:Two|c3:Three|c1:One');
   });
+
+  it('keeps keys and presses on a card from reaching the editor under it', () => {
+    const onKeyDown = vi.fn();
+    const onClick = vi.fn();
+    render(
+      <div onKeyDown={onKeyDown} onClick={onClick}>
+        <NoteCardList cards={three} onChange={vi.fn()} />
+      </div>,
+    );
+    fireEvent.keyDown(card(1, 3), { key: 'r' });
+    fireEvent.keyDown(card(1, 3).querySelector('button[aria-label="Remove Card"]')!, { key: 'r' });
+    fireEvent.click(card(1, 3).querySelector('[aria-label="Drag to Reorder"]')!);
+    expect(onKeyDown).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+    // Tab still moves focus on.
+    fireEvent.keyDown(card(1, 3), { key: 'Tab' });
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('noteCardsSummary', () => {
