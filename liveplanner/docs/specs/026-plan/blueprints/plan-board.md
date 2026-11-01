@@ -526,7 +526,15 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   the element's right less `endWidth` and `BAND_GAP_PX` 12, at least `BAND_MID_MIN_PX` 140 is left between the menu
   (judged without the name) and the strip, less `BAND_GAP_PX` each side; `mid` runs from the menu box as it is to the
   strip (floored at 0), `stripEnd` is the strip's right edge from the canvas's right edge, and the insets' top is 0. Its
-  room never reads where the strip is now, so moving it cannot take the band away. `CanvasCover` sets
+  room never reads where the strip is now, so moving it cannot take the band away. **It settles** (Work Tracker #271):
+  a band laid out keeps itself down to `BAND_MID_MIN_PX`, but one not laid out needs `BAND_HYSTERESIS_PX` 16 more
+  (`headerBand`'s `banded`), so a width on the threshold does not flip it. A board's widgets ride in the controls card
+  only in a band, so the card is far wider in one than out of one; `measureCanvasChrome` takes a `BandMemo`
+  (`useCanvasLayerInsets` keeps one per canvas) holding whether the last layout was banded and the card's width as
+  last measured in a band, and judges the room off a band with that width, so a width where the band would take its
+  own room away costs one flip, never a loop. `CanvasCover` writes the canvas's `data-strip-in-band`,
+  `data-band-blend`, `data-band-tint` and their properties only when they differ from what is there (an identical write
+  still reaches a MutationObserver). `CanvasCover` sets
   `--plan-strip-align: flex-end` and `--plan-strip-end` (`setStripEnd`: `stripEnd` over the strip's computed `zoom`) on
   the canvas `main` it is portalled into while it has a band (`clearStripEnd` on going); `ToolbarPalette`'s root reads
   them as `align-items` and `padding-right` (centre and 0 otherwise). `useCanvasLayerInsets` observes the controls card
