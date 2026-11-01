@@ -47,6 +47,8 @@ type Page = {
   readyState?: 'loading' | 'complete';
   prerendering?: boolean;
   idleCallback?: boolean;
+  // The page that opened this one (`document.referrer`); the page itself is on https://liveplanner.app.
+  referrer?: string;
 };
 
 function boot(page: Page = {}) {
@@ -95,6 +97,8 @@ function boot(page: Page = {}) {
   window.self = window;
   window.top = page.inFrame ? {} : window;
   const location = {
+    protocol: 'https:',
+    host: 'liveplanner.app',
     pathname: page.path ?? '/explorer/home',
     search: page.search ?? '',
     hash: page.hash ?? '',
@@ -102,8 +106,14 @@ function boot(page: Page = {}) {
     reload: () => {},
   };
   const attributes = new Map<string, string>();
+  const documentListeners: Record<string, (() => void)[]> = {};
   const document = {
     cookie: page.cookie ?? '',
+    referrer: page.referrer ?? '',
+    visibilityState: 'visible',
+    addEventListener: (type: string, fn: () => void) => {
+      (documentListeners[type] ??= []).push(fn);
+    },
     readyState: page.readyState ?? 'loading',
     prerendering: page.prerendering ?? false,
     documentElement: {
@@ -131,9 +141,18 @@ function boot(page: Page = {}) {
   const fire = (type: string) => {
     for (const fn of listeners[type] ?? []) fn();
   };
+  // The tab hidden, then shown again (the person was in another tab or app).
+  const comeBack = () => {
+    for (const state of ['hidden', 'visible']) {
+      document.visibilityState = state;
+      for (const fn of documentListeners.visibilitychange ?? []) fn();
+    }
+  };
   return {
     to: went[0] ?? null,
+    went,
     stopped,
+    comeBack,
     storage,
     scheme: document.documentElement.style.colorScheme,
     attributes,
@@ -254,10 +273,48 @@ describe('the boot script', () => {
     expect((storage as Map<string, string>).get(SILENT_SESSION_KEY)).toBe('1');
   });
 
-  it('bounces once per browser session', () => {
+  it('bounces once per tab', () => {
     const storage = new Map<string, string>();
     expect(boot({ storage }).to).not.toBeNull();
     expect(boot({ storage }).to).toBeNull();
+    // A page reached from the app's own pages keeps the mark.
+    expect(boot({ storage, referrer: 'https://liveplanner.app/project/abc' }).to).toBeNull();
+    expect(boot({ storage, referrer: 'https://liveplanner.app' }).to).toBeNull();
+  });
+
+  it('asks again on the next load after the tab comes back into view, since the person may have signed in elsewhere', () => {
+    const storage = new Map<string, string>();
+    expect(boot({ storage }).to).not.toBeNull();
+    const page = boot({ storage });
+    expect(page.to).toBeNull();
+    page.comeBack();
+    // Not under the person's hands: the page they are on stays, the next one asks.
+    expect(page.went).toEqual([]);
+    expect(boot({ storage }).to).not.toBeNull();
+    expect(boot({ storage }).to).toBeNull();
+  });
+
+  it('asks again on a page opened from another site, since the tab may have been through a sign-in there', () => {
+    const storage = new Map<string, string>();
+    expect(boot({ storage }).to).not.toBeNull();
+    expect(boot({ storage, referrer: 'https://www.livediagram.app/' }).to).not.toBeNull();
+    // The way back from a bounce (the guard up) is no visit to another site, whatever the accounts site's address.
+    expect(
+      boot({ storage, cookie: 'lp_silent=1', referrer: 'https://www.liveworkspace.app/' }).to,
+    ).toBeNull();
+    expect(storage.get(SILENT_SESSION_KEY)).toBe('1');
+    // Another site whose address only starts with this one's.
+    storage.set(SILENT_SESSION_KEY, '1');
+    expect(boot({ storage, referrer: 'https://liveplanner.app.example/' }).to).not.toBeNull();
+  });
+
+  it('still never asks again within two minutes of a bounce, nor in a tab whose storage is blocked', () => {
+    const storage = new Map<string, string>([[SILENT_SESSION_KEY, '1']]);
+    const page = boot({ storage, cookie: 'lp_silent=1', referrer: 'https://www.livediagram.app/' });
+    expect(page.to).toBeNull();
+    page.comeBack();
+    expect(boot({ storage, cookie: 'lp_silent=1' }).to).toBeNull();
+    expect(boot({ storage: 'blocked', referrer: 'https://www.livediagram.app/' }).to).toBeNull();
   });
 
   it('stays put with a session here already', () => {

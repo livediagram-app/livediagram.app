@@ -359,8 +359,13 @@ goes to the app's fallback page instead (`safeReturnPath`).
 
 It never bounces:
 
-- more than once per tab (`sessionStorage`), nor again in any tab of the app within two minutes (the
-  guard cookie, `<prefix>silent`, which the route also refuses to bounce past, so it can't loop);
+- more than once per tab (`sessionStorage`) while the person can't have signed in anywhere else since,
+  nor again in any tab of the app within two minutes (the guard cookie, `<prefix>silent`, which the route
+  also refuses to bounce past, so it can't loop). The tab's mark is dropped when the tab comes back into
+  view after being hidden (the person was in another tab or app, where they may have signed in) and when
+  the page was opened from another site (the same tab may have been through a sign-in there), so the
+  tab's next full page load asks again. Without that, a tab that asked as a guest stayed a guest after
+  the person signed in on another app, however often it reloaded;
 - with a session in the app already (its hint cookie, `<prefix>signed_in=1`);
 - after the person signed out of that app alone. Signing out ends the liveworkspace session and every
   app's session in that browser ([Signing out](#signing-out)), so a bounce from any app finds no
@@ -382,11 +387,13 @@ It never bounces:
 Whatever goes wrong on the way (no sign-in configured, rate limited, the accounts site down), the
 route and the callback go back to the page rather than to an error.
 
-**The cost.** One bounce per new tab for a person with no session in the app: four extra requests (the
+**The cost.** One bounce per new tab for a person with no session in the app, and one more on a tab's
+next full page load after it comes back into view or is opened from another site, never more than once
+in two minutes: four extra requests (the
 stopped page, the app's route, the accounts site, the callback, which for a signed-in person also
 swaps the code). Measured locally against the dev stacks (median of seven cold loads), it adds about
 85 ms to a signed-in person's first load and about 50 ms to a guest's; on the deployed apps each hop is
-a round trip to the edge, so it costs more. Later loads in the same tab add nothing, and a person
+a round trip to the edge, so it costs more. Later loads in a tab that stays in view add nothing, and a person
 already signed in to the app never bounces. FedCM and the Storage Access API could make this a
 background request one day, but neither works in every browser, so the bounce stays.
 
