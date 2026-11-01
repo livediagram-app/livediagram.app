@@ -38,24 +38,24 @@ menu.
 The tab's content is replaced by one article ([Article pages](../007-editor/article-pages.md)) holding the
 document's body, in the order it is written. The article flows onto as many pages as the writing needs.
 
-| In the document                                                             | In the article                                                    |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Title, Subtitle styles                                                      | Title, Subtitle paragraphs                                        |
-| Heading 1, Heading 2, Heading 3 to 9 (by style name or outline level)       | Heading 1, Heading 2, Heading 3                                   |
-| Quote, Intense Quote styles                                                 | Quote paragraphs                                                  |
-| A list paragraph (bulleted or numbered by its numbering definition), level  | A bulleted or numbered list item at that level (deepest 5 levels) |
-| A paragraph starting with ☐, or ☒ or ☑ ticked (the Word export's to-dos)    | A to-do item, ticked or not, the box left out                     |
-| A paragraph in a code style, or every run of it in a monospace font         | A code block; consecutive ones join into one                      |
-| Bold, italic, underline, strikethrough, superscript, subscript, a code font | The same marks                                                    |
-| A hyperlink to an http, https or mailto address (relationship or field)     | A link (anything else keeps its text, unlinked)                   |
-| A page break (a break run, or "page break before" on a paragraph)           | A page break                                                      |
-| A line break                                                                | A line break in the block; a tab is a space                       |
-| A picture, inline or floating                                               | An in-line object zone holding an image, at most the text's width |
-| Paragraph alignment (centre, right, justify)                                | The same alignment                                                |
+| In the document                                                             | In the article                                                                                                                      |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Title, Subtitle styles                                                      | Title, Subtitle paragraphs                                                                                                          |
+| Heading 1, Heading 2, Heading 3 to 9 (by style name or outline level)       | Heading 1, Heading 2, Heading 3                                                                                                     |
+| Quote, Intense Quote styles                                                 | Quote paragraphs                                                                                                                    |
+| A list paragraph (bulleted or numbered by its numbering definition), level  | A bulleted or numbered list item at that level (deepest 5 levels)                                                                   |
+| A paragraph starting with ☐, or ☒ or ☑ ticked (the Word export's to-dos)    | A to-do item, ticked or not, the box left out                                                                                       |
+| A paragraph in a code style, or every run of it in a monospace font         | A code block; consecutive ones join into one                                                                                        |
+| Bold, italic, underline, strikethrough, superscript, subscript, a code font | The same marks                                                                                                                      |
+| A hyperlink to an http, https or mailto address (relationship or field)     | A link (anything else keeps its text, unlinked)                                                                                     |
+| A page break (a break run, or "page break before" on a paragraph)           | A page break                                                                                                                        |
+| A line break                                                                | A line break in the block; a tab is a space                                                                                         |
+| A picture, inline or floating                                               | An in-line object zone holding an image, at most the text's width                                                                   |
+| Paragraph alignment (centre, right, justify)                                | The same alignment                                                                                                                  |
 | A table                                                                     | A table block: its rows and cells, a repeated header row as the header row, merged cells read as one; a table inside a cell as text |
-| Empty paragraphs (spacing)                                                  | Left out                                                          |
-| Tracked insertions; tracked deletions                                       | Kept as written; left out                                         |
-| Content controls, smart tags, fields                                        | Their content or result                                           |
+| Empty paragraphs (spacing)                                                  | Left out                                                                                                                            |
+| Tracked insertions; tracked deletions                                       | Kept as written; left out                                                                                                           |
+| Content controls, smart tags, fields                                        | Their content or result                                                                                                             |
 
 What is **not** brought across, and named in the report when the document had it: footnotes and endnotes,
 comments, headers and footers, text boxes and shapes, charts, diagrams (SmartArt), equations, embedded objects

@@ -589,7 +589,12 @@ describe('a PDF’s link areas', () => {
     view.dom.querySelectorAll<HTMLElement>('a').forEach((a, i) => {
       a.getClientRects = () => rect(9, i === 0 ? 30 : 0);
     });
-    const areas = linkAreas(view, { flow: 'f', pages: [page('a', 0, 'f')] as never, margin: 96, zoom: 1 });
+    const areas = linkAreas(view, {
+      flow: 'f',
+      pages: [page('a', 0, 'f')] as never,
+      margin: 96,
+      zoom: 1,
+    });
     expect(areas).toEqual([
       { x: 101, y: 106, w: 50, h: 20, page: 0 },
       { x: 105, y: 106, w: 30, h: 20, href: 'https://example.com' },

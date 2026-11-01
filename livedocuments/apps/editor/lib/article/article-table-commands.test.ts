@@ -72,8 +72,7 @@ const run = (command: Command, state: EditorState) => {
   const ok = command(state, (tr) => (next = state.apply(tr)));
   return { ok, state: next };
 };
-const tableOf = (state: EditorState) =>
-  docToBlocks(state.doc, []).find((b) => b.type === 'table');
+const tableOf = (state: EditorState) => docToBlocks(state.doc, []).find((b) => b.type === 'table');
 
 describe('a table block in the editor', () => {
   it('round-trips through the editor, its header row as header cells', () => {
