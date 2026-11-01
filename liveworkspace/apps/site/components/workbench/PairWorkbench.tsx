@@ -245,14 +245,15 @@ export function PendingRequest({
   ) : (
     'an unnamed token'
   );
-  const state = working ? 'working' : failed ? 'failed' : 'pending';
   return (
     <div className="text-center">
       <p className="text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
         {site}
       </p>
       <div className="mt-2">
-        <Heading state={state}>Allow this workbench?</Heading>
+        {/* One heading through the wait and a failure: a fresh one would take focus from the pressed button, and
+            the failure is its own alert. */}
+        <Heading state="pending">Allow this workbench?</Heading>
       </div>
       {/* The two questions (workbench-embeds.md "Pairing", step 3): the whole workspace is asked for in its own
           words, never as one more item. */}
