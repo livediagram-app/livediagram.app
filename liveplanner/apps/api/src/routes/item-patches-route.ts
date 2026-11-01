@@ -25,7 +25,7 @@ import {
   itemCaller,
   itemNotFound,
   isItemEditor,
-  retiresItem,
+  editorOnly,
   writer,
 } from './item-route-kit';
 import { writeItemsWithRetry } from './item-write-loop';
@@ -85,7 +85,7 @@ export async function patches(ctx: PlanRouteContext, projectId: string): Promise
         if (timed) return rejectedFor(id, 'field_time_tracked', timed);
         const cleared = clearedRequired(caller, next, stored.get(id)!, undo);
         if (cleared) return rejectedFor(id, 'field_required', cleared);
-        if (retiresItem(stored.get(id)!, next) && !(await isItemEditor(ctx, caller)))
+        if (editorOnly(stored.get(id)!, next) && !(await isItemEditor(ctx, caller)))
           return forbidden();
         const bound = fieldsWithinBounds(next.fields);
         if (bound) return rejectedFor(id, bound);

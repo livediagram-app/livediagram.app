@@ -12,6 +12,7 @@ import {
   timeSpentWritten,
   requiredClearedBy,
   statusExcluded,
+  repeatChanged,
   typesOf,
   type Item,
   type ItemPerson,
@@ -104,6 +105,12 @@ export function clearedRequired(
 // pays for no second gate.
 export function retiresItem(before: Item, next: Item): boolean {
   return isTrashed(before) !== isTrashed(next) || isArchived(before) !== isArchived(next);
+}
+
+// What only an Editor may do to a card: retire it (above), or set, change or stop its repeat
+// (docs/specs/026-plan/items.md "Repeating cards").
+export function editorOnly(before: Item, next: Item): boolean {
+  return retiresItem(before, next) || repeatChanged(before, next);
 }
 
 export async function isItemEditor(ctx: PlanRouteContext, caller: ItemCaller): Promise<boolean> {

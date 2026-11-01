@@ -13,6 +13,7 @@ import {
   ITEM_BULK_MAX,
   ITEM_KEY_MAX,
   ITEM_WRITE_RETRIES,
+  REPEAT_FIELD,
   applyMove,
   itemPlacer,
   applyPatch,
@@ -67,7 +68,7 @@ import {
   isItemEditor,
   rejected,
   relay,
-  retiresItem,
+  editorOnly,
   writer,
   type ItemCaller,
 } from './item-route-kit';
@@ -257,6 +258,9 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   // Votes, threads and a key come back only with an Editor's undo: a Participant makes a fresh card.
   const restores = read.votes !== undefined || restoresThreads(read) || read.key !== undefined;
   if (restores && !(await isItemEditor(ctx, caller))) return forbidden();
+  // A card made repeating is an Editor's (docs/specs/026-plan/items.md "Repeating cards").
+  if (read.fields[REPEAT_FIELD] !== undefined && !(await isItemEditor(ctx, caller)))
+    return forbidden();
   // A Calculated field is worked out, never given (docs/specs/026-plan/item-types.md "Calculated fields").
   const calculated = restores ? null : calculatedSet(caller, read);
   if (calculated) return rejected('field_calculated', calculated);
@@ -352,7 +356,7 @@ export async function writeItem(
     if (timed) return rejected('field_time_tracked', timed);
     const cleared = clearedRequired(caller, next, item, opts.undo === true);
     if (cleared) return rejected('field_required', cleared);
-    if (retiresItem(item, next) && !(await isItemEditor(ctx, caller))) return forbidden();
+    if (editorOnly(item, next) && !(await isItemEditor(ctx, caller))) return forbidden();
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return rejected(bound);
     const rev = await updateItemAtRev(ctx.env, caller.projectId, next, item.rev);

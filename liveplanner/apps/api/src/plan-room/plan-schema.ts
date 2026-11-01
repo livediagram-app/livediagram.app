@@ -11,6 +11,7 @@
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
 import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
+import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
@@ -387,6 +388,10 @@ const V10 = (exec: Exec) => {
 // items.md "Images in use"): the last set sent, and the triggers that queue a report. Its own step, appended.
 const V11 = IMAGE_REFS_SCHEMA;
 
+// A repeating card's schedule (card-repeats-schema.ts; docs/specs/026-plan/items.md "Repeating cards"). Its own step,
+// appended.
+const V12 = CARD_REPEATS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -399,6 +404,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V9,
   V10,
   V11,
+  V12,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

@@ -19,7 +19,13 @@ const asInput = (tab: { id: string; name: string; elements: unknown }): PlanTabI
   elements: Array.isArray(tab.elements) ? (tab.elements as unknown[]) : [],
 });
 
-export async function planTabs(ctx: PlanRouteContext, projectId: string, tabId: string | null) {
+// The plan's board tabs (one, for a tab-scoped caller). Needs only the env, so the room's alarm reads them too
+// (plan-room/card-repeats.ts).
+export async function planTabs(
+  ctx: Pick<PlanRouteContext, 'env'>,
+  projectId: string,
+  tabId: string | null,
+) {
   if (tabId !== null) {
     const tab = await getTab(ctx.env, projectId, tabId);
     return tab ? [asInput(tab)] : [];
