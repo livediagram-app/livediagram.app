@@ -149,7 +149,7 @@ function pathUpstream(
 
 // Every card's blocker ids, read lazily and kept: the graph a loop check walks.
 function blockerGraph(
-  items: ReadonlyMap<string, Item>,
+  items: ReadonlyMap<string, BlockingCard>,
   types: readonly ItemTypeDef[],
 ): (id: string) => readonly string[] {
   const seen = new Map<string, readonly string[]>();
@@ -177,10 +177,13 @@ export function blockingLoop(
   return path ? path.map((id) => items.get(id)!) : null;
 }
 
+// A card as a loop check reads it: a card about to be made has no number yet.
+export type BlockingCard = Pick<Item, 'id' | 'type' | 'fields'> & { key?: number };
+
 // A write's change to one card: its state before (none for a create) and after.
 export interface BlockingChange {
   before?: Pick<Item, 'id' | 'type' | 'fields'>;
-  next: Item;
+  next: BlockingCard;
 }
 
 // The first loop a write would close: the card and the chain from its new blocker back to it. Only the links a change
@@ -190,17 +193,17 @@ export function blockingCycleOf(
   items: Iterable<Item>,
   types: readonly ItemTypeDef[],
   changes: readonly BlockingChange[],
-): { itemId: string; chain: Item[] } | null {
+): { itemId: string; chain: BlockingCard[] } | null {
   if (changes.length === 0 || !hasBlocksFields(types)) return null;
   // The links each change adds, read from the cards alone: a write adding none never reads the plan.
-  const added: { item: Item; blocker: string }[] = [];
+  const added: { item: BlockingCard; blocker: string }[] = [];
   for (const c of changes) {
     const had = c.before ? blockerIdsOf(c.before, typeIn(types, c.before.type)) : [];
     for (const b of blockerIdsOf(c.next, typeIn(types, c.next.type)))
       if (!had.includes(b)) added.push({ item: c.next, blocker: b });
   }
   if (added.length === 0) return null;
-  const after = new Map<string, Item>();
+  const after = new Map<string, BlockingCard>();
   for (const it of items) after.set(it.id, it);
   for (const c of changes) after.set(c.next.id, c.next);
   const graph = blockerGraph(after, types);
@@ -211,11 +214,15 @@ export function blockingCycleOf(
   return null;
 }
 
-const named = (it: Item) => `#${it.key} ${itemTitle(it).trim() || 'Untitled'}`;
+// "#3 Website"; a card not yet made (no number) is named by its title alone.
+const named = (it: BlockingCard) => {
+  const title = itemTitle(it).trim() || 'Untitled';
+  return it.key ? `#${it.key} ${title}` : title;
+};
 
 // What a refused loop says: "#5 Launch already waits on #3 Website, so it can't block it.", naming the cards between
 // when the chain is longer ("... waits on #3 Website through #7 Copy, ...").
-export function blockingLoopMessage(chain: readonly Item[]): string {
+export function blockingLoopMessage(chain: readonly BlockingCard[]): string {
   const blocker = chain[0]!;
   const item = chain[chain.length - 1]!;
   const between = chain.slice(1, -1);

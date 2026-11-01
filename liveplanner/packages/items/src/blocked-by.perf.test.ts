@@ -43,6 +43,10 @@ function plan(n: number, links: number): Item[] {
   return out;
 }
 
+// Node's CPU clock; this package carries no Node types, so only what is read is declared.
+type CpuUsage = { user: number; system: number };
+declare const process: { cpuUsage(since?: CpuUsage): CpuUsage };
+
 const cpuMs = (run: () => void): number => {
   const start = process.cpuUsage();
   run();

@@ -217,6 +217,9 @@ describe('loops', () => {
     expect(blockingLoopMessage([b, a])).toBe(
       `#${b.key} Launch already waits on #${a.key} Website, so it can't block it.`,
     );
+    expect(blockingLoopMessage([b, { ...a, key: undefined }])).toBe(
+      `#${b.key} Launch already waits on Website, so it can't block it.`,
+    );
     expect(blockingLoopMessage([b, c, a])).toBe(
       `#${b.key} Launch already waits on #${a.key} Website through #${c.key} Untitled, so it can't block it.`,
     );
