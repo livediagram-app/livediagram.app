@@ -3,6 +3,8 @@
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { memo, useCallback, useEffect, useMemo } from 'react';
 import {
+  EXPLORER_POPOVER_HEIGHT,
+  EXPLORER_POPOVER_WIDTH,
   ExplorerPanel,
   explorerPath,
   useOpenItem,
@@ -139,10 +141,11 @@ function ExplorerImpl({
       // Only ever the menu button's popover: never placed in a corner or dragged.
       position={null}
       defaultCorner="top-left"
-      // Roomy on a desktop or tablet: up to 60rem wide (kept 1rem inside the window) and 56rem tall (kept on the
-      // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size.
-      popoverWidth="w-[60rem]"
-      popoverHeight="56rem"
+      // Roomy on a desktop or tablet: up to 64rem wide (kept 1rem inside the window) and 56rem tall (kept on the
+      // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size. Every editor's
+      // panel takes the one size from the package.
+      popoverWidth={EXPLORER_POPOVER_WIDTH}
+      popoverHeight={EXPLORER_POPOVER_HEIGHT}
       popoverScrim
       // On a phone it opens as a sheet: edge to edge, down to the tab bar.
       popoverSheet={sheet}
