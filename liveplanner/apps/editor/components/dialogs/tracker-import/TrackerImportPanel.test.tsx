@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
-// The Import dialog's Another Tool view (docs/specs/026-plan/tracker-import.md "Reading the file", "The preview",
-// "The import"): choosing or dropping a file, its refusals, the preview's sections, where it goes (the tab choice
-// dimmed when the plan has no room) and the import's outcomes.
+// A board from another tool in the Import dialog (docs/specs/026-plan/tracker-import.md "Where it lives", "Reading
+// the file", "The preview", "The import"): a tool's row or a dropped file, its refusals, the preview's sections, where
+// it goes (the tab choice dimmed when the plan has no room) and the import's outcomes.
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -13,8 +13,9 @@ import {
   type TrackerPlanContext,
 } from '@liveplanner/items';
 import type { TrackerImportActions, TrackerTarget } from '@/hooks/plan/useTrackerImport';
-import { TRACKER_NOT_LOADED, TrackerImportPanel } from './TrackerImportPanel';
+import { ImportTabDialog } from '../ImportTabDialog';
 import { peopleLine } from './TrackerPreviewView';
+import { TRACKER_NOT_LOADED } from './useTrackerFlow';
 
 const picker = vi.hoisted(() => ({ pickTabFile: vi.fn() }));
 vi.mock('@/lib/import-tab', () => picker);
@@ -54,17 +55,28 @@ function tracker(
   } satisfies TrackerImportActions;
 }
 
+// The dialog on a Dashboard tab: its own row is the liveplanner Tab, then the four tools.
 function open(t: TrackerImportActions = tracker()) {
   const onDone = vi.fn();
-  render(<TrackerImportPanel tracker={t} onDone={onDone} head={<p>switch</p>} />);
+  render(
+    <ImportTabDialog
+      tabName="Overview"
+      intoTab={{ kind: 'json' }}
+      onImportFile={vi.fn()}
+      onImportText={vi.fn()}
+      tracker={t}
+      onClose={onDone}
+    />,
+  );
   return { onDone };
 }
 
 const pick = (text: string, name = 'issues.csv') =>
   picker.pickTabFile.mockResolvedValueOnce({ name, text, file: new File([text], name) });
 
-async function choose() {
-  fireEvent.click(screen.getByRole('button', { name: /Choose a File/ }));
+// The file says which tool it came from: any tool's row opens the picker.
+async function choose(row = 'Jira') {
+  fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${row}: `) }));
 }
 
 afterEach(() => {
@@ -73,15 +85,16 @@ afterEach(() => {
 });
 
 describe('TrackerImportPanel: reading the file', () => {
-  it('opens on the file to choose, naming the four tools and where each keeps its export', () => {
+  it('names each tool with its file, and nothing to import until a file is read', () => {
     open();
-    expect(screen.getByText('switch')).toBeTruthy();
     expect(
-      within(screen.getByRole('list', { name: 'Exports it reads' }))
-        .getAllByRole('listitem')
-        .map((li) => li.textContent),
-    ).toEqual(['TrelloJSON', 'AsanaCSV', 'JiraCSV', 'LinearCSV']);
-    expect(screen.getByText('Where to Find the Export')).toBeTruthy();
+      within(screen.getByRole('group', { name: 'A Board from Another Tool' }))
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('aria-label')?.split(':')[0]),
+    ).toEqual(['Trello', 'Asana', 'Jira', 'Linear']);
+    expect(
+      screen.getByText('A one-off copy into a new Board tab or plan, after a preview.'),
+    ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Import' })).toBeNull();
   });
 
@@ -94,8 +107,26 @@ describe('TrackerImportPanel: reading the file', () => {
         maxBytes: TRACKER_FILE_MAX_BYTES,
       }),
     );
-    expect(screen.getByRole('button', { name: /Choose a File/ })).toBeTruthy();
+    expect(screen.getByTestId('import-choose')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('says the row’s file is being read until it is previewed', async () => {
+    let finish: (v: unknown) => void = () => {};
+    picker.pickTabFile.mockReturnValueOnce(new Promise((r) => (finish = r)));
+    open();
+    await choose('Asana');
+    const row = screen.getByRole('button', { name: /^Asana: / });
+    await waitFor(() => expect(row.textContent).toContain('Reading the File…'));
+    finish({ name: 'launch.csv', text: ASANA, file: null });
+    expect(await screen.findByRole('heading', { name: 'Import from Asana' })).toBeTruthy();
+  });
+
+  it('reads the file as the tool it came from, whichever row picked it', async () => {
+    pick(JIRA);
+    open();
+    await choose('Trello');
+    expect(await screen.findByRole('heading', { name: 'Import from Jira' })).toBeTruthy();
   });
 
   it('refuses a file past the cap unread, and a file from no tool it knows', async () => {
@@ -132,29 +163,14 @@ describe('TrackerImportPanel: reading the file', () => {
     expect(warn).toHaveBeenCalled();
   });
 
-  it('reads a dropped file, highlighting the drop zone while it is over it', async () => {
+  it('previews a tool’s export dropped on the list', async () => {
     open();
-    const zone = screen.getByRole('button', { name: /Choose a File/ });
-    // Something other than a file passes over unnoticed.
-    fireEvent.dragOver(zone, { dataTransfer: { types: ['text/plain'] } });
-    expect(zone.className).not.toContain('border-brand-400');
-    fireEvent.dragOver(zone, { dataTransfer: { types: ['Files'] } });
-    expect(zone.className).toContain('border-brand-400');
-    fireEvent.dragLeave(zone);
-    expect(zone.className).not.toContain('border-brand-400');
     const file = new File([ASANA], 'Launch.csv', { type: 'text/csv' });
-    fireEvent.drop(zone, { dataTransfer: { types: ['Files'], files: [file] } });
+    fireEvent.drop(screen.getByTestId('import-choose'), {
+      dataTransfer: { types: ['Files'], files: [file] },
+    });
     expect(await screen.findByText('Launch')).toBeTruthy();
-  });
-
-  it('refuses a dropped file past the cap, and ignores a drop with no file', async () => {
-    open();
-    const zone = screen.getByRole('button', { name: /Choose a File/ });
-    fireEvent.drop(zone, { dataTransfer: { types: ['Files'], files: [] } });
-    const big = new File(['x'], 'big.json');
-    Object.defineProperty(big, 'size', { value: TRACKER_FILE_MAX_BYTES + 1 });
-    fireEvent.drop(zone, { dataTransfer: { types: ['Files'], files: [big] } });
-    expect((await screen.findByRole('alert')).textContent).toContain('too big to import');
+    expect(screen.getByRole('heading', { name: 'Import from Asana' })).toBeTruthy();
   });
 });
 
@@ -194,12 +210,25 @@ describe('TrackerImportPanel: the preview', () => {
     expect(screen.getByText('No one is assigned on these cards.')).toBeTruthy();
   });
 
-  it('goes back to choosing a file', async () => {
+  it('goes back to the list from its back bar', async () => {
     pick(ASANA);
     open();
     await choose();
+    fireEvent.click(await screen.findByRole('button', { name: /All Imports/ }));
+    expect(screen.getByTestId('import-choose')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Import' })).toBeTruthy();
+  });
+
+  it('chooses another file for the same tool, a cancel keeping the preview', async () => {
+    pick(ASANA, 'launch.csv');
+    open();
+    await choose();
     fireEvent.click(await screen.findByRole('button', { name: 'Choose Another File' }));
-    expect(screen.getByRole('button', { name: /Choose a File/ })).toBeTruthy();
+    await waitFor(() => expect(picker.pickTabFile).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('launch')).toBeTruthy();
+    pick(JIRA);
+    fireEvent.click(screen.getByRole('button', { name: 'Choose Another File' }));
+    expect(await screen.findByRole('heading', { name: 'Import from Jira' })).toBeTruthy();
   });
 
   it('plans a new plan only when it is chosen, and keeps both plans', async () => {

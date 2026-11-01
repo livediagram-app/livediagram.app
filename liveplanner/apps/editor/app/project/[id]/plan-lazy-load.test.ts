@@ -61,7 +61,7 @@ describe('the editor’s first load', () => {
   });
 
   it('loads the CSV writer from the tab menu only at the press', () => {
-    const imports = staticImports(read('components/chrome/tab-data-rows.ts'));
+    const imports = staticImports(read('components/dialogs/import/into-tab.ts'));
     expect(imports).not.toContain('@/components/sheets/sheet-csv');
   });
 

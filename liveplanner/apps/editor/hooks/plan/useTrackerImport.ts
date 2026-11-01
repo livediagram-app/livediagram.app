@@ -1,8 +1,8 @@
 'use client';
 
 // Importing a board from another tool (docs/specs/026-plan/tracker-import.md "The import"): what the Import dialog's
-// Another Tool view plans against (the plan's card types, states, people and room), and the writes that make it. The
-// file is read and planned in the dialog's own chunk (TrackerImportPanel); this only reads the plan and writes.
+// preview plans against (the plan's card types, states, people and room), and the writes that make it. The file is
+// read and planned in the dialog's own chunk (useTrackerFlow); this only reads the plan and writes.
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
   ITEMS_MAX,

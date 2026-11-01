@@ -5,9 +5,6 @@ import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
 import { track } from '@/lib/telemetry';
 import { useOpenSettingsRequests } from '@liveworkspace/workbench/hooks/ui/useOpenSettingsRequests';
 
-// The Import dialog's two views (docs/specs/026-plan/tracker-import.md "Where it lives").
-export type ImportView = 'file' | 'tracker';
-
 // Top-level modal/dialog visibility for the editor: Search, Settings, the Share dialog, the per-tab Export / Import dialogs, and the
 // Collaborators modal.
 // Pure open/closed UI flags with no project-data coupling — a self-
@@ -81,13 +78,6 @@ export function useEditorDialogs() {
   // tab live from `multiSelectedIds` when scope is 'selection'.
   const [exportScope, setExportScope] = useState<'tab' | 'selection'>('tab');
   const [importOpen, setImportOpen] = useState(false);
-  // Which view the Import dialog shows: a liveplanner file, or a board from another tool
-  // (docs/specs/026-plan/tracker-import.md "Where it lives").
-  const [importView, setImportView] = useState<ImportView>('file');
-  const openImportOn = useCallback((view: ImportView) => {
-    setImportView(view);
-    setImportOpen(true);
-  }, []);
   // The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md), opened from a tab's presence stack.
   // null = closed; otherwise `focusId` is whose avatar was clicked (null from
   // the "+N" badge), which the modal highlights.
@@ -128,9 +118,6 @@ export function useEditorDialogs() {
     setExportScope,
     importOpen,
     setImportOpen,
-    importView,
-    setImportView,
-    openImportOn,
     collaborators,
     openCollaborators,
     closeCollaborators,

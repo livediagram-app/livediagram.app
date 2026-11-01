@@ -154,7 +154,7 @@ export function EditorView() {
     projectTeamId,
     duplicateTab,
     hydrated,
-    openImportOn,
+    setImportOpen,
     trackerImport,
     canShareProject,
     isOwner,
@@ -359,8 +359,8 @@ export function EditorView() {
             onDuplicate={duplicateTab}
             onDelete={deleteTab}
             onClearContent={() => void clearTabContent()}
-            onImportTab={() => openImportOn('file')}
-            onImportFromTool={trackerImport.canImport ? () => openImportOn('tracker') : undefined}
+            onImportTab={() => setImportOpen(true)}
+            canImportFromTool={trackerImport.canImport}
             onExportTab={() => {
               setExportScope('tab');
               setExportOpen(true);
