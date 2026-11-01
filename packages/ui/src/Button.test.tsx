@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, render } from '@testing-library/react';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { Button, ButtonContent } from './Button';
 
 // A button's label centres its cap band, not its line box, at the button's usual height
@@ -59,5 +60,81 @@ describe('Button ghost variant', () => {
     const cls = container.querySelector('button')!.className;
     expect(cls).not.toContain('border');
     expect(cls).toContain('hover:bg-slate-100');
+  });
+});
+
+// docs/specs/004-interface-design/busy-buttons.md: a busy button keeps the keyboard and ignores a second press.
+describe('Button busy', () => {
+  function Save({ onSave }: { onSave: () => Promise<void> }) {
+    const [busy, setBusy] = useState(false);
+    return (
+      <Button
+        busy={busy}
+        onClick={async () => {
+          setBusy(true);
+          await onSave();
+          setBusy(false);
+        }}
+      >
+        {busy ? 'Saving…' : 'Save'}
+      </Button>
+    );
+  }
+
+  it('keeps focus through the wait and ignores a second press', async () => {
+    let finish = () => {};
+    const onSave = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)));
+    const { container } = render(<Save onSave={onSave} />);
+    const button = container.querySelector('button')!;
+    button.focus();
+    act(() => button.click());
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.disabled).toBe(false);
+    expect(document.activeElement).toBe(button);
+    act(() => button.click());
+    expect(onSave).toHaveBeenCalledTimes(1);
+    await act(async () => finish());
+    expect(button.hasAttribute('aria-disabled')).toBe(false);
+    expect(button.hasAttribute('aria-busy')).toBe(false);
+    expect(document.activeElement).toBe(button);
+    act(() => button.click());
+    expect(onSave).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not submit its form while busy', () => {
+    const onSubmit = vi.fn((event: Event) => event.preventDefault());
+    const { container } = render(
+      <form onSubmit={(e) => onSubmit(e.nativeEvent)}>
+        <Button type="submit" busy>
+          Add
+        </Button>
+      </form>,
+    );
+    act(() => container.querySelector('button')!.click());
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('keeps an aria-disabled the caller set when not busy', () => {
+    const { container } = render(<Button aria-disabled>Sync now</Button>);
+    expect(container.querySelector('button')!.getAttribute('aria-disabled')).toBe('true');
+    expect(container.querySelector('button')!.hasAttribute('aria-busy')).toBe(false);
+  });
+
+  it("takes the caller's own look with variant none, and still reads as disabled while busy", () => {
+    const { container } = render(
+      <Button variant="none" className="rounded-full bg-slate-900" busy>
+        Join
+      </Button>,
+    );
+    const button = container.querySelector('button')!;
+    expect(button.className).toBe(
+      'aria-disabled:cursor-not-allowed aria-disabled:opacity-50 rounded-full bg-slate-900',
+    );
+    expect(button.querySelector('.text-optical-line')).toBeNull();
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(
+      render(<Button variant="none">Bare</Button>).container.querySelector('button')!.className,
+    ).toBe('aria-disabled:cursor-not-allowed aria-disabled:opacity-50');
   });
 });
