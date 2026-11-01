@@ -260,7 +260,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       el,
       shape.fill,
       shape.stroke,
-      el.textColor ?? '#1e293b',
+      // Its rows in the element's ink for this page, as the canvas writes them.
+      el.textColor ?? defaultTextColor(el, surface),
       opts.chartPalette,
       fontFamily,
     )}</g>`;
@@ -276,7 +277,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       el,
       shape.fill,
       shape.stroke,
-      el.textColor ?? '#1e293b',
+      el.textColor ?? defaultTextColor(el, surface),
       fontFamily,
     )}</g>`;
   }
