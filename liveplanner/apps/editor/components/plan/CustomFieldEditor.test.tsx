@@ -27,6 +27,22 @@ describe('CustomFieldEditor', () => {
     expect(onSave).toHaveBeenLastCalledWith(undefined);
   });
 
+  // Its label is not a <label for> (a press on the words must not tick it), so the box carries the name itself.
+  it('names a Checkbox field by its label', () => {
+    const onSave = vi.fn();
+    render(
+      <CustomFieldEditor
+        id="k"
+        field={{ id: 'f-signed', label: 'Signed Off', kind: 'checkbox' }}
+        value={undefined}
+        disabled={false}
+        onSave={onSave}
+      />,
+    );
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Signed Off' }));
+    expect(onSave).toHaveBeenLastCalledWith(true);
+  });
+
   it('shows GBP for a currency field with no code', () => {
     render(
       <CustomFieldEditor

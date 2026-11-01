@@ -224,6 +224,7 @@ export function CustomFieldEditor({
         <input
           id={id}
           type="checkbox"
+          aria-label={field.label}
           disabled={disabled}
           className="h-4 w-4 accent-brand-600 enabled:cursor-pointer"
           checked={value === true}
