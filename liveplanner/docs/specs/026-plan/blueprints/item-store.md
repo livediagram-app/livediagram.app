@@ -718,6 +718,118 @@ side's length and branch. An item step's closures send the inverse writes (`inve
 the touched keys, the old status and neighbour, a delete for a create, a restoring create for a delete, one `patches` of each item's inverse for a `patches`, and for a `moves` one `moves` putting each card back before the card it sat before (`inverseMoves`: the cards restored from the last in each column to the first, so each one's old neighbour is back in place first; a card that had no status then loses it in one `patches`)), and redo
 replays the write with the keys the first write was given. Votes push nothing.
 
+## Repeats
+
+Derived from [Items](../items.md) "Repeating cards".
+
+### Pure core (`packages/items/src/repeat.ts`, `repeat-dates.ts`, `repeat-copy.ts`)
+
+```ts
+type RepeatEvery = 'day' | 'weekday' | 'week' | 'month';
+interface RepeatRule {
+  every: RepeatEvery;
+  days?: number[]; // week only: 0 (Sunday) to 6, ascending, unique, 1 to 7 of them
+  date?: number; // month only: 1 to 31; past a month's end, its last day
+  until?: string; // YYYY-MM-DD, on or after `from`; the last day a copy may be made for
+  status?: string; // the chosen column; absent: the type's starting state
+  from: string; // YYYY-MM-DD in timeZone: the day it was saved
+  timeZone: string; // IANA, at most 64 characters (isRuleTimeZone, on date-time-fields.ts isTimeZone)
+}
+```
+
+- `REPEAT_FIELD = 'repeat'`; `readRepeatRule(v)` normalises a rule or answers undefined (validateFields refuses it
+  `field_value_invalid`); `itemRepeat(item)`; `hasRepeat(item)` (a key test, for card faces: no parse per render);
+  `repeatChanged(before, after)` (the api's Editor gate).
+- Days are `YYYY-MM-DD` strings; day arithmetic is on UTC day numbers (`dayNumber`, `dayOf`), so a day's weekday
+  never depends on a time zone. `occursOn(rule, day)`; `nextOccurrence(rule, after)`: the first due day strictly
+  after `after`, null past `until` or past `REPEAT_SEARCH_DAYS`; `latestOccurrence(rule, after, through)`: the last
+  due day in (`after`, `through`], null when none; `previousOccurrence(rule, day)`: the last due day on or before.
+- Time zones (`repeat-dates.ts`): `localDay(ms, tz)` reads the day with one cached `Intl.DateTimeFormat` per zone
+  (`REPEAT_ZONE_CACHE_MAX`, oldest dropped); `dayStart(day, tz)` is the first instant of that day there: UTC
+  midnight less the zone's offset, worked out twice (the offset at the guess can differ across a change), then
+  stepped an hour at a time (at most 3) while the instant still reads the day before (a skipped midnight).
+- `repeatSchedule(rule, settled, now)` answers `{ make: day | null, next: day | null, nextAt: ms | null }`: `make` is
+  `latestOccurrence(rule, settled, today)` (one, however many were missed), `next` the first due day after
+  `max(settled, make, today)`, `nextAt` its `dayStart`. `settledFloor(rule, settled, now)` is
+  `max(settled ?? '', from, yesterday)`: what a first look, an edit or a restore starts from.
+- `repeatCopy(source, rule, day, types)` (`repeat-copy.ts`) answers the copy's `{ type, fields }`: the source's
+  fields less `repeat`, `status`, `statusSince`, `trashedFrom`, `archived`, `flagged`, `example`, `votes`,
+  `comments`, the linked-card fields (`unlinkedFields`), every custom Votes and Time Spent field, with each
+  checklist row `done: false` and `start` and `due` moved by `day - previousOccurrence(rule, from)` days.
+  `repeatCopyId(sourceId, day)`: `r` and 23 base-36 characters of the SHA-256 of `${sourceId}/${day}` (the sync
+  fallback digest), inside `ITEM_ID_PATTERN`. `REPEAT_PERSON`: `{ id: 'repeat', name: 'Repeat', color: '#64748b' }`.
+- `repeatWords(rule)`: "every day", "every weekday", "every week on Mon and Thu", "every month on the 31st", then
+  ", until 31 Dec 2026" (day, short month words and year; never a locale's numeric order). `repeatNext(rule, now)`:
+  the next due day after today, for the panel.
+
+### Storage (plan schema step V12, `plan-room/card-repeats-schema.ts`)
+
+```sql
+CREATE TABLE IF NOT EXISTS item_repeats (
+  item_id   TEXT    PRIMARY KEY,
+  last_made TEXT    NULL,     -- the last due day settled: a copy made for it, or the floor a look started from
+  next_at   INTEGER NULL,     -- when the next copy is due (ms); NULL: none (ended, or the source is trashed)
+  dirty     INTEGER NOT NULL DEFAULT 1  -- the rule or the state changed: work next_at out again
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS item_repeats_due ON item_repeats (dirty, next_at);
+```
+
+- Triggers keep it, so no write path (a patch, many patches, a create, a bulk create, a copy, an import, the
+  migration door, an undo) can forget it: `item_repeats_insert` (AFTER INSERT ON items WHEN the row's `$.repeat` is
+  not null) upserts the row dirty, keeping `last_made`; `item_repeats_update` (AFTER UPDATE OF fields WHEN
+  `$.repeat` or `$.status` changed and either side has a repeat) does the same; `item_repeats_delete` (AFTER DELETE)
+  drops the row. A card without a repeat costs each write the triggers' `json_extract` reads and nothing else.
+
+### The room (`plan-room/card-repeats.ts` `RepeatSchedule`, wired into `plan-room.ts`)
+
+- `at`: the next wake the schedule asks for (null: none), restored on construction from `SELECT MIN(next_at) ...
+WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (after every content write) asks
+  `SELECT 1 FROM item_repeats WHERE dirty = 1 LIMIT 1` and, when one is, sets `at` to now and arms the alarm.
+  `armAlarm` includes `at`.
+- `run(now)` (the alarm, when `at <= now`), bounded to `REPEAT_COPIES_PER_WAKE` rows of each kind:
+  1. Dirty rows: read the card; none or no rule: the row goes; trashed: `next_at` NULL, clean (parked until a change
+     dirties it); else `last_made = settledFloor(...)`, `next_at` from `repeatSchedule`, clean.
+  2. Due rows (`dirty = 0 AND next_at <= now`, oldest first): read the card; gone, no rule or trashed: as above.
+     `repeatSchedule` gives `make`; none (an early wake): `next_at` again. Else the copy is made in one batch: the
+     store's rev and next key raised, the copy inserted (id `repeatCopyId`, key the next free, rank the end of its
+     column, `REPEAT_PERSON` as maker), and `UPDATE item_repeats SET last_made = ?, next_at = ? WHERE item_id = ?`.
+     A primary-key collision (the copy is already there) settles the day without a copy. A full store
+     (`ITEMS_MAX`) settles the day without a copy and logs `[repeats] items_full`.
+  3. Each copy is relayed as an ordered `items` op and appended to history tagged `repeat`.
+  4. `at`: now + `REPEAT_MORE_MS` while rows of either kind remain past the bound, else the earliest `next_at`.
+- A purge drops the table with the rest of the storage (`deleteAll`).
+
+### Api gate
+
+- `writeItem`, `/items/patches` and a create refuse a write whose `repeat` differs from the stored one (a create:
+  any `repeat`) unless the caller is an Editor (`isItemEditor`; 403). Bulk creates are an Editor's already.
+
+### Editor
+
+- `useItemRepeat` (`ItemRepeatLine.tsx`) hands `ItemPanel` three parts: the menu's `repeat` prop for `ItemPanelMenu`
+  (`{ repeating, onRepeat, onStopRepeat }`, null unless the person is an Editor, `canRetire`, on a plan in an account,
+  `useIsOfflineProject`), the Details line and the open dialog. `ItemPanelMenu` shows **Repeat**, or **Edit Repeat**
+  and **Stop Repeating**, from it.
+- `RepeatDialog.tsx` (`PlanModal`): Every as a segmented radio group, the week's days as seven toggle buttons
+  (`aria-pressed`, Monday first, at least one kept on), the month's date as a select (1st to 31st, with a note past
+  the 28th), Ends (Never, or On a date with `DateInput`, seeded 30 days out; a day before today is refused in words),
+  Lands In (a select of Starting State and the tab's columns, keeping a column the rule names that no board shows).
+  Its choices live in `repeat-draft.ts`; saving writes `repeat` stamped with the day the dialog opened (`from`) and
+  `timeZone` from `Intl.DateTimeFormat().resolvedOptions()`.
+- `ItemRepeatLine`: the repeat glyph, "Repeats" and `repeatRuleWords`, "Next" and `dayWords` (the year only when it
+  is not this one), "Ended" past its end, and for an Editor Edit and Stop as small text buttons; offline it reads
+  "Repeats only in plans saved to your account". Above the meta line in Details (the aside, and the phone's Details
+  tab).
+- `PlanCardFace`: `RepeatMark` (plan-card-parts.tsx) beside the flag at every size, from `hasRepeat`.
+- Telemetry: `Plan · Toggled · RepeatOn` on a save, `RepeatOff` on a stop.
+
+### Agents
+
+- `planListing` lists `repeat: { rule, next, timeZone }` (words, the next day, the zone) beside `fields`, and drops the
+  raw `repeat` from `fields`. change_items refuses a field named Repeat (`resolveFields`, `value_invalid`,
+  `REPEAT_REFUSAL`, saying where an Editor sets one) unless the card's type has a custom field of that name; the
+  api still checks and gates a `repeat` any caller writes.
+
 ## Errors and edge cases
 
 | Case                                            | Handling                                                              |
@@ -770,13 +882,17 @@ replays the write with the keys the first write was given. Votes push nothing.
   written and time per append, held to a budget). A card at the cap answers `ITEM_HISTORY_MAX` entries before grouping,
   measured there at its worst case. Storage is bounded at `ITEMS_MAX` x `ITEM_HISTORY_MAX` rows, in practice far
   fewer (the age limit, and most cards change a few times).
+- Repeats: a plan with no repeating card does no repeat work: no alarm, and per write the triggers' `json_extract`
+  reads plus one indexed `LIMIT 1` probe of an empty table (measured in `card-repeats.test.ts`). A wake handles at
+  most `REPEAT_COPIES_PER_WAKE` rows of each kind; the store is listed once per wake, not per copy.
 
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
 `items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
 `comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api), `history.read`,
-`history.append.failed`, `history.retention` (api), `items.history.failed` (editor). Api logs never
+`history.append.failed`, `history.retention` (api), `items.history.failed` (editor), `[repeats] made`,
+`[repeats] settled` (a copy already there), `[repeats] items_full`, `[repeats] failed` (api). Api logs never
 include `fields` or comment text.
 
 ## Testing
@@ -811,6 +927,10 @@ include `fields` or comment text.
 | History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`  |
 | Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`               |
 | Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
+| Repeats: rules, days, zones, DST, month ends         | `packages/items/src/repeat.test.ts`, `packages/items/src/repeat-dates.test.ts`, `packages/items/src/repeat-copy.test.ts`                                                                    |
+| Repeats: alarm, once a day, late, restart, stop      | `apps/api/src/plan-room/card-repeats.test.ts`, `apps/api/src/plan-room/card-repeats.edges.test.ts` (full plan, retries, parked rows)                                                        |
+| Repeats: Editor gate, roles                          | `apps/api/src/routes/item-repeat-gate.test.ts`, `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `apps/editor/components/plan/ItemRepeatLine.test.tsx`                                 |
+| Repeats: dialog, glyph, Activity line                | `apps/editor/components/plan/RepeatDialog.test.tsx`, `apps/editor/components/plan/PlanCardFace.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                      |
 | Tab import: parse, plan, land, report                | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
 ## Constants and configuration
@@ -840,6 +960,10 @@ include `fields` or comment text.
 | `ITEM_HISTORY_CHANGES_MAX` | 16                        | Bounds one entry; a write changes a few fields          |
 | `ITEM_HISTORY_REFETCH_MS`  | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
 | `ACTIVITY_ENTRIES_SHOWN`   | 20                        | Spec; a tab's worth before Show More                    |
+| `REPEAT_COPIES_PER_WAKE`   | 25                        | Bounds one alarm's work; 10 to 100                      |
+| `REPEAT_MORE_MS`           | 1000                      | The next wake while rows remain; 0.5 to 10 s            |
+| `REPEAT_SEARCH_DAYS`       | 400                       | A year and a month: every rule meets a day within it    |
+| `REPEAT_ZONE_CACHE_MAX`    | 32                        | Zones a plan's rules name; 8 to 64                      |
 
 ## Many moves (`moves`)
 

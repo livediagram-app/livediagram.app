@@ -311,6 +311,16 @@ export function FlagMark() {
   );
 }
 
+// A repeating card's mark (docs/specs/026-plan/items.md "Repeating cards"), beside the flag on every size, in the
+// card's quiet text colour.
+export function RepeatMark({ color }: { color: string }) {
+  return (
+    <span className="mt-0.5 shrink-0" role="img" aria-label="Repeats">
+      <PlanTypeGlyph glyph="repeat" size={13} color={color} />
+    </span>
+  );
+}
+
 // A blocked card's badge (docs/specs/026-plan/item-types.md "Blocked By"): a red link and how many of its blockers
 // are open, beside the flag on every size.
 export const BLOCKED_COLOUR = '#dc2626';

@@ -1,7 +1,8 @@
 'use client';
 
 // The item panel's `⋯` menu (docs/specs/026-plan/plan-board.md "Open an item"): Duplicate, Flag (or Remove
-// Flag), Archive (or Restore) and Edit Card Type for someone who may edit, then Copy Card Link and Help for everyone, then
+// Flag), Archive (or Restore), Repeat (or Edit Repeat and Stop Repeating, items.md "Repeating cards") and Edit Card
+// Type for someone who may edit, then Copy Card Link and Help for everyone, then
 // Trash last for an editor, as icon-left rows beside
 // the panel's Close, so the header keeps only the item's type, its key and the two buttons.
 import { useState } from 'react';
@@ -31,6 +32,7 @@ export function ItemPanelMenu({
   onTrash,
   onEditType,
   onCopyLink,
+  repeat,
 }: {
   itemKey: number;
   // Someone who may only view gets Help alone.
@@ -48,6 +50,8 @@ export function ItemPanelMenu({
   onEditType?: (() => void) | undefined;
   // Copies the card's address (docs/specs/026-plan/plan-board.md "Its address"), for every role; absent, no row.
   onCopyLink?: (() => void) | undefined;
+  // Repeat, or Edit Repeat and Stop Repeating on a repeating card: an Editor's on a plan in an account; absent, none.
+  repeat?: { repeating: boolean; onRepeat: () => void; onStopRepeat: () => void } | null;
 }) {
   const [open, setOpen] = useState(false);
   // Held in state so the menu anchors on its first render.
@@ -88,6 +92,24 @@ export function ItemPanelMenu({
                   icon={<PlanBoardTileArt preset="archive" size={14} />}
                   onClick={run(onArchive)}
                 />
+              ) : null}
+              {repeat && canRetire ? (
+                <>
+                  <MenuActionRow
+                    plain
+                    label={repeat.repeating ? 'Edit Repeat' : 'Repeat'}
+                    icon={<PlanTypeGlyph glyph="repeat" size={14} />}
+                    onClick={run(repeat.onRepeat)}
+                  />
+                  {repeat.repeating ? (
+                    <MenuActionRow
+                      plain
+                      label="Stop Repeating"
+                      icon={<PlanTypeGlyph glyph="repeat" size={14} />}
+                      onClick={run(repeat.onStopRepeat)}
+                    />
+                  ) : null}
+                </>
               ) : null}
               {onEditType && canRetire ? (
                 <MenuActionRow

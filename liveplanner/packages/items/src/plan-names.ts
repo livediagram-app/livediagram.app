@@ -30,6 +30,7 @@ import { isTimedRange, parseDateRange } from './date-range-fields';
 import { isPhoneNumber, PHONE_HINT } from './phone-fields';
 import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
+import { REPEAT_FIELD } from './repeat';
 
 export type NameRefusalCode =
   | 'status_unknown'
@@ -174,6 +175,9 @@ export function choiceOption(options: readonly string[], value: string): string 
   return byKey.length === 1 ? byKey[0] : undefined;
 }
 
+export const REPEAT_REFUSAL =
+  "change_items doesn't set a repeat: an Editor sets one from the card's ⋯ menu (Repeat) in the editor.";
+
 // Fields as an agent writes them, for an item of `type`: built-in fields by id or interface name, custom fields
 // by id or name, a status by column name, an assignee by name, a parent or Card field by item number, a priority
 // or Choice option case aside. A key the type does not have is refused.
@@ -210,6 +214,10 @@ export function resolveFields(
   const out: Record<string, unknown> = {};
   for (const [rawKey, value] of Object.entries(input)) {
     const named = fieldKeyOf(rawKey, type);
+    // A repeat needs the setter's time zone, which an agent's call does not carry: an Editor sets it in the editor
+    // (docs/specs/026-plan/items.md "Repeating cards"). A custom field named Repeat is still that field.
+    if (!named.ok && statusKey(rawKey) === REPEAT_FIELD)
+      return refuse('value_invalid', REPEAT_REFUSAL);
     if (!named.ok) return named;
     const key = named.key;
     // Pictures are uploaded in the card panel, never named (docs/specs/026-plan/items.md "Attachments").

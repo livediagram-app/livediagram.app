@@ -32,7 +32,7 @@ import {
   ROOM_PONG,
   type AccessLevel,
 } from '@liveplanner/api-schema';
-import { opForTheWire, stampCommentAuthor } from '@liveplanner/project';
+import { opForTheWire, stampCommentAuthor, withoutLegacyThread } from '@liveplanner/project';
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomScopedStructure, cachedStoredTab } from '../room-scoped-structure';
 import { RoomLedgerStore } from '../room-ledger-store';
@@ -104,6 +104,7 @@ import {
 import { notifyProjectJoin } from '../email/notifications';
 import { anonymisePlan } from './plan-anonymise';
 import { PLAN_OUTBOX, drainOutbox } from './plan-outbox';
+import { RepeatSchedule } from './card-repeats';
 import { exportProjectFile, importProjectFile, type ProjectFileImport } from './project-file';
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -191,6 +192,8 @@ export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 // The plan's own daily upkeep: unreferenced sheets expire, old changesets go (both used to be crons).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
+// How long a repeat wake that failed as a whole waits before it tries again.
+const REPEAT_RETRY_MS = 60 * 1000;
 
 export class PlanRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
@@ -260,6 +263,12 @@ export class PlanRoom extends DurableObject<Env> {
   );
   private lastFlushAt = 0;
   private draining = false;
+  // Repeating cards (card-repeats.ts; docs/specs/026-plan/items.md "Repeating cards"): the wake their schedule asks
+  // for. A plan without one asks for none.
+  private readonly repeats = new RepeatSchedule(
+    () => this.state.storage.sql,
+    () => this.schemaReady,
+  );
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
   private writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
@@ -380,6 +389,7 @@ export class PlanRoom extends DurableObject<Env> {
     if (typeof row?.id === 'string' && this.planId === null) this.planId = row.id;
     if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
     this.shares.restore();
+    this.repeats.restore(Date.now());
   }
 
   // Every call names its plan; an object answers for one plan only.
@@ -419,6 +429,8 @@ export class PlanRoom extends DurableObject<Env> {
     }
     // A shared tab's holders get their copy on idle (tab-shares.ts).
     if (this.shares.noteWrite()) this.armAlarm();
+    // A rule set, changed or stopped, or its card trashed or restored, is settled on the next wake.
+    if (this.repeats.noteWrite(Date.now())) this.armAlarm();
     if (this.flushAt !== null) return;
     if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
     const now = Date.now();
@@ -479,6 +491,31 @@ export class PlanRoom extends DurableObject<Env> {
       this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0
     ) {
       this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
+    }
+  }
+
+  // The copies of the plan's repeating cards that are due (card-repeats.ts), each relayed as an ordered `items` op. A
+  // wake that fails as a whole tries again a minute later.
+  private async runRepeats(now: number): Promise<void> {
+    const env = this.roomEnv;
+    const planId = this.planId;
+    if (!env || !planId || !this.schemaReady) {
+      this.repeats.clear();
+      return;
+    }
+    try {
+      const run = await this.repeats.run(env, planId, now, (items, rev) =>
+        this.broadcastOrderedSystemOp({
+          kind: 'items',
+          upserts: items.map(withoutLegacyThread),
+          removed: [],
+          rev,
+        }),
+      );
+      if (run.made > 0) console.info('[repeats] wake', { planId, made: run.made });
+    } catch (error) {
+      console.warn('[repeats] failed', { planId, error: String(error) });
+      this.repeats.at = now + REPEAT_RETRY_MS;
     }
   }
 
@@ -1108,6 +1145,7 @@ export class PlanRoom extends DurableObject<Env> {
     this.planRowReady = false;
     this.flushAt = null;
     this.shares.clear();
+    this.repeats.clear();
     this.maintenanceAt = null;
     // The purged plan holds no pictures now, so the media service's sweep may take those only it held. A failure
     // keeps them (storage kept, never a broken picture) and does not stop the purge.
@@ -1387,13 +1425,14 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
-  // next push, the plan's next upkeep. None when nothing is due.
+  // next push, the plan's next upkeep, a repeating card's next copy. None when nothing is due.
   private armAlarm(): void {
     const due = [
       this.agents.nextExpiry(),
       this.flushAt,
       this.shares.at,
       this.maintenanceAt,
+      this.repeats.at,
       this.nextGrantDue(),
     ].filter((t): t is number => t !== null);
     if (due.length === 0) void this.state.storage.deleteAlarm();
@@ -1407,6 +1446,7 @@ export class PlanRoom extends DurableObject<Env> {
     if (expired.length > 0) this.broadcastPresence();
     const now = Date.now();
     this.checkGrants(now);
+    if (this.repeats.due(now)) await this.runRepeats(now);
     if (this.flushAt !== null && this.flushAt <= now) await this.drainIndex();
     // A shared tab written while the push was in flight (its write armed nothing then).
     this.shares.noteWrite();

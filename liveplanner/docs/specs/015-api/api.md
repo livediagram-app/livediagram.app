@@ -355,6 +355,10 @@ SQLite; `plan-room-store.test.ts` keeps budgets on them): a 1 MB tab saves in ab
 **Upkeep.** Each object runs its own daily upkeep from its alarm: sheets unreferenced for 30 days expire, and
 changesets past their retention go.
 
+**Repeats.** A plan with repeating cards ([Items](../026-plan/items.md) "Repeating cards") makes each copy from its
+alarm, at the first moment of the due day in the rule's time zone, bounded per wake; a plan without one sets no alarm
+for them and runs no repeat work.
+
 **Duration.** The object is billed while it runs a request or an alarm. Content requests and preview drawings
 run there rather than in the worker, so a plan under heavy API traffic keeps its object awake for that traffic; an
 idle plan costs nothing, and sockets still hibernate.

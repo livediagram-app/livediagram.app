@@ -7,7 +7,13 @@ import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
 import { PlanRoom } from './plan-room';
 
-export type Plan = { room: PlanRoom; db: DatabaseSync; transactions: number };
+export type Plan = {
+  room: PlanRoom;
+  db: DatabaseSync;
+  transactions: number;
+  // The object evicted and woken again on the same storage: everything in memory starts over.
+  restart: () => PlanRoom;
+};
 
 // The PLAN_ROOM namespace: one PlanRoom per name, each on its own database, with the calls the worker made.
 export function planNamespace(envOf: () => Env) {
@@ -63,20 +69,26 @@ export function planNamespace(envOf: () => Env) {
       waitUntil: () => {},
     };
     plan.room = new PlanRoom(state as unknown as DurableObjectState, envOf());
+    plan.restart = () => {
+      plan.room = new PlanRoom(state as unknown as DurableObjectState, envOf());
+      return plan.room;
+    };
     plans.set(name, plan);
     return plan;
   };
   const ns = {
     idFromName: (name: string) => ({ name, equals: (o: { name?: string }) => o?.name === name }),
     get: (id: { name: string }) => {
-      const { room } = open(id.name);
-      return new Proxy(room, {
-        get(target, prop, receiver) {
-          const value: unknown = Reflect.get(target, prop, receiver);
+      const plan = open(id.name);
+      return new Proxy(plan.room, {
+        get(_target, prop) {
+          // The room as it is now: a restart swaps it.
+          const room = plan.room;
+          const value: unknown = Reflect.get(room, prop, room);
           if (typeof value !== 'function') return value;
           return (...args: unknown[]) => {
             calls.push(String(prop));
-            return (value as (...a: unknown[]) => unknown).apply(target, args);
+            return (value as (...a: unknown[]) => unknown).apply(room, args);
           };
         },
       });

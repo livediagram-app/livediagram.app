@@ -32,6 +32,7 @@ import { normaliseAttachments } from './attachments';
 import { STATUS_SINCE_FIELD } from './item';
 import { isStatusSince } from './status-since';
 import { isStampField } from './card-stamps';
+import { REPEAT_FIELD, readRepeatRule } from './repeat';
 
 type ItemFieldKind =
   | 'text'
@@ -287,6 +288,13 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
     if (key === STATUS_SINCE_FIELD) {
       if (isStatusSince(v)) fields[key] = v;
       else if (mode === 'patch') return { ok: false, error: 'field_value_invalid', field: key };
+      continue;
+    }
+    // A repeating card's rule (docs/specs/026-plan/items.md "Repeating cards"), kept as readRepeatRule normalises it.
+    if (key === REPEAT_FIELD) {
+      const rule = readRepeatRule(v);
+      if (!rule) return { ok: false, error: 'field_value_invalid', field: key };
+      fields[key] = rule as unknown as ItemFieldValue;
       continue;
     }
     if (kind === 'long-text') {

@@ -299,6 +299,57 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   archived, trashed or restored.
 - Flag and Remove Flag send `Plan · Toggled · FlagOn` and `Plan · Toggled · FlagOff`.
 
+## Repeating cards
+
+Routine work ("Weekly report", "Monthly invoices") repeats on a rule instead of being added again by hand. Assigned
+actions do not recur ([Assigned actions](../012-collaboration/assigned-actions.md) §9), so this is the planner's one
+recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anything yet.
+
+- **The rule** is the card's `repeat` field, an object: **Every** `day`, `weekday` (Monday to Friday), `week` on
+  chosen `days` (one or more of Sunday 0 to Saturday 6), or `month` on a `date` (1 to 31); an optional **Ends**
+  `until` day (`YYYY-MM-DD`, the last day a copy may be made for); **Lands In** `status`, a chosen column, absent for
+  the type's starting state; and two stamps the editor sets on every save: `from`, the setter's day it was saved,
+  and `timeZone`, the setter's IANA time zone. A month day past the month's end means its last day (the 31st is
+  30 April and 28 or 29 February). A rule that fails these checks is refused (`field_value_invalid`).
+- **Whose day it is**: the setter's. Every date of the rule, "today" included, is a day in its `timeZone`, so
+  "Monday" is the Monday of the person who set it, wherever the others are. A copy is due from the first moment of
+  its day there (local midnight; a day whose midnight a clock change skips starts when the day does).
+- **The copies**: on each due day after `from` (the card itself stands for the day it was set), a fresh card of
+  the same type is made, landing in the rule's column, else its type's Default State, else its built-in one by
+  name, else the source's own state. It keeps the title, description, checklist (every row unticked), labels,
+  assignee, colour, attachments and custom fields; the start and due dates move on by the days between the source's
+  own day under the rule (the latest due day on or before `from`) and the copy's. It carries no repeat (only the
+  source repeats), no votes, comments, tracked time, Calculated values (worked out afresh), flag, archive flag,
+  linked-card link or example flag. It is made by **Repeat**, and its history opens "Created this card from a
+  repeating card".
+- **Exactly once a day**: a copy's id is worked out from the source's id and its day, and the plan keeps the last
+  day it settled for each repeating card, written in the same transaction as the copy. A restart, a retry or a second
+  wake never makes a second copy for the same day.
+- **Late, never a burst**: a plan that wakes after several due days (a long sleep, a delayed alarm, a card restored
+  from the Trash) makes one copy, for the latest of them, and moves on to the next.
+- **Whatever its state**: a done or archived source keeps repeating. A **trashed** source makes none while it is in
+  the Trash (restored, it resumes, a missed day coming once at most), and **Stop Repeating** clears the rule for
+  good. Deleting the card ends it.
+- **Who may**: an Editor sets, changes and stops a repeat (the api refuses anyone else, 403). A Participant and a
+  Viewer see the glyph and the panel's line but no Repeat row, and a Participant's other edits to the card are
+  untouched by it.
+- **On the card**: a repeating card wears a small repeat glyph at the end of its title, beside any flag, on every
+  board at every card size ("Repeats" to a screen reader).
+- **In the item panel**: the ⋯ menu offers **Repeat** (an Editor's, on a plan in an account; **Edit Repeat** and
+  **Stop Repeating** on a repeating card). It opens the **Repeat** dialog: **Every** (Day, Weekday, Week, Month),
+  the week's days as toggles (Monday first) or the month's date, **Ends** (Never or On a date), **Lands In** (Starting
+  State, or one of the board's columns), and **Cancel** and **Repeat** (**Save** when editing; Stop Repeating too).
+  The Details column then shows the rule in words with the next day ("Repeats every week on Mon and Thu · Next Thu
+  5 Nov"), and for an Editor **Edit** and **Stop** beside it.
+- **Where it runs**: from the plan's Durable Object alarm, never a sweep over every plan, so a plan without a
+  repeating card does no repeat work at all. A plan in This Browser makes no copies (it has no alarm), and its
+  menu offers no Repeat; a rule it holds from before reads "Repeats only in plans saved to your account".
+- **Copies of the plan**: a duplicated or imported plan holds its cards' rules, and its own copies start from the day
+  it first sees them, never catching up on days before it existed.
+- **Agents**: list_items lists a card's rule (`repeat`: the rule in words, its next day and time zone);
+  change_items does not set one: a rule needs the setter's time zone, which an agent's call does not carry.
+- Repeat and Stop Repeating send `Plan · Toggled · RepeatOn` and `Plan · Toggled · RepeatOff`.
+
 ## Example cards
 
 - An **example card** is one a Plan template made to show how its boards run
@@ -817,6 +868,7 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   [Inbox](../013-workspace/inbox.md) (§2.4 there), in every project you can open; a row opens the card on its board.
 - **Comment** with participate access; edit and delete your own comments, delete any with edit access, and delete a
   thread you started, or any with edit access ([Comments](#comments)).
+- **Repeat** a card, change its rule or stop it with edit access as an Editor ([Repeating cards](#repeating-cards)).
 - An agent token acts as its person, and a read-only token reads only.
 
 ## Live for everyone
@@ -842,7 +894,7 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 
 - An [offline project](../006-project/offline-mode.md) keeps its item store inside its own record, as an
   `items` array beside its tabs, and its threads as a `threads` array. Every rule above holds, minus the room and
-  [History](#history), which it does not keep.
+  [History](#history), which it does not keep, and [repeats](#repeating-cards), which need the plan's alarm.
 - Its writes pass the api's own checks (fields, places, what a move may set, a status the card's type leaves out,
   the size bounds) and are refused by the same names, so the record never holds what **Sync to cloud** would refuse.
 - **Sync to cloud** sends the items and threads with the project; **Take offline** fetches every item and thread

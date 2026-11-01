@@ -775,6 +775,14 @@ export const PLAN_CARD_ACTIVITY = chart(
   { types: ['ActivityOn'], rising: 'neutral' },
 );
 
+export const PLAN_CARD_REPEATS = chart(
+  'Plan',
+  'Toggled',
+  'Cards Repeating',
+  "A card set to repeat from its panel's menu (a fresh copy on each day its rule names), or stopped repeating.",
+  { types: ['RepeatOn', 'RepeatOff'], rising: 'neutral' },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1124,6 +1132,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_FOCUSED,
   PLAN_FILL_TAB,
   PLAN_CARD_ACTIVITY,
+  PLAN_CARD_REPEATS,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,

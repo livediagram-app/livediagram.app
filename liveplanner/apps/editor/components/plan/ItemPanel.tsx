@@ -36,6 +36,7 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
+import { useItemRepeat } from './ItemRepeatLine';
 import { LinkedCardGroup } from './LinkedCards';
 import { BlockedBySections } from './BlockedBy';
 import { LinkedActionBanner } from './LinkedActionBanner';
@@ -200,6 +201,7 @@ function ItemPanelContent({
   useTitleFocus(fieldId(item, 'title'), !mobile && canEdit, fresh);
   // When the panel opened: the meta line says how long ago the last change was from here.
   const [now] = useState(() => Date.now());
+  const repeat = useItemRepeat({ item, statuses, canSet: canRetire, now, onSave });
   const type = typeIn(types, item.type);
   const tabs = tabsOf(type);
   const offered = new Set<string>(type.fields);
@@ -311,6 +313,7 @@ function ItemPanelContent({
         onTrash={onTrash}
         onEditType={onEditType}
         onCopyLink={onCopyLink}
+        repeat={repeat.menu}
       />
       {onMaximise && !mobile ? (
         <ItemMaximiseButton maximised={maximised} onToggle={onMaximise} />
@@ -377,6 +380,7 @@ function ItemPanelContent({
       ) : current.id === DETAILS_TAB ? (
         <div className="flex flex-col">
           {details.map(detailRow)}
+          {repeat.line}
           {meta}
         </div>
       ) : current.id === firstTabId && showsChildren ? (
@@ -440,10 +444,12 @@ function ItemPanelContent({
               {detailsLabelOf(type)}
             </h3>
             {details.map(detailRow)}
+            {repeat.line}
             {meta}
           </aside>
         )}
       </div>
+      {repeat.dialog}
     </>
   );
 }
