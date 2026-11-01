@@ -13,7 +13,7 @@ import {
   lucideStar,
 } from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@livedesign/design';
-import type { TemplateKind } from '@livedesign/templates';
+import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livedesign/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -105,7 +105,12 @@ export function StartFromTemplates({
       search={(query) =>
         start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) }))
       }
-      onChoose={(kind) => onTemplate(kind as TemplateKind)}
+      onChoose={(kind) => {
+        onTemplate(kind as TemplateKind);
+        // The mode's own blank (Recommended's first card) lands one page with no kind, so the tab stays empty and the
+        // start would stay up over it, the card seemingly dead. It starts from a blank page, as the × does.
+        if (kind === BLANK_TEMPLATE_FOR_MODE[mode]) close();
+      }}
       onClose={close}
       // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(palette) => <StartSaveSwitch palette={palette} />}
