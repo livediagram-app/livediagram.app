@@ -21,7 +21,7 @@ import {
 import { type App, type Folder, type IndexClient, type Item } from '@liveworkspace/index-client';
 import { useFolderPreviews } from '../data/useFolderPreviews';
 import { useItemList } from '../data/useItemList';
-import { jumpBackInLine, jumpBackInLoader, viewList } from '../data/viewLists';
+import { isMostUsed, jumpBackInLine, jumpBackInLoader, viewList } from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
 import { inboxCount } from '../data/useInbox';
 import { ExplorerProvider, useExplorer } from '../explorer/context';
@@ -38,13 +38,14 @@ import { PeopleProvider } from '../explorer/extras';
 import type { ExplorerAccounts } from '../data/accounts';
 import {
   LocalPreview,
+  mergeOpened,
   ThisBrowserItemMenu,
   ThisBrowserPill,
   useThisBrowserItems,
   type ThisBrowserHost,
 } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
-import { PanelThisBrowser } from './PanelThisBrowser';
+import { PanelLocalCard, PanelThisBrowser } from './PanelThisBrowser';
 import { ConfirmDialog, Tooltip, BackBar } from '@liveworkspace/ui';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
 import {
@@ -1127,6 +1128,8 @@ const JUMP_BACK_IN_ROWS = 6;
 const PANEL_PER_GROUP = 4;
 const live = (i: ShownItem) => i.trashedAt === null;
 const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
+// The index's item, or one kept only in this browser (which has no app: it is the host's).
+const isIndexed = (i: ShownItem | ThisBrowserItem): i is ShownItem => 'app' in i;
 
 function HomeSection({
   currentId,
@@ -1148,6 +1151,9 @@ function HomeSection({
     belongs: notHidden,
     epoch,
   });
+  // What this browser keeps of the app's, opened here: Jump Back In's by the page's rule.
+  const { live: local } = useThisBrowserItems();
+  const localOpened = useMemo(() => local.filter((i) => i.lastOpenedAt !== null), [local]);
   if (list.error)
     return (
       <PaneFailed
@@ -1156,9 +1162,21 @@ function HomeSection({
       />
     );
   if (list.loading) return <PaneSkeleton rows={6} />;
-  const recent = list.items.filter((i) => i.id !== currentId).slice(0, JUMP_BACK_IN_ROWS);
+  // The index's most used first, then its recent with this browser's opened ones merged in by last open, as the
+  // page's Home does (mergeOpened); the open item left out of both.
+  const others = list.items.filter((i) => i.id !== currentId);
+  const recent = [
+    ...others.filter(isMostUsed),
+    ...mergeOpened(
+      others.filter((i) => !isMostUsed(i)),
+      localOpened.filter((i) => i.id !== currentId),
+      JUMP_BACK_IN_ROWS,
+    ),
+  ].slice(0, JUMP_BACK_IN_ROWS);
   // Empty only because the open item is left out: there is one, just no other.
-  const onlyOpen = recent.length === 0 && list.items.some((i) => i.id === currentId);
+  const onlyOpen =
+    recent.length === 0 &&
+    (list.items.some((i) => i.id === currentId) || localOpened.some((i) => i.id === currentId));
   return (
     <div className="flex flex-col gap-6">
       <PaneSection
@@ -1182,9 +1200,13 @@ function HomeSection({
       >
         {recent.length ? (
           <PaneGrid label="Jump Back In">
-            {recent.map((item) => (
-              <JumpBackInCard key={item.id} item={item} />
-            ))}
+            {recent.map((item) =>
+              isIndexed(item) ? (
+                <JumpBackInCard key={item.id} item={item} />
+              ) : (
+                <PanelLocalCard key={item.id} item={item} />
+              ),
+            )}
           </PaneGrid>
         ) : (
           <PaneEmpty
