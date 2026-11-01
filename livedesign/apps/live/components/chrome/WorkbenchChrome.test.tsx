@@ -29,6 +29,14 @@ describe('WorkbenchOpenLink', () => {
 });
 
 describe('WorkbenchBackButton', () => {
+  // docs/specs/007-editor/pages-mode.md "Joined to the menu box": a frame's Back takes the row as the menu box does.
+  it('heads the docked Contents sidebar as the menu box does', () => {
+    render(<WorkbenchBackButton onBack={() => {}} backTitle="Minigames" joinedWidth={236} />);
+    const card = document.querySelector<HTMLElement>('[data-toolbar-menu]')!;
+    expect(card.hasAttribute('data-menu-joined')).toBe(true);
+    expect(card.style.width).toBe('216px');
+  });
+
   it('goes back, named by where it goes, a native button at the toolbar’s size', () => {
     const onBack = vi.fn();
     render(<WorkbenchBackButton onBack={onBack} backTitle="Minigames" />);
