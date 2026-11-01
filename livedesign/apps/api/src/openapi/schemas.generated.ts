@@ -6574,6 +6574,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "textItalic": {
         "type": "boolean"
       },
+      "textScale": {
+        "type": "number"
+      },
       "textSize": {
         "$ref": "#/components/schemas/TextSize"
       },
