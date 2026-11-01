@@ -36,6 +36,9 @@ export type PageThumbOptions = {
   // A picture's URL by image id (thumb-images.ts's thumbImageHref): an image element and a page's
   // picture fill draw it, and without one (or before it arrives) the placeholder and the tone.
   resolveImageHref?: (imageId: string) => string | undefined;
+  // A photo page's picture (its preview's URL) by page id (docs/specs/031-photo/photo-pages.md "Exports and other
+  // views"): without one the page draws the checkerboard and a picture glyph.
+  photoHref?: (pageId: string) => string | undefined;
 };
 
 /** The tab's arrow labels as the canvas lays them out, for pageThumbFor's `labels`. */
@@ -67,6 +70,7 @@ export function pageThumbFor(pageId: string, tab: Tab, opts: PageThumbOptions): 
     paper: CANVAS_PAPER[canvasSurface === 'dark' ? 'dark' : 'light'],
     idPrefix: `lvd-thumb-${pageId}`,
     imageHref: opts.resolveImageHref,
+    ...(opts.photoHref ? { photoHref: opts.photoHref } : {}),
     frameTheme: tabWireframeFrameTheme(tab),
   });
   if (page.background?.fill) surface = frame.surface;
