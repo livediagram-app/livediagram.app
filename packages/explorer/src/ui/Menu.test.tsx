@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
+import { ConfirmDialog, Dialog } from '@liveworkspace/ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MenuActionRow, PortalMenu, placeMenu } from './Menu';
 
@@ -66,6 +68,74 @@ describe('PortalMenu', () => {
     expect(menu.style.overflowY).toBe('auto');
     expect(menu.style.top).toBe('8px');
     anchor.remove();
+  });
+
+  it('hands focus back to its trigger as an item closes it, so the dialog it opens returns there', () => {
+    function Card() {
+      const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+      const [asking, setAsking] = useState(false);
+      const [editing, setEditing] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={(e) => setAnchor(e.currentTarget)}>
+            Team options
+          </button>
+          {anchor ? (
+            <PortalMenu anchor={anchor} onClose={() => setAnchor(null)} label="Team options">
+              <MenuActionRow
+                label="Edit Team"
+                icon={null}
+                onClick={() => {
+                  setAnchor(null);
+                  setEditing(true);
+                }}
+              />
+              <MenuActionRow
+                label="Delete Team"
+                icon={null}
+                onClick={() => {
+                  setAnchor(null);
+                  setAsking(true);
+                }}
+              />
+            </PortalMenu>
+          ) : null}
+          <ConfirmDialog
+            open={asking}
+            title="Delete Team?"
+            message="It goes."
+            confirmLabel="Delete Team"
+            onConfirm={() => setAsking(false)}
+            onCancel={() => setAsking(false)}
+          />
+          {editing ? (
+            <Dialog open onClose={() => setEditing(false)} ariaLabel="Edit Team">
+              <input aria-label="Team name" autoFocus />
+              <button type="button" onClick={() => setEditing(false)}>
+                Close
+              </button>
+            </Dialog>
+          ) : null}
+        </>
+      );
+    }
+    render(<Card />);
+    const trigger = screen.getByRole('button', { name: 'Team options' });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(document.activeElement?.textContent).toContain('Edit Team');
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Delete Team' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete Team?' });
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(document.activeElement).toBe(trigger);
+
+    // A dialog whose field takes focus as it opens (autoFocus) still returns it to the trigger.
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Edit Team' }));
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Team name' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(document.activeElement).toBe(trigger);
   });
 
   it('places a menu that fits without a scroll', () => {

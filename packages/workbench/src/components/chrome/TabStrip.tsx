@@ -51,7 +51,7 @@ export function TabStrip<T extends { id: string }>({
   renderRenameField,
   folderPresence,
 }: TabStripProps<T>) {
-  const stripRef = useRef<HTMLDivElement>(null);
+  const stripRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
@@ -164,7 +164,9 @@ export function TabStrip<T extends { id: string }>({
   const onKeyDown = useStripRoving(listRef);
 
   return (
-    <div ref={stripRef} className={TAB_STRIP_CLASS}>
+    // A landmark: the footer sits outside the editor's header and main, so without one every tab was content no
+    // landmark held (axe region) and a screen reader's landmark list had no way to the tabs.
+    <nav ref={stripRef} aria-label="Tab bar" className={TAB_STRIP_CLASS}>
       <div
         ref={listRef}
         role="toolbar"
@@ -210,6 +212,6 @@ export function TabStrip<T extends { id: string }>({
           +
         </button>
       )}
-    </div>
+    </nav>
   );
 }

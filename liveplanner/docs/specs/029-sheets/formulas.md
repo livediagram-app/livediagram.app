@@ -37,7 +37,9 @@ A value is one of:
 - An error flows through: a formula reading an error shows it, except the functions that test for errors
   (`IFERROR`, `IFNA`, `ISERROR`, `ISNA`, `ERROR.TYPE`).
 - A **circular** formula (one that reads itself, directly or through others) shows `#REF!` in every cell of the
-  loop, and hovering says "Circular reference: B2 → C2 → B2". There is no iterative calculation.
+  loop, and hovering says "Circular reference: B2 → C2 → B2" (each cell with its sheet when the loop runs through
+  another sheet: "Circular reference: 'Sheet 1'!A1 → 'Q3 Costs'!A1 → 'Sheet 1'!A1"). There is no iterative
+  calculation.
 
 ## What a typed input becomes
 

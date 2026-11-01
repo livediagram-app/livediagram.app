@@ -70,7 +70,11 @@ function ExplorerImpl({
   // Take Offline and Sync Canvas on a canvas's menu, as the person (an account, or this browser's guest).
   const guestId = useGuestId(authLoaded, accountUserId);
   const itemMenu = useOfflineItemMenu(accountUserId ?? guestId);
-  const thisBrowser = useThisBrowserHost(accountUserId ?? guestId, !!accountUserId);
+  const thisBrowser = useThisBrowserHost(
+    accountUserId ?? guestId,
+    !!accountUserId,
+    currentDocumentId ?? null,
+  );
   const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
   const shareHost = useMemo(
     () => ({

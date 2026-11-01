@@ -12,7 +12,7 @@ import { cellKey, type Sheet } from '../sheet';
 import { CARD_FUNCTION_NAMES } from '../formula/registry';
 import { callsOf, type Node } from '../formula/ast';
 import { safeHyperlink } from '../hyperlink';
-import { storedAst, type SheetHandle, type SheetsCtx } from '../formula/stored';
+import { quoteSheet, storedAst, type SheetHandle, type SheetsCtx } from '../formula/stored';
 import type { StoredFormula } from '../sheet';
 import {
   dims,
@@ -615,8 +615,13 @@ export class Workbook {
     }
   }
 
+  // A loop through other sheets names each cell's sheet ('Q3 Costs'!A1 → 'Sheet 1'!A1), else "A1 → A1" reads as a
+  // cell reading itself; a loop on one sheet keeps the short form (B2 → C2 → B2).
   private describeLoop(path: string[], back: string): string {
-    const names = [...path, back].map((id) => {
+    const ids = [...path, back];
+    const sheetOf = (id: string) => id.slice(0, id.indexOf('|'));
+    const crossSheet = ids.some((id) => sheetOf(id) !== sheetOf(ids[0]!));
+    const names = ids.map((id) => {
       const bar = id.indexOf('|');
       const sheet = this.sheets.get(id.slice(0, bar));
       const key = id.slice(bar + 1);
@@ -625,7 +630,8 @@ export class Workbook {
       const ix = layoutIndex(sheet.layout);
       const r = ix.rowPos.get(key.slice(0, colon));
       const c = ix.colPos.get(key.slice(colon + 1));
-      return r === undefined || c === undefined ? '?' : formatA1(r, c);
+      if (r === undefined || c === undefined) return '?';
+      return crossSheet ? `${quoteSheet(sheet.title)}!${formatA1(r, c)}` : formatA1(r, c);
     });
     return names.join(' → ');
   }

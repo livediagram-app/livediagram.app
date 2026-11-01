@@ -103,6 +103,7 @@ export function EditorStartPanels() {
           // 'self' placeholder an early open runs under.
           onSyncToCloud={ctx.syncToCloud}
           syncReady={ctx.selfParticipant.id !== 'self'}
+          tabScope={ctx.sessionTabScope}
         />
       ) : null}
       {showPlanBoardPicker ? (

@@ -18,7 +18,14 @@ import {
 } from '@/lib/photo-editor/photo-export';
 import { apiFetcher, PixelsStore } from '@/lib/photo-editor/pixels-store';
 import { track } from '@/lib/telemetry';
+import { photoTools } from '@/lib/photo-editor/tool-state';
 import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';
+
+// What a JPEG shows where the photo is transparent (photo-pages.md "Exports and other views"): white, or the
+// person's background colour.
+export type JpegMatte = 'white' | 'background';
+export const jpegMatte = (choice: JpegMatte, background: string): string =>
+  choice === 'white' ? '#ffffff' : background;
 
 const FORMATS: readonly { value: PhotoFormat; label: string; line: string }[] = [
   { value: 'png', label: 'PNG', line: 'Every pixel as it is, transparency kept.' },
@@ -57,7 +64,7 @@ export function PhotoExportPanel({
   const [format, setFormat] = useState<PhotoFormat>('png');
   const [quality, setQuality] = useState(0.9);
   const [lossless, setLossless] = useState(false);
-  const [matte, setMatte] = useState<'white' | 'black'>('white');
+  const [matte, setMatte] = useState<JpegMatte>('white');
   const [withElements, setWithElements] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +86,7 @@ export function PhotoExportPanel({
         format,
         quality,
         lossless,
-        matte: matte === 'white' ? '#ffffff' : '#000000',
+        matte: jpegMatte(matte, photoTools.get().background),
         elements,
       });
       done();
@@ -143,12 +150,12 @@ export function PhotoExportPanel({
         <OptionToggle label="Lossless" on={lossless} onChange={setLossless} />
       ) : null}
       {format === 'jpeg' ? (
-        <OptionChoice<'white' | 'black'>
+        <OptionChoice<JpegMatte>
           label="Where Transparent"
           value={matte}
           choices={[
             { value: 'white', label: 'White' },
-            { value: 'black', label: 'Black' },
+            { value: 'background', label: 'Background Colour' },
           ]}
           onChange={setMatte}
         />

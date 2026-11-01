@@ -31,8 +31,9 @@ guessing meaning from geometry: the flowchart export preserves the
 connection graph, which is the part that's real.
 
 Sequence diagrams are drawn by the agents' graph input only (below, [Sequence diagrams](#sequence-diagrams-agents));
-the editor's import does not take them yet. Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant)
-and class diagrams remain out of scope; importing one reports a clear error naming the supported types.
+the editor's import does not take them yet. Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant, git graph, C4, requirement, ZenUML and the
+`-beta` types: xychart, sankey, block, packet, architecture, radar, treemap, plus kanban) and class diagrams remain
+out of scope; importing one reports a clear error naming the supported types, never a graph of its header words.
 
 Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
 theme owns colours; Mermaid styling is skipped, never an error) and true
@@ -100,7 +101,9 @@ only the sweep direction differs).
 - **Click links**: `click A "https://…"` (and the `click A href "https://…"`
   form) imports as the node's element link (`{ kind: 'url' }`), and a node
   whose element carries a URL link exports a matching `click` line. Callback
-  forms (`click A someJsFunction`) are skipped: there's no code to call.
+  forms (`click A someJsFunction`) are skipped: there's no code to call. Only a web or mail address (`http:`,
+  `https:`, `mailto:`) becomes a link, as the link picker allows; `click A "javascript:…"` is dropped (the graph
+  input's node `link` follows the same rule).
 - Lines it doesn't understand (`classDef`, `style`, `linkStyle`,
   `direction`, comments `%%`) are skipped, not fatal: a real-world paste
   imports its graph and ignores the decoration. So is a class written on a node (`a:::hot --> b`, `a[Label]:::hot`):
@@ -276,6 +279,9 @@ took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119`
   nodes, <m> connections): up to 500 nodes and 1000 connections are supported. Split it into
   several diagrams." A fan-out line is checked before its pairs are built, so the refusal costs no
   more than reading the line.
+- The refusal comes after the parse, so the parse itself is linear in the text: subgraphs and composite states are
+  kept by id and their members filtered once (20 000 composite states each named by a transition took 20 s while
+  every cluster was scanned for each one; `mermaid-clusters-linear.test.ts` holds it under a CPU budget).
 - The MCP's `graph` input carries the same caps in its schema and in `resolveGraphInput`
   ([MCP server](../015-api/mcp-server.md) §4.7).
 - draw.io's graph-only JSON export is truncated to the caps rather than refused

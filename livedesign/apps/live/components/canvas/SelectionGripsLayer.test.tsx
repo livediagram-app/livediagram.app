@@ -75,6 +75,16 @@ describe('SelectionGripsLayer', () => {
     expect(layerOf(container).querySelectorAll('[aria-label="Resize width"]')).toHaveLength(2);
   });
 
+  it('leans each touch pad outward, so a finger on a small element body moves it', () => {
+    // An even 16 px pad reached 19 to 22 px into the element from each grip, so on a phone a drag on a small
+    // element's middle resized it.
+    const { container } = render(<Harness>{chrome()}</Harness>);
+    const handles = [...layerOf(container).querySelectorAll<HTMLElement>('[data-canvas-handle]')];
+    expect(handles).toHaveLength(8);
+    for (const h of handles)
+      expect(h.className).toMatch(/pointer-coarse:before:(top|right|bottom|left)-\[-4px\]/);
+  });
+
   it("frames the handles on the element's box, turned with it", () => {
     const { container } = render(<Harness>{chrome()}</Harness>);
     const frame = layerOf(container).querySelector<HTMLElement>('[data-grips-for="a"]')!;

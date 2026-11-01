@@ -7,7 +7,7 @@ import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-sto
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
-import { InspectOverlay, sizePillAt } from './InspectOverlay';
+import { InspectOverlay, keepPillOnScreen, sizePillAt } from './InspectOverlay';
 
 // docs/specs/007-editor/wireframe-pages.md "The measurements on the canvas".
 const pages = layOutPages([
@@ -102,5 +102,18 @@ describe('the size pill', () => {
     expect(sizePillAt(b, 80, new Set(['left']))).toEqual({ x: 160, y: 146 });
     expect(sizePillAt(b, 80, new Set(['bottom']))).toEqual({ x: 160, y: 76 });
     expect(sizePillAt(b, 80, new Set(['top', 'bottom']))).toEqual({ x: 306, y: 146 });
+  });
+
+  it('keeps the size pill and the distance pills inside the canvas, below the palette', () => {
+    // A phone zoomed in on a full-width element put the pill past the window's edge (round 1 saw it clipped).
+    const view = { left: 0, top: 124, right: 390, bottom: 796 };
+    const wide = { x: -40, y: 300, w: 470, h: 80 };
+    expect(sizePillAt(wide, 64, new Set(['top', 'bottom']), view)).toEqual({ x: 318, y: 386 });
+    expect(sizePillAt({ x: 100, y: -200, w: 80, h: 60 }, 64, new Set(['bottom']), view)).toEqual({
+      x: 108,
+      y: 132,
+    });
+    expect(keepPillOnScreen({ x: -30, y: 900 }, 40, view)).toEqual({ x: 8, y: 770 });
+    expect(keepPillOnScreen({ x: 100, y: 300 }, 40, view)).toEqual({ x: 100, y: 300 });
   });
 });

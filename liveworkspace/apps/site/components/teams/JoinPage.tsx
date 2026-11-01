@@ -99,10 +99,14 @@ export function JoinPage() {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight break-words text-slate-900 dark:text-white">
             {state.preview.teamName}
           </h1>
+          {/* The organisation is someone's typing, isolated so its direction never turns the count around. */}
           <p className="mt-2 text-slate-600 dark:text-slate-400">
-            {[state.preview.organisation, memberCountLabel(state.preview.memberCount)]
-              .filter(Boolean)
-              .join(' · ')}
+            {state.preview.organisation ? (
+              <>
+                <bdi>{state.preview.organisation}</bdi> ·{' '}
+              </>
+            ) : null}
+            {memberCountLabel(state.preview.memberCount)}
           </p>
           <p className="mt-4 max-w-sm text-sm text-slate-600 dark:text-slate-400">
             A team is the same in every liveworkspace app: its work shows up for everyone in it.

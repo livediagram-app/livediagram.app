@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
 import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -28,10 +28,17 @@ export function CodeEditDialog({
     onClose();
   };
 
-  // Tab inserts two spaces instead of moving focus — table stakes for a
-  // code editor, and Escape still exits via the Dialog's own handling.
+  const hintId = useId();
+  // Tab inserts two spaces instead of moving focus: table stakes for a code editor. That left a keyboard with no
+  // way to Save (Shift+Tab indented too, and Escape cancels), so Shift+Tab leaves the field as it does anywhere and
+  // ⌘/Ctrl+Enter saves, as the mind map outline does.
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key !== 'Tab') return;
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      save();
+      return;
+    }
+    if (e.key !== 'Tab' || e.shiftKey || e.altKey || e.metaKey || e.ctrlKey) return;
     e.preventDefault();
     const el = e.currentTarget;
     const { selectionStart, selectionEnd, value } = el;
@@ -66,10 +73,19 @@ export function CodeEditDialog({
           maxLength={CODE_MAX_LENGTH}
           spellCheck={false}
           autoFocus
+          aria-label="Code"
+          aria-describedby={hintId}
           rows={14}
           placeholder="// your code here"
           className="w-full resize-y rounded-lg border border-slate-200 bg-slate-900 p-3 font-mono text-xs leading-4 text-slate-200 outline-none focus:border-brand-400 dark:border-slate-700"
         />
+        {/* The keys, only where there is a keyboard to press them. */}
+        <p
+          id={hintId}
+          className="-mt-1 text-xs text-slate-600 pointer-coarse:hidden dark:text-slate-400"
+        >
+          Tab indents, Shift+Tab moves on, ⌘/Ctrl+Enter saves.
+        </p>
         <div className="flex items-center justify-between gap-3">
           <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
             Language

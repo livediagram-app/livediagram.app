@@ -69,7 +69,7 @@ function ExplorerImpl({
   const viewerId = accountUserId ?? guestId;
   // Take Offline and Sync Document on a document's menu.
   const itemMenu = useOfflineItemMenu(viewerId);
-  const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId);
+  const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId, currentDocumentId ?? null);
   // The Community tab for a signed-in account's own documents (lib/explorer-community-host.ts), asked whether the
   // Community is on only for an account.
   const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);

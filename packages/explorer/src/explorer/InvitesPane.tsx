@@ -78,12 +78,6 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
       ) : (
         <ul className="flex flex-col gap-3">
           {invites.map((invite) => {
-            const subtitle = [invite.organisation, members(invite.memberCount)]
-              .filter(Boolean)
-              .join(' · ');
-            const from = invite.invitedByName
-              ? `${invite.invitedByName} invited you`
-              : 'You were invited';
             const when = invite.createdAt && now ? ` ${relativeSince(invite.createdAt, now)}` : '';
             const role = invite.role === 'admin' ? ', as an admin' : '';
             return (
@@ -94,7 +88,7 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
               >
                 <span
                   aria-hidden
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-sm font-semibold text-white"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-sm font-semibold text-white dark:bg-brand-600"
                 >
                   {initialsOf(invite.teamName)}
                 </span>
@@ -102,11 +96,25 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
                   <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                     {invite.teamName}
                   </span>
+                  {/* The organisation and the inviter's name are someone's typing: isolated, so their direction
+                      never turns the words around them. */}
                   <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                    {subtitle}
+                    {invite.organisation ? (
+                      <>
+                        <bdi>{invite.organisation}</bdi> ·{' '}
+                      </>
+                    ) : null}
+                    {members(invite.memberCount)}
                   </span>
                   <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                    {`${from}${when}${role}.`}
+                    {invite.invitedByName ? (
+                      <>
+                        <bdi>{invite.invitedByName}</bdi> invited you
+                      </>
+                    ) : (
+                      'You were invited'
+                    )}
+                    {`${when}${role}.`}
                   </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-2">

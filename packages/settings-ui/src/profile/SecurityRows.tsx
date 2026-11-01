@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 
 // The Profile's Sign-in and Security (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): how the person signs in and
@@ -281,8 +281,25 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
   // session but this one.
   const [gone, setGone] = useState<ReadonlySet<string>>(() => new Set());
   const [now] = useState(() => Date.now());
+  // Where the keyboard was when a Sign Out was pressed. That button is disabled while it works (which drops focus
+  // to the page) and then goes with its row, so focus comes back to the next Sign Out here, or to the panel it sits
+  // in: never left on the page's body, outside the Settings dialog.
+  const pressed = useRef<{ scope: HTMLElement | null; button: HTMLElement } | null>(null);
+  useEffect(() => {
+    const was = pressed.current;
+    if (!was || busy !== null) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active !== was.button) return;
+    pressed.current = null;
+    const next = was.button.isConnected
+      ? was.button
+      : (was.scope?.querySelector<HTMLElement>('[data-session-sign-out]:not([disabled])') ??
+        was.scope);
+    next?.focus({ preventScroll: true });
+  });
 
-  async function act(id: string, run: () => Promise<boolean>) {
+  async function act(id: string, run: () => Promise<boolean>, button: HTMLElement) {
+    pressed.current = { scope: button.closest<HTMLElement>('[role="dialog"]'), button };
     setBusy(id);
     setFailed(false);
     const ok = await run().catch(() => false);
@@ -344,7 +361,10 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
                 className={SETTINGS_ROW_BUTTON}
                 disabled={busy !== null}
                 aria-label={`Sign out of ${deviceName(session.userAgent)}`}
-                onClick={() => void act(session.id, () => security.revokeSession(session.token))}
+                data-session-sign-out=""
+                onClick={(e) =>
+                  void act(session.id, () => security.revokeSession(session.token), e.currentTarget)
+                }
               >
                 {busy === session.id ? 'Signing out…' : 'Sign Out'}
               </button>
@@ -364,7 +384,8 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
               type="button"
               className={SETTINGS_ROW_BUTTON}
               disabled={busy !== null}
-              onClick={() => void act('others', security.revokeOtherSessions)}
+              data-session-sign-out=""
+              onClick={(e) => void act('others', security.revokeOtherSessions, e.currentTarget)}
             >
               {busy === 'others' ? 'Signing out…' : 'Sign Out Others'}
             </button>

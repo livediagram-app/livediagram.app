@@ -120,7 +120,8 @@ function page(
   return onNavigate;
 }
 
-const card = () => screen.findByText('Northwind · 2 members · 1 invited · You’re an admin');
+const HEADLINE = 'Northwind · 2 members · 1 invited · You’re an admin';
+const card = () => screen.findByText((_, el) => el?.tagName === 'P' && el.textContent === HEADLINE);
 
 describe('a team’s view', () => {
   beforeEach(() => localStorage.clear());
@@ -133,6 +134,20 @@ describe('a team’s view', () => {
     expect(screen.getByText('Kai Moss')).toBeTruthy();
     expect(screen.getByText('Invited')).toBeTruthy();
     expect(await screen.findByText('Item 1')).toBeTruthy();
+  });
+
+  it('isolates the organisation, names and addresses, so right-to-left text turns nothing else around', async () => {
+    const team = details({ organisation: '\u202Eevil org' });
+    team.members[1]!.name = '\u202Eeel nna';
+    page({ kind: 'team', id: 't1' }, fakeHost(team));
+    const headline = await screen.findByText(
+      (_, el) =>
+        el?.tagName === 'P' &&
+        el.textContent === `\u202Eevil org · 2 members · 1 invited · You’re an admin`,
+    );
+    expect(headline.querySelector('bdi')?.textContent).toBe('\u202Eevil org');
+    expect(screen.getByText('\u202Eeel nna').tagName).toBe('BDI');
+    expect(screen.getByText('ann@x.test').tagName).toBe('BDI');
   });
 
   it('pins the only admin, and lets an admin change another’s role', async () => {
@@ -157,6 +172,20 @@ describe('a team’s view', () => {
     const ask = await screen.findByRole('dialog', { name: 'Withdraw Invite?' });
     fireEvent.click(within(ask).getByRole('button', { name: 'Withdraw Invite' }));
     await waitFor(() => expect(host.removeMember).toHaveBeenCalledWith('t1', 'm3'));
+  });
+
+  it('keeps focus on the card after a removal, not on the row that goes', async () => {
+    const host = fakeHost();
+    page({ kind: 'team', id: 't1' }, host);
+    await card();
+    const withdraw = screen.getByRole('button', { name: 'Withdraw invite to Kai Moss' });
+    withdraw.focus();
+    fireEvent.click(withdraw);
+    const ask = await screen.findByRole('dialog', { name: 'Withdraw Invite?' });
+    fireEvent.click(within(ask).getByRole('button', { name: 'Withdraw Invite' }));
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Design options' })),
+    );
   });
 
   it('invites an address as a Member or an Admin', async () => {
@@ -244,6 +273,11 @@ describe('a team’s view', () => {
   it('is a not-found card for a team the person is not in', async () => {
     page({ kind: 'team', id: 'gone' }, fakeHost(null));
     expect(await screen.findByText('Team not found')).toBeTruthy();
+    // White on brand-600 (sky, liveworkspace's brand) is 4.09:1: the way back is the shared primary Button, on 700;
+    // the 404 label lightens on the dark card (rose-600 there is 3.49:1).
+    const notFound = (await screen.findByText('Team not found')).closest('div')!;
+    expect(notFound.querySelector('button')?.className).toContain('bg-brand-700');
+    expect(screen.getByText('404').className).toContain('dark:text-rose-400');
   });
 
   it('shows the library alone without a TeamsHost', async () => {
