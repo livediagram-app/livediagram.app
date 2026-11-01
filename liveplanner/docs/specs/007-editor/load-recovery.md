@@ -232,7 +232,9 @@ the server, which the rest of this spec covers.
 ## Out of scope
 
 - A request id on API responses for matching a report to a log line.
-- A service worker or any offline copy of the editor itself: without a
-  connection the editor still cannot start.
+- An offline copy of the editor itself: without a connection the editor still
+  cannot start. The one service worker, `/push-worker.js`, only shows phone
+  notifications: it has no fetch handler, so it caches and answers nothing
+  ([Installable app](../016-platform/installable-app.md)).
 - Timeouts on every API request. The watchdog bounds the load; requests after
   it are already reported when they fail.

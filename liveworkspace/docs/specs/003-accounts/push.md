@@ -56,7 +56,15 @@ The app checks each of these before it asks accounts to send (`createPusher` in 
 - **Not someone already looking at it.** A person with a session in the item's realtime room (it has said hello) is
   left out: the room's env carries `ROOM_PEOPLE`, the person tags of its sessions (`sha256(<item>:<person>)`, as
   each app's `personTagFor` makes them), and the check compares tags, so the room still holds no person's id.
-- **At most 50 people an event** (`PUSH_RECIPIENTS_MAX`), which bounds the index asks.
+- **At most 50 people an event** (`PUSH_RECIPIENTS_MAX`), which bounds the index asks, and at most 5 new comments a
+  save or changeset (`PUSH_COMMENTS_PER_SAVE_MAX`, read by `freshCommentsInThreads`, which also finds who wrote
+  earlier in each comment's thread).
+
+Where the events come from, in every app: a tab save, a changeset, and the REST comment routes, for a comment (the
+writer's own new comments, as the comment email reads them); the `notify-action` route, for an assignment. The assign
+dialog asks `notify-action` for every new teammate assignee, with `email: false` when its Email box is unticked: the
+email follows the box, the phone notification goes either way, as the switches decide. The route also takes the
+action's `tabId` and `elementId`, for the link.
 
 The app runs all of this after it has answered: in the item room's `waitUntil` for a comment or a save, and in the
 room's RPC for an assignment. A failure is logged and never reaches the request.
@@ -64,21 +72,22 @@ room's RPC for an assignment. A failure is logged and never reaches the request.
 ## Devices
 
 A device is one browser's push subscription, kept per account in `push_device`
-(`migrations/0017_push_devices.sql`, `src/push/devices.ts`): its push service endpoint, its two keys, a label and when
-it last reached it. **One registration serves every app**: a row names no app, so a phone registered in livediagram
-also hears of liveplanner's mentions, and tapping one opens liveplanner's address. Registering the same phone again
-in another installed app adds a second row, which the device list shows with the app it was turned on in, so either
-can be removed.
+(`migrations/0017_push_devices.sql`, `src/push/devices.ts`): its push service endpoint, its two keys, a label, the app it
+was turned on in and when it last reached it. **One registration serves every app**: the app is only what the device
+list shows, so a phone registered in livediagram also hears of liveplanner's mentions, and tapping one opens
+liveplanner's address. Registering the same phone again in another installed app adds a second row (each installed
+app is its own subscription), which the list shows with its own app, so either can be removed.
 
-- **Registering** is `POST /api/account/push/devices` `{ endpoint, keys: { p256dh, auth }, label }`, answered
+- **Registering** is `POST /api/account/push/devices` `{ endpoint, keys: { p256dh, auth }, label, app }`, answered
   `201 { device }`. One row per endpoint: registering again (new keys, or another account signing in on the same
   browser) updates the row in place and moves it to this account. The endpoint must be https on a known push service
   (FCM, Mozilla, Apple, Windows), with no port or credentials, so the Worker never posts to an address a page chose;
   the keys must be a P-256 point and a 16-byte secret. The label is cleaned like any typed name, at most 80
-  characters (`A device` when empty).
+  characters (`A device` when empty). `app` is `liveworkspace` or one of the four apps; anything else reads as
+  `liveworkspace`.
 - **At most 10 devices an account** (`MAX_PUSH_DEVICES`): registering another drops the oldest.
-- **Listing** is `GET /api/account/push/devices`, answering `{ publicKey, devices: [{ id, label, createdAt,
-lastSentAt }] }`, newest first. `publicKey` is the deployment's VAPID public key, what the browser subscribes with;
+- **Listing** is `GET /api/account/push/devices`, answering `{ publicKey, devices: [{ id, label, app,
+createdAt, lastSentAt }] }`, newest first. `publicKey` is the deployment's VAPID public key, what the browser subscribes with;
   null when phone notifications are off here (then `POST` answers `503 push_not_configured`).
 - **Removing** is `DELETE /api/account/push/devices/<id>`, the person's own devices only (`404` otherwise).
 - **Both doors.** These answer the session on liveworkspace.app (a write from its own origin) and the app's bearer
@@ -113,10 +122,13 @@ service:
 Each site serves what it takes to install it and to receive a push (every app's
 docs/specs/016-platform/installable-app.md, and [site.md](../010-site/site.md#installing)):
 
-- **A web app manifest** at `/manifest.webmanifest`, `display: standalone`, its icons (192 and 512 pixels, and a
-  maskable one), and a `start_url` at the editor or the Explorer, never the marketing page.
-- **A push-only service worker** at `/push-worker.js`, registered after the page has loaded. It has **no fetch
-  handler**, so it never answers a request and keeps no offline copy (each app's load-recovery.md). It shows each
+- **A web app manifest** at `/manifest.webmanifest`, `display: standalone`, `id` and `scope` `/`, its icons (the
+  scalable mark and 256 and 512 pixel PNGs, for any purpose), and `start_url` `/explorer`, never the marketing page.
+  Every page on the address links it: the marketing pages, the editor, and the Explorer (liveworkspace.app's pages,
+  whose relative link resolves to the app's own manifest there). Built once in `@liveworkspace/marketing-site`
+  (`lib/install.ts`).
+- **A push-only service worker** at `/push-worker.js`, registered only when someone presses Turn On, never on page
+  load, so no page pays for it. It has **no fetch handler**, so it never answers a request and keeps no offline copy (each app's load-recovery.md). It shows each
   push as a notification (title, the app's name, the site's icon, the tag) and, on a tap, focuses a window already
   at that link or opens the link, on whichever app's address it is.
 
@@ -127,13 +139,15 @@ docs/specs/016-platform/installable-app.md, and [site.md](../010-site/site.md#in
 editor; `@liveworkspace/settings-ui`, `push/`):
 
 - **Turn On Phone Notifications** asks the browser's permission, subscribes with the deployment's public key and
-  registers the device, labelled with its kind, browser and the app it was turned on in (`iPhone, Safari
-(liveplanner)`). Where the browser can't, it says why instead: on an iPhone or iPad the app must first be added to
+  registers the device, labelled with its browser and system (`Safari on iOS`), and the app it was turned on in,
+  which the list shows by that app's logo (prism and wordmark), never its name as plain text. Where the browser can't, it says why instead: on an iPhone or iPad the app must first be added to
   the Home Screen (Share, Add to Home Screen) and opened from there; a browser that has blocked notifications must be
   allowed in its settings; a browser with no Web Push can't; a deployment with no VAPID key has phone notifications
-  off. A guest sees no Phone section.
+  off. Signed in only: like API Tokens, the section shows only where the host offers an account's tools, so a guest or
+  a signed-out person sees none.
 - **The four switches**, one per kind, worded as the email ones.
-- **Devices**, newest first, each with when it last got a notification (or when it was added), this browser's marked
+- **Devices**, newest first, each with when it last got a notification (or when it was added) and the logo of the app it was turned on in,
+  this browser's marked
   This Device, and Remove (asked once). Removing this browser's device also unsubscribes it here.
 
 ## Before deploy

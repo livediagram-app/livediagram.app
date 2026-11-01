@@ -27,6 +27,8 @@ retired and its three parts redistributed:
 - **Email notifications** are the six rows in **Notifications > Email**
   (§3). Absent unless email is configured (the `EMAIL` binding) AND the reader is signed in, since
   a guest has no address to send to.
+- **Phone notifications** are **Notifications > Phone**: Turn On, the device list and four switches, signed in
+  only, and not behind the `EMAIL` binding ([Phone notifications](phone-notifications.md)).
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**.
 
 ### `/explorer/profile` still resolves, deliberately

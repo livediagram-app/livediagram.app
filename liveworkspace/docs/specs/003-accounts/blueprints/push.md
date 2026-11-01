@@ -18,7 +18,7 @@ Scope, by file:
 | `liveworkspace/apps/accounts/migrations/0017_push_devices.sql` | The table                                                              |
 | `liveworkspace/apps/accounts/scripts/generate-vapid-keys.ts`   | Makes a VAPID pair and prints the two secrets                          |
 | `packages/settings-ui/src/push/`                               | The Phone section: Turn On, the switches, the device list              |
-| `packages/ui/src/push-worker.ts`                               | The push-only service worker's source, and registering it after load   |
+| `packages/marketing-site/src/lib/install.ts`                   | The manifest and the push-only service worker's source, for every site |
 
 ## Domain and naming
 
@@ -57,7 +57,7 @@ Scope, by file:
 ## Data and persistence
 
 `push_device (id PK, user_id → "user" ON DELETE CASCADE, endpoint UNIQUE 12..1024, p256dh 86..88, auth 22..24,
-label 1..80, created_at, last_sent_at)`, index `(user_id, created_at)`. Every read and write names `user_id` or
+label 1..80, app IN (liveworkspace, the four apps) DEFAULT liveworkspace, created_at, last_sent_at)`, index `(user_id, created_at)`. Every read and write names `user_id` or
 `endpoint`, or a list of ids through `json_each`.
 
 ## Errors and edge cases

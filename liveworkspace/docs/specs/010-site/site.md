@@ -669,6 +669,20 @@ they never meet an app's own `/_next`, and one build serves both addresses.
   (`Status · liveworkspace`), the same in its Open Graph and X cards, so a search result or a tab never reads
   "Status" alone.
 
+## Installing
+
+liveworkspace.app installs to a home screen like each app does
+([push.md "The app side"](../003-accounts/push.md#the-app-side)), so an installed liveworkspace can show phone
+notifications from every app:
+
+- `/manifest.webmanifest` (`app/manifest.ts`, `installManifest` from `@liveworkspace/marketing-site/lib/install`):
+  `liveworkspace`, standalone, `id` and `scope` `/`, starting at `/explorer`, with the scalable mark and 256 and 512
+  pixel PNGs drawn from it at build (`app/liveworkspace-icon-256.png/route.tsx`, `…-512.png`, `lib/install-icon.tsx`),
+  and an opaque 180 pixel Apple tile (`app/apple-icon.tsx`). Every page links it. Served on an app's address, the
+  Explorer's link is relative, so it names that app's manifest there, and installing from there installs the app.
+- `/push-worker.js` (`app/push-worker.js/route.ts`): the push-only service worker every site serves, registered only
+  when someone turns phone notifications on, with no fetch handler.
+
 ## Hosting
 
 One Worker, `liveworkspace-site`, static assets only, on the custom domains `www.liveworkspace.app` and
