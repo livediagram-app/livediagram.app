@@ -180,7 +180,7 @@ board, so each one can be a widget.
 - **A field gone** (taken off every type the board takes, or the board no longer taking its types) leaves its widget
   in place, quiet and dashed: "This field was removed", with **Remove** (a cross named "Remove widget") for someone
   who may edit. A field whose kind changed so the view no longer fits reads "This field changed kind", with the same
-  Remove.
+  Remove, even when no view reads its new kind (a Rating made Text is still on the board, so it has changed, not gone).
 - A board holds each field and view at most once, and at most **12** field widgets.
 
 ## The widget gallery
