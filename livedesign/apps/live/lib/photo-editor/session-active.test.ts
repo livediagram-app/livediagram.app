@@ -37,3 +37,19 @@ describe('the active layer', () => {
     expect(h.s.version).toBe(versionAfter);
   });
 });
+
+// docs/specs/031-photo/photo-adjustments.md "Performance": what changes no pixel names no tile, so the screen
+// keeps every tile it has uploaded (null would have it upload the whole photo again).
+describe('a redraw that changes no pixels', () => {
+  it('names no tiles for the active layer, the chosen, the solo or a preview of the stack', () => {
+    const h = harness(photoOf(8, 8, [pixelLayer('a'), pixelLayer('b')]));
+    const seen = vi.fn<(changes: readonly unknown[] | null) => void>();
+    h.s.subscribe(seen);
+    h.s.choose('a', 'layer');
+    h.s.setChosen(new Set(['a', 'b']));
+    h.s.setSolo('a');
+    h.s.preview({ ...h.s.photo });
+    // (A tile load the harness started may land first, naming everything.)
+    expect(seen.mock.calls.map((c) => c[0]).slice(-4)).toEqual([[], [], [], []]);
+  });
+});
