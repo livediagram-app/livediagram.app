@@ -4939,6 +4939,9 @@ importers:
       '@liveworkspace/migration':
         specifier: workspace:^
         version: link:../../../packages/migration
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -5674,6 +5677,9 @@ importers:
 
   packages/auth-client:
     dependencies:
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites

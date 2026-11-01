@@ -10,7 +10,8 @@
     "./account": "./src/account.ts",
     "./device": "./src/device.ts",
     "./common": "./src/common.ts",
-    "./presence": "./src/presence.ts"
+    "./presence": "./src/presence.ts",
+    "./push": "./src/push.ts"
   },
   "scripts": {
     "lint": "oxlint",
