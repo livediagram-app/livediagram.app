@@ -10,6 +10,7 @@ import {
   type EditorState,
   type Transaction,
 } from 'prosemirror-state';
+import { GapCursor } from 'prosemirror-gapcursor';
 import {
   CellSelection,
   addColumnAfter,
@@ -215,6 +216,15 @@ export function tableTab(dir: 1 | -1, reshape: () => boolean): Command {
   };
 }
 
+// Below a table: the first place to write after it, or, with nothing after it (a table ending the
+// writing, whose top level takes a gap cursor), the gap after it, where typing starts a paragraph as
+// Right does. Selection.near found nothing below and fell back into the table's last cell, so Down
+// never left it.
+function outBelow(state: EditorState, after: number): Selection {
+  const $after = state.doc.resolve(after);
+  return Selection.findFrom($after, 1) ?? new GapCursor($after);
+}
+
 /** Up and Down from a cell's first or last line: the cell above or below in the same column, or out of the
  *  table before or after it. (prosemirror-tables' own arrows expect blocks in a cell; a cell here is one
  *  stretch of text.) */
@@ -232,7 +242,7 @@ export function cellArrow(dir: 1 | -1): Command {
       next !== null
         ? TextSelection.create(state.doc, tableStart + next + 1)
         : dir > 0
-          ? Selection.near(state.doc.resolve($h.after(depth - 2)), 1)
+          ? outBelow(state, $h.after(depth - 2))
           : Selection.near(state.doc.resolve($h.before(depth - 2)), -1);
     dispatch?.(state.tr.setSelection(target).scrollIntoView());
     return true;
