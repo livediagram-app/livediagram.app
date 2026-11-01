@@ -577,7 +577,8 @@ ink").
 
 - Everyone on the tab sees the writing change as each person's commits land. The writing syncs
   **block by block**: two people writing in different paragraphs never overwrite each other; two
-  in the same paragraph at once is last commit wins for that paragraph. A **table syncs cell by
+  in the same paragraph at once is last commit wins for that paragraph, the room's last on every screen
+  (see [Same-element edits converge](../012-collaboration/realtime-conflict-resolution.md#same-element-edits-converge)). A **table syncs cell by
   cell**: a commit that only changed cells' text sends each changed cell on its own, so two people
   in different cells of one table never overwrite each other; two in the same cell at once is last
   commit wins for that cell. A change to the table's shape (a row or column added or removed, the
