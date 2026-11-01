@@ -132,7 +132,7 @@ describe('item actions: what the toasts say', () => {
       placeName: (to) => (to.folderId ? 'Q3' : 'My Work'),
     });
     await actions.move(item, { folderId: 'f1', teamId: null });
-    expect(toast.show.mock.calls.at(-1)![0]).toBe('Moved “Item 1” to Q3.');
+    expect(toast.show.mock.calls.at(-1)![0]).toBe('Moved “\u2068Item 1\u2069” to \u2068Q3\u2069.');
     // Its Undo moves it back.
     toast.show.mock.calls.at(-1)![1].action.run();
     await vi.waitFor(() =>
@@ -143,17 +143,28 @@ describe('item actions: what the toasts say', () => {
     );
     index.fail.set('updateItem', new IndexError(500, 'unknown'));
     await actions.move(item, { folderId: null, teamId: null });
-    expect(toast.error).toHaveBeenLastCalledWith('Couldn’t move “Item 1”. Try again.');
+    expect(toast.error).toHaveBeenLastCalledWith('Couldn’t move “\u2068Item 1\u2069”. Try again.');
+  });
+
+  it('isolates a name holding a bidi override, so the words after it still read forwards', async () => {
+    const { item, toast, actions } = setup();
+    await actions.trash({ ...item, title: 'Budget \u202eevil' });
+    // The override stays inside FSI … PDI: " to the Trash." is not turned around.
+    expect(toast.show.mock.calls.at(-1)![0]).toBe(
+      'Moved “\u2068Budget \u202eevil\u2069” to the Trash.',
+    );
   });
 
   it('offers Undo on a delete, and says the item is back once Undo restores it', async () => {
     const { item, toast, actions } = setup();
     await actions.trash(item);
     const [text, options] = toast.show.mock.calls.at(-1)!;
-    expect(text).toBe('Moved “Item 1” to the Trash.');
+    expect(text).toBe('Moved “\u2068Item 1\u2069” to the Trash.');
     options.action.run();
     await vi.waitFor(() =>
-      expect(toast.show).toHaveBeenLastCalledWith('“Item 1” restored.', { tone: 'success' }),
+      expect(toast.show).toHaveBeenLastCalledWith('“\u2068Item 1\u2069” restored.', {
+        tone: 'success',
+      }),
     );
   });
 
@@ -162,9 +173,9 @@ describe('item actions: what the toasts say', () => {
     index.fail.set('restoreItem', new IndexError(500, 'unknown'));
     await actions.restore(item);
     expect(toast.error).toHaveBeenLastCalledWith(
-      'Couldn’t restore “Item 1”. It is still in the Trash.',
+      'Couldn’t restore “\u2068Item 1\u2069”. It is still in the Trash.',
     );
     await actions.purge(item);
-    expect(toast.show).toHaveBeenLastCalledWith('“Item 1” deleted for good.');
+    expect(toast.show).toHaveBeenLastCalledWith('“\u2068Item 1\u2069” deleted for good.');
   });
 });

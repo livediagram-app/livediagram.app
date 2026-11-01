@@ -32,6 +32,7 @@ import { canManage } from '../explorer/menus';
 import { openThisBrowserItem } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { useDragging, useDragStore } from './store';
+import { quoted } from '../quoted';
 
 export { useDragging } from './store';
 
@@ -100,9 +101,9 @@ export function useThisBrowserDrag(item: ThisBrowserItem): SourceProps {
 }
 
 export const THIS_BROWSER_DROP_COPY = {
-  trash: (name: string) => `“${name}” is kept only in this browser. Open it to delete it.`,
+  trash: (name: string) => `${quoted(name)} is kept only in this browser. Open it to delete it.`,
   place: (name: string) =>
-    `“${name}” is kept only in this browser. Sign in and sync it to your account to put it in a folder.`,
+    `${quoted(name)} is kept only in this browser. Sign in and sync it to your account to put it in a folder.`,
 } as const;
 
 /** What a drop does with an item kept only in this browser, through This Browser's own verbs: the Trash asks before

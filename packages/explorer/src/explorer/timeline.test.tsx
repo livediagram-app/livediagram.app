@@ -56,7 +56,7 @@ describe('the Timeline view', () => {
     await waitFor(() => expect(cards().length).toBe(1));
     expect(timelineQueries(index)).toEqual([{ app: 'liveplanner', limit: 30 }]);
     expect(screen.getByText('Plan Renamed')).toBeTruthy();
-    expect(screen.getByText(/Was “Old name” · by you/)).toBeTruthy();
+    expect(screen.getByText(/Was “\u2068Old name\u2069” · by you/)).toBeTruthy();
     expect(document.querySelector('[data-app-mark]')).toBeNull();
     expect(screen.getByRole('treeitem', { name: 'Timeline' }).getAttribute('aria-selected')).toBe(
       'true',

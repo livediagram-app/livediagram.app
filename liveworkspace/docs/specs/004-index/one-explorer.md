@@ -389,6 +389,11 @@ can't know the reader's locale, so dates are written only in the browser: the li
 in the browser (the Explorer's items, This Browser's list, the status history, the Settings rows), and a prerender
 shows none.
 
+**Names in sentences.** A toast or a confirmation that names an item, a folder, a team or a picture ("Moved “Plan”
+to the Trash.", "Delete “Plan” for good?") isolates the name (FSI … PDI, `quoted` and `isolated` in the package): a
+right-to-left name, or one holding a bidi override, stays inside its own run and never turns the words after it
+around.
+
 ### 5. Comments, actions and the Inbox live in liveworkspace
 
 What the Inbox needs about comments and actions is stored in liveworkspace, keyed by app, item, tab and

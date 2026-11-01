@@ -15,6 +15,7 @@ import type { Words } from '../words';
 import { useExplorer } from './context';
 import { EmptyPane } from './EmptyPane';
 import { ThisBrowserTrashGroup, useThisBrowserTrashed } from './ThisBrowser';
+import { quoted } from '../quoted';
 
 export const TRASH_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -170,7 +171,7 @@ export function TrashPane({
       {purging ? (
         <ConfirmDialog
           open
-          title={`Delete “${purging.title || 'Untitled'}” for good?`}
+          title={`Delete ${quoted(purging.title || 'Untitled')} for good?`}
           message="This cannot be undone."
           confirmLabel="Delete permanently"
           onCancel={() => setPurging(null)}

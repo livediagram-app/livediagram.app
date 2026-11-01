@@ -48,6 +48,7 @@ import { EmptyPane } from './EmptyPane';
 import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
 import { useNamedEvents } from '../data/names';
+import { quoted } from '../quoted';
 
 // A link to one event looks this many pages back for it before giving up: a bounded walk, never the whole history.
 export const FOCUS_PAGES_MAX = 5;
@@ -215,7 +216,7 @@ export function renderTimelineEvent(
   let description: string | undefined;
   switch (event.type) {
     case 'renamed':
-      meta = detail.from ? `Was “${detail.from}” · ${by}` : by;
+      meta = detail.from ? `Was ${quoted(detail.from)} · ${by}` : by;
       break;
     case 'moved': {
       const place = detail.folderName ?? (detail.teamId ? ctx.teamName(detail.teamId) : 'My Work');

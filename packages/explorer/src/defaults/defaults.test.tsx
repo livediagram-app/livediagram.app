@@ -100,7 +100,7 @@ describe('the entries', () => {
         kind,
         held: [],
       }).message,
-    ).toContain('move to “Work”');
+    ).toContain('move to “\u2068Work\u2069”');
     const team = folderDeleteConfirmation({
       name: 'Q3',
       parentName: null,
@@ -156,7 +156,9 @@ describe('in the Explorer', () => {
     page(index);
     fireEvent.click(await screen.findByRole('button', { name: 'Menu for My Work' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Use as Default for…' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Use “My Work” as Default for' });
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Use “\u2068My Work\u2069” as Default for',
+    });
     const plans = within(dialog).getByRole('checkbox', { name: 'Plans' }) as HTMLInputElement;
     const retro = within(dialog).getByRole('checkbox', {
       name: 'Retrospective plans',

@@ -19,6 +19,7 @@ import { ItemMenu } from './menus';
 import { ROW_HEIGHT, useItemBits, useOwnerLabel, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
+import { quoted } from '../quoted';
 
 // What the link lets the person do, as its chip says it (share-roles.md).
 export const ROLE_CHIP: Record<Level, string> = {
@@ -89,7 +90,7 @@ export function SharedList({
       {dismissing ? (
         <ConfirmDialog
           open
-          title={`Dismiss “${dismissing.title || 'Untitled'}”?`}
+          title={`Dismiss ${quoted(dismissing.title || 'Untitled')}?`}
           message="It leaves your Shared With Me list. Its link still opens it, and opening it again brings it back."
           confirmLabel="Dismiss"
           onCancel={() => setDismissing(null)}

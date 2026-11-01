@@ -12,6 +12,7 @@ import {
 } from '@liveworkspace/index-client';
 import type { LensOption } from '../lens';
 import type { Words } from '../words';
+import { quoted } from '../quoted';
 
 export type DefaultEntry = {
   key: string;
@@ -91,7 +92,7 @@ export function folderDeleteConfirmation(input: {
 }): { title: string; message: string; confirmLabel: string } {
   const to =
     input.parentName !== null
-      ? `“${input.parentName}”`
+      ? `${quoted(input.parentName)}`
       : input.teamName !== null
         ? `the top of ${input.teamName}`
         : 'My Work';
@@ -104,7 +105,7 @@ export function folderDeleteConfirmation(input: {
     );
   }
   return {
-    title: `Delete “${input.name || 'this folder'}”?`,
+    title: `Delete ${quoted(input.name || 'this folder')}?`,
     message: lines.join('\n'),
     confirmLabel: 'Delete Folder',
   };

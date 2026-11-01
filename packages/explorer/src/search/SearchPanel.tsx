@@ -30,6 +30,7 @@ import { DEFAULT_BASE_PATH, explorerPath } from '../views';
 import type { ItemHref, RenderAppLogo, TeamRef } from '../types';
 import { matchAll, queryWords } from './match';
 import { useItemSearch } from './useItemSearch';
+import { quoted } from '../quoted';
 
 /** A host's own result: a help article or a settings section. */
 export type SearchEntry = {
@@ -308,7 +309,7 @@ export function SearchPanel({
                 ? 'Searching…'
                 : failed
                   ? 'Search couldn’t reach your items just now. Try again in a moment.'
-                  : `Nothing matches “${q}”.`}
+                  : `Nothing matches ${quoted(q)}.`}
           </p>
         ) : null}
       </div>

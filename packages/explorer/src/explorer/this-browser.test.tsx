@@ -192,7 +192,7 @@ describe('This Browser in the Explorer', () => {
       name: 'Delete this plan from this browser?',
     });
     expect(dialog.textContent).toContain(
-      '“Local 2” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
+      '“\u2068Local 2\u2069” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
     );
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'local-2' }));
@@ -344,7 +344,7 @@ describe('deleting one kept in this browser', () => {
     expect(thisBrowserDeleteCopy('canvas', '')).toEqual({
       title: 'Delete this canvas from this browser?',
       message:
-        '“Untitled” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
+        '“\u2068Untitled\u2069” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
       confirmLabel: 'Delete',
     });
   });

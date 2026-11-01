@@ -363,7 +363,7 @@ describe('<Explorer>', () => {
     const listsBefore = index.count('listItems');
     fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
     await waitFor(() => expect(index.count('restoreItem')).toBe(1));
-    await screen.findByText('Restored “Roadmap”.');
+    await screen.findByText('Restored “\u2068Roadmap\u2069”.');
     await waitFor(() => expect(index.count('listItems')).toBeGreaterThan(listsBefore));
     rerender(
       <Explorer
@@ -376,7 +376,7 @@ describe('<Explorer>', () => {
         trashedOnArrival={trashed}
       />,
     );
-    expect(screen.queryAllByText('Moved “Roadmap” to the Trash.')).toHaveLength(0);
+    expect(screen.queryAllByText('Moved “\u2068Roadmap\u2069” to the Trash.')).toHaveLength(0);
   });
 });
 

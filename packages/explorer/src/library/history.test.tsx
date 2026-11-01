@@ -106,7 +106,7 @@ describe('History', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     const run = within(dialog).getByRole('list', { name: 'Plan Renamed, 3 times' });
     expect(within(run).getAllByRole('listitem')).toHaveLength(3);
-    expect(within(run).getByText('Was “Untitled”')).toBeTruthy();
+    expect(within(run).getByText('Was “\u2068Untitled\u2069”')).toBeTruthy();
   });
 
   it('filters by kind with toggle chips', async () => {
