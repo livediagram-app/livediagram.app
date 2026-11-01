@@ -26,7 +26,23 @@ export function clipText(value: string, max: number): string {
   return value.slice(0, end);
 }
 
-/** A typed name as it is kept: bidi controls out, trimmed, clipped to `max` between whole characters. */
+// What a name may not start or end with: spaces and the characters that draw nothing (zero-width spaces and
+// joiners, word joiners, byte order marks, soft hyphens and the rest of Unicode's format characters). Left at an
+// end, they make a name that looks blank (a team called only "\u200B" is a nameless row in every sidebar), or two
+// names that look the same and aren't.
+const EDGE = /[\s\p{Cf}]/u;
+
+/** The text without spaces or invisible formatting characters at either end, found by a scan from each end. */
+export function trimInvisible(value: string): string {
+  let start = 0;
+  let end = value.length;
+  while (start < end && EDGE.test(value[start]!)) start += 1;
+  while (end > start && EDGE.test(value[end - 1]!)) end -= 1;
+  return value.slice(start, end);
+}
+
+/** A typed name as it is kept: bidi controls out, trimmed of spaces and invisible characters, clipped to `max`
+ *  between whole characters. */
 export function cleanText(value: string, max: number): string {
-  return clipText(withoutBidiControls(value).trim(), max).trimEnd();
+  return trimInvisible(clipText(trimInvisible(withoutBidiControls(value)), max));
 }
