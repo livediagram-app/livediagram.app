@@ -154,6 +154,8 @@ export function WebhooksPanel() {
               </>
             }
             secret={made.secret}
+            // The form that made it is gone: the keyboard goes to Copy rather than the dialog's top.
+            focusCopy
             onDone={() => {
               setMade(null);
               headingRef.current?.focus();

@@ -153,12 +153,14 @@ export function WebhookRow({
   const [deliveries, setDeliveries] = useState<WebhookDelivery[] | null>(null);
   const [confirming, setConfirming] = useState<HTMLElement | null>(null);
   const deleteRef = useRef<HTMLButtonElement>(null);
+  const pauseRef = useRef<HTMLButtonElement>(null);
   const test = useSendTest(webhook.id, setDeliveries);
   const state = stateOf(webhook);
   const paused = webhook.pausedAt !== null;
   const kind = KINDS[webhook.kind];
 
   async function run<T>(call: () => Promise<T>, done: (data: T) => void) {
+    if (busy) return;
     setBusy(true);
     setError(null);
     const result = await attempt(call);
@@ -191,8 +193,9 @@ export function WebhookRow({
     <button
       type="button"
       className={`${BUTTON.secondary} !px-3 !py-1.5 bg-white dark:bg-slate-800`}
-      disabled={busy}
-      onClick={() => void setPaused(false)}
+      aria-disabled={busy || undefined}
+      // The note and this button go once it resumes: the keyboard moves to the row's Pause.
+      onClick={() => void setPaused(false).then(() => pauseRef.current?.focus())}
     >
       Resume
     </button>
@@ -233,8 +236,13 @@ export function WebhookRow({
             <button
               type="button"
               className={`${BUTTON.secondary} gap-1.5 !px-3.5`}
-              disabled={busy || paused || test.result?.state === 'sending'}
+              // Paused, it can't be pressed. While a test sends, or the row is busy, it stays focusable
+              // (aria-disabled, and a press does nothing): disabling the focused button dropped the keyboard
+              // out of Settings altogether.
+              disabled={paused}
+              aria-disabled={busy || test.result?.state === 'sending' || undefined}
               onClick={() => {
+                if (busy || test.result?.state === 'sending') return;
                 setError(null);
                 void test.send();
               }}
@@ -244,10 +252,12 @@ export function WebhookRow({
             </button>
             <Tooltip label={pauseLabel}>
               <button
+                ref={pauseRef}
                 type="button"
                 aria-label={pauseLabel}
                 className={BUTTON.icon}
-                disabled={busy}
+                // Focusable while it saves, so the keyboard stays on it as it turns into Resume (or Pause).
+                aria-disabled={busy || undefined}
                 onClick={() => void setPaused(!paused)}
               >
                 {paused ? <PlayGlyph /> : <PauseGlyph />}
