@@ -53,6 +53,15 @@ const wait = (ms: number) =>
     vi.advanceTimersByTime(ms);
   });
 
+describe('the flyout a category opens', () => {
+  it('is the dialog its button says it opens, named for the category', () => {
+    show();
+    expect(button('Shapes').getAttribute('aria-haspopup')).toBe('dialog');
+    fireEvent.click(button('Shapes'));
+    expect(screen.getByRole('dialog', { name: 'Shapes' })).toBe(flyout());
+  });
+});
+
 describe('hover intent', () => {
   it('opens a category the pointer rests on, not one it sweeps across', () => {
     show();
