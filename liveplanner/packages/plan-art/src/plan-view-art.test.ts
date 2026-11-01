@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from '@liveplanner/project';
-import { ITEM_TYPES } from '@liveplanner/items';
+import { ITEM_TYPES, type ItemTypeDef } from '@liveplanner/items';
 import { planViewArt } from './plan-view-art';
 import { NOW, artData, card, shape } from './test-fixtures';
 
@@ -65,7 +65,7 @@ describe('a plan view’s picture', () => {
       multiple: true,
       blocks: true,
     };
-    const types = ITEM_TYPES.map((t) =>
+    const types: ItemTypeDef[] = ITEM_TYPES.map((t: ItemTypeDef) =>
       t.id === 'project'
         ? { ...t, fields: [...t.fields, blockedBy.id], custom: [...(t.custom ?? []), blockedBy] }
         : t,
