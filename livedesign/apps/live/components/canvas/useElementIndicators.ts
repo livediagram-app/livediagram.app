@@ -5,6 +5,8 @@
 import {
   activeCommentCount,
   isOpenAction,
+  labelFontPx,
+  labelTextScale,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
@@ -87,6 +89,8 @@ export function useElementIndicators(
   // A circle or a pill is fully round however its corner preset reads.
   const indicatorCornerPx = shape === 'circle' || shape === 'stadium' ? Infinity : cornerPx;
   const metrics = label.inlineIcon ? inlineIconMetrics(element, label.text, label.textSize) : null;
+  // A scaled label (docs/specs/007-editor/pages-mode.md "Sizes") takes less room than its size's own px.
+  const textScale = labelTextScale(element);
   const position = (element.type === 'shape' && element.iconPosition) || 'left';
   const layout = useIndicatorLayout(element, indicatorCornerPx, items, {
     label: label.text,
@@ -103,7 +107,9 @@ export function useElementIndicators(
             gap: inlineIconGap(metrics.iconSize, position === 'left' || position === 'right'),
           },
         }
-      : {}),
+      : textScale !== 1 && label.textSize !== 'scale'
+        ? { fontPx: labelFontPx(label.textSize) * textScale }
+        : {}),
   });
   return { items, layout, cornerPx: indicatorCornerPx };
 }

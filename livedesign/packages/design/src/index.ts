@@ -484,6 +484,7 @@ export * from './tab-builders';
 export * from './svg-render';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
+export { labelTextScale, withPickedTextSize } from './label-text-scale';
 export { borderOf } from './svg-render-border';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-table';

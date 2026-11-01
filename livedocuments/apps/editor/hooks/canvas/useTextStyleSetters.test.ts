@@ -2,7 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createText, type Element, type TextElement } from '@livedocuments/document';
+import { createShape, createText, type Element, type TextElement } from '@livedocuments/document';
 import { useTextStyleSetters } from './useTextStyleSetters';
 
 // Stands in for the DOM measure: the text block is 10 px a character at 14 px, scaled with the
@@ -20,7 +20,7 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 
 // A text box whose edits land through the setters. Whether it hugs is its own sizing, whatever the
 // editor mode (docs/specs/006-document/document-structure.md).
-function setup(el: TextElement) {
+function setup(el: Element) {
   let els: Element[] = [el];
   const commit = (map: (els: Element[]) => Element[]) => {
     els = map(els);
@@ -54,6 +54,17 @@ describe('useTextStyleSetters on a hugging text box', () => {
     setters.setTextSizeSelected('md');
     // 5 characters at 22 px: 78.57 wide, rounded up, plus 8; 27.5 tall, rounded up, plus 4.
     expect(current()).toMatchObject({ textSize: 'md', width: 87, height: 32 });
+    expect(current().textScale).toBeUndefined();
+  });
+
+  it("drops a re-fit scale from a shape's label with the size picked", () => {
+    const { setters, current } = setup({
+      ...createShape('square', 0, 0),
+      textSize: 16,
+      textScale: 0.46,
+    });
+    setters.setTextSizeSelected(18);
+    expect(current()).toMatchObject({ textSize: 18 });
     expect(current().textScale).toBeUndefined();
   });
 

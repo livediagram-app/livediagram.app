@@ -207,6 +207,10 @@ describe('Page edits', () => {
     }
     const title = onPage.find((e) => e.type === 'text') as { textScale?: number };
     expect(title.textScale).toBeLessThan(2);
+    // A button's words shrink with the button (pages-mode.md "Sizes"), as the title's do.
+    const button = onPage.find((e) => e.type === 'shape' && e.label) as { textScale?: number };
+    expect(button.textScale).toBeLessThan(1);
+    expect(button.textScale).toBe(title.textScale);
   });
 });
 

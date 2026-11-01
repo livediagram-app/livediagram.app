@@ -390,6 +390,9 @@ export type ShapeElement = {
   // override-free run => the legacy whole-element render. `label` is
   // always kept === runsPlainText(richText). See rich-text.ts.
   richText?: TextRun[];
+  // Multiplier on the label's size, set when a page re-fit scales the shape with its page
+  // (docs/specs/007-editor/pages-mode.md "Sizes"), so its words stay inside it. Absent = 1.
+  textScale?: number;
 };
 
 // --- Text ------------------------------------------------------------------

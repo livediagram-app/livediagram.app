@@ -325,9 +325,14 @@ a slide of a deleted page can never find a new page under the old id.
 - **Changing size or orientation re-fits the page's content**: everything on the page before the
   change stays on it. Content that still fits the new margin box keeps its size, re-centred (and
   nudged back inside the margins if it pokes out); content that no longer fits is scaled down as
-  one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
-  and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
-  pages after it move along. One edit, one undo.
+  one, about the page's centre, until it does: the words scale with it (`textScale`), a text
+  element's text and a shape's own label alike (with the label's inline icon, which follows its
+  size), and arrows' bends with their lines, so a button's words stay inside the button. A shape
+  that draws its own face (a chart, a card, a web component) keeps its face's type. Nothing is cut
+  off. The pages after it move along. One edit, one undo.
+- **A picked size is the size**: choosing a Text Size for an element that carries a `textScale`
+  (a re-fitted shape or text, a Shift-resized text box) sets the size it draws at and drops the
+  scale, so the readout and the drawn words agree again.
 - The page label reads `<name> · <size label> · <Portrait|Landscape> · <Article|Slide>`,
   the name only where the page has one: never "Page n", which the page navigator shows.
   Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post,
