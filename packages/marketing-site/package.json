@@ -19,6 +19,7 @@
     "@liveworkspace/auth-client": "workspace:^",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/licences": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },
   "peerDependencies": {
