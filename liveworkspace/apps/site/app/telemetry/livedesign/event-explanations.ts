@@ -365,6 +365,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone started a blank photo page, at a size and fill they chose.',
   'Tab|Changed|PhotoEditAsPhoto':
     "Someone made a new photo page from an image's picture (Edit as Photo).",
+  'Tab|Changed|PhotoMakeSizes':
+    'Someone copied a photo page into new pages of social sizes, such as an Instagram post or a page banner (Make Sizes).',
+  'Document|Exported|PhotoAllSizes':
+    'Someone downloaded every photo page of a tab in one zip, each file named by its page and size (All Sizes).',
   'Tab|Changed|PhotoImageSize': 'Someone resized a photo, every layer resampled (Image Size).',
   'Tab|Changed|PhotoCanvasSize':
     "Someone changed a photo's canvas size, its layers kept as they are.",

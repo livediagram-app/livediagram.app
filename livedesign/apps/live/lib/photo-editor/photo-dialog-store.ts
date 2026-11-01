@@ -15,6 +15,7 @@ export type PhotoDialog =
   | { kind: 'modify'; how: ModifyHow | 'grow' }
   | { kind: 'flatten' }
   | { kind: 'place' }
+  | { kind: 'make-sizes' }
   | { kind: 'select-and-mask' };
 
 let open: PhotoDialog | null = null;
