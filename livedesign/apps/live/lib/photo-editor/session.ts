@@ -130,7 +130,9 @@ export class PhotoSession {
     return () => this.listeners.delete(fn);
   }
 
-  /** Something changed: the screen redraws (`changes` names the tiles, null redraws everything). */
+  /** Something changed: the screen redraws (`changes` names the tiles, null redraws everything). An empty
+   *  list changed no pixels (an active layer, a preview of the stack): the GPU keeps every tile it holds, so
+   *  a 40-megapixel photo is not uploaded again at each step of an adjustment's slider. */
   changed(changes: TileChange[] | null = null): void {
     this.version++;
     for (const fn of this.listeners) fn(changes);
@@ -375,26 +377,26 @@ export class PhotoSession {
     this.active = layerId;
     const l = this.layer(layerId);
     this.target = target === 'mask' && l?.mask ? 'mask' : 'layer';
-    this.changed();
+    this.changed([]);
   }
 
   /** The layers chosen beside the active one, redrawn. */
   setChosen(ids: ReadonlySet<string>): void {
     this.chosen = ids;
-    this.changed();
+    this.changed([]);
   }
 
   /** The layer shown alone (Alt+press on its eye), or every layer again. */
   setSolo(layerId: string | null): void {
     this.solo = layerId;
-    this.changed();
+    this.changed([]);
   }
 
   /** The photo shown mid-gesture (a drag of a layer), not yet an edit: the gesture's end commits. */
   preview(next: Photo): void {
     this.photo = next;
     this.keepToLayers(next);
-    this.changed();
+    this.changed([]);
   }
 
   /** A layer's pixels put back as they were before a gesture that was cancelled: the raster taken
