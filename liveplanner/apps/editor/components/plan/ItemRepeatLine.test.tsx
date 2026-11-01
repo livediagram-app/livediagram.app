@@ -68,6 +68,16 @@ describe('ItemRepeatLine', () => {
     render(<ItemRepeatLine rule={RULE} now={NOW} offline />);
     expect(screen.getByText('Repeats only in plans saved to your account')).toBeTruthy();
   });
+
+  it('pads Edit and Stop to a 44px tap height on a touch screen', () => {
+    render(
+      <ItemRepeatLine rule={RULE} now={NOW} offline={false} onEdit={vi.fn()} onStop={vi.fn()} />,
+    );
+    for (const name of ['Edit', 'Stop']) {
+      const classes = screen.getByRole('button', { name }).className.split(' ');
+      expect(classes).toEqual(expect.arrayContaining(['touch-target-y', 'relative']));
+    }
+  });
 });
 
 function Harness({
