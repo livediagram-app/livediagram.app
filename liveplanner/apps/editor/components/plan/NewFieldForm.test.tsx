@@ -84,7 +84,7 @@ describe('Pick', () => {
     expect(screen.queryByText('Your own field')).toBeNull();
     expect(header('Text & links').getAttribute('aria-expanded')).toBe('true');
     expect(header('Numbers & dates').getAttribute('aria-expanded')).toBe('false');
-    expect(kindNames()).toEqual(['Text', 'Long Text', 'Link', 'Email']);
+    expect(kindNames()).toEqual(['Text', 'Long Text', 'Link', 'Email', 'Phone']);
     expect(kind('Link').getAttribute('aria-describedby')).toBeTruthy();
     expect(screen.getByText('A web address')).toBeTruthy();
   });
@@ -141,7 +141,7 @@ describe('Pick', () => {
   it('filters the kinds as you type, by a built-in’s name too, opening every group with a match', () => {
     open();
     type('date');
-    expect(kindNames()).toEqual(['Date']);
+    expect(kindNames()).toEqual(['Date', 'Date and Time', 'Date Range']);
     expect(header('Numbers & dates').getAttribute('aria-expanded')).toBe('true');
     expect(screen.queryByRole('button', { name: /^Text & links/ })).toBeNull();
     type('due');
@@ -167,7 +167,7 @@ describe('Pick', () => {
     expect(screen.getByText('1 field matches')).toBeTruthy();
     // Clearing it brings the accordion back as it was.
     type('');
-    expect(kindNames()).toEqual(['Text', 'Long Text', 'Link', 'Email']);
+    expect(kindNames()).toEqual(['Text', 'Long Text', 'Link', 'Email', 'Phone']);
   });
 
   it('says so when nothing matches', () => {

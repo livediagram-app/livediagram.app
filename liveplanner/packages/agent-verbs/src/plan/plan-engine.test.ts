@@ -281,6 +281,57 @@ describe('planListing', () => {
     ]);
   });
 
+  // docs/specs/026-plan/item-types.md "Date and Time", "Date Range", "Phone": ISO 8601 and the number as typed.
+  it('lists a moment as its UTC instant, a range as an ISO 8601 interval, and a phone as typed', async () => {
+    const EVENT = {
+      ...BUG,
+      id: 'event',
+      label: 'Event',
+      fields: ['title', 'status', 'f-when', 'f-trip', 'f-slot', 'f-phone'],
+      custom: [
+        { id: 'f-when', label: 'When', kind: 'datetime' as const },
+        { id: 'f-trip', label: 'Trip', kind: 'daterange' as const },
+        { id: 'f-slot', label: 'Slot', kind: 'daterange' as const, withTime: true },
+        { id: 'f-phone', label: 'Phone', kind: 'phone' as const },
+      ],
+    };
+    const cards = [
+      item(
+        9,
+        'hhh999',
+        {
+          title: 'Launch',
+          'f-when': '2026-10-31T17:00:00Z[Europe/London]',
+          'f-trip': ['2026-10-31', '2026-11-02'],
+          'f-slot': ['2026-10-31T09:00:00Z', '2026-10-31T17:00:00Z'],
+          'f-phone': '+44 20 7946 0958',
+        },
+        'event',
+      ),
+      item(10, 'iii000', { title: 'Odd', 'f-when': 'soon', 'f-trip': 'later' }, 'event'),
+    ];
+    const { api: a } = api(
+      { [`/projects/${D}/items`]: { items: cards, rev: 1 } },
+      { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, EVENT] },
+    );
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.items[0]!.fields).toEqual({
+      title: 'Launch',
+      When: '2026-10-31T17:00:00Z',
+      Trip: '2026-10-31/2026-11-02',
+      Slot: '2026-10-31T09:00:00Z/2026-10-31T17:00:00Z',
+      Phone: '+44 20 7946 0958',
+    });
+    // A stray value is listed as stored.
+    expect(listing.items[1]!.fields).toEqual({ title: 'Odd', When: 'soon', Trip: 'later' });
+    expect(listing.types.find((t) => t.id === 'event')!.custom).toEqual([
+      { id: 'f-when', name: 'When', kind: 'datetime' },
+      { id: 'f-trip', name: 'Trip', kind: 'daterange' },
+      { id: 'f-slot', name: 'Slot', kind: 'daterange', withTime: true },
+      { id: 'f-phone', name: 'Phone', kind: 'phone' },
+    ]);
+  });
+
   // docs/specs/026-plan/item-types.md "Holds Several": a comma list of names and cards, read and written back.
   describe('a field that holds several', () => {
     const SAM = { id: 'n-sam', name: 'Sam', color: '#2563eb' };

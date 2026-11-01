@@ -11,7 +11,8 @@ import { canvasSurface } from '@livedocuments/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
+import { setBandDocumentName } from '@/lib/article/article-band-layout';
 import { presentedPages } from '@/lib/presented-pages';
 import {
   LockedElementMenu,
@@ -240,6 +241,8 @@ export function EditorCanvasHost() {
     isOutOfScope,
     tabLoadErrors,
   } = useEditorContext();
+  // The name a {name} field in an article's header or footer shows.
+  useLayoutEffect(() => setBandDocumentName(documentName), [documentName]);
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
   const startPanelOpen = useStartPanelOpen();

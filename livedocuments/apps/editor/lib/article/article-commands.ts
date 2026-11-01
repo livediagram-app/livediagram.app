@@ -18,6 +18,7 @@ import {
   type ArticleListKind,
   type ArticleParagraphStyle,
 } from '@livedocuments/document';
+import { isInTable } from 'prosemirror-tables';
 import { articleSchema, numberAttr, safeMarkColor, textAttr } from './article-schema';
 
 const S = articleSchema;
@@ -373,13 +374,23 @@ export const backspaceAtStart: Command = (state, dispatch, view) => {
     if (dispatch) dispatch(state.tr.delete(beforePos, pos));
     return true;
   }
-  if (before.type === S.nodes.zone) {
+  if (before.type === S.nodes.zone || before.type === S.nodes.toc) {
     if (dispatch) {
       const tr = state.tr;
-      // An empty block goes with the move to the zone.
+      // An empty block goes with the move to the zone (or the contents).
       if (node.content.size === 0 && isTextBlock(node)) tr.delete(pos, pos + node.nodeSize);
       tr.setSelection(NodeSelection.create(tr.doc, beforePos));
       dispatch(tr);
+    }
+    return true;
+  }
+  if (before.type === S.nodes.table) {
+    // Into the end of the table's last cell, never joined into it.
+    if (dispatch) {
+      const tr = state.tr;
+      if (node.content.size === 0 && isTextBlock(node)) tr.delete(pos, pos + node.nodeSize);
+      tr.setSelection(Selection.near(tr.doc.resolve(pos - 3), -1));
+      dispatch(tr.scrollIntoView());
     }
     return true;
   }
@@ -401,8 +412,13 @@ export const deleteAtEnd: Command = (state, dispatch) => {
     if (dispatch) dispatch(state.tr.delete(afterPos, afterPos + after.nodeSize));
     return true;
   }
-  if (after.type === S.nodes.zone) {
+  if (after.type === S.nodes.zone || after.type === S.nodes.toc) {
     if (dispatch) dispatch(state.tr.setSelection(NodeSelection.create(state.doc, afterPos)));
+    return true;
+  }
+  if (after.type === S.nodes.table) {
+    // Into the start of the table's first cell, never joined into it.
+    if (dispatch) dispatch(state.tr.setSelection(TextSelection.create(state.doc, afterPos + 3)));
     return true;
   }
   return false;
@@ -470,6 +486,9 @@ export type ArticleSelectionState = {
   zoneId: string | null;
   // Text is selected (what a margin note goes on).
   hasText: boolean;
+  // The selection is in a table's cells (the Table menu shows), and that table has its header row on.
+  inTable: boolean;
+  tableHeader: boolean;
 };
 
 /** Whether two selection states show the same toolbar. */
@@ -484,9 +503,28 @@ export function sameSelectionState(a: ArticleSelectionState, b: ArticleSelection
     a.inText === b.inText &&
     a.zoneId === b.zoneId &&
     a.hasText === b.hasText &&
+    a.inTable === b.inTable &&
+    a.tableHeader === b.tableHeader &&
     a.marks.size === b.marks.size &&
     [...a.marks].every((m) => b.marks.has(m))
   );
+}
+
+/** Whether the table around the selection has its header row on (every cell of its first row a header
+ *  cell): the Table menu's Header Row. False outside a table. */
+export function tableHasHeader(state: EditorState): boolean {
+  const { $from } = state.selection;
+  for (let d = $from.depth; d > 0; d--) {
+    const node = $from.node(d);
+    if (node.type !== S.nodes.table) continue;
+    const first = node.firstChild;
+    let all = !!first && first.childCount > 0;
+    first?.forEach((cell) => {
+      if (cell.type !== S.nodes.table_header) all = false;
+    });
+    return all;
+  }
+  return false;
 }
 
 export function selectionStateOf(state: EditorState): ArticleSelectionState {
@@ -541,6 +579,8 @@ export function selectionStateOf(state: EditorState): ArticleSelectionState {
     color,
     highlight,
     inText: !!first && (isTextBlock(first) || first.type === CODE),
+    inTable: isInTable(state),
+    tableHeader: tableHasHeader(state),
     zoneId:
       state.selection instanceof NodeSelection && state.selection.node.type === S.nodes.zone
         ? (state.selection.node.attrs.id as string)

@@ -929,7 +929,8 @@ A board's cards go out to a CSV file from a **Board tab's** Export dialog (its *
 ([CSV](../029-sheets/sheet.md#csv)): RFC 4180 quoting both ways, a comma (or a tab, when the first line holds one; a semicolon when it holds semicolons
 and no comma).
 A download is safe to open: a field a spreadsheet would run as a formula is made inert with a leading `'` (the
-Sheet's rule).
+Sheet's rule); a phone number as typed (`+44 20 7946 0958`) is written as quoted text with no `'`, as it holds no
+formula.
 
 **The CSV export** (everyone, a Viewer included) is the cards the board shows, before any quick filter: column by
 column in board order, each column's cards in their order on it. A file named for the board's title ("Roadmap.csv";
@@ -941,8 +942,9 @@ column in board order, each column's cards in their order on it. A file named fo
   **Priority** (Urgent, High, Medium, Low), **Start**, **Due** (YYYY-MM-DD), **Estimate**, **Labels** (joined by ", "),
   **Description** (its plain text).
 - Then the custom fields of the board's card types by their label, in catalogue order (a label two types share is one
-  column): a Card field (Parent among them) as the linked card's title, a checkbox as "Yes" or empty, the rest as
-  written; a Person or Card field that holds several as its names or titles joined by ", ". A field a card's type does not offer is empty on its row.
+  column): a Card field (Parent among them) as the linked card's title, a checkbox as "Yes" or empty, a Date and
+  Time as its UTC instant in ISO 8601 (`2026-10-31T17:00:00Z`), a Date Range as an ISO 8601 interval
+  (`2026-10-31/2026-11-02`), a Phone as typed, the rest as written; a Person or Card field that holds several as its names or titles joined by ", ". A field a card's type does not offer is empty on its row.
 
 **Import CSV…** (an Editor or a Participant, who may add cards; dimmed for a Viewer, and on an Archive board) opens a
 file picker (`.csv`, `.tsv`). The first row names the columns, matched case-insensitively by the names the Sheet's
@@ -964,7 +966,9 @@ to import. Import CSV reads files up to 5 MB." Each row after it becomes a new c
   two-digit year in this century); a date that is not a real day is left empty.
 - **Labels**: split at commas and semicolons, as many as a card holds. **Description**: plain text, cut to its limit.
 - Custom fields of the row's type by label: a number as a number, a checkbox from Yes/True/1/X, a choice only as one
-  of its options; a Person field by name (a field that holds several takes a comma list of names); a Card field is
+  of its options; a Date and Time from ISO 8601 (with its offset, or without one read in the importer's own zone,
+  "2026-10-31 17:00" too); a Date Range from two ends joined by `/` (or " to "), each read as its field's ends are; a
+  Phone as a phone number (a leading `'` from an older download dropped); a Person field by name (a field that holds several takes a comma list of names); a Card field is
   not imported.
 - A field the row's type does not offer is ignored, as is a value that does not fit its field.
 

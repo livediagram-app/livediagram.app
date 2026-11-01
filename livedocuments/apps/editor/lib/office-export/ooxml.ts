@@ -27,6 +27,7 @@ export const REL = {
   numbering: `${RT}/numbering`,
   settings: `${RT}/settings`,
   footer: `${RT}/footer`,
+  header: `${RT}/header`,
   slide: `${RT}/slide`,
   slideLayout: `${RT}/slideLayout`,
   slideMaster: `${RT}/slideMaster`,

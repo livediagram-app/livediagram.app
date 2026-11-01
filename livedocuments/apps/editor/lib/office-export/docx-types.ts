@@ -2,7 +2,9 @@
 // article's blocks in order, its zones already drawn as images, the look its styles carry and the paper.
 
 import type {
+  ArticleBand,
   ArticleBlock,
+  ArticleTocEntry,
   ArticleParagraphStyle,
   ArticleRules,
   ArticleZoneAlign,
@@ -19,7 +21,27 @@ export type DocxImage = {
   align: ArticleZoneAlign;
 };
 
-export type DocxBlock = Exclude<ArticleBlock, { type: 'zone' }> | DocxImage;
+/** A contents block resolved: the headings of its article it lists, each with the page the editor laid it on (absent
+ *  when no editor has laid the article out; Word fills them on Update Field). */
+export type DocxToc = {
+  type: 'docxToc';
+  id: string;
+  depth: 1 | 2 | 3;
+  entries: (ArticleTocEntry & { page?: number })[];
+};
+
+export type DocxBlock =
+  Exclude<ArticleBlock, { type: 'zone' } | { type: 'toc' }> | DocxImage | DocxToc;
+
+/** The header and footer (docs/specs/007-editor/article-pages.md "Headers and footers"), with the values their
+ *  name and date fields take as of the export; page numbers are the look's. */
+export type DocxBands = {
+  header?: ArticleBand;
+  footer?: ArticleBand;
+  differentFirstPage: boolean;
+  name: string;
+  date: string;
+};
 
 /** The article's style resolved to what Word's styles say: faces, sizes in px, colours as six hex digits. */
 export type DocxLook = {
@@ -49,6 +71,12 @@ export type DocxPage = {
   topMarginPx: number;
 };
 
-export type DocxDocument = { title: string; look: DocxLook; page: DocxPage; blocks: DocxBlock[] };
+export type DocxDocument = {
+  title: string;
+  look: DocxLook;
+  page: DocxPage;
+  blocks: DocxBlock[];
+  bands?: DocxBands;
+};
 
 export type { ArticleParagraphStyle };

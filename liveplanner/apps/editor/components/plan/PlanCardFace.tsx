@@ -40,6 +40,7 @@ import {
   itemAttachments,
   itemHasStamp,
   runningOnCard,
+  pastDue,
 } from '@liveplanner/items';
 import { RunningTimerPill } from './time/TimerReadouts';
 import { finishFaceShadows } from '@liveplanner/project';
@@ -364,8 +365,16 @@ export function PlanCardFace({
           ? typeIn(plan?.types ?? ITEM_TYPES, linkedTypeId)
           : undefined;
         const linkedColour = linked ? itemColourOf(linked, linkedType) : undefined;
+        // A Date and Time or Date Range that has passed draws red, as an overdue Due does, never on a done card
+        // (item-types.md "Past due").
+        const late = !muted && pastDue(def, item.fields[def.id]);
         return (
-          <MetaPill key={f} palette={palette} label={`${def.label}: ${text}`}>
+          <MetaPill
+            key={f}
+            palette={palette}
+            {...(late ? { tone: LATE_COLOUR } : {})}
+            label={`${def.label}: ${text}${late ? ', overdue' : ''}`}
+          >
             {linkedColour ? (
               <ColourDot colour={linkedColour} />
             ) : linkedType ? (

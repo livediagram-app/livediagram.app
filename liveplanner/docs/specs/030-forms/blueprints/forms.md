@@ -33,6 +33,9 @@ export const QUESTION_TYPES = [
   'email',
   'link',
   'date',
+  'datetime',
+  'daterange',
+  'phone',
   'single',
   'multi',
   'rating',
@@ -58,6 +61,7 @@ export interface FormQuestion {
   max?: number;
   whole?: true; // number; multi: picks
   scale?: number;
+  withTime?: true; // daterange: each end a date and time
   style?: 'stars' | 'numbers';
   lowLabel?: string;
   highLabel?: string; // rating
@@ -131,7 +135,11 @@ only when `raw` is not an object. `QUESTION_TYPE_NAMES` and `QUESTION_TYPE_TELEM
 field). An Other pick is sent as `OTHER_ANSWER` with its text under `other`.
 
 `checkAnswer(q, raw, other?) → { value?, error? }`, errors `required | too_long | not_a_number | not_whole | below_min
-| above_max | not_an_email | not_a_link | not_a_date | not_an_option | too_few | too_many | out_of_scale | must_tick`.
+| above_max | not_an_email | not_a_link | not_a_date | not_a_time | both_dates | end_before_start | not_a_phone | not_an_option |
+too_few | too_many | out_of_scale | must_tick`. A `datetime` answer is `parseDateTime(raw)` (offset required, the
+respondent page sends `fromLocalInput`'s value) else `not_a_time`; a `daterange` answer a two-item list, each end a day
+(`not_a_date`) or, with `withTime`, an instant (`not_a_time`), one end missing `both_dates`, the end first
+`end_before_start`, kept as `[start, end]`; a `phone` answer `isPhoneNumber` (kept trimmed) else `not_a_phone`.
 An empty answer (`''`, whitespace, `[]`, `false`, absent) is `{}`, or `required` / `must_tick` when required. A Link
 without a scheme is taken as `https://`; only `https://` with a dotted host passes. Multiple picks are kept in option
 order, an Other's text last. `checkResponse(form, body, questions?)` checks every question (or a section's); answers to
@@ -139,7 +147,10 @@ unknown ids are dropped. `answerErrorMessage(q, error)` is the page's copy, shar
 
 ## 5. Mapping (`mapping.ts`)
 
-`MAPPABLE_KINDS`, `TITLE_TYPES` (short, email, number, single, date) and `NEW_FIELD_KIND` are the spec's tables.
+`MAPPABLE_KINDS`, `TITLE_TYPES` (short, email, phone, number, single, date) and `NEW_FIELD_KIND` are the spec's
+tables. A `daterange` question fits a `daterange` field only when their Include Time match; `newFieldFor` copies
+`withTime`. `answerText` reads a `datetime` as `dateTimeText(v, 'medium', { tz: its zone })` and its zone in brackets,
+a `daterange` as "start to end" (days as stored, timed ends as a `datetime` reads).
 `fieldTakes(q, field)`: the kind fits; a rating field's scale ≥ the question's; a choice field holds every option
 and the question has no Other. `effectiveTarget(q, type)` resolves `goesTo` or falls back to Description with
 `broken: true` (field gone, not in `type.fields`, no longer fits; Title on a type that cannot be one).

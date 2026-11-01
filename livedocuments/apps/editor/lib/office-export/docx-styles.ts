@@ -3,6 +3,7 @@
 // styles (Normal, Title, Subtitle, Heading 1 to 3, Quote, Code, List Paragraph, Hyperlink), so a heading restyled in
 // Word restyles every heading; and the bullet and numbered list definitions. Pure string building.
 
+import type { ArticleBand } from '@livedocuments/document';
 import { xmlText, XML_DECL } from './ooxml';
 import type { DocxLook } from './docx-types';
 
@@ -17,6 +18,7 @@ export const DOCX_TYPES = {
   numbering: `${WML}.numbering+xml`,
   settings: `${WML}.settings+xml`,
   footer: `${WML}.footer+xml`,
+  header: `${WML}.header+xml`,
 } as const;
 
 /** Twips (twentieths of a point) per page px: 96 px an inch, 1440 twips an inch. */
@@ -54,6 +56,12 @@ export const CODE_STYLE_ID = 'Code';
 export const CODE_CHAR_STYLE_ID = 'CodeChar';
 export const LIST_STYLE_ID = 'ListParagraph';
 export const HYPERLINK_STYLE_ID = 'Hyperlink';
+// A contents block (docs/specs/007-editor/article-pages.md "Table of contents"): its heading, and its entries by
+// level, Word's own style names so Update Field keeps them.
+export const TOC_HEADING_STYLE_ID = 'TOCHeading';
+export const tocStyleId = (level: number) => `TOC${level}`;
+// A contents entry's indent, px a level.
+const TOC_INDENT_PX = 20;
 
 // The list definitions: bullets by level (•, ◦, ▪, again), numbers by level (1, a, i, again), 28 px a level.
 export const BULLET_NUM_ID = 1;
@@ -151,6 +159,14 @@ export function stylesXml(look: DocxLook): string {
       border: `<w:pBdr><w:left w:val="single" w:sz="24" w:space="12" w:color="${look.accent}"/></w:pBdr>`,
       indent: `<w:ind w:left="${twips(16)}"/>`,
     }) +
+    paragraphStyle(TOC_HEADING_STYLE_ID, 'TOC Heading', look, TYPE.h2, { colour: heading }) +
+    [1, 2, 3]
+      .map(
+        (level) =>
+          `<w:style w:type="paragraph" w:styleId="${tocStyleId(level)}"><w:name w:val="toc ${level}"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/>` +
+          `<w:pPr><w:spacing w:after="${twips(body * 0.25)}"/><w:ind w:left="${twips(TOC_INDENT_PX * (level - 1))}"/></w:pPr></w:style>`,
+      )
+      .join('') +
     `<w:style w:type="paragraph" w:styleId="${CODE_STYLE_ID}"><w:name w:val="Code"/><w:basedOn w:val="Normal"/><w:qFormat/>` +
     `<w:pPr><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/>` +
     `<w:spacing w:before="${twips(code.before * codeLine)}" w:after="${twips(code.after * codeLine)}" ${leading(code.px * (body / NORMAL_PX), look.lineHeight)}/>` +
@@ -205,13 +221,54 @@ export const SETTINGS_XML =
   '<w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat>' +
   '</w:settings>';
 
-/** The footer of a document with page numbers: the page number field, centred, small and muted. */
-export function footerXml(look: DocxLook): string {
-  const rPr = `<w:rPr><w:color w:val="${look.muted}"/><w:sz w:val="${halfPoints(look.bodyPx * 0.8)}"/></w:rPr>`;
+/** A field run (`PAGE`, `NUMPAGES`): Word works its value out; `shown` is what reads until it does. */
+export function fieldRuns(instr: string, shown: string, rPr = ''): string {
   return (
-    `${XML_DECL}<w:ftr ${WML_NS}><w:p><w:pPr><w:jc w:val="center"/></w:pPr>` +
-    `<w:r>${rPr}<w:fldChar w:fldCharType="begin"/></w:r><w:r>${rPr}<w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>` +
-    `<w:r>${rPr}<w:fldChar w:fldCharType="separate"/></w:r><w:r>${rPr}<w:t>1</w:t></w:r>` +
-    `<w:r>${rPr}<w:fldChar w:fldCharType="end"/></w:r></w:p></w:ftr>`
+    `<w:r>${rPr}<w:fldChar w:fldCharType="begin"/></w:r><w:r>${rPr}<w:instrText xml:space="preserve"> ${instr} </w:instrText></w:r>` +
+    `<w:r>${rPr}<w:fldChar w:fldCharType="separate"/></w:r><w:r>${rPr}<w:t>${xmlText(shown)}</w:t></w:r>` +
+    `<w:r>${rPr}<w:fldChar w:fldCharType="end"/></w:r>`
   );
+}
+
+/** A header's or footer's part as runs: `{page}` and `{pages}` Word's fields, `{name}` and `{date}` their text as of
+ *  the export. */
+function bandPartRuns(text: string, rPr: string, values: { name: string; date: string }): string {
+  let out = '';
+  for (const piece of text.split(/(\{(?:page|pages|name|date)\})/)) {
+    if (!piece) continue;
+    if (piece === '{page}') out += fieldRuns('PAGE', '1', rPr);
+    else if (piece === '{pages}') out += fieldRuns('NUMPAGES', '1', rPr);
+    else {
+      const t = piece === '{name}' ? values.name : piece === '{date}' ? values.date : piece;
+      if (t) out += `<w:r>${rPr}<w:t xml:space="preserve">${xmlText(t)}</w:t></w:r>`;
+    }
+  }
+  return out;
+}
+
+/**
+ * A header or a footer part (`word/header1.xml`, `word/footer1.xml`): one paragraph, its left part at the margin,
+ * its centre on a centre tab stop, its right part on a right tab stop at the text's right edge, small and muted as
+ * the page draws it. An absent band is an empty paragraph (an empty first-page header or footer).
+ */
+export function bandXml(
+  kind: 'header' | 'footer',
+  band: ArticleBand | undefined,
+  look: DocxLook,
+  textWidthPx: number,
+  values: { name: string; date: string },
+): string {
+  const rPr = `<w:rPr><w:color w:val="${look.muted}"/><w:sz w:val="${halfPoints(look.bodyPx * 0.8)}"/></w:rPr>`;
+  const tabs =
+    `<w:tabs><w:tab w:val="center" w:pos="${twips(textWidthPx / 2)}"/>` +
+    `<w:tab w:val="right" w:pos="${twips(textWidthPx)}"/></w:tabs>`;
+  const part = (t: string | undefined) => (t ? bandPartRuns(t, rPr, values) : '');
+  const tab = `<w:r>${rPr}<w:tab/></w:r>`;
+  const content = band
+    ? band.center || band.right
+      ? part(band.left) + tab + part(band.center) + (band.right ? tab + part(band.right) : '')
+      : part(band.left)
+    : '';
+  const root = kind === 'header' ? 'w:hdr' : 'w:ftr';
+  return `${XML_DECL}<${root} ${WML_NS}><w:p><w:pPr>${tabs}<w:spacing w:after="0"/></w:pPr>${content}</w:p></${root}>`;
 }

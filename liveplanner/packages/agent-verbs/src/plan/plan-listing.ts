@@ -54,6 +54,9 @@ import {
   rollupProblem,
   durationMinutes,
   durationText,
+  instantIso,
+  isTimedRange,
+  rangeIso,
   isTimeSpent,
   readTimeValue,
   timePerson,
@@ -181,6 +184,7 @@ export interface ListedType {
     showAs?: 'percent';
     // A Duration field that tracks time, read-only to agents (docs/specs/026-plan/item-types.md "Time Spent").
     timeSpent?: true;
+    withTime?: true;
     readOnly?: true;
     onCard?: boolean;
     // A card of the type must have a value for it (docs/specs/026-plan/item-types.md "Required fields").
@@ -348,6 +352,10 @@ function listedValue(
   if ((key === PARENT_FIELD_ID || field?.kind === 'card') && typeof value === 'string')
     return linkText(value);
   // "2h 30m"; a Time Spent field its total (docs/specs/026-plan/item-types.md "Duration").
+  // ISO 8601: a moment as its UTC instant, a range as its interval (docs/specs/026-plan/item-types.md "Date and
+  // Time", "Date Range").
+  if (field?.kind === 'datetime') return instantIso(value) ?? value;
+  if (field?.kind === 'daterange') return rangeIso(value as ItemFieldValue) ?? value;
   if (field?.kind === 'duration') {
     const m = durationMinutes(field, value as ItemFieldValue);
     return m === undefined ? null : durationText(m);
@@ -386,6 +394,7 @@ export function listedType(
       ...(isRollupField(f) || isLookupField(f) ? listedRollup(f, t, types) : {}),
       ...(f.kind === 'calculated' && showsAsPercent(f) ? { showAs: 'percent' as const } : {}),
       ...(isTimeSpent(f) ? { timeSpent: true as const } : {}),
+      ...(isTimedRange(f) ? { withTime: true as const } : {}),
       ...(f.kind === 'calculated' || isTimeSpent(f) ? { readOnly: true as const } : {}),
       ...(f.onCard ? { onCard: true } : {}),
       ...(f.required ? { required: true } : {}),

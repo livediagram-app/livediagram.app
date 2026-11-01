@@ -1,5 +1,7 @@
 // Calendar days for the plan views (docs/specs/026-plan/plan-views.md): a `YYYY-MM-DD` date field as a
 // whole day number, so a time axis or a month grid is integer arithmetic with no time zone in it.
+import { readInstant, zonedDay } from './date-time-fields';
+
 export const DAY_MS = 86_400_000;
 const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -34,11 +36,16 @@ export const MONTH_LONG = [
   'December',
 ] as const;
 
-// Days since 1970-01-01 for a `YYYY-MM-DD` value that is a real date, or undefined for anything else.
-export function dayNumber(value: unknown): number | undefined {
+// Days since 1970-01-01 for a `YYYY-MM-DD` value that is a real date, or for a Date and Time moment the day it falls
+// on in `tz` (the runtime's zone, the viewer's, without one; docs/specs/026-plan/plan-views.md "Times and ranges");
+// undefined for anything else.
+export function dayNumber(value: unknown, tz?: string): number | undefined {
   if (typeof value !== 'string') return undefined;
   const m = ISO_DAY.exec(value);
-  if (!m) return undefined;
+  if (!m) {
+    const at = readInstant(value);
+    return at ? zonedDay(at.ms, tz) : undefined;
+  }
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
   // A day past its month's end ("2026-02-31") is not a date, rather than a day in the next month.
   if (mo < 1 || mo > 12 || d < 1 || d > daysInMonth(y, mo - 1)) return undefined;

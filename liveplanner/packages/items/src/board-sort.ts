@@ -11,6 +11,8 @@ import { CUSTOM_FIELD_ID_PATTERN, customFieldOf } from './type-catalogue';
 import { isObj } from './validate';
 import { percentValue } from './percent-fields';
 import { durationMinutes } from './duration-fields';
+import { readInstant } from './date-time-fields';
+import { readRange } from './date-range-fields';
 import { statusKey } from './status-names';
 import { STAMP_FIELD_LABELS, isStampField, itemStampTime } from './card-stamps';
 
@@ -47,9 +49,16 @@ export const BOARD_SORT_KINDS: readonly CustomFieldKind[] = [
   // Shortest first, as whole minutes; a Time Spent field by its total (docs/specs/026-plan/item-types.md "Duration").
   'duration',
   'date',
+  // By its moment, and a range by its start, earliest first (item-types.md "Date and Time", "Date Range").
+  'datetime',
+  'daterange',
   'rating',
   'choice',
 ];
+
+// The kind a custom field sorts as: a moment and a range sort as dates do.
+const sortKindOf = (kind: CustomFieldKind): BoardSortKind =>
+  kind === 'datetime' || kind === 'daterange' ? 'date' : (kind as BoardSortKind);
 
 export type BoardSortKind =
   'priority' | 'number' | 'currency' | 'percent' | 'duration' | 'date' | 'rating' | 'choice';
@@ -93,9 +102,7 @@ export function boardSortFieldsOf(types: readonly ItemTypeDef[]): BoardSortField
   ).map((f) => BUILT_IN_SORT_FIELDS[f]);
   for (const t of types)
     for (const c of t.custom ?? []) {
-      const kind = BOARD_SORT_KINDS.includes(c.kind)
-        ? (c.kind as BoardSortKind)
-        : formulaSortKind(c);
+      const kind = BOARD_SORT_KINDS.includes(c.kind) ? sortKindOf(c.kind) : formulaSortKind(c);
       if (!kind || !t.fields.includes(c.id)) continue;
       if (out.some((f) => f.id === c.id)) continue;
       out.push({ id: c.id, label: c.label, kind });
@@ -113,7 +120,7 @@ export function boardSortFieldOf(
   for (const t of types) {
     const c = customFieldOf(t, id);
     if (c && BOARD_SORT_KINDS.includes(c.kind))
-      return { id: c.id, label: c.label, kind: c.kind as BoardSortKind };
+      return { id: c.id, label: c.label, kind: sortKindOf(c.kind) };
     const worked = c && formulaSortKind(c);
     if (c && worked) return { id: c.id, label: c.label, kind: worked };
   }
@@ -184,6 +191,13 @@ function readerFor(
   if (def.kind === 'percent') return (item) => percentValue(item.fields[field]);
   if (def.kind === 'duration') return (item) => durationMinutes(def, item.fields[field]);
   if (def.kind === 'date') return (item) => day(item.fields[field]);
+  if (def.kind === 'datetime') return (item) => readInstant(item.fields[field])?.ms;
+  // A range of days by its first day's text, a timed range by its start's moment: one field's keys are one shape.
+  if (def.kind === 'daterange')
+    return (item) => {
+      const r = readRange(item.fields[field]);
+      return r ? (r.timed ? readInstant(r.start)!.ms : r.start) : undefined;
+    };
   // A Formula, Rollup or Lookup by its worked-out value: a day as a day, every other sortable result as a number.
   const formulaKind = formulaSortKind(def);
   if (formulaKind) {

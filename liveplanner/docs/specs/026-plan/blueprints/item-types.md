@@ -384,6 +384,65 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
   - Agents: `plan-schema.ts` adds `percent` to the kind enum and `showAs` to `add`/`editCustom`; `plan-listing.ts`
     lists `showAs` on a field that shows as a Percent; the OpenAPI schema is regenerated (`gen:openapi`) from
     `CUSTOM_FIELD_KINDS` and `CustomFieldDef`.
+- Date and Time, Date Range and Phone fields (spec "Date and Time", "Date Range", "Phone"; kinds `datetime`,
+  `daterange`, `phone` in `CUSTOM_FIELD_KINDS`). Each kind has one reading module in packages/items, shared by every
+  surface:
+  - `date-time-fields.ts`: `readInstant(v)` (`{ ms, zone? }` from any ISO 8601 date-time with `Z` or `±HH:MM`,
+    optional seconds and fraction, optional `[Area/City]` suffix; else undefined); `instantValue(ms, zone?)` (the
+    stored form, `YYYY-MM-DDTHH:MM:00Z` plus `[zone]`, the minute floored); `isInstantValue(v)`;
+    `parseDateTime(text, { local? })` (the stored form, or undefined; `local` reads a time with no offset in the
+    runtime's own zone, "2026-10-31 17:00" too, and stamps the runtime's zone; without `local` an offset is
+    required); `instantIso(v)` (`YYYY-MM-DDTHH:MM:SSZ`, the zone dropped; agents and CSV); `zonedParts(ms, tz?)`
+    (year, month, date, hour, minute in `tz`, else the runtime's zone through the Date getters; one cached
+    `Intl.DateTimeFormat` per zone), `zonedDay(ms, tz?)` (that day as a day number), `zonedInstant(day, hour, minute,
+tz?)` (the inverse, a clock change resolved as the platform does: a skipped time moves forward, a repeated one
+    takes the first); `shiftInstant(v, days, tz?)` (whole days keeping the wall-clock time and the zone);
+    `instantOnDay(v | undefined, day, tz?)` (an instant moved to `day` keeping its time, or a new one at
+    `TIMED_DEFAULT_HOUR` 9:00); `dateTimeText(v, style 'short' | 'medium', { tz?, now? })` (weekday, day, short
+    month, the year in `medium` or when not `now`'s, and the time, in the viewer's locale and clock; one cached
+    formatter per style, zone and year shape); `dateTimeZones(v, tz?)` (the panel's zone line: "Your time,
+    Europe/London", then "· Set as Fri 31 Oct, 13:00 in America/New_York" when its zone differs); `localInputValue(v, tz?)`
+    and `fromLocalInput(text, tz?)` (a `datetime-local` box's `YYYY-MM-DDTHH:MM`); `viewerZone()`.
+  - `date-range-fields.ts`: `readRange(v)` (`{ start, end }` from a two-item list whose ends are both days or both
+    instants, in order; else undefined); `rangeValue(a, b)` (the two ends in order); `parseDateRange(input,
+withTime, { local? })` (a list of two, or text split at `/` or " to ", each end read as a day, `cardDateOf`, or a
+    `parseDateTime`; a range of days refuses an instant and the other way round); `rangeIso(v)` ("start/end", each
+    end `instantIso` when timed); `dateRangeText(v, style, { tz?, now? })`; `rangeEndOf(v, role)` (`start` the first
+    end, `due` the last); `rangeWithEnd(v, role, end)` (one end replaced, the other moved along when crossed, or both
+    set from `end` when there was none); `isTimedRange(field)` (`withTime === true`).
+  - `phone-fields.ts`: `PHONE_MAX` 32, `PHONE_DIGITS_MIN` 3, `isPhoneNumber(v)` (trimmed, at most `PHONE_MAX`,
+    `/^\+?[\d ()-]+$/` with at least `PHONE_DIGITS_MIN` digits), `phoneHref(v)` (`tel:` and the `+` and digits), and
+    `PHONE_HINT`.
+  - `readCustom` keeps `withTime` only as `true` on a `daterange` field (dropped elsewhere, never refused);
+    `type-changes.ts` takes `withTime` only on an added `daterange` field (refused on another kind); `editCustom`
+    takes no `withTime`, since Include Time is chosen when the field is made. `canBeRequired` allows all three; `isEmptyFieldValue` reads an empty
+    list as empty.
+  - Readers: `customFieldText` (a Date and Time `dateTimeText` short, a Date Range `dateRangeText` short, a Phone as
+    typed); `board-sort.ts` (`datetime` sorts by its ms and `daterange` by its start's, as kind `date` keyed by
+    number); `plan-names.ts` `resolveFields` (`parseDateTime` without `local`, `parseDateRange`, `isPhoneNumber`,
+    each refused with its hint); `board-csv.ts` (out: `instantIso`, `rangeIso`, the phone as typed; in:
+    `parseDateTime(..., { local: true })`, `parseDateRange(..., { local: true })`, `isPhoneNumber` after dropping a
+    leading `'`); `view-fields.ts` (`viewDateOptions` and `viewDatesOf` take the three date kinds; `ViewDates` gains
+    `shapes`, each role's field shape, absent for the built-ins); `plan-view-dates.ts` `dayNumber(v, tz?)` reads an
+    instant's day in `tz` (the runtime zone without one); `view-dates-write.ts` `roleValue(item, dates, role)` (a
+    range's end for its role) and `roleDays(item, dates, changes, tz?)` (the `set` that writes whole days to each
+    role: `dayKey` for a date, `instantOnDay` for an instant, `rangeWithEnd` for a range, both roles of one range
+    in one value), used by `calendarMove`, `ganttDrag`, `ganttDrawn(a, b, dates, item)` and `ganttNewCardDates`;
+    `ganttModel` marks a timed Due overdue by `now`'s ms; `calendarModel` gives each card `at` (the ms of a timed
+    date) and lists a day's untimed cards first, then timed by `at`.
+  - Agents: `plan-schema.ts` adds the kinds and `withTime` (add only); `plan-listing.ts` lists `withTime` and reads a
+    value as `instantIso` / `rangeIso`; the OpenAPI schema is regenerated (`gen:openapi`).
+  - Editor: `DateTimeInput` (`components/plan/DateTimeInput.tsx`, a `datetime-local` box with `DateInput`'s whole-
+    value rules), `DateRangeField` (`components/plan/DateRangeField.tsx`, From and To), `PhoneField`
+    (`components/plan/PhoneField.tsx`, a `tel` box and its `tel:` link), each from `CustomFieldEditor`; samples in
+    `CustomFieldKindParts` and `ItemTypeDisplay`; `IncludeTimeSwitch` in `ItemTypeFieldForms` (Add Field only);
+    `add-field-kinds.ts` places Phone in Text & links and Date and Time and Date Range in Numbers & dates, with the
+    spec's words; the card face draws a past Date and Time or Date Range in red (`pastDue(field, value, now?, tz?)`
+    in `date-range-fields.ts`), never on a done card; `CustomFieldEditor`'s `ZoneLine` (`dateTimeZones`) sits under
+    a moment's box and a timed range's boxes. `formula-fields.ts` reads a Date and Time as `instantIso` text and a
+    Date Range as a list of its ends; `card-source.ts` (sheet card functions, card tables) as `instantIso` and
+    `rangeIso`. Forms: `QuestionControl` (a `tel` box; a `datetime-local` box sending `fromLocalInput`; `RangeAnswer`,
+    From and To, sending the two ends or nothing), `QuestionSettings` (Include Time), `PlaceholderField` (Phone).
 - Duration fields (spec "Duration"): `duration-fields.ts` (packages/items) is the one reading, shared by every
   surface: `DURATION_HOURS_MAX` 99,999 and `DURATION_MINUTES_MAX`; `parseDuration(v)` (a number is minutes; text
   "2h 30m", "2h30m", "1.5h", "90m", "2:30" or a bare number of minutes, every character but spaces and commas
@@ -729,6 +788,11 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | Calculated fields: children, done, values, refusals                                                 | `packages/items/src/calculated-fields.test.ts`, `apps/api/src/routes/item-routes.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`                                                                                                                                                                         |
 | Rollup and Lookup: every aggregate, archived, trashed, missing links, limits, surfaces, 2,000 cards | `packages/items/src/rollup-fields.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`, `packages/project/src/svg-render-plan-card.test.ts`, `apps/editor/components/plan/RollupEditor.test.tsx`                                                                                                              |
 | Formula fields: language, limits, fuzz, values, results, sort, CSV, sheets, agents, 2,000 cards     | `packages/items/src/formula/formula.test.ts`, `packages/items/src/formula-fields.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`, `packages/project/src/svg-render-plan-card.test.ts`, `apps/editor/components/plan/FormulaEditor.test.tsx`, `apps/editor/components/plan/CalculatedFieldValue.test.tsx` |
+| Date and Time: read, parse, store, zones, DST, text, zone line, CSV, agents                         | `packages/items/src/date-time-fields.test.ts`, `packages/items/src/board-csv.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`                                                                                                                                                                             |
+| Date Range: read, parse, order, ends, text, CSV, agents                                             | `packages/items/src/date-range-fields.test.ts`, `packages/items/src/board-csv.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`                                                                                                                                                                            |
+| Times and ranges on calendars and the Gantt chart, across zones and clock changes                   | `packages/items/src/view-dates-write.test.ts`                                                                                                                                                                                                                                                                    |
+| Phone: check, tel link, CSV as text                                                                 | `packages/items/src/phone-fields.test.ts`, `packages/sheets/src/fill-csv.test.ts`                                                                                                                                                                                                                                |
+| Date and Time, Date Range, Phone in the card panel and its roles                                    | `apps/editor/components/plan/DateTimeFields.test.tsx`                                                                                                                                                                                                                                                            |
 | Percent: read, parse, clamp, show as, sort, lanes, CSV                                              | `packages/items/src/percent-fields.test.ts`                                                                                                                                                                                                                                                                      |
 | Percent: agents write, refuse, list showAs                                                          | `packages/agent-verbs/src/verbs/item.test.ts`, `packages/items/src/type-changes.test.ts`                                                                                                                                                                                                                         |
 | Percent: slider, chip, panel, switch                                                                | `apps/editor/components/plan/PercentSlider.test.tsx`, `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                                                                                                                                        |

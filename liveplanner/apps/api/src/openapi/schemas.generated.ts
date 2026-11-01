@@ -2642,6 +2642,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "timeSpent": {
         "type": "boolean"
+      },
+      "withTime": {
+        "type": "boolean"
       }
     },
     "required": [
@@ -2660,9 +2663,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "percent",
       "duration",
       "date",
+      "datetime",
+      "daterange",
       "checkbox",
       "link",
       "email",
+      "phone",
       "choice",
       "multichoice",
       "rating",
@@ -4085,6 +4091,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/QuestionType"
       },
       "whole": {
+        "const": true,
+        "type": "boolean"
+      },
+      "withTime": {
         "const": true,
         "type": "boolean"
       }
@@ -8473,6 +8483,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "whole": {
         "const": true,
         "type": "boolean"
+      },
+      "withTime": {
+        "const": true,
+        "type": "boolean"
       }
     },
     "required": [
@@ -8525,8 +8539,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "paragraph",
       "number",
       "email",
+      "phone",
       "link",
       "date",
+      "datetime",
+      "daterange",
       "single",
       "multi",
       "rating",

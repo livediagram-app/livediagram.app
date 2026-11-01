@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { useToday } from './useToday';
+import { useMinute, useToday } from './useToday';
 
 afterEach(() => vi.useRealTimers());
 
@@ -28,5 +28,23 @@ describe('useToday', () => {
       document.dispatchEvent(new Event('visibilitychange'));
     });
     expect(result.current.toDateString()).toBe(new Date(2026, 9, 13).toDateString());
+  });
+});
+
+describe('useMinute', () => {
+  it('ticks each minute while on, and never while off', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 31, 16, 59, 0));
+    const { result, rerender } = renderHook(({ on }) => useMinute(on), {
+      initialProps: { on: true },
+    });
+    expect(result.current).toBe(new Date(2026, 9, 31, 16, 59).getTime());
+    act(() => {
+      vi.advanceTimersByTime(60_000);
+    });
+    expect(result.current).toBe(new Date(2026, 9, 31, 17, 0).getTime());
+    rerender({ on: false });
+    expect(result.current).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

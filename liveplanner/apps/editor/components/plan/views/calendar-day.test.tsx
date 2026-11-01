@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { Item } from '@liveplanner/items';
+import { timeOfDayText, type Item } from '@liveplanner/items';
 import type { PlanPalette } from '../plan-palette';
 import { CalendarEntryFace } from './calendar-day';
 
@@ -47,5 +47,50 @@ describe('CalendarEntryFace', () => {
     );
     expect(screen.queryByTestId('face')).toBeNull();
     expect(screen.getByText('Ship it')).toBeTruthy();
+  });
+});
+
+// plan-views.md "Times and ranges": a timed date's card shows its time of day, in the viewer's zone.
+describe('a timed entry', () => {
+  const at = new Date(2026, 9, 14, 17, 30).getTime();
+
+  it('shows its time before the title in a line, and over the card as a card', () => {
+    render(
+      <CalendarEntryFace
+        item={CARD}
+        done={false}
+        at={at}
+        asCards={false}
+        palette={PALETTE}
+        colour="#f00"
+      />,
+    );
+    expect(screen.getByText(timeOfDayText(at))).toBeTruthy();
+    cleanup();
+    render(
+      <CalendarEntryFace
+        item={CARD}
+        done={false}
+        at={at}
+        asCards
+        palette={PALETTE}
+        colour="#f00"
+      />,
+    );
+    expect(screen.getByTestId('face')).toBeTruthy();
+    expect(screen.getByText(timeOfDayText(at))).toBeTruthy();
+  });
+
+  it('shows no time for an untimed one', () => {
+    render(
+      <CalendarEntryFace
+        item={CARD}
+        done={false}
+        asCards={false}
+        palette={PALETTE}
+        colour="#f00"
+      />,
+    );
+    expect(screen.queryByText(timeOfDayText(at))).toBeNull();
   });
 });

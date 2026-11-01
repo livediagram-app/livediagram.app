@@ -9,7 +9,7 @@
 // own row order when it has one; a row's grip drags it to a new place (useGanttRowReorder). Blocked By links draw as
 // arrows from blocker to blocked (gantt-arrows.tsx).
 import { useMemo, useRef, useState } from 'react';
-import { useToday } from '@/hooks/ui/useToday';
+import { useMinute, useToday } from '@/hooks/ui/useToday';
 import { IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import {
   ITEM_TYPES,
@@ -72,19 +72,29 @@ export function GanttView({
   // "Card types").
   const accepted = ganttShownTypes(settings, types);
   const acceptedKey = accepted.join(',');
-  // The fields its bars run between: Start and Due unless picked (plan-views.md "Dates").
-  const { start: startField, due: dueField } = viewDatesOf(settings, types);
+  // The fields its bars run between: Start and Due unless picked (plan-views.md "Dates"), with their shapes, kept
+  // while the settings and types are so the model is too.
+  const dates = useMemo(() => viewDatesOf(settings, types), [settings, types]);
+  // A timed Due goes overdue to the minute (plan-views.md "Times and ranges"): the chart then reads the clock each
+  // minute; a chart of days never ticks.
+  const dueShape = dates.shapes?.due;
+  const minute = useMinute(dueShape === 'datetime' || dueShape === 'daterange-time');
   // Add Card under the last row (GanttAddCard): for someone who may add cards, with a type to add.
   // An Editor gets it with no type to draw yet too, for Add New Card Type.
   const canAdd = !!plan && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
   // Recomputed when the cards, the phases, the accepted types or the day change.
   const model = useMemo(
     () =>
-      ganttModel(items.values(), phases, new Date(dayKey), acceptedKey.split(','), {
-        start: startField,
-        due: dueField,
-      }),
-    [items, phases, dayKey, acceptedKey, startField, dueField],
+      ganttModel(
+        items.values(),
+        phases,
+        minute > 0 && new Date(minute).toDateString() === dayKey
+          ? new Date(minute)
+          : new Date(dayKey),
+        acceptedKey.split(','),
+        dates,
+      ),
+    [items, phases, dayKey, acceptedKey, dates, minute],
   );
   // A card's own Colour draws its bar and diamond, else its card type's colour (docs/specs/026-plan/items.md
   // "Colour"); either is lifted on a dark surface like a type accent.
@@ -139,7 +149,7 @@ export function GanttView({
   const today = (ganttAt(view, model.today) + ganttAt(view, model.today + 1)) * 50;
   const drag = useGanttDrag({
     model: view,
-    dates: { start: startField, due: dueField },
+    dates,
     trackRef,
     onCommit: (itemId, patch) => {
       void plan?.patchItem(itemId, patch);
@@ -245,7 +255,7 @@ export function GanttView({
               plan={plan}
               types={types}
               shown={acceptedKey}
-              dates={{ start: startField, due: dueField }}
+              dates={dates}
               palette={palette}
               top={AXIS_H + layout.height}
               height={ROW_H}
@@ -318,6 +328,7 @@ export function GanttView({
                     view={view}
                     trackRef={trackRef}
                     colour={colourOf(row)}
+                    dates={dates}
                     onCommit={(itemId, patch) => {
                       void plan?.patchItem(itemId, patch);
                       track('Plan', 'Changed', 'GanttDrawn');

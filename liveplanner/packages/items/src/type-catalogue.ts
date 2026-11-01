@@ -373,6 +373,8 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
   if (input['showAs'] === 'percent' && canShowAsPercent(field)) field.showAs = 'percent';
   // Kept only as true, only on a Duration field (docs/specs/026-plan/item-types.md "Time Spent"); anything else reads off.
   if (input['timeSpent'] === true && field.kind === 'duration') field.timeSpent = true;
+  // Kept only as true, on a Date Range (date-range-fields.ts); anything else is dropped, never refused.
+  if (input['withTime'] === true && field.kind === 'daterange') field.withTime = true;
   if (input['onCard'] === true) field.onCard = true;
   // Kept only as true, and never on a Checkbox: anything else reads as optional rather than refusing the catalogue.
   if (input['required'] === true && canBeRequired(field.kind) && !field.timeSpent)

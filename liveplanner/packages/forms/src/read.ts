@@ -108,6 +108,7 @@ function readQuestion(v: unknown): FormQuestion | null {
     type === 'paragraph' ||
     type === 'number' ||
     type === 'email' ||
+    type === 'phone' ||
     type === 'link'
   ) {
     const placeholder = text(v['placeholder'], PLACEHOLDER_MAX);
@@ -132,6 +133,7 @@ function readQuestion(v: unknown): FormQuestion | null {
     if (max !== undefined) q.max = max;
   }
   if (type === 'number' && v['whole'] === true) q.whole = true;
+  if (type === 'daterange' && v['withTime'] === true) q.withTime = true;
   if (type === 'rating') {
     const scale = v['scale'];
     q.scale =

@@ -5,7 +5,7 @@ import {
   articlesOf,
   pagesOf,
 } from '@livedocuments/document';
-import { buildTabFromMarkdown, markdownImportOutcome } from './markdown-import';
+import { buildTabFromMarkdown } from './markdown-import';
 import { mergeImportedTab } from './import-merge';
 
 // docs/specs/020-import-export/markdown-import.md: a Markdown file imports as an article.
@@ -36,13 +36,18 @@ describe('buildTabFromMarkdown', () => {
     expect(article.blocks[0]!.type).toBe('paragraph');
   });
 
-  it('writes a table as a list and says so', () => {
-    const { tables } = built('| A | B |\n| --- | --- |\n| 1 | 2 |');
-    expect(tables).toBe(1);
-    const outcome = markdownImportOutcome(tables);
-    expect(outcome.status).toBe('done');
-    expect(outcome.status === 'done' && outcome.failures?.[0]?.message).toContain('as lists');
-    expect(markdownImportOutcome(0)).toEqual({ status: 'done' });
+  it('reads a pipe table as a table block and [TOC] as a contents block', () => {
+    const { tab } = built('[TOC]\n\n| A | B |\n| --- | --- |\n| 1 | 2 |');
+    const article = Object.values(articlesOf(tab))[0]!;
+    expect(article.blocks.map((b) => b.type)).toEqual(['toc', 'table']);
+    const table = article.blocks[1]!;
+    expect(table.type === 'table' && table.header).toBe(true);
+    expect(table.type === 'table' && table.rows.map((r) => r.cells.map((c) => c[0]?.text))).toEqual(
+      [
+        ['A', 'B'],
+        ['1', '2'],
+      ],
+    );
   });
 
   it('refuses a paragraph longer than a block holds, and Markdown longer than an article takes', () => {

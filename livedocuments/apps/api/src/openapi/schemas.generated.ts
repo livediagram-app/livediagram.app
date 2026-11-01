@@ -344,6 +344,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ArticleBand": {
+    "additionalProperties": false,
+    "description": "A header or a footer: its left, centre and right parts, plain text with fields.",
+    "properties": {
+      "center": {
+        "type": "string"
+      },
+      "left": {
+        "type": "string"
+      },
+      "right": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
   "ArticleBlock": {
     "anyOf": [
       {
@@ -360,6 +376,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/ArticlePageBreakBlock"
+      },
+      {
+        "$ref": "#/components/schemas/ArticleTableBlock"
+      },
+      {
+        "$ref": "#/components/schemas/ArticleTocBlock"
       },
       {
         "$ref": "#/components/schemas/ArticleZoneBlock"
@@ -764,6 +786,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "bodyFont": {
         "type": "string"
       },
+      "differentFirstPage": {
+        "const": true,
+        "type": "boolean"
+      },
+      "footer": {
+        "$ref": "#/components/schemas/ArticleBand"
+      },
+      "header": {
+        "$ref": "#/components/schemas/ArticleBand"
+      },
       "headingFont": {
         "type": "string"
       },
@@ -837,6 +869,81 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ArticleTableBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "cols": {
+        "items": {
+          "$ref": "#/components/schemas/ArticleTableColumn"
+        },
+        "type": "array"
+      },
+      "header": {
+        "const": true,
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "rows": {
+        "items": {
+          "$ref": "#/components/schemas/ArticleTableRow"
+        },
+        "type": "array"
+      },
+      "type": {
+        "const": "table",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "cols",
+      "rows"
+    ],
+    "type": "object"
+  },
+  "ArticleTableColumn": {
+    "additionalProperties": false,
+    "description": "A column: its id (what a cell op names) and its share of the text width (the shares sum to 1).",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "w": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "w"
+    ],
+    "type": "object"
+  },
+  "ArticleTableRow": {
+    "additionalProperties": false,
+    "description": "A row: its id and one cell per column, in the columns' order; a cell is its runs.",
+    "properties": {
+      "cells": {
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/ArticleRun"
+          },
+          "type": "array"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "cells"
+    ],
+    "type": "object"
+  },
   "ArticleTextSize": {
     "enum": [
       "small",
@@ -844,6 +951,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "large"
     ],
     "type": "string"
+  },
+  "ArticleTocBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "depth": {
+        "enum": [
+          1,
+          2
+        ],
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "type": {
+        "const": "toc",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type"
+    ],
+    "type": "object"
   },
   "ArticleWrite": {
     "additionalProperties": false,

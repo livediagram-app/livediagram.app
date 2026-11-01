@@ -937,7 +937,10 @@ Every tab is in Plan, so a Sheet element goes on any tab, as a board does
   as a comma file), UTF-8.
 - **Safe to open**: every CSV the app downloads (a Sheet's, a board's) makes a field a spreadsheet would run as a
   formula inert, prefixing it with `'`: one starting with `=`, `+`, `-`, `@`, a tab or a carriage return, unless it
-  is a number as shown (`-5`, `-£1,200.50`, `+3%`). Read back into a Sheet, `'=1+1` is the text `=1+1` again. Only
+  is a number as shown (`-5`, `-£1,200.50`, `+3%`) or a phone number as typed (`+44 20 7946 0958`, `+1 (555)
+010-0199`: a `+` then only digits, spaces, brackets and dashes, at least 3 digits), which holds no function, cell
+  reference or command and so is written as text, quoted, keeping its `+` with no apostrophe. Read back into a
+  Sheet, `'=1+1` is the text `=1+1` again. Only
   downloads do this; a sheet's own copies and round trips write its values as they are.
 - Telemetry: `Sheet · Imported · Csv`, `Sheet · Exported · Csv`.
 

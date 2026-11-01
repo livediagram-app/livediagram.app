@@ -120,13 +120,12 @@ export function useTabImport({
     }
 
     if (format === 'markdown') {
-      const { buildTabFromMarkdown, markdownImportOutcome } = await import('@/lib/markdown-import');
+      const { buildTabFromMarkdown } = await import('@/lib/markdown-import');
       const result = buildTabFromMarkdown(text, { tabName: active?.name });
       if (!result.ok) return { status: 'error', error: result.error };
       replaceActiveTabContent(result.tab);
       track('Tab', 'Imported', 'Markdown');
-      // Tables written as lists: the dialog's report says so.
-      return markdownImportOutcome(result.tables);
+      return { status: 'done' };
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');

@@ -25,6 +25,9 @@ import { resolveItemRef } from './refs';
 import { statusKey } from './status-names';
 import { parsePercent, PERCENT_MAX, PERCENT_MIN } from './percent-fields';
 import { DURATION_HINT, isTimeSpent, parseDuration } from './duration-fields';
+import { parseDateTime } from './date-time-fields';
+import { isTimedRange, parseDateRange } from './date-range-fields';
+import { isPhoneNumber, PHONE_HINT } from './phone-fields';
 import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
 
@@ -348,6 +351,36 @@ export function resolveFields(
       if (!isEmailAddress(address))
         return refuse('value_invalid', `"${value}" is not an email address for ${field.label}.`);
       out[key] = address;
+    } else if (field.kind === 'phone') {
+      if (!isPhoneNumber(value))
+        return refuse(
+          'value_invalid',
+          `"${String(value)}" is not a phone number for ${field.label}: ${PHONE_HINT.charAt(0).toLowerCase()}${PHONE_HINT.slice(1)}.`,
+        );
+      out[key] = value.trim();
+    } else if (field.kind === 'datetime') {
+      // ISO 8601 with its offset (docs/specs/026-plan/item-types.md "Date and Time"): an agent has no zone of its own.
+      const at = typeof value === 'string' ? parseDateTime(value) : undefined;
+      if (!at)
+        return refuse(
+          'value_invalid',
+          `"${String(value)}" is not a date and time for ${field.label}: give the time with its offset, such as 2026-10-31T17:00:00Z.`,
+        );
+      out[key] = at;
+    } else if (field.kind === 'daterange') {
+      // An ISO 8601 interval, "start/end", or a list of its two ends (item-types.md "Date Range").
+      const timed = isTimedRange(field);
+      const range = parseDateRange(value, timed);
+      if (!range)
+        return refuse(
+          'value_invalid',
+          `"${Array.isArray(value) ? value.join(', ') : String(value)}" is not a date range for ${field.label}: give ${
+            timed
+              ? 'two times with their offsets, such as 2026-10-31T09:00:00Z/2026-11-02T17:00:00Z'
+              : 'two dates, such as 2026-10-31/2026-11-02'
+          }.`,
+        );
+      out[key] = range;
     } else if (field.kind === 'card' && typeof value === 'string') {
       const linked = resolveItem(value, naming.items);
       if (!linked.ok) return linked;

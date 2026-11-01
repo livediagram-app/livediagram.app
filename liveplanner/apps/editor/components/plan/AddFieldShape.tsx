@@ -32,6 +32,7 @@ import {
   calculationPatch,
   ShowAsPercentSwitch,
   TrackTimeSwitch,
+  IncludeTimeSwitch,
   CurrencySelect,
   HoldsSeveralSwitch,
   BlocksSwitch,
@@ -69,6 +70,7 @@ export function addedField(field: NewField): NewField {
     ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
     ...(field.multiple && holdsSeveralKind(field.kind) ? {} : { multiple: undefined }),
     ...(field.blocks && field.kind === 'card' ? {} : { blocks: undefined }),
+    ...(field.withTime && field.kind === 'daterange' ? {} : { withTime: undefined }),
   };
 }
 
@@ -318,6 +320,7 @@ function ShapeOwn({
       ) : null}
       <ShowAsPercentSwitch field={field} onChange={(showAs) => set({ showAs })} />
       <TrackTimeSwitch field={field} onChange={set} />
+      <IncludeTimeSwitch field={field} onChange={set} />
       <HoldsSeveralSwitch field={field} onChange={(multiple) => set({ multiple })} />
       <BlocksSwitch field={field} onChange={set} />
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
@@ -338,6 +341,7 @@ function ShapeOwn({
           calculation={field.calculation}
           showAs={field.showAs}
           timeSpent={field.timeSpent}
+          withTime={field.withTime}
           required={field.required === true && canBeRequired(kind)}
         />
       )}

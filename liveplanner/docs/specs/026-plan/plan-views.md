@@ -275,14 +275,30 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 - A Gantt chart, a Due Calendar and a Start Calendar read their dates by role ([Fields by
   role](item-types.md#fields-by-role)): Start and Due unless picked. Chart Settings' **Dates** section (the View
   flyout's too) has, for a Gantt chart, **Starts On** and **Due On**; for a Due Calendar **Due On**; for a Start
-  Calendar **Starts On**. Each is an [option list](plan-board.md#option-lists) of the Date fields the views' card
-  types offer: the built-in Start Date or Due Date first, then each custom Date field by its label, ticked when
-  picked. Its note: "The date field this chart reads."
+  Calendar **Starts On**. Each is an [option list](plan-board.md#option-lists) of the date fields the views' card
+  types offer: the built-in Start Date or Due Date first, then each custom Date, Date and Time and Date Range field
+  by its label, ticked when picked. Its note: "The date field this chart reads."
 - Stored on the element as `startField` and `dueField` (a custom field's id); the built-in is the default and
   never stored. A picked field no shown type offers any more reads as the built-in again, and the setting stays.
 - Everything the chart does reads and writes the picked fields: its bars, the calendar's days, a drag or Alt+Arrow
   move, the other date carried along, Add Card's first dates, the counts and an image of the chart. A type must
   offer the picked fields to be listed under Card Types.
+- **Times and ranges** ([Date and Time](item-types.md#date-and-time-fields), [Date Range](item-types.md#date-range-fields)):
+  - A Date and Time is on the day it falls on in the viewer's own time zone, so a card due 00:30 on Saturday in
+    Tokyo is on Friday for a viewer in London. A plain Date is always its own day, whatever the viewer's zone.
+  - A Date Range picked for **Starts On** reads its start, for **Due On** its end: picked for both, the Gantt chart
+    draws the range as a bar; a Due Calendar places the card on the range's last day, a Start Calendar on its first.
+  - **On a calendar day** a timed card shows its time before its title ("17:00 Launch", in the viewer's clock), or in
+    its card's top corner where the day draws cards, and the day lists its timed cards by time, earliest first, after
+    its cards with no time.
+  - **Overdue** (a Gantt bar's red edge): a timed Due is overdue once its moment has passed, to the minute; a day
+    once the day has passed.
+  - **Moving** (a calendar drag, Alt+Arrows, a Gantt drag) moves a timed date by whole days and keeps its time of
+    day in the viewer's zone, across a clock change too (a 09:00 meeting dragged over the end of summer time is
+    still 09:00); a range's end moves as that end. A date written where there was none (a Gantt draw, Add Card's
+    first dates, a range's other end) is a day, or, on a Date and Time field or a timed range, that day at 09:00 in
+    the viewer's zone (`TIMED_DEFAULT_HOUR`).
+  - The Due Soon widget and its dashboard tile keep reading the built-in Due, which stays a day.
 - Telemetry: `Plan` · `Changed` · `ViewDates`.
 
 ### Due Calendar

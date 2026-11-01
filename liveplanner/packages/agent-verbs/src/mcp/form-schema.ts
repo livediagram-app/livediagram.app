@@ -74,6 +74,10 @@ const questionFields = {
       'number: the highest answer. multi: the most picks (Other counts as one; 0 for none).',
     ),
   whole: z.boolean().optional().describe('number: whole numbers only.'),
+  withTime: z
+    .boolean()
+    .optional()
+    .describe('daterange: each end is a date and time (answers are ISO 8601 with their offset).'),
   scale: z
     .number()
     .int()

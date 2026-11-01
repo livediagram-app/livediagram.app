@@ -8,6 +8,8 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
+  ARTICLE_TOP_MIN_PX,
+  articleHeaderBandPx,
   articleMarginPx,
   MAX_PAGES,
   articleTopMarginPx,
@@ -236,6 +238,12 @@ export function ArticleFlows({
                 margin={articleMarginPx(
                   articles.stylePreview?.flow === flow ? articles.stylePreview.style : doc.style,
                 )}
+                topMin={
+                  ARTICLE_TOP_MIN_PX +
+                  articleHeaderBandPx(
+                    articles.stylePreview?.flow === flow ? articles.stylePreview.style : doc.style,
+                  )
+                }
                 onCommit={articles.onCommit}
                 onLayout={articles.onLayout}
                 onUndo={articles.undo}
@@ -262,7 +270,8 @@ export function ArticleFlows({
                 const doc = flow ? articles.flows[flow] : undefined;
                 const preview = articles.stylePreview;
                 const style = preview && preview.flow === flow ? preview.style : doc?.style;
-                return articleTopMarginPx(style) * zoom;
+                // The header's band sits under the toolbar's room, never under the card.
+                return (articleTopMarginPx(style) - articleHeaderBandPx(style)) * zoom;
               }}
               // For the article the toolbar shows for: the one worked on, or the one hovered.
               onInsert={articles.insertObject}

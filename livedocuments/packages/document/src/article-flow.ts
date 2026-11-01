@@ -2,6 +2,9 @@
 // order and its style, stored once per article on the tab (`Tab.articles[flow]`), shared by every
 // page of the article (`Page.flow`). Pure data and its reading: whatever is stored is
 // read defensively, so a malformed block, run or field is dropped rather than trusted.
+import { parseArticleBand, type ArticleBand } from './article-bands';
+import { parseArticleTable, type ArticleTableBlock } from './article-table';
+import type { ArticleTocBlock } from './article-toc';
 
 // Block and article limits (docs/specs/007-editor/article-pages.md "Blocks"). An article this
 // large is ~250 pages of text, far inside a tab's row (MAX_TAB_BYTES, 1.99 MB) only when the
@@ -104,12 +107,17 @@ export type ArticleZoneBlock = {
 
 export type ArticleZoneAt = { page: string; x: number; y: number };
 
+export type { ArticleTableBlock } from './article-table';
+export type { ArticleTocBlock } from './article-toc';
+
 export type ArticleBlock =
   | ArticleParagraphBlock
   | ArticleListBlock
   | ArticleCodeBlock
   | ArticleDividerBlock
   | ArticlePageBreakBlock
+  | ArticleTableBlock
+  | ArticleTocBlock
   | ArticleZoneBlock;
 
 export type ArticleLookId = 'clean' | 'classic' | 'report' | 'notebook' | 'bold';
@@ -141,8 +149,14 @@ export type ArticleStyle = {
   paragraphSpacing?: ArticleParagraphSpacing;
   rules?: ArticleRules;
   margins?: ArticleMargins;
-  // Absent is on.
+  // Absent is off.
   pageNumbers?: boolean;
+  // The line at the top and at the bottom of every page (docs/specs/007-editor/article-pages.md
+  // "Headers and footers"); absent is none.
+  header?: ArticleBand;
+  footer?: ArticleBand;
+  // The first page shows no header, footer or page number (a title page). Absent is off.
+  differentFirstPage?: true;
 };
 
 export type ArticleFlow = { blocks: ArticleBlock[]; style?: ArticleStyle };
@@ -191,11 +205,16 @@ const sameFormat = (a: ArticleRun, b: ArticleRun): boolean =>
   a.nk === b.nk;
 
 /** Runs read defensively, neighbours of one format merged, empty ones dropped, the text capped at
- *  MAX_ARTICLE_BLOCK_TEXT characters over at most MAX_ARTICLE_RUNS runs. */
-export function normaliseRuns(v: unknown): ArticleRun[] {
+ *  `limit` characters (MAX_ARTICLE_BLOCK_TEXT) over at most `maxRuns` runs (MAX_ARTICLE_RUNS); a table's
+ *  cell has smaller caps. */
+export function normaliseRuns(
+  v: unknown,
+  limit = MAX_ARTICLE_BLOCK_TEXT,
+  maxRuns = MAX_ARTICLE_RUNS,
+): ArticleRun[] {
   if (!Array.isArray(v)) return [];
   const out: ArticleRun[] = [];
-  let left = MAX_ARTICLE_BLOCK_TEXT;
+  let left = limit;
   for (const raw of v) {
     if (left <= 0) break;
     const run = parseRun(raw);
@@ -210,7 +229,7 @@ export function normaliseRuns(v: unknown): ArticleRun[] {
     left -= run.text.length + (run.href?.length ?? 0);
     const last = out[out.length - 1];
     if (last && sameFormat(last, run)) last.text += run.text;
-    else if (out.length < MAX_ARTICLE_RUNS) out.push(run);
+    else if (out.length < maxRuns) out.push(run);
     else break;
   }
   return out;
@@ -264,6 +283,12 @@ export function parseArticleBlock(v: unknown): ArticleBlock | undefined {
       return { id, type: 'divider' };
     case 'pageBreak':
       return { id, type: 'pageBreak' };
+    case 'table':
+      return parseArticleTable(b, id);
+    case 'toc':
+      return b.depth === 1 || b.depth === 2
+        ? { id, type: 'toc', depth: b.depth }
+        : { id, type: 'toc' };
     case 'zone': {
       const width = clampSize(b.width);
       const height = clampSize(b.height);
@@ -313,6 +338,11 @@ export function parseArticleStyle(v: unknown): ArticleStyle | undefined {
       (out as Record<string, unknown>)[key] = s[key];
   }
   if (typeof s.pageNumbers === 'boolean') out.pageNumbers = s.pageNumbers;
+  const header = parseArticleBand(s.header);
+  if (header) out.header = header;
+  const footer = parseArticleBand(s.footer);
+  if (footer) out.footer = footer;
+  if (s.differentFirstPage === true) out.differentFirstPage = true;
   return Object.keys(out).length > 0 ? out : undefined;
 }
 

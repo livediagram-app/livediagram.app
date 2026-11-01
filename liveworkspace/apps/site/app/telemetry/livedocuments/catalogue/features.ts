@@ -257,7 +257,7 @@ export const ARTICLE_INSERTS = chart(
   'Element',
   'Added',
   'Article Inserts',
-  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
+  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote, code block or table of contents.',
   {
     types: [
       'ArticleImage',
@@ -271,6 +271,7 @@ export const ARTICLE_INSERTS = chart(
       'ArticlePageBreak',
       'ArticleQuote',
       'ArticleCode',
+      'ArticleContents',
       'ArticleComment',
       'ArticleAction',
     ],
@@ -281,13 +282,15 @@ export const ARTICLE_FORMATTING = chart(
   'Element',
   'Changed',
   'Article Formatting',
-  "The page toolbar used on an article's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
+  "The page toolbar used on an article's writing (a format, a text style or list, a link), a table in the writing reshaped or pasted, and a zone in the writing wrapped, placed or deleted.",
   {
     types: [
       'ArticleFormat',
       'ArticleBlockStyle',
       'ArticleLink',
       'ArticlePaste',
+      'ArticleTableShape',
+      'ArticleTablePaste',
       'ArticleZoneWrap',
       'ArticleZoneResized',
       'ArticleZoneMoved',

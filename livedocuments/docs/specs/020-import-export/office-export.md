@@ -76,22 +76,24 @@ What is on a page, in its paint order (the canvas's back to front, so what overl
 page. The document's paper is the article's page size and orientation (A4, US Letter, A3, ...), its margins the
 article's margins.
 
-| In the article                                                 | In the document                                                        |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Title, Subtitle, Heading 1, Heading 2, Heading 3, Quote        | Paragraphs in Word's Title, Subtitle, Heading 1 to 3 and Quote styles  |
-| Body paragraph                                                 | Normal                                                                 |
-| Bulleted and numbered list items, level 0 to 4                 | Word list items at that level (•, ◦, ▪; 1, a, i), each run numbered 1  |
-| To-do item                                                     | A list item starting ☐, or ☒ struck through when done                  |
-| Code block                                                     | One paragraph in a Code style (monospace, shaded), its lines kept      |
-| Divider                                                        | An empty paragraph with a rule under it                                |
-| Page break                                                     | A page break                                                           |
-| Alignment (left, centre, right, justify)                       | The same alignment                                                     |
-| Bold, italic, underline, strikethrough, superscript, subscript | The same formatting                                                    |
-| Inline code                                                    | A run in the Code font, shaded                                         |
-| A link (http, https or mailto)                                 | A hyperlink in Word's Hyperlink style                                  |
-| Text colour, highlight                                         | The same colour; the highlight as the run's shading                    |
-| A line break inside a block                                    | A line break                                                           |
-| An object or drawing zone                                      | An image of the zone as the page shows it, its size, inline or wrapped |
+| In the article                                                 | In the document                                                                                                                                                                           |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Title, Subtitle, Heading 1, Heading 2, Heading 3, Quote        | Paragraphs in Word's Title, Subtitle, Heading 1 to 3 and Quote styles                                                                                                                     |
+| Body paragraph                                                 | Normal                                                                                                                                                                                    |
+| Bulleted and numbered list items, level 0 to 4                 | Word list items at that level (•, ◦, ▪; 1, a, i), each run numbered 1                                                                                                                     |
+| To-do item                                                     | A list item starting ☐, or ☒ struck through when done                                                                                                                                     |
+| Code block                                                     | One paragraph in a Code style (monospace, shaded), its lines kept                                                                                                                         |
+| Divider                                                        | An empty paragraph with a rule under it                                                                                                                                                   |
+| Page break                                                     | A page break                                                                                                                                                                              |
+| Table                                                          | A Word table across the text width, its columns in their shares, ruled in hairlines; a header row as Word's repeating header row, bold on a tint                                          |
+| Contents block                                                 | Word's table of contents (a TOC field over Heading 1 to the levels chosen), its entries as the page shows them, linked to the headings, so it reads at once and Update Field refreshes it |
+| Alignment (left, centre, right, justify)                       | The same alignment                                                                                                                                                                        |
+| Bold, italic, underline, strikethrough, superscript, subscript | The same formatting                                                                                                                                                                       |
+| Inline code                                                    | A run in the Code font, shaded                                                                                                                                                            |
+| A link (http, https or mailto)                                 | A hyperlink in Word's Hyperlink style                                                                                                                                                     |
+| Text colour, highlight                                         | The same colour; the highlight as the run's shading                                                                                                                                       |
+| A line break inside a block                                    | A line break                                                                                                                                                                              |
+| An object or drawing zone                                      | An image of the zone as the page shows it, its size, inline or wrapped                                                                                                                    |
 
 - **The style travels as styles**: the article's heading and body fonts, text size, line and paragraph spacing,
   accent (headings in it when **Headings in the Accent** is on, links and the quote bar always), and **Lines Under
@@ -101,6 +103,10 @@ article's margins.
   Right** float the image at that side with the text running beside it, 14 px clear. A zone's image is drawn at twice
   its size, its elements exactly as the page shows them, cut at a drawing zone's edge.
 - **Page numbers** (when the style has them) are a page number field centred in the footer.
+- **Header and footer** are Word's own header and footer, each a left, a centre and a right part on tab stops,
+  `{page}` and `{pages}` as Word's PAGE and NUMPAGES fields, the document name and date written as text as of the
+  export; **Different First Page** is Word's own (an empty first-page header and footer). Page numbers with an empty
+  footer centre fill the centre as on the page.
 - **Not in the document**: comments and actions (the margin notes are review furniture, as in every export), loose
   elements on an article page (in no zone), the page's background, pattern and ruled lines (Word's page is white and
   its text dark), and the editor's own chrome.
