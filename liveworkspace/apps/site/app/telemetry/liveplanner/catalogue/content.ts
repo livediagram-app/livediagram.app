@@ -3,6 +3,7 @@
 
 import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@liveplanner/api-schema';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
+import { TRACKER_SOURCE_NAMES } from '@liveplanner/items';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
@@ -639,12 +640,21 @@ export const TAB_IMPORTS = chart(
   'A tab imported from a liveplanner JSON export.',
 );
 
+// A board imported from another tool (docs/specs/026-plan/tracker-import.md), by the tool it came from.
+export const PLAN_BOARDS_IMPORTED = chart(
+  'Plan',
+  'Imported',
+  'Boards Imported',
+  'A Board tab made from a Trello, Asana, Jira or Linear export in the Import dialog.',
+  { types: Object.values(TRACKER_SOURCE_NAMES) },
+);
+
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
   blurb:
-    'Diagrams leaving liveplanner as files and text, and tabs coming back in from JSON exports.',
-  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
+    'Diagrams leaving liveplanner as files and text, tabs coming back in from JSON exports, and boards from other tools.',
+  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PLAN_BOARDS_IMPORTED],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };
 
