@@ -805,9 +805,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import a liveplanner tab exported as JSON into the active tab, by pasting it or picking the file.',
+      'One Import dialog for everything: a CSV, a tab’s JSON export, or a board from Trello, Asana, Jira or Linear.',
     keywords:
-      'import json file files paste upload load restore backup copy clipboard replace tab export round trip',
+      'import json csv file files paste drop upload load restore backup copy clipboard replace tab export round trip trello asana jira linear board migrate move',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

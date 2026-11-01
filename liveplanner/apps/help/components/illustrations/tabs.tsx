@@ -433,7 +433,7 @@ export function TabMenu() {
   const mx = 150;
   const my = 10;
   const mw = 200;
-  const rows = ['Organise in Tab Folder', 'Add to Plan', null, 'Import', 'Export', 'Clear'];
+  const rows = ['Organise in Tab Folder', 'Add to Plan', null, 'Import…', 'Export', 'Clear'];
   return (
     <Scene w={420} h={230}>
       <TabBar y={barY} w={420} />
@@ -755,7 +755,7 @@ export function ImportMenu() {
         x={mx}
         y={my}
         width={192}
-        height={128}
+        height={110}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -764,17 +764,140 @@ export function ImportMenu() {
         x={mx}
         y={my + 6}
         w={192}
-        rows={[
-          'Organise in Tab Folder',
-          'Add to Plan',
-          null,
-          'Import',
-          'Import from Another Tool…',
-          'Export',
-          'Clear',
-        ]}
-        highlight="Import"
+        rows={['Organise in Tab Folder', 'Add to Plan', null, 'Import…', 'Export', 'Clear']}
+        highlight="Import…"
       />
+    </Scene>
+  );
+}
+
+/** The one Import dialog's list (docs/specs/026-plan/plan-tabs.md "The Import dialog"): on a Board tab, its own CSV
+ *  under Into This Tab, then the four tools under A Board from Another Tool, each with its mark and what file to
+ *  bring. */
+export function ImportChooser() {
+  const W = 420;
+  const H = 286;
+  const dx = 20;
+  const dy = 8;
+  const x = dx + 16;
+  const w = 348;
+  const ROW = 32;
+  const row = (
+    y: number,
+    tile: string,
+    mark: ReactNode,
+    label: string,
+    hint: string,
+    file: string,
+    last: boolean,
+  ) => (
+    <g key={label}>
+      <rect x={x + 10} y={y + 7} width={18} height={18} rx={4.5} className={tile} />
+      <g transform={`translate(${x + 10} ${y + 7})`}>{mark}</g>
+      <Label x={x + 38} y={y + 11} size={10} weight={600} tone="strong">
+        {label}
+      </Label>
+      <Label x={x + 38} y={y + 23} size={8.5} tone="muted">
+        {hint}
+      </Label>
+      <rect x={x + w - 36} y={y + 10} width={28} height={12} rx={3} className="fill-slate-100" />
+      <Label x={x + w - 22} y={y + 16} size={7.5} weight={700} anchor="middle" tone="body">
+        {file}
+      </Label>
+      {last ? null : (
+        <line x1={x} y1={y + ROW} x2={x + w} y2={y + ROW} className="stroke-slate-100" />
+      )}
+    </g>
+  );
+  const tools: [string, ReactNode, string, string, string][] = [
+    [
+      'fill-indigo-500',
+      <>
+        <rect x={4} y={4} width={4.4} height={10} rx={1} className="fill-white" />
+        <rect x={9.8} y={4} width={4.4} height={6.4} rx={1} className="fill-white" />
+      </>,
+      'Trello',
+      'Board JSON from Menu › Print, export and share › Export as JSON',
+      'JSON',
+    ],
+    [
+      'fill-rose-400',
+      <>
+        <circle cx={9} cy={5.8} r={2.6} className="fill-white" />
+        <circle cx={5.3} cy={11.8} r={2.6} className="fill-white" />
+        <circle cx={12.7} cy={11.8} r={2.6} className="fill-white" />
+      </>,
+      'Asana',
+      'Project CSV from its name menu › Export/Print › CSV',
+      'CSV',
+    ],
+    [
+      'fill-indigo-400',
+      <path
+        d="M9 2.6 15.4 9 9 15.4 2.6 9Zm0 4L6.6 9 9 11.4 11.4 9Z"
+        fillRule="evenodd"
+        className="fill-white"
+      />,
+      'Jira',
+      'Issues CSV from Issue search › Export › Export CSV (all fields)',
+      'CSV',
+    ],
+    [
+      'fill-violet-500',
+      <circle cx={9} cy={9} r={6} className="fill-white" />,
+      'Linear',
+      'Issues CSV from Settings › Import / Export › Export CSV',
+      'CSV',
+    ],
+  ];
+  const toolsY = dy + 128;
+  return (
+    <Scene w={W} h={H}>
+      <Dialog x={dx} y={dy} w={380} h={272} title="Import" sceneW={W} sceneH={H}>
+        <Label x={x} y={dy + 52} size={8.5} weight={700} tone="muted">
+          INTO THIS TAB
+        </Label>
+        <rect
+          x={x}
+          y={dy + 60}
+          width={w}
+          height={ROW}
+          rx={7}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        {row(
+          dy + 60,
+          'fill-brand-50',
+          <path
+            d="M4.5 4.5h9v9h-9Zm0 3h9m-9 3h9M9 4.5v9"
+            className="fill-none stroke-brand-600"
+            strokeWidth={1.1}
+          />,
+          'CSV',
+          'A .csv or .tsv, each row a new card on this board',
+          'CSV',
+          true,
+        )}
+        <Label x={x} y={dy + 112} size={8.5} weight={700} tone="muted">
+          A BOARD FROM ANOTHER TOOL
+        </Label>
+        <rect
+          x={x}
+          y={toolsY}
+          width={w}
+          height={ROW * tools.length}
+          rx={7}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        {tools.map(([tile, mark, label, hint, file], i) =>
+          row(toolsY + i * ROW, tile, mark, label, hint, file, i === tools.length - 1),
+        )}
+        <Label x={x} y={toolsY + ROW * tools.length + 14} size={9} tone="muted">
+          A one-off copy into a new Board tab or plan, after a preview.
+        </Label>
+      </Dialog>
     </Scene>
   );
 }
@@ -871,8 +994,9 @@ export function ImportWarning() {
   );
 }
 
-/** The Import dialog's Another Tool view (docs/specs/026-plan/tracker-import.md "The preview"): the switch, the board
- *  read from the file with its columns, and where it goes, a new Board tab chosen. */
+/** The Import dialog's preview of a board from another tool (docs/specs/026-plan/tracker-import.md "The preview"):
+ *  the All Imports back bar, the board read from the file with its columns, and where it goes, a new Board tab
+ *  chosen. */
 export function TrackerImportPreview() {
   const W = 420;
   const H = 250;
@@ -887,15 +1011,30 @@ export function TrackerImportPreview() {
   let cx = dx + 16;
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={230} title="Import from Another Tool" sceneW={W} sceneH={H}>
-        {/* The view switch: liveplanner File, Another Tool (chosen) */}
-        <rect x={dx + 16} y={dy + 40} width={348} height={20} rx={6} className="fill-slate-100" />
-        <rect x={dx + 192} y={dy + 42} width={170} height={16} rx={5} className="fill-brand-600" />
-        <Label x={dx + 104} y={dy + 50} size={9} anchor="middle" tone="body">
-          liveplanner File
+      <Dialog x={dx} y={dy} w={380} h={230} title="Import from Trello" sceneW={W} sceneH={H}>
+        {/* The back bar: All Imports, the tool as its chip */}
+        <rect
+          x={dx + 16}
+          y={dy + 41}
+          width={348}
+          height={20}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        <path
+          d={`M${dx + 30} ${dy + 47} l-3.5 4 l3.5 4`}
+          className="fill-none stroke-slate-500"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Label x={dx + 40} y={dy + 51} size={9.5} weight={600} tone="strong">
+          All Imports
         </Label>
-        <Label x={dx + 277} y={dy + 50} size={9} anchor="middle" tone="onAccent">
-          Another Tool
+        <rect x={dx + 322} y={dy + 45} width={36} height={12} rx={3} className="fill-slate-100" />
+        <Label x={dx + 340} y={dy + 51} size={8.5} weight={600} anchor="middle" tone="body">
+          Trello
         </Label>
         {/* The board read from the file */}
         <Label x={dx + 16} y={dy + 80} size={10} tone="muted">
