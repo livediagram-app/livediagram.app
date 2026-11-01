@@ -4,6 +4,7 @@ import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { Button } from '@liveworkspace/ui';
 import { lucideHistory, lucideRefreshCw } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { TIME_SECONDS } from '@liveworkspace/ui/date-format';
 import {
   allServices,
   environmentOf,
@@ -232,7 +233,7 @@ export function StatusBoard({
               hint={
                 summary.lastAt !== null ? (
                   <time dateTime={new Date(summary.lastAt).toISOString()}>
-                    {new Date(summary.lastAt).toLocaleTimeString()}
+                    {TIME_SECONDS.format(summary.lastAt)}
                   </time>
                 ) : (
                   'waiting for the first answers'

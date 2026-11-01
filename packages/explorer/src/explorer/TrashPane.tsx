@@ -8,6 +8,7 @@
 import { useMemo, useState } from 'react';
 import type { ShownItem } from '../data/overlay';
 import { Button, ConfirmDialog } from '@liveworkspace/ui';
+import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { InfoIcon, ItemIcon } from '../ui/icons';
 import type { Words } from '../words';
@@ -46,10 +47,7 @@ export function trashGroups(
 
 /** "Deleted 3 Oct", or why an empty item was tidied away. */
 export function trashedOnLabel(item: Pick<ShownItem, 'trashedAt' | 'trashReason'>): string {
-  const on = new Date(item.trashedAt ?? 0).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-  });
+  const on = DAY_MONTH.format(item.trashedAt ?? 0);
   return item.trashReason === 'empty' ? `Moved here ${on} because it was empty` : `Deleted ${on}`;
 }
 

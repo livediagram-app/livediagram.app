@@ -1,5 +1,7 @@
 // The Details view's cell text. `locale` is the reader's (undefined) outside tests.
 
+import { dateFormat, type DateFormat } from '@liveworkspace/ui/date-format';
+
 const KB = 1024;
 const MB = 1024 * KB;
 
@@ -40,36 +42,41 @@ export function formatSize(
     : `${formatObjects(elements, locale)} (${formatBytes(bytes, locale)})`;
 }
 
-const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
+// One shared format per time zone (@liveworkspace/ui/date-format), each keeping one formatter per locale: rows call
+// these a lot, and none makes a formatter of its own.
+const dateTimeFormats = new Map<string, DateFormat>();
+const dateFormats = new Map<string, DateFormat>();
+function zoned(
+  cache: Map<string, DateFormat>,
+  options: Intl.DateTimeFormatOptions,
+  timeZone: string | undefined,
+): DateFormat {
+  const key = timeZone ?? '';
+  let format = cache.get(key);
+  if (!format) {
+    format = dateFormat(timeZone ? { ...options, timeZone } : options);
+    cache.set(key, format);
+  }
+  return format;
+}
 
-/** "23 Oct 2026, 14:05" in the reader's locale. The formatter is made once per locale (rows call this a lot). */
+/** "23 Oct 2026, 14:05" in the reader's locale. */
 export function formatDateTime(
   at: number,
   { locale, timeZone }: { locale?: string; timeZone?: string } = {},
 ): string {
-  const key = `${locale ?? ''}|${timeZone ?? ''}`;
-  let format = dateTimeFormats.get(key);
-  if (!format) {
-    format = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone });
-    dateTimeFormats.set(key, format);
-  }
-  return format.format(at);
+  return zoned(dateTimeFormats, { dateStyle: 'medium', timeStyle: 'short' }, timeZone).format(
+    at,
+    locale,
+  );
 }
-
-const dateFormats = new Map<string, Intl.DateTimeFormat>();
 
 /** "23 Oct 2026" in the reader's locale, for the Created column. */
 export function formatDate(
   at: number,
   { locale, timeZone }: { locale?: string; timeZone?: string } = {},
 ): string {
-  const key = `${locale ?? ''}|${timeZone ?? ''}`;
-  let format = dateFormats.get(key);
-  if (!format) {
-    format = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone });
-    dateFormats.set(key, format);
-  }
-  return format.format(at);
+  return zoned(dateFormats, { dateStyle: 'medium' }, timeZone).format(at, locale);
 }
 
 const MINUTE = 60_000;
