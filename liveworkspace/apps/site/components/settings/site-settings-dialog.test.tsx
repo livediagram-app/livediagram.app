@@ -362,6 +362,24 @@ describe('the Settings panel, for a guest on an app’s address', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('has no API Tokens or Webhooks, even asked for them: they are signed in only', async () => {
+    act(() =>
+      root.render(
+        <SiteSettingsDialog
+          app="livediagram.app"
+          guest={{ ownerId: 'guest_abc', signInHref: '/api/auth/sign-in?return_to=%2Fexplorer' }}
+          initialCategoryId="account:webhooks"
+          onClose={() => {}}
+        />,
+      ),
+    );
+    await until(() => document.querySelector('nav[aria-label="Settings categories"]'));
+    expect(document.querySelector('[data-settings-cell="webhooks"]')).toBeNull();
+    expect(document.querySelector('[data-settings-cell="tokens"]')).toBeNull();
+    expect(railButton('Webhooks')).toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('writes a change into the editor’s copy, keeping its other keys, and marks it for the editor to send', async () => {
     localStorage.setItem(KEY, JSON.stringify({ telemetryEnabled: false }));
     await openAsGuest();
@@ -401,5 +419,26 @@ describe('the Settings panel, opened on a section', () => {
     expect(cell.textContent).toContain('Make a token');
     expect(cell.textContent).toContain('No tokens yet');
     expect(fetchMock.mock.calls.filter(([url]) => url === '/api/account/tokens')).toHaveLength(1);
+  });
+
+  it('draws the webhooks in place for a signed-in person, their code and list fetched only when their category shows', async () => {
+    fetchMock.mockImplementation((url: string) =>
+      url === '/api/index/webhooks'
+        ? json(200, { webhooks: [] })
+        : url === '/api/account/teams'
+          ? json(200, { teams: [] })
+          : json(200, { all: {}, app: {}, updatedAt: null }),
+    );
+    await open(null, { initialScope: 'all' });
+    expect(fetchMock.mock.calls.some(([url]) => url === '/api/index/webhooks')).toBe(false);
+    act(() => root.unmount());
+    root = createRoot(container);
+    await open(null, { initialScope: 'all', initialCategoryId: 'account:webhooks' });
+    await until(() =>
+      document
+        .querySelector('[data-settings-cell="webhooks"]')
+        ?.textContent?.includes('No Webhooks Yet'),
+    );
+    expect(fetchMock.mock.calls.filter(([url]) => url === '/api/index/webhooks')).toHaveLength(1);
   });
 });

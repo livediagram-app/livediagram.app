@@ -1,38 +1,42 @@
 'use client';
 
 import { useId, useState, type FormEvent, type RefObject } from 'react';
-import { Select } from '@liveworkspace/ui';
 import {
-  WEBHOOK_EVENT_LABELS,
   WEBHOOK_EVENTS,
-  WEBHOOK_KINDS,
   WEBHOOK_NAME_MAX,
   WEBHOOK_URL_MAX,
   type Webhook,
   type WebhookEvent,
   type WebhookKind,
 } from '@liveworkspace/index-client';
-import { BUTTON, ErrorNote, INPUT, Panel } from '../account-ui';
-import { attempt, KIND_HINTS, KIND_LABELS, webhookError, webhooksClient } from './webhooks-api';
+import { BUTTON, ErrorNote, INPUT } from '../account-ui';
+import { DestinationPicker, EventPicker, FormStep, ScopePicker, type TeamChoice } from './pickers';
+import { attempt, KINDS, webhookError, webhooksClient } from './webhooks-api';
 
-export type TeamChoice = { id: string; name: string };
+export type { TeamChoice } from './pickers';
 
-// Adding a webhook (webhooks.md "Who adds one"): where it sends, a name, whose items (the person's own, or a team they
-// run), the URL and the events. A team the person is only a member of isn't offered, and the index checks again.
+const LABEL = 'block text-sm font-medium text-slate-700 dark:text-slate-300';
+const TEXT_BUTTON =
+  'relative touch-target-y cursor-pointer rounded text-xs font-semibold text-slate-600 underline-offset-2 transition-colors duration-micro hover:text-slate-900 hover:underline disabled:cursor-default disabled:opacity-40 disabled:no-underline dark:text-slate-300 dark:hover:text-white';
+
+// Adding a webhook (webhooks.md "Who adds one"; site.md "Settings", Webhooks), in the order a person thinks of it:
+// where it posts, its address (with how to get one), a name, whose items (their own, or a team they run) and what it
+// sends. A team the person is only a member of isn't offered, and the index checks again.
 export function AddWebhook({
   teams,
-  nameRef,
+  firstRef,
   onAdded,
   onCancel,
 }: {
   // The teams the person runs now.
   teams: readonly TeamChoice[];
-  nameRef: RefObject<HTMLInputElement | null>;
+  // The chosen destination, which takes the keyboard as the form opens.
+  firstRef: RefObject<HTMLInputElement | null>;
   onAdded: (webhook: Webhook, secret: string | null) => Promise<void>;
   onCancel: () => void;
 }) {
   const id = useId();
-  const [kind, setKind] = useState<WebhookKind>('json');
+  const [kind, setKind] = useState<WebhookKind>('slack');
   const [name, setName] = useState('');
   const [scope, setScope] = useState('');
   const [url, setUrl] = useState('');
@@ -66,134 +70,175 @@ export function AddWebhook({
     else setError(result.error);
   }
 
-  const hint = KIND_HINTS[kind];
+  const words = KINDS[kind];
+  const missing = !name.trim() ? 'a name' : !url.trim() ? 'an address' : null;
+  // Whose Items? is asked only of someone who runs a team.
+  const whose = teams.length > 0;
   return (
-    <Panel>
-      <form onSubmit={(event) => void submit(event)} aria-labelledby={`${id}-heading`}>
-        <h2 id={`${id}-heading`} className="text-base font-semibold text-slate-900 dark:text-white">
+    <form
+      onSubmit={(event) => void submit(event)}
+      aria-labelledby={`${id}-heading`}
+      data-webhook-form=""
+      className="flex flex-col gap-6 bg-slate-50/80 px-4 py-5 sm:px-5 dark:bg-slate-900/40"
+    >
+      <div>
+        <h4 id={`${id}-heading`} className="text-base font-semibold text-slate-900 dark:text-white">
           Add a Webhook
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Sends what happens to the items as it happens. Only what the Timeline would show you.
+        </h4>
+        <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
+          Each message carries what the Timeline shows: the item’s name and link, who did it, and a
+          short detail, like a comment’s first words.
         </p>
+      </div>
 
-        <div
-          role="radiogroup"
-          aria-label="Sends to"
-          className="mt-4 grid grid-cols-3 gap-1 rounded-full bg-slate-100 p-1 dark:bg-slate-800"
-        >
-          {WEBHOOK_KINDS.map((k) => (
-            <button
-              key={k}
-              type="button"
-              role="radio"
-              aria-checked={kind === k}
-              aria-label={KIND_LABELS[k]}
-              onClick={() => {
-                setKind(k);
-                setError(null);
-              }}
-              className={`min-w-0 truncate rounded-full px-2 py-1.5 text-sm font-semibold transition-colors duration-micro ${
-                kind === k
-                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-              }`}
-            >
-              {/* "Microsoft Teams" fits from `sm` up; a phone's segment says "Teams". */}
-              <span className={k === 'teams' ? 'hidden sm:inline' : undefined}>
-                {KIND_LABELS[k]}
-              </span>
-              {k === 'teams' && <span className="sm:hidden">Teams</span>}
-            </button>
-          ))}
-        </div>
+      <FormStep n={1} id={`${id}-where`} title="Where Should It Post?">
+        <DestinationPicker
+          inputRef={firstRef}
+          value={kind}
+          onChange={(next) => {
+            setKind(next);
+            setError(null);
+          }}
+        />
+      </FormStep>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Name
+      <FormStep n={2} id={`${id}-address`} title="Connect It">
+        <div className="flex flex-col gap-3">
+          <Steps id={`${id}-how`} steps={words.steps} />
+          <label className={LABEL}>
+            {words.field}
             <input
-              ref={nameRef}
-              className={`${INPUT} mt-1`}
-              placeholder="Like “#launch channel”"
-              maxLength={WEBHOOK_NAME_MAX}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
+              className={`${INPUT} mt-1 font-mono`}
+              type="url"
+              inputMode="url"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={words.placeholder}
+              maxLength={WEBHOOK_URL_MAX}
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              aria-describedby={`${id}-how`}
               required
             />
           </label>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Items
-            <Select
-              className="mt-1 flex w-full"
-              size="md"
-              selectClassName="h-[38px] !rounded-xl !pl-3 !pr-8 !text-sm"
-              value={scope}
-              onChange={(event) => setScope(event.target.value)}
-            >
-              <option value="">Your own items</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name}’s items
-                </option>
-              ))}
-            </Select>
-          </label>
-        </div>
-
-        <label className="mt-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
-          {kind === 'json' ? 'Address' : `${KIND_LABELS[kind]} Webhook URL`}
-          <input
-            className={`${INPUT} mt-1 font-mono`}
-            type="url"
-            inputMode="url"
-            autoComplete="off"
-            spellCheck={false}
-            placeholder={hint.placeholder}
-            maxLength={WEBHOOK_URL_MAX}
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            aria-describedby={`${id}-url-help`}
-            required
-          />
-        </label>
-        <p id={`${id}-url-help`} className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          {hint.help}
-        </p>
-
-        <fieldset className="mt-4">
-          <legend className="text-sm font-medium text-slate-700 dark:text-slate-300">Events</legend>
-          <div className="mt-2 grid gap-x-4 gap-y-2 sm:grid-cols-2">
-            {WEBHOOK_EVENTS.map((e) => (
-              <label
-                key={e}
-                className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
-              >
-                <input
-                  type="checkbox"
-                  checked={events.has(e)}
-                  onChange={(event) => toggle(e, event.target.checked)}
-                  className="size-4 rounded border-slate-300"
-                />
-                {WEBHOOK_EVENT_LABELS[e]}
-              </label>
-            ))}
+          <div>
+            <label className={LABEL}>
+              Name
+              <input
+                className={`${INPUT} mt-1`}
+                placeholder={words.namePlaceholder}
+                maxLength={WEBHOOK_NAME_MAX}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                aria-describedby={`${id}-name-help`}
+                required
+              />
+            </label>
+            <p id={`${id}-name-help`} className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              A label for you, like the channel it posts to.
+            </p>
           </div>
-        </fieldset>
+        </div>
+      </FormStep>
 
-        {error && <ErrorNote>{webhookError(error, kind)}</ErrorNote>}
-        <div className="mt-5 flex flex-wrap justify-end gap-2">
+      {whose ? (
+        <FormStep n={3} id={`${id}-whose`} title="Whose Items?">
+          <ScopePicker teams={teams} value={scope} onChange={setScope} />
+        </FormStep>
+      ) : null}
+
+      <FormStep
+        n={whose ? 4 : 3}
+        id={`${id}-what`}
+        title="What Should It Send?"
+        aside={
+          <span className="flex items-center gap-3">
+            <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
+              {events.size} of {WEBHOOK_EVENTS.length}
+            </span>
+            <button
+              type="button"
+              className={TEXT_BUTTON}
+              disabled={events.size === WEBHOOK_EVENTS.length}
+              onClick={() => setEvents(new Set(WEBHOOK_EVENTS))}
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              className={TEXT_BUTTON}
+              disabled={events.size === 0}
+              onClick={() => setEvents(new Set())}
+            >
+              Clear
+            </button>
+          </span>
+        }
+      >
+        <EventPicker value={events} onToggle={toggle} />
+      </FormStep>
+
+      <div className="flex flex-col gap-3">
+        {error ? <ErrorNote>{webhookError(error, kind)}</ErrorNote> : null}
+        <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
+          <p
+            aria-live="polite"
+            className="mr-auto text-xs text-slate-500 empty:hidden dark:text-slate-400"
+          >
+            {missing
+              ? `Add ${missing} to finish.`
+              : events.size === 0
+                ? 'Pick at least one thing to send.'
+                : ''}
+          </p>
           <button type="button" className={BUTTON.secondary} onClick={onCancel}>
             Cancel
           </button>
           <button
             type="submit"
             className={BUTTON.primary}
-            disabled={busy || events.size === 0 || !name.trim() || !url.trim()}
+            disabled={busy || events.size === 0 || missing !== null}
           >
-            Add Webhook
+            {busy ? 'Adding…' : 'Add Webhook'}
           </button>
         </div>
-      </form>
-    </Panel>
+      </div>
+    </form>
+  );
+}
+
+// How to get the address: numbered steps for Slack and Teams, one line for a service the person runs.
+function Steps({ id, steps }: { id: string; steps: readonly string[] }) {
+  if (steps.length === 1)
+    return (
+      <p id={id} className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+        {steps[0]}
+      </p>
+    );
+  return (
+    <div
+      id={id}
+      className="rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800"
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        How to Get It
+      </p>
+      <ol className="mt-1.5 flex flex-col gap-1.5">
+        {steps.map((text, i) => (
+          <li
+            key={text}
+            className="flex gap-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300"
+          >
+            <span
+              aria-hidden
+              className="w-3 shrink-0 text-right font-semibold tabular-nums text-slate-400 dark:text-slate-500"
+            >
+              {i + 1}
+            </span>
+            <span>{text}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 // Settings › Webhooks' side of the index (liveworkspace/docs/specs/004-index/webhooks.md "Routes"): the person's client,
 // asking as the Explorer does (the workspace token, on liveworkspace.app and on an app's address alike), what each
-// refusal tells the person, and the words for each kind, pause and delivery.
+// refusal tells the person, and the words for each destination, event, pause and delivery, written for someone who
+// has never met a webhook (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks).
 
 import {
   createIndexClient,
@@ -8,9 +9,11 @@ import {
   WEBHOOK_EVENT_LABELS,
   type Webhook,
   type WebhookDelivery,
+  type WebhookEvent,
   type WebhookKind,
   type WebhookPauseReason,
 } from '@liveworkspace/index-client';
+import { formatRelativeTime } from '@liveworkspace/ui';
 import { workspaceToken } from '@/lib/explorer/token';
 
 export const webhooksClient = createIndexClient({ getToken: workspaceToken });
@@ -26,27 +29,118 @@ export async function attempt<T>(run: () => Promise<T>): Promise<WebhookResult<T
   }
 }
 
-export const KIND_LABELS: Record<WebhookKind, string> = {
-  json: 'Webhook',
-  slack: 'Slack',
-  teams: 'Microsoft Teams',
-};
+// ---------- Where it posts --------------------------------------------------------------------------------------
 
-// What the URL field asks for, by where it sends.
-export const KIND_HINTS: Record<WebhookKind, { placeholder: string; help: string }> = {
-  json: {
-    placeholder: 'https://example.com/hooks/liveworkspace',
-    help: 'Any HTTPS address you run. Each delivery is signed JSON, so you can check it came from us.',
-  },
+/** Each destination as the person picks it: its name, a line on what arrives, and its address field. */
+export const KINDS: Record<
+  WebhookKind,
+  {
+    label: string;
+    blurb: string;
+    // The address field's label and example.
+    field: string;
+    placeholder: string;
+    // How to get the address, step by step, or one line for a service the person runs.
+    steps: readonly string[];
+    // A name to suggest it, as the field's example.
+    namePlaceholder: string;
+  }
+> = {
   slack: {
+    label: 'Slack',
+    blurb: 'A message in a channel',
+    field: 'Slack Webhook URL',
     placeholder: 'https://hooks.slack.com/services/…',
-    help: 'In Slack, add an Incoming Webhook to the channel and paste its URL.',
+    steps: [
+      'Open api.slack.com/apps and create an app for your workspace, or pick one you have.',
+      'Turn on Incoming Webhooks, choose Add New Webhook and pick the channel.',
+      'Copy the webhook URL and paste it here.',
+    ],
+    namePlaceholder: 'Like “#launch channel”',
   },
   teams: {
+    label: 'Microsoft Teams',
+    blurb: 'A card in a channel',
+    field: 'Teams Workflow URL',
     placeholder: 'https://…logic.azure.com/workflows/…',
-    help: 'In the Teams channel, add the Workflows template “Post to a channel when a webhook request is received” and paste its URL.',
+    steps: [
+      'In the Teams channel, open More options (…) and choose Workflows.',
+      'Pick “Post to a channel when a webhook request is received” and follow its steps.',
+      'Copy the URL it gives you and paste it here.',
+    ],
+    namePlaceholder: 'Like “Design team channel”',
+  },
+  json: {
+    label: 'Your Own Service',
+    blurb: 'Signed JSON to an address you run',
+    field: 'HTTPS Address',
+    placeholder: 'https://example.com/hooks/updates',
+    steps: [
+      'Any https:// address your service listens on. Each delivery is JSON, signed with a secret you get once it’s added, so you can check it came from us.',
+    ],
+    namePlaceholder: 'Like “Build server”',
   },
 };
+
+// The order the destinations are offered in: the chat tools first, as most people want one of them.
+export const KIND_ORDER: readonly WebhookKind[] = ['slack', 'teams', 'json'];
+
+// ---------- What it sends ---------------------------------------------------------------------------------------
+
+export type EventGroupId = 'items' | 'sharing' | 'work';
+
+/** The events in groups a person recognises, each with a line saying when it fires. */
+export const EVENT_GROUPS: readonly {
+  id: EventGroupId;
+  label: string;
+  events: readonly { event: WebhookEvent; label: string; hint: string }[];
+}[] = [
+  {
+    id: 'items',
+    label: 'Items',
+    events: [
+      { event: 'created', label: 'Item Created', hint: 'Something new is made or copied' },
+      { event: 'renamed', label: 'Item Renamed', hint: 'Its name changes' },
+      { event: 'moved', label: 'Item Moved', hint: 'It moves to another folder or space' },
+      { event: 'trashed', label: 'Moved to the Trash', hint: 'It goes to the Trash' },
+    ],
+  },
+  {
+    id: 'sharing',
+    label: 'Sharing and Comments',
+    events: [
+      { event: 'shared', label: 'Share Link Made', hint: 'Someone makes a link to share it' },
+      { event: 'commented', label: 'Comment Added', hint: 'Someone comments or replies' },
+    ],
+  },
+  {
+    id: 'work',
+    label: 'Actions and Cards',
+    events: [
+      {
+        event: 'action_assigned',
+        label: 'Action or Card Assigned',
+        hint: 'Someone is given an action or a card',
+      },
+      { event: 'action_done', label: 'Action or Card Done', hint: 'An action or card is done' },
+      { event: 'card_moved', label: 'Card Moved', hint: 'A card moves to another column' },
+    ],
+  },
+];
+
+// The events only one app sends, which name it by its logo.
+export const EVENT_APP: Partial<Record<WebhookEvent, 'liveplanner'>> = {
+  card_moved: 'liveplanner',
+};
+
+const EVENT_NAMES = new Map(EVENT_GROUPS.flatMap((g) => g.events.map((e) => [e.event, e.label])));
+
+/** An event or a delivery's type, by its name in Settings (the app it comes from, where only one sends it, is drawn
+ *  beside it as that app's logo). */
+export const eventName = (type: WebhookDelivery['type']): string =>
+  EVENT_NAMES.get(type as WebhookEvent) ?? (type === 'ping' ? 'Test' : WEBHOOK_EVENT_LABELS[type]);
+
+// ---------- Refusals --------------------------------------------------------------------------------------------
 
 const URL_INVALID: Record<WebhookKind, string> = {
   json: 'Use an https:// address on the standard port, with no user name or password in it.',
@@ -65,7 +159,7 @@ const MESSAGES: Record<string, string> = {
   webhooks_need_account: 'Sign in to your account to manage webhooks.',
   not_team_admin: 'Only the team’s admins can add webhooks for it.',
   unauthorized: 'You’ve been signed out. Sign in again to carry on.',
-  offline: 'Couldn’t reach liveworkspace. Check your connection and try again.',
+  offline: 'Couldn’t connect. Check your connection and try again.',
 };
 
 export function webhookError(error: string, kind: WebhookKind = 'json'): string {
@@ -73,19 +167,28 @@ export function webhookError(error: string, kind: WebhookKind = 'json'): string 
   return MESSAGES[error] ?? 'Something went wrong. Please try again.';
 }
 
-const PAUSES: Record<WebhookPauseReason, string> = {
-  paused: 'Paused',
-  creator_left: 'Paused: whoever added it no longer runs the team',
-  failing: 'Paused: 20 deliveries in a row failed',
-  gone: 'Paused: the address said it’s gone',
+// ---------- State -----------------------------------------------------------------------------------------------
+
+export type WebhookTone = 'live' | 'paused' | 'warn';
+
+// Why it paused itself, and what to do about it.
+const PAUSES: Record<Exclude<WebhookPauseReason, 'paused'>, string> = {
+  creator_left:
+    'It paused because whoever added it no longer runs the team. Resume it to send as you.',
+  failing:
+    'It paused after 20 deliveries in a row failed. Check the address still works, then resume it.',
+  gone: 'It paused because the address said it no longer exists. If the address changed, add the webhook again.',
 };
 
-/** The webhook's state, as its row's pill says it. */
-export function stateOf(webhook: Webhook): { label: string; tone: 'live' | 'paused' | 'warn' } {
+/** The webhook's state: its badge, and, when it paused itself, why and what to do. */
+export function stateOf(webhook: Webhook): { label: string; tone: WebhookTone; note?: string } {
   if (webhook.pausedAt === null) return { label: 'Active', tone: 'live' };
   const reason = webhook.pausedReason ?? 'paused';
-  return { label: PAUSES[reason], tone: reason === 'paused' ? 'paused' : 'warn' };
+  if (reason === 'paused') return { label: 'Paused', tone: 'paused' };
+  return { label: 'Needs Attention', tone: 'warn', note: PAUSES[reason] };
 }
+
+// ---------- Deliveries ------------------------------------------------------------------------------------------
 
 // Why a delivery failed or waits, in words.
 const ERRORS: Record<string, string> = {
@@ -98,14 +201,25 @@ const ERRORS: Record<string, string> = {
   paused: 'the webhook was paused',
 };
 
-export function deliveryLine(d: WebhookDelivery): string {
-  const status = d.status !== null ? `${d.status}` : null;
+/** Why a delivery that got no 2xx went wrong, in words: the answer's code, the reason none came, or both. */
+export function failureOf(d: Pick<WebhookDelivery, 'status' | 'error'>): string | null {
+  const status = d.status !== null ? `answered ${d.status}` : null;
   const why = d.error ? (ERRORS[d.error] ?? d.error) : null;
-  const detail = [status, why].filter(Boolean).join(', ');
-  if (d.state === 'delivered') return status ? `Delivered (${status})` : 'Delivered';
-  if (d.state === 'failed') return detail ? `Failed: ${detail}` : 'Failed';
-  return d.attempts > 0 ? `Retrying${detail ? ` after ${detail}` : ''}` : 'Waiting to send';
+  return [status, why].filter(Boolean).join(', ') || null;
 }
 
-export const deliveryTypeLabel = (d: WebhookDelivery): string =>
-  WEBHOOK_EVENT_LABELS[d.type] ?? d.type;
+export function deliveryLine(d: WebhookDelivery): string {
+  if (d.state === 'delivered') return d.status !== null ? `Delivered (${d.status})` : 'Delivered';
+  const failure = failureOf(d);
+  if (d.state === 'failed') return failure ? `Failed: ${failure}` : 'Failed';
+  return d.attempts > 0 ? `Retrying${failure ? ` after it ${failure}` : ''}` : 'Waiting to send';
+}
+
+/** "2 hours ago" (every list's shared wording), or the date past a week. */
+export function whenOf(at: number, now: number): string {
+  const ago = now - at;
+  return ago < 0 || ago >= WEEK_MS ? DATE.format(at) : formatRelativeTime(ago);
+}
+
+const WEEK_MS = 7 * 86_400_000;
+const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' });

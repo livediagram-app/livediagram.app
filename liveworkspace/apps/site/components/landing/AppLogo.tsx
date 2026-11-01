@@ -24,7 +24,14 @@ export function appLogoInks(app: ListedApp, brand: BrandApp): CSSProperties {
   } as CSSProperties;
 }
 
-export function AppLogo({ app, size = 'lg' }: { app: ListedApp; size?: 'sm' | 'md' | 'lg' }) {
+export function AppLogo({
+  app,
+  size = 'lg',
+}: {
+  app: ListedApp;
+  // `xs`: inside a line of text (Settings › Webhooks).
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+}) {
   const brand = brandAppOf(app.id);
   if (!brand) return <span className="font-semibold">{app.name}</span>;
   return (

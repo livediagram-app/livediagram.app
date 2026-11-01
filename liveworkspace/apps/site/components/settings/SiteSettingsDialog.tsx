@@ -125,7 +125,7 @@ export default function SiteSettingsDialog({
               securityHref: workspaceHref('/explorer?settings=profile'),
               tokensHref: workspaceHref('/explorer?settings=tokens'),
               // Webhooks are the index's, which the page reaches with the person's token on either address.
-              renderWebhooks: () => <LazyCell cell="webhooks" panel={<WebhooksPanel />} />,
+              renderWebhooks: () => <LazyCell cell="webhooks" flush panel={<WebhooksPanel />} />,
             }
           : {
               identity,
@@ -138,7 +138,7 @@ export default function SiteSettingsDialog({
                 return left;
               },
               renderTokens: () => <LazyCell cell="tokens" panel={<TokensPanel />} />,
-              renderWebhooks: () => <LazyCell cell="webhooks" panel={<WebhooksPanel />} />,
+              renderWebhooks: () => <LazyCell cell="webhooks" flush panel={<WebhooksPanel />} />,
             },
     [identity, guestSignIn, profile, cloudSync],
   );
@@ -237,10 +237,19 @@ export default function SiteSettingsDialog({
 
 // A category drawn in the panel from its own chunk, fetched when it is first shown: the API tokens (making one, its
 // secret shown once, revoking one; they read GET /api/account/tokens then) and the webhooks (the index's
-// GET /webhooks then).
-function LazyCell({ cell, panel }: { cell: string; panel: ReactNode }) {
+// GET /webhooks then). `flush`: the category lays out its own parts edge to edge in the card, with the hairlines
+// between them, as the webhooks do.
+function LazyCell({
+  cell,
+  panel,
+  flush = false,
+}: {
+  cell: string;
+  panel: ReactNode;
+  flush?: boolean;
+}) {
   return (
-    <div data-settings-cell={cell} className="px-4 py-4">
+    <div data-settings-cell={cell} className={flush ? undefined : 'px-4 py-4'}>
       <Suspense
         fallback={
           <div
