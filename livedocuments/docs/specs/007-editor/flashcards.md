@@ -57,7 +57,9 @@ alignment. Nothing else can be put on it.
   **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code** and **Divider**. Never a page break, an
   image, a table, a chart, a drawing, a callout or a sticky note.
 - **Paste** keeps the text (headings, lists, quotes, code, links and the inline marks, as in an article); a pasted
-  picture and pasted canvas elements are dropped, and the paste says so once ("Flashcards hold text only.").
+  table (HTML, or tab-separated text) comes as a list, a row an item with its cells joined by " · ", as an agent's
+  does; a pasted picture, page break and canvas elements are dropped, and the paste says so once ("Flashcards hold
+  text only.").
 - **Nothing lands on a card**: an element drawn, dropped, pasted or placed so its centre lands on a card is not added,
   and one moved onto it goes back, with a short notice, "Flashcards hold text only.", shown at most once every few
   seconds (as a locked page's is). An element already on a card (made before this rule, or by an agent) stays where it
