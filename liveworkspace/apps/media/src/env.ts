@@ -17,6 +17,7 @@ export interface Env {
   MEDIA_KEY_LIVEPLANNER?: string;
   MEDIA_KEY_LIVEDOCUMENTS?: string;
   MEDIA_KEY_LIVEDESIGN?: string;
+  MEDIA_KEY_LIVEHUDDLE?: string;
   // Previews (liveworkspace/docs/specs/006-media/previews.md). The index, asked who may see an item: its service binding (a
   // Worker's fetch to another Worker's route on its own zone isn't routed to it), else INDEX_URL.
   INDEX?: Fetcher;
@@ -27,6 +28,7 @@ export interface Env {
   APP_ORIGIN_LIVEPLANNER?: string;
   APP_ORIGIN_LIVEDOCUMENTS?: string;
   APP_ORIGIN_LIVEDESIGN?: string;
+  APP_ORIGIN_LIVEHUDDLE?: string;
 }
 
 const KEY_OF: Record<MediaApp, keyof Env> = {
@@ -34,6 +36,7 @@ const KEY_OF: Record<MediaApp, keyof Env> = {
   'liveplanner.app': 'MEDIA_KEY_LIVEPLANNER',
   'livedocuments.app': 'MEDIA_KEY_LIVEDOCUMENTS',
   'livedesign.app': 'MEDIA_KEY_LIVEDESIGN',
+  'livehuddle.app': 'MEDIA_KEY_LIVEHUDDLE',
 };
 
 export function appKey(env: Env, app: MediaApp): string | undefined {
@@ -66,6 +69,7 @@ const MEDIA_APP_OF: Record<App, MediaApp> = {
   liveplanner: 'liveplanner.app',
   livedocuments: 'livedocuments.app',
   livedesign: 'livedesign.app',
+  livehuddle: 'livehuddle.app',
 };
 
 const ORIGIN_OF: Record<App, keyof Env> = {
@@ -73,6 +77,7 @@ const ORIGIN_OF: Record<App, keyof Env> = {
   liveplanner: 'APP_ORIGIN_LIVEPLANNER',
   livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
   livedesign: 'APP_ORIGIN_LIVEDESIGN',
+  livehuddle: 'APP_ORIGIN_LIVEHUDDLE',
 };
 
 // Where an app's export door is, with the key it takes, or null when either is not configured.

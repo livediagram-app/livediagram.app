@@ -40,11 +40,13 @@ function show({
   canEdit = true,
   side = 'left',
   hidden = false,
-}: { canEdit?: boolean; side?: 'left' | 'right'; hidden?: boolean } = {}) {
+  joined = false,
+}: { canEdit?: boolean; side?: 'left' | 'right'; hidden?: boolean; joined?: boolean } = {}) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
   const onMinimise = vi.fn();
   const onMoveToSide = vi.fn();
+  const onDraggingChange = vi.fn();
   const edit = {
     addPage,
     movePageTo: vi.fn(),
@@ -75,10 +77,12 @@ function show({
         side={side}
         onMoveToSide={onMoveToSide}
         onMinimise={onMinimise}
+        joined={joined}
+        onDraggingChange={onDraggingChange}
       />
     </ViewportStoreProvider>,
   );
-  return { focusPage, addPage, onMinimise, onMoveToSide, edit, deck, store };
+  return { focusPage, addPage, onMinimise, onMoveToSide, onDraggingChange, edit, deck, store };
 }
 
 // The view centred on a page (the centred transform, @liveworkspace/workbench/lib/viewport.ts), in jsdom's 0 x 0 canvas.
@@ -117,6 +121,51 @@ describe('PageContentsSidebar', () => {
     cleanup();
     show({ side: 'right' });
     expect(screen.getByRole('complementary', { name: 'Contents' }).style.right).toBe('0px');
+  });
+
+  // docs/specs/007-editor/pages-mode.md "Joined to the menu box".
+  it('joined, rises to the top and keeps the menu box’s row, its header where it was', () => {
+    show({ joined: true });
+    const aside = screen.getByRole('complementary', { name: 'Contents' });
+    expect(aside.style.top).toBe('0px');
+    const band = aside.firstElementChild as HTMLElement;
+    expect(band.hasAttribute('data-menu-join-band')).toBe(true);
+    expect(band.style.height).toBe('68px');
+    expect(band.nextElementSibling?.hasAttribute('data-contents-handle')).toBe(true);
+  });
+
+  it('has no menu row unjoined', () => {
+    show();
+    expect(document.querySelector('[data-menu-join-band]')).toBeNull();
+  });
+
+  it('tells the chrome a drag across starts and ends, a cancelled one too', () => {
+    const h = show({ joined: true });
+    const handle = document.querySelector<HTMLElement>('[data-contents-handle]')!;
+    handle.setPointerCapture = () => {};
+    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
+    expect(h.onDraggingChange).toHaveBeenLastCalledWith(true);
+    fireEvent.pointerUp(handle, { clientX: -10, pointerId: 1 });
+    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
+    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
+    fireEvent.pointerCancel(handle, { pointerId: 1 });
+    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
+    // A press on its buttons is no drag.
+    h.onDraggingChange.mockClear();
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Minimise Contents' }), {
+      button: 0,
+      pointerId: 1,
+    });
+    expect(h.onDraggingChange).not.toHaveBeenCalled();
+  });
+
+  it('lets go of the menu box if it goes mid-drag', () => {
+    const h = show({ joined: true });
+    const handle = document.querySelector<HTMLElement>('[data-contents-handle]')!;
+    handle.setPointerCapture = () => {};
+    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
+    cleanup();
+    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
   });
 
   it("stacks each page's Delete and ⋯ down its left, an Editor's alone, whose presses never glide", () => {

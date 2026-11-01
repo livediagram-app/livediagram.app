@@ -64,6 +64,8 @@
 @source '../../../../packages/settings-ui/src';
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
 @source '../../../../packages/workbench/src';
+/* So does Avatar mode's shared code (@liveworkspace/avatar). */
+@source '../../../../packages/avatar/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating

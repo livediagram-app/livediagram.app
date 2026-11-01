@@ -14,7 +14,7 @@ Scope, by file:
 | `apps/editor/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring             |
 | `apps/editor/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`    | Calls `usePortalTravel`; walk-in through `enterPortalRef`         |
-| `apps/editor/hooks/canvas/useAvatarWalk.ts`            | Arrival hook, `teleportTo`, the ignored exit portal               |
+| `../packages/avatar/src/hooks/useAvatarWalk.ts`        | Arrival hook, `teleportTo`, the ignored exit portal               |
 | `apps/editor/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                |
 | `apps/editor/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create Portal                                     |

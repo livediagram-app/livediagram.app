@@ -214,7 +214,7 @@ so a new page load starts on the page kind's landing.
 
 - On a desktop, the menu box (the Explorer button, top left) ends with the open tab's name, after a
   hairline. It is the chrome's ink, 14 px at regular weight (never bold), cut short
-  with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
+  with an ellipsis past 16rem (sooner while the box heads Pages mode's Contents sidebar, [Pages mode](pages-mode.md) "Joined to the menu box"), and follows a rename at once. The box shows a name alone, never an icon beside it.
 - A click (a tap) on it renames the tab in place, for someone who may change the
   design's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.

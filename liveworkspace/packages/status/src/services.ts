@@ -87,8 +87,9 @@ export function environmentOf(host: string): StatusEnvironment {
 
 type AppSiteId = Exclude<SiteId, 'liveworkspace.app'>;
 
-// Each app's MCP Worker's local port (its wrangler.toml `[dev] port`).
-const MCP_DEV_PORTS: Record<AppSiteId, number> = {
+// Each app's MCP Worker's local port (its wrangler.toml `[dev] port`). The MCP server is optional per app: an app with
+// no entry ships none (livehuddle's first version), and its group has no MCP row.
+const MCP_DEV_PORTS: Partial<Record<AppSiteId, number>> = {
   'livediagram.app': 8788,
   'liveplanner.app': 8888,
   'livedocuments.app': 8988,
@@ -102,10 +103,18 @@ export function appOrigin(site: Site, env: StatusEnvironment): string {
   return `https://www.${site.id}`;
 }
 
-/** An app's MCP server in `env`, or null where the page doesn't check it (staging has no public MCP host). */
+/** Whether an app ships an MCP server, so the page checks one. */
+export function hasMcp(site: Site): boolean {
+  return site.id !== 'liveworkspace.app' && MCP_DEV_PORTS[site.id] !== undefined;
+}
+
+/** An app's MCP server in `env`, or null where the page doesn't check it (staging has no public MCP host; an app
+ *  without one has none anywhere). */
 export function mcpOrigin(site: Site, env: StatusEnvironment): string | null {
   if (site.id === 'liveworkspace.app') return null;
-  if (env === 'development') return `http://localhost:${MCP_DEV_PORTS[site.id]}`;
+  const devPort = MCP_DEV_PORTS[site.id];
+  if (devPort === undefined) return null;
+  if (env === 'development') return `http://localhost:${devPort}`;
   if (env === 'staging') return null;
   return `https://mcp.${site.id}`;
 }
@@ -194,8 +203,9 @@ function platformGroup(): ServiceGroup {
 
 const MCP_DESCRIPTION = 'Lets AI assistants read and make your work, with your permission.';
 
-// What each app adds to the page: the services every app has, and livediagram's Community pages.
-function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
+// What each app adds to the page: the services every app has, its MCP server where it ships one, and livediagram's
+// Community pages. Exported for a held app's group, which `statusGroups` leaves off the page until launch.
+export function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
   const g = site.id.replace(/\.app$/, '');
   const origin = appOrigin(site, env);
   const mcp = mcpOrigin(site, env);
@@ -259,8 +269,8 @@ function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
     });
     throughRouter.push(`${g}:community-pages`);
   }
-  services.push(
-    {
+  if (hasMcp(site)) {
+    services.push({
       id: `${g}:mcp`,
       name: 'MCP server',
       description: MCP_DESCRIPTION,
@@ -272,21 +282,21 @@ function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
             mode: 'skipped',
             reason: 'Staging has no public MCP address, so it isn’t checked here.',
           },
+    });
+  }
+  services.push({
+    id: `${g}:router`,
+    name: 'Router',
+    description: `Puts every part of ${site.name} on one address.`,
+    icon: 'route',
+    label: 'Every check above passes through it',
+    check: {
+      mode: 'derived',
+      from: throughRouter,
+      rule: 'any',
+      note: 'Every request to the app passes through the router, so it is up when any of them answers.',
     },
-    {
-      id: `${g}:router`,
-      name: 'Router',
-      description: `Puts every part of ${site.name} on one address.`,
-      icon: 'route',
-      label: 'Every check above passes through it',
-      check: {
-        mode: 'derived',
-        from: throughRouter,
-        rule: 'any',
-        note: 'Every request to the app passes through the router, so it is up when any of them answers.',
-      },
-    },
-  );
+  });
   return { id: g, site, title: site.name, blurb: `${site.pitch}.`, services };
 }
 

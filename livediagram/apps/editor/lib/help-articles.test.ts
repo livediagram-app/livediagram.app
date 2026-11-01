@@ -66,6 +66,7 @@ describe('every key earns its place', () => {
     walk(SRC);
     // The editor code every editor shares (@liveworkspace/workbench) can open an article too.
     walk(`${SRC}../../../packages/workbench/src`);
+    walk(`${SRC}../../../packages/avatar/src`);
     const haystack = sources.join('\n');
     // Guard against the walk finding nothing, which would pass vacuously.
     expect(sources.length).toBeGreaterThan(200);

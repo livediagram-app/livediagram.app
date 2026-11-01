@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isParticipationOp, isRoomOpRef } from './room-messages';
+import { isParticipationOp, isPresenceOpKind, isRoomOpRef } from './room-messages';
 
 // docs/specs/012-collaboration/realtime-conflict-resolution.md: the `ref` a client puts on an op frame,
 // which the room echoes on that op's cursor frame.
@@ -36,5 +36,13 @@ describe('isParticipationOp', () => {
     for (const op of [{ kind: 'el' }, { kind: 'tab' }, { kind: 'el-delta' }, null, 'vote', 3]) {
       expect(isParticipationOp(op)).toBe(false);
     }
+  });
+});
+
+// The avatar-say op's shape and parser are @liveworkspace/api-schema's (its avatar-say tests); its class is this
+// product's (docs/specs/008-canvas/blueprints/avatar-speech.md).
+describe('avatar-say', () => {
+  it('is a presence op: never ordered, logged or replayed', () => {
+    expect(isPresenceOpKind('avatar-say')).toBe(true);
   });
 });

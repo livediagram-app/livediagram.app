@@ -52,7 +52,7 @@ import {
   receivePeerDragPreview,
 } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
-import { receivePeerSay, resetSpeechBubbles } from '@/lib/avatar-speech-store';
+import { receivePeerSay, resetSpeechBubbles } from '@liveworkspace/avatar/speech-store';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime room: one WebSocket per document, opened for every document saved on

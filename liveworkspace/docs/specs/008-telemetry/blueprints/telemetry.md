@@ -30,18 +30,18 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term            | Identifier                                                     | Meaning                                                                           |
-| --------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Event           | `TelemetryWireEvent` `{ category, action, type? }`             | Three short fields from a closed vocabulary; never user content                   |
-| Batch           | `TelemetryBatch` `{ app, events }`                             | What one `POST /events` carries                                                   |
-| App             | `TelemetryApp`, one of `TELEMETRY_APPS`                        | `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`       |
-| Platform sender | `PLATFORM_TELEMETRY_APP` = `'liveworkspace.app'`               | The Explorer and Settings on liveworkspace.app, speaking for an app or for itself |
-| Sender          | `TelemetrySender` = app or platform; `TELEMETRY_SENDERS`       | What a batch may name in `app`                                                    |
-| Sender kind     | `'server' \| 'browser' \| 'platform'` (`senderOf`)             | How the batch proved who it is                                                    |
-| Filter          | `TelemetryAppFilter` = app or `ALL_TELEMETRY_APPS` (`'all'`)   | What the summary is asked for                                                     |
-| Window          | `TelemetryWindowKey` `today` / `last7` / `last30`              | 1, 7 or 30 UTC calendar days ending today (`TELEMETRY_WINDOW_DAYS`)               |
-| Metric key      | `metricKey(category, action, type)` = `category\|action\|type` | One event's series key; `type` null is `''`                                       |
-| Server-only     | `isServerEmittedEvent` (each app's `api-schema`)               | Events only the app's Workers may count (a sign-up, an email sent)                |
+| Term            | Identifier                                                       | Meaning                                                                                            |
+| --------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Event           | `TelemetryWireEvent` `{ category, action, type? }`               | Three short fields from a closed vocabulary; never user content                                    |
+| Batch           | `TelemetryBatch` `{ app, events }`                               | What one `POST /events` carries                                                                    |
+| App             | `TelemetryApp`, one of `TELEMETRY_APPS` or `HELD_TELEMETRY_APPS` | `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`; held `livehuddle.app` |
+| Platform sender | `PLATFORM_TELEMETRY_APP` = `'liveworkspace.app'`                 | The Explorer and Settings on liveworkspace.app, speaking for an app or for itself                  |
+| Sender          | `TelemetrySender` = app or platform; `TELEMETRY_SENDERS`         | What a batch may name in `app`                                                                     |
+| Sender kind     | `'server' \| 'browser' \| 'platform'` (`senderOf`)               | How the batch proved who it is                                                                     |
+| Filter          | `TelemetryAppFilter` = app or `ALL_TELEMETRY_APPS` (`'all'`)     | What the summary is asked for                                                                      |
+| Window          | `TelemetryWindowKey` `today` / `last7` / `last30`                | 1, 7 or 30 UTC calendar days ending today (`TELEMETRY_WINDOW_DAYS`)                                |
+| Metric key      | `metricKey(category, action, type)` = `category\|action\|type`   | One event's series key; `type` null is `''`                                                        |
+| Server-only     | `isServerEmittedEvent` (each app's `api-schema`)                 | Events only the app's Workers may count (a sign-up, an email sent)                                 |
 
 ## Behaviour and state
 

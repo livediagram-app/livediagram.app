@@ -8,7 +8,7 @@ import {
   type App,
   type Kind,
 } from '@liveworkspace/index-client';
-import { APP_SITES, type Site } from '@liveworkspace/sites';
+import { REGISTERED_APP_SITES, type Site } from '@liveworkspace/sites';
 
 // What the Explorer lists: this app's items, or every app's.
 export type AppFilter = 'app' | 'all';
@@ -27,6 +27,7 @@ const KIND_WORDS: Record<Kind, { one: string; many: string }> = {
   plan: { one: 'Plan', many: 'Plans' },
   document: { one: 'Document', many: 'Documents' },
   design: { one: 'Design', many: 'Designs' },
+  space: { one: 'Space', many: 'Spaces' },
 };
 
 function words(one: string, many: string): Words {
@@ -57,6 +58,7 @@ const HERO_WORDS: Record<Kind, HeroWords> = {
   plan: { question: 'what are you planning today?', lead: LEAD },
   document: { question: 'what are you writing today?', lead: LEAD },
   design: { question: 'what are you designing today?', lead: LEAD },
+  space: { question: 'who are you meeting today?', lead: LEAD },
 };
 
 // The hero while the list mixes every app: no one kind's verb.
@@ -76,7 +78,7 @@ export function heroGreeting(hour: number): string {
 
 /** The site an app lives on, for its mark (name and accent) on a row in the All filter. */
 export function siteOf(app: App): Site {
-  const site = APP_SITES.find((s) => s.id === `${app}.app`);
+  const site = REGISTERED_APP_SITES.find((s) => s.id === `${app}.app`);
   // Every app has a site (a test pins it); the fallback keeps a new app from crashing a row.
   return (
     site ?? {

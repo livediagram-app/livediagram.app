@@ -4,7 +4,8 @@ Every liveworkspace app keeps the images people upload in one service, whose API
 **liveworkspace.app/api/media**. The images are indexed in its own D1 database and stored in its own R2
 bucket. Because a signed-in person is the same liveworkspace account in every app, their gallery
 follows them: a picture uploaded in livediagram can be placed in livedocuments or livedesign without
-uploading it again.
+uploading it again. livehuddle, registered before its launch, is one of the apps it serves
+([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)).
 
 ```
 packages/media               @liveworkspace/media: apps, upload limits, sniffing, guest owners, wire shapes, a client

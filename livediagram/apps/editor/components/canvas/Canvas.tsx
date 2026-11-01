@@ -56,11 +56,11 @@ import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
-import { AvatarWalker } from '@/components/canvas/AvatarWalker';
-import { AvatarPadArrivals } from '@/components/canvas/AvatarPadArrivals';
-import { parseAvatarStatus } from '@/lib/avatar-status';
-import { headPoint } from '@/lib/avatar-speech';
-import { avatarScale } from '@/lib/avatar-config';
+import { AvatarWalker } from '@liveworkspace/avatar/components/AvatarWalker';
+import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
+import { parseAvatarStatus } from '@liveworkspace/avatar/status';
+import { headPoint } from '@liveworkspace/avatar/speech';
+import { avatarScale } from '@liveworkspace/avatar/config';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 
 // The footprint a burst is scaled against when it comes from the avatar panel
@@ -71,8 +71,8 @@ import { useCanvasPointer } from './useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 
 const AVATAR_BURST_PX = 120;
-import { parseAvatarConfig } from '@/lib/avatar-config';
-import { reactionPose } from '@/lib/avatar-reactions';
+import { parseAvatarConfig } from '@liveworkspace/avatar/config';
+import { reactionPose } from '@liveworkspace/avatar/reactions';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';

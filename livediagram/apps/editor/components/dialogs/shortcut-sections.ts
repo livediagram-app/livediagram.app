@@ -10,8 +10,8 @@
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
 
 import { EDITOR_MODES, editorModeLabel, REACTION_LABEL, REACTIONS } from '@livediagram/document';
-import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@/lib/avatar-action-keys';
-import { AVATAR_REACTIONS } from '@/lib/avatar-reactions';
+import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@liveworkspace/avatar/action-keys';
+import { AVATAR_REACTIONS } from '@liveworkspace/avatar/reactions';
 
 // The mode key's row names the modes it moves through, from the mode catalogue so a new mode cannot go missing.
 const CYCLED_MODES = EDITOR_MODES.map(editorModeLabel).join(', ');

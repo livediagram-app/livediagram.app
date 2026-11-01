@@ -150,7 +150,8 @@ User codes are 8 characters of `BCDFGHJKLMNPQRSTVWXZ`.
 `CLIENTS_PATH` `/api/auth/internal/clients`, `REGISTRAR_EMAIL` (`clients.ts`); `ADMIN_HEADER`
 `x-liveworkspace-admin` (`secrets.ts`); `CLIENT_CHECK_TTL_MS` 5 min (`account-api.ts`); `RESOURCES`
 (`resources.ts`): production `https://livediagram.app/api`, `https://liveplanner.app/api`,
-`https://livedocuments.app/api`, `https://livedesign.app/api`; staging their `staging.` twins;
+`https://livedocuments.app/api`, `https://livedesign.app/api`, `https://livehuddle.app/api` (held); staging their
+`staging.` twins;
 development `http://localhost/api`. `SILENT_SESSION_KEY`, `SILENT_GUARD_MAX_AGE_SECONDS` 120,
 `SIGNED_OUT_MAX_AGE_SECONDS` 400 d, `SIGNED_OUT_VALUE` `2`, `SILENT_RETURN_KEY`, `SILENT_RETURN_ATTRIBUTE`, `SILENT_RETRY_GLOBAL`,
 `SILENT_RETURN_MAX_LENGTH` 1,500, `GUEST_STATE_PATTERN`,

@@ -89,6 +89,9 @@ type Props = Pick<
     // strip takes the phone's row; null is that row with no menu card (a phone
     // held sideways, docs/specs/007-editor/live-app.md "A phone held sideways").
     leading?: ReactNode;
+    // The screen width of Pages mode's Contents sidebar while the menu box heads it (docs/specs/007-editor/pages-mode.md
+    // "Joined to the menu box"): the strip centres in what shows beside it, as a page is framed beside it.
+    besideWidth?: number;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
@@ -145,7 +148,7 @@ function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode })
 }
 
 export function ToolbarPalette(props: Props) {
-  const { canvasTool, themeTint, pendingDraw, leading } = props;
+  const { canvasTool, themeTint, pendingDraw, leading, besideWidth } = props;
   const photoInPlace = !!props.photoTools?.inPlaceOfCategories;
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.
   const phoneRow = leading !== undefined;
@@ -382,6 +385,7 @@ export function ToolbarPalette(props: Props) {
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
         alignItems: crowded ? 'flex-end' : 'center',
         paddingRight: crowded ? '0.75rem' : 0,
+        ...(besideWidth ? { paddingLeft: toSurfacePx(besideWidth, scale) } : {}),
       }}
       // While one of its popovers is open (a category's flyout, More, Search) the strip rises to the popover layer,
       // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.

@@ -437,10 +437,10 @@ export * from './agenda-current';
 export * from './quiz';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
-export * from './fence';
+export * from '@liveworkspace/avatar/fence';
 // The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
-export * from './avatar-palette';
-export * from './avatar-pad';
+export * from '@liveworkspace/avatar/palette';
+export * from '@liveworkspace/avatar/pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
 export * from './office';

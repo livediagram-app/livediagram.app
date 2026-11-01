@@ -32,7 +32,7 @@ Scope, by file:
 
 | Term        | Identifier                                                                                                       | Meaning                                                                                                         |
 | ----------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| App         | `MediaApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`                          | The four apps; the index's `App` is the name without `.app` (`indexAppOf`)                                      |
+| App         | `MediaApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, `livehuddle.app` (held) | Every registered app; the index's `App` is the name without `.app` (`indexAppOf`)                               |
 | Image       | `images` row; id `crypto.randomUUID()`; R2 key = id                                                              | One stored picture                                                                                              |
 | Owner       | account id, or `guest:<sha256(app + "\n" + guestId)>` (`mediaGuestOwner`)                                        | Who uploaded it                                                                                                 |
 | Reference   | `refs (app, document, image_id)`                                                                                 | A document that places an image, as its app last said                                                           |
@@ -319,7 +319,8 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | `APP_ORIGIN_LIVEPLANNER`    | `https://www.liveplanner.app`                                                             | `https://staging.liveplanner.app`                        |
 | `APP_ORIGIN_LIVEDOCUMENTS`  | `https://www.livedocuments.app`                                                           | `https://staging.livedocuments.app`                      |
 | `APP_ORIGIN_LIVEDESIGN`     | `https://www.livedesign.app`                                                              | `https://staging.livedesign.app`                         |
-| Secrets                     | `MEDIA_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN`                  | the same                                                 |
+| `APP_ORIGIN_LIVEHUDDLE`     | `https://www.livehuddle.app`                                                              | `https://staging.livehuddle.app`                         |
+| Secrets                     | `MEDIA_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN`, `_LIVEHUDDLE`   | the same                                                 |
 
 `[[rules]]` bundles `.ttf` and `.otf` as data (the card renderer's fonts). Locally (`.dev.vars.example`):
 `dev-<app>-media-key`, `INDEX_URL=http://localhost:8793/api/index`, the four app routers on 3100, 3200, 3300, 3400;

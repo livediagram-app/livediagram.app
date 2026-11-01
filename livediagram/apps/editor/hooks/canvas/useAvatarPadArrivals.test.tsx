@@ -3,9 +3,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { avatarPadCore, createShape, type Element, type ShapeElement } from '@livediagram/document';
-import { AVATAR_PAD_ARRIVAL_MS } from '@/lib/avatar-pad';
-import type { AvatarPoint } from '@/lib/avatar-walk';
-import { useAvatarPadArrivals } from './useAvatarPadArrivals';
+import { AVATAR_PAD_ARRIVAL_MS } from '@liveworkspace/avatar/pad';
+import type { AvatarPoint } from '@liveworkspace/avatar/walk';
+import { useAvatarPadArrivals } from '@liveworkspace/avatar/hooks/useAvatarPadArrivals';
 
 // docs/specs/009-elements/avatar-pad.md "The arrival": derived on each screen from the positions everyone publishes.
 

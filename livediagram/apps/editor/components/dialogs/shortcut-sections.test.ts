@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EDIT_KEYS, VIEW_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import { SHORTCUT_SECTIONS } from './shortcut-sections';
-import { avatarActionForKey } from '@/lib/avatar-action-keys';
+import { avatarActionForKey } from '@liveworkspace/avatar/action-keys';
 
 // The Keyboard settings list and the key maps are two hand-kept lists of one thing.
 // The list calls itself "a reference card of every binding the editor knows"

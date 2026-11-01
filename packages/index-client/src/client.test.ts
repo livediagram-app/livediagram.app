@@ -21,7 +21,13 @@ function fakeFetch(respond: (seen: Seen) => Response = () => Response.json({})) 
 
 describe('constants', () => {
   it('give every app one kind', () => {
-    expect(APPS.map((app) => APP_KINDS[app])).toEqual(['canvas', 'plan', 'document', 'design']);
+    expect(APPS.map((app) => APP_KINDS[app])).toEqual([
+      'canvas',
+      'plan',
+      'document',
+      'design',
+      'space',
+    ]);
   });
 
   it('order the levels', () => {

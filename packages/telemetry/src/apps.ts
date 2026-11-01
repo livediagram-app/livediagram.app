@@ -9,7 +9,18 @@ export const TELEMETRY_APPS = [
   'livedesign.app',
 ] as const;
 
-export type TelemetryApp = (typeof TELEMETRY_APPS)[number];
+// Apps registered before their launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md "Registered
+// before launch"): their events are taken and stored, and the dashboard, which lists TELEMETRY_APPS, shows none of
+// them until launch moves them there.
+export const HELD_TELEMETRY_APPS = ['livehuddle.app'] as const;
+
+export type TelemetryApp = (typeof TELEMETRY_APPS)[number] | (typeof HELD_TELEMETRY_APPS)[number];
+
+// Every app the service takes events from: the listed and the held.
+const ACCEPTED_TELEMETRY_APPS: readonly TelemetryApp[] = [
+  ...TELEMETRY_APPS,
+  ...HELD_TELEMETRY_APPS,
+];
 
 // The dashboard's "every app" choice. Not an app: never stored, only asked for.
 export const ALL_TELEMETRY_APPS = 'all';
@@ -17,7 +28,9 @@ export const ALL_TELEMETRY_APPS = 'all';
 export type TelemetryAppFilter = TelemetryApp | typeof ALL_TELEMETRY_APPS;
 
 export function isTelemetryApp(value: unknown): value is TelemetryApp {
-  return typeof value === 'string' && (TELEMETRY_APPS as readonly string[]).includes(value);
+  return (
+    typeof value === 'string' && (ACCEPTED_TELEMETRY_APPS as readonly string[]).includes(value)
+  );
 }
 
 export function isTelemetryAppFilter(value: unknown): value is TelemetryAppFilter {
@@ -48,11 +61,16 @@ export const TELEMETRY_APP_ORIGINS: Record<TelemetryApp, readonly string[]> = {
     'https://www.livedesign.app',
     'https://staging.livedesign.app',
   ],
+  'livehuddle.app': [
+    'https://livehuddle.app',
+    'https://www.livehuddle.app',
+    'https://staging.livehuddle.app',
+  ],
 };
 
 // The app an origin belongs to, or null for one no app serves.
 export function telemetryAppOfOrigin(origin: string): TelemetryApp | null {
-  for (const app of TELEMETRY_APPS) {
+  for (const app of ACCEPTED_TELEMETRY_APPS) {
     if (TELEMETRY_APP_ORIGINS[app].includes(origin)) return app;
   }
   return null;

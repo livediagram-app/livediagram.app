@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { BRAND_APPS } from '@liveworkspace/brand';
-import { APPS, type App } from '@liveworkspace/index-client';
+import { type App } from '@liveworkspace/index-client';
+import { APP_NAMES as APPS } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
 import { WorkKinds, defaultTemplateHref } from './WorkKinds';
 import { WORK_KINDS, WORK_KINDS_PER_APP, workTiles } from './work-kinds';
@@ -9,7 +10,8 @@ import { WORK_KINDS, WORK_KINDS_PER_APP, workTiles } from './work-kinds';
 // kinds, one per app under All, every set built the same way, each tile in its own app's colours and starting its
 // template.
 
-const EXPECTED: Record<App, { labels: string[]; templates: string[] }> = {
+// livehuddle is registered but held until launch (no Explorer shows it), so it has no set yet.
+const EXPECTED: Partial<Record<App, { labels: string[]; templates: string[] }>> = {
   livediagram: {
     labels: ['Flowchart', 'Mind Map', 'Whiteboard', 'Workshop'],
     templates: ['flowchart', 'mindmap', 'whiteboard', 'blank-session'],
@@ -52,12 +54,12 @@ describe('WorkKinds', () => {
     const set = screen.getByRole('region', { name: 'What you can make' });
     expect(set.getAttribute('data-work-kinds')).toBe(app);
     const tiles = tilesOf(container);
-    expect(tiles.map((t) => t.textContent)).toEqual(EXPECTED[app].labels);
+    expect(tiles.map((t) => t.textContent)).toEqual(EXPECTED[app]!.labels);
     expect(tiles.map((t) => t.getAttribute('data-work-app'))).toEqual(Array(4).fill(app));
     expect(tiles.map((t) => t.getAttribute('href'))).toEqual(
-      EXPECTED[app].templates.map((t) => href(app, t)),
+      EXPECTED[app]!.templates.map((t) => href(app, t)),
     );
-    for (const [i, label] of EXPECTED[app].labels.entries())
+    for (const [i, label] of EXPECTED[app]!.labels.entries())
       expect(within(set).getByRole('link', { name: `New ${label}` })).toBe(tiles[i]);
     // Each draws in its own app's colours, set on the tile for the picture's `brand` classes.
     for (const t of tiles) {
@@ -67,7 +69,7 @@ describe('WorkKinds', () => {
   });
 
   it('builds every app’s set, and All’s, the same way: one layout, size and spacing', () => {
-    const shapes = [...APPS.map((app) => [app, false] as const), [APPS[0], true] as const].map(
+    const shapes = [...APPS.map((app) => [app, false] as const), [APPS[0]!, true] as const].map(
       ([app, all]) => {
         const { container, unmount } = render(
           <WorkKinds app={app} all={all} templateHref={href} />,
@@ -87,7 +89,7 @@ describe('WorkKinds', () => {
     expect(tiles.map((t) => t.getAttribute('data-work-app'))).toEqual([...APPS]);
     expect(tiles.map((t) => t.textContent)).toEqual(['Canvas', 'Plan', 'Document', 'Design']);
     expect(tiles.map((t) => t.getAttribute('href'))).toEqual(
-      APPS.map((app) => href(app, EXPECTED[app].templates[0]!)),
+      APPS.map((app) => href(app, EXPECTED[app]!.templates[0]!)),
     );
     expect(tiles[0]!.getAttribute('aria-label')).toBe('New Canvas in livediagram');
     expect(tiles.map((t) => t.style.getPropertyValue('--wk-500'))).toEqual(
@@ -149,5 +151,12 @@ describe('WorkKinds', () => {
     // past this budget is a picture to simplify, as the hero draws on every Home.
     for (const n of counts) expect(n).toBeLessThan(200);
     expect(elapsed).toBeLessThan(1000);
+  });
+});
+
+describe('a held app', () => {
+  it('has no tile under All until it launches: one per listed app only', () => {
+    expect(workTiles('livediagram', true).map((t) => t.app)).not.toContain('livehuddle');
+    expect(WORK_KINDS.livehuddle).toEqual([]);
   });
 });
