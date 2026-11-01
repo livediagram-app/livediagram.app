@@ -5,7 +5,8 @@
 // `<prefix>signed_in` (whether) and `<prefix>account` (who). A visitor with no hint costs nothing, not even a
 // request. Someone the hint says is signed in is shown at once from the cookies, and the page checks that once,
 // when it is idle, with the app's `POST /api/auth/token`: signing out in another app ends this app's session too
-// but can't reach its cookies, so the hint can outlive the session, and the answer clears it. A session from before
+// but can't reach its cookies, so the hint can outlive the session, and the answer clears it (and lets the silent
+// sign-in ask again). A session from before
 // the name cookie existed (the hint without the name) asks at once instead, since its answer sets the name.
 
 import { useSyncExternalStore } from 'react';
@@ -19,6 +20,7 @@ import {
   readAccountPicture,
 } from '@liveworkspace/auth-client/account-name';
 import { askSignOut } from '@liveworkspace/auth-client/sign-out';
+import { retrySilentSignIn } from '@liveworkspace/auth-client/silent';
 
 /** Signed out (or not known to be signed in), the name still on its way, or the person (`colour`: their presence
  *  colour, null for Automatic or a session from before the colour cookie; `picture`: their Google picture, null with
@@ -95,6 +97,10 @@ function askOnce(): void {
       asked = true;
       asking = null;
       for (const listener of listeners) listener();
+      // The hint outlived its session (it ended in another app) and the answer cleared it: the silent sign-in asks
+      // again, once, in case the person has signed in elsewhere since (liveworkspace/docs/specs/003-accounts/
+      // accounts.md "A hint that outlived its session"). Still signed in, or offline, it does nothing.
+      retrySilentSignIn();
     });
 }
 

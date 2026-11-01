@@ -14,6 +14,7 @@ import {
 } from './app-session';
 import { accountFetch, resetWorkspaceIdentity, workspaceIdentity } from './token';
 import { explorerSilentSignInScript } from './silent';
+import { SILENT_RETRY_GLOBAL } from '@liveworkspace/auth-client/silent';
 
 const token = (sub: string) => `h.${btoa(JSON.stringify({ sub })).replace(/=+$/, '')}.s`;
 
@@ -94,6 +95,25 @@ describe("the app's session", () => {
     expect(a).toMatchObject({ sub: 'user_1', name: 'Ada' });
     await appAccount();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the silent sign-in look again after its first answer, and never after a later one', async () => {
+    // The function the boot script leaves on the page (@liveworkspace/auth-client/silent retrySilentSignIn).
+    const again = vi.fn();
+    vi.stubGlobal(SILENT_RETRY_GLOBAL, again);
+    document.cookie = 'lp_signed_in=1; path=/';
+    // The hint outlived its session: the app's answer clears it.
+    const refused = vi.fn<typeof fetch>(async () => {
+      document.cookie = 'lp_signed_in=0; path=/';
+      return Response.json({ signedIn: false }, { status: 401 });
+    });
+    vi.stubGlobal('fetch', refused);
+    expect(await appAccount()).toBeNull();
+    expect(again).toHaveBeenCalledTimes(1);
+    document.cookie = 'lp_signed_in=1; path=/';
+    await appAccount();
+    expect(refused).toHaveBeenCalledTimes(2);
+    expect(again).toHaveBeenCalledTimes(1);
   });
 
   it('is who the Explorer asks the index as', async () => {

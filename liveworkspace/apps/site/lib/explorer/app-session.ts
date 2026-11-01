@@ -3,6 +3,7 @@
 
 import { appSignOut as signOutOfApp } from '@liveworkspace/account-menu';
 import { accountColourOf, accountPictureOf } from '@liveworkspace/auth-client/account-name';
+import { retrySilentSignIn } from '@liveworkspace/auth-client/silent';
 import { createGuestTokens, type GuestTokens } from '@liveworkspace/index-client/browser';
 import { SIGNED_IN_HINT_COOKIE as DIAGRAM_HINT } from '@livediagram/api-schema';
 import { SIGNED_IN_HINT_COOKIE as PLANNER_HINT } from '@liveplanner/api-schema';
@@ -43,6 +44,7 @@ export type AppAccount = {
 const RENEW_BEFORE_MS = 60_000;
 let account: AppAccount | null = null;
 let accountPending: Promise<AppAccount | null> | null = null;
+let answered = false;
 
 function cookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -155,6 +157,13 @@ export function appAccount(now = Date.now()): Promise<AppAccount | null> {
   accountPending ??= askToken().then((found) => {
     accountPending = null;
     account = found;
+    // The page's first answer: a hint that outlived its session (it ended in another app) lets the silent sign-in
+    // ask again (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session"). Later answers
+    // never do; the retry itself is once per page.
+    if (!answered) {
+      answered = true;
+      retrySilentSignIn();
+    }
     return found;
   });
   return accountPending;
@@ -223,5 +232,6 @@ export function appGuestTokens(app: AppName): GuestTokens {
 export function resetAppSession() {
   account = null;
   accountPending = null;
+  answered = false;
   guestTokens.clear();
 }
