@@ -74,7 +74,8 @@ as what it means, never as the text typed, so everyone reads it the same whateve
 - **A1 references**: `B4`; absolute parts with `$` (`$B$4`, `B$4`, `$B4`), which do not shift when the formula is
   copied, filled or pasted.
 - **Ranges**: `A1:C5`, whole columns `A:C`, whole rows `2:4`, and open ends of a filled column (`A2:A`).
-- A reference past the grid (`ZZ1` on a 26-column sheet) is `#REF!`.
+- A reference past the grid (`ZZ1` on a 26-column sheet) is `#REF!`: a typed one is kept as `#REF!` in the formula, as a
+  reference to a deleted cell is, and one `INDIRECT` reads (`INDIRECT("ZZ1")`) answers `#REF!`.
 - References are not case sensitive; they are stored upper case.
 
 ### Other sheets
