@@ -48,7 +48,7 @@ const fail = (status: number, error: string): Result<never> => ({ ok: false, sta
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { SEND_WINDOW, windowFilter, type SendWindow } from './send-window.ts';
 import { isSettingsApp, type SettingsApp } from './settings.ts';
-import { cleanText } from './text.ts';
+import { cleanText } from '@liveworkspace/api-kit/typed-text';
 import {
   teamScopes,
   timelineStatement,
