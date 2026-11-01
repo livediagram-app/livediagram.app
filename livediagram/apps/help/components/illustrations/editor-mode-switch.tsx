@@ -217,6 +217,17 @@ const STROKE = {
   strokeLinejoin: 'round' as const,
 };
 
+/** The Fill tool's paint bucket, with the bar of the colour it will pour under it. */
+export function FillGlyph({ bar = 'fill-brand-400' }: { bar?: string }) {
+  return (
+    <g>
+      <path d="M-6 -2 l5 -5 l6 6 l-5 5 Z M-1 -7 l-2 -2" {...STROKE} />
+      <path d="M6 0 c1.6 2.2 1.6 3.6 0 3.6 s-1.6 -1.4 0 -3.6 Z" className="fill-slate-600" />
+      <rect x={-7} y={6} width={14} height={3} rx={1.5} className={bar} />
+    </g>
+  );
+}
+
 /** A marker nib in a given colour class. */
 function Marker({ cls }: { cls: string }) {
   return (
@@ -238,11 +249,11 @@ function Marker({ cls }: { cls: string }) {
 export function DrawDockScene() {
   const y = 22;
   return (
-    <Scene w={440} h={170}>
+    <Scene w={474} h={170}>
       <rect
         x={14}
         y={y - 6}
-        width={412}
+        width={446}
         height={44}
         rx={11}
         className="fill-white stroke-slate-200"
@@ -267,40 +278,43 @@ export function DrawDockScene() {
       <DockTool x={192} y={y} keyName="P">
         <path d="M0 7 l-5 -7 l5 -7 l5 7 Z M0 7 v-5" {...STROKE} />
       </DockTool>
-      <DockTool x={226} y={y} keyName="E">
+      <DockTool x={226} y={y} keyName="F">
+        <FillGlyph />
+      </DockTool>
+      <DockTool x={260} y={y} keyName="E">
         <path d="M-6 3 l7 -8 l6 6 l-5 5 h-5 Z M-2 -1 l6 6" {...STROKE} />
       </DockTool>
       <line
-        x1={264}
+        x1={298}
         y1={y + 4}
-        x2={264}
+        x2={298}
         y2={y + 28}
         className="stroke-slate-200"
         strokeWidth={1.2}
       />
       {/* Pinned shapes, then Shapes */}
-      <DockTool x={270} y={y} keyName="A">
+      <DockTool x={304} y={y} keyName="A">
         <path d="M-6 6 L6 -6 M0 -6 h6 v6" {...STROKE} />
       </DockTool>
-      <DockTool x={304} y={y} keyName="R">
+      <DockTool x={338} y={y} keyName="R">
         <rect x={-7} y={-5} width={14} height={10} rx={1.5} {...STROKE} />
       </DockTool>
-      <DockTool x={338} y={y} keyName="S">
+      <DockTool x={372} y={y} keyName="S">
         <g>
           <circle cx={-3} cy={-3} r={3.5} {...STROKE} />
           <rect x={1} y={1} width={6} height={6} rx={1} {...STROKE} />
         </g>
       </DockTool>
       <line
-        x1={376}
+        x1={410}
         y1={y + 4}
-        x2={376}
+        x2={410}
         y2={y + 28}
         className="stroke-slate-200"
         strokeWidth={1.2}
       />
       {/* Settings */}
-      <DockTool x={384} y={y}>
+      <DockTool x={418} y={y}>
         <g>
           <circle r={3} {...STROKE} />
           {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
@@ -317,13 +331,13 @@ export function DrawDockScene() {
         </g>
       </DockTool>
       {/* Group captions */}
-      <Label x={140} y={78} anchor="middle" size={10} tone="muted">
+      <Label x={157} y={78} anchor="middle" size={10} tone="muted">
         Drawing tools
       </Label>
-      <Label x={321} y={78} anchor="middle" size={10} tone="muted">
+      <Label x={355} y={78} anchor="middle" size={10} tone="muted">
         Shapes
       </Label>
-      <Label x={400} y={78} anchor="middle" size={10} tone="muted">
+      <Label x={434} y={78} anchor="middle" size={10} tone="muted">
         Settings
       </Label>
       {/* A sketch on the board */}

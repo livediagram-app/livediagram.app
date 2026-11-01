@@ -20,6 +20,7 @@ import {
   EmbedArt,
   EntityArt,
   ErasersArt,
+  FillArt,
   EventStormingArt,
   ExpiryArt,
   ExportArt,
@@ -164,7 +165,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Comments on any element',
         description:
-          "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
+          "Right-click an element, leave a thread. Replies, emoji reactions, resolve, delete. Comments carry the author's name and colour so it's clear who said what, and a thumbs up or a heart says you agree without another reply.",
       },
       {
         art: <CommentsArt />,
@@ -794,7 +795,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore the whiteboard',
     title: 'A whiteboard that feels like paper',
     description:
-      'Switch a tab to Draw and the canvas becomes a whiteboard: three markers in hand, a pen that answers to pressure, and erasers that take a whole stroke or just a smudge. Sketch it rough, and let it snap to shape when you want it neat.',
+      'Switch a tab to Draw and the canvas becomes a whiteboard: three markers in hand, a pen that answers to pressure, and erasers that take a whole stroke or just a smudge. Sketch it rough, colour it in with one press, and let it snap to shape when you want it neat.',
     metaDescription:
       'Switch a tab to Draw for a whiteboard that feels like paper: three pressure-sensitive markers, smart erasers, and rough shapes that snap neat.',
     highlights: [
@@ -816,7 +817,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/draw-mode/',
         title: 'Shapes and text in the dock',
         description:
-          'Draw mode swaps the palette for a dock across the top: select, the three markers, text, the Path tool and the eraser, each on its own key, then the shapes you use. Pin up to seven favourites, an arrow and a rectangle to start, and the Shapes button offers the ones you pick most.',
+          'Draw mode swaps the palette for a dock across the top: select, the three markers, text, the Path tool, the Fill bucket and the eraser, each on its own key, then the shapes you use. Pin up to seven favourites, an arrow and a rectangle to start, and the Shapes button offers the ones you pick most.',
       },
       {
         art: <PressureArt />,
@@ -838,6 +839,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Two erasers',
         description:
           'The stroke eraser lifts a whole stroke in one touch; the partial eraser rubs out only what it passes over. Stickies, text and shapes are never cut in half.',
+      },
+      {
+        art: <FillArt />,
+        href: '/help/canvas/draw-mode/#the-fill-tool',
+        title: 'Colour it in with one press',
+        description:
+          'Press F for the Fill bucket, pick a colour, and press inside a shape or a loop you drew: it fills, with your ink kept as the outline. A loop whose ends nearly meet still counts, and anything open says so instead of guessing.',
       },
       {
         art: <PathToolArt />,
