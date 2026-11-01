@@ -78,12 +78,12 @@ A plan holds up to 32 card types. Each type holds up to 24 fields, 12 of them cu
 
 A card type can **inherit** from another, its **base type**, so several types share one set of fields kept in one place: a **Bug** and a **Story** built on one **Work** type, each adding fields of its own.
 
-- **Set it up:** in the type editor's **Configuration**, under the name, pick the base type in **Inherits From**. The type takes its fields (in the base type's order, with every setting: options, Required, Notifies, Holds Several and the rest), its tabs, its statuses and their order, its Default State, and its **Display** at each card size, at once.
+- **Set it up:** in the type editor's **Configuration**, beside the name, pick the base type in **Inherits From** (it only appears once there is another type to inherit from). The type takes its fields (in the base type's order, with every setting: options, Required, Notifies, Holds Several and the rest), its tabs, its statuses and their order, its Default State, and its **Display** at each card size, at once.
 - **What stays its own:** its name, colour, glyph and new-card title. It can **add fields** of its own, which go under **Details**, after the base type's.
 - **Inherited fields are locked:** each shows a lock ("Inherited from Work") and has no Edit, Remove or Move. The **States** and **Display** tabs show what it takes, read-only, with "Bug takes its states from Work. Change them on Work, or Detach to give Bug its own."
 - **Change the base, change them all:** a field added to, removed from or renamed on Work changes on Bug and Story in the same save. Because the fields are the same, a card keeps its values when its type changes between Work and Bug.
 - **Detach** (the scissors beside **Inherits From**, or picking **None**) makes it an ordinary type holding a copy of the base type's settings as they are, no longer following it. Deleting a base type detaches every type built on it the same way, so none loses a field.
-- **One level:** a base type can't itself inherit, so a type others build on shows **Inherits From** greyed out, naming them ("Bug and Story inherit from this type."). A base type is still an ordinary type, with cards of its own; a board that takes Work doesn't take Bug unless you tick it too.
+- **One level:** a base type can't itself inherit, so a type others build on has no **Inherits From** menu, only a line naming them ("Bug and Story inherit from this type."). A base type is still an ordinary type, with cards of its own; a board that takes Work doesn't take Bug unless you tick it too.
 - In the **Card Types** panel, a type built on another says "Inherits Work" under its name. The usual limits count its base type's fields and its own together.
 
 Only an Editor sets or changes inheritance. AI agents can set it too, through the [MCP server](/help/account-and-data/connect-ai-mcp/).
