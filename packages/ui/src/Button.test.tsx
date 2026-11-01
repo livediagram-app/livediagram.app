@@ -67,15 +67,13 @@ describe('Button ghost variant', () => {
 describe('Button busy', () => {
   function Save({ onSave }: { onSave: () => Promise<void> }) {
     const [busy, setBusy] = useState(false);
+    const save = async () => {
+      setBusy(true);
+      await onSave();
+      setBusy(false);
+    };
     return (
-      <Button
-        busy={busy}
-        onClick={async () => {
-          setBusy(true);
-          await onSave();
-          setBusy(false);
-        }}
-      >
+      <Button busy={busy} onClick={() => void save()}>
         {busy ? 'Saving…' : 'Save'}
       </Button>
     );
