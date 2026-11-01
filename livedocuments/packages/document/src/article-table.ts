@@ -46,14 +46,19 @@ export function normaliseShares(shares: readonly number[]): number[] {
   const n = shares.length;
   if (n === 0) return [];
   const min = Math.min(ARTICLE_TABLE_MIN_SHARE, 1 / n);
-  const total = shares.reduce((sum, w) => sum + (finitePositive(w) ? w : 0), 0);
-  let out = shares.map((w) => (finitePositive(w) && total > 0 ? w / total : 1 / n));
+  // A share that is not a positive number takes the mean of those that are (all of them 1 when none is).
+  const valid = shares.filter(finitePositive);
+  const fill = valid.length ? valid.reduce((sum, w) => sum + w, 0) / valid.length : 1;
+  const given = shares.map((w) => (finitePositive(w) ? w : fill));
+  const total = given.reduce((sum, w) => sum + w, 0);
+  let out = given.map((w) => w / total);
   // Lift the narrow columns to the minimum, taking the room from the rest in proportion.
   const narrow = out.filter((w) => w < min).length;
   if (narrow > 0) {
     const room = 1 - narrow * min;
     const wide = out.reduce((sum, w) => sum + (w >= min ? w : 0), 0);
-    out = out.map((w) => (w < min ? min : wide > 0 ? (w / wide) * room : room / (n - narrow)));
+    // Some column is at least the minimum (the shares sum to 1), so `wide` is never 0.
+    out = out.map((w) => (w < min ? min : (w / wide) * room));
   }
   return out.map((w) => Math.round(w * 10_000) / 10_000);
 }

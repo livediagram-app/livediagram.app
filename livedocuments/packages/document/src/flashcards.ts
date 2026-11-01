@@ -5,12 +5,16 @@
 import {
   articlesOf,
   newFlashcardFlow,
+  nextArticleBlockId,
+  normaliseRuns,
+  type ArticleRun,
   withFreshArticleBlockIds,
   type ArticleBlock,
   type ArticleFlow,
   type ArticleParagraphBlock,
 } from './article-flow';
 import { withArticleFlow } from './article-pages';
+import type { ArticleTableBlock } from './article-table';
 import { MAX_PAGES, newFlashcardPage, pagesOf, withPages, type Page } from './page';
 import type { Tab } from './index';
 
@@ -69,15 +73,52 @@ export function speakingTimeLabel(seconds: number): string | null {
 }
 
 /** Whether a block is one a card holds (docs/specs/007-editor/flashcards.md "Text only"): text,
- *  never a zone or a page break. */
+ *  never a zone, a page break, a table or a contents block. */
 export function isFlashcardBlock(b: ArticleBlock): boolean {
-  return b.type !== 'zone' && b.type !== 'pageBreak';
+  return b.type !== 'zone' && b.type !== 'pageBreak' && b.type !== 'table' && b.type !== 'toc';
 }
 
-/** A card's writing cut to the text (zones and page breaks left out). Same array back when
- *  nothing was. */
+/** A table as a card holds it: a bulleted item a row, its cells joined by " · ", the header row's
+ *  text bold. */
+function tableAsList(t: ArticleTableBlock, taken: Set<string>): ArticleBlock[] {
+  return t.rows.map((row, r) => {
+    const runs: ArticleRun[] = [];
+    row.cells.forEach((cell, c) => {
+      if (c > 0) runs.push({ text: ' · ' });
+      for (const run of cell) runs.push(t.header && r === 0 ? { ...run, b: true } : run);
+    });
+    const id = nextArticleBlockId(taken);
+    taken.add(id);
+    return { id, type: 'list', list: 'bullet', runs: normaliseRuns(runs) };
+  });
+}
+
+/** A card's writing cut to the text: zones, page breaks and contents blocks left out (`leftOut`
+ *  counts them), each table written as a list (`tables` counts them). The same array back when
+ *  nothing changed. */
+export function flashcardCut(blocks: ArticleBlock[]): {
+  blocks: ArticleBlock[];
+  tables: number;
+  leftOut: number;
+} {
+  if (blocks.every(isFlashcardBlock)) return { blocks, tables: 0, leftOut: 0 };
+  const taken = new Set(blocks.map((b) => b.id));
+  const out: ArticleBlock[] = [];
+  let tables = 0;
+  let leftOut = 0;
+  for (const b of blocks) {
+    if (b.type === 'table') {
+      tables++;
+      out.push(...tableAsList(b, taken));
+    } else if (isFlashcardBlock(b)) out.push(b);
+    else leftOut++;
+  }
+  return { blocks: out, tables, leftOut };
+}
+
+/** A card's writing cut to the text (flashcardCut's blocks). */
 export function flashcardBlocks(blocks: ArticleBlock[]): ArticleBlock[] {
-  return blocks.every(isFlashcardBlock) ? blocks : blocks.filter(isFlashcardBlock);
+  return flashcardCut(blocks).blocks;
 }
 
 /** A new card after the last page (`page` its id and background), its writing new. Null at the

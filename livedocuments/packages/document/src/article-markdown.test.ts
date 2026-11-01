@@ -87,3 +87,34 @@ describe('Markdown pasted into an article', () => {
     );
   });
 });
+
+describe('pasted tables and contents', () => {
+  it('recognises a pipe table or a [TOC] line as Markdown, and plain bars as not', () => {
+    expect(looksLikeMarkdown('| a | b |\n|---|---|\n| 1 | 2 |')).toBe(true);
+    expect(looksLikeMarkdown('[TOC]')).toBe(true);
+    expect(looksLikeMarkdown('| a | b |\n| 1 | 2 |')).toBe(false);
+  });
+
+  it('reads a pipe table as a table block', () => {
+    const [table] = parseMarkdownBlocks('| a | b |\n:---: | ---\n| 1 | 2 |');
+    if (table?.type !== 'table') throw new Error('no table');
+    expect(table.header).toBe(true);
+    expect(table.cols).toHaveLength(2);
+    expect(table.rows.map((r) => r.cells.map((c) => c[0]?.text ?? ''))).toEqual([
+      ['a', 'b'],
+      ['1', '2'],
+    ]);
+  });
+
+  it('keeps an all-empty header table with no body as one empty row', () => {
+    const [table] = parseMarkdownBlocks('|  |  |\n|---|---|');
+    expect(table?.type === 'table' && table.rows).toHaveLength(1);
+  });
+
+  it('reads [TOC] lines as contents blocks', () => {
+    expect(shape('# A\n\n[TOC 2]')).toEqual([
+      { type: 'paragraph', style: 'h1', runs: [{ text: 'A' }] },
+      { type: 'toc', depth: 2 },
+    ]);
+  });
+});

@@ -204,7 +204,9 @@ export const writeArticleShape = {
         '- [ ] to-dos, > quotes, ``` code, --- dividers, **bold**, *italic*, ~~strike~~, `code`, [links](https://…). ' +
         'Front matter sets the title and subtitle: a first line ---, then title: …, subtitle: …, then ---. ' +
         'A line \\pagebreak starts a new page; a line [zone <id>] keeps an existing zone there. ' +
-        'An article holds no tables: a Markdown table is written as a list.',
+        'A pipe table (| a | b |, then |---|---|, then rows) is a table, its first line the header row (an empty first ' +
+        'line: no header row); <br> is a line break in a cell. A line [TOC] is a table of contents ([TOC 1] or [TOC 2] ' +
+        'for fewer heading levels). On a card a table is written as a list.',
     ),
   article: z
     .string()
