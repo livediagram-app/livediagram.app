@@ -193,17 +193,7 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 
 ## Defaults ledger
 
-See DEFAULTS.md D17 to D19. The field widget and gallery defaults below join DEFAULTS.md once the open import work
-there (#1168) lands:
-
-| Default                                 | Value                                                                      |
-| --------------------------------------- | -------------------------------------------------------------------------- |
-| Field widgets a board holds             | 12, beside the built-ins                                                   |
-| A number field's suggested view         | Sum (Percent: Average; Rating: Average Stars)                              |
-| When a field outranks the built-ins     | Filled on more than half the cards offered it                              |
-| Where a field shared by types is listed | Under the first of the board's types offering it, "Also on" the others     |
-| A Timeline's horizon                    | Overdue, then the next 4 weeks                                             |
-| Whether field widgets follow the filter | No: like every widget, they read the board's cards before its quick filter |
+See DEFAULTS.md D17 to D19, and D74 to D79 for field widgets and the gallery.
 
 ## Filter field and saved filters (board-widgets.md "The Filter widget", "Saved filters")
 
