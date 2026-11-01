@@ -95,13 +95,28 @@ export function svgConcept(
       .map((row, i) => {
         const t = l.tiers[i]!;
         const points = t.points.map((p) => `${r2(el.x + p.x)},${r2(el.y + p.y)}`).join(' ');
-        const text = notes && row.note ? `${row.label}  ${row.note}` : row.label;
+        // A funnel tier with a value splits its width with it, as the canvas face lays it out: the label centred in
+        // the left half, the value (muted, 70%) in the right. One without takes the whole tier.
+        const valued = notes && !!row.note;
+        const half = valued ? { ...t.label, width: t.label.width / 2 } : t.label;
+        const ink = ramp[i]!.text;
+        const value = valued
+          ? webLine(
+              el,
+              row.note!,
+              { ...half, x: t.label.x + half.width },
+              conceptFitPx(row.note!, half.width, l.labelPx),
+              ink,
+              { bold: true, opacity: 0.7, fontFamily },
+            )
+          : '';
         return (
           `<polygon points="${points}" fill="${xmlEscape(ramp[i]!.fill)}" stroke-linejoin="round"/>` +
-          webLine(el, text, t.label, conceptFitPx(text, t.label.width, l.labelPx), ramp[i]!.text, {
+          webLine(el, row.label, half, conceptFitPx(row.label, half.width, l.labelPx), ink, {
             bold: true,
             fontFamily,
-          })
+          }) +
+          value
         );
       })
       .join('');
