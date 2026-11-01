@@ -5,7 +5,7 @@
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
 import { planBoardBodyCursor } from './board-cursors';
-import { planFontStyle } from '@/lib/plan-font';
+import { planBoardFontStyle } from '@/lib/plan-font';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { useInDashboard } from '@/components/plan/dashboard/dashboard-context';
 import { isCardVotableInVote } from '@liveplanner/project';
@@ -492,7 +492,7 @@ export function PlanBoardView({
         borderColor: palette.border,
         color: palette.text,
         borderRadius: radius,
-        ...planFontStyle(fontFamily),
+        ...planBoardFontStyle(fontFamily),
       }}
     >
       {simplified ? (

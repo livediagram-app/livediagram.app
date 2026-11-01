@@ -9,6 +9,7 @@ import { CountBadge } from '@liveplanner/ui';
 import { plural } from '@liveplanner/project';
 import type { PlanPalette } from './plan-palette';
 import { COLUMN_ATTR } from './column-move-flip';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 export function SlotColumnHeader({
   col,
@@ -44,7 +45,9 @@ export function SlotColumnHeader({
         className="h-2 w-2 shrink-0 rounded-full"
         style={{ backgroundColor: column.color ?? palette.muted }}
       />
-      <span className="min-w-0 truncate text-[12px] font-semibold">{column.name}</span>
+      <span className="min-w-0 truncate text-[12px] font-semibold" style={PLAN_HEADING_STYLE}>
+        {column.name}
+      </span>
       <CountBadge
         background={col.overLimit ? palette.warningBg : palette.surface}
         color={col.overLimit ? palette.warning : palette.muted}

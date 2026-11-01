@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { CountBadge } from '@liveplanner/ui';
 import { plural } from '@liveplanner/project';
 import type { PlanPalette } from './plan-palette';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 // The group the board's root carries (PlanBoardView), whose hover and focus show the controls.
 export const SLOT_BOARD_GROUP = 'group/slot-board';
@@ -38,7 +39,12 @@ export function SlotBoardHeader({
       className="flex h-10 shrink-0 items-center gap-2 pl-3.5 pr-2"
       style={{ color: palette.text }}
     >
-      <div className="min-w-0 truncate text-[14px] font-bold leading-tight">{title}</div>
+      <div
+        className="min-w-0 truncate text-[14px] font-bold leading-tight"
+        style={PLAN_HEADING_STYLE}
+      >
+        {title}
+      </div>
       <CountBadge background={palette.column} color={palette.muted} label={plural(count, 'card')}>
         {count}
       </CountBadge>

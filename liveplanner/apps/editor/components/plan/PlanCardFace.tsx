@@ -44,6 +44,7 @@ import {
   pastDue,
 } from '@liveplanner/items';
 import { RunningTimerPill } from './time/TimerReadouts';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
@@ -107,6 +108,14 @@ export type CardFaceEdit = {
   slot: (slot: CardSlot, bits: ReactNode[]) => ReactNode;
   bit: (field: CardField, node: ReactNode) => ReactNode;
 };
+
+// The title in the tab's face (docs/specs/004-interface-design/fonts.md "On boards and cards"); the rest of the face
+// keeps the board's UI face. `contents`, so the title stays the row's flex item.
+const cardHeading = (title: ReactNode) => (
+  <span className="contents" style={PLAN_HEADING_STYLE}>
+    {title}
+  </span>
+);
 
 // The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
 const FRAME =
@@ -428,7 +437,7 @@ export function PlanCardFace({
           <span className="mt-[5px] flex shrink-0">
             <TypeDot accent={accent} />
           </span>
-          {titleText(2, 12.5)}
+          {cardHeading(titleText(2, 12.5))}
           {flag}
         </div>
         {bits.length ? (
@@ -449,7 +458,7 @@ export function PlanCardFace({
         {presenceTag}
         <TypeDot accent={accent} />
         {zone('lead', slotBits('lead'))}
-        {titleText(2, 13)}
+        {cardHeading(titleText(2, 13))}
         {flag}
         <span
           className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium"
@@ -495,7 +504,7 @@ export function PlanCardFace({
         </div>
       ) : null}
       <div className="flex items-start gap-1.5">
-        {titleText(3, 14)}
+        {cardHeading(titleText(3, 14))}
         {flag}
       </div>
       {body.length || edit ? (

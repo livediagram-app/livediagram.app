@@ -10,6 +10,7 @@ import { ChevronLeftIcon, ChevronRightIcon, CountBadge, Tooltip } from '@livepla
 import { plural } from '@liveplanner/project';
 import { COLUMN_ATTR, STRIP_ATTR } from './column-move-flip';
 import type { PlanPalette } from './plan-palette';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 // The strip's cell button lays the count and the name out as a column that wraps (docs/specs/026-plan/plan-board.md
 // "Collapse Column"): each is a full-width line, so when the name is too long for the room left under the count, it
@@ -173,7 +174,10 @@ export function CollapsedColumnCell({
             </CountBadge>
           </span>
           <span className={STRIP_LINE_CLASS}>
-            <span className={STRIP_NAME_CLASS} style={{ color: palette.text }}>
+            <span
+              className={STRIP_NAME_CLASS}
+              style={{ ...PLAN_HEADING_STYLE, color: palette.text }}
+            >
               {column.name}
             </span>
           </span>

@@ -17,6 +17,7 @@ import type { PlanPalette } from './plan-palette';
 import { COLUMN_ATTR } from './column-move-flip';
 import { plural } from '@liveplanner/project';
 import { CollapseColumnButton } from './CollapsedColumn';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 export function PlanColumnHeader({
   col,
@@ -80,7 +81,9 @@ export function PlanColumnHeader({
         aria-hidden
       />
       <div className="flex items-center gap-2">
-        <span className="truncate text-[13px] font-semibold">{column.name}</span>
+        <span className="truncate text-[13px] font-semibold" style={PLAN_HEADING_STYLE}>
+          {column.name}
+        </span>
         <span className="ml-auto flex">
           <CountBadge
             size="md"

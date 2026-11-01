@@ -3,7 +3,7 @@
 // The Plan card element's body (docs/specs/026-plan/plan-board.md "The Plan card"): one item's card
 // face at the element's size. A double-click or double-tap, in any mode, opens the item;
 // a card whose item is not in this project's store says so and offers to go.
-import { planFontStyle } from '@/lib/plan-font';
+import { planBoardFontStyle } from '@/lib/plan-font';
 import type { ShapeElement } from '@liveplanner/project';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
@@ -69,7 +69,7 @@ export function PlanCardView({
   return (
     <div
       className="absolute inset-0"
-      style={fontFamily ? planFontStyle(fontFamily) : undefined}
+      style={planBoardFontStyle(fontFamily)}
       role="button"
       tabIndex={-1}
       aria-label={itemAccessibleName(item, plan?.types)}

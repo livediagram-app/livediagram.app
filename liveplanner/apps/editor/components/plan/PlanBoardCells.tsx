@@ -29,6 +29,7 @@ import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
 import { useCardFileDrop } from './card-file-drop';
 import type { PlanPalette } from './plan-palette';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -103,7 +104,7 @@ export function LaneRow({
         <span aria-hidden>{shut ? '▸' : '▾'}</span>
         {lane.person ? <PersonDisc person={lane.person} /> : null}
         {lane.colour ? <ColourDot colour={lane.colour} /> : null}
-        <span style={{ color: palette.text }}>{lane.label}</span>
+        <span style={{ ...PLAN_HEADING_STYLE, color: palette.text }}>{lane.label}</span>
       </button>
       {children}
     </>
