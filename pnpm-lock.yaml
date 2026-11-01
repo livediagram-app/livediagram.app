@@ -5997,6 +5997,9 @@ importers:
 
   packages/drive:
     dependencies:
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../api-kit
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites

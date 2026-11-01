@@ -25,6 +25,7 @@
     "./room-element-ops": "./src/room-element-ops.ts",
     "./room-follows": "./src/room-follows.ts",
     "./room-multiplayer": "./src/room-multiplayer.ts",
+    "./sealed": "./src/sealed.ts",
     "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",
     "./unfurl": "./src/unfurl.ts",
     "./unfurl-fetch": "./src/unfurl-fetch.ts"
