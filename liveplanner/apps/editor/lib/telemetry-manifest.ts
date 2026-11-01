@@ -138,6 +138,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Plan·Selected',
   'Plan·Started',
   'Plan·Toggled',
+  'Plan·Unlinked',
   'Plan·Used',
   'Participant·Created',
   'Participant·Returned',

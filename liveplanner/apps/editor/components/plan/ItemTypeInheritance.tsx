@@ -98,7 +98,7 @@ export function InheritedPartNotice({
         role="note"
         className="flex items-start gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2.5 text-[13px] text-brand-900 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-100"
       >
-        <span aria-hidden className="mt-0.5 shrink-0 text-brand-600 dark:text-brand-300">
+        <span aria-hidden className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-300">
           <LinkIcon />
         </span>
         <span>
@@ -107,7 +107,12 @@ export function InheritedPartNotice({
         </span>
       </p>
       {/* The base's settings as this type takes them: shown, never edited here. */}
-      <div inert role="group" aria-label={`${baseLabel}’s ${part}`} className="opacity-60 saturate-50">
+      <div
+        inert
+        role="group"
+        aria-label={`${baseLabel}’s ${part}`}
+        className="opacity-60 saturate-50"
+      >
         {children}
       </div>
     </div>
