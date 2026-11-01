@@ -38,7 +38,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   rather than a per-element field. The chart default sizes are squarer to match. The chart layout (`chartFrame`) reserves a
   vertical strip for a left/right legend or a horizontal band for a top/bottom
   one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
-  column on the side, or wraps in a centred row on top/bottom.
+  column on the side, or wraps in a centred row on top/bottom. A name longer than the strip is cut with an
+  ellipsis inside it, on the canvas and in an export alike, so a long name never runs past the chart.
 - Under the placement tiles (while the legend is on), **Text Size** (the one
   [Text Size](../004-interface-design/fonts.md#text-size) slider, 6 to 48 px, without Scale) sets the
   key's row size. It writes the element's ordinary `textSize` (a chart has no label, so the Text

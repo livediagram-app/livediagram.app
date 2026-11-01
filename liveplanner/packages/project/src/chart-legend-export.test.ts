@@ -3,6 +3,8 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { renderElementsToSvg } from './svg-render';
+import { fitLegendLabel } from './svg-render-charts';
+import { textAdvanceEm } from '@liveworkspace/model-core/text-advance';
 import type { Element } from './index';
 
 // Inter's drawn widths in em (as text-advance.test.ts measured them).
@@ -51,5 +53,51 @@ describe('a chart legend in an export', () => {
       if (swatches[i + 1]! > n.x)
         expect(n.x + INTER[n.label]! * n.px).toBeLessThan(swatches[i + 1]!);
     }
+  });
+
+  // A name longer than the chart is wide is cut with an ellipsis inside the chart, as the canvas key's truncate cuts
+  // it, never drawn past the chart's edges.
+  const LONG = 'A very very long slice label that goes on and on forever and ever';
+  const legendTexts = (pos?: 'right') => {
+    const el = {
+      ...createShape('pie-chart', 100, 50),
+      id: 'c',
+      width: 260,
+      height: 220,
+      pieSlices: [
+        { label: 'A', value: 4 },
+        { label: LONG, value: 3 },
+      ],
+      ...(pos ? { chartLegendPosition: pos } : {}),
+    } as Element;
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] }, {});
+    return [...svg.matchAll(/<text\b[^>]*>/g)].map((m) => {
+      const start = m.index + m[0].length;
+      const at = m[0].indexOf(' x="');
+      const sizeAt = m[0].indexOf(' font-size="');
+      return {
+        x: Number(m[0].slice(at + 4, m[0].indexOf('"', at + 4))),
+        px: Number(m[0].slice(sizeAt + 12, m[0].indexOf('"', sizeAt + 12))),
+        label: svg.slice(start, svg.indexOf('<', start)),
+      };
+    });
+  };
+
+  for (const pos of [undefined, 'right'] as const) {
+    it(`cuts a long name to the chart with an ellipsis (${pos ?? 'bottom'} legend)`, () => {
+      const long = legendTexts(pos).find((t) => t.label.startsWith('A very'));
+      expect(long).toBeDefined();
+      expect(long!.label.endsWith('…')).toBe(true);
+      expect(long!.x).toBeGreaterThanOrEqual(100);
+      expect(long!.x + textAdvanceEm(long!.label) * long!.px).toBeLessThanOrEqual(100 + 260);
+    });
+  }
+
+  it('keeps a name that fits whole, and cuts on whole characters', () => {
+    expect(fitLegendLabel('Food', 200, 14)).toBe('Food');
+    const cut = fitLegendLabel('🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉', 40, 14);
+    expect(cut.endsWith('…')).toBe(true);
+    expect([...cut.slice(0, -1)].every((ch) => ch === '🎉')).toBe(true);
+    expect(fitLegendLabel('Anything', 0, 14)).toBe('…');
   });
 });
