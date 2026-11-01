@@ -221,7 +221,7 @@ and each flow under the category of what it is for ([Template categories](../008
   Wireframe** (iPhone), **Blank Tablet Wireframe** (iPad), **Blank Website Wireframe** (Browser),
   **Blank Laptop Wireframe** and **Blank Watch Wireframe**.
 - **Flows**, a row of wireframe pages, each named for its screen and laid out from a wireframe layout
-  (`WIREFRAME_FLOWS` in `packages/templates/src/template-builders-wireframe-flows.ts`):
+  (`WIREFRAME_FLOWS` in `packages/templates/src/wireframe-flow-data.ts`):
 
 | Template                | Device  | Screens                                               |
 | ----------------------- | ------- | ----------------------------------------------------- |

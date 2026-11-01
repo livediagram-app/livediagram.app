@@ -1,13 +1,13 @@
 import type { ReactElement, ReactNode } from 'react';
+import type { TemplateKind } from '@livedesign/templates';
 import {
   LOGO_EXPLORATIONS,
   WIREFRAME_FLOWS,
   isLogoExplorationKind,
   isWireframeFlowKind,
   type LogoExplorationKind,
-  type TemplateKind,
   type WireframeFlowKind,
-} from '@livedesign/templates';
+} from '@livedesign/templates/template-flow-data';
 import { pv } from '@liveworkspace/template-previews/motion';
 import {
   BAR,

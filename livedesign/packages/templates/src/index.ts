@@ -21,12 +21,12 @@ export {
   WIREFRAME_FLOWS,
   isWireframeFlowKind,
   type WireframeFlowKind,
-} from './template-builders-wireframe-flows';
+} from './wireframe-flow-data';
 export {
   LOGO_EXPLORATIONS,
   isLogoExplorationKind,
   type LogoExplorationKind,
-} from './template-builders-logo-explorations';
+} from './logo-exploration-data';
 export * from './page-layouts';
 export * from './logo-layouts';
 export * from './layout-catalogue';

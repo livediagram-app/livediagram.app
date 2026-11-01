@@ -172,7 +172,7 @@ Text sits on the paper or inside an outline, never on a theme fill, so it reads 
 The placeholder name is **Brand**, its initials **BR**, the tagline **Your tagline here**.
 
 Each category is also a template, a **logo exploration** (`LOGO_EXPLORATIONS` in
-`packages/templates/src/template-builders-logo-explorations.ts`, in the **Branding** category): one logo page per
+`packages/templates/src/logo-exploration-data.ts`, in the **Branding** category): one logo page per
 layout of the family, named for its layout, so a designer compares the whole family side by side, keeps the one
 that fits and deletes the rest. **Lockup Explorations** (the seven lockups), **Wordmark Explorations** (the six
 wordmarks), **Emblems and Badges** (the six emblems) and **Marks and App Icons** (the six marks). Unlike Logo
