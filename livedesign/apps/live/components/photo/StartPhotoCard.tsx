@@ -38,6 +38,27 @@ export const BLANK_PRESETS: readonly { name: string; width: number; height: numb
   { name: 'Icon', width: 1024, height: 1024 },
 ];
 
+/** A Custom field's text as whole pixels, or null while it is not one yet (empty, zero, negative, not a number). */
+export function customPixels(text: string): number | null {
+  if (text.trim() === '') return null;
+  const n = Math.round(Number(text));
+  return Number.isFinite(n) && n >= 1 ? n : null;
+}
+
+/** The Custom size with one side set: the other side follows the held shape (width over height) under Keep Shape,
+ *  and stays as it was without it. */
+export function chainedSize(
+  size: { width: number; height: number },
+  side: 'width' | 'height',
+  value: number,
+  shape: number | null,
+): { width: number; height: number } {
+  if (shape === null) return { ...size, [side]: value };
+  return side === 'width'
+    ? { width: value, height: Math.max(1, Math.round(value / shape)) }
+    : { width: Math.max(1, Math.round(value * shape)), height: value };
+}
+
 /** A picture read in starts the photo; a refusal or a scale-down is said. */
 /** A photo just started with no tool in hand picks one up, so the next press does something: the Brush on a blank
  *  photo, the Move tool on a picture. A tool already in hand stays. */
@@ -75,10 +96,18 @@ export function StartPhotoCard({
   const [preset, setPreset] = useState(0);
   const [custom, setCustom] = useState<{ width: number; height: number } | null>(null);
   const [chain, setChain] = useState(true);
+  // What each Custom field holds while it is typed in, so it can be cleared and retyped (a field held to its number
+  // read "1" the moment it was emptied, and 500 typed after it made 1500), and the shape Keep Shape holds (reading it
+  // from the last pair as each key went in lost it to rounding: 3840 retyped over 1920 x 1080 made 13840 x 13840).
+  const [draft, setDraft] = useState<Partial<Record<'width' | 'height', string>>>({});
+  const [shape, setShape] = useState(1);
   const [picking, setPicking] = useState(false);
   const ready = photo.session?.pageId === page.id;
   const size = custom ?? BLANK_PRESETS[preset]!;
-  const refused = sizeRefused(size.width, size.height);
+  const unfinished = Object.values(draft).some((t) => customPixels(t ?? '') === null);
+  const refused = unfinished
+    ? 'Enter a whole number of pixels.'
+    : sizeRefused(size.width, size.height);
   const create = (w = size.width, h = size.height) => {
     if (!photo.session) return;
     startBlank(photo.session, w, h, 'transparent');
@@ -147,6 +176,7 @@ export function StartPhotoCard({
                 aria-label={`${p.name}, ${p.width} by ${p.height}`}
                 onClick={() => {
                   setCustom(null);
+                  setDraft({});
                   setPreset(i);
                 }}
                 className={`flex h-16 flex-col items-center justify-end gap-1 rounded-md border p-1 text-[10px] font-medium ${
@@ -167,7 +197,11 @@ export function StartPhotoCard({
             type="button"
             role="radio"
             aria-checked={!!custom}
-            onClick={() => setCustom({ width: size.width, height: size.height })}
+            onClick={() => {
+              setCustom({ width: size.width, height: size.height });
+              setShape(size.width / size.height);
+              setDraft({});
+            }}
             className={`flex h-16 items-end justify-center rounded-md border p-1 text-[10px] font-medium ${
               custom
                 ? 'border-brand-500 bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-100'
@@ -186,24 +220,27 @@ export function StartPhotoCard({
                   type="number"
                   min={1}
                   max={pixelCap()}
-                  value={custom[k]}
+                  value={draft[k] ?? custom[k]}
                   onChange={(e) => {
-                    const v = Math.max(1, Math.round(Number(e.target.value) || 1));
-                    const other = k === 'width' ? 'height' : 'width';
-                    setCustom(
-                      chain
-                        ? ({
-                            [k]: v,
-                            [other]: Math.max(1, Math.round((v / custom[k]) * custom[other])),
-                          } as { width: number; height: number })
-                        : { ...custom, [k]: v },
-                    );
+                    const text = e.target.value;
+                    setDraft({ [k]: text });
+                    const v = customPixels(text);
+                    if (v === null) return;
+                    setCustom(chainedSize(custom, k, v, chain ? shape : null));
                   }}
+                  onBlur={() => setDraft({})}
                   className="w-20 rounded border border-slate-200 bg-white px-1.5 py-0.5 tabular-nums dark:border-slate-700 dark:bg-slate-900"
                 />
               </label>
             ))}
-            <OptionToggle label="Keep Shape" on={chain} onChange={setChain} />
+            <OptionToggle
+              label="Keep Shape"
+              on={chain}
+              onChange={(on) => {
+                setChain(on);
+                if (on) setShape(custom.width / custom.height);
+              }}
+            />
           </div>
         ) : null}
         {refused ? (
