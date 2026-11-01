@@ -59,6 +59,9 @@ export default function OfficeExportPanel({
         {previewSvg ? (
           <div
             data-testid="export-preview"
+            // One picture with a name, as the GIF's preview is: left bare, the SVG's every word was its name.
+            role="img"
+            aria-label="The first page as it will download"
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
             dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
           />

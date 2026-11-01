@@ -45,6 +45,15 @@ const open = (withPages = true) =>
 const preview = () => screen.findByTestId('export-preview');
 
 describe('ExportTabDialog, Pages', () => {
+  // Bare, the preview SVG was named by every word on the page (a screen reader read the whole page out).
+  it('names its preview as one picture', async () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^PDF/ }));
+    const shown = await preview();
+    expect(shown.getAttribute('role')).toBe('img');
+    expect(shown.getAttribute('aria-label')).toBe('The page as it will download');
+  });
+
   it('offers no Hidden layers option', async () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /^SVG/ }));
