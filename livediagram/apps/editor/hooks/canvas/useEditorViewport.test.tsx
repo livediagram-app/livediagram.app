@@ -86,7 +86,7 @@ describe('useEditorViewport view', () => {
   });
 });
 
-// docs/specs/007-editor/article-pages.md "Writing": the caret stays in sight, above a phone's on-screen keyboard
+// docs/specs/007-editor/editor-app.md "The keyboard never hides the caret": what is revealed stays above a phone's on-screen keyboard
 // too, which shrinks the visual viewport and leaves the canvas as it was.
 describe('useEditorViewport revealing above the on-screen keyboard', () => {
   const reveal = (keyboard: number) => {
