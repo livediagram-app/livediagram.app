@@ -12,6 +12,7 @@ import { graphemes, r2, xmlEscape } from './svg-render-primitives';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
+import { isFilledPenLoop, penLoopFillPath } from './stroke-loop-fill';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
 import { codeTheme } from '@liveworkspace/model-core/code-themes';
@@ -150,7 +151,12 @@ export function svgFreehandShape(
   // function (pen-stroke.ts).
   if (isPenStroke(el)) {
     const ink = penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y }), r2);
-    return `<path d="${ink}" fill="${xmlEscape(stroke)}" stroke="none"/>`;
+    // A marker loop the Fill tool closed (docs/specs/023-draw-mode/drawing-tools.md "The Fill tool"):
+    // its fill under its ink, along the centre line, as the canvas draws it.
+    const under = isFilledPenLoop(el)
+      ? `<path d="${penLoopFillPath(el, r2)}" fill="${xmlEscape(fill)}" stroke="none"/>`
+      : '';
+    return `${under}<path d="${ink}" fill="${xmlEscape(stroke)}" stroke="none"/>`;
   }
   const pts = freehandCanvasPoints(el);
   const d = el.straightEdges

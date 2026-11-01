@@ -13,6 +13,7 @@ import { buildCanvasToolOptions } from './canvas-tool-options';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { useLogoMarkerTiles } from './PaletteLogoTab';
+import { useLogoFillTool } from './FillToolRow';
 import {
   paletteCategoriesFor,
   participantPaletteCategories,
@@ -126,6 +127,8 @@ export function usePaletteCatalogue({
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
   const beginPath = armed(onBeginPath);
+  // The Fill tool (a logo page's Draw, after the markers): its tile in this browser's colour.
+  const { tile: fillTile, begin: beginFillTool } = useLogoFillTool();
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
@@ -164,6 +167,7 @@ export function usePaletteCatalogue({
     addComponent,
     addIcon,
     addTechIcon,
+    beginFill: beginFillTool ? (fill) => armed(() => beginFillTool(fill))() : undefined,
     cancelDraw: onCancelDraw,
     hasImage: !!onAddImage,
   };
@@ -211,7 +215,13 @@ export function usePaletteCatalogue({
     ? participantPaletteCategories()
     : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {}).map((c) =>
         c.id === 'draw' && markers.length
-          ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
+          ? {
+              ...c,
+              tiles: [
+                ...withGroupEnd(c.tiles ?? []),
+                ...(fillTile ? [...withGroupEnd(markers), fillTile] : markers),
+              ],
+            }
           : c,
       );
   const tabs = paletteCategoryTabs({

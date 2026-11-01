@@ -302,6 +302,13 @@ const multipleArg = z
     'A person or card field only: true holds several people or cards (written as a comma list or a list), false ' +
       'holds one again (cards keep what they hold).',
   );
+// Blocked By (docs/specs/026-plan/item-types.md "Blocked By"): a card field whose cards block the card.
+const blocksArg = z
+  .boolean()
+  .describe(
+    'A card field only: true makes its cards block the card (a Blocked By field; it holds several too), so the card ' +
+      'shows as blocked until each is in a done column; false stops. A change that would make a loop is refused.',
+  );
 const assigneeNotifiesArg = z
   .boolean()
   .describe('false stops the Assignee telling its person when a card is theirs; true tells again.');
@@ -386,6 +393,7 @@ const customField = z.object({
     ),
   notifies: notifiesArg.optional(),
   multiple: multipleArg.optional(),
+  blocks: blocksArg.optional(),
 });
 
 const colourArg = z
@@ -459,6 +467,7 @@ const customFieldEdit = z.object({
     .describe('true makes it required (any kind but checkbox), false optional again.'),
   notifies: notifiesArg.optional(),
   multiple: multipleArg.optional(),
+  blocks: blocksArg.optional(),
 });
 
 export const cardTypeChangeSchema = z.discriminatedUnion('op', [

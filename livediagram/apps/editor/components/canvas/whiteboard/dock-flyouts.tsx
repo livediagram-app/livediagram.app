@@ -30,6 +30,7 @@ import { SnapColoursSection } from './SnapColoursSection';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BackgroundGlyph, OffGlyph, RecogniseGlyph } from './whiteboard-icons';
 import { PenWidthIcon } from './PenWidthIcon';
+import { FillColourPicker } from './FillColourPicker';
 
 const ERASER_MODES = [
   { id: 'stroke', label: 'Stroke', hint: 'Remove whole strokes' },
@@ -92,6 +93,19 @@ export function EraserFlyoutBody({ model }: { model: WhiteboardDockModel }) {
         </FlyoutOption>
       ))}
     </div>
+  );
+}
+
+// The Fill tool's colour (docs/specs/023-draw-mode/fill-tool.md "Its colour"): the one colour picker.
+export function FillFlyoutBody({ model }: { model: WhiteboardDockModel }) {
+  const appearance = useCanvasSurface();
+  return (
+    <FillColourPicker
+      value={model.fill}
+      themeFills={model.fillSwatches.map((s) => s.color)}
+      board={appearance}
+      onPick={model.setFill}
+    />
   );
 }
 

@@ -481,6 +481,7 @@ export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
+export * from './stroke-loop-fill';
 export * from '@liveworkspace/model-core/stroke-points';
 export * from './stroke-fit';
 export * from '@liveworkspace/model-core/stroke-points-cache';

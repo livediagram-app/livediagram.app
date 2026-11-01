@@ -115,7 +115,8 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
   3. **Text**.
   4. **Path tool** (see [Path tool](path-tool.md)).
-  5. **Eraser**, with its mode (see [Eraser](#eraser)).
+  5. **Fill**, the paint bucket, with its colour (see [Fill tool](fill-tool.md)).
+  6. **Eraser**, with its mode (see [Eraser](#eraser)).
 - **Shapes, left to right:**
   1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
      the user keeps there (see [Shape slots](#shape-slots)); by default
@@ -171,7 +172,9 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   of it (**below** a dock at the top, **above** one at the bottom), and each
   group's own width is fixed per breakpoint, so nothing shifts under the
   pointer (zero layout shift).
-- On narrow screens the dock scrolls horizontally rather than wrapping.
+- On narrow screens the dock scrolls horizontally rather than wrapping. On a phone or a tablet
+  its bar keeps one pinned shape and moves the rest into the Shapes flyout first (see
+  [On a phone or a tablet](#shape-slots)), so a portrait or landscape tablet shows the whole dock.
 - A sticky or a text box placed from the dock opens for typing at once.
 - Selecting an element shows the ordinary on-canvas selection handles; its
   styling is reached through right-click, as on any tab, but the menu offers
@@ -272,13 +275,23 @@ Explorer Home's Jump Back In.
   kinds are dropped on read.
 - **Telemetry:** `Draw` · `Changed` · `ShapePinned` / `ShapeUnpinned`
   (never the kind).
-- **On a phone** (below `sm`, the dock only; `splitPhonePins`), the bar keeps **only the first
-  pinned shape** (Arrow, by default) and the rest move into the **Shapes** flyout as a **Pinned**
-  row above the six slots (Rectangle, by default), so the bar fits the width. They are still
-  pinned and still count as such: none shows twice, and their shape keys work as before. The
-  flyout grows by that row (it stays fixed while typing). Shapes do not drag on or off the bar
-  there; pinning and unpinning go through the slot's menu (long-press). A pinned shape in the
-  flyout has no menu: it is already pinned.
+- **On a phone or a tablet** (a phone, or any window up to **1099 px** wide, the dock only;
+  `splitBarPins`), the bar keeps **only the first pinned shape** (Arrow, by default) and the rest
+  move into the **Shapes** flyout as a **Pinned** row above the six slots (Rectangle, by default),
+  so the bar fits the width. They are still pinned and still count as such: none shows twice, and
+  their shape keys work as before. The flyout grows by that row (it stays fixed while typing).
+  Shapes do not drag on or off the bar there; pinning and unpinning go through the slot's menu
+  (long-press or right-click). A pinned shape in the flyout has no menu: it is already pinned.
+  - **How the bar fits a tablet:** the drawing tools, Shapes and Settings never leave the bar;
+    only pins move, the least likely to be missed (Rectangle is one press away in the flyout's
+    Pinned row, and R still arms it). With one pin, the default bar fits beside the menu card on a
+    portrait tablet from about 800 px wide (an iPad Air or Pro in portrait, 820 to 834), and
+    centred on a landscape tablet (1024). The upper bound is measured: with both default pins and
+    a short tab name the full bar fits centred from about 1060 px, and 1099 leaves room for a
+    longer tab name in the menu card.
+  - Narrower windows (a small tablet in portrait, such as 744 or 768, or a narrow desktop window
+    from 640) have less room beside the menu card than even the trimmed bar needs, so the bar
+    scrolls sideways there, as on a phone, rather than hiding a drawing tool.
 
 ## Pens
 
@@ -424,8 +437,10 @@ Explorer Home's Jump Back In.
   is drawn, and no snapping of the first point to a neighbour. Guides and
   snapping stay for shapes and lines from the Shapes flyout.
 - **Strokes stay open.** A whiteboard stroke that ends near its start is not
-  closed and filled, as a pencil sketch in Diagram mode is: an "o" written on
-  a board is ink, not a shape.
+  closed and filled when it lands, as a pencil sketch in Diagram mode is: an
+  "o" written on a board is ink, not a shape. Only the **Fill** tool closes
+  one, on purpose: a press inside a loop whose ends meet closes and fills it,
+  keeping its ink as the outline ([Fill tool](fill-tool.md)).
 - Pens are the user's, not the board's: they persist **device-locally** in
   `localStorage` (`livediagram:v2:whiteboard-pens`), like the other tool
   panels, and never travel with the document.
@@ -486,8 +501,9 @@ Explorer Home's Jump Back In.
   selected, its box catches pointers too and its outline still does, outside
   the box as well: a double-click on a selected shape's line, either half of
   it, opens its label, never deselecting and reselecting it. Lines and
-  arrows are picked by their line, and paths by their line or fill
-  ([Path tool](path-tool.md)). **Notes and text boxes** keep their whole box:
+  arrows are picked by their line, paths by their line or fill
+  ([Path tool](path-tool.md)), and a filled marker loop by its line or its
+  fill ([Fill tool](fill-tool.md)). **Notes and text boxes** keep their whole box:
   they are filled or hold text. So does a kind that paints its own face (a
   chart, a panel, an icon, a web component).
 - **A double-click anywhere inside a shape writes in it**, selected or not,
@@ -611,7 +627,8 @@ The eraser offers **both** modes, switched in its flyout:
   alone. **The same holds for every element the whiteboard picks by its
   drawn path** (see [Selecting](#selecting)): a shape is touched only where
   its outline is (or its visible fill), a line or arrow only along its line, a
-  path along its line or fill. Brushing through a shape's empty inside erases
+  path along its line or fill, and a filled marker loop ([Fill tool](fill-tool.md))
+  along its line or fill. Brushing through a shape's empty inside erases
   nothing. Notes and text boxes are touched anywhere in their box.
 - **Partial**: removes only the part of a stroke under the brush, splitting
   the stroke into the pieces either side. Pieces are new `freehand` elements
@@ -807,6 +824,7 @@ not apply: a whiteboard has no palette to mirror):
 | L      | Line                                                    |
 | A      | Arrow                                                   |
 | P      | Path tool                                               |
+| F      | Fill (the paint bucket)                                 |
 | S      | Shapes: opens the Shapes flyout with its search focused |
 
 **S** opens the Shapes flyout as a hover would, with its search field focused, so
@@ -815,7 +833,7 @@ the search, **Escape** closes it and gives the focus back to the board. The shap
 above still pick their shape directly.
 
 Escape first closes whatever is open (a flyout, a text edit); with nothing
-open it puts down a pen, the eraser or an armed shape, and only with Select
+open it puts down a pen, the eraser, the Fill tool or an armed shape, and only with Select
 already in hand does it clear the selection.
 
 H (hand) and Z (zen) keep working as on any tab, and every modifier shortcut
@@ -845,18 +863,19 @@ where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 Preset-enum events only, never content, under a `Draw` category (named `Whiteboard` until its stored history was rewritten):
 
-| Event                     | Action     | Type                                                     |
-| ------------------------- | ---------- | -------------------------------------------------------- |
-| A whiteboard created      | `Created`  | `Template` (wizard), `NewTab`, `Import`                  |
-| A pen picked              | `Selected` | `Main`, `Second`, `Third`                                |
-| A shape picked in search  | `Selected` | `ShapeSearch` (never the kind)                           |
-| A shape pinned / unpinned | `Changed`  | `ShapePinned`, `ShapeUnpinned` (never the kind)          |
-| A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen), `PenReset` |
-| The pen cursor chosen     | `Changed`  | `CursorDot`, `CursorCrosshair`                           |
-| Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                          |
-| Shape recognition toggled | `Toggled`  | `RecognitionOn`, `RecognitionOff`                        |
-| Background changed        | `Changed`  | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid`    |
-| Custom colours snapped    | `Changed`  | `SnapColours` (never a colour or a count)                |
+| Event                     | Action                                    | Type                                                     |
+| ------------------------- | ----------------------------------------- | -------------------------------------------------------- |
+| A whiteboard created      | `Created`                                 | `Template` (wizard), `NewTab`, `Import`                  |
+| A pen picked              | `Selected`                                | `Main`, `Second`, `Third`                                |
+| A shape picked in search  | `Selected`                                | `ShapeSearch` (never the kind)                           |
+| A shape pinned / unpinned | `Changed`                                 | `ShapePinned`, `ShapeUnpinned` (never the kind)          |
+| A pen changed             | `Changed`                                 | `PenColour`, `PenWidth` (a width on any pen), `PenReset` |
+| The pen cursor chosen     | `Changed`                                 | `CursorDot`, `CursorCrosshair`                           |
+| Eraser mode switched      | `Changed`                                 | `EraserStroke`, `EraserPartial`                          |
+| The Fill tool             | see [Fill tool](fill-tool.md) "Telemetry" |                                                          |
+| Shape recognition toggled | `Toggled`                                 | `RecognitionOn`, `RecognitionOff`                        |
+| Background changed        | `Changed`                                 | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid`    |
+| Custom colours snapped    | `Changed`                                 | `SnapColours` (never a colour or a count)                |
 
 A pen reports its place, never its colour. Strokes, stickies and text report
 through the ordinary `Element` / `Added` events.

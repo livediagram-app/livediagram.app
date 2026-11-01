@@ -8,7 +8,7 @@ import type { ResolveTabWindow } from './tab-window';
 import type { TagColour } from './tag-colours';
 import { isPersonNode } from './person-node';
 import type { SheetRenderModel } from './svg-render-plan-sheet';
-import type { Item, ItemTypeDef } from '@liveplanner/items';
+import type { IsDoneStatus, Item, ItemTypeDef } from '@liveplanner/items';
 import { imageCornerPx } from './drawn-outline-finish';
 import { ownColours } from './behaviour-skin';
 import {
@@ -127,6 +127,9 @@ export type BoxedExportOptions = {
   items?: ReadonlyMap<string, Item>;
   // The project's item types (docs/specs/026-plan/item-types.md); the built-in ones without them.
   itemTypes?: readonly ItemTypeDef[];
+  // The statuses the plan's boards count as done, for the blocked badge (docs/specs/026-plan/item-types.md
+  // "Blocked By").
+  itemsDone?: IsDoneStatus;
   // Sheet windows by sheet id (docs/specs/029-sheets/sheet.md "Exports and images").
   sheets?: ReadonlyMap<string, SheetRenderModel>;
   // A plan view's picture at its box (docs/specs/026-plan/plan-tabs.md "Export"), from a caller that has the charts'

@@ -165,6 +165,8 @@ export type EditorKeyboardShortcutsDeps = {
     pickText: () => void;
     pickShape: (id: WhiteboardShapeId) => void;
     pickPath: () => void;
+    // F: the Fill tool (docs/specs/023-draw-mode/fill-tool.md).
+    pickFill: () => void;
     // S: the Shapes flyout, opened as a hover opens it, its search field focused.
     openShapes: () => void;
   } | null;
@@ -375,6 +377,8 @@ export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
   '3': (l) => l.whiteboard?.pickPen('third'),
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): P, which is the pencil on a diagram tab.
   p: (l) => l.whiteboard?.pickPath(),
+  // The Fill tool (docs/specs/023-draw-mode/fill-tool.md): F, which is the Frame on a diagram tab.
+  f: (l) => l.whiteboard?.pickFill(),
   e: (l) => l.whiteboard?.pickEraser(),
   n: (l) => l.whiteboard?.pickSticky(),
   t: (l) => l.whiteboard?.pickText(),
@@ -396,6 +400,7 @@ export const WHITEBOARD_TOOL_KEYS = {
   second: '2',
   third: '3',
   path: 'P',
+  fill: 'F',
   eraser: 'E',
   sticky: 'N',
   text: 'T',

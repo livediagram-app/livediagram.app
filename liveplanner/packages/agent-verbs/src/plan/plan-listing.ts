@@ -38,6 +38,9 @@ import {
   fieldCardIds,
   fieldPeople,
   holdsSeveral,
+  isBlocksField,
+  blockingIndexOf,
+  hasBlocksFields,
   formulaProblem,
   formulaResultOf,
   formulaScopeOf,
@@ -59,6 +62,7 @@ import {
   timePerson,
   type CalculatedValue,
   type CustomFieldDef,
+  type BlockingIndex,
 } from '@liveplanner/items';
 import type { PlanState } from './plan-state';
 
@@ -97,12 +101,26 @@ interface ListedItem {
   // Each Time Spent field's entries and running timers, by the field's name (docs/specs/026-plan/item-types.md "Time
   // Spent"); only on a card with any.
   time?: Record<string, ListedTime>;
+  // Blocked By (docs/specs/026-plan/item-types.md "Blocked By"): its open blockers' count, and the live cards it
+  // blocks ("#7 Copy"); each only when there are any.
+  blocked?: number;
+  blocks?: string[];
 }
 
 // A Time Spent field's time as agents read it: who by name, the time as text, when as ISO times.
 interface ListedTime {
   entries: { by: string; time: string; at: string }[];
   running: { by: string; since: string }[];
+}
+
+// A card's Blocked By facts from the plan's one blocking lookup: none when it neither waits nor blocks.
+function listedBlocking(index: BlockingIndex, id: string): Pick<ListedItem, 'blocked' | 'blocks'> {
+  const open = index.open.get(id);
+  const blocks = index.blocks.get(id);
+  return {
+    ...(open ? { blocked: open } : {}),
+    ...(blocks?.length ? { blocks: blocks.map((c) => `${ref(c)} ${itemTitle(c)}`) } : {}),
+  };
 }
 
 // A card's Time Spent fields with any time, by name; undefined when none has.
@@ -174,6 +192,8 @@ export interface ListedType {
     // A Person field that tells its person when a card is theirs (item-types.md "Notifies").
     notifies?: boolean;
     multiple?: boolean;
+    // A Blocked By field (item-types.md "Blocked By").
+    blocks?: boolean;
   }[];
   // The Assignee tells no one (item-types.md "Notifies"); given only when switched off.
   assigneeNotifies?: false;
@@ -380,6 +400,7 @@ export function listedType(
       ...(f.required ? { required: true } : {}),
       ...(f.notifies ? { notifies: true } : {}),
       ...(holdsSeveral(f) ? { multiple: true } : {}),
+      ...(isBlocksField(f) ? { blocks: true } : {}),
     })),
     ...(t.assigneeNotifies === false ? { assigneeNotifies: false as const } : {}),
     ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),
@@ -445,6 +466,10 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
   });
   // Calculated fields (docs/specs/026-plan/item-types.md "Calculated fields"), worked out from what was read, and only
   // when a type has one.
+  // Blocked By, read once for every card, and only when a type has a Blocks field.
+  const blocking = hasBlocksFields(plan.types)
+    ? blockingIndexOf(state.items, plan.types, isDone)
+    : null;
   const calc = hasCalculatedFields(plan.types)
     ? { index: childIndexOf(state.items, plan.types), isDone }
     : null;
@@ -480,6 +505,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
           plan.types.find((t) => t.id === i.type),
         ),
       ),
+      ...(blocking ? listedBlocking(blocking, i.id) : {}),
     }));
   return {
     boards,

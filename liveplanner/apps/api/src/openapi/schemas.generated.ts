@@ -2576,6 +2576,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aggregate": {
         "$ref": "#/components/schemas/Aggregate"
       },
+      "blocks": {
+        "type": "boolean"
+      },
       "calculation": {
         "$ref": "#/components/schemas/Calculation"
       },

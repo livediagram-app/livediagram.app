@@ -46,6 +46,7 @@ import { RunningTimerPill } from './time/TimerReadouts';
 import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
+import { planBlocking } from './blocking';
 import { customFieldText } from './custom-field-text';
 import { calculatedFieldOutcome } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
@@ -63,6 +64,7 @@ import {
   ChecklistPill,
   CommentsPill,
   DuePill,
+  BlockedMark,
   FlagMark,
   KeyTag,
   LATE_COLOUR,
@@ -180,9 +182,13 @@ export function PlanCardFace({
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
   const title = itemTitle(item) || 'Untitled';
+  // Its open blockers (docs/specs/026-plan/item-types.md "Blocked By"), from the plan's one lookup; never on the
+  // Display's example card.
+  const blocked = plan && !edit ? (planBlocking(plan).open.get(item.id) ?? 0) : 0;
   const flag = (
     <>
       {fresh ? <NewResponseMark /> : null}
+      {blocked > 0 ? <BlockedMark count={blocked} /> : null}
       {isFlagged(item) ? <FlagMark /> : null}
     </>
   );

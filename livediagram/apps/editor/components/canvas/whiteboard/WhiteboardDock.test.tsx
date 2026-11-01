@@ -31,7 +31,7 @@ describe('WhiteboardDock groups', () => {
     }
   });
 
-  it('lays out Select, the markers, Text, Path tool and Eraser as the drawing tools', () => {
+  it('lays out Select, the markers, Text, Path tool, Fill and Eraser as the drawing tools', () => {
     renderDock();
     expect(itemsOf('drawing')).toEqual([
       'select',
@@ -40,6 +40,7 @@ describe('WhiteboardDock groups', () => {
       'third',
       'text',
       'path',
+      'fill',
       'eraser',
     ]);
     expect(screen.queryByRole('button', { name: 'Sticky Note' })).toBeNull();
@@ -222,6 +223,38 @@ describe('WhiteboardDock drawing tools', () => {
     expect(m.setEraserMode).toHaveBeenCalledWith('partial');
   });
 
+  // docs/specs/023-draw-mode/fill-tool.md "Where it sits" and "Its colour".
+  it('picks up the Fill tool, then opens its colour picker when pressed in hand', () => {
+    const { m } = renderDock();
+    fireEvent.click(screen.getByRole('button', { name: 'Fill' }));
+    expect(m.pickFill).toHaveBeenCalled();
+    expect(screen.queryByRole('group', { name: 'Fill' })).toBeNull();
+  });
+
+  it("shows the bucket's colour on its button, and No fill as a slash", () => {
+    renderDock(model('pen', { fill: '#123456' }));
+    const bar = screen.getByRole('button', { name: 'Fill' }).querySelector('[data-fill-bar]')!;
+    expect(bar.getAttribute('stroke')).toBe('#123456');
+  });
+
+  it('shows No fill on the button as the no-colour chip', () => {
+    renderDock(model('pen', { fill: 'transparent' }));
+    const bar = screen.getByRole('button', { name: 'Fill' }).querySelector('[data-fill-bar]')!;
+    expect(bar.tagName.toLowerCase()).toBe('rect');
+  });
+
+  it('picks a fill colour from the one colour picker, No fill first', () => {
+    const { m } = renderDock(model('fill'));
+    const fill = screen.getByRole('button', { name: 'Fill' });
+    expect(fill.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(fill);
+    const group = screen.getByRole('group', { name: 'Fill colour' });
+    fireEvent.click(within(group).getByRole('button', { name: 'No fill' }));
+    expect(m.setFill).toHaveBeenCalledWith('transparent');
+    fireEvent.click(within(group).getAllByRole('button', { name: 'Green' })[0]!);
+    expect(m.setFill).toHaveBeenLastCalledWith('#dcfce7');
+  });
+
   it('picks Text from the drawing tools', () => {
     const { m } = renderDock();
     const text = within(screen.getByRole('toolbar', { name: 'Drawing tools' })).getByRole(
@@ -270,6 +303,7 @@ describe('WhiteboardDock drawing tools', () => {
     expect(keyOf(/^Path tool/)).toBe('P');
     expect(keyOf(/^Eraser/)).toBe('E');
     expect(keyOf(/^Text/)).toBe('T');
+    expect(keyOf(/^Fill/)).toBe('F');
   });
 });
 

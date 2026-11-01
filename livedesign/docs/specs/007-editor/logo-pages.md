@@ -50,15 +50,19 @@ tools are where they belong.
 
 - **Draw**, which the palette opens on: **Pens** (the **Pen**, the Path tool, click for corners
   and drag for curves, [Path tool](../023-draw-mode/path-tool.md); the **Freehand Pencil**; the **Shape
-  Pen**), **Outlines** (the **Polygon**) and **Markers** (three, **Marker 1**, **Marker 2**, **Marker 3**,
-  each in the colour and width the person gave it, [Drawing tools](../023-draw-mode/drawing-tools.md)).
+  Pen**), **Outlines** (the **Polygon**), **Markers** (three, **Marker 1**, **Marker 2**, **Marker 3**,
+  each in the colour and width the person gave it, [Drawing tools](../023-draw-mode/drawing-tools.md))
+  and **Fill** (the **Fill** tool, a paint bucket in the colour the person gave it,
+  [Drawing tools](../023-draw-mode/drawing-tools.md) "The Fill tool").
 - **Shapes**, every one; **Write**, **Text** for a wordmark and a **Sticky Note** for a comment on
   the design; **Icons**, a glyph to start from; and **Media**, an **Image** to trace
   or set the mark beside.
 - No charts, blocks, device frames, stickers or embeds: a logo has no use for them.
 
 Each tool puts itself down after one use and selects what it drew, as the pencil does, a marker
-included (a marker picked up from the Toolbar strip's Search stays in hand as before). A marker
+included (a marker picked up from the Toolbar strip's Search stays in hand as before). The Fill
+tool is the exception: it stays in hand until another tool or Escape puts it down, so a mark's parts
+fill one after another, and pressed again while held it opens its colour. A marker
 lines up as the pencil does: its first point snaps to nearby alignments (the dot shows before the
 press) and its stroke shows alignment guides as it grows. In the palette a held marker pressed
 again opens its flyout below its tile (colour and width); its changes are the marker's everywhere
