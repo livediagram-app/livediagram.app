@@ -61,6 +61,16 @@ describe('ROOM_ELEMENT_RULES', () => {
     expect(judge(add(shape('a', { shape: 'instance' })))).toBeNull();
   });
 
+  // docs/specs/007-editor/pages-mode.md "Sizes": a turned page's shapes carry their label's scale.
+  it("relays a re-fitted shape's label scale, and refuses one out of range", () => {
+    expect(judge(add(shape('a', { textSize: 16, textScale: 0.46 })))).toBeNull();
+    expect(judge(add(shape('a', { textScale: 0 })))).toEqual({
+      reason: 'invalid-element',
+      elementId: 'a',
+      field: 'textScale',
+    });
+  });
+
   it('refuses a tab that names an id twice', () => {
     expect(judge(tab([shape('a'), shape('a')]))).toEqual({
       reason: 'duplicate-element',

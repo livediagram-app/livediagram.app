@@ -75,6 +75,9 @@ import { AddCardButton } from './AddCardButton';
 import { BoardCardTypeChips } from './BoardCardTypeChips';
 import { chipsShown } from './card-type-chips';
 import { planBoardKey } from './plan-board-keys';
+import { groupColumnMoves } from './board-selection';
+import { BoardSelectionBar } from './BoardSelectionBar';
+import { useBoardSelection } from '@/hooks/plan/useBoardSelection';
 import { planBandTint, planOwnColours, planPalette } from './plan-palette';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
@@ -204,10 +207,41 @@ export function PlanBoardView({
     canEditCards,
   });
 
-  // A press on a card in Plan mode without edit rights still opens it.
+  // This person's selected cards here (docs/specs/026-plan/plan-board.md "Several cards at once"): an Editor's or a
+  // Participant's, in Plan mode, never in a Dashboard slot; a face-down card is never picked.
+  const selfId = plan?.self?.id ?? '';
+  const selectable = useCallback(
+    (id: string) => {
+      const it = items.get(id);
+      return !!it && !!setup && !cardIsFaceDown(it, setup, selfId);
+    },
+    [items, setup, selfId],
+  );
+  const selection = useBoardSelection({
+    projection,
+    enabled: interactive && canEditCards && !simplified,
+    selectable,
+    ...(plan ? { announce: plan.announce } : {}),
+  });
+
+  // A press on a card in Plan mode without edit rights still opens it. With a selection: Cmd/Ctrl (or any press in
+  // select mode) picks the card or lets it go, Shift picks the run from the last card picked in its column, and a press
+  // on a selected card carries the whole group; any other press lets the selection go and works the card alone.
   const onCardPress = (id: string, e: React.PointerEvent<HTMLElement>) => {
     if (!interactive) return;
-    if (canEditCards) drag.onCardPointerDown(id, e, look.holdToDrag);
+    if (canEditCards && !simplified && e.button === 0) {
+      const picking = e.metaKey || e.ctrlKey || selection.mode;
+      if (picking || e.shiftKey) {
+        stop(e);
+        e.preventDefault();
+        if (e.shiftKey && !picking) selection.range(id);
+        else selection.toggle(id);
+        return;
+      }
+    }
+    const group = selection.ids.has(id) && selection.ids.size > 1 ? selection.ordered : undefined;
+    if (!group && selection.ids.size) selection.clear();
+    if (canEditCards) drag.onCardPointerDown(id, e, look.holdToDrag, group);
     else {
       stop(e);
       plan?.openItem(id);
@@ -276,6 +310,8 @@ export function PlanBoardView({
   // dragged near the columns' left or right edge scrolls them sideways.
   useEdgeAutoScroll(bodyRef, (maximised || filled || simplified) && (!!drag.drag || !!incoming));
   const dragging = drag.drag;
+  // The cards a group drag carries, for a look-up per card drawn (one Set per drag, not a scan per card).
+  const carried = useMemo(() => new Set(dragging?.group ?? []), [dragging?.group]);
   // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up"); five
   // slots across while it covers the canvas, then it scrolls sideways.
   const look = boardLook(
@@ -347,11 +383,33 @@ export function PlanBoardView({
             ),
           }
         : projection;
-    const action = planBoardKey(drawn, item.id, e.key, e.shiftKey, canEditCards, sortedBy);
+    const action = planBoardKey(drawn, item.id, e.key, e.shiftKey, canEditCards, sortedBy, {
+      canSelect: canEditCards && !simplified,
+      grouped: selection.ids.has(item.id) && selection.ids.size > 1,
+      canRetire: canEdit,
+    });
     if (!action) return;
     e.preventDefault();
     e.stopPropagation();
-    if (action.kind === 'focus') {
+    if (action.kind === 'select') selection.toggle(item.id);
+    else if (action.kind === 'moveGroup') {
+      // Each selected card one column on from its own, as one write; a card whose type leaves that column out stays.
+      const moves = groupColumnMoves(projection, selection.ordered, action.step).filter((m) => {
+        const it = items.get(m.id);
+        return !!it && !moveStatusRefusal(plan.types, it, m.move, columnName);
+      });
+      if (moves.length === 0) plan.announce('The selected cards can’t move that way');
+      else {
+        focusNextRef.current = item.id;
+        plan.moveItems?.(moves);
+        track('Plan', 'Moved', 'Cards');
+        plan.announce(`${moves.length === 1 ? '1 card' : `${moves.length} cards`} moved`);
+      }
+    } else if (action.kind === 'trashGroup') {
+      const went = plan.trashItems(selection.ordered);
+      if (went) plan.announce(`${went === 1 ? '1 card' : `${went} cards`} moved to the Trash`);
+      selection.clear();
+    } else if (action.kind === 'focus') {
       boardRef.current
         ?.querySelector<HTMLElement>(`[data-plan-card="${CSS.escape(action.itemId)}"]`)
         ?.focus();
@@ -477,6 +535,8 @@ export function PlanBoardView({
           quick={quick}
           onQuick={setQuick}
           canFilterMine={self?.id ?? null}
+          planItems={items}
+          {...(statusNames ? { statusNames } : {})}
           canEdit={setUpHere}
           loadFailed={plan?.status === 'error'}
           onRetry={() => plan?.retry()}
@@ -530,6 +590,15 @@ export function PlanBoardView({
       )}
       {/* A template's example cards: Clear Example Cards or Keep Them, for an Editor (ExampleCardsNotice); left on the
           board's tab by a slot board. */}
+      {plan && selection.ids.size ? (
+        <BoardSelectionBar
+          plan={plan}
+          setup={setup}
+          ordered={selection.ordered}
+          palette={palette}
+          onClear={selection.clear}
+        />
+      ) : null}
       {interactive && plan && !simplified ? (
         <ExampleCardsNotice shown={shownItems} plan={plan} palette={palette} />
       ) : null}
@@ -758,7 +827,8 @@ export function PlanBoardView({
                                       ? held?.height
                                       : undefined
                                   }
-                                  lifted={dragging?.itemId === item.id}
+                                  lifted={dragging?.itemId === item.id || carried.has(item.id)}
+                                  selected={selection.ids.has(item.id)}
                                   done={done}
                                   // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
                                   setupFields={CARD_FIELDS}
@@ -822,6 +892,7 @@ export function PlanBoardView({
           canEdit={canEditCards}
           canRetire={canEdit}
           onClose={() => setMenu(null)}
+          {...(canEditCards && !simplified ? { onSelect: selection.start } : {})}
         />
       ) : null}
       {dragging && items.get(dragging.itemId) ? (
@@ -833,6 +904,7 @@ export function PlanBoardView({
           item={items.get(dragging.itemId)!}
           palette={palette}
           fields={CARD_FIELDS}
+          count={dragging.group?.length ?? 1}
         />
       ) : null}
     </div>

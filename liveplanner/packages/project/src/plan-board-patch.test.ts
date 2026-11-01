@@ -12,6 +12,15 @@ const rename = (s: PlanBoardSetup, id: string, name: string): PlanBoardSetup => 
 });
 
 describe('planBoardPatch', () => {
+  // docs/specs/026-plan/board-widgets.md "Saved filters": the list travels as a set-up field.
+  it('carries saved filters, and applies them', () => {
+    const saved = { ...base, savedFilters: [{ id: 'sf-1', name: 'My Bugs', mine: true as const }] };
+    const patch = planBoardPatch(base, saved);
+    expect(patch).toEqual({ set: { savedFilters: saved.savedFilters } });
+    expect(applyPlanBoardPatch(base, patch).savedFilters).toEqual(saved.savedFilters);
+    expect(planBoardPatch(saved, base)).toEqual({ clear: ['savedFilters'] });
+  });
+
   it('is null when nothing changed, and for a missing side', () => {
     expect(planBoardPatch(base, { ...base })).toBeNull();
     expect(planBoardPatch(undefined, base)).toBeNull();

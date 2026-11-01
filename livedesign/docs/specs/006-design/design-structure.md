@@ -98,10 +98,12 @@ type Tab = {
 // Concrete element kinds, see packages/design for the full shape of each:
 //   ShapeElement     (shape: square / circle / diamond / cylinder / parallelogram / hexagon
 //                            / design / stadium / actor / cloud / browser / monitor / laptop
-//                            / phone / tablet)
+//                            / phone / tablet; optionally textScale, a multiplier on its
+//                            label's size set when a re-fit scales it with its page, absent = 1;
+//                            docs/specs/007-editor/pages-mode.md "Sizes")
 //   TextElement      (optionally sizing: 'fit' | 'wrap', how the box hugs its text, absent = a
 //                     fixed box; and
-//                     textScale, the Shift-resize scale. A stored autoWidth: true reads as 'fit')
+//                     textScale, the Shift-resize or re-fit scale. A stored autoWidth: true reads as 'fit')
 //   ImageElement     (boxed, references an R2-stored bitmap by imageId, see docs/specs/009-elements/images.md)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
 //   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-design/stroke-points.md,
@@ -136,7 +138,7 @@ blanked in a room hello).
 ### Styles have their types
 
 An element's style fields are read by name or done arithmetic with: `padding`, `borderRadius`, `strokeStyle`,
-`textAlignX` and `textAlignY` are names, `textSize` a name or a size in px, `rotation` and `opacity` numbers,
+`textAlignX` and `textAlignY` are names, `textSize` a name or a size in px, `rotation`, `opacity` and `textScale` numbers,
 `shadow` its offsets, blur and strength, and `strokeWidth` a named weight (px on an arrow). One of the wrong type
 (`padding: 12`, `opacity: "50%"`) is dropped by the stored-element migrations wherever elements enter, as a colour
 that is no colour is, and the element draws with that style's default. Only the type is checked: a name this build

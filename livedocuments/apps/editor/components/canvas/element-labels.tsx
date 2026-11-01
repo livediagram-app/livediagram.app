@@ -16,6 +16,7 @@
 import {
   hasRichFormatting,
   labelFontPx,
+  labelTextScale,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
@@ -65,8 +66,8 @@ export function renderLabel(
   textAnim?: TextAnimView,
 ) {
   const isSticky = element.type === 'sticky';
-  // A Shift-resized text box draws its text scaled.
-  const textScale = element.type === 'text' ? (element.textScale ?? 1) : 1;
+  // A Shift-resized text box, and a text or shape a page re-fit scaled, draws its words scaled.
+  const textScale = labelTextScale(element);
   const textPadding = hug ? hug.padding : padding;
   // Shape elements don't carry a placeholder during edit. The user
   // is already mid-double-click on a visible shape, so the empty

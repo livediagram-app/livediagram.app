@@ -5,6 +5,8 @@
 import { itemColourOf } from './item-colour';
 import { ITEM_TYPE_PATTERN } from './limits';
 import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
+import type { CardSearchFilter } from './card-search';
+import { readSavedFilters, type SavedBoardFilter } from './saved-filters';
 import { statusTitleCase } from './status-title-case';
 import type { Item, ItemFieldValue, ItemPerson } from './item';
 import {
@@ -175,6 +177,9 @@ export interface PlanBoardSetup {
   fillTab?: boolean;
   // A linked board (docs/specs/026-plan/linked-boards.md): the kind of canvas record it collects. Absent is none.
   collects?: LinkedRecordKind;
+  // Saved filters (docs/specs/026-plan/board-widgets.md "Saved filters"): named quick filters everyone may apply,
+  // at most SAVED_FILTERS_MAX. Absent is none.
+  savedFilters?: SavedBoardFilter[];
 }
 
 // The kinds of canvas record a linked board collects (docs/specs/026-plan/linked-boards.md).
@@ -201,6 +206,9 @@ export interface QuickFilter {
   due?: QuickDueWindow;
   // Only items of this priority.
   priority?: Priority;
+  // The Filter widget's field chips (docs/specs/026-plan/board-widgets.md "The Filter widget"): Card Search's filters,
+  // every one of which a card must match.
+  filters?: CardSearchFilter[];
 }
 
 // `QuickFilter.person` for the cards nobody is assigned.
@@ -890,6 +898,25 @@ function boardLanes(
   return { by, field, lanes, lanesOfItem };
 }
 
+// `cards` narrowed to those matching every filter, as they are (an Archive board's archived cards too). A parent or a
+// linked card is looked up in `all`. One lane grouping per filter, over the cards still in play.
+export function cardsMatchingFilters(
+  cards: readonly Item[],
+  filters: readonly CardSearchFilter[],
+  all: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+  statusNames?: ReadonlyMap<string, string>,
+): Item[] {
+  let out = [...cards];
+  for (const f of filters) {
+    if (out.length === 0) break;
+    const groups = laneGroups(f.by, f.field, out, all, types, statusNames);
+    // A card holding several values matches a filter on any of them (item-types.md "Holds Several").
+    out = out.filter((c) => inLane(groups, c.id, f.key));
+  }
+  return out;
+}
+
 export function projectBoard(
   setup: PlanBoardSetup,
   items: ReadonlyMap<string, Item>,
@@ -933,6 +960,12 @@ export function projectBoard(
   unplaced.sort((a, b) => a.key - b.key);
 
   const groups = boardLanes(setup, scoped, items, types, statusNames, isDone);
+  // The Filter widget's field chips, matched once for the whole board rather than per card.
+  const chipped = quick?.filters?.length
+    ? new Set(
+        cardsMatchingFilters(scoped, quick.filters, items, types, statusNames).map((i) => i.id),
+      )
+    : null;
   const { by, lanes } = groups;
 
   // Cards in every done column (docs/specs/026-plan/plan-board.md "Done columns").
@@ -945,7 +978,9 @@ export function projectBoard(
           : []
         : scoped.filter((it) => itemStatus(it) === column.status);
     if (isDoneColumn(setup, column)) doneCount += all.length;
-    const shown = all.filter((it) => quickFilterMatches(quick, it, types));
+    const shown = all.filter(
+      (it) => (!chipped || chipped.has(it.id)) && quickFilterMatches(quick, it, types),
+    );
     // One pass files each card into every lane it sits in (several, for a field that holds several), in order.
     const byLane = new Map<string, Item[]>(lanes.map((l) => [l.key, []]));
     for (const it of shown)
@@ -1066,6 +1101,9 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(readCardSize(input['cardSize']) === 'minimal' ? { cardSize: 'minimal' as const } : {}),
     hideWriting: input['hideWriting'] === true,
     ...(input['fillTab'] === true ? { fillTab: true } : {}),
+    ...(readSavedFilters(input['savedFilters'])
+      ? { savedFilters: readSavedFilters(input['savedFilters']) }
+      : {}),
     ...((LINKED_RECORD_KINDS as readonly unknown[]).includes(input['collects'])
       ? { collects: input['collects'] as LinkedRecordKind }
       : {}),

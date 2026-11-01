@@ -3,7 +3,12 @@
 // check names its field and rule, so a refusal says which value to fix.
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
-import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@liveplanner/items';
+import {
+  isPlanViewSettings,
+  isSavedBoardFilters,
+  isValidItemId,
+  normaliseBoardSetup,
+} from '@liveplanner/items';
 import { isPlanSheetRef } from './element-types';
 import { isFlowchartDirection } from './flowchart';
 import { isChartSource, isSheetAnchor } from './chart-source';
@@ -413,8 +418,13 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   {
     field: 'planBoard',
-    valid: (v: unknown) => normaliseBoardSetup(v) !== null,
-    rule: 'a Plan board set-up: 1 to 12 columns, each an id and a status',
+    // Saved filters are refused when malformed rather than read past (docs/specs/026-plan/board-widgets.md "Saved
+    // filters"): at most 8, each an id, a name and what it narrows by.
+    valid: (v: unknown) =>
+      normaliseBoardSetup(v) !== null &&
+      ((v as { savedFilters?: unknown }).savedFilters === undefined ||
+        isSavedBoardFilters((v as { savedFilters?: unknown }).savedFilters)),
+    rule: 'a Plan board set-up: 1 to 12 columns, each an id and a status, and at most 8 saved filters',
   },
   {
     field: 'planCard',

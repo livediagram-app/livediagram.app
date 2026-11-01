@@ -1429,3 +1429,136 @@ describe('a vote’s tally', () => {
     expect((await call({ method: 'GET', path: '/items/tally' })).status).toBe(405);
   });
 });
+
+// docs/specs/026-plan/items.md "Move many": a group lands together, in order, as one write.
+describe('moving many items at once', () => {
+  it('lands the cards together at the drop point, in order, with one rev raise and one room op', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const b = (await add({ title: 'B', status: 'todo' })).body.item;
+    await add({ title: 'X', status: 'done' });
+    const y = (await add({ title: 'Y', status: 'done' })).body.item;
+    const before = await db.getItemsRev(sql.env, 'd1');
+    relayed = [];
+    const res = await call<ItemsResponse>({
+      path: '/items/moves',
+      body: {
+        items: [
+          { id: b.id, status: 'done', before: y.id },
+          { id: a.id, status: 'done', after: b.id, set: { priority: 'high' } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.rev).toBe(before + 1);
+    expect(relayed).toHaveLength(1);
+    const done = (await db.listItems(sql.env, 'd1'))
+      .filter((i) => i.fields['status'] === 'done')
+      .sort((p, q) => (p.rank < q.rank ? -1 : p.rank > q.rank ? 1 : 0))
+      .map((i) => i.fields['title']);
+    expect(done).toEqual(['X', 'B', 'A', 'Y']);
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['priority']).toBe('high');
+  });
+
+  it('refuses the whole request, naming the card, and checks the body', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    expect(
+      await call({
+        path: '/items/moves',
+        body: {
+          items: [
+            { id: a.id, status: 'done' },
+            { id: 'missing-id', status: 'done' },
+          ],
+        },
+      }),
+    ).toEqual({ status: 404, body: { error: 'item_not_found' } });
+    expect(
+      (await call({ path: '/items/moves', body: { items: [{ id: a.id, set: { title: 'x' } }] } }))
+        .body,
+    ).toMatchObject({ error: 'place_invalid', id: a.id });
+    expect(
+      (
+        await call({
+          path: '/items/moves',
+          body: { items: [{ id: a.id, status: 'done', clear: ['title'] }] },
+        })
+      ).body,
+    ).toMatchObject({ error: 'title_required', id: a.id });
+    for (const items of [[], 'x', Array.from({ length: 201 }, () => ({ id: a.id }))])
+      expect((await call({ path: '/items/moves', body: { items } })).status).toBe(400);
+    expect(
+      (await call({ path: '/items/moves', body: { items: [{ status: 'done' }] } })).body,
+    ).toMatchObject({ message: 'each item needs its id' });
+    expect((await call({ method: 'GET', path: '/items/moves' })).status).toBe(405);
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['status']).toBe('todo');
+  });
+
+  it('lets a Participant move cards, never archive them, and a Viewer neither', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const move = { items: [{ id: a.id, status: 'done' }] };
+    const as = (code: string, body: unknown) =>
+      call({ path: '/items/moves', code, owner: 'guest', body });
+    expect((await as('VIEW', move)).status).toBe(403);
+    expect((await as('PART', move)).status).toBe(200);
+    const archive = { items: [{ id: a.id, status: 'done', set: { archived: true } }] };
+    expect((await as('PART', archive)).status).toBe(403);
+    expect((await call({ path: '/items/moves', body: archive })).status).toBe(200);
+  });
+
+  it('refuses a status the type leaves out, unless it is an undo', async () => {
+    await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: {
+        itemTypes: {
+          version: 1,
+          types: [
+            {
+              id: 'task',
+              label: 'Task',
+              color: '#71717a',
+              glyph: 'task',
+              fields: [],
+              excludedStatuses: ['done'],
+            },
+          ],
+        },
+      },
+    });
+    const t = (await add({ title: 'T', status: 'todo' })).body.item;
+    const items = [{ id: t.id, status: 'done' }];
+    expect((await call({ path: '/items/moves', body: { items } })).body).toEqual({
+      error: 'status_excluded',
+      field: 'status',
+      id: t.id,
+    });
+    expect((await call({ path: '/items/moves', body: { items, undo: true } })).status).toBe(200);
+  });
+
+  it('retries a card a racing write moved on, ranking it after the one that landed', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const b = (await add({ title: 'B', status: 'todo' })).body.item;
+    const real = db.updateItemsAtRev;
+    let first = true;
+    const racing = vi.spyOn(db, 'updateItemsAtRev').mockImplementation((env, doc, writes) => {
+      const keep = first ? writes.filter((w) => w.next.id !== b.id) : writes;
+      first = false;
+      return real(env, doc, keep);
+    });
+    const res = await call<ItemsResponse>({
+      path: '/items/moves',
+      body: {
+        items: [
+          { id: a.id, status: 'done', before: null },
+          { id: b.id, status: 'done', after: a.id },
+        ],
+      },
+    });
+    racing.mockRestore();
+    expect(res.status).toBe(200);
+    const ra = (await db.readItem(sql.env, 'd1', a.id))!;
+    const rb = (await db.readItem(sql.env, 'd1', b.id))!;
+    expect([ra.fields['status'], rb.fields['status']]).toEqual(['done', 'done']);
+    expect(ra.rank < rb.rank).toBe(true);
+  });
+});

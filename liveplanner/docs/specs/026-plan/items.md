@@ -247,6 +247,10 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   each other; the same field resolves to the last write.
 - **Move**: a new `status` and/or a new `rank`, given as "after this item" or "before this item" (or the top or
   end of a column), so a move needs no knowledge of other ranks.
+- **Move many**: several cards moved as one write (a group dragged on a board, a selection's Move To), each with its
+  own move, applied in order, so the cards can land together: the first at the drop point, each next one right
+  after the one before (`POST /items/moves`, up to 200, participate access). Every card is checked before any is
+  written, so one refusal refuses them all, naming the card. One undo step puts every card back where it was.
 - A create, update or move that changes a card's `status` stamps `statusSince` with the write's moment; one that
   names `statusSince` itself (an undo, a restore, a sync or copy) keeps the value it gives.
 - **Tally**: a session vote's host, ending it, adds each card's dots to the card's `votes` (per voter, as

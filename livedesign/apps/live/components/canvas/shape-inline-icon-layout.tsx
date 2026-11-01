@@ -78,6 +78,8 @@ export function ShapeInlineIconLayout({
   const isRow = position === 'left' || position === 'right';
   const iconFirst = position === 'left' || position === 'above';
   const { fontSize, iconSize, elementIconSize } = inlineIconMetrics(element, label, textSize);
+  // A run's own size scales with the label (docs/specs/007-editor/pages-mode.md "Sizes"), as `fontSize` does.
+  const runPx = labelRunPx(false, element.textScale ?? 1);
 
   const iconGlyph = (
     <div
@@ -115,7 +117,7 @@ export function ShapeInlineIconLayout({
     >
       {hasRichFormatting(element.richText) ? (
         element.richText!.map((run, i) => (
-          <span key={i} style={effectiveRunStyle(run, element, labelRunPx(false))}>
+          <span key={i} style={effectiveRunStyle(run, element, runPx)}>
             {run.text}
           </span>
         ))

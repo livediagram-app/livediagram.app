@@ -7,6 +7,7 @@ import {
   defaultTextAlign,
   estimatedLabelMeasure,
   fontSizeFor,
+  labelTextScale,
   LABEL_LINE_HEIGHT,
   labelRoom,
   PADDING_PX,
@@ -38,8 +39,7 @@ function inkOf(t: BoxedElement & { label: string }): {
   px: number;
   measure: (s: string) => number;
 } {
-  const scale = (t as { textScale?: number }).textScale ?? 1;
-  const px = fontSizeFor(t.textSize) * scale;
+  const px = fontSizeFor(t.textSize) * labelTextScale(t);
   const measure = estimatedLabelMeasure(px);
   const wrapped = wrapLabel(t.label, labelRoom(t).width, measure, true);
   const pad = PADDING_PX[t.padding ?? defaultPadding(t)];

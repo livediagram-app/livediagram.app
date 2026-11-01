@@ -33,6 +33,7 @@ beforeEach(() => {
     accepts: vi.fn(() => true),
     refusal: vi.fn(() => 'This board shows Bug cards'),
     drop: vi.fn(),
+    dropMany: vi.fn(),
     hover: vi.fn(),
     acceptsType: vi.fn(() => true),
     addCard: vi.fn(),

@@ -19,6 +19,7 @@ import {
 import { ITEMS_MAX } from './limits';
 import { statusSinceUndo } from './status-since';
 import { applyTimeOp, inverseTimeOp, type TimeOp } from './time-tracking';
+import { applyMoves, inverseMoves, type ItemMoveOf } from './group-moves';
 
 export type ItemStoreState = { items: Item[]; rev: number; nextKey: number };
 
@@ -32,6 +33,8 @@ export type ItemWrite =
   // Many items changed as one write (a card type's or a removed column's cards to the Trash).
   | { kind: 'patches'; patches: ItemPatchOf[]; undo?: true }
   | { kind: 'move'; id: string; move: ItemMove; undo?: true }
+  // Many items moved as one write, in order (a group dragged on a board, a selection's Move To; items.md "Move many").
+  | { kind: 'moves'; moves: ItemMoveOf[]; undo?: true }
   // A session vote's tally added to cards' votes when the vote ends (not undoable), in the Votes field `field` (the
   // built-in when absent; the editor sends only cards whose type offers it, and the api checks again).
   | { kind: 'tally'; tallies: ItemTally[]; field?: string }
@@ -124,6 +127,21 @@ export function applyItemWrite(
       removed: [],
     };
   }
+  if (write.kind === 'moves') {
+    const applied = applyMoves(state.items, write.moves, base);
+    if (!applied.ok) return { ok: false, error: 'item_not_found' };
+    const { moved } = applied;
+    return {
+      ok: true,
+      state: {
+        ...state,
+        items: state.items.map((i) => moved.get(i.id) ?? i),
+        rev: state.rev + 1,
+      },
+      upserts: [...moved.values()],
+      removed: [],
+    };
+  }
   const item = state.items.find((i) => i.id === write.id);
   if (!item) return { ok: false, error: 'item_not_found' };
   if (write.kind === 'delete') {
@@ -182,6 +200,7 @@ export function mergeItemChanges(
 export function itemIdsOfWrite(write: ItemWrite): string[] {
   if (write.kind === 'create') return write.creates.flatMap((c) => (c.id ? [c.id] : []));
   if (write.kind === 'patches') return write.patches.map((p) => p.id);
+  if (write.kind === 'moves') return write.moves.map((m) => m.id);
   if (write.kind === 'tally') return write.tallies.map((t) => t.id);
   return [write.id];
 }
@@ -192,6 +211,10 @@ export function writeLimitedTo(write: ItemWrite, ids: ReadonlySet<string>): Item
   if (write.kind === 'patches') {
     const patches = write.patches.filter((p) => ids.has(p.id));
     return patches.length ? { ...write, patches } : null;
+  }
+  if (write.kind === 'moves') {
+    const moves = write.moves.filter((m) => ids.has(m.id));
+    return moves.length ? { ...write, moves } : null;
   }
   if (write.kind === 'create') {
     const creates = write.creates.filter((c) => c.id !== undefined && ids.has(c.id));
@@ -243,6 +266,18 @@ export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): Ite
     }
     return [{ kind: 'patches', patches: undo }];
   }
+  if (write.kind === 'moves') {
+    // Every card back before the card it sat before, as one write; a card that had no status then loses it.
+    const inverse = inverseMoves(before.items, write.moves);
+    if (!inverse) return null;
+    const out: ItemWrite[] = [{ kind: 'moves', moves: inverse.moves }];
+    if (inverse.unstatus.length)
+      out.push({
+        kind: 'patches',
+        patches: inverse.unstatus.map(({ id, set }) => ({ id, patch: { set, clear: ['status'] } })),
+      });
+    return out;
+  }
   const item = before.items.find((i) => i.id === write.id);
   if (!item) return null;
   if (write.kind === 'delete') {
@@ -275,7 +310,10 @@ export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): Ite
 
 // A write marked as an undo or redo (`undo` above): a patch or a move; any other write is returned as it is.
 export function asUndoWrite(write: ItemWrite): ItemWrite {
-  return write.kind === 'patch' || write.kind === 'patches' || write.kind === 'move'
+  return write.kind === 'patch' ||
+    write.kind === 'patches' ||
+    write.kind === 'move' ||
+    write.kind === 'moves'
     ? { ...write, undo: true }
     : write;
 }

@@ -20,6 +20,7 @@ import {
   type ItemMove,
   type ItemPatch,
   type ItemPatchOf,
+  type ItemMoveOf,
   type ItemPerson,
   type BoardStatusTypes,
   settleDoneColumns,
@@ -233,6 +234,20 @@ export function usePlanSlice(opts: {
     (itemId: string, move: ItemMove) => {
       void write({ kind: 'move', id: itemId, move });
       track('Plan', 'Moved', 'Board');
+    },
+    [write],
+  );
+
+  // Many cards moved together (a group's drag, a selection's Move To): one write and one undo step, a single move for
+  // one card.
+  const moveItems = useCallback(
+    (moves: readonly ItemMoveOf[]) => {
+      if (moves.length === 0) return;
+      void write(
+        moves.length === 1
+          ? { kind: 'move', id: moves[0]!.id, move: moves[0]!.move }
+          : { kind: 'moves', moves: [...moves] },
+      );
     },
     [write],
   );
@@ -545,6 +560,7 @@ export function usePlanSlice(opts: {
       addItem,
       addItems,
       moveItem,
+      moveItems,
       patchItem,
       trackTime,
       deleteItem,
@@ -592,6 +608,7 @@ export function usePlanSlice(opts: {
       addItem,
       addItems,
       moveItem,
+      moveItems,
       patchItem,
       trackTime,
       deleteItem,

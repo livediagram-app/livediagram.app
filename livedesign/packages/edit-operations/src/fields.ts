@@ -311,6 +311,9 @@ function writeAlias(
       const size = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
       if (size !== null && !isTextSize(size)) return { ...text(`one of ${TEXT_SIZE_VALUES}`) };
       patch.textSize = size;
+      // A size set is the size the words draw at, so a re-fit or Shift-resize scale goes with it
+      // (docs/specs/004-interface-design/fonts.md "Text size").
+      if (Reflect.get(el, 'textScale') !== undefined) patch.textScale = null;
       return null;
     }
     case 'line':

@@ -1,5 +1,5 @@
 // The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
-// contracts"): list, create, bulk create, patch (POST), many patches (item-patches-route.ts), a vote's tally (item-tally-route.ts), move and delete under
+// contracts"): list, create, bulk create, patch (POST), many patches (item-patches-route.ts), many moves (item-moves-route.ts), a vote's tally (item-tally-route.ts), move and delete under
 // /api/projects/:id/items, and a card's comment writes (item-comment-routes.ts). People and agents use the
 // same doors. Every write applies the pure functions of @liveplanner/items, lands guarded by the item's rev
 // (retried on a lost race), and reaches the room as an ordered `items` op. Comment author ids reach only their
@@ -73,6 +73,7 @@ import {
   type ItemCaller,
 } from './item-route-kit';
 import { patches } from './item-patches-route';
+import { moves } from './item-moves-route';
 import { historyTagOf, itemHistory } from './item-history-route';
 import { appendItemHistory } from '../db/item-history';
 import { planTabs } from './plan-route';
@@ -449,6 +450,9 @@ export async function handleItemRoutes(ctx: PlanRouteContext): Promise<Response 
     return method === 'POST' ? bulk(ctx, projectId) : methodNotAllowed();
   if (segments.length === 5 && segments[4] === 'patches')
     return method === 'POST' ? patches(ctx, projectId) : methodNotAllowed();
+  // Many moves as one write (docs/specs/026-plan/items.md "Move many").
+  if (segments.length === 5 && segments[4] === 'moves')
+    return method === 'POST' ? moves(ctx, projectId) : methodNotAllowed();
   if (segments.length === 5 && segments[4] === 'tally')
     return method === 'POST' ? tally(ctx, projectId) : methodNotAllowed();
   const itemId = segments[4]!;

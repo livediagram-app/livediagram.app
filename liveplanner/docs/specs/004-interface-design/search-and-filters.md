@@ -17,9 +17,12 @@ filters live in the search. The box always reads as the whole query.
 
 - Plan's Cards panel and Setup Sheet's Cards step ([Finding a card](../026-plan/items.md),
   [Setup Sheet](../029-sheets/sheet.md#setup-sheet)), through `CardSearchControls`.
+- A board's **Filter** widget ([Board widgets](../026-plan/board-widgets.md#the-filter-widget)), in its **compact**
+  form: one row, 28 px tall, in the board's own colours, scrolling sideways rather than wrapping.
 - A surface whose filters are not a search's (Card Search, a view of filters alone) keeps its filter bar.
 
 ## Building it
 
-- `FilterSearchBox` (apps/editor/components/primitives) draws the field; the caller owns what a chip and the add
-  control mean.
+- `FilterSearchBox` (`@liveworkspace/workbench` components/primitives) draws the field; the caller owns what a chip and
+  the add control mean. `compact` draws the one-row header form, and `tone` hands it a surface's own border, ink and
+  focus colours.
