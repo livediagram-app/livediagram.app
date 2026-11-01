@@ -4,6 +4,7 @@
 // overwriting the other. The same shape as the element ops (element-op.ts) for the same reason.
 import {
   isArticleId,
+  normaliseRuns,
   parseArticleBlock,
   parseArticleStyle,
   sameArticleValue,
@@ -11,6 +12,13 @@ import {
   type ArticleFlow,
   type ArticleStyle,
 } from './article-flow';
+import {
+  MAX_ARTICLE_CELL_RUNS,
+  MAX_ARTICLE_CELL_TEXT,
+  tableCellOps,
+  withTableCell,
+  type ArticleTableCellOp,
+} from './article-table';
 
 export type ArticleOp =
   // A block added or moved: it goes after `after` (null: first), or failing that before `before`
@@ -20,7 +28,10 @@ export type ArticleOp =
   | { kind: 'put'; block: ArticleBlock; after?: string | null; before?: string | null }
   | { kind: 'remove'; id: string }
   // The article's style replaced (undefined: back to the defaults).
-  | { kind: 'style'; style?: ArticleStyle };
+  | { kind: 'style'; style?: ArticleStyle }
+  // One table cell's text replaced (docs/specs/007-editor/article-pages.md "Collaboration": a table
+  // syncs cell by cell), by its table's, row's and column's ids.
+  | ArticleTableCellOp;
 
 /** Indexes (into `seq`) of one longest strictly increasing subsequence: O(n log n). */
 function longestIncreasing(seq: readonly number[]): Set<number> {
@@ -68,7 +79,10 @@ export function diffArticleFlow(before: ArticleFlow | undefined, after: ArticleF
     if (was !== undefined && stayed.has(i)) {
       const old = prevBlocks[was]!;
       if (old === b || sameArticleValue(old, b)) return;
-      ops.push({ kind: 'put', block: b });
+      // A table whose cells alone changed goes cell by cell, so a collaborator's cell keeps its text.
+      const cells = old.type === 'table' && b.type === 'table' ? tableCellOps(old, b) : null;
+      if (cells) ops.push(...cells);
+      else ops.push({ kind: 'put', block: b });
       return;
     }
     ops.push({
@@ -100,6 +114,13 @@ export function applyArticleOps(
     }
     if (op.kind === 'style') {
       style = op.style;
+      continue;
+    }
+    if (op.kind === 'cell') {
+      // A cell whose table, row or column has gone changes nothing: a change of shape won.
+      const i = blocks.findIndex((b) => b.id === op.block);
+      const table = blocks[i];
+      if (table?.type === 'table') blocks[i] = withTableCell(table, op.row, op.col, op.runs);
       continue;
     }
     const at = blocks.findIndex((b) => b.id === op.block.id);
@@ -142,7 +163,16 @@ export function parseArticleOps(v: unknown): ArticleOp[] | null {
     const o = raw as Record<string, unknown> | null;
     if (!o || typeof o !== 'object') continue;
     if (o.kind === 'remove' && isArticleId(o.id)) out.push({ kind: 'remove', id: o.id });
-    else if (o.kind === 'style') {
+    else if (o.kind === 'cell') {
+      if (!isArticleId(o.block) || !isArticleId(o.row) || !isArticleId(o.col)) continue;
+      out.push({
+        kind: 'cell',
+        block: o.block,
+        row: o.row,
+        col: o.col,
+        runs: normaliseRuns(o.runs, MAX_ARTICLE_CELL_TEXT, MAX_ARTICLE_CELL_RUNS),
+      });
+    } else if (o.kind === 'style') {
       const style = parseArticleStyle(o.style);
       out.push(style ? { kind: 'style', style } : { kind: 'style' });
     } else if (o.kind === 'put') {

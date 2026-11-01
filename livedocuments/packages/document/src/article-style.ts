@@ -2,7 +2,7 @@
 // (docs/specs/007-editor/article-pages.md "Article style", "Type"): every field's default, and
 // the looks an article can start from. Pure; the editor turns the result into CSS variables and
 // the exports read the same numbers.
-import { articlesOf } from './article-flow';
+import { articlesOf, sameArticleValue } from './article-flow';
 import { withArticleFlow } from './article-pages';
 import { pagesOf, withPages } from './page';
 import type { Tab } from './index';
@@ -145,6 +145,9 @@ function withArticleLook(style: ArticleStyle | undefined, look: ArticleLookId): 
     ...(style?.accent ? { accent: style.accent } : {}),
     ...(style?.margins ? { margins: style.margins } : {}),
     ...(style?.pageNumbers !== undefined ? { pageNumbers: style.pageNumbers } : {}),
+    ...(style?.header ? { header: style.header } : {}),
+    ...(style?.footer ? { footer: style.footer } : {}),
+    ...(style?.differentFirstPage ? { differentFirstPage: true as const } : {}),
     look,
     ...fields,
   };
@@ -160,9 +163,19 @@ export function articleMarginPx(style: ArticleStyle | undefined): number {
  *  starts under it (Narrow's 48 would). */
 export const ARTICLE_TOP_MIN_PX = 72;
 
-/** An article's top margin, in canvas px: its margin, never less than ARTICLE_TOP_MIN_PX. */
+/** The band a header takes above the text, under the page toolbar's room (docs/specs/007-editor/article-pages.md
+ *  "Headers and footers"). */
+export const ARTICLE_HEADER_BAND_PX = 32;
+
+/** The header's band on an article's pages, in canvas px: ARTICLE_HEADER_BAND_PX with a header, else 0. */
+export function articleHeaderBandPx(style: ArticleStyle | undefined): number {
+  return style?.header ? ARTICLE_HEADER_BAND_PX : 0;
+}
+
+/** An article's top margin, in canvas px: its margin, never less than ARTICLE_TOP_MIN_PX, nor less than
+ *  that and the header's band when it has a header. */
 export function articleTopMarginPx(style: ArticleStyle | undefined): number {
-  return Math.max(articleMarginPx(style), ARTICLE_TOP_MIN_PX);
+  return Math.max(articleMarginPx(style), ARTICLE_TOP_MIN_PX + articleHeaderBandPx(style));
 }
 
 /** The body text's line height in canvas px: the pitch ruled lines are drawn at. */
@@ -172,11 +185,11 @@ export function articleBodyLinePx(style: ArticleStyle | undefined): number {
 }
 
 const sameFields = (was: ArticleStyle | undefined, patch: Partial<ArticleStyle>): boolean =>
-  (Object.keys(patch) as (keyof ArticleStyle)[]).every((k) => was?.[k] === patch[k]);
+  (Object.keys(patch) as (keyof ArticleStyle)[]).every((k) => sameArticleValue(was?.[k], patch[k]));
 
 /**
  * An article's style changed (docs/specs/007-editor/article-pages.md "Article style"): a look
- * sets every field it has (keeping the accent, margins and page numbers); one field changed is
+ * sets every field it has (keeping the accent, margins, page numbers, header and footer); one field changed is
  * that field alone, and the article no longer names a look. Choosing Notebook rules the article's
  * pages (their Lines pattern); leaving it takes the lines away again. One tab edit.
  */
