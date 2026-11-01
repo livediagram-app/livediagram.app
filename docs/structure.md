@@ -8,7 +8,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ account-menu             the signed-in account menu, for liveworkspace.app and every app
 │  ├─ agent-verbs              the parts of every product's CLI and MCP verbs that read no element union: addressing, refusals, argv lines
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
-│  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, rate-limit keys, link unfurls, refusal logs, the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
+│  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
 │  ├─ brand                    every app's logo drawn once: the Living Prism and wordmark, as React and as SVG strings
