@@ -328,8 +328,10 @@ describe('New Team', () => {
 
   it('is not offered to a guest, nor without a TeamsHost', async () => {
     page({ kind: 'all' }, fakeHost(), { signedIn: false, signInHref: '/sign-in' });
-    expect(await screen.findByRole('link', { name: /Sign in to access Teams/ })).toBeTruthy();
+    const nudge = await screen.findByRole('link', { name: /Sign in to access Teams/ });
     expect(screen.queryByRole('treeitem', { name: 'New Team' })).toBeNull();
+    // Outside the Spaces tree, which holds only treeitems (axe aria-required-children).
+    expect(nudge.closest('[role="tree"]')).toBeNull();
   });
 
   it('reads the teams list once as the page opens, and a team only when its view opens', async () => {

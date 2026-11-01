@@ -280,10 +280,14 @@ function SidebarGroup({
   title,
   first = false,
   children,
+  after,
 }: {
   title: string;
   first?: boolean;
   children: ReactNode;
+  // Below the group's rows, outside its tree: a tree holds only treeitems (and their groups), so a link there is
+  // read as a broken tree.
+  after?: ReactNode;
 }) {
   const id = useId();
   return (
@@ -299,6 +303,7 @@ function SidebarGroup({
       <ul role="tree" aria-labelledby={id}>
         {children}
       </ul>
+      {after}
     </section>
   );
 }
@@ -497,7 +502,10 @@ export function Sidebar() {
           badgeLabel={sharedCount === undefined ? undefined : `${sharedCount} shared with you`}
         />
       </SidebarGroup>
-      <SidebarGroup title="Spaces">
+      <SidebarGroup
+        title="Spaces"
+        after={!signedIn && signInHref ? <SidebarSignInNudge href={signInHref} /> : null}
+      >
         <SidebarRow
           icon={<MyWorkIcon />}
           tone="sky"
@@ -568,9 +576,7 @@ export function Sidebar() {
             badgeTone="brand"
           />
         ) : null}
-        {!signedIn && signInHref ? (
-          <SidebarSignInNudge href={signInHref} />
-        ) : canRun ? (
+        {!signedIn && signInHref ? null : canRun ? (
           <SidebarRow
             icon={<PlusIcon />}
             label={SIDEBAR_LABELS.newTeam}
