@@ -16,6 +16,7 @@ import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../d
 import { getParticipant } from '../liveworkspace/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
+import { pushItemOf, pushNewComments } from '../liveworkspace/push';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
@@ -152,6 +153,18 @@ export async function handleTabPut(
         ),
       );
     }
+    // Phone notifications for the writer's new comments (docs/specs/014-identity/phone-notifications.md), email or
+    // not. A token never gets here (refuseTokenTabPut), so this is always a person's save.
+    ctx.waitUntil?.(
+      pushNewComments(env, {
+        document: pushItemOf(existing),
+        tabId,
+        authorId: owner,
+        authorName: writerParticipant?.name ?? null,
+        next: sanitised.elements,
+        previous: existingTab?.elements ?? [],
+      }),
+    );
     // Echo what was just written instead of reading it back; folder is link metadata the client
     // strips before persisting, so it is absent by design.
     return json({

@@ -77,7 +77,8 @@ import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
 import { documentMayServeImage } from '../db/image-grants';
 import { indexService } from '../index-service';
-import { notifyActionAssigned, notifyDocumentJoin, notifyMentioned } from '../email/notifications';
+import { notifyDocumentJoin, notifyMentioned } from '../email/notifications';
+import { actionNotices, type NoticeDocument } from '../liveworkspace/action-notices';
 import type { ActionNotice, MentionNotice } from '../document-client';
 import {
   checkCommunityPost,
@@ -315,6 +316,7 @@ export class DocumentRoom extends DurableObject<Env> {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
           DOCUMENT_ROOM: this.localNamespace(env.DOCUMENT_ROOM),
+          ROOM_PEOPLE: () => this.roomPeople(),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage);
@@ -832,9 +834,8 @@ export class DocumentRoom extends DurableObject<Env> {
   async notifyAction(documentId: string, input: ActionNotice): Promise<boolean> {
     const document = await this.noticeDocument(documentId);
     if (!document) return false;
-    this.state.waitUntil(
-      notifyActionAssigned(this.requireEnv(), { ...input, document }).catch(() => {}),
-    );
+    for (const work of actionNotices(this.requireEnv(), document, input))
+      this.state.waitUntil(work);
     return true;
   }
 
@@ -842,16 +843,21 @@ export class DocumentRoom extends DurableObject<Env> {
     const document = await this.noticeDocument(documentId);
     if (!document) return false;
     this.state.waitUntil(
-      notifyMentioned(this.requireEnv(), { ...input, document }).catch(() => {}),
+      notifyMentioned(this.requireEnv(), {
+        ...input,
+        document: { id: document.id, name: document.name },
+      }).catch(() => {}),
     );
     return true;
   }
 
-  private async noticeDocument(documentId: string): Promise<{ id: string; name: string } | null> {
+  private async noticeDocument(documentId: string): Promise<NoticeDocument | null> {
     this.bindDocument(documentId);
     if (!this.hasSchema()) return null;
     const meta = await readDocumentMeta(this.requireEnv(), documentId);
-    return meta ? { id: documentId, name: meta.name } : null;
+    return meta
+      ? { id: documentId, name: meta.name, ownerId: meta.ownerId, teamId: meta.teamId }
+      : null;
   }
 
   // A closed account's name off this canvas (document-anonymise.ts): the index's person purge, through the api.
@@ -1757,6 +1763,15 @@ export class DocumentRoom extends DurableObject<Env> {
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
     this.broadcastPresence(ws);
+  }
+
+  // The person tags of the hello'd sessions: who is looking at the canvas now, whom a phone notification skips
+  // (docs/specs/014-identity/phone-notifications.md).
+  private roomPeople(): Set<string> {
+    const tags = new Set<string>();
+    for (const session of this.liveSessions().values())
+      if (session.personTag) tags.add(session.personTag);
+    return tags;
   }
 
   // Every hello'd session with a live socket, by presence id: what the selection store answers

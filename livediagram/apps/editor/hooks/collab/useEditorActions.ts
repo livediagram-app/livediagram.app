@@ -73,6 +73,12 @@ type EditorActionsDeps = {
     assigneeMemberId?: string;
     actionName: string;
     description: string;
+    // The dialog's Email box: false sends the phone notification alone
+    // (docs/specs/014-identity/phone-notifications.md).
+    email: boolean;
+    // Where the action is, for the notification's link.
+    tabId: string;
+    elementId: string;
   }) => void;
 };
 
@@ -213,15 +219,20 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
         card ? [...list, action].slice(0, ACTION_CARD_MAX) : [action],
       );
       track('Action', 'Created', input.notifyEmail ? 'EmailOn' : 'EmailOff');
-      // Email needs a team context (the endpoint verifies shared
-      // membership); a self-assignment has none and never notifies.
-      if (input.notifyEmail && input.teamId) {
+      // A notice needs a team context (the endpoint verifies shared
+      // membership); a self-assignment has none and never notifies. The
+      // phone notification goes either way, the email only when its box is
+      // ticked (docs/specs/014-identity/phone-notifications.md).
+      if (input.teamId) {
         deps.notify({
           teamId: input.teamId,
           assigneeUserId: input.assignee.userId,
           assigneeMemberId: input.assignee.memberId,
           actionName: name,
           description: input.description.trim(),
+          email: input.notifyEmail,
+          tabId: deps.activeId,
+          elementId,
         });
       }
     } else {
@@ -247,13 +258,16 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
       // Only a NEW assignee gets the email offer (docs/specs/012-collaboration/assigned-actions.md §3): an edit
       // that keeps the assignee sends nothing, and a self-assignment
       // has no team context to email through.
-      if (reassigned && input.notifyEmail && input.teamId) {
+      if (reassigned && input.teamId) {
         deps.notify({
           teamId: input.teamId,
           assigneeUserId: input.assignee.userId,
           assigneeMemberId: input.assignee.memberId,
           actionName: name,
           description: input.description.trim(),
+          email: input.notifyEmail,
+          tabId: deps.activeId,
+          elementId,
         });
       }
     }

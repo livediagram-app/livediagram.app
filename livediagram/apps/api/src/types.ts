@@ -183,4 +183,9 @@ export type Env = {
 // worker's bindings plus `DOCUMENT_DB`, the document's own SQLite behind the D1 surface (@liveworkspace/index-app item-db.ts).
 // Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
 // the worker reaches content through the document's Durable Object instead.
-export type DocumentEnv = Env & { DOCUMENT_DB: D1Database };
+// `ROOM_PEOPLE`: the person tags of the sessions in the canvas's room right now, so a phone notification skips someone
+// already looking at it (docs/specs/014-identity/phone-notifications.md).
+export type DocumentEnv = Env & {
+  DOCUMENT_DB: D1Database;
+  ROOM_PEOPLE?: () => ReadonlySet<string>;
+};
