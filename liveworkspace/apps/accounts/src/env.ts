@@ -14,6 +14,11 @@ export interface Env {
   // Cloudflare Email Service's send_email binding. Required in staging and production; without it, development
   // logs each email.
   EMAIL?: SendEmail;
+  // The send window the onboarding series, invitation reminders and token warnings wait for (send-window.ts):
+  // `<Day>-<Day> HH:00-HH:00`, or `always` for none; unset, Mon-Fri 09:00-21:00. And the zone of a recipient whose
+  // zone isn't known; unset, Europe/London. For self-hosting: neither is set in wrangler.toml.
+  EMAIL_SEND_WINDOW?: string;
+  EMAIL_DEFAULT_TIME_ZONE?: string;
   // Both set turns on "Continue with Google"; either missing leaves email codes only.
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;

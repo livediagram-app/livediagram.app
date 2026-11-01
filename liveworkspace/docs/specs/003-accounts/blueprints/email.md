@@ -44,7 +44,7 @@ as `List-Unsubscribe`.
 | Deletion code       | an app asks before closing an account       | `<code> is your code to delete your liveworkspace account`     | the asking client's app, else liveworkspace                          | no                             |
 | Team invitation     | an admin invites; reminders at stage 1 to 3 | `<who> invited you to <team> on liveworkspace` (`Reminder: …`) | accept at `/explorer/invites`; decline at `/join/decline?token=`     | no                             |
 | Invitation response | someone accepts or declines                 | `<responder> accepted\|declined your invitation to <team>`     | `/explorer/team?id=`; unsubscribe `/explorer?settings=notifications` | `notifyInviteResponse` (`all`) |
-| Token expiring      | daily, a week before                        | `Your liveworkspace API token expires soon`                    | `/explorer?settings=tokens`                                          | no                             |
+| Token expiring      | a week before, in the send window           | `Your liveworkspace API token expires soon`                    | `/explorer?settings=tokens`                                          | no                             |
 | Welcome             | right after sign-up, caught up every 15 min | `Welcome to liveworkspace`                                     | liveworkspace's frame, links to the home app                         | no                             |
 | Week 1              | ~7 days in                                  | `Find your way around the Explorer`                            | as above                                                             | `notifyTips`                   |
 | Week 2              | ~14 days in                                 | `Bring your team into your work`                               | as above                                                             | `notifyTips`                   |
@@ -79,8 +79,31 @@ they are.
   first, by its partial index; one send at a time. A stage is claimed (stamped) before sending (`taken` if another
   run got it); `notifyTips` set to `0` in `all` keeps the stamp and sends nothing (`skipped`); a failed send clears
   the stamp, `send_attempts + 1` (`[lifecycle] giving up …` at the third), else a success resets it.
-- The frequent cron runs only `welcome`; the daily runs the order `welcome`, `activation`, `week1`, `week2`,
+- The frequent cron runs only `welcome`; the hourly runs the order `welcome`, `activation`, `week1`, `week2`,
   `winback`. Logged `[lifecycle] onboarding emails`.
+- Every stage but `welcome` adds the send window's filter on `u.timeZone` to its due query (below); when no zone is
+  inside, that stage's query isn't run and it counts nothing.
+
+### The send window (`send-window.ts`)
+
+- `SEND_WINDOW`: `{ days: Mon to Fri, start 09:00, end 21:00, zone: 'Europe/London' }`. A local time is inside when
+  its weekday is a window day and `start <= hh:mm < end`, in the zone, by `Intl.DateTimeFormat` (`hourCycle: h23`), so
+  DST moves with the zone.
+- `parseTimeZone(value)`: a string of at most 64 characters naming a zone `Intl` accepts, answered as the runtime's
+  name for it (`resolvedOptions().timeZone`) when that is in the known list, else the name as given when it is;
+  anything else `null`. The known list is `Intl.supportedValuesOf('timeZone')` and `UTC`.
+- `parseSendWindow(spec, zone)`: `always` (no window), else `^(Sun|Mon|…)-(Sun|…) (\d\d):00-(\d\d):00$` with start
+  before end, at most 24; a day range wraps (`Sat-Mon`). Unparsable: the default, warned `[email] EMAIL_SEND_WINDOW does not parse; using the default` (and alike for `EMAIL_DEFAULT_TIME_ZONE`).
+  `sendWindowOf(env)` reads `EMAIL_SEND_WINDOW` and `EMAIL_DEFAULT_TIME_ZONE`, cached per value.
+- `windowFilter(column, window, now)`: `null` for an `always` window (no filter), `'closed'` when no zone is inside
+  (the caller runs no query). Otherwise one fragment and one bind: `<col> IN (SELECT value FROM json_each(?))` over
+  the inside zones when the default zone is outside, or `(<col> IS NULL OR <col> NOT IN (SELECT value FROM
+json_each(?)))` over the outside zones when it is inside. The split is worked out once per instant (the run's
+  queries share it), with one `Intl.DateTimeFormat` per zone kept for the isolate (at most the known list).
+- The session sighting (`index.ts`, `withSessionColour` in `profiles.ts`): on `GET /api/auth/get-session` with a
+  user, an `X-Time-Zone` that `parseTimeZone` accepts is written in the colour read's batch
+  (`UPDATE "user" SET timeZone = ?2 WHERE id = ?1 AND timeZone IS NOT ?2`). liveworkspace.app sends it from
+  `lib/session.ts` and the sign-in flow's `/get-session` calls (`timeZoneHeader()` in `lib/accounts.ts`).
 - Each email sent is `Email·Sent·<Welcome|Activation|Week1|Week2|WinBack>` under the home app; none is counted when
   there is no home app.
 
@@ -112,20 +135,23 @@ the team's people.
 
 ## Errors and edge cases
 
-| Case                               | Behaviour                                             |
-| ---------------------------------- | ----------------------------------------------------- |
-| No binding outside development     | the send throws; the caller logs it                   |
-| An address failing three days      | it leaves every due list for good (`send_attempts` 3) |
-| The inline welcome racing the cron | the claim lets one send                               |
-| Tips turned off                    | stamped, never sent                                   |
-| An unknown account sighted         | never "first"                                         |
+| Case                                | Behaviour                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------- |
+| No binding outside development      | the send throws; the caller logs it; the hourly windowed sweeps don't run |
+| Recipient outside the send window   | stays due; goes in the first hourly run inside it                         |
+| No zone known / unknown stored zone | timed by the default zone (`Europe/London`)                               |
+| An address failing three days       | it leaves every due list for good (`send_attempts` 3)                     |
+| The inline welcome racing the cron  | the claim lets one send                                                   |
+| Tips turned off                     | stamped, never sent                                                       |
+| An unknown account sighted          | never "first"                                                             |
 
 ## Testing
 
 | Test                                                                          | Pins                                                                                            |
 | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/accounts/src/email.test.ts`                               | `codeEmail`; `sendCodeEmail`; each team and token email in the frame, escaped, with a text part |
-| `liveworkspace/apps/accounts/src/lifecycle.test.ts` (19)                      | starting the series; the welcome; the series; telemetry; the emails                             |
+| `liveworkspace/apps/accounts/src/lifecycle.test.ts`                           | starting the series; the welcome; the series; the send window; telemetry; the emails            |
+| `liveworkspace/apps/accounts/src/send-window.test.ts`                         | the window's edges, weekends, DST both ways, zones parsed and refused, the config, the filter   |
 | `liveworkspace/apps/accounts/src/account-apps.test.ts` (4)                    | sightings; milestones; emails                                                                   |
 | `liveworkspace/apps/accounts/src/notify.test.ts` (4)                          | `readNotifySettings`; `teamPeople`                                                              |
 | `liveworkspace/apps/accounts/src/signup-app.test.ts` (4)                      | the app a sign-up came through                                                                  |
@@ -134,7 +160,9 @@ the team's people.
 ## Constants and configuration
 
 `ACTIVATION_DELAY_MS` 3 d, `WINBACK_QUIET_MS` 4 weeks, `SWEEP_LIMIT` 100, `MAX_SEND_ATTEMPTS` 3, `STAGE_ORDER`,
-`MAX_WAITING` 1,000 (`lifecycle.ts`); `MAX_EMAIL_IDS` 100 (`account-apps.ts`); `MAX_NOTIFY_OWNERS` 100,
+`MAX_WAITING` 1,000 (`lifecycle.ts`); `SEND_WINDOW` Mon to Fri 09:00 to 21:00, `DEFAULT_TIME_ZONE` `Europe/London`,
+`MAX_TIME_ZONE_LENGTH` 64 (`send-window.ts`), vars `EMAIL_SEND_WINDOW` and `EMAIL_DEFAULT_TIME_ZONE` (unset in both
+environments: the defaults); `MAX_EMAIL_IDS` 100 (`account-apps.ts`); `MAX_NOTIFY_OWNERS` 100,
 `MAX_NOTIFY_KEYS` 8 (`notify.ts`); `EMAIL_SEND_TIMEOUT_MS` 10 s (`packages/email`); `JOIN_NOTIFY_THROTTLE_MS` 15 min,
 `NOTIFY_EMAIL_DEDUPE_MS` 24 h, `NOTIFY_EMAILS_PER_SENDER_PER_HOUR` 60 (`packages/auth-client/src/notify.ts`). Var
 `EMAIL_FROM` `sign-in@liveplanner.app` in both environments; binding `[[send_email]] EMAIL`.
@@ -144,3 +172,6 @@ the team's people.
 - `ACC15`: three failed sends in a row take an account off every due list for good; a success before then resets
   the count.
 - `ACC16`: a series email for someone who has opened no app speaks for liveworkspace and is not counted under any app.
+- `ACC18`: the send window is whole hours (the sweeps run hourly); a window that would cross midnight
+  (`21:00-09:00`) doesn't parse and the default is used.
+- `ACC19`: an invited address is timed by the zone of the account with that address, else the default.

@@ -16,7 +16,11 @@ accounts Worker for every app ([liveworkspace/docs/specs/003-accounts/accounts.m
 "Onboarding emails"). livedocuments keeps no lifecycle table and runs no sweep; it
 reports when someone saves a document they own (`reportActivity`: a genuine
 create, and each summary push from a document's room) so the series knows who
-is active.
+is active. The series after the welcome, invitation reminders and the token warning wait
+for the recipient's weekday daytime (Monday to Friday, 09:00 to 21:00 in their
+own time zone, Europe/London when it isn't known; accounts.md "The send
+window"). livedocuments' own
+emails below are never held.
 
 **Transactional: always send (when the feature is on):**
 

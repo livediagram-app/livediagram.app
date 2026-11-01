@@ -59,6 +59,10 @@ describe("the header's session", () => {
       picture: null,
     });
     expect(call).toHaveBeenCalledTimes(1);
+    // With the browser's time zone, which the accounts Worker keeps for the send window.
+    expect(call).toHaveBeenCalledWith('/get-session', undefined, {
+      'x-time-zone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
   });
 
   it('is null for Automatic, and for a colour that is not safe to paint', async () => {

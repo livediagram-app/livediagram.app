@@ -10,6 +10,7 @@ import {
   nextUrl,
   returnPath,
   signedOAuthQuery,
+  timeZoneHeader,
   signInHref,
 } from './accounts';
 
@@ -155,5 +156,24 @@ describe("on an app's own address", () => {
     const home = at('https://liveworkspace.app');
     expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(next);
     expect(home).not.toHaveBeenCalled();
+  });
+});
+
+describe('timeZoneHeader', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("sends the browser's IANA zone, and nothing when the browser won't say", () => {
+    vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
+      timeZone: 'America/New_York',
+    } as Intl.ResolvedDateTimeFormatOptions);
+    expect(timeZoneHeader()).toEqual({ 'x-time-zone': 'America/New_York' });
+    vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
+      timeZone: '',
+    } as Intl.ResolvedDateTimeFormatOptions);
+    expect(timeZoneHeader()).toEqual({});
+    vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockImplementation(() => {
+      throw new RangeError('no ICU');
+    });
+    expect(timeZoneHeader()).toEqual({});
   });
 });

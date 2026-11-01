@@ -74,10 +74,15 @@ parse is read as `{}`.
 
 Each step runs in `step()`: a throw logs `[accounts] cron step failed: <name>` and the run goes on.
 
-| Cron           | Steps, in order                                                                                                                                                                               |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*/15 * * * *` | 1. `index purges`: up to 25 `pending_purges` rows sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                   |
-| `17 9 * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then the token Timeline notes (and a flush), then `server events`; 6. `idle guests`. |
+| Cron           | Steps, in order                                                                                                                                                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*/15 * * * *` | 1. `index purges`: up to 25 `pending_purges` rows sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                                                                          |
+| `17 * * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then, in the 09:17 UTC run only, the token Timeline notes (and a flush); then `server events`; 6. in the 09:17 UTC run only, `idle guests`. |
+
+The hourly run's emails keep to the send window ([email.md](email.md) "The send window"): the window is read from
+`EMAIL_SEND_WINDOW` and `EMAIL_DEFAULT_TIME_ZONE` once per run (`sendWindowOf`). Without an `EMAIL` binding outside
+development (`emailOn`), steps 3 to 5 send nothing: the lifecycle and token steps are skipped and the invitation
+sweep only expires.
 
 Details: [teams.md](teams.md), [tokens.md](tokens.md), [email.md](email.md),
 [sessions-and-guests.md](sessions-and-guests.md).
@@ -335,7 +340,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Rate limit `WORKBENCH_LIMITER`    | 30 per 60 s                                                                                                                  |
 | Rate limit `LEGACY_GUEST_LIMITER` | 10 per 60 s                                                                                                                  |
 | Email `EMAIL`                     | `send_email`                                                                                                                 |
-| Crons                             | `17 9 * * *`, `*/15 * * * *`                                                                                                 |
+| Crons                             | `17 * * * *`, `*/15 * * * *`                                                                                                 |
 | Var `ENVIRONMENT`                 | `production`                                                                                                                 |
 | Var `BASE_URL`                    | `https://www.liveworkspace.app`                                                                                              |
 | Var `INDEX_URL`                   | `https://www.liveworkspace.app/api/index`                                                                                    |
@@ -366,7 +371,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Rate limit `WORKBENCH_LIMITER`    | 30 per 60 s                                                         |
 | Rate limit `LEGACY_GUEST_LIMITER` | 10 per 60 s                                                         |
 | Email `EMAIL`                     | `send_email`                                                        |
-| Crons                             | `17 9 * * *`, `*/15 * * * *`                                        |
+| Crons                             | `17 * * * *`, `*/15 * * * *`                                        |
 | Var `ENVIRONMENT`                 | `staging`                                                           |
 | Var `BASE_URL`                    | `https://staging.liveworkspace.app`                                 |
 | Var `INDEX_URL`                   | `https://staging.liveworkspace.app/api/index`                       |
@@ -406,6 +411,7 @@ Migrations, in order:
   (docs/migration.md step 8)
 - `0015_drop_migration_notice.sql`: drops `migration_notice` once that email was sent, so the recipients'
   addresses aren't kept
+- `0016_user_time_zone.sql`: `user.timeZone`, the account's IANA zone for the send window
 
 | Table                   | Columns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Created in                  |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
@@ -433,7 +439,7 @@ Migrations, in order:
 | `team`                  | `id`, `name`, `organisation`, `createdAt`, `updatedAt`, `deletedAt`, `rev`, `inviteLinkNonce`, `inviteLinkHash`, `inviteLinkExpiresAt`                                                                                                                                                                                                                                                                                                                                                                                                                                          | `0002_teams_and_tokens.sql` |
 | `team_member`           | `id`, `teamId`, `userId`, `email`, `role`, `status`, `invitedBy`, `createdAt`, `updatedAt`, `rev`, `declineTokenHashes`, `clockStartedAt`, `reminder1SentAt`, `reminder2SentAt`, `reminder3SentAt`, `reminderAttempts`, `expiredAt`                                                                                                                                                                                                                                                                                                                                             | `0002_teams_and_tokens.sql` |
 | `team_seq`              | `id`, `value`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `0002_teams_and_tokens.sql` |
-| `user`                  | `id`, `name`, `email`, `emailVerified`, `image`, `createdAt`, `updatedAt`, `givenName`, `familyName`                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `0001_better_auth.sql`      |
+| `user`                  | `id`, `name`, `email`, `emailVerified`, `image`, `createdAt`, `updatedAt`, `givenName`, `familyName`, `timeZone (0016)`                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `0001_better_auth.sql`      |
 | `verification`          | `id`, `identifier`, `value`, `expiresAt`, `createdAt`, `updatedAt`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `0001_better_auth.sql`      |
 
 ## Constants and configuration: named constants
@@ -602,7 +608,8 @@ Worker as a whole:
 
 ## Defaults ledger
 
-- `ACC1`: the spec names no cron minute; the daily run is `17 9 * * *` and the frequent one `*/15 * * * *`.
+- `ACC1`: the spec names no cron minute; the hourly run is `17 * * * *` (its daily steps in the 09:17 UTC run) and the
+  frequent one `*/15 * * * *`.
 - `ACC2`: closing an account answers `200` once the account is gone, whether or not the index, the workbench or
   Drive took their part; the index's is retried, Drive's is not.
 - `ACC3`: a telemetry event with no app (someone who signed up on liveworkspace.app) is not counted.

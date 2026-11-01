@@ -189,6 +189,35 @@ describe("the account menu's colour", () => {
     const refused = new Response('no', { status: 401 });
     expect(await withSessionColour(refused, db)).toBe(refused);
   });
+
+  it("keeps the browser's time zone on the account, writing only when it changed", async () => {
+    await write('user_ada', { color: '#f97316' });
+    const zoneOf = () =>
+      (
+        sql.prepare('SELECT timeZone FROM "user" WHERE id = ?').get('user_ada') as {
+          timeZone: string | null;
+        }
+      ).timeZone;
+    const sighting = (zone: string | null) =>
+      withSessionColour(Response.json({ user: { id: 'user_ada' } }), db, zone);
+    expect(zoneOf()).toBeNull();
+    const answered = await sighting('America/New_York');
+    expect(((await answered.json()) as { user: { color: unknown } }).user.color).toBe('#f97316');
+    expect(zoneOf()).toBe('America/New_York');
+    // The same zone again: the guarded write changes no row.
+    const changes = () => (sql.prepare('SELECT total_changes() AS n').get() as { n: number }).n;
+    const before = changes();
+    await sighting('America/New_York');
+    expect(changes()).toBe(before);
+    await sighting('Europe/London');
+    expect(zoneOf()).toBe('Europe/London');
+    // No zone sent (or one parseTimeZone refused, which index.ts passes as null) leaves it as it was.
+    await sighting(null);
+    expect(zoneOf()).toBe('Europe/London');
+    // Signed out: nothing is written.
+    await withSessionColour(Response.json(null), db, 'Asia/Tokyo');
+    expect(zoneOf()).toBe('Europe/London');
+  });
 });
 
 describe('a guest signing in', () => {

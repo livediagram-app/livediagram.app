@@ -138,11 +138,13 @@ class_name = "WorkbenchStore"
 tag = "v1"
 new_sqlite_classes = ["WorkbenchStore"]
 
-# The daily sweep of team invitations: reminders, then expiry (src/teams.ts sweepInvitations), and of
-# guests who can never come back (src/guest-sweep.ts). Every 15 minutes: closed accounts' index purges
-# not yet taken are sent again (src/index-purge.ts).
+# Hourly: the onboarding series, team invitations' expiry and reminders (src/teams.ts sweepInvitations) and the
+# token expiry warnings, each email only to whoever's local time is inside the send window (src/send-window.ts);
+# the 09:17 UTC run also notes expiring tokens on the Timeline and sweeps guests who can never come back
+# (src/guest-sweep.ts). Every 15 minutes: closed accounts' index purges not yet taken are sent again
+# (src/index-purge.ts), and failed welcomes are tried again.
 [triggers]
-crons = ["17 9 * * *", "*/15 * * * *"]
+crons = ["17 * * * *", "*/15 * * * *"]
 
 [env.staging]
 name = "liveworkspace-accounts-staging"
@@ -226,4 +228,4 @@ tag = "v1"
 new_sqlite_classes = ["WorkbenchStore"]
 
 [env.staging.triggers]
-crons = ["17 9 * * *", "*/15 * * * *"]
+crons = ["17 * * * *", "*/15 * * * *"]

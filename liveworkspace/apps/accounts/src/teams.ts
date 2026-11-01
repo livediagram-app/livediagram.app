@@ -21,7 +21,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // "Reminders and expiry").
 export const REMINDER_AGES_MS = [1 * DAY_MS, 7 * DAY_MS, 21 * DAY_MS] as const;
 export const INVITATION_TTL_MS = 28 * DAY_MS;
-// Per daily sweep: invitations expired, and reminders sent per stage.
+// Per sweep: invitations expired, and reminders sent per stage.
 export const EXPIRE_BATCH = 500;
 export const REMINDER_BATCH = 100;
 // Failed reminder sends in a row before an invitation leaves the reminder queue for good.
@@ -46,6 +46,7 @@ const ok = <T>(value: T): Result<T> => ({ ok: true, value });
 const fail = (status: number, error: string): Result<never> => ({ ok: false, status, error });
 
 import { profilePictureOf } from '@liveworkspace/sites/picture';
+import { SEND_WINDOW, windowFilter, type SendWindow } from './send-window.ts';
 import { isSettingsApp, type SettingsApp } from './settings.ts';
 import { cleanText } from './text.ts';
 import {
@@ -1374,14 +1375,17 @@ export interface ReminderEmail {
   declineToken: string;
 }
 
-// The daily sweep (liveworkspace/docs/specs/003-accounts/accounts.md "Reminders and expiry"). First, invitations nobody
-// answered in 28 days expire, whether or not email is set up. Then each one still waiting hears the
+// The hourly sweep (liveworkspace/docs/specs/003-accounts/accounts.md "Reminders and expiry"). First, invitations
+// nobody answered in 28 days expire, whether or not email is set up. Then each one still waiting hears the
 // latest reminder it is due (1, 7 and 21 days after its clock started), one email per invitation per
-// run; a reminder it skipped is stamped 0. A failed send is tried again tomorrow, three times at most.
+// run; a reminder it skipped is stamped 0. A reminder waits for the send window of the account at the invited
+// address, by the default zone for an address with no account (send-window.ts). A failed send is tried again in
+// the next run inside the window, three times at most.
 export async function sweepInvitations(
   db: D1Database,
   send: ((email: ReminderEmail) => Promise<void>) | null,
   now = Date.now(),
+  window: SendWindow | null = SEND_WINDOW,
 ): Promise<{ expired: number; reminded: number; failed: number }> {
   const [, expiry] = await db.batch<unknown>([
     db.prepare(BUMP),
@@ -1398,6 +1402,8 @@ export async function sweepInvitations(
   let reminded = 0;
   let failed = 0;
   if (!send) return { expired, reminded, failed };
+  const inWindow = windowFilter('r.timeZone', window, now);
+  if (inWindow === 'closed') return { expired, reminded, failed };
 
   // Latest stage first, so an invitation that fell behind gets only the reminder it is due now.
   for (let stage = REMINDER_AGES_MS.length; stage >= 1; stage--) {
@@ -1409,12 +1415,20 @@ export async function sweepInvitations(
         `SELECT m.id, m.email, m.declineTokenHashes, t.name AS teamName, u.name AS inviterName,
                 ${INVITER_APP} AS inviterApp
          FROM team_member m JOIN team t ON t.id = m.teamId LEFT JOIN "user" u ON u.id = m.invitedBy
+         LEFT JOIN "user" r ON r.email = m.email
          WHERE m.status = 'invited' AND t.deletedAt IS NULL
            AND m.clockStartedAt <= ? AND m.clockStartedAt > ?
            AND m.${column} IS NULL AND m.reminderAttempts < ?
+           ${inWindow ? `AND ${inWindow.sql}` : ''}
          ORDER BY m.clockStartedAt, m.id LIMIT ?`,
       )
-      .bind(now - from, now - until, MAX_REMINDER_ATTEMPTS, REMINDER_BATCH)
+      .bind(
+        now - from,
+        now - until,
+        MAX_REMINDER_ATTEMPTS,
+        ...(inWindow ? [inWindow.bind] : []),
+        REMINDER_BATCH,
+      )
       .all<{
         id: string;
         email: string;

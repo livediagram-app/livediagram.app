@@ -4,7 +4,7 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 
 | #     | Blueprint             | Default applied                                                                                                                                                      |
 | ----- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ACC1  | accounts              | the spec names no cron minute; the daily run is `17 9 * * *` and the frequent one `*/15 * * * *`.                                                                    |
+| ACC1  | accounts              | the spec names no cron minute; the hourly run is `17 * * * *` (its daily steps in the 09:17 UTC run) and the frequent one `*/15 * * * *`.                            |
 | ACC2  | accounts              | closing an account answers `200` once the account is gone, whether or not the index, the workbench or Drive took their part; the index's is retried, Drive's is not. |
 | ACC3  | accounts              | a telemetry event with no app (someone who signed up on liveworkspace.app) is not counted.                                                                           |
 | ACC4  | sign-in               | the spec names no per-address limit; sending a code is held to 3 a minute per address and 10 a minute per network, checking to 10 a minute per network.              |
@@ -21,3 +21,5 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | ACC15 | email                 | three failed sends in a row take an account off every due list for good; a success before then resets the count.                                                     |
 | ACC16 | email                 | a series email for someone who has opened no app speaks for liveworkspace and is not counted under any app.                                                          |
 | ACC17 | accounts              | checking and closing with a deletion code share `CODE_IP_LIMITER`'s 10 a minute, keyed by account, since the caller is always an app's server.                       |
+| ACC18 | email                 | the send window is whole hours (the sweeps run hourly); a window that would cross midnight (`21:00-09:00`) doesn't parse and the default is used.                    |
+| ACC19 | email                 | an invited address is timed by the zone of the account with that address, else the default.                                                                          |

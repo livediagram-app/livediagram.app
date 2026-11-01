@@ -22,6 +22,10 @@ Teams and API tokens belong to the liveworkspace account
 do their emails: team invitations, their reminders and Decline links, the answer an invitation's
 admins are told, and the warning a week before an API token expires all come from the accounts Worker
 ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Teams", "API tokens").
+The series after the welcome, invitation reminders and the token warning wait
+for the recipient's weekday daytime (Monday to Friday, 09:00 to 21:00 in their
+own time zone, Europe/London when it isn't known; accounts.md "The send
+window"). livedesign's own emails below are never held.
 
 livedesign sends the rest, two kinds:
 

@@ -39,6 +39,9 @@ const SECRET = 'test-secret-test-secret-test-secret';
 const BASE = 'https://liveworkspace.app';
 const DAY = 24 * 60 * 60 * 1000;
 const T0 = Date.UTC(2026, 9, 1);
+// The sweep with no send window, for the tests of what it sends rather than when (send-window.test.ts has when).
+const sweepAnyHour = (...[db, send, now]: Parameters<typeof sweepInvitations>) =>
+  sweepInvitations(db, send, now, null);
 
 const ADA: Actor = { id: 'user_ada', email: 'ada@example.com' };
 const BEA: Actor = { id: 'user_bea', email: 'bea@example.com' };
@@ -233,15 +236,15 @@ describe('reminders and expiry', () => {
     const sent: ReminderEmail[] = [];
     const send = async (email: ReminderEmail) => void sent.push(email);
 
-    expect(await sweepInvitations(db, send, T0 + DAY / 2)).toEqual({
+    expect(await sweepAnyHour(db, send, T0 + DAY / 2)).toEqual({
       expired: 0,
       reminded: 0,
       failed: 0,
     });
-    await sweepInvitations(db, send, T0 + DAY);
-    await sweepInvitations(db, send, T0 + 2 * DAY);
-    await sweepInvitations(db, send, T0 + 7 * DAY);
-    await sweepInvitations(db, send, T0 + 21 * DAY);
+    await sweepAnyHour(db, send, T0 + DAY);
+    await sweepAnyHour(db, send, T0 + 2 * DAY);
+    await sweepAnyHour(db, send, T0 + 7 * DAY);
+    await sweepAnyHour(db, send, T0 + 21 * DAY);
     expect(sent.map((e) => e.stage)).toEqual([1, 2, 3]);
     expect(sent[0]).toMatchObject({ to: BEA.email, teamName: 'Design' });
 
@@ -249,7 +252,7 @@ describe('reminders and expiry', () => {
     expect(await readDeclineToken(db, sent[2]!.declineToken)).toMatchObject({ status: 'invited' });
     expect(await readDeclineToken(db, declineToken)).toMatchObject({ status: 'invited' });
 
-    expect(await sweepInvitations(db, send, T0 + INVITATION_TTL_MS)).toMatchObject({ expired: 1 });
+    expect(await sweepAnyHour(db, send, T0 + INVITATION_TTL_MS)).toMatchObject({ expired: 1 });
     expect(await readDeclineToken(db, declineToken)).toMatchObject({ status: 'expired' });
     expect(await listMembers(db, id)).toContainEqual(
       expect.objectContaining({ id: member.id, status: 'declined', expired: true }),
@@ -261,9 +264,9 @@ describe('reminders and expiry', () => {
     const id = await team();
     await invite(id, BEA.email!);
     const sent: ReminderEmail[] = [];
-    await sweepInvitations(db, async (e) => void sent.push(e), T0 + 8 * DAY);
+    await sweepAnyHour(db, async (e) => void sent.push(e), T0 + 8 * DAY);
     expect(sent.map((e) => e.stage)).toEqual([2]);
-    await sweepInvitations(db, async (e) => void sent.push(e), T0 + 9 * DAY);
+    await sweepAnyHour(db, async (e) => void sent.push(e), T0 + 9 * DAY);
     expect(sent).toHaveLength(1);
   });
 
@@ -275,14 +278,50 @@ describe('reminders and expiry', () => {
       tries++;
       throw new Error('down');
     };
-    for (let day = 1; day <= 5; day++) await sweepInvitations(db, failing, T0 + day * DAY);
+    for (let day = 1; day <= 5; day++) await sweepAnyHour(db, failing, T0 + day * DAY);
     expect(tries).toBe(3);
+  });
+
+  it("waits for the send window of the invited address's account, or London's for an address with none", async () => {
+    const id = await team();
+    sql.prepare('UPDATE "user" SET timeZone = ? WHERE id = ?').run('America/Los_Angeles', BEA.id);
+    await invite(id, BEA.email!);
+    await invite(id, 'dee@example.com');
+    const sent: ReminderEmail[] = [];
+    const send = async (email: ReminderEmail) => void sent.push(email);
+    const HOUR = 60 * 60 * 1000;
+    // Friday 2026-10-02, a day in: 08:17 UTC is 09:17 in London (BST) and 01:17 in Los Angeles (PDT).
+    const friday = T0 + DAY + 8 * HOUR + 17 * 60 * 1000;
+    await sweepInvitations(db, send, friday - HOUR); // 08:17 in London
+    expect(sent).toEqual([]);
+    await sweepInvitations(db, send, friday);
+    expect(sent.map((e) => e.to)).toEqual(['dee@example.com']);
+    await sweepInvitations(db, send, friday + 8 * HOUR); // 09:17 in Los Angeles
+    expect(sent.map((e) => e.to)).toEqual(['dee@example.com', BEA.email]);
+    // Hourly runs after send nothing again.
+    for (let at = friday + 9 * HOUR; at < friday + 2 * DAY; at += HOUR) {
+      await sweepInvitations(db, send, at);
+    }
+    expect(sent).toHaveLength(2);
+  });
+
+  it('expires invitations even when no zone is inside the window', async () => {
+    const id = await team();
+    await invite(id, BEA.email!);
+    // Saturday 2026-10-31 12:00 UTC, past the 28 days: the weekend everywhere.
+    const saturday = Date.UTC(2026, 9, 31, 12);
+    let tries = 0;
+    expect(await sweepInvitations(db, async () => void tries++, saturday)).toMatchObject({
+      expired: 1,
+      reminded: 0,
+    });
+    expect(tries).toBe(0);
   });
 
   it('expires invitations even when email is off', async () => {
     const id = await team();
     await invite(id, BEA.email!);
-    expect(await sweepInvitations(db, null, T0 + INVITATION_TTL_MS)).toMatchObject({ expired: 1 });
+    expect(await sweepAnyHour(db, null, T0 + INVITATION_TTL_MS)).toMatchObject({ expired: 1 });
   });
 });
 
@@ -598,11 +637,11 @@ describe('counting team emails, teams and tokens', () => {
         stage: reminder.stage,
         app: reminder.inviterApp,
       });
-    await sweepInvitations(db, send, T0 + DAY);
+    await sweepAnyHour(db, send, T0 + DAY);
     emailDown = true;
-    expect(await sweepInvitations(db, send, T0 + 7 * DAY)).toMatchObject({ failed: 1 });
+    expect(await sweepAnyHour(db, send, T0 + 7 * DAY)).toMatchObject({ failed: 1 });
     emailDown = false;
-    await sweepInvitations(db, send, T0 + 21 * DAY);
+    await sweepAnyHour(db, send, T0 + 21 * DAY);
     await flushServerEvents(env);
     expect(counted()).toEqual([
       'livediagram.app Email·Sent·TeamInviteReminder1',
