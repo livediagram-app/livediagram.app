@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { lucideCheck } from '@liveworkspace/icons/lucide';
 import { nextPageId, type Page } from '@livedesign/design';
-import { Button, DialogHeader, lucideGlyph, Tooltip } from '@livedesign/ui';
+import { Button, DialogHeader, lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livedesign/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
@@ -77,7 +77,7 @@ function SizeTile({
         aria-hidden
         className={`absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full ${
           on
-            ? 'bg-brand-600 text-white'
+            ? `bg-brand-700 text-white ${SOLID_BRAND_DARK}`
             : 'border border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900'
         }`}
       >
