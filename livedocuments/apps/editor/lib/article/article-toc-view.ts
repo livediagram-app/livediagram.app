@@ -209,9 +209,12 @@ export class TocView implements NodeView {
       const list = el('div', 'article-toc-list');
       list.setAttribute('role', 'list');
       for (const line of lines) {
+        // A list item holding a button: a button given the listitem role stopped being a button to a
+        // screen reader (axe aria-allowed-role), so its press was never offered.
+        const item = el('div', 'article-toc-item');
+        item.setAttribute('role', 'listitem');
         const b = el('button', 'article-toc-entry');
         b.type = 'button';
-        b.setAttribute('role', 'listitem');
         b.dataset.tocTarget = line.id;
         b.style.setProperty('--toc-level', String(line.level - 1));
         b.setAttribute(
@@ -223,7 +226,8 @@ export class TocView implements NodeView {
           el('span', 'article-toc-leader'),
           el('span', 'article-toc-page', line.page === null ? '' : String(line.page)),
         );
-        list.appendChild(b);
+        item.appendChild(b);
+        list.appendChild(item);
       }
       parts.push(list);
     }
