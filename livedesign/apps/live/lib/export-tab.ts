@@ -118,6 +118,7 @@ export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
+import { expandForExport } from './component-registry';
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).
 export const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
@@ -185,9 +186,11 @@ export function renderedExportScale(canvas: HTMLCanvasElement): number {
 }
 
 export async function renderTabToCanvas(
-  tab: Tab,
+  source: Tab,
   opts: ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
+  // Each instance drawn as its main's elements (docs/specs/009-elements/components.md "How an instance draws").
+  const tab = expandForExport(source);
   const frame = opts.page
     ? pageExportFrame(opts.page, {
         transparentPaper: opts.transparentPaper,
@@ -488,7 +491,9 @@ function withMotion(el: BoxedElement, motion: SvgMotion | undefined, svg: string
   return `<g class="lvd-svg-motion ${xmlEscape(m.className)}" style="${xmlEscape(m.style)}">${svg}</g>`;
 }
 
-export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
+export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string {
+  // Each instance drawn as its main's elements (docs/specs/009-elements/components.md "How an instance draws").
+  const tab = expandForExport(source);
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
   const frame = opts.page
@@ -619,7 +624,9 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 
 // A downloaded SVG carries its own typefaces: the reader hasn't got
 // Permanent Marker installed, and an @import is dead in an offline viewer.
-export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
+export async function exportTabAsSvg(source: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
+  // Expanded first so the faces an instance's words write in are embedded too.
+  const tab = expandForExport(source);
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   const fontCss =
     opts.fontCss ??

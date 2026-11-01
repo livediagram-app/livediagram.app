@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { TabWindowFace } from './tab-window/TabWindowFace';
+import { InstanceFace } from './component/InstanceFace';
 import type { ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livedesign/design';
 import {
@@ -127,7 +128,10 @@ export function ElementFaceRouter({
   const surface = useElementSurface(element.id);
   return (
     <>
-      {element.type === 'shape' && element.shape === 'tab-window' ? (
+      {element.type === 'shape' && element.shape === 'instance' ? (
+        /* An instance (docs/specs/009-elements/components.md): its main's elements, drawn inside its box. */
+        <InstanceFace element={element} surface={surface} />
+      ) : element.type === 'shape' && element.shape === 'tab-window' ? (
         /* Tab window (docs/specs/009-elements/tab-window.md): another tab of the design, live, fitted inside it. */
         <TabWindowFace
           element={element}

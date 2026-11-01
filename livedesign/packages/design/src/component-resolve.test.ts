@@ -155,6 +155,8 @@ describe('expandInstances', () => {
     ]);
     expect(out).toMatchObject({ id: 't' });
     expect(out.elements[1]).toMatchObject({ id: 'inst', opacity: 0 });
+    // A second pass changes nothing.
+    expect(expandInstances(out, lookup)).toBe(out);
   });
 
   it('drops an instance in an edit session and draws a missing main as a dashed frame', () => {

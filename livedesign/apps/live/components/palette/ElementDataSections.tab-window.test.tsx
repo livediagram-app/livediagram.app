@@ -45,6 +45,8 @@ const flags = {
 
 it("offers a tab window's Shows list, so its tab can be changed", () => {
   editor.value = {
+    // No component actions here: the Component section stays out of the way.
+    componentActions: { canEdit: false },
     tabs,
     activeTab: tabs[0],
     can: { level: 'edit' },

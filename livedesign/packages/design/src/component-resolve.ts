@@ -212,15 +212,15 @@ export function missingComponentFrame(
 /** A tab with every instance expanded, for an export: an instance whose main resolves stays (the box arrows pin to;
  *  renderers draw nothing for it) followed by its resolved elements; one with its edit session open is dropped (its
  *  members draw); one with no main becomes the missing frame. Returns `tab` itself when it holds no instance.
- *  Linear in the tab's elements plus the elements of the mains it shows. */
+ *  Linear in the tab's elements plus the elements of the mains it shows. Expanding twice is expanding once. */
 export function expandInstances<T extends { elements: Element[] }>(
   tab: T,
   lookup: ComponentLookup,
 ): T {
-  if (!tab.elements.some(isInstanceShape)) return tab;
+  if (!tab.elements.some(isUnexpanded)) return tab;
   const out: Element[] = [];
   for (const el of tab.elements) {
-    if (!isInstanceShape(el)) {
+    if (!isUnexpanded(el)) {
       out.push(el);
       continue;
     }
@@ -237,9 +237,11 @@ export function expandInstances<T extends { elements: Element[] }>(
   return { ...tab, elements: out };
 }
 
-// Any instance-kind shape, with or without a main id.
-function isInstanceShape(el: Element): el is ShapeElement {
-  return el.type === 'shape' && el.shape === 'instance';
+// An instance-kind shape (with or without a main id) not yet expanded. An expanded one is kept at opacity 0, so a
+// second pass (an SVG export expands, then renders) leaves it be; an instance a person faded to nothing draws
+// nothing either way.
+function isUnexpanded(el: Element): el is ShapeElement {
+  return el.type === 'shape' && el.shape === 'instance' && el.opacity !== 0;
 }
 
 /** One element of a main an instance may override, and what it takes: text, colours and an icon. */

@@ -327,3 +327,24 @@ describe('arrow keys between pages', () => {
     expect(onStepPage).not.toHaveBeenCalled();
   });
 });
+
+// Components (docs/specs/009-elements/components.md "Shortcuts"): matched on the key's code, as Alt changes the letter.
+describe('Make Component and Detach chords', () => {
+  it("runs them for an Editor, never Cmd+K's search, and does nothing for a Viewer", () => {
+    const onMakeComponent = vi.fn();
+    const onDetachComponent = vi.fn();
+    const onOpenSearch = vi.fn();
+    const { bag } = deps({ onMakeComponent, onDetachComponent, onOpenSearch });
+    const view = renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('k', { metaKey: true, altKey: true, code: 'KeyK' });
+    press('b', { metaKey: true, altKey: true, code: 'KeyB' });
+    expect(onMakeComponent).toHaveBeenCalledOnce();
+    expect(onDetachComponent).toHaveBeenCalledOnce();
+    expect(onOpenSearch).not.toHaveBeenCalled();
+    view.unmount();
+    const viewer = deps({ onMakeComponent, isReadOnly: true });
+    renderHook(() => useEditorKeyboardShortcuts(viewer.bag));
+    expect(press('k', { metaKey: true, altKey: true, code: 'KeyK' }).defaultPrevented).toBe(true);
+    expect(onMakeComponent).toHaveBeenCalledOnce();
+  });
+});
