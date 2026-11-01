@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { fillSeries } from './fill';
 import { csvSafeField, isCsvPhoneNumber, parseCsv, toCsv } from './csv';
 import { serialFromDate } from './dates';
@@ -171,9 +172,10 @@ describe('CSV', () => {
     expect(csvSafeField('- x')).toBe("'- x");
     // A field that is a sign then 100,000 spaces backtracked quadratically before (seconds); now well under a budget.
     const field = `-${' '.repeat(100_000)}x`;
-    const t0 = performance.now();
-    expect(csvSafeField(field)).toBe(`'${field}`);
-    expect(performance.now() - t0).toBeLessThan(50);
+    let safe = '';
+    // CPU time (docs/ci.md "Speed budgets"): a linear check, well under the budget; a backtracking one is not.
+    expect(cpuMsOf(() => (safe = csvSafeField(field)))).toBeLessThan(50);
+    expect(safe).toBe(`'${field}`);
   });
   // A phone number holds no formula, so a download keeps its + as quoted text with no ' (sheet.md "CSV").
   it('writes a phone number as quoted text, keeping its +, and still makes a formula inert', () => {
@@ -191,8 +193,9 @@ describe('CSV', () => {
       ['+44 20 7946 0958'],
     ]);
     const field = `+${' '.repeat(100_000)}x`;
-    const t0 = performance.now();
-    expect(csvSafeField(field)).toBe(`'${field}`);
-    expect(performance.now() - t0).toBeLessThan(50);
+    let safe = '';
+    // CPU time (docs/ci.md "Speed budgets"): a linear check, well under the budget; a backtracking one is not.
+    expect(cpuMsOf(() => (safe = csvSafeField(field)))).toBeLessThan(50);
+    expect(safe).toBe(`'${field}`);
   });
 });
