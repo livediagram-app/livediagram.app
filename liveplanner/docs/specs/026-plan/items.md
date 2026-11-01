@@ -338,7 +338,7 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
 - **In the item panel**: the ⋯ menu offers **Repeat** (an Editor's, on a plan in an account; **Edit Repeat** and
   **Stop Repeating** on a repeating card). It opens the **Repeat** dialog: **Every** (Day, Weekday, Week, Month),
   the week's days as toggles (Monday first) or the month's date, **Ends** (Never or On a date), **Lands In** (Starting
-  State, or one of the board's columns), and **Cancel** and **Repeat** (**Save** when editing; Stop Repeating too).
+  State, or one of the board's columns the card's type uses, as its Status picker offers), and **Cancel** and **Repeat** (**Save** when editing; Stop Repeating too).
   The Details column then shows the rule in words with the next day ("Repeats every week on Mon and Thu · Next Thu
   5 Nov"), and for an Editor **Edit** and **Stop** beside it.
 - **Where it runs**: from the plan's Durable Object alarm, never a sweep over every plan, so a plan without a
