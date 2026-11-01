@@ -329,7 +329,8 @@ example }` feeds autocomplete, the hint card and the help article; a test checks
 - **Spills**: a formula's array value claims the rectangle below and right; a claimed cell with its own input, or
   another formula's claim, makes the formula `#SPILL!` (reason names the blocker). Claims are tracked in a
   `SpillMap` (cell → owner); a change to a cell inside a claim re-checks its owner.
-- **Budget**: each recalc counts cell reads; past `RECALC_READS_MAX` it stops, marks unreached dirty cells
+- **Budget**: each recalc counts cell reads, one counter for the whole recalculation (reset by the first read after a
+  change, not by each top-level read; format rules and links evaluated by `evaluateAt` keep a budget of their own); past `RECALC_READS_MAX` it stops, marks unreached dirty cells
   `#NUM!` with reason `too_large`, and returns `{ truncated: true }` (the editor toasts the spec's line once). A
   single range of more than `RANGE_CELLS_MAX` cells read at once is `#NUM!`. Whole-column refs read only to the last
   filled row (`layoutSize` plus the sheet's filled extent).
