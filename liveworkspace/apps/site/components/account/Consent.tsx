@@ -40,9 +40,13 @@ export function Consent() {
   return (
     <AccountCard narrow>
       <AccountHeading title="Allow access">
-        {/* A client id is one unbroken word, up to whatever its maker chose: it wraps rather than leaving the card. */}
-        <strong className="break-all text-slate-900 dark:text-slate-100">{client}</strong> wants to
-        use your liveworkspace account.
+        {/* A client id is one unbroken word, up to whatever its maker chose: it wraps rather than leaving the card.
+            It comes from the address, so it is isolated (<bdi>): a right-to-left override in it turned the whole
+            sentence after it backwards. */}
+        <strong className="break-all text-slate-900 dark:text-slate-100">
+          <bdi>{client}</bdi>
+        </strong>{' '}
+        wants to use your liveworkspace account.
       </AccountHeading>
       {error && <Alert tone="error">{error}</Alert>}
       <div className="flex gap-2">
