@@ -89,6 +89,11 @@ single-colour theme they fall through to the per-element helpers.
 `switchThemeElements` builds one map and shares it when both `prev` and `next` are palette themes
 (D6). The map depends only on `elements`, so sharing it is exact.
 
+A board or sheet bound to a calm-hue style preset (`isPlanPresetId(colorPreset)`, a shape element) is cleared by
+`withoutPlanPreset` before the switch walk: its `colorPreset`, `fillColor`, `strokeColor` and `textColor` are dropped
+so it follows the new tab style (docs/specs/010-palette/style-presets.md "Boards and sheets"). Only
+`switchThemeElements` does this; `recolourElementsForTheme` (a template painted with a theme) keeps the preset.
+
 New elements: `deriveNewBoxedColours` (in `apps/editor/lib/themes.ts`) gives a palette theme's new
 element the trunk colour, and never runs the walk.
 
@@ -200,26 +205,27 @@ Each fingerprint is a fixed prefix plus `key=value` pairs.
 
 Each spec rule maps to one test, and every test is deterministic.
 
-| Rule                                                     | Test                                                            | File                                        |
-| -------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------- |
-| Box-to-box edges only (E1–E3)                            | free endpoint; arrow-to-arrow and dangling pins; self-loop      | `hierarchy.test.ts`                         |
-| Roots seed branches in project order                     | root with three children                                        | `hierarchy.test.ts` (exists)                |
-| Subtree shares one index                                 | deep subtree                                                    | `hierarchy.test.ts` (exists)                |
-| Diamond keeps first index (E11)                          | two parents                                                     | `hierarchy.test.ts` (exists)                |
-| Loose elements continue the counter (E10)                | root + 2 branches + loose ⇒ index 2                             | `hierarchy.test.ts`                         |
-| Rootless loop is trunk (E4)                              | A→B→C→A                                                         | `hierarchy.test.ts`                         |
-| Depth limit (E8, I4)                                     | chain of `MAX_ELEMENTS_PER_TAB`, no throw, every node branch 0  | `hierarchy.test.ts`                         |
-| Invariants I1–I3                                         | mixed fixture: arrows absent; range; two runs equal             | `hierarchy.test.ts`                         |
-| Arrow colour follows `to`, then `from`, then trunk       | three cases                                                     | `hierarchy.test.ts` (exists)                |
-| `rootColor` fallback (E7)                                | palette theme without `rootColor`; one null field               | `theme-graph.test.ts` (new)                 |
-| Empty palette paints trunk + O2 (E5)                     | spy `console.warn`                                              | `theme-graph.test.ts`                       |
-| Wrap modulo (E9)                                         | 7 branches on a 6-entry palette                                 | `theme-graph.test.ts`                       |
-| Switch shares one map (D6)                               | `switchThemeElements` result equals two-map result              | `theme-graph.test.ts`                       |
-| O1 logged once per palette call, never for single-colour | spy `console.info`                                              | `theme-graph.test.ts`                       |
-| `contrastRatio`                                          | black/white = 21; equal = 1; order-independent; malformed = NaN | `colors.test.ts`                            |
-| Built-in contrast ≥ 4.5                                  | every palette entry + `rootColor` of every built-in             | `themes-data.test.ts` (new)                 |
-| Five built-ins, 26 total                                 | counts                                                          | `apps/editor/lib/themes.test.ts` (exists)   |
-| Colours reach the canvas + O1 in the browser             | Rainbow on a mind map: ≥ 3 palette hues, switch log             | `apps/editor/e2e/multicolour-theme.spec.ts` |
+| Rule                                                                                                                                           | Test                                                                   | File                                        |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------- |
+| Box-to-box edges only (E1–E3)                                                                                                                  | free endpoint; arrow-to-arrow and dangling pins; self-loop             | `hierarchy.test.ts`                         |
+| Roots seed branches in project order                                                                                                           | root with three children                                               | `hierarchy.test.ts` (exists)                |
+| Subtree shares one index                                                                                                                       | deep subtree                                                           | `hierarchy.test.ts` (exists)                |
+| Diamond keeps first index (E11)                                                                                                                | two parents                                                            | `hierarchy.test.ts` (exists)                |
+| Loose elements continue the counter (E10)                                                                                                      | root + 2 branches + loose ⇒ index 2                                    | `hierarchy.test.ts`                         |
+| Rootless loop is trunk (E4)                                                                                                                    | A→B→C→A                                                                | `hierarchy.test.ts`                         |
+| Depth limit (E8, I4)                                                                                                                           | chain of `MAX_ELEMENTS_PER_TAB`, no throw, every node branch 0         | `hierarchy.test.ts`                         |
+| Invariants I1–I3                                                                                                                               | mixed fixture: arrows absent; range; two runs equal                    | `hierarchy.test.ts`                         |
+| Arrow colour follows `to`, then `from`, then trunk                                                                                             | three cases                                                            | `hierarchy.test.ts` (exists)                |
+| `rootColor` fallback (E7)                                                                                                                      | palette theme without `rootColor`; one null field                      | `theme-graph.test.ts` (new)                 |
+| Empty palette paints trunk + O2 (E5)                                                                                                           | spy `console.warn`                                                     | `theme-graph.test.ts`                       |
+| Wrap modulo (E9)                                                                                                                               | 7 branches on a 6-entry palette                                        | `theme-graph.test.ts`                       |
+| A theme switch clears a board's or sheet's style preset and its colours; a hand-set board keeps its colours; a template paint keeps the preset | `switchThemeElements` / `recolourElementsForTheme` on a `plan-*` board | `theme-graph.test.ts`                       |
+| Switch shares one map (D6)                                                                                                                     | `switchThemeElements` result equals two-map result                     | `theme-graph.test.ts`                       |
+| O1 logged once per palette call, never for single-colour                                                                                       | spy `console.info`                                                     | `theme-graph.test.ts`                       |
+| `contrastRatio`                                                                                                                                | black/white = 21; equal = 1; order-independent; malformed = NaN        | `colors.test.ts`                            |
+| Built-in contrast ≥ 4.5                                                                                                                        | every palette entry + `rootColor` of every built-in                    | `themes-data.test.ts` (new)                 |
+| Five built-ins, 26 total                                                                                                                       | counts                                                                 | `apps/editor/lib/themes.test.ts` (exists)   |
+| Colours reach the canvas + O1 in the browser                                                                                                   | Rainbow on a mind map: ≥ 3 palette hues, switch log                    | `apps/editor/e2e/multicolour-theme.spec.ts` |
 
 ## Constants and configuration
 
