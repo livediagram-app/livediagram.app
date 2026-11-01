@@ -287,6 +287,16 @@ describe('the sheet toolbar', () => {
     expect(h.cell('A1')?.format?.ff).toBeUndefined();
   });
 
+  // docs/specs/004-interface-design/fonts.md "Not offered in liveplanner".
+  it('leaves Permanent Marker out of the font menu', () => {
+    width = 1000;
+    show(h);
+    pickCategory('Text');
+    fireEvent.click(screen.getByRole('button', { name: 'Font: Default' }));
+    expect(row('Caveat')).toBeTruthy();
+    expect(screen.queryByText('Permanent Marker')).toBeNull();
+  });
+
   it('offers the fonts as a menu once Font folds into More', () => {
     width = 0;
     show(h);

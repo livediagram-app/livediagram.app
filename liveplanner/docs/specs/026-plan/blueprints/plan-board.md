@@ -620,6 +620,20 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 - Card face: 8 px radius, 4 px type stripe on the left, glyph + `#key` muted 12 px, title 14 px semibold up to
   3 lines (`line-clamp`), chips row (priority dot, labels, estimate, due, votes, checklist `3/5`), assignee
   avatar bottom right. Done column cards draw at 70% opacity.
+- Lettering (`apps/editor/lib/plan-font.ts`, spec [Fonts](../../004-interface-design/fonts.md) "On boards and
+  cards"): the board root (`PlanBoardView`) and the Plan card element root (`PlanCardView`) take
+  `planBoardFontStyle(stack)`: `fontFamily: PLAN_UI_FONT` (`var(--font-sans, ui-sans-serif, system-ui, sans-serif)`)
+  plus `--plan-heading-font` (the stack) and, for Caveat, `--plan-heading-adjust` (`ex-height
+PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family: var(--plan-heading-font)`,
+  `font-size-adjust: var(--plan-heading-adjust)`, `font-synthesis-weight: none`): `BoardTitle` (on the board, not in
+  the menu box), `SlotBoardHeader`'s title, `PlanColumnHeader` / `SlotColumnHeader` / `CollapsedColumn` names, the
+  swimlane label (`PlanBoardCells`) and the card title (`PlanCardFace`, a `display: contents` wrapper round
+  `titleText`). An unset variable is invalid at computed-value time, so the heading inherits: with no tab font it
+  is the UI face. A stack whose id is in `PLANNER_EXCLUDED_FONT_IDS` sets no variable. The Dashboard page root
+  keeps `planFontStyle` (its own text in the tab face) and also sets the variables, so slot boards inherit them.
+- Font pickers: `PLANNER_FONTS` (`@liveplanner/project` `planner-fonts.ts`, `FONTS` less
+  `PLANNER_EXCLUDED_FONT_IDS`) feeds `TextTab`, `TypographySections` and `SheetToolbarMenus`; labels of a stored
+  font still read from `FONTS`, so an excluded face already set keeps its name.
 - Cursors (`components/plan/board-cursors.ts`): `planCardCursor(interactive, canEditCards)` is `grab` for an
   Editor or a Participant, `pointer` for a Viewer, nothing out of Plan mode; `planBoardBodyCursor(interactive)`
   sets `default` on the board body, which otherwise inherits the canvas's `cursor-grab`.
