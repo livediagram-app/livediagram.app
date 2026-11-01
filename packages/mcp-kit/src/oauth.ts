@@ -4,6 +4,7 @@
 // apps/editor) and hands it to the client through the standard code+PKCE exchange.
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
+import { cleanText } from '@liveworkspace/api-kit/typed-text';
 import { DEVICE_CODE_GRANT, pkceChallenge } from '@liveworkspace/api-kit/oauth';
 import { isLoopbackHostname, oauthRedirectUrl } from '@liveworkspace/api-kit/request-auth';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
@@ -68,6 +69,13 @@ function randomId(): string {
 }
 
 // A redirect target a client may register (oauthRedirectUrl: https, or http on loopback, no fragment).
+/** A client's registered name as the consent screen shows it: no bidi control (one turns the screen's own words
+ *  around it backwards), no spaces or invisible characters at its ends, at most 120 whole characters (never half an
+ *  emoji), and "MCP client" when nothing is left or none was sent. */
+export function registeredName(value: unknown): string {
+  return (typeof value === 'string' ? cleanText(value, 120) : '') || 'MCP client';
+}
+
 export function isAllowedRedirectUri(uri: string): boolean {
   return oauthRedirectUrl(uri) !== null;
 }
@@ -134,8 +142,7 @@ export function registerOauthRoutes<E extends OauthEnv>(
       );
     }
     const clientId = randomId();
-    const clientName =
-      typeof body.client_name === 'string' ? body.client_name.slice(0, 120) : 'MCP client';
+    const clientName = registeredName(body.client_name);
     const reg: ClientReg = { redirectUris: uris, clientName };
     await c.env.OAUTH_KV.put(`client:${clientId}`, JSON.stringify(reg), {
       expirationTtl: CLIENT_TTL,
@@ -190,7 +197,8 @@ export function registerOauthRoutes<E extends OauthEnv>(
       redirectUri,
       codeChallenge,
       state: q.state,
-      clientName: reg.clientName,
+      // Cleaned again: a client registered before names were cleaned keeps whatever it sent.
+      clientName: registeredName(reg.clientName),
     };
     await c.env.OAUTH_KV.put(`session:${session}`, JSON.stringify(record), {
       expirationTtl: SESSION_TTL,
@@ -207,7 +215,7 @@ export function registerOauthRoutes<E extends OauthEnv>(
     }
     return c.redirect(
       `${consentBase}/oauth/consent?session=${encodeURIComponent(session)}` +
-        `&client=${encodeURIComponent(reg.clientName)}&to=${encodeURIComponent(toHost)}`,
+        `&client=${encodeURIComponent(record.clientName)}&to=${encodeURIComponent(toHost)}`,
     );
   });
 
