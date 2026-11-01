@@ -65,13 +65,18 @@ export function BoardWidgetPicker({
   // Said to a screen reader after each press: what was added or taken off.
   const [said, setSaid] = useState('');
 
-  // The section in view: the last whose top has reached the list's top.
+  // The section in view: the last whose top has reached the list's top; scrolled to the end, the last whose top shows
+  // (a short last section never reaches the top, yet it is the one in view).
   const spy = () => {
     const box = list.current;
     if (!box) return;
     let at: string | null = sections[0]?.key ?? null;
-    for (const el of box.querySelectorAll<HTMLElement>('[data-gallery-section]'))
-      if (el.offsetTop - box.offsetTop <= box.scrollTop + 8) at = el.dataset.gallerySection ?? at;
+    const atEnd = box.scrollHeight - box.clientHeight - box.scrollTop <= 1 && box.scrollTop > 0;
+    for (const el of box.querySelectorAll<HTMLElement>('[data-gallery-section]')) {
+      const top = sectionTop(box, el);
+      if (top <= box.scrollTop + 8 || (atEnd && top < box.scrollTop + box.clientHeight))
+        at = el.dataset.gallerySection ?? at;
+    }
     setCurrent(at);
   };
   // A search may drop the current section: back to the first, at the top.
@@ -87,7 +92,7 @@ export function BoardWidgetPicker({
     const box = list.current;
     const el = box?.querySelector<HTMLElement>(`[data-gallery-section="${key}"]`);
     if (!box || !el) return;
-    const top = el.offsetTop - box.offsetTop;
+    const top = sectionTop(box, el);
     const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if (box.scrollTo) box.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
     else box.scrollTop = top;
@@ -183,6 +188,13 @@ export function BoardWidgetPicker({
       </div>
     </AnchoredPopover>
   );
+}
+
+// Where a section starts in the list's scrolled content. Measured on screen: the list is `relative`, so a section's
+// offsetTop is already from the list, and taking the list's own offsetTop off as well left each section the gallery's
+// header height (about 50 px) short of the top, the end of the section before it showing above.
+export function sectionTop(box: HTMLElement, el: HTMLElement): number {
+  return el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
 }
 
 // The index the arrow key moves to from `at`: by where the tiles sit when laid out (the nearest in the row above or
