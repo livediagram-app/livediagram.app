@@ -9,7 +9,8 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteLogoTab, useLogoMarkerTiles } from './PaletteLogoTab';
 import { tileById, type PaletteTileDef } from './palette-tile-defs';
 import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
-import { defaultFill, FILL_CHOICE_KEY, fillToolTile } from './FillToolRow';
+import { fillToolTile } from './FillToolRow';
+import { defaultFill, FILL_CHOICE_KEY, resetFillColour } from './fill-tool-colour';
 import { track } from '@/lib/telemetry';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -17,6 +18,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  resetFillColour();
   vi.mocked(track).mockClear();
 });
 
@@ -39,17 +41,32 @@ const actions = {
   beginFreehand: vi.fn(),
 } as unknown as PaletteTileActions;
 
-function Tab({ pendingDraw }: { pendingDraw: PendingDraw | null }) {
+function Tab({
+  pendingDraw,
+  extra = [],
+}: {
+  pendingDraw: PendingDraw | null;
+  extra?: PaletteTileDef[];
+}) {
   const markers = useLogoMarkerTiles(true);
-  const tiles = [tileById('logo:pen')!, tileById('tools:pencil')!, ...markers] as PaletteTileDef[];
+  const tiles = [
+    tileById('logo:pen')!,
+    tileById('tools:pencil')!,
+    ...markers,
+    ...extra,
+  ] as PaletteTileDef[];
   return <PaletteLogoTab tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-function show(ctx: ReturnType<typeof editor>, pendingDraw: PendingDraw | null = null) {
+function show(
+  ctx: ReturnType<typeof editor>,
+  pendingDraw: PendingDraw | null = null,
+  extra: PaletteTileDef[] = [],
+) {
   const wrap = ({ children }: { children: ReactNode }) => (
     <EditorContext.Provider value={ctx as never}>{children}</EditorContext.Provider>
   );
-  render(<Tab pendingDraw={pendingDraw} />, { wrapper: wrap });
+  render(<Tab pendingDraw={pendingDraw} extra={extra} />, { wrapper: wrap });
 }
 
 describe('PaletteLogoTab', () => {
@@ -151,9 +168,17 @@ describe('PaletteLogoTab', () => {
     expect(ctx.beginDraw).toHaveBeenCalledWith({ type: 'fill', fill: '#123456' });
   });
 
-  it('has no Fill row outside an editor, and its tile never presses on its own', () => {
+  it('has no Fill row outside an editor, and its tile picks up only where the editor can', () => {
     render(<Tab pendingDraw={null} />);
     expect(screen.queryByRole('option', { name: 'Fill' })).toBeNull();
     expect(tileHandler(fillToolTile('#123456'), actions, null)()).toBeUndefined();
+    const beginFill = vi.fn();
+    tileHandler(fillToolTile('#123456'), { ...actions, beginFill }, null)();
+    expect(beginFill).toHaveBeenCalledWith('#123456');
+  });
+
+  it('draws the catalogue’s Fill tile once, as its own row', () => {
+    show(editor(), null, [fillToolTile('#123456')]);
+    expect(screen.getAllByRole('option', { name: 'Fill' })).toHaveLength(1);
   });
 });

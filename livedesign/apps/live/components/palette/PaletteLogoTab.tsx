@@ -113,7 +113,8 @@ export function PaletteLogoTab({
 }) {
   const editor = useContext(EditorContext);
   const model = editor?.markerPens;
-  const tools = tiles.filter((t) => t.action.type !== 'marker');
+  // The Fill tile (the category flyout's) is drawn here as its own row, after the markers.
+  const tools = tiles.filter((t) => t.action.type !== 'marker' && t.action.type !== 'fill');
   const markers = tiles.filter((t) => t.action.type === 'marker');
   return (
     <div data-palette-logo="" className="flex flex-col gap-2">

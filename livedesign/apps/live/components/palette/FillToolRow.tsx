@@ -1,17 +1,14 @@
 'use client';
 
-// The Fill tool's row in a logo page's Draw (docs/specs/023-draw-mode/drawing-tools.md "The Fill
-// tool", docs/specs/007-editor/logo-pages.md "The Logo palette"): a paint bucket over the colour it
-// pours. A press picks it up, held until another tool or Escape puts it down; pressed again while
-// held, it opens its colour, the one colour picker, whose pick re-arms it at once.
-import { useState } from 'react';
+// The Fill tool in a logo page's Draw (docs/specs/023-draw-mode/drawing-tools.md "The Fill tool",
+// docs/specs/007-editor/logo-pages.md "The Logo palette"): a paint bucket over the colour it pours.
+// As a row (the palette's Draw tab) a press picks it up, held until another tool or Escape puts it
+// down; pressed again while held, it opens its colour, the one colour picker, whose pick re-arms it
+// at once. As a tile (the category flyout) a press picks it up and its side panel holds the picker.
+import { useContext, useState } from 'react';
 import { FillToolIcon } from '@livedesign/ui';
-import { standardColours, type CanvasSurface } from '@livedesign/design';
-import {
-  FILL_TRANSPARENT,
-  loadFillChoice,
-  saveFillChoice,
-} from '@liveworkspace/workbench/lib/fill-choice';
+import { EditorContext } from '@/app/design/[id]/EditorContext';
+import { FILL_TRANSPARENT } from '@liveworkspace/workbench/lib/fill-choice';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, standardGroup } from '@/components/colour/colour-options';
 import { useThemeColours } from '@/components/colour/useThemeColours';
@@ -20,20 +17,14 @@ import { WhiteboardFlyout } from '@/components/canvas/whiteboard/WhiteboardFlyou
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import { isFillIntent, type PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
+import { setFillColour, useFillColour } from './fill-tool-colour';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRow } from './PaletteToolRows';
 
-// Where this browser keeps the Fill tool's colour.
-export const FILL_CHOICE_KEY = 'livedesign:v2:fill';
 const ANCHOR = 'logo-fill';
 
-/** Until one is picked the bucket pours the soft Blue, drawn for the canvas it pours on. */
-export function defaultFill(surface: CanvasSurface): string {
-  return standardColours('soft', surface).find((c) => c.name === 'blue')!.hex;
-}
-
-/** The Fill tool's tile, as its row shows it: its colour on the bucket. */
+/** The Fill tool's tile, as its row and the category flyout show it: its colour on the bucket. */
 export function fillToolTile(colour: string): PaletteTileDef {
   return {
     id: 'logo:fill',
@@ -44,9 +35,53 @@ export function fillToolTile(colour: string): PaletteTileDef {
     description:
       'A paint bucket: click inside a closed shape, or a marker loop whose ends meet, to fill it. It stays in your hand until you pick another tool or press Escape.',
     noTint: true,
-    action: { type: 'fill' },
+    action: { type: 'fill', fill: colour },
     icon: <FillToolIcon colour={colour === FILL_TRANSPARENT ? null : colour} size={18} />,
   };
+}
+
+/** The Fill tool for the category flyout: its tile in this browser's colour, and its pick-up (none
+ *  outside an editor, where the palette offers no Fill). */
+export function useLogoFillTool(): {
+  tile: PaletteTileDef | null;
+  begin: ((fill: string) => void) | undefined;
+} {
+  const editor = useContext(EditorContext);
+  const fill = useFillColour();
+  if (!editor) return { tile: null, begin: undefined };
+  return {
+    tile: fillToolTile(fill),
+    begin: (next) => {
+      editor.beginDraw({ type: 'fill', fill: next });
+      track('Draw', 'Selected', 'Fill');
+    },
+  };
+}
+
+/** The bucket's colour, the one colour picker: a pick is kept for this browser, reported, and
+ *  handed to `onPick` (which picks the bucket up in it), even when it is the colour already kept. */
+export function FillColourPicker({ onPick }: { onPick: (fill: string) => void }) {
+  const surface = useCanvasSurface();
+  const theme = useThemeColours();
+  const yours = useDesignColours();
+  const fill = useFillColour();
+  return (
+    <ColourPicker
+      label="Fill colour"
+      value={fill}
+      leading={[noColour(FILL_TRANSPARENT, 'No fill')]}
+      theme={theme}
+      standard={[standardGroup('soft', surface, 'hex')]}
+      yours={yours}
+      onPick={(next) => {
+        if (next !== fill) {
+          setFillColour(next);
+          track('Draw', 'Changed', 'FillColour');
+        }
+        onPick(next);
+      }}
+    />
+  );
 }
 
 export function FillToolRow({
@@ -61,23 +96,12 @@ export function FillToolRow({
   // The palette body the flyout is placed against.
   scope: string;
 }) {
-  const surface = useCanvasSurface();
-  const theme = useThemeColours();
-  const yours = useDesignColours();
-  const [choice, setChoice] = useState(() => loadFillChoice(FILL_CHOICE_KEY));
+  const fill = useFillColour();
   const [open, setOpen] = useState(false);
-  const fill = choice ?? defaultFill(surface);
   const held = isFillIntent(pendingDraw);
   const pick = () => {
     beginDraw({ type: 'fill', fill });
     track('Draw', 'Selected', 'Fill');
-  };
-  const setFill = (next: string) => {
-    if (next === fill) return;
-    setChoice(next);
-    saveFillChoice(FILL_CHOICE_KEY, next);
-    if (held) beginDraw({ type: 'fill', fill: next });
-    track('Draw', 'Changed', 'FillColour');
   };
   return (
     <>
@@ -97,14 +121,12 @@ export function FillToolRow({
           scope={scope}
           onClose={() => setOpen(false)}
         >
-          <ColourPicker
-            label="Fill colour"
-            value={fill}
-            leading={[noColour(FILL_TRANSPARENT, 'No fill')]}
-            theme={theme}
-            standard={[standardGroup('soft', surface, 'hex')]}
-            yours={yours}
-            onPick={setFill}
+          <FillColourPicker
+            onPick={(next) => {
+              // Held already: a new colour re-arms it; the same one changes nothing.
+              if (pendingDraw?.type === 'fill' && pendingDraw.fill !== next)
+                beginDraw({ type: 'fill', fill: next });
+            }}
           />
         </WhiteboardFlyout>
       ) : null}
