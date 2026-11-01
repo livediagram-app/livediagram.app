@@ -11,6 +11,7 @@
 
 import type { ShapeKind } from './index';
 import { isSankeyShape } from './sankey-model';
+import { REACTIONS, type Reaction } from '@liveworkspace/avatar/reaction-bursts';
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
 // branch on "is this a progress element" without repeating the literal pair.
@@ -252,12 +253,9 @@ export function clampRating(value: number): number {
 // (@liveworkspace/model-core/progress-label), so the clamp-and-round can't drift.
 export { clampPercent } from '@liveworkspace/model-core/progress-label';
 
-// Reaction pads (docs/specs/009-elements/reaction-pad.md). Five reactions, chosen to cover distinct THINGS
-// PEOPLE MEAN rather than five ways of saying "nice": celebrate a result,
-// admire an idea, show warmth to a person, thank a speaker, mark the moment a
-// thing shipped. A sixth would be decoration.
-export const REACTIONS = ['confetti', 'sparkles', 'hearts', 'applause', 'fireworks'] as const;
-export type Reaction = (typeof REACTIONS)[number];
+// Reaction pads (docs/specs/009-elements/reaction-pad.md). The five reactions, their names and glyphs, are
+// @liveworkspace/avatar's: a walking character throws the same bursts (docs/specs/008-canvas/avatar-mode.md).
+export * from '@liveworkspace/avatar/reaction-bursts';
 
 // Each reaction's colour, a pair of hues from one end of its glow to the other
 // (docs/specs/009-elements/reaction-pad.md "The look"). Fixed rather than the theme's: the reaction's
@@ -268,24 +266,6 @@ export const REACTION_HUES: Record<Reaction, readonly [string, string]> = {
   hearts: ['#f472b6', '#a855f7'],
   applause: ['#fbbf24', '#fb923c'],
   fireworks: ['#818cf8', '#e879f9'],
-};
-
-/** Menu + hover card name for a reaction. */
-export const REACTION_LABEL: Record<Reaction, string> = {
-  confetti: 'Confetti',
-  sparkles: 'Sparkles',
-  hearts: 'Hearts',
-  applause: 'Applause',
-  fireworks: 'Fireworks',
-};
-
-/** The glyph the pad wears, and the particle each burst throws. */
-export const REACTION_EMOJI: Record<Reaction, string> = {
-  confetti: '🎉',
-  sparkles: '✨',
-  hearts: '💜',
-  applause: '👏',
-  fireworks: '🎆',
 };
 
 /** One line on what the reaction is FOR, for the menu tile. */

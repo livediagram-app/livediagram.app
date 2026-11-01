@@ -18,6 +18,8 @@ const DIRS = [
   'lib',
   // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
   '../../../packages/workbench/src',
+  // Avatar mode's shared code (@liveworkspace/avatar) renders here too.
+  '../../../packages/avatar/src',
 ];
 const COUNT_IN_BRACKETS = / \(\$\{[^}]*(\.length|\bcount\b|\btotal\b)[^}]*\}\)/;
 

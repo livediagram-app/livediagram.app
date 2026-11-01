@@ -9,6 +9,8 @@
     "./access-levels": "./src/access-levels.ts",
     "./agent-presence": "./src/agent-presence.ts",
     "./api-tokens": "./src/api-tokens.ts",
+    "./avatar": "./src/avatar.ts",
+    "./avatar-say": "./src/avatar-say.ts",
     "./build-id": "./src/build-id.ts",
     "./catalogues": "./src/catalogues.ts",
     "./comment-threads": "./src/comment-threads.ts",
@@ -36,8 +38,8 @@
     "./tab-size": "./src/tab-size.ts",
     "./teams": "./src/teams.ts",
     "./title-case": "./src/title-case.ts",
-    "./untitled-names": "./src/untitled-names.ts",
     "./trash": "./src/trash.ts",
+    "./untitled-names": "./src/untitled-names.ts",
     "./within-reach": "./src/within-reach.ts"
   },
   "scripts": {
