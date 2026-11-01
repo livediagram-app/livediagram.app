@@ -2,7 +2,7 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   dateTimeText,
-  dateTimeTitle,
+  dateTimeZones,
   fromLocalInput,
   instantIso,
   instantOnDay,
@@ -214,15 +214,14 @@ describe('showing a moment', () => {
     expect(timeOfDayText(Date.UTC(2026, 9, 31, 17))).toBeTruthy();
   });
 
-  it('names the viewer’s zone in its tooltip, and where it was set when that is another', () => {
+  it('names the viewer’s zone, and where it was set when that is another', () => {
     const set = '2026-10-31T17:00:00Z[America/New_York]';
-    const title = dateTimeTitle(set, LONDON)!;
-    expect(title).toContain('Your time, Europe/London');
-    expect(title).toContain('Set as');
-    expect(title).toContain('America/New_York');
-    expect(dateTimeTitle(set, NEW_YORK)).not.toContain('Set as');
-    expect(dateTimeTitle('2026-10-31T17:00:00Z', LONDON)).not.toContain('Set as');
-    expect(dateTimeTitle('2026-10-31T17:00:00Z')).toContain(`Your time, ${viewerZone()}`);
-    expect(dateTimeTitle(undefined)).toBeNull();
+    const zones = dateTimeZones(set, LONDON)!;
+    expect(zones).toMatch(/^Your time, Europe\/London · Set as .* in America\/New_York$/);
+    expect(zones).toMatch(/1:00|13/);
+    expect(dateTimeZones(set, NEW_YORK)).toBe('Your time, America/New_York');
+    expect(dateTimeZones('2026-10-31T17:00:00Z', LONDON)).toBe('Your time, Europe/London');
+    expect(dateTimeZones('2026-10-31T17:00:00Z')).toBe(`Your time, ${viewerZone()}`);
+    expect(dateTimeZones(undefined)).toBeNull();
   });
 });

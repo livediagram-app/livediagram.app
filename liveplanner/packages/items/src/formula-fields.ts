@@ -9,6 +9,8 @@ import { itemAssignee, itemLabels, itemTitle, type Item, type ItemFieldValue } f
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { calculatedResultOf } from './calculated-result';
 import { durationMinutes, durationText } from './duration-fields';
+import { instantIso } from './date-time-fields';
+import { readRange } from './date-range-fields';
 import { fieldCardIds, fieldPeople, holdsSeveral } from './several-values';
 import { compileFormula } from './formula/compile';
 import { evaluateTree } from './formula/evaluate';
@@ -137,6 +139,19 @@ function customValue(run: Run, def: CustomFieldDef): FormulaValue {
     }
     case 'calculated':
       return isFormulaField(def) ? nestedFormula(run, def) : calculatedRead(run, def);
+    // A moment as its ISO 8601 instant, and a range as a list of its two ends: text, never a day, since a day depends
+    // on whose zone it is read in (item-types.md "Dates elsewhere").
+    case 'datetime':
+      return textValue(instantIso(raw));
+    case 'daterange': {
+      const r = readRange(raw);
+      return r
+        ? listValue(
+            r.timed ? [instantIso(r.start)!, instantIso(r.end)!] : [r.start, r.end],
+            def.label,
+          )
+        : null;
+    }
     default:
       // Text, Long Text, Email, Link, Choice, Colour, and any kind a later reader adds: as text, or as it is stored.
       if (Array.isArray(raw)) return listValue(raw, def.label);

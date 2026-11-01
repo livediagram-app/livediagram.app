@@ -293,16 +293,16 @@ export function dateTimeText(
   return momentText(at.ms, { tz: opts.tz, year, weekday: true });
 }
 
-// The tooltip (docs/specs/026-plan/item-types.md "Date and Time"): the moment whole, the viewer's zone named, and the
-// time it was set as in its own zone when that is another.
-export function dateTimeTitle(value: unknown, tz?: string): string | null {
+// Where a moment is read (docs/specs/026-plan/item-types.md "Date and Time"): the viewer's zone named, and the time it
+// was set as in its own zone when that is another ("Your time, Europe/London · Set as Fri 31 Oct, 13:00 in
+// America/New_York"), drawn under the panel's box.
+export function dateTimeZones(value: unknown, tz?: string): string | null {
   const at = readInstant(value);
   if (!at) return null;
   const here = tz ?? viewerZone();
-  const whole = momentText(at.ms, { tz, year: true, weekday: true });
   const own =
     at.zone && at.zone !== here
       ? ` · Set as ${momentText(at.ms, { tz: at.zone, year: false, weekday: true })} in ${at.zone}`
       : '';
-  return `${whole} · Your time, ${here}${own}`;
+  return `Your time, ${here}${own}`;
 }

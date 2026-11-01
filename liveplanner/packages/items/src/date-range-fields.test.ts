@@ -3,6 +3,7 @@ import {
   dateRangeText,
   isTimedRange,
   parseDateRange,
+  pastDue,
   rangeDays,
   rangeEndOf,
   rangeIso,
@@ -159,5 +160,32 @@ describe('showing a range', () => {
       now,
     })!;
     expect(instant).not.toContain(' to ');
+  });
+});
+
+describe('past due', () => {
+  const now = Date.UTC(2026, 9, 31, 17, 0);
+  const DT = { kind: 'datetime' as const };
+  const DR = { kind: 'daterange' as const };
+
+  it('is a moment that has passed, to the minute', () => {
+    expect(pastDue(DT, '2026-10-31T16:59:00Z', now)).toBe(true);
+    expect(pastDue(DT, '2026-10-31T17:00:00Z[Europe/London]', now)).toBe(false);
+    expect(pastDue(DT, 'nope', now)).toBe(false);
+  });
+
+  it('is a range whose end has passed: by the day for days, to the minute with times', () => {
+    expect(pastDue(DR, ['2026-10-29', '2026-10-30'], now, LONDON)).toBe(true);
+    expect(pastDue(DR, ['2026-10-29', '2026-10-31'], now, LONDON)).toBe(false);
+    // 17:00 UTC on 31 October is already 1 November in Tokyo: a range ending on the 31st has passed there.
+    expect(pastDue(DR, ['2026-10-29', '2026-10-31'], now, TOKYO)).toBe(true);
+    expect(pastDue(DR, ['2026-10-31T09:00:00Z', '2026-10-31T16:00:00Z'], now)).toBe(true);
+    expect(pastDue(DR, ['2026-10-31T09:00:00Z', '2026-10-31T18:00:00Z'], now)).toBe(false);
+    expect(pastDue(DR, undefined, now)).toBe(false);
+  });
+
+  it('is never another kind, and reads the clock by default', () => {
+    expect(pastDue({ kind: 'date' }, '2020-01-01', now)).toBe(false);
+    expect(pastDue(DT, '2020-01-01T00:00:00Z')).toBe(true);
   });
 });

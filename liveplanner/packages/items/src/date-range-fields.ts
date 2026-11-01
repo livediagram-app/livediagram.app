@@ -150,3 +150,21 @@ export function dateRangeText(
 function dayParts(day: string): [number, number, number] {
   return [Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10))];
 }
+
+// Whether a Date and Time or a Date Range has passed (docs/specs/026-plan/item-types.md "Past due"): a moment, or a
+// timed range's end, to the minute; a range of days when its last day is before today in `tz`. Never another kind.
+export function pastDue(
+  field: Pick<CustomFieldDef, 'kind'>,
+  value: ItemFieldValue | undefined,
+  now: number = Date.now(),
+  tz?: string,
+): boolean {
+  if (field.kind === 'datetime') {
+    const at = readInstant(value);
+    return at !== undefined && at.ms < now;
+  }
+  if (field.kind !== 'daterange') return false;
+  const r = readRange(value);
+  if (!r) return false;
+  return r.timed ? msOf(r.end) < now : rangeDays(value)!.end < zonedDay(now, tz);
+}

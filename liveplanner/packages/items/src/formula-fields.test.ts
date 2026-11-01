@@ -213,6 +213,28 @@ describe('formula fields', () => {
     expect(formulaValue(f('x', 'X', '{f-owner}', 'text'), c, deal, ctx)).toBe('Missing card');
   });
 
+  it('reads a Date and Time as its instant and a Date Range as its two ends', () => {
+    const event: ItemTypeDef = {
+      ...deal,
+      fields: ['title', 'f-call', 'f-when', 'f-slot'],
+      custom: [
+        { id: 'f-call', label: 'Call', kind: 'datetime' },
+        { id: 'f-when', label: 'When', kind: 'daterange' },
+        { id: 'f-slot', label: 'Slot', kind: 'daterange', withTime: true },
+      ],
+    };
+    const c = card({
+      'f-call': '2026-10-31T17:00:00Z[Europe/London]',
+      'f-when': ['2026-10-31', '2026-11-02'],
+      'f-slot': ['2026-10-31T09:00:00Z', '2026-10-31T17:00:00Z[Europe/London]'],
+    });
+    const v = (formula: string) => formulaValue(f('x', 'X', formula, 'text'), c, event, ctx);
+    expect(v('{f-call}')).toBe('2026-10-31T17:00:00Z');
+    expect(v('concat({f-when})')).toBe('2026-10-31, 2026-11-02');
+    expect(v('concat({f-slot})')).toBe('2026-10-31T09:00:00Z, 2026-10-31T17:00:00Z');
+    expect(formulaValue(f('x', 'X', '{f-when}', 'text'), card({}), event, ctx)).toBeNull();
+  });
+
   it('reads a single Person or Card value as one, and a list misused is an error naming the field', () => {
     const one: ItemTypeDef = {
       ...deal,
