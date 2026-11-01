@@ -456,6 +456,7 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export { borderOf } from './svg-render-border';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { labelTextScale, withPickedTextSize } from './label-text-scale';
