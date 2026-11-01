@@ -188,7 +188,8 @@ on the chrome surface, over the canvas, so the page never shifts for it.
   the tool and hide the card.
 
 Each tool's options are the person's own, kept in this browser; a brush's size and hardness also change with `[` and
-`]` (Shift for hardness). On a phone they are the bottom sheet the tools row opens.
+`]` (Shift for hardness). On a phone they are the bottom sheet the tools row opens, closed as the card is: a press
+outside it, Escape, or its grab handle dragged down.
 
 ### The quick panel
 
