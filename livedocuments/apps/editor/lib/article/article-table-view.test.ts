@@ -10,6 +10,7 @@ import {
 } from '@livedocuments/document';
 import { blocksToDoc, docToBlocks } from './article-convert';
 import { articleSchema as S } from './article-schema';
+import { GapCursor } from 'prosemirror-gapcursor';
 import { cellArrow } from './article-table-commands';
 import { blockIdsPlugin } from './article-plugins';
 import {
@@ -239,6 +240,19 @@ describe('Up and Down in a cell', () => {
     go(cellPos(view, 0, 0));
     expect(arrow(view, -1)).toBe(true);
     expect(view.state.selection.$from.parent.textContent).toBe('Before');
+  });
+
+  it('leave a table that ends the writing for the gap after it, where typing starts a paragraph', () => {
+    const { view } = mount([
+      { id: 'a', type: 'paragraph', runs: [{ text: 'Before' }] },
+      table(2, 2),
+    ]);
+    view.dispatch(
+      view.state.tr.setSelection(TextSelection.create(view.state.doc, cellPos(view, 1, 0))),
+    );
+    expect(arrow(view, 1)).toBe(true);
+    expect(view.state.selection).toBeInstanceOf(GapCursor);
+    expect(view.state.selection.from).toBe(view.state.doc.content.size);
   });
 
   it('leave a line within a cell, a range and the writing outside a table to the browser', () => {
