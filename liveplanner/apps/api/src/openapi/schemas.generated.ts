@@ -5472,7 +5472,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "ai",
       "undo",
-      "form"
+      "form",
+      "repeat"
     ],
     "type": "string"
   },

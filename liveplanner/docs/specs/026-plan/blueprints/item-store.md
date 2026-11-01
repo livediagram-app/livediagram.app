@@ -772,7 +772,7 @@ CREATE INDEX IF NOT EXISTS item_repeats_due ON item_repeats (dirty, next_at);
 ### The room (`plan-room/card-repeats.ts` `RepeatSchedule`, wired into `plan-room.ts`)
 
 - `at`: the next wake the schedule asks for (null: none), restored on construction from `SELECT MIN(next_at) ...
-  WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (after every content write) asks
+WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (after every content write) asks
   `SELECT 1 FROM item_repeats WHERE dirty = 1 LIMIT 1` and, when one is, sets `at` to now and arms the alarm.
   `armAlarm` includes `at`.
 - `run(now)` (the alarm, when `at <= now`), bounded to `REPEAT_COPIES_PER_WAKE` rows of each kind:
@@ -795,15 +795,20 @@ CREATE INDEX IF NOT EXISTS item_repeats_due ON item_repeats (dirty, next_at);
 
 ### Editor
 
-- `ItemPanelMenu` takes `repeating`, `onRepeat` and `onStopRepeat`; rows **Repeat** / **Edit Repeat** and
-  **Stop Repeating**, shown when `onRepeat` is given (an Editor, a plan in an account: `useIsOfflineProject`).
-- `RepeatDialog.tsx` (own file, the shared `Dialog`): Every as a segmented choice, the week's days as seven toggle
-  buttons (`aria-pressed`, Monday first, at least one kept on), the month's date as a select (1st to 31st), Ends
-  (Never, or On a date with a date input), Lands In (a select of Starting State and the tab's columns). Saving
-  writes `repeat` with `from` today and `timeZone` from `Intl.DateTimeFormat().resolvedOptions()`.
-- `ItemRepeatLine.tsx`: the repeat glyph, `repeatWords`, "Next" and the day, and for an Editor Edit and Stop as small
-  text buttons; offline it reads "Repeats only in plans saved to your account". Above the meta line in Details (the
-  aside, and the phone's Details tab).
+- `useItemRepeat` (`ItemRepeatLine.tsx`) hands `ItemPanel` three parts: the menu's `repeat` prop for `ItemPanelMenu`
+  (`{ repeating, onRepeat, onStopRepeat }`, null unless the person is an Editor, `canRetire`, on a plan in an account,
+  `useIsOfflineProject`), the Details line and the open dialog. `ItemPanelMenu` shows **Repeat**, or **Edit Repeat**
+  and **Stop Repeating**, from it.
+- `RepeatDialog.tsx` (`PlanModal`): Every as a segmented radio group, the week's days as seven toggle buttons
+  (`aria-pressed`, Monday first, at least one kept on), the month's date as a select (1st to 31st, with a note past
+  the 28th), Ends (Never, or On a date with `DateInput`, seeded 30 days out; a day before today is refused in words),
+  Lands In (a select of Starting State and the tab's columns, keeping a column the rule names that no board shows).
+  Its choices live in `repeat-draft.ts`; saving writes `repeat` stamped with the day the dialog opened (`from`) and
+  `timeZone` from `Intl.DateTimeFormat().resolvedOptions()`.
+- `ItemRepeatLine`: the repeat glyph, "Repeats" and `repeatRuleWords`, "Next" and `dayWords` (the year only when it
+  is not this one), "Ended" past its end, and for an Editor Edit and Stop as small text buttons; offline it reads
+  "Repeats only in plans saved to your account". Above the meta line in Details (the aside, and the phone's Details
+  tab).
 - `PlanCardFace`: `RepeatMark` (plan-card-parts.tsx) beside the flag at every size, from `hasRepeat`.
 - Telemetry: `Plan · Toggled · RepeatOn` on a save, `RepeatOff` on a stop.
 
@@ -911,10 +916,10 @@ include `fields` or comment text.
 | History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`  |
 | Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`               |
 | Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
-| Repeats: rules, days, zones, DST, month ends         | `packages/items/src/repeat.test.ts`, `packages/items/src/repeat-dates.test.ts`, `packages/items/src/repeat-copy.test.ts`                                                                     |
-| Repeats: alarm, once a day, late, restart, stop      | `apps/api/src/plan-room/card-repeats.test.ts`                                                                                                                                               |
-| Repeats: Editor gate, roles                          | `apps/api/src/routes/item-repeat-gate.test.ts`, `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `apps/editor/components/plan/ItemRepeatLine.test.tsx`                                  |
-| Repeats: dialog, glyph                               | `apps/editor/components/plan/RepeatDialog.test.tsx`, `apps/editor/components/plan/PlanCardFace.test.tsx`                                                                                    |
+| Repeats: rules, days, zones, DST, month ends         | `packages/items/src/repeat.test.ts`, `packages/items/src/repeat-dates.test.ts`, `packages/items/src/repeat-copy.test.ts`                                                                    |
+| Repeats: alarm, once a day, late, restart, stop      | `apps/api/src/plan-room/card-repeats.test.ts`, `apps/api/src/plan-room/card-repeats.edges.test.ts` (full plan, retries, parked rows)                                                        |
+| Repeats: Editor gate, roles                          | `apps/api/src/routes/item-repeat-gate.test.ts`, `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `apps/editor/components/plan/ItemRepeatLine.test.tsx`                                 |
+| Repeats: dialog, glyph, Activity line                | `apps/editor/components/plan/RepeatDialog.test.tsx`, `apps/editor/components/plan/PlanCardFace.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                      |
 | Tab import: parse, plan, land, report                | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
 ## Constants and configuration
