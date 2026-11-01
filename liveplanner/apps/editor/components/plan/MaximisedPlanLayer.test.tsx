@@ -333,6 +333,57 @@ describe('the canvas cover', () => {
     main.remove();
   });
 
+  // Work Tracker #271: an identical write still wakes a MutationObserver (and the canvas's restyle), so a canvas
+  // already wearing the band's values is left untouched, and a band that only changes its header's size writes nothing
+  // to the canvas.
+  it('writes nothing to the canvas it already wears the band on', () => {
+    const main = document.createElement('main');
+    document.body.appendChild(main);
+    main.setAttribute('data-strip-in-band', '');
+    main.setAttribute('data-band-blend', '');
+    main.setAttribute('data-band-tint', '');
+    main.style.setProperty('--plan-strip-align', 'flex-end');
+    main.style.setProperty('--plan-strip-end', '300px');
+    main.style.setProperty('--band-surface', '#fff');
+    main.style.setProperty('--band-line', '#ccc');
+    main.style.setProperty('--band-tint', '#0284c7');
+    const seen: MutationRecord[] = [];
+    const watch = new MutationObserver((records) => seen.push(...records));
+    watch.observe(main, { attributes: true });
+    const band = { height: 53, left: 124, mid: 349, stripEnd: 300 };
+    const blend = { surface: '#fff', line: '#ccc' };
+    const { rerender } = render(
+      <CanvasCover layout={{ insets, band }} marker={{}} tint="#0284c7">
+        <span />
+      </CanvasCover>,
+      { container: main },
+    );
+    // The header's own size changing is its own box's business, not the canvas's.
+    rerender(
+      <CanvasCover layout={{ insets, band: { ...band, mid: 300 } }} marker={{}} tint="#0284c7">
+        <span />
+      </CanvasCover>,
+    );
+    seen.push(...watch.takeRecords());
+    expect(seen).toEqual([]);
+    // The element's own surface and border take the canvas the same way: set once, never rewritten.
+    main.removeAttribute('data-band-tint');
+    rerender(
+      <CanvasCover layout={{ insets, band }} marker={{}} blend={blend}>
+        <span />
+      </CanvasCover>,
+    );
+    watch.takeRecords();
+    rerender(
+      <CanvasCover layout={{ insets, band: { ...band, mid: 301 } }} marker={{}} blend={blend}>
+        <span />
+      </CanvasCover>,
+    );
+    expect(watch.takeRecords()).toEqual([]);
+    watch.disconnect();
+    main.remove();
+  });
+
   it("lends the element's hue to the chrome in its band, and takes it back", () => {
     const main = document.createElement('main');
     document.body.appendChild(main);

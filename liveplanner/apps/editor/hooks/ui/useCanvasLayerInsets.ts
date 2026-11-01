@@ -6,7 +6,7 @@
 // or class attributes), a chrome transition ends, the window resizes, or chrome comes or goes (the canvas's children
 // change: the set is looked up again and re-observed only when it differs). Typing, pressing and dragging on the board
 // itself measure nothing.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   BAND_CONTROLS_SELECTOR,
   NO_LAYOUT,
@@ -14,6 +14,7 @@ import {
   TOP_ROW_SELECTOR,
   measureCanvasChrome,
   sameLayout,
+  type BandMemo,
   type CanvasLayout,
 } from '@/lib/canvas-layer-insets';
 
@@ -33,8 +34,11 @@ export function touchesChrome(
 // The element's insets, and its header band when the top row leaves room (lib/canvas-layer-insets.ts headerBand).
 export function useCanvasLayerInsets(canvas: HTMLElement | null, withBand = true): CanvasLayout {
   const [layout, setLayout] = useState<CanvasLayout>(NO_LAYOUT);
+  // What the last measure learned, for the next one's hysteresis and room (lib/canvas-layer-insets BandMemo).
+  const memo = useRef<BandMemo>({ banded: false, endWidth: null });
   useEffect(() => {
     if (!canvas || canvas === document.body) return;
+    memo.current = { banded: false, endWidth: null };
     let frame = 0;
     let rescan = true;
     let chrome: HTMLElement[] = [];
@@ -69,7 +73,7 @@ export function useCanvasLayerInsets(canvas: HTMLElement | null, withBand = true
           }
         }
       }
-      const next = measureCanvasChrome(canvas, withBand);
+      const next = measureCanvasChrome(canvas, withBand, memo.current);
       setLayout((prev) => (sameLayout(prev, next) ? prev : next));
     };
     function schedule() {

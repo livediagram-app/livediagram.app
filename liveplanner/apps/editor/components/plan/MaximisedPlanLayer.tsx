@@ -113,9 +113,9 @@ export function CanvasCover({
   useLayoutEffect(() => {
     const main = coverRef.current?.parentElement;
     if (!main || !blendSurface || !blendLine) return;
-    main.setAttribute('data-band-blend', '');
-    main.style.setProperty('--band-surface', blendSurface);
-    main.style.setProperty('--band-line', blendLine);
+    setAttr(main, 'data-band-blend', '');
+    setProp(main, '--band-surface', blendSurface);
+    setProp(main, '--band-line', blendLine);
     return () => {
       main.removeAttribute('data-band-blend');
       main.style.removeProperty('--band-surface');
@@ -163,9 +163,19 @@ export function CanvasCover({
 function setStripEnd(main: HTMLElement, stripEnd: number): void {
   const strip = main.querySelector<HTMLElement>('[data-toolbar-palette]');
   const zoom = strip ? parseFloat(getComputedStyle(strip).zoom) || 1 : 1;
-  main.setAttribute('data-strip-in-band', '');
-  main.style.setProperty('--plan-strip-align', 'flex-end');
-  main.style.setProperty('--plan-strip-end', `${Math.round(stripEnd / zoom)}px`);
+  setAttr(main, 'data-strip-in-band', '');
+  setProp(main, '--plan-strip-align', 'flex-end');
+  setProp(main, '--plan-strip-end', `${Math.round(stripEnd / zoom)}px`);
+}
+
+// Writes that skip what is already there: an identical attribute or property write still reaches a MutationObserver
+// (the layout hook's, a test's) as a change, and the canvas restyles for it.
+function setAttr(el: HTMLElement, name: string, value: string): void {
+  if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+}
+
+function setProp(el: HTMLElement, name: string, value: string): void {
+  if (el.style.getPropertyValue(name) !== value) el.style.setProperty(name, value);
 }
 
 // An element's own surface and border, for the chrome in its band to take (toolbar-surface BAND_BLEND).
@@ -173,8 +183,8 @@ type BandBlend = { surface: string; line: string };
 
 // The element's hue on the chrome in its band (toolbar-surface BAND_TINT), set on the canvas they sit in.
 function setBandTint(main: HTMLElement, tint: string): void {
-  main.setAttribute('data-band-tint', '');
-  main.style.setProperty('--band-tint', tint);
+  setAttr(main, 'data-band-tint', '');
+  setProp(main, '--band-tint', tint);
 }
 
 function clearBandTint(main: HTMLElement): void {
