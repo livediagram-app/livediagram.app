@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { BrandMark } from '@livediagram/ui';
 import { Dialog, useMediaQuery } from '@liveworkspace/ui';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
@@ -40,6 +40,10 @@ import { settingsErrorMessage } from './settings-ui';
 
 // The API Tokens category's own code: fetched when it is first shown, not with the panel.
 const TokensPanel = lazy(() => import('./TokensPanel').then((m) => ({ default: m.TokensPanel })));
+// The Webhooks category's, the same way.
+const WebhooksPanel = lazy(() =>
+  import('./webhooks/WebhooksPanel').then((m) => ({ default: m.WebhooksPanel })),
+);
 
 // The apps' phone layout: narrower than `sm`, or a touch screen under 500px tall (each editor's
 // PHONE_MEDIA_QUERY).
@@ -120,6 +124,8 @@ export default function SiteSettingsDialog({
               cloudSync,
               securityHref: workspaceHref('/explorer?settings=profile'),
               tokensHref: workspaceHref('/explorer?settings=tokens'),
+              // Webhooks are the index's, which the page reaches with the person's token on either address.
+              renderWebhooks: () => <LazyCell cell="webhooks" panel={<WebhooksPanel />} />,
             }
           : {
               identity,
@@ -131,7 +137,8 @@ export default function SiteSettingsDialog({
                 if (left) window.location.assign('/');
                 return left;
               },
-              renderTokens: () => <TokensRow />,
+              renderTokens: () => <LazyCell cell="tokens" panel={<TokensPanel />} />,
+              renderWebhooks: () => <LazyCell cell="webhooks" panel={<WebhooksPanel />} />,
             },
     [identity, guestSignIn, profile, cloudSync],
   );
@@ -228,11 +235,12 @@ export default function SiteSettingsDialog({
   );
 }
 
-// The API tokens (making one, its secret shown once, revoking one), drawn in the panel on liveworkspace.app: their code
-// is its own chunk, fetched when the category is first shown, and they read GET /api/account/tokens then.
-function TokensRow() {
+// A category drawn in the panel from its own chunk, fetched when it is first shown: the API tokens (making one, its
+// secret shown once, revoking one; they read GET /api/account/tokens then) and the webhooks (the index's
+// GET /webhooks then).
+function LazyCell({ cell, panel }: { cell: string; panel: ReactNode }) {
   return (
-    <div data-settings-cell="tokens" className="px-4 py-4">
+    <div data-settings-cell={cell} className="px-4 py-4">
       <Suspense
         fallback={
           <div
@@ -241,7 +249,7 @@ function TokensRow() {
           />
         }
       >
-        <TokensPanel />
+        {panel}
       </Suspense>
     </div>
   );

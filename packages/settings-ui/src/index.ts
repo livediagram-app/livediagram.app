@@ -24,6 +24,7 @@ export {
   SETTINGS_CARD_SLOT,
   useInSettingsGroup,
 } from './SettingsGroup';
+export { AccordionSection } from './AccordionSection';
 export { SettingsToggleRowView } from './rows/ToggleRow';
 export { SettingsChoiceRowView } from './rows/ChoiceRow';
 export {

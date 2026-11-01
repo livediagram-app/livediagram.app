@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useRef, useState, type FormEvent, type RefObject } from 'react';
 import { accountApi, errorMessage, formatDate, type ApiToken } from '@/lib/account-api';
 import { BUTTON, ErrorNote, INPUT, Panel } from './account-ui';
+import { ConfirmAction } from './ConfirmAction';
+import { SecretReveal } from './SecretReveal';
 import { useAccountData } from './useAccountData';
 
 // The Settings panel's API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): making a token, seeing it once,
@@ -25,8 +27,9 @@ export function TokensPanel() {
         }}
       />
       {made && (
-        <Reveal
-          token={made}
+        <SecretReveal
+          title={`Here’s ${made.name}. Copy it now: it won’t be shown again.`}
+          secret={made.secret}
           onDone={() => {
             setMade(null);
             nameRef.current?.focus();
@@ -138,72 +141,8 @@ function CreateToken({
   );
 }
 
-function Reveal({ token, onDone }: { token: ApiToken & { secret: string }; onDone: () => void }) {
-  const [copied, setCopied] = useState<'no' | 'yes' | 'failed'>('no');
-  const secretRef = useRef<HTMLElement>(null);
-
-  // The browser can refuse the clipboard (no permission, an insecure page): say so, and select the token so it can
-  // be copied by hand.
-  async function copy() {
-    try {
-      if (!navigator.clipboard) throw new Error('no clipboard');
-      await navigator.clipboard.writeText(token.secret);
-      setCopied('yes');
-    } catch {
-      setCopied('failed');
-      const code = secretRef.current;
-      if (code) window.getSelection()?.selectAllChildren(code);
-    }
-  }
-
-  return (
-    <Panel className="border-emerald-300 bg-emerald-50/70 dark:border-emerald-500/40 dark:bg-emerald-500/5">
-      <p role="status" className="font-semibold text-slate-900 dark:text-white">
-        Here’s {token.name}. Copy it now: it won’t be shown again.
-      </p>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <code
-          ref={secretRef}
-          className="block min-w-0 flex-1 overflow-x-auto rounded-xl bg-white px-3 py-2 font-mono text-sm text-slate-900 ring-1 ring-emerald-200 dark:bg-slate-950 dark:text-white dark:ring-emerald-500/30"
-        >
-          {token.secret}
-        </code>
-        <button
-          type="button"
-          className={`${BUTTON.secondary} shrink-0`}
-          onClick={() => void copy()}
-        >
-          {copied === 'yes' ? 'Copied' : 'Copy'}
-        </button>
-        <button type="button" className={`${BUTTON.primary} shrink-0`} onClick={onDone}>
-          Done
-        </button>
-      </div>
-      {copied === 'failed' && (
-        <p role="alert" className="mt-2 text-sm text-rose-700 dark:text-rose-300">
-          This browser didn’t let us copy it. It’s selected: copy it with your keyboard or menu.
-        </p>
-      )}
-    </Panel>
-  );
-}
-
 function TokenRow({ token, onRevoked }: { token: ApiToken; onRevoked: () => Promise<void> }) {
-  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const revokeRef = useRef<HTMLButtonElement>(null);
-  const keepRef = useRef<HTMLButtonElement>(null);
-  // The button pressed is swapped for the next step's, so the keyboard follows it: to Keep (the safe answer) when
-  // asked, back to Revoke when kept. Not on the first render, where nothing here had focus.
-  const asked = useRef(false);
-  useEffect(() => {
-    if (!asked.current) return;
-    (confirming ? keepRef : revokeRef).current?.focus();
-  }, [confirming]);
-  const ask = (next: boolean) => {
-    asked.current = true;
-    setConfirming(next);
-  };
 
   async function revoke() {
     const result = await accountApi(`/tokens/${token.id}`, 'DELETE');
@@ -230,30 +169,7 @@ function TokenRow({ token, onRevoked }: { token: ApiToken; onRevoked: () => Prom
               Expires {formatDate(token.expiresAt)}
             </p>
           </div>
-          {confirming ? (
-            <span className="flex gap-1">
-              <button type="button" className={BUTTON.danger} onClick={() => void revoke()}>
-                Revoke now
-              </button>
-              <button
-                ref={keepRef}
-                type="button"
-                className={BUTTON.secondary}
-                onClick={() => ask(false)}
-              >
-                Keep
-              </button>
-            </span>
-          ) : (
-            <button
-              ref={revokeRef}
-              type="button"
-              className={BUTTON.danger}
-              onClick={() => ask(true)}
-            >
-              Revoke
-            </button>
-          )}
+          <ConfirmAction label="Revoke" confirmLabel="Revoke now" onConfirm={revoke} />
         </div>
         {error && <ErrorNote>{errorMessage(error)}</ErrorNote>}
       </Panel>
