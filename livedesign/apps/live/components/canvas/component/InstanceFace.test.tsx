@@ -104,7 +104,7 @@ describe('ComponentSessionBar', () => {
 
 describe('useComponentSession', () => {
   const lib = new Map([[main.id, main]]);
-  const session = (els: Element[], canEdit = true, selfId = 'me') => {
+  const session = (els: Element[], canEdit = true, selfId = 'me', owned = new Set(['i'])) => {
     const changeComponent = vi.fn();
     const { result } = renderHook(() =>
       useComponentSession({
@@ -112,6 +112,7 @@ describe('useComponentSession', () => {
         selfId,
         elements: els,
         library: { lookup: libraryLookup(lib), changeComponent },
+        owned: { current: owned },
       }),
     );
     return { result, changeComponent };
@@ -141,6 +142,11 @@ describe('useComponentSession', () => {
     expect(other.result.current.sessionInstanceId).toBeNull();
     expect(other.changeComponent).not.toHaveBeenCalled();
     expect(session([open, member('X')], false).changeComponent).not.toHaveBeenCalled();
+    // A session this screen did not open (a peer's copy, the person's other device, a reload): a half-arrived
+    // start or Done must never be written over the main, so only Done derives it there.
+    const elsewhere = session([open, member('X')], true, 'me', new Set());
+    expect(elsewhere.result.current.sessionInstanceId).toBe('i');
+    expect(elsewhere.changeComponent).not.toHaveBeenCalled();
     const missing = { ...open, componentId: 'gone' } as Element;
     expect(session([missing, member('X')]).changeComponent).not.toHaveBeenCalled();
   });

@@ -20,33 +20,49 @@ import { instanceMarkup } from '@/lib/instance-svg';
 
 const ComponentIcon = lucideGlyph(lucidePackage, 16);
 
-export function DesignComponentsBand() {
+export function DesignComponentsBand({ variant = 'band' }: { variant?: 'band' | 'flyout' }) {
   const editor = useOptionalEditorContext();
   if (!editor || !editor.componentActions.canEdit) return null;
   const mains = placeableComponents(editor.componentLibrary.library.values());
   const { activeTab } = editor;
   const surface = canvasSurface(activeTab.backgroundColor ?? EXPORT_BG);
+  const flyout = variant === 'flyout';
+  const count =
+    mains.length > 0 ? (
+      <span className="inline-flex h-[12.6px] items-center rounded-full bg-slate-100 px-1.5 text-[9px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+        <span className="text-optical-centre">{mains.length}</span>
+      </span>
+    ) : null;
   return (
-    <section className="flex flex-col gap-1 pb-1" data-design-components="">
-      <div className="flex items-center gap-1.5 px-2 pt-1">
-        <span className="text-slate-500 dark:text-slate-400">
-          <ComponentIcon />
-        </span>
-        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+    <section
+      aria-label="In This Design"
+      className={flyout ? 'flex flex-col' : 'flex flex-col gap-1 pb-1'}
+      data-design-components=""
+    >
+      {flyout ? (
+        // The category flyout's own group heading (CategoryFlyout), so the band reads as its first group.
+        <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
           In This Design
-        </span>
-        {mains.length > 0 ? (
-          <span className="inline-flex h-[12.6px] items-center rounded-full bg-slate-100 px-1.5 text-[9px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-            <span className="text-optical-centre">{mains.length}</span>
+          {count}
+          <span aria-hidden className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+        </h4>
+      ) : (
+        <div className="flex items-center gap-1.5 px-2 pt-1">
+          <span className="text-slate-500 dark:text-slate-400">
+            <ComponentIcon />
           </span>
-        ) : null}
-      </div>
+          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+            In This Design
+          </span>
+          {count}
+        </div>
+      )}
       {mains.length === 0 ? (
         <p className="px-2 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
           Select elements and choose Make Component to reuse them on every screen.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-1 px-1">
+        <div className={flyout ? 'grid grid-cols-3 gap-1.5' : 'grid grid-cols-2 gap-1 px-1'}>
           {mains.map((main) => (
             <ComponentTile
               key={main.id}

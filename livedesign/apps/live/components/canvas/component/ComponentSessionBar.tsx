@@ -32,10 +32,11 @@ export function ComponentSessionBar({
     return () => window.removeEventListener('keydown', onKey, true);
   }, [nothingSelected, onDone]);
   return (
+    // Under the header (56px) and the category bar (its foot at 114 to 120px), so neither hides it.
     <div
       role="status"
       data-component-session-bar=""
-      className="pointer-events-auto absolute left-1/2 top-3 z-30 flex max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-2 rounded-full border border-brand-200 bg-white py-1 pl-3 pr-1 text-sm shadow-md dark:border-brand-800 dark:bg-slate-900"
+      className="pointer-events-auto absolute left-1/2 top-32 z-30 flex w-max max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-2 rounded-full border border-brand-200 bg-white py-1 pl-3 pr-1 text-sm shadow-md dark:border-brand-800 dark:bg-slate-900"
     >
       <span className="text-brand-700 dark:text-brand-300">
         <ComponentIcon />

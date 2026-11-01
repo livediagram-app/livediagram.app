@@ -2,30 +2,36 @@
 
 Derived from [Components](../components.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                        | Role                                                                                |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `packages/design/src/components.ts`                         | Types, constants, `isInstance`, `mayGoInComponent`, names, refs                     |
-| `packages/design/src/component-resolve.ts`                  | `resolveInstance`, `expandInstances`, override targets                              |
-| `packages/design/src/component-make.ts`                     | `makeComponent`, `detachInstance`                                                   |
-| `packages/design/src/component-session.ts`                  | The edit session: start, stamp, derive, finish                                      |
-| `packages/design/src/component-patch.ts`                    | `ComponentPatch`, `applyComponentPatch`, `diffComponent`                            |
-| `packages/design/src/component-validate.ts`                 | `isValidDesignComponent`, `isValidComponentPatch`, instance and member field checks |
-| `packages/api-schema/src/room-messages.ts`                  | `component` joins `SYSTEM_OP_KINDS`; `ComponentRoomOp`                              |
-| `apps/api/src/design-room/design-schema.ts`                 | Step adding `components` and `component_refs`                                       |
-| `apps/api/src/db/components.ts`                             | Reads, writes, refs statements                                                      |
-| `apps/api/src/routes/component-routes.ts`                   | `GET` / `PUT` / `PATCH /api/designs/:id/components[/:componentId]`                  |
-| `apps/api/src/room-scope.ts`                                | A `component` op reaches a scoped session only when `tabIds` holds its tab          |
-| `apps/api/src/design-room/tab-shares.ts`                    | The `components` extra on a shared tab's body                                       |
-| `apps/api/src/thumbnail.ts`                                 | Expands instances with the stored library before drawing                            |
-| `apps/live/lib/component-registry.ts`                       | The editor's library for the export renderers (`currentComponent`)                  |
-| `apps/live/app/design/[id]/useComponentLibrary.ts`          | Load, apply ops, save (PUT / PATCH), offline, refetch on an unknown id              |
-| `apps/live/app/design/[id]/useComponentActions.ts`          | Make, place, detach, override, rename, remove, edit session                         |
-| `apps/live/components/canvas/InstanceFace.tsx`              | Draws an instance on the canvas (the export renderer, inline SVG)                   |
-| `apps/live/components/canvas/ComponentSessionBar.tsx`       | "Editing <name>" with Done                                                          |
-| `apps/live/components/palette/ComponentMenuSection.tsx`     | The instance menu's Component section and Overrides                                 |
-| `apps/live/components/palette/component-tiles.tsx`          | The palette's In This Design band                                                   |
-| `apps/live/lib/export-tab.ts`                               | `renderTabToSvg` / `renderTabToCanvas` expand instances first                       |
-| `packages/design-views`, `packages/agent-verbs`, `apps/mcp` | The agents' read and write paths                                                    |
+| File                                                        | Role                                                                                 |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `packages/design/src/components.ts`                         | Types, constants, `isInstance`, `mayGoInComponent`, names, refs                      |
+| `packages/design/src/component-resolve.ts`                  | `resolveInstance`, `expandInstances`, override targets                               |
+| `packages/design/src/component-make.ts`                     | `makeComponent`, `detachInstance`                                                    |
+| `packages/design/src/component-session.ts`                  | The edit session: start, stamp, derive, finish                                       |
+| `packages/design/src/component-patch.ts`                    | `ComponentPatch`, `applyComponentPatch`, `diffComponent`                             |
+| `packages/design/src/component-validate.ts`                 | `isValidDesignComponent`, `isValidComponentPatch`, instance and member field checks  |
+| `packages/api-schema/src/room-messages.ts`                  | `component` joins `SYSTEM_OP_KINDS`; `ComponentRoomOp`                               |
+| `apps/api/src/design-room/design-schema.ts`                 | Step adding `components` and `component_refs`                                        |
+| `apps/api/src/db/components.ts`                             | Reads, writes, refs statements                                                       |
+| `apps/api/src/routes/component-routes.ts`                   | `GET` / `PUT` / `PATCH /api/designs/:id/components[/:componentId]`                   |
+| `apps/api/src/room-scope.ts`                                | A `component` op reaches a scoped session only when `tabIds` holds its tab           |
+| `apps/api/src/design-room/tab-shares.ts`                    | The `components` extra on a shared tab's body                                        |
+| `apps/api/src/design-room/component-share.ts`               | What a shared body carries (8 MB budget) and what a design taking it in keeps        |
+| `apps/api/src/component-redact.ts`                          | A main as a reader may see it (Community, comment author ids)                        |
+| `apps/api/src/design-room/design-content.ts`                | A copy carries the library (`DesignCopy.components`)                                 |
+| `packages/design/src/design-envelope.ts`                    | The Drive file carries the library (`design.components`)                             |
+| `packages/design/src/participant-content.ts`                | A Participant never adds, changes or takes on an instance or component field         |
+| `apps/api/src/thumbnail.ts`                                 | Expands instances with the stored library before drawing                             |
+| `apps/live/lib/component-registry.ts`                       | The editor's library for the export renderers (`currentComponent`)                   |
+| `apps/live/app/design/[id]/useComponentLibrary.ts`          | Load, apply ops, save (PUT / PATCH), offline, refetch on an unknown id               |
+| `apps/live/app/design/[id]/useComponentActions.ts`          | Make, place, detach, override, rename, remove, edit session                          |
+| `apps/live/components/canvas/InstanceFace.tsx`              | Draws an instance on the canvas (the export renderer, inline SVG)                    |
+| `apps/live/app/design/[id]/useComponentSession.ts`          | Derives the main live, on the screen that opened the session only (`owned`)          |
+| `apps/live/components/canvas/ComponentSessionBar.tsx`       | "Editing <name>" with Done                                                           |
+| `apps/live/components/palette/ComponentMenuSection.tsx`     | The instance menu's Component section and Overrides                                  |
+| `apps/live/components/palette/component-tiles.tsx`          | In This Design: a band (Components tab) or the flyout's first group (CategoryFlyout) |
+| `apps/live/lib/export-tab.ts`                               | `renderTabToSvg` / `renderTabToCanvas` expand instances first                        |
+| `packages/design-views`, `packages/agent-verbs`, `apps/mcp` | The agents' read and write paths                                                     |
 
 ## Domain and naming
 
@@ -181,9 +187,12 @@ export function componentRefIdsFromData(data: string): string[];
 ```
 
 Wire: `GET /components` → `{ components }`; `PUT` body `DesignComponent` → `{ component }`; `PATCH` body
-`ComponentPatch` → `{ component }`. Room: `{ kind: 'component', component, tabIds }` (system). Rejections: 400
-`invalid component` / `invalid patch`, 403 `forbidden` (non-edit grant), 404 `not_found`, 409 `too_many_components`,
-413 `payload_too_large`.
+`ComponentPatch` → `{ component }`. Room: `{ kind: 'component', component, tabIds }` (system), sequenced through
+the room's `/mutation` like a changeset, so a reconnecting editor replays it; comment author ids are blanked on the
+wire. Rejections: 400
+`bad_request` with message `invalid component` / `invalid patch` / `invalid json`, 403 `forbidden` (non-edit grant, or
+a tab-scoped Editor replacing a main another tab uses), 404 `not_found` (no main; to a tab-scoped Editor, one another
+tab uses), 409 `too_many_components` / `component_busy` (three lost compare-and-swaps), 413 `payload_too_large`.
 
 Validation (`isValidDesignComponent`): `id` 1 to 64 chars without `/`; `name` 1 to 60; `width`, `height` finite and
 above 0; `elements` at most 200, each `isValidElement`, each `mayGoInComponent`, ids unique, none an instance or a
@@ -208,10 +217,15 @@ CREATE TABLE IF NOT EXISTS component_refs (
 CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component_id);
 ```
 
-- `component_refs` is rewritten from the body on every tab write (the save, a changeset, a share taken in, the
-  migration door) and pruned on every tab delete, in the same batch as `image_refs`.
-- A copy of a design copies every `components` row. A shared tab's body carries `extra.components` (the mains its
-  instances use); taking it in upserts each where the stored `updated_at` is older or absent.
+- `component_refs` is rewritten from the body on every tab write (the save, a changeset, a seeded create, a copy, a
+  share taken in; a Participant's swap only adds) and pruned on every tab delete, in the same batch as `image_refs`.
+- A library write (PUT, PATCH) moves the design's `saved_at`, so its preview, Drive file and listing follow. A
+  shared tab taken in does not announce the mains it brought to the room (a taken body is not announced either).
+- The migration door writes no refs: what it brings in from livediagram.app predates components, so none holds an
+  instance.
+- A copy of a design copies every `components` row (a one-tab copy, the mains that tab uses). A shared tab's body
+  carries `extra.components` (the mains its instances use); taking it in upserts each where the stored `updated_at`
+  is older or absent.
 - This Browser designs keep the library under the design's offline record (`components`), saved with its tabs.
 - Snapshot / restore: a tab's revision history never holds mains; a restored tab draws with today's mains.
 
@@ -220,7 +234,10 @@ CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component
 - A missing main: the canvas shows "Missing component" (or "Loading component…" while the library loads); exports
   draw the missing frame; Detach and Edit Component are disabled.
 - An archived main: draws; absent from the band; Make Component's name count skips nothing (D195).
-- A session whose person left: anyone who may edit sees the bar and may press Done.
+- A session seen on a screen that did not open it (a peer, the person's other device, a reload): the start and Done
+  arrive one element op at a time, so that screen never derives live (`owned` holds only the sessions this screen's
+  `startEdit` opened); `finishEdit` derives once from the members as they stand when this person presses Done there.
+- A library op older than one already seen for that main (ops can pass each other): dropped (`noteStored`).
 - Two sessions on one tab: each instance's own; `stampSessionMembers` stamps only while exactly one is open on the
   tab (D196).
 - Deleting a session's instance (it is hidden, but an undo can do it): its members stay as plain elements.
@@ -245,11 +262,13 @@ CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component
 
 ## Presentation and UX
 
-- Session bar: top centre of the canvas, the editor's floating bar style; copy "Editing <name>. Changes reach every
-  instance." and **Done**.
+- Session bar: centred at `top-32` (128px, under the 56px header and the category bar's foot at 114 to 120px),
+  sized to its content (`w-max`, at most the viewport less 32px); copy "Editing <name>", then " · changes reach every
+  instance" from `sm`, and **Done**.
 - Component section (instance menu, Tools): name field (Rename Component), **Edit Component**, **Detach Instance**,
   **Reset Overrides**, **Remove from Library**; an **Overrides** accordion, closed until opened.
-- In This Design band: tiles `48 x 48` showing the main's picture, name under it, tooltip "Add <name>".
+- In This Design: tiles showing the main's picture (48px tall) with its name under it, tooltip "Place <name>"; two
+  columns as a band, three as the flyout's first group under an `h4` like the flyout's own group headings.
 - Disabled Make Component tooltip: "Images, videos, embeds, link cards and tab windows can't go in a component yet."
 
 ## Accessibility
@@ -257,7 +276,8 @@ CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component
 - The session bar is a `role="status"` region; Done is a button reachable by Tab; Escape with nothing selected is
   Done.
 - Override fields are labelled by the main element's name ("Text: Home", "Fill: Nav background").
-- Every control has a tooltip and a pointer cursor; tiles are buttons named "Add <name>".
+- Every control has a tooltip and a pointer cursor; tiles are buttons named by the main, tooltip "Place <name>";
+  the band is a `section` labelled "In This Design".
 
 ## Web Experience
 
@@ -272,23 +292,28 @@ CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component
 
 ## Testing
 
-| Rule                                                   | Test                                                         |
-| ------------------------------------------------------ | ------------------------------------------------------------ |
-| Resolve scales, re-ids, applies overrides              | `packages/design/src/component-resolve.test.ts`              |
-| Expand keeps anchors, drops sessions, draws missing    | `component-resolve.test.ts`                                  |
-| Make: frame, arrows, refusals, instance placement      | `component-make.test.ts`                                     |
-| Detach: fresh ids, overrides baked, arrows freed       | `component-make.test.ts`                                     |
-| Session start / stamp / derive / finish                | `component-session.test.ts`                                  |
-| Patch apply and diff                                   | `component-patch.test.ts`                                    |
-| Validation of mains, patches and instance fields       | `component-validate.test.ts`                                 |
-| Linear expand on 30 screens                            | `components.perf.test.ts`                                    |
-| Routes: roles, scope, caps, merge per element, op sent | `apps/api/src/routes/component-routes.test.ts`               |
-| Refs kept on tab writes; shared tab carries mains      | `apps/api/src/db/components.test.ts`, `tab-shares` tests     |
-| Thumbnail draws instances                              | `apps/api/src/thumbnail.test.ts`                             |
-| Exports expand instances                               | `apps/live/lib/export-tab.test.ts`                           |
-| Canvas face draws the main, missing and loading states | `apps/live/components/canvas/InstanceFace.test.tsx`          |
-| Menu section: overrides, detach, roles                 | `apps/live/components/palette/ComponentMenuSection.test.tsx` |
-| Agents read and write instances                        | `packages/design-views`, `packages/agent-verbs` tests        |
+| Rule                                                    | Test                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------ |
+| Resolve scales, re-ids, applies overrides               | `packages/design/src/component-resolve.test.ts`              |
+| Expand keeps anchors, drops sessions, draws missing     | `component-resolve.test.ts`                                  |
+| Make: frame, arrows, refusals, instance placement       | `component-make.test.ts`                                     |
+| Detach: fresh ids, overrides baked, arrows freed        | `component-make.test.ts`                                     |
+| Session start / stamp / derive / finish                 | `component-session.test.ts`                                  |
+| Only the opening screen derives live; Done derives once | `useComponentActions.test.tsx`, `InstanceFace.test.tsx`      |
+| Patch apply and diff                                    | `component-patch.test.ts`                                    |
+| Validation of mains, patches and instance fields        | `component-validate.test.ts`                                 |
+| Linear expand on 30 screens                             | `components.perf.test.ts`                                    |
+| Routes: roles, scope, caps, merge per element, op sent  | `apps/api/src/routes/component-routes.test.ts`               |
+| Refs kept on tab writes; copy carries the library       | `apps/api/src/db/components.test.ts`                         |
+| Shared tab carries mains, later wins                    | `design-room/component-share.test.ts`, `design-room-store`   |
+| Room sequences the op; scope filters it                 | `apps/api/src/design-room.test.ts`, `room-scope.test.ts`     |
+| Participant never touches a component                   | `packages/design/src/participant-content.leak.test.ts`       |
+| Thumbnail and tab render draw instances                 | `apps/api/src/thumbnail.test.ts`, `tab-render-route.test.ts` |
+| Drive file carries the library                          | `design-envelope.test.ts`, `routes/internal-file.test.ts`    |
+| Exports expand instances                                | `apps/live/lib/export-tab.test.ts`                           |
+| Canvas face draws the main, missing and loading states  | `apps/live/components/canvas/InstanceFace.test.tsx`          |
+| Menu section: overrides, detach, roles                  | `apps/live/components/palette/ComponentMenuSection.test.tsx` |
+| Agents read and write instances                         | `packages/design-views`, `packages/agent-verbs` tests        |
 
 ## Constants and configuration
 

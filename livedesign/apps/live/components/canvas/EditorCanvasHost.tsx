@@ -479,7 +479,7 @@ export function EditorCanvasHost() {
                   if (canvasTool === 'laser' && x !== null && y !== null) {
                     // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
                     broadcastLaser(x, y, laserConfig);
-                    // Laser mode hides the cursor indicator on peer screens —
+                    // Laser mode hides the cursor indicator on peer screens:
                     // the laser dot is the cursor. Clear any prior position.
                     broadcastCursor(null);
                     return;
@@ -690,7 +690,7 @@ export function EditorCanvasHost() {
                 }}
                 onDeselect={() => {
                   // Clicking empty canvas also cancels an armed arrow-connect, and
-                  // wraps up the Format tool — restoring the pre-Format tool — so a
+                  // wraps up the Format tool (restoring the pre-Format tool) so a
                   // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
                   if (canvasTool === 'format') exitFormatTool();
                   cancelConnect();
@@ -703,7 +703,7 @@ export function EditorCanvasHost() {
                 onSelect={selectElement}
                 onElementContextMenu={(id, sx, sy) => {
                   // Concurrent-selection lock (docs/specs/007-editor/live-app.md): a peer holds this
-                  // element, so it can't be selected, dragged, or edited — don't
+                  // element, so it can't be selected, dragged, or edited; don't
                   // pop a dead context menu on it either. Same gate as
                   // selectElement. A Participant or a Viewer still opens its own menu there
                   // (comments, a link), less Edit Text (docs/specs/008-canvas/element-menu-quick-bar.md).
@@ -744,8 +744,8 @@ export function EditorCanvasHost() {
                     ? undefined
                     : // Right-click on a group / multi-selection always OPENS at the
                       // cursor (a direct set, like onElementContextMenu). A toggle here
-                      // meant a lingering multi menu — which clicking elsewhere doesn't
-                      // dismiss, since element pointerdown stops propagation — got
+                      // meant a lingering multi menu, which clicking elsewhere doesn't
+                      // dismiss, since element pointerdown stops propagation, got
                       // closed by the next right-click instead of reopening, so the
                       // group menu "wouldn't open".
                       (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })

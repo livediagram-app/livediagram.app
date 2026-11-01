@@ -210,6 +210,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Set once Pages mode's pages are known (below): the tab the lock guard applies to, and how
   // it says something was held back.
   const pageLockGuardRef = useRef<PageLockGuard | null>(null);
+  // The component edit sessions this screen opened, the only ones it derives live (useComponentSession).
+  const ownedComponentSessions = useRef(new Set<string>());
   // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
@@ -1458,12 +1460,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setMultiSelectedIds(new Set(ids.length > 1 ? ids : []));
     },
     viewCentre: getViewportCenter,
+    owned: ownedComponentSessions,
   });
   const componentSession = useComponentSession({
     canEdit,
     selfId: selfParticipant.id,
     elements: activeTab.elements,
     library: componentLibrary,
+    owned: ownedComponentSessions,
   });
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations

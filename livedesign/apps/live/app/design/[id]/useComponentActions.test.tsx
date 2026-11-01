@@ -68,6 +68,7 @@ function setup(elements: Element[], canEdit = true, mains: DesignComponent[] = [
     receiveComponent: vi.fn(),
   };
   const select = vi.fn();
+  const owned = { current: new Set<string>() };
   let n = 0;
   const { result } = renderHook(() =>
     useComponentActions({
@@ -78,11 +79,12 @@ function setup(elements: Element[], canEdit = true, mains: DesignComponent[] = [
       library,
       select,
       viewCentre: () => ({ x: 500, y: 500 }),
+      owned,
       newId: () => `id${(n += 1)}`,
       now: () => 99,
     }),
   );
-  return { actions: result.current, get: () => current, commit, library, select };
+  return { actions: result.current, get: () => current, commit, library, select, owned };
 }
 
 beforeEach(() => trackMock.mockReset());
@@ -170,11 +172,39 @@ describe('useComponentActions', () => {
     expect(s.get().map((e) => e.id)).toEqual(['i', 'i-a']);
     expect(s.get()[0]).toMatchObject({ componentEditBy: 'me' });
     expect(s.select).toHaveBeenCalledWith(['i-a']);
+    // This screen opened it, so this screen derives it live.
+    expect(s.owned.current.has('i')).toBe(true);
     s.actions.finishEdit('i');
+    expect(s.owned.current.has('i')).toBe(false);
     expect(s.get().map((e) => e.id)).toEqual(['i']);
     expect(s.select).toHaveBeenLastCalledWith(['i']);
     s.actions.startEdit('nope');
     expect(s.commit).toHaveBeenCalledTimes(2);
+  });
+
+  it('derives the main once on Done for a session this screen did not open, and only its own', () => {
+    const member = {
+      ...box('i-a', 100, 100),
+      label: 'Edited',
+      componentMember: { instanceId: 'i', elementId: 'a' },
+    };
+    const mine = setup([inst({ componentEditBy: 'me' }), member]);
+    mine.actions.finishEdit('i');
+    expect(mine.library.changeComponent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'm',
+        elements: [expect.objectContaining({ id: 'a', label: 'Edited' })],
+      }),
+    );
+    expect(mine.get().map((e) => e.id)).toEqual(['i']);
+    // Unchanged members, or another person's session, write nothing.
+    const same = { ...member, label: 'a' } as Element;
+    const unchanged = setup([inst({ componentEditBy: 'me' }), same]);
+    unchanged.actions.finishEdit('i');
+    expect(unchanged.library.changeComponent).not.toHaveBeenCalled();
+    const theirs = setup([inst({ componentEditBy: 'them' }), member]);
+    theirs.actions.finishEdit('i');
+    expect(theirs.library.changeComponent).not.toHaveBeenCalled();
   });
 
   it('does nothing for a Participant or a Viewer', () => {

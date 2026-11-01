@@ -91,6 +91,14 @@ function withEditor(canEdit: boolean, mains: DesignComponent[] = [main], loaded 
 }
 
 describe('ComponentMenuSection on an instance', () => {
+  it('draws nothing outside an editor', () => {
+    editor.value = null;
+    const { container } = render(
+      <ComponentMenuSection target={instance()} sectionProps={sectionProps} onClose={() => {}} />,
+    );
+    expect(container.textContent).toBe('');
+  });
+
   it("gives an Editor the main's name, Edit, Detach, Reset, Remove and the overrides", async () => {
     const a = withEditor(true);
     const onClose = vi.fn();
@@ -222,6 +230,16 @@ describe('In This Design', () => {
     render(<DesignComponentsBand />);
     expect(screen.getByText('In This Design')).toBeTruthy();
     expect(screen.queryByText('Old')).toBeNull();
+    fireEvent.click(screen.getByText('Header'));
+    expect(a.placeInstance).toHaveBeenCalledWith('m');
+  });
+
+  it("heads the category flyout as its first group, the flyout's own heading", () => {
+    const a = withEditor(true, [main]);
+    render(<DesignComponentsBand variant="flyout" />);
+    const heading = screen.getByRole('heading', { name: /In This Design/ });
+    expect(heading.tagName).toBe('H4');
+    expect(heading.textContent).toContain('1');
     fireEvent.click(screen.getByText('Header'));
     expect(a.placeInstance).toHaveBeenCalledWith('m');
   });

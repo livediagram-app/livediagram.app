@@ -7,7 +7,10 @@ import { afterEach, expect, it, vi } from 'vitest';
 import type { ShapeElement, Tab } from '@livedesign/design';
 
 const editor = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
-vi.mock('@/app/design/[id]/EditorContext', () => ({ useEditorContext: () => editor.value }));
+vi.mock('@/app/design/[id]/EditorContext', () => ({
+  useEditorContext: () => editor.value,
+  useOptionalEditorContext: () => editor.value,
+}));
 vi.mock('@/app/design/[id]/useSelectTab', () => ({ useSelectTab: () => vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 

@@ -106,13 +106,16 @@ type ComponentOverride = {
 3. They are edited with every ordinary tool: move, restyle, retype, delete, draw new ones. An element added on that
    tab during the session joins it (it is marked as it lands). One edit, one undo step, as always.
 4. **Live**: after each change the main is derived from the members (positions back into the frame's space, at the
-   instance's scale) and saved, so every other instance redraws as the members change. Only the session's person
-   derives, so peers do not write the same main twice.
+   instance's scale) and saved, so every other instance redraws as the members change. Only the screen that opened
+   the session derives live: a peer, and the same person on another device, receive a start or a Done one element at
+   a time, and deriving from that half-arrived session would write a main with members missing. A session seen on
+   any other screen (after a reload, or on a second device) is derived once, on Done.
 5. **Done** (the session bar, Escape with nothing selected, or Edit Component on another instance) derives the main a
    last time, removes the members and shows the instance again. Its box and frame are unchanged.
 
-The session bar sits at the top of the canvas: "Editing <name>. Changes reach every instance." with **Done**. Anyone
-who may edit sees it and may press Done (a session left open by someone who has gone).
+The session bar sits centred under the category bar, clear of the header: "Editing <name> · changes reach every
+instance" (the second half from 640px wide) with **Done**. The session's person sees it on every screen they have the
+design open on.
 
 - **The frame stays as it was made.** Members moved beyond it draw beyond every instance's box. A session never
   rescales other instances.
@@ -132,8 +135,9 @@ the instance keep their end as a free point where it was. One undo step. Detachi
 
 - **In This Design** is the first band of the palette's Components category, on every tab: a tile per main, its
   picture and name, newest first. Pressing a tile drops an instance at the viewport's centre at the frame's size.
-  With no mains the band reads "Select elements and choose Make Component to reuse them across screens." (an Editor)
-  and is hidden for anyone else.
+  With no mains the band reads "Select elements and choose Make Component to reuse them on every screen." (an
+  Editor) and is hidden for anyone else. In the category bar's flyout it is the first group, headed like the others;
+  in the palette's Components tab it is a band above the blocks.
 - **Rename Component** (an instance's Component section): a name of up to 60 characters, collapsed whitespace, like a
   tab name.
 - **Remove from Library** (same section) takes the main out of the band (`archived: true`). Instances already placed
@@ -151,9 +155,10 @@ the instance keep their end as a free point where it was. One undo step. Detachi
   another tab's content, and an instance on their tab still draws. Archived mains are returned (instances need them);
   the palette hides them.
 - **Writes**: `PUT /api/designs/:id/components/:componentId` (make), `PATCH` (change: a patch of named elements
-  upserted and removed, name, archived), validated like tab elements. Edit role only (a scoped Editor too). A patch
-  merges per element against the stored main, so two people changing different elements of one main both keep their
-  change.
+  upserted and removed, name, archived), validated like tab elements. Edit role only, an API token too (agents patch
+  mains). A tab-scoped Editor may write only a main no other tab uses (one it just made, or one only its own tab
+  draws), so it never changes what another tab draws. A patch merges per element against the stored main, so two
+  people changing different elements of one main both keep their change.
 - **Realtime**: the worker, not the writer, announces each stored change as a `component` system op carrying the
   whole main and the tabs that use it; a tab-scoped session receives it only for mains its tab uses. Every editor
   applies it to its library, and every instance redraws. Instance elements merge per element, like any element.
@@ -161,8 +166,10 @@ the instance keep their end as a free point where it was. One undo step. Detachi
   again, once at a time.
 - **A tab shared into another design** ([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)) carries
   the mains its instances use, with every body it sends; the design taking it in keeps each as its own main under the
-  same id, the later `updatedAt` winning. After that each design's library is its own.
-- **A copy of a design** copies its library. **A This Browser design** keeps its library in the browser with its tabs.
+  same id, the later `updatedAt` winning (at most 8 MB of mains per body; any past it draw as missing there until a
+  later body carries them). After that each design's library is its own.
+- **A copy of a design** copies its library (a one-tab copy, the mains that tab uses), and so does the design's Drive
+  file (`components` beside its tabs). **A This Browser design** keeps its library in the browser with its tabs.
 - **Clipboard**: copied instances carry their mains; a paste into a design without one adds it to that library.
 
 ## Exports, thumbnails and agents
@@ -185,7 +192,8 @@ the instance keep their end as a free point where it was. One undo step. Detachi
 | Viewer      | See instances                                                                            |
 
 Gated on the session's `can.edit`, never on read-only alone. The api refuses component writes from a Participant or
-Viewer, and a Participant's element op adding or changing an instance.
+Viewer, and a Participant's element op adding or changing an instance, carrying a component field (`componentId`,
+`componentOverrides`, `componentEditBy`, `componentMember`) or changing an element of an open edit session.
 
 ## Limits
 

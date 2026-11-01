@@ -27,7 +27,7 @@ import {
   MenuActionRow,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MENU_CELL_INPUT } from '@liveworkspace/workbench/components/palette/menu-editor-classes';
-import { useEditorContext } from '@/app/design/[id]/EditorContext';
+import { useEditorContext, useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import { MAKE_COMPONENT_REFUSAL } from '@/app/design/[id]/useComponentActions';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
@@ -85,7 +85,10 @@ export function ComponentMenuSection({
   sectionProps: SectionProps;
   onClose: () => void;
 }) {
-  const { componentActions, componentLibrary } = useEditorContext();
+  // Outside an editor (a menu drawn on its own, as in tests and previews) there is no library: no section.
+  const editor = useOptionalEditorContext();
+  if (!editor) return null;
+  const { componentActions, componentLibrary } = editor;
   if (!isInstance(target)) {
     if (!componentActions.canEdit) return null;
     return (

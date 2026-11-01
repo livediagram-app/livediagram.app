@@ -12,6 +12,7 @@ import {
 import { arrow, box, instanceOf, navMain, text } from './components.test.fixtures';
 import type { DesignComponent } from './components';
 import type { ArrowElement, Element, ShapeElement } from './index';
+import { svgBoxed } from './svg-render';
 
 describe('resolveInstance', () => {
   it('places the main at the instance, ids namespaced', () => {
@@ -225,8 +226,8 @@ describe('overrides', () => {
 });
 
 describe('an instance in the headless renderer', () => {
-  it('draws a dashed frame unexpanded and nothing as an expanded anchor', async () => {
-    const { svgBoxed } = await import('./svg-render');
+  // Imported up front: a dynamic import of the renderer inside the test ran past the test timeout under load.
+  it('draws a dashed frame unexpanded and nothing as an expanded anchor', () => {
     const inst = instanceOf(navMain());
     expect(svgBoxed(inst)).toContain('Component');
     expect(svgBoxed({ ...inst, opacity: 0 })).toBe('');

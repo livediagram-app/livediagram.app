@@ -5,7 +5,9 @@
 import { useCallback } from 'react';
 import {
   clampComponentName,
+  deriveComponentFromSession,
   detachInstance,
+  diffComponent,
   finishComponentEdit,
   isInstance,
   makeComponent,
@@ -21,6 +23,7 @@ import {
 } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import type { ComponentLibraryState } from './useComponentLibrary';
+import type { OwnedComponentSessions } from './useComponentSession';
 
 /** Ids `<seed>-1`, `<seed>-2`, ... afresh on each run, so a change run twice mints the same ids. */
 function counter(seed: string): () => string {
@@ -67,6 +70,8 @@ export function useComponentActions(opts: {
   library: ComponentLibraryState;
   select: (ids: readonly string[]) => void;
   viewCentre: () => { x: number; y: number };
+  /** The sessions this screen opened (useComponentSession): startEdit adds to it. */
+  owned: OwnedComponentSessions;
   newId?: () => string;
   now?: () => number;
 }): ComponentActions {
@@ -192,12 +197,20 @@ export function useComponentActions(opts: {
       .filter((e) => !before.has(e.id))
       .map((e) => e.id);
     commit(run);
+    opts.owned.current.add(instanceId);
     select(members);
     track('Element', 'Changed', 'ComponentEdit');
   };
 
   const finishEdit = (instanceId: string) => {
     if (!canEdit) return;
+    // The main as the members finally stand, for a session this screen did not derive live (useComponentSession).
+    const inst = elements.find((e) => e.id === instanceId);
+    const main =
+      isInstance(inst) && inst.componentEditBy === selfId ? lookup(inst.componentId) : undefined;
+    const derived = main ? deriveComponentFromSession(elements, instanceId, main, now()) : null;
+    if (main && derived && diffComponent(main, derived)) library.changeComponent(derived);
+    opts.owned.current.delete(instanceId);
     commit((els) => finishComponentEdit(els, instanceId));
     select([instanceId]);
   };
