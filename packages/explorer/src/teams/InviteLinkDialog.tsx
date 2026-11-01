@@ -42,7 +42,6 @@ export function InviteLinkDialog({
   }, [on]);
 
   async function change(run: () => Promise<TeamResult<unknown>>) {
-    if (busy) return;
     changed.current = true;
     setBusy(true);
     setError(null);
@@ -105,12 +104,7 @@ export function InviteLinkDialog({
             ) : null}
           </>
         ) : (
-          <Button
-            ref={turnOnRef}
-            size="sm"
-            aria-disabled={busy || undefined}
-            onClick={() => void change(onReset)}
-          >
+          <Button ref={turnOnRef} size="sm" busy={busy} onClick={() => void change(onReset)}>
             Turn On Link
           </Button>
         )}
@@ -126,18 +120,13 @@ export function InviteLinkDialog({
             <Button
               variant="secondary"
               size="sm"
-              // Focusable while it works (a disabled button drops the keyboard to the dialog's top).
-              aria-disabled={busy || undefined}
+              // Keeps the keyboard while it works (busy-buttons.md): disabled, it dropped to the dialog's top.
+              busy={busy}
               onClick={() => void change(onClear)}
             >
               Turn Off
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              aria-disabled={busy || undefined}
-              onClick={() => void change(onReset)}
-            >
+            <Button variant="secondary" size="sm" busy={busy} onClick={() => void change(onReset)}>
               New Link
             </Button>
           </>

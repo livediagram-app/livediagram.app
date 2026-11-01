@@ -1,6 +1,7 @@
 'use client';
 
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
+import { Button } from '@liveworkspace/ui';
 import { lucideHistory, lucideRefreshCw } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import {
@@ -249,18 +250,20 @@ export function StatusBoard({
                 >
                   {running || remaining === null ? 'Now' : resting ? `in ${remaining} s` : 'Ready'}
                 </span>
-                <button
-                  type="button"
+                <Button
+                  variant="none"
                   onClick={() => void run()}
-                  disabled={running || resting || remaining === null}
+                  // Busy through the check and its rest, so the keyboard stays on it (busy-buttons.md).
+                  disabled={remaining === null}
+                  busy={running || resting}
                   aria-describedby="lw-status-rest"
-                  className={`relative touch-target-y inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-micro hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-60 disabled:hover:bg-slate-900 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:focus-visible:outline-white dark:disabled:hover:bg-white ${running ? 'disabled:cursor-progress' : 'disabled:cursor-not-allowed'}`}
+                  className={`relative touch-target-y inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-micro hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-60 disabled:hover:bg-slate-900 aria-disabled:hover:bg-slate-900 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:focus-visible:outline-white dark:disabled:hover:bg-white dark:aria-disabled:hover:bg-white ${running ? 'disabled:cursor-progress' : 'disabled:cursor-not-allowed'}`}
                 >
                   <span className={running ? 'lw-status-spin inline-flex' : 'inline-flex'}>
                     <RefreshIcon />
                   </span>
                   Check now
-                </button>
+                </Button>
               </dd>
             </div>
           </dl>

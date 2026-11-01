@@ -66,4 +66,25 @@ describe('Consent', () => {
     await allow();
     expect(alertText()).toMatch(/That request has expired/);
   });
+
+  it('keeps the keyboard on Allow while it answers, and answers once', async () => {
+    let finish: (r: Response) => void = () => {};
+    const fetch = vi.fn(() => new Promise<Response>((r) => (finish = r)));
+    vi.stubGlobal('fetch', fetch);
+    act(() => root.render(<Consent />));
+    const button = (name: string) =>
+      [...container.querySelectorAll('button')].find((b) => b.textContent === name)!;
+    button('Allow').focus();
+    await act(async () => button('Allow').click());
+    expect(button('Allow').getAttribute('aria-disabled')).toBe('true');
+    expect(button('Allow').disabled).toBe(false);
+    expect(document.activeElement).toBe(button('Allow'));
+    await act(async () => button('Allow').click());
+    await act(async () => button('Deny').click());
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await act(async () => finish(new Response('{}', { status: 401 })));
+    await settle();
+    expect(alertText()).toMatch(/That request has expired/);
+    expect(document.activeElement).toBe(button('Allow'));
+  });
 });

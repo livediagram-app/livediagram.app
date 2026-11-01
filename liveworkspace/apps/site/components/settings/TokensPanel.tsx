@@ -2,6 +2,7 @@
 
 import { useRef, useState, type FormEvent, type RefObject } from 'react';
 import { accountApi, errorMessage, formatDate, type ApiToken } from '@/lib/account-api';
+import { Button } from '@liveworkspace/ui';
 import { BUTTON, ErrorNote, INPUT, Panel } from './account-ui';
 import { ConfirmAction } from './ConfirmAction';
 import { SecretReveal } from './SecretReveal';
@@ -91,7 +92,6 @@ function CreateToken({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (busy) return;
     setBusy(true);
     setError(null);
     const result = await accountApi<ApiToken & { secret: string }>('/tokens', 'POST', {
@@ -123,15 +123,11 @@ function CreateToken({
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
-          {/* Focusable while it makes the token (aria-disabled; submit ignores a second press): disabled, the
-              focused button dropped the keyboard to the top of Settings. */}
-          <button
-            type="submit"
-            className={`${BUTTON.primary} shrink-0`}
-            aria-disabled={busy || undefined}
-          >
+          {/* Keeps the keyboard while it makes the token (busy-buttons.md): disabled, the focused button dropped it
+              to the top of Settings. */}
+          <Button type="submit" variant="none" className={`${BUTTON.primary} shrink-0`} busy={busy}>
             Make token
-          </button>
+          </Button>
         </div>
         <label className="mt-3 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
           <input

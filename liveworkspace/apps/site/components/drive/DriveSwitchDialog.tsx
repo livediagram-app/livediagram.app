@@ -4,7 +4,7 @@
 // account than the one Cloud Sync uses. Nothing has changed yet; the person confirms or cancels here. A pending switch
 // lasts 30 minutes; answered after that, the dialog says so and offers the way back.
 import { useEffect, useRef, useState } from 'react';
-import { Dialog, DialogFooter } from '@liveworkspace/ui';
+import { Button, Dialog, DialogFooter } from '@liveworkspace/ui';
 import type { DriveClient } from '@liveworkspace/drive/client';
 import { switchOutcome } from '@/lib/drive/pages';
 import { BUTTON } from '../settings/account-ui';
@@ -33,11 +33,17 @@ export function DriveSwitchDialog({
 }) {
   const [phase, setPhase] = useState<Phase>('ask');
   const switchRef = useRef<HTMLButtonElement>(null);
+  const backRef = useRef<HTMLAnchorElement>(null);
   const busy = phase === 'switching' || phase === 'keeping';
+  const expired = phase === 'expired';
 
   useEffect(() => {
     switchRef.current?.focus();
   }, []);
+  // Timed out, the buttons give way to Back to Cloud Sync: the keyboard goes with them rather than to the dialog.
+  useEffect(() => {
+    if (expired) backRef.current?.focus();
+  }, [expired]);
 
   const answer = async (next: 'switching' | 'keeping') => {
     setPhase(next);
@@ -79,23 +85,24 @@ export function DriveSwitchDialog({
       </div>
       <DialogFooter>
         {phase === 'expired' ? (
-          <a href={cloudSyncHref} className={BUTTON.primary}>
+          <a ref={backRef} href={cloudSyncHref} className={BUTTON.primary}>
             Back to Cloud Sync
           </a>
         ) : (
           <>
-            <button type="button" className={BUTTON.secondary} disabled={busy} onClick={keep}>
+            {/* Busy while either answer is sent (busy-buttons.md): the pressed one keeps the keyboard. */}
+            <Button variant="none" className={BUTTON.secondary} busy={busy} onClick={keep}>
               Keep Current Account
-            </button>
-            <button
+            </Button>
+            <Button
               ref={switchRef}
-              type="button"
+              variant="none"
               className={BUTTON.primary}
-              disabled={busy}
+              busy={busy}
               onClick={() => void answer('switching')}
             >
               {phase === 'switching' ? 'Switching…' : 'Switch Account'}
-            </button>
+            </Button>
           </>
         )}
       </DialogFooter>
