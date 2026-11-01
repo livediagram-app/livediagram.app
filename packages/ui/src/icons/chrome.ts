@@ -51,6 +51,7 @@ export {
 } from './badges';
 export {
   MarkerIcon,
+  FillToolIcon,
   FlowchartIcon,
   FlipchartIcon,
   PagesIcon,

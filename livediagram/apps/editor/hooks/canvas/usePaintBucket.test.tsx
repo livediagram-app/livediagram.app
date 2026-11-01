@@ -76,7 +76,7 @@ describe('usePaintBucket', () => {
     const s = setup();
     s.paint({ x: 900, y: 900 });
     expect(s.hint).toHaveBeenCalledWith(FILL_MISSED_HINT);
-    const locked = setup({ elements: [{ ...square, locked: true } as Element] });
+    const locked = setup({ elements: [{ ...square, locked: true }] });
     locked.paint({ x: 100, y: 100 });
     expect(locked.hint).toHaveBeenCalledWith(FILL_LOCKED_HINT);
     expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'FillMissed');

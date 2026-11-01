@@ -198,6 +198,7 @@
     "./hooks/canvas/useCanvasSelectHandlers": "./src/hooks/canvas/useCanvasSelectHandlers.ts",
     "./hooks/canvas/useChartHover": "./src/hooks/canvas/useChartHover.ts",
     "./hooks/canvas/useCursorsNearPointer": "./src/hooks/canvas/useCursorsNearPointer.ts",
+    "./hooks/canvas/useFillPress": "./src/hooks/canvas/useFillPress.ts",
     "./hooks/canvas/useKeyboardAvoidance": "./src/hooks/canvas/useKeyboardAvoidance.ts",
     "./hooks/canvas/useObservedSize": "./src/hooks/canvas/useObservedSize.ts",
     "./hooks/canvas/usePruneInertSelection": "./src/hooks/canvas/usePruneInertSelection.ts",

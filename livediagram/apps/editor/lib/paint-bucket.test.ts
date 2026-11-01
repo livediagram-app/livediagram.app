@@ -26,23 +26,25 @@ function marker(id: string, gapDeg: number, cx = 100, cy = 100, r = 50): Freehan
   return { ...createFreehand(pts, false), id, penWidth: 1.5 };
 }
 
-const rect = (id: string, over: Partial<Element> = {}): Element =>
-  ({
-    ...createShape('square', 0, 0),
-    id,
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 200,
-    fillColor: 'transparent',
-    ...over,
-  }) as Element;
+const rect = (id: string, over: Record<string, unknown> = {}): Element => ({
+  ...createShape('square', 0, 0),
+  id,
+  x: 0,
+  y: 0,
+  width: 200,
+  height: 200,
+  fillColor: 'transparent',
+  ...over,
+});
 
 const P = { x: 100, y: 100 };
 
 describe('what a press fills', () => {
   it('fills a closed shape under the press, inside its drawn outline', () => {
-    expect(paintBucketTarget([rect('r')], P)).toEqual({ kind: 'fill', el: expect.objectContaining({ id: 'r' }) });
+    expect(paintBucketTarget([rect('r')], P)).toEqual({
+      kind: 'fill',
+      el: expect.objectContaining({ id: 'r' }),
+    });
     // An ellipse by its curve: its box corner is outside it.
     const ellipse = { ...rect('e'), shape: 'circle' } as Element;
     expect(paintBucketTarget([ellipse], { x: 5, y: 5 }).kind).toBe('none');
@@ -74,7 +76,9 @@ describe('what a press fills', () => {
     expect(paintBucketTarget([rect('r'), note], P).kind).toBe('none');
     const chart = { ...rect('c'), shape: 'pie-chart' } as Element;
     expect(paintBucketTarget([rect('r'), chart], P).kind).toBe('none');
-    expect(paintBucketTarget([rect('r', { locked: true } as Partial<Element>)], P).kind).toBe('locked');
+    expect(paintBucketTarget([rect('r', { locked: true })], P).kind).toBe(
+      'locked',
+    );
   });
 
   it('does not see what is on a hidden or locked layer, or outside every box', () => {
@@ -87,7 +91,7 @@ describe('what a press fills', () => {
   });
 
   it('follows a rotated element round its centre', () => {
-    const turned = rect('r', { rotation: 45 } as Partial<Element>);
+    const turned = rect('r', { rotation: 45 });
     expect(paintBucketTarget([turned], P).kind).toBe('fill');
     expect(paintBucketTarget([turned], { x: 400, y: 400 }).kind).toBe('none');
   });
@@ -130,7 +134,7 @@ describe('what a press fills', () => {
 
 describe('pouring', () => {
   it('fills a shape with the colour, dropping a swatch binding, and skips the same colour', () => {
-    const r = rect('r', { fillSwatch: 2, colorPreset: 'blue' } as Partial<Element>);
+    const r = rect('r', { fillSwatch: 2, colorPreset: 'blue' });
     const next = pourBucket({ kind: 'fill', el: r }, BLUE)!;
     expect(next).toMatchObject({ id: 'r', fillColor: BLUE });
     expect((next as { fillSwatch?: unknown }).fillSwatch).toBeUndefined();
@@ -142,7 +146,10 @@ describe('pouring', () => {
   });
 
   it('fills a closed path, dropping its swatch binding', () => {
-    const path = { ...createPath([{ x: 0, y: 0, mode: 'corner' }], true), fillSwatch: 1 } as Element;
+    const path = {
+      ...createPath([{ x: 0, y: 0, mode: 'corner' }], true),
+      fillSwatch: 1,
+    } as Element;
     const next = pourBucket({ kind: 'fill', el: path }, BLUE)!;
     expect(next).toMatchObject({ fillColor: BLUE });
     expect((next as { fillSwatch?: unknown }).fillSwatch).toBeUndefined();

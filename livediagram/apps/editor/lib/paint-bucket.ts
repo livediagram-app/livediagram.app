@@ -93,9 +93,7 @@ export function paintBucketTarget(
     if (verdict === 'through') continue;
     if ((el as { locked?: boolean }).locked) return { kind: 'locked' };
     if (verdict === 'stop') return { kind: 'none' };
-    return verdict === 'loop'
-      ? { kind: 'loop', el: el as FreehandElement }
-      : { kind: 'fill', el };
+    return verdict === 'loop' ? { kind: 'loop', el: el as FreehandElement } : { kind: 'fill', el };
   }
   return { kind: 'none' };
 }
@@ -113,7 +111,11 @@ export function pourBucket(
   if (target.kind === 'loop') {
     return colour === 'transparent' ? null : fillStrokeLoop(target.el, colour);
   }
-  const el = target.el as Element & { fillColor?: string; fillSwatch?: unknown; colorPreset?: unknown };
+  const el = target.el as Element & {
+    fillColor?: string;
+    fillSwatch?: unknown;
+    colorPreset?: unknown;
+  };
   const same = el.fillColor?.toLowerCase() === colour.toLowerCase();
   if (same && el.fillSwatch === undefined && el.colorPreset === undefined) return null;
   if (el.type === 'path') return { ...el, fillColor: colour, fillSwatch: undefined };

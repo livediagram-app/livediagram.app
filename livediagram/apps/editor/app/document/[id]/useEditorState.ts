@@ -2553,7 +2553,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pathEditing: isPathEditing(activeTab.elements, editingId),
     leavePathEdit: () => setEditingId(null),
     snapColours,
-    fillSwatches: applySwatchOverrides(quickSwatches(activeTheme, 'fill'), swatchOverrides.overrides.fill),
+    fillSwatches: applySwatchOverrides(
+      quickSwatches(activeTheme, 'fill'),
+      swatchOverrides.overrides.fill,
+    ),
     userPreferences,
     setUserPreferences,
     writeUserPreferences,

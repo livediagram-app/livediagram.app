@@ -1,7 +1,8 @@
-import { lucideWorkflow } from '@liveworkspace/icons/lucide';
+import { lucidePaintBucket, lucideWorkflow } from '@liveworkspace/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
+import { Prims } from './Prims';
 
 // The editor modes' marks and the kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md
 // "Hero"): a marker for freehand drawing, a flowchart for a diagram, a flipchart for a workshop, a page, a board and
@@ -16,6 +17,31 @@ export function MarkerIcon({ size = 16, ...rest }: IconProps) {
       <path d="M7 13 L15.5 4.5 L18 7 L9.5 15.5 L6.4 16 Z" />
       <path d="M6.4 16 L7 13 L9.5 15.5 Z" fill="currentColor" />
       <path d="M4 19.5 H20" />
+    </Glyph>
+  );
+}
+
+// The Fill tool's mark (livediagram docs/specs/023-draw-mode/fill-tool.md, livedesign
+// docs/specs/023-draw-mode/drawing-tools.md "The Fill tool"): a paint bucket over a bar of the colour
+// it pours; no colour (null) shows the no-colour chip's slash, so what will pour is never hidden.
+export function FillToolIcon({
+  colour,
+  size = 16,
+  ...rest
+}: IconProps & { colour: string | null }) {
+  return (
+    <Glyph size={size} units={24} {...rest}>
+      <g transform="translate(2.4 0) scale(0.8)">
+        <Prims prims={lucidePaintBucket} />
+      </g>
+      {colour ? (
+        <path d="M4 21.5 H20" stroke={colour} strokeWidth={3} data-fill-bar="" />
+      ) : (
+        <>
+          <rect x="4" y="20" width="16" height="3" rx="1" strokeWidth={1} data-fill-bar="" />
+          <path d="M6 23.2 L18 19.8" strokeWidth={1} />
+        </>
+      )}
     </Glyph>
   );
 }

@@ -17,7 +17,8 @@ import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
 import type { DockFlyoutApi } from './useDockFlyout';
-import { DOCK_ICON_PX, FillGlyph, PenGlyph, TextGlyph } from './whiteboard-icons';
+import { FillToolIcon } from '@livediagram/ui';
+import { DOCK_ICON_PX, PenGlyph, TextGlyph } from './whiteboard-icons';
 import { FILL_TRANSPARENT } from '@liveworkspace/workbench/lib/fill-choice';
 
 export function DrawingToolsGroup({
@@ -100,7 +101,7 @@ export function DrawingToolsGroup({
         itemKey="fill"
         label="Fill"
         shortcut={WHITEBOARD_TOOL_KEYS.fill}
-        icon={<FillGlyph colour={fillBar} />}
+        icon={<FillToolIcon colour={fillBar} size={DOCK_ICON_PX} />}
         pressed={tool === 'fill'}
         controls={{ id: 'whiteboard-flyout-fill', expanded: expanded('fill') }}
         onPress={(el) => (tool === 'fill' ? fly.toggle('fill', el) : pickAndClose(model.pickFill))}

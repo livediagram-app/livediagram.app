@@ -1,31 +1,35 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { PendingDraw } from '@/lib/draw-mode';
 import { useFillPress } from './useFillPress';
 
-// docs/specs/023-draw-mode/fill-tool.md "Input".
-const FILL: PendingDraw = { type: 'fill', fill: '#dbeafe' };
-
-function setup(pendingDraw: PendingDraw | null = FILL, pinching = false) {
+// livediagram docs/specs/023-draw-mode/fill-tool.md "Input".
+function setup(armed = true, pinching = false) {
   const wrapper = document.createElement('div');
   wrapper.getBoundingClientRect = () => ({ left: 10, top: 20 }) as DOMRect;
   const onPaintBucket = vi.fn();
-  const hook = renderHook((p: { pendingDraw: PendingDraw | null }) =>
-    useFillPress({
-      pendingDraw: p.pendingDraw,
-      wrapperRef: { current: wrapper },
-      viewportZoom: 2,
-      isPinchingRef: { current: pinching },
-      onPaintBucket,
-    }),
-  { initialProps: { pendingDraw } },
+  const hook = renderHook(
+    (p: { armed: boolean }) =>
+      useFillPress({
+        armed: p.armed,
+        wrapperRef: { current: wrapper },
+        viewportZoom: 2,
+        isPinchingRef: { current: pinching },
+        onPaintBucket,
+      }),
+    { initialProps: { armed } },
   );
   return { hook, onPaintBucket };
 }
 
 const down = (id = 1, x = 110, y = 220, button = 0) =>
-  ({ pointerId: id, clientX: x, clientY: y, button, preventDefault: vi.fn() }) as unknown as React.PointerEvent;
+  ({
+    pointerId: id,
+    clientX: x,
+    clientY: y,
+    button,
+    preventDefault: vi.fn(),
+  }) as unknown as React.PointerEvent;
 
 function fire(type: 'pointerdown' | 'pointerup' | 'pointercancel', id: number, x = 110, y = 220) {
   const ev = new Event(type) as PointerEvent;
@@ -49,16 +53,16 @@ describe('useFillPress', () => {
   });
 
   it('claims nothing without the bucket in hand, a handler, or the main button', () => {
-    expect(setup(null).hook.result.current.beginFillPress(down())).toBe(false);
+    expect(setup(false).hook.result.current.beginFillPress(down())).toBe(false);
     expect(setup().hook.result.current.beginFillPress(down(1, 0, 0, 2))).toBe(false);
     const { result } = renderHook(() =>
-      useFillPress({ pendingDraw: FILL, wrapperRef: { current: null }, viewportZoom: 1 }),
+      useFillPress({ armed: true, wrapperRef: { current: null }, viewportZoom: 1 }),
     );
     expect(result.current.beginFillPress(down())).toBe(false);
     // With a handler but no canvas to measure, the press is claimed and fills nothing.
     const onPaintBucket = vi.fn();
     const bare = renderHook(() =>
-      useFillPress({ pendingDraw: FILL, wrapperRef: { current: null }, viewportZoom: 1, onPaintBucket }),
+      useFillPress({ armed: true, wrapperRef: { current: null }, viewportZoom: 1, onPaintBucket }),
     );
     expect(bare.result.current.beginFillPress(down())).toBe(true);
     // Its own pointer seen again by the window is not a second finger.
@@ -82,7 +86,7 @@ describe('useFillPress', () => {
     fire('pointercancel', 1);
     fire('pointerup', 1);
     expect(onPaintBucket).not.toHaveBeenCalled();
-    const pinching = setup(FILL, true);
+    const pinching = setup(true, true);
     pinching.hook.result.current.beginFillPress(down());
     fire('pointerup', 1);
     expect(pinching.onPaintBucket).not.toHaveBeenCalled();
@@ -95,7 +99,7 @@ describe('useFillPress', () => {
     fire('pointerup', 1, 300, 300);
     expect(onPaintBucket).toHaveBeenCalledWith({ x: 145, y: 140 });
     hook.result.current.beginFillPress(down());
-    hook.rerender({ pendingDraw: null });
+    hook.rerender({ armed: false });
     fire('pointerup', 1);
     expect(onPaintBucket).toHaveBeenCalledTimes(1);
     hook.unmount();

@@ -1,11 +1,10 @@
 'use client';
 
-// The Fill tool's press (docs/specs/023-draw-mode/fill-tool.md "Input"): a click or a tap fills, on
-// release, where it went down, when the pointer moved less than 6 screen px. A drag, a second finger
-// (a pinch) or a cancelled pointer fills nothing, so the canvas still pans and zooms.
+// The Fill tool's press (livediagram docs/specs/023-draw-mode/fill-tool.md "Input", livedesign
+// docs/specs/023-draw-mode/drawing-tools.md "The Fill tool"): a click or a tap fills, on release, where
+// it went down, when the pointer moved less than 6 screen px. A drag, a second finger (a pinch) or a
+// cancelled pointer fills nothing, so a pinch still zooms.
 import { useEffect, useRef, type RefObject } from 'react';
-import { pointerToCanvas } from '@/lib/canvas';
-import { isFillIntent, type PendingDraw } from '@/lib/draw-mode';
 
 /** How far a press may travel, in screen px, and still be a press. */
 export const FILL_PRESS_SLOP_PX = 6;
@@ -13,13 +12,15 @@ export const FILL_PRESS_SLOP_PX = 6;
 type Press = { id: number; x: number; y: number };
 
 export function useFillPress({
-  pendingDraw,
+  armed,
   wrapperRef,
   viewportZoom,
   isPinchingRef,
   onPaintBucket,
 }: {
-  pendingDraw: PendingDraw | null;
+  // The Fill tool is in hand.
+  armed: boolean;
+  // The canvas's zoomed content box: a press is measured from its corner, in canvas px.
   wrapperRef: RefObject<HTMLDivElement | null>;
   viewportZoom: number;
   isPinchingRef?: RefObject<boolean>;
@@ -29,7 +30,6 @@ export function useFillPress({
   // The press in flight: a second finger landing marks it a pinch rather than starting another.
   const pinchRef = useRef<{ id: number; pinch: () => void } | null>(null);
   // A press in flight is dropped when the tool is put down or the view unmounts.
-  const armed = isFillIntent(pendingDraw);
   useEffect(() => {
     if (armed) return;
     stopRef.current?.();
@@ -61,7 +61,10 @@ export function useFillPress({
       if (pinched || isPinchingRef?.current || moved >= FILL_PRESS_SLOP_PX) return;
       const rect = wrapperRef.current?.getBoundingClientRect();
       if (!rect) return;
-      onPaintBucket(pointerToCanvas(press.x, press.y, rect, viewportZoom));
+      onPaintBucket({
+        x: (press.x - rect.left) / viewportZoom,
+        y: (press.y - rect.top) / viewportZoom,
+      });
     };
     const onCancel = (ev: PointerEvent) => {
       if (ev.pointerId === press.id) stop();

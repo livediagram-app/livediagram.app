@@ -9,7 +9,8 @@ import { isFillIntent, type PendingDraw } from '@/lib/draw-mode';
 import { paintBucketTarget, pourBucket } from '@/lib/paint-bucket';
 import { track } from '@/lib/telemetry';
 
-export const FILL_MISSED_HINT = 'Click inside a closed shape, or a loop whose ends meet, to fill it.';
+export const FILL_MISSED_HINT =
+  'Click inside a closed shape, or a loop whose ends meet, to fill it.';
 export const FILL_LOCKED_HINT = "That's locked, so its fill stays.";
 
 export function usePaintBucket({

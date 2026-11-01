@@ -5,7 +5,8 @@ import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
-import { useFillPress } from '@/components/canvas/useFillPress';
+import { useFillPress } from '@liveworkspace/workbench/hooks/canvas/useFillPress';
+import { isFillIntent } from '@/lib/draw-mode';
 
 type CanvasDrawToolsInput = {
   props: CanvasProps;
@@ -101,7 +102,7 @@ export function useCanvasDrawTools({
   // The Fill tool (docs/specs/023-draw-mode/fill-tool.md), in front of every drawing gesture: while it
   // is in hand a press is a fill, never a draw.
   const { beginFillPress } = useFillPress({
-    pendingDraw,
+    armed: isFillIntent(pendingDraw),
     wrapperRef,
     viewportZoom,
     isPinchingRef,

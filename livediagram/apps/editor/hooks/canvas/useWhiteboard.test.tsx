@@ -182,7 +182,10 @@ describe('useWhiteboard', () => {
       ],
     });
     expect(hook.result.current.fill).toBe('#dbeafe');
-    hook.rerender({ ...deps, fillSwatches: [{ slot: 0, color: '#ffffff', name: 'Theme default' }] });
+    hook.rerender({
+      ...deps,
+      fillSwatches: [{ slot: 0, color: '#ffffff', name: 'Theme default' }],
+    });
     expect(hook.result.current.fill).toBe('#ffffff');
     act(() => hook.result.current.pickFill());
     expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
