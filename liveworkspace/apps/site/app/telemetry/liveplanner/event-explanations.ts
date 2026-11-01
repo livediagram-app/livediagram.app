@@ -716,6 +716,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone stopped a timer on a card’s Time Spent field, recording its time as an entry.',
   'Plan|Added|TimeEntry':
     'Someone added time they worked to a card’s Time Spent field by hand (Add Time).',
+  'Plan|Linked|CardTypeBase':
+    'Someone saved a card type that now inherits its fields, tabs, states and display from another type.',
+  'Plan|Unlinked|CardTypeBase':
+    'Someone detached a card type from the type it inherited from, keeping a copy of its settings.',
   'Plan|Linked|LinkedCard':
     'Someone linked an existing card to this one from a Linked as section (Link Existing).',
   'Plan|Linked|LinkedCardMoved':
@@ -2420,6 +2424,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Imported': 'Someone imported a tab from a file.',
   'Tab|Linked': 'A tab was linked into another project.',
   'Plan|Linked': 'An existing card was linked to another card from its Linked as section.',
+  'Plan|Unlinked': 'A card type was detached from the type it inherited from.',
   'Tab|Loaded':
     "A tab's content was fetched for viewing (the first tab when a project opens, then each tab switched to).",
   'Tab|Locked': 'A tab was locked (read-only).',

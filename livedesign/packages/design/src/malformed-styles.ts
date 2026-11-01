@@ -32,6 +32,8 @@ const STYLE_TYPES: readonly [string, (v: unknown, el: Element) => boolean][] = [
   ['textAlignX', isText],
   ['textAlignY', isText],
   ['textSize', isTextSizeLike],
+  // A text's or shape's label scale multiplies its size (docs/specs/007-editor/pages-mode.md "Sizes").
+  ['textScale', isNumber],
   ['rotation', isNumber],
   ['opacity', isNumber],
   ['shadow', isShadowLike],

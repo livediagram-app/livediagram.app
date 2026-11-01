@@ -26,6 +26,7 @@ import {
   applyFinishToEl,
   applyStrokeColorToEl,
   applyTextColorToEl,
+  applyTextSizeToEl,
 } from './style-presets';
 
 // Minimal element of any type. Cast through unknown since the union
@@ -493,5 +494,21 @@ describe('applyFinishToEl (docs/specs/008-canvas/finish.md)', () => {
       const source = el(type);
       expect(applyFinishToEl(source, 'sketch'), type).toBe(source);
     }
+  });
+});
+
+// docs/specs/004-interface-design/fonts.md "Text size": a picked size is the size drawn.
+describe('applyTextSizeToEl', () => {
+  it("drops a shape's or a text's scale, in the preview as on commit", () => {
+    expect(applyTextSizeToEl(el('shape', { textSize: 16, textScale: 0.46 }), 18)).toEqual(
+      el('shape', { textSize: 18 }),
+    );
+    expect(applyTextSizeToEl(el('text', { textScale: 2 }), 'md')).toEqual(
+      el('text', { textSize: 'md' }),
+    );
+  });
+
+  it("sizes an arrow's caption", () => {
+    expect(applyTextSizeToEl(el('arrow'), 'lg')).toEqual(el('arrow', { textSize: 'lg' }));
   });
 });

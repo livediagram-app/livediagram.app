@@ -267,6 +267,12 @@ export interface ItemTypeDef {
   assigneeNotifies?: boolean;
   // The custom Colour field its cards take their colour from ("Fields by role"); absent is the built-in Colour.
   colourField?: string;
+  // The base type it inherits from, by id (docs/specs/026-plan/item-types.md "Inherited types"; type-inheritance.ts):
+  // every part but its id, name, colour, glyph and new-card title is the base's, stored resolved beside this link.
+  inherits?: string;
+  // An inherited type's own fields, by id, in order: what it adds after its base type's. Always stored beside
+  // `inherits` once resolved (empty when none); absent, every field it has that its base lacks.
+  ownFields?: readonly string[];
 }
 
 // Parent (docs/specs/026-plan/item-types.md "Card fields"): a Card field linking to Projects, under the one custom

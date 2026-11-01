@@ -46,6 +46,8 @@ import {
   type ItemTypeCatalogue,
 } from './type-catalogue';
 import { defaultTypesToAdd } from './brought-types';
+import { refuseInheritedEdits, withBase, withOwnFields } from './type-change-inherit';
+import { withInheritance } from './type-inheritance';
 import { canBeRequired } from './required-fields';
 import { holdsSeveralKind } from './several-values';
 import type { CardField } from './board';
@@ -162,6 +164,8 @@ export type CardTypeChange =
       defaultStatus?: string;
       // The statuses it uses, in order, by column name or status; absent, every status the boards name.
       statuses?: readonly string[];
+      // Its base type, by name or id (docs/specs/026-plan/item-types.md "Inherited types").
+      inherits?: string;
     } & FaceInput &
       NotifyInput)
   | ({
@@ -179,6 +183,9 @@ export type CardTypeChange =
       defaultStatus?: string | null;
       // The whole ordered list of the statuses it uses, by column name or status.
       statuses?: readonly string[];
+      // A base type to inherit from, by name or id, or null to detach (docs/specs/026-plan/item-types.md "Inherited
+      // types").
+      inherits?: string | null;
     } & FaceInput &
       NotifyInput)
   | { op: 'delete'; type: string }
@@ -640,6 +647,14 @@ function withStatusList(type: ItemTypeDef, list: readonly string[]): ItemTypeDef
   return next;
 }
 
+// A catalogue refusal with the type it names: "Bug: types[3].fields", so a base change that takes a type inheriting
+// from it past a cap says which.
+function namedReason(reason: string, types: readonly ItemTypeDef[]): string {
+  const at = /^types\[(\d+)\]/.exec(reason);
+  const type = at ? types[Number(at[1])] : undefined;
+  return type ? `${type.label}: ${reason}` : reason;
+}
+
 // The catalogue after `changes`, in order, each seeing the ones before it.
 export function applyCardTypeChanges(
   stored: ItemTypeCatalogue | null | undefined,
@@ -689,6 +704,9 @@ export function applyCardTypeChanges(
           };
         }
         type = resolveRollups(resolveFormulas(type, formulas), [...types, type], rollups);
+        // A base type takes the place of the parts it gives: naming them too is refused, as on an inherited type.
+        const base = c.inherits === undefined ? null : typeNamed(c.inherits);
+        if (base) refuseInheritedEdits({ ...type, inherits: base.id }, c, [], [...types, type]);
         // Every status the boards name when none are given, as the type editor's Add Type starts one.
         const every = statuses.map((s) => s.status);
         if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
@@ -701,6 +719,7 @@ export function applyCardTypeChanges(
           type,
           (type.custom ?? []).filter((f) => f.onCard).map((f) => f.id),
         );
+        if (base) type = withBase(type, base, types);
         types = [...types, type];
         const made = (type.custom ?? []).map((f) => `${f.label} (${f.id})`);
         applied.push(
@@ -710,6 +729,22 @@ export function applyCardTypeChanges(
       } else if (c.op === 'set') {
         let type = typeNamed(c.type);
         const id = type.id;
+        if (c.inherits !== undefined)
+          type = withBase(type, c.inherits === null ? null : typeNamed(c.inherits), types);
+        // What an inherited type takes from its base can't change here (type-change-inherit.ts).
+        refuseInheritedEdits(
+          type,
+          c,
+          // A name not found yet (a field this change adds first) is left to the edit that reads it.
+          [
+            ...(c.removeFields ?? []),
+            ...(c.removeCustom ?? []),
+            ...(c.editCustom ?? []).map((e) => e.field),
+          ]
+            .map((f) => fieldKeyOf(f, type))
+            .flatMap((named) => (named.ok ? [named.key] : [])),
+          types,
+        );
         if (c.name !== undefined) {
           const name = c.name.trim();
           if (types.some((t) => t.id !== id && statusKey(t.label) === statusKey(name)))
@@ -771,8 +806,9 @@ export function applyCardTypeChanges(
         if (start && 'status' in start) type = { ...type, defaultStatus: start.status };
         type = withFace(type, c);
         type = withAssigneeNotifies(type, c.assigneeNotifies);
-        // The fields this change ticked Show on Card: placed on a type whose Display is its own.
-        type = withOnCardShown(type, ticked);
+        // The fields this change ticked Show on Card: placed on a type whose Display is its own (never an inherited
+        // type's: its Display is its base's).
+        type = type.inherits ? withOwnFields(type, types) : withOnCardShown(type, ticked);
         replace(type);
         applied.push(
           `~ ${type.label} (${type.id})` +
@@ -792,6 +828,8 @@ export function applyCardTypeChanges(
             : '= every default card type is here already',
         );
       }
+      // A base changed or deleted reaches the types inheriting from it before the next change reads them.
+      types = [...withInheritance(types)];
     }
   } catch (err) {
     if (err instanceof Refused) return { ok: false, applied, ...err.refusal };
@@ -803,7 +841,7 @@ export function applyCardTypeChanges(
       ok: false,
       applied,
       code: 'type_change_invalid',
-      message: `The card types would break a rule (${checked.reason}); nothing was saved.`,
+      message: `The card types would break a rule (${namedReason(checked.reason, types)}); nothing was saved.`,
     };
   // A project whose card types are not chosen, left with none: nothing to store.
   const none = stored == null && types.length === 0;

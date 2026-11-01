@@ -67,6 +67,7 @@ export function ItemTypeLayoutEditor({
   detailsLabel,
   onDetailsLabel,
   removedSome,
+  inherited,
 }: {
   // The type being edited (undefined for a new one): a Project always keeps its Start and Due.
   typeId?: string | undefined;
@@ -77,6 +78,9 @@ export function ItemTypeLayoutEditor({
   onDetailsLabel: (label: string) => void;
   // A field has come off since the editor opened: say what happens to its values.
   removedSome: boolean;
+  // An inherited type (docs/specs/026-plan/item-types.md "Inherited types"): its base type's name and the fields it
+  // takes from it, locked here; its tabs and Details name are the base's, and its own fields go under Details.
+  inherited?: { from: string; ids: ReadonlySet<string> } | undefined;
 }) {
   // The group whose Add Field form is open (Details is `null`), and the custom field being edited.
   // The group whose Add Field popover is open, and the button it hangs from.
@@ -95,6 +99,9 @@ export function ItemTypeLayoutEditor({
     [typeId, draft.fields, draft.custom],
   );
   const kept = requiredFieldsOf(typeId);
+  const isInherited = (id: string) => !!inherited?.ids.has(id);
+  // Locked to the base: a tab, the Details name and Add Tab.
+  const lockedLayout = !!inherited;
   const customOf = (id: string) => draft.custom.find((f) => f.id === id);
   const labelOf = (id: string) =>
     customOf(id)?.label || BUILT_IN_FIELD_LABELS[id as ItemFieldId] || id;
@@ -119,7 +126,9 @@ export function ItemTypeLayoutEditor({
   const rowsOf = (home: 'card' | { group: GroupId }, list: readonly string[]) => {
     if (list.length === 0) return null;
     const group = home === 'card' ? undefined : home.group;
-    const movable = group === undefined ? [] : movableIn(draft, group);
+    // An inherited field never moves: only an inherited type's own fields, under Details, move among themselves.
+    const movable =
+      group === undefined ? [] : movableIn(draft, group).filter((f) => !isInherited(f));
     return (
       <ReorderableRows
         ids={movable}
@@ -129,17 +138,21 @@ export function ItemTypeLayoutEditor({
           list.map((id) => {
             const c = customOf(id);
             const at = movable.indexOf(id);
+            const locked = isInherited(id);
             return (
               <FieldRow
                 key={id}
                 id={id}
                 label={labelOf(id)}
                 icon={fieldIconOf(id, c)}
-                removable={!kept.includes(id) && !isRequired(id)}
+                removable={!locked && !kept.includes(id) && !isRequired(id)}
+                lockLabel={locked && inherited ? `Inherited from ${inherited.from}` : undefined}
                 required={!!c && requiredCustomFieldsOf({ fields: [id], custom: [c] }).length > 0}
                 editing={editing === id}
-                onEdit={c ? () => setEditing(editing === id ? null : id) : undefined}
-                moveTargets={group === undefined ? [] : groups.filter((g) => g.id !== group)}
+                onEdit={c && !locked ? () => setEditing(editing === id ? null : id) : undefined}
+                moveTargets={
+                  group === undefined || lockedLayout ? [] : groups.filter((g) => g.id !== group)
+                }
                 onMoveTo={(to) => onChange({ ...draft, tabs: fileField(draft.tabs, id, to) })}
                 handle={at >= 0 && movable.length > 1 ? drag.handleProps(id) : undefined}
                 dragging={drag.draggingId === id}
@@ -152,7 +165,7 @@ export function ItemTypeLayoutEditor({
                     : (by) => onChange(moveField(draft, group, id, by))
                 }
                 onRemove={() => onChange(removeField(draft, id))}
-                notifies={id === 'assignee' ? assigneeNotifies : undefined}
+                notifies={id === 'assignee' && !locked ? assigneeNotifies : undefined}
               >
                 {c && editing === id ? (
                   <CustomFieldForm
@@ -245,6 +258,7 @@ export function ItemTypeLayoutEditor({
           title={
             <input
               aria-label="Details name"
+              readOnly={lockedLayout}
               className={`${NAME_INPUT} border-transparent`}
               value={detailsLabel}
               maxLength={ITEM_TYPE_TAB_LABEL_MAX}
@@ -266,7 +280,8 @@ export function ItemTypeLayoutEditor({
             title={
               <input
                 aria-label={`Tab ${i + 1} name`}
-                autoFocus={!t.label && t.fields.length === 0}
+                readOnly={lockedLayout}
+                autoFocus={!lockedLayout && !t.label && t.fields.length === 0}
                 className={`${NAME_INPUT} ${
                   !t.label.trim() && t.fields.length > 0
                     ? 'border-rose-400 dark:border-rose-500'
@@ -287,62 +302,68 @@ export function ItemTypeLayoutEditor({
             }
             tag="Tab"
             actions={
-              <>
-                <button
-                  type="button"
-                  className={ICON_BUTTON}
-                  aria-label={`Move ${t.label || 'tab'} up`}
-                  disabled={i === 0}
-                  onClick={() => onChange({ ...draft, tabs: moveTab(draft.tabs, i, -1) })}
-                >
-                  <ArrowUpIcon size={14} />
-                </button>
-                <button
-                  type="button"
-                  className={ICON_BUTTON}
-                  aria-label={`Move ${t.label || 'tab'} down`}
-                  disabled={i === draft.tabs.length - 1}
-                  onClick={() => onChange({ ...draft, tabs: moveTab(draft.tabs, i, 1) })}
-                >
-                  <ArrowDownIcon size={14} />
-                </button>
-                {isKeptTab(t) ? (
-                  // Overview stays: the slot keeps the headers' controls lined up.
-                  <span aria-hidden className="h-7 w-7 shrink-0" />
-                ) : (
+              lockedLayout ? undefined : (
+                <>
                   <button
                     type="button"
                     className={ICON_BUTTON}
-                    aria-label={`Remove ${t.label || 'tab'}`}
-                    onClick={() =>
-                      onChange({ ...draft, tabs: draft.tabs.filter((x) => x.id !== t.id) })
-                    }
+                    aria-label={`Move ${t.label || 'tab'} up`}
+                    disabled={i === 0}
+                    onClick={() => onChange({ ...draft, tabs: moveTab(draft.tabs, i, -1) })}
                   >
-                    <CloseIcon size={12} />
+                    <ArrowUpIcon size={14} />
                   </button>
-                )}
-              </>
+                  <button
+                    type="button"
+                    className={ICON_BUTTON}
+                    aria-label={`Move ${t.label || 'tab'} down`}
+                    disabled={i === draft.tabs.length - 1}
+                    onClick={() => onChange({ ...draft, tabs: moveTab(draft.tabs, i, 1) })}
+                  >
+                    <ArrowDownIcon size={14} />
+                  </button>
+                  {isKeptTab(t) ? (
+                    // Overview stays: the slot keeps the headers' controls lined up.
+                    <span aria-hidden className="h-7 w-7 shrink-0" />
+                  ) : (
+                    <button
+                      type="button"
+                      className={ICON_BUTTON}
+                      aria-label={`Remove ${t.label || 'tab'}`}
+                      onClick={() =>
+                        onChange({ ...draft, tabs: draft.tabs.filter((x) => x.id !== t.id) })
+                      }
+                    >
+                      <CloseIcon size={12} />
+                    </button>
+                  )}
+                </>
+              )
             }
-            footer={addForm(t.id)}
+            footer={lockedLayout ? undefined : addForm(t.id)}
             empty={
-              isKeptTab(t)
-                ? 'No fields yet. Add one, or move one here.'
-                : 'No fields yet. Add one, or move one here; an empty tab is dropped when you save.'
+              lockedLayout
+                ? 'No fields here.'
+                : isKeptTab(t)
+                  ? 'No fields yet. Add one, or move one here.'
+                  : 'No fields yet. Add one, or move one here; an empty tab is dropped when you save.'
             }
           >
             {rowsOf({ group: t.id }, t.fields)}
           </LayoutGroup>
         ))}
         <div className="flex flex-col gap-1.5">
-          <button
-            type="button"
-            disabled={draft.tabs.length >= ITEM_TYPE_TABS_MAX}
-            className={DASHED_ADD_BUTTON}
-            onClick={() => onChange({ ...draft, tabs: addTab(draft.tabs) })}
-          >
-            <PlusIcon size={13} />
-            Add Tab
-          </button>
+          {lockedLayout ? null : (
+            <button
+              type="button"
+              disabled={draft.tabs.length >= ITEM_TYPE_TABS_MAX}
+              className={DASHED_ADD_BUTTON}
+              onClick={() => onChange({ ...draft, tabs: addTab(draft.tabs) })}
+            >
+              <PlusIcon size={13} />
+              Add Tab
+            </button>
+          )}
           {removedSome ? (
             <p className="text-center text-[12px] text-slate-500 dark:text-slate-400">
               Items keep what they hold in a removed field.

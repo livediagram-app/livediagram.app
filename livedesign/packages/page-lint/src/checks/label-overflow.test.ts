@@ -32,6 +32,15 @@ describe('label-overflow', () => {
     expect(of(lint(tabOf(box('a', 0, 0, { label: undefined }))), 'label-overflow')).toEqual([]);
   });
 
+  it("measures a re-fitted shape's label at its scale (N11)", () => {
+    // A button a turned page shrank to half: its label shrank with it, so it still fits.
+    const button = { label: 'Continue with Google', textSize: 16, width: 110, height: 26 };
+    expect(of(lint(tabOf(box('a', 0, 0, button))), 'label-overflow')).toHaveLength(1);
+    expect(
+      of(lint(tabOf(box('a', 0, 0, { ...button, textScale: 0.5 }))), 'label-overflow'),
+    ).toEqual([]);
+  });
+
   it('never fires on a box sized for its label, as labelBoxSize sizes it', () => {
     const corpus = [
       'Orders',

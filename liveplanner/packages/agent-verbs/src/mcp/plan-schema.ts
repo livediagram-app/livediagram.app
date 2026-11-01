@@ -497,6 +497,13 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
+    inherits: typeArg
+      .optional()
+      .describe(
+        'A base card type, by name or id: the new type takes its fields, custom fields (same ids), tabs, ' +
+          'statuses, Default State and display, keeping its own name, colour and glyph; its own custom fields ' +
+          'follow. The base must inherit from none.',
+      ),
   }),
   z.object({
     op: z.literal('set'),
@@ -532,6 +539,14 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
+    inherits: typeArg
+      .nullable()
+      .optional()
+      .describe(
+        'A base card type to inherit from, by name or id (its fields the base lacks stay its own), or null to ' +
+          'detach, keeping a copy of the base’s settings. An inherited type’s statuses, Default State, display, ' +
+          'tabs and inherited fields are its base’s to change.',
+      ),
   }),
   z.object({
     op: z.literal('delete'),
@@ -683,6 +698,16 @@ const listedType = z.object({
     .literal(false)
     .optional()
     .describe('Given when its Assignee tells no one; the Assignee notifies otherwise.'),
+  inherits: z
+    .string()
+    .optional()
+    .describe(
+      'Its base card type’s name: every field but ownFields, and its statuses, are the base’s.',
+    ),
+  ownFields: z
+    .array(z.string())
+    .optional()
+    .describe('An inherited type’s own fields, by name, after its base’s.'),
 });
 
 const listedBoard = z.object({

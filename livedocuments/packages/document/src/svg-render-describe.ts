@@ -20,6 +20,7 @@ import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
 import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
 import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
+import { labelTextScale } from './label-text-scale';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
@@ -234,7 +235,7 @@ export function describeBoxedExport(
       ? resolveIconArt?.(el.iconId)
       : undefined;
   if (iconArt) {
-    const size = fontSizeFor(el.textSize);
+    const size = fontSizeFor(el.textSize) * labelTextScale(el);
     // The caption lives in its own band — the complement of the glyph band
     // (iconCaptionBand, docs/specs/010-palette/technology-icons.md) — so it can never stack over the art: a
     // centre caption takes the vertical band the glyph doesn't, a left/right
@@ -298,8 +299,9 @@ export function describeBoxedExport(
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
   const multiline = el.type === 'sticky';
-  // A Shift-resized text box draws its text scaled (docs/specs/006-document/document-structure.md "Data model").
-  const textScale = el.type === 'text' ? (el.textScale ?? 1) : 1;
+  // A Shift-resized text box, and a text or shape a page re-fit scaled, draws its words scaled
+  // (docs/specs/007-editor/pages-mode.md "Sizes").
+  const textScale = labelTextScale(el);
   const baseSize = fontSizeFor(el.textSize, multiline) * textScale;
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)

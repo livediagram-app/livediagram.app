@@ -5961,11 +5961,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
+      "inherits": {
+        "type": "string"
+      },
       "label": {
         "type": "string"
       },
       "newTitle": {
         "type": "string"
+      },
+      "ownFields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "statuses": {
         "items": {

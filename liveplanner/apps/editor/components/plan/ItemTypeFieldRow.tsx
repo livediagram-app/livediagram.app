@@ -21,6 +21,7 @@ export function FieldRow({
   label,
   icon,
   removable,
+  lockLabel,
   required,
   editing,
   onEdit,
@@ -42,6 +43,8 @@ export function FieldRow({
   icon: { node: React.ReactNode; name: string };
   // False for a field that never comes off (Title, Status, a type's kept fields): no Remove, and a lock.
   removable: boolean;
+  // What the lock says: "{Name} is always on this type", or why else it stays ("Inherited from Work").
+  lockLabel?: string | undefined;
   // A required custom field (docs/specs/026-plan/item-types.md "Required fields"): marked after its name.
   required?: boolean;
   editing: boolean;
@@ -99,11 +102,11 @@ export function FieldRow({
             {required ? <RequiredMark /> : null}
           </span>
           {!removable ? (
-            <Tooltip label={`${label} is always on this type`}>
+            <Tooltip label={lockLabel ?? `${label} is always on this type`}>
               <span
                 tabIndex={0}
                 role="img"
-                aria-label={`${label} is always on this type`}
+                aria-label={lockLabel ?? `${label} is always on this type`}
                 className="flex shrink-0 text-slate-400 dark:text-slate-400"
               >
                 <LockIcon size={11} />
