@@ -79,7 +79,7 @@ export function ExportRow({
               className="mt-2.5 h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700/60"
             >
               <div
-                className="h-full rounded-full bg-slate-800 transition-[width] duration-500 ease-out motion-reduce:transition-none dark:bg-slate-200"
+                className="h-full rounded-full bg-slate-800 transition-[width] duration-200 ease-out motion-reduce:transition-none dark:bg-slate-200"
                 style={{ width: `${progress}%` }}
               />
             </div>

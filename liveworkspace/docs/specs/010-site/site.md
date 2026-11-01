@@ -15,6 +15,7 @@ apps/telemetry     the telemetry API, /api/telemetry/* (telemetry.md)
 apps/community     the Community API, /api/community/* (community.md)
 apps/status        the hourly status checks and their history, /api/status* (status.md)
 apps/drive         Google Drive sync for every app, /api/drive* (drive.md)
+apps/export        Download Your Data, behind accounts only: no route of its own (003-accounts/data-export.md)
 apps/redirect      the bare liveworkspace.app's page loads, one 301 to www. ("Hosting")
 ```
 
