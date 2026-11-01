@@ -1,7 +1,9 @@
 // A card's history in the plan's own SQLite (docs/specs/026-plan/items.md "History", blueprint item-store.md
 // "History"): appended by the plan's item writes once they land, read one card at a time when its panel opens, and
 // bounded per card on every append and across the plan by the daily upkeep. Only `env.PLAN_DB`, the plan's Durable
-// Object storage: history never touches D1, the index or the room.
+// Object storage: history never touches D1, the index or the room. A card's status change also leaves a `card_moved`
+// key in the plan's outbox, in the same batch, which the room's drain pushes to the index for webhooks
+// (liveworkspace/docs/specs/004-index/webhooks.md "What it sends").
 
 import {
   ITEM_HISTORY_MAX,
@@ -12,7 +14,11 @@ import {
   type ItemHistoryTag,
   type StoredHistoryEntry,
 } from '@liveplanner/items';
+import { CARD_MOVED_KIND, cardMoveKeyOf } from '@liveworkspace/index-app';
 import type { PlanEnv } from '../types';
+
+// A card with no status, as a webhook names where it was.
+const NO_STATUS = 'No Status';
 
 // One landed write to one card: the card as it stood (null for a create) and as written.
 export type HistoryWrite = { before: Item | null; after: Item };
@@ -30,6 +36,7 @@ export async function appendItemHistory(
 ): Promise<number> {
   const db = env.PLAN_DB;
   const rows: { i: string; a: number; b: string; c: string }[] = [];
+  const moves: string[] = [];
   const trimmed = new Set<string>();
   let cutoff = 0;
   for (const { before, after } of writes) {
@@ -42,6 +49,21 @@ export async function appendItemHistory(
       b: JSON.stringify(by),
       c: JSON.stringify(changes),
     });
+    for (const change of changes) {
+      if (change.kind !== 'moved') continue;
+      const title = after.fields['title'];
+      moves.push(
+        cardMoveKeyOf({
+          cardId: after.id,
+          cardKey: after.key,
+          card: typeof title === 'string' ? title : '',
+          from: change.from ?? NO_STATUS,
+          to: change.to ?? NO_STATUS,
+          actorName: by.name,
+          at: after.updatedAt,
+        }),
+      );
+    }
     if (before) trimmed.add(after.id);
     cutoff = Math.max(cutoff, after.updatedAt - ITEM_HISTORY_MAX_AGE_MS);
   }
@@ -55,6 +77,14 @@ export async function appendItemHistory(
       )
       .bind(projectId, tag ?? null, JSON.stringify(rows)),
   ];
+  if (moves.length > 0)
+    statements.push(
+      db
+        .prepare(
+          `INSERT OR IGNORE INTO outbox (plan_id, kind, key) SELECT ?, '${CARD_MOVED_KIND}', value FROM json_each(?)`,
+        )
+        .bind(projectId, JSON.stringify(moves)),
+    );
   for (const itemId of trimmed) {
     statements.push(
       db
