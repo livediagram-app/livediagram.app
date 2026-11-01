@@ -26,3 +26,6 @@ One row per default applied where a spec is silent or qualitative.
 | FT2 | workshop-tour     | The help card's hue                                      | `#ea580c`, a step from Workshop mode's `#c2410c`                                                   |
 | PM1 | presentation-mode | What counts as a step (counted from the slide asked for) | A move of exactly one slide; a jump (list, Home, End) is taken as given                            |
 | PM2 | presentation-mode | What logs a refused fullscreen                           | `console.warn`, always shown ([Console logging](../../003-system-architecture/console-logging.md)) |
+| VK1 | vote-keys         | Which characters are the vote keys                       | `+` and `=` (one key, shifted or not) and `-`; the numpad's `+` and `-` give the same `key`        |
+| VK2 | vote-keys         | What a key says when the tab refuses the dot             | `This tab is locked, so no dot moved.`: a locked tab is the one block a voter can meet             |
+| VK3 | vote-keys         | Whether a refused key is tracked                         | No: only a dot that moved is (`Element` `Voted` / `Removed` `Vote`), as for a press                |
