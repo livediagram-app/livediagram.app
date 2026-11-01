@@ -90,6 +90,15 @@ describe('the Make Sizes dialog', () => {
     expect(document.activeElement).toBe(all);
   });
 
+  it('writes the Custom fields’ unit in an ink that reads on the dark dialog too', () => {
+    // slate-500 alone is 3.6:1 on the dark dialog (axe colour-contrast in dark mode).
+    open();
+    fireEvent.click(tile(/^Custom/));
+    const units = screen.getAllByText('px');
+    expect(units.length).toBeGreaterThan(0);
+    for (const u of units) expect(u.className).toContain('dark:text-slate-400');
+  });
+
   it('holds the ticks to the room the tab has left', () => {
     sizeTicks.set({ ticked: ['x-post', 'x-header', 'custom'], custom: { width: 10, height: 10 } });
     open({ photoRoom: 2 });
