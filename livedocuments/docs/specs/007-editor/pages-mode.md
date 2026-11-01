@@ -200,7 +200,8 @@ A tab with no pages stored starts with one page, its kind unchosen.
 
 **The first page's choice**: while a tab's only page is unchosen and empty, it offers the four kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size (420 px
-wide, never wider than the screen less a 16 px gutter a side, so a phone shows all of it),
+wide, never wider than the screen less a 16 px gutter a side, so a phone shows all of it, and over the
+canvas's + after the page),
 **What Is This Page For?** ("Choose now: every page of this tab will be this kind."), over four
 cards:
 
