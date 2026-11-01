@@ -103,8 +103,15 @@ card, each line a run joined by `<a:br/>`.
 - Remove: `removeNoteCard`; with words, `undo` is set (replacing any earlier one) and cleared after
   `NOTE_CARD_UNDO_MS` or by Undo (`restoreNoteCard`).
 - Keys on a closed, focused card (its root, `role="group"` with a `tabIndex` of 0): Enter opens, Delete/Backspace
-  removes, Alt+↑/↓ moves, ↑/↓ moves focus. Keys in the open box: Escape closes (stopped there, so the popover stays
-  open), ⌘/Ctrl+Enter adds after; every other key is stopped from reaching the editor's shortcuts.
+  removes, Alt+↑/↓ moves, ↑/↓ moves focus. Keys in the open box: Escape closes, ⌘/Ctrl+Enter adds after; every
+  other key is stopped from reaching the editor's shortcuts.
+- Escape and the popover: `AnchoredPopover` and the phone sheet take Escape in the capture phase, before the box sees
+  it. So `NoteCardList` takes an optional `takeEscape` ref and sets it to a function that closes the open card and
+  returns true (false with none open); `PageNotesButton` passes `onEscape={() => takeEscape.current?.() ?? false}` to
+  `TitlePopoverButton`, which hands it to `AnchoredPopover`'s `onEscape` and calls it first in its sheet's
+  `useEscape`, closing only when it returns false.
+- The cards sit in a scroller (`data-note-card-scroller`, `max-h-[min(55vh,30rem)]`, overscroll contained) with Add
+  Card under it; the list is `select-none` while a card is dragged.
 - An outside press while a card is open closes it (`useClickOutside` on the list).
 - Empty (`cards.length === 0`): `CompactEmptyState` (size small) with **Add First Card**.
 
@@ -178,17 +185,17 @@ cards, one point each. You flip through them while you present.", "Add First Car
 
 ## Testing
 
-| Rule                                                                                                 | Test                                                                                 |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Parse, read old notes, mirror, limits                                                                | `packages/document/src/slide-notes.test.ts`                                          |
-| List edits                                                                                           | `apps/editor/lib/note-card-edits.test.ts`                                            |
-| The list: empty state, add, open one at a time, blank removed, keys, reorder, remove and undo, limit | `components/slide-notes/NoteCardList.test.tsx`                                       |
-| Title-bar button names, popover, phone sheet                                                         | `components/canvas/PageNotesButton.test.tsx`                                         |
-| Presenter viewer: buttons, dots, keys, live region, stays open across slides                         | `components/slide-notes/PresenterNoteCards.test.tsx`, `PresentationOverlay.test.tsx` |
-| Export one paragraph a card; summary counts                                                          | `lib/office-export/pptx.test.ts`, `ExportTabDialog.office.test.tsx`                  |
-| Import as one card                                                                                   | `packages/document/src/slide-deck-pages.test.ts`                                     |
-| Community drops cards                                                                                | `apps/api/src/redact-document.test.ts`                                               |
-| Roles: no page controls without edit                                                                 | `lib/page-deck-controls.test.ts`                                                     |
+| Rule                                                                                                 | Test                                                                                            |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Parse, read old notes, mirror, limits                                                                | `packages/document/src/slide-notes.test.ts`                                                     |
+| List edits                                                                                           | `apps/editor/lib/note-card-edits.test.ts`                                                       |
+| The list: empty state, add, open one at a time, blank removed, keys, reorder, remove and undo, limit | `components/slide-notes/NoteCardList.test.tsx`                                                  |
+| Title-bar button names, popover, phone sheet, Esc to the open card first                             | `components/canvas/PageNotesButton.test.tsx`                                                    |
+| Presenter viewer: buttons, dots, keys, live region, stays open across slides                         | `components/slide-notes/PresenterNoteCards.test.tsx`, `PresentationOverlay.note-cards.test.tsx` |
+| Export one paragraph a card; summary counts                                                          | `lib/office-export/pptx.test.ts`, `ExportTabDialog.office.test.tsx`                             |
+| Import as one card                                                                                   | `packages/document/src/slide-deck-pages.test.ts`                                                |
+| Community drops cards                                                                                | `apps/api/src/redact-document.test.ts`                                                          |
+| Roles: no page controls without edit                                                                 | `lib/page-deck-controls.test.ts`                                                                |
 
 ## Defaults ledger
 

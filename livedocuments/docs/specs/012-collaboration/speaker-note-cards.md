@@ -65,7 +65,9 @@ The cards are written in two places, both an Editor's: the slide page's title-ba
   first. Under the box: the hint "⌘↵ New Card · Esc Done" (Ctrl on Windows and Linux; left out on touch), and once
   past 800 characters a counter ("840 / 1,000"), amber at the limit. Every keystroke writes the deck.
 - **Leaving a card**: **Done**, Esc, pressing outside it or opening another card closes it. A card closed blank is
-  removed (nothing to undo).
+  removed (nothing to undo). Esc in an open card closes only the card; the next Esc closes the popover or sheet.
+- **A long stack** scrolls inside the list (up to 55% of the window's height, at most 30 rem), with **Add Card**
+  under it, so the popover never runs off the screen.
 - **Add Card**: a dashed card-shaped button under the last card ("Add Card", a plus); it adds a blank card at the end
   and opens it. ⌘↵ (Ctrl+Enter) in an open card adds a blank card straight after it and opens that. At 20 cards the
   button is disabled with the tooltip "A slide holds up to 20 cards" and ⌘↵ does nothing.
@@ -78,6 +80,7 @@ The cards are written in two places, both an Editor's: the slide page's title-ba
   card removes it the same way.
 - **Keyboard**: Tab reaches each card and its buttons in order; ↑ / ↓ on a focused card move focus to the card above
   or below.
+- The keyboard shortcuts dialog and help list ↑ / ↓ under "While presenting" (next and previous note card).
 - Copy is Title Case on buttons and headings; every icon button has a styled Tooltip and a pointer cursor; light and
   dark both read; the list fits a 450 px wide window and a 390 px phone without sideways scrolling.
 
