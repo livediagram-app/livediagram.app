@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import {
+  COMMUNITY_APP,
   COMMUNITY_KEY_STORAGE,
   communityImagePath,
   documentPath,
@@ -11,7 +12,6 @@ import { CommunityHelpLink } from '@livehuddle/ui';
 import { CommunitySiteProvider, type CommunitySite } from '@liveworkspace/community-site/client';
 import { COMMUNITY_APP_WORDS } from '@liveworkspace/community-ui/words';
 import { communityTelemetry } from './telemetry';
-import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
 // livehuddle's binding of the Community pages (@liveworkspace/community-site; docs/specs/025-community/community.md
 // "The Community app"), mounted once by the root layout. The pages are every app's; what is livehuddle's is here:

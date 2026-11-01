@@ -8,12 +8,13 @@
 
 import { SITE_URL } from '@livehuddle/ui/site';
 import { createCommunityWorker } from '@liveworkspace/community-site/worker';
-import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
 export type { CommunityWorkerEnv as Env } from '@liveworkspace/community-site/worker';
 
 export default createCommunityWorker({
-  app: COMMUNITY_APP,
+  // Borrowed from livediagram until the community app is cut (@livehuddle/api-schema COMMUNITY_APP; kept a literal so
+  // the Worker doesn't bundle the schema).
+  app: 'livediagram.app',
   siteUrl: SITE_URL,
   product: 'livehuddle',
 });

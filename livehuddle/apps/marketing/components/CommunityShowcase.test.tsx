@@ -82,7 +82,7 @@ describe('CommunityShowcase', () => {
       expect(
         urls().some(
           (url) =>
-            url === 'https://www.liveworkspace.app/api/community/featured?app=livehuddle.app',
+            url === 'https://www.liveworkspace.app/api/community/featured?app=livediagram.app',
         ),
       ).toBe(true),
     );

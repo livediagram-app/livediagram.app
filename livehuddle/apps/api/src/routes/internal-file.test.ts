@@ -27,12 +27,14 @@ vi.mock('../index-service', async (importOriginal) => ({
 }));
 
 import { upsertTab } from '../db/tabs';
+import { DOCUMENT_FILE_FORMAT } from '../document-room/document-file';
 import { sqliteD1, testDocument } from '../test-sqlite-d1';
 import { handleInternalItems } from './internal-items';
 
 const DRIVE_KEY = 'drive-key';
 const OWNER = 'user_ada';
-const MIME = 'application/vnd.livehuddle+json';
+// The file format the fork borrows from livediagram for now (document-file.ts).
+const MIME = DOCUMENT_FILE_FORMAT.mimeType;
 
 beforeEach(() => {
   made.length = 0;

@@ -62,9 +62,9 @@ afterEach(() => vi.clearAllMocks());
 const view = () => render(<StartSaveSwitch palette={PALETTE} />);
 
 describe('StartSaveSwitch', () => {
-  it('names the switch for a canvas and shows it on, on the server, for a signed-in owner', () => {
+  it('names the switch for a Space and shows it on, on the server, for a signed-in owner', () => {
     view();
-    const sw = screen.getByRole('switch', { name: 'Sync Canvas to Server' });
+    const sw = screen.getByRole('switch', { name: 'Sync Space to Server' });
     expect(sw.getAttribute('aria-checked')).toBe('true');
     expect(screen.getByText('Saved to your account, on every device.')).toBeTruthy();
   });

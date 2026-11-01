@@ -4,17 +4,15 @@ import { describe, expect, it } from 'vitest';
 import { explorerImports, explorerLibraryHosts } from './explorer-library-host';
 
 describe('explorer library host', () => {
-  it('offers livehuddle’s Import From sources, on this site’s own /import page', () => {
-    expect(explorerImports?.sources.map((s) => s.id)).toEqual([
-      'microsoft-whiteboard',
-      'excalidraw',
-      'drawio',
-    ]);
+  // livehuddle's platform registration (@liveworkspace/sites APP_ITEMS) lists no Import From sources and no Shape
+  // Libraries: its Gallery alone is lent to the Explorer.
+  it('offers no Import From sources, as livehuddle registers none', () => {
+    expect(explorerImports).toBeUndefined();
   });
 
-  it('lends the Gallery and Shape Libraries over this site, the same objects every time', () => {
+  it('lends the Gallery over this site, the same object every time', () => {
     const hosts = explorerLibraryHosts();
-    expect(Object.keys(hosts).sort()).toEqual(['gallery', 'shapeLibraries']);
+    expect(Object.keys(hosts).sort()).toEqual(['gallery']);
     expect(explorerLibraryHosts()).toBe(hosts);
   });
 });

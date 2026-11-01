@@ -3,14 +3,14 @@
 // publish / Edit Listing, remove). The public gallery reads live in
 // apps/community; nothing here is called without an owner identity.
 import {
-  communityServiceUrl,
+  COMMUNITY_APP,
   type CommunityFacetsResponse,
   type CommunityOwnPost,
   type CommunityOwnPostResponse,
   type CommunityPostInput,
+  communityServiceUrl,
 } from '@livehuddle/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
-import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
 function documentCommunityUrl(documentId: string): string {
   return `${API_BASE}/documents/${encodeURIComponent(documentId)}/community`;

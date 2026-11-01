@@ -4,7 +4,7 @@
 // the service what only it knows: who may publish, where its canvas stands, and who copied it.
 
 import { communityAppClient, type CommunityAppCall } from '@liveworkspace/community/app';
-import type { CommunityAppPublish } from '@livehuddle/api-schema';
+import { COMMUNITY_APP, type CommunityAppPublish } from '@livehuddle/api-schema';
 import type { Env } from './types';
 
 export {
@@ -12,8 +12,6 @@ export {
   communityServiceConfigured,
   copierHash,
 } from '@liveworkspace/community/app';
-import { COMMUNITY_APP } from '@livehuddle/api-schema';
-
 // Borrowed from livediagram until the community app is cut (@livehuddle/api-schema COMMUNITY_APP).
 export { COMMUNITY_APP };
 

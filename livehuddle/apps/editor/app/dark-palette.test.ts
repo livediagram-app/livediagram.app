@@ -149,9 +149,10 @@ describe('the wordmark', () => {
   // Every app's wordmark classes live in the shared logo package (packages/brand/src/apps.ts).
   const brand = readFileSync(`${REPO}../packages/brand/src/apps.ts`, 'utf8');
 
-  it('lights its "live" half sky in dark mode, and is brand-700 in light (#74)', () => {
+  // livehuddle's hue is emerald (open decision D5), registered in the shared brand package before the fork.
+  it('lights its "live" half emerald in dark mode, and is brand-700 in light (#74)', () => {
     expect(brand).toMatch(
-      /livehuddle: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-sky-400'/,
+      /livehuddle: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-emerald-400'/,
     );
   });
 });

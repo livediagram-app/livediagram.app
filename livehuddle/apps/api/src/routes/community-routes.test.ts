@@ -382,7 +382,7 @@ describe('owner routes', () => {
     service.sql
       .exec(`INSERT INTO posts (id, app, document, share_code, owner, author_name, author_color, title,
       description, category, search_text, published_at, updated_at)
-      SELECT 'p' || value, 'livehuddle.app', 'x' || value, 'c' || value, '${AUTHOR}', 'Ada', '#000000', 'T', 'D',
+      SELECT 'p' || value, 'livediagram.app', 'x' || value, 'c' || value, '${AUTHOR}', 'Ada', '#000000', 'T', 'D',
              'other', 't', 1, 1
         FROM json_each('[${Array.from({ length: 50 }, (_, i) => i).join(',')}]')`);
     const res = await community('PUT', { body });

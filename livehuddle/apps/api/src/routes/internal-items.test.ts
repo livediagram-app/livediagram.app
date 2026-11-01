@@ -296,7 +296,7 @@ describe('PUT /api/internal/people/:id/migration', () => {
     await library(USER, 'lib-new', 'Sketches');
     const body = {
       v: 1,
-      app: 'livehuddle',
+      app: 'livediagram',
       personId: USER,
       shapeLibraries: [old('lib-old', 'Sketches'), old('lib-two', 'Flows')],
     };
@@ -314,7 +314,7 @@ describe('PUT /api/internal/people/:id/migration', () => {
     const { send } = arrange();
     const res = await send('PUT', `people/${USER}/migration`, {
       v: 1,
-      app: 'livehuddle',
+      app: 'livediagram',
       personId: USER,
       shapeLibraries: [],
     });

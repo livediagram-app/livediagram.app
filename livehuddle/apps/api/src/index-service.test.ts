@@ -14,7 +14,7 @@ describe('index service', () => {
     const token = await index.tokenFor('user_ann');
     const client = indexFor(env, { kind: 'bearer', token })!;
     const { item } = await client.createItem({ id: 'doc-1', app: 'livehuddle', title: 'Map' });
-    expect(item).toMatchObject({ id: 'doc-1', ownerId: 'user_ann', kind: 'canvas', title: 'Map' });
+    expect(item).toMatchObject({ id: 'doc-1', ownerId: 'user_ann', kind: 'space', title: 'Map' });
     const outcome = await requestGrant(env, { kind: 'bearer', token }, 'doc-1', null);
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;

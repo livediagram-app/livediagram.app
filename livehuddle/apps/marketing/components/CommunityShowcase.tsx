@@ -1,10 +1,9 @@
 'use client';
 
-import { communityImagePath } from '@livehuddle/api-schema';
+import { COMMUNITY_APP, communityImagePath } from '@livehuddle/api-schema';
 import { CommunityHelpLink } from '@livehuddle/ui';
 import { CommunityShowcase as Showcase } from '@liveworkspace/community-ui/landing';
 import { COMMUNITY_APP_WORDS } from '@liveworkspace/community-ui/words';
-import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page";
 // docs/specs/019-marketing/marketing-site.md): every app's section (@liveworkspace/community-ui/landing), bound to

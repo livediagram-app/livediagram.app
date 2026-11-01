@@ -5,7 +5,7 @@
 // the card preview's picture. The editor's Share and the Explorer's both build theirs here.
 
 import type { ReactNode } from 'react';
-import { communityPostPath } from '@livehuddle/api-schema';
+import { COMMUNITY_APP, communityPostPath } from '@livehuddle/api-schema';
 import {
   COMMUNITY_APP_WORDS,
   type CommunityOwnerClient,
@@ -22,7 +22,6 @@ import {
   apiRemoveCommunityPost,
 } from '@/lib/api/community';
 import { track } from '@/lib/telemetry';
-import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
 // Each a literal pair, so the telemetry manifest's coverage test sees it (docs/specs/017-telemetry/telemetry.md):
 // Shared and Changed carry the post's category (communityCategoryType), Removed the word Post.
