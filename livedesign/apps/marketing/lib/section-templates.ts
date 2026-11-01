@@ -13,15 +13,24 @@ export const SECTION_TEMPLATES_MAX = 9;
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
   logos: [
     'logo-design',
+    'logo-lockups',
+    'logo-wordmarks',
+    'logo-emblems',
+    'logo-marks',
     'wireframe-mobile-app',
     'wireframe-website',
     'wireframe-dashboard',
-    'wireframe-tablet-app',
-    'wireframe-watch-app',
-    'blank-logo',
+    'wireframe-app-onboarding',
   ],
   photos: ['photo-edit'],
-  collaboration: ['wireframe-website', 'wireframe-mobile-app', 'logo-design', 'photo-edit'],
+  collaboration: [
+    'wireframe-website',
+    'wireframe-mobile-app',
+    'wireframe-project-tool',
+    'wireframe-social-app',
+    'logo-design',
+    'photo-edit',
+  ],
 };
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));

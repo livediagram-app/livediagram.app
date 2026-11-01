@@ -64,7 +64,7 @@ const LIST: Alternative[] = [
       'A laser pointer, a spotlight and Zen mode for walking people through a design, live.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can add logo and wireframe pages for you.',
-      '15 templates to start from, from a logo design to app and website wireframes and a photo to edit.',
+      '33 templates to start from, by what you are making: logos and brand marks, app and website wireframes for shopping, travel, social and work, and a photo to edit.',
       'Free and MIT-licensed, with no paid tier.',
     ],
     sections: [

@@ -36,6 +36,24 @@ const ALL_KINDS = [
   'wireframe-dashboard',
   'wireframe-tablet-app',
   'wireframe-watch-app',
+  'logo-lockups',
+  'logo-wordmarks',
+  'logo-emblems',
+  'logo-marks',
+  'wireframe-social-app',
+  'wireframe-delivery-app',
+  'wireframe-travel-app',
+  'wireframe-ride-app',
+  'wireframe-music-app',
+  'wireframe-app-onboarding',
+  'wireframe-online-store',
+  'wireframe-blog',
+  'wireframe-company-site',
+  'wireframe-project-tool',
+  'wireframe-team-inbox',
+  'wireframe-video-app',
+  'wireframe-fitness-watch',
+  'wireframe-watch-music',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -72,6 +90,24 @@ const PAGED_KINDS = [
   'wireframe-dashboard',
   'wireframe-tablet-app',
   'wireframe-watch-app',
+  'logo-lockups',
+  'logo-wordmarks',
+  'logo-emblems',
+  'logo-marks',
+  'wireframe-social-app',
+  'wireframe-delivery-app',
+  'wireframe-travel-app',
+  'wireframe-ride-app',
+  'wireframe-music-app',
+  'wireframe-app-onboarding',
+  'wireframe-online-store',
+  'wireframe-blog',
+  'wireframe-company-site',
+  'wireframe-project-tool',
+  'wireframe-team-inbox',
+  'wireframe-video-app',
+  'wireframe-fitness-watch',
+  'wireframe-watch-music',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
@@ -95,7 +131,7 @@ describe('templates on pages', () => {
     const o = templateCanvasOverrides(kind);
     expect(o.opensIn).toBe('pages');
     expect(o.pages?.length).toBeGreaterThan(0);
-    const want = kind === 'logo-design' ? 'logo' : 'wireframe';
+    const want = kind.startsWith('logo-') ? 'logo' : 'wireframe';
     expect(o.pages!.every((p) => p.kind === want)).toBe(true);
     expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
   });

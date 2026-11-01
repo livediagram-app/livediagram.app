@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, popularKindsFor } from '@livedesign/templates';
+import {
+  EXTRA_BLANK_TEMPLATES,
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  popularKindsFor,
+  templateCategory,
+} from '@livedesign/templates';
 import { TEMPLATE_STARTS } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
@@ -38,26 +44,20 @@ describe('the Pages template start', () => {
 });
 
 describe('Start Making Pages', () => {
-  it('groups by what is made: Logos, Photos, Wireframes', () => {
+  it('groups after Recommended and Blank Pages by the catalogue categories, in their order', () => {
     expect(TEMPLATE_STARTS.pages.groups.map((g) => g.name)).toEqual([
       'Recommended',
-      'Logos',
-      'Photos',
-      'Wireframes',
+      'Blank Pages',
+      ...TEMPLATE_CATEGORIES.map((c) => c.label),
     ]);
   });
 
-  it('leads each group with its page kind: Blank Logo, Photo Edit, a blank wireframe', () => {
-    const first = Object.fromEntries(TEMPLATE_STARTS.pages.groups.map((g) => [g.id, g.kinds[0]]));
-    expect(first).toMatchObject({
-      logos: 'blank-logo',
-      photos: 'photo-edit',
-      wireframes: 'blank-wireframe-phone',
-    });
-    // Blank Logo stays in its group alone.
-    expect(TEMPLATE_STARTS.pages.groups[0]!.kinds).not.toContain('blank-logo');
-    expect(TEMPLATE_STARTS.pages.groups.filter((g) => g.kinds.includes('blank-logo'))).toHaveLength(
-      1,
-    );
+  it('puts the blanks of a page kind in Blank Pages, and every other template under its primary category', () => {
+    const groups = TEMPLATE_STARTS.pages.groups;
+    expect(groups[1]!.kinds).toEqual([...EXTRA_BLANK_TEMPLATES]);
+    for (const g of groups.slice(2))
+      for (const k of g.kinds) expect(templateCategory(k), k).toBe(g.id);
+    const kinds = groups.slice(1).flatMap((g) => g.kinds);
+    expect(new Set(kinds).size).toBe(kinds.length);
   });
 });
