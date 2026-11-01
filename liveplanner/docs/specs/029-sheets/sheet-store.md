@@ -75,7 +75,8 @@ elements, its snapshots, its changesets or its room.
 - A write the server could not take for now (no answer, a timeout, a rate limit, a server error) is kept, still
   shown and still ahead of the sheet's later writes, and sent again after a wait that doubles from half a second
   up to 30 seconds, until it lands or the room confirms it. Only a refusal (any other answer) drops it, with a
-  toast, and fetches the sheet again.
+  toast, and fetches the sheet again. While it waits it is kept in the plan's queue of waiting changes, so a reload
+  keeps it too, and coming back online sends it at once ([Offline changes](../007-editor/offline-changes.md)).
 
 ## Template starts
 

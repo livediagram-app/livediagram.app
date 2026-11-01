@@ -24,8 +24,16 @@ export const REPAIR_KEPT_KEYS: readonly string[] = [
   'liveplanner:v2:collab-secret',
 ];
 
+/** The prefix of each plan's queue of waiting card and sheet changes (docs/specs/007-editor/offline-changes.md),
+ *  one key per plan and person: work that exists nowhere else until it is sent. */
+export const OFFLINE_QUEUE_KEY_PREFIX = 'liveplanner:offline-queue:';
+
+/** Key prefixes a repair keeps, every key under them. */
+export const REPAIR_KEPT_PREFIXES: readonly string[] = [OFFLINE_QUEUE_KEY_PREFIX];
+
 /** True when a repair clears this storage key. */
 export function isRepairClearable(key: string): boolean {
   if (!REPAIR_SCOPE_PREFIXES.some((p) => key.startsWith(p))) return false;
+  if (REPAIR_KEPT_PREFIXES.some((p) => key.startsWith(p))) return false;
   return !REPAIR_KEPT_KEYS.includes(key);
 }

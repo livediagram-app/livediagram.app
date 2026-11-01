@@ -38,6 +38,7 @@ import { usePlanDefaultTool } from '@/hooks/editor/usePlanDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useSheetCsvDrop } from '@/hooks/sheets/useSheetCsvDrop';
 import { useSheetChartInertIds } from '@/hooks/sheets/useSheetChartInertIds';
+import { signalReconnect } from '@/lib/offline-queue/reconnect';
 import { useSheetsBridge, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { tabNamedForSheet } from '@/lib/tab-named-plan';
 import { useBoardDeleteGuard } from '@/hooks/plan/useBoardDeleteGuard';
@@ -844,6 +845,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     color: selfParticipant.color,
     shareCode: sessionShareCode,
     tabScope: sessionTabScope,
+    // Which of this session's card writes may wait for the connection (offline-changes.md "Roles").
+    level: participant.can.level,
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
     // An undo of a card's delete puts it back on its threads (docs/specs/026-plan/items.md "Cards coming and going").
@@ -976,6 +979,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       cardThreads.refetch();
       sheets.resync();
       sheets.reannounce();
+      // Changes that waited for the connection go now (docs/specs/007-editor/offline-changes.md "Sending them").
+      signalReconnect();
       // A rejoined connection has a new presence id, which carries no hold until it is said again.
       planPresence.reannounce();
     },

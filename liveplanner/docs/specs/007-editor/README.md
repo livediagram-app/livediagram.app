@@ -7,6 +7,7 @@ Follow the references below only as needed; never upfront.
 - ./start-panel.md - when working on the start panel an empty tab shows (StartPanel, drawing Start Planning): the panel, Best Match, its keyboard, when it shows, search handed over from /new, its look
 - ./new-project-route.md - when working on `/new`: creating a project and landing on Start Planning
 - ./templates-by-mode.md - when working on which templates are Plan's (isPlanTemplate), the blanks, hidden templates, Popular, and the names a template gives its tab and project
+- ./offline-changes.md - when working on card and sheet changes made without a connection: what waits, kept across a reload, the banner's count, sending them on reconnect, refusals on replay, the bounds and roles
 - ./load-recovery.md - when working on a project that will not load: the load's watchdog and time limits, the opening screen's self-healing reload, the load-error screen's recovery card (Copy Diagnostics, Repair This Browser), what a repair clears and keeps, and the help centre's Repair page
 - ./user-preferences.md - when working on user preferences: per-user editor preference flags and the Settings dialog
 - ./power-user-mode.md - when working on power user mode: a preset of recommended settings that restores untouched ones when switched off, power-user-only settings such as Minimal chrome, and the once-ever offer

@@ -7,13 +7,15 @@
 // fetches what it needs when it loads. A store can hold tabs loaded while nothing was attached (a sheet form's
 // builder reads its sheet; a Sheet's tab left and shown again), so an op dropped then leaves them stale: attaching
 // after one was dropped reads every loaded tab again, as a rejoin does.
-import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import type { RoomOp, SheetPresenceOp, SheetsRoomOp } from '@liveplanner/api-schema';
 import type { SheetPerson } from '@liveplanner/sheets';
 import type { BoxedElement, Element } from '@liveplanner/project';
 import type { SheetsScope } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { isOfflineIdSync } from '@/lib/offline/offline-ids';
+import { planQueue } from '@/lib/offline-queue/plan-queue';
 
 export type SheetPeer = { id: string; name: string; color: string };
 
@@ -158,6 +160,18 @@ export function useSheetsBridge(opts: {
       attach,
     ],
   );
+  // Sheet changes a reload kept waiting (docs/specs/007-editor/offline-changes.md "Kept across a reload") go as soon
+  // as the plan opens, before any Sheet is drawn: the sheet chunk loads only when some wait.
+  const bridgeRef = useLatest(bridge);
+  useEffect(() => {
+    if (!projectId || isOfflineIdSync(projectId)) return;
+    if (planQueue(projectId, ownerId).count('sheets') === 0) return;
+    void import('@/components/sheets/sheet-store-client')
+      .then((m) => m.sheetStoreOf(bridgeRef.current))
+      .catch(() => {
+        // The chunk did not load (offline): the changes still wait, and go when a Sheet is drawn.
+      });
+  }, [projectId, ownerId, bridgeRef]);
   return {
     bridge,
     receiveSheets: useCallback((op: SheetsRoomOp) => {
