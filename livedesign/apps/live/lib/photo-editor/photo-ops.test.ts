@@ -3,6 +3,8 @@ import { createMask, setLayer, type PixelLayer, type TextLayer } from '@livedesi
 import { clearSelection, fillSelection } from './edit-ops';
 import {
   canvasSize,
+  coverPlan,
+  coverSize,
   cropTo,
   flipImage,
   imageSize,
@@ -170,6 +172,56 @@ describe('changing the size', () => {
     expect(pixel(h, 0, 0)).toEqual([255, 255, 255, 255]);
     expect(pixel(h, 2, 0)).toEqual([255, 0, 0, 255]);
     expect(pixel(h, 5, 1)).toEqual([0, 255, 0, 255]);
+  });
+
+  it('plans a cover fit: the larger scale, centred', () => {
+    expect(coverPlan({ width: 4000, height: 3000 }, { width: 1080, height: 1920 })).toEqual({
+      k: 0.64,
+      dx: -740,
+      dy: 0,
+    });
+    expect(coverPlan({ width: 1080, height: 1080 }, { width: 1584, height: 396 })).toEqual({
+      k: 1584 / 1080,
+      dx: 0,
+      dy: -594,
+    });
+  });
+
+  it('fills another size, cropped about the centre, keeping the pixels past its edges', async () => {
+    // A 4 x 2 photo into 2 x 2: scale 1, the middle two columns kept in view.
+    const h = halves();
+    const text = {
+      text: 'Hi',
+      font: 'inter',
+      size: 12,
+      weight: 400 as const,
+      colour: '#000000',
+      align: 'left' as const,
+      at: { x: 2, y: 0 },
+      boxWidth: 4,
+    };
+    h.s.commitStack(
+      {
+        ...h.s.photo,
+        layers: [...h.s.photo.layers, { id: 't', name: 'T', layerKind: 'text', text }],
+      },
+      'Text',
+    );
+    expect(coverSize(h.s, 2, 2)).toBeNull();
+    await h.s.settled();
+    expect([h.s.photo.width, h.s.photo.height]).toEqual([2, 2]);
+    expect(pixel(h, 0, 0)).toEqual([255, 0, 0, 255]);
+    expect(pixel(h, 1, 0)).toEqual([0, 255, 0, 255]);
+    const a = h.s.photo.layers[0] as PixelLayer;
+    expect(a.offset).toEqual({ x: -1, y: 0 });
+    expect(h.s.raster('a').contentBounds()).toMatchObject({ width: 4, height: 2 });
+    expect((h.s.photo.layers[1] as TextLayer).text).toMatchObject({ at: { x: 1, y: 0 } });
+    expect(lastCommit(h)?.label).toBe('Make Sizes');
+    // Twice as big: every layer and its text scaled with it.
+    expect(coverSize(h.s, 4, 4)).toBeNull();
+    await h.s.settled();
+    expect((h.s.photo.layers[1] as TextLayer).text).toMatchObject({ size: 24, boxWidth: 8 });
+    expect(coverSize(h.s, 0, 4)).toMatch(/at least one pixel/);
   });
 
   it('crops to a rect and trims transparent edges', async () => {

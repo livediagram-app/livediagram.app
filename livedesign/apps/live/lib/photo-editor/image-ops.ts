@@ -226,6 +226,56 @@ export function canvasSize(
   return null;
 }
 
+/** How a photo fills another size (photo-pages.md "Making sizes"): scaled by the larger of the two
+ *  scales so it covers the size, then placed about the centre. */
+export function coverPlan(
+  from: { width: number; height: number },
+  to: { width: number; height: number },
+): { k: number; dx: number; dy: number } {
+  const k = Math.max(to.width / from.width, to.height / from.height);
+  return {
+    k,
+    dx: Math.round((to.width - from.width * k) / 2),
+    dy: Math.round((to.height - from.height * k) / 2),
+  };
+}
+
+/** Make Sizes' one step: Image Size by the cover scale, then Canvas Size about the centre, every layer
+ *  reworked once. The pixels past the new edges are kept, so the Move tool can choose another crop. */
+export function coverSize(s: PhotoSession, width: number, height: number): string | null {
+  const refused = sizeRefused(width, height);
+  if (refused) return refused;
+  const { k, dx, dy } = coverPlan(s.photo, { width, height });
+  rework(
+    s,
+    'Make Sizes',
+    { width, height },
+    (p) => ({
+      raster: resizeRaster(
+        p.raster,
+        Math.max(1, Math.round(p.raster.width * k)),
+        Math.max(1, Math.round(p.raster.height * k)),
+        'bicubic',
+      ),
+      x: Math.round(p.x * k) + dx,
+      y: Math.round(p.y * k) + dy,
+    }),
+    (l) =>
+      l.layerKind === 'text'
+        ? {
+            ...l,
+            text: {
+              ...l.text,
+              size: Math.min(2000, Math.max(4, l.text.size * k)),
+              at: { x: Math.round(l.text.at.x * k) + dx, y: Math.round(l.text.at.y * k) + dy },
+              ...(l.text.boxWidth ? { boxWidth: l.text.boxWidth * k } : {}),
+            },
+          }
+        : l,
+  );
+  return null;
+}
+
 /** Rotate by a quarter turn, two or three. */
 export function rotateQuarterTurn(s: PhotoSession, turn: QuarterTurn): void {
   const { width: W, height: H } = s.photo;
