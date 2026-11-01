@@ -128,7 +128,8 @@ export function PasswordSection({
             checked={on}
             labelledBy="share-password-label"
             describedBy="share-password-description"
-            disabled={busy || locked}
+            disabled={locked}
+            busy={busy}
             onChange={toggle}
             coversRow
             className="ml-auto"
@@ -160,7 +161,7 @@ export function PasswordSection({
           >
             Replace
           </Button>
-          <Button variant="secondary" size="xs" disabled={busy} onClick={() => void remove()}>
+          <Button variant="secondary" size="xs" busy={busy} onClick={() => void remove()}>
             Remove
           </Button>
         </div>
@@ -201,7 +202,14 @@ export function PasswordSection({
                 className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-2 font-mono text-sm text-slate-800 outline-none transition duration-micro placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
             </div>
-            <Button type="submit" size="xs" disabled={!canSave} className="shadow-sm">
+            <Button
+              type="submit"
+              size="xs"
+              // Busy, not disabled, while it saves (busy-buttons.md); disabled only while the password is not ready.
+              disabled={next === null || tooShort}
+              busy={busy}
+              className="shadow-sm"
+            >
               Save
             </Button>
             {replacing ? (

@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { lucideCircleHelp } from '@liveworkspace/icons/lucide';
 import { clamp } from '@liveworkspace/model-core/geometry-primitives';
-import { lucideGlyph } from '@liveworkspace/ui';
+import { Button, lucideGlyph } from '@liveworkspace/ui';
 import { glideTransition } from './tour-motion';
 import { placeTourPopover } from './tour-position';
 import type { TourTargetRect } from './useTourEngine';
@@ -241,26 +241,19 @@ export function TourPopover({
             )}
             <div className="flex items-center gap-2">
               {onBack ? (
-                <button
-                  type="button"
-                  aria-disabled={busy || undefined}
-                  onClick={() => {
-                    if (!busy) onBack();
-                  }}
+                <Button
+                  variant="none"
+                  busy={busy}
+                  onClick={onBack}
                   className="inline-flex h-8 items-center rounded-lg px-3 text-[13px] font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
                 >
                   Back
-                </button>
+                </Button>
               ) : null}
               {/* The last card finishes the tour; every other step moves it on. */}
               {/* While busy a press waits, the keyboard's too: the focused Next stays mounted while the next step
                   prepares, and Enter or Space on it would otherwise skip that step. */}
-              <AccentButton
-                busy={busy}
-                onClick={() => {
-                  if (!busy) onNext();
-                }}
-              >
+              <AccentButton busy={busy} onClick={onNext}>
                 {outro ? outro.finish : 'Next'}
               </AccentButton>
             </div>
@@ -282,13 +275,13 @@ function AccentButton({
   children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      aria-disabled={busy || undefined}
+    <Button
+      variant="none"
+      busy={busy}
       onClick={onClick}
       className="inline-flex h-8 cursor-pointer items-center justify-center rounded-lg bg-[var(--tour-accent)] px-3.5 text-[13px] font-medium text-[var(--tour-on-accent)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tour-accent)]"
     >
       {children}
-    </button>
+    </Button>
   );
 }

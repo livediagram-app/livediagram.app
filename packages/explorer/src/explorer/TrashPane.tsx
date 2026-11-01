@@ -164,7 +164,7 @@ export function TrashPane({
       <ThisBrowserTrashGroup />
       {hasMore ? (
         <div className="flex justify-center">
-          <Button variant="secondary" size="sm" onClick={onLoadMore} disabled={loadingMore}>
+          <Button variant="secondary" size="sm" onClick={onLoadMore} busy={loadingMore}>
             {loadingMore ? 'Loading…' : 'Show more'}
           </Button>
         </div>

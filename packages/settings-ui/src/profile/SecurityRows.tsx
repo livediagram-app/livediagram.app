@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Button } from '@liveworkspace/ui';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 
 // The Profile's Sign-in and Security (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): how the person signs in and
@@ -175,10 +176,11 @@ export function SignInMethodsRows({
             ) : google === 'connected' ? (
               <StatusPill on>Connected</StatusPill>
             ) : (
-              <button
-                type="button"
+              <Button
+                variant="none"
                 className={SETTINGS_ROW_BUTTON}
-                disabled={connecting || load.state === 'error'}
+                disabled={load.state === 'error'}
+                busy={connecting}
                 onClick={async () => {
                   setConnecting(true);
                   setFailed(false);
@@ -190,7 +192,7 @@ export function SignInMethodsRows({
                 }}
               >
                 {connecting ? 'Connecting…' : 'Connect'}
-              </button>
+              </Button>
             )
           }
         >
@@ -356,10 +358,10 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
             session.current ? (
               <StatusPill on>This device</StatusPill>
             ) : (
-              <button
-                type="button"
+              <Button
+                variant="none"
                 className={SETTINGS_ROW_BUTTON}
-                disabled={busy !== null}
+                busy={busy !== null}
                 aria-label={`Sign out of ${deviceName(session.userAgent)}`}
                 data-session-sign-out=""
                 onClick={(e) =>
@@ -367,7 +369,7 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
                 }
               >
                 {busy === session.id ? 'Signing out…' : 'Sign Out'}
-              </button>
+              </Button>
             )
           }
         />
@@ -380,15 +382,15 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
             description: `Ends ${others === 1 ? 'the other session' : `all ${others} other sessions`}. This device stays signed in.`,
           }}
           control={
-            <button
-              type="button"
+            <Button
+              variant="none"
               className={SETTINGS_ROW_BUTTON}
-              disabled={busy !== null}
+              busy={busy !== null}
               data-session-sign-out=""
               onClick={(e) => void act('others', security.revokeOtherSessions, e.currentTarget)}
             >
               {busy === 'others' ? 'Signing out…' : 'Sign Out Others'}
-            </button>
+            </Button>
           }
         >
           {failed ? (

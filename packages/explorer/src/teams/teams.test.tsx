@@ -205,6 +205,32 @@ describe('a team’s view', () => {
     expect(await screen.findByText('Invitation sent to zoe@x.test.')).toBeTruthy();
   });
 
+  it('keeps the keyboard on Invite while it sends, then hands it to the emptied field', async () => {
+    let finish: () => void = () => {};
+    const invite = vi.fn(
+      () =>
+        new Promise<{ ok: true; value: undefined }>(
+          (r) => (finish = () => r({ ok: true, value: undefined })),
+        ),
+    );
+    const host = fakeHost(details(), { invite } as unknown as Partial<TeamsHost>);
+    page({ kind: 'team', id: 't1' }, host);
+    await card();
+    const field = screen.getByLabelText('Email address to invite');
+    fireEvent.change(field, { target: { value: 'zoe@x.test' } });
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Invite' });
+    button.focus();
+    fireEvent.click(button);
+    await waitFor(() => expect(button.getAttribute('aria-busy')).toBe('true'));
+    expect(button.disabled).toBe(false);
+    expect(document.activeElement).toBe(button);
+    fireEvent.click(button);
+    expect(invite).toHaveBeenCalledTimes(1);
+    finish();
+    await screen.findByText('Invitation sent to zoe@x.test.');
+    expect(document.activeElement).toBe(field);
+  });
+
   it('turns the join link on, and copies it', async () => {
     const team = details();
     const host = fakeHost(team, {

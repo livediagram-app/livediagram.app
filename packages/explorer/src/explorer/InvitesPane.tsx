@@ -131,7 +131,7 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
                   <Button
                     variant="secondary"
                     size="xs"
-                    disabled={busy.has(invite.id)}
+                    busy={busy.has(invite.id)}
                     aria-label={`Decline the invitation to ${invite.teamName}`}
                     onClick={() => void reply(invite, false)}
                   >
@@ -139,7 +139,7 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
                   </Button>
                   <Button
                     size="xs"
-                    disabled={busy.has(invite.id)}
+                    busy={busy.has(invite.id)}
                     aria-label={`Accept the invitation to ${invite.teamName}`}
                     className="shadow-sm"
                     onClick={() => void reply(invite, true)}

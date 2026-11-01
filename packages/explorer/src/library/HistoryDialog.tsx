@@ -9,7 +9,7 @@
 
 import { memo, useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import type { Item, TimelineEvent } from '@liveworkspace/index-client';
-import { EmptyState, PictureDisc } from '@liveworkspace/ui';
+import { Button, EmptyState, PictureDisc } from '@liveworkspace/ui';
 import { usePersonPicture } from '../data/usePeople';
 import { useExtras } from '../explorer/extras';
 import { useExplorer, type ExplorerContextValue } from '../explorer/context';
@@ -196,15 +196,14 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
                 Couldn’t load older events.
               </p>
             ) : null}
-            <button
-              type="button"
-              disabled={state.loading}
-              aria-busy={state.loading || undefined}
+            <Button
+              variant="none"
+              busy={state.loading}
               onClick={() => read(state.cursor)}
               className={BUTTON}
             >
               {state.loading ? 'Loading…' : state.failed ? 'Try again' : 'Show older events'}
-            </button>
+            </Button>
             <p className={`text-[11px] ${MUTED}`} aria-live="polite">
               {state.events.length} shown
             </p>

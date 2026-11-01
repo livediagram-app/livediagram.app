@@ -15,13 +15,7 @@ export function LoadMore({
   const { words } = useCommunitySite();
   return (
     <div className="mt-10 flex flex-col items-center gap-2">
-      <Button
-        variant="secondary"
-        size="md"
-        onClick={onClick}
-        disabled={loading}
-        aria-busy={loading}
-      >
+      <Button variant="secondary" size="md" onClick={onClick} busy={loading}>
         {loading ? 'Loading...' : failed ? 'Try Again' : 'Load More'}
       </Button>
       {failed ? (
