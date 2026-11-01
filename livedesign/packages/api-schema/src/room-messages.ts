@@ -1,10 +1,10 @@
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
-import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { ElementDelta, RoomElementOp, Tab } from '@livedesign/design';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 import type { PhotoOp } from '@livedesign/photo-engine';
+import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
