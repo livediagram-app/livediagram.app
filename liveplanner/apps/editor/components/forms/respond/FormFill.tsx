@@ -5,6 +5,7 @@
 // or Submit, Back / Next / Submit, and then the confirmation. The form link's page and the builder's Preview both draw
 // it; only what Submit does differs.
 import { useEffect, useRef } from 'react';
+import { Button } from '@liveplanner/ui';
 import { answerErrorMessage, promptOf, type PublicForm } from '@liveplanner/forms';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
@@ -222,10 +223,10 @@ export function FormFill({
           </button>
         ) : null}
         {lastSection ? (
-          <button
-            type="button"
+          <Button
+            variant="none"
             onClick={() => void fill.send()}
-            disabled={fill.status === 'sending'}
+            busy={fill.status === 'sending'}
             className="flex h-11 cursor-pointer items-center gap-2 form-box rounded-lg bg-[var(--form-accent)] px-6 text-[15px] font-semibold text-[var(--form-on-accent)] shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80 dark:focus-visible:ring-offset-slate-950"
           >
             {fill.status === 'sending' ? (
@@ -235,7 +236,7 @@ export function FormFill({
               />
             ) : null}
             {fill.status === 'sending' ? 'Sending…' : 'Submit'}
-          </button>
+          </Button>
         ) : (
           <button
             type="button"

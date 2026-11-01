@@ -50,7 +50,7 @@ export function TrackerImportPanel({
           className="shrink-0 whitespace-nowrap"
           // The picker again, for the same tool; a cancel keeps this preview.
           onClick={() => void flow.pick(preview.board.source)}
-          disabled={busy}
+          busy={busy}
         >
           Choose Another File
         </Button>
@@ -60,7 +60,7 @@ export function TrackerImportPanel({
           // Wide enough for "Importing…", so the label swap moves nothing.
           className="min-w-[7.5rem] shrink-0"
           onClick={() => void flow.run()}
-          disabled={busy}
+          busy={busy}
         >
           {flow.busy === 'importing' ? 'Importing…' : 'Import'}
         </Button>

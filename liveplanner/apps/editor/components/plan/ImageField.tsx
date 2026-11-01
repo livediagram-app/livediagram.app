@@ -6,7 +6,7 @@
 // authenticated fetch (apiImageUrl), so a picture shown on a board and in its panel is fetched once.
 import { useId, useRef, useState, type DragEvent } from 'react';
 import type { ItemFieldValue } from '@liveplanner/items';
-import { lucideGlyph } from '@liveplanner/ui';
+import { Button, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideImage,
   lucideImagePlus,
@@ -104,12 +104,12 @@ export function ImageFieldControl({
     return (
       <div className="flex flex-col gap-1.5">
         {picker}
-        <button
+        <Button
+          variant="none"
           id={id}
-          type="button"
-          disabled={!canUpload || uploading}
+          disabled={!canUpload}
+          busy={uploading}
           aria-describedby={hintId}
-          aria-busy={uploading || undefined}
           onClick={choose}
           onDragOver={dragOver}
           onDragLeave={() => setOver(false)}
@@ -136,7 +136,7 @@ export function ImageFieldControl({
           <span id={hintId} className="text-[11px] text-slate-500 dark:text-slate-400">
             PNG, JPEG, WebP or GIF, up to 10 MB
           </span>
-        </button>
+        </Button>
         {message ? (
           <p role="alert" className="text-[12px] text-rose-700 dark:text-rose-300">
             {message}
@@ -192,15 +192,16 @@ export function ImageFieldControl({
       </div>
       {disabled ? null : (
         <div className="flex items-center gap-1">
-          <button
-            type="button"
+          <Button
+            variant="none"
             className={QUIET_BUTTON}
-            disabled={!canUpload || uploading}
+            disabled={!canUpload}
+            busy={uploading}
             onClick={choose}
           >
             <ReplaceIcon />
             Replace
-          </button>
+          </Button>
           <button
             type="button"
             className={QUIET_BUTTON}

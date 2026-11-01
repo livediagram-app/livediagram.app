@@ -262,7 +262,7 @@ export function SelectAndMaskDialog({
         <Button variant="secondary" size="sm" onClick={onClose}>
           Cancel
         </Button>
-        <Button size="sm" disabled={busy} onClick={ok}>
+        <Button size="sm" busy={busy} onClick={ok}>
           OK
         </Button>
       </DialogFooter>
