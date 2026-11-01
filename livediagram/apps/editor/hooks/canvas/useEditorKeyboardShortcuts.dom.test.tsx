@@ -153,6 +153,7 @@ describe("a Participant's palette keys", () => {
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const { bag } = deps({
@@ -212,6 +213,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const addShape = vi.fn();
@@ -259,6 +261,13 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
     expect(addShape).not.toHaveBeenCalled();
   });
 
+  it('picks up the Fill tool with F, never the Frame', () => {
+    const { wb, addShape } = board();
+    press('f');
+    expect(wb.pickFill).toHaveBeenCalledTimes(1);
+    expect(addShape).not.toHaveBeenCalled();
+  });
+
   it('picks up the Path tool with P, never the pencil', () => {
     const { wb } = board();
     press('p');
@@ -283,6 +292,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const onDeselect = vi.fn();
@@ -302,6 +312,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const { bag } = deps({ selectedId: null, whiteboard: wb, canvasTool: 'eraser' });
@@ -325,6 +336,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const { bag } = deps({ selectedId: null, whiteboard: wb, isReadOnly: true });

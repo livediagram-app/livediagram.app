@@ -8,6 +8,15 @@ import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add
 import { ToolbarPalette } from './ToolbarPalette';
 import { HOVER_CLOSE_MS, HOVER_OPEN_MS } from './CategoryBar';
 import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
+import { EditorContext } from '@/app/design/[id]/EditorContext';
+import { setCurrentPageKind } from '@/lib/current-page-kind';
+import { defaultFill, FILL_CHOICE_KEY, resetFillColour } from './fill-tool-colour';
+
+// A phone's strip, for the Fill tool's tap (its panel, since a phone cannot rest on a tile).
+const mobile = vi.hoisted(() => ({ value: false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => mobile.value,
+}));
 
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
@@ -291,5 +300,71 @@ describe('a tile’s side panel', () => {
     expect(side()).not.toBeNull();
     fireEvent.pointerEnter(button('Shapes'), mouse);
     expect(side()).toBeNull();
+  });
+});
+
+// docs/specs/023-draw-mode/drawing-tools.md "The Fill tool": a logo page's Draw, after the markers.
+describe('the Fill tool on a logo page', () => {
+  afterEach(() => {
+    setCurrentPageKind(null);
+    localStorage.clear();
+    resetFillColour();
+    mobile.value = false;
+  });
+
+  function showLogo() {
+    setCurrentPageKind('logo');
+    const ctx = {
+      beginDraw: vi.fn(),
+      markerPens: { prefs: { pens: [{ id: 'main', colour: null, width: 4 }] }, updatePen: vi.fn() },
+    };
+    const h = Object.fromEntries(
+      PALETTE_ADD_HANDLER_KEYS.map((k) => [k, vi.fn()]),
+    ) as unknown as PaletteAddHandlers;
+    render(
+      <EditorContext.Provider value={ctx as never}>
+        <EditorModeProvider value={{ mode: 'pages', canEdit: true }}>
+          <ToolbarPalette
+            canvasTool="select"
+            onSetCanvasTool={vi.fn()}
+            canvasEmpty={false}
+            pendingDraw={null}
+            {...h}
+          />
+        </EditorModeProvider>
+      </EditorContext.Provider>,
+    );
+    fireEvent.click(button('Draw'), { detail: 1 });
+    return { ctx, fill: within(flyout()!).getByRole('button', { name: 'Fill' }) };
+  }
+
+  it('sits in its own Fill group after the markers, and a press picks it up', () => {
+    const { ctx, fill } = showLogo();
+    const titles = [...flyout()!.querySelectorAll('h4')].map((h) => h.textContent);
+    expect(titles.slice(-2)).toEqual(['Markers', 'Fill']);
+    expect(fill.getAttribute('draggable')).toBeNull();
+    fireEvent.click(fill);
+    expect(ctx.beginDraw).toHaveBeenCalledWith({ type: 'fill', fill: defaultFill('light') });
+    expect(side()).toBeNull();
+  });
+
+  it('holds its colour in the panel a rest opens, whose pick picks it up in that colour', () => {
+    const { ctx, fill } = showLogo();
+    fireEvent.pointerEnter(fill);
+    wait(200);
+    expect(side()!.querySelector('h3')?.textContent).toBe('Fill');
+    fireEvent.click(within(side()!).getByRole('button', { name: 'No fill' }));
+    expect(localStorage.getItem(FILL_CHOICE_KEY)).toBe('transparent');
+    expect(ctx.beginDraw).toHaveBeenCalledWith({ type: 'fill', fill: 'transparent' });
+  });
+
+  it('on a phone, a tap opens its colour, and a colour picks it up', () => {
+    mobile.value = true;
+    const { ctx, fill } = showLogo();
+    fireEvent.click(fill);
+    expect(ctx.beginDraw).not.toHaveBeenCalled();
+    expect(fill.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(within(side()!).getByRole('button', { name: 'No fill' }));
+    expect(ctx.beginDraw).toHaveBeenCalledWith({ type: 'fill', fill: 'transparent' });
   });
 });

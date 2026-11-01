@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createImage, createPinnedArrow, createShape } from './factories';
+import { createFreehand, createImage, createPinnedArrow, createShape } from './factories';
 import type { Element, Tab } from './index';
 import { applyMindMoves, planMindGrowth } from './mind-grow';
 import { createFlowchartStart } from './flowchart';
@@ -307,6 +307,19 @@ describe("applyParticipantOp: update someone else's element", () => {
       ),
     );
     expect(shaped.tab.elements[0]).toMatchObject({ width: 120 });
+  });
+
+  it("keeps a marker loop's stored fill and open ends when a Participant sends a Fill tool press", () => {
+    // docs/specs/023-draw-mode/fill-tool.md "Share roles": a fill a Participant sends anyway is not kept.
+    const ring = [0, 1, 2, 3, 4, 5].map((i) => ({
+      x: 50 + 40 * Math.cos(i),
+      y: 50 + 40 * Math.sin(i),
+    }));
+    const stored = { ...createFreehand(ring, false), id: 'ink', penWidth: 2 } as Element;
+    const filled = { ...stored, closed: true, fillColor: '#dbeafe' } as Element;
+    const r = applied(applyParticipantOp(tabOf([stored]), { kind: 'update', element: filled }, ME));
+    expect(r.changed).toBe(false);
+    expect(r.tab.elements[0]).toBe(stored);
   });
 
   it('answers unchanged when nothing permitted moved', () => {

@@ -33,6 +33,7 @@ function setup(tab: Tab, pendingDraw: PendingDraw | null) {
     pathEditing: false,
     leavePathEdit: vi.fn(),
     snapColours: { colours: [], blocked: false, snap: vi.fn(() => 0) },
+    fillSwatches: [],
   };
   const hook = renderHook(
     (d: typeof deps) => {

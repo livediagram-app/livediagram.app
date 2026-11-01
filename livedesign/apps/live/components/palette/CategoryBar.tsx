@@ -23,7 +23,7 @@ import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyo
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { EditorMode } from '@livedesign/design';
 import { StripOpenedBody, Divider } from './strip-rail-items';
-import type { PaletteTileActions } from './PaletteTileGrid';
+import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 
 // The category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): the Pages strip
 // shows the mode's categories rather than one category's tiles, each a button with its glyph and name. With a mouse, resting
@@ -365,7 +365,16 @@ export function CategoryBarFlyout({
             pendingDraw={pendingDraw}
             focusFirst={bar.viaKeyboard}
             sideOpenId={openSide?.def.id ?? null}
-            onSide={(def, el) => (openSide?.def.id === def.id ? setSide(null) : showSide(def, el))}
+            onSide={(def, el) => {
+              // The Fill tool picks up (or puts down) at a press, as any tool; its colour is in the panel resting on
+              // it opens. A phone cannot rest, so there a tap opens the panel, and a colour picks it up.
+              if (def.action.type === 'fill' && !isMobile) {
+                tileHandler(def, actions, pendingDraw)();
+                return;
+              }
+              if (openSide?.def.id === def.id) setSide(null);
+              else showSide(def, el);
+            }}
             onItemHover={onItemHover}
           />
         </div>

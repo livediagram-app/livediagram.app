@@ -122,7 +122,8 @@ export function useCanvasDrawGesture({
   // in CanvasChrome) appears exactly when the start would latch.
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
   // The corner-snap dot is for shapes drawn to size. Out of that state, the dot goes at once.
-  const hoverSnaps = !!pendingDraw && !drawDrag && !penPoints;
+  // The Fill tool presses, never draws to size (docs/specs/023-draw-mode/drawing-tools.md "The Fill tool").
+  const hoverSnaps = !!pendingDraw && !drawDrag && !penPoints && pendingDraw.type !== 'fill';
   if (!hoverSnaps && drawHover) setDrawHover(null);
   useEffect(() => {
     if (!hoverSnaps) return;

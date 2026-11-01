@@ -436,6 +436,8 @@ export type CanvasProps = {
   // The user preferences (docs/specs/007-editor/user-preferences.md) the chrome reads.
   settings: UserPreferences;
   onCancelDraw: () => void;
+  // The Fill tool's press (docs/specs/023-draw-mode/fill-tool.md), at a canvas point.
+  onPaintBucket?: (point: { x: number; y: number }) => void;
   onUndo: () => void;
   onRedo: () => void;
   // Lightweight id + name of this document's tabs, so a link badge's

@@ -3,7 +3,9 @@ import { EMBED_PROVIDERS } from '@livedesign/design';
 import {
   drawBannerMessage,
   drawIntentCursor,
+  isFillIntent,
   isHeldPenIntent,
+  isHeldToolIntent,
   isPathIntent,
   opensForTyping,
   type PendingDraw,
@@ -42,6 +44,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   arrow: [{ type: 'arrow' }],
   polygon: [{ type: 'polygon' }],
   path: [{ type: 'path' }],
+  fill: [{ type: 'fill', fill: '#dbeafe' }],
   // Component kinds share one branch and one label table that is already a
   // Record<ComponentKind, string>, so the compiler covers that axis; one
   // sample is enough here.
@@ -288,6 +291,25 @@ describe('opensForTyping', () => {
 describe('the Highlighter (docs/specs/008-canvas/highlighter.md)', () => {
   it('is a one-shot arm, not a held pen: it wears the mode banner', () => {
     expect(isHeldPenIntent({ type: 'freehand', variant: 'highlighter' })).toBe(false);
+  });
+});
+
+describe('the Fill tool (docs/specs/023-draw-mode/drawing-tools.md "The Fill tool")', () => {
+  const fill: PendingDraw = { type: 'fill', fill: '#dbeafe' };
+  it('is held, with no one-shot banner, but is not a pen', () => {
+    expect(isFillIntent(fill)).toBe(true);
+    expect(isFillIntent({ type: 'path' })).toBe(false);
+    expect(isHeldToolIntent(fill)).toBe(true);
+    expect(isHeldToolIntent({ type: 'path' })).toBe(true);
+    expect(isHeldToolIntent({ type: 'polygon' })).toBe(false);
+    expect(isHeldPenIntent(fill)).toBe(false);
+  });
+
+  it('has its own bucket cursor and screen-reader copy', () => {
+    expect(drawIntentCursor(fill)).toMatch(/^url\(/);
+    expect(drawIntentCursor(fill)).not.toBe(drawIntentCursor({ type: 'path' }));
+    expect(drawBannerMessage(fill, false)).toBe('Click inside a closed shape to fill it');
+    expect(drawBannerMessage(fill, true)).toBe('Tap inside a closed shape to fill it');
   });
 });
 

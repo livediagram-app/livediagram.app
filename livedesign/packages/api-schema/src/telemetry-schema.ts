@@ -144,8 +144,9 @@ export const TELEMETRY_CATEGORIES = [
   // 'Local'). Whether people ever come back for a deleted design is the
   // question; never a design or team name.
   'Trash',
-  // The markers (docs/specs/023-draw-mode/drawing-tools.md): a marker 'Changed' ('PenColour' |
-  // 'PenWidth') and a stroke flipped between ink and a shape, 'Toggled' ('RecogniseOnceKey' |
+  // The markers and the Fill tool (docs/specs/023-draw-mode/drawing-tools.md): a marker 'Changed'
+  // ('PenColour' | 'PenWidth'), the Fill tool picked up, 'Toggled' ('Fill') and 'Changed' ('FillColour', and
+  // 'FillMissed' for a press that filled nothing), and a stroke flipped between ink and a shape, 'Toggled' ('RecogniseOnceKey' |
   // 'RecogniseOnceChip' | 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
   // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with

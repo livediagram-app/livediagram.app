@@ -22,13 +22,15 @@ import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
 import {
   pinFromMenu,
   resolveSlotDrop,
-  splitPhonePins,
+  NARROW_DOCK_MEDIA_QUERY,
+  splitBarPins,
   unpinShape,
   type SlotOutcome,
   type SlotSource,
 } from '@/lib/whiteboard-shape-slots';
 import {
   EraserFlyoutBody,
+  FillFlyoutBody,
   PenFlyoutBody,
   penFlyoutLabel,
   SettingsFlyoutBody,
@@ -46,6 +48,7 @@ import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { useMenuCardClearance } from './useMenuCardClearance';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { announceToastFloorChange } from '@liveworkspace/workbench/components/toast/toast-floor';
+import { useMediaQuery } from '@livediagram/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
@@ -84,12 +87,12 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
   const scale = useUiScale('toolbar');
   const wrapper = useRef<HTMLDivElement>(null);
   const clear = useMenuCardClearance(wrapper, scale, model.position === 'top');
-  // A phone's dock: one pinned shape on the bar, the rest in the Shapes flyout, and no dragging
-  // shapes on or off the bar (its drop targets would not match the pins it hides).
+  // A narrow dock (a phone or a tablet): one pinned shape on the bar, the rest in the Shapes flyout,
+  // and no dragging shapes on or off the bar (its drop targets would not match the pins it hides).
   const phone = useIsMobileViewport();
-  const pins = phone
-    ? splitPhonePins(model.pinnedShapes)
-    : { onBar: model.pinnedShapes, inMenu: [] };
+  const tablet = useMediaQuery(NARROW_DOCK_MEDIA_QUERY);
+  const narrow = phone || tablet;
+  const pins = splitBarPins(model.pinnedShapes, narrow);
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const fly = useDockFlyout();
@@ -196,6 +199,8 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
     switch (f.kind) {
       case 'eraser':
         return { label: 'Eraser', body: <EraserFlyoutBody model={model} /> };
+      case 'fill':
+        return { label: 'Fill', body: <FillFlyoutBody model={model} /> };
       case 'shapes':
         return {
           label: 'Shapes',
@@ -205,7 +210,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
               ink={ink}
               slots={model.slotShapes}
               menuPins={pins.inMenu}
-              canDrag={!phone}
+              canDrag={!narrow}
               slotDrag={slotDrag}
               onPin={(key) => chooseFromMenu({ key, from: 'flyout' })}
               onEngage={fly.stick}
@@ -252,7 +257,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
       <ShapesGroup
         model={model}
         pinned={pins.onBar}
-        canDrag={!phone}
+        canDrag={!narrow}
         fly={fly}
         slotDrag={slotDrag}
         refusing={refusing}

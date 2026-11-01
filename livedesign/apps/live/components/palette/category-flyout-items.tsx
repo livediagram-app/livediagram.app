@@ -22,8 +22,10 @@ const DEFAULT_HINT = 'Click to add one, or drag it onto the canvas.';
 const TOUCH_HINT = 'Tap to add one, or drag it onto the canvas.';
 
 /** Whether pressing this tile opens a side panel (its presets, or what an opener stands for) rather than placing. */
+// The Fill tool's side panel holds its colour (CategoryFlyoutSide); a press still picks it up
+// (CategoryBar), save on a phone, where the panel is the only way to its colour.
 export function opensSide(def: PaletteTileDef): boolean {
-  return !!def.variants?.length || def.action.type === 'open';
+  return !!def.variants?.length || def.action.type === 'open' || def.action.type === 'fill';
 }
 
 type ItemProps = {

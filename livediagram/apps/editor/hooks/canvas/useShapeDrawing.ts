@@ -177,7 +177,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // mis-routes either here, bail rather than fall through into the
     // boxed branch and mint a phantom element where the user expected
     // a sketch.
-    if (intent.type === 'freehand' || intent.type === 'polygon' || intent.type === 'path') {
+    // The Fill tool (docs/specs/023-draw-mode/fill-tool.md) presses, never draws: usePaintBucket.
+    if (
+      intent.type === 'freehand' ||
+      intent.type === 'polygon' ||
+      intent.type === 'path' ||
+      intent.type === 'fill'
+    ) {
       setPendingDraw(null);
       return;
     }
