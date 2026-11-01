@@ -7,7 +7,6 @@ import {
   parseAvatarSay,
   withinSayLimits,
 } from './avatar-say';
-import { isPresenceOpKind } from './room-messages';
 
 const words = (n: number) => Array.from({ length: n }, (_, i) => `w${i % 10}`).join(' ');
 const op = (over: Record<string, unknown> = {}) => ({
@@ -93,9 +92,5 @@ describe('parseAvatarSay (docs/specs/008-canvas/avatar-mode.md "The wire")', () 
 
   it('is markup-agnostic: text passes through as text', () => {
     expect(parseAvatarSay(op({ text: '<b>hi</b>' }))?.text).toBe('<b>hi</b>');
-  });
-
-  it('is a presence op: never ordered, logged or replayed', () => {
-    expect(isPresenceOpKind('avatar-say')).toBe(true);
   });
 });

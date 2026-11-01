@@ -17,7 +17,13 @@ import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
 import type { EditorMode, Tab } from '@livediagram/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 
-export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
+export type {
+  AvatarClothing,
+  AvatarConfig,
+  AvatarGender,
+  AvatarHair,
+  AvatarSize,
+} from '@liveworkspace/api-schema/avatar';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -311,7 +317,7 @@ export * from './lens-modes';
 // Explorer Home: the open marker and the use window (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
-export * from './avatar-say';
+export * from '@liveworkspace/api-schema/avatar-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from '@liveworkspace/api-schema/within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).

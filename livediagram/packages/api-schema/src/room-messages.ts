@@ -2,8 +2,8 @@ import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
-import type { AvatarConfig } from './avatar';
-import type { AvatarSayOp } from './avatar-say';
+import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
+import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
@@ -12,58 +12,10 @@ import type { ChangesetRoomOp } from './changesets';
 // Realtime room messages
 // ---------------------------------------------------------------------
 
-// One participant's Avatar-mode character (docs/specs/008-canvas/avatar-mode.md), as it travels over the
-// presence channel. Position is the character's FEET in canvas coords; the
-// animation inputs and the costume ride along so a peer draws the same
-// character, walk cycle, hop, and flag wave the sender sees. Deliberately
-// small — this goes out at cursor rates.
-
-// The statuses a character can show in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), the one list both
-// ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
-// receiver's type does not name.
-export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away'] as const;
-export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
-
-export type AvatarPresence = {
-  x: number;
-  y: number;
-  facing: 'down' | 'up' | 'left' | 'right';
-  // The sender's costume (docs/specs/008-canvas/avatar-mode.md): gender / clothing / hair / size, each a
-  // preset token from a closed set. Optional so a packet from an older client
-  // still parses — the receiver falls back to the default character. Purely
-  // cosmetic, and never an identity claim.
-  config?: AvatarConfig;
-  // A reaction in progress (docs/specs/008-canvas/avatar-mode.md): which one, and how far into it the
-  // sender is. The pose is derived from these two by a pure function on both
-  // ends, so the wire carries a kind and a clock rather than a pose.
-  reaction?: {
-    kind: 'jumping-jacks' | 'wave' | 'spin' | 'cheer' | 'dance';
-    elapsedMs: number;
-  };
-  walking: boolean;
-  // Two-frame leg swing (0 | 1).
-  stepFrame: number;
-  // Height above the ground mid-hop, in canvas px (0 = standing).
-  lift: number;
-  // Flag-wave frame, or null when the flag is down.
-  wave: number | null;
-  // Chair (docs/specs/009-elements/chair.md): the element id of the chair this character is sitting
-  // on, or null / absent when standing.
-  //
-  // Occupancy rides HERE, on ephemeral presence, and is deliberately never
-  // written to the document: a chair therefore cannot be left permanently
-  // occupied by somebody who closed their laptop, cannot conflict between two
-  // clients, and reaches D1 and undo not at all. Optional so a
-  // packet from an older client still parses as "standing".
-  seatedOn?: string | null;
-  // A drink in the hand (docs/specs/009-elements/office.md "Using it"), from a water cooler or a coffee machine,
-  // or none. Presence like the seat: put down after a minute or on leaving the mode, never in the document.
-  // Optional so an older client's packet parses as empty-handed; anything else draws nothing.
-  holding?: 'water' | 'coffee' | null;
-  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
-  // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
-  status?: AvatarStatus | null;
-};
+// One participant's Avatar-mode character and its statuses (docs/specs/008-canvas/avatar-mode.md) are every
+// product's wire shapes, in @liveworkspace/api-schema/avatar; re-exported so this package's surface is unchanged.
+export { AVATAR_STATUS_IDS } from '@liveworkspace/api-schema/avatar';
+export type { AvatarPresence, AvatarStatus } from '@liveworkspace/api-schema/avatar';
 
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
@@ -525,21 +477,10 @@ export type RoomOp =
         effect: 'beam' | 'glow' | 'comet' | 'spark';
       };
     }
-  // The sender's Avatar-mode character (docs/specs/008-canvas/avatar-mode.md), so everyone in the room
-  // sees everyone else walking around. Ephemeral presence exactly like
-  // cursor / laser: throttled to ~30 Hz, never logged, never replayed to a
-  // reconnecting client, and `avatar: null` means "I left the mode, drop my
-  // character". The tab id scopes rendering to peers looking at the same tab.
-  | { kind: 'avatar'; tabId: string; avatar: AvatarPresence | null }
-  // One character SHOVES another (docs/specs/008-canvas/avatar-mode.md). Sent by the pusher when their
-  // character reaches the person they clicked; only the participant named in
-  // `targetId` acts on it, by sliding their own character a short way along
-  // (`dx`, `dy`) — a unit vector. Everyone's character stays authoritative on
-  // its owner's machine, so a push is a request, never a remote write, and a
-  // peer who has left the mode simply ignores it.
-  | { kind: 'avatar-push'; tabId: string; targetId: string; dx: number; dy: number }
-  // A character SAYS something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): `id` names the bubble,
-  // `x, y` the canvas point above the speaker's head it rises from. Parsed by `parseAvatarSay` at both ends.
+  // The sender's Avatar-mode character, and one character SHOVING another (docs/specs/008-canvas/avatar-mode.md):
+  // every product's wire shapes, in @liveworkspace/api-schema/avatar.
+  | AvatarOp
+  | AvatarPushOp
   | AvatarSayOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor
   // / laser / avatar: never logged, never ordered, never replayed to a
