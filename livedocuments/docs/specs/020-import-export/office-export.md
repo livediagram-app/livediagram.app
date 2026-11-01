@@ -28,7 +28,8 @@ A tab with no page yet, and an export of a selection, show neither card.
 The card opens a panel with the shared back bar ("All formats" › PowerPoint / Word) and the dialog's subtitle
 "Download the tab as a PowerPoint deck." / "Download the article as a Word document.":
 
-- **What the file holds**, one line: "12 slides, one a page, with the speaker notes of 3." (no notes: "12 slides, one
+- **What the file holds**, one line: "12 slides, one a page, with the speaker notes of 3." (counting slides with a
+  note card that is not blank; no notes: "12 slides, one
   a page."; one page: "1 slide.") / "The article's 9 pages of writing, its pictures and drawings as images." (one
   page: "The article's writing, its pictures and drawings as images.").
 - **What stays editable**, a short list under it: for PowerPoint "Text boxes keep their font, size, colour and
@@ -64,8 +65,9 @@ What is on a page, in its paint order (the canvas's back to front, so what overl
 - **The background**: a plain page is the slide's white; a solid colour is the slide's background colour; a
   gradient, an animated background (as it stands when the slide opens), a picture or a pattern is the slide's
   background picture.
-- **Speaker notes**: the notes of the page's slide in the [Slide Deck](../012-collaboration/presentation-mode.md)
-  become the slide's notes, which the presenter view of PowerPoint, Keynote and Google Slides shows.
+- **Speaker notes**: the note cards of the page's slide in the [Slide Deck](../012-collaboration/presentation-mode.md)
+  become the slide's notes, one paragraph a card in order (a line break inside a card stays a line break), which the
+  presenter view of PowerPoint, Keynote and Google Slides shows ([Speaker note cards](../012-collaboration/speaker-note-cards.md)).
 - **A hidden slide** (the page's slide hidden in the Slide Deck) is a hidden slide in the deck.
 - **Not in the deck**: the editor's own chrome (selections, page headers, comments' badges, cursors), animations and
   transitions (a slide is its resting frame, as in every export), and links on elements.

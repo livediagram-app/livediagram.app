@@ -1673,11 +1673,12 @@ separate pages. It is explicit: never run on opening a tab.
   Deck. Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
 SlideShown`).
 - **Add Notes**: beside the deck button once the deck has a slide of the page, **Add Notes** (a
-  page glyph) opens a popover holding that slide's speaker notes, the deck slide's own: the same
-  notes the Slide Deck panel writes and the presenter view shows, never drawn on the slide. Once
-  the slide has notes the button reads **Notes**, pressed. Every keystroke writes the deck (one
-  `UI · Changed · SlideNotes` per opening, on the first keystroke); emptying the box removes the
-  notes. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone, like the deck button.
+  stack-of-cards glyph) opens a popover holding that slide's speaker notes as note cards, the deck
+  slide's own: the same cards the Slide Deck panel writes and the presenter view flips through,
+  never drawn on the slide ([Speaker note cards](../012-collaboration/speaker-note-cards.md)). Once
+  the slide has a card with words the button reads **Notes**, pressed. Every keystroke writes the
+  deck. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone. Unlike the deck button it is
+  offered on a phone too (icon only, its popover a bottom sheet), so cards can be written anywhere.
 - **Any other page in the deck shows its eye too**: an infographic or article page offers no
   Add to Slides in its title bar (the Slide Deck's page picker adds it), but once the deck has a
   slide of it, the same eye sits beside its cog, so wherever a page is presented its visibility is

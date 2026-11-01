@@ -77,8 +77,9 @@ sits on the slide, scaled from the deck's size to the page's.
   its master's), else the master's text style's.
 - **Pictures** become **image** elements in the picture's box; a cropped picture fills its box (cover).
 - **Groups** are opened: their members are placed through the group's own scaling.
-- **Speaker notes** become the slide's notes in the Slide Deck, the same notes the page's **Notes** button and
-  the presenter view show.
+- **Speaker notes** become the slide's notes in the Slide Deck as **one note card** holding the notes page's text
+  (its paragraphs as lines), the same cards the page's **Notes** button and the presenter view show
+  ([Speaker note cards](../012-collaboration/speaker-note-cards.md)); the speaker can split it into cards afterwards.
 - A **hidden slide** is a page whose slide is hidden in the Slide Deck.
 
 What is **not** brought across, and named in the report when the deck had it: tables, charts and diagrams

@@ -176,6 +176,12 @@ Flipping only moves the view, so it is everyone's.
 - `UI · Used · FlashcardFlip` once per flip that moved the card in front.
 - Never text.
 
+## Speaker note cards
+
+A slide's speaker notes use a smaller form of flashcards: plain-text **note cards** on the deck's slide, with a
+flashcard's speaking time, stack and flip but no page, title or editor of their own
+([Speaker note cards](../012-collaboration/speaker-note-cards.md)).
+
 ## Non-goals
 
 - Presenting a stack full screen with a timer (the editor's own view is the speaking view).
