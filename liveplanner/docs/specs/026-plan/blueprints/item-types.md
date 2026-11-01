@@ -116,7 +116,8 @@ item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) 
   `blockingLoopMessage(chain)` is "#5 Launch already waits on #3 Website, so it can't block it." (with
   "through #7 Copy" when the chain is longer). `ItemRejection` gains `blocks_cycle`; `writtenItemsRefusal` runs
   `blockingCycleOf` over `before` with the upserts (create, patch, patches, move), so an offline plan refuses what the
-  api refuses. Gantt: `ganttArrows(entries, index, isDone)` (plan-view-gantt-arrows.ts) answers an arrow per blocker
+  api refuses. `waitingOn(items, types, itemId)` answers every card that already waits on a card (one pass inverting the links,
+  one walk down), what the panel's picker marks. Gantt: `ganttArrows(entries, index, phases)` (plan-view-gantt-arrows.ts) answers an arrow per blocker
   and blocked pair that are both row entries with a mark (`from`, `to` rows and tops, `done`), and
   `ganttArrowPath(from, to, rowH)` the elbow path (`GANTT_ARROW_STEP = 8`, the head `GANTT_ARROW_HEAD = 5`). Linked as:
   `LinkField.blocks` and `LinkedGroup.blocks`; `blocksHeading(label)` is "Blocks" for a field named Blocked By
@@ -133,16 +134,19 @@ item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) 
   `HoldsSeveralSwitch` in `CustomFieldForm` and `AddFieldShape` (`addedField` keeps `blocks` only on a card field);
   `planBlocking(plan)` (`components/plan/blocking.ts`) memoises `blockingIndexOf` in a `WeakMap` by the items map,
   reused while the catalogue and status phases keep their identity; `BlockedMark` (`plan-card-parts.tsx`, the Lucide
-  link glyph at 12 px in `BLOCKED_RED` `#dc2626` with its count, `role="img"`, "Blocked by N open card(s)") beside
-  `FlagMark` in every `PlanCardFace` size; `BlockedByGroup` and the Blocks mirror in `LinkedCards.tsx`, drawn by
-  `ItemPanel`; `LinkedCardField` with `blocks` checks `blockingLoop` before a pick adds a card (refused: announce and
-  toast the message, the field unchanged) and marks such rows "Waits on this card"; a Blocks field's control is
-  read-only without `canEdit`; `refusalMessage('blocks_cycle')` "Those cards would block each other in a loop";
+  link glyph at 12 px in `BLOCKED_COLOUR` `#dc2626` with its count, `role="img"` and a Tooltip, "Blocked by N open
+  card(s)") before `FlagMark` in every `PlanCardFace` size, never on the Display's example card; `BlockedBySections`
+  (`BlockedBy.tsx`, from `blockedByGroups`) leads `ItemPanel`'s Linked as sections, and `LinkedCardGroup` draws a
+  `group.blocks` group as the Blocks mirror (no add buttons, not drawn when empty); `LinkedCardField` with `blocksFor`
+  (the card's id) checks `blockingLoop` before a pick adds a card (refused: announce and toast the message, the field
+  unchanged) and marks the rows `waitingOn` names "Waits on this card" (worked out once while the list is open); a
+  Blocks field's control is read-only unless the plan's `canEdit` (an Editor), whatever `canEditCards`; `refusalMessage('blocks_cycle')` "Those cards would block each other in a loop";
   `GanttArrows` (`views/gantt-arrows.tsx`) an `aria-hidden`, `pointer-events-none` SVG over the track in px. The SVG
   face (`svg-render-plan-card.ts`) draws a `blocked` bit (the link glyph path and count in red) after the title row's
   flag (Detailed) or at the end of the trail (Minimal), from `CardFaceContext.blocking`, made once per board or card
-  by `svg-render-plan.ts` from the render's `itemsDone` (the plan-wide done statuses the editor, api thumbnail and MCP
-  pass), else the board's own done columns; `planArtResolver`'s Gantt (`plan-view-time-art.ts`) draws the arrows.
+  by `svg-render-plan.ts` from the render's `itemsDone` (the plan-wide done statuses the editor's image exports and tab
+  thumbnails pass), else the board's own done columns (the api thumbnail and the MCP images, where a lone Plan card
+  shows no badge); `planArtResolver`'s Gantt (`plan-view-time-art.ts`) draws the arrows.
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
 - Card Age (spec "Card display"): `age` is a built-in card field (`CARD_FIELDS`, both sizes' `CARD_SIZE_FIELDS`),
   labelled "Age", in no `DRAWN` slot and so in no default; `typeOffersCardField` offers it on every type. The editor's
@@ -660,18 +664,18 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 
 ## Errors and edge cases
 
-| Case                               | Handling                                                     |
-| ---------------------------------- | ------------------------------------------------------------ |
-| Stored catalogue unreadable        | Built-ins (`readItemTypeCatalogue` null)                     |
-| Item of a type the catalogue lacks | Drawn as `FALLBACK_ITEM_TYPE` "Item"; card tile makes a Task |
-| Custom value of the wrong kind     | Shown empty; replaced by the next edit                       |
-| Field taken off a type             | Values kept in `fields`; shown again if it returns           |
-| Deleting the last type             | Not offered (`canDelete`); `deleteType` refuses              |
-| Save fails                         | That change dropped (later ones kept), toast                 |
-| Another change landed first (409)  | Change made again to the stored catalogue, sent again (3×)   |
-| Blocks turned on over links that loop | Cards never rewritten; both show blocked; a write adding to the loop is refused, removing is not |
-| A blocker trashed, archived or missing | Ignored by the badge, the Blocked By list and the arrows; kept on the card |
-| Two writes race to close a loop    | Each passes its own read; the loop shows (both blocked) until a link is removed |
+| Case                                   | Handling                                                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Stored catalogue unreadable            | Built-ins (`readItemTypeCatalogue` null)                                                         |
+| Item of a type the catalogue lacks     | Drawn as `FALLBACK_ITEM_TYPE` "Item"; card tile makes a Task                                     |
+| Custom value of the wrong kind         | Shown empty; replaced by the next edit                                                           |
+| Field taken off a type                 | Values kept in `fields`; shown again if it returns                                               |
+| Deleting the last type                 | Not offered (`canDelete`); `deleteType` refuses                                                  |
+| Save fails                             | That change dropped (later ones kept), toast                                                     |
+| Another change landed first (409)      | Change made again to the stored catalogue, sent again (3×)                                       |
+| Blocks turned on over links that loop  | Cards never rewritten; both show blocked; a write adding to the loop is refused, removing is not |
+| A blocker trashed, archived or missing | Ignored by the badge, the Blocked By list and the arrows; kept on the card                       |
+| Two writes race to close a loop        | Each passes its own read; the loop shows (both blocked) until a link is removed                  |
 
 ## Security and trust
 
@@ -684,7 +688,8 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 - Blocked By: `blockingIndexOf` is one pass over the cards and their links (at most `ITEMS_MAX` cards × 20 links a
   field), made once per items change (`planBlocking`, the SVG render once per board); a card face reads a Map. The loop
   check walks each new edge's upstream once (cards plus links), so a write of k new links costs k walks; it runs only
-  when a Blocks field's value changed. Measured in `blocked-by.perf.test.ts`.
+  when a Blocks field's value changed; the picker's `waitingOn` is one inversion and one walk per open list. Measured
+  in `blocked-by.perf.test.ts`.
 
 ## Accessibility and UX
 
@@ -756,12 +761,12 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 | Statuses chips, panel Status options                                                                | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                                                                                                                                                                                          |
 | Editor tabs, Configuration sections, flags, arrow keys                                              | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                                       |
 | Show Me steps open Configuration, scroll to Fields                                                  | `apps/editor/components/tour/CardTypeTour.test.tsx`                                                                                                                                                                                                                                                              |
-| Blocked By: index, open count, ignored blockers, loops, messages, changed-value gate                  | `packages/items/src/blocked-by.test.ts`, `blocked-by.perf.test.ts` |
-| Blocked By: offline write checks refuse a loop                                                      | `packages/items/src/write-checks.test.ts` |
-| Blocked By: the api's Editor gate and loop refusal (create, patch, patches, move)                   | `apps/api/src/routes/item-blocks.test.ts` |
-| Blocked By: switch, badge sizes, panel lists, picker refusal, roles                                 | `apps/editor/components/plan/BlockedBy.test.tsx` |
-| Blocked By: SVG badge                                                                               | `packages/project/src/svg-render-plan-card.test.ts` |
-| Blocked By: agents list, set, loop stop, switch                                                     | `packages/agent-verbs/src/plan/plan-engine.test.ts` |
+| Blocked By: index, open count, ignored blockers, loops, messages, changed-value gate                | `packages/items/src/blocked-by.test.ts`, `blocked-by.perf.test.ts`                                                                                                                                                                                                                                               |
+| Blocked By: offline write checks refuse a loop                                                      | `packages/items/src/write-checks.test.ts`                                                                                                                                                                                                                                                                        |
+| Blocked By: the api's Editor gate and loop refusal (create, patch, patches, move)                   | `apps/api/src/routes/item-blocks.test.ts`                                                                                                                                                                                                                                                                        |
+| Blocked By: switch, badge sizes, panel lists, picker refusal, roles                                 | `apps/editor/components/plan/BlockedBy.test.tsx`                                                                                                                                                                                                                                                                 |
+| Blocked By: SVG badge                                                                               | `packages/project/src/svg-render-plan-card.test.ts`                                                                                                                                                                                                                                                              |
+| Blocked By: agents list, set, loop stop, switch                                                     | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                                                                                                                                                                                              |
 | Panel, editor, card face, palette in a browser                                                      | checked by hand against the dev stack (screenshots)                                                                                                                                                                                                                                                              |
 
 ## Constants and configuration
