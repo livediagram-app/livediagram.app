@@ -65,6 +65,7 @@ import type { TeamsHost } from '../data/teams';
 import { TeamsProvider, useTeams } from '../teams/context';
 import { DriveReconnectBanner, withDriveMarks } from '../drive/DriveMarks';
 import { useDriveMarks, type ExplorerDriveHost } from '../drive/useDriveMarks';
+import { quoted } from '../quoted';
 
 export type ExplorerProps = {
   /** The host app: its kind is what New makes and what "this app" shows. */
@@ -464,16 +465,16 @@ function ArrivalUndo({ trashed }: { trashed: { id: string; title: string | null 
     if (offered.current === trashed.id) return;
     offered.current = trashed.id;
     const name = trashed.title || 'Untitled';
-    toast.show(`Moved “${name}” to the Trash.`, {
+    toast.show(`Moved ${quoted(name)} to the Trash.`, {
       action: {
         label: 'Undo',
         run: () =>
           void client.restoreItem(trashed.id).then(
             () => {
               reloadLists();
-              toast.show(`Restored “${name}”.`, { tone: 'success' });
+              toast.show(`Restored ${quoted(name)}.`, { tone: 'success' });
             },
-            () => toast.error(`Couldn’t restore “${name}”. It is in the Trash.`),
+            () => toast.error(`Couldn’t restore ${quoted(name)}. It is in the Trash.`),
           ),
       },
     });

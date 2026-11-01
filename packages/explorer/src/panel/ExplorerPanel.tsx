@@ -134,6 +134,7 @@ import {
 } from './sections';
 import { withDriveMarks } from '../drive/DriveMarks';
 import { useDriveMarks, type ExplorerDriveHost } from '../drive/useDriveMarks';
+import { quoted } from '../quoted';
 
 /**
  * How the panel lays out: `side`, the rail beside the pane (a desktop popover); `stacked`, a row of section chips
@@ -1661,7 +1662,7 @@ function TrashSection() {
         <ConfirmDialog
           open
           // The Explorer page's own confirmation (TrashPane), word for word.
-          title={`Delete “${confirming.title || 'Untitled'}” for good?`}
+          title={`Delete ${quoted(confirming.title || 'Untitled')} for good?`}
           message="This cannot be undone."
           confirmLabel="Delete permanently"
           onConfirm={() => {

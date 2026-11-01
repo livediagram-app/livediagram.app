@@ -66,7 +66,7 @@ describe('parsing', () => {
       'unknown_team',
     ]);
     expect(issueMessage(issues[2]!, words)).toBe(
-      '“soon” isn’t an Edited option, so it’s searched as text.',
+      '“\u2068soon\u2069” isn’t an Edited option, so it’s searched as text.',
     );
   });
 

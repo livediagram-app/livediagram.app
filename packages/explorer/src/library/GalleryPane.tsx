@@ -12,6 +12,7 @@ import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { useBlobUrl } from './blobs';
 import type { GalleryHost, GalleryImage, GalleryUse } from './types';
+import { quoted } from '../quoted';
 
 type Loaded =
   | { status: 'loading' }
@@ -148,7 +149,7 @@ export function GalleryPane({
       {deleting ? (
         <ConfirmDialog
           open
-          title={`Delete “${imageName(deleting)}”?`}
+          title={`Delete ${quoted(imageName(deleting))}?`}
           message={
             usageOf(deleting.id).length
               ? `It’s still in ${countOf(usageOf(deleting.id), kindMany)}: those will show a broken picture.`

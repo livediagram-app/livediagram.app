@@ -153,7 +153,7 @@ describe('the Search panel', () => {
     expect(screen.getByText('Start typing to search.')).toBeTruthy();
     await typeAndWait('zzzz');
     expect(screen.queryByRole('listbox')).toBeNull();
-    expect(screen.getByText('Nothing matches “zzzz”.')).toBeTruthy();
+    expect(screen.getByText('Nothing matches “\u2068zzzz\u2069”.')).toBeTruthy();
     await typeAndWait('filters');
     expect(screen.getByRole('listbox', { name: 'Results' })).toBeTruthy();
   });
