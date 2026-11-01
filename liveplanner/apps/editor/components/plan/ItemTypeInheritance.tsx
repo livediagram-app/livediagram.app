@@ -15,11 +15,39 @@ const DetachIcon = lucideGlyph(lucideScissors, 14);
 const andList = (xs: readonly string[]) =>
   xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : xs.join('');
 
+// Whether the Inherits From menu is drawn: only while a base is chosen (to change or Detach) or there is one to pick.
+// With nothing to pick (no other type, or the only others already inherit) it is left out, and Name has the row.
+export const showsInheritsFrom = (base: ItemTypeDef | undefined, bases: readonly ItemTypeDef[]) =>
+  !!base || bases.length > 0;
+
+// The line under the Name and Inherits From row: who inherits from a base type (which has no menu, so this is all it
+// shows), what the chosen base gives, or what the menu does. Nothing, with nothing to say.
+export function InheritsFromNote({
+  base,
+  bases,
+  heirs,
+}: {
+  base: ItemTypeDef | undefined;
+  bases: readonly ItemTypeDef[];
+  // The types inheriting from this one: a base never inherits.
+  heirs: readonly ItemTypeDef[];
+}) {
+  const note = heirs.length
+    ? `${andList(heirs.map((t) => t.label))} ${heirs.length === 1 ? 'inherits' : 'inherit'} from this type.`
+    : base
+      ? `Takes ${base.label}’s fields, tabs, states and display, and follows every change to it. Fields you add here are this type’s own.`
+      : bases.length > 0
+        ? 'Share fields, tabs, states and display with another type, and follow its changes.'
+        : '';
+  if (!note) return null;
+  return <p className="-mt-1 mb-3 text-[12px] text-slate-500 dark:text-slate-400">{note}</p>;
+}
+
+// The Inherits From menu and its Detach, drawn beside Name (ItemTypeConfiguration).
 export function InheritsFromRow({
   id,
   base,
   bases,
-  heirs,
   onBase,
   onDetach,
 }: {
@@ -29,27 +57,19 @@ export function InheritsFromRow({
   base: ItemTypeDef | undefined;
   // The types it may inherit from (basesFor).
   bases: readonly ItemTypeDef[];
-  // The types inheriting from this one: a base never inherits, so the menu is disabled while there are any.
-  heirs: readonly ItemTypeDef[];
   onBase: (base: ItemTypeDef) => void;
   // Detach (and None): the type keeps what it holds, now its own.
   onDetach: () => void;
 }) {
-  const note = heirs.length
-    ? `${andList(heirs.map((t) => t.label))} ${heirs.length === 1 ? 'inherits' : 'inherit'} from this type.`
-    : base
-      ? `Takes ${base.label}’s fields, tabs, states and display, and follows every change to it. Fields you add here are this type’s own.`
-      : 'Share fields, tabs, states and display with another type, and follow its changes.';
   const detachHint = base ? `Stop following ${base.label} and keep a copy of its settings` : '';
   return (
-    <SheetRow label="Inherits From" htmlFor={id}>
-      <div className="flex flex-wrap items-center gap-2">
+    <SheetRow label="Inherits From" htmlFor={id} className="min-w-0 max-w-sm flex-[1_1_16rem]">
+      <div className="flex items-center gap-2">
         <Select
           id={id}
-          className="w-full max-w-xs"
+          className="min-w-0 flex-1"
           selectClassName="h-9 text-[13px]"
           value={base?.id ?? ''}
-          disabled={heirs.length > 0 || (!base && bases.length === 0)}
           onChange={(e) => {
             const next = bases.find((t) => t.id === e.target.value);
             if (next) onBase(next);
@@ -65,14 +85,18 @@ export function InheritsFromRow({
         </Select>
         {base ? (
           <Tooltip label={detachHint}>
-            <Button variant="secondary" aria-label={`Detach: ${detachHint}`} onClick={onDetach}>
+            <Button
+              variant="secondary"
+              className="shrink-0"
+              aria-label={`Detach: ${detachHint}`}
+              onClick={onDetach}
+            >
               <DetachIcon />
               Detach
             </Button>
           </Tooltip>
         ) : null}
       </div>
-      <p className="mt-1.5 text-[12px] text-slate-500 dark:text-slate-400">{note}</p>
     </SheetRow>
   );
 }

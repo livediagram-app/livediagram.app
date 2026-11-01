@@ -46,7 +46,12 @@ import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
 import { ItemTypeStatuses } from './ItemTypeStatuses';
 import { ItemTypeDisplay, type CardDisplayDraft } from './ItemTypeDisplay';
 import { ItemTypeCardColour } from './ItemTypeCardColour';
-import { InheritedPartNotice, InheritsFromRow } from './ItemTypeInheritance';
+import {
+  InheritedPartNotice,
+  InheritsFromNote,
+  InheritsFromRow,
+  showsInheritsFrom,
+} from './ItemTypeInheritance';
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { withoutEmptyTabs, type LayoutDraft } from './item-type-layout';
@@ -310,15 +315,17 @@ export function ItemTypeEditor({
               removedSome={removedSome}
               inherited={inherited}
               inheritance={
-                <InheritsFromRow
-                  id={`${titleId}-inherits`}
-                  base={base}
-                  bases={bases}
-                  heirs={heirs}
-                  onBase={chooseBase}
-                  onDetach={() => setInherits(undefined)}
-                />
+                showsInheritsFrom(base, bases) ? (
+                  <InheritsFromRow
+                    id={`${titleId}-inherits`}
+                    base={base}
+                    bases={bases}
+                    onBase={chooseBase}
+                    onDetach={() => setInherits(undefined)}
+                  />
+                ) : undefined
               }
+              inheritanceNote={<InheritsFromNote base={base} bases={bases} heirs={heirs} />}
             />
           ),
           display: (

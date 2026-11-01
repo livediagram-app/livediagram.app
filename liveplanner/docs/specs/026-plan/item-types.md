@@ -919,9 +919,13 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 - **Who changes it**: only someone who may edit the whole plan, as for every card type change
   ([share roles](../013-workspace/share-roles.md)).
 - **In the type editor** (Configuration's General section): **Inherits From**, a menu of **None** and every type it
-  may inherit from (a type inheriting from none, not itself). Choosing one lays the draft out from that type at
-  once (its fields, tabs, states and display), keeping any fields only this type had as its own. A type others
-  inherit from shows the menu disabled, saying "Bug and Story inherit from this type." While a base type is
+  may inherit from (a type inheriting from none, not itself), **on the same row as Name**, to its right (the two
+  wrap onto two rows only where the editor is too narrow for both, a phone). A line under the row says what it does.
+  **Nothing to pick, nothing shown**: with no other type it could inherit from (the only others already inherit,
+  or there are none), and no base chosen, the menu is not drawn at all, and the Name field has the row. A type others
+  inherit from has nothing to pick either (a base never inherits), so it shows no menu, only the line "Bug and Story
+  inherit from this type." under Name. Choosing one lays the draft out from that type at
+  once (its fields, tabs, states and display), keeping any fields only this type had as its own. While a base type is
   chosen, **Detach** sits beside the menu (a scissors icon, with the tooltip "Stop following Work and keep a copy of its settings");
   it and choosing None both leave the draft as it stands, now its own. Inherited fields carry a lock beside their
   name ("Inherited from Work") and have no Edit, Remove or Move; the tab names, the Details name and Add Tab are
