@@ -8,6 +8,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ account-menu             the signed-in account menu, for liveworkspace.app and every app
 │  ├─ agent-verbs              the parts of every product's CLI and MCP verbs that read no element union: addressing, refusals, argv lines
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
+│  ├─ app-doors                the platform's calls on each app's internal doors (export, import, link), for the Drive mirror and the data export
 │  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
@@ -23,6 +24,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ community-ui             the Community's pieces in every app: the post tile, the Share dialog's Community tab, the landing section
 │  ├─ community-site           every app's Community pages (gallery, post) and their Worker; each product binds its own
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
+│  ├─ data-export              Download Your Data's contract: limits, export keys and states, the link's message, the doors' paths
 │  ├─ diagram-lint             the numbers and line formats livediagram's and livedocuments' diagram lint judge by
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
@@ -63,6 +65,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 │  ├─ apps/status              liveworkspace.app/api/status: hourly checks of every service, 90 days kept, own D1
 │  ├─ apps/drive               liveworkspace.app/api/drive: the Google Drive mirror for every app, one Durable Object per person
+│  ├─ apps/export              Download Your Data's service, behind accounts only: one Durable Object per export, the zip in R2
 │  ├─ apps/redirect            the bare liveworkspace.app: a page load's one 301 to www., everything else to the site
 │  ├─ apps/migrate             the one-off move from the historical livediagram.app, run from a laptop, never deployed
 │  ├─ docs/specs               the platform's specs and blueprints, one category per service
@@ -141,6 +144,7 @@ liveworkspace/
 │  ├─ status                       hourly checks of every service and 90 days of history (liveworkspace/docs/specs/009-status)
 │  ├─ index                        the One Explorer's index: every product's items, folders and sharing in one place
 │  ├─ drive                        the Google Drive mirror, for every product
+│  ├─ export                       Download Your Data: every product's items, comments and images as one zip
 │  └─ site                         liveworkspace.app: the front door, the Explorer, Settings, the telemetry dashboard
 ├─ livediagram/
 │  ├─ apps/editor                  thin: workbench + mode-draw (Diagram, Draw and Workshop)
