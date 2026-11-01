@@ -155,3 +155,14 @@ describe('RepeatDialog', () => {
     });
   });
 });
+
+describe('RepeatDialog contrast', () => {
+  it('draws an unpicked choice above slate-500, which reads 4.3:1 on the slate-100 track', () => {
+    dialog();
+    for (const name of ['Day', 'Weekday', 'Month', 'On a date']) {
+      const classes = screen.getByRole('radio', { name }).className.split(/\s+/);
+      expect(classes).not.toContain('text-slate-500');
+      expect(classes).toContain('text-slate-600');
+    }
+  });
+});
