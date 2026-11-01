@@ -1590,7 +1590,7 @@ function TrashSection() {
                       <RestoreIcon />
                     </PaneIconButton>
                     <PaneIconButton
-                      label="Delete for Good"
+                      label="Delete Forever"
                       tone="danger"
                       onClick={() => setConfirming(row)}
                     >
@@ -1620,8 +1620,9 @@ function TrashSection() {
       {confirming ? (
         <ConfirmDialog
           open
-          title="Delete for good?"
-          message={`Delete "${confirming.title || 'Untitled'}" for good? This cannot be undone.`}
+          // The Explorer page's own confirmation (TrashPane), word for word.
+          title={`Delete “${confirming.title || 'Untitled'}” for good?`}
+          message="This cannot be undone."
           confirmLabel="Delete permanently"
           onConfirm={() => {
             void actions.purge(confirming);
