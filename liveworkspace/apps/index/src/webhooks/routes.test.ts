@@ -290,6 +290,10 @@ describe('changing one', () => {
       pausedReason: 'paused',
     });
     expect(deliveries().map((d) => [d.state, d.error])).toEqual([['failed', 'paused']]);
+    // Given up untried, it has no last try: the list dates it when it was given up, never null (1 Jan 1970).
+    const [listed] = await list(bo.auth);
+    expect(listed!.lastDelivery).toEqual({ state: 'failed', status: null, at: expect.any(Number) });
+    expect(listed!.lastDelivery!.at).toBeGreaterThan(0);
     // A test of a paused webhook is refused.
     expect(
       (await call(`/webhooks/${webhook.id}/test`, { method: 'POST', auth: bo.auth })).status,

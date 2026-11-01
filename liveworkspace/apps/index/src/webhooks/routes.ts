@@ -71,9 +71,12 @@ type WebhookRow = {
   last: string | null;
 };
 
+// The newest finished delivery's time is its last try's; one given up untried (a pause gives up what waited) has
+// none, so it is when it was given up (next_at), never null (a null read as 1 January 1970 in Settings).
 const COLUMNS = `w.id, w.scope, w.kind, w.name, w.host, w.events, w.created_by, w.created_at, w.paused_at,
   w.paused_reason,
-  (SELECT json_object('state', d.state, 'status', d.status, 'at', d.last_at) FROM webhook_deliveries d
+  (SELECT json_object('state', d.state, 'status', d.status, 'at', COALESCE(d.last_at, d.next_at, d.occurred_at))
+    FROM webhook_deliveries d
     WHERE d.webhook_id = w.id AND d.state <> 'pending' ORDER BY d.id DESC LIMIT 1) AS last`;
 
 export function webhookOf(row: WebhookRow): Webhook {
