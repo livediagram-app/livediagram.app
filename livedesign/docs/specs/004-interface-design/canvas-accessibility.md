@@ -31,6 +31,9 @@ delete, undo, label edit via Space) that already work on a selection.
   is skipped. It works from anywhere on the page but a modal dialog (whose focus trap keeps it) and with focus in a
   text field, where F6 still moves on: typing never uses it. Each region is marked `data-region` with its name, and
   the tab order inside a region is unchanged. (`../packages/workbench/src/hooks/ui/useRegionCycle.ts`.)
+- **Panels are named regions.** Every floating panel and the popovers hung from the bottom controls (Layers, the
+  Explorer, the Map and the rest) is a `region` named by its title, so a screen reader moving into one hears which
+  panel it is in rather than a nameless group of controls.
 - Traversal is **selection**: the existing selection ring is the focus
   indicator (one concept, not two). Works in read-only views (it's
   navigation); the guarded verbs (nudge / delete / …) stay edit-only as
