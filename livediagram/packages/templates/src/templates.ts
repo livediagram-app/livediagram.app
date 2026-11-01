@@ -170,6 +170,15 @@ export type TemplateKind =
   | 'journey-doodle'
   | 'pre-mortem'
   | 'idea-garden'
+  // The use-case batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): four boards built from one board
+  // grid over data (an Eisenhower matrix, a PESTLE scan, a class's KWL chart and a new starter's 30-60-90 day plan),
+  // a photosynthesis concept map and a small office's network diagram.
+  | 'eisenhower-matrix'
+  | 'pestle-analysis'
+  | 'kwl-chart'
+  | 'onboarding-plan'
+  | 'concept-map'
+  | 'network-diagram'
   // Workshop mode's blank (docs/specs/012-collaboration/workshop-mode.md "Templates").
   | 'blank-session';
 
@@ -737,6 +746,48 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Idea Garden',
     description:
       'Grow ideas as a drawn tree: the question at the roots, themes as branches, ideas as leaves and the best ones as fruit.',
+    extra: true,
+  },
+  {
+    kind: 'eisenhower-matrix',
+    title: 'Eisenhower Matrix',
+    description:
+      'Sort a week by urgent and important: do it now, book it, hand it off or drop it, then pick today’s three.',
+    extra: true,
+  },
+  {
+    kind: 'pestle-analysis',
+    title: 'PESTLE Analysis',
+    description:
+      'Scan the world outside the business through six lenses, vote on what matters, then carry it into the SWOT.',
+    extra: true,
+  },
+  {
+    kind: 'kwl-chart',
+    title: 'KWL Chart',
+    description:
+      'A class topic before and after: what we know, what we want to know, then what we learned.',
+    extra: true,
+  },
+  {
+    kind: 'onboarding-plan',
+    title: '30-60-90 Day Plan',
+    description:
+      'A new starter’s first three months: learn, contribute, then lead, with goals for each and the check-ins.',
+    extra: true,
+  },
+  {
+    kind: 'concept-map',
+    title: 'Concept Map',
+    description:
+      'Link ideas into sentences: concepts in boxes, linking words on every arrow and cross-links between branches.',
+    extra: true,
+  },
+  {
+    kind: 'network-diagram',
+    title: 'Network Diagram',
+    description:
+      'An office network in tiers: router, firewall and switches, VLANs with their subnets, Wi-Fi, VPN and an IP plan.',
     extra: true,
   },
 ];

@@ -52,28 +52,29 @@ answered as any unknown kind is (`retired-templates.test.ts`).
 
 Drawn with the marks a person makes in Draw mode: freehand strokes (with a slight hand wobble, so
 the board reads as drawn, not ruled), sticky notes, text and stickers. Each is a real example to
-draw over, not an empty frame.
+draw over, not an empty frame. Each one's category is in [Template
+categories](../008-canvas/canvas-and-palette.md#template-categories).
 
-- **Sketchnote** _(Brainstorm)_: visual notes from a talk ("How we ship on Fridays"): a hand-lettered
+- **Sketchnote**: visual notes from a talk ("How we ship on Fridays"): a hand-lettered
   banner title, the speaker and date, a cloud holding the big idea at the centre, three framed
   areas (Key points, Quotes, Questions) joined to it by drawn arrows, a lightbulb doodle and a
   takeaway banner along the bottom.
-- **Rich Picture** _(Strategy)_: a systems-thinking rich picture of a problem (a hospital's
+- **Rich Picture**: a systems-thinking rich picture of a problem (a hospital's
   discharge delays): stick-figure stakeholders with what they say in speech bubbles, the system in
   a drawn cloud, crossed swords where interests clash, an eye for who is watching, and a legend
   that teaches the symbols.
-- **Comic Strip** _(Design)_: a six-panel product story ("Maya finds the bug") in hand-drawn panels,
+- **Comic Strip**: a six-panel product story ("Maya finds the bug") in hand-drawn panels,
   each with a caption, speech bubbles and a sticker for the moment it shows.
-- **Doodle Warm-Up** _(Brainstorm)_: a meeting icebreaker, "Draw your teammate in 60 seconds": six
+- **Doodle Warm-Up**: a meeting icebreaker, "Draw your teammate in 60 seconds": six
   hand-drawn frames each named for a teammate, the rules on a sticky note, a timer and a
   "best likeness" vote with sticker stars.
-- **Paper Prototype** _(Design)_: three hand-drawn phone screens of a made-up app, lo-fi UI in
+- **Paper Prototype**: three hand-drawn phone screens of a made-up app, lo-fi UI in
   marker, tap arrows from one screen to the next, and stickies with what to test with users.
-- **Journey Doodle** _(Design)_: a customer's day as a winding drawn road, each stop a doodle with
+- **Journey Doodle**: a customer's day as a winding drawn road, each stop a doodle with
   a face for how it felt, the dip where it goes wrong ringed, and opportunities on stickies.
-- **Pre-Mortem** _(Workshops)_: "It's a year from now and the project failed": a drawn wreck in the
+- **Pre-Mortem**: "It's a year from now and the project failed": a drawn wreck in the
   middle, the reasons on stickies round it by theme, and what to do now with tick boxes.
-- **Idea Garden** _(Brainstorm)_: ideas grown as a drawn tree: the question at the roots, themes as
+- **Idea Garden**: ideas grown as a drawn tree: the question at the roots, themes as
   branches, ideas as leaves, the best ones as fruit, and a legend.
 
 ## Workshop templates
@@ -93,22 +94,25 @@ unchanged; only the mode they open in moved from Diagram.
   vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
   session tool opens in Workshop.
 - The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
-  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User Persona** (`user-persona`),
-  **Empathy Map** (`empathy-map`) and **User Journey** (`journey`), under Workshops, the **Planning** group's **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`),
-  **RACI Matrix** (`raci-matrix`) and **User Story Map** (`user-story-map`), and the **Strategy** group's **SWOT** (`swot`), **Business
-  Model Canvas** (`business-model-canvas`), **Value Proposition Canvas** (`value-proposition-canvas`), **Stakeholder
-  map** (`stakeholder-map`) and **Opportunity Solution Tree** (`opportunity-solution-tree`). Their catalogue
-  categories are unchanged. **A board built from sticky notes for a group to add theirs to is a Workshop
-  template**: a note per voice is the room's work. SWOT, Empathy Map and User Journey moved from Diagram for it; a
-  Diagram template may still carry a sticky or two as an annotation (Family Tree, Flywheel, Sequence Diagram) and
-  stays a diagram. Event Storming is its own kind of tab and keeps its own mode.
-- The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
-  (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
-  round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).
-- The **Quizzes & Games** group, after Spaces: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions**
-  (`icebreaker-questions`), **Two Truths and a Lie** (`two-truths-and-a-lie`), **Would You Rather**
-  (`would-you-rather`) and **Find Someone Who Bingo** (`people-bingo`), "Quizzes, icebreakers and games to warm up
-  the room." ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
+  postmortem** (`incident-postmortem`), **User Persona** (`user-persona`), **Empathy Map** (`empathy-map`), **User
+  Journey** (`journey`), **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`), **RACI Matrix**
+  (`raci-matrix`), **User Story Map** (`user-story-map`), **SWOT** (`swot`), **PESTLE Analysis**
+  (`pestle-analysis`), **Business Model Canvas** (`business-model-canvas`), **Value Proposition Canvas**
+  (`value-proposition-canvas`), **Stakeholder map** (`stakeholder-map`), **Opportunity Solution Tree**
+  (`opportunity-solution-tree`) and **KWL Chart** (`kwl-chart`, a class's board). **A board built from sticky notes
+  for a group to add theirs to is a Workshop template**: a note per voice is the room's work. SWOT, Empathy Map and
+  User Journey moved from Diagram for it; a Diagram template may still carry a sticky or two as an annotation (Family
+  Tree, Flywheel, Sequence Diagram) and stays a diagram, and a sticky board one person keeps for themselves stays a
+  diagram too (**Eisenhower Matrix**, a person's own week, and **30-60-90 Day Plan**, a new starter's own plan).
+  Event Storming is its own kind of tab and keeps its own mode.
+- The spaces: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
+  (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), in the **Virtual Spaces** category ([Virtual Office
+  template](../012-collaboration/virtual-office-template.md)).
+- The games: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions** (`icebreaker-questions`), **Two Truths and a Lie**
+  (`two-truths-and-a-lie`), **Would You Rather** (`would-you-rather`) and **Find Someone Who Bingo**
+  (`people-bingo`), in **Quizzes & Games** ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
+- Start a Workshop groups them by the catalogue's categories, as every start does ([Start
+  diagramming](start-diagramming.md) "Recommended and groups").
 
 ## Testing
 

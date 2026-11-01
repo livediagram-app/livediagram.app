@@ -85,7 +85,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
 // walks that whole path in a browser, then reloads to prove the board is
 // still a board after a round trip through the api.
 test('an event-storming board stays a board across a reload', async ({ page, pageErrors }) => {
-  await startTemplateDocument(page, 'Technical', /^Event storming/i);
+  await startTemplateDocument(page, 'Software & IT', /^Event storming/i);
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
 
   // The notation palette is the board presenting itself: on any other tab

@@ -204,7 +204,7 @@ export async function startTemplateDocument(
 // a row around that note through the api and reloads. The three are copies of
 // the seeded note (so they carry exactly its stationery), one rhythm step apart.
 export async function startEventStormingRow(page: Page): Promise<void> {
-  await startTemplateDocument(page, 'Technical', /^Event storming/i);
+  await startTemplateDocument(page, 'Software & IT', /^Event storming/i);
   const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
   await notes.first().waitFor();
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';

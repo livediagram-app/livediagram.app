@@ -127,6 +127,14 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',
+  // The use-case batch: the four board grids are sticky-note boards on the dot grid; the concept map and the network
+  // diagram are alignment-heavy box-and-line diagrams on graph paper.
+  'eisenhower-matrix': 'grid',
+  'pestle-analysis': 'grid',
+  'kwl-chart': 'grid',
+  'onboarding-plan': 'grid',
+  'concept-map': 'graph',
+  'network-diagram': 'graph',
 };
 
 // How far each loud backdrop pattern steps back behind a template's content
