@@ -42,7 +42,7 @@ export type ItemHistoryChange =
   | { kind: 'cleared'; field: string };
 
 // How an entry was made: by an agent (an API token), as an undo or redo, or from a form's response.
-export type ItemHistoryTag = 'ai' | 'undo' | 'form';
+export type ItemHistoryTag = 'ai' | 'undo' | 'form' | 'repeat';
 
 // An entry as the plan stores it: its author as the card names them (a hashed id, a name, a colour).
 export type StoredHistoryEntry = {
@@ -260,7 +260,7 @@ export function historyForReader(
   }));
 }
 
-const TAGS: readonly string[] = ['ai', 'undo', 'form'];
+const TAGS: readonly string[] = ['ai', 'undo', 'form', 'repeat'];
 const CHANGE_KINDS = new Set([
   'created',
   'moved',
