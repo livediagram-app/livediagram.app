@@ -125,12 +125,16 @@ on a logo page: the same rules, from the same shared code, so a filled mark beha
   up; it **stays in hand** until another tool or Escape puts it down (the exception to a logo tool's
   one use, [Logo pages](../007-editor/logo-pages.md) "The Logo palette"). No keyboard key: F is the
   Frame. Not in the Toolbar strip's Search.
-- **Its colour:** pressed again while held, its row opens its flyout, **Fill**, below it: the one
-  colour picker ([Colour picker](../004-interface-design/colour-picker.md)), **No fill** first, the
-  theme's colours, the **soft** standard colours drawn for the canvas, Custom colours from the
-  design and **+**. A pick re-arms it at once. The row's bucket shows the colour in hand as a bar
-  (No fill as the no-colour chip's slash). Device-local (`livedesign:v2:fill`), never on the design;
-  until one is picked it pours the soft **Blue** for the canvas it is on.
+- **Its colour:** the one colour picker ([Colour picker](../004-interface-design/colour-picker.md)),
+  **No fill** first, the theme's colours, the **soft** standard colours drawn for the canvas, Custom
+  colours from the design and **+**. In the palette's Draw tab, pressed again while held, its row
+  opens the picker in its flyout, **Fill**, below it, and a pick re-arms it at once. In the category
+  bar's Draw flyout, resting on (or focusing) its tile opens the picker in the side panel beside
+  it, as a presets tile's does, and a pick there picks the bucket up in that colour; a phone cannot
+  rest, so there a tap on the tile opens the panel and a colour picks it up. The bucket shows the
+  colour in hand as a bar (No fill as the no-colour chip's slash), the same on every surface.
+  Device-local (`livedesign:v2:fill`), never on the design; until one is picked it pours the soft
+  **Blue** for the canvas it is on.
 - **What a press fills**, top first, past open ink, lines, text boxes and any outline the press is
   outside, and stopped by a note, an image, a table or any element that fills its box:
   1. **A closed element: its fill is set**, as a picked Background colour sets it (a shape loses its

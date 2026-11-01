@@ -161,15 +161,30 @@ Exclude), **Wordmark**, **Logo Kit**.
   (`placement: 'below'`, `scope: [data-palette-logo]`, opener `logo-marker-<id>`) with `PenFlyoutBody`, its `updatePen` wrapped to re-arm with the patch.
 - The Fill tool (`components/palette/FillToolRow.tsx`, spec [Drawing tools](../../023-draw-mode/drawing-tools.md)
   "The Fill tool"): after the Markers, under a **Fill** heading, only inside an editor. Its tile
-  (`fillToolTile`, id `logo:fill`, action `{ type: 'fill' }`, never in `PALETTE_TILES`, so not in
-  Search) draws `FillToolIcon` (`@liveworkspace/ui`) with the colour bar. Not held, the row calls
-  `beginDraw({ type: 'fill', fill })`; held (`isFillIntent`, which `tileActive`'s default matches),
-  it toggles a `WhiteboardFlyout` (opener `logo-fill`, `scope: [data-palette-logo]`, label Fill)
-  with the shared `ColourPicker` (`noColour('transparent', 'No fill')`, `useThemeColours`,
-  `standardGroup('soft', surface, 'hex')`, `useDesignColours`). A pick stores it
-  (`saveFillChoice('livedesign:v2:fill')`) and re-arms when held. `tileHandler`'s `fill` case is a
-  no-op: the row always passes its own press. The colour defaults to `defaultFill(surface)`, the
-  soft Blue.
+  (`fillToolTile(colour)`, id `logo:fill`, action `{ type: 'fill', fill }`, never in
+  `PALETTE_TILES`, so not in Search) draws `FillToolIcon` (`@liveworkspace/ui`) with the colour bar.
+  The colour is one store per browser, `components/palette/fill-tool-colour.ts`
+  (`useFillColour`, a `useSyncExternalStore` over `loadFillChoice('livedesign:v2:fill')`;
+  `setFillColour` saves and tells every reader), so the row, the tile and its panel agree at once;
+  it defaults to `defaultFill(surface)`, the soft Blue. `FillColourPicker` is the shared
+  `ColourPicker` (`noColour('transparent', 'No fill')`, `useThemeColours`,
+  `standardGroup('soft', surface, 'hex')`, `useDesignColours`): a new colour is stored and reported
+  (`Draw` · `Changed` · `FillColour`), and every pick goes to its `onPick`.
+  - The Draw tab's row (`FillToolRow`): not held, it calls `beginDraw({ type: 'fill', fill })`; held
+    (`isFillIntent`, which `tileActive`'s default matches), it toggles a `WhiteboardFlyout` (opener
+    `logo-fill`, `scope: [data-palette-logo]`, label Fill) holding `FillColourPicker`, whose pick
+    of a new colour re-arms it. `PaletteLogoTab` leaves the catalogue's `fill` tile out of its tool
+    rows, so the row is the one Fill there.
+  - The category flyout: `usePaletteCatalogue` appends the tile from `useLogoFillTool()` (null
+    outside an editor) after the markers, the markers ending their group (`withGroupEnd`), and
+    `category-flyout-groups` names its group **Fill** (`logo:fill`). `tileActions.beginFill` is
+    the hook's `begin` (`beginDraw` plus `Draw` · `Selected` · `Fill`) wrapped in `armed`, so a
+    pick-up closes the flyout as any tool's does; `tileHandler`'s `fill` case calls it with the
+    tile's colour (a no-op without it). `opensSide` counts the `fill` tile, so a rest or focus
+    opens `CategoryFlyoutSide`, which for `fill` holds `FillColourPicker` (tagline "Pick a colour to
+    pick the bucket up in it.") whose pick calls `beginFill`. `CategoryBar`'s `onSide` runs
+    `tileHandler` for a `fill` tile on a desktop (a press picks up, or puts down while held) and
+    opens the panel on a phone (`isMobile`). The tile is not draggable (side tiles never are).
 - The Fill tool's press: `useCanvasDrawTools` runs `useFillPress` (`@liveworkspace/workbench`)
   after the off-page guard and before the Path tool; its release calls `useEditorPaintBucket`
   (`hooks/canvas/`), which binds `usePaintBucket` to `useOptionalEditorContext()` (blocked unless
@@ -604,42 +619,42 @@ Measured (vitest on this branch):
 
 ## Testing
 
-| Spec rule                                         | Test                                                                                                                                                                           |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Logo page parsed, artboard, no pattern, label     | `packages/design/src/page-logo.test.ts`                                                                                                                                        |
-| Guide geometry, snap boxes, page under a point    | `packages/design/src/logo-page.test.ts`                                                                                                                                        |
-| Mirror rules                                      | `packages/design/src/element-mirror.test.ts`, `element-symmetry.test.ts`, `apps/live/lib/mirror-commit.test.ts`                                                                |
-| Mirror popover and per-page settings              | `apps/live/components/canvas/LogoMirrorPopover.test.tsx`, `apps/live/hooks/editor/useLogoTools.pages.test.tsx`                                                                 |
-| Mirror Copy                                       | `apps/live/hooks/editor/useLogoTools.test.ts`                                                                                                                                  |
-| Wordmark fields, clamps, arc geometry, validation | `packages/design/src/wordmark.test.ts`                                                                                                                                         |
-| Wordmark in export                                | `packages/design/src/svg-render-wordmark.test.ts`                                                                                                                              |
-| Combined paths: draw, hit, validate               | `packages/design/src/path-contours.test.ts`                                                                                                                                    |
-| Combined paths: a contour reshaped, dropped       | `packages/design/src/path-contours.test.ts`, `apps/live/hooks/canvas/usePathCommits.test.tsx`                                                                                  |
-| Combined paths: picking and switching contours    | `apps/live/lib/path-contour-pick.test.ts`, `apps/live/components/canvas/path/usePathContour.test.tsx`                                                                          |
-| Combined paths: edit gesture, toolbar, outline    | `apps/live/components/canvas/path/usePathEditGesture.test.tsx`, `PathEditToolbar.test.tsx`, `PathEditLayer.test.tsx`                                                           |
-| Simplify, its tolerance and budget                | `apps/live/lib/path-simplify.test.ts`                                                                                                                                          |
-| Edit Points on a combined path and a stroke       | `apps/live/components/canvas/CanvasSelectionToolbars.editpoints.test.tsx`                                                                                                      |
-| Page edits, the delete glide                      | `apps/live/hooks/editor/page-edits.test.ts`                                                                                                                                    |
-| Logo layouts fit the safe area                    | `apps/live/lib/logo-layouts.test.ts`                                                                                                                                           |
-| Combine ops, style, empty, too detailed, budget   | `apps/live/lib/combine/combine.test.ts`, `apps/live/hooks/canvas/useCombineShapes.test.ts`                                                                                     |
-| Wordmark controls and patch                       | `apps/live/components/palette/WordmarkSection.test.tsx`, `apps/live/lib/style-presets-wordmark.test.ts`                                                                        |
-| Bold clears the weight                            | `apps/live/hooks/canvas/useTextStyleSetters-bold.test.ts`                                                                                                                      |
-| Guides popover                                    | `apps/live/components/canvas/LogoGuidesPopover.test.tsx`                                                                                                                       |
-| Guide preferences                                 | `apps/live/lib/logo-guide-prefs.test.ts`                                                                                                                                       |
-| Transparency, kit names, ICO                      | `apps/live/lib/export-logo.test.ts`, `apps/live/lib/ico-writer.test.ts`                                                                                                        |
-| Commands                                          | `apps/live/lib/editor-commands.test.ts`                                                                                                                                        |
-| Guide snapping and its budget                     | `packages/design/src/logo-guide-snap.test.ts`, `apps/live/lib/logo-guide-snapping.test.ts`                                                                                     |
-| Where a drawing can start                         | `apps/live/components/canvas/GuideSnapPoints.test.tsx`                                                                                                                         |
-| Per-page Show Guides                              | `apps/live/lib/logo-page-guides.test.ts`                                                                                                                                       |
-| Title bar controls and room                       | `apps/live/components/canvas/LogoTitleBar.test.tsx`                                                                                                                            |
-| Tidy Up                                           | `apps/live/lib/stroke-tidy.test.ts`, `apps/live/lib/simplify-line.test.ts`, `apps/live/hooks/canvas/useTidyUpStrokes.test.tsx`                                                 |
-| Mirror merge                                      | `apps/live/lib/mirror-merge.test.ts`                                                                                                                                           |
-| The Logo palette and its markers                  | `apps/live/components/palette/PaletteLogoTab.test.tsx`, `apps/live/components/palette/MarkerPaletteTile.test.tsx`                                                              |
-| The Fill tool: row, colour, press, fill, export   | `PaletteLogoTab.test.tsx`, `hooks/canvas/useEditorPaintBucket.test.tsx`, `usePaintBucket.test.tsx`, `lib/paint-bucket.test.ts`, `packages/design/src/stroke-loop-fill.test.ts` |
-| The palette follows the page                      | `apps/live/hooks/canvas/useLogoPaletteSwitch.test.tsx`                                                                                                                         |
-| Layout tiles rendered                             | `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                                                                     |
-| No quick-connect pluses                           | `apps/live/components/canvas/LayerSelectionChrome.test.ts`                                                                                                                     |
-| Show Me                                           | `apps/live/components/tour/PageTour.test.tsx`                                                                                                                                  |
+| Spec rule                                         | Test                                                                                                                                                                                                                                               |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Logo page parsed, artboard, no pattern, label     | `packages/design/src/page-logo.test.ts`                                                                                                                                                                                                            |
+| Guide geometry, snap boxes, page under a point    | `packages/design/src/logo-page.test.ts`                                                                                                                                                                                                            |
+| Mirror rules                                      | `packages/design/src/element-mirror.test.ts`, `element-symmetry.test.ts`, `apps/live/lib/mirror-commit.test.ts`                                                                                                                                    |
+| Mirror popover and per-page settings              | `apps/live/components/canvas/LogoMirrorPopover.test.tsx`, `apps/live/hooks/editor/useLogoTools.pages.test.tsx`                                                                                                                                     |
+| Mirror Copy                                       | `apps/live/hooks/editor/useLogoTools.test.ts`                                                                                                                                                                                                      |
+| Wordmark fields, clamps, arc geometry, validation | `packages/design/src/wordmark.test.ts`                                                                                                                                                                                                             |
+| Wordmark in export                                | `packages/design/src/svg-render-wordmark.test.ts`                                                                                                                                                                                                  |
+| Combined paths: draw, hit, validate               | `packages/design/src/path-contours.test.ts`                                                                                                                                                                                                        |
+| Combined paths: a contour reshaped, dropped       | `packages/design/src/path-contours.test.ts`, `apps/live/hooks/canvas/usePathCommits.test.tsx`                                                                                                                                                      |
+| Combined paths: picking and switching contours    | `apps/live/lib/path-contour-pick.test.ts`, `apps/live/components/canvas/path/usePathContour.test.tsx`                                                                                                                                              |
+| Combined paths: edit gesture, toolbar, outline    | `apps/live/components/canvas/path/usePathEditGesture.test.tsx`, `PathEditToolbar.test.tsx`, `PathEditLayer.test.tsx`                                                                                                                               |
+| Simplify, its tolerance and budget                | `apps/live/lib/path-simplify.test.ts`                                                                                                                                                                                                              |
+| Edit Points on a combined path and a stroke       | `apps/live/components/canvas/CanvasSelectionToolbars.editpoints.test.tsx`                                                                                                                                                                          |
+| Page edits, the delete glide                      | `apps/live/hooks/editor/page-edits.test.ts`                                                                                                                                                                                                        |
+| Logo layouts fit the safe area                    | `apps/live/lib/logo-layouts.test.ts`                                                                                                                                                                                                               |
+| Combine ops, style, empty, too detailed, budget   | `apps/live/lib/combine/combine.test.ts`, `apps/live/hooks/canvas/useCombineShapes.test.ts`                                                                                                                                                         |
+| Wordmark controls and patch                       | `apps/live/components/palette/WordmarkSection.test.tsx`, `apps/live/lib/style-presets-wordmark.test.ts`                                                                                                                                            |
+| Bold clears the weight                            | `apps/live/hooks/canvas/useTextStyleSetters-bold.test.ts`                                                                                                                                                                                          |
+| Guides popover                                    | `apps/live/components/canvas/LogoGuidesPopover.test.tsx`                                                                                                                                                                                           |
+| Guide preferences                                 | `apps/live/lib/logo-guide-prefs.test.ts`                                                                                                                                                                                                           |
+| Transparency, kit names, ICO                      | `apps/live/lib/export-logo.test.ts`, `apps/live/lib/ico-writer.test.ts`                                                                                                                                                                            |
+| Commands                                          | `apps/live/lib/editor-commands.test.ts`                                                                                                                                                                                                            |
+| Guide snapping and its budget                     | `packages/design/src/logo-guide-snap.test.ts`, `apps/live/lib/logo-guide-snapping.test.ts`                                                                                                                                                         |
+| Where a drawing can start                         | `apps/live/components/canvas/GuideSnapPoints.test.tsx`                                                                                                                                                                                             |
+| Per-page Show Guides                              | `apps/live/lib/logo-page-guides.test.ts`                                                                                                                                                                                                           |
+| Title bar controls and room                       | `apps/live/components/canvas/LogoTitleBar.test.tsx`                                                                                                                                                                                                |
+| Tidy Up                                           | `apps/live/lib/stroke-tidy.test.ts`, `apps/live/lib/simplify-line.test.ts`, `apps/live/hooks/canvas/useTidyUpStrokes.test.tsx`                                                                                                                     |
+| Mirror merge                                      | `apps/live/lib/mirror-merge.test.ts`                                                                                                                                                                                                               |
+| The Logo palette and its markers                  | `apps/live/components/palette/PaletteLogoTab.test.tsx`, `apps/live/components/palette/MarkerPaletteTile.test.tsx`                                                                                                                                  |
+| The Fill tool: row, colour, press, fill, export   | `PaletteLogoTab.test.tsx`, `CategoryBar.test.tsx` (the flyout tile, its panel, a phone's tap), `hooks/canvas/useEditorPaintBucket.test.tsx`, `usePaintBucket.test.tsx`, `lib/paint-bucket.test.ts`, `packages/design/src/stroke-loop-fill.test.ts` |
+| The palette follows the page                      | `apps/live/hooks/canvas/useLogoPaletteSwitch.test.tsx`                                                                                                                                                                                             |
+| Layout tiles rendered                             | `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                                                                                                                                         |
+| No quick-connect pluses                           | `apps/live/components/canvas/LayerSelectionChrome.test.ts`                                                                                                                                                                                         |
+| Show Me                                           | `apps/live/components/tour/PageTour.test.tsx`                                                                                                                                                                                                      |
 
 ## Assets and external resources
 
