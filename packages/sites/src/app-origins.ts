@@ -3,7 +3,7 @@
 // the address is one of the app's registered OAuth redirect URIs; the sign-in pages read them to know when they are
 // being served under an app's address. Kept Worker-safe: no Node, no DOM.
 
-import { APP_SITES, isStagingHost, LOCAL_PORTS, type Site, type SiteId } from './index';
+import { isStagingHost, LOCAL_PORTS, REGISTERED_APP_SITES, type Site, type SiteId } from './index';
 
 export type AppSiteId = Exclude<SiteId, 'liveworkspace.app'>;
 
@@ -34,7 +34,8 @@ export function siteHrefFrom(site: Site, href: string, host: string): string {
 }
 
 /** The app an origin belongs to in `environment`, or null (liveworkspace.app itself, or anywhere else). Only an exact
- *  origin matches: no other port, scheme or subdomain. */
+ *  origin matches: no other port, scheme or subdomain. A held app's origins count: the services accept it before it
+ *  is listed anywhere. */
 export function appOfOrigin(origin: string, environment: AppEnvironment): AppSiteId | null {
   let normal: string;
   try {
@@ -42,7 +43,7 @@ export function appOfOrigin(origin: string, environment: AppEnvironment): AppSit
   } catch {
     return null;
   }
-  for (const site of APP_SITES) {
+  for (const site of REGISTERED_APP_SITES) {
     const id = site.id as AppSiteId;
     if (appOrigins(id, environment).includes(normal)) return id;
   }
