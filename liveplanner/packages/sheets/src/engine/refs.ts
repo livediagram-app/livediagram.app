@@ -43,6 +43,9 @@ export function posToRange(pos: PosRef, f: Frame): RangeRef | null {
   }
   if (r2 === undefined) r2 = r1;
   if (c2 === undefined) c2 = c1;
+  // A reference wholly past the grid (`M1` typed into INDIRECT on a 12-column sheet) reads no cell: #REF!
+  // (formulas.md "References"), never an empty range.
+  if (Math.min(r1, r2) >= grid.rows || Math.min(c1, c2) >= grid.cols) return null;
   const range = {
     sheetId,
     r1: Math.min(r1, r2),

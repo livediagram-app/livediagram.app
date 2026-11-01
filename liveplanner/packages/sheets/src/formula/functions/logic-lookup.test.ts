@@ -205,6 +205,10 @@ describe('lookup', () => {
     ['=INDIRECT("A1", "x")', '#VALUE!'],
     ['=INDIRECT(5)', '#REF!'],
     ['=INDIRECT("Nope!A1")', '#REF!'],
+    // Past the grid (formulas.md "References"): the book is 30 rows by 12 columns.
+    ['=INDIRECT("M1")', '#REF!'],
+    ['=INDIRECT("A31")', '#REF!'],
+    ['=SUM(INDIRECT("M1:N2"))', '#REF!'],
   ])('%s is %s', (f, e) => {
     expect(calc(f, T)).toMatchObject({ e });
   });
