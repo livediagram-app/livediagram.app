@@ -9,7 +9,8 @@
 // the same address as a guest. Either way it costs one bounce per browser session, and nothing after.
 //
 // Guards, all here so every app keeps the same ones:
-// - the page: once per browser session (sessionStorage), never in a frame, never for a crawler or an automated
+// - the page: once per tab (sessionStorage) until the person may have signed in elsewhere since (the tab came back
+//   into view, or the page was opened from another site), never in a frame, never for a crawler or an automated
 //   browser (`navigator.webdriver`, which also keeps the apps' own end-to-end suites unbounced), never on the
 //   sign-in pages, embeds or a share link (`?s=`), never with a session already (the app's hint cookie);
 // - the person: never after they signed out of this app alone (the global sign-out failed), until they sign in
@@ -312,17 +313,23 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
   const skip = JSON.stringify(options.skipPaths);
   const key = JSON.stringify(SILENT_SESSION_KEY);
   const back = JSON.stringify(SILENT_RETURN_KEY);
+  const afterPaint = options.afterPaint === true;
   // A session here already, signed out of this app alone, or a bounce just out.
   const settled = `has('${hint}','1')||has('${signedOut}','${SIGNED_OUT_VALUE}')||has('${guard}')`;
   // Once per browser session; no storage, no bounce (nothing to stop the next one).
   const once = `if(st.getItem(${key}))return;st.setItem(${key},'1');if(st.getItem(${key})!=='1')return;`;
   const go = `l.replace(${api}+'/auth/silent?return='+encodeURIComponent(r));`;
   const tooLong = `if(r.length>${SILENT_RETURN_MAX_LENGTH})return;`;
+  // The way back from a deferred bounce, said once for the page view and Web Vitals trackers.
+  const leaving = afterPaint ? `st.setItem(${back},l.pathname+l.search);` : '';
   return (
     `(function(){try{` +
-    `var w=window,d=document,l=location,n=navigator,c=d.cookie||'',st=w.sessionStorage;` +
+    `var w=window,d=document,l=location,n=navigator,c=d.cookie||'',st=w.sessionStorage,s=${skip};` +
     `function has(k,v){return new RegExp('(?:^|;\\\\s*)'+k+'='+(v?v+'(?:;|$)':'[^;\\\\s]')).test(c)}` +
-    (options.afterPaint
+    // The sign-in pages, embeds and the rest (and everything under them), and a share link: their own flows, not to
+    // be interrupted.
+    `function skipped(p){for(var i=0;i<s.length;i++){if(p===s[i]||p.indexOf(s[i]+'/')===0)return 1}return /[?&]s=/.test(l.search)}` +
+    (afterPaint
       ? // Back from a deferred bounce: said once, for the page view and Web Vitals trackers.
         `var b=st.getItem(${back});if(b!==null){st.removeItem(${back});` +
         `if(b===l.pathname+l.search)d.documentElement.setAttribute('${SILENT_RETURN_ATTRIBUTE}','')}`
@@ -330,24 +337,28 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
     // A frame (an embed, the workbench, a preview), a crawler, an audit or other automated browser, or no cookies
     // to come back with.
     `if(w.top!==w.self||n.webdriver||!n.cookieEnabled||/bot|crawl|spider|slurp|mediapartners|facebookexternalhit|embedly|preview|lighthouse/i.test(n.userAgent||''))return;` +
-    `if(${settled})return;` +
-    `var p=l.pathname,s=${skip};` +
-    `for(var i=0;i<s.length;i++){if(p===s[i]||p.indexOf(s[i]+'/')===0)return}` +
-    // A share link: its own visitor flow, not to be interrupted.
-    `if(/[?&]s=/.test(l.search))return;` +
-    (options.afterPaint
-      ? // A prerendered page nobody is looking at yet, or a tab that already bounced, waits for nothing.
-        `if(d.prerendering||st.getItem(${key}))return;` +
-        // The visitor starting to use the page calls it off: a reload under their hands would lose their place.
+    `if(skipped(l.pathname))return;` +
+    // The tab's mark holds only while the person can't have signed in anywhere else since it was set: it goes when
+    // the page was opened from another site (the tab may have been through a sign-in there) and when the tab comes
+    // back into view after being hidden (the person was in another tab or app), so the next full load asks again.
+    // Not while the guard is up: the way back from a bounce is no visit to another site.
+    `var o=l.protocol+'//'+l.host,f=d.referrer||'';if(f&&f!==o&&f.indexOf(o+'/')!==0&&!has('${guard}'))st.removeItem(${key});` +
+    `d.addEventListener('visibilitychange',function(){try{if(d.visibilityState==='visible')st.removeItem(${key})}catch(e){}});` +
+    (afterPaint
+      ? // The visitor starting to use the page calls a bounce off: a reload under their hands would lose their place.
         `var used=0,ev=['pointerdown','keydown','wheel','touchstart'];` +
         `function use(){used=1}` +
-        `for(var j=0;j<ev.length;j++)w.addEventListener(ev[j],use,{capture:true,passive:true});` +
+        `for(var j=0;j<ev.length;j++)w.addEventListener(ev[j],use,{capture:true,passive:true});`
+      : '') +
+    `if(${settled})return;` +
+    (afterPaint
+      ? // A prerendered page nobody is looking at yet, or a tab that already bounced, waits for nothing.
+        `if(d.prerendering||st.getItem(${key}))return;` +
         `function bounce(){try{if(used)return;c=d.cookie||'';if(${settled})return;` +
-        `var r=l.pathname+l.search+l.hash;${tooLong}${once}` +
-        `st.setItem(${back},l.pathname+l.search);${go}}catch(e){}}` +
+        `var r=l.pathname+l.search+l.hash;${tooLong}${once}${leaving}${go}}catch(e){}}` +
         `function idle(){if(w.requestIdleCallback)w.requestIdleCallback(bounce,{timeout:1000});else w.setTimeout(bounce,200)}` +
         `if(d.readyState==='complete')idle();else w.addEventListener('load',function(){w.setTimeout(idle,0)})`
-      : `var r=p+l.search+l.hash;${tooLong}${once}` +
+      : `var r=l.pathname+l.search+l.hash;${tooLong}${once}` +
         `d.documentElement.style.colorScheme='light dark';` +
         `if(w.stop)w.stop();` +
         go +

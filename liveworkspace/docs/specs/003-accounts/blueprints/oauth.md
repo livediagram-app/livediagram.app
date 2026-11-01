@@ -74,7 +74,7 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
 - `authorizeUrl`: `response_type=code`, `scope` the four, `code_challenge` S256, `state`, optional `prompt` `create`,
   `login` or `none`; `exchangeCode` and `refreshTokens` send the client secret, so they run in the app's Worker;
   the refresh token returned replaces the one sent.
-- Silent sign-in: once per browser session, never in a frame, for a crawler or a Lighthouse audit, on sign-in pages,
+- Silent sign-in: once per tab until the tab comes back into view or is opened from another site, never in a frame, for a crawler or a Lighthouse audit, on sign-in pages,
   embeds or share links, or after a sign-out of the app alone (the global sign-out failed; mark `2`, remembered 400 days;
   a successful one sets the 120 s guard instead, and the old mark `1` is ignored); the editors bounce before paint, the
   marketing pages (`afterPaint`) once loaded and idle and only while untouched, marking the page they land back on
