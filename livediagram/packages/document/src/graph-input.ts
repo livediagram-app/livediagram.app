@@ -273,8 +273,10 @@ export function layoutGraph(
     clusters: g.groups as GraphCluster[] | undefined,
   };
   const flat = style === 'flow' ? sideStepEdges(g.nodes, g.edges) : new Set<string>();
-  // A tree's leaf groups stack under their parent, the compact org chart (graph-look.ts).
-  const stacked = style === 'tree' ? stackedParents(g.nodes, g.edges) : new Set<string>();
+  // A tree's leaf groups stack under their parent, the compact org chart (graph-look.ts); run across the page, a
+  // family is already a column, so none stack.
+  const stacked =
+    style === 'tree' && direction !== 'LR' ? stackedParents(g.nodes, g.edges) : new Set<string>();
   const flowLayout = (dir: LayoutDirection) =>
     layoutClusteredGraph(graph, {
       direction: dir,
