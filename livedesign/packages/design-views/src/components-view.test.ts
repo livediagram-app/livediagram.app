@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { DesignComponent, Element } from '@livedesign/design';
 import { componentsView } from './components-view';
 
@@ -130,10 +131,12 @@ describe('componentsView', () => {
 
   it('stays linear on the largest library (200 mains of 200 elements)', () => {
     const library = Array.from({ length: 200 }, (_, i) => many(`m${i}`, 200));
-    const started = performance.now();
-    const view = componentsView(design, library, { budget: 1000 });
-    expect(view.fit.state).toBe('lines-dropped');
+    let view: ReturnType<typeof componentsView> | undefined;
+    const ms = cpuMsOf(() => {
+      view = componentsView(design, library, { budget: 1000 });
+    });
+    expect(view?.fit.state).toBe('lines-dropped');
     // Measured at about 60 ms; a quadratic fit took seconds.
-    expect(performance.now() - started).toBeLessThan(2000);
+    expect(ms).toBeLessThan(cpuBudgetMs(2000));
   });
 });
