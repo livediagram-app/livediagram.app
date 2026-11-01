@@ -153,8 +153,8 @@ export function dayHeading(day: string, now: number): string {
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
   if (day === dateKey(yesterday.getTime())) return 'Yesterday';
-  const { label, year } = formatDay(day);
-  return year && year !== String(new Date(now).getFullYear()) ? `${label} ${year}` : label;
+  const { label, year, withYear } = formatDay(day);
+  return year && year !== String(new Date(now).getFullYear()) ? withYear : label;
 }
 
 /** Groups under their day headings, in the groups' order. */

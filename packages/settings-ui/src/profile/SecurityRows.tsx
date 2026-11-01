@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { DAY_LONG_MONTH, DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 
 // The Profile's Sign-in and Security (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): how the person signs in and
@@ -249,7 +250,7 @@ function lastActive(iso: string, now: number): string {
   if (hours < 24) return `Active ${hours} hour${hours === 1 ? '' : 's'} ago`;
   const days = Math.round(hours / 24);
   if (days < 30) return `Active ${days} day${days === 1 ? '' : 's'} ago`;
-  return `Active ${new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`;
+  return `Active ${DAY_MONTH.format(at)}`;
 }
 
 const LaptopGlyph = () => (
@@ -268,7 +269,7 @@ const PhoneGlyph = () => (
 function signedInSince(iso: string): string {
   const at = Date.parse(iso);
   if (Number.isNaN(at)) return 'Signed in here';
-  return `Signed in here since ${new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}`;
+  return `Signed in here since ${DAY_LONG_MONTH.format(at)}`;
 }
 
 /** Where You're Signed In: each session, this device first, signing out of any other. */

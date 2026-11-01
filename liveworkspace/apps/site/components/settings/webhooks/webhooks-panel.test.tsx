@@ -182,7 +182,8 @@ describe('Settings › Webhooks', () => {
     expect(row().textContent).toContain('Slack · Design’s items');
     expect(row().querySelector('[data-state="live"]')?.textContent).toBe('Active');
     expect(row().textContent).toContain('hooks.slack.com');
-    expect(row().textContent).toMatch(/Delivered \d+ \w{3}/);
+    // The date in the reader's locale: "21 Sept" or "Sep 21".
+    expect(row().textContent).toMatch(/Delivered (\d+ \w{3,4}|\w{3,4} \d+)/);
     const sends = row().querySelector('[aria-label="What it sends"]')!;
     expect(sends.textContent).toContain('Item Created');
     expect(sends.textContent).toContain('Card Moved');
@@ -510,8 +511,11 @@ describe('words', () => {
   it('says when, relatively within a week and by date past it', () => {
     const now = Date.UTC(2026, 9, 30, 12);
     expect(whenOf(now - 2 * 3_600_000, now)).toMatch(/2 hours ago|2h/);
-    expect(whenOf(now - 10 * 86_400_000, now)).toBe('20 Oct');
-    expect(whenOf(now + 60_000, now)).toBe('30 Oct');
+    // Past a week, the date in the reader's locale ("20 Oct", "Oct 20").
+    const day = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
+    expect(whenOf(now - 10 * 86_400_000, now)).toBe(day.format(now - 10 * 86_400_000));
+    expect(whenOf(now - 10 * 86_400_000, now)).toMatch(/20/);
+    expect(whenOf(now + 60_000, now)).toBe(day.format(now + 60_000));
   });
 
   it('finds the test this row sent, never an older one', () => {

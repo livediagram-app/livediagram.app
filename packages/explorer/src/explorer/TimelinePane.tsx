@@ -22,6 +22,7 @@ import {
   type Item,
   type TimelineEvent,
 } from '@liveworkspace/index-client';
+import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { RENAME_INPUT } from '../ui/classes';
 import { DismissIcon } from '../ui/icons';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
@@ -256,7 +257,7 @@ export function renderTimelineEvent(
     case 'share_link_expiring': {
       const links = Number(detail.links ?? '1') || 1;
       const when = Number(detail.expiresAt ?? event.occurredAt) || event.occurredAt;
-      const date = new Date(when).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+      const date = DAY_MONTH.format(when);
       meta = `${links > 1 ? `${links} share links stop` : 'A share link stops'} working on ${date} · Extend it in Share`;
       break;
     }

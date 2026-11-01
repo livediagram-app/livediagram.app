@@ -10,6 +10,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./relative-time": "./src/relative-time.ts",
+    "./date-format": "./src/date-format.ts",
     "./build-animation-kit": "./src/build-animation-kit.tsx",
     "./breadcrumb-json-ld": "./src/breadcrumb-json-ld.ts",
     "./appearance-storage": "./src/appearance/appearance-storage.ts",

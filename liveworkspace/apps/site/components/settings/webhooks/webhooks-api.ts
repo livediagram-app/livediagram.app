@@ -14,6 +14,7 @@ import {
   type WebhookPauseReason,
 } from '@liveworkspace/index-client';
 import { formatRelativeTime } from '@liveworkspace/ui';
+import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { workspaceToken } from '@/lib/explorer/token';
 
 export const webhooksClient = createIndexClient({ getToken: workspaceToken });
@@ -222,4 +223,4 @@ export function whenOf(at: number, now: number): string {
 }
 
 const WEEK_MS = 7 * 86_400_000;
-const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' });
+const DATE = DAY_MONTH;

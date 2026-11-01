@@ -10,6 +10,7 @@
 import { memo, useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import type { Item, TimelineEvent } from '@liveworkspace/index-client';
 import { EmptyState, PictureDisc } from '@liveworkspace/ui';
+import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../data/usePeople';
 import { useExtras } from '../explorer/extras';
 import { useExplorer, type ExplorerContextValue } from '../explorer/context';
@@ -57,8 +58,7 @@ type RenderCtx = Parameters<typeof renderTimelineEvent>[1];
 const MUTED = 'text-slate-500 dark:text-slate-400';
 const BUTTON = `inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition duration-micro hover:border-brand-300 hover:text-brand-700 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:text-brand-300 ${FOCUS_RING}`;
 
-const fullDate = (at: number) =>
-  new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const fullDate = (at: number) => DAY_MONTH_YEAR.format(at);
 const iso = (at: number) => new Date(at).toISOString();
 
 export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => void }) {

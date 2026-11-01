@@ -16,6 +16,7 @@
 
 import { memo, type ReactNode } from 'react';
 import { PictureDisc } from '@liveworkspace/ui';
+import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../../data/usePeople';
 import { initials } from '../../timeline/whatHappened';
 import { useNow } from '../../time';
@@ -284,12 +285,12 @@ export function Status({ reason }: { reason: InboxReason }) {
 
 // A full date for the time's tooltip, one formatter for every row, worded on first hover: formatting 300 dates up
 // front is a few milliseconds no one reads.
-const FULL_DATE = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+const FULL_DATE = MEDIUM_DATE_TIME;
 const fullDateOnHover = (at: number) => (e: { currentTarget: HTMLElement }) => {
   if (!e.currentTarget.title) e.currentTarget.title = FULL_DATE.format(at);
 };
 
-const SHORT_DATE = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+const SHORT_DATE = DAY_MONTH;
 
 /** A row's age in a few characters: "now", "12m", "3h", "2d", then the date ("12 Oct"). */
 export function shortAgo(at: number, now: number): string {
