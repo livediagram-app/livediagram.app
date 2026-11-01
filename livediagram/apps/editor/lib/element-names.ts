@@ -173,7 +173,8 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
  *  commands, docs/specs/008-canvas/element-indicators.md), which are controls on its face too. */
 export function elementRole(el: Element, hasIndicators = false): 'img' | 'group' {
   if (hasIndicators) return 'group';
-  if (el.type === 'video' || el.type === 'link-card') return 'group';
+  // A table's cells edit in place and, selected, it shows its column and row options buttons.
+  if (el.type === 'video' || el.type === 'link-card' || el.type === 'table') return 'group';
   if (el.type === 'image') return el.imageId ? 'img' : 'group';
   if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';
   return 'img';

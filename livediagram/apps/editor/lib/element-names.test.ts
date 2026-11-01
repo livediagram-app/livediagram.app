@@ -223,4 +223,18 @@ describe('elementRole', () => {
     expect(elementRole(shape('square'), true)).toBe('group');
     expect(elementRole(shape('square'), false)).toBe('img');
   });
+
+  it('makes a table a group: its cells edit in place and its track menus are buttons', () => {
+    expect(
+      elementRole({
+        id: 't',
+        type: 'table',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+        cells: [['a']],
+      } as unknown as Element),
+    ).toBe('group');
+  });
 });
