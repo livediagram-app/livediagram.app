@@ -5340,6 +5340,9 @@ importers:
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui
+      '@liveworkspace/data-export':
+        specifier: workspace:^
+        version: link:../../../packages/data-export
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
