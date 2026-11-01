@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { DOMParser as PMDOMParser, type Node as PMNode, type Slice } from 'prosemirror-model';
 import { EditorState, TextSelection, type Transaction } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
+import { normalisePastedTables } from './article-table-paste';
 import { articleSchema } from './article-schema';
 import { articlePasteProps } from './article-paste';
 
@@ -73,12 +74,24 @@ describe('pasted HTML', () => {
     ]);
   });
 
-  it('keeps table cells of text apart, a paragraph each', () => {
-    expect(
-      blocks(
-        parse('<table><tr><th>Head</th><td>Cell</td></tr><tr><td><p>In a p</p></td></tr></table>'),
+  // A pasted table is a table block (docs/specs/007-editor/article-pages.md "Tables", Paste), its cells
+  // kept apart; article-table-paste.ts makes each cell's blocks lines first.
+  it('keeps table cells of text apart, a table block of them', () => {
+    const slice = parse(
+      normalisePastedTables(
+        '<table><tr><th>Head</th><td>Cell</td></tr><tr><td><p>In a p</p></td></tr></table>',
       ),
-    ).toEqual(['body:Head', 'body:Cell', 'body:In a p']);
+    );
+    const table = slice.content.firstChild!;
+    expect(slice.content.childCount).toBe(1);
+    expect(table.type.name).toBe('table');
+    const cells: string[] = [];
+    table.descendants((n) => {
+      if (n.type.spec.tableRole === 'cell' || n.type.spec.tableRole === 'header_cell')
+        cells.push(n.textContent);
+      return true;
+    });
+    expect(cells).toEqual(['Head', 'Cell', 'In a p', '']);
   });
 });
 

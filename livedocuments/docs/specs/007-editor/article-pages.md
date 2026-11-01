@@ -147,7 +147,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   bold / italic / underline / strike are kept, everything else dropped (a list item or quote
   holding paragraphs, as Google Docs writes them, is still that item or quote; Word's list
   paragraphs are list items at their level, its typed markers dropped; Google Docs' checklist
-  items are to-dos; a table's cells of text are a paragraph each); into an empty block, pasted
+  items are to-dos; a table is a table block, see "Tables"); into an empty block, pasted
   writing that opens with a heading, quote, list item or code takes the block's place, so it keeps
   its kind; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links); other
