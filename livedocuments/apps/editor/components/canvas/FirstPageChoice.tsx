@@ -21,7 +21,12 @@ export function FirstPageChoice({
 }) {
   const cards = useRef<(HTMLButtonElement | null)[]>([]);
   return (
-    <div {...{ [GIF_OMIT_ATTR]: '' }} className="absolute inset-0 flex items-center justify-center">
+    // Above the canvas's + after the page (AddPageButton, later in the same layer): on a phone the page is
+    // narrower than the card, and the + sat over the Article card, taking its press.
+    <div
+      {...{ [GIF_OMIT_ATTR]: '' }}
+      className="absolute inset-0 z-10 flex items-center justify-center"
+    >
       <div
         role="group"
         aria-labelledby="first-page-choice-title"
