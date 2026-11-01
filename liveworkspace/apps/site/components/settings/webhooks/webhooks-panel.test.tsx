@@ -277,6 +277,17 @@ describe('Settings › Webhooks', () => {
     expect(row('w2').textContent).toContain('Added. Send a test to check it reaches your service.');
   });
 
+  it('isolates each name (<bdi>), so a right-to-left or overriding one never turns the words around it', async () => {
+    webhooks = [{ ...HOOK, name: '\u202Eevil' }];
+    await render();
+    expect(row().querySelector('h5 > bdi')?.textContent).toBe('\u202Eevil');
+    await press('Add Webhook');
+    type(field('Slack Webhook URL'), 'https://hooks.slack.com/services/T/B/x');
+    type(field('Name'), 'Mine');
+    await press('Add Webhook', container.querySelector('form')!);
+    expect(container.querySelector('[role=status] bdi')?.textContent).toBe('Mine');
+  });
+
   it('says what was wrong with the address, by where it sends', async () => {
     answer = (c) => (c.method === 'POST' ? json(400, { error: 'webhook_url_invalid' }) : null);
     await render();

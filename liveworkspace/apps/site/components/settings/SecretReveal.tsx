@@ -13,7 +13,7 @@ export function SecretReveal({
   children,
 }: {
   // What the green card says first, as a status the screen reader hears.
-  title: string;
+  title: ReactNode;
   secret: string;
   onDone: () => void;
   // A line under the secret (how to use it).
