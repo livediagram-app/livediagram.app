@@ -55,7 +55,7 @@ delete, undo, label edit via Space) that already work on a selection.
 "yes"`. Arrows carry the same on their SVG group.
 - An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): the session
   buttons (timer, vote, poll), checklists, temperature checks, agendas, Q&A boards, quizzes, reaction pads, pickers,
-  reveals, decision records, mode buttons, estimate cards, idea boxes, done checks, comment pins, action cards and
+  reveals, decision records, mode buttons, Bring Focus buttons, portals, roll calls, estimate cards, idea boxes, done checks, comment pins, action cards and
   pages, a table (its cells edit in place, and selected it shows its column and row options), an embed, a link card, an image still waiting for its picture, and any element showing indicator buttons
   (its link, note, action or comments, [Element indicators](../008-canvas/element-indicators.md)). An
   img's children are presentational, so as pictures their Start, tick and Ask buttons and the Q&A note field could
