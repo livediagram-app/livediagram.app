@@ -41,10 +41,20 @@ const blockText = (b: ArticleBlock): string =>
 // A word: a run of letters or digits (an apostrophe or hyphen inside keeps it one word).
 const WORD = /[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu;
 
+/** How many words a piece of plain text holds (a note card's, a block's). */
+export function spokenWordCount(text: string): number {
+  return text.match(WORD)?.length ?? 0;
+}
+
+/** How long a number of words takes to say aloud, in seconds: at FLASHCARD_WORDS_PER_MINUTE, rounded up. */
+export function speakingSecondsFor(words: number): number {
+  return Math.ceil((words * 60) / FLASHCARD_WORDS_PER_MINUTE);
+}
+
 /** How many words a card's writing holds: its title and every block's text. */
 export function flashcardWordCount(flow: ArticleFlow): number {
   let n = 0;
-  for (const b of flow.blocks) n += blockText(b).match(WORD)?.length ?? 0;
+  for (const b of flow.blocks) n += spokenWordCount(blockText(b));
   return n;
 }
 
@@ -59,7 +69,7 @@ export function flashcardSpeakingSeconds(flow: ArticleFlow): number {
     words = flashcardWordCount(flow);
     counted.set(flow, words);
   }
-  return Math.ceil((words * 60) / FLASHCARD_WORDS_PER_MINUTE);
+  return speakingSecondsFor(words);
 }
 
 /** A speaking time as the card's footer says it: "25 sec" under a minute (to the next 5 s), then
