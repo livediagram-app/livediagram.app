@@ -18,6 +18,8 @@ APP_ORIGIN_LIVEDESIGN=http://localhost:3400
 # DRIVE_KEY_INDEX the same as its DRIVE_KEY_INDEX. Without its DRIVE binding (wrangler.toml) no signal is sent.
 INDEX_KEY_DRIVE=dev-index-drive-key
 DRIVE_KEY_INDEX=dev-drive-index-key
+# The data export's service (liveworkspace/docs/specs/003-accounts/data-export.md): the same as its INDEX_KEY_EXPORT.
+INDEX_KEY_EXPORT=dev-index-export-key
 # Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): the key their URLs and secrets are sealed with, base64 of
 # 32 bytes. This one is for local use only.
 WEBHOOK_KEY=AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=

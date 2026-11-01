@@ -34,6 +34,9 @@ export interface Env {
   INDEX_KEY_DRIVE?: string;
   DRIVE_KEY_INDEX?: string;
   DRIVE?: Fetcher;
+  // The data export's service (liveworkspace/docs/specs/003-accounts/data-export.md "Contracts > The index"): its key
+  // here, with which it lists a person's personal items or one team's.
+  INDEX_KEY_EXPORT?: string;
   // The migration's handoff (migration-handoff.ts), per person. Absent (tests, local), not limited.
   MIGRATION_LIMITER?: RateLimit;
   // Share-password guesses (share-guesses.ts): per visitor's network, and per item whatever the network. Absent

@@ -178,6 +178,11 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
       return notFound();
     }
   }
+  // The data export lists, and nothing else: `GET /items`.
+  if (caller.person?.export) {
+    if (segments[0] !== 'items' || segments.length !== 1 || request.method !== 'GET')
+      return notFound();
+  }
   const drive: DriveTouched = new Set();
   const response = await route({ request, env, url, segments, caller, waitUntil, drive });
   // After the answer: the Drive mirror hears of its people's changes (nothing without its binding).
