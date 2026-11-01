@@ -239,3 +239,41 @@ describe('revFromEtag', () => {
     expect(revFromEtag(null)).toBeNull();
   });
 });
+
+// docs/specs/024-agents/design-views.md: the components view is the design's, not one tab's.
+describe('readDesign view components', () => {
+  it('reads the design view through the MCP door and answers its text as components', async () => {
+    quiet();
+    const { env, requests } = api({ view: new Response('component nav "Nav" 100x40 · 1 element') });
+    const result = await readDesign(env, 'tok', {
+      designId: 'd1',
+      view: 'components',
+      budget: 500,
+    });
+    const view = requests.find((r) => r.searchParams.has('view'))!;
+    expect(view.pathname).toBe('/api/designs/d1');
+    expect(Object.fromEntries(view.searchParams)).toEqual({
+      view: 'components',
+      door: 'mcp',
+      budget: '500',
+    });
+    expect(result.structuredContent).toMatchObject({
+      id: 'd1',
+      components: 'component nav "Nav" 100x40 · 1 element',
+    });
+  });
+
+  it('answers a refused view in words, and throws a fault', async () => {
+    quiet();
+    const refused = api({
+      view: () =>
+        Response.json({ error: 'bad_request', message: 'budget too small' }, { status: 400 }),
+    });
+    const out = await readDesign(refused.env, 'tok', { designId: 'd1', view: 'components' });
+    expect(out).toMatchObject({ isError: true, content: [{ text: 'budget too small' }] });
+    const down = api({ view: () => new Response('down', { status: 503 }) });
+    await expect(
+      readDesign(down.env, 'tok', { designId: 'd1', view: 'components' }),
+    ).rejects.toThrow();
+  });
+});

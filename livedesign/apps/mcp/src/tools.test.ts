@@ -154,6 +154,8 @@ const ARGS = {
   ops: [],
   limit: 5,
   changes: [],
+  // change_components takes exactly one change.
+  detach: { instance: 'n1' },
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -172,6 +174,7 @@ describe('registerTools', () => {
     const { registered } = harness();
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
+      'change_components',
       'change_pages',
       'create_design',
       'delete_design',
@@ -292,6 +295,8 @@ describe('tool annotations', () => {
     // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
     // content.
     change_pages: 'destructive',
+    // docs/specs/015-api/mcp-server.md §4.9e: a make removes elements, a patch rewrites every instance.
+    change_components: 'destructive',
   };
 
   it('gives every tool one of the three documented presets', () => {
@@ -352,7 +357,12 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
-    expect(destructive).toEqual(['change_pages', 'delete_design', 'update_design']);
+    expect(destructive).toEqual([
+      'change_components',
+      'change_pages',
+      'delete_design',
+      'update_design',
+    ]);
   });
 });
 

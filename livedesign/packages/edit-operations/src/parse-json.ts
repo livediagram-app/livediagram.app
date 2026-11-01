@@ -124,6 +124,7 @@ const REQUIRED: Readonly<Record<EditOperationName, readonly string[]>> = {
   order: ['target'],
   layout: ['target'],
   test: ['target', 'fields'],
+  detach: ['target'],
 };
 
 // Members of which exactly one, at most one (`atMostOne`) or at least one (`atLeastOne`) is given,

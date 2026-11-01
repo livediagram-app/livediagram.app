@@ -3,6 +3,7 @@
 // name. Read off the engine's own factories, aliases and value lists, so it says what the engine accepts.
 
 import {
+  INSTANCE_SHAPE,
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
   SHAPE_KINDS,
@@ -150,6 +151,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   sticker: ['stickerId'],
   // docs/specs/009-elements/tab-window.md: which tab the window shows.
   'tab-window': ['windowTabId'],
+  // docs/specs/009-elements/components.md: the main it draws and what it changes of it.
+  instance: ['componentId', 'componentOverrides'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {
@@ -167,7 +170,13 @@ export function elementFormatText(kind: string): string | null {
     ? 'arrow: connect <a> -> <b> [id=<id>] key=value… [again]'
     : `${kind}: ${el.type === 'shape' ? 'a shape' : withArticle(el.type)}. add ${kind} [id=<id>] key=value… [<placement>]`;
   const size =
-    'width' in el ? [`Size: ${el.width}×${el.height} at first, grown to fit its label.`] : [];
+    kind === INSTANCE_SHAPE
+      ? [
+          'Size: its main’s frame (component ls lists the mains). componentOverrides is {"<main element id>": {label, fillColor, strokeColor, textColor, iconId}}; detach <ref> makes it plain elements.',
+        ]
+      : 'width' in el
+        ? [`Size: ${el.width}×${el.height} at first, grown to fit its label.`]
+        : [];
   const aliases = aliasesOf(el).map((a) => `${a}=${aliasValue(el, a)}`);
   const fields = storedFieldsOf(kind, el);
   return [

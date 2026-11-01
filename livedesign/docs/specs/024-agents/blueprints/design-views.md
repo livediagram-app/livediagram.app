@@ -124,8 +124,10 @@ No view reads a clock, a random source or a locale; `overview` takes `now` as an
 5. **Edges.** `edgesOf(printed)`: each printed arrow is either a `ViewEdge` on its source's line or an own-line arrow.
 6. **Header.** `countElements` and the thread counts over printed elements; `rev` and the tab ref from the context.
 
-`context` is `{ rev?: number; tabIds?: readonly string[] }`; `tabIds` (the design's tab ids in order) makes the
-tab ref unique within the design (`VW4`).
+`context` is `{ rev?: number; tabIds?: readonly string[]; selected?; components?: readonly DesignComponent[] }`;
+`tabIds` (the design's tab ids in order) makes the tab ref unique within the design (`VW4`); `components` (the mains
+the tab's instances use, or the whole library) names each instance's main (`VW70`); without it an instance prints
+`(main not loaded)`.
 
 ### Refs (`@livedesign/design`, `element-refs.ts`)
 
@@ -311,15 +313,16 @@ are escaped as `\;` and `\}` too.
 
 **Content summaries** (`contentSummaryOf`), printed after the label:
 
-| Element                           | Summary                                                                                                                      | Ledger |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `table`                           | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                                                     | `VW18` |
-| `code-block`                      | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                                                           | `VW20` |
-| `pie-chart`, `bar-chart`          | `slices=<pieSlices.length>`                                                                                                  | `VW21` |
-| `line-chart`                      | `series=<lineSeries.length> x=<lineCategories.length>`                                                                       | `VW21` |
-| `checklist`                       | `done=<done>/<total>`                                                                                                        |        |
-| `sankey`                          | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`                                   |        |
-| `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set |        |
+| Element                           | Summary                                                                                                                                                                                                                                                                       | Ledger |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `table`                           | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                                                                                                                                                                                                      | `VW18` |
+| `code-block`                      | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                                                                                                                                                                                                            | `VW20` |
+| `pie-chart`, `bar-chart`          | `slices=<pieSlices.length>`                                                                                                                                                                                                                                                   | `VW21` |
+| `line-chart`                      | `series=<lineSeries.length> x=<lineCategories.length>`                                                                                                                                                                                                                        | `VW21` |
+| `instance`                        | `instance of "<main name>"`, then `overrides=<entries> fields=<distinct fields, in COMPONENT_OVERRIDE_FIELDS order>` when it has overrides; `instance of <componentId> (main not loaded)` with no library, `(main missing)` when the library lacks it (`instance-summary.ts`) | `VW70` |
+| `checklist`                       | `done=<done>/<total>`                                                                                                                                                                                                                                                         |        |
+| `sankey`                          | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`                                                                                                                                                                                    |        |
+| `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set                                                                                                                                                  |        |
 
 The table line prints its label first when it has one. Every text a summary prints from the design goes through
 `cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
@@ -370,17 +373,18 @@ dispatches by `request.view`, answering `{ ok: true, view, text, json, fit, elem
 Each tab view is a function of the model (`outlineView(model, options)`, …) answering `{ text, json, fit }`; `fit`
 is the full view's estimate and the step it took (a ladder state, or `lines-dropped`), for the `[views] budget` log.
 
-| View       | Function                               | Served by                | Lines after the header                                                                  |
-| ---------- | -------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------- |
-| `outline`  | `outlineView(model, options)`          | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root |
-| `graph`    | `graphView`                            | api, CLI offline         | Nodes, a blank line, arrows (below)                                                     |
-| `layout`   | `layoutView`                           | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                            |
-| `comments` | `commentsView`                         | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
-| `show`     | `showView` (`ref`), `showSelectedView` | api, CLI offline         | One element in full                                                                     |
-| `find`     | `findView` (`q` required)              | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@livedesign/page-lint`                | api, CLI offline         | The lint's own output ([Page lint](../page-lint.md)) under the same header              |
-| `diff`     | `diffView(before, after, context)`     | CLI only, from its cache | Added, removed, changed and moved elements                                              |
-| `overview` | `overviewView(design, tabs, options)`  | api, CLI offline         | One line per tab                                                                        |
+| View         | Function                                      | Served by                | Lines after the header                                                                                                                                                                                                                                                                                                  |
+| ------------ | --------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `outline`    | `outlineView(model, options)`                 | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root                                                                                                                                                                                                                                 |
+| `graph`      | `graphView`                                   | api, CLI offline         | Nodes, a blank line, arrows (below)                                                                                                                                                                                                                                                                                     |
+| `layout`     | `layoutView`                                  | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                                                                                                                                                                                                                                                            |
+| `comments`   | `commentsView`                                | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                                                                                                                                                                                                                                                           |
+| `show`       | `showView` (`ref`), `showSelectedView`        | api, CLI offline         | One element in full                                                                                                                                                                                                                                                                                                     |
+| `find`       | `findView` (`q` required)                     | api, CLI offline         | Matches with their container chains                                                                                                                                                                                                                                                                                     |
+| `lint`       | `@livedesign/page-lint`                       | api, CLI offline         | The lint's own output ([Page lint](../page-lint.md)) under the same header                                                                                                                                                                                                                                              |
+| `diff`       | `diffView(before, after, context)`            | CLI only, from its cache | Added, removed, changed and moved elements                                                                                                                                                                                                                                                                              |
+| `overview`   | `overviewView(design, tabs, options)`         | api, CLI offline         | One line per tab                                                                                                                                                                                                                                                                                                        |
+| `components` | `componentsView(design, components, options)` | api                      | The library: `design <ref> "<name>" · <n> components (<k> archived)`, then per main `component <id> "<name>" <w>x<h> [archived] · <n> elements` and its elements indented (`<kind> <id> "<text>" takes=<override fields>`); a budget drops element lines of the largest mains first, named in the elision line (`VW71`) |
 
 `renderView` dispatches `lint` to the page-lint package's renderer; this package owns only its header and the
 query plumbing (`VW58`). `diff` has no api door: the CLI keeps the last tab it read per design, tab and `rev` and runs
@@ -436,7 +440,7 @@ Left out, and named on `omitted:`: `id`, `type`, `shape` and `label` (in the fir
 person id, listed in `PERSON_ID_FIELDS` (`commentThread.comments[].authorId`, the mentions' `userId` and
 `memberId` on `commentThread.comments[].mentions[]`, `action.assignerId`,
 `action.assignee.userId`, `action.assignee.memberId`, `action.teamId`, the same on `actions[]`,
-`responses[].participantId`). A test walks every element type's fields so a new person-id
+`responses[].participantId`, `addedBy`, and an instance's edit-session mark `componentEditBy`). A test walks every element type's fields so a new person-id
 field fails until it is listed; `omitted:` names only the ones the element holds. The edges list both directions with arrow refs, in array order. `code` prints as a
 JSON string.
 
@@ -643,10 +647,11 @@ tab, `gateGrant` on the design), and answer `200 text/plain; charset=utf-8` (or 
 through `textPlain`, with `Cache-Control: no-cache`, the CORS set and the `ETag` the tab read carries
 ([Agent changesets](../agent-changesets.md#the-tab-revision)); a view never answers 304 (`VW44`).
 
-| Method | Path                                 | Query (`VIEW_QUERY`, `VW42`)                                                                             | Failures                                                                                                     |
-| ------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| GET    | `/api/designs/:id/tabs/:tabId?view=` | `view`, `json=1`, `budget`, `only` (outline, layout), `coarse=1`, `style=1`, `ref`, `q`, `all=1`, `door` | 400 `unknown_view`, 400 `invalid_value`, 404 `target_not_found`, 400 `target_ambiguous`, the GET's 404 / 410 |
-| GET    | `/api/designs/:id?view=overview`     | `view=overview`, `json=1`, `budget`, `door`                                                              | 400 `unknown_view`, 400 `invalid_value`, the GET's 404 / 410                                                 |
+| Method | Path                                 | Query (`VIEW_QUERY`, `VW42`)                                                                                                      | Failures                                                                                                     |
+| ------ | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| GET    | `/api/designs/:id/tabs/:tabId?view=` | `view`, `json=1`, `budget`, `only` (outline, layout), `coarse=1`, `style=1`, `ref`, `q`, `all=1`, `door`                          | 400 `unknown_view`, 400 `invalid_value`, 404 `target_not_found`, 400 `target_ambiguous`, the GET's 404 / 410 |
+| GET    | `/api/designs/:id?view=overview`     | `view=overview`, `json=1`, `budget`, `door`                                                                                       | 400 `unknown_view`, 400 `invalid_value`, the GET's 404 / 410                                                 |
+| GET    | `/api/designs/:id?view=components`   | `view=components`, `json=1`, `budget`, `door`; the library from `readComponents(env, { tabIds })`, a tab-scoped reader's tab only | as `overview`                                                                                                |
 
 `parseViewQuery(url, scope)` validates (`VW43`), each failure a JSON `{ error, message }` naming the parameter and its
 allowed values:

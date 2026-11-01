@@ -44,7 +44,12 @@ export const readDesignOutput = {
           'The tab elements (format "json"), in the format of the livedesign://schema/elements resource.',
         ),
     })
-    .describe('The tab that was read.'),
+    .optional()
+    .describe('The tab that was read; absent for the components view.'),
+  components: z
+    .string()
+    .optional()
+    .describe('The components view text (view "components"): every main, not one tab.'),
   tabs: z
     .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
     .describe('Every tab of the design, in order: pass one as tabId to read it.'),
@@ -88,9 +93,7 @@ export const listTemplatesOutput = {
 
 export const createDesignOutput = {
   id: designId,
-  designId: designId.describe(
-    'The design id again, under the name the other tools take it by.',
-  ),
+  designId: designId.describe('The design id again, under the name the other tools take it by.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   tabCount: z.number().int().describe('How many tabs were created.'),
   tabIds: z.array(z.string()).describe('The new tab ids, in order.'),
@@ -126,9 +129,7 @@ export const addTabOutput = {
 
 export const updateDesignOutput = {
   id: designId,
-  designId: designId.describe(
-    'The design id again, under the name the other tools take it by.',
-  ),
+  designId: designId.describe('The design id again, under the name the other tools take it by.'),
   tabId: tabId.describe('The tab that was edited.'),
   url,
   ...changesetAnswer,
@@ -145,9 +146,7 @@ export const shareDesignOutput = {
 };
 
 export const renameDesignOutput = {
-  renamed: z
-    .enum(['design', 'tab'])
-    .describe('Whether the design or one of its tabs was renamed.'),
+  renamed: z.enum(['design', 'tab']).describe('Whether the design or one of its tabs was renamed.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   id: designId.optional().describe('The renamed design id (design renames).'),
   tabId: tabId.optional().describe('The renamed tab id (tab renames).'),
@@ -155,9 +154,7 @@ export const renameDesignOutput = {
 };
 
 export const deleteDesignOutput = {
-  deleted: z
-    .enum(['design', 'tab'])
-    .describe('Whether the design or one of its tabs was deleted.'),
+  deleted: z.enum(['design', 'tab']).describe('Whether the design or one of its tabs was deleted.'),
   designId,
   tabId: tabId.optional().describe('The deleted tab id (tab deletes).'),
   trashed: z.boolean().optional().describe('True when the design went to the Trash.'),

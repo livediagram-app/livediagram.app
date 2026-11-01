@@ -143,7 +143,7 @@ describe('set', () => {
     expect(rejection.code).toBe('unknown_field');
     expect(rejection.details[0]).toBe('arrow has no field "widht"');
     expect(rejection.details[1]).toMatch(
-      /^fields: label stroke text-color border text line, then id type layerId from to /,
+      /^fields: label stroke text-color border text line, then id type layerId componentMember from to /,
     );
   });
 
