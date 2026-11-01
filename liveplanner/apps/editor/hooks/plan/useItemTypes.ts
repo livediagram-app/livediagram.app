@@ -30,6 +30,7 @@ import {
   type ItemTypeDef,
   defaultTypesToAdd,
   ITEM_TYPES_MAX,
+  withInheritance,
 } from '@liveplanner/items';
 import { ItemTypesStaleError, saveItemTypes, type SavedItemTypes } from '@/lib/api/item-types';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -187,7 +188,9 @@ export function useItemTypes(opts: {
     (edit: (types: readonly ItemTypeDef[]) => readonly ItemTypeDef[]) =>
       change((shown) => ({
         version: ITEM_TYPE_CATALOGUE_VERSION,
-        types: edit(typesOf(shown)),
+        // A base saved or deleted reaches the types inheriting from it at once, in the same undo step
+        // (docs/specs/026-plan/item-types.md "Inherited types").
+        types: withInheritance(edit(typesOf(shown))),
       })),
     [change],
   );

@@ -26,6 +26,8 @@ export function ItemTypeConfiguration({
   detailsLabel,
   onDetailsLabel,
   removedSome,
+  inheritance,
+  inherited,
 }: {
   // The Name input's id (its label points at it).
   nameId: string;
@@ -44,6 +46,10 @@ export function ItemTypeConfiguration({
   onDetailsLabel: (next: string) => void;
   // A field the type had is gone from the draft (the layout editor says what that means).
   removedSome: boolean;
+  // The Inherits From row (ItemTypeInheritance.tsx), under Name.
+  inheritance?: ReactNode;
+  // An inherited type's base name and the fields it takes, locked in the layout.
+  inherited?: { from: string; ids: ReadonlySet<string> } | undefined;
 }) {
   return (
     <div className="flex flex-col">
@@ -66,6 +72,7 @@ export function ItemTypeConfiguration({
             <TypeColourButton value={color} onChange={onColor} />
           </div>
         </SheetRow>
+        {inheritance}
       </ConfigurationSection>
       <ConfigurationSection
         title="Fields"
@@ -82,6 +89,7 @@ export function ItemTypeConfiguration({
           detailsLabel={detailsLabel}
           onDetailsLabel={onDetailsLabel}
           removedSome={removedSome}
+          inherited={inherited}
         />
       </ConfigurationSection>
     </div>
