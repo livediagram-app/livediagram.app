@@ -126,7 +126,9 @@ describe('ExportTabDialog, PowerPoint and Word', () => {
     expect(
       screen.getByText("The article's writing, its pictures and drawings as images."),
     ).toBeTruthy();
-    await screen.findByTestId('export-preview');
+    const shown = await screen.findByTestId('export-preview');
+    expect(shown.getAttribute('role')).toBe('img');
+    expect(shown.getAttribute('aria-label')).toBe('The first page as it will download');
     fireEvent.click(screen.getByRole('button', { name: 'Download Word' }));
     expect((await screen.findByRole('alert')).textContent).toMatch(/couldn't draw a picture/);
     expect(downloadBlob).not.toHaveBeenCalled();
