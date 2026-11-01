@@ -70,6 +70,29 @@ describe('Invites', () => {
     expect(screen.getByRole('button', { name: 'Decline the invitation to Ops Crew' })).toBeTruthy();
   });
 
+  it('says the invites couldn’t load, never a blank page, and tries again', async () => {
+    const teams = fakeTeams([invite()]);
+    const myTeams = teams.host.myTeams as ReturnType<typeof vi.fn>;
+    myTeams.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    render(
+      <Explorer
+        app="livediagram"
+        client={createFakeIndex({}).client}
+        view={{ kind: 'invites' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/d/${i.id}`}
+        onCreate={vi.fn()}
+        viewerId="user_me"
+        heroHidden
+        teamsHost={teams.host}
+      />,
+    );
+    expect(await screen.findByText('Couldn’t load your invites')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText('Ops Crew')).toBeTruthy();
+    expect(screen.queryByText('Couldn’t load your invites')).toBeNull();
+  });
+
   it('isolates the organisation and the inviter’s name, so right-to-left text turns nothing around', async () => {
     page({ kind: 'invites' }, [
       invite({ organisation: '\u202Eevil org', invitedByName: '\u202Enna' }),

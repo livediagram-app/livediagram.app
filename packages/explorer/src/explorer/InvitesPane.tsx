@@ -24,7 +24,7 @@ const members = (n: number) => `${n} ${n === 1 ? 'member' : 'members'}`;
 
 export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
   const { words, navigate } = useExplorer();
-  const { myTeams, canRun, answer } = useTeams();
+  const { myTeams, myTeamsFailed, retryMyTeams, canRun, answer } = useTeams();
   const toast = useToast();
   const now = useNow();
   // The invitations being answered, so their buttons wait.
@@ -63,6 +63,16 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
       <PaneHeader title={SIDEBAR_LABELS.invites} onOpenNav={onOpenNav} showFilter={false} />
       {!canRun ? (
         <EmptyPane view={{ kind: 'invites' }} words={words} />
+      ) : invites === null && myTeamsFailed ? (
+        <EmptyState
+          icon={<MailIcon size={28} />}
+          title="Couldn’t load your invites"
+          description="Check your connection and try again."
+        >
+          <Button size="sm" onClick={retryMyTeams}>
+            Try again
+          </Button>
+        </EmptyState>
       ) : invites === null ? (
         <SkeletonRows count={2} />
       ) : invites.length === 0 ? (

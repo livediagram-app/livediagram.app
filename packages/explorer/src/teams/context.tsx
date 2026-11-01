@@ -34,6 +34,9 @@ export type TeamsContext = {
   canRun: boolean;
   /** Accounts' list (member counts, the invitations waiting); null until read, and never in the panel. */
   myTeams: MyTeams | null;
+  /** The last read of accounts' list failed (offline, refused), so `myTeams` is null for good until `retryMyTeams`. */
+  myTeamsFailed: boolean;
+  retryMyTeams: () => void;
   /** The teams to show. */
   teams: TeamRef[];
   create: (input: { name: string; organisation?: string | null }) => Promise<TeamResult<TeamRef>>;
@@ -56,6 +59,8 @@ const QUIET: TeamsContext = {
   host: null,
   canRun: false,
   myTeams: null,
+  myTeamsFailed: false,
+  retryMyTeams: () => {},
   teams: NO_TEAMS,
   create: async () => NO_HOST,
   update: async () => NO_HOST,
@@ -73,21 +78,25 @@ export function useTeams(): TeamsContext {
 /** Accounts' list, read once as the page opens (signed in, with a host) and again after a change. */
 function useMyTeams(host: TeamsHost | null, read: boolean) {
   const [mine, setMine] = useState<MyTeams | null>(null);
+  const [failed, setFailed] = useState(false);
   const [epoch, setEpoch] = useState(0);
   useEffect(() => {
+    setFailed(false);
     if (!host || !read) {
       setMine(null);
       return;
     }
     const controller = new AbortController();
     host.myTeams(controller.signal).then(setMine, (e: unknown) => {
-      // Without it the badges stay away and the token's teams show; nothing else depends on it.
-      if (!isAbort(e)) setMine(null);
+      // Without it the badges stay away and the token's teams show; Invites says it couldn't load.
+      if (isAbort(e)) return;
+      setMine(null);
+      setFailed(true);
     });
     return () => controller.abort();
   }, [host, read, epoch]);
   const refresh = useCallback(() => setEpoch((n) => n + 1), []);
-  return [mine, setMine, refresh] as const;
+  return [mine, setMine, refresh, failed] as const;
 }
 
 export function TeamsProvider({
@@ -106,7 +115,7 @@ export function TeamsProvider({
   children: ReactNode;
 }) {
   const live = signedIn ? host : null;
-  const [myTeams, setMyTeams, refresh] = useMyTeams(live, eager);
+  const [myTeams, setMyTeams, refresh, myTeamsFailed] = useMyTeams(live, eager);
   const changes = useSyncExternalStore(
     teamChanges.subscribe,
     teamChanges.snapshot,
@@ -130,6 +139,8 @@ export function TeamsProvider({
       host: live,
       canRun: true,
       myTeams,
+      myTeamsFailed,
+      retryMyTeams: refresh,
       teams,
       create: async (input) => {
         const result = await live.create(input);
@@ -180,7 +191,7 @@ export function TeamsProvider({
         return result;
       },
     };
-  }, [live, teams, myTeams, changed, setMyTeams]);
+  }, [live, teams, myTeams, myTeamsFailed, refresh, changed, setMyTeams]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
