@@ -338,7 +338,14 @@ describe('Settings › Webhooks', () => {
       await wait(0);
       expect(calls.some((c) => c.url === '/api/index/webhooks/w1/test')).toBe(true);
       expect(row().querySelector('[role=status]')?.textContent).toBe('Sending a test…');
-      expect(button('Send Test', row()).disabled).toBe(true);
+      // Pressed again while it sends, nothing more is queued; and the keyboard stays on it (aria-disabled, never
+      // disabled, which dropped focus out of Settings).
+      const sendTest = button('Send Test', row());
+      expect(sendTest.getAttribute('aria-disabled')).toBe('true');
+      expect(sendTest.disabled).toBe(false);
+      expect(document.activeElement).toBe(sendTest);
+      await press('Send Test', row());
+      expect(calls.filter((c) => c.url.endsWith('/test'))).toHaveLength(1);
       await wait(READ_AT[0]);
       expect(reads).toBe(1);
       expect(row().querySelector('[role=status]')?.textContent).toBe('Sending a test…');
@@ -401,6 +408,37 @@ describe('Settings › Webhooks', () => {
     await press('Resume Webhook', row());
     expect(calls.filter((c) => c.method === 'PATCH').at(-1)?.body).toEqual({ paused: false });
     expect(button('Pause Webhook', row())).toBeTruthy();
+  });
+
+  it('keeps the keyboard on Pause as it turns into Resume, and on Pause after Resume in the note', async () => {
+    await render();
+    await press('Pause Webhook', row());
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Resume Webhook');
+    const note = [...row().querySelectorAll('button')].find((b) => b.textContent === 'Resume')!;
+    note.focus();
+    await act(async () => note.click());
+    await settle();
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Pause Webhook');
+  });
+
+  it('puts the keyboard on Copy once added with a secret, and keeps it on Add Webhook when refused', async () => {
+    await render();
+    await press('Add Webhook');
+    act(() => choice('Your Own Service').click());
+    type(field('Name'), 'Mine');
+    type(field('HTTPS Address'), 'https://hooks.example.com/in');
+    await press('Add Webhook', container.querySelector('form')!);
+    expect(document.activeElement?.textContent).toBe('Copy');
+    await press('Done');
+    answer = (c) => (c.method === 'POST' ? json(400, { error: 'webhook_url_invalid' }) : null);
+    await press('Add Webhook');
+    act(() => choice('Your Own Service').click());
+    type(field('Name'), 'Again');
+    type(field('HTTPS Address'), 'https://hooks.example.com/in');
+    const form = container.querySelector('form')!;
+    await press('Add Webhook', form);
+    expect(container.querySelector('[role=alert]')).toBeTruthy();
+    expect(document.activeElement).toBe(button('Add Webhook', form));
   });
 
   it('deletes after asking in a popover, and keeps it on Cancel', async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BUTTON, Panel } from './account-ui';
 
 // A secret shown once, with Copy and Done: a new API token (TokensPanel), a new webhook's signing secret
@@ -11,6 +11,7 @@ export function SecretReveal({
   secret,
   onDone,
   children,
+  focusCopy = false,
 }: {
   // What the green card says first, as a status the screen reader hears.
   title: ReactNode;
@@ -18,9 +19,15 @@ export function SecretReveal({
   onDone: () => void;
   // A line under the secret (how to use it).
   children?: ReactNode;
+  // Takes the keyboard on Copy as it shows: where what made it (a form) has gone, so focus has nowhere else to be.
+  focusCopy?: boolean;
 }) {
   const [copied, setCopied] = useState<'no' | 'yes' | 'failed'>('no');
   const secretRef = useRef<HTMLElement>(null);
+  const copyRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (focusCopy) copyRef.current?.focus();
+  }, [focusCopy]);
 
   async function copy() {
     try {
@@ -47,6 +54,7 @@ export function SecretReveal({
           {secret}
         </code>
         <button
+          ref={copyRef}
           type="button"
           className={`${BUTTON.secondary} shrink-0`}
           onClick={() => void copy()}

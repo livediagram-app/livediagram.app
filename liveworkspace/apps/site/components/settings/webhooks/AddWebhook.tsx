@@ -54,6 +54,7 @@ export function AddWebhook({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError(null);
     const result = await attempt(() =>
@@ -197,7 +198,11 @@ export function AddWebhook({
           <button
             type="submit"
             className={BUTTON.primary}
-            disabled={busy || events.size === 0 || missing !== null}
+            // Only what the form lacks disables it. While it adds, it stays focusable (aria-disabled, and submit
+            // ignores a second press): a disabled button drops the keyboard to the dialog's top, and an error
+            // then left the person nowhere near it.
+            disabled={events.size === 0 || missing !== null}
+            aria-disabled={busy || undefined}
           >
             {busy ? 'Adding…' : 'Add Webhook'}
           </button>
