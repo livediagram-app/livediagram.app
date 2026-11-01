@@ -442,6 +442,29 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
       expect(room.cursor()).toEqual({ epoch: 'e1', seq: 11 });
     });
 
+    // docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element".
+    it('answers false at once when the room refuses the op, and logs it', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { room, socket } = open();
+      const pending = room.sequence(tick);
+      answer(socket, { kind: 'op-refused', op: 'el', reason: 'invalid-element', field: 'from' });
+      answer(socket, {
+        kind: 'op-refused',
+        op: 'el',
+        reason: 'invalid-element',
+        elementId: 'e',
+        field: 'from',
+        ref: 1,
+      });
+      await expect(pending).resolves.toBe(false);
+      expect(warn).toHaveBeenCalledWith('[room] op refused', {
+        op: 'el',
+        reason: 'invalid-element',
+        field: 'from',
+      });
+      warn.mockRestore();
+    });
+
     it('gives up after ROOM_SEQUENCE_ACK_TIMEOUT_MS, and logs it', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const { room } = open();

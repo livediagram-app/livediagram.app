@@ -28,6 +28,7 @@
     "./placement": "./src/placement.ts",
     "./ref-errors": "./src/ref-errors.ts",
     "./room-capacity": "./src/room-capacity.ts",
+    "./room-refusal": "./src/room-refusal.ts",
     "./sha256": "./src/sha256.ts",
     "./share-links": "./src/share-links.ts",
     "./signed-in-hint": "./src/signed-in-hint.ts",

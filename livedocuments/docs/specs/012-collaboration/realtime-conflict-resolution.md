@@ -140,6 +140,37 @@ and logged (`[room] malformed op dropped`), so it never stops every editor in th
 reconnects, from rendering. What an element or a patch holds is the stored-element migrations' to settle; a kind
 this build does not apply passes, and is ignored.
 
+### An invalid element
+
+The envelope check above leaves what an element holds to the receivers' migrations, and a migration repairs only
+the shapes it knows. So the room checks every element an Editor's op carries before relaying it: each element of a
+`tab` op's tab, and the element of an `el` add or update (`judgeRoomElementOp` in
+`@liveworkspace/api-kit/room-element-ops`, bound to this product's validator in `apps/api/src/room-element-rules.ts`).
+It judges an element as the tab save does, migrated first (`migrateIncomingTab`, `migrateIncomingElements`), then by
+`elementValidationIssue` (`packages/document/src/validate.ts`). It relays the op as it was sent, since every receiver runs the
+same migrations.
+
+- Whatever its kind, an element needs an `id` (a non-empty string) and a `type` (a string). A tab's element ids are
+  unique, and a tab holds at most `MAX_ELEMENTS_PER_TAB` elements.
+- **An unknown kind passes.** A `type` the room's build does not know is relayed unjudged, so a newer client's new
+  kind reaches its peers during a deploy as it always has.
+- **An unknown field passes.** The validator checks only the fields it names, so a field it does not name is never
+  judged and a newer build's new field on a known kind relays unchanged. A named field that breaks its rule is
+  refused: the tab save refuses it too, so the room drops exactly what would make each peer's next save fail.
+- **A refused op goes nowhere.** It is not relayed, sequenced or kept for catch-up. The sender gets an `op-refused`
+  frame naming the op's kind, the reason (`invalid-element`, `duplicate-element` or `too-many-elements`), the
+  element and the field, and echoing the op's `ref`, so a save waiting on that op stops waiting. The editor logs
+  `[room] op refused`.
+- **The log is bounded.** The room logs `[room] element op refused` with the op's kind, the reason and the field,
+  never the element: at most 10 lines a minute per room, the first line after a full minute counting the lines held
+  back (`suppressed`), so a client sending bad ops in a loop cannot flood the logs.
+- A Participant's `el` op is unchanged: it goes through the participant content rule and never relays as sent.
+  `tab-meta`, `el-delta`, a `remove` and a `reorder` carry no element and are not judged.
+
+One case is accepted. A newer build that widens a named field's rule (a new value in a closed list) is refused by
+an older room. Each product's api deploys before its editor (docs/ci.md "Order"), so the room learns the wider rule
+first; only a rollback runs the older rule, and then the older api's tab save refuses the same element anyway.
+
 ### Keepalive
 
 A socket can die without a close event: a laptop asleep, a NAT or proxy that dropped an idle
