@@ -385,7 +385,7 @@ and gated by a confirmation:
   best-effort, but a rollback that itself fails still reports the original
   delete failure rather than a success.
 - **Take Offline bypasses the [Trash](../013-workspace/trash.md)** for the project's owner: it is a move, not a delete, so the server copy goes at once. A joined teammate taking a team project offline sends the team's copy to the team Trash instead, since from the team's side it is a deletion.
-- **Deleting an offline project removes it for good** (the Explorer asks first; nothing else holds it, and the local Trash is gone, see [Trash](../013-workspace/trash.md)). Deleting the plan open in the editor tombstones it first (`lib/project-tombstones.ts`), so neither the autosave nor the unload flush writes it back, then removes the IndexedDB record and leaves for the Explorer, as deleting an open cloud plan does. Sync Project removes the local record outright (a move, like Take Offline).
+- **Deleting an offline project removes it for good** (the Explorer asks first; nothing else holds it, and the local Trash is gone, see [Trash](../013-workspace/trash.md)). Deleting the plan open in the editor tombstones it first (`lib/project-tombstones.ts`), so neither the autosave nor the unload flush writes it back, then removes the IndexedDB record and leaves for the Explorer, as deleting an open cloud plan does (`@liveworkspace/workbench/lib/this-browser-remove`, shared by every editor). Sync Project removes the local record outright (a move, like Take Offline).
 - Because it deletes the cloud copy, taking a _shared_ or _team_ project offline
   first revokes those (a share/team project can't be pulled private silently);
   the confirmation spells this out.

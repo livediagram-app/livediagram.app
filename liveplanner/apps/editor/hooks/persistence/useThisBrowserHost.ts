@@ -4,7 +4,9 @@ import { useMemo } from 'react';
 import { useThisBrowserList, type ThisBrowserHost } from '@liveworkspace/explorer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
-import { removeThisBrowserPlan } from '@/lib/this-browser-remove';
+import { removeThisBrowserItem } from '@liveworkspace/workbench/lib/this-browser-remove';
+import { offlineDeleteProject } from '@/lib/offline/offline-store';
+import { markProjectDeleted } from '@/lib/project-tombstones';
 import { useOfflineConversions } from './useOfflineConversion';
 
 // This Browser in the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md "This Browser"): the plans kept only in this browser, from the
@@ -32,9 +34,13 @@ export function useThisBrowserHost(
               conversions.current.syncToCloud({ id: item.id, name: item.title || 'Untitled' }),
           }
         : {}),
-      // Nothing else holds one, so Delete removes it for good (the Explorer asks first); the open one, leaving for the
-      // Explorer (lib/this-browser-remove.ts).
-      remove: (item) => void removeThisBrowserPlan(item.id, openId),
+      // Nothing else holds one, so Delete removes it for good (the Explorer asks first); the open plan is
+      // tombstoned first and the editor leaves for the Explorer (@liveworkspace/workbench/lib/this-browser-remove).
+      remove: (item) =>
+        void removeThisBrowserItem(item.id, openId, {
+          remove: offlineDeleteProject,
+          tombstone: markProjectDeleted,
+        }),
     }),
     [items, signedIn, conversions, router, openId],
   );
