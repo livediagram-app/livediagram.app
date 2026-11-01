@@ -46,6 +46,7 @@
 @source '../../../../packages/account-menu/src';
 /* The shared template-browse art (PreviewFan, @liveworkspace/template-previews) carries its own utility classes. */
 @source '../../../../packages/template-previews/src/PreviewFan.tsx';
+@source '../../../../packages/template-previews/src/DeferredPreviewFan.tsx';
 
 @media (prefers-reduced-motion: reduce) {
   /* the window veils stay hidden */
