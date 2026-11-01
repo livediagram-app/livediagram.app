@@ -12,7 +12,8 @@ export const PHONE_ROW_DESCRIPTION =
 export const PHONE_KEYWORDS =
   'phone push mobile notification notify device iphone android install home screen app';
 
-type StateCopy = { description: string; status?: string; warn?: boolean };
+// How the status reads: on (`good`), needing something (`warn`), or plain.
+type StateCopy = { description: string; status?: string; warn?: boolean; good?: boolean };
 
 export const phoneCopy = {
   state(state: PhoneState): StateCopy {
@@ -28,6 +29,7 @@ export const phoneCopy = {
           description:
             'This device gets a notification when someone mentions you, assigns you an action, replies in your thread or comments on your work. Tap one to open it.',
           status: 'On',
+          good: true,
         };
       case 'needs-install':
         return {

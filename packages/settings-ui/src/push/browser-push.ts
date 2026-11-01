@@ -77,6 +77,9 @@ export type SubscribeResult =
   | { ok: true; subscription: PushSubscription }
   | { ok: false; reason: 'blocked' | 'dismissed' | 'failed' };
 
+// How long subscribing may take before Turn On says it couldn't.
+export const SUBSCRIBE_TIMEOUT_MS = 20_000;
+
 /** Asks permission, registers the push-only worker and subscribes with the deployment's key. */
 export async function subscribeThisBrowser(
   publicKey: string,
@@ -89,10 +92,16 @@ export async function subscribeThisBrowser(
   try {
     await w.navigator.serviceWorker.register(PUSH_WORKER_PATH, { scope: '/' });
     const registration = await w.navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: keyBytes(publicKey),
-    });
+    // A browser that can't reach its push service can leave this pending for good; the row must not stay busy.
+    const subscription = await Promise.race([
+      registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: keyBytes(publicKey),
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('push_subscribe_timeout')), SUBSCRIBE_TIMEOUT_MS),
+      ),
+    ]);
     return { ok: true, subscription };
   } catch {
     return { ok: false, reason: 'failed' };

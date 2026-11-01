@@ -172,7 +172,13 @@ export function PhoneNotificationsRow({
           ) : copy.status ? (
             <span
               data-phone-status
-              className={`text-xs ${copy.warn ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'}`}
+              className={`text-xs font-medium ${
+                copy.warn
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : copy.good
+                    ? 'text-emerald-700 dark:text-emerald-300'
+                    : 'text-slate-500 dark:text-slate-400'
+              }`}
             >
               {copy.status}
             </span>

@@ -11,6 +11,7 @@ import {
   phoneSupport,
   pushDeviceLabel,
   readThisDevice,
+  SUBSCRIBE_TIMEOUT_MS,
   subscribeThisBrowser,
   writeThisDevice,
   type PushWindow,
@@ -148,6 +149,19 @@ describe('browser-push', () => {
     expect(await currentSubscription(fakeWindow({}))).toBeNull();
     const broken = { getRegistration: () => Promise.reject(new Error('no')) };
     expect(await currentSubscription(fakeWindow({ serviceWorker: broken }))).toBeNull();
+  });
+
+  it('gives up on a subscribe that never answers', async () => {
+    vi.useFakeTimers();
+    const worker = fakeServiceWorker(null);
+    worker.pushManager.subscribe = vi.fn(() => new Promise<never>(() => {}));
+    const pending = subscribeThisBrowser(
+      'AQID',
+      fakeWindow({ permission: 'default', serviceWorker: worker }),
+    );
+    await vi.advanceTimersByTimeAsync(SUBSCRIBE_TIMEOUT_MS);
+    expect(await pending).toEqual({ ok: false, reason: 'failed' });
+    vi.useRealTimers();
   });
 
   it('remembers which listed device is this browser, and survives storage that throws', () => {
