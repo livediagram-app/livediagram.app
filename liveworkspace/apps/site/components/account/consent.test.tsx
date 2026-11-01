@@ -38,6 +38,15 @@ describe('Consent', () => {
     expect(container.querySelector('strong')?.className).toContain('break-all');
   });
 
+  it("isolates the client id, so an override in the address can't turn the sentence around", async () => {
+    window.history.replaceState(null, '', '/consent?client_id=%E2%80%AEevil&sig=s');
+    act(() => root.render(<Consent />));
+    expect(container.querySelector('strong > bdi')?.textContent).toBe('\u202Eevil');
+    expect(container.querySelector('h1')?.parentElement?.textContent).toContain(
+      'wants to use your liveworkspace account.',
+    );
+  });
+
   it('says the connection failed, not that the request expired, when nothing answers', async () => {
     vi.stubGlobal(
       'fetch',
