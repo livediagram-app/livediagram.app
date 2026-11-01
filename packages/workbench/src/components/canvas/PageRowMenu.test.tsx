@@ -202,6 +202,27 @@ describe('PageRowMenu', () => {
     }
   });
 
+  it('keeps its own keys from the list, but lets Undo and Redo chords through', () => {
+    const outer = vi.fn<(key: string) => void>();
+    render(
+      <div
+        onKeyDown={(e) => {
+          outer(e.key);
+        }}
+      >
+        <List models={{ a: model().model }} stack />
+      </div>,
+    );
+    for (const name of ['More Actions for Page a', 'Delete Page a']) {
+      const button = screen.getByRole('button', { name });
+      fireEvent.keyDown(button, { key: 'Home' });
+      fireEvent.keyDown(button, { key: 'Backspace' });
+      fireEvent.keyDown(button, { key: 'z', metaKey: true });
+      fireEvent.keyDown(button, { key: 'y', ctrlKey: true });
+    }
+    expect(outer.mock.calls.map((c) => c[0])).toEqual(['z', 'y', 'z', 'y']);
+  });
+
   it('ignores a long press that ends before its menu could open', () => {
     vi.useFakeTimers();
     try {

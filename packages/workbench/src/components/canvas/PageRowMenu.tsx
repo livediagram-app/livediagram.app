@@ -99,6 +99,12 @@ function swallowLiftClick() {
 // A row's grip carries this: a finger held on it is starting a drag, never a long press for the menu.
 export const PAGE_ROW_GRIP_ATTR = 'data-contents-grip';
 
+// A row tool's own keys stop at it (the list's arrows never move off it, Delete never reaches the canvas),
+// but a Ctrl or Cmd chord goes on, so Undo and Redo still work from it.
+function keepRowKey(e: { metaKey: boolean; ctrlKey: boolean; stopPropagation: () => void }) {
+  if (!e.metaKey && !e.ctrlKey) e.stopPropagation();
+}
+
 /** The one ⋯ menu a Contents list shares: which page's is open and where it hangs, each row's ⋯
  *  as its anchor, and the row's own ways in (a right-click, a finger's long press). */
 export function usePageRowMenu() {
@@ -229,7 +235,7 @@ export function PageRowMenuButton({
           menu.toggle(id);
         }}
         onKeyDown={(e) => {
-          e.stopPropagation();
+          keepRowKey(e);
           if (menu.openId !== id && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
             e.preventDefault();
             menu.toggle(id);
@@ -279,7 +285,7 @@ export function PageRowStack({
               e.stopPropagation();
               remove();
             }}
-            onKeyDown={(e) => e.stopPropagation()}
+            onKeyDown={keepRowKey}
             className="relative flex h-6 w-6 touch-target items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-900/5 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-white/10 dark:hover:text-slate-100"
           >
             <DeleteIcon />
