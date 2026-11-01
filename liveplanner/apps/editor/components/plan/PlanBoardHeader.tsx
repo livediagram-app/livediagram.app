@@ -54,6 +54,8 @@ export function PlanBoardHeader({
   onRetry,
   onReveal,
   onMoveUnplaced,
+  planItems,
+  statusNames,
   chips,
   end,
 }: {
@@ -84,6 +86,9 @@ export function PlanBoardHeader({
   onRetry: () => void;
   onReveal: () => void;
   onMoveUnplaced: (item: Item, status: string) => void;
+  // Every card of the plan and its status names, for the Filter widget's chips.
+  planItems?: ReadonlyMap<string, Item>;
+  statusNames?: ReadonlyMap<string, string>;
   // The card type chips after the title (BoardCardTypeChips). In a header band they lead the header itself, just after
   // the menu box, so they give way to the widgets and controls rather than widening the box.
   chips?: React.ReactNode;
@@ -109,6 +114,8 @@ export function PlanBoardHeader({
     canEdit,
     onSetup,
     onOpenItem,
+    planItems,
+    statusNames,
   };
   const [renaming, setRenaming] = useState(false);
   // In a header band, the title and widgets ride in the menu box (menu-name-slot).
@@ -130,7 +137,10 @@ export function PlanBoardHeader({
         onChange={(next) => {
           // Taking a widget off clears what it narrowed.
           const kept: QuickFilter = { ...quick };
-          if (!next.includes('filter')) delete kept.text;
+          if (!next.includes('filter')) {
+            delete kept.text;
+            delete kept.filters;
+          }
           if (!next.includes('mine')) delete kept.mine;
           if (!next.includes('types')) delete kept.type;
           if (!next.includes('due')) delete kept.due;

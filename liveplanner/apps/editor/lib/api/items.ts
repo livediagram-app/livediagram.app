@@ -112,7 +112,7 @@ async function landedOf(res: Response): Promise<ItemsResponse | null> {
 // request, or the failed one's partial answer) throws ItemWritePartlyLanded with what landed.
 async function postInChunks(
   scope: ItemsScope,
-  path: '/patches' | '/tally',
+  path: '/patches' | '/moves' | '/tally',
   entries: readonly object[],
   action: string,
   undo?: true,
@@ -200,6 +200,16 @@ export async function writeItem(
       );
     case 'move':
       return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
+    case 'moves':
+      // A group of cards moved together, in order (docs/specs/026-plan/items.md "Move many"): a chunk's first move names
+      // the last card of the chunk before, which has landed.
+      return postInChunks(
+        scope,
+        '/moves',
+        write.moves.map(({ id: itemId, move }) => ({ id: itemId, ...move })),
+        'items move',
+        write.undo,
+      );
     // A time write to a Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"); a no-op answers rev -1.
     case 'time':
       return one(await post(scope, `${id}/time`, { field: write.field, ...write.op }, 'item time'));

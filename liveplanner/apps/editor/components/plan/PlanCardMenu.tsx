@@ -6,7 +6,8 @@
 // may only view gets Open alone; a Participant gets Open, Duplicate, Move to and Flag, as the item panel's menu gives it. Built on the shared ContextMenu, so it opens at the click, re-clamps to
 // the window as it grows, is a bottom sheet on a phone and keeps the long-press grace, like the element menu.
 import type { SyntheticEvent } from 'react';
-import { DuplicateIcon, PencilIcon, TrashIcon, PlanCardsIcon } from '@liveplanner/ui';
+import { DuplicateIcon, PencilIcon, TrashIcon, PlanCardsIcon, lucideGlyph } from '@liveplanner/ui';
+import { lucideSquareCheck } from '@liveworkspace/icons/lucide';
 import {
   MenuActionRow,
   MenuGroupSeparator,
@@ -21,6 +22,9 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { track } from '@/lib/telemetry';
 import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanContextValue } from './PlanContext';
+
+// Select: starts picking several cards (docs/specs/026-plan/plan-board.md "Several cards at once").
+const SelectIcon = lucideGlyph(lucideSquareCheck, 16);
 
 // A portal's events still bubble up the React tree to the board and canvas.
 const stop = (e: SyntheticEvent) => e.stopPropagation();
@@ -40,6 +44,7 @@ export function PlanCardMenu({
   onArchive,
   flagged = false,
   onFlag,
+  onSelect,
   onClose,
 }: {
   // Viewport coordinates of the right-click.
@@ -65,6 +70,8 @@ export function PlanCardMenu({
   // Flag (or Remove Flag) (docs/specs/026-plan/items.md "Flags").
   flagged?: boolean;
   onFlag: () => void;
+  // Select: starts select mode with this card picked. Absent where a board takes no selection (a Dashboard slot).
+  onSelect?: () => void;
   onClose: () => void;
 }) {
   const act = (fn: () => void) => () => {
@@ -123,6 +130,12 @@ export function PlanCardMenu({
                 ))}
               </>
             ) : null}
+            {onSelect ? (
+              <>
+                <MenuGroupSeparator />
+                <MenuActionRow plain label="Select" icon={<SelectIcon />} onClick={act(onSelect)} />
+              </>
+            ) : null}
             <MenuGroupSeparator />
             <MenuActionRow
               plain
@@ -155,6 +168,7 @@ export function PlanCardMenuHost({
   setup,
   canEdit,
   canRetire = canEdit,
+  onSelect,
   onClose,
 }: {
   menu: { itemId: string; at: { x: number; y: number } };
@@ -162,6 +176,8 @@ export function PlanCardMenuHost({
   setup: PlanBoardSetup;
   canEdit: boolean;
   canRetire?: boolean;
+  // Select in the menu: starts the board's select mode with this card (useBoardSelection).
+  onSelect?: (itemId: string) => void;
   onClose: () => void;
 }) {
   const item = plan.items.get(menu.itemId);
@@ -194,6 +210,7 @@ export function PlanCardMenuHost({
       }}
       flagged={isFlagged(item)}
       onFlag={() => toggleFlag(plan, item)}
+      {...(onSelect ? { onSelect: () => onSelect(item.id) } : {})}
       archived={isArchived(item)}
       onArchive={() => {
         const was = isArchived(item);

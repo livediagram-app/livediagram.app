@@ -43,6 +43,37 @@ describe('writeItem patches', () => {
   });
 });
 
+describe('writeItem moves', () => {
+  it('posts a group of moves to /items/moves, in order, flagged when an undo', async () => {
+    const fetch = vi.fn(async () =>
+      Response.json({
+        items: [
+          { id: 'a', rev: 2 },
+          { id: 'b', rev: 2 },
+        ],
+        rev: 4,
+      }),
+    );
+    vi.stubGlobal('fetch', fetch);
+    const moves = [
+      { id: 'a', move: { status: 'done', before: null } },
+      { id: 'b', move: { status: 'done', after: 'a' } },
+    ];
+    const answer = await writeItem(scope, { kind: 'moves', moves, undo: true }, by);
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain('/projects/doc-cloud/items/moves');
+    expect(sentJson(init)).toEqual({
+      items: [
+        { id: 'a', status: 'done', before: null },
+        { id: 'b', status: 'done', after: 'a' },
+      ],
+      undo: true,
+    });
+    expect(answer).toMatchObject({ rev: 4 });
+    expect(answer.upserts).toHaveLength(2);
+  });
+});
+
 describe('writeItem tally', () => {
   it('posts a vote’s tally to /items/tally', async () => {
     const fetch = vi.fn(async () => Response.json({ items: [{ id: 'i1', rev: 2 }], rev: 3 }));
