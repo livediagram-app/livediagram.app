@@ -1,0 +1,255 @@
+import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
+import {
+  containerContents,
+  withAttached,
+  anchorOutward,
+  anchorPosition,
+  fieldEndPosition,
+  isBoxed,
+  nearestOfferedAnchor,
+  withMindSubtrees,
+  type Anchor,
+  type ArrowElement,
+} from '@livediagram/document';
+import { getTheme } from '@/lib/themes';
+import { track } from '@/lib/telemetry';
+import { type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
+import type { EditorDragDeps } from './useEditorDrag.types';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+
+type BoxedDragHandlerDeps = {
+  depsRef: RefObject<EditorDragDeps>;
+  setDrag: Dispatch<SetStateAction<DragState | null>>;
+  checkpointPendingRef: RefObject<boolean>;
+};
+
+// The drag gesture starters for boxed elements: beginDrag (move / resize a
+// shape, sticky, table, image, or freehand) and beginAnchorDrag (drag a
+// resize / rotate handle). Each snapshots the pressed element off depsRef,
+// arms a history checkpoint, and sets the drag state the shared move effect in
+// useEditorDrag then advances. Split out of useEditorDrag.
+export function useBoxedDragHandlers({
+  depsRef,
+  setDrag,
+  checkpointPendingRef,
+}: BoxedDragHandlerDeps) {
+  // A press that an armed action takes instead of selecting: true when it took it. Shared by a drag's press and
+  // a tap that panned instead of dragging (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
+  const pressArmedAction = (elementId: string): boolean => {
+    const d = depsRef.current;
+    // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): same "armed source, next click
+    // is the action" shape as the Format tool below. Draws a
+    // pinned connector to the clicked shape instead of selecting it.
+    if (d.connectSourceId !== null) {
+      d.connectArrowTo(elementId);
+      return true;
+    }
+    // Persistent Format tool: first click arms the source, each later
+    // click paints onto the target and (in Keep painting) KEEPS the
+    // source armed so the user can format many elements in a row.
+    if (d.formatToolActive) {
+      if (d.formatSourceId === null) d.setFormatSourceId(elementId);
+      else d.applyFormatFromSource(elementId);
+      return true;
+    }
+    return false;
+  };
+
+  const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
+    const d = depsRef.current;
+    if (mode === 'move' && pressArmedAction(elementId)) return;
+    if (d.editingId === elementId) return;
+    const element = d.activeTab.elements.find((el) => el.id === elementId);
+    if (!element || !isBoxed(element)) return;
+    // A hidden / locked LAYER makes its elements fully inert (docs/specs/006-document/layers.md):
+    // unlike per-element `locked` (selectable to inspect, below), a
+    // press on one doesn't even land a selection.
+    if (d.layerInertIds.has(elementId)) return;
+    // The selection as the press found it, before this press changes it.
+    const { multiSelectedIds } = d.readSelection();
+    d.setSelectedId(elementId);
+    // Only Shift adds to a selection (docs/specs/008-canvas/canvas-and-palette.md "Marquee
+    // box-select"): a press outside the multi-selection selects this element alone.
+    if (multiSelectedIds.size > 0 && !multiSelectedIds.has(elementId)) {
+      d.setMultiSelectedIds(new Set());
+    }
+    // Selection above still lands so viewers can inspect; the drag
+    // itself is blocked for a locked element or a read-only session.
+    if (element.locked === true) return;
+    // A Participant moves and resizes only what it may (docs/specs/013-workspace/share-roles.md).
+    if (d.isReadOnly && !(mode === 'move' ? d.canMove : d.canResize)?.(element)) return;
+
+    // A multi-selection drags in lockstep: for 'move' the whole set
+    // translates together, for 'resize-*' the whole set scales together
+    // (members reposition + resize proportionally around the corner opposite
+    // the drag handle). A bare single-element drag falls through to the
+    // singleton set.
+    // A locked member stays put (docs/specs/008-canvas/canvas-and-palette.md "Locking"): the rest of the
+    // selection moves without it, and so does a frame or lane without a locked element it holds.
+    const lockedIds = new Set(
+      d.activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
+    );
+    const unlocked = (set: ReadonlySet<string>) =>
+      lockedIds.size === 0 ? set : new Set([...set].filter((id) => !lockedIds.has(id)));
+    const baseIds = multiSelectedIds.has(elementId)
+      ? unlocked(multiSelectedIds)
+      : new Set<string>([elementId]);
+
+    // Frames and lanes (docs/specs/008-canvas/canvas-and-palette.md): MOVING one carries what it holds by
+    // the centre rule agents' `move` uses (`containerContents`): every element whose centre it holds,
+    // nested frames with their contents, and loose arrows whose free ends lie inside (pinned arrows
+    // follow via the rebind pass). Resizing is deliberately excluded — a frame
+    // resize re-sizes the section outline and leaves its contents put.
+    //
+    // A mind node (docs/specs/009-elements/mind-node.md "Moving a branch") carries its whole subtree
+    // the same way: a branch is one idea, and its points follow its heading.
+    const ids =
+      mode === 'move'
+        ? unlocked(
+            // A host's badges and step numbers ride its drag (docs/specs/009-elements/badge.md).
+            withAttached(
+              d.activeTab.elements,
+              withMindSubtrees(
+                d.activeTab.elements,
+                containerContents(d.activeTab.elements, baseIds),
+              ),
+            ),
+          )
+        : baseIds;
+
+    const startBounds = new Map<string, ShapeBounds>();
+    // Free endpoints of any arrows the frame-section expansion pulled in, so
+    // their free ends translate with the section (only relevant for a move).
+    const startArrowEnds = new Map<
+      string,
+      { from?: { x: number; y: number }; to?: { x: number; y: number } }
+    >();
+    for (const el of d.activeTab.elements) {
+      if (!ids.has(el.id)) continue;
+      if (isBoxed(el)) {
+        startBounds.set(el.id, { x: el.x, y: el.y, width: el.width, height: el.height });
+      } else if (el.type === 'arrow') {
+        startArrowEnds.set(el.id, {
+          from: el.from.kind === 'free' ? { x: el.from.x, y: el.from.y } : undefined,
+          to: el.to.kind === 'free' ? { x: el.to.x, y: el.to.y } : undefined,
+        });
+      }
+    }
+
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'boxed',
+      primaryId: elementId,
+      mode,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startBounds,
+      startArrowEnds,
+      startElements: d.activeTab.elements,
+      aspectLocked: element.aspectLocked === true,
+    });
+  };
+
+  const beginAnchorDrag = (
+    elementId: string,
+    sideAnchor: Anchor,
+    e: ReactPointerEvent,
+    opts?: {
+      clickToPlace?: boolean;
+      placeOutPx?: number;
+      tapPlaceOutPx?: number;
+      // Start from one of an entity's fields (docs/specs/009-elements/entity.md "Field to field").
+      field?: number;
+    },
+  ) => {
+    const d = depsRef.current;
+    if (d.formatSourceId !== null || d.formatToolActive) return;
+    const element = d.activeTab.elements.find((el) => el.id === elementId);
+    if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
+    if (d.layerInertIds.has(elementId)) return;
+    // A side without anchors (a triangle's top) starts from the nearest one
+    // the shape offers (docs/specs/008-canvas/arrow-anchors.md).
+    const anchor = nearestOfferedAnchor(element, sideAnchor);
+    const fromEnd: ArrowElement['from'] =
+      opts?.field !== undefined
+        ? { kind: 'pinned', elementId, anchor, field: opts.field }
+        : { kind: 'pinned', elementId, anchor };
+    const start =
+      (opts?.field !== undefined && fieldEndPosition(element, anchor, opts.field)) ||
+      anchorPosition(element, anchor);
+    // A connector drawn FROM a shape takes the TAB THEME's stroke, not the
+    // shape's own. It used to copy the shape's stroke so the pair matched,
+    // but a red box then sprouted red arrows, a green box green ones, and
+    // the connectors stopped reading as one system; the theme is the
+    // colour every arrow on the tab shares. A theme with no element
+    // stroke (Default) leaves it unset, so the built-in arrow colour
+    // applies.
+    const theme = getTheme(d.activeTab.theme);
+    const inheritedStroke = theme.elementStroke ?? undefined;
+    // placeOutPx (mobile Arrow option): don't enter a drag — drop a free
+    // arrow that runs straight out from the anchor by that many px and
+    // select it so the user can reposition it by hand.
+    if (opts?.placeOutPx) {
+      const dir = anchorOutward(anchor);
+      const placed: ArrowElement = d.styleNewElement({
+        id: crypto.randomUUID(),
+        type: 'arrow',
+        from: fromEnd,
+        to: {
+          kind: 'free',
+          x: start.x + dir.x * opts.placeOutPx,
+          y: start.y + dir.y * opts.placeOutPx,
+        },
+        ...(inheritedStroke ? { strokeColor: inheritedStroke } : {}),
+      });
+      d.commit((els) => [...els, placed]);
+      d.setSelectedId(placed.id);
+      track('Element', 'Added', 'Arrow');
+      return;
+    }
+    const arrow: ArrowElement = d.styleNewElement({
+      id: crypto.randomUUID(),
+      type: 'arrow',
+      from: fromEnd,
+      to: { kind: 'free', x: start.x, y: start.y },
+      ...(inheritedStroke ? { strokeColor: inheritedStroke } : {}),
+    });
+    d.commit((els) => [...els, arrow]);
+    d.setSelectedId(arrow.id);
+    track('Element', 'Added', 'Arrow');
+    // The move handler tracks (startCanvas + (client - startClient)). For a
+    // press-drag from the anchor handle the pointer IS at the anchor, so
+    // e.client is the right origin. A click-to-place from the ring starts
+    // far out on the ring button, so anchor that origin to the anchor's
+    // own screen position instead (derived from the element's DOM rect) —
+    // otherwise the endpoint would trail the cursor by the button offset.
+    let startClientX = e.clientX;
+    let startClientY = e.clientY;
+    if (opts?.clickToPlace && element.width > 0 && element.height > 0) {
+      const node = document.querySelector(elementSelector(elementId));
+      if (node) {
+        const r = node.getBoundingClientRect();
+        startClientX = r.left + ((start.x - element.x) / element.width) * r.width;
+        startClientY = r.top + ((start.y - element.y) / element.height) * r.height;
+      }
+    }
+    setDrag({
+      kind: 'arrow-endpoint',
+      arrowId: arrow.id,
+      end: 'to',
+      startClientX,
+      startClientY,
+      startCanvasX: start.x,
+      startCanvasY: start.y,
+      clickToPlace: opts?.clickToPlace ?? false,
+      pressClientX: e.clientX,
+      pressClientY: e.clientY,
+      ...(opts?.tapPlaceOutPx
+        ? { tapPlace: { anchor, sourceId: elementId, placeOutPx: opts.tapPlaceOutPx } }
+        : {}),
+    });
+  };
+
+  return { beginDrag, beginAnchorDrag, pressArmedAction };
+}

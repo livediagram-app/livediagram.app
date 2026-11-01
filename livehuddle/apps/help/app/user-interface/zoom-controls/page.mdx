@@ -1,0 +1,47 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ZoomControls } from '@/components/illustrations/user-interface';
+
+export const metadata = helpMetadata({
+  title: 'Zoom Controls',
+  description:
+    'The zoom controls let you zoom in and out, fit the whole canvas to the screen, and jump to a preset zoom level.',
+  path: '/help/user-interface/zoom-controls/',
+});
+
+<ArticleLayout
+  title="Zoom Controls"
+  description="Zoom in and out, fit the canvas to the screen, and jump to a preset level."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after **Tidy Up** (in Diagram mode), Undo and Redo, the session tools, any mode or Collaborate buttons, and Layers with the **Theme & canvas** button, and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+
+<Figure caption="The zoom cluster: step out, the current level, step in, with the preset popover open above.">
+  <ZoomControls />
+</Figure>
+
+## The controls
+
+- **Zoom out** / **Zoom in**: step 10% further or closer.
+- **The percentage button**: shows the current level. **Click it to fit the whole canvas** in view at once, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels (25%, 50%, 75%, 100%, 125% and 150%, plus **Fit to screen**) and pick one to jump straight there (100% is true size).
+
+Zoom runs from 10% to 500%.
+
+## From the keyboard and trackpad
+
+| Keys                     | Does                              |
+| ------------------------ | --------------------------------- |
+| `⌘+` / `⌘-`              | Zoom in / out                     |
+| `⌘0`                     | Reset the zoom to 100%            |
+| `⇧1`                     | Zoom to fit everything on the tab |
+| `⌘` + scroll, or a pinch | Zoom in or out                    |
+
+`⌘` is Ctrl on Windows and Linux. A plain two-finger scroll pans rather than zooms, and so do the [Hand tool](/help/selection-modes/hand/), `Space` + drag, and a middle-button drag. Zoom never changes the canvas, so it works on a view-only link too. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
+
+## On a phone and in zen mode
+
+On a phone the zoom buttons and the percentage are dropped to save space: pinch to zoom, and a dedicated **Fit** button stands in for fit-to-screen. In [Zen mode](/help/tools/zen-mode/) everything else hides but the zoom controls stay (along with any session tools in use), joined by an **Exit zen mode** button.
+
+</ArticleLayout>

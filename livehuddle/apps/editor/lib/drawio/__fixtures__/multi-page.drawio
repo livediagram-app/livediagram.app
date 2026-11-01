@@ -1,0 +1,95 @@
+<mxfile host="livediagram-fixtures" agent="hand-written" version="24.7.17" type="device" pages="3">
+  <diagram id="mp-overview" name="Overview">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#FAFAF5" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="notes-layer" value="Annotations" style="locked=1;" parent="0" visible="0" />
+        <UserObject label="%owner%'s board" owner="Platform team" tooltip="Start here" link="data:page/id,mp-detail" placeholders="1" id="entry">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="40" width="160" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Docs" link="https://example.com/docs" id="docs">
+          <mxCell style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+            <mxGeometry x="260" y="40" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Run" link="javascript:alert(1)" id="run">
+          <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+            <mxGeometry x="440" y="40" width="80" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="grp" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="40" y="160" width="300" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-a" value="Grouped A" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="grp">
+          <mxGeometry width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-b" value="Grouped B" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="grp">
+          <mxGeometry x="180" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="secret" value="Hidden draft" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" visible="0">
+          <mxGeometry x="400" y="160" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="folded" value="Folded box" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" collapsed="1" parent="1">
+          <mxGeometry x="40" y="300" width="160" height="23" as="geometry">
+            <mxRectangle x="40" y="300" width="200" height="200" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="folded-child" value="Inside the fold" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="folded">
+          <mxGeometry x="40" y="60" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="link-edge" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="entry" target="grp-b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="to-group" style="html=1;" edge="1" parent="1" source="docs" target="grp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="annotation" value="Remember to review the fold." style="text;html=1;whiteSpace=wrap;" vertex="1" parent="notes-layer">
+          <mxGeometry x="260" y="300" width="200" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="mp-detail" name="Detail">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="rich" value="&lt;h2&gt;Release plan&lt;/h2&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;Beta&lt;/b&gt; in May&lt;/li&gt;&lt;li&gt;&lt;i&gt;GA&lt;/i&gt; in &lt;font color=&quot;#b85450&quot;&gt;June&lt;/font&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;See &lt;a href=&quot;https://example.com/plan&quot;&gt;the plan&lt;/a&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tri" value="" style="triangle;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cloud" value="Internet" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="40" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="star" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.star;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="620" y="40" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="callout" value="Heads up" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;" vertex="1" parent="1">
+          <mxGeometry x="340" y="180" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="step" value="Stage 1" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="180" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="proc" value="Subroutine" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;rotation=15;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="big" value="Big and bold" style="text;html=1;fontSize=28;fontStyle=1;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="200" y="300" width="260" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="mp-empty" name="Scratch">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

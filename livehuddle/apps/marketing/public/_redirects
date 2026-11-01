@@ -1,0 +1,51 @@
+# Retired feature category pages (docs/specs/019-marketing/marketing-site.md "Feature category pages").
+# The landing page once had thirteen generic categories; it now has one per core feature, and
+# each old /features/<id> URL moves permanently to where its cards went, so search results and
+# old links keep landing. Workers Static Assets reads this file from out/ (Next copies public/).
+# lib/retired-features.test.ts pins every target to a live page.
+# Pages mode moved out of livediagram into livedocuments: its infographics and documents categories
+# go there, and the slide deck cards that stayed went to collaboration.
+# Plan mode moved out of livediagram into liveplanner: its boards, sheets and forms categories go there.
+
+/features/simple /features/diagrams 301
+/features/simple/ /features/diagrams 301
+/features/content /features/diagrams 301
+/features/content/ /features/diagrams 301
+/features/assist /features/diagrams 301
+/features/assist/ /features/diagrams 301
+/features/customise /features/diagrams 301
+/features/customise/ /features/diagrams 301
+/features/refine /features/diagrams 301
+/features/refine/ /features/diagrams 301
+/features/tabs /features/diagrams 301
+/features/tabs/ /features/diagrams 301
+/features/motion /features/diagrams 301
+/features/motion/ /features/diagrams 301
+/features/connect /features/diagrams 301
+/features/connect/ /features/diagrams 301
+/features/express /features/whiteboard 301
+/features/express/ /features/whiteboard 301
+/features/present /features/collaboration 301
+/features/present/ /features/collaboration 301
+/features/reliability / 301
+/features/reliability/ / 301
+/features/foundations / 301
+/features/foundations/ / 301
+/features/slides /features/collaboration 301
+/features/slides/ /features/collaboration 301
+/features/infographics https://www.livedocuments.app/ 301
+/features/infographics/ https://www.livedocuments.app/ 301
+/features/documents https://www.livedocuments.app/ 301
+/features/documents/ https://www.livedocuments.app/ 301
+/features/plan https://www.liveplanner.app/ 301
+/features/plan/ https://www.liveplanner.app/ 301
+/features/sheets https://www.liveplanner.app/ 301
+/features/sheets/ https://www.liveplanner.app/ 301
+/features/forms https://www.liveplanner.app/ 301
+/features/forms/ https://www.liveplanner.app/ 301
+
+# Retired comparisons (packages/comparisons/README.md "livediagram"): Google Slides left with Pages
+# mode and is livedocuments' to compare now, so its old address lands on that page there.
+# lib/comparison-redirects.test.ts pins it, and that no rule here catches a live comparison.
+/alternatives/google-slides https://www.livedocuments.app/alternatives/google-slides 301
+/alternatives/google-slides/ https://www.livedocuments.app/alternatives/google-slides 301

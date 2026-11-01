@@ -1,0 +1,631 @@
+import {
+  lucideArrowUpDown,
+  lucideGift,
+  lucideMessagesSquare,
+  lucideShapes,
+  lucideShare2,
+  lucideShieldCheck,
+  lucideSparkles,
+  lucideUsers,
+  lucideZap,
+} from '@liveworkspace/icons/lucide';
+import { CONTACT_FORM_URL, lucideGlyph, REPO_URL, STATUS_PAGE_URL } from '@livediagram/ui';
+import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
+
+// The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
+// into categories, each with an icon and a one-line blurb. Pure data, exempt from the line target.
+// The shape, and what `a` and `aText` are, is @liveworkspace/marketing-site's lib/faq.ts. faq-content.test.tsx
+// renders every JSX answer and fails if its text drifts from `aText`, so the structured data stays a faithful
+// image of the page.
+
+const ICON = 18;
+// Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
+// catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
+export const TEMPLATE_COUNT = 88;
+// The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
+export const TEMPLATE_CATEGORY_COUNT = 14;
+
+export const FAQ_CATEGORIES: FaqCategory[] = [
+  {
+    id: 'getting-started',
+    title: 'Getting started',
+    blurb: 'What livediagram is and how to begin.',
+    icon: lucideGlyph(lucideZap, ICON),
+    items: [
+      {
+        q: 'What is livediagram?',
+        a: 'A free, real-time canvas for diagrams, whiteboards and workshops. Every canvas is a stack of tabs, and each tab can be worked on in three modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, and Workshop for running a session with your team. Your team can join any of them live.',
+      },
+      {
+        q: 'Do I need an account to use livediagram?',
+        a: (
+          <>
+            No. Open the editor and start drawing straight away, with no sign-up. Your work saves in
+            your browser as you go, and pressing Share puts it online for others to join. Signing in
+            (also free) keeps your canvases with you across devices and unlocks teams, API tokens
+            and the AI connection. See{' '}
+            <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
+          </>
+        ),
+        aText:
+          'No. Open the editor and start drawing straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your canvases with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
+      },
+      {
+        q: 'How do I start my first canvas?',
+        a: `Press Start drawing and choose what you are making: Diagram, Draw or Workshop. Your canvas opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+      },
+      {
+        q: 'Does it work on my phone or tablet?',
+        a: (
+          <>
+            It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
+            gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone
+            screens are best for viewing and light edits. See{' '}
+            <a href="/help/supported-devices/">supported devices</a>.
+          </>
+        ),
+        aText:
+          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone screens are best for viewing and light edits. See supported devices.',
+      },
+      {
+        q: 'Are there keyboard shortcuts?',
+        a: (
+          <>
+            Plenty. Cmd-Z (or Ctrl-Z) undoes and Cmd-Shift-Z redoes, Cmd-K opens the command palette
+            for any action, and single keys pick tools. The{' '}
+            <a href="/help/getting-started/keyboard-essentials/">keyboard essentials</a> article
+            lists them all.
+          </>
+        ),
+        aText:
+          'Plenty. Cmd-Z (or Ctrl-Z) undoes and Cmd-Shift-Z redoes, Cmd-K opens the command palette for any action, and single keys pick tools. The keyboard essentials article lists them all.',
+      },
+      {
+        q: 'Can I use it with a keyboard or a screen reader?',
+        a: (
+          <>
+            Yes. The canvas is a stop in the Tab order: move through its elements and edit them with
+            the keyboard, and screen readers announce what is selected. See{' '}
+            <a href="/help/getting-started/accessibility/">accessibility</a>.
+          </>
+        ),
+        aText:
+          'Yes. The canvas is a stop in the Tab order: move through its elements and edit them with the keyboard, and screen readers announce what is selected. See accessibility.',
+      },
+      {
+        q: 'Is there a dark mode?',
+        a: (
+          <>
+            Yes. Choose Light, Dark or System from the Appearance button, and one choice covers the
+            editor and the help centre alike. See <a href="/help/tools/dark-mode/">dark mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Choose Light, Dark or System from the Appearance button, and one choice covers the editor and the help centre alike. See dark mode.',
+      },
+    ],
+  },
+  {
+    id: 'free-and-open-source',
+    title: 'Free and open source',
+    blurb: 'No paid tier, no catch.',
+    icon: lucideGlyph(lucideGift, ICON),
+    items: [
+      {
+        q: 'Is it really free?',
+        a: 'Yes. Every feature is free for everyone, with no paid tier, no trial and no plan to introduce one. If we ship it, every user gets it.',
+      },
+      {
+        q: 'Is the code open source?',
+        a: (
+          <>
+            Yes. The whole codebase is MIT-licensed and{' '}
+            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
+              public on GitHub
+            </a>
+            . You can read it, audit it, or contribute.
+          </>
+        ),
+        aText:
+          'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, audit it, or contribute.',
+      },
+      {
+        q: 'Will features ever move behind a paywall?',
+        a: 'No. There are no "Pro" features and no billing anywhere in the code. Every feature is in the one free version at livediagram.app.',
+      },
+    ],
+  },
+  {
+    id: 'creating',
+    title: 'Creating',
+    blurb: 'Shapes, templates, themes and modes.',
+    icon: lucideGlyph(lucideShapes, ICON),
+    items: [
+      {
+        q: 'What can I make with it?',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas and Sankey diagrams.',
+      },
+      {
+        q: 'How many templates and themes are there?',
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every shape and arrow in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
+      },
+      {
+        q: 'Can I make a diagram look hand-drawn?',
+        a: (
+          <>
+            Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and
+            print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip,
+            like a flip chart). Switch it from the tab's style, or set it on one element, and
+            nothing about the diagram changes underneath. Ready-made looks set the theme, finish,
+            font and canvas pattern in one click. See{' '}
+            <a href="/help/canvas/finish/">choosing a finish</a>.
+          </>
+        ),
+        aText:
+          "Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip, like a flip chart). Switch it from the tab's style, or set it on one element, and nothing about the diagram changes underneath. Ready-made looks set the theme, finish, font and canvas pattern in one click. See choosing a finish.",
+      },
+      {
+        q: 'What are the three modes?',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a canvas can have its own.',
+      },
+      {
+        q: 'Can I organise a big canvas?',
+        a: 'Yes. A canvas holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your canvases live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a canvas onto a folder to file it.',
+      },
+      {
+        q: 'Can I make mind maps?',
+        a: (
+          <>
+            Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the
+            mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in
+            one click, or open Edit Outline to rewrite the whole map as an indented list. See{' '}
+            <a href="/help/palette/mind-maps/">mind maps</a>.
+          </>
+        ),
+        aText:
+          'Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in one click, or open Edit Outline to rewrite the whole map as an indented list. See mind maps.',
+      },
+      {
+        q: 'Can I add pictures?',
+        a: (
+          <>
+            Yes. Upload an image once and reuse it from your gallery, or search Openverse for an
+            openly licensed photo or illustration without leaving the editor. See{' '}
+            <a href="/help/palette/tools/images/">images</a>.
+          </>
+        ),
+        aText:
+          'Yes. Upload an image once and reuse it from your gallery, or search Openverse for an openly licensed photo or illustration without leaving the editor. See images.',
+      },
+      {
+        q: 'Can I show data, like a chart?',
+        a: (
+          <>
+            Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or
+            line chart, a progress bar, a rating or a timeline. See{' '}
+            <a href="/help/palette/tools/data-elements/">data elements</a>.
+          </>
+        ),
+        aText:
+          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. See data elements.',
+      },
+      {
+        q: 'Can I animate things?',
+        a: (
+          <>
+            Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a
+            label can type itself in, and a drawing can draw itself. Hover a choice to preview it on
+            your selection first. See <a href="/help/canvas/animations/">animations</a>.
+          </>
+        ),
+        aText:
+          'Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a label can type itself in, and a drawing can draw itself. Hover a choice to preview it on your selection first. See animations.',
+      },
+      {
+        q: 'Can I use the same tab in two canvases?',
+        a: (
+          <>
+            Yes. Add to Another Canvas puts the tab you are on into another of your canvases. It is
+            the same tab in both places, not a copy, so an edit in one shows up in the other. See{' '}
+            <a href="/help/tabs/add-to-document/">Add to Another Canvas</a>.
+          </>
+        ),
+        aText:
+          'Yes. Add to Another Canvas puts the tab you are on into another of your canvases. It is the same tab in both places, not a copy, so an edit in one shows up in the other. See Add to Another Canvas.',
+      },
+      {
+        q: 'Is there a 3D view?',
+        a: (
+          <>
+            Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an
+            architecture walkthrough or a screenshot. It is a way to look at a diagram rather than
+            edit it. See <a href="/help/selection-modes/isometric-mode/">Isometric mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
+      },
+      {
+        q: 'Can I use it as a whiteboard?',
+        a: (
+          <>
+            Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
+            text, a fill bucket, an eraser and shapes, on a plain, dotted or grid board in light or
+            dark. With a stylus, a resting palm never leaves a mark. See{' '}
+            <a href="/help/canvas/draw-mode/">Draw mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, a fill bucket, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
+      },
+      {
+        q: 'Can I present from it?',
+        a: 'Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.',
+      },
+      {
+        q: 'Can I undo a mistake?',
+        a: 'Yes. Press Cmd-Z (or Ctrl-Z) to step back your recent edits and Cmd-Shift-Z to bring one back; the buttons also sit in the bottom-right corner. Undo is personal, so it rewinds your own changes, not a teammate’s; if you both changed the same element, it puts that element back as you had it.',
+      },
+      {
+        q: 'What if I delete something by accident?',
+        a: 'Deleted canvases wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer or in Settings › Account. Team canvases go to their team’s Trash.',
+      },
+    ],
+  },
+  {
+    id: 'working-together',
+    title: 'Working together',
+    blurb: 'Real-time collaboration and teams.',
+    icon: lucideGlyph(lucideUsers, ICON),
+    items: [
+      {
+        q: 'Can I work with my team in real time?',
+        a: 'Yes, that is the point. Share a link and teammates join the same canvas in real time, whatever mode a tab is in, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new canvas starts in your browser, and the first Share syncs it in one step.',
+      },
+      {
+        q: 'What happens if two people edit the same thing at once?',
+        a: 'Every change shows up for everyone live. Edits to different elements merge cleanly. If two people change the same element at the same moment, the most recent change is the one that sticks.',
+      },
+      {
+        q: 'Can I leave comments and assign follow-ups?',
+        a: 'Yes. Comment on any element and reply in threads, then resolve them when they are done. You can also attach an action to an element and assign it to a teammate, so the follow-ups a meeting produces stay with the canvas instead of getting lost.',
+      },
+      {
+        q: 'Can I set up a team with shared canvases?',
+        a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of canvases. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
+      },
+      {
+        q: 'Can I follow what someone else is looking at?',
+        a: (
+          <>
+            Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a
+            teammate: your view goes wherever theirs goes, until you move away yourself. See{' '}
+            <a href="/help/canvas/follow-along/">following along</a>.
+          </>
+        ),
+        aText:
+          'Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a teammate: your view goes wherever theirs goes, until you move away yourself. See following along.',
+      },
+      {
+        q: 'Can we walk around a board together?',
+        a: (
+          <>
+            Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel
+            character around the canvas, with speech bubbles, a status and reactions. The Virtual
+            Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a
+            coffee machine to meet at. See{' '}
+            <a href="/help/selection-modes/avatar-mode/">Avatar mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel character around the canvas, with speech bubbles, a status and reactions. The Virtual Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a coffee machine to meet at. See Avatar mode.',
+      },
+      {
+        q: 'Can I stop a finished tab being changed?',
+        a: (
+          <>
+            Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone
+            unlocks it, with a padlock beside its name. You can also lock single elements or whole
+            layers. See <a href="/help/tabs/locking-tabs/">locking a tab</a>.
+          </>
+        ),
+        aText:
+          'Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
+      },
+      {
+        q: 'How do I keep up with what changed?',
+        a: (
+          <>
+            Your Inbox gathers the actions and comment threads waiting on you across every canvas,
+            and Home shows what other people did while you were away. Once you sign in, emails can
+            tell you too, and you choose which in Settings. See{' '}
+            <a href="/help/explorer/activity/">the Inbox</a>.
+          </>
+        ),
+        aText:
+          'Your Inbox gathers the actions and comment threads waiting on you across every canvas, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+      },
+      {
+        q: 'Is it good for running workshops and retros?',
+        a: (
+          <>
+            Very. Switch a tab to Workshop, the mode for running a session, or start from a
+            retrospective, Lean Coffee or town hall Q&amp;A template, which opens there. Whoever
+            holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate
+            cards run planning poker, a temperature check shows how the room feels, a quiz asks what
+            it knows, and an idea box collects anonymous ideas. See{' '}
+            <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
+          </>
+        ),
+        aText:
+          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective, Lean Coffee or town hall Q&A template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Workshop mode.',
+      },
+    ],
+  },
+  {
+    id: 'sharing',
+    title: 'Sharing and embedding',
+    blurb: 'Links, passwords, embeds and the Community.',
+    icon: lucideGlyph(lucideShare2, ICON),
+    items: [
+      {
+        q: 'How do share links work?',
+        a: 'From a canvas you own, create an editor link (full edit access), a participant link (add stickies, write and vote, without reshaping the board) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
+      },
+      {
+        q: 'Can I password-protect a canvas?',
+        a: 'Yes. Add a password in the Share dialog and every link to that canvas asks for it before opening.',
+      },
+      {
+        q: 'Can I share just one tab?',
+        a: (
+          <>
+            Yes. When a canvas has more than one tab, the Share dialog lets a link open a single
+            tab, as an editor, participant or view-only link, and the rest of the canvas stays
+            private. See <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
+          </>
+        ),
+        aText:
+          'Yes. When a canvas has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the canvas stays private. See sharing one tab.',
+      },
+      {
+        q: 'Can I embed a diagram in my docs or wiki?',
+        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable canvas, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
+      },
+      {
+        q: 'Can I show a diagram where iframes are blocked, like a README?',
+        a: (
+          <>
+            Yes. A live image is a plain image URL that follows your canvas, redrawn after each
+            save, so a GitHub README or a doc always shows the current version. See{' '}
+            <a href="/help/collaboration/sharing/live-image/">live images</a>.
+          </>
+        ),
+        aText:
+          'Yes. A live image is a plain image URL that follows your canvas, redrawn after each save, so a GitHub README or a doc always shows the current version. See live images.',
+      },
+      {
+        q: 'What is the Community?',
+        a: (
+          <>
+            A public gallery of canvases people are proud of. Signed-in owners can publish a canvas
+            with a title, description and tags; anyone can browse it, open it read-only, like it and
+            make their own copy in one click. <a href="/community/">Take a look</a>.
+          </>
+        ),
+        aText:
+          'A public gallery of canvases people are proud of. Signed-in owners can publish a canvas with a title, description and tags; anyone can browse it, open it read-only, like it and make their own copy in one click. Take a look.',
+      },
+    ],
+  },
+  {
+    id: 'ai-and-integrations',
+    title: 'AI, API and MCP',
+    blurb: 'Connect your assistant and your scripts.',
+    icon: lucideGlyph(lucideSparkles, ICON),
+    items: [
+      {
+        q: 'Can I connect my own AI assistant, like Claude?',
+        a: (
+          <>
+            Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool
+            and, after a one-time authorisation, it can find, read, create and edit the canvases in
+            your account. Its changes appear live for anyone on the tab, outlined so you can see
+            them and undo them. <a href="/ai">Build with AI</a> walks you through connecting Claude,
+            ChatGPT, Cursor and more.
+          </>
+        ),
+        aText:
+          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the canvases in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+      },
+      {
+        q: 'Is there an API?',
+        a: (
+          <>
+            Yes. Once you sign in, create an API token and call the REST API to read and manage your
+            canvases from scripts, CI or anything that can send a header. See the{' '}
+            <a href="/help/developers/api-overview/">API overview</a>.
+          </>
+        ),
+        aText:
+          'Yes. Once you sign in, create an API token and call the REST API to read and manage your canvases from scripts, CI or anything that can send a header. See the API overview.',
+      },
+      {
+        q: 'Is there a command-line tool?',
+        a: 'Yes. Install it from npm as @livediagram/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export canvases from your terminal, which makes it handy for scripts and coding agents.',
+      },
+      {
+        q: 'Can I keep my diagrams next to my code?',
+        a: (
+          <>
+            Yes. Link a repository to a folder of canvases with the CLI, and it keeps a snapshot of
+            each one in the repository, so coding agents find your diagrams by name and read them as
+            text. livediagram stays the home of every canvas. See{' '}
+            <a href="/help/developers/repositories/">diagrams in your repository</a>.
+          </>
+        ),
+        aText:
+          'Yes. Link a repository to a folder of canvases with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. livediagram stays the home of every canvas. See diagrams in your repository.',
+      },
+    ],
+  },
+  {
+    id: 'import-export',
+    title: 'Import and export',
+    blurb: 'Bring work in, take it anywhere.',
+    icon: lucideGlyph(lucideArrowUpDown, ICON),
+    items: [
+      {
+        q: 'Can I export my work?',
+        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Hidden layers stay out of image exports unless you switch them on.',
+      },
+      {
+        q: 'Does it work with Mermaid?',
+        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livediagram lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
+      },
+      {
+        q: 'Can I move my boards over from another tool?',
+        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
+      },
+      {
+        q: 'Can I turn a photo of sticky notes into a board?',
+        a: 'Yes, on an event storming board. Take a photo of the wall and livediagram finds the sticky notes and places them on the canvas for you to tidy up.',
+      },
+      {
+        q: 'Can I keep a copy in my own Google Drive?',
+        a: 'Yes, once you sign in. Connect Google Drive in Settings and your canvases, with your work from every other liveworkspace app, are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
+      },
+    ],
+  },
+  {
+    id: 'privacy',
+    title: 'Privacy and your data',
+    blurb: 'What we keep, and what we never do.',
+    icon: lucideGlyph(lucideShieldCheck, ICON),
+    items: [
+      {
+        q: 'Where is my data stored, and do you track me?',
+        a: (
+          <>
+            Canvases saved to your account are stored in our database on Cloudflare, and canvases in
+            This Browser stay in your browser. There are no tracking pixels, no advertising and no
+            third-party analytics. We do record anonymous, first-party usage (which features get
+            used, never your content or name) and show it openly on our{' '}
+            <a href="/telemetry">telemetry page</a>. See the{' '}
+            <a href="https://www.liveworkspace.app/privacy">privacy policy</a> for the details.
+          </>
+        ),
+        aText:
+          'Canvases saved to your account are stored in our database on Cloudflare, and canvases in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
+      },
+      {
+        q: 'Can I keep a canvas off your servers entirely?',
+        a: (
+          <>
+            Yes. Offline Mode saves a canvas only in your browser, never on our servers. Until you
+            sign in, new canvases start that way; after, you can choose it when you create one.
+            Either way you can switch later. See{' '}
+            <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Offline Mode saves a canvas only in your browser, never on our servers. Until you sign in, new canvases start that way; after, you can choose it when you create one. Either way you can switch later. See Offline Mode.',
+      },
+      {
+        q: 'What happens to my canvases if I clear my browser data?',
+        a: (
+          <>
+            A canvas kept only in your browser goes with it, so share it or sign in first. Share
+            syncs a canvas online in one step, and after you sign in livediagram offers to move
+            every browser-only canvas into your account. Canvases saved to your account are never
+            touched. See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
+          </>
+        ),
+        aText:
+          'A canvas kept only in your browser goes with it, so share it or sign in first. Share syncs a canvas online in one step, and after you sign in livediagram offers to move every browser-only canvas into your account. Canvases saved to your account are never touched. See Offline Mode.',
+      },
+      {
+        q: 'Is my work saved automatically?',
+        a: 'Yes. Every change saves on its own, with a status that shows saving, saved or a problem. Close the tab and reload, and your canvas comes back exactly as you left it.',
+      },
+      {
+        q: 'How do I delete my data or account?',
+        a: (
+          <>
+            Delete any canvas you own at any time, and delete your account and everything in it
+            yourself from your account settings. See{' '}
+            <a href="/help/account-and-data/deleting-your-data/">deleting your data</a>.
+          </>
+        ),
+        aText:
+          'Delete any canvas you own at any time, and delete your account and everything in it yourself from your account settings. See deleting your data.',
+      },
+    ],
+  },
+  {
+    id: 'support',
+    title: 'Help and support',
+    blurb: 'When something is not right.',
+    icon: lucideGlyph(lucideMessagesSquare, ICON),
+    items: [
+      {
+        q: 'A canvas will not load. What can I do?',
+        a: (
+          <>
+            Try reloading first. If it still will not open, the editor offers to repair this
+            browser’s saved state without touching your canvases. The{' '}
+            <a href="/help/troubleshooting/document-not-loading/">troubleshooting guide</a> walks
+            through every step.
+          </>
+        ),
+        aText:
+          'Try reloading first. If it still will not open, the editor offers to repair this browser’s saved state without touching your canvases. The troubleshooting guide walks through every step.',
+      },
+      {
+        q: 'Is livediagram up right now?',
+        a: (
+          <>
+            The <a href={STATUS_PAGE_URL}>liveworkspace status page</a> checks each of
+            livediagram&rsquo;s services from your browser while you watch, and from Cloudflare
+            every hour, with 90 days of livediagram&rsquo;s history and any recent incidents, beside
+            the services every app shares.
+          </>
+        ),
+        aText:
+          'The liveworkspace status page checks each of livediagram’s services from your browser while you watch, and from Cloudflare every hour, with 90 days of livediagram’s history and any recent incidents, beside the services every app shares.',
+      },
+      {
+        q: 'Who makes livediagram?',
+        a: (
+          <>
+            It is built in the open by{' '}
+            <a href="https://github.com/tommcclean" target="_blank" rel="noopener noreferrer">
+              Tom McClean
+            </a>{' '}
+            and{' '}
+            <a href="https://github.com/webbertakken" target="_blank" rel="noopener noreferrer">
+              Webber
+            </a>
+            , with contributions welcome on GitHub.
+          </>
+        ),
+        aText:
+          'It is built in the open by Tom McClean and Webber, with contributions welcome on GitHub.',
+      },
+      {
+        q: 'How do I get in touch?',
+        a: (
+          <>
+            Use the <a href="/help/contact/">contact page</a>, or send us a message through the{' '}
+            <a href={CONTACT_FORM_URL} target="_blank" rel="noopener noreferrer">
+              contact form
+            </a>
+            . Bug reports and ideas are welcome on GitHub too.
+          </>
+        ),
+        aText:
+          'Use the contact page, or send us a message through the contact form. Bug reports and ideas are welcome on GitHub too.',
+      },
+    ],
+  },
+];

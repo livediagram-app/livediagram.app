@@ -1,0 +1,45 @@
+// The recorded creation intent as stored on a documents row (migration 0062,
+// docs/specs/013-workspace/default-folders.md "Recorded intent"). Each stored value reads as itself
+// only when it is in its list, so a retired value never reaches a client as a live option. The
+// opens-in decides whether anything was recorded: when it reads null, so does everything else.
+
+import { isCreationTabKind, isTemplateFamily, type RecordedIntent } from '@livediagram/api-schema';
+import { parseEditorMode } from '@livediagram/document';
+
+export type RecordedIntentRow = {
+  opens_in: string | null;
+  tab_kind: string | null;
+  template_family: string | null;
+};
+
+const RETIRED_MODES: ReadonlySet<string | null> = new Set(['pages', 'illustrate', 'infographic']);
+
+const UNKNOWN: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: null };
+
+export function readRecordedIntent(row: RecordedIntentRow): RecordedIntent {
+  // A document made in Pages (recorded as `pages`, or before its renames `illustrate` or `infographic`) was made as
+  // something livediagram no longer makes: nothing reads as recorded, rather than Diagram, which it was not made as.
+  if (RETIRED_MODES.has(row.opens_in)) return UNKNOWN;
+  const opensIn = parseEditorMode(row.opens_in);
+  if (!opensIn) return UNKNOWN;
+  return {
+    opensIn,
+    tabKind: isCreationTabKind(row.tab_kind) ? row.tab_kind : null,
+    templateFamily: isTemplateFamily(row.template_family) ? row.template_family : null,
+  };
+}
+
+// The same, from the intent the index files a canvas under (`<opensIn>:<tabKind>:<templateFamily>`, routes/documents.ts
+// indexIntentOf), or nothing recorded for none.
+export function recordedIntentOf(intent: string | null | undefined): RecordedIntent {
+  if (!intent) return UNKNOWN;
+  const [opens_in = null, tab_kind = null, template_family = null] = intent.split(':');
+  return readRecordedIntent({
+    opens_in: opens_in || null,
+    tab_kind: tab_kind || null,
+    template_family: template_family || null,
+  });
+}
+
+// Nothing recorded: a canvas read from its own store, which keeps no intent (the index does).
+export const NO_RECORDED_INTENT: RecordedIntent = UNKNOWN;

@@ -1,0 +1,167 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { AgentChangeToast } from '@liveworkspace/help-site/art/illustrations/agent-changes';
+
+export const metadata = helpMetadata({
+  title: "Reviewing and Undoing an Agent's Changes",
+  description:
+    'Every change an AI tool, the CLI or a script makes is a changeset you can review and undo for 30 days: from the change toast in the editor, the CLI, or the API.',
+  path: '/help/developers/agent-changes/',
+});
+
+<ArticleLayout
+  title="Reviewing and Undoing an Agent's Changes"
+  description="See what an AI tool, the CLI or a script changed, and take it back from the editor, the CLI or the API."
+  categoryTitle="Developers"
+  categorySlug="developers"
+>
+
+When an [AI tool](/help/account-and-data/connect-ai-mcp/), the [CLI](/help/developers/cli/) or a script changes one of your tabs, the change lands as a **changeset**: one write to one tab, applied all or nothing, credited to the person whose [API token](/help/account-and-data/api-tokens/) made it, and undoable as one unit. This article covers how to see what a changeset did and how to take it back.
+
+## In the Editor
+
+If you have the canvas open when a changeset lands, you see it happen. The change arrives on your canvas straight away, everything it touched is outlined in its author's colour for two seconds, and a note appears at the bottom of the screen:
+
+<Figure caption="The change toast: who changed how many elements and why, with Show and Undo.">
+  <AgentChangeToast />
+</Figure>
+
+The note reads _name_ changed _n_ elements, followed by the summary the agent gave the change, when it gave one: "Webber changed 2 elements: add payment service". The name is the person whose token made the change, so an agent working for you shows your own name. Elements added and removed count as changed.
+
+- **Show** brings the changed elements into view, switching to their tab if you are on another one.
+- **Undo** reverts the change. Afterwards the note reads **Undone**, or, when some elements were changed again in the meantime, something like **Undone, 2 kept because they changed since** (see [What Undo Keeps](#what-undo-keeps)).
+- If the undo fails, the note offers Show and Undo again, and an error says "Could not undo Webber's change".
+
+The note stays until you close it. Changes from the same token within ten seconds of each other share one note, with the counts added up and the latest summary, and **Undo** on it reverts each of them, newest first. A newer burst from the same token replaces the note.
+
+Your own Undo shortcut (`Ctrl+Z` or `⌘Z`) never takes back an agent's change: it only ever undoes your own edits. Anything you change while the agent works is kept, and an element you have selected is off limits to it: the changeset is refused and the agent is told who holds it.
+
+The note is an information message, so switching off **In-Editor Notifications** in [Settings](/help/user-interface/settings/) hides it; the outline still shows. Undo needs edit access to the tab, so Viewers and Participants see changes arrive but can't revert them.
+
+### Once the Note Is Gone
+
+The editor has no history of changesets. Once you close the note, or if the change landed while you didn't have the canvas open (it simply appears when you next open it, with no outline and no note), review and undo it from the CLI or the API, below.
+
+## From the CLI
+
+`changeset ls` lists a canvas's recent changesets, newest first, 20 by default:
+
+```bash
+livediagram changeset ls "Auth flow"
+livediagram changeset ls 3f9c --tab Overview --limit 5
+```
+
+One changeset a line: its id, the tab revision it produced, the tab, who made it (marked `(agent)` when a token did), its summary, how many elements it added, changed and removed, and when (in UTC):
+
+```text
+cs_8k2m4q7d1x  rev 42  "Overview"  Webber (agent)  "add payment service"  +2 ~0 -0  2026-10-11 09:14
+cs_3h7v2n9c4p  rev 39  "Overview"  Webber (agent)  +0 ~3 -1  2026-10-11 08:52
+```
+
+A revert shows as its own line ending in `reverts cs_…`. `changeset show` prints one changeset's line, then what it did, one line per element, the same lines the write printed:
+
+```bash
+livediagram changeset show "Auth flow" cs_8k2m4q7d1x
+```
+
+```text
+cs_8k2m4q7d1x  rev 42  "Overview"  Webber (agent)  "add payment service"  +2 ~0 -0  2026-10-11 09:14
++ pay  square "Payment service" @520,120 160×64
++ arrow  n2→pay
+rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livediagram changeset revert abc123 cs_8k2m4q7d1x
+```
+
+Every write the CLI makes ends with that same footer, so the command that takes it back is printed beside the change. To undo one:
+
+```bash
+livediagram changeset revert "Auth flow" cs_8k2m4q7d1x
+```
+
+```text
+reverted 1 · rev 44→45 · cs_5m2q8r1t6w · lint clean
+kept pay (changed)
+```
+
+`-q` prints only the new changeset's id, and `--json` gives the whole answer.
+
+To see everything that changed in a tab since you last looked, whoever changed it, use `tab diff` with a revision the CLI has read (the CLI keeps a copy of each tab it reads with `tab view`):
+
+```bash
+livediagram tab diff "Auth flow" --since 41
+```
+
+```text
+tab 0b34 "Checkout platform" · since rev 41 · rev 47 · 6 changes
+- arrow 6406 → 0556 [0cee]
+~ square e4a8 label "Payments service" → "Payments"
+~ entity cb02 moved +200,+0
++ cylinder 7180 "Redis cache" in c991 "Services"
+```
+
+## From the API
+
+Three routes read and revert changesets, with the same [authentication](/help/developers/authentication/) as the rest of the [API](/help/developers/api-overview/):
+
+| Route                                                      | What it does                                                                                                 |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `GET /api/documents/{id}/changesets`                       | The recent changesets, newest first. `?tab=` narrows it to one tab; `?limit=` from 1 to 100 (20 by default). |
+| `GET /api/documents/{id}/changesets/{changesetId}`         | One changeset, with its result lines.                                                                        |
+| `POST /api/documents/{id}/changesets/{changesetId}/revert` | Reverts it, as a new changeset.                                                                              |
+
+Each changeset in the list looks like this:
+
+```json
+{
+  "id": "cs_8k2m4q7d1x",
+  "tabId": "tab-1",
+  "rev": 42,
+  "author": { "name": "Webber", "color": "#8b5cf6" },
+  "agent": true,
+  "summary": "add payment service",
+  "counts": { "added": 2, "changed": 0, "removed": 0 },
+  "revertOf": null,
+  "createdAt": 1791710040000
+}
+```
+
+`agent` is `true` when an API token made the change. Only the person who made it also sees the `tokenId` of the token that did. The single-changeset route answers `{ "changeset": { … }, "results": [ … ], "text": "…" }`, where `text` is the lines `changeset show` prints under the summary line. A revert answers:
+
+```json
+{
+  "changeset": {
+    "id": "cs_5m2q8r1t6w",
+    "tabId": "tab-1",
+    "rev": 45,
+    "previousRev": 44,
+    "rebasedOver": 0
+  },
+  "reverted": 1,
+  "kept": [{ "id": "pay", "reason": "changed" }]
+}
+```
+
+It also carries `lint`, the [lint report](/help/developers/working-with-documents/) of the tab the revert leaves. `changeset` is `null` when there was nothing to revert.
+
+Reading the history needs read access to the canvas; reverting needs edit access to the tab. A revert made with a token is refused with `409 elements_held` when somebody has one of its elements selected, as any agent change is; one made from the editor's **Undo** never is. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the other answers.
+
+## What Undo Keeps
+
+A revert applies the changeset in reverse to the tab as it is now, element by element. Anything changed since is left alone rather than overwritten, and listed as kept with a reason:
+
+- `changed`: someone edited an element the changeset added or changed.
+- `gone`: an element the changeset added or changed has since been deleted.
+- `present`: an element the changeset removed is back on the tab.
+- `order`: someone reordered the elements a changeset reordered.
+
+Everything else goes back to how the changeset found it. Comments, votes and other contributions people added to an element in the meantime stay on it. A few more cases:
+
+- A revert is itself a new changeset, credited to you, so you can revert a revert.
+- Reverting a changeset that created a tab empties the tab but keeps it.
+- Reverting the same changeset twice changes nothing: every element has changed since the first revert, so the CLI says `nothing to revert`.
+- AI tools connected through [MCP](/help/account-and-data/connect-ai-mcp/) can't revert changesets themselves; use the editor, the CLI or the API.
+
+## How Long You Can Undo
+
+A changeset can be reviewed and reverted for **30 days** after it lands, the same as the [Trash](/help/account-and-data/trash/) keeps a deleted canvas. After that its record is deleted: it no longer appears in the list, and showing or reverting it answers `404`. The change itself stays on the tab.
+
+</ArticleLayout>

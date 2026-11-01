@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Inbox',
+  description:
+    'The Explorer Inbox lists what is outstanding for you in every liveworkspace app: actions assigned to you or by you, and open comment threads.',
+  path: '/help/explorer/activity/',
+});
+
+<ArticleLayout
+  title="Inbox"
+  description="What is waiting on you right now: actions assigned to you or by you, and the comment threads you are part of."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The **Inbox** sits under [Home](/help/explorer/timeline/) in the Explorer sidebar's Overview group. It lists what is still _open_ for you, in one place for every liveworkspace app: the [actions](/help/collaboration/assigned-actions/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
+
+## What lands here
+
+The Inbox is one list, newest first, under date dividers. Each row has a status that says why it is there:
+
+- **To do:** an open action assigned to you, until it is done. An action you assigned to yourself lives here too, so the page doubles as your to-do list.
+- **Waiting on** a teammate (for example **Waiting on Bo**): an open action you gave to someone else, so you can follow it up.
+- An unresolved [comment](/help/collaboration/comments/) thread you are part of: **Mentioned you** when someone [mentioned you](/help/collaboration/comments/#mentioning-a-teammate), **On your canvas** for a thread on your own canvas, and **Replied to you** or **You replied** for a thread you wrote in.
+
+Above the list, filter chips narrow it to one kind: **All**, **My Actions**, **Assigned by Me**, **Comments** and **Form Responses** (forms with new responses, from liveplanner). Done actions and resolved threads are not listed: the Inbox is a list of what is outstanding, not a history. When nothing is waiting, the page says **You’re all caught up**.
+
+With **livediagram** chosen at the top of the page, the Inbox lists only what comes from your canvases; with **All Apps**, it lists every app's, and each row names its app.
+
+## Reading and opening a row
+
+Each row names the canvas it is from and the thing it is about, with the latest change, and on the right the person behind it with how long ago. Click a row and the canvas opens at that spot, with the action or thread ready, so you can reply, resolve or finish it there. A row from another app opens in that app.
+
+## The badge
+
+The Inbox row in the sidebar shows a count of the open actions **assigned to you**, so you can tell from any other page whether something needs you. Work you handed out and comment threads are not counted.
+
+## Canvases saved only in this browser
+
+In the editor's [Explorer panel](/help/explorer/explorer-panel/), the Inbox also lists the open actions and comment threads of canvases saved only in This Browser ([Offline Mode](/help/privacy-and-security/offline-mode/)), with everything else. Each of their rows carries a **This Browser** pill, because the canvas is kept in this browser and nowhere else. Nobody else sees those rows, and another browser or device won't list them. The Explorer page lists only what your account or guest identity holds.
+
+## Guests and signing in
+
+The Inbox works without an account, like the rest of livediagram. When you sign in, what you did as a guest moves to your account with your canvases.
+
+</ArticleLayout>

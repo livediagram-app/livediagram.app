@@ -1,0 +1,77 @@
+'use client';
+
+// The person's documents, for the editor's pickers that name another document (Add to Document, a link to a document, search).
+// They are the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): one page of livediagram items, read once the
+// open document has loaded and the browser is idle, so it never joins the open's requests. `refresh` reads it again
+// after this editor changed it (a tab moved to another document).
+
+import { useEffect, useState } from 'react';
+import type { Item } from '@liveworkspace/index-client';
+import type { DocumentListItem } from '@/lib/api-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { useAfterLegacyClaim } from './useAfterLegacyClaim';
+
+// One page: the pickers show the most recent few, and search filters what is here.
+export const DOCUMENT_LIST_LIMIT = 100;
+// Waits at most this long for an idle moment.
+const IDLE_TIMEOUT_MS = 4_000;
+
+export function documentListItem(item: Item): DocumentListItem {
+  return {
+    id: item.id,
+    name: item.title,
+    folderId: item.folderId,
+    savedAt: item.updatedAt,
+    shareCode: item.sharedVia,
+    ownerId: item.ownerId,
+    createdAt: item.createdAt,
+  };
+}
+
+// The person's live documents.
+export async function fetchDocumentList(): Promise<DocumentListItem[]> {
+  const page = await indexClient.listItems({ app: 'livediagram', limit: DOCUMENT_LIST_LIMIT });
+  const live = page.items.filter((item) => item.trashedAt === null);
+  return live.map(documentListItem);
+}
+
+function whenIdle(run: () => void): () => void {
+  if (typeof window.requestIdleCallback === 'function') {
+    const handle = window.requestIdleCallback(run, { timeout: IDLE_TIMEOUT_MS });
+    return () => window.cancelIdleCallback(handle);
+  }
+  const handle = window.setTimeout(run, 1);
+  return () => window.clearTimeout(handle);
+}
+
+// `enabled` once the document has loaded for a person (not a workbench, not before hydration). A change of
+// `ownerId` (signing in or out) reads the list again.
+export function useDocumentList(
+  enabled: boolean,
+  ownerId: string,
+): {
+  documentList: DocumentListItem[];
+  refreshDocumentList: () => void;
+} {
+  const [documentList, setDocumentList] = useState<DocumentListItem[]>([]);
+  const [generation, setGeneration] = useState(0);
+  useEffect(() => {
+    if (!enabled) return;
+    let live = true;
+    const cancel = whenIdle(() => {
+      fetchDocumentList()
+        .then((list) => {
+          if (live) setDocumentList(list);
+        })
+        // A failed read leaves the pickers as they were; the next refresh asks again.
+        .catch(() => {});
+    });
+    return () => {
+      live = false;
+      cancel();
+    };
+  }, [enabled, ownerId, generation]);
+  // An old livediagram.app guest's work, just claimed (docs/specs/014-identity/auth-and-guest-access.md).
+  useAfterLegacyClaim(() => setGeneration((g) => g + 1), enabled);
+  return { documentList, refreshDocumentList: () => setGeneration((g) => g + 1) };
+}

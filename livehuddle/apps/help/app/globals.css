@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+@import '@liveworkspace/tailwind-config';
+
+/* Scan the shared UI package so utility classes used only inside its
+ * components (e.g. `text-brand-700` in <Brand>'s wordmark) are generated
+ * here too. Tailwind v4 skips node_modules, where the workspace package
+ * is symlinked. */
+@source '../../../packages/ui/src';
+/* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
+@source '../../../../packages/ui/src';
+@source '../../../../packages/brand/src';
+/* The help centre's shared pages and components (@liveworkspace/help-site). */
+@source '../../../../packages/help-site/src';
+
+@import '@livediagram/ui/hero-band.css';
+@import '@liveworkspace/help-site/help.css';
+
+/* Print colours for the shared help styles: the default theme's brand, fixed so paper does not follow the reader's
+ * chosen theme. */
+:root {
+  --help-print-link: #0369a1;
+  --help-print-section: #0ea5e9;
+}

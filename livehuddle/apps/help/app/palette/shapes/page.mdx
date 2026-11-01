@@ -1,0 +1,80 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ShapeGallery, ShapeMarkers } from '@liveworkspace/help-site/art/illustrations/palette-shapes-arrows';
+import { ShapeMorphGrid } from '@liveworkspace/help-site/art/illustrations/shapes';
+
+export const metadata = helpMetadata({
+  title: 'Shapes',
+  description:
+    'Add squares, circles, cylinders, hexagons and more from the Shapes category, morph one kind into another in place, and flag status with shape markers.',
+  path: '/help/palette/shapes/',
+});
+
+<ArticleLayout
+  title="Shapes"
+  description="The nodes of every diagram: drop a shape, style it, and morph it into another kind whenever you change your mind."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("shapes")}
+>
+
+Shapes hold the ideas in your diagram. The palette's **Shapes** category covers the everyday set of thirteen, so there is a node for flowcharts, data stores, decisions and notes alike:
+
+- **The basics:** Square, Circle and Diamond.
+- **The flowchart shapes:** Cylinder, Parallelogram, Hexagon, Document and Stadium.
+- **The rest:** Cloud, Triangle, Trapezoid, Star and Bubble (a speech bubble).
+
+<Figure caption="A sample of the shape kinds the Shapes category offers.">
+  <ShapeGallery />
+</Figure>
+
+## Adding a shape
+
+Rest on **Shapes**, first on the palette strip, or click it, then click a shape in its panel. The canvas is now ready to place it:
+
+- **Tap** the canvas to drop the shape there, at the size of whatever you had selected when you picked the tile, so a row of shapes stays consistent.
+- **Drag** to draw it at exactly the size you want. Hold **Shift** while you drag for a perfect square or circle.
+- Press **Escape** to cancel instead.
+
+You can also drag a tile straight from the palette onto the canvas. Five shapes have a single-key shortcut that arms the same placement without opening the palette: **R** for a square, **O** a circle, **D** a diamond, **C** a cylinder and **G** a parallelogram.
+
+Once placed, a shape behaves like any other element: move, resize, recolour, rotate and theme it as usual.
+
+## Morphing between kinds
+
+Changed your mind? Right-click a shape and open its **Shape** section to turn it into another kind in place, keeping its size, colours and text. The grid offers the eight common kinds: Square, Circle, Diamond, Stadium, Parallelogram, Hexagon, Triangle and Cylinder. Hover a tile to preview the result on the canvas; click to keep it.
+
+<Figure caption="Hovering Cylinder in the Shape section previews the selected square as a cylinder.">
+  <ShapeMorphGrid />
+</Figure>
+
+Select several shapes first and the same section morphs them all at once. Charts, meters, code blocks and other elements that draw their own content don't morph, and neither do icons or frames.
+
+## Styling and text
+
+Double-click a shape (or select it and press **Space**) to type its label, or just start typing to replace the label. The right-click menu's **Style** row holds one-click [Style Presets](/help/palette/shapes/style-presets/) along with the Colours and Border controls, and its **Text** row holds the font, size, padding and alignment of the label. See [Text and Fonts](/help/canvas/text-and-fonts/) for the text controls.
+
+## Status markers
+
+A shape with a label can show a small status symbol right beside its text: a red, orange or green dot, or a to-do checkbox. It flags status without adding a separate element.
+
+<Figure caption="A traffic-light dot and a checkbox marker shown inside shapes.">
+  <ShapeMarkers />
+</Figure>
+
+<FeatureGrid>
+  <Feature slug="shape-markers" title="Shape Markers">
+    Show a traffic-light dot or a checkbox inside a shape to flag status at a glance.
+  </Feature>
+  <Feature slug="style-presets" title="Style Presets">
+    Restyle a shape or arrow in one click with looks that follow the tab's theme.
+  </Feature>
+</FeatureGrid>
+
+<Tip>
+  Reach for [Arrows](/help/palette/arrows/) to connect your shapes into a flow once they are on the
+  canvas, or use a shape's quick-add **+** buttons to add a connected shape beside it.
+</Tip>
+
+</ArticleLayout>

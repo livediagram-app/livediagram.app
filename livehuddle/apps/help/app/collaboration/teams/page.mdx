@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  TeamMembers,
+  TeamSharedTree,
+} from '@liveworkspace/help-site/art/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'Teams',
+  description:
+    'Group signed-in users into a team, invite teammates by email, and share a folder tree of canvases every member can manage.',
+  path: '/help/collaboration/teams/',
+});
+
+<ArticleLayout title="Teams" description="Your liveworkspace teams in livediagram: roles, members, and a shared library of canvases everyone can manage." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("teams")}>
+
+A team is a named group of signed-in people. Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, and you make and run them in the Explorer, wherever it shows: the Explorer page and the editor's Explorer panel. Each member has a role, either Admin or Member, and every team gets a shared library of canvases that all members can open and edit. Teams are not a paid tier: livediagram is free and open source, so the roles are about who may manage the team, not about unlocking features.
+
+## What a team is
+
+A team has a name (up to 80 characters) and a list of members. To create one, choose **New Team**, the last row of the Explorer sidebar's **Spaces** group (in the editor's Explorer panel, it's on the rail under Spaces): give the team a name and, if you like, an organisation, and the new team opens. While you work, you can also choose **Change Folder** on a canvas's menu, then the **New Team** tile: name the team, and livediagram makes it and files the canvas straight into it. The person who creates a team becomes its first Admin. A team is not tied to a single owner, so it carries on even if its creator later leaves.
+
+Teams need a signed-in account because they are keyed to your account identity and invites are matched by email. The canvas itself always works without an account, and a share link can still be handed to a guest who edits without signing in.
+
+In the Explorer sidebar, every team you have joined is a space under **Spaces**, beside My Work, with **New Team** as the last row. Open a team to see its view: the team's card at the top, with its members and their roles, and the shared library below. A team you join shows up here within a few minutes, usually at once.
+
+## Roles and invites
+
+There are two roles. **Admins** can invite people, change roles, rename the team, remove members, and delete the team, all from the team's card. **Members** can see the team and its members, work in the shared library, and leave. The last remaining Admin cannot leave or be demoted, so a team always has someone in charge. Promote another member first, or delete the team.
+
+<Figure caption="A team's member list, each row tagged with an Admin or Member role badge.">
+  <TeamMembers />
+</Figure>
+
+Admins add people by email address at the foot of the team's card, or share a join link with **Invite by Link**. When someone invites you, the invitation shows under **Invites** in the Explorer sidebar, with a count, where you can **Accept** or **Decline** it. See [Roles and Invites](/help/collaboration/teams/roles-and-invites/) for the full handshake.
+
+## The shared library
+
+Every team has its own folder tree of canvases, listed on the team page below the team's card. Any joined member can create, rename, duplicate, move, and delete canvases there, so the work belongs to the whole team rather than to one person. Team canvases also turn up in your Recent list, marked **Team**. See [Team Shared Canvases](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+
+Inside a team canvas, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
+
+<Figure caption="The team's library holds its shared folders and canvases, which every member can manage.">
+  <TeamSharedTree noun="canvas" />
+</Figure>
+
+## Leaving or deleting a team
+
+- Leaving a team (**Leave Team** on its card's ⋯ menu) takes you out. Canvases you created in the team library stay with the team (another member, the longest-standing Admin, takes them over), and if you have one of its canvases open, you lose access straight away.
+- Deleting a team (Admins only, **Delete Team** on the same menu) removes the team and its member list for everyone. Its canvases are not lost: each one moves back to the root of its owner's My Work.
+
+Either way, you land back in My Work with a short message saying so.
+
+<Tip>
+  If your invite does not appear, make sure you are signed in with the same email address it was
+  sent to. Invites are matched by your verified account email.
+</Tip>
+
+<FeatureGrid>
+  <Feature slug="explorer" title="Explorer">
+    Browse and organise all your canvases and teams in one place.
+  </Feature>
+  <Feature slug="sharing" title="Sharing and Embeds">
+    Hand any canvas to people outside your team with a share link.
+  </Feature>
+</FeatureGrid>
+
+</ArticleLayout>

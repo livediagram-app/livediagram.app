@@ -1,0 +1,310 @@
+import {
+  MAX_COLOR_LEN,
+  MAX_PARTICIPANT_NAME_LEN,
+  type CommentListStatus,
+  type DocumentCommentThread,
+} from '@livediagram/api-schema';
+import {
+  cleanReactions,
+  commentWithReactions,
+  isSafeColourValue,
+  reactionSummary,
+  sanitizeMentions,
+  type Comment,
+  type CommentMention,
+  type CommentThread,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
+import { buildViewModel, commentHosts } from '@livediagram/document-views';
+
+// Who is saving: their profile, or only their id when no profile could be read (a guest-only
+// a deployment keeps none; liveworkspace may be out of reach). Then their own new comments keep the
+// name and colour they were posted under, clamped and checked, and still carry the writer's id, so
+// nobody else's comment can be relabelled either way.
+export type CommentWriter = { id: string; name: string | null; color: string | null };
+
+// The comment author fallbacks, as the comment routes use them.
+export const UNKNOWN_AUTHOR_NAME = 'Anonymous';
+export const UNKNOWN_AUTHOR_COLOR = '#94a3b8';
+
+const threadOf = (el: Element): CommentThread | undefined =>
+  (el as { commentThread?: CommentThread }).commentThread;
+
+// The element with its thread replaced, or removed when `thread` is undefined.
+function withThread(el: Element, thread: CommentThread | undefined): Element {
+  const { commentThread: _drop, ...rest } = el as Element & { commentThread?: CommentThread };
+  return (thread ? { ...rest, commentThread: thread } : rest) as Element;
+}
+
+// The element with its thread mapped; the same element when the thread is unchanged.
+function mapThread(el: Element, fn: (thread: CommentThread) => CommentThread | undefined): Element {
+  const thread = threadOf(el);
+  if (!thread) return el;
+  const mapped = fn(thread);
+  return mapped === thread ? el : withThread(el, mapped);
+}
+
+// Rewrite newly-added comments so the author fields come from the
+// server-trusted participant record, not whatever the client posted.
+// Compares each comment's id against the prior tab's comments by
+// id: anything new is attributed to the writer (the resolved owner
+// of the PUT); anything pre-existing passes through with its
+// stored author fields restored. Closes the comment-author
+// spoofing surface called out in the security audit (a share-link
+// visitor could otherwise stamp another participant's name +
+// colour onto a comment, or relabel someone else's existing one).
+//
+// A save can also carry SOMEBODY ELSE's new comment: it reached the saver
+// live, and their save landed in D1 before the author's own. That comment is
+// credited by `roomAuthors`, the name the room stamped it with when it was
+// posted (docs/specs/012-collaboration/collab-race-hardening.md), not to the saver, which is what used to happen. Its
+// author id stays empty (the saver's copy has none: it is stripped from every
+// room op) until the author's own save claims it; see below.
+//
+// Pure helper, exported so the api worker's PUT-tab handler and
+// the colocated tests both consume the same implementation.
+export function rewriteCommentAuthors(
+  nextElements: Element[],
+  prevElements: Element[],
+  writer: CommentWriter,
+  roomAuthors: ReadonlyMap<string, { authorName: string; authorColor: string }> = new Map(),
+): Element[] {
+  // Index existing comments by id so the lookup per new comment is
+  // O(1). A comment id collision across two different elements is
+  // impossible by construction (uuids) so flat indexing is safe.
+  const existingComments = new Map<
+    string,
+    {
+      text: string;
+      createdAt: number;
+      authorName: string;
+      authorColor: string;
+      authorId?: string;
+      tokenId?: string;
+      mentions?: CommentMention[];
+    }
+  >();
+  for (const el of prevElements) {
+    const thread = threadOf(el);
+    if (!thread?.comments) continue;
+    for (const c of thread.comments) {
+      existingComments.set(c.id, {
+        text: c.text,
+        createdAt: c.createdAt,
+        authorName: c.authorName,
+        authorColor: c.authorColor,
+        authorId: c.authorId,
+        tokenId: c.tokenId,
+        mentions: c.mentions,
+      });
+    }
+  }
+  return nextElements.map((el) =>
+    mapThread(el, (thread) => {
+      if (!thread?.comments?.length) return thread;
+      const sanitised = thread.comments.map((c) => {
+        const prior = existingComments.get(c.id);
+        if (prior) {
+          // Existing comment: lock author fields (incl. the author id
+          // used for delete-own checks) to whatever was stored. Stops a
+          // malicious edit-role visitor from mutating someone else's
+          // already-posted comment author or reassigning its ownership.
+          //
+          // The one opening: a comment stored WITHOUT an author id (credited
+          // from the room, above) is claimed by the save that carries the
+          // writer's own id on it, which only the author's copy does. What it
+          // grants is delete-own over REST, and an edit-role writer can already
+          // delete any comment through this very PUT.
+          // Mentions (docs/specs/012-collaboration/comment-mentions.md) lock the same way: nobody retargets
+          // someone else's mention after it was sent.
+          const claimed = prior.authorId === undefined && c.authorId === writer.id;
+          // The words and the time lock the same way for anyone but the comment's author: an
+          // edit-role writer may delete someone else's comment, never put words in their mouth.
+          const own = claimed || (prior.authorId !== undefined && prior.authorId === writer.id);
+          // The token id locks the same way (agent-presence I7): only the server stamps it.
+          const { mentions: _sent, tokenId: _token, ...body } = c;
+          return {
+            ...body,
+            ...(own ? {} : { text: prior.text, createdAt: prior.createdAt }),
+            authorName: prior.authorName,
+            authorColor: prior.authorColor,
+            authorId: claimed ? writer.id : prior.authorId,
+            ...(prior.tokenId ? { tokenId: prior.tokenId } : {}),
+            ...(prior.mentions ? { mentions: prior.mentions } : {}),
+          };
+        }
+        // Somebody else's comment, arriving in this writer's save before
+        // their own: credited as the room saw it posted.
+        // A new comment's mentions arrive from a client: cleaned, never trusted.
+        // A token id a client sends on a new comment is dropped: only the comment routes stamp one.
+        const { mentions: raw, tokenId: _sentToken, ...fresh } = c;
+        const mentions = sanitizeMentions(raw);
+        const withMentions = mentions ? { mentions } : {};
+        const posted = roomAuthors.get(c.id);
+        if (posted && c.authorId !== writer.id) {
+          const { authorId: _none, ...rest } = fresh;
+          return {
+            ...rest,
+            authorName: posted.authorName,
+            authorColor: posted.authorColor,
+            ...withMentions,
+          };
+        }
+        // New comment: server-authoritative author (name, colour, and the
+        // stable id that later authorises delete-own).
+        return {
+          ...fresh,
+          authorName: writer.name ?? claimedName(fresh.authorName),
+          authorColor: writer.color ?? claimedColor(fresh.authorColor),
+          authorId: writer.id,
+          ...withMentions,
+        };
+      });
+      // Reactions (docs/specs/012-collaboration/comment-reactions.md) are public and an Editor's save may carry
+      // anyone's (they reached it live), so they pass, cleaned: a malformed one never reaches D1 or a peer.
+      const comments = sanitised.map((c) =>
+        commentWithReactions(c as Comment, cleanReactions((c as Comment).reactions)),
+      );
+      return { ...thread, comments };
+    }),
+  );
+}
+
+// Remove a single comment by id from whichever element's thread holds
+// it, dropping the thread entirely once its last comment goes (so the
+// element's comment badge clears, mirroring the client's deleteComment).
+// Returns the elements unchanged when the id isn't present.
+export function removeComment(elements: Element[], commentId: string): Element[] {
+  return elements.map((el) => {
+    const thread = threadOf(el);
+    if (!thread?.comments?.some((c) => c.id === commentId)) return el;
+    const remaining = thread.comments.filter((c) => c.id !== commentId);
+    return withThread(el, remaining.length ? { ...thread, comments: remaining } : undefined);
+  });
+}
+
+// The comment and the element whose thread holds it.
+export function findCommentHost(
+  elements: Element[],
+  commentId: string,
+): { comment: Comment; elementId: string } | null {
+  for (const el of elements) {
+    const comment = threadOf(el)?.comments?.find((c) => c.id === commentId);
+    if (comment) return { comment, elementId: el.id };
+  }
+  return null;
+}
+
+// Blank the author id on every comment a given visitor did NOT write,
+// before serving a tab to a non-owner. The author id is the document /
+// guest owner id of whoever posted the comment; exposing other people's
+// ids to a visitor would re-open the observe-then-claim vector that
+// `redactOwner` closes for the document owner id. A visitor still sees
+// their OWN author id (which they already know — it's their own id), so
+// the client can light up a delete button on their own comments. Pass
+// the document owner's id as `viewerId` to no-op (the owner sees all).
+export function redactCommentAuthorIds(elements: Element[], viewerId: string | null): Element[] {
+  return elements.map((el) =>
+    mapThread(el, (thread) => {
+      if (!thread?.comments?.length) return thread;
+      const comments = thread.comments.map((c) =>
+        c.authorId && c.authorId === viewerId
+          ? c
+          : { ...c, authorId: undefined, tokenId: undefined },
+      );
+      return { ...thread, comments };
+    }),
+  );
+}
+
+// A stored tab's data (JSON) with its comments' author ids redacted for `viewerId`, as
+// redactCommentAuthorIds: a copy made by someone other than the owner carries no one else's ids.
+// Data with no author id at all is returned as it is, without a parse.
+export function redactTabDataAuthors(data: string, viewerId: string): string {
+  if (!data.includes('"authorId"') && !data.includes('"tokenId"')) return data;
+  try {
+    const parsed = JSON.parse(data) as { elements?: unknown };
+    if (!Array.isArray(parsed.elements)) return data;
+    return JSON.stringify({
+      ...parsed,
+      elements: redactCommentAuthorIds(parsed.elements as Element[], viewerId),
+    });
+  } catch {
+    return data;
+  }
+}
+
+// docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one
+// comment id not in `prevElements` written by `authorId`. Used by the tab-autosave handler to fire
+// the "someone commented on your document" notification only when a genuinely new comment landed
+// (not on every autosave), and only for the writer's own: a save can carry a peer's comment that
+// reached the writer live first, which is not the writer commenting. Pass the elements after
+// rewriteCommentAuthors, whose author ids the server set.
+export function hasNewComments(
+  nextElements: Element[],
+  prevElements: Element[],
+  authorId: string,
+): boolean {
+  const seen = new Set<string>();
+  for (const el of prevElements) {
+    for (const c of threadOf(el)?.comments ?? []) seen.add(c.id);
+  }
+  for (const el of nextElements) {
+    for (const c of threadOf(el)?.comments ?? []) {
+      if (!seen.has(c.id) && c.authorId === authorId) return true;
+    }
+  }
+  return false;
+}
+
+// One tab's threads as the document listing serves them (agent-presence blueprint "REST"): in the outline's order,
+// with each element's ref and label, author ids redacted for everyone but their author, and threads filtered by
+// status. A thread on a hidden layer is left out, as the views leave its element out.
+export function threadsOfTab(
+  tab: Tab & { name: string },
+  status: CommentListStatus,
+  viewerId: string | null,
+): DocumentCommentThread[] {
+  const elements = redactCommentAuthorIds(tab.elements, viewerId);
+  const byId = new Map(elements.map((el) => [el.id, el]));
+  return commentHosts(buildViewModel({ ...tab, elements })).flatMap(({ el, ref, label }) => {
+    const thread = threadOf(byId.get(el.id)!);
+    if (!thread || thread.comments.length === 0) return [];
+    if (status !== 'all' && thread.resolved !== (status === 'resolved')) return [];
+    return [
+      {
+        tabId: tab.id,
+        tabName: tab.name,
+        elementId: el.id,
+        ref,
+        label,
+        resolved: thread.resolved,
+        comments: thread.comments.map((c) => ({
+          id: c.id,
+          text: c.text,
+          createdAt: c.createdAt,
+          authorName: c.authorName,
+          authorColor: c.authorColor,
+          ...(c.mentions ? { mentions: c.mentions } : {}),
+          ...(c.reactions?.length ? { reactions: reactionSummary(c.reactions) } : {}),
+          ...(c.authorId ? { authorId: c.authorId } : {}),
+          ...(c.tokenId ? { tokenId: c.tokenId } : {}),
+        })),
+      },
+    ];
+  });
+}
+
+// The name a writer without a profile posted their comment under, clamped as presence clamps it.
+function claimedName(name: unknown): string {
+  const trimmed = typeof name === 'string' ? name.trim().slice(0, MAX_PARTICIPANT_NAME_LEN) : '';
+  return trimmed || UNKNOWN_AUTHOR_NAME;
+}
+
+// Their colour, only when it is a safe one: it is painted into every peer's page.
+function claimedColor(color: unknown): string {
+  return typeof color === 'string' && color.length <= MAX_COLOR_LEN && isSafeColourValue(color)
+    ? color
+    : UNKNOWN_AUTHOR_COLOR;
+}

@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { OpenSource } from '@/components/illustrations/about';
+
+export const metadata = helpMetadata({
+  title: 'What is Open Source?',
+  description:
+    'Open source means the code is public and anyone can read, run, or modify it. livediagram is MIT-licensed, so here is what that gives you.',
+  path: '/help/about/what-is-open-source/',
+});
+
+<ArticleLayout title="What is Open Source?" description="The code is public, free to read, and free to run. Here is what open source means and what livediagram being MIT-licensed gives you." categoryTitle="About livediagram" categorySlug="about">
+
+Most software you use is a black box: you get the finished app, but the source code that makes it work is kept private. **Open source** flips that around. The code is published in the open for anyone to read, run, modify, and share. livediagram is open source, and that shapes the whole product, from what it costs to how your data is handled.
+
+## What "open source" actually means
+
+Software is open source when its source code, the human-readable instructions that make the program work, is published under a licence that grants everyone the right to use it freely. In practice that means three things:
+
+- **You can read it.** Nothing about how the app works is hidden. The exact code that runs is the code you can inspect.
+- **You can modify it.** Fork it, change it, adapt it to your needs.
+- **You can share it.** Pass on the original or your modified version.
+
+The licence is what makes those rights real rather than a promise. Different open-source licences attach different conditions; livediagram uses one of the most permissive.
+
+## livediagram is MIT-licensed
+
+livediagram is released under the **MIT licence**, one of the simplest and most permissive open-source licences. It is permissive on purpose: anyone may read, fork, modify, or embed the code, for any purpose, commercial or not, with no copyleft strings attached. The whole codebase is publicly viewable.
+
+That licence choice has concrete consequences for you.
+
+### It is free, with no paid tier
+
+Because the project is open and there is no commercial product to protect, livediagram is **free for everyone**. There is no paid tier, no "Pro" upgrade, and no plan to introduce one. Every feature ships to every user. See [Why use livediagram?](/help/about/why-livediagram/).
+
+### You can verify the claims, not just trust them
+
+A public codebase means you do not have to take any privacy or security claim on faith. How a canvas is stored, what telemetry records, how share passwords work, all of it is in the open for you (or anyone) to audit. See [Open source and trust](/help/privacy-and-security/open-source-trust/).
+
+### You are never locked in
+
+Nothing in the code phones home to check a licence, and your canvases export to portable formats, so you are never trapped.
+
+<Figure caption="Because the code is public and MIT-licensed, anyone can read how the app they use is built.">
+  <OpenSource />
+</Figure>
+
+## Open source, hosted for convenience
+
+Being open source does not mean you have to touch any code. livediagram runs at livediagram.app so you can just use it, while the code stays open for anyone who wants to read it.
+
+<Tip>
+  Open source is also an invitation: the code is [on
+  GitHub](https://github.com/livediagram-app/livediagram.app), and contributions back to the project
+  are welcome under the same MIT licence.
+</Tip>
+
+</ArticleLayout>

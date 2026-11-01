@@ -1,0 +1,308 @@
+'use client';
+
+import { CountBadge, DialogCloseButton } from '@livediagram/ui';
+import { TrashIcon } from '@/components/primitives/explorer-icons';
+import { useEffect, useEffectEvent, useState } from 'react';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { apiDeleteImage, type ImageSummary } from '@/lib/api-client';
+import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
+import { useImageGallery } from '@/hooks/ui/useImageGallery';
+import { GalleryEmpty } from '@liveworkspace/workbench/components/panels/GalleryEmpty';
+import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
+import { ImageDropZone } from '@/components/canvas/ImageDropZone';
+import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
+
+// Three-tab modal launched from the Image element's placeholder + the
+// "Upload image" palette button. Tab 1 (Upload) accepts a file via
+// drag-drop or file input, runs client-side validation (MIME + size +
+// dimensions) and SHA-256 hashing for dedupe, then POSTs to
+// /api/images. Tab 2 (Gallery) lists every image the owner has
+// uploaded so they can reuse one without re-uploading. docs/specs/009-elements/images.md.
+// Tab 3 (Search) finds openly licensed pictures on Openverse and stores the
+// pick in the gallery with a credit. docs/specs/009-elements/image-search.md.
+//
+// Upload validation + hashing + the apiUploadImage call live in
+// lib/upload-image.ts so the Explorer Image Gallery can reuse the
+// same flow (docs/specs/013-workspace/folders.md) without duplicating the rules.
+
+type ImagePickerProps = {
+  ownerId: string;
+  documentId: string;
+  // When set, the picker is selecting an image for this specific
+  // element id: the parent applies the chosen imageId + dimensions
+  // to that element. When null, the picker is opening for a fresh
+  // "Add image" gesture and onSelect is responsible for placing a
+  // new ImageElement.
+  forElementId: string | null;
+  // The image currently attached to that element (if any). When
+  // truthy AND onRemove is provided, the picker renders a footer
+  // "Remove from element" action that detaches the image from
+  // the element without touching the gallery copy.
+  currentImageId?: string | null;
+  onRemove?: () => void;
+  onSelect: (image: PickedImage) => void;
+  onClose: () => void;
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
+  // uploads into its one document and never reads the person's gallery: no Gallery, no Search.
+  uploadOnly?: boolean;
+};
+
+export function ImagePicker({
+  ownerId,
+  documentId,
+  forElementId: _forElementId,
+  currentImageId,
+  onRemove,
+  onSelect,
+  onClose,
+  uploadOnly = false,
+}: ImagePickerProps) {
+  const [tab, setTab] = useState<'upload' | 'gallery' | 'search'>('upload');
+  const {
+    gallery,
+    setGallery,
+    error: galleryError,
+    setError: setGalleryError,
+    pick,
+  } = useImageGallery(ownerId, documentId, !uploadOnly);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const confirm = useConfirm();
+
+  const handleFile = async (file: File) => {
+    setUploadError(null);
+    setUploading(true);
+    try {
+      // Cloud documents upload to the gallery; offline documents embed the
+      // file locally as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
+      const { image } = await addImageFileForDocument(ownerId, documentId, file);
+      onSelect(image);
+    } catch (e) {
+      setUploadError(e instanceof ImageUploadError ? e.message : 'Upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Clipboard paste support. While the picker is open, a paste
+  // gesture (Cmd-V / Ctrl-V or right-click → Paste) lifts the
+  // first image file off the clipboard and runs it through the
+  // same handleFile path as drag-drop / file input. Pasting a
+  // screenshot is the most common image source after drag-drop,
+  // so handling it natively saves the user a "save to disk → drag
+  // in" detour. Only attaches the listener while the picker is
+  // mounted; the keydown handler above lives on the document so
+  // the paste one does too (a focused button inside the dialog
+  // doesn't bubble the paste event to the dialog otherwise).
+  // The pasted file goes through handleFile as an effect event, so the listener attaches once and
+  // still uploads with the newest owner / document / onSelect.
+  const pasteFile = useEffectEvent((file: File) => void handleFile(file));
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.kind !== 'file') continue;
+        const file = item.getAsFile();
+        if (!file) continue;
+        if (file.type.startsWith('image/')) {
+          e.preventDefault();
+          pasteFile(file);
+          return;
+        }
+      }
+    };
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
+  }, []);
+
+  const selectFromGallery = async (image: ImageSummary) => {
+    const picked = await pick(image);
+    if (picked) onSelect(picked);
+  };
+
+  const handleDelete = async (image: ImageSummary) => {
+    const ok = await confirm({
+      title: `Delete "${image.originalName ?? 'image'}"?`,
+      message:
+        'This image will be permanently removed from your gallery. This can’t be undone, and any element still using it will show a broken-image placeholder.',
+      confirmLabel: 'Delete image',
+    });
+    if (!ok) return;
+    try {
+      await apiDeleteImage(ownerId, image.id);
+      setGallery((prev) => (prev ? prev.filter((i) => i.id !== image.id) : prev));
+    } catch {
+      setGalleryError('Delete failed.');
+    }
+  };
+
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      ariaLabel="Image picker"
+      size="2xl"
+      className="max-h-[calc(100dvh-2rem)]"
+    >
+      <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Image</h2>
+        <DialogCloseButton compact onClick={onClose} />
+      </header>
+      {uploadOnly ? null : (
+        <nav className="flex gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">
+          <TabButton active={tab === 'upload'} onClick={() => setTab('upload')}>
+            Upload
+          </TabButton>
+          <TabButton active={tab === 'gallery'} onClick={() => setTab('gallery')}>
+            Gallery
+            {gallery ? <CountBadge count={gallery.length} className="ml-1.5 align-middle" /> : null}
+          </TabButton>
+          <TabButton active={tab === 'search'} onClick={() => setTab('search')}>
+            Search
+          </TabButton>
+        </nav>
+      )}
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        {tab === 'upload' ? (
+          <ImageDropZone
+            onSelectFile={handleFile}
+            uploading={uploading}
+            error={uploadError}
+            prompt="Drop, paste, or click to choose an image"
+            heightClass="h-48"
+            gapClass="gap-2"
+          />
+        ) : tab === 'search' ? (
+          <ImageSearchPane ownerId={ownerId} documentId={documentId} onPicked={onSelect} />
+        ) : (
+          <GalleryGrid
+            ownerId={ownerId}
+            documentId={documentId}
+            gallery={gallery}
+            error={galleryError}
+            onSelect={(image) => void selectFromGallery(image)}
+            onDelete={(image) => void handleDelete(image)}
+          />
+        )}
+      </div>
+      {currentImageId && onRemove ? (
+        <footer className="flex items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Detaches the image from this element. The gallery copy is kept.
+          </p>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+          >
+            Remove from element
+          </button>
+        </footer>
+      ) : null}
+    </Dialog>
+  );
+}
+
+function GalleryGrid({
+  ownerId,
+  documentId,
+  gallery,
+  error,
+  onSelect,
+  onDelete,
+}: {
+  ownerId: string;
+  documentId: string;
+  gallery: ImageSummary[] | null;
+  error: string | null;
+  onSelect: (image: ImageSummary) => void;
+  onDelete: (image: ImageSummary) => void;
+}) {
+  if (error) {
+    return (
+      <p className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+        {error}
+      </p>
+    );
+  }
+  if (!gallery) {
+    return <p className="text-xs text-slate-500 dark:text-slate-400">Loading…</p>;
+  }
+  if (gallery.length === 0) {
+    return <GalleryEmpty description="Drop one in the Upload tab and it will show up here." />;
+  }
+  return (
+    <ul className="grid max-h-72 grid-cols-4 gap-2 overflow-y-auto">
+      {gallery.map((image) => (
+        <GalleryTile
+          key={image.id}
+          ownerId={ownerId}
+          documentId={documentId}
+          image={image}
+          onSelect={() => onSelect(image)}
+          onDelete={() => onDelete(image)}
+        />
+      ))}
+    </ul>
+  );
+}
+
+function GalleryTile({
+  ownerId,
+  documentId,
+  image,
+  onSelect,
+  onDelete,
+}: {
+  ownerId: string;
+  documentId: string;
+  image: ImageSummary;
+  onSelect: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <li className="group relative">
+      <GalleryImageButton
+        image={image}
+        ownerId={ownerId}
+        documentId={documentId}
+        onClick={onSelect}
+        ariaLabel={`Use ${image.originalName ?? 'image'}`}
+      />
+      <button
+        type="button"
+        onClick={onDelete}
+        aria-label={`Delete ${image.originalName ?? 'image'}`}
+        className="absolute right-1 top-1 hidden rounded bg-white/90 p-1 text-slate-500 shadow transition hover:bg-slate-100 hover:text-slate-700 group-hover:block focus-visible:block [@media(hover:none)]:block dark:bg-slate-900/90 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      >
+        <TrashIcon />
+      </button>
+    </li>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        active
+          ? 'rounded-t-md border-b-2 border-brand-500 px-3 py-1.5 text-xs font-semibold text-brand-700 dark:text-brand-200'
+          : 'rounded-t-md border-b-2 border-transparent px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+      }
+    >
+      {children}
+    </button>
+  );
+}

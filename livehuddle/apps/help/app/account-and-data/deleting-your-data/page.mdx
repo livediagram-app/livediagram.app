@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Deleting Your Data',
+  description:
+    'How to delete a canvas or your whole account in livediagram, and how guest and account data are scoped to you.',
+  path: '/help/account-and-data/deleting-your-data/',
+});
+
+<ArticleLayout title="Deleting Your Data" description="Remove a canvas or your whole account, and understand how your data is scoped whether you are a guest or signed in." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+You own your canvases, and removing one is straightforward. It helps to know how your data is scoped first, because that determines what "your data" means whether you are working as a guest or signed in.
+
+## Deleting a canvas
+
+You can delete a canvas from the [Explorer](/explorer/recent) or from the editor. Open the canvas's **⋯** menu (on its row or card, or in the Current Canvas section of the Explorer panel) and choose **Delete**. It goes straight away, without a question, because nothing is lost yet: a notification naming the canvas ("“Roadmap” deleted") appears with **Undo**, which puts it back where it was. It stays for about ten seconds, longer while your pointer is over it; after that the canvas is still in the Trash. Deleting the canvas you have open takes you to the Explorer, where the same **Undo** appears.
+
+Deleting a canvas moves it to the [Trash](/help/account-and-data/trash/), where it waits for 30 days before it is removed for good, along with the content that belongs only to it, such as its tabs and comments. While it waits, its share links stop working and it disappears from your lists, and you can restore it with everything it had. To remove it straight away, delete it permanently from the Trash.
+
+A copy of a tab you added to another canvas is that canvas's own, so it stays there. [Canvases in This Browser](/help/privacy-and-security/offline-mode/) have their own Trash in this browser.
+
+If you have organised canvases into [folders](/help/explorer/folders/), you can also tidy up by moving canvases between folders or removing folders, separately from deleting the canvases themselves.
+
+## Deleting your account
+
+When you are signed in, open **Settings**, go to **Account**, and choose **Delete Account** under **Danger Zone**. Because this cannot be undone, you confirm it twice: type your email address and choose **Email Me a Code**, then enter the 6-digit code we email you (the same kind of code you sign in with) and choose **Delete Account**. The code works for 10 minutes, so nobody using a computer you left signed in can delete your account without your inbox.
+
+Deleting your account is not only about livediagram: it closes your liveworkspace account, which every liveworkspace app shares. It removes from the server, straight away:
+
+- every canvas you own, including anything already in the Trash, with its tabs, comments and share links;
+- your folders, images, shape libraries and preferences;
+- your stars, your history and activity, and any [community](/help/collaboration/sharing/community/) posts;
+- your [API tokens](/help/account-and-data/api-tokens/), which stops any script or [connected AI tool](/help/account-and-data/connect-ai-mcp/) at once;
+- your [Google Drive](/help/account-and-data/google-drive/) connection (liveworkspace's access is revoked at Google, and the files already in your Drive stay yours);
+- your liveworkspace account itself, and with it **everything you own in every other liveworkspace app**: your canvases, plans, documents and designs in livediagram, liveplanner, livedocuments and livedesign, the Trash included, deleted for good the same way.
+
+Canvases in a [team's](/help/collaboration/teams/) shared library are not deleted with you: they pass to a remaining member, so the team keeps its work. A team you were the last member of is deleted, and its canvases, which are all yours by then, are deleted with your account. If email is set up, you get a short confirmation once it is done.
+
+Your livediagram data goes first, then the account. If closing the account fails, livediagram says so and you stay signed in, so choosing **Delete Account** again finishes it (with the same code while it lasts, or a new one). [Canvases in This Browser](/help/privacy-and-security/offline-mode/) were never on the server, so they stay in this browser until you clear its storage.
+
+## How your data is scoped
+
+Where your data lives depends on how you are identified:
+
+- **As a guest**, new canvases start [offline](/help/privacy-and-security/offline-mode/), saved only in this browser, and any you share or sync are owned on the server by your [per-browser id](/help/account-and-data/guest-identity/), stored in that one browser. Your data is scoped to that browser, so clearing the browser's storage removes the app's link to your guest content, and using a different browser or device shows a fresh, empty workspace.
+- **When signed in**, your canvases are owned by your account and synced across every device where you sign in. Deleting a canvas removes it everywhere, because the account is the single source of truth.
+
+A guest has no account to delete. To remove what you created as a guest, delete the canvases you no longer want and empty the Trash. Clearing the browser's storage deletes your canvases in This Browser, but only removes this browser's record of your guest identity: canvases you shared or synced stay on the server, out of reach from a fresh browser, so delete them first if you want them gone.
+
+<Tip>
+  If you plan to clear your browser, sign in first if you want to keep anything. Your guest canvases
+  on the server move into the account on sign-up. Ones in This Browser move only if you accept the
+  offer to move them after signing in, so do that before you clear the browser.
+</Tip>
+
+</ArticleLayout>

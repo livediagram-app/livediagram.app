@@ -1,0 +1,54 @@
+import {
+  bannerLayout,
+  BORDER_RADIUS_PX,
+  cornerRadiusPx,
+  PAGE_HEADING_MAX,
+} from '@livediagram/document';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
+import { LabelRegion } from '@/components/canvas/web/LabelRegion';
+import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+
+// Banner (docs/specs/009-elements/web-components-and-no-groups.md): an accent bar with the title (the label, edited like any
+// label) over a subtitle line edited in place. The bar paints in the fill
+// when one is picked, else the stroke — the theme accent.
+export function BannerFace({
+  element,
+  labelNode,
+  accent,
+  textColor,
+  fontFamily,
+  editable,
+  onSetHeading,
+}: WebFaceProps) {
+  const zoom = useCanvasZoom();
+  const l = bannerLayout(element.width, element.height);
+  const radius = cornerRadiusPx(
+    element.borderRadius,
+    element.width,
+    element.height,
+    BORDER_RADIUS_PX.lg,
+  );
+  return (
+    <>
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ backgroundColor: element.fillColor ?? accent, borderRadius: radius }}
+      />
+      <LabelRegion rect={l.title}>{labelNode}</LabelRegion>
+      <div className="absolute" style={{ ...rectStyle(l.subtitle), fontFamily }}>
+        <InlineTextLine
+          value={element.pageSubtitle ?? ''}
+          placeholder="Subtitle"
+          editable={editable}
+          onCommit={(v) => onSetHeading('pageSubtitle', v)}
+          zoom={zoom}
+          maxLength={PAGE_HEADING_MAX}
+          className="text-center leading-normal"
+          style={{ color: textColor, opacity: 0.85, fontSize: l.subtitlePx }}
+          ariaLabel="Banner subtitle"
+        />
+      </div>
+    </>
+  );
+}

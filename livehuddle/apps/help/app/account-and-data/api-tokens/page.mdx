@@ -1,0 +1,61 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'API Tokens',
+  description:
+    'Create an API token on liveworkspace.app to call the livediagram API from your scripts. Tokens act as your account and last six months.',
+  path: '/help/account-and-data/api-tokens/',
+});
+
+<ArticleLayout
+  title="API Tokens"
+  description="Call the livediagram API from your own scripts with a revocable token. A signed-in-only feature for advanced users."
+  categoryTitle="Account and Data"
+  categorySlug="account-and-data"
+>
+
+An API token lets your own scripts and integrations talk to the livediagram API as you, outside the editor. Tokens belong to your liveworkspace account, so one token works with the API and MCP server of every liveworkspace app, livediagram included. A token carries your account's **full read and write access** unless you make it read-only, so treat it like a password.
+
+To connect an AI tool like Claude rather than write your own script, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/): it creates and uses one of these tokens for you. So does [the livediagram CLI](/help/developers/cli/) when you sign in with `livediagram auth login`.
+
+## You need an account
+
+API tokens are a **signed-in-only** feature. The editor, sharing, and real-time collaboration all stay account-free for guests, but tokens require [signing in](/help/account-and-data/signing-in/), the same as [teams](/help/collaboration/teams/).
+
+## Creating a token
+
+Tokens are made on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens). In livediagram, open **Settings** (the sliders icon near the end of the bottom bar), choose **Account**, then **API Tokens**, and choose **Manage API Tokens** to get there.
+
+Name the token, switch on **Read-only** if it only needs to look, and create it. Its secret is shown **once**, right after you create it: copy it then, because it is never displayed again. If you lose the secret, revoke the token and create a new one.
+
+## What a token can do, and for how long
+
+- **Access:** a token has your account's read + write access to canvases and folders, including your [teams'](/help/collaboration/teams/) shared libraries, or read access only if it is read-only. It can't manage teams or your account: those are done on liveworkspace.app, signed in.
+- **Lifetime:** every token lasts **six months**, then expires. Rotate by creating a fresh token before the old one lapses.
+- **Limit:** you can have up to **20** tokens at once, across every liveworkspace app. Revoke one to free a slot.
+
+## Using a token
+
+Send the token as a **bearer header** to the API, which lives under `/api` on your livediagram host (`https://livediagram.app/api` on the hosted service):
+
+```bash
+# List your documents
+curl https://livediagram.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a canvas's last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
+
+For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), [worked examples](/help/developers/working-with-documents/), and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
+
+## Viewing and revoking tokens
+
+Your tokens are listed on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens), with when each was created, last used and expires. Revoke one there. livediagram stops accepting it within a minute, and ends any workbench pairing made with it within a few minutes. Deleting your account also removes all of your tokens, along with the rest of your data.
+
+<Tip>
+  Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create
+  a replacement, no need to change anything else about your account.
+</Tip>
+
+</ArticleLayout>

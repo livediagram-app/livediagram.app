@@ -1,0 +1,389 @@
+import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
+import dynamic from 'next/dynamic';
+import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
+import { useState, type ReactNode } from 'react';
+import {
+  TAB_BAR_CLASS,
+  TAB_RENAME_FIELD_CLASS,
+} from '@liveworkspace/workbench/components/chrome/tab-shape';
+import { TabStrip } from '@liveworkspace/workbench/components/chrome/TabStrip';
+import {
+  folderNamesInDocument,
+  groupTabsIntoRuns,
+  tabFolderName,
+  type Tab,
+} from '@livediagram/document';
+import { useAppearance } from '@/hooks/ui/useAppearance';
+import type { Participant } from '@/lib/identity';
+import { safeInlinePadding, safeInset } from '@livediagram/ui';
+import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
+import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
+import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
+import { ChromeControls } from '@/components/chrome/ChromeControls';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
+// Lazy: the tab context menu (and the 18 kB icon module it drags in)
+// only loads on the first right-click — it was the largest single
+// eager block left in the editor chunk after the dialogs went dynamic.
+const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalMenu), {
+  ssr: false,
+});
+import { TabPill, type TabPillCtx } from './TabPill';
+import type { AccessLevel } from '@livediagram/api-schema';
+
+// Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
+// Cleanup category used to live here too but were removed: the palette and quick-connect cover
+// adding, and the command palette's Actions keep Auto Layout and Auto-align.)
+export type CanvasMenuActions = {
+  // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md); greyed,
+  // not hidden, when the buffer is empty.
+  onPaste: () => void;
+  canPaste: boolean;
+};
+
+// Where the canvas right-click / footer-button menu should open. `openUp`
+// grows it upward from y (footer button) rather than down from the cursor.
+export type CanvasMenuTarget = { x: number; y: number; openUp?: boolean };
+
+type TabBarProps = {
+  // Optional callback that pops the user-preferences dialog
+  // (docs/specs/007-editor/user-preferences.md). The gear sits between GitHub and the dark-mode
+  // toggle. Available in every role: even view-role visitors can
+  // adjust their own browser-local preferences.
+  onOpenSettings?: () => void;
+  // Optional callback that pops the global search panel. The
+  // button sits to the LEFT of the dark-mode toggle.
+  onOpenSearch?: () => void;
+  // When set, the active tab's menu opens at this point as the canvas
+  // right-click / footer-button menu — the same tab menu with the canvas
+  // sections (`canvasActions`) folded in. The page owns the open/close state
+  // (shared with element / multi context menus); `onCloseCanvasMenu` dismisses
+  // it. Null when no canvas menu is open.
+  canvasMenu?: CanvasMenuTarget | null;
+  onCloseCanvasMenu?: () => void;
+  canvasActions?: CanvasMenuActions;
+  // Minimal chrome's role icon (docs/specs/007-editor/power-user-mode.md), first in the bar.
+  roleIcon?: ReactNode;
+  // Power user mode turns the Appearance control into a quick switch
+  // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
+  powerUser?: boolean;
+  // A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34): its Open in
+  // livediagram link at the bar's right end, and no Appearance control (the workbench sets the scheme).
+  workbenchLink?: (labelled: boolean) => ReactNode;
+  tabs: Tab[];
+  activeId: string;
+  // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
+  // into a folder by name (new or existing), make it loose again, or
+  // rename a folder (rewrites every member).
+  onMoveTabToFolder: (tabId: string, folderName: string) => void;
+  onRemoveTabFromFolder: (tabId: string) => void;
+  onRenameFolder: (oldName: string, newName: string) => void;
+  // True when the active tab has at least one element. Used to enable
+  // / disable the "Clear content" menu item — disabled on empty tabs
+  // so the option is still discoverable but doesn't no-op.
+  activeTabHasContent: boolean;
+  onSelect: (id: string) => void;
+  onAdd: () => void;
+  onRename: (id: string, name: string) => void;
+  onDuplicate: (id: string) => void;
+  onDelete: (id: string) => void;
+  // Wipes every element from the active tab. Undoable. Only exposed
+  // through the active tab's ellipsis menu (used to live in the
+  // Palette's Content accordion).
+  onClearContent: () => void;
+  // Active-tab import / export. Surfaced in the ellipsis menu (moved
+  // out of the Palette's Import/Export accordion so the per-tab actions
+  // all live in one place).
+  onImportTab: () => void;
+  onExportTab: () => void;
+  // The user's other documents (excluding the current one). Drives the
+  // "Add to Document" submenu in the tab ellipsis; savedAt versions the
+  // destination-picker thumbnails (docs/specs/006-document/document-snapshots.md).
+  otherDocuments: { id: string; name: string; savedAt?: number }[];
+  // Copy the active tab into another document. Callee handles the
+  // round-trip to the API. Returns a promise so the menu can dismiss
+  // after the operation completes.
+  onCopyTabTo: (targetDocumentId: string) => Promise<void> | void;
+  // Flip tab.locked. Disables every mutator until toggled back on.
+  // The lock icon appears on the tab itself + on every element.
+  onToggleLockTab: () => void;
+  // Move `sourceId` next to `targetId`. `placeBefore` (default true) picks
+  // which side of the target it lands on — the tab bar sets it from the
+  // pointer position so the drop matches the insertion caret. Omitting it
+  // (folder-chip drop) falls back to inserting before the target.
+  onReorder: (sourceId: string, targetId: string, placeBefore?: boolean) => void;
+  // True for a view-only ('view' share role) session. Suppresses
+  // every mutation affordance on the bar: tab rename (double-click
+  // + the ellipsis Rename row), the "+" add button, the whole
+  // ellipsis menu (so Duplicate / Clear content / Lock / Move / Delete
+  // all vanish), and tab drag-to-reorder. Tab pills remain
+  // clickable so the viewer can still navigate between tabs.
+  readOnly?: boolean;
+  // Tabs outside a tab-scoped share session's scope render as "Not shared"
+  // pills (docs/specs/013-workspace/tab-scoped-share-links.md).
+  isOutOfScope?: (tabId: string) => boolean;
+  // Bumped by the command palette's "Rename tab" action to inline-rename the
+  // ACTIVE tab (the palette can't reach this component's local editing state).
+  // A monotonic counter; each increment opens the active tab's name editor.
+  renameActiveNonce?: number;
+  // Remote participants grouped by which tab they're currently
+  // focused on. Each tab in the bar renders the matching avatars so
+  // collaborators can see at a glance where everyone is working.
+  participantsByTab: Map<string, Participant[]>;
+  // Local viewer's identity + role, so the per-tab avatar hover card can
+  // tag the local user with "You" + their role (Viewer / Editor). We
+  // can't reliably tag peers with their role yet (the api doesn't
+  // broadcast role per ParticipantPresence), so the badge only appears
+  // when the participant id matches `selfId`.
+  selfId: string;
+  selfRole: AccessLevel;
+  // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
+  // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
+  // Optional: a surface with no room behind it leaves the avatars as plain
+  // presence indicators.
+  followingId?: string | null;
+  // How many people follow us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), on our own avatar.
+  followerCount?: number;
+  onOpenCollaborators?: (participantId: string | null) => void;
+};
+
+export function TabBar({
+  tabs,
+  activeId,
+  onMoveTabToFolder,
+  onRemoveTabFromFolder,
+  onRenameFolder,
+  activeTabHasContent,
+  onSelect,
+  onAdd,
+  onRename,
+  onDuplicate,
+  onDelete,
+  onClearContent,
+  onImportTab,
+  onExportTab,
+  otherDocuments,
+  onCopyTabTo,
+  onToggleLockTab,
+  onReorder,
+  readOnly = false,
+  isOutOfScope,
+  renameActiveNonce = 0,
+  participantsByTab,
+  selfId,
+  selfRole,
+  followingId,
+  followerCount,
+  onOpenCollaborators,
+  onOpenSettings,
+  onOpenSearch,
+  canvasMenu,
+  onCloseCanvasMenu,
+  canvasActions,
+  roleIcon,
+  powerUser = false,
+  workbenchLink,
+}: TabBarProps) {
+  const minimalChrome = useMinimalChrome();
+  // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
+  const buttonLabels = useButtonLabelsSetting();
+  const labelled = !minimalChrome && buttonLabels;
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  // The command palette requests an active-tab rename by bumping
+  // renameActiveNonce: each bump opens the editor once, during render. The
+  // value the bar mounts with is no request, so a remount never replays
+  // one; ignored for view-only sessions (rename is blocked there).
+  const [seenRenameNonce, setSeenRenameNonce] = useState(renameActiveNonce);
+  if (renameActiveNonce !== seenRenameNonce) {
+    setSeenRenameNonce(renameActiveNonce);
+    if (!readOnly) setEditingId(activeId);
+  }
+  // Drag-reorder machinery (which pill is dragged / hovered + the five
+  // per-pill handlers) lives in useTabReorderDrag.
+  const reorderDrag = useTabReorderDrag(onReorder);
+  // Drives the per-tab accent's legibility guard: the bar is white in
+  // light mode, slate-900 in dark, so a stroke that reads on one can
+  // vanish on the other.
+  const { appearance } = useAppearance();
+  const isDark = appearance === 'dark';
+
+  // Distinct folder names in this document, for the "Organise in Tab Folder"
+  // menu's pick list (docs/specs/006-document/tab-folders.md).
+  const folderNames = folderNamesInDocument(tabs);
+
+  // The tab-menu callbacks for a given tab, shared by the per-tab ellipsis
+  // menu and the canvas right-click menu so both drive the exact same
+  // actions (rename / duplicate / folder / ...). `close` differs
+  // per surface — the ellipsis closes via setMenuFor, the canvas menu via
+  // onCloseCanvasMenu — so each caller passes its own.
+  const tabMenuProps = (tab: Tab, close: () => void) => ({
+    canDelete: tabs.length > 1,
+    canClearContent: activeTabHasContent && !tab.locked,
+    locked: tab.locked === true,
+    selfId,
+    otherDocuments,
+    folderNames,
+    currentFolder: tabFolderName(tab),
+    onMoveToFolder: (name: string) => {
+      onMoveTabToFolder(tab.id, name);
+      close();
+    },
+    onRemoveFromFolder: () => {
+      onRemoveTabFromFolder(tab.id);
+      close();
+    },
+    onRename: () => {
+      setEditingId(tab.id);
+      close();
+    },
+    onDuplicate: () => {
+      onDuplicate(tab.id);
+      close();
+    },
+    onClearContent: () => {
+      onClearContent();
+      close();
+    },
+    onImport: () => {
+      onImportTab();
+      close();
+    },
+    onExport: () => {
+      onExportTab();
+      close();
+    },
+    onCopyTo: async (targetId: string) => {
+      await onCopyTabTo(targetId);
+      close();
+    },
+    onToggleLock: () => {
+      onToggleLockTab();
+      close();
+    },
+    onDelete: () => {
+      onDelete(tab.id);
+      close();
+    },
+  });
+
+  const activeTab = tabs.find((t) => t.id === activeId);
+
+  // One tab, see TabPill. The ctx bundle keeps the render callback (the strip's, for loose tabs and folder
+  // members alike) a one-liner.
+  const pillCtx: TabPillCtx = {
+    isOutOfScope,
+    activeId,
+    editingId,
+    setEditingId,
+    menuFor,
+    setMenuFor,
+    readOnly,
+    isDark,
+    // A tap on the tab already open selects nothing again; the strip brings all of it into view instead.
+    onSelect: (id: string) => {
+      if (id !== activeId) onSelect(id);
+    },
+    onRename,
+    reorderDrag,
+    participantsByTab,
+    selfId,
+    selfRole,
+    followingId,
+    followerCount,
+    onOpenCollaborators,
+    canvasActions,
+    tabMenuProps,
+  };
+  const renderTabPill = (tab: Tab): ReactNode => <TabPill key={tab.id} tab={tab} ctx={pillCtx} />;
+
+  // Who is on a collapsed folder's tucked-away tabs, each person once, on its chip.
+  const folderPresence = (tabIds: string[]): ReactNode => {
+    const seen = new Set<string>();
+    const people: Participant[] = [];
+    for (const id of tabIds)
+      for (const p of participantsByTab.get(id) ?? []) {
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        people.push(p);
+      }
+    if (people.length === 0) return null;
+    return (
+      <TabPresenceStack
+        participants={people}
+        selfId={selfId}
+        selfRole={selfRole}
+        followingId={followingId}
+        followerCount={followerCount}
+        onOpenCollaborators={onOpenCollaborators}
+      />
+    );
+  };
+
+  return (
+    <>
+      <div
+        data-editor-tabbar
+        data-region="tabs"
+        // The app's own colours, whatever the tab's style (docs/specs/011-theme/canvas-and-theme-dialog.md).
+        data-app-chrome
+        // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits
+        // above the bottom inset (the height grows by it), its sides past the side insets.
+        style={{
+          height: `calc(3rem + ${safeInset('bottom')})`,
+          paddingBottom: safeInset('bottom'),
+          ...safeInlinePadding('0.75rem'),
+        }}
+        className={TAB_BAR_CLASS}
+      >
+        {roleIcon}
+        {/* The tabs and folders (the shared strip, docs/specs/007-editor/editor-app.md "How a tab looks"). */}
+        <TabStrip
+          runs={groupTabsIntoRuns(tabs)}
+          activeId={activeId}
+          readOnly={readOnly}
+          renderTab={renderTabPill}
+          onAdd={onAdd}
+          onReorder={onReorder}
+          onRenameFolder={onRenameFolder}
+          renderRenameField={(field) => (
+            <NameEditor {...field} label="Folder name" className={TAB_RENAME_FIELD_CLASS} />
+          )}
+          folderPresence={folderPresence}
+        />
+        {/* Shared right-hand cluster (search / settings / dark-mode; GitHub
+            lives in the Explorer panel's ⋯ menu here),
+            reused by the Explorer's bottom bar (docs/specs/007-editor/editor-app.md). Labelled here on
+            desktop; icon-only on a phone. */}
+        <ChromeControls
+          onOpenSearch={onOpenSearch}
+          onOpenSettings={onOpenSettings}
+          settingsLabel="Application settings"
+          settingsDescription="Your editor preferences. They follow your account, not this canvas."
+          // Icons only under Minimal chrome or with Button Labels off; each keeps its hover card,
+          // titled with its name.
+          labelled={labelled}
+          github={false}
+          powerUser={powerUser}
+          appearance={!workbenchLink}
+        />
+        {workbenchLink?.(labelled)}
+      </div>
+      {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
+        // A fault inside the menu closes the menu, not the editor.
+        <MenuErrorBoundary onError={onCloseCanvasMenu}>
+          <PortalMenu
+            point={canvasMenu}
+            onClose={onCloseCanvasMenu}
+            canvas={canvasActions}
+            {...tabMenuProps(activeTab, onCloseCanvasMenu)}
+          />
+        </MenuErrorBoundary>
+      ) : null}
+    </>
+  );
+}
+
+// UI light / dark mode toggle, pinned to the right edge of the
+// TabBar. Distinct from the per-tab theme grid (Palette →
+// Theme accordion): this only flips editor chrome, not the canvas.
+// docs/specs/007-editor/editor-app.md "UI light / dark mode" documents the full surface.

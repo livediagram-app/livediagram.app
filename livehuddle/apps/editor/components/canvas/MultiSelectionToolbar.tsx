@@ -1,0 +1,170 @@
+import type { Element } from '@livediagram/document';
+import {
+  DuplicateIcon,
+  EllipsisIcon,
+  LockIcon,
+  TrashIcon,
+  HoverCard,
+  Glyph,
+} from '@livediagram/ui';
+import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
+import {
+  TOOLBAR_BTN,
+  TOOLBAR_BTN_ON,
+} from '@liveworkspace/workbench/components/canvas/toolbar-buttons';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
+import {
+  useMinimalChrome,
+  usePowerUser,
+} from '@liveworkspace/workbench/components/providers/minimal-chrome';
+
+type MultiSelectionToolbarProps = {
+  // True when EVERY member is locked. The Lock button reads as Unlock only then, since a click unlocks only a
+  // fully locked selection (anything unlocked, and it locks them all). Delete protects locked members and
+  // removes the rest, so it only goes fully dead when nothing's deletable.
+  allLocked: boolean;
+  // The elements in the multi-selection — drives the Filter Selection menu's
+  // per-kind buckets.
+  selectedElements: Element[];
+  onDuplicate: () => void;
+  onDelete: () => void;
+  onToggleLock: () => void;
+  // Narrows the selection to one kind (Filter Selection menu). Omitted for
+  // view-role, where the selection can't be edited.
+  onFilter?: (ids: Set<string>) => void;
+  // Opens the Export dialog scoped to just the selected elements.
+  onExport: () => void;
+  // Opens the selection-wide context menu (anchored under the ⋯ button).
+  // Omitted for view-role, where there's no context menu.
+  onOpenContextMenu?: (screenX: number, screenY: number) => void;
+};
+
+// The marquee multi-selection action buttons. Rendered bare (no shell) so the
+// caller can host them in a FloatingToolbar that floats over the selection
+// with a title; the shell + count live there.
+export function MultiSelectionToolbar({
+  allLocked,
+  selectedElements,
+  onDuplicate,
+  onDelete,
+  onToggleLock,
+  onFilter,
+  onExport,
+  onOpenContextMenu,
+}: MultiSelectionToolbarProps) {
+  // SelectionFilterMenu renders nothing for a single-kind selection, so its
+  // trailing divider must share the SAME predicate — gating on `onFilter`
+  // alone leaves a stray divider when the funnel button self-hides.
+  const filterable = !!onFilter && buildFilterGroups(selectedElements).length >= 2;
+  // Same rule as the single-selection popover (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
+  const touch = useCoarsePointer();
+  const minimalChrome = useMinimalChrome();
+  const powerUser = usePowerUser();
+  const showDelete = touch || !minimalChrome;
+  return (
+    <>
+      {onOpenContextMenu && (touch || !powerUser) ? (
+        <>
+          <HoverCard title="More" description="Open the selection menu.">
+            <button
+              type="button"
+              data-context-menu-trigger
+              onClick={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                onOpenContextMenu(r.left, r.bottom);
+              }}
+              aria-label="More actions"
+              className={TOOLBAR_BTN}
+            >
+              <EllipsisIcon size={14} />
+            </button>
+          </HoverCard>
+          <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+        </>
+      ) : null}
+      {filterable && onFilter ? (
+        <>
+          <SelectionFilterMenu selectedElements={selectedElements} onFilter={onFilter} />
+          {/* Filter narrows WHAT is selected; everything after acts on the
+              selection — the divider marks that boundary. */}
+          <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+        </>
+      ) : null}
+      <HoverCard title="Duplicate" description="Duplicate the selection, arrows included.">
+        <button
+          type="button"
+          onClick={onDuplicate}
+          aria-label="Duplicate selected elements"
+          className={TOOLBAR_BTN}
+        >
+          <DuplicateIcon size={14} />
+        </button>
+      </HoverCard>
+      {/* Duplicate copies the selection; everything after acts ON it
+          (export, then lock / delete) — the divider marks that
+          boundary, same as the one after More above. */}
+      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+      {/* Lock sits with Delete, past the last divider: they are the two that
+          decide whether these elements can still be touched, and locking is
+          what makes the Delete beside it refuse. A divider between them read
+          as Lock belonging with Export, which it does not. */}
+      <HoverCard title="Export" description="Export just these elements.">
+        <button
+          type="button"
+          onClick={onExport}
+          aria-label="Export selected elements"
+          className={TOOLBAR_BTN}
+        >
+          <ExportIcon />
+        </button>
+      </HoverCard>
+      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+      <HoverCard
+        title={allLocked ? 'Unlock' : 'Lock'}
+        description={allLocked ? 'Unlock so they move again.' : "Lock so they can't move."}
+      >
+        <button
+          type="button"
+          onClick={onToggleLock}
+          aria-label={allLocked ? 'Unlock selected elements' : 'Lock selected elements'}
+          aria-pressed={allLocked}
+          className={allLocked ? TOOLBAR_BTN_ON : TOOLBAR_BTN}
+        >
+          <LockIcon closed={allLocked} size={14} />
+        </button>
+      </HoverCard>
+      {showDelete ? (
+        <HoverCard
+          title="Delete"
+          description={
+            allLocked ? 'All locked. Unlock to delete.' : 'Delete selected (locked ones are kept).'
+          }
+        >
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={allLocked}
+            aria-label="Delete selected elements"
+            className={
+              allLocked
+                ? 'flex h-7 w-7 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
+                : TOOLBAR_BTN
+            }
+          >
+            <TrashIcon size={14} />
+          </button>
+        </HoverCard>
+      ) : null}
+    </>
+  );
+}
+
+function ExportIcon() {
+  return (
+    <Glyph size={14} units={16}>
+      <path d="M8 2v8" />
+      <path d="M5 6.5 8 10l3-3.5" />
+      <path d="M2.75 11.5v1.25a1 1 0 0 0 1 1h8.5a1 1 0 0 0 1-1V11.5" />
+    </Glyph>
+  );
+}

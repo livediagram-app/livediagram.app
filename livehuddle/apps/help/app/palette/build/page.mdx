@@ -1,0 +1,74 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { BuildRows } from '@/components/illustrations/palette-build-chairs';
+
+export const metadata = helpMetadata({
+  title: 'Build Elements',
+  description:
+    'The palette Build category holds what you lay a diagram out with: mind maps, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, keys and tables.',
+  path: '/help/palette/build/',
+});
+
+<ArticleLayout
+  title="Build Elements"
+  description="The elements you lay a diagram out with, as opposed to the ones you draw on it."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('build')}
+>
+
+The **Build** elements hold what you lay a diagram _out_ with. In Diagram mode they sit on the palette strip after Draw as two categories: **Diagrams**, the structures that grow as you type (mind node, org chart, flowchart, sequence, table, entity), and **Layout**, what you arrange and label them with (lane, frame, stack, boundary, then the diagram key, card, badge and step number). Workshop mode has **Layout** too, with the Timeline in it. Everywhere else in the palette you are adding something to the canvas; here you are deciding how the canvas is arranged.
+
+What the first four have in common is that **each one holds other work**. A frame gathers a region, a lane carries the steps in a row, a table organises cells, and a mind node hangs children off itself. You reach for them at the same moment: once you know how the diagram is arranged, before you have decided what goes in it.
+
+## What the category contains
+
+- A **Mind node** is a node that knows its parent. **Tab** adds a child to its right, **Enter** a sibling below, each one connected and selected; start typing to label it, so a whole branch is built from the keyboard. See [Mind Maps](/help/palette/mind-maps/).
+- An **Org Chart** is a mind map of people: each node shows an initials disc, a name and a role, **Tab** adds a report below and **Enter** a peer beside it, and the chart lays itself out top down. See [Org Charts](/help/palette/org-charts/).
+- A **Flowchart** starts as a **Start** step. **Tab** adds the next step and **Enter** a parallel one, and the whole chart lays itself out after every change; any step can become a Decision, an Input / Output and more, and the chart can run in swimlanes. See [Flowcharts](/help/palette/flowcharts/).
+- A **Table** is an editable grid of cells you can style, link, and fill row by row; double-click a cell to type. See [Tables](/help/palette/tools/tables/).
+- A **Lane** is a titled horizontal band for swimlane diagrams, its title down its left edge. Dragging the lane carries everything sitting in it, so a row of steps moves as one. See [Lanes](/help/palette/lanes/).
+- A **Frame** is a labelled box that groups a section of the canvas. It draws behind its contents and carries them when you move it, and a slide with one frame on it is framed by it. Press `F` to add one. See [Frames](/help/palette/build/frames/).
+- A **Sequence** diagram shows who calls whom, in order: participants side by side over dashed lifelines and a row per message. Double-click it to write its participants and messages in a dialog, where **Enter** in a message adds the next one, and the diagram lays itself out; replies are dashed and answered calls get an activation bar. See [Sequence Diagrams](/help/palette/sequence-diagrams/).
+- A **Stack** lines up whatever you drop into it in a row, a column or a grid with even gaps, and reflows as things are added, removed or resized, so a row of cards never needs nudging into line. See [Stacks](/help/palette/stacks/).
+- A **Diagram Key** lists the line styles and tag colours the tab uses, each with a meaning you type, and keeps itself up to date as the diagram changes. See [Diagram Keys and Tag Colours](/help/palette/diagram-keys/).
+- A **Boundary** is a titled, tinted container for a cloud region, a VPC, a cluster or a C4 system. It carries what sits inside it like a frame, and boundaries nested in each other read deeper. See [Boundaries](/help/palette/boundaries/).
+- The **Timeline** is a [concept graphic](/help/palette/concept-graphics/timeline-rail/), in **Concepts** (and in Workshop's Layout): milestones along a line, each with when and what.
+  The **Sankey** diagram, which shows how much moves where, is in **Concepts** too, beside the funnel and the cycle: rather than holding work you place in it, it lays itself out from the flows you give it, as they do. See [Sankey Diagram](/help/palette/build/sankey-diagram/).
+
+In Diagram mode four more tiles follow, for the nodes and marks a finished diagram is made of:
+
+- A **Card** is one node with a title, a meta line, a body, an icon and tags, each switched on or off. See [Cards and Callouts](/help/palette/cards-and-callouts/).
+- A **Badge** is a small pill of text and a **Step Number** a numbered disc; drop either on a node's corner and it travels with the node. See [Badges and Step Numbers](/help/palette/badges-and-step-numbers/).
+- An **Entity** is a class or a table: a title over its fields, for a data model. See [Entities](/help/palette/entities/).
+
+Card and Badge each come in presets: press one and its presets open in a second panel beside Layout's.
+
+Diagrams and Layout are in the palette in Diagram mode, and Layout in Workshop mode. In Draw mode the palette gives way to the dock, whose shape catalogue still offers the mind node, lane and frame.
+
+## Cards, not pictures
+
+Shapes show as a grid of pictures, because the picture is the explanation. The containers here are, at tile size, all a rectangle. So the [palette panels](/help/palette/toolbar-layout/) list them as cards with a one-line description each, Layout's in two groups, **Containers** and **Parts**: "Tab adds a child, Enter a sibling" against "A titled band that carries its steps" is what you are actually choosing between, and no icon says that.
+
+<Figure caption="Build's elements as cards, each with a line on what it does.">
+  <BuildRows />
+</Figure>
+
+<Note>
+  These elements are filed by what they do rather than what they look like: the mind node, lane,
+  frame and table sit together because each holds other work.
+</Note>
+
+## Working with them
+
+Each behaves like any other element once placed: select, restyle, lock, and move it freely, and each can carry a [link](/help/canvas/links/), a note, or a [comment](/help/collaboration/comments/) like anything else on the canvas.
+
+Because they hold other work, two habits pay off. Put the container down **first** and fill it afterwards, so the things inside are captured by it as you go. And when you move one, check what came with it: a frame and a lane carry everything whose centre sits inside them, and a mind node carries its whole branch, which is usually what you want and occasionally a surprise. Resizing a frame or a lane never moves its contents.
+
+<Tip>
+  Reach for Layout at the start of a canvas and the rest goes faster: lay out the lanes or frames
+  you know you need, then switch to Shapes and fill them in.
+</Tip>
+
+</ArticleLayout>

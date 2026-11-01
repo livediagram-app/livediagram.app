@@ -1,0 +1,101 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { TitleBarParts, VisibilityLegendFigure } from '@/components/illustrations/title-bar';
+
+export const metadata = helpMetadata({
+  title: 'The Title Bar',
+  description:
+    'The strip across the top of the editor: the canvas name, who can see it, whether you are editing or viewing, and Share or Copy at the right.',
+  path: '/help/user-interface/title-bar/',
+});
+
+<ArticleLayout
+  title="The Title Bar"
+  description="The canvas's name, who can see it, your role in it, and Share or Copy, in the strip above the canvas."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+The **title bar** is the strip across the top of the editor, above the canvas. Reading from left to right, it holds the logo, the canvas's name, a pill saying who can see the canvas, a pill saying whether you are editing or viewing it, and at the right edge **Present**, when the canvas has a slide deck with a slide to show, then the button that matters most for this canvas: **Share** if you can share it, **Copy** if you can't. Your account button sits at the very end.
+
+<Figure caption="The title bar of a shared canvas, as its owner sees it: the name, the Shared visibility pill, the Editing role pill, a solid Share button and the account button.">
+  <TitleBarParts />
+</Figure>
+
+## The logo
+
+The logo on the left takes you to the livediagram home page. On a phone it shows without its wordmark. Hover over it to see every liveworkspace site (on a touch screen, tap the logo or the small arrow beside it; a second tap on the logo goes home): **liveworkspace.app** at the top, then each app, such as **liveplanner.app**. One click switches to any of them. The other parts of livediagram (the **Explorer**, the **Community**, **Help** and more) are links along the foot of the [Explorer panel](/help/explorer/explorer-panel/).
+
+## The canvas name
+
+The name sits in the middle of the bar. To rename the canvas, click the name, type the new one, and press `Enter` (or click away) to keep it. `Escape` leaves the old name in place, and clearing the box and confirming keeps the old name too. Names are capped at 60 characters, the same limit the Explorer uses. You can also start a rename from the [command palette](/help/tips-and-tricks/command-palette/) with **Rename Canvas**.
+
+A new canvas names itself: while it still has its starting name (such as "Untitled canvas", "Untitled Whiteboard" or "Untitled Workshop"), the first label you type on its first tab becomes its name, in every mode. A name you gave it yourself is never replaced.
+
+Only people who can change the canvas's structure can rename it: its owner and anyone on an Editor link. On a Participant or Viewer link, or a [link to a single tab](/help/collaboration/sharing/one-tab/), the name is plain text and clicking it does nothing.
+
+## The visibility pill
+
+Right after the name, a small pill says who can see this canvas. It reads one of five words:
+
+- **Private**: only you can see it.
+- **Shared**: anyone with one of its [share links](/help/collaboration/sharing/) can open it.
+- **Team**: it lives in a [team library](/help/collaboration/teams/team-shared-documents/) and every member of the team can open it. A team canvas with a live share link reads **Shared** instead.
+- **Public**: it is listed in the [Community](/help/collaboration/sharing/community/), where anyone can find it, view it and make their own copy. This wins over Shared and Team, because it is the widest audience there is.
+- **This Browser**: it is saved only in this browser, never on our servers (see [Offline Mode](/help/privacy-and-security/offline-mode/)). This wins over all the others.
+
+Hover the pill, or tab to it with the keyboard, and a legend opens beneath it. At the top it shows **Who Can See This** for the current state, with rings around a figure of you lit out as far as the canvas reaches. Under that the four audiences sit on one scale, **From Just You to Everyone**: Just you (Private), Link (Shared), Team and Everyone (Public), filled up to where the canvas is now. Hover any other stop to see what it would mean (the heading changes to **If It Were**). This Browser sits apart below the scale, since it is the opposite of sharing: the canvas never leaves this browser.
+
+<Figure caption="The legend under the visibility pill of a Shared canvas: who can see it, the four audiences from Just you to Everyone, This Browser apart, and the owner's Change Who Can See This button.">
+  <VisibilityLegendFigure />
+</Figure>
+
+If you can share the canvas (you own it, or it is in a team you belong to), the pill is also a button: clicking it opens the Share dialog, and the legend ends with a **Change Who Can See This** button that does the same. Everyone else gets the legend to read but no button, since only those who can share a canvas decide who can see it.
+
+The pill does not show on a phone (the bar has no room for it), while the welcome screen of a new canvas is open, in [Zen mode](/help/tools/zen-mode/), or inside an [embed](/help/collaboration/sharing/embeds/), which hides the whole title bar.
+
+## The role pill
+
+After the visibility pill comes a second pill saying what you can do here right now: **Editing**, **Participating** or **Viewing**. It follows your [share role](/help/collaboration/sharing/): the owner and anyone on an Editor link see **Editing**, a Participant link shows **Participating**, and a Viewer link shows **Viewing**.
+
+Hover the pill to see who owns the canvas: **Owned by you** on your own canvases, or **Owned by** and the owner's name on someone else's. When the owner's name is not known, the pill has no hover text.
+
+If your role lets you edit, the pill is a switch that steps through all three, so you can check what each kind of link will get before you send it:
+
+- Click **Editing** and it turns to **Participating**: you work the canvas as someone on a Participant link does, with their palette and their limits. You can add stickies and text and move or delete what you add, but not anyone else's.
+- Click **Participating** and it turns to **Viewing**: the canvas becomes read-only, exactly as someone on a Viewer link sees it.
+- Click **Viewing** to go back to editing.
+
+The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the canvas.
+
+For a Participant or a Viewer the pill is just a label. Clicking it does nothing, because their link does not allow editing.
+
+Like the visibility pill, the role pill is hidden on a phone, in Zen mode and in embeds. With [Minimal Chrome](/help/user-interface/power-user-mode/#minimal-chrome) on, it leaves the title bar and becomes a pencil, a ballot box or an eye at the start of the bottom bar, which works the same way.
+
+## Present
+
+When the canvas's [slide deck](/help/selection-modes/slide-deck/) has a slide to show, **Present** sits just left of Share or Copy and starts the presentation. See [Presenting](/help/selection-modes/slide-deck/presenting/).
+
+## Share or Copy
+
+The right edge of the bar holds one main action, and which one you get depends on whose canvas it is.
+
+**Share** is for the owner, and for members of the team whose library holds the canvas. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the canvas has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) canvas it asks you to save the canvas to your account first, since there is nothing on a server to share yet.
+
+**Copy** is for everyone else who has the canvas open: someone on a share link of any role. It makes a copy of the canvas that belongs to you:
+
+<Step n={1}>Click **Copy**. It reads **Copying** while the copy is made.</Step>
+<Step n={2}>The editor opens your copy, named "Copy of" and the original name.</Step>
+<Step n={3}>
+  Find it again later at the top level of My Work in the [Explorer](/help/explorer/explorer-page/).
+</Step>
+
+Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the canvas through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/).
+
+Someone who opened a canvas from the [Community](/help/collaboration/sharing/finding-community-documents/) does not get **Copy** in the title bar. A slim bar under the title bar offers **Make a Copy** instead, which works the same way.
+
+## Your account
+
+At the far right is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the canvas) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+
+</ArticleLayout>

@@ -1,0 +1,110 @@
+'use client';
+
+import { useMemo } from 'react';
+import {
+  contentBounds,
+  isBoxed,
+  layerBands,
+  layerOpacityOf,
+  r2,
+  arrowLabelFontStack,
+  arrowLabelPass,
+  svgArrow,
+  sketchBackdropIds,
+  svgBoxed,
+  type Element,
+  type Layer,
+} from '@livediagram/document';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
+import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
+
+// Per-layer preview markup (docs/specs/006-document/layers.md), shared by the Layers panel rows and
+// the context menu's Move-to-layer tiles: the SAME headless renderer the
+// Map / exports use, split into one markup string per layer. Every
+// preview shares the whole tab's content bounds as its viewBox, so each
+// layer's elements show where they actually sit. Hidden layers keep
+// their preview (that's how you see what you're missing); a layer's
+// opacity dims it. The markup is our own renderer's output (user text is
+// xmlEscaped inside it), so injecting it via an <svg> is safe.
+export function useLayerThumbnails(
+  elements: Element[],
+  layers: Layer[],
+  // The tab default face (docs/specs/004-interface-design/fonts.md), so a row preview matches the canvas.
+  tabFont?: string,
+): { thumbMarkup: Map<string, string>; thumbViewBox: string | null } {
+  // Re-render once the async icon catalogues land so icon glyphs pop in.
+  const iconsLoaded = useIconCatalogs();
+  // The canvas paper (docs/specs/008-canvas/minimap.md "Fidelity"), so a
+  // preview on a dark canvas shows the dark cards the canvas shows.
+  const surface = useCanvasSurface();
+  // The theme's chart colours, so a chart's row preview matches the canvas.
+  const chartPalette = useCanvasChartPalette();
+  // The tab's finish (docs/specs/008-canvas/finish.md), so a sketched layer previews sketched.
+  const tabFinish = useTabFinish();
+  return useMemo(() => {
+    // The resolvers find nothing until the catalogues land; gating them on the
+    // flag makes the rebuild on landing a real input of this memo.
+    const art = iconsLoaded
+      ? { resolveIconArt: resolveIconArtLoaded, resolveStickerArt: resolveStickerArtLoaded }
+      : {};
+    if (elements.length === 0) {
+      return { thumbMarkup: new Map<string, string>(), thumbViewBox: null };
+    }
+    const markup = new Map<string, string>();
+    const labels = arrowLabelPass(elements, {
+      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
+    });
+    // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+    const backdrops = sketchBackdropIds(elements, tabFinish);
+    for (const band of layerBands(elements, layers, { includeHidden: true })) {
+      const parts: string[] = [];
+      for (const el of band.elements) {
+        if (el.type !== 'arrow' && isBoxed(el)) {
+          parts.push(
+            svgBoxed(el, {
+              ...art,
+              tabFont,
+              tabFinish,
+              sketchBackdrop: backdrops.has(el.id),
+              surface,
+              chartPalette,
+            }),
+          );
+        }
+      }
+      for (const el of band.elements) {
+        if (el.type === 'arrow')
+          parts.push(
+            // Breaks only around this layer's own boxes, the ones drawn here.
+            svgArrow(
+              el,
+              elements,
+              surface,
+              tabFont,
+              labels,
+              `lvd-layer-${band.layer.id}-ko-`,
+              band.elements,
+              undefined,
+              tabFinish,
+            ),
+          );
+      }
+      const opacity = layerOpacityOf(band.layer);
+      markup.set(
+        band.layer.id,
+        opacity < 1 ? `<g opacity="${r2(opacity)}">${parts.join('')}</g>` : parts.join(''),
+      );
+    }
+    const b = contentBounds(elements);
+    const pad = 8;
+    return {
+      thumbMarkup: markup,
+      thumbViewBox: `${r2(b.x - pad)} ${r2(b.y - pad)} ${r2(b.w + pad * 2)} ${r2(b.h + pad * 2)}`,
+    };
+  }, [elements, layers, tabFont, tabFinish, iconsLoaded, surface, chartPalette]);
+}

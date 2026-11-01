@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { TableElement } from '@/components/illustrations/palette-tools';
+import { TableEditControls } from '@/components/illustrations/tools-menus';
+
+export const metadata = helpMetadata({
+  title: 'Tables',
+  description:
+    'Drop an editable grid on the canvas and fill it in by double-clicking a cell, with rows and columns you add or remove as you go.',
+  path: '/help/palette/tools/tables/',
+});
+
+<ArticleLayout
+  title="Tables"
+  description="An editable grid of cells for tabular content, right on the canvas."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Tools', slug: 'tools' }}
+  subArticles={getSubArticles('tools').filter((a) => a.slug !== 'tables')}
+>
+
+A table is an editable grid for the parts of a diagram that are easier to read as rows and columns: a comparison, a schedule, a small data set, a legend. It lives on the canvas like any other element, so you can place, resize, recolour, lock and move it freely.
+
+<Figure caption="A table element with a header row and body cells, with one cell selected for editing.">
+  <TableElement />
+</Figure>
+
+## Adding one
+
+<Step n={1}>Open the **Diagrams** category on the palette strip.</Step>
+<Step n={2}>
+  Pick **Table**, then tap the canvas to drop a 3&nbsp;&times;&nbsp;3 grid with a header row, or
+  drag to draw the same grid at the size you want.
+</Step>
+<Step n={3}>
+  **Double-click any cell** to type. Enter commits and moves down a row, and Tab moves to the next
+  cell.
+</Step>
+
+To bring a block of data in at once, copy cells from a spreadsheet and paste them into a cell you are editing: the table fills from that cell and grows to fit.
+
+## Editing the grid
+
+- **Select a cell** with a click, then use the keyboard like a spreadsheet: arrow keys move the selection, Tab and Shift+Tab walk cells (Tab off the last cell adds a row), Enter or F2 edits, typing starts editing straight away, Backspace or Delete clears the cell, and Escape steps back to selecting the whole table. **Shift-click** more cells to style or clear several at once.
+- **Right-click a cell** for its context menu: text styling and size, colours, alignment and clear apply to every selected cell; a link is set one cell at a time.
+- **Rows and columns**: with the table selected, rest the pointer on a column or row and a small **⋯** appears just outside its top or left edge (on a touch screen they are always shown). Click it for **Insert Left** / **Insert Right** (or Above / Below for a row), **Move Left** / **Move Right** (Up / Down), and **Delete Column** (or Row). The **+** on the table's right edge offers **Add Column**, and the one on its bottom edge **Add Row**, each appending at that end.
+- **Sizing**: rest the pointer on a divider for a moment and drag to set a column's width or a row's height; double-click a divider to clear its set size, so the column or row shares the space evenly again.
+
+<Figure caption="A selected table with a column's ⋯ menu open, and the + buttons on the right and bottom edges.">
+  <TableEditControls />
+</Figure>
+
+## Picking a look
+
+A table paints four surfaces (the cells, the grid lines, the header band and the header text) that only read well together, so the **Presets** in the **Style** section of its context menu offer eight complete looks rather than making you choose four colours. Four are built from your theme's accent, quiet to loud: **Theme**, **Banded**, **Bold Head** and **Minimal**. Four are neutrals that look the same whatever the theme: **Plain**, **Paper**, **Slate** and **Inked**. Hover a tile to preview it on the table, click to apply.
+
+Zebra striping comes with the look, since it's part of the look. Which cells are **headers** doesn't: that's about your data, so a preset never re-reads your first row as a heading.
+
+Pick a look and it stays your table's look: change the diagram's [theme](/help/canvas/themes/) and a Banded table becomes the new theme's Banded, the same way a shape's preset moves with the theme. Set any of those colours by hand, or toggle the striping yourself, and the table keeps what you chose from then on.
+
+The table is a real canvas element underneath, so its grid lines and text follow the active [theme](/help/canvas/themes/), and you can restyle, align and multi-select it alongside everything else. The **Table** section of its context menu toggles **Header Row**, **Header Column** and **Zebra Striping**; with both headers on, the corner cell is both.
+
+<Tip>
+  Reach for a table when a cluster of shapes is really just rows and columns: a single grid stays
+  tidier and is far quicker to edit.
+</Tip>
+
+</ArticleLayout>

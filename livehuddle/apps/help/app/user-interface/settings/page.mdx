@@ -1,0 +1,133 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { SettingsDialogScene } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
+
+export const metadata = helpMetadata({
+  title: 'Settings',
+  description:
+    'Every livediagram setting explained: editor behaviour, appearance, shortcuts, panels, accessibility, canvases, account, API tokens, privacy and what syncs.',
+  path: '/help/user-interface/settings/',
+});
+
+<ArticleLayout
+  title="Settings"
+  description="Every category in the Settings dialog, what each setting does, and which ones follow you to another device."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+**Settings** opens from the **Settings** button (the sliders icon) in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular canvas, which is why there is one set of them and not one per canvas.
+
+Signed in, the dialog's header has a **livediagram** / **All** switch. **livediagram** shows this app's settings; **All** adds the settings your liveworkspace account keeps for every app, including an **Account** section with **Name and Colour**, **Sign-in Methods**, **Where You’re Signed In**, **Sign Out** and **Cloud Sync**. A guest sees this app's settings only.
+
+The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
+
+<Figure caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
+  <SettingsDialogScene noun="canvas" />
+</Figure>
+
+Some categories hold **sub-categories** (Editor holds Draw and Presenting; Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
+
+Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on (a panel's own options under its switch) sits indented beneath it, and shows only while that switch is on.
+
+## Editor
+
+Under **Canvas**:
+
+- **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
+- **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
+- **Element Indicators**: how an element shows that it has a link, a note, an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+
+Under **Mouse**:
+
+- **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
+- **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
+
+Then:
+
+- **Power User Mode**, under **Power User**: applies a set of recommended settings in one go and unlocks **Minimal Chrome**, which hides labels and hints while keeping every control. Switching it off puts back the settings you did not change. See [Power User Mode](/help/user-interface/power-user-mode/).
+
+### Draw
+
+- **Dock Position**: where [Draw mode](/help/canvas/draw-mode/)'s dock of pens, shapes and tools sits, **Top** or **Bottom** (closer to hand when drawing on a tablet). **Top** by default. Only Draw mode has a dock, so Diagram mode is unaffected.
+
+### Presenting
+
+How a [slide deck](/help/selection-modes/slide-deck/) runs when you present it. See [Presenter Controls](/help/selection-modes/slide-deck/presenter-controls/).
+
+- Under **Slides**: **Transition** (**Slide**, the default, **Fade** or **None**), **Speed** (**Quick**, **Normal**, the default, or **Slow**) and **Slide Size** (**Fill Screen**, the default, or **Actual Size**, which never zooms past 100%).
+- Under **Playback**: **Auto-Advance** (**Off**, the default, or every 5s, 10s, 30s or 60s), **Click to Advance** (on by default) and **Loop the Deck** (off by default).
+- Under **While Presenting**: **Show Position** (the slide counter and name, on by default), **Keep Controls Visible** (off), **Hide the Pointer** (on), **Show Elapsed Time** (off) and **Show Slide Budget** (off). The last two are also in the cog you get while presenting.
+
+## Appearance
+
+- **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a diagram's [theme](/help/canvas/themes/), although a tab on the Default theme follows it. The same control sits in the bottom bar. Saved on this device only (see below). See [Dark Mode](/help/tools/dark-mode/).
+- **Button Labels**: names the buttons along the bottom (such as **Search**, **Settings**, the theme, **Layers**, **Style** and **Tidy Up**) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
+- **UI Scale**: makes the panels, the toolbar and the buttons in the bottom-right corner (zoom, undo and redo, layers) bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. The canvas, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own (**Toolbar Scale** goes up to 140%); moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
+
+## Keyboard
+
+- **Keyboard Shortcuts**: the switch that turns the editor's keyboard shortcuts on and off. Off means all of them, chords like undo included, not just the single-letter keys. Saved on this device only (see below).
+- **All Shortcuts**: the full shortcut reference, in collapsible groups. The **Keyboard Shortcuts** command in [search](/help/search-panel/) opens Settings straight on this category. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+
+## Panels
+
+- **Panel Opacity**: fades every panel and the toolbar, from 30% to 100% (100% by default), so the canvas shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it. See [Panel Opacity](/help/palette/panel-opacity/).
+
+**Panels** holds four sub-categories, one per panel. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
+
+- **Layers**: **Enable Layers Panel**, then **Layer Thumbnails**, **Layer Element Counts** and **Preview Layer on Hover**. Turning the panel off also hides its button and the **Move to layer** choices in the element menu; your layers keep working. See [Layers](/help/canvas/layers/).
+- **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. See [Map](/help/user-interface/minimap/).
+- **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/).
+- **Quick Style**: **Enable Quick Style Panel**, the panel of common styles that opens beside a selected shape or arrow. With it off, every style is still in the element's right-click menu. See [Quick Style Panel](/help/canvas/quick-style-panel/).
+
+## Accessibility
+
+- **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
+- **UI Scale**: **Open Appearance** takes you to **UI Scale**, for bigger panels, toolbar and corner buttons.
+
+## Tours
+
+One switch per guided tour: **Diagram Tour**, **Workshop Tour**, **Draw Tour** and **Avatar Tour**. Tours never start on their own: each one starts from the **Start Tour** button in the bar along the bottom of the editor, just left of **Search** (Start Diagram Tour, Start Draw Tour and so on). A switch here turns itself off once you have taken that tour. Switch one back on and close Settings to take that tour again: it starts straight away if you are in its mode, or you can press its button when you get there. See [The Diagram Tour](/help/getting-started/diagram-tour/), [The Workshop Tour](/help/canvas/workshop-mode/workshop-tour/), [The Draw Tour](/help/canvas/draw-mode/draw-tour/).
+
+Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the [Sankey Diagram](/help/palette/build/sankey-diagram/), have a tour of their own, on the same **Start Tour** button while one is selected (Start Sankey Tour). **Show Me on Every Element** switches them all; beneath it, one switch per element that has a tour (**Sankey Diagram**, **Layer Stack**, **Pyramid**, **Funnel**, **Cycle**, **Hub and Spoke**, **Onion**, **Chevrons**, **Timeline**, **Mind Map**, **Flowchart**, **Org Chart**, **Sequence**, **Chart**, **Stack**, **Entity**, **Lane**, **Boundary**, **Diagram Key** and **Portal**) shows whether you have taken that one.
+
+## Canvases
+
+- **Show Home Banner**, under **Explorer**: the greeting, status pills and large search at the top of Explorer Home. On by default; with it off, Home's search sits in the header, as on every other Explorer page.
+- **Default Folders**: the folder each kind of new canvas goes to (diagrams, whiteboards, sessions and so on) when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
+
+## Account
+
+**Account** shows who you are (a guest, or your name and email when signed in), your [Trash](/help/account-and-data/trash/) (deleted canvases wait there for 30 days), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, and **Delete Account**. When this browser still holds pages, boards or designs that belong in livedocuments, liveplanner or livedesign, **Pages and Boards in This Browser** lists them until you move them there. It holds two sub-categories:
+
+### Notifications
+
+- **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a canvas to a folder or linking a tab. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
+- **Email**: once signed in, one switch per email (someone joins, comments on or mentions you in your canvas, assigns you an action or responds to a team invite, plus tips and milestones). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+
+### API Tokens
+
+- **Manage API Tokens** opens liveworkspace.app, where you create, view and revoke the tokens your own scripts and connected AI tools use to call livediagram as you. Below it, the workbenches paired with your tokens are listed, each with **Unpair**. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+
+Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
+
+## Privacy
+
+- **Send Anonymous Usage Events**: the small first-party events listed on the public [telemetry dashboard](/telemetry): no user content, no third-party trackers. Turn it off to keep everything you do on your device. See [What We Collect](/help/privacy-and-security/what-we-collect/).
+
+## Settings follow you, most of them
+
+Settings are **stored against your identity, not your browser**, and apply to every canvas you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your canvases](/help/getting-started/guest-vs-account/) if you later sign up.
+
+A few things deliberately stay on the device you are using:
+
+- **Theme** (light, dark or system) in **Appearance**.
+- The **Keyboard Shortcuts** switch, so you can keep shortcuts on where you have a full keyboard and off where you don't.
+- **Panel positions**: which corner each panel docks into.
+- **Explorer view**: List, Card or Details.
+- **Tool settings**: the eraser's brush, the laser's pen, the spotlight, the avatar and Draw mode's pens.
+
+The **Presenting** settings follow your account like the rest. The canvas-behaviour toggles ([auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/)) all live here, under **Editor** and **Panels**, so every setting has one home.
+
+</ArticleLayout>

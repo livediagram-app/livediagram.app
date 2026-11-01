@@ -1,0 +1,44 @@
+/* A face drawn by hand under Sketch (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too";
+ * @liveworkspace/workbench/components/canvas/SketchFace.tsx). The live face keeps its words and controls with its ink hidden; a still copy
+ * of it underneath keeps the ink, hides the words, and goes through the face wobble (SKETCH_FACE_FILTER, defined
+ * by SketchFilterDefs). */
+
+/* The live face: no fills, borders or shadows, no drawn shapes; its words, photos and focus rings stay. */
+[data-sketch-words]:not([data-sketch-measure])
+  :not(img, video, iframe, canvas, [data-sketch-skip], [data-sketch-skip] *),
+[data-sketch-words]:not([data-sketch-measure])
+  :not([data-sketch-skip], [data-sketch-skip] *)::before,
+[data-sketch-words]:not([data-sketch-measure])
+  :not([data-sketch-skip], [data-sketch-skip] *)::after {
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+}
+[data-sketch-words]:not([data-sketch-measure])
+  :not(:focus-visible, [data-sketch-skip], [data-sketch-skip] *) {
+  box-shadow: none !important;
+}
+[data-sketch-words]:not([data-sketch-measure])
+  :is(rect, circle, ellipse, path, line, polyline, polygon, use):not([data-sketch-skip] *) {
+  opacity: 0 !important;
+}
+
+/* The ink: everything but the words, through the wobble, never hit. Emoji are words too: a transparent fill hides
+ * them. */
+[data-sketch-ink] {
+  filter: url(#lvd-sketch-face);
+  pointer-events: none;
+}
+[data-sketch-ink],
+[data-sketch-ink] * {
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: none !important;
+  text-decoration-color: transparent !important;
+  caret-color: transparent !important;
+}
+[data-sketch-ink] ::placeholder {
+  color: transparent !important;
+}
+[data-sketch-ink] :is(text, tspan, textPath) {
+  visibility: hidden !important;
+}

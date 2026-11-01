@@ -1,0 +1,66 @@
+/* The landing hero's whiteboard wall (docs/specs/019-marketing/marketing-site.md "Hero"): the band's
+   ground on the landing page only (the help centre's page headers keep @livediagram/ui hero-band.css's
+   dot grid). A near-white board with a faint diagonal sheen and a soft frame, sticky notes hung from
+   `xl`, the search arrow in marker and the fan's cards taped up. All static CSS and SVG: the only motion
+   is the arrow's play-once draw (hero-animations.css) and the fan's deal (hero-fan.css). */
+.hero-whiteboard {
+  --hero-bg: #f6f9fc;
+  --wb-sheen: rgb(255 255 255 / 0.85);
+  --wb-frame: #dce7f0;
+  --wb-marker: #0284c7;
+  --wb-tape: rgb(125 211 252 / 0.5);
+  --wb-sticky-shadow: rgb(30 27 75 / 0.18);
+  --wb-sticky-yellow: #fde68a;
+  --wb-sticky-pink: #fbcfe8;
+  --wb-sticky-green: #bbf7d0;
+  --wb-sticky-ink: #3f2a06;
+  --wb-hand: 'Caveat Hero', 'Bradley Hand', 'Segoe Print', 'Comic Sans MS', cursive;
+}
+
+:where(.dark, .dark *):not(:where(.light, .light *)) .hero-whiteboard,
+.hero-whiteboard:where(.dark, .dark *):not(:where(.light, .light *)) {
+  --hero-bg: #0b1520;
+  --wb-sheen: rgb(255 255 255 / 0.035);
+  --wb-frame: #1b2a3b;
+  --wb-marker: #38bdf8;
+  --wb-tape: rgb(56 189 248 / 0.28);
+  --wb-sticky-shadow: rgb(0 0 0 / 0.55);
+  --wb-sticky-yellow: #b9932a;
+  --wb-sticky-pink: #b5578a;
+  --wb-sticky-green: #4d9a68;
+  --wb-sticky-ink: #140d02;
+}
+
+/* The board: a sheen across it and the frame round its edge, drawn as one inset shadow so it costs no
+   extra layout. */
+.hero-wb-board {
+  background-image: linear-gradient(115deg, transparent 28%, var(--wb-sheen) 44%, transparent 60%);
+  box-shadow: inset 0 0 0 10px var(--wb-frame);
+}
+
+/* A sticky note on the editor's pad colours, with the pad's peel shadow under its foot. Its display is
+   the markup's (`hidden xl:flex`): this sheet is unlayered, so setting one here would beat the utilities. */
+.hero-wb-sticky {
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  width: 7.5rem;
+  height: 7.5rem;
+  padding: 0.75rem;
+  color: var(--wb-sticky-ink);
+  font-family: var(--wb-hand);
+  font-weight: 600;
+  font-size: 1.75rem;
+  line-height: 1.05;
+  text-align: center;
+  box-shadow: 0 14px 18px -12px var(--wb-sticky-shadow);
+}
+
+/* The scrawl under the arrow's tip, and the tape across each taped-up card. */
+.hero-wb-note {
+  font-family: var(--wb-hand);
+  font-weight: 600;
+}
+.hero-wb-tape {
+  background: var(--wb-tape);
+}

@@ -1,0 +1,125 @@
+/*
+ * The image picker's Search tab loaders (docs/specs/009-elements/image-search.md "Loading" and
+ * "Picking", ImageSearchLoader.tsx). Ambient indicators, so they loop
+ * (docs/specs/004-interface-design/motion.md):
+ *
+ *   - Searching: a grid of placeholder photos, each a soft wash with a sun and two hills. A light
+ *     sweeps across every tile, each tile a step behind the one before, so the glint rolls across
+ *     the grid like a wave; the lens above circles as it looks.
+ *   - Picking: the picked tile lifts and a ring chases round it while its stage reads below.
+ *
+ * The resting styles are the finished, still picture, so with the animation off (reduced motion)
+ * the loaders are calm placeholders with their words.
+ */
+
+/* The glint: a diagonal band of light crossing the tile, then a rest. The tile's index sets its
+   phase, so the wave rolls left to right, top to bottom. */
+.lvd-search-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.7) 48%,
+    rgb(255 255 255 / 0.15) 56%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: lvd-search-glint 1.8s cubic-bezier(0.4, 0, 0.2, 1) var(--lvd-search-phase, 0s) infinite;
+}
+:where(.dark) .lvd-search-skeleton::after {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.1) 48%,
+    rgb(255 255 255 / 0.03) 56%,
+    transparent 70%
+  );
+}
+
+/* The placeholder's sun and hills breathe with the wave, so the tile reads as a picture forming. */
+.lvd-search-art {
+  animation: lvd-search-breathe 1.8s ease-in-out var(--lvd-search-phase, 0s) infinite;
+}
+
+/* The lens circles a small orbit, as if scanning the grid. */
+.lvd-search-lens {
+  animation: lvd-search-orbit 1.6s linear infinite;
+}
+
+/* The picked tile's ring: an arc chasing round. */
+.lvd-pick-ring {
+  transform-origin: center;
+  animation: lvd-pick-spin 1s linear infinite;
+}
+
+/* The stage bar's light, running along the track. */
+.lvd-pick-bar {
+  animation: lvd-pick-bar 1.3s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes lvd-search-glint {
+  0% {
+    transform: translateX(-120%);
+  }
+  60%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+@keyframes lvd-search-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+@keyframes lvd-search-orbit {
+  from {
+    transform: rotate(0deg) translateX(2px) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translateX(2px) rotate(-360deg);
+  }
+}
+@keyframes lvd-pick-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes lvd-pick-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+/* Still under reduced motion: the placeholders at rest, the ring a fixed arc, the bar a calm
+   third. Set explicitly so the global collapse does not land the glint mid-sweep. */
+@media (prefers-reduced-motion: reduce) {
+  .lvd-search-skeleton::after {
+    animation: none;
+    display: none;
+  }
+  .lvd-search-art,
+  .lvd-search-lens,
+  .lvd-pick-ring,
+  .lvd-pick-bar {
+    animation: none;
+  }
+}
+:root.reduce-motion .lvd-search-skeleton::after {
+  animation: none;
+  display: none;
+}
+:root.reduce-motion .lvd-search-art,
+:root.reduce-motion .lvd-search-lens,
+:root.reduce-motion .lvd-pick-ring,
+:root.reduce-motion .lvd-pick-bar {
+  animation: none;
+}

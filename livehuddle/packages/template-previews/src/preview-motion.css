@@ -1,0 +1,3 @@
+/* The template previews' hover stories (docs/specs/004-interface-design/motion.md): @liveworkspace/template-previews'
+   stylesheet, shipped next to this product's previews and imported by every app that renders them. */
+@import '@liveworkspace/template-previews/preview-motion.css';

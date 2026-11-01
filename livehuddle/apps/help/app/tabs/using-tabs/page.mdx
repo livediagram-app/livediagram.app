@@ -1,0 +1,111 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { TabBarOverview, RenamingTab, TabMenu } from '@/components/illustrations/tabs';
+
+export const metadata = helpMetadata({
+  title: 'Using Tabs',
+  description:
+    'Split a livediagram canvas into tabs, each its own canvas: add, name, reorder, delete and switch tabs on the tab bar, with every action in the tab menu.',
+  path: '/help/tabs/using-tabs/',
+});
+
+<ArticleLayout
+  title="Tabs"
+  description="One canvas, many canvases. Tabs let you split a project across several boards, each with its own elements, theme, and background."
+  categoryTitle="Tabs"
+  categorySlug="tabs"
+>
+
+A canvas is not a single page. It is a collection of **tabs**, each with its own elements, layout, theme, and background. A new canvas usually starts with one tab, and you add more whenever a piece of work deserves its own space. The tab bar sits along the bottom of the editor, and the active tab fills the canvas area above it.
+
+## What a tab is
+
+Each tab is a self-contained canvas inside the canvas. A tab carries its own elements, its own theme and background pattern, and an optional lock, all independent of the other tabs around it. Common ways people split work across tabs:
+
+- An **Overview** tab with the high-level picture, and detail tabs behind it.
+- One tab per system, team, or phase of a project.
+- A scratch tab for ideas you are not ready to file yet.
+
+Each tab also has its own [mode](/help/canvas/editor-modes/) (Diagram, Draw or Workshop), the same for everyone on it, chosen on its start while it is empty. The small icon at the start of a tab's name shows it.
+
+<Figure caption="The tab bar runs along the bottom of the editor: the active tab is raised with its ⋯ menu button, and the plus button adds another tab.">
+  <TabBarOverview />
+</Figure>
+
+## Adding a tab
+
+Press the **+** button at the end of the tab bar, or run **Create New Tab** from the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`). The new tab:
+
+- is named `Tab 2`, `Tab 3` and so on, after the number of tabs in the canvas;
+- takes the theme, background and font of the tab you were on, so it matches the work around it;
+- opens in the same mode as the tab you were on: made from a Workshop tab it is a Workshop tab, and from a Draw tab a Draw tab;
+- starts on that mode's own start, such as **Start Drawing** or **Start a Workshop**, so you can begin from a template or close it to keep the tab blank.
+
+**Duplicate** in the tab menu makes a copy instead: it is named after the original with "copy" on the end, sits right after it, and is a separate tab with its own elements from then on.
+
+## Naming and reordering tabs
+
+Tabs start with default names like `Tab 1` and `Tab 2`, and you can rename any of them:
+
+- **Double-click** the active tab's name to edit it inline. Enter or clicking away saves, Escape cancels, and an empty name keeps the old one.
+- **Rename** in the tab menu (and **Rename Tab** in the command palette) opens the same editor.
+- **Auto-rename on first edit:** while a tab still has its default name, editing the label of its first element renames the tab to match. This only happens once, so later edits leave a renamed tab alone.
+
+Tab names are capped at **60 characters**. Runs of spaces and line breaks collapse to one, and anything longer is cut at the last whole word with an ellipsis, so a paragraph typed into a sticky can't turn into an unreadable tab.
+
+Drag a tab left or right to reorder it. A blue bar shows where it will land: drop on the left half of a tab to land before it, the right half to land after it. Reordering only moves the tab in the list, it never touches the content on any tab.
+
+Drag a tab up off the bar to the **right edge** of the screen instead, and it opens beside the tab you're on: see [Side by Side Tabs](/help/tabs/side-by-side/).
+
+<Figure caption="Double-click the active tab's name to edit it inline, then press Enter to save or Escape to cancel.">
+  <RenamingTab />
+</Figure>
+
+## The tab menu
+
+Click the **⋯** button on the active tab, or right-click any tab (which switches to it first), to open its menu. Right-clicking an empty spot on the canvas opens the same menu, with **Paste** moved to a row of its own at the top. On a phone it opens as a sheet from the bottom of the screen.
+
+Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** (greyed out until you have copied something), **Side by Side** (on a large enough window; **Close Side by Side** while two tabs are open), **Lock Tab** and **Delete**. Below them, everything else is a full-width row, in groups split by a line:
+
+- **Organise in Tab Folder** and **Add to Another Canvas**.
+- **Import**, **Export**, and **Clear**, which removes every element from the tab after a confirmation (undo brings them back).
+
+To tidy a tab's layout, search for **Auto Layout** or **Auto-align** in the [command palette](/help/search-panel/the-search-panel/command-palette/). See [Cleaning Up a Tab](/help/tabs/tab-cleanup/).
+
+The [session tools](/help/collaboration/session-tools/) (timer, vote and poll) are not in this menu: they have their own buttons in the bottom bar.
+
+<Figure caption="The tab menu: quick actions along the top, then full-width rows for folders and canvases, and content.">
+  <TabMenu />
+</Figure>
+
+## Deleting a tab
+
+Choose **Delete** in the tab menu. The tab goes straight away, and **Undo** brings it back. Once you reload or leave the canvas it is gone, unless another canvas also holds it ([Add to Another Canvas](/help/tabs/add-to-document/)), so export or duplicate anything you might want later. A few things to know:
+
+- A canvas always keeps at least one tab, so Delete is greyed out on the last one.
+- A [locked tab](/help/tabs/locking-tabs/) can't be deleted until you unlock it.
+- Links on other tabs that pointed at the deleted tab are removed with it.
+- If the tab is also in [another canvas](/help/tabs/add-to-document/), it is only removed from this one.
+
+## Share links
+
+On a share link for a Viewer or a Participant, and on any link scoped to one tab, you can still click between tabs, but the **+** button, the tab menu, renaming and drag-to-reorder are all hidden. Only an Editor with a link to the whole canvas changes its tabs.
+
+## More with tabs
+
+Each tab also carries its own menu of actions, covered in their own guides:
+
+- **[Tab Folders](/help/tabs/tab-folders/)** group related tabs under one named chip so a long tab bar stays readable.
+- **[Side by Side Tabs](/help/tabs/side-by-side/)** puts two tabs on screen at once, each live, with the toolbars following you between them.
+- **[Linking Across Tabs](/help/tabs/linking-tabs/)** turns any element into a jump point to another tab.
+- **[Add a Tab to Another Canvas](/help/tabs/add-to-document/)** shares a tab into a different canvas: it is the same tab in both places, not a copy, so edits appear everywhere it lives.
+- **[Importing](/help/tabs/import-tabs/)** and **[Exporting](/help/tabs/export-tabs/)** move a tab's contents in and out as a file.
+- **[Locking a Tab](/help/tabs/locking-tabs/)** makes a whole tab read-only.
+- **[Cleaning Up a Tab](/help/tabs/tab-cleanup/)** tidies a tab's layout in one click.
+
+<Tip>
+  A shared reference tab such as a glossary can live in more than one canvas at once with [Add to
+  Canvas](/help/tabs/add-to-document/). Editing it in one place updates it everywhere.
+</Tip>
+
+</ArticleLayout>

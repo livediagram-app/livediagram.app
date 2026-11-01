@@ -1,0 +1,237 @@
+// The DATA-shape context-menu rows (docs/specs/009-elements/progress.md progress,
+// rating, pie / chart): the inline editors (star picker,
+// percent slider), their category glyphs, and the shared AnimTiles
+// grid the three per-kind animation pickers ride. Split from
+// context-menu-rows.tsx (which re-exports everything here) so that file
+// keeps the generic look-and-feel rows.
+
+import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
+import { type ReactNode } from 'react';
+import {
+  animationLabel,
+  clampPercent,
+  PIE_ANIMS,
+  PROGRESS_ANIMS,
+  RATING_ANIMS,
+  RATING_MAX,
+  SANKEY_ANIMS,
+  type AnimationSpeed,
+  type SankeyAnim,
+  type PieAnim,
+  type ProgressAnim,
+  type RatingAnim,
+} from '@livediagram/document';
+import { MenuToggleRow } from './context-menu-input-rows';
+
+// The "None" tile glyph — a dashed empty circle, sized to match a marker glyph.
+export function NoMarkerGlyph() {
+  return (
+    <Glyph size={18} units={24}>
+      <circle cx="12" cy="12" r="8" strokeDasharray="3 3" />
+    </Glyph>
+  );
+}
+import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
+import {
+  SankeyAnimPreview,
+  PieAnimPreview,
+  ProgressAnimPreview,
+  RatingAnimPreview,
+} from '@/components/palette/animation-previews-existing';
+import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { SpeedTiles, withNone } from '@/components/palette/context-menu-tiles';
+import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
+import { lucideChartColumn, lucideChartPie, lucideStar } from '@liveworkspace/icons/lucide';
+
+// Progress percentage slider (docs/specs/009-elements/progress.md). Mirrors OpacityRow but on a 0–100
+// integer scale.
+
+// A small star glyph for the Rating controls (filled = scored, else outline).
+function StarGlyph({ filled, size = 16 }: { filled: boolean; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z"
+        fill={filled ? '#f59e0b' : 'none'}
+        stroke={filled ? '#f59e0b' : 'currentColor'}
+        strokeWidth={filled ? 0 : 1.6}
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// The "Rating" category glyph: a filled star (the hollow star is the Icon category).
+export function RatingMenuGlyph() {
+  return (
+    <Glyph size={MENU_ICON_PX} units={24} fill="currentColor">
+      <Prims prims={lucideStar} />
+    </Glyph>
+  );
+}
+
+// Rating star picker (docs/specs/009-elements/rating.md): click a star to set the 1..RATING_MAX score.
+export function RatingPickerRow({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+}) {
+  return (
+    <div className="px-2 py-1.5">
+      <p className="px-1 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">Stars</p>
+      <div className="flex items-center justify-center gap-1 text-slate-400">
+        {Array.from({ length: RATING_MAX }, (_, i) => {
+          const n = i + 1;
+          return (
+            <button
+              key={n}
+              type="button"
+              onClick={() => onChange(n)}
+              aria-label={`${n} star${n > 1 ? 's' : ''}`}
+              className="cursor-pointer rounded p-0.5 transition hover:scale-110"
+            >
+              <StarGlyph filled={n <= value} size={20} />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Rating animation tiles (docs/specs/009-elements/rating.md): None + the star-specific animations, then a
+// Shared body for the per-element animation pickers (Progress / Rating / Pie):
+// a None-prepended tile grid, then a Speed row + a Repeat toggle once an
+// animation is picked. Each kind passes only its own anim list + tile glyph;
+// everything else (speed, repeat, the play-once-vs-loop copy) is identical.
+// `header` adds the "Animation" label (Progress omits it, as the category
+// title already reads "Animation").
+type AnimTilesProps<T extends string> = {
+  anim: T | null;
+  speed: AnimationSpeed;
+  repeat: boolean;
+  onSet: (v: T | null) => void;
+  onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
+};
+function AnimTiles<T extends string>({
+  anims,
+  glyphFor,
+  header = true,
+  anim,
+  speed,
+  repeat,
+  onSet,
+  onSetSpeed,
+  onSetRepeat,
+}: AnimTilesProps<T> & {
+  anims: readonly T[];
+  glyphFor: (v: T | null) => ReactNode;
+  header?: boolean;
+}) {
+  return (
+    <>
+      {header ? (
+        <p className="px-3 pb-1 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+          Animation
+        </p>
+      ) : null}
+      <div className={`grid grid-cols-4 gap-1 px-2 ${header ? 'pb-1.5' : 'py-1.5'}`}>
+        {withNone(anims).map((v) => (
+          <AnimationPreviewTile
+            key={v ?? 'none'}
+            active={anim === v}
+            label={v ? animationLabel(v) : 'None'}
+            frame={v ? 0.3 : 0}
+            onClick={() => onSet(v)}
+          >
+            {glyphFor(v)}
+          </AnimationPreviewTile>
+        ))}
+      </div>
+      {anim ? (
+        <>
+          <SpeedTiles value={speed} onSet={onSetSpeed} />
+          <MenuToggleRow
+            label="Repeat"
+            description="Loop the animation instead of playing it once."
+            checked={repeat}
+            onToggle={() => onSetRepeat(!repeat)}
+          />
+        </>
+      ) : null}
+    </>
+  );
+}
+
+export function RatingAnimTiles(props: AnimTilesProps<RatingAnim>) {
+  return (
+    <AnimTiles {...props} anims={RATING_ANIMS} glyphFor={(v) => <RatingAnimPreview anim={v} />} />
+  );
+}
+
+// Monochrome pie outline — the "Data" category glyph. The other category
+// glyphs are all single-colour (currentColor); this matches them.
+export const DataMenuGlyph = lucideGlyph(lucideChartPie, MENU_ICON_PX);
+
+// Bars on axes: the "Chart" (display options) category glyph.
+export const ChartMenuGlyph = lucideGlyph(lucideChartColumn, MENU_ICON_PX);
+
+// Pie slice animation tiles (docs/specs/009-elements/pie-chart.md): None + the chart animations, then Speed
+// + Repeat once one is picked (mirrors ProgressAnimTiles / RatingAnimTiles).
+export function PieAnimTiles(props: AnimTilesProps<PieAnim>) {
+  return <AnimTiles {...props} anims={PIE_ANIMS} glyphFor={(v) => <PieAnimPreview anim={v} />} />;
+}
+
+// Sankey animation tiles (docs/specs/009-elements/sankey.md "The menu"): None, Grow (sweeps in once) and
+// Flow (a current along the bands, looping), then Speed + Repeat once one is picked.
+export function SankeyAnimTiles(props: AnimTilesProps<SankeyAnim>) {
+  return (
+    <AnimTiles {...props} anims={SANKEY_ANIMS} glyphFor={(v) => <SankeyAnimPreview anim={v} />} />
+  );
+}
+
+// A labelled 0–100 range slider with a right-aligned `{pct}%` readout. Shared
+// by the Progress percentage + the Layer opacity rows; each owns its own
+// value<->pct conversion and passes the already-resolved pct in.
+export function PercentSliderRow({
+  label,
+  pct,
+  onPct,
+}: {
+  label: string;
+  pct: number;
+  onPct: (pct: number) => void;
+}) {
+  return (
+    <MenuSliderRow
+      label={label}
+      min={0}
+      max={100}
+      value={pct}
+      display={`${pct}%`}
+      onChange={onPct}
+    />
+  );
+}
+
+export function ProgressRow({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return <PercentSliderRow label="Percentage" pct={clampPercent(value)} onPct={onChange} />;
+}
+
+// Progress fill-animation tiles (docs/specs/009-elements/progress.md): None / Fill / Pulse / Stripes, plus
+// a Speed row + a Repeat toggle once an animation is picked. `fill` defaults to
+// playing once and holding (Repeat off); pulse / stripes default to looping.
+// No header (the Progress category title already reads "Animation").
+export function ProgressAnimTiles(props: AnimTilesProps<ProgressAnim>) {
+  return (
+    <AnimTiles
+      {...props}
+      anims={PROGRESS_ANIMS}
+      header={false}
+      glyphFor={(v) => <ProgressAnimPreview anim={v} />}
+    />
+  );
+}

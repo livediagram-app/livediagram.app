@@ -1,0 +1,55 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Shared With Me',
+  description:
+    'Items other people have shared with you collect under Shared With Me in the Explorer, so a link you were sent is easy to find again.',
+  path: '/help/explorer/shared-with-you/',
+});
+
+<ArticleLayout
+  title="Shared With Me"
+  description="Open a share link someone sent you and the item lands under Shared With Me, ready to reopen any time."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Shared With Me** collects the items other people have handed you, so a link a colleague sent last week is still easy to find this week. It sits in the Explorer sidebar's **Overview** group, just below the Timeline, with a count of what it holds.
+
+## How an item gets here
+
+When you open a [share link](/help/collaboration/sharing/) someone sent you, that item is remembered and added to **Shared With Me**. Opening the link once is enough. Until you have opened one, the page says **Nothing shared with you yet**.
+
+Opening a link to one of your own items doesn't add it, and items in your [teams](/help/explorer/team-spaces/) live in the team's library.
+
+Shared With Me covers every liveworkspace app: choose **All Apps** at the top of the page to see a Canvas or a Design someone shared with you beside your canvases.
+
+## Reading the list
+
+Shared With Me is a table of its own, whichever view the rest of the Explorer is in:
+
+- **Name**, with a picture of the item. Click it to open the item on its share link, without digging the original link out of your messages.
+- **Owner**: whose item it is (hidden on a phone, to save room).
+- **Role**: **Edit**, **Participate** or **View**, the access the share link gives you.
+- **Updated**: when the item last changed (hidden on a phone too).
+
+Type in the Explorer's search box to [filter](/help/explorer/filters/) the list.
+
+## Removing an item
+
+Click the **×** at the end of a row (**Dismiss**) and confirm, or choose **Remove from Shared With Me** in the item's **⋯** menu, when you are done with it. That only removes it from your list; it does not affect the item or anyone else's access. Open the share link again and it comes back.
+
+The list only offers items you can still open: if the owner turns the link off, it [runs out](/help/collaboration/sharing/share-link-expiry/), or the item goes to the Trash, it drops off.
+
+## Guests and signing in
+
+Shared With Me works without an account: the list is kept for your guest identity, which is the same in every liveworkspace app. Signing in carries it into your account.
+
+<Tip>
+  Shared items stay separate from **My Work**: they are other people's items you have access to, not
+  your own library, so they never clutter your folders. They do show up in
+  [Recent](/help/explorer/recent/) and in search.
+</Tip>
+
+</ArticleLayout>

@@ -1,0 +1,421 @@
+'use client';
+
+// The element-menu sections for the collaboration elements that carry
+// settings: the estimate card's scale (docs/specs/012-collaboration/estimate-card.md), the agenda's segments
+// (docs/specs/012-collaboration/agenda.md), the decision record's status / date / drivers (docs/specs/012-collaboration/decision-record.md), and
+// the chair's facing (docs/specs/009-elements/chair.md).
+//
+// Their own file for the same reason BehaviourMenuSections has one: each is a
+// small form, and none of it belongs in the data-shape sections beside charts
+// and rails.
+
+import {
+  AGENDA_DEFAULT_MINUTES,
+  AGENDA_MAX_ITEMS,
+  AGENDA_MAX_MINUTES,
+  AGENDA_MAX_TEXT,
+  AGENDA_MIN_MINUTES,
+  CHAIR_FACINGS,
+  CHAIR_FACING_LABELS,
+  DECISION_MAX_DRIVERS,
+  DECISION_MAX_TEXT,
+  DECISION_STATUSES,
+  DECISION_STATUS_COLORS,
+  DECISION_STATUS_LABELS,
+  DEFAULT_DECISION_STATUS,
+  DEFAULT_ESTIMATE_SCALE,
+  ESTIMATE_SCALES,
+  ESTIMATE_SCALE_LABELS,
+  ESTIMATE_SCALE_VALUES,
+  clampAgendaMinutes,
+  moveAgendaCurrent,
+  removeAgendaCurrent,
+  type AgendaItem,
+  type ChairFacing,
+  type DecisionStatus,
+  type EstimateScale,
+  type ShapeElement,
+  isSeatingShape,
+  seatingFacing,
+  type SeatingKind,
+  DEFAULT_ROOM_DOOR,
+  ROOM_DOOR_LABELS,
+  ROOM_DOORS,
+  type RoomDoor,
+} from '@livediagram/document';
+import { DateInput } from '@livediagram/ui';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
+import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
+import {
+  MENU_ADD_ROW_BUTTON,
+  MENU_CELL_INPUT,
+} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
+
+// Each collaboration kind contributes exactly ONE section to the Tools group —
+// an agenda has Segments and nothing else, a chair has Chair and nothing else.
+// These used to be forced open, because inside a flyout panel holding only
+// them an accordion was a second click revealing the one thing behind it.
+// `MenuFlyoutSection` now promotes a lone section into the host menu instead
+// (docs/specs/008-canvas/canvas-and-palette.md), where it is an ordinary collapsible row like every other one — so
+// the override is gone and the scaffold's `sectionProps` is passed straight
+// through. Forcing it open here now would leave a row in the main menu that
+// can never be closed.
+
+const fieldClass =
+  'w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
+const labelClass = 'text-[10px] font-medium text-slate-500 dark:text-slate-400';
+const removeButtonClass =
+  'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800';
+
+// --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
+
+export function EstimateMenuSection({
+  target,
+  sectionProps,
+  onSetScale,
+}: {
+  target: ShapeElement | undefined;
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
+  onSetScale: (scale: EstimateScale) => void;
+}) {
+  const current = target?.estimateScale ?? DEFAULT_ESTIMATE_SCALE;
+  return (
+    <MenuAccordionSection title="Scale" icon={<ToolsMenuGlyph />} {...sectionProps('estimate')}>
+      <div className="flex flex-col gap-1 px-2 py-1.5">
+        {ESTIMATE_SCALES.map((scale) => (
+          <button
+            key={scale}
+            type="button"
+            onClick={() => onSetScale(scale)}
+            aria-pressed={current === scale}
+            className={`flex cursor-pointer flex-col items-start rounded-md border px-2 py-1 text-left transition ${
+              current === scale
+                ? 'border-brand-400 bg-brand-50 dark:border-brand-500/60 dark:bg-brand-500/15'
+                : 'border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800'
+            }`}
+          >
+            <span className="text-[11px] font-medium text-slate-700 dark:text-slate-200">
+              {ESTIMATE_SCALE_LABELS[scale]}
+            </span>
+            {/* The values themselves, because the name of a scale is not the
+                thing being chosen between — "1 2 3 5 8" is. */}
+            <span className="text-[10px] tabular-nums text-slate-500 dark:text-slate-400">
+              {ESTIMATE_SCALE_VALUES[scale].join('  ')}
+            </span>
+          </button>
+        ))}
+        <p className="mt-0.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+          Changing the scale keeps answers already cast, so clear the card first if the round has
+          started.
+        </p>
+      </div>
+    </MenuAccordionSection>
+  );
+}
+
+// Stable empties, so an element without rows compares equal from one render to the next.
+const NO_AGENDA_ITEMS: AgendaItem[] = [];
+const NO_DRIVERS: string[] = [];
+
+// --- Agenda (docs/specs/012-collaboration/agenda.md) -----------------------------------------------------
+
+// Mirrors the checklist's row editor (docs/specs/009-elements/checklist.md) and the record's field editor
+// (docs/specs/009-elements/entity.md) rather than inventing a third row-editing idiom.
+export function AgendaMenuSection({
+  target,
+  sectionProps,
+  onSetItems,
+}: {
+  target: ShapeElement | undefined;
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
+  // `moveCurrent` carries the current segment with its row: given the index
+  // that was current, where it is now (undefined when its row is gone). Left
+  // out for an edit that keeps every row where it was.
+  onSetItems: (items: AgendaItem[], moveCurrent?: (current: number) => number | undefined) => void;
+}) {
+  const items = target?.agendaItems ?? NO_AGENDA_ITEMS;
+  // The row drafts follow the element's segments when they change, adjusted during render.
+  const [rows, setRows] = useFollowingDraft<AgendaItem[]>(items);
+
+  const move = (from: number, to: number) => {
+    if (to < 0 || to >= rows.length) return;
+    const next = [...rows];
+    const [moved] = next.splice(from, 1);
+    if (moved) next.splice(to, 0, moved);
+    onSetItems(next, (current) => moveAgendaCurrent(current, from, to));
+  };
+
+  return (
+    <MenuAccordionSection title="Segments" icon={<ToolsMenuGlyph />} {...sectionProps('agenda')}>
+      <div className="px-2 py-1.5">
+        <div className="flex flex-col gap-1">
+          {rows.map((item, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <input
+                className={`${MENU_CELL_INPUT} flex-1`}
+                value={item.label}
+                placeholder="Segment"
+                aria-label={`Segment ${i + 1} name`}
+                maxLength={AGENDA_MAX_TEXT}
+                onChange={(e) =>
+                  setRows((r) => r.map((s, j) => (j === i ? { ...s, label: e.target.value } : s)))
+                }
+                onBlur={() => onSetItems(rows)}
+              />
+              <input
+                className={`${MENU_CELL_INPUT} w-[3.25rem]`}
+                type="number"
+                min={AGENDA_MIN_MINUTES}
+                max={AGENDA_MAX_MINUTES}
+                value={item.minutes}
+                aria-label={`Segment ${i + 1} minutes`}
+                onChange={(e) =>
+                  setRows((r) =>
+                    r.map((s, j) => (j === i ? { ...s, minutes: Number(e.target.value) } : s)),
+                  )
+                }
+                // Clamped on commit, so a typed 0 or 999 lands as the nearest
+                // legal value rather than being kept and clamped forever after
+                // on every read.
+                onBlur={() =>
+                  onSetItems(rows.map((s) => ({ ...s, minutes: clampAgendaMinutes(s.minutes) })))
+                }
+              />
+              <button
+                type="button"
+                aria-label={`Move segment ${i + 1} up`}
+                disabled={i === 0}
+                onClick={() => move(i, i - 1)}
+                className={`${removeButtonClass} hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700`}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                aria-label={`Remove segment ${i + 1}`}
+                onClick={() =>
+                  onSetItems(
+                    rows.filter((_, j) => j !== i),
+                    (current) => removeAgendaCurrent(current, i),
+                  )
+                }
+                className={removeButtonClass}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          disabled={rows.length >= AGENDA_MAX_ITEMS}
+          onClick={() => onSetItems([...rows, { label: '', minutes: AGENDA_DEFAULT_MINUTES }])}
+          className={MENU_ADD_ROW_BUTTON}
+        >
+          Add Segment
+        </button>
+      </div>
+    </MenuAccordionSection>
+  );
+}
+
+// --- Decision record (docs/specs/012-collaboration/decision-record.md) -------------------------------------------
+
+export function DecisionMenuSection({
+  target,
+  sectionProps,
+  onSetStatus,
+  onSetDate,
+  onSetDrivers,
+}: {
+  target: ShapeElement | undefined;
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
+  onSetStatus: (status: DecisionStatus) => void;
+  onSetDate: (date: string | undefined) => void;
+  onSetDrivers: (drivers: string[]) => void;
+}) {
+  const status = target?.decisionStatus ?? DEFAULT_DECISION_STATUS;
+  const drivers = target?.decisionDrivers ?? NO_DRIVERS;
+  // The row drafts follow the element's drivers when they change, adjusted during render.
+  const [rows, setRows] = useFollowingDraft<string[]>(drivers);
+
+  return (
+    <MenuAccordionSection title="Decision" icon={<ToolsMenuGlyph />} {...sectionProps('decision')}>
+      <div className="flex flex-col gap-2 px-2 py-1.5">
+        <div>
+          <span className={labelClass}>Status</span>
+          <div className="mt-1 grid grid-cols-2 gap-1">
+            {DECISION_STATUSES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onSetStatus(s)}
+                aria-pressed={status === s}
+                className={`inline-flex items-center cursor-pointer rounded-md border px-1.5 py-1 text-[10px] font-semibold transition ${
+                  status === s
+                    ? 'border-transparent'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                }`}
+                // The chosen status wears its own chip colours, so the picker
+                // shows exactly what will land on the card.
+                style={
+                  status === s
+                    ? {
+                        backgroundColor: DECISION_STATUS_COLORS[s].bg,
+                        color: DECISION_STATUS_COLORS[s].text,
+                      }
+                    : undefined
+                }
+              >
+                <span className="text-optical-line text-optical-caps [--optical-tracking:0.04em]">
+                  {DECISION_STATUS_LABELS[s]}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="lvd-decision-date">
+            Date
+          </label>
+          <DateInput
+            id="lvd-decision-date"
+            unstyled
+            className={`${fieldClass} mt-1`}
+            value={target?.decisionDate}
+            // Saves only a whole date (docs/specs/004-interface-design/date-fields.md); an emptied
+            // field clears it entirely: an undated card shows nothing rather than "no date"
+            // (docs/specs/012-collaboration/decision-record.md).
+            onCommit={onSetDate}
+          />
+        </div>
+        <div>
+          <span className={labelClass}>Drivers</span>
+          <div className="mt-1 flex flex-col gap-1">
+            {rows.map((driver, i) => (
+              <div key={i} className="flex items-center gap-1">
+                <input
+                  className={`${MENU_CELL_INPUT} flex-1`}
+                  value={driver}
+                  placeholder="Why"
+                  aria-label={`Driver ${i + 1}`}
+                  maxLength={DECISION_MAX_TEXT}
+                  onChange={(e) => setRows((r) => r.map((s, j) => (j === i ? e.target.value : s)))}
+                  onBlur={() => onSetDrivers(rows)}
+                />
+                <button
+                  type="button"
+                  aria-label={`Remove driver ${i + 1}`}
+                  onClick={() => onSetDrivers(rows.filter((_, j) => j !== i))}
+                  className={removeButtonClass}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            disabled={rows.length >= DECISION_MAX_DRIVERS}
+            onClick={() => onSetDrivers([...rows, ''])}
+            className={MENU_ADD_ROW_BUTTON}
+          >
+            Add Driver
+          </button>
+        </div>
+      </div>
+    </MenuAccordionSection>
+  );
+}
+
+// --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
+
+const FACING_ARROW: Record<ChairFacing, string> = { n: '↓', e: '←', s: '↑', w: '→' };
+
+// The section's title and hint name the furniture it is on (docs/specs/009-elements/chair.md).
+const SEATING_NOUN: Record<SeatingKind, string> = {
+  chair: 'Chair',
+  desk: 'Desk',
+  sofa: 'Sofa',
+  'meeting-table': 'Meeting Table',
+};
+
+export function ChairMenuSection({
+  target,
+  sectionProps,
+  onSetFacing,
+}: {
+  target: ShapeElement | undefined;
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
+  onSetFacing: (facing: ChairFacing) => void;
+}) {
+  const kind = target && isSeatingShape(target.shape) ? target.shape : 'chair';
+  const facing = seatingFacing({ shape: kind, chairFacing: target?.chairFacing });
+  const noun = SEATING_NOUN[kind];
+  return (
+    <MenuAccordionSection title={noun} icon={<ToolsMenuGlyph />} {...sectionProps('chair')}>
+      {/* Tiles rather than a list: the arrow IS the answer here, which is the
+          same test the palette applies to its own categories (docs/specs/010-palette/palette-top-level-categories.md). */}
+      <MenuTileGrid cols={4}>
+        {CHAIR_FACINGS.map((f) => (
+          <MenuTile
+            key={f}
+            icon={
+              <span aria-hidden className="text-[15px] leading-none">
+                {FACING_ARROW[f]}
+              </span>
+            }
+            label={CHAIR_FACING_LABELS[f].replace('Facing ', '')}
+            active={facing === f}
+            onClick={() => onSetFacing(f)}
+          />
+        ))}
+      </MenuTileGrid>
+      <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+        Which way somebody sitting here faces. Walk an Avatar-mode character into the{' '}
+        {noun.toLowerCase()} to sit down.
+      </p>
+    </MenuAccordionSection>
+  );
+}
+
+// --- Room (docs/specs/009-elements/office.md "Room") -------------------------------------------------
+
+const DOOR_GLYPH: Record<RoomDoor, string> = { n: '↑', e: '→', s: '↓', w: '←', none: '✕' };
+
+export function RoomMenuSection({
+  target,
+  sectionProps,
+  onSetDoor,
+}: {
+  target: ShapeElement | undefined;
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
+  onSetDoor: (door: RoomDoor) => void;
+}) {
+  const door = target?.roomDoor ?? DEFAULT_ROOM_DOOR;
+  return (
+    <MenuAccordionSection title="Room" icon={<ToolsMenuGlyph />} {...sectionProps('room')}>
+      <MenuTileGrid cols={3}>
+        {ROOM_DOORS.map((d) => (
+          <MenuTile
+            key={d}
+            icon={
+              <span aria-hidden className="text-[13px] leading-none">
+                {DOOR_GLYPH[d]}
+              </span>
+            }
+            label={ROOM_DOOR_LABELS[d]}
+            active={door === d}
+            onClick={() => onSetDoor(d)}
+          />
+        ))}
+      </MenuTileGrid>
+      <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+        Which wall the doorway is in. Avatar-mode characters walk through the doorway and nowhere
+        else; with None, only a portal gets you in.
+      </p>
+    </MenuAccordionSection>
+  );
+}

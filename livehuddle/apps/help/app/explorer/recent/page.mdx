@@ -1,0 +1,49 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Recent',
+  description:
+    'Recent lists everything you can open by when you last opened it, your own items, your teams’ and those shared with you, each with where it lives.',
+  path: '/help/explorer/recent/',
+});
+
+<ArticleLayout
+  title="Recent"
+  description="Everything you opened lately, newest first, across every folder, team and share."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Recent** lists the 12 items you opened most recently, newest first, so the work in progress is always one click away. Find it under **Library** in the **More** group of the [Explorer](/explorer) sidebar, or press **See More** beside Jump Back In on [Home](/help/explorer/timeline/). The bar at the top, **Home** with **Recent** beside it, leads back.
+
+## What lands here
+
+Recent goes by when **you** last opened something: your own items, your teams' and the ones [shared with you](/help/explorer/shared-with-you/). Opening an item is private, so your Recent is yours alone, and nobody else sees what you opened.
+
+It is a view across your whole library, not a folder of its own: an item appearing in Recent has not been moved or copied, and you will still find it in its folder.
+
+With **livediagram** chosen at the top of the page, Recent shows only canvases; with **All Apps**, it shows what you opened in every liveworkspace app.
+
+## Working from Recent
+
+- **Open** an item by clicking it.
+- Switch between [List, Card and Details views](/help/explorer/list-and-card-views/) with the buttons at the top right. Since Recent mixes your canvases with other people's, it adds an **Owner** column: You, the team's name, or Shared with you.
+- Type in the Explorer's search box to [filter](/help/explorer/filters/) the list.
+- Each item's **⋯** menu (or a right-click) carries the same actions as anywhere else in the Explorer.
+- **New Canvas** makes a canvas in My Work, and **Import from** brings boards in there.
+
+## Hide from Recent
+
+To keep an item out of Recent, choose **Hide from Recent** from its **⋯** menu. It leaves Recent and Jump Back In on Home, and the next most recent takes its place; it stays everywhere else, in its folder, in search and in Favourites. Hiding is yours alone: on a shared or team canvas, nobody else's Recent changes. To bring it back, choose **Show in Recent** from the same menu, wherever the item is listed.
+
+## Seeing where an item lives
+
+Recent spans every folder, so each item shows a small chip naming the folder it sits in: its team for a team item in no folder, or **My Work** for one of yours in none. Click the chip to jump straight to that folder instead of opening the item. An item shared with you through a link lives in someone else's library, so it has no chip.
+
+<Tip>
+  A guest's Recent is kept for their guest identity, and signing in carries it into the account with
+  everything else.
+</Tip>
+
+</ArticleLayout>

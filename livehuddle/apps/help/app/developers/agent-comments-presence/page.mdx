@@ -1,0 +1,176 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Comments and Presence for Agents',
+  description:
+    'Let an agent or script reply to, resolve and reopen comment threads, and show what it is doing with a status line and focus ring.',
+  path: '/help/developers/agent-comments-presence/',
+});
+
+<ArticleLayout
+  title="Comments and Presence for Agents"
+  description="Talk to people through comment threads, and show them what your agent is working on while it works."
+  categoryTitle="Developers"
+  categorySlug="developers"
+>
+
+Comments are how people and agents talk on the canvas when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
+
+The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://livediagram.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
+
+## Who Can Do What
+
+What an agent may do follows its token, through the same gates as a share link:
+
+- A **full-access token** on a canvas you can comment on adds, replies, resolves, reopens and shows presence. Commenting needs the access a **Participant** or **Editor** has; someone who can only view reads the threads.
+- A **read-only token** lists threads but writes nothing: no comments and no presence.
+- Presence is for API tokens only. A signed-in browser session already shows itself in the editor, so the presence endpoints answer it `403 presence_requires_token`.
+
+A comment an agent writes records the token's id for the audit trail, and the people reading it see only your name.
+
+## List the Threads
+
+Read the whole conversation without reading a tab:
+
+```bash
+livediagram comment ls "Shop"                  # open threads (the default)
+livediagram comment ls "Shop" --status all     # resolved ones too
+```
+
+```bash
+curl "https://livediagram.app/api/documents/$DOC/comments?status=open" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+`status` is `open` (the default), `resolved` or `all`; anything else is `400 invalid_status`. The answer lists every thread across the canvas's tabs, in tab order and then outline order, with the element's **ref** and label so you can act on it straight away:
+
+```json
+{
+  "threads": [
+    {
+      "tabId": "tab-1",
+      "tabName": "Overview",
+      "elementId": "n2",
+      "ref": "n2",
+      "label": "Orders API",
+      "resolved": false,
+      "comments": [
+        {
+          "id": "c1f0…",
+          "text": "Should this be idempotent?",
+          "createdAt": 1760180000000,
+          "authorName": "Priya",
+          "authorColor": "#7c3aed"
+        }
+      ]
+    }
+  ]
+}
+```
+
+To read one tab's threads as text, ask for its comments view: `GET /documents/$DOC/tabs/$TAB?view=comments` (add `all=1` for resolved ones).
+
+## Reply, Resolve and Reopen
+
+In the CLI, a thread is named by its element's ref, from any [view](/help/developers/working-with-documents/#read-a-tab-as-text):
+
+```bash
+livediagram comment add "Shop" n2 "Should this be idempotent?"   # starts a thread, or adds to one
+livediagram comment reply "Shop" n2 "Yes, keyed by order id"
+livediagram comment resolve "Shop" n2
+livediagram comment reopen "Shop" n2
+```
+
+Add `--tab Flow` when the element is not on the first tab. `reply`, `resolve` and `reopen` on an element with no thread are refused, with the `comment add` command to start one.
+
+Over the API, a thread is named by **any comment in it**, so take a comment id from the listing:
+
+```bash
+# Start a thread on an element (or add to its thread)
+curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "elementId": "n2", "text": "Should this be idempotent?" }'
+
+# Reply on the thread that holds comment c1f0…
+curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reply \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "text": "Yes, keyed by order id" }'
+
+# Resolve it, or reopen it
+curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
+  -H "Authorization: Bearer $TOKEN"
+curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+- Adding and replying answer `201` with the new `comment`. A comment is at most 2,000 characters, and a reply to a resolved thread reopens it, as it does in the editor.
+- Resolving and reopening answer `204`. Resolving a resolved thread, or reopening an open one, changes nothing.
+- `DELETE …/comments/$COMMENT` deletes a comment you wrote. Removing someone else's is left to the editor.
+- Arrows cannot carry a thread; every boxed element can.
+
+Everyone with the canvas open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
+
+## Show What Your Agent Is Doing
+
+An agent at work can appear on a tab with a short **status line** ("Adding the payment flow") and a **focus**: the elements it is looking at.
+
+```bash
+livediagram presence set "Shop" --status "Adding the payment flow" --focus api,db
+livediagram presence set "Shop" --tab Flow --status "Reviewing" --ttl 120
+livediagram presence clear "Shop"
+```
+
+```bash
+curl -X PUT https://livediagram.app/api/documents/$DOC/tabs/$TAB/presence \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "status": "Adding the payment flow", "focus": ["api", "db"], "ttl": 60000 }'
+```
+
+```json
+{
+  "presence": {
+    "tabId": "tab-1",
+    "status": "Adding the payment flow",
+    "focus": ["api", "db"],
+    "expiresAt": 1760180060000
+  }
+}
+```
+
+| Field    | Takes                                                                                                                                    |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `status` | Up to 80 characters, no control characters. Leave it out for presence with no status line.                                               |
+| `focus`  | Up to 20 elements, by ref, id prefix or id. The answer gives their full ids.                                                             |
+| `ttl`    | How long it stays, in **milliseconds** over the API: 1,000 to 120,000, 30,000 when left out. The CLI's `--ttl` is in seconds (1 to 120). |
+
+Setting presence again replaces both the status and the focus. `DELETE` on the same path takes it off at once and answers `204` whether or not it was there.
+
+**You rarely need to keep it alive yourself.** Every changeset your token applies or reverts on a tab, and every read of a tab, keeps its presence there for three minutes, so an agent that is busy reading or editing stays visible and one that stops leaves on its own a few minutes later. A dry run or a refused changeset refreshes nothing. Reads refresh it at most once every 30 seconds per tab.
+
+**An agent shows on one tab at a time:** the last one it read, changed or set presence on. Reading another tab moves it there.
+
+Refusals name what was wrong: `400` with `status_too_long`, `invalid_status`, `too_many_focus`, `invalid_focus`, `ttl_out_of_range`, `focus_not_found` (listing the refs) or `focus_ambiguous` (listing the candidates); `409 agent_presence_full` when a canvas already shows 32 agents; and `503 room_unavailable` when the live room could not be reached, which is worth one retry.
+
+## What People See
+
+Presence shows in the editor as an avatar of its own, named after its owner ("Webber's Agent"), in the owner's colour and marked with a small star instead of initials. Everyone on the canvas sees it, the owner included, beside the owner's own avatar when they are on the same tab:
+
+- **The status line** appears in the agent's hover card, on its row in Collaborators, and in what a screen reader announces. It never shows as text in the tab bar. Without one, the hover card says "Working on this tab".
+- **The focus** is outlined with a thin ring in the owner's colour. It never locks anything: people keep working on those elements.
+- An agent is listed in Collaborators under its tab, but it is not counted as a person, cannot be followed, and never holds the facilitator role or counts in a session's head count.
+- Two of your tokens on one tab show as one avatar, with the status set last. A private canvas's presence stack, otherwise hidden, shows while your agent is on it.
+
+[Live Presence](/help/collaboration/live-presence/#agents-at-work) has what this looks like for the people working beside your agent.
+
+## Waiting for People
+
+To answer comments as they arrive, let the CLI wait for the next one rather than polling:
+
+```bash
+livediagram wait "Shop" --for comment --timeout 600
+```
+
+It prints the comment and exits, so an agent can read it, reply and wait again. Agents cannot be @mentioned; they read new comments as they arrive or on their next read.
+
+</ArticleLayout>
