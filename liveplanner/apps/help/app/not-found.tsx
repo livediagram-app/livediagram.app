@@ -5,6 +5,7 @@ import { PageNotFound } from '@liveplanner/ui';
 export default function NotFound() {
   return (
     <PageNotFound
+      inMain
       homeHref="/help/"
       homeLabel="Browse Help Centre"
       helpHref="/help/troubleshooting/"
