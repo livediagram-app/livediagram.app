@@ -311,6 +311,8 @@ export function PaletteDropdown({
             ref={menuRef}
             {...hoverProps}
             role="listbox"
+            // The trigger's name: an unnamed listbox reads as "list box" alone.
+            aria-label={ariaLabel}
             data-palette-dropdown-menu
             data-tour-id={dataTourId ? `${dataTourId}-menu` : undefined}
             // The open animation unfolds the menu toward the trigger
