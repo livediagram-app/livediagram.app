@@ -32,6 +32,40 @@ describe('parseMermaid', () => {
     ]);
   });
 
+  // Mermaid takes letters in any script in a bare id; ASCII-only reading cut `node_é` to `node_` and dropped its edge.
+  it('reads ids, subgraph ids, classes and click targets in any script', () => {
+    const res = parseMermaid(
+      [
+        'flowchart LR',
+        '  node_é --> b',
+        '  subgraph Küche[Kitchen]',
+        '    Ä[Über] --> Ö',
+        '  end',
+        '  Ö:::heiß --> 日本 --> नमस्ते',
+        '  click Ä "https://example.com"',
+      ].join('\n'),
+    );
+    if (!res.ok) throw new Error(res.error);
+    expect(res.graph.nodes.map((n) => [n.id, n.label])).toEqual([
+      ['node_é', 'node_é'],
+      ['b', 'b'],
+      ['Ä', 'Über'],
+      ['Ö', 'Ö'],
+      ['日本', '日本'],
+      ['नमस्ते', 'नमस्ते'],
+    ]);
+    expect(res.graph.edges.map((e) => `${e.from}>${e.to}`)).toEqual([
+      'node_é>b',
+      'Ä>Ö',
+      'Ö>日本',
+      '日本>नमस्ते',
+    ]);
+    expect(res.graph.nodes.find((n) => n.id === 'Ä')?.link).toBe('https://example.com');
+    expect(res.graph.clusters?.map((c) => [c.id, c.label, c.members])).toEqual([
+      ['Küche', 'Kitchen', ['Ä', 'Ö']],
+    ]);
+  });
+
   it('reads LR direction and bare (undefined) nodes', () => {
     const r = parseMermaid('graph LR\n  A --> B --> C');
     expect(r.ok).toBe(true);
