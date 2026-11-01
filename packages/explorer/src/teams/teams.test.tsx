@@ -221,8 +221,12 @@ describe('a team’s view', () => {
     page({ kind: 'team', id: 't1' }, host);
     await card();
     fireEvent.click(screen.getByRole('button', { name: 'Invite by Link' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Turn On Link' }));
+    const turnOn = await screen.findByRole('button', { name: 'Turn On Link' });
+    turnOn.focus();
+    fireEvent.click(turnOn);
     await waitFor(() => expect(host.resetInviteLink).toHaveBeenCalledWith('t1'));
+    // Turn On Link goes as the link shows: the keyboard moves to Copy, not to the dialog's top.
+    await waitFor(() => expect(document.activeElement?.textContent).toBe('Copy'));
     fireEvent.click(await screen.findByRole('button', { name: 'Copy' }));
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith('https://liveworkspace.app/join?token=abc'),
