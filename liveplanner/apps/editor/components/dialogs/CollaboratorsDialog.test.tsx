@@ -6,6 +6,7 @@ import type { AccessLevel } from '@liveplanner/api-schema';
 import type { Participant } from '@/lib/identity';
 import { bindWorkbench } from '@/lib/workbench-bindings';
 import { HIDE_CURSORS_KEY } from '@/lib/workbench-keys';
+import { CursorsDrawnContext } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { CollaboratorsDialog } from './CollaboratorsDialog';
 
 // Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md): the switch at the foot of
@@ -21,7 +22,7 @@ const person = (id: string, name: string): Participant => ({
 });
 const tabs = [{ id: 't1', name: 'Overview' }] as unknown as Tab[];
 
-function open(selfRole: AccessLevel) {
+function open(selfRole: AccessLevel, cursorsDrawn = true) {
   bindWorkbench();
   return render(
     <CollaboratorsDialog
@@ -34,6 +35,11 @@ function open(selfRole: AccessLevel) {
       onGoToTab={vi.fn()}
       onClose={vi.fn()}
     />,
+    {
+      wrapper: ({ children }) => (
+        <CursorsDrawnContext.Provider value={cursorsDrawn}>{children}</CursorsDrawnContext.Provider>
+      ),
+    },
   );
 }
 
@@ -46,6 +52,14 @@ describe('CollaboratorsDialog: Hide Participant Cursors', () => {
   it("flips this device's choice under the editor's own key", () => {
     open('view');
     fireEvent.click(screen.getByRole('switch', { name: /Hide Participant Cursors/ }));
+    expect(window.localStorage.getItem(HIDE_CURSORS_KEY)).toBe('true');
+  });
+
+  // Only where cursors are drawn (collaborator-enhancements.md): on a tab that draws none, no switch and no footer.
+  it('leaves the switch out where the tab draws no cursors, keeping the stored choice', () => {
+    window.localStorage.setItem(HIDE_CURSORS_KEY, 'true');
+    open('edit', false);
+    expect(screen.queryByRole('switch', { name: /Hide Participant Cursors/ })).toBeNull();
     expect(window.localStorage.getItem(HIDE_CURSORS_KEY)).toBe('true');
   });
 });

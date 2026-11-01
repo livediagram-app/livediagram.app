@@ -593,7 +593,7 @@ and the dialog stays as the one complete, browsable index of them.
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
-  sub-categories **Layers**, **Map**, **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md)) and
+  sub-categories **Layers**, **Map**, **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md)) and
   **Quick Style**, one per panel),
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),

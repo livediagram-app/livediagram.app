@@ -6,6 +6,7 @@ import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
+import { useOfferedSettingItems } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { explorerPath } from '@liveworkspace/explorer';
@@ -52,6 +53,9 @@ export function EditorSearchPanel() {
     () => (items ? { items, tabOf: cardTabResolver(tabs, types) } : undefined),
     [items, types, tabs],
   );
+
+  // Less the Hide Participant Cursors row on a tab that draws no cursors (collaborator-enhancements.md).
+  const settingItems = useOfferedSettingItems(SETTINGS_SEARCH_ITEMS);
 
   if (!searchOpen) return null;
 
@@ -110,7 +114,7 @@ export function EditorSearchPanel() {
         else assignAppLocation(itemHref({ ...item, kind: APP_KINDS[item.app] }));
       }}
       helpItems={HELP_SEARCH_ITEMS}
-      settingItems={SETTINGS_SEARCH_ITEMS}
+      settingItems={settingItems}
       onSelectSetting={openSettingsAt}
       onClose={() => setSearchOpen(false)}
     />

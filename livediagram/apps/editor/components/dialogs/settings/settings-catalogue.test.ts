@@ -476,3 +476,21 @@ describe('settings sub-categories', () => {
     );
   });
 });
+
+// Only where cursors are drawn (docs/specs/012-collaboration/collaborator-enhancements.md): the row, and so the
+// dialog's search over it, follows whether the tab on screen draws other people's cursors.
+describe('Hide Participant Cursors row', () => {
+  const offered = (cursorsDrawn?: boolean) =>
+    visibleCategories({ emailEnabled: true, signedIn: true, cursorsDrawn })
+      .flatMap((c) => c.rows)
+      .some((r) => r.key === 'hideCursors');
+
+  it('is offered where the tab draws cursors, and when nothing says otherwise', () => {
+    expect(offered(true)).toBe(true);
+    expect(offered(undefined)).toBe(true);
+  });
+
+  it('is absent where the tab draws none', () => {
+    expect(offered(false)).toBe(false);
+  });
+});

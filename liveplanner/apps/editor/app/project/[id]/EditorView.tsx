@@ -74,6 +74,8 @@ import {
   useUiScalePreview,
 } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
+import { CursorsDrawnContext } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
+import { planHidesCursors } from '@/lib/plan-cursors';
 import { resolveUiScales } from '@liveworkspace/workbench/lib/ui-scale';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
@@ -232,6 +234,7 @@ export function EditorView() {
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
   const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
   const backdrop = resolveViewBackdrop(activeTab, appearance);
+  const cursorsDrawn = !planHidesCursors(activeTab);
   // One value while the style holds, so the covers reading it stay quiet as the editor re-renders.
   const patternScale = activeTab.backgroundPatternScale ?? 1;
   const patternSpeed = activeTab.backgroundAnimationSpeed ?? 1;
@@ -415,168 +418,176 @@ export function EditorView() {
     // menus, so a swatch in a menu can't disagree with the shape it describes.
     // Subscribing to the appearance is what re-renders this on a mode switch:
     // a Default tab's paper is the viewer's, not the tab's.
-    <SelectionStoreProvider store={ctx.selectionStore}>
-      <ViewportStoreProvider store={ctx.viewport}>
-        <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
-          {/* The canvas style, for the pages that cover the canvas and must draw its motion themselves. */}
-          <CanvasPatternContext.Provider value={canvasPattern}>
-            {/* The active tab's finish (docs/specs/008-canvas/finish.md), for the menus and panels; each
+    // Only a Dashboard draws participant cursors (plan-cursors.ts), so only there do Settings, the Collaborators
+    // modal and search offer Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md).
+    <CursorsDrawnContext.Provider value={cursorsDrawn}>
+      <SelectionStoreProvider store={ctx.selectionStore}>
+        <ViewportStoreProvider store={ctx.viewport}>
+          <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
+            {/* The canvas style, for the pages that cover the canvas and must draw its motion themselves. */}
+            <CanvasPatternContext.Provider value={canvasPattern}>
+              {/* The active tab's finish (docs/specs/008-canvas/finish.md), for the menus and panels; each
               canvas provides its own tab's again. */}
-            <CanvasFinishProvider finish={activeTab.finish}>
-              {/* The wobble Sketch palette tiles are drawn through (palette-tile-finish.ts). */}
-              <SketchFilterDefs />
-              {/* Plan boards and cards, and the dialogs that draw them (exports), read the items and
+              <CanvasFinishProvider finish={activeTab.finish}>
+                {/* The wobble Sketch palette tiles are drawn through (palette-tile-finish.ts). */}
+                <SketchFilterDefs />
+                {/* Plan boards and cards, and the dialogs that draw them (exports), read the items and
               their actions here (docs/specs/026-plan/plan-board.md). */}
-              <PlanProvider value={ctx.plan.context}>
-                <ThreadCountsProvider value={ctx.cardThreads.store}>
-                  <CardThreadsProvider value={cardThreadsValue}>
-                    <FormBoardContext.Provider value={formBoard}>
-                      {/* The sheets bridge, and cell comments (docs/specs/029-sheets/sheet.md "Cell comments"): every Sheet
+                <PlanProvider value={ctx.plan.context}>
+                  <ThreadCountsProvider value={ctx.cardThreads.store}>
+                    <CardThreadsProvider value={cardThreadsValue}>
+                      <FormBoardContext.Provider value={formBoard}>
+                        {/* The sheets bridge, and cell comments (docs/specs/029-sheets/sheet.md "Cell comments"): every Sheet
                 opens its cells' threads through the editor's one comment popover. */}
-                      <SheetsProviders
-                        bridge={ctx.sheetsBridge}
-                        openComments={ctx.openComments}
-                        openId={ctx.commentThreadOpenId}
-                        openCell={ctx.commentThreadOpenCell}
-                        canComment={ctx.can.takePart}
-                      >
-                        <CanvasFocusProvider value={ctx.focusBounds}>
-                          <MinimalChromeProvider
-                            value={minimalChrome}
-                            powerUser={isPowerUserMode(userPreferences)}
-                          >
-                            <UiScaleProvider value={uiScales}>
-                              <DockNamesProvider value={userPreferences?.dockButtonNames !== false}>
-                                {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
+                        <SheetsProviders
+                          bridge={ctx.sheetsBridge}
+                          openComments={ctx.openComments}
+                          openId={ctx.commentThreadOpenId}
+                          openCell={ctx.commentThreadOpenCell}
+                          canComment={ctx.can.takePart}
+                        >
+                          <CanvasFocusProvider value={ctx.focusBounds}>
+                            <MinimalChromeProvider
+                              value={minimalChrome}
+                              powerUser={isPowerUserMode(userPreferences)}
+                            >
+                              <UiScaleProvider value={uiScales}>
+                                <DockNamesProvider
+                                  value={userPreferences?.dockButtonNames !== false}
+                                >
+                                  {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
                       tab of the project live beside it when one has been dragged to the right. */}
-                                <SplitViewFrame header={header} footer={footer}>
-                                  {(headerInColumn, footerInColumn) => (
-                                    <div className="flex h-dvh flex-col">
-                                      {headerInColumn}
-                                      <AreaErrorBoundary area="TabDialogs">
-                                        <EditorTabDialogs />
-                                      </AreaErrorBoundary>
-                                      <AreaErrorBoundary area="Collaborators">
-                                        <CollaboratorsHost />
-                                      </AreaErrorBoundary>
-                                      {/* At the canvas's top edge, under the header. */}
-                                      {landscapeBarsHandle}
-                                      <AreaErrorBoundary
-                                        area="Canvas"
-                                        fallback="panel"
-                                        fallbackClassName="flex-1"
-                                      >
-                                        {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                                        <ChangesetRevealContext.Provider
-                                          value={ctx.changesetReveals}
-                                        >
-                                          {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                                          <AgentFocusContext.Provider
-                                            value={ctx.agentFocusByElement}
-                                          >
-                                            {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                                            <CommentBadgesContext.Provider
-                                              value={!(embedMode && isReadOnly)}
-                                            >
-                                              {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                              <SuppressElementIndicators when={embedMode}>
-                                                <EditorCanvasHost />
-                                              </SuppressElementIndicators>
-                                            </CommentBadgesContext.Provider>
-                                          </AgentFocusContext.Provider>
-                                        </ChangesetRevealContext.Provider>
-                                        {ctx.plan.openItemId ||
-                                        ctx.plan.editingType ||
-                                        ctx.plan.requiredFields ? (
-                                          <PlanSheetsHost plan={ctx.plan} />
-                                        ) : null}
-                                      </AreaErrorBoundary>
-                                      {embedMode ? (
-                                        // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
-                                        // switcher replace the full TabBar. Same selection clears as
-                                        // the TabBar's onSelect so element state never leaks across a
-                                        // tab switch.
-                                        <EmbedChrome
-                                          tabs={tabs}
-                                          activeId={activeId}
-                                          shareCode={sessionShareCode}
-                                          onSelectTab={selectTab}
-                                        />
-                                      ) : null}
-                                      {workbench ? (
-                                        // The workbench's Reconnect line; its Open in liveplanner sits in the tab bar.
-                                        <WorkbenchReconnectLine
-                                          workbenchName={workbench.workbenchName}
-                                          ended={workbench.ended}
-                                        />
-                                      ) : null}
-                                      {footerInColumn}
-                                      {ctx.searchOpen ? (
-                                        <AreaErrorBoundary area="Search">
-                                          <EditorSearchPanel />
+                                  <SplitViewFrame header={header} footer={footer}>
+                                    {(headerInColumn, footerInColumn) => (
+                                      <div className="flex h-dvh flex-col">
+                                        {headerInColumn}
+                                        <AreaErrorBoundary area="TabDialogs">
+                                          <EditorTabDialogs />
                                         </AreaErrorBoundary>
-                                      ) : null}
-                                      <AreaErrorBoundary area="Modals">
-                                        <EditorModals />
-                                      </AreaErrorBoundary>
-                                      <AreaErrorBoundary area="Popovers">
-                                        <EditorAnchoredPopovers />
-                                      </AreaErrorBoundary>
-                                      <AreaErrorBoundary area="ContextMenu">
-                                        <EditorContextMenuHost />
-                                      </AreaErrorBoundary>
-                                      <AreaErrorBoundary area="ElementDialogs">
-                                        <EditorElementDialogs />
-                                      </AreaErrorBoundary>
-                                      {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
+                                        <AreaErrorBoundary area="Collaborators">
+                                          <CollaboratorsHost />
+                                        </AreaErrorBoundary>
+                                        {/* At the canvas's top edge, under the header. */}
+                                        {landscapeBarsHandle}
+                                        <AreaErrorBoundary
+                                          area="Canvas"
+                                          fallback="panel"
+                                          fallbackClassName="flex-1"
+                                        >
+                                          {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
+                                          <ChangesetRevealContext.Provider
+                                            value={ctx.changesetReveals}
+                                          >
+                                            {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                                            <AgentFocusContext.Provider
+                                              value={ctx.agentFocusByElement}
+                                            >
+                                              {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                                              <CommentBadgesContext.Provider
+                                                value={!(embedMode && isReadOnly)}
+                                              >
+                                                {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                                                <SuppressElementIndicators when={embedMode}>
+                                                  <EditorCanvasHost />
+                                                </SuppressElementIndicators>
+                                              </CommentBadgesContext.Provider>
+                                            </AgentFocusContext.Provider>
+                                          </ChangesetRevealContext.Provider>
+                                          {ctx.plan.openItemId ||
+                                          ctx.plan.editingType ||
+                                          ctx.plan.requiredFields ? (
+                                            <PlanSheetsHost plan={ctx.plan} />
+                                          ) : null}
+                                        </AreaErrorBoundary>
+                                        {embedMode ? (
+                                          // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
+                                          // switcher replace the full TabBar. Same selection clears as
+                                          // the TabBar's onSelect so element state never leaks across a
+                                          // tab switch.
+                                          <EmbedChrome
+                                            tabs={tabs}
+                                            activeId={activeId}
+                                            shareCode={sessionShareCode}
+                                            onSelectTab={selectTab}
+                                          />
+                                        ) : null}
+                                        {workbench ? (
+                                          // The workbench's Reconnect line; its Open in liveplanner sits in the tab bar.
+                                          <WorkbenchReconnectLine
+                                            workbenchName={workbench.workbenchName}
+                                            ended={workbench.ended}
+                                          />
+                                        ) : null}
+                                        {footerInColumn}
+                                        {ctx.searchOpen ? (
+                                          <AreaErrorBoundary area="Search">
+                                            <EditorSearchPanel />
+                                          </AreaErrorBoundary>
+                                        ) : null}
+                                        <AreaErrorBoundary area="Modals">
+                                          <EditorModals />
+                                        </AreaErrorBoundary>
+                                        <AreaErrorBoundary area="Popovers">
+                                          <EditorAnchoredPopovers />
+                                        </AreaErrorBoundary>
+                                        <AreaErrorBoundary area="ContextMenu">
+                                          <EditorContextMenuHost />
+                                        </AreaErrorBoundary>
+                                        <AreaErrorBoundary area="ElementDialogs">
+                                          <EditorElementDialogs />
+                                        </AreaErrorBoundary>
+                                        {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
           wizard's "Show me around" handoff flag is pending. */}
-                                      <AreaErrorBoundary area="Tour">
-                                        <EditorTours />
-                                      </AreaErrorBoundary>
+                                        <AreaErrorBoundary area="Tour">
+                                          <EditorTours />
+                                        </AreaErrorBoundary>
 
-                                      {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
+                                        {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
           the bottom chrome (the tab bar, the Undo / session cluster, the dock) rather than over it, above the canvas
           (z-[var(--z-overlay)]). */}
-                                      {showSignInBanner ? (
-                                        <SignInBanner
-                                          surface="Editor"
-                                          onDismiss={dismissSignIn}
-                                          placementClassName="z-[var(--z-overlay)]"
-                                          standOnChrome
-                                        />
-                                      ) : null}
-                                      <EditorStartPanels />
+                                        {showSignInBanner ? (
+                                          <SignInBanner
+                                            surface="Editor"
+                                            onDismiss={dismissSignIn}
+                                            placementClassName="z-[var(--z-overlay)]"
+                                            standOnChrome
+                                          />
+                                        ) : null}
+                                        <EditorStartPanels />
 
-                                      {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
+                                        {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
           right now. Suppressed while a mode banner owns the top slot. */}
-                                      {minimalChrome ? null : (
-                                        <ModifierHint
-                                          readOnly={isReadOnly}
-                                          drag={drag}
-                                          elements={activeTab.elements}
-                                          hasElements={activeTab.elements.length > 0}
-                                        />
-                                      )}
+                                        {minimalChrome ? null : (
+                                          <ModifierHint
+                                            readOnly={isReadOnly}
+                                            drag={drag}
+                                            elements={activeTab.elements}
+                                            hasElements={activeTab.elements.length > 0}
+                                          />
+                                        )}
 
-                                      {/* An editor older than the server's project format offers a reload, once its edits
+                                        {/* An editor older than the server's project format offers a reload, once its edits
             are saved (docs/specs/016-platform/new-version-prompt.md). */}
-                                      <NewVersionPrompt hasUnsavedChanges={ctx.hasUnsavedChanges} />
-                                    </div>
-                                  )}
-                                </SplitViewFrame>
-                              </DockNamesProvider>
-                            </UiScaleProvider>
-                          </MinimalChromeProvider>
-                        </CanvasFocusProvider>
-                      </SheetsProviders>
-                    </FormBoardContext.Provider>
-                  </CardThreadsProvider>
-                </ThreadCountsProvider>
-              </PlanProvider>
-            </CanvasFinishProvider>
-          </CanvasPatternContext.Provider>
-        </CanvasSurfaceProvider>
-      </ViewportStoreProvider>
-    </SelectionStoreProvider>
+                                        <NewVersionPrompt
+                                          hasUnsavedChanges={ctx.hasUnsavedChanges}
+                                        />
+                                      </div>
+                                    )}
+                                  </SplitViewFrame>
+                                </DockNamesProvider>
+                              </UiScaleProvider>
+                            </MinimalChromeProvider>
+                          </CanvasFocusProvider>
+                        </SheetsProviders>
+                      </FormBoardContext.Provider>
+                    </CardThreadsProvider>
+                  </ThreadCountsProvider>
+                </PlanProvider>
+              </CanvasFinishProvider>
+            </CanvasPatternContext.Provider>
+          </CanvasSurfaceProvider>
+        </ViewportStoreProvider>
+      </SelectionStoreProvider>
+    </CursorsDrawnContext.Provider>
   );
 }

@@ -99,6 +99,10 @@ no way to turn them off for themselves.
   Turning it off shows every cursor again at its latest position.
 - **Every role** (Editor, Participant, Viewer) has it: it only changes what this screen draws, and nobody
   else sees any difference.
+- **Only where cursors are drawn.** The switch shows, in Settings and in the Collaborators modal, only while
+  the tab you are on draws other people's cursors. Where none are drawn it is absent from both, and from search
+  (the Settings dialog's and the editor's), since there it could change nothing. The stored value is untouched:
+  back on a tab that draws cursors, the switch is there again as you left it. In livedocuments every tab draws them: infographic, slide, article and flashcard pages all sit on the one canvas the cursors move over, so the switch always shows.
 
 ### Implementation notes
 
@@ -107,6 +111,9 @@ no way to turn them off for themselves.
   draws the list and draws nothing while the switch is on) and `components/dialogs/HideCursorsSwitch` (the
   modal's row). The editors' four copies of `RemoteCursor.tsx` are gone.
 - Settings: a `hideCursors` row (its own kind, like `shortcuts`) in the Collaborate category.
+- Where cursors are drawn: `CursorsDrawnContext` / `useCursorsDrawn` in `hooks/collab/useHideCursors` (true
+  unless an editor says otherwise). `HideCursorsFooter` draws the modal's footer only when true; the Settings row's
+  `available` reads `cursorsDrawn` off the row context; `settingsOfferedHere` drops the row from the editor's search.
 - Telemetry: `UI` / `Toggled` / `HideCursorsOn` / `HideCursorsOff`, sent before the write, from either place.
 
 ## 3. Cursors Step Aside
