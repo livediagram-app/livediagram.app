@@ -10,5 +10,6 @@ export { placePicture } from './layer-ops';
 export { elementPixels } from './rasterize-element';
 export { photoCommandItems, runPhotoCommand } from './photo-commands';
 export { announceCommit, watchSelection } from './photo-announce';
+export { allSizesZip, download } from './photo-export';
 
 export type PhotoRuntime = typeof import('./runtime');

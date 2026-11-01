@@ -85,6 +85,7 @@ export const PHOTO_ACTIONS: readonly PhotoAction[] = [
   { id: 'trim', label: 'Trim Transparent', menu: 'Image', section: 4 },
   { id: 'free-transform', label: 'Free Transform', menu: 'Image', keys: 'Mod+T', section: 5 },
   { id: 'place-picture', label: 'Place Picture…', menu: 'Image', section: 5 },
+  { id: 'make-sizes', label: 'Make Sizes…', menu: 'Image', section: 6 },
   { id: 'select-all', label: 'All', menu: 'Select', keys: 'Mod+A', section: 1 },
   { id: 'deselect', label: 'Deselect', menu: 'Select', keys: 'Mod+D', section: 1 },
   { id: 'reselect', label: 'Reselect', menu: 'Select', keys: 'Mod+Shift+D', section: 1 },
@@ -259,6 +260,12 @@ export function runPhotoAction(id: string, photo: PhotoEditorView): void {
       return size('PhotoTrimmed', trimTransparent(s));
     case 'place-picture':
       return photoDialogs.open({ kind: 'place' });
+    case 'make-sizes':
+      if (!s.photo.layers.length)
+        return say('Start the photo first: there is nothing to make sizes from.');
+      if (!photo.addSizes || photo.photoRoom < 1)
+        return say('A tab holds up to 10 photo pages. Delete one to make sizes.');
+      return photoDialogs.open({ kind: 'make-sizes' });
     case 'step-backward':
       return photo.stepHistory(-1);
     case 'fit-photo':

@@ -59,7 +59,8 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
 - **`packages/design`**: `Tab.photos?: Record<string, Photo>` (the type re-exported from the engine), `PageKind`
   gains `'photo'`, `PageSizeId` gains `'photo'`; `parsePageFields`, `pageKindOf`, `pageDimensions` (the `fit`
   sides), `pageLabel`, `pageMargin` (0), `withPages` (a removed photo page's photo is dropped), `newPhotoPage`,
-  `photoSheetSides(width, height)`.
+  `photoSheetSides(width, height)`, `photoPagesAdded(tab, afterId, made)` (Make Sizes' pages, named, with their
+  photos, after the source page in one edit).
 - **`packages/api-schema`**: the `photo` room op in `room-messages.ts` (`MUTATION_OP_KINDS`), `photo-frames.ts`
   (`tabPhotoOps(before, after)`), the blob-batch framing (`photo-blob-batch.ts`: `encodeBlobBatch`,
   `decodeBlobBatch`), and the route DTOs.
@@ -82,6 +83,8 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
       bands, for merges), `view-options.ts` (the pixel grid).
     - Edits: `layer-ops.ts`, `image-ops.ts`, `apply-ops.ts`, `edit-ops.ts`, `mask-ops.ts`, `selection-ops.ts`,
       `selection-mask.ts`, `select-and-mask.ts`, `clipboard.ts`, `rasterize-element.ts`, `start-photo.ts`.
+    - Make Sizes: `make-sizes.ts` (`PHOTO_SIZE_FORMATS`, `coverPlan`, `makeSizes`, the remembered ticks); the
+      resample-and-crop itself is `coverSize` in `image-ops.ts`, a `rework` like Image Size and Canvas Size.
     - Commands and state: `photo-actions.ts` (`PHOTO_ACTIONS`, every menu entry and chord), `photo-commands.ts`
       (the command palette), `photo-dialog-store.ts`, `photo-history.ts`, `photo-focus.ts`, `photo-pointer.ts`
       (the pointer's place and `photoPress`), `photo-announce.ts`, `lock-shake.ts`.
@@ -90,7 +93,7 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
       handler per tool family: `paint-tools.ts`, `select-tools.ts`, `fill-tools.ts`, `shape-tools.ts`,
       `move-tool.ts`, `transform-tool.ts`, `crop-tool.ts`, `text-tool.ts`, with `tool-context.ts`,
       `tool-handler.ts`, `held-keys.ts`, `lift.ts`).
-    - Export: `photo-export.ts`.
+    - Export: `photo-export.ts` (with `allSizesZip` and `sizeFileNames` for All Sizes).
   - `components/photo/`: `PhotoPagesLayer.tsx` and `PhotoSurface.tsx` (the page's canvas), `PhotoChrome.tsx`,
     `PhotoCanvasOverlays.tsx` and `PhotoToolOverlay.tsx` (presses, the cursor, marching ants, boxes),
     `PhotoToolsRail.tsx` (the photo tools: `placement="strip"` in the palette strip, `"row"` on a phone), `PhotoColours.tsx`, `PhotoToolOptionsBody.tsx` (with `PhotoPhoneOptions.tsx` and `PhotoTransformOptions.tsx`), `PhotoBrushPresets.tsx`,
@@ -98,7 +101,7 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
     `PhotoLayersTab.tsx`, `PhotoLayerRow.tsx` (rows restack by the shared `useRowPointerDrag` the canvas's `useLayerRowDrag` also runs on), `PhotoBlendPicker.tsx`, `PhotoAdjustTab.tsx`,
     `AdjustmentEditor.tsx`, `CurvesEditor.tsx`, `PhotoEffectsEditor.tsx`, `PhotoTextEditor.tsx`, the dialogs
     (`PhotoDialogs.tsx`, `PhotoSizeDialogs.tsx`, `PhotoEditDialogs.tsx`, `PhotoApplyDialogs.tsx`,
-    `SelectAndMaskDialog.tsx`, `PlacePictureDialog.tsx`, `FilterPreview.tsx`), `PhotoExportPanel.tsx`,
+    `SelectAndMaskDialog.tsx`, `PlacePictureDialog.tsx`, `FilterPreview.tsx`, `MakeSizesDialog.tsx`), `PhotoExportPanel.tsx`,
     `StartPhotoCard.tsx`, `RasterThumb.tsx`, and the hooks `usePhotoShortcuts.ts`, `usePhotoHistogram.ts`,
     `usePhotoDropPaste.ts`, `usePhotoPreviewUrl.ts`, `useApplyPreview.ts`.
   - `hooks/editor/`: `usePhotoEditor.ts` (the photo page in focus, its session's lifecycle, the
@@ -235,6 +238,30 @@ type Photo = {
 - Fills, text layers and layers with effects are drawn by the CPU (`content-cache.ts`) and uploaded as tiles.
 - Fallback: without WebGL 2 (or on context loss until restored) `cpu-view.ts` composites the visible rect with
   `compositePhoto` at up to `CPU_FRAME_PIXELS`, on the main thread, throttled to 15 frames a second.
+
+### Make Sizes
+
+[Photo pages](../photo-pages.md) "Making sizes". `makeSizes(source, formats, deps)` runs once the source session's
+tiles are loaded (`whenLoaded`):
+
+1. For each format, a **transient session** (`new PhotoSession(source.photo, ...)`, its page id the new page's,
+   its `commit` capturing the photo instead of writing the tab) over the same pixels store, so the source's
+   decoded tiles are read from memory, never fetched again.
+2. `coverSize(s, w, h)` reworks it: every pixel layer and mask resampled by `k = max(w / W, h / H)` (Bicubic, in
+   the photo worker: the `resize` task of `worker-tasks.ts`, so a 12 MP photo never holds the page for its
+   resample; the page only reads the pictures and lays the results into tiles) and placed at `round(x * k) + dx`, `round(y * k) + dy`, where `dx = round((w - W * k) / 2)` and
+   `dy = round((h - H * k) / 2)` (`coverPlan`); text layers scaled and moved as Image Size does; the photo's size
+   set to the format. Its tiles encode in the photo worker and go to the upload queue (`deps.enqueue`), as any
+   commit's do.
+3. Its preview is made (`previewRaster`, `encodePreview`) and set on the photo, its blob enqueued too.
+4. The session is disposed before the next format starts, so at most one format's resampled pixels are held at a
+   time beside the source's.
+5. When every format is done (and the dialog was not closed meanwhile, `deps.cancelled()`), one `commitTabs`
+   writes `photoPagesAdded(tab, sourceId, made)`: one undo step. A cancel commits nothing; the tiles already
+   queued are uploaded but named by no tab, so the daily sweep releases them.
+
+The editor's `PhotoEditorView.makeSizes` is present only while `addPhotoPage` is (an Editor, a photo tab with room)
+and the session is in hand; `PhotoEditorView.exportAllSizes` while a scope is (anyone the export allows).
 
 ## Interfaces and contracts
 
@@ -379,7 +406,10 @@ Every spec rule maps to a test file:
   `tab-broadcast-ops` and `room-op-apply` photo cases, component tests for the rail, options flyout, Layers tab,
   Adjust tab, History tab, dialogs, start card and shortcuts (`usePhotoShortcuts.test.ts`, the press guard),
   `no-memo-guard.test.ts` (every component that reads the session opts out of the compiler's memo), share
-  roles (`editor-capabilities` photo flags). E2E: `photo-gpu-parity.spec.ts` (the GPU against the CPU over 73
+  roles (`editor-capabilities` photo flags). Make Sizes: `make-sizes.test.ts` (the formats, `coverPlan`, the room,
+  the ticks, `makeSizes` over a real session: sizes, layers, offsets, previews, cancel), `photo-ops.test.ts`
+  (`coverSize`), `photo-pages.test.ts` in the design package (`photoPagesAdded`), `MakeSizesDialog.test.tsx` (ticks,
+  room, custom, roles), `photo-export` (`sizeFileNames`, `allSizesZip`). E2E: `photo-gpu-parity.spec.ts` (the GPU against the CPU over 73
   scenarios and two views: at most 6 levels a channel, 12 for Hard Mix, Posterize and Threshold, whose steps
   amplify a rounding). The make-paint-reload flow is covered by unit tests over the real session and store, and
   was walked in a browser with two clients; it has no e2e spec yet.
@@ -427,6 +457,7 @@ Every spec rule maps to a test file:
 | `REFINE_EDGE_RADIUS`                                   | 6               | D23                                         | 2 to 16        |
 | `PRECISE_CURSOR_PX`                                    | 4               | D24                                         | 2 to 8         |
 | `CONTENT_AWARE_MIN_REACH`                              | 32              | D25                                         | 16 to 128      |
+| `PHOTO_SIZE_FORMATS` (`make-sizes.ts`)                 | 8 formats       | Pages spec "The formats", D29               | platform sizes |
 
 `PHOTO_MAX_BYTES_PER_TAB`: api env, decimal bytes, hosted 536870912.
 

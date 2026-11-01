@@ -6,8 +6,16 @@
 // its checkpoint), the History, the previews made after commits, the blob store's transports, and the
 // pages' view with `photo` in it.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { photoOfPage, photosOf, withPhoto, type LaidOutPage, type Tab } from '@livedesign/design';
-import { PHOTO_PREVIEW_DELAY_MS, type Photo } from '@livedesign/photo-engine';
+import {
+  photoOfPage,
+  photoPagesAdded,
+  photosOf,
+  withPhoto,
+  type LaidOutPage,
+  type Tab,
+} from '@livedesign/design';
+import { PHOTO_MAX_PAGES, PHOTO_PREVIEW_DELAY_MS, type Photo } from '@livedesign/photo-engine';
+import type { MadeSize } from '@/lib/photo-editor/make-sizes';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -79,6 +87,13 @@ export type PhotoEditorView = {
   // Edit as Photo: a new photo page after the image's page, started from its picture. Absent where
   // the session may not add pages.
   editAsPhoto?: (imageId: string, from: { x: number; y: number }) => void;
+  // Make Sizes' pages added after the source page, one edit, and the view taken to the first; false when
+  // refused (no room). Absent where the session may not add pages (photo-pages.md "Making sizes").
+  addSizes?: (sourceId: string, made: readonly MadeSize[]) => boolean;
+  // How many more photo pages the tab takes.
+  photoRoom: number;
+  // All Sizes as PNGs with their elements (Make Sizes' toast); absent without a scope.
+  exportAllSizes?: (designName: string) => Promise<void>;
   // Rasterize Into Layer: an element on the photo in focus drawn into a new layer and removed, one
   // edit. Absent where the session may not edit the photo.
   rasterizeElement?: (elementId: string) => void;
@@ -386,6 +401,60 @@ export function usePhotoEditor<V extends PagesModeView>({
     [addPhotoPage, scope, canEdit, pages],
   );
 
+  // Make Sizes (photo-pages.md "Making sizes"): the new pages in one edit, the view gone to the first
+  // once it is laid out.
+  const photoRoom = Math.max(
+    0,
+    PHOTO_MAX_PAGES - (pages?.filter((p) => p.kind === 'photo').length ?? 0),
+  );
+  const [sizesGoTo, setSizesGoTo] = useState<string | null>(null);
+  useEffect(() => {
+    if (!sizesGoTo || !pages?.some((p) => p.id === sizesGoTo)) return;
+    setSizesGoTo(null);
+    focusPage?.(sizesGoTo);
+    setPressed(sizesGoTo);
+  }, [sizesGoTo, pages, focusPage]);
+  const addSizes = useMemo(
+    () =>
+      addPhotoPage && canEdit
+        ? (sourceId: string, made: readonly MadeSize[]): boolean => {
+            const out = photoPagesAdded(tabRef.current, sourceId, made);
+            if (!('tab' in out) || !made.length) return false;
+            commitTabs((ts) =>
+              ts.map((t) => {
+                if (t.id !== tabId) return t;
+                const again = photoPagesAdded(t, sourceId, made);
+                return 'tab' in again ? again.tab : t;
+              }),
+            );
+            setSizesGoTo(made[0]!.id);
+            track('Tab', 'Changed', 'PhotoMakeSizes');
+            return true;
+          }
+        : undefined,
+    [addPhotoPage, canEdit, tabRef, commitTabs, tabId],
+  );
+  const pagesRef = useLatest(pages);
+  const sessionRef = useLatest(session);
+  const exportAllSizes = useMemo(
+    () =>
+      scope && store && rt
+        ? async (designName: string) => {
+            const file = await rt.allSizesZip(
+              tabRef.current,
+              pagesRef.current ?? [],
+              store,
+              sessionRef.current,
+              designName,
+              { format: 'png', quality: 0.9, matte: '#ffffff', withElements: true, scope },
+            );
+            rt.download(file.blob, file.name);
+            track('Document', 'Exported', 'PhotoAllSizes');
+          }
+        : undefined,
+    [scope, store, rt, tabRef, pagesRef, sessionRef],
+  );
+
   const tabForRaster = useLatest(activeTab);
   const rasterizeElement = useMemo(
     () =>
@@ -458,6 +527,9 @@ export function usePhotoEditor<V extends PagesModeView>({
       toast: (m: string) => toast.warning(m),
       writePhoto,
       ...(editAsPhoto ? { editAsPhoto } : {}),
+      ...(addSizes ? { addSizes } : {}),
+      photoRoom,
+      ...(exportAllSizes ? { exportAllSizes } : {}),
       ...(rasterizeElement ? { rasterizeElement } : {}),
       runtime: rt,
       others,
@@ -485,6 +557,9 @@ export function usePhotoEditor<V extends PagesModeView>({
       toast,
       writePhoto,
       editAsPhoto,
+      addSizes,
+      photoRoom,
+      exportAllSizes,
       rasterizeElement,
       rt,
       others,

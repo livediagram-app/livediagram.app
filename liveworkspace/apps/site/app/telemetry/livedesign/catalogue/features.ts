@@ -228,12 +228,13 @@ export const PHOTO_PAGES = chart(
   'Tab',
   'Changed',
   'Photos Started and Resized',
-  'A photo page started from a picture or blank, made from an image (Edit as Photo), resized, its canvas changed, turned, flipped, cropped or trimmed.',
+  'A photo page started from a picture or blank, made from an image (Edit as Photo), copied into social sizes (Make Sizes), resized, its canvas changed, turned, flipped, cropped or trimmed.',
   {
     types: [
       'PhotoStartedFromPicture',
       'PhotoStartedBlank',
       'PhotoEditAsPhoto',
+      'PhotoMakeSizes',
       'PhotoImageSize',
       'PhotoCanvasSize',
       'PhotoRotated',

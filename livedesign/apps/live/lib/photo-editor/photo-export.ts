@@ -13,7 +13,7 @@ import {
   type Raster,
 } from '@livedesign/photo-engine';
 import { renderTabToSvg } from '../export-tab';
-import type { ExportImageMap } from '../export-tab-images';
+import { loadTabImages, type ExportImageMap } from '../export-tab-images';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 import type { PixelsStore } from './pixels-store';
 import { PhotoSession } from './session';
@@ -147,6 +147,74 @@ function bandWithElements(
   ctx.putImageData(new ImageData(new Uint8ClampedArray(band.data), band.width, rows), 0, 0);
   ctx.drawImage(elements, 0, -y, s.photo.width, s.photo.height);
   return { width: band.width, height: rows, data: ctx.getImageData(0, 0, band.width, rows).data };
+}
+
+/** Every photo page's file name in All Sizes (photo-pages.md "Exports and other views"): its name, or
+ *  Page n, then its pixel size, a name already taken gaining " 2", " 3". */
+export function sizeFileNames(
+  pages: readonly { name?: string; index: number; width: number; height: number }[],
+  ext: string,
+): string[] {
+  const taken = new Set<string>();
+  return pages.map((p) => {
+    const base = `${p.name ?? `Page ${p.index + 1}`} ${p.width}x${p.height}`;
+    let file = fileNameOf(base, ext);
+    for (let n = 2; taken.has(file); n++) file = fileNameOf(`${base} ${n}`, ext);
+    taken.add(file);
+    return file;
+  });
+}
+
+export type AllSizesOptions = {
+  format: 'png' | 'jpeg';
+  quality: number;
+  matte: string;
+  // Each page's elements drawn over its photo (their pictures read with `scope`), or none.
+  withElements: boolean;
+  scope: { ownerId: string; designId: string; shareCode: string | null };
+};
+
+/** All Sizes: one .zip of every photo page at its pixel size, each drawn in turn and its pixels let
+ *  go before the next. */
+export async function allSizesZip(
+  tab: Tab,
+  pages: readonly LaidOutPage[],
+  store: PixelsStore,
+  inFocus: PhotoSession | null,
+  designName: string,
+  o: AllSizesOptions,
+): Promise<{ blob: Blob; name: string }> {
+  const photoPages = pages.filter((p) => p.kind === 'photo');
+  const names = sizeFileNames(
+    photoPages.map((p) => {
+      const { width, height } = photoOfPage(tab, p.id);
+      return { ...(p.name ? { name: p.name } : {}), index: p.index, width, height };
+    }),
+    o.format === 'jpeg' ? 'jpg' : 'png',
+  );
+  const images = o.withElements
+    ? await loadTabImages(tab, o.scope).catch(() => undefined)
+    : undefined;
+  const files: { name: string; data: Uint8Array }[] = [];
+  for (const [i, page] of photoPages.entries()) {
+    const { session, done } = await loadedSession(tab, page.id, store, inFocus);
+    try {
+      const file = await photoFile(session, names[i]!, {
+        format: o.format,
+        quality: o.quality,
+        lossless: false,
+        matte: o.matte,
+        elements: o.withElements ? await elementsImage(tab, page, images) : null,
+      });
+      files.push({ name: names[i]!, data: new Uint8Array(await file.blob.arrayBuffer()) });
+    } finally {
+      done();
+    }
+  }
+  return {
+    blob: new Blob([writeZip(files)], { type: 'application/zip' }),
+    name: fileNameOf(`${designName || 'Photo'} - All Sizes`, 'zip'),
+  };
 }
 
 /** The photo as a file, by its format. */

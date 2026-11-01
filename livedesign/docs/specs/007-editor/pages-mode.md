@@ -291,6 +291,10 @@ anything that named a deleted page can never find a new page under the old id.
   page the `logo` size only and no Size section ([Logo pages](logo-pages.md)), a **wireframe** page
   its device ([Wireframe pages](wireframe-pages.md)), a **photo** page its picture's size
   ([Photo pages](../031-photo/photo-pages.md)).
+- **One picture in many sizes** (social posts, banners, covers) is a photo page's **Make Sizes…**
+  ([Photo pages](../031-photo/photo-pages.md) "Making sizes"): a new photo page for each format ticked, the
+  picture scaled to fill it and cropped about the centre, each page its own afterwards. No other page kind
+  offers social sizes: a logo page keeps its artboard and a wireframe page its device.
 - A page is only ever given a size its kind offers; any other is refused. A page stored in a size
   livediagram had (US Letter, A3, Square, Post, Story) reads as A4.
 - **Fit to Content** (`fit`) is the page made around content that does not fit a paper size ("Into

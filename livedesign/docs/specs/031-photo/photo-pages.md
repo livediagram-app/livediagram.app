@@ -231,7 +231,7 @@ tooltip and named beside its icon while there is room ([Pages](../007-editor/pag
   adjustments](photo-adjustments.md)), **Auto Tone**, **Auto Contrast**, **Auto Colour**, then **Image Size…**,
   **Canvas Size…**, **Rotate 90° Clockwise**, **Rotate 90° Anticlockwise**, **Rotate 180°**, **Rotate…**, **Flip
   Horizontal**, **Flip Vertical**, **Crop to Selection**, **Trim Transparent**, **Free Transform**, **Place
-  Picture…**.
+  Picture…**, then **Make Sizes…** ([Making sizes](#making-sizes)).
 - **Select**: a menu: **All** (Ctrl/Cmd+A), **Deselect** (Ctrl/Cmd+D), **Reselect**, **Inverse**
   (Ctrl/Cmd+Shift+I), **Subject**, **Colour Range…**, **Select and Mask…**, then **Modify** (**Grow**, **Expand…**, **Contract…**,
   **Border…**, **Smooth…**, **Feather…**), and **Remove Background** ([Photo tools](photo-tools.md) "Smart
@@ -271,13 +271,78 @@ All on the active photo, each one edit:
   non-transparent bounds. The **Crop** tool ([Photo tools](photo-tools.md) "Crop") is the hands-on way.
 - A size past the pixel cap is refused, with a toast: "Photos can be up to 8192 px on a side." (4096 on a phone).
 
+## Making sizes
+
+One photo in every size a post needs. **Make Sizes…** copies the photo page in focus into a new photo page for each
+format ticked, its picture scaled to fill the format and cropped about the centre. Each new page is a photo of its
+own: nothing links back to the page it came from, and each is then adjusted freely (the Move tool slides the
+picture to choose another crop, since the pixels past the new edges are kept).
+
+Make Sizes works on photo pages only. Social sizes are pictures, so they are photo pages; a logo or wireframe page
+has no Make Sizes ([Pages](../007-editor/pages-mode.md) "One kind a tab").
+
+### The formats
+
+| Format                | Pixel size                                  |
+| --------------------- | ------------------------------------------- |
+| **Instagram Post**    | 1080 x 1350                                 |
+| **Instagram Story**   | 1080 x 1920                                 |
+| **LinkedIn Post**     | 1200 x 627                                  |
+| **LinkedIn Banner**   | 1584 x 396                                  |
+| **X Post**            | 1600 x 900                                  |
+| **X Header**          | 1500 x 500                                  |
+| **Facebook Cover**    | 851 x 315                                   |
+| **YouTube Thumbnail** | 1280 x 720                                  |
+| **Custom**            | width and height fields, 1 to the pixel cap |
+
+### The dialog
+
+- **Opening**: the Image menu's **Make Sizes…** (its own last section), or `Photo: Make Sizes` in the command
+  palette. On a photo with no layers yet (unstarted) it is refused with a toast: "Start the photo first: there is
+  nothing to make sizes from." With no room for another photo page it is refused with a toast: "A tab holds up to
+  10 photo pages. Delete one to make sizes."
+- **Header**: **Make Sizes**, under it "Now <w> x <h> px. Each size becomes a new photo page, the picture scaled to
+  fill it and cropped about the centre."
+- **The formats** as tiles, two a row (three on a wide window), each a checkbox: the photo's preview drawn in the
+  format's shape, scaled to fill it and cropped about the centre as the new page will be (a plain tile while the
+  preview loads), the format's name and its pixel size. A ticked tile has the accent border and a tick in its
+  corner. **Custom**, last, shows width and height fields while ticked (each 1 to the pixel cap), the tile drawn
+  in their shape; a size past the cap is refused under the fields and the Make button waits.
+- **Room**: a tab holds at most 10 photo pages. While the ticks fill the room, the unticked tiles are disabled,
+  each with the tooltip "A tab holds up to 10 photo pages.", and a line under the grid says how many more fit.
+- **Select All** and **Clear** sit over the grid (Select All ticks as many as fit, in order).
+- The ticks are remembered in this browser for the next time. None are ticked the first time.
+- **Footer**: **Cancel** and **Make <n> Sizes** ("Make 1 Size"), disabled with nothing ticked. While the sizes are
+  made the button reads "Making…" and the dialog stays; Escape and Cancel still close it, and the work stops.
+
+### What it makes
+
+- **One edit**: every new page lands in one tab edit (one undo step, synced to everyone), right after the page it
+  came from, in the dialog's order, each named for its format ("Instagram Post", ..., "Custom"). The view goes to
+  the first new page, and a toast says "Made <n> sizes." with **Export All Sizes** ([Exports and other
+  views](#exports-and-other-views)).
+- **Each new photo** is the source photo's layer stack at the format's pixel size, by the rules of **Image Size**
+  then **Canvas Size** ([Changing the size](#changing-the-size)) in one step: every pixel layer and mask resampled
+  (Bicubic) by the larger of the two scales (format width over photo width, format height over photo height), so
+  the picture fills the format, then the photo's edges set about the centre (the Centre anchor). Layers keep the
+  pixels past the edges. Text layers keep their text, their size scaled and their box moved; adjustment, fill and
+  group layers are kept as they are. Layer names, order, visibility, opacity, blend modes, masks and effects come
+  along.
+- **Elements on top** stay on the page they are on: they are not part of the photo. Text a size needs to carry is
+  best a text layer, which every size scales with the picture.
+- **Each new photo has its preview** made as it is made, so the pages show their pictures at once, before anyone
+  goes to them.
+- **Nothing is linked**: a later change to the source page or to any size changes that page alone.
+- **A page in focus elsewhere**: if someone else is on the source page, Make Sizes copies the photo as this person
+  last received it.
+
 ## Share roles
 
-| Role            | On a photo page                                                                                                                                                                                                                                 |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything: every tool, every layer change, adjustments, filters, size changes, making and deleting photo pages.                                                                                                                                |
-| **Participant** | Sees the photo and the layer stack (read-only Layers tab: no actions, no toggles), may use the Eyedropper and the info line, and may add elements on top where they may add content. No tool that changes pixels or layers, no title-bar menus. |
-| **Viewer**      | Sees the photo; no photo tools, no options flyout, no panel; may export where the design allows exports.                                                                                                                                        |
+| Role            | On a photo page                                                                                                                                                                                                                                                |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Everything: every tool, every layer change, adjustments, filters, size changes, making and deleting photo pages, Make Sizes (for someone who may add pages).                                                                                                   |
+| **Participant** | Sees the photo and the layer stack (read-only Layers tab: no actions, no toggles), may use the Eyedropper and the info line, and may add elements on top where they may add content. No tool that changes pixels or layers, no title-bar menus, no Make Sizes. |
+| **Viewer**      | Sees the photo; no photo tools, no options flyout, no panel, no Make Sizes; may export (All Sizes too) where the design allows exports.                                                                                                                        |
 
 The server refuses a photo blob write from anyone who may not edit the tab, and the room refuses a `photo` op from
 a Participant or a Viewer.
@@ -311,7 +376,14 @@ a Participant or a Viewer.
   colour where transparent), **WebP** (quality, or **Lossless**), or **PSD** (layers kept: pixel layers with their
   names, opacity, blend modes, visibility and masks; adjustment, fill and text layers as pixel layers named after
   them, so the file looks the same in another editor). **Layers as Files** downloads a .zip of each visible layer as a
-  PNG the photo's size. Elements on top are included in PNG, JPEG and WebP (**Include Elements**, on by default) and
+  PNG the photo's size.
+- **All Sizes** (the Photo card's format, while the tab has two photo pages or more): one .zip of every photo page
+  in the tab, each a file at its pixel size named by its page's name (a made size is named for its format) and
+  its size, `Instagram Post 1080x1350.png` (a page without a name takes "Page <n>"; a name already taken gains
+  " 2", " 3"). **File Type**: **PNG** or **JPEG** (quality, on white where transparent), and **Include
+  Elements** as above. The .zip is named `<design name> - All Sizes.zip`. The pages are drawn one at a time,
+  each page's pixels let go before the next. Make Sizes' toast offers **Export All Sizes**, which downloads the
+  same .zip as PNGs with their elements. Elements on top are included in PNG, JPEG and WebP (**Include Elements**, on by default) and
   never in PSD.
 - **Opening a PSD**: a .psd file is accepted wherever a picture starts a photo (Open a Picture's Upload, a drop, a
   paste). Its layers come in as pixel layers with their names, opacity, blend modes, visibility, masks, clipping and
@@ -330,6 +402,7 @@ a Participant or a Viewer.
   agent write that would change a photo's layers is refused, naming the photo page ("Photo pages are edited in the
   editor: their layers can't be changed by an agent.").
 - Every agent write keeps the tab's photos as they are.
+- Make Sizes is the editor's alone: an agent adds a photo page of a size it names, but never copies pixels into it.
 
 ## Limits
 
@@ -344,9 +417,9 @@ a Participant or a Viewer.
 
 `Tab · Changed ·` `PhotoPageAdded`, `PageKindPhoto` (the first page's choice), `PhotoStartedFromPicture`,
 `PhotoStartedBlank`, `PhotoEditAsPhoto`, `PhotoImageSize`, `PhotoCanvasSize`, `PhotoRotated`, `PhotoFlipped`,
-`PhotoCropped`, `PhotoTrimmed`; `Element · Used ·` each tool once per stroke or use (`PhotoBrush`, `PhotoEraser`,
+`PhotoCropped`, `PhotoTrimmed`, `PhotoMakeSizes` (once a Make Sizes, never its formats); `Element · Used ·` each tool once per stroke or use (`PhotoBrush`, `PhotoEraser`,
 ... the tool's id in Pascal case); `Element · Changed ·` each adjustment and filter applied (`PhotoAdjust<Id>`,
-`PhotoFilter<Id>`), each layer operation (`PhotoLayer<Operation>`); `Design · Exported · Photo<Format>`,
+`PhotoFilter<Id>`), each layer operation (`PhotoLayer<Operation>`); `Design · Exported · Photo<Format>` (`PhotoAllSizes` for All Sizes),
 `Design · Imported · PhotoPsd`; `UI · Opened · PhotoPanel<Tab>`. Never a colour, a size, a name or text.
 
 ## Non-goals
