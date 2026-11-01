@@ -700,6 +700,13 @@ they never meet an app's own `/_next`, and one build serves both addresses.
   Settings panel also call their APIs. All of it is on this origin, but for Status, which also checks each
   app's own addresses ([Status](#status-status)).
 - Light and dark, following the device (the shared appearance boot script).
+- A page that fails to render never shows the framework's bare error screen. It shows the site's own: the
+  title "Something went wrong · liveworkspace", a main landmark holding one card (the shared empty state) with
+  the heading "Something went wrong", a line saying nothing was lost, **Try Again** (which renders the page
+  again) and **Go to the Home Page**. A failure in the root layout itself gets the same card in a page of its
+  own, with `lang`, the stylesheet and the appearance setting, so it is light or dark as the rest of the site.
+- A button that starts work it waits for keeps the keyboard while it works (busy, never `disabled`;
+  [busy buttons](../../../livediagram/docs/specs/004-interface-design/busy-buttons.md)).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
 - The front door, Comparison, the dashboard, Status and the privacy policy and terms are indexable: title, description, canonical,
   Open Graph, `robots.txt` and `sitemap.xml`. Every other page's title names the page and then the site
