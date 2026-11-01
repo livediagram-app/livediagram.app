@@ -252,8 +252,19 @@ detailed: { header, headerEnd, underTitle, footer, bottomRight } }`, each a list
       refused naming what the size draws (`display_invalid`).
     - `tabs`: the item panel's tabs, `[{ name, fields }]`, up to 6, fields by name (Title never, it heads the
       panel); `detailsLabel`: what the panel calls Details. `set` replaces them whole when given.
+  - `add` and `set` take `inherits`: a card type's name or id, its [base type](item-types.md#inherited-types). The
+    type then takes the base type's fields, custom fields (same ids), tabs, statuses, Default State and display,
+    keeping its own name, colour and glyph; its own fields follow the base's. `set` with `inherits: null` detaches
+    it, keeping a copy of the base type's settings. A base type that itself inherits, or a type that others
+    inherit from being given a base, is refused (`type_change_invalid`, "Work inherits from Item, and a type
+    inherits only from one that inherits from none."). On an inherited type, `removeFields`, `removeCustom` or
+    `editCustom` naming an inherited field, and `statuses`, `defaultStatus`, `display`, `tabs`, `detailsLabel` or
+    `assigneeNotifies`, are refused naming the base type ("Bug takes its statuses from Work: change Work, or
+    detach Bug with inherits: null."). A change to a base type reaches every type that inherits from it in the
+    same save.
   - `delete` `{ type }`: as the type editor's Delete Type: the type goes and its cards (out of the Trash) move to the
-    Trash; the answer says how many. The catalogue's last type can go too, leaving none.
+    Trash; the answer says how many. The catalogue's last type can go too, leaving none. Deleting a base type
+    detaches every type that inherits from it, each keeping a copy of its settings.
   - `add_default_types`: as Add Default Types: any of Project, Task, Note, Idea and Action the project lacks, after
     its types; nothing it has changes. `restore_built_ins`, its older name, does the same.
 - The tool reads the catalogue, applies every change, checks the whole result with the editor's rules
@@ -271,7 +282,9 @@ The tool's descriptions carry what an agent needs to design a type well, as fact
 [MCP server](../015-api/mcp-server.md) §4.15): the built-in fields and what each holds, the custom field kinds and what
 each stores, every Plan glyph id, the card sizes with the slots each draws and the fields it can draw, the panel's
 tabs, and the limits (24 fields, 12 custom, 20 choice options, 6 tabs, 32 types). `list_items` lists each type with
-its Default State, its display per size and its tabs, so a change can build on what is there; a Card field lists
+its Default State, its display per size and its tabs, so a change can build on what is there; an inherited type
+also lists `inherits` (its base type's name) and `ownFields` (its own fields by name), every other field being its
+base type's; a Card field lists
 `linkTypes`, every card type it links to, beside `linkType`, the first. A Calculated field lists its `calculation`,
 `showAs: "percent"` when it shows as a Percent, and `readOnly: true` (a Formula also its `formula` by names, its
 `result`, and `formulaError` when it stopped working; a Rollup or Lookup its `through` and `source` by name, its

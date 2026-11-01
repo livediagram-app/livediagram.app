@@ -21,6 +21,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards           | (no other name)             |
 | **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a project made before card types started empty reads as | built-in types              |
 | **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the ten more a template uses                  | preset type, built-in type  |
+| **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                | parent type, super type     |
+| **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own             | subtype, child type         |
 
 ## The type catalogue
 
@@ -68,6 +70,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `inherits`      | The [base type](#inherited-types) it inherits from, by id: a type in the same catalogue that inherits from none. Absent: it inherits from none                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `ownFields`     | An inherited type's own fields, by id, in order: what it adds after its base type's. Absent: none                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
   Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are.
@@ -878,6 +882,60 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
   placed custom fields starts Under the Title on Detailed cards, until the type's Detailed layout is changed; the
   tick is gone from the field's settings.
 
+## Inherited types
+
+A card type can **inherit** from another, its **base type**, so several types share one set of fields kept in one
+place: a Bug and a Story built on one Work type, each adding fields of its own.
+
+- **What it takes from its base type**: the fields, in the base's order; the custom fields, with the **same ids**,
+  so a card's values carry over when its type moves between the base and an inherited type, and with every
+  setting each field has (options, linked card types, Required, Show on Card, Notifies, Holds Several, Blocked By
+  and the rest); the panel's tabs and the Details name; the statuses it uses and their order; the Default State;
+  what its cards show at each size (Display); the Card Colour field and the Assignee's Notifies switch.
+- **What stays its own**: its id, name, colour, glyph and new-card title. It may **add fields** of its own, built-in
+  or custom, which follow the base type's fields and show under Details. It **cannot remove or edit an inherited
+  field**, nor change its tabs, statuses, Default State or Display: those are the base type's to change.
+- **A change to the base type reaches every type that inherits from it**, in the same save: a field added to Work
+  appears on Bug and Story, one removed comes off them, a renamed field is renamed on them, a new state order is
+  theirs. A field the base type comes to have that an inherited type already added itself (the same built-in
+  field, or a custom field of the same id) becomes the base type's, its own copy dropped.
+- **Stored resolved.** An inherited type is stored with `inherits`, `ownFields` and every part it takes from its
+  base type written out in full, worked out again on every save (the editor's, the api's and an agent's). So a
+  reader that knows nothing of inheritance (an editor from before it, an older agent) reads a whole type, and if
+  it saves the catalogue it keeps every inherited field: the type simply stops following its base type.
+- **Detach** turns an inherited type into an ordinary one holding a copy of its base type's settings as they are
+  at that moment; from then on it no longer follows the base type. **Deleting a base type** detaches every type
+  that inherits from it the same way, so none loses a field. A type naming a base type the catalogue lacks (one
+  deleted in a change made at the same time) is read as detached.
+- **One level only.** A base type inherits from none, and a type that others inherit from cannot itself inherit:
+  a catalogue with a chain, or a type inheriting from itself, is refused (`types[i].inherits`). The base type is
+  in the same plan; sharing types across a team is a separate feature.
+- **A base type is an ordinary type.** It holds cards of its own, shows in the palette, the type pickers and a
+  board's card types as any type does; boards and filters name the types they take one by one, so taking Work
+  never takes Bug.
+- **Caps are unchanged**: an inherited type's fields, its base type's and its own together, are at most 24, its
+  custom fields at most 12, and the catalogue at most 32 KB stored. A change to a base type that would take an
+  inherited type past a cap is refused whole, naming that type (`types[i].fields`, `types[i].custom`).
+- **Who changes it**: only someone who may edit the whole plan, as for every card type change
+  ([share roles](../013-workspace/share-roles.md)).
+- **In the type editor** (Configuration's General section): **Inherits From**, a menu of **None** and every type it
+  may inherit from (a type inheriting from none, not itself). Choosing one lays the draft out from that type at
+  once (its fields, tabs, states and display), keeping any fields only this type had as its own. A type others
+  inherit from shows the menu disabled, saying "Bug and Story inherit from this type." While a base type is
+  chosen, **Detach** sits beside the menu (with the tooltip "Stop following Work: keep a copy of its settings");
+  it and choosing None both leave the draft as it stands, now its own. Inherited fields carry a lock beside their
+  name ("Inherited from Work") and have no Edit, Remove or Move; the tab names, the Details name and Add Tab are
+  read-only; fields are added under Details only. The States and Display tabs show, in place of their controls,
+  "Bug takes its states from Work. Change them on Work, or Detach to give Bug its own." ("its display" for
+  Display), with the states or display it takes listed below, read-only.
+- **In the Card Types panel**, an inherited type's row says "Inherits Work" under its name, beside its field count.
+  Deleting a base type's confirmation adds "Bug and Story will keep a copy of its settings."
+- **Agents** see `inherits` (the base type's name) and `ownFields` on a type in `list_items`, and set it with
+  `change_card_types`' `inherits` on `add` or `set` (a type's name or id; `null` on `set` detaches). An agent's
+  change to an inherited part of an inherited type is refused, naming its base type.
+- Telemetry: `Plan` · `Linked` · `CardTypeBase` when a saved type starts inheriting, and `Plan` · `Unlinked` ·
+  `CardTypeBase` when a saved type is detached (Detach or None). Never names or ids.
+
 ## The Card Types panel
 
 - In Plan mode, the bottom-right cluster has a **Card Types** button (the Cards glyph) where Diagram has Layers,
@@ -1245,10 +1303,15 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
 
 - The api validates a stored catalogue whole (shape, ids, counts, lengths, kinds) and refuses one that fails,
   by name (`item_types_invalid`), keeping the last good one. Its stored size is at most 32 KB.
+- Validating a catalogue works out every [inherited type](#inherited-types) again from its base type, so what is
+  stored is always resolved: a chain or a type inheriting from itself is refused, a type whose base is gone is
+  detached, and the caps are checked on the resolved types.
 
 ## Telemetry
 
 - `Plan` · `Opened` · `CardTypes` when the panel opens; `Plan` · `Changed` · `CardType` when a type is saved, `Plan` · `Added` · `CardType` when one is added,
   `Plan` · `Duplicated` · `CardType` when a duplicate is saved and `Plan` · `Deleted` · `CardType` when one is deleted. Never names, ids or field names.
+- `Plan` · `Linked` · `CardTypeBase` when a saved type starts inheriting from a base type, `Plan` · `Unlinked` ·
+  `CardTypeBase` when a saved type is detached ([Inherited types](#inherited-types)).
 - `Plan` · `Added` · `LinkedCard` when New {Type} makes a card already linked, and `Plan` · `Linked` · `LinkedCard`
   when Link Existing links one (`LinkedCardMoved` when it moved from another card).
