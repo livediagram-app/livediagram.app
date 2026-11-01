@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 // the route's metadata <title> a moment after hydration and writes the static title ("Form | liveplanner") back over
 // it. So the title element is watched while mounted, and put back whenever something else rewrites it. One observer
 // on one small element; its callback runs only when the title changes. null leaves the title alone.
-export function useDocumentTitle(title: string | null): void {
+export function useBrowserTabTitle(title: string | null): void {
   useEffect(() => {
     if (title === null) return;
     const apply = () => {

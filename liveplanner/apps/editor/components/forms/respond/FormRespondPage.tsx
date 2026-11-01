@@ -4,7 +4,7 @@
 // canvas style, with nothing of the editor around it: no sign-in, no project, no Explorer. Loading, not found, closed
 // and the form itself are the page's four states; the form's own flow is FormFill.
 import { useEffect, useState, type CSSProperties } from 'react';
-import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle';
+import { useBrowserTabTitle } from '@/hooks/ui/useBrowserTabTitle';
 import dynamic from 'next/dynamic';
 import type { PublicFormResponse } from '@liveplanner/api-schema';
 import { formCodeFromPath } from '@/lib/form-path';
@@ -53,7 +53,7 @@ export function FormRespondPage() {
         ? page.data.form.heading
         : page.data.heading
       : null;
-  useDocumentTitle(heading ? `${heading} | liveplanner` : null);
+  useBrowserTabTitle(heading ? `${heading} | liveplanner` : null);
 
   // The form's look (its tab's theme, finish and font) dresses the whole page, the backdrop included.
   const look = page.kind === 'ready' ? formLookProps(page.data.look) : null;
