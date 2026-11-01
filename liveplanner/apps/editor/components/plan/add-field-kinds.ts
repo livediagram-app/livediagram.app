@@ -24,11 +24,11 @@ export type KindGroup = { id: KindGroupId; label: string; kinds: readonly PickKi
 
 // The groups, in order; the first opens to start.
 export const KIND_GROUPS: readonly KindGroup[] = [
-  { id: 'text', label: 'Text & links', kinds: ['text', 'longtext', 'link', 'email'] },
+  { id: 'text', label: 'Text & links', kinds: ['text', 'longtext', 'link', 'email', 'phone'] },
   {
     id: 'numbers',
     label: 'Numbers & dates',
-    kinds: ['number', 'currency', 'percent', 'duration', 'rating', 'date'],
+    kinds: ['number', 'currency', 'percent', 'duration', 'rating', 'date', 'datetime', 'daterange'],
   },
   { id: 'choices', label: 'Choices', kinds: ['choice', 'multichoice', 'checkbox', 'labels'] },
   {
@@ -49,12 +49,15 @@ export const KIND_DESCRIPTIONS: Record<PickKind, string> = {
   longtext: 'Paragraphs of notes',
   link: 'A web address',
   email: 'An address that opens your mail app',
+  phone: 'A number that calls on a phone',
   number: 'Points, counts and sizes',
   currency: 'An amount, like £12,500',
   percent: 'How far along, drawn as a bar',
   duration: 'Hours and minutes, or time tracked with a timer',
   rating: 'Stars out of 3 to 10',
   date: 'A day on the calendar',
+  datetime: 'A day and a time, in each person’s time zone',
+  daterange: 'From one day to another, with times if you like',
   choice: 'One option from a list',
   multichoice: 'Several options from a list',
   checkbox: 'Yes or no, ticked or not',
@@ -75,6 +78,7 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
   longtext: ['notes', 'paragraph', 'multiline', 'multi-line', 'description', 'essay'],
   link: ['url', 'website', 'web', 'href', 'hyperlink'],
   email: ['mail', 'e-mail', 'contact', 'inbox'],
+  phone: ['mobile', 'tel', 'telephone', 'call', 'cell', 'contact', 'number'],
   number: ['count', 'points', 'size', 'quantity', 'integer', 'numeric', 'figure'],
   currency: [
     'money',
@@ -94,6 +98,8 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
   duration: ['time', 'hours', 'minutes', 'timer', 'tracking', 'billable', 'timesheet', 'spent'],
   rating: ['stars', 'score', 'rank', 'review', 'grade'],
   date: ['day', 'deadline', 'when', 'calendar', 'due', 'time'],
+  datetime: ['time', 'meeting', 'appointment', 'hour', 'clock', 'timestamp', 'deadline', 'when'],
+  daterange: ['range', 'event', 'trip', 'period', 'span', 'from', 'until', 'dates', 'sprint'],
   choice: ['dropdown', 'drop-down', 'select', 'option', 'single', 'picklist', 'enum', 'status'],
   multichoice: ['tags', 'multi-select', 'multiselect', 'multiple', 'many', 'select many'],
   checkbox: ['yes/no', 'yes', 'no', 'tick', 'toggle', 'boolean', 'true/false', 'done', 'switch'],

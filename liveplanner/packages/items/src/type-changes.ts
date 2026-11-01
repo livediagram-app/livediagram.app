@@ -96,6 +96,8 @@ export interface CustomFieldInput {
   showAs?: string;
   // A Duration field that tracks time (docs/specs/026-plan/item-types.md "Time Spent"); set only when it is made.
   timeSpent?: boolean;
+  // A Date Range whose ends carry a time (docs/specs/026-plan/item-types.md "Date Range"); set only when it is made.
+  withTime?: boolean;
   onCard?: boolean;
   // Required (docs/specs/026-plan/item-types.md "Required fields"); never a checkbox.
   required?: boolean;
@@ -430,6 +432,13 @@ function customOf(
     if (known !== 'duration')
       throw invalid(`"${name}" is ${withArticle(known)} field: only a duration field tracks time.`);
     field.timeSpent = true;
+  }
+  if (input.withTime) {
+    if (known !== 'daterange')
+      throw invalid(
+        `"${name}" is ${withArticle(known)} field: only a date range field has times on its ends.`,
+      );
+    field.withTime = true;
   }
   if (input.onCard) field.onCard = true;
   if (input.required) field.required = requirable(field);

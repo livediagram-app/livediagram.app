@@ -8,6 +8,8 @@ import { CloseIcon, TextInput } from '@liveplanner/ui';
 import {
   CURRENCY_DEFAULT,
   EMAIL_MAX,
+  dateTimeZones,
+  rangeEndOf,
   ITEM_UNKNOWN_STRING_MAX,
   RATING_STARS_ON_CARD,
   durationMinutes,
@@ -22,6 +24,9 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { RatingInput } from '../forms/RatingInput';
 import { PercentSlider } from './PercentSlider';
 import { DurationInput } from './time/DurationInput';
+import { DateTimeInput } from './DateTimeInput';
+import { DateRangeField } from './DateRangeField';
+import { PhoneField } from './PhoneField';
 
 type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
@@ -174,8 +179,46 @@ export function CustomFieldEditor({
           ) : null}
         </div>
       );
+    // A phone number as typed, and its call link (docs/specs/026-plan/item-types.md "Phone").
+    case 'phone':
+      return (
+        <PhoneField
+          id={id}
+          label={field.label}
+          value={text}
+          disabled={disabled}
+          onSave={(v) => void onSave(v)}
+        />
+      );
     case 'date':
       return <DateField id={id} value={value} disabled={disabled} onSave={onSave} />;
+    // A moment in the viewer's zone (docs/specs/026-plan/item-types.md "Date and Time").
+    case 'datetime':
+      return (
+        <div className="flex flex-col gap-0.5">
+          <DateTimeInput
+            id={id}
+            label={field.label}
+            value={text || undefined}
+            disabled={disabled}
+            onCommit={(v) => void onSave(v)}
+          />
+          <ZoneLine value={text} />
+        </div>
+      );
+    case 'daterange':
+      return (
+        <div className="flex flex-col gap-0.5">
+          <DateRangeField
+            id={id}
+            field={field}
+            value={value}
+            disabled={disabled}
+            onSave={(v) => void onSave(v)}
+          />
+          {field.withTime ? <ZoneLine value={rangeEndOf(value, 'start')} /> : null}
+        </div>
+      );
     case 'checkbox':
       return (
         <input
@@ -237,4 +280,13 @@ export function CustomFieldEditor({
     case 'votes':
       return null;
   }
+}
+
+// Under a moment's box, the zone it reads in and where it was set when that is another (item-types.md "Date and Time"):
+// a line rather than a tooltip, so a phone shows it too.
+function ZoneLine({ value }: { value: unknown }) {
+  const zones = dateTimeZones(value);
+  return zones ? (
+    <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">{zones}</p>
+  ) : null;
 }

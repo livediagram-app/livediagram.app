@@ -9,6 +9,8 @@ import { CURRENCY_DEFAULT, ratingScaleOf, type CustomFieldDef } from './item-typ
 import type { Item, ItemFieldValue } from './item';
 import { itemColourValue } from './item-colour';
 import { fieldCardIds, fieldPeople } from './several-values';
+import { dateTimeText } from './date-time-fields';
+import { dateRangeText } from './date-range-fields';
 
 const FORMATS = {
   // A board card, where room is tight: "30 Oct".
@@ -60,6 +62,12 @@ export function customFieldText(
       if (typeof value !== 'string') return null;
       return dayLabel(value, 'medium');
     }
+    // In the viewer's zone, short: "Fri 31 Oct, 17:00", "31 Oct to 2 Nov" (item-types.md "Date and Time", "Date
+    // Range").
+    case 'datetime':
+      return dateTimeText(value, 'short');
+    case 'daterange':
+      return dateRangeText(value, 'short');
     case 'link':
       return typeof value === 'string' ? linkHost(value) : null;
     case 'currency':
@@ -75,6 +83,7 @@ export function customFieldText(
       return m === undefined ? null : durationText(m);
     }
     case 'email':
+    case 'phone':
       return typeof value === 'string' ? value : null;
     // Every linked card or person of a field that holds several, joined (item-types.md "Holds Several").
     case 'card': {

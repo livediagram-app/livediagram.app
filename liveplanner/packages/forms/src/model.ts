@@ -6,8 +6,11 @@ export const QUESTION_TYPES = [
   'paragraph',
   'number',
   'email',
+  'phone',
   'link',
   'date',
+  'datetime',
+  'daterange',
   'single',
   'multi',
   'rating',
@@ -24,8 +27,11 @@ export const QUESTION_TYPE_NAMES: Readonly<Record<QuestionType, string>> = {
   paragraph: 'Paragraph',
   number: 'Number',
   email: 'Email',
+  phone: 'Phone',
   link: 'Link',
   date: 'Date',
+  datetime: 'Date and Time',
+  daterange: 'Date Range',
   single: 'Single Choice',
   multi: 'Multiple Choice',
   rating: 'Rating',
@@ -38,8 +44,11 @@ export const QUESTION_TYPE_TELEMETRY: Readonly<Record<QuestionType, string>> = {
   paragraph: 'Paragraph',
   number: 'Number',
   email: 'Email',
+  phone: 'Phone',
   link: 'Link',
   date: 'Date',
+  datetime: 'DateTime',
+  daterange: 'DateRange',
   single: 'SingleChoice',
   multi: 'MultipleChoice',
   rating: 'Rating',
@@ -68,6 +77,8 @@ export interface FormQuestion {
   whole?: true;
   // Rating.
   scale?: number;
+  // Date Range: each end a date and time (docs/specs/030-forms/forms.md "Question types").
+  withTime?: true;
   style?: 'stars' | 'numbers';
   lowLabel?: string;
   highLabel?: string;

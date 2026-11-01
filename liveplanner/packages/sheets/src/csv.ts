@@ -143,14 +143,28 @@ const FORMULA_START = /^[=+\-@\t\r]/;
 // a long run of spaces is read once, never backtracked over (a field is user input).
 const SHOWN_NUMBER = /^[+-]?\s*(?:\p{Sc}\s*)?[\d.,]+(?:\s*\p{Sc})?%?$/u;
 
+// A phone number as typed (docs/specs/029-sheets/sheet.md "CSV"): a + then only digits, spaces, brackets and dashes,
+// at least 3 digits. No letter, quote or other sign, so it names no function, cell or command: it is written as text,
+// keeping its +, never with a '. One character class, so nothing backtracks.
+const PHONE_NUMBER = /^\+[\d ()-]+$/;
+export const isCsvPhoneNumber = (field: string): boolean =>
+  PHONE_NUMBER.test(field) && field.replace(/\D/g, '').length >= 3;
+
 // A field made inert for a download: prefixed with ' so a spreadsheet opening the file shows it as text.
 export function csvSafeField(field: string): string {
-  return FORMULA_START.test(field) && !SHOWN_NUMBER.test(field) ? `'${field}` : field;
+  return FORMULA_START.test(field) && !SHOWN_NUMBER.test(field) && !isCsvPhoneNumber(field)
+    ? `'${field}`
+    : field;
+}
+
+// A download's field: inert, and quoted when it is a phone number so a reader takes it as text.
+function safeField(field: string): string {
+  return isCsvPhoneNumber(field) ? `"${field}"` : quote(csvSafeField(field));
 }
 
 // `safe` (every download leaving the app, never a sheet's own round trip): each field a spreadsheet would run as a
-// formula is made inert (csvSafeField).
+// formula is made inert (csvSafeField), and a phone number is written as quoted text.
 export function toCsv(rows: readonly (readonly string[])[], opts: { safe?: boolean } = {}): string {
-  const field = opts.safe ? (f: string) => quote(csvSafeField(f)) : quote;
+  const field = opts.safe ? safeField : quote;
   return rows.map((r) => r.map(field).join(',')).join('\r\n') + (rows.length ? '\r\n' : '');
 }

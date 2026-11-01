@@ -97,8 +97,11 @@ const HINTS: Partial<Record<FormQuestion['type'], string>> = {
   paragraph: 'Your answer',
   number: 'A number',
   email: 'name@example.com',
+  phone: '+44 20 7946 0958',
   link: 'https://',
   date: 'dd/mm/yyyy',
+  datetime: 'dd/mm/yyyy, --:--',
+  daterange: 'dd/mm/yyyy to dd/mm/yyyy',
 };
 
 function star(cx: number, cy: number, r: number, fill: string, stroke: string): string {

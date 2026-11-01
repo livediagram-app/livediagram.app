@@ -143,10 +143,10 @@ previewing), the help link and the form's **cog**.
 - **Questions**, each a card. The selected one (click, or Tab onto it and Enter) shows its editing chrome: a
   **left accent bar** in the form colour, the prompt as an editable field beside its **type button**, the help text
   under it ("Description (optional)"), a choice question's options, a text answer's box (Short Answer, Paragraph,
-  Number, Email, Link) as respondents see it with its **placeholder** typed straight into it, grey as it will show
+  Number, Email, Link, Phone) as respondents see it with its **placeholder** typed straight into it, grey as it will show
   ("Placeholder: shown in the box until someone types." under it; emptied, the type's own hint), or any other type's
   answer control as respondents see it, disabled; its own **settings** in a tinted block (bounds and Whole Numbers Only, fewest and most
-  picks, Show as Dropdown, scale, style and end labels: whichever its type has), and a **footer**: **Answer goes to**
+  picks, Show as Dropdown, scale, style and end labels, a Date Range's Include Time: whichever its type has), and a **footer**: **Answer goes to**
   (a badge naming the mapping, opening [Answer Goes To](#mapping-where-an-answer-goes) under itself, a sheet on a
   phone, which closes once a choice is made), **Move Up**, **Move Down**, **Duplicate**, **Delete** and
   **Required**. Selecting a question grows its card open to the editing chrome, and letting go shrinks it back
@@ -271,6 +271,9 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
 | **Email**           | An email box                                                                     | Placeholder, typed into its box                                               | An email address              |
 | **Link**            | A web address box                                                                | Placeholder, typed into its box                                               | An `https://` URL             |
 | **Date**            | A date picker                                                                    |                                                                               | A date (`YYYY-MM-DD`)         |
+| **Date and Time**   | A date-and-time picker, in the respondent's own time zone                        |                                                                               | A moment (UTC, with its zone) |
+| **Date Range**      | Two date pickers, From and To (date-and-time pickers with Include Time)          | Include Time                                                                  | A start and an end            |
+| **Phone**           | A phone box (a phone's number pad on a phone)                                    | Placeholder, typed into its box                                               | A phone number, as typed      |
 | **Single Choice**   | Radio buttons (or a dropdown past 7 options)                                     | Options (2 to 20), Show as Dropdown                                           | One option                    |
 | **Multiple Choice** | Checkboxes                                                                       | Options (2 to 20), Minimum and Maximum Picks                                  | A list of options             |
 | **Rating**          | Stars, or numbered buttons on a scale (Numbers' labels under the first and last) | Scale 3 to 10 (5 by default), Stars or Numbers, Low and High labels (Numbers) | A whole number 1 to the scale |
@@ -290,6 +293,18 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
   on a German or French phone, so the browser reads `3,5` as 3.5 and `1.234,5` as 1234.5 before it checks the answer
   and sends it (`withLocaleNumbers`, `packages/forms/src/locale-number.ts`); the box keeps showing what was typed. A
   group mark counts only between thousands, so an en-US `3,5` is not read as 35. The server checks plain numbers.
+- A **Date and Time** answer is read in the respondent's own time zone and sent as its UTC instant with that zone
+  (`2026-10-31T17:00:00Z[Europe/London]`, as a [Date and Time field](../026-plan/item-types.md#date-and-time-fields)
+  keeps it); a time that is not a real moment says "Enter a real date and time". In a card's Description or a sheet's
+  row it reads in the zone it was given in, with the zone named ("Fri 31 Oct 2026, 17:00 (Europe/London)").
+- A **Date Range** answer is its two ends; both are needed ("Enter both dates", or "Enter a real date"), and an end
+  before its start is refused ("The end is before the start"). **Include Time** (off) makes each end a date and time,
+  read as a Date and Time answer is. In a Description or a sheet's row it reads "2026-10-31 to 2026-11-02" (with
+  times, each end as a Date and Time answer reads it).
+- A **Phone** answer is checked as a [Phone field](../026-plan/item-types.md#phone-fields) checks a number (digits,
+  spaces, brackets, dashes and a leading `+`, at least 3 digits): "Enter a phone number like +44 20 7946 0958". Its box
+  is `type="tel"` with `autocomplete="tel"`, so a phone shows its number pad and can fill the respondent's own
+  number. Its placeholder is "+44 20 7946 0958" until one is typed.
 
 ### Mapping: where an answer goes
 
@@ -298,7 +313,7 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 - **Description** (the default): the answer is written into the card's Description under its prompt, in form order:
   each unmapped answered question a bold line of the prompt, then the answer (choices joined by commas, a Rating as
   "4 / 5", a Checkbox as Yes or No). Unanswered questions are left out.
-- **Title**: Short Answer, Email, Number, Single Choice and Date questions may map to Title; one question at most
+- **Title**: Short Answer, Email, Phone, Number, Single Choice and Date questions may map to Title; one question at most
   (picking it for one unmaps it from another, saying so).
 - **A custom field** of the destination card type whose kind takes the answer (below), or **New Field "<Prompt>"**,
   which adds a custom field of the right kind named after the prompt (made unique) to the card type at once. A
@@ -312,6 +327,9 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 | Email           | Email, Text                                          |
 | Link            | Link, Text                                           |
 | Date            | Date                                                 |
+| Date and Time   | Date and Time                                        |
+| Date Range      | Date Range (its Include Time matching)               |
+| Phone           | Phone, Text                                          |
 | Single Choice   | Choice (options matched by name), Text               |
 | Multiple Choice | Multiple Choice (options matched by name), Long Text |
 | Rating          | Rating (scale equal or larger), Number               |
@@ -667,7 +685,7 @@ stands, its answers landing where a person would have sent them, and hands back 
 first), a destination's board by its tab's name or the board's title, its card type and column by name, a sheet by
 its name in Responses Go To ("Budget", "Budget 2"), and a mapping by the card field's name. An unknown name is refused
 with the ones there are. Question types go by their ids (`short`, `paragraph`, `number`, `email`, `link`, `date`,
-`single`, `multi`, `rating`, `checkbox`), each described with the builder's name for it.
+`datetime`, `daterange`, `phone`, `single`, `multi`, `rating`, `checkbox`; a `daterange` takes `withTime`), each described with the builder's name for it.
 
 - **`read_form`** (read): the Form tab named (or the project's first): its heading and description, its sections
   in order (each with its rule as the question's prompt and the answers), each question with every setting it has
