@@ -64,15 +64,15 @@ export function PaneList({ label, children }: { label?: string; children: ReactN
   );
 }
 
-// Preview cards (folders, Jump Back In) in two columns, three in a wide pane (the desktop popover), cascading in
-// as the rows do.
+// Preview cards (folders, Jump Back In), compact so more fit in a row: two across in a narrow pane (a phone's sheet),
+// three from 24rem (a tablet, a wide phone), four from 42rem (every desktop popover), with a touch more air between
+// them there. They cascade in as the rows do.
+export const PANE_GRID =
+  'lvd-cascade grid grid-cols-2 gap-2 @sm:grid-cols-3 @2xl:grid-cols-4 @2xl:gap-x-3 @2xl:gap-y-3.5';
+
 export function PaneGrid({ label, children }: { label?: string; children: ReactNode }) {
   return (
-    <ul
-      aria-label={label}
-      className="lvd-cascade grid grid-cols-2 gap-2 @2xl:grid-cols-3"
-      onKeyDown={paneListKeys}
-    >
+    <ul aria-label={label} className={PANE_GRID} onKeyDown={paneListKeys}>
       {children}
     </ul>
   );

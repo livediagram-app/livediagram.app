@@ -142,8 +142,17 @@ import { useDriveMarks, type ExplorerDriveHost } from '../drive/useDriveMarks';
 export type PanelLayout = 'side' | 'stacked' | 'sheet';
 
 /**
+ * The editors' popover (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the
+ * scrim"): up to 64rem wide, so the 13rem rail has room and the pane's compact preview cards run four across, yet a
+ * quarter of a 1280px window's canvas stays in sight; and up to 56rem tall. Each editor's MovablePanel takes these,
+ * so the size lives once. The host keeps it 1rem inside the window.
+ */
+export const EXPLORER_POPOVER_WIDTH = 'w-[64rem]';
+export const EXPLORER_POPOVER_HEIGHT = '56rem';
+
+/**
  * The rail and pane's box per layout. `side` (a desktop or tablet popover) fills the popover, which the host sizes
- * (the editors' popover: up to 60rem by 56rem, kept inside the window), never shorter than 18rem; `sheet` fills a
+ * (EXPLORER_POPOVER_WIDTH by EXPLORER_POPOVER_HEIGHT, kept inside the window), never shorter than 18rem; `sheet` fills a
  * phone's sheet, never shorter than 18rem; `stacked` (a narrow corner panel) is capped to leave the canvas room.
  */
 export const PANEL_BODY: Record<PanelLayout, string> = {
@@ -758,7 +767,7 @@ function Rail({
       className={
         phone
           ? 'shrink-0 overflow-x-auto px-2.5 py-1 [scrollbar-width:none]'
-          : 'scrollbar-slim flex w-44 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-1.5 py-2 dark:border-slate-700/70'
+          : 'scrollbar-slim flex w-52 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-2.5 py-3 dark:border-slate-700/70'
       }
     >
       {phone ? (
@@ -1045,7 +1054,7 @@ function Pane({
       </div>
       <div
         data-explorer-pane=""
-        className="scrollbar-slim @container min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1"
+        className="scrollbar-slim @container min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1 @2xl:px-4"
       >
         {/* Keyed by section: a pick slides the new section in (a fade alone under reduced motion). */}
         <div key={sectionKey(section)} className="animate-view-forward">
@@ -1122,9 +1131,12 @@ function FilterToggle() {
 
 // ---- Home -----------------------------------------------------------------------------------------------
 
-// How many items Home's Jump Back In lists in the pane, from this many of each group (fewer than Home's page).
-const JUMP_BACK_IN_ROWS = 6;
+// How many items Home's Jump Back In lists in the pane (two full rows of four in a desktop popover), from this many of
+// each group (fewer than Home's page).
+const JUMP_BACK_IN_ROWS = 8;
 const PANEL_PER_GROUP = 4;
+// The recent ones asked past PANEL_PER_GROUP: JUMP_BACK_IN_ROWS of them and one for the open item.
+const PANEL_RECENT_EXTRA = JUMP_BACK_IN_ROWS + 1 - PANEL_PER_GROUP;
 const live = (i: ShownItem) => i.trashedAt === null;
 const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
 
@@ -1136,9 +1148,10 @@ function HomeSection({
   onOpenExplorer?: (view: ExplorerView) => void;
 }) {
   const { client, app, filter, overlay, epoch, words } = useExplorer();
-  // Most used then recent (one request), one more than the pane lists, so leaving out the open item still fills it.
+  // Most used then recent (one request): enough recent ones to fill the pane alone, plus one, so a person with no most
+  // used yet, or leaving out the open item, still sees two full rows.
   const load = useMemo(
-    () => jumpBackInLoader(client, app, filter, PANEL_PER_GROUP, 1),
+    () => jumpBackInLoader(client, app, filter, PANEL_PER_GROUP, PANEL_RECENT_EXTRA),
     [client, app, filter],
   );
   const list = useItemList({
