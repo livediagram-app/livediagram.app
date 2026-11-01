@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccountMenu } from './AccountMenu';
+import { AccountMenu, SIGN_OUT_REFUSED } from './AccountMenu';
 import { AppAccountMenu } from './AppAccountMenu';
 import { appAccountOf, appSignOut, resetAppAccount } from './app-account';
 import { avatarColour } from './initials';
@@ -313,6 +313,31 @@ describe('AccountMenu signed in', () => {
     fireEvent.click(settings);
     expect(onOpenSettings).toHaveBeenCalledOnce();
     expect(screen.queryAllByRole('menuitem')).toHaveLength(0);
+  });
+
+  it('says so when Sign Out is refused or never gets through, and keeps the menu open to try again', async () => {
+    const onSignOut = vi
+      .fn()
+      .mockResolvedValueOnce(false)
+      .mockRejectedValueOnce(new TypeError('offline'));
+    render(<AccountMenu name="Ada" onSignOut={onSignOut} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
+    for (let i = 0; i < 2; i++) {
+      await act(async () => {
+        fireEvent.click(screen.getByRole('menuitem', { name: /Sign Out/ }));
+      });
+      expect(screen.getByRole('menu')).toBeTruthy();
+      expect(screen.getByRole('menuitem', { name: /Sign Out/ }).textContent).toContain(
+        SIGN_OUT_REFUSED,
+      );
+      expect(screen.getByRole('status').textContent).toBe(SIGN_OUT_REFUSED);
+    }
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
+    expect(screen.getByRole('menuitem', { name: /Sign Out/ }).textContent).toContain(
+      'Every app in this browser',
+    );
+    expect(screen.getByRole('status').textContent).toBe('');
   });
 
   it('names the open menu "Account", not after its trigger', () => {
