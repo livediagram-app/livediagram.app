@@ -887,7 +887,9 @@ A board can be maximised to work on it without the rest of the canvas around it.
   in the chrome's own text colour, truncating past 16 rem. It is the same title: a double-click on it renames it in
   place, as in the header. A board's [card type chips](#card-type-chips) stay in the header, leading it just after
   the menu box. The room the band needs is measured from the menu box without the name, so the name
-  coming or going never takes the band away. Without a band (a phone, a narrow window) the name stays in the header.
+  coming or going never takes the band away. A board's widgets count where they would ride, at the band's right, even
+  while they sit in the header, so their moving into the band never takes it away again (the header never flips
+  between the two). Without a band (a phone, a narrow window) the name stays in the header.
 - **It is not placed on the canvas while it fills it**: maximised or filling its tab, a board, view or Sheet's
   element menu leaves out **Layer**, **Size**, **Rotation** and its **Animation** categories (they would change
   where and how it sits on the canvas it hides), and its animation does not play; restored, it animates in its

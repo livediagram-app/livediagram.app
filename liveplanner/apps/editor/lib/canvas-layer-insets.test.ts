@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import {
+  BAND_ENTRY_SLACK_PX,
   BAND_MID_MIN_PX,
   BAND_RIGHT_MIN_PX,
   MAX_INSET_SHARE,
@@ -239,7 +240,59 @@ describe('headerBand', () => {
     (stripEl!.firstElementChild as HTMLElement).getBoundingClientRect = rect(strip);
     const controls = main!.querySelector<HTMLElement>('[data-band-controls]')!;
     Object.defineProperty(controls, 'offsetWidth', { value: 144 });
+    // Not yet in a band: the card's larger buttons there are allowed for.
+    expect(measureCanvasChrome(main!).band).toEqual(
+      headerBand(canvas, none, menu, strip, 0, 160, BAND_ENTRY_SLACK_PX),
+    );
+    main!.querySelector('[data-canvas-cover]')!.setAttribute('data-header-band', '');
     expect(measureCanvasChrome(main!).band).toEqual(headerBand(canvas, none, menu, strip, 0, 160));
+  });
+
+  // A board's widgets sit in its header without a band and ride in the controls card with one: judged from the card
+  // alone, the band came, the widgets moved in, the card grew and took it away, every frame (a 680 px window).
+  it('counts a board’s widgets where they would ride, so the band never flips', () => {
+    const page = (banded: boolean, width = 680) => {
+      document.body.innerHTML = `
+        <main data-canvas-a11y-root="">
+          <div data-canvas-cover=""${banded ? ' data-header-band=""' : ''}>
+            <div data-board-header="">
+              ${banded ? '' : '<div data-widget-zone=""><div></div><button></button></div>'}
+              <div data-band-controls="">${banded ? '<span><div data-widget-zone=""></div></span>' : ''}</div>
+            </div>
+          </div>
+        </main>
+        <div data-toolbar-menu=""></div>`;
+      const [main, menuEl] = [...document.body.children] as HTMLElement[];
+      const rect = (r: { left: number; top: number; right: number; bottom: number }) => () =>
+        ({
+          ...r,
+          x: r.left,
+          y: r.top,
+          width: r.right - r.left,
+          height: r.bottom - r.top,
+        }) as DOMRect;
+      const narrow = { left: 0, top: 56, right: width, bottom: 900 };
+      main!.getBoundingClientRect = rect(narrow);
+      menuEl!.getBoundingClientRect = rect(box(12, 68, 137, 114));
+      const controls = main!.querySelector<HTMLElement>('[data-band-controls]')!;
+      const zone = main!.querySelector<HTMLElement>('[data-widget-zone]')!;
+      // It stretches across the header; its widgets and + run 352 px.
+      zone.getBoundingClientRect = rect(box(200, 70, 640, 106));
+      if (!banded) {
+        const [list, add] = [...zone.children] as HTMLElement[];
+        list!.getBoundingClientRect = rect(box(204, 74, 520, 102));
+        add!.getBoundingClientRect = rect(box(526, 74, 556, 102));
+      }
+      // The cog alone, or the cog and the widgets' run (capped at 56vw, then the hairline and the gap).
+      Object.defineProperty(controls, 'offsetWidth', { value: banded ? 438 : 48 });
+      return measureCanvasChrome(main!).band;
+    };
+    // The same answer either way: no band at 680 px with three widgets, so nothing changes from frame to frame.
+    expect(page(false)).toBeNull();
+    expect(page(true)).toBeNull();
+    // A wider window has room for them: a band either way, judged from what the zone holds, not its stretched box.
+    expect(page(false, 1000)).not.toBeNull();
+    expect(page(true, 1000)).not.toBeNull();
   });
 });
 

@@ -103,6 +103,8 @@ export function headerBand(
   strip: Box | null,
   nameWidth = 0,
   endWidth = BAND_RIGHT_MIN_PX,
+  // More room the band must leave before it comes (widgetsToCome); once it has come, nothing more.
+  entryWidth = 0,
 ): HeaderBand | null {
   if (!menu || canvas.right - canvas.left < BAND_CANVAS_MIN_PX) return null;
   const half = canvas.top + (canvas.bottom - canvas.top) / 2;
@@ -116,7 +118,7 @@ export function headerBand(
   // Where the strip's right edge goes, and its left edge then.
   const stripRight = right - Math.max(0, endWidth) - BAND_GAP_PX;
   const end = strip ? stripRight - (strip.right - strip.left) : stripRight;
-  if (end - baseRight - 2 * BAND_GAP_PX < BAND_MID_MIN_PX) return null;
+  if (end - Math.max(0, entryWidth) - baseRight - 2 * BAND_GAP_PX < BAND_MID_MIN_PX) return null;
   return {
     height: Math.round(Math.max(menu.bottom, strip?.bottom ?? menu.bottom) - top),
     left: Math.round(menu.right - left + BAND_GAP_PX),
@@ -186,6 +188,31 @@ function unionOfChildren(el: HTMLElement): Box | null {
   return out;
 }
 
+// A board's widgets ride in its controls card only while there is a band (PlanBoardHeader): without one they sit in
+// the header, and the card is the cog alone. Judging the band from that narrow card let it on, the widgets moved in,
+// the wider card took it away, and the header flipped between the two every frame. So without a band the widgets count
+// as they would ride (their run, as wide as the band's zone lets it: PlanBoardHeader's `max-w-[min(56vw,46rem)]`,
+// its hairline and padding, and the card's gap), plus BAND_ENTRY_SLACK_PX for the card's larger buttons in the band:
+// the band comes only once it fits with them, and stays.
+const BAND_ZONE_MAX_VW = 0.56;
+const BAND_ZONE_MAX_PX = 736;
+// The zone's right padding and hairline, and the card's gap before the next control (PlanBoardHeader, gap-3).
+const BAND_ZONE_EDGE_PX = 9 + 12;
+export const BAND_ENTRY_SLACK_PX = 24;
+function widgetsToCome(canvas: HTMLElement, controls: HTMLElement): number {
+  if (canvas.querySelector('[data-header-band]')) return 0;
+  const zone = controls
+    .closest('[data-board-header]')
+    ?.querySelector<HTMLElement>('[data-widget-zone]');
+  if (!zone || controls.contains(zone)) return BAND_ENTRY_SLACK_PX;
+  // What the zone holds, not the zone (it stretches across the header): its children's run, scrolled out of view or not,
+  // and its own 4 px sides.
+  const held = unionOfChildren(zone);
+  const natural = held ? held.right - held.left + 8 : 0;
+  const run = Math.min(natural, window.innerWidth * BAND_ZONE_MAX_VW, BAND_ZONE_MAX_PX);
+  return run + BAND_ZONE_EDGE_PX + BAND_ENTRY_SLACK_PX;
+}
+
 // The chrome over `canvas` now, read off the screen.
 // `withBand` false: never a header band (a Dashboard's page starts below the top row, docs/specs/026-plan/plan-tabs.md).
 export function measureCanvasChrome(canvas: HTMLElement, withBand = true): CanvasLayout {
@@ -224,6 +251,7 @@ export function measureCanvasChrome(canvas: HTMLElement, withBand = true): Canva
         ? parseFloat(getComputedStyle(controls.parentElement).paddingRight) || 0
         : 0)
     : BAND_RIGHT_MIN_PX;
+  const entryWidth = controls ? widgetsToCome(canvas, controls) : 0;
   if (!withBand) return { insets, band: null };
   const band = headerBand(
     area,
@@ -232,6 +260,7 @@ export function measureCanvasChrome(canvas: HTMLElement, withBand = true): Canva
     strip ? unionOfChildren(strip) : null,
     nameWidth,
     endWidth,
+    entryWidth,
   );
   if (band) return { insets: { ...insets, top: 0 }, band };
   const row = phoneRow(area, insets, menu);
