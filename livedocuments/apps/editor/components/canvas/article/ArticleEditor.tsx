@@ -72,6 +72,7 @@ import { useArticleLinkHover } from './useArticleLinkHover';
 import { caretCanvasRect, createArticleHandle, writingScale } from './article-editor-handle';
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
 import { articlePasteProps } from '@/lib/article/article-paste';
+import { cardPasteSlice } from '@/lib/article/article-card-paste';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -551,6 +552,14 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
       handleScrollToSelection: () => true,
       ...pasteProps,
+      // A card holds text only: a pasted table comes as a list, a page break or a zone not at all
+      // (docs/specs/007-editor/flashcards.md "Text only").
+      transformPasted: (slice) => {
+        if (!latest.current.card) return slice;
+        const onCard = cardPasteSlice(slice);
+        if (onCard.cut) announceTextOnly();
+        return onCard.slice;
+      },
       nodeViews: tableNodeViews(rights, (v, id) =>
         jumpToHeading(v, id, latest.current.editable, (r) => {
           const p = latest.current;
