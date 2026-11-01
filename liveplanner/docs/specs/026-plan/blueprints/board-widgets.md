@@ -140,11 +140,11 @@ due?: 'overdue' | 'soon' }` and `PlanBoardSetup.savedFilters?: SavedBoardFilter[
 types, statusNames)` (card-search.ts, the core `searchCards` now shares; it never drops archived cards, so an
   Archive board filters too) answers an id set each card is then checked against, beside `quickFilterMatches`. The
   projection is memoised on the quick filter, so chips do not rescan on a render that changes nothing.
-- **Widget** (`widgets/BoardFilterField.tsx`): `FilterSearchBox` with `compact` and `tone` (the board palette's
+- **Widget** (`components/plan/widgets/BoardFilterField.tsx`): `FilterSearchBox` with `compact` and `tone` (the board palette's
   border, ink, muted and focus), chips labelled by `searchFilterLabel`, Add Filter from `searchFields` over the cards
   the board shows under the other narrowings and `searchValues` for a field's values, memoised on `[items, quick,
-types]`. `widgets/SavedFilterChips.tsx` draws the chips, Save Filter and each chip's menu; the name popover is
-  `widgets/SavedFilterNamePopover.tsx`.
+types]`. `components/plan/widgets/SavedFilterChips.tsx` draws the chips, Save Filter and each chip's menu; the name popover is
+  `components/plan/widgets/SavedFilterNamePopover.tsx`.
 - **Pure helpers** (`saved-filters.ts`): `SAVED_FILTERS_MAX = 8`, `SAVED_FILTER_NAME_MAX = 40`,
   `SAVED_FILTER_TEXT_MAX = 200`; `isSavedBoardFilters(v)` (the api's check, via validate-shape), `readSavedFilters(v)`
   (normaliseBoardSetup keeps the valid ones, at most 8); `savedFilterFrom(quick, name, id)` (a due window with no
