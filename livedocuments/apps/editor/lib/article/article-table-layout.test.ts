@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { EditorState } from 'prosemirror-state';
 import type { DecorationSet } from 'prosemirror-view';
@@ -42,10 +43,11 @@ describe('the header row repeated on later pages', () => {
 
   it('stays linear for a 500 row table', () => {
     const rows = Array.from({ length: 501 }, () => 24);
-    const t0 = performance.now();
-    for (let i = 0; i < 100; i++)
-      repeatBreaks({ columnHeight: 900, firstTop: 0, rowHeights: rows });
-    expect(performance.now() - t0).toBeLessThan(200);
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 100; i++)
+        repeatBreaks({ columnHeight: 900, firstTop: 0, rowHeights: rows });
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 
   it('draws a copy of the header row before each break row, as measured', () => {
