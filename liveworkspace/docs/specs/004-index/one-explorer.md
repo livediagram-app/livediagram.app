@@ -342,7 +342,8 @@ The journeys, one way each:
      In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog.
 3. **Answer an invitation.** Sidebar › Spaces › **Invites** (shown while any wait, with their count): a card per
    invitation with **Accept** and **Decline**. Accepting opens the team; declining takes the card away. Each says
-   so in a toast. With none waiting it says where the teams are (Spaces) and offers **New Team**.
+   so in a toast. With none waiting it says where the teams are (Spaces) and offers **New Team**. When the teams
+   couldn't be read (offline, refused) it says so, with **Try again**, rather than waiting for ever.
 4. **Join by link.** The link (`liveworkspace.app/join?token=…`) lands on a thin page that shows the team and
    joins it, then opens the team's view in the Explorer. Signed out, it signs in and comes back.
 5. **Decline from an email.** The email's Decline link (`/join/decline?token=…`) is a thin page that declines
