@@ -25,6 +25,9 @@ import {
   requiredCleared,
   requiredFieldsMessage,
   typeIn,
+  blockingCycleOf,
+  blockingLoopMessage,
+  type BlockingChange,
   type Item,
   type ItemFields,
   type ItemTypeDef,
@@ -75,6 +78,17 @@ function requiredStop(type: ItemTypeDef, missing: readonly { label: string }[]):
     `${requiredFieldsMessage(type, missing)}: give ${missing.length === 1 ? 'it' : 'them'} in fields, by name. ` +
       'list_items marks each required field (required: true).',
   );
+}
+
+// A Blocked By loop (docs/specs/026-plan/item-types.md "Blocked By"), stopped before the api sees it so the refusal
+// names the chain it would close.
+function loopStop(
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+  change: BlockingChange,
+): void {
+  const loop = blockingCycleOf(items, types, [change]);
+  if (loop) throw new Stop('blocks_cycle', blockingLoopMessage(loop.chain));
 }
 
 function must<T extends object>(named: Named<T>): T {
@@ -245,6 +259,9 @@ export async function applyItemChanges(
           : undefined;
         const missing = missingRequiredFields(type, fields as ItemFields);
         if (missing.length) throw requiredStop(type, missing);
+        loopStop(items, types, {
+          next: { id: '', type: type.id, fields: { ...fields, title: c.title } as ItemFields },
+        });
         const { item } = await post(base, {
           type: type.id,
           fields: { ...fields, title: c.title },
@@ -279,6 +296,10 @@ export async function applyItemChanges(
             'field_required',
             `${emptied.label} is required on ${type.label} cards: it can be changed, not emptied.`,
           );
+        loopStop(items, types, {
+          before: target,
+          next: { ...target, type: type.id, fields: after },
+        });
         const { item } = await post(`${base}/${encodeURIComponent(target.id)}`, {
           ...(Object.keys(set).length ? { set } : {}),
           ...(clear.length ? { clear } : {}),
