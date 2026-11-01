@@ -59,6 +59,8 @@ export function TextImportPanel({
         <BackBar label="All formats" current={formatTitle} onClick={onBack} disabled={busy} />
       ) : null}
       <textarea
+        // Named for the format: the placeholder (a sample) is no name, and clears once anything is typed.
+        aria-label={`${formatTitle} to import`}
         value={text}
         onChange={(e) => setText(e.target.value)}
         spellCheck={false}
@@ -66,7 +68,11 @@ export function TextImportPanel({
         className="h-56 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-xs leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-600 dark:focus:ring-brand-500/30"
       />
       {error ? (
-        <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <p
+          // Announced when it appears: the Import button keeps focus, so a reader would never hear why nothing landed.
+          role="alert"
+          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+        >
           {error}
         </p>
       ) : null}
