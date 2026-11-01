@@ -74,7 +74,7 @@ describe('ImageSearchPane loading', () => {
     await searchFor('mountains');
     expect(screen.getByText(/Searching Openverse for/).textContent).toContain('“mountains”');
     expect(document.querySelectorAll('[data-image-search-skeleton]')).toHaveLength(8);
-    expect(screen.getByRole('button', { name: 'Search' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Search' }).getAttribute('aria-busy')).toBe('true');
 
     await act(async () => {
       search.resolve!({ results: [result('a'), result('b')], page: 1, pageCount: 1 });
