@@ -6,7 +6,7 @@
 // with Replace and Remove. Spaces around a password are trimmed, and a field of spaces alone saves nothing. A new
 // password needs SHARE_PASSWORD_MIN characters (the index refuses fewer); until then Save waits and the field says so.
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SHARE_PASSWORD_MAX, SHARE_PASSWORD_MIN } from '@liveworkspace/index-client';
 import { Button, Switch } from '@liveworkspace/ui';
 import { LockIcon } from '../../ui/icons';
@@ -43,6 +43,9 @@ export function PasswordSection({
   const [enabled, setEnabled] = useState(false);
   const [replacing, setReplacing] = useState(false);
   const field = useRef<HTMLInputElement>(null);
+  // The "Saved" flash's timer, cleared when the dialog closes so it never sets state on an unmounted section.
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(savedTimer.current), []);
   const on = passwordSet || enabled;
   const focusField = () => requestAnimationFrame(() => field.current?.focus());
 
@@ -53,7 +56,8 @@ export function PasswordSection({
     setTyped('');
     setReplacing(false);
     setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+    clearTimeout(savedTimer.current);
+    savedTimer.current = setTimeout(() => setSaved(false), 1500);
   };
   const remove = async () => {
     if (!(await onSet(null))) return;
