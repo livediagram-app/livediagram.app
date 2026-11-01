@@ -587,11 +587,37 @@ The catalogue (`packages/templates/src/templates.ts`, pinned by `template-catalo
 
 Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships the tab's `pages` (ids `page-1`, `page-2`, ..., each already of its kind so the first-page kind choice is not offered, each named); `buildTemplate(kind)` builds the elements in page coordinates on exactly those pages, ignoring the centre it is given, with the page layouts' kit at page scale. The pages are declared once per template (`packages/templates/src/template-pages.ts`), so every application path lands the pages and the elements together:
 
-| Template        | Pages                                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Logo design     | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                    |
-| Wireframe flows | One wireframe page per screen of the flow (mobile app, website, dashboard, tablet app, watch app), at its device's size. |
-| Photo edit      | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                   |
+| Template          | Pages                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Logo design       | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                                                         |
+| Logo explorations | Logo pages, one per logo layout of a family (wordmarks, emblems, marks, lockups), each named for its layout ([Logo pages](../007-editor/logo-pages.md)).      |
+| Wireframe flows   | One wireframe page per screen of the flow, at its device's size, each laid out from a wireframe layout ([Wireframe pages](../007-editor/wireframe-pages.md)). |
+| Photo edit        | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                                                        |
+
+### Template categories
+
+livedesign's categories are its own: they need not match the other products'. They are grouped by **what the
+design is for** (the use case), never by device or page kind, so a phone, a laptop and a browser flow for the same
+job sit together. Every template but the blanks has one primary category and may be cross-listed where people
+would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it
+has a home). Every picker shows them alphabetically by label.
+
+| Category               | Holds                                                                                            | Also lists             |
+| ---------------------- | ------------------------------------------------------------------------------------------------ | ---------------------- |
+| Branding               | Logo Design, Wordmark Explorations, Emblems and Badges, Marks and App Icons, Lockup Explorations |                        |
+| Health and Fitness     | Watch App Wireframe, Fitness Watch Wireframe                                                     |                        |
+| Music and Video        | Music App Wireframe, Video App Wireframe, Watch Music Wireframe                                  |                        |
+| Photos                 | Photo Edit                                                                                       |                        |
+| Shopping               | Mobile App Wireframe (a shopping app), Delivery App Wireframe                                    | Online Store Wireframe |
+| Sign Up and Onboarding | App Sign Up Wireframe                                                                            | Mobile App Wireframe   |
+| Social and Messaging   | Social App Wireframe, Tablet App Wireframe                                                       | Team Inbox Wireframe   |
+| Travel and Transport   | Travel App Wireframe, Ride App Wireframe                                                         |                        |
+| Websites               | Website Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe                |                        |
+| Work and Productivity  | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                  |                        |
+
+The blanks (Blank Illustration, Blank Logo and the five blank wireframes) are in no category: they lead Popular, the
+landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the
+job it does; a category is added when a job has no home, rather than stretching one that reads wrong.
 
 ## Modifier hint banner
 

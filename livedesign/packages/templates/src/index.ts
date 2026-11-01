@@ -17,6 +17,16 @@ export {
 export { isUntitledDesignName, UNTITLED_DESIGN_NAME } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
+export {
+  WIREFRAME_FLOWS,
+  isWireframeFlowKind,
+  type WireframeFlowKind,
+} from './template-builders-wireframe-flows';
+export {
+  LOGO_EXPLORATIONS,
+  isLogoExplorationKind,
+  type LogoExplorationKind,
+} from './template-builders-logo-explorations';
 export * from './page-layouts';
 export * from './logo-layouts';
 export * from './layout-catalogue';

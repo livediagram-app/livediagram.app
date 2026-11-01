@@ -41,8 +41,8 @@ describe('a start search, best match first', () => {
     const first = best.querySelector('[data-start-card]')!.getAttribute('data-start-card');
     expect(first).toBe('logo-design');
     expect(document.querySelectorAll('[data-start-card="logo-design"]')).toHaveLength(1);
-    // Before the groups, Logos' Blank Logo among them.
-    expect(sections().indexOf('Best Match')).toBeLessThan(sections().indexOf('Logos'));
+    // Before the groups, Branding's logo explorations among them.
+    expect(sections().indexOf('Best Match')).toBeLessThan(sections().indexOf('Branding'));
     fireEvent.keyDown(search, { key: 'ArrowDown' });
     expect(document.activeElement?.getAttribute('data-start-card')).toBe('logo-design');
   });

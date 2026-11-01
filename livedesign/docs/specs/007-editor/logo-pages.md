@@ -171,6 +171,14 @@ Twenty-five in all, in four categories: **Lockups**, **Wordmarks**, **Emblems** 
 Text sits on the paper or inside an outline, never on a theme fill, so it reads in every theme.
 The placeholder name is **Brand**, its initials **BR**, the tagline **Your tagline here**.
 
+Each category is also a template, a **logo exploration** (`LOGO_EXPLORATIONS` in
+`packages/templates/src/template-builders-logo-explorations.ts`, in the **Branding** category): one logo page per
+layout of the family, named for its layout, so a designer compares the whole family side by side, keeps the one
+that fits and deletes the rest. **Lockup Explorations** (the seven lockups), **Wordmark Explorations** (the six
+wordmarks), **Emblems and Badges** (the six emblems) and **Marks and App Icons** (the six marks). Unlike Logo
+Design, which shows one made-up brand worked up in full, they use the layouts' placeholder name, so they read as a
+family of starts rather than a finished brand.
+
 ## Construction guides
 
 **Show Guides** is per page: a logo page shows its construction guides to someone who may edit it

@@ -1128,7 +1128,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start a design from a ready-made template instead of a blank page.',
     keywords:
-      'template templates starter scaffold quick start prebuilt blank logo blank tab blank illustration empty page artboard wireframe phone tablet website laptop watch app logo design photo edit photo editor picture search find a template start making pages recommended',
+      'template templates starter scaffold quick start prebuilt blank logo blank tab blank illustration empty page artboard wireframe phone tablet website laptop watch app logo design photo edit photo editor picture search find a template start making pages recommended blank pages categories branding shopping websites social messaging travel music video fitness onboarding sign up work productivity store blog delivery ride lockup wordmark emblem badge',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',

@@ -46,11 +46,13 @@ are, the panel draws them.
 ### Recommended and groups
 
 Recommended is the Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **its blank
-first**. The groups (`components/start/start-template-items.ts`), by what each makes: **Logos**, **Photos** and
-**Wireframes**. Each leads with its start of that page kind (Blank Logo, Photo Edit, and the five blank wireframes),
-one empty page of the kind meant.
+first**. Then **Blank Pages**: Blank Logo and the five blank wireframes, one empty page of the kind meant. Then
+one group per catalogue category, in the same alphabetical order and with the same names as every other picker
+([Template categories](../008-canvas/canvas-and-palette.md#template-categories)), each template under its primary
+category (`components/start/start-template-items.ts` derives them, so a new template or category needs no change
+there).
 
-A template in none of the groups is placed in the last group, so every listed template is reachable. Blank
+Every listed template is in exactly one group, so every one is reachable. Blank
 Illustration is not offered: closing the panel leaves the same empty tab.
 
 ## When it shows
