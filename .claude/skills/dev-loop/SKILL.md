@@ -205,6 +205,14 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   touched app's guard tests (the `*.test.ts` files at the app's root and in its `app/` folder, plus
   `lib/small-text-contrast.test.ts`: `dark-palette`, `label-contrast`, `aria-label-roles`, `optical-guard` and the
   rest) and, when you add a telemetry event, the site's metric-emitters test. They caught most of the red CI on recent PRs.
+- **Checks the pre-push hook can miss.** The hook runs once per machine, so it skips its checks when another push
+  holds them, and it runs in this machine's en-GB locale. Before every push, do these yourself:
+  - Run `prettier --check` and oxlint on every changed file.
+  - Grep your new tests for `performance.now`. Speed budgets use `cpuMsOf` or `cpuBudgetMs` from
+    `@liveworkspace/vitest-config/cpu-time`.
+  - Grep app code for a bare `new DOMParser()`. HTML is parsed through the product's `parseInert` (trusted types).
+  - Run date and time formatting tests a second time with `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`, because CI runs en-US.
+  - Pin the clock with fake timers in any test that groups by day ("Today", "Yesterday").
 - **Push before the browser checks**, so CI runs while you verify. Once the code, spec, the performance review (below) and the checks above pass,
   push and open the PR with the `not-ready` label and "Verifying in the browser" at the top of the description,
   so the pr-loop can't merge it yet. After verification, update the description with the screenshots and remove
