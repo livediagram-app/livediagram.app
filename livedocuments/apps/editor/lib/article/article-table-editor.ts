@@ -18,7 +18,12 @@ import {
 } from './article-table-paste';
 
 /** What this person may do in the writing now, read as it is needed. */
-export type TableRights = { editable: () => boolean; reshape: () => boolean };
+export type TableRights = {
+  editable: () => boolean;
+  reshape: () => boolean;
+  // Writes the writing as it is now (the editor's commit): a press that is one edit on its own.
+  commit?: () => void;
+};
 
 /** The table keys: before the writing's own keymap (Tab, Enter and Backspace mean other things in a cell). */
 export const tableKeyPlugins = (rights: TableRights): Plugin[] => [
@@ -70,6 +75,7 @@ export function tableNodeViews(
         editable: rights.editable,
         reshape,
         onJump: (id) => onJump(view, id),
+        commit: () => rights.commit?.(),
       }),
   };
 }

@@ -332,6 +332,16 @@ describe('a contents block as drawn', () => {
     expect(entries(view)).toEqual(['Intro']);
   });
 
+  it('writes a chip press as its own edit at once, and a press on the pressed chip not at all', () => {
+    const commit = vi.fn();
+    const { view } = mount(doc(), { ...ROLES.editor, commit });
+    view.dom.querySelector<HTMLButtonElement>('[data-toc-depth="3"]')!.click();
+    expect(commit).not.toHaveBeenCalled();
+    view.dom.querySelector<HTMLButtonElement>('[data-toc-depth="2"]')!.click();
+    expect(view.state.doc.firstChild!.attrs.depth).toBe(2);
+    expect(commit).toHaveBeenCalledTimes(1);
+  });
+
   it('jumps to a heading from its entry, the buttons its own', () => {
     const { view, onJump } = mount(doc());
     const entry = view.dom.querySelector<HTMLButtonElement>('[data-toc-target="h2"]')!;

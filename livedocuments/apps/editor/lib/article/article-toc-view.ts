@@ -130,6 +130,9 @@ export type TocHost = {
   editable: () => boolean;
   reshape: () => boolean;
   onJump: (headingId: string) => void;
+  // Writes the change at once: a chip's press is one edit, and the writing has no caret to commit it
+  // later, so an undo straight after it would undo the edit before.
+  commit: () => void;
 };
 
 const linesOf = (decorations: readonly Decoration[]): readonly TocLine[] =>
@@ -242,7 +245,9 @@ export class TocView implements NodeView {
       const pos = this.getPos();
       if (pos === undefined || !this.host.reshape()) return;
       const depth = Number(chip.dataset.tocDepth);
+      if (tocDepthOf(this.node.attrs) === depth) return;
       this.view.dispatch(this.view.state.tr.setNodeAttribute(pos, 'depth', depth));
+      this.host.commit();
       return;
     }
     const entry = target?.closest?.<HTMLElement>('[data-toc-target]');
