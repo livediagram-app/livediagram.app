@@ -487,7 +487,8 @@ const graphField = z
       .enum(['down', 'right'])
       .optional()
       .describe(
-        'Flow direction: "down" (top to bottom) or "right" (left to right). Default: auto.',
+        'Direction of a flow or a tree: "down" (top to bottom) or "right" (left to right). Default: ' +
+          'auto (a tree runs down).',
       ),
     style: z
       .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence'])
