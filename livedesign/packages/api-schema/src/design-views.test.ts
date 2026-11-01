@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DESIGN_VIEW_NAMES,
+  isDesignViewName,
   isTabViewName,
   isViewDoor,
   LINT_VIEW_NAME,
@@ -22,6 +23,10 @@ describe('design view names', () => {
     expect(isTabViewName('outline')).toBe(true);
     expect(isTabViewName('overview')).toBe(false);
     expect(isTabViewName('diff')).toBe(false);
+    expect(isTabViewName('components')).toBe(false);
+    expect(isDesignViewName('components')).toBe(true);
+    expect(isDesignViewName('overview')).toBe(true);
+    expect(isDesignViewName('outline')).toBe(false);
     expect(isViewDoor('mcp')).toBe(true);
     expect(isViewDoor('web')).toBe(false);
   });

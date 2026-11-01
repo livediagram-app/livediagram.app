@@ -39,6 +39,9 @@ describe('the element format', () => {
     expect(sticky).not.toContain('Any other stored field');
     expect(elementFormatText('arrow')).toContain('line=straight|angled|curved');
     expect(elementFormatText('arrow')).not.toContain('Size:');
+    const instance = elementFormatText('instance')!;
+    expect(instance).toContain('Size: its main’s frame');
+    expect(instance).toContain('componentId componentOverrides');
   });
 
   it('knows nothing of a kind the engine does not make', () => {

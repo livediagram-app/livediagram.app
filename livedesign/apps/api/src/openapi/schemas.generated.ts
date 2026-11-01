@@ -174,6 +174,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -290,6 +293,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "arrowheadStartShape": {
         "$ref": "#/components/schemas/ArrowheadShape"
+      },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
       },
       "curveOffset": {
         "additionalProperties": false,
@@ -1570,6 +1576,72 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ComponentMember": {
+    "additionalProperties": false,
+    "description": "An element of an open edit session: the instance it is editing and the main element it stands for.",
+    "properties": {
+      "elementId": {
+        "type": "string"
+      },
+      "instanceId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "instanceId",
+      "elementId"
+    ],
+    "type": "object"
+  },
+  "ComponentOverride": {
+    "additionalProperties": false,
+    "description": "What an instance changes about one element of its main, without detaching.",
+    "properties": {
+      "fillColor": {
+        "type": "string"
+      },
+      "iconId": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textColor": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "ComponentResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "component": {
+        "$ref": "#/components/schemas/DesignComponent"
+      }
+    },
+    "required": [
+      "component"
+    ],
+    "type": "object"
+  },
+  "ComponentsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "components": {
+        "items": {
+          "$ref": "#/components/schemas/DesignComponent"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "components"
+    ],
+    "type": "object"
+  },
   "ConceptAnim": {
     "enum": [
       "build",
@@ -1842,6 +1914,45 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label",
       "resolved",
       "comments"
+    ],
+    "type": "object"
+  },
+  "DesignComponent": {
+    "additionalProperties": false,
+    "description": "A main: a name, a frame (its own box, top-left at 0, 0) and the elements it is made of, in the frame's space.",
+    "properties": {
+      "archived": {
+        "type": "boolean"
+      },
+      "elements": {
+        "items": {
+          "$ref": "#/components/schemas/Element"
+        },
+        "type": "array"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "width",
+      "height",
+      "elements",
+      "updatedAt"
     ],
     "type": "object"
   },
@@ -2707,6 +2818,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -3217,6 +3331,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "credit": {
         "$ref": "#/components/schemas/ImageCredit"
       },
@@ -3705,6 +3822,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
       },
       "fillColor": {
         "type": "string"
@@ -5192,6 +5312,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -6246,6 +6369,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentEditBy": {
+        "type": "string"
+      },
+      "componentId": {
+        "type": "string"
+      },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
+      "componentOverrides": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ComponentOverride"
+        },
+        "type": "object"
+      },
       "conceptAnim": {
         "$ref": "#/components/schemas/ConceptAnim"
       },
@@ -6644,6 +6782,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "process",
       "site-header",
       "tab-window",
+      "instance",
       "stadium",
       "cloud",
       "triangle",
@@ -7007,6 +7146,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
       },
       "fillColor": {
         "type": "string"
@@ -7518,6 +7660,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -7974,6 +8119,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -8398,6 +8546,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "embedProvider": {
         "$ref": "#/components/schemas/EmbedProvider"
       },
@@ -8746,7 +8897,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "find",
       "diff",
       "lint",
-      "pages"
+      "pages",
+      "components"
     ],
     "type": "string"
   },

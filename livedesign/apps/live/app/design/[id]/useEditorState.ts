@@ -25,6 +25,7 @@ import {
   useEffectEvent,
 } from 'react';
 import {
+  stampSessionMembers,
   stampTabKind,
   isBoxed,
   stampNewElementLayers,
@@ -77,6 +78,15 @@ import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBur
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
+import { useComponentLibrary } from './useComponentLibrary';
+import { useComponentSession } from './useComponentSession';
+import { MAKE_COMPONENT_REFUSAL, useComponentActions } from './useComponentActions';
+
+// No elements, one stable list (an empty design before its first tab).
+const NO_ELEMENTS: Element[] = [];
+// Said when a main could not be stored (docs/specs/009-elements/components.md "Sharing, collaboration and storage").
+const COMPONENT_SAVE_FAILED =
+  'Your component change could not be saved. Check your connection and try again.';
 import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
 import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
@@ -200,6 +210,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Set once Pages mode's pages are known (below): the tab the lock guard applies to, and how
   // it says something was held back.
   const pageLockGuardRef = useRef<PageLockGuard | null>(null);
+  // The component edit sessions this screen opened, the only ones it derives live (useComponentSession).
+  const ownedComponentSessions = useRef(new Set<string>());
   // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
@@ -228,7 +240,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
       // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after the commit moved their hosts.
-      const next = guardLockedPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
+      const guarded = guardLockedPagesIn(
+        ts,
+        settleChipsInTabs(ts, mapped),
+        pageLockGuardRef.current,
+      );
+      // An open component edit session (docs/specs/009-elements/components.md "Editing the main"): what this commit
+      // adds to a changed tab joins the session. stampSessionMembers returns the elements as they are with no session.
+      const next = guarded.map((t) => {
+        if (before.has(t)) return t;
+        const prev = ts.find((p) => p.id === t.id);
+        if (!prev) return t;
+        const els = stampSessionMembers(prev.elements, t.elements);
+        return els === t.elements ? t : { ...t, elements: els };
+      });
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -907,6 +932,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     send: (op) => roomRef.current?.send({ kind: 'op', op }),
   });
 
+  // The design's component library (docs/specs/009-elements/components.md "The library"), kept live by the room.
+  const componentLibrary = useComponentLibrary({
+    hydrated,
+    designId,
+    ownerId: selfParticipant.id,
+    shareCode: sessionShareCode,
+    elements: (tabs.find((t) => t.id === activeId) ?? tabs[0])?.elements ?? NO_ELEMENTS,
+    onSaveError: () => toast.error(COMPONENT_SAVE_FAILED),
+  });
+
   useRoomConnection({
     onAdderKey: participant.setAdderKey,
     hydrated,
@@ -946,6 +981,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveDesignTrashed: () => designTrashed.setDesignTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    receiveComponent: componentLibrary.receiveComponent,
     receivePhotoPresence: photoPresence.receive,
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
@@ -1414,6 +1450,28 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // never written back over.
     commitTabs(activeElementsCommit(activeId, mapElements));
   };
+
+  // Components (docs/specs/009-elements/components.md): an Editor's actions, and the edit session's derive.
+  const componentActions = useComponentActions({
+    canEdit: canEdit && !editsBlocked,
+    selfId: selfParticipant.id,
+    elements: activeTab.elements,
+    commit,
+    library: componentLibrary,
+    select: (ids) => {
+      setSelectedId(ids.length === 1 ? ids[0]! : null);
+      setMultiSelectedIds(new Set(ids.length > 1 ? ids : []));
+    },
+    viewCentre: getViewportCenter,
+    owned: ownedComponentSessions,
+  });
+  const componentSession = useComponentSession({
+    canEdit,
+    selfId: selfParticipant.id,
+    elements: activeTab.elements,
+    library: componentLibrary,
+    owned: ownedComponentSessions,
+  });
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations
   // that touch more than the elements array — the layer ops and the
@@ -2306,6 +2364,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   //.
   const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
+    addMissingComponents: componentLibrary.addMissing,
     isReadOnly,
     createBlocked,
     explainCreateBlocked: layersState.explainCreateBlocked,
@@ -2341,6 +2400,18 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Z zen, z-order + fit-to-screen). The full keymap + rationale lives in
   // useEditorKeyboardShortcuts and is catalogued in docs/specs/008-canvas/canvas-and-palette.md.
   useEditorKeyboardShortcuts({
+    onMakeComponent: () => {
+      const { selectedId, multiSelectedIds } = readSelection();
+      const ids =
+        multiSelectedIds.size > 0 ? multiSelectedIds : new Set(selectedId ? [selectedId] : []);
+      const refusal = componentActions.makeRefusal(ids);
+      if (refusal) toast.info(MAKE_COMPONENT_REFUSAL[refusal]);
+      else componentActions.makeFromSelection(ids);
+    },
+    onDetachComponent: () => {
+      const { selectedId } = readSelection();
+      if (selectedId) componentActions.detach(selectedId);
+    },
     formatSourceId,
     setFormatSourceId,
     readSelection,
@@ -2439,6 +2510,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useWorkbenchEnd(workbench, designTrashed.trashed);
 
   return {
+    componentLibrary,
+    componentActions,
+    componentSession,
     surface,
     tourSquare,
     addCustomColour,

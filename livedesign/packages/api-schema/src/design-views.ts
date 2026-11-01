@@ -17,12 +17,14 @@ export const VIEW_NAMES = [
   'diff',
   'lint',
   'pages',
+  'components',
 ] as const;
 export const LINT_VIEW_NAME = 'lint' satisfies ViewName;
 export type ViewName = (typeof VIEW_NAMES)[number];
 
 // What each api door serves. `diff` has no api door: the CLI computes it from its cache.
-export const DESIGN_VIEW_NAMES = ['overview'] as const satisfies readonly ViewName[];
+// `components` lists the design's component library (docs/specs/009-elements/components.md), a design view.
+export const DESIGN_VIEW_NAMES = ['overview', 'components'] as const satisfies readonly ViewName[];
 export const TAB_VIEW_NAMES = [
   'outline',
   'graph',
@@ -65,6 +67,7 @@ export const VIEW_PARAMETERS: Readonly<
   Record<DesignViewName | TabViewName, readonly ViewQueryParameter[]>
 > = {
   overview: COMMON_PARAMETERS,
+  components: COMMON_PARAMETERS,
   outline: [...COMMON_PARAMETERS, 'only', 'style'],
   graph: COMMON_PARAMETERS,
   layout: [...COMMON_PARAMETERS, 'only', 'coarse'],
@@ -237,6 +240,34 @@ export type OverviewView = {
   tabs: OverviewTab[];
   elision: Elision;
 };
+
+// The `components` view (docs/specs/024-agents/design-views.md "The views"): the design's mains, each with its
+// frame and its elements, the ids an instance's `componentOverrides` is keyed by. `elements` is empty for a main a
+// budget collapsed (`collapsed` counts them).
+export type ComponentsView = {
+  design: { id: string; name: string };
+  components: {
+    id: string;
+    name: string;
+    width: number;
+    height: number;
+    archived: boolean;
+    elementCount: number;
+    elements: {
+      id: string;
+      kind: string;
+      label: string | null;
+      summary: string | null;
+      takes: string[];
+    }[];
+    collapsed: number;
+  }[];
+  elision: Elision;
+};
+
+export function isDesignViewName(value: string): value is DesignViewName {
+  return DESIGN_VIEW_NAMES.some((name) => name === value);
+}
 
 export function isTabViewName(value: string): value is TabViewName {
   return TAB_VIEW_NAMES.some((name) => name === value);

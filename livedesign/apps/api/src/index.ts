@@ -204,7 +204,10 @@ async function routeApiRequest(
   // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
   // its volume low instead.
   const isWrite =
-    request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE';
+    request.method === 'POST' ||
+    request.method === 'PUT' ||
+    request.method === 'PATCH' ||
+    request.method === 'DELETE';
   // Read-only token enforcement (docs/specs/015-api/mcp-server.md §4.11): a token minted read-only may
   // only GET/HEAD. Reject every write it presents at this single choke point
   // — so no write route can be reached, present or future, with no per-route

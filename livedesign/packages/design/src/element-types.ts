@@ -37,6 +37,7 @@ import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { HeroCaption, StatItem } from './web-components';
+import type { ComponentMember, ComponentOverride } from './components';
 import type { ImageCredit } from './image-credit';
 import type {
   AnimationSpeed,
@@ -75,6 +76,8 @@ export type ShapeElement = {
   // element authored before layers existed keeps rendering unchanged.
   // Carried by every element variant (arrows included, see index.ts).
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   shape: ShapeKind;
   // Registry key for the glyph (e.g. 'server', 'database', 'user'). Two
   // uses: when `shape === 'icon'` it IS the element (glyph above an
@@ -220,6 +223,11 @@ export type ShapeElement = {
   // Tab window (docs/specs/009-elements/tab-window.md): the id of the tab of this design it shows. Only meaningful
   // on the 'tab-window' kind. Absent until chosen; a tab that is gone (or not shared) shows as unavailable.
   windowTabId?: string;
+  // Instance (docs/specs/009-elements/components.md): the main of the design's component library it draws, its
+  // overrides by main element id, and who has its edit session open. Only meaningful on the 'instance' kind.
+  componentId?: string;
+  componentOverrides?: Record<string, ComponentOverride>;
+  componentEditBy?: string;
   // A timeline rail saved before the Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): its point count
   // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;
@@ -408,6 +416,8 @@ export type TextElement = {
   addedBy?: string;
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -539,6 +549,8 @@ export type TableElement = {
   type: 'table';
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -652,6 +664,8 @@ export type StickyElement = {
   addedBy?: string;
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -747,6 +761,8 @@ export type ImageElement = {
   type: 'image';
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -851,6 +867,8 @@ export type FreehandElement = {
   type: 'freehand';
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -971,6 +989,8 @@ export type PathElement = {
   type: 'path';
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -1036,6 +1056,8 @@ export type AnnotationElement = {
   type: 'annotation';
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -1123,6 +1145,8 @@ export type LinkCardElement = {
   type: 'link-card';
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -1196,6 +1220,8 @@ export type VideoElement = {
   type: 'video';
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   x: number;
   y: number;
   width: number;
@@ -1275,6 +1301,8 @@ const UNTYPED_SHAPES = new Set<string>([
   'sticker',
   // A tab window shows another tab (docs/specs/009-elements/tab-window.md); there is nothing to write on it.
   'tab-window',
+  // An instance draws its main (docs/specs/009-elements/components.md); its text is changed through Overrides.
+  'instance',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {

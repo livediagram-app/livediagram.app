@@ -65,6 +65,7 @@ function words(operation: EditOperation): string[] {
       return [operation.op, operation.target, ...fieldsText(operation.fields)];
     case 'rm':
     case 'unwrap':
+    case 'detach':
       return [operation.op, operation.target];
     case 'move':
       return [

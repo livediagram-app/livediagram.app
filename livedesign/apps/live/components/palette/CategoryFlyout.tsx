@@ -16,6 +16,7 @@ import {
 } from './category-flyout-groups';
 import { CardList, InfoFooter, opensSide, TileGrid } from './category-flyout-items';
 import { BrowseLayoutContext } from './PaletteCategoryBrowser';
+import { DesignComponentsBand } from './component-tiles';
 
 // The category bar's flyout (docs/specs/007-editor/toolbar-layout.md "The category bar"): one category's
 // tiles under its name, in its named groups, as a grid of pictures (Shapes) or cards with a blurb (Build). A footer
@@ -109,6 +110,8 @@ export function CategoryFlyout({
       >
         {tiles ? (
           <div className="flex flex-col gap-3 p-3">
+            {/* The design's own mains lead the Components category (docs/specs/009-elements/components.md). */}
+            {category.id === 'components' ? <DesignComponentsBand variant="flyout" /> : null}
             {flyoutGroups(category.id, tiles).map((group, gi) => (
               <section key={group.id} aria-label={group.title ?? category.label}>
                 {group.title ? (

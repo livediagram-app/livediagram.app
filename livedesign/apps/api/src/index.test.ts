@@ -70,6 +70,19 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(res.status).toBe(403);
   });
 
+  // A main's change (docs/specs/009-elements/components.md) is a write like any other.
+  it('403s a PATCH from a read-only token', async () => {
+    const res = await worker.fetch(
+      new Request('https://api.test/api/designs/d1/components/c1', {
+        method: 'PATCH',
+        headers: RO,
+      }),
+      env(),
+    );
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'read_only_token' });
+  });
+
   it('lets a read-only token revoke itself, and only itself', async () => {
     const self = await worker.fetch(
       new Request('https://api.test/api/tokens/current', { method: 'DELETE', headers: RO }),

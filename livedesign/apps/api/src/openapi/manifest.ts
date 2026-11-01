@@ -14,7 +14,13 @@
 // design.ts, so they aren't repeated here.
 
 import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livedesign/api-schema';
-import { NAME_MAX_LENGTH } from '@livedesign/design';
+import {
+  COMPONENT_NAME_MAX,
+  MAX_COMPONENT_BYTES,
+  MAX_COMPONENT_ELEMENTS,
+  MAX_COMPONENTS,
+  NAME_MAX_LENGTH,
+} from '@livedesign/design';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/design-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 
@@ -33,7 +39,7 @@ interface QueryParam {
 }
 
 export interface RouteSpec {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   /** Path template under the server base, e.g. `/designs/{id}/tabs/{tabId}`. */
   path: string;
   /** Top-level resource segment, matching index.ts's dispatch switch. Used by
@@ -523,6 +529,53 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     responseSchema: 'RevertResponse',
     statuses: [200, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'GET',
+    path: '/designs/{id}/components',
+    segment: 'designs',
+    tag: 'Components',
+    summary:
+      "The design's component library: every main (a component's own elements in its frame), archived ones included, which the instances on its tabs (`shape: 'instance'`, `componentId`) draw. A link confined to one tab gets only the mains that tab uses.",
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    responseSchema: 'ComponentsResponse',
+    statuses: [200, 401, 404, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/designs/{id}/components/{componentId}',
+    segment: 'designs',
+    tag: 'Components',
+    summary: `Make (or replace) one main. The body's \`id\` must be the path's; \`updatedAt\` is set by the server. At most ${MAX_COMPONENTS} mains per design (409 \`too_many_components\`), ${MAX_COMPONENT_ELEMENTS} elements and ${MAX_COMPONENT_BYTES / 1024} KB each (413). Everyone with the design open sees it at once.`,
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    requestSchema: ref('DesignComponent'),
+    responseSchema: 'ComponentResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'PATCH',
+    path: '/designs/{id}/components/{componentId}',
+    segment: 'designs',
+    tag: 'Components',
+    summary:
+      'Change one main element by element: elements upserted and removed by id, their order, its name, archived. Applied to the main as stored, so two changes to different elements both land; every instance redraws. 404 for a main the design does not have.',
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', maxLength: COMPONENT_NAME_MAX },
+        archived: { type: 'boolean' },
+        upsert: { type: 'array', items: ref('Element') },
+        remove: { type: 'array', items: { type: 'string' } },
+        order: { type: 'array', items: { type: 'string' } },
+      },
+      additionalProperties: false,
+    },
+    responseSchema: 'ComponentResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
   },
   {
     method: 'PUT',

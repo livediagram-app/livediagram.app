@@ -12,6 +12,7 @@ import { handleTabRename } from './tab-name-route';
 import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
+import { handleComponentRoutes } from './component-routes';
 import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
@@ -35,6 +36,9 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
+  // The component library (docs/specs/009-elements/components.md).
+  const components = await handleComponentRoutes(ctx);
+  if (components) return components;
   // /api/designs/<id>/tabs/<tabId>/photo-blobs[-held|-adopt][/<blob>] (docs/specs/031-photo/photo-store.md "The routes").
   const photoBlobs = await handlePhotoBlobRoutes(ctx);
   if (photoBlobs) return photoBlobs;

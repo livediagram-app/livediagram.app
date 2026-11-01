@@ -178,7 +178,10 @@ export function useBoxedElementGestures({
     // card opens the link picker.
     if (
       element.type === 'shape' &&
-      (element.shape === 'code-block' || element.shape === 'sankey')
+      (element.shape === 'code-block' ||
+        element.shape === 'sankey' ||
+        // An instance opens its edit session (docs/specs/009-elements/components.md "Editing the main").
+        element.shape === 'instance')
     ) {
       onOpenEditDialog?.(element.id);
       return;

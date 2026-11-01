@@ -174,7 +174,8 @@ browser. A token minted for the CLI is named "livedesign CLI".
 
 ## 4. Tools
 
-Fourteen tools: thirteen for designs and one for pages ([§4.9d](#49d-the-pages-tools)). The search/view capability is two tools (find, then read); create,
+Fifteen tools: thirteen for designs, one for pages ([§4.9d](#49d-the-pages-tools)) and one for components
+([§4.9e](#49e-the-components-tool)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
 ([§4.5a](#45a-search_icons)) and list_images the user's image gallery ([§4.5b](#45b-list_images));
@@ -220,7 +221,8 @@ the refs the edit tools take (`format: "json"` returns the elements instead), pl
 ([§5](#5-visualise-inline-image-render)); without it a read costs no image tokens. So "show me my onboarding wireframes" → `find_designs` →
 `read_design` with `image: true` renders it inline. Its structured result carries the tab's `rev`,
 which `update_design` takes back as the base of its ops ([§4.4](#44-update_design)).
-It also takes `view` (`outline`, `pages`, `layout`, `comments`, `show`, `find`), `budget` (8,000 tokens unless
+It also takes `view` (`outline`, `pages`, `layout`, `comments`, `show`, `find`, and `components`, the design's
+component library rather than a tab), `budget` (8,000 tokens unless
 given), `only`, `ref`, `q`, `coarse`, `all` and `style`; a ref that names nothing or several comes back as a
 correctable result naming the candidates.
 
@@ -551,6 +553,30 @@ Pages are named by id, place (`2`) or name. The tool goes through one api route
 - **Reading**: `read_design` with `view: "pages"` lists the pages, the elements on each and the layouts on
   offer.
 
+### 4.9e The components tool
+
+The design's component library ([Components](../009-elements/components.md)). `read_design` with
+`view: "components"` lists it (`GET /api/designs/:id?view=components`): each main's id, name, frame and elements,
+the ids an instance's overrides are keyed by.
+
+- **Placing and overriding** are ordinary element edits through `update_design`: an `add` of
+  `{ "type": "shape", "shape": "instance", "componentId", "x", "y" }` (the main's frame its size when `width` and
+  `height` are left out), and an `update` of `componentOverrides` (`{ <main element id>: { label?, fillColor?,
+strokeColor?, textColor?, iconId? } }`). `edits` takes `detach <instance>` as well.
+- **`change_components`** (destructive) makes one change a call, `apps/mcp/src/components-tools.ts` over
+  `packages/agent-verbs/src/components/`:
+  - `make` `{ tabId?, elementIds, name? }`: the elements (ids or refs) become a new main, stored with
+    `PUT /api/designs/:id/components/:componentId`, then replaced on the tab by one instance as a changeset at the
+    revision read. Refused as the editor refuses it: nothing, a locked element, a kind a main cannot hold (images,
+    videos, link cards, tab windows), over 200 elements, or an instance whose main is missing.
+  - `patch` `{ componentId, name?, archived?, upsert?, remove?, order? }`: changes a main element by element
+    (`PATCH …/components/:componentId`); every instance redraws.
+  - `detach` `{ tabId?, instance }`: the instance becomes plain elements, as the `detach` edit operation does.
+  - A call carries exactly one of `make`, `patch` and `detach`, each an object of the fields above.
+  - The answer names the main for `make` and `patch` (`component { id, name, width, height, elements, archived }`,
+    null for a `detach`) and, for `make` and `detach`, the changeset's result lines and revision.
+- **Previews** expand every instance with the design's mains before drawing, so a PNG shows what the editor shows.
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts**: pre-canned templates a client surfaces as slash
@@ -625,14 +651,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the fourteen tools, and each is a preset in
+Three behaviours cover the fifteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                        |
 | --------------- | -------------- | ----------------- | -------------------------------------------------------------------------------------------- |
 | **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images` |
 | **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`                |
-| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `change_pages`                                             |
+| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `change_pages`, `change_components`                        |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -741,19 +767,20 @@ code or status: a design in the Trash, a view-only grant, an id that names nothi
 (a tab id the design lacks names its tabs, `rename_design` and `change_pages` included, whose tab routes answer a bare 404 that would otherwise read as "no such design"); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
-| Tool             | Result object                                                                                             |
-| ---------------- | --------------------------------------------------------------------------------------------------------- |
-| `find_designs`   | `count`, `designs[]` of `{ id, name, updatedAt, library, url }`                                           |
-| `read_design`    | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`       |
-| `list_templates` | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
-| `create_design`  | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                           |
-| `add_tab`        | `designId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                    |
-| `update_design`  | `id` and `designId` (the same), `tabId`, `url`                                                            |
-| `share_design`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                     |
-| `rename_design`  | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab                |
-| `delete_design`  | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`                |
-| `list_trash`     | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
-| `restore_design` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+| Tool                | Result object                                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `find_designs`      | `count`, `designs[]` of `{ id, name, updatedAt, library, url }`                                                                                           |
+| `read_design`       | `id`, `name`, `tab { id, name, rev, ... }` (for `view: "components"`, `components` text instead), `tabs[]` of `{ id, name }` (every tab, in order), `url` |
+| `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                 |
+| `create_design`     | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                           |
+| `add_tab`           | `designId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                    |
+| `update_design`     | `id` and `designId` (the same), `tabId`, `url`                                                                                                            |
+| `share_design`      | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                                                                     |
+| `rename_design`     | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab                                                                |
+| `delete_design`     | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`                                                                |
+| `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                         |
+| `restore_design`    | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                              |
+| `change_components` | `designId`, `component` (null for a `detach`), `lines[]`, `rev` (null for a `patch`), `url`                                                               |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its

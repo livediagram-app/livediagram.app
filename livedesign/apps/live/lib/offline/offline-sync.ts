@@ -9,6 +9,7 @@
 
 import { DESIGN_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { apiCreateDesign } from '@/lib/api-client';
+import { cloudPutComponent } from '@/lib/api/components';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { uploadEmbeddedImages } from './offline-images';
@@ -77,6 +78,10 @@ async function upload(rec: OfflineDesignRecord, ownerId: string): Promise<Map<st
     console.warn(`[offline-sync] placement refused reason=${code}, filed at root`);
     await create(null);
   }
+  // The library travels too (docs/specs/009-elements/components.md "This Browser"): without it every instance on
+  // the cloud copy would draw as missing. One request per main; a design rarely holds more than a few.
+  for (const component of rec.components ?? [])
+    await cloudPutComponent(ownerId, rec.id, component, null);
   return imageIds;
 }
 

@@ -14,6 +14,7 @@ import {
   type ThemeDefinition,
   type Element,
   type BoxedElement,
+  type DesignComponent,
   type ElementId,
   type RefTable,
   type Tab,
@@ -74,6 +75,8 @@ export type EditState = {
   readonly selected: readonly ElementId[] | null;
   // The tab's theme, which theme colour names and new elements' paint come from.
   readonly theme: ThemeDefinition;
+  // The design's mains, when the caller read them; an instance's main is looked up here.
+  readonly components: ReadonlyMap<string, DesignComponent> | null;
   // The input tab's content origin: what coordinates shown and taken are relative to.
   readonly origin: { x: number; y: number };
   // Every id the tab holds or the changeset used, and every keyword: what a new id may not be.
@@ -116,6 +119,7 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     log,
     selected: options.selected === undefined ? [] : options.selected,
     theme: options.theme ?? themeOf(tab, log),
+    components: options.components ? new Map(options.components.map((c) => [c.id, c])) : null,
     origin: contentOrigin(tab.elements),
     taken: new Set([...before.keys(), ...RESERVED_WORDS]),
     memo: { refs: null, holders: null, elements: null },

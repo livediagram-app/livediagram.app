@@ -55,11 +55,13 @@ describe('CORS_HEADERS', () => {
     expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DESIGN_CONVERSION_HEADER);
   });
 
-  it('allows the five HTTP methods the live editor uses', () => {
+  it('allows the six HTTP methods the live editor uses', () => {
     const methods = CORS_HEADERS['Access-Control-Allow-Methods'];
     expect(methods).toContain('GET');
     expect(methods).toContain('POST');
     expect(methods).toContain('PUT');
+    // A main's per-element change (docs/specs/009-elements/components.md).
+    expect(methods).toContain('PATCH');
     expect(methods).toContain('DELETE');
     expect(methods).toContain('OPTIONS');
   });

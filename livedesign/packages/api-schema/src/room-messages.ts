@@ -1,5 +1,5 @@
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
-import type { ElementDelta, RoomElementOp, Tab } from '@livedesign/design';
+import type { DesignComponent, ElementDelta, RoomElementOp, Tab } from '@livedesign/design';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
@@ -91,11 +91,16 @@ export const MUTATION_OP_KINDS = [
 //
 // `changeset` (docs/specs/024-agents/agent-changesets.md): one write the api applied and recorded,
 // sequenced through /mutation. A forged one would show people a change nobody made (CS24).
+//
+// `component` (docs/specs/009-elements/components.md "Sharing, collaboration and storage"): one main of the component
+// library as stored after a write, announced by the worker that stored it. A forged one would redraw every
+// instance of a main with something nobody wrote.
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
   'design-trashed',
   'changeset',
+  'component',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -391,10 +396,16 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
+  // One main of the component library as stored (docs/specs/009-elements/components.md), with the tabs whose
+  // instances use it: a tab-scoped session receives it only when its tab is one of them. Worker-originated
+  // through /mutation.
+  | ComponentRoomOp
   // The design went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.
   | { kind: 'design-trashed' };
+
+export type ComponentRoomOp = { kind: 'component'; component: DesignComponent; tabIds: string[] };
 
 // Client-side narrowings of `ClientMessage` / `ServerMessage` that
 // pin `op` to `RoomOp` for type-safe send/receive in the editor.

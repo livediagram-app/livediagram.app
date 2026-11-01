@@ -10,6 +10,7 @@
 
 import { PAGE_EXPORT_PAPER, withinPageFrame, type PageExportFrame } from './page-frame';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
+import { missingComponentFrame } from './component-resolve';
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
@@ -177,6 +178,11 @@ export function contentBounds(
 export { svgIconShape } from './svg-render-image-icon';
 
 export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
+  // An instance (docs/specs/009-elements/components.md "Exports"): an export expands it first (expandInstances), which
+  // keeps it, unseen (opacity 0), only as the box its arrows pin to. One reaching a renderer unexpanded draws as a
+  // dashed frame rather than nothing.
+  if (source.type === 'shape' && source.shape === 'instance')
+    return source.opacity === 0 ? '' : svgBoxed(missingComponentFrame(source, 'Component'), opts);
   // Every word on the element in its face, so a face that writes its own (a panel's rows, a button) wears the tab's
   // font and finish as on the canvas; a word that names its own face keeps it.
   const face = exportFontFamily(source, opts.tabFont, opts.tabFinish);

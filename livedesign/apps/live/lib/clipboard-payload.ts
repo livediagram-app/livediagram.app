@@ -19,8 +19,11 @@
 // message instead of pasting nonsense.
 
 import {
+  isValidDesignComponent,
   isValidElement,
+  MAX_COMPONENTS,
   migrateIncomingElements,
+  type DesignComponent,
   ORIGINAL_ONLY_FIELDS,
   type Element,
 } from '@livedesign/design';
@@ -49,6 +52,9 @@ type ClipboardEnvelope = {
   // clipboard: the copy lives in the in-app buffer of the window that made it,
   // and this id names that copy (see `clipboardWriteFor`).
   inAppCopy?: string;
+  // The mains the copied instances draw (docs/specs/009-elements/components.md "Clipboard"), so a paste into another
+  // design adds the ones its library lacks. Absent from a copy holding no instance, and ignored by an older editor.
+  components?: DesignComponent[];
 };
 
 // Fields that carry WHO did something rather than WHAT the element is. They are
@@ -73,12 +79,16 @@ export function stripIdentity(el: Element): Element {
 }
 
 /** The clipboard text for a selection. */
-export function serialiseElements(elements: Element[]): string {
+export function serialiseElements(
+  elements: Element[],
+  components: readonly DesignComponent[] = [],
+): string {
   const envelope: ClipboardEnvelope = {
     schemaVersion: CLIPBOARD_SCHEMA_VERSION,
     kind: CLIPBOARD_KIND,
     copiedAt: Date.now(),
     elements: elements.map(stripIdentity),
+    ...(components.length > 0 ? { components: [...components] } : {}),
   };
   return JSON.stringify(envelope);
 }
@@ -92,9 +102,13 @@ export function serialiseElements(elements: Element[]): string {
 // since.
 type ClipboardWrite = { text: string; inAppOnly: boolean };
 
-export function clipboardWriteFor(elements: Element[], copyId: string): ClipboardWrite {
+export function clipboardWriteFor(
+  elements: Element[],
+  copyId: string,
+  components: readonly DesignComponent[] = [],
+): ClipboardWrite {
   if (elements.length <= MAX_CLIPBOARD_ELEMENTS) {
-    const text = serialiseElements(elements);
+    const text = serialiseElements(elements, components);
     if (text.length <= MAX_CLIPBOARD_BYTES) return { text, inAppOnly: false };
   }
   const marker: ClipboardEnvelope = {
@@ -182,4 +196,17 @@ export function parseElementsPayload(text: string | null | undefined): Element[]
     seen.add(el.id);
     return true;
   });
+}
+
+/** The mains a clipboard string carries (each one that validates), or [] when it carries none or is not ours. Never
+ *  throws. Read only after parseElementsPayload accepted the same text. */
+export function parseComponentsPayload(text: string | null | undefined): DesignComponent[] {
+  if (!text || text.length > MAX_CLIPBOARD_BYTES || !text.includes('"components"')) return [];
+  try {
+    const env = JSON.parse(text) as Partial<ClipboardEnvelope>;
+    if (env.kind !== CLIPBOARD_KIND || !Array.isArray(env.components)) return [];
+    return env.components.slice(0, MAX_COMPONENTS).filter(isValidDesignComponent);
+  } catch {
+    return [];
+  }
 }
