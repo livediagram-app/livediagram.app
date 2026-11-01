@@ -74,6 +74,38 @@ describe('tree style', () => {
     expect(l2.x).toBeGreaterThan(l1.x + l1.width);
   });
 
+  it('runs left to right when asked: each generation a column, every parent centred beside its own children', () => {
+    const out = autoLayoutElements(org(), { style: 'tree', direction: 'LR' });
+    const [root, l, l1] = ['root', 'l', 'l1'].map((id) => find(out, id));
+    expect(l!.x).toBeGreaterThan(root!.x + root!.width);
+    expect(l1!.x).toBeGreaterThan(l!.x + l!.width);
+    // Siblings share a column and don't overlap vertically.
+    const [k1, k2, k3] = ['l1', 'l2', 'l3'].map((id) => find(out, id));
+    expect(k1!.x).toBe(k2!.x);
+    expect(k2!.y).toBeGreaterThan(k1!.y + k1!.height);
+    const span =
+      (Math.min(k1!.y, k2!.y, k3!.y) + Math.max(...[k1!, k2!, k3!].map((k) => k.y + k.height))) / 2;
+    expect(centerOf(l!).y).toBeCloseTo(span, 5);
+    // Its arrows leave a parent's right side for a child's left.
+    const a = out.find((e) => e.id === 'arr-root-l') as ArrowElement;
+    expect(a.from.kind === 'pinned' && a.from.anchor).toBe('e');
+    expect(a.to.kind === 'pinned' && a.to.anchor).toBe('w');
+  });
+
+  it('runs down when asked down, as with no direction', () => {
+    const down = autoLayoutElements(org(), { style: 'tree', direction: 'TB' });
+    expect(down).toEqual(autoLayoutElements(org(), { style: 'tree' }));
+  });
+
+  it('lays separate trees across the page side by side down it', () => {
+    const two = [...org(), shape('x', 900, 0), shape('y', 900, 200), arrow('x', 'y')];
+    const out = autoLayoutElements(two, { style: 'tree', direction: 'LR' });
+    const lowest = Math.max(
+      ...['root', 'l', 'r', 'l1', 'l2', 'l3'].map((id) => find(out, id).y + find(out, id).height),
+    );
+    expect(find(out, 'x').y).toBeGreaterThan(lowest);
+  });
+
   it('degrades gracefully on a non-tree graph (extra cross edge)', () => {
     const els = [...org(), arrow('r', 'l3')]; // l3 now has two parents
     const out = autoLayoutElements(els, { style: 'tree' });
