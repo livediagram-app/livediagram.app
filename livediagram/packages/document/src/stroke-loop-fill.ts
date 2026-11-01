@@ -2,11 +2,7 @@
 // "After a fill"): which strokes are loops, the loop closed and filled as the same element, and the fill
 // a closed pen stroke draws under its ink. The geometry is shared with livedesign
 // (@liveworkspace/model-core/stroke-loop); this file binds it to the freehand element.
-import {
-  closeStrokeLoop,
-  isStrokeLoop,
-  loopFillPath,
-} from '@liveworkspace/model-core/stroke-loop';
+import { closeStrokeLoop, isStrokeLoop, loopFillPath } from '@liveworkspace/model-core/stroke-loop';
 import type { FreehandElement } from './element-types';
 import { freehandCanvasPoints, freehandStrokePoints, packFreehandPoints } from './freehand-points';
 import { freehandPenStroke, isPenStroke, penStrokeCentreline } from './pen-stroke';
@@ -40,7 +36,10 @@ export function fillStrokeLoop(el: FreehandElement, fillColor: string): Freehand
 
 /** The fill a closed pen stroke draws under its ink, in canvas px: its streamlined centre line. */
 export function penLoopFillPath(
-  el: Pick<FreehandElement, 'x' | 'y' | 'width' | 'height' | 'packedPoints' | 'penWidth' | 'streamline'>,
+  el: Pick<
+    FreehandElement,
+    'x' | 'y' | 'width' | 'height' | 'packedPoints' | 'penWidth' | 'streamline'
+  >,
   fmt?: (n: number) => number,
 ): string {
   return loopFillPath(penStrokeCentreline(freehandPenStroke(el, { x: el.x, y: el.y })), fmt);

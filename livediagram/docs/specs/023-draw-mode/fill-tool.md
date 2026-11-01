@@ -115,11 +115,11 @@ A marker stroke's ends meet when all of these hold (`STROKE_LOOP_*`, shared with
 
 ## Share roles
 
-| Role        | The Fill tool                                                                                                                                    |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Editor      | Picks it, sets its colour and fills.                                                                                                             |
+| Role        | The Fill tool                                                                                                                                                                                                                                 |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Editor      | Picks it, sets its colour and fills.                                                                                                                                                                                                          |
 | Participant | Never: its palette on a whiteboard is its own (Sticky, Text, Image) and the dock's tools are not among it; F does nothing. A fill it sends anyway is not kept: the room keeps the stored fill and closed flag of anything but its own sticky. |
-| Viewer      | Never: a Viewer has no dock and no keys but V, H, Z and Escape.                                                                                 |
+| Viewer      | Never: a Viewer has no dock and no keys but V, H, Z and Escape.                                                                                                                                                                               |
 
 The editor gates the fill on the session's `can.recolour` for the element it would change, so a
 session that may not recolour it changes nothing.
@@ -147,13 +147,13 @@ CPU (a budget test keeps it there).
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-| Event                                 | Action     | Type                          |
-| ------------------------------------- | ---------- | ----------------------------- |
-| The Fill tool picked                  | `Selected` | `Draw` · `Fill`               |
-| Its colour changed                    | `Changed`  | `Draw` · `FillColour`         |
-| A closed element filled               | `Changed`  | `Element` · `FillBucket`      |
-| A marker loop closed and filled       | `Changed`  | `Element` · `FillLoop`        |
-| A press that filled nothing           | `Changed`  | `Draw` · `FillMissed`         |
+| Event                           | Action     | Type                     |
+| ------------------------------- | ---------- | ------------------------ |
+| The Fill tool picked            | `Selected` | `Draw` · `Fill`          |
+| Its colour changed              | `Changed`  | `Draw` · `FillColour`    |
+| A closed element filled         | `Changed`  | `Element` · `FillBucket` |
+| A marker loop closed and filled | `Changed`  | `Element` · `FillLoop`   |
+| A press that filled nothing     | `Changed`  | `Draw` · `FillMissed`    |
 
 Never a colour or an element's content.
 

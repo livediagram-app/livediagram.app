@@ -88,9 +88,9 @@ describe('a filled loop on the board', () => {
 
   it('exports its fill under its ink', () => {
     const svg = svgFreehandShape(filled, '#2563eb', '#bfdbfe');
-    expect(svg.startsWith(`<path d="${penLoopFillPath(filled, (n) => Math.round(n * 100) / 100)}`)).toBe(
-      true,
-    );
+    expect(
+      svg.startsWith(`<path d="${penLoopFillPath(filled, (n) => Math.round(n * 100) / 100)}`),
+    ).toBe(true);
     expect(svg.indexOf('fill="#bfdbfe"')).toBeLessThan(svg.indexOf('fill="#2563eb"'));
     // An open stroke exports its ink alone.
     expect(svgFreehandShape(marker(10), '#2563eb', '#bfdbfe')).not.toContain('#bfdbfe');

@@ -154,7 +154,9 @@ export const TELEMETRY_CATEGORIES = [
   'Trash',
   // Draw mode (docs/specs/023-draw-mode/draw-mode.md), named 'Whiteboard' until its stored
   // history was rewritten (migration 0061): a Whiteboard tab 'Created' (`type` how:
-  // 'Template' | 'NewTab' | 'Import'), a pen 'Selected' ('Main' | 'Second' | 'Third'),
+  // 'Template' | 'NewTab' | 'Import'), a pen or the Fill tool 'Selected' ('Main' | 'Second' |
+  // 'Third' | 'Path' | 'Fill'), the Fill tool 'Changed' ('FillColour', and 'FillMissed' for a press
+  // that filled nothing, docs/specs/023-draw-mode/fill-tool.md),
   // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |
   // 'PenReset', 'CursorDot' | 'CursorCrosshair', 'EraserStroke' | 'EraserPartial', 'BackgroundPlain' | 'BackgroundDots' |
   // 'BackgroundGrid', 'SnapColours') and shape recognition 'Toggled' ('RecognitionOn' |

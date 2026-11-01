@@ -851,19 +851,19 @@ where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 Preset-enum events only, never content, under a `Draw` category (named `Whiteboard` until its stored history was rewritten):
 
-| Event                     | Action     | Type                                                     |
-| ------------------------- | ---------- | -------------------------------------------------------- |
-| A whiteboard created      | `Created`  | `Template` (wizard), `NewTab`, `Import`                  |
-| A pen picked              | `Selected` | `Main`, `Second`, `Third`                                |
-| A shape picked in search  | `Selected` | `ShapeSearch` (never the kind)                           |
-| A shape pinned / unpinned | `Changed`  | `ShapePinned`, `ShapeUnpinned` (never the kind)          |
-| A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen), `PenReset` |
-| The pen cursor chosen     | `Changed`  | `CursorDot`, `CursorCrosshair`                           |
-| Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                          |
-| The Fill tool             | see [Fill tool](fill-tool.md) "Telemetry"                |                                                          |
-| Shape recognition toggled | `Toggled`  | `RecognitionOn`, `RecognitionOff`                        |
-| Background changed        | `Changed`  | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid`    |
-| Custom colours snapped    | `Changed`  | `SnapColours` (never a colour or a count)                |
+| Event                     | Action                                    | Type                                                     |
+| ------------------------- | ----------------------------------------- | -------------------------------------------------------- |
+| A whiteboard created      | `Created`                                 | `Template` (wizard), `NewTab`, `Import`                  |
+| A pen picked              | `Selected`                                | `Main`, `Second`, `Third`                                |
+| A shape picked in search  | `Selected`                                | `ShapeSearch` (never the kind)                           |
+| A shape pinned / unpinned | `Changed`                                 | `ShapePinned`, `ShapeUnpinned` (never the kind)          |
+| A pen changed             | `Changed`                                 | `PenColour`, `PenWidth` (a width on any pen), `PenReset` |
+| The pen cursor chosen     | `Changed`                                 | `CursorDot`, `CursorCrosshair`                           |
+| Eraser mode switched      | `Changed`                                 | `EraserStroke`, `EraserPartial`                          |
+| The Fill tool             | see [Fill tool](fill-tool.md) "Telemetry" |                                                          |
+| Shape recognition toggled | `Toggled`                                 | `RecognitionOn`, `RecognitionOff`                        |
+| Background changed        | `Changed`                                 | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid`    |
+| Custom colours snapped    | `Changed`                                 | `SnapColours` (never a colour or a count)                |
 
 A pen reports its place, never its colour. Strokes, stickies and text report
 through the ordinary `Element` / `Added` events.
