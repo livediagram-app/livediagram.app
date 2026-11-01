@@ -54,7 +54,7 @@ describe('pie and legend rows', () => {
         onChange={onChange}
       />,
     );
-    fireEvent.click(screen.getAllByRole('button', { name: 'Slice colour' })[1]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Slice 2 colour' }));
     fireEvent.click(screen.getByRole('button', { name: 'Teal' }));
     expect(onChange).toHaveBeenCalledWith([
       { label: 'A', value: 1 },
@@ -65,7 +65,7 @@ describe('pie and legend rows', () => {
   it('recolour one legend row from the picker', () => {
     const onChange = vi.fn();
     render(<LegendDataEditor items={[{ label: 'Done' }]} onChange={onChange} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Legend colour' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Legend row 1 colour' }));
     fireEvent.click(screen.getByRole('button', { name: 'Pink' }));
     expect(onChange).toHaveBeenCalledWith([
       { label: 'Done', color: penColourHex('pink', 'light') },
