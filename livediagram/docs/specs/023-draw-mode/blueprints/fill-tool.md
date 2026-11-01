@@ -2,8 +2,8 @@
 
 Derived from [The Fill tool](../fill-tool.md) and the Fill rows of [Draw mode](../draw-mode.md).
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) as `Fn`.
-livedesign builds the same tool on its logo pages from the same shared modules (livedesign
-docs/specs/023-draw-mode/drawing-tools.md "The Fill tool").
+livedesign builds the same tool on its logo pages from the same shared modules (livedesign's
+[Drawing tools](../../../../../livedesign/docs/specs/023-draw-mode/drawing-tools.md) "The Fill tool").
 
 Scope, by file:
 
