@@ -41,7 +41,8 @@ const STAR_GOLD = '#f59e0b';
 const BREAKDOWN_NAMED = 2;
 
 export type FieldWidgetContext = {
-  // The fields the board's widgets can read (boardFields), memoised on the board's set-up and types.
+  // Every custom field the board's types offer, those no view reads too (boardFields(…, false)), memoised on the
+  // board's set-up and types: a widget whose field became Text has changed kind, not gone.
   fields: readonly BoardField[];
   // The cards the board shows, before its quick filter (memoised by the board, so summaries are kept per list).
   items: readonly Item[];

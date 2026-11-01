@@ -182,4 +182,18 @@ describe('board fields', () => {
     expect(fieldWidgetState('field:sum:f-points', fields)).toEqual({ state: 'removed' });
     expect(fieldWidgetState('field:sum:f-sev', fields)).toMatchObject({ state: 'changed' });
   });
+
+  // A field made a kind no view reads (Text) is still on the board: "This field changed kind", not "removed".
+  it('keeps the fields no view reads only when asked, so a field turned into one has changed kind', () => {
+    expect(boardFields({ addTypes: ['feature'] }, types).map((x) => x.def.id)).not.toContain(
+      'f-notes',
+    );
+    const every = boardFields({ addTypes: ['feature'] }, types, false);
+    expect(every.map((x) => x.def.id)).toEqual(['f-budget', 'f-sev', 'f-notes']);
+    expect(fieldWidgetState('field:sum:f-notes', every)).toMatchObject({
+      state: 'changed',
+      field: { def: { id: 'f-notes' } },
+    });
+    expect(fieldWidgetState('field:sum:f-points', every)).toEqual({ state: 'removed' });
+  });
 });

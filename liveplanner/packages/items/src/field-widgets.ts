@@ -143,15 +143,17 @@ export function boardFieldTypes(
 }
 
 // The fields a board's widgets can read (board-widgets.md "Field widgets" "Which fields"): each custom field one of
-// its types offers and a view reads, once, in the order the types offer them.
+// its types offers and a view reads, once, in the order the types offer them. `readable` false keeps the fields no
+// view reads too (a Text field), for fieldWidgetState: a field turned into one has changed kind, not gone.
 export function boardFields(
   setup: Pick<PlanBoardSetup, 'addTypes'>,
   types: readonly ItemTypeDef[],
+  readable = true,
 ): BoardField[] {
   const out = new Map<string, { def: CustomFieldDef; types: ItemTypeDef[] }>();
   for (const t of boardFieldTypes(setup, types))
     for (const f of t.custom ?? []) {
-      if (!t.fields.includes(f.id) || viewsOfField(f).length === 0) continue;
+      if (!t.fields.includes(f.id) || (readable && viewsOfField(f).length === 0)) continue;
       const row = out.get(f.id);
       if (row) row.types.push(t);
       else out.set(f.id, { def: f, types: [t] });
@@ -167,7 +169,8 @@ export type FieldWidgetState =
   | { state: 'changed'; field: BoardField };
 
 // A field still on some other type of the project, but on none the board takes, reads as removed from the board: the
-// same quiet state.
+// same quiet state. `fields` is boardFields(…, false), so a field whose kind no view reads any more (a Rating made Text)
+// reads as changed, not removed.
 export function fieldWidgetState(
   key: FieldWidgetKey,
   fields: readonly BoardField[],
