@@ -41,7 +41,7 @@ describe('the active layer', () => {
 // docs/specs/031-photo/photo-adjustments.md "Performance": what changes no pixel names no tile, so the screen
 // keeps every tile it has uploaded (null would have it upload the whole photo again).
 describe('a redraw that changes no pixels', () => {
-  it('names no tiles for the active layer, the chosen, the solo or a preview of the stack', () => {
+  it('names no tiles for the active layer, the chosen, the solo, a stack edit or the photo coming back', () => {
     const h = harness(photoOf(8, 8, [pixelLayer('a'), pixelLayer('b')]));
     const seen = vi.fn<(changes: readonly unknown[] | null) => void>();
     h.s.subscribe(seen);
@@ -49,7 +49,10 @@ describe('a redraw that changes no pixels', () => {
     h.s.setChosen(new Set(['a', 'b']));
     h.s.setSolo('a');
     h.s.preview({ ...h.s.photo });
+    // A stack edit and the photo coming back: sync names any tiles it changed itself.
+    h.s.commitStack({ ...h.s.photo }, 'Opacity');
+    h.s.setPhoto({ ...h.s.photo });
     // (A tile load the harness started may land first, naming everything.)
-    expect(seen.mock.calls.map((c) => c[0]).slice(-4)).toEqual([[], [], [], []]);
+    expect(seen.mock.calls.map((c) => c[0]).slice(-6)).toEqual([[], [], [], [], [], []]);
   });
 });
