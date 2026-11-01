@@ -416,6 +416,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           pendingDraw={pendingDraw}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
+          {...(menuJoin.joinedWidth === undefined ? {} : { besideWidth: menuJoin.joinedWidth })}
           tabElements={elements}
         />
       ) : null}

@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { editorViewportOf } from '../../lib/editor-viewport';
-import { STRIP_MENU_GAP_PX } from '../canvas/menu-join';
+import { stripRoomBesideMenu } from '../canvas/menu-join';
 
 // Whether the category bar names its categories (docs/specs/007-editor/toolbar-layout.md "The category bar"), from
 // the strip's REAL sizes, as useStripTileLimit fits tiles: the centred strip may take the editor's width less the
@@ -43,8 +43,7 @@ export function useBarLabels(
       }
       const view = editorViewportOf(card);
       const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
-      const clear = menu ? menu.getBoundingClientRect().right - view.left + STRIP_MENU_GAP_PX : 0;
-      const fits = named.current.width <= view.width - 2 * clear;
+      const fits = named.current.width <= stripRoomBesideMenu(view.width, view.left, menu);
       if (fits !== labels) setLabels(fits);
     };
     measure();

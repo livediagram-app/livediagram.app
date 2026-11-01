@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { editorViewportOf } from '../../lib/editor-viewport';
-import { STRIP_MENU_GAP_PX } from '../canvas/menu-join';
+import { stripRoomBesideMenu } from '../canvas/menu-join';
 
 // Whether the centred strip would run under the top-left menu card (docs/specs/007-editor/toolbar-layout.md "The
 // category bar"): the strip as drawn is wider than the room centring leaves it, the editor's width less the menu
@@ -20,8 +20,7 @@ export function useStripCrowded(cardRef: RefObject<HTMLElement | null>, enabled:
       if (width <= 0) return;
       const view = editorViewportOf(card);
       const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
-      const clear = menu ? menu.getBoundingClientRect().right - view.left + STRIP_MENU_GAP_PX : 0;
-      setCrowded(width > view.width - 2 * clear);
+      setCrowded(width > stripRoomBesideMenu(view.width, view.left, menu));
     };
     measure();
     const observer = new ResizeObserver(measure);

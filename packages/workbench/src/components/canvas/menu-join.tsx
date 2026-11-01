@@ -25,6 +25,22 @@ export function joinedMenuCardWidth(sidebarPx: number, toolbarScale: number): nu
   return toSurfacePx(Math.max(0, sidebarPx - MENU_CARD_INSET_PX - STRIP_MENU_GAP_PX), toolbarScale);
 }
 
+/** The width the palette strip may take beside the menu box (`menu`, the `[data-toolbar-menu]` card), in an editor
+ *  `viewWidth` wide whose left edge is at `viewLeft`. Centred across the editor, it keeps the strip's gap from the box
+ *  on both sides; joined (`data-menu-joined`), the strip centres in what shows beside the sidebar instead, as a page
+ *  is framed beside it, so only its left gives way and a laptop's strip keeps its names. */
+export function stripRoomBesideMenu(
+  viewWidth: number,
+  viewLeft: number,
+  menu: HTMLElement | null,
+): number {
+  if (!menu) return viewWidth;
+  const clear = menu.getBoundingClientRect().right - viewLeft + STRIP_MENU_GAP_PX;
+  return menu.hasAttribute('data-menu-joined')
+    ? viewWidth - clear - STRIP_MENU_GAP_PX
+    : viewWidth - 2 * clear;
+}
+
 /** The sidebar's top row while joined: room for the menu box (drawn over it, above the sidebar), a hairline at its
  *  foot, so the sidebar's own header sits where it does unjoined. `height` is in the sidebar's surface px. */
 export function MenuJoinBand({ height }: { height: number }) {
