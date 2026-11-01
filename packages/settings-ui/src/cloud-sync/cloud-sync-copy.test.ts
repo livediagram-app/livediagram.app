@@ -14,7 +14,12 @@ import {
 } from './cloud-sync-copy';
 
 const NOW = 1_700_000_000_000;
-const IDLE: DriveConnectState = { connecting: false, connectError: null, cancelled: false, returned: false };
+const IDLE: DriveConnectState = {
+  connecting: false,
+  connectError: null,
+  cancelled: false,
+  returned: false,
+};
 
 const connection = (over: Partial<DriveConnected> = {}): DriveConnected => ({
   connected: true,
@@ -46,8 +51,12 @@ describe('Cloud Sync row: the status', () => {
   });
 
   it('says when it last synced, and Not synced yet before the first', () => {
-    expect(status(connected({ lastSyncedAt: NOW - 5_000 })).status.text).toBe('Last synced just now');
-    expect(status(connected({ lastSyncedAt: NOW - 30_000 })).status.text).toBe('Last synced < 1 min ago');
+    expect(status(connected({ lastSyncedAt: NOW - 5_000 })).status.text).toBe(
+      'Last synced just now',
+    );
+    expect(status(connected({ lastSyncedAt: NOW - 30_000 })).status.text).toBe(
+      'Last synced < 1 min ago',
+    );
     expect(status(connected()).status).toEqual({ text: 'Last synced 3 mins ago', warn: false });
     expect(status(connected({ lastSyncedAt: null })).status.text).toBe('Not synced yet');
   });
@@ -75,7 +84,14 @@ describe('Cloud Sync row: the status', () => {
       }),
     );
     expect(notice.status).toEqual({ text: 'Needs attention', warn: true });
-    expect(notice.problem?.text).toBe(`Roadmap and 1 more: ${DRIVE_NOTICE_TEXT}`);
+    expect(notice.problem?.text).toBe(`\u2068Roadmap\u2069 and 1 more: ${DRIVE_NOTICE_TEXT}`);
+    // An override in the name (an item's title) stays inside its isolate, so the words after it read forwards.
+    const flipped = status(
+      connected({
+        notices: [{ id: 'i1', app: 'liveplanner', kind: 'item', name: 'Budget \u202eevil' }],
+      }),
+    );
+    expect(flipped.problem?.text).toBe(`\u2068Budget \u202eevil\u2069: ${DRIVE_NOTICE_TEXT}`);
     expect(status(connected({ status: 'error' })).status).toEqual({ text: 'Offline', warn: true });
     expect(status({ ...connected(), unreachable: true } as DriveRowConnection).problem?.text).toBe(
       DRIVE_OFFLINE,
@@ -102,10 +118,13 @@ describe('Cloud Sync row: the status', () => {
       const copy = status(row);
       const options = driveStatusOptions(row, copy.phase).map((o) => o.text);
       // A time or a count is held at its widest sample ("Copying 12 of 12…"); every other wording is listed as is.
-      if (!/^(Last synced|Copying)/.test(copy.status.text)) expect(options).toContain(copy.status.text);
+      if (!/^(Last synced|Copying)/.test(copy.status.text))
+        expect(options).toContain(copy.status.text);
     }
     expect(
-      driveStatusOptions(connected({ progress: { done: 3, total: 12 } }), 'connected').map((o) => o.text),
+      driveStatusOptions(connected({ progress: { done: 3, total: 12 } }), 'connected').map(
+        (o) => o.text,
+      ),
     ).toContain('Copying 12 of 12…');
     expect(driveStatusOptions({ kind: 'checking' }, 'not-connected').map((o) => o.text)).toEqual([
       'Checking…',
