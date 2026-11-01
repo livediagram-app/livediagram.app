@@ -182,7 +182,7 @@ function GridTile(item: ItemProps) {
         {def.icon}
       </span>
       {minimal ? null : (
-        <span className="w-full truncate text-center text-[11px] leading-none">
+        <span className="w-full truncate text-center text-[11px] leading-tight">
           {tileDisplayName(def)}
         </span>
       )}
