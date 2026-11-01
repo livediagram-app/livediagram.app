@@ -70,6 +70,14 @@ export async function importBoardCsv(
 export function useBoardCsv(elementId: string, setup: PlanBoardSetup | null): void {
   const plan = usePlan();
   const latest = useLatest({ plan, setup });
+  // A picked or dropped file's text into new cards, then what the board says; refused unread past the cap.
+  const importFile = async (file: { tooBig?: boolean; text: () => Promise<string> } | null) => {
+    const { plan: p, setup: s } = latest.current;
+    if (!file || !p || !s) return;
+    const message = file.tooBig ? BOARD_CSV_TOO_BIG : await importBoardCsv(p, s, await file.text());
+    p.announce(message);
+    p.notify?.(message);
+  };
   usePublishBoardCsv(
     elementId,
     plan && setup
@@ -84,15 +92,14 @@ export function useBoardCsv(elementId: string, setup: PlanBoardSetup | null): vo
               // Loaded at the press: the picker is the import dialog's, not needed to draw a board.
               const { pickTabFile } = await import('@/lib/import-tab');
               const file = await pickTabFile(BOARD_CSV_ACCEPT, { maxBytes: BOARD_CSV_MAX_BYTES });
-              const { plan: p, setup: s } = latest.current;
-              if (!file || !p || !s) return;
-              const message = file.tooBig
-                ? BOARD_CSV_TOO_BIG
-                : await importBoardCsv(p, s, file.text);
-              p.announce(message);
-              p.notify?.(message);
+              await importFile(file && { tooBig: file.tooBig, text: async () => file.text });
             })();
           },
+          onImportCsvFile: (file) =>
+            void importFile({
+              tooBig: file.size > BOARD_CSV_MAX_BYTES,
+              text: () => file.text(),
+            }),
         }
       : undefined,
   );

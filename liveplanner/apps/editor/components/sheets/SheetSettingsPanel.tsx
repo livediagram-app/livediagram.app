@@ -84,7 +84,7 @@ export function SheetSettingsPanel({
   actions: SheetActions;
   onImportCsv: () => void;
   onClose: () => void;
-  // A Sheet filling its Sheet tab: Import CSV and Download CSV are the tab menu's (tab-data-rows.ts), not repeated here.
+  // A Sheet filling its Sheet tab: Import CSV and Download CSV are the tab's Import and Export dialogs' (into-tab.ts), not repeated here.
   csvInTabMenu?: boolean;
   // Sections after the Sheet's own, sharing its one-open-at-a-time (a Dashboard slot's Slot section).
   more?:
