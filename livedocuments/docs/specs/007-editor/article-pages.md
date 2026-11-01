@@ -116,7 +116,9 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   block. Text selection spans blocks, lists and pages freely.
 - **The caret stays in sight.** After the writer types or moves the caret (the arrow keys, Page Down, a paste), the
   view pans the least it must to show the caret, as the canvas brings any element into view (`scrollIntoView`), so
-  writing that runs onto the next page, or below the window, is never written blind. A collaborator's writing never
+  writing that runs onto the next page, below the window or behind a phone's on-screen keyboard (what shows ends 24 px
+  above the keyboard), is never written blind; the view is left there, not snapped back onto a page
+  ([Pages](pages-mode.md) "The view rests on a page"). A collaborator's writing never
   moves the view, nor does a press, which lands where the caret already shows.
 - **Typing**, the arrow keys, Home / End, word jumps (Alt / Ctrl+Arrow), Page Up / Down, Shift to
   extend, the browser's spell check, IME composition, dictation and the system emoji picker all
@@ -142,7 +144,12 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   centre, right, justify), ⌘\ (clear formatting), ⌘Enter (tick or untick the to-do at the
   caret), ⌘Z / ⌘⇧Z (undo, redo), ⌘A (all the article's writing), Escape (leave the writing; the caret goes, nothing is selected).
 - **Paste**: from a web page or another editor, its headings, lists, quotes, code, links and
-  bold / italic / underline / strike are kept, everything else dropped; Markdown text is read as
+  bold / italic / underline / strike are kept, everything else dropped (a list item or quote
+  holding paragraphs, as Google Docs writes them, is still that item or quote; Word's list
+  paragraphs are list items at their level, its typed markers dropped; Google Docs' checklist
+  items are to-dos; a table's cells of text are a paragraph each); into an empty block, pasted
+  writing that opens with a heading, quote, list item or code takes the block's place, so it keeps
+  its kind; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links); other
   plain text pastes as paragraphs, one per line. A pasted table (from a spreadsheet, a web page,
   Word or Google Docs, or a Markdown pipe table) becomes a table block (see "Tables"). Pasted images go into object zones. A paste of

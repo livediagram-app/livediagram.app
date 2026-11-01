@@ -181,6 +181,57 @@ function formatFromStyle(style: string, tags: Set<string>): CellFormat | undefin
   return Object.keys(f).length ? f : undefined;
 }
 
+// The next tag of pasted HTML from `from`, read left to right: its name, whether it closes, and its attributes up to
+// the `>` that ends it outside quotes. Google Sheets writes a cell's value and formula into attributes
+// (`data-sheets-formula="=IF(R[0]C[1]>2,1,0)"`) where a browser may leave `>` unescaped, so the first `>` is not
+// always the tag's end. An unclosed quote falls back to that first `>`, as a browser would recover.
+type HtmlTag = { index: number; end: number; name: string; closing: boolean; attrs: string };
+function isNameChar(code: number): boolean {
+  return (code >= 48 && code <= 57) || (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+}
+function nextTag(
+  html: string,
+  from: number,
+  lastQuote: { '"': number; "'": number },
+): HtmlTag | null {
+  for (let i = html.indexOf('<', from); i >= 0; i = html.indexOf('<', i + 1)) {
+    let j = i + 1;
+    const closing = html[j] === '/';
+    if (closing) j++;
+    const nameStart = j;
+    while (j < html.length && isNameChar(html.charCodeAt(j))) j++;
+    if (j === nameStart) continue;
+    const firstGt = html.indexOf('>', j);
+    if (firstGt < 0) return null;
+    // A quote opens a value only straight after `=` (spaces allowed), as in a browser; its closing quote is
+    // found by a jump, and one with none (after the last of its kind) ends the tag at the first `>` instead.
+    let end = -1;
+    let afterEquals = false;
+    for (let k = j; k < html.length; k++) {
+      const ch = html[k]!;
+      if (ch === '>') {
+        end = k;
+        break;
+      }
+      if (afterEquals && (ch === '"' || ch === "'")) {
+        if (k >= lastQuote[ch]) break;
+        k = html.indexOf(ch, k + 1);
+        afterEquals = false;
+      } else if (ch === '=') afterEquals = true;
+      else if (ch !== ' ' && ch !== '\t' && ch !== '\n' && ch !== '\r') afterEquals = false;
+    }
+    if (end < 0) end = firstGt;
+    return {
+      index: i,
+      end: end + 1,
+      name: html.slice(nameStart, j),
+      closing,
+      attrs: html.slice(j, end),
+    };
+  }
+  return null;
+}
+
 // The first <table> of pasted HTML as rows of cells, colspan and rowspan filled with empty cells; null when there
 // is no table.
 export function readPastedHtml(html: string): PastedCell[][] | null {
@@ -190,7 +241,6 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
   const body = html.slice(start, end < 0 ? undefined : end);
   const rows: PastedCell[][] = [];
   const pendingRowSpans: Map<number, number>[] = [];
-  const tagRe = /<\/?([a-z0-9]+)([^>]*)>/gi;
   let row: PastedCell[] | null = null;
   let cell: {
     text: string;
@@ -206,7 +256,14 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
     if (!cell || !row) return;
     cell.text += inner.join('');
     inner.length = 0;
-    const text = decode(cell.text.replace(/\s*\n\s*/g, ' '))
+    // Source line breaks are spaces, except straight after a <br>, where Excel indents the next line's source
+    // ("Two<br>\n  lines" is "Two" and "lines").
+    const text = decode(
+      cell.text
+        .replace(/\s*\n\s*/g, ' ')
+        .split('\u0001 ')
+        .join('\u0001'),
+    )
       .split('\u0001')
       .join('\n')
       .trim();
@@ -221,13 +278,14 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
     }
     cell = null;
   };
-  for (let m = tagRe.exec(body); m; m = tagRe.exec(body)) {
+  const lastQuote = { '"': body.lastIndexOf('"'), "'": body.lastIndexOf("'") };
+  for (let m = nextTag(body, 0, lastQuote); m; m = nextTag(body, m.end, lastQuote)) {
     const text = body.slice(last, m.index);
-    last = tagRe.lastIndex;
+    last = m.end;
     if (cell) inner.push(text);
-    const name = m[1]!.toLowerCase();
-    const closing = m[0][1] === '/';
-    const attrs = m[2] ?? '';
+    const name = m.name.toLowerCase();
+    const closing = m.closing;
+    const attrs = m.attrs;
     if (name === 'tr' && !closing) {
       finishCell();
       row = [];

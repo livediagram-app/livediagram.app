@@ -75,6 +75,8 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
       text and effects drawn for the compositor), `text-raster.ts`, `thumbnails.ts`, `preview.ts`.
     - The worker: `photo.worker.ts` with `worker-tasks.ts` (encode, decode, filter, subject, quick select,
       refine, content-aware fill) and `photo-worker-client.ts`.
+      A worker gets copies of a task's buffers until it has answered once, and has them moved after; a
+      worker that never loads (offline, a chunk gone after a deploy) leaves the page the buffers to run the task.
     - Drawing: `apps/live/lib/photo-editor/gl/gl-compositor.ts` and `apps/live/lib/photo-editor/gl/shaders.ts` (WebGL 2), `cpu-view.ts` (the fallback),
       `surface-painter.ts` (which one draws, and when), `sliced-composite.ts` (a main-thread composite in
       bands, for merges), `view-options.ts` (the pixel grid).

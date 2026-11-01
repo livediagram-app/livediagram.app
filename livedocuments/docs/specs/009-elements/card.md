@@ -38,7 +38,9 @@ single element and pure layout, with the slots chosen per card.
 
 **The label is the body**, so double-click edits it with the normal label editor (rich text, alignment, size, bold,
 the block-type picker). The title, the meta line and each tag **edit in place** once the card is selected, the same
-rule as the web components: the first click selects, the next one edits, Enter commits, Escape restores.
+rule as the web components: the first click selects, the next one edits, Enter commits, Escape restores. Until then a
+line is not focusable at all (no `tabindex`), since the card is one `img` to a screen reader and a focusable line
+inside it would be a control nested in another.
 
 **Media** draws `iconId` when it is set:
 

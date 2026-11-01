@@ -43,6 +43,7 @@ import { lastPageKey } from '@/lib/last-page';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
 import { useLastPage } from './useLastPage';
 import { usePageSnap } from './usePageSnap';
+import { getActiveArticle } from '@/lib/article/article-editor-store';
 import { cardInFrontOf, cardStageOf, type CardStack, type CardStage } from '@/lib/flashcard-stack';
 import { flipCard, pictureCard, type CardPicture } from '@/lib/flashcard-flip';
 
@@ -266,6 +267,7 @@ export function usePagesMode(deps: {
       glide.current = null;
     },
     suspended: deps.snapSuspended ?? (() => false),
+    writing: () => getActiveArticle()?.focused === true,
   });
   // The page you were last on, remembered as the view rests (docs/specs/007-editor/
   // pages-mode.md "Back to the page you were on").

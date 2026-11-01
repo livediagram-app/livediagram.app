@@ -99,10 +99,20 @@ export function PortalMenu({
     };
   }, [anchor, close]);
 
-  // The first item takes focus, so the arrow keys work from the start.
+  // The first item takes focus, so the arrow keys work from the start. Closing with focus still in the menu, or lost
+  // with it (an item chosen), hands it back to the trigger, as a menu button does: a dialog the item opens then
+  // returns focus there as it closes, rather than to the page, outside everything.
+  const latestAnchor = useLatest(anchor);
   useEffect(() => {
-    ref.current?.querySelector<HTMLElement>(ITEM)?.focus({ preventScroll: true });
-  }, []);
+    const menu = ref.current;
+    menu?.querySelector<HTMLElement>(ITEM)?.focus({ preventScroll: true });
+    return () => {
+      const now = document.activeElement;
+      const lost = now === null || now === document.body || !!menu?.contains(now);
+      const trigger = latestAnchor.current;
+      if (lost && trigger?.isConnected) trigger.focus({ preventScroll: true });
+    };
+  }, [latestAnchor]);
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
@@ -137,6 +147,13 @@ export function PortalMenu({
         aria-label={label}
         tabIndex={-1}
         onKeyDown={onKeyDown}
+        // Choosing an item hands focus to the trigger first, before the item runs: a dialog it opens then remembers
+        // the trigger (not the item, which is about to go) as where to return focus, even when a field in the
+        // dialog takes focus as it opens.
+        onClickCapture={(e) => {
+          const item = (e.target as Element).closest?.(ITEM);
+          if (item && ref.current?.contains(item)) anchor?.focus({ preventScroll: true });
+        }}
         className={`fixed z-50 flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
         style={
           at

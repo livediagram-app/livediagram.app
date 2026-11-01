@@ -21,7 +21,7 @@ function sourceFiles(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-const SMALL = /(?<![\w:-])text-(xs|sm|\[(9|10|11|12|13)px\])(?![\w-])/;
+const SMALL = /(?<![\w:-])text-(xs|sm|\[(9|10|11|12|13)(\.5)?px\])(?![\w-])/;
 const PALE = /(?<![\w:/!-])text-slate-(300|400)(?![\w/-])/;
 const CHIP = /(?<![\w:/-])bg-slate-(100|200)(?![\w/-])/;
 const MID = /(?<![\w:/!-])text-slate-500(?![\w/-])/;

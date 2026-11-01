@@ -3,6 +3,7 @@
 // Why sign in, from the guest's banner's Learn More: what an account adds, in the Explorer's words for the app's
 // kind. Loaded only when first opened.
 
+import { buttonClassName } from '@liveworkspace/ui';
 import { Dialog } from '../ui/Dialog';
 import { useExplorer } from './context';
 
@@ -75,7 +76,7 @@ export function SignInReasons({
         <a
           href={href}
           onClick={onSignIn}
-          className="inline-flex w-full items-center justify-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 sm:w-auto"
+          className={buttonClassName({ size: 'md', className: 'w-full sm:w-auto' })}
         >
           Sign In
         </a>

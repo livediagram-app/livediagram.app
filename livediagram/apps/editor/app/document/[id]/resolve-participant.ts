@@ -8,6 +8,17 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 // the stored profile, seeded on a first visit. Lifted out of useIdentityBootstrap so a
 // document in This Browser can open first and resolve this in the background
 // (docs/specs/006-document/offline-mode.md "Instant open").
+// The name a first visit with no profile is seeded with (docs/specs/014-identity/auth-and-guest-access.md): the
+// account name when signed in, else the guest's random placeholder. /new seeds with it too, so a signed-in
+// person's first document never gives them a random name that then wins in every app.
+export function firstVisitName(
+  accountUserId: string | null | undefined,
+  accountDisplayName: string | null | undefined,
+  guestName: string,
+): string {
+  return (accountUserId && accountDisplayName) || guestName;
+}
+
 export async function resolveParticipant(opts: {
   accountUserId: string | null | undefined;
   accountDisplayName: string | null | undefined;
@@ -25,7 +36,7 @@ export async function resolveParticipant(opts: {
   if (storedSelf) return { ...storedSelf, status: 'online' };
   const self: Participant = {
     id: selfId,
-    name: (accountUserId && accountDisplayName) || randomName(),
+    name: firstVisitName(accountUserId, accountDisplayName, randomName()),
     color: randomColor(),
     status: 'online',
   };

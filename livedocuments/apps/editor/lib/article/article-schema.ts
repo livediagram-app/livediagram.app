@@ -45,6 +45,53 @@ const tagStyle = (tag: string): ArticleParagraphStyle | null =>
           ? 'quote'
           : null;
 
+// Pasted HTML whose blocks are wrapped in another block (a quote's paragraphs, a table cell's): the
+// wrapper is read through to its blocks rather than as a block of its own, which would leave it empty.
+const BLOCK_TAGS = new Set([
+  'P',
+  'DIV',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'UL',
+  'OL',
+  'PRE',
+  'BLOCKQUOTE',
+  'TABLE',
+]);
+const hasBlockChild = (el: HTMLElement): boolean =>
+  Array.from(el.children).some((child) => BLOCK_TAGS.has(child.tagName));
+
+// Word's list paragraphs (`<p style="mso-list:l0 level2 lfo1">`): no list markup, the level in the
+// style and the marker typed out in a span Word marks `mso-list:Ignore`.
+const WORD_MARKER = 'span[style*="mso-list:Ignore" i]';
+const wordListLevel = (style: string): number => {
+  const at = style.toLowerCase().indexOf('level');
+  let level = 0;
+  for (
+    let i = at + 5;
+    at >= 0 && i < style.length && style.charAt(i) >= '0' && style.charAt(i) <= '9';
+    i++
+  ) {
+    level = level * 10 + Number(style.charAt(i));
+  }
+  return Math.min(4, Math.max(0, level - 1));
+};
+// A numbered marker is a number or a letter run then "." or ")" ("1.", "b)", "iv."); anything else
+// (·, o, §, a dash) is a bullet.
+const isNumberedMarker = (marker: string): boolean => {
+  const last = marker.charAt(marker.length - 1);
+  if (marker.length < 2 || (last !== '.' && last !== ')')) return false;
+  for (let i = 0; i < marker.length - 1; i++) {
+    const c = marker.charAt(i).toLowerCase();
+    if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z'))) return false;
+  }
+  return true;
+};
+
 // A node's or mark's attribute, read as the schema declares it: ProseMirror types every attribute
 // `any`. Anything else reads as absent, which ProseMirror fills with the attribute's default.
 export const textAttr = (attrs: Attrs, key: string): string | undefined => {
@@ -79,11 +126,22 @@ export const articleSchema = new Schema({
             };
           },
         },
+        // A quote's own paragraphs, and Word's quote styles, are quotes.
+        {
+          tag: 'blockquote > p, p.MsoQuote, p.MsoIntenseQuote',
+          priority: 60,
+          getAttrs: (el) => ({ style: 'quote', align: readAlign(el) }),
+        },
         ...['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'].map((tag) => ({
           tag,
-          getAttrs: (el: HTMLElement) => ({ style: tagStyle(tag), align: readAlign(el) }),
+          getAttrs: (el: HTMLElement) =>
+            tag === 'blockquote' && hasBlockChild(el)
+              ? false
+              : { style: tagStyle(tag), align: readAlign(el) },
         })),
         { tag: 'p', getAttrs: (el) => ({ align: readAlign(el) }) },
+        // A table cell of text is a paragraph of its own, so cells never run together.
+        { tag: 'td, th', getAttrs: (el) => !hasBlockChild(el) && { align: readAlign(el) } },
       ],
       toDOM(node): DOMOutputSpec {
         const style = node.attrs.style as ArticleParagraphStyle;
@@ -133,10 +191,38 @@ export const articleSchema = new Schema({
               if (p.tagName === 'UL' || p.tagName === 'OL') level++;
             }
             const checkbox = e.querySelector(':scope > input[type=checkbox]');
+            // Google Docs marks a checklist item as a checkbox rather than holding one.
+            const ariaBox = e.getAttribute('role') === 'checkbox';
             return {
-              list: checkbox ? 'todo' : e.parentElement?.tagName === 'OL' ? 'numbered' : 'bullet',
+              list:
+                checkbox || ariaBox
+                  ? 'todo'
+                  : e.parentElement?.tagName === 'OL'
+                    ? 'numbered'
+                    : 'bullet',
               level: Math.min(4, level),
-              checked: checkbox instanceof HTMLInputElement && checkbox.checked,
+              checked:
+                (checkbox instanceof HTMLInputElement && checkbox.checked) ||
+                (ariaBox && e.getAttribute('aria-checked') === 'true'),
+            };
+          },
+        },
+        // A list item's own paragraph (Google Docs, most web pages: `<li><p>…</p></li>`) is read as
+        // the item's text, not as a paragraph that would leave the item empty.
+        { tag: 'li > p', priority: 60, skip: true },
+        // Word's list paragraphs, their typed-out markers dropped.
+        { tag: WORD_MARKER, priority: 60, ignore: true },
+        // Word's empty `<o:p>` closes each paragraph; read as a block it would leave an empty one.
+        { tag: 'o\\:p', priority: 60, ignore: true },
+        {
+          tag: 'p[style*="mso-list" i]',
+          priority: 60,
+          getAttrs: (el) => {
+            const marker = el.querySelector(WORD_MARKER)?.textContent?.replace(/\s/g, '') ?? '';
+            return {
+              list: isNumberedMarker(marker) ? 'numbered' : 'bullet',
+              level: wordListLevel(el.getAttribute('style') ?? ''),
+              align: readAlign(el),
             };
           },
         },

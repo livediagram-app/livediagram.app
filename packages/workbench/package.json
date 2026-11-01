@@ -363,6 +363,7 @@
     "./lib/tech-icons": "./src/lib/tech-icons.ts",
     "./lib/testing/bindings": "./src/lib/testing/bindings.ts",
     "./lib/testing/storage-event": "./src/lib/testing/storage-event.ts",
+    "./lib/this-browser-remove": "./src/lib/this-browser-remove.ts",
     "./lib/toast-name": "./src/lib/toast-name.ts",
     "./lib/toolbar-search-request": "./src/lib/toolbar-search-request.ts",
     "./lib/typing-target": "./src/lib/typing-target.ts",

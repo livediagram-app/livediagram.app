@@ -1501,7 +1501,10 @@ is while the rest of the tab is worked on.
   - **Whenever the view rests**: the same holds after anything else that moves the view (the zoom
     cluster's buttons, the Map, the arrow keys) once the view has rested 250 ms with no pointer
     held. Not while following someone (their view is the follow's, and a move of your own would
-    end it).
+    end it), and not while an article's writing has the caret: the view moves for the caret then
+    (kept in sight as it is written on, above a phone's keyboard, onto the next page), and snapping
+    back to the page would take the caret out of sight again. A pan or zoom by hand still lets go
+    onto a page.
   - For everyone who can see the pages, on a phone and a desktop alike; no setting.
 - **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload) fits the page you were last on rather than the first, so moving between tabs
   never loses your place. The page you are on is the one under the middle of the view (else the

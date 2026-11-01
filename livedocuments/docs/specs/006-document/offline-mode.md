@@ -385,7 +385,7 @@ confirmation:
   best-effort, but a rollback that itself fails still reports the original
   delete failure rather than a success.
 - **Take Offline bypasses the [Trash](../013-workspace/trash.md)** for the document's owner: it is a move, not a delete, so the server copy goes at once. A joined teammate taking a team document offline sends the team's copy to the team Trash instead, since from the team's side it is a deletion.
-- **Deleting an offline document moves it to this browser's local Trash** ([Trash](../013-workspace/trash.md), "The local Trash"): the IndexedDB record gains `trashedAt` and keeps everything else, leaves the lists and stars, refuses writes, and is purged 30 days later the next time the app lists documents or opens the Trash. Sync Document removes the local record outright (a move, like Take Offline).
+- **Deleting an offline document removes it for good** (the Explorer asks first; nothing else holds it, and the local Trash is gone, see [Trash](../013-workspace/trash.md)). Deleting the document open in the editor tombstones it first (`lib/document-tombstones.ts`), so neither the autosave nor the unload flush writes it back, then removes the IndexedDB record and leaves for the Explorer, as deleting an open cloud document does (`@liveworkspace/workbench/lib/this-browser-remove`, shared by every editor). Sync Document removes the local record outright (a move, like Take Offline).
 - Because it deletes the cloud copy, taking a _shared_ or _team_ document offline
   first revokes those (a share/team document can't be pulled private silently);
   the confirmation spells this out.

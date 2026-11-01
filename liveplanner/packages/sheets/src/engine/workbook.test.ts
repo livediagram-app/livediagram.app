@@ -43,6 +43,15 @@ describe('values and recalculation', () => {
     b.set('B1', '5');
     expect(b.v('A1')).toBe(5);
   });
+  it('names each sheet in a loop that runs through another sheet', () => {
+    const b = book({ 'Sheet 1': { A1: "='Q3 Costs'!A1" }, 'Q3 Costs': { A1: "='Sheet 1'!A1" } });
+    expect((b.v('A1') as { why: string }).why).toBe(
+      "Circular reference: 'Sheet 1'!A1 → 'Q3 Costs'!A1 → 'Sheet 1'!A1",
+    );
+    // A loop on one sheet keeps the short form.
+    const one = book({ B2: '=C2', C2: '=B2' });
+    expect((one.v('B2') as { why: string }).why).toBe('Circular reference: B2 → C2 → B2');
+  });
   it('shows #REF! for a loop longer than the stack holds, and recovers once it is broken', () => {
     const cells: Record<string, string> = { A1: '=A300' };
     for (let i = 2; i <= 300; i++) cells[`A${i}`] = `=A${i - 1}+1`;

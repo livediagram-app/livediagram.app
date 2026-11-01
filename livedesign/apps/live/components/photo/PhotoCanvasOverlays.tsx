@@ -71,7 +71,11 @@ const KEY_TAKERS =
 export const keysElsewhere = (): boolean =>
   typingSomewhere() ||
   !!document.activeElement?.closest?.('[role="dialog"]') ||
-  !!document.querySelector(KEY_TAKERS);
+  Array.from(document.querySelectorAll(KEY_TAKERS)).some(
+    // Only one on screen: the header's site switcher keeps its menu mounted and hidden (it opens on hover), and
+    // counting it left every photo key dead.
+    (el) => getComputedStyle(el).visibility !== 'hidden',
+  );
 
 export function PhotoCanvasOverlays({
   pages,

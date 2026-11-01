@@ -119,7 +119,7 @@ The Photo panel's **Layers** tab ([Photo pages](photo-pages.md) "The Photo panel
   Duplicate, Link-free moves together); Alt+[ and Alt+] step the active layer down and up.
 - **Reordering**: dragging a row moves the layer (a line shows where it lands; onto the middle of a group's row puts
   it in the group), by the same pointer drag as the canvas's [Layers](../006-design/layers.md) panel, so it works by
-  touch too; Ctrl/Cmd+[ and Ctrl/Cmd+] move it down and up one; with Shift, to the bottom and top.
+  touch too (on a touch screen from a grip at the row's left, since a finger on the row scrolls the list); Ctrl/Cmd+[ and Ctrl/Cmd+] move it down and up one; with Shift, to the bottom and top.
 - **Under the list**: **New Layer** (a labelled button, Ctrl/Cmd+Shift+N), then icon buttons with tooltips: **New
   Group**, **Add Mask** (from the selection when there is one: reveal it; otherwise reveal all; Alt for hide all),
   **New Fill or Adjustment** (a menu: Solid Colour, Gradient, then the adjustments in the Adjust tab's sections),
