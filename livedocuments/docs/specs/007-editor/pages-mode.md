@@ -1240,13 +1240,28 @@ Both show the same list:
   has (an Editor's, or a share link's for a Participant or Viewer), once per picture and shared
   with the canvas's own copy. Only the rows drawn so far ask for theirs. Until a picture arrives,
   or where it can't be read, its place shows the image placeholder (a page picture, its tone). The Slide Deck's pictures show them the same way.
-- **A page's actions** (an Editor's): in the sidebar, a small toolbar at the end of the name's
-  line, shown while the row is hovered, focused or marked: **Duplicate**, **Lock** or **Unlock**,
-  and **Delete** (not on a locked page), each a glyph with its Tooltip. In the popover, one **⋯**
-  button (shown on hover or focus) opens the same as a menu, a header naming the page, with **Add
-  to Slides** first on a slide page not yet in the deck, and Delete last under its own separator.
-  Each does exactly what the page's title bar does; none glides to the page. A Participant and a
-  Viewer see neither.
+- **A page's actions** (an Editor's), down the row's left, so the picture and its name keep the
+  row's whole width:
+  - **In the sidebar** the column beside the picture stacks, under the page's number, the **grip**
+    (drag to reorder), **Delete** (a bin; not on a locked page) and **⋯** (the page's
+    menu), each a glyph with its Tooltip. They show while the row is hovered, focused or marked, or
+    while its menu is open, and always to a finger, where each keeps a 44 px tap area (the stack
+    spaces itself out under a coarse pointer).
+  - **In the popover** (a bottom sheet on a phone) the rows are compact, one line each: the **⋯**
+    sits under the page's number, and the grip stays at the row's right edge, where a thumb finds
+    it. Delete is in the menu.
+  - **The ⋯ menu** (also a right-click on the row, or a long press on it by a finger) is one menu for
+    the whole list, a header naming the page, then in groups: **Page Settings** (the cog: glides to
+    the page and opens its settings, where it is renamed and resized); the page's place in the
+    slide deck, **Add to Slides** on a slide page the deck has no slide of, else **Hide in Slides** or
+    **Show in Slides** on any page the deck has a slide of; **Duplicate** (while the copy fits under
+    the page limit), **Move Up** and **Move Down** (while the page's unit has a neighbour that way:
+    an article moves whole), **Lock** or **Unlock**; then, under its own separator, **Delete**, last
+    (not on a locked page), in the menu's own tones ([Destructive actions](../004-interface-design/destructive-actions.md)). Each does exactly what the page's title bar, cog or the Slide
+    Deck does; none but Page Settings glides to the page. A Participant and a Viewer see no grip,
+    no Delete and no ⋯, and a right-click or long press opens nothing.
+  - A row's name carries the padlock on a locked page and a crossed eye (**Hidden in Slides**) on a
+    page whose slide is hidden in the deck, so a skipped slide shows at a glance.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to
@@ -1646,24 +1661,23 @@ separate pages. It is explicit: never run on opening a tab.
 - Pressing a page slide's row switches to its tab and frames its page, as the page's label does.
   Its `…` menu has no Selection section (the slide is whatever is on its page), its delete confirm
   says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.
-- **A slide page's deck button**: first in its title bar, left of Layout and Background, for an
-  editor on a desktop, a slide page shows its place in the deck, named beside its icon while the
-  title bar has room. The deck always has a slide of a slide page, so the button
-  toggles that slide's visibility in the presentation: **Hide in Slides** (an
-  open eye) or **Show in Slides** (a crossed eye), the same as the slide's Visibility in the Slide
-  Deck. Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
-SlideShown`).
-- **Add Notes**: beside the deck button once the deck has a slide of the page, **Add Notes** (a
+- **A page's place in the deck lives in Contents**: the page's title bar has no deck button. A
+  slide page the deck has no slide of offers **Add to Slides**, and any page the deck has a slide of
+  **Hide in Slides** (keeps the slide but skips it when presenting) or **Show in Slides**, in the
+  page's ⋯ menu in Contents (above), the same switch as the slide's Visibility in the Slide Deck.
+  Contents marks a hidden page's row with a crossed eye. Telemetry as the Slide Deck's own
+  (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden / SlideShown`).
+- **Add Notes**: first in the title bar once the deck has a slide of the page, **Add Notes** (a
   stack-of-cards glyph) opens a popover holding that slide's speaker notes as note cards, the deck
   slide's own: the same cards the Slide Deck panel writes and the presenter view flips through,
   never drawn on the slide ([Speaker note cards](../012-collaboration/speaker-note-cards.md)). Once
   the slide has a card with words the button reads **Notes**, pressed. Every keystroke writes the
-  deck. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone. Unlike the deck button it is
+  deck. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone. It is
   offered on a phone too (icon only, its popover a bottom sheet), so cards can be written anywhere.
-- **Any other page in the deck shows its eye too**: an infographic or article page offers no
-  Add to Slides in its title bar (the Slide Deck's page picker adds it), but once the deck has a
-  slide of it, the same eye sits beside its cog, so wherever a page is presented its visibility is
-  one press away.
+- **Any other page in the deck**: an infographic or article page offers no Add to Slides (the Slide
+  Deck's page picker adds it), but once the deck has a slide of it, its ⋯ menu in Contents holds
+  Hide in Slides or Show in Slides too, so wherever a page is presented its visibility is one menu
+  away.
 - **A page slide presents full screen**: it is fitted with no margin, the page edge to edge on the
   screen's limiting side, and everything round the sheet is black (a letterbox), so a 16:9 slide
   fills a 16:9 screen and any other shape sits between black bars, as a projector shows it.

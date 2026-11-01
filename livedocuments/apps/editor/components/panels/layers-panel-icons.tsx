@@ -26,7 +26,7 @@ import {
 
 export { LayersStackIcon } from '@livedocuments/ui';
 export const GripIcon = lucideGlyph(lucideGripVertical, 14);
-// 13px: shared with the slide deck rows, the page deck button and the role indicator.
+// 13px: shared with the slide deck rows, a Contents page's slide toggles and the role indicator.
 export const EyeIcon = lucideGlyph(lucideEye, 13);
 export const EyeOffIcon = lucideGlyph(lucideEyeOff, 13);
 export const RowEyeIcon = lucideGlyph(lucideEye, 16);

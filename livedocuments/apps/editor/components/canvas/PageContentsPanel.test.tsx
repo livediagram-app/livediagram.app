@@ -46,6 +46,8 @@ function show(n: number, canEdit = true, onDock?: () => void) {
             canDuplicate: () => true,
             setLocked: vi.fn(),
             removePage: vi.fn(),
+            canMove: () => true,
+            movePage: vi.fn(),
           },
         }
       : {}),
@@ -116,13 +118,19 @@ describe('PageContentsPanel', () => {
 
   it("offers each page's actions in its ⋯ menu, an Editor's alone", () => {
     const h = show(3);
-    fireEvent.click(screen.getByRole('button', { name: 'Menu for Page 2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 2' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
     expect(h.duplicatePage).toHaveBeenCalledWith('p2');
     expect(h.focusPage).not.toHaveBeenCalled();
+    // The popover's compact rows keep Delete in the menu, and the ⋯ under the page's number.
+    expect(screen.queryByRole('button', { name: 'Delete Page 2' })).toBeNull();
+    const row = screen.getAllByRole('listitem')[1]!;
+    expect(
+      row.querySelector('[aria-label="More Actions for Page 2"]')?.closest('.w-7'),
+    ).not.toBeNull();
     cleanup();
     show(3, false);
-    expect(screen.queryByRole('button', { name: 'Menu for Page 2' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'More Actions for Page 2' })).toBeNull();
   });
 
   it('moves between rows with the arrow keys', () => {

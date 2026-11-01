@@ -5,9 +5,11 @@ import { layOutPages, type Page } from '@livedesign/design';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { requestPagePanel } from '@/lib/page-panel-request';
 import { CONTENTS_FOLLOW_SETTLE_MS, PageContentsSidebar } from './PageContentsSidebar';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+vi.mock('@/lib/page-panel-request', () => ({ requestPagePanel: vi.fn() }));
 
 // docs/specs/007-editor/pages-mode.md "Contents": docked as a sidebar down the canvas's left.
 afterEach(() => {
@@ -51,6 +53,8 @@ function show({
     canDuplicate: () => true,
     setLocked: vi.fn(),
     removePage: vi.fn(),
+    canMove: (id: string, by: -1 | 1) => (by === -1 ? id !== 'p1' : id !== 'p3'),
+    movePage: vi.fn(),
   };
   const store = createViewportStore(1);
   const view = {
@@ -111,20 +115,45 @@ describe('PageContentsSidebar', () => {
     expect(screen.getByRole('complementary', { name: 'Contents' }).style.right).toBe('0px');
   });
 
-  it("gives each page a toolbar, an Editor's alone, whose presses never glide", () => {
+  it("stacks each page's Delete and ⋯ down its left, an Editor's alone, whose presses never glide", () => {
     const h = show();
-    // Add to Slides stays on the page's own title bar: the sidebar's toolbar leaves it out.
-    expect(screen.queryByRole('button', { name: 'Add to Slides Page 2' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate Page 2' }));
-    expect(h.edit.duplicatePage).toHaveBeenCalledWith('p2');
-    fireEvent.click(screen.getByRole('button', { name: 'Lock Page 2' }));
-    expect(h.edit.setLocked).toHaveBeenCalledWith('p2', true);
     fireEvent.click(screen.getByRole('button', { name: 'Delete Page 2' }));
     expect(h.edit.removePage).toHaveBeenCalledWith('p2');
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 2' }));
+    expect(screen.getAllByRole('menuitem').map((el) => el.textContent)).toEqual([
+      'Page Settings',
+      'Duplicate',
+      'Move Up',
+      'Move Down',
+      'Lock',
+      'Delete',
+    ]);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move Down' }));
+    expect(h.edit.movePage).toHaveBeenCalledWith('p2', 1);
     expect(h.focusPage).not.toHaveBeenCalledWith('p2');
+    // One menu for the whole list, whichever row's ⋯ opened it.
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 1' }));
+    expect(screen.getAllByRole('menu')).toHaveLength(1);
+    expect(screen.queryByRole('menuitem', { name: 'Move Up' })).toBeNull();
+    // No line of what each page is: the picture says it.
+    expect(screen.queryByText(/Not in the deck|In the deck/)).toBeNull();
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('toolbar')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^More Actions for/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
+    // A right-click on a row opens nothing for someone who may not edit.
+    fireEvent.contextMenu(screen.getAllByRole('listitem')[1]!);
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('opens a page’s settings from its menu, framing it first', async () => {
+    const h = show();
+    fireEvent.contextMenu(screen.getAllByRole('listitem')[2]!);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Page Settings' }));
+    expect(h.focusPage).toHaveBeenCalledWith('p3');
+    expect(screen.queryByRole('menu')).toBeNull();
+    // Its settings open from its cog once it is framed.
+    await waitFor(() => expect(requestPagePanel).toHaveBeenCalledWith('p3'));
   });
 
   it('minimises to its button, framing the page in view again', async () => {

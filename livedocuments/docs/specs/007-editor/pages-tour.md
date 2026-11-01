@@ -3,7 +3,7 @@
 A short, optional guided tour of one [page kind](pages-mode.md#page-kinds): a slide, an infographic or an
 article. Like every tour it is started from the footer's **Start Pages Tour** button and never offers itself; [Show Me](show-me.md)
 runs the same track from a page's panel, and the [element tours](element-tours.md) share the button. Each kind has its own **track**, which shows how that kind of page is made by
-opening the real controls on the person's own page (a slide's Layout and Background popovers, its deck button,
+opening the real controls on the person's own page (a slide's Layout and Background popovers,
 the Slide Deck and Present) rather than only pointing at them: anchored step cards, a glide, a
 dimming spotlight, Skip, Back and a closing card, driven by the tour engine every tour shares ("How a tour runs").
 
@@ -115,7 +115,7 @@ The deck stays open from step 4 to step 7 and closes after them, however the tou
 
 ### Filtering
 
-- A step whose control is not on screen when the tour starts (a slide's deck button and the Slides button on a
+- A step whose control is not on screen when the tour starts (the Slides button on a
   phone; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
   turn is skipped ("Mechanics").
 - If the tour can no longer run where it started (the person's edit rights go, they open another tab, or the tour page is deleted or locked) it ends as skipped, closing whatever it opened.
