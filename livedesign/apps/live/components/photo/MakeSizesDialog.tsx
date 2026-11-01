@@ -321,7 +321,8 @@ export function MakeSizesDialog({
         </Button>
         <Button
           size="sm"
-          disabled={!n || busy !== null || !!customRefused}
+          disabled={!n || !!customRefused}
+          busy={busy !== null}
           onClick={() => void make()}
         >
           {busy !== null
