@@ -9,6 +9,7 @@ import {
   recoverInBrowser,
 } from '@liveworkspace/workbench/lib/stale-build-navigation';
 import { isChunkLoadError } from '@liveworkspace/workbench/lib/stale-chunks';
+import { getOnline } from '@liveworkspace/workbench/lib/online-status';
 
 // A render crash in one part of the editor or Explorer used to unmount the
 // whole page (the app has no route-level error boundary), and the telemetry
@@ -25,6 +26,10 @@ import { isChunkLoadError } from '@liveworkspace/workbench/lib/stale-chunks';
 //   - 'panel' for layout areas (canvas, header, tab bar, Explorer panes): a
 //     small notice in the area's place with a Try Again that remounts it,
 //     so the rest of the page stays reachable instead of going blank.
+//
+// Code that has not loaded yet cannot come while the browser is offline (docs/specs/007-editor/load-recovery.md
+// "Offline"): such a failure waits for the connection instead, and the area mounts again on its own once the
+// browser is back online. A panel says so, with no Try Again (it could only fail again).
 
 // Closed on purpose: the area is part of a public telemetry token.
 type ErrorArea =
@@ -76,11 +81,17 @@ type Props = {
   children: ReactNode;
 };
 
-export class AreaErrorBoundary extends Component<Props, { failed: boolean }> {
-  override state = { failed: false };
+type State = { failed: boolean; offline: boolean };
 
-  static getDerivedStateFromError() {
-    return { failed: true };
+export class AreaErrorBoundary extends Component<Props, State> {
+  override state: State = { failed: false, offline: false };
+
+  static getDerivedStateFromError(error: unknown): State {
+    return { failed: true, offline: isChunkLoadError(error) && !getOnline() };
+  }
+
+  override componentWillUnmount() {
+    window.removeEventListener('online', this.retry);
   }
 
   override componentDidCatch(error: unknown, info: ErrorInfo) {
@@ -95,13 +106,25 @@ export class AreaErrorBoundary extends Component<Props, { failed: boolean }> {
     if (isChunkLoadError(error)) void recoverInBrowser(error, browserNavigationDeps());
   }
 
-  override componentDidUpdate(prev: Props) {
-    if (this.state.failed && prev.resetKey !== this.props.resetKey) {
-      this.setState({ failed: false });
-    }
+  // A failure in the first render commits as a mount, so both lifecycles wait for the connection.
+  override componentDidMount() {
+    this.waitForOnline(false);
   }
 
-  private readonly retry = () => this.setState({ failed: false });
+  override componentDidUpdate(prev: Props, prevState: State) {
+    this.waitForOnline(prevState.offline);
+    if (this.state.failed && prev.resetKey !== this.props.resetKey) this.retry();
+  }
+
+  private waitForOnline(wasOffline: boolean) {
+    if (this.state.offline === wasOffline) return;
+    if (!this.state.offline) window.removeEventListener('online', this.retry);
+    // Back online before this ran: no `online` event is coming.
+    else if (getOnline()) this.retry();
+    else window.addEventListener('online', this.retry);
+  }
+
+  private readonly retry = () => this.setState({ failed: false, offline: false });
 
   override render() {
     if (!this.state.failed) return this.props.children;
@@ -113,10 +136,19 @@ export class AreaErrorBoundary extends Component<Props, { failed: boolean }> {
           this.props.fallbackClassName ?? ''
         }`}
       >
-        <span>Something went wrong in {AREA_LABEL[this.props.area]}.</span>
-        <Button variant="secondary" size="xs" onClick={this.retry}>
-          Try Again
-        </Button>
+        {this.state.offline ? (
+          <span>
+            You&apos;re offline, so {AREA_LABEL[this.props.area]} couldn&apos;t load. It comes back
+            when you reconnect.
+          </span>
+        ) : (
+          <>
+            <span>Something went wrong in {AREA_LABEL[this.props.area]}.</span>
+            <Button variant="secondary" size="xs" onClick={this.retry}>
+              Try Again
+            </Button>
+          </>
+        )}
       </div>
     );
   }
