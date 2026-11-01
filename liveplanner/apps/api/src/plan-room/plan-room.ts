@@ -11,8 +11,10 @@ import {
   roomGrantStep,
   owesShares,
   ShareSchedule,
+  type ExportCommentsResult,
   type ExportQuery,
   type ExportResult,
+  type ExportTablesResult,
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
@@ -106,6 +108,7 @@ import { anonymisePlan } from './plan-anonymise';
 import { PLAN_OUTBOX, drainOutbox } from './plan-outbox';
 import { RepeatSchedule } from './card-repeats';
 import { exportProjectFile, importProjectFile, type ProjectFileImport } from './project-file';
+import { exportPlanComments, exportPlanTables } from './plan-export';
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { answerPlanRequest, isPlanCreate, type RouteIdentity } from './plan-route';
@@ -628,6 +631,23 @@ export class PlanRoom extends DurableObject<Env> {
     if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
     this.bindPlan(planId);
     return exportProjectFile(this.requireEnv(), planId, query.ifVersion);
+  }
+
+  // The export door's `csv` and `comments` formats (liveworkspace/docs/specs/003-accounts/data-export.md,
+  // plan-export.ts): every board and Sheet as CSV, and every comment thread with its real authors. A plan never
+  // started is not found, and asking does not start it.
+  async exportTables(planId: string): Promise<ExportTablesResult> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
+    this.bindPlan(planId);
+    return exportPlanTables(this.requireEnv(), planId);
+  }
+
+  async exportComments(planId: string): Promise<ExportCommentsResult> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
+    this.bindPlan(planId);
+    return exportPlanComments(this.requireEnv(), planId);
   }
 
   // A new plan from a Drive file (routes/internal-file.ts read it): its content lands as a copy's does, and it

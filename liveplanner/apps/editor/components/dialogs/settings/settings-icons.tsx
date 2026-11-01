@@ -26,7 +26,8 @@ export type SettingsIconId =
   | 'privacy';
 
 // The sub-categories, nested under a top-level category (Panels, Account).
-export type SettingsSubcategoryId = 'collaborate' | 'notifications' | 'tokens' | 'webhooks';
+export type SettingsSubcategoryId =
+  'collaborate' | 'notifications' | 'tokens' | 'webhooks' | 'data';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -54,6 +55,7 @@ const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   notifications: () => <SettingsSharedGlyph id="notifications" />,
   tokens: () => <SettingsSharedGlyph id="tokens" />,
   webhooks: () => <SettingsSharedGlyph id="webhooks" />,
+  data: () => <SettingsSharedGlyph id="data" />,
 };
 
 /** A category's icon in the Settings list: its tile, or a sub-category's glyph. */

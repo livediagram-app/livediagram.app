@@ -146,7 +146,8 @@ export async function parseListSpec(
   if (limit === null) return badRequest('invalid_query');
   const cursor = decodeCursor(params.get('cursor'));
   if (cursor === null) return badRequest('invalid_cursor');
-  const scopes = await teamFilter(env, person, params.get('team'));
+  // The data export's scope is set below, whatever team the query names.
+  const scopes = person.export ? undefined : await teamFilter(env, person, params.get('team'));
   if (scopes instanceof Response) return scopes;
   const spec: ListSpec = { view, limit };
   if (app) spec.app = app;
@@ -154,6 +155,11 @@ export async function parseListSpec(
   if (scopes) spec.scopes = scopes;
   // The Drive mirror lists the person's personal items only, in every view: nothing shared with them, no team's.
   if (person.drive) spec.scopes = [personalScope(person.id)];
+  // The data export lists one scope: the person's personal items, or the one team it named.
+  if (person.export) {
+    spec.view = 'all';
+    spec.scopes = [person.teams[0] ? teamScope(person.teams[0]) : personalScope(person.id)];
+  }
   const folder = params.get('folder');
   if (folder !== null) {
     if (!isId(folder)) return badRequest('invalid_folder');
@@ -185,7 +191,7 @@ export async function parseListSpec(
   const any = params.get('any');
   if (any !== null) {
     // Search's whole reach, links included: not the mirror's to ask.
-    if (any !== '1' || person.drive) return badRequest('invalid_query');
+    if (any !== '1' || person.drive || person.export) return badRequest('invalid_query');
     spec.any = true;
   }
   return spec;

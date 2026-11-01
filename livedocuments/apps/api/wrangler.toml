@@ -208,6 +208,15 @@ name = "EMAIL"
 #
 # Unset = the mirror cannot export or import documents (the two doors take only the index's key).
 
+# DATA_EXPORT_KEY is livedocuments's secret on liveworkspace's data export (liveworkspace/docs/specs/003-accounts/data-export.md
+# "The apps' doors"); the service holds the same value as DATA_EXPORT_KEY_LIVEDOCUMENTS. It opens the internal export
+# door alone, in every format (its `comments` format is the data export's own), nothing else. Never in [vars]:
+#
+#   - Local dev: `DATA_EXPORT_KEY=dev-livedocuments-data-export-key` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put DATA_EXPORT_KEY` (and `--env staging`).
+#
+# Unset = the data export cannot read documents (the export door's `comments` format takes only the index's key).
+
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedocuments-api-staging` via

@@ -44,6 +44,10 @@ const TokensPanel = lazy(() => import('./TokensPanel').then((m) => ({ default: m
 const WebhooksPanel = lazy(() =>
   import('./webhooks/WebhooksPanel').then((m) => ({ default: m.WebhooksPanel })),
 );
+// Your Data's (Download Your Data), the same way.
+const DataExportPanel = lazy(() =>
+  import('./data-export/DataExportPanel').then((m) => ({ default: m.DataExportPanel })),
+);
 
 // The apps' phone layout: narrower than `sm`, or a touch screen under 500px tall (each editor's
 // PHONE_MEDIA_QUERY).
@@ -126,6 +130,8 @@ export default function SiteSettingsDialog({
               tokensHref: workspaceHref('/explorer?settings=tokens'),
               // Webhooks are the index's, which the page reaches with the person's token on either address.
               renderWebhooks: () => <LazyCell cell="webhooks" flush panel={<WebhooksPanel />} />,
+              // Downloads are the accounts session's, as the tokens are.
+              dataExportHref: workspaceHref('/explorer?settings=data'),
             }
           : {
               identity,
@@ -139,6 +145,7 @@ export default function SiteSettingsDialog({
               },
               renderTokens: () => <LazyCell cell="tokens" panel={<TokensPanel />} />,
               renderWebhooks: () => <LazyCell cell="webhooks" flush panel={<WebhooksPanel />} />,
+              renderDataExport: () => <LazyCell cell="data" flush panel={<DataExportPanel />} />,
             },
     [identity, guestSignIn, profile, cloudSync],
   );

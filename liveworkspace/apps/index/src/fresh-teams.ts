@@ -36,7 +36,7 @@ function readerFor(env: Env): TeamReader | null {
 // checked (the app asks the same way, @liveworkspace/index-app teams.ts), and the Drive mirror reaches no team.
 export async function inTeamNow(env: Env, person: Person, teamId: string): Promise<boolean> {
   if (person.teams.includes(teamId)) return true;
-  if (person.kind !== 'account' || person.app || person.drive) return false;
+  if (person.kind !== 'account' || person.app || person.drive || person.export) return false;
   const claimed = person.teams.map((id) => ({ id, name: '', role: 'member' as const }));
   const teams = await access.teamsOf(readerFor(env), person.id, claimed, teamId);
   for (const t of teams) if (!person.teams.includes(t.id)) person.teams.push(t.id);

@@ -270,6 +270,15 @@ name = "EMAIL"
 #
 # Unset = the mirror cannot export or import canvases (the two doors take only the index's key).
 
+# DATA_EXPORT_KEY is livediagram's secret on liveworkspace's data export (liveworkspace/docs/specs/003-accounts/data-export.md
+# "The apps' doors"); the service holds the same value as DATA_EXPORT_KEY_LIVEDIAGRAM. It opens the internal export
+# door alone, in every format (its `comments` format is the data export's own), nothing else. Never in [vars]:
+#
+#   - Local dev: `DATA_EXPORT_KEY=dev-livediagram-data-export-key` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put DATA_EXPORT_KEY` (and `--env staging`).
+#
+# Unset = the data export cannot read canvases (the export door's `comments` format takes only the index's key).
+
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-api-staging` via

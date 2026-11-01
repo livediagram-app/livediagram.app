@@ -448,7 +448,9 @@ secret, the service's `DRIVE_KEY_<APP>`) on exactly these two routes, alongside 
   (`413 too_large`).
 
 `@liveworkspace/drive` holds the four kinds, MIME types and extensions (`APP_FILE_FORMATS`), so the service and every
-app name them from one place.
+app name them from one place. The service makes these calls, and where an item opens, through
+`@liveworkspace/app-doors` (`createAppDoors`), the one client of the apps' internal doors, which the data export
+([data-export.md](../003-accounts/data-export.md#the-apps)) uses too: each caller hands it its own origins and keys.
 
 ## Limits and cost
 

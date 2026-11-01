@@ -15,6 +15,7 @@ import {
   PRIVACY_ROWS,
   PUSH_ROWS,
   readAccountToggle,
+  DATA_EXPORT_CATEGORY,
   WEBHOOKS_CATEGORY,
   type AccountToggle,
 } from '@liveworkspace/settings/account';
@@ -52,6 +53,10 @@ export interface AccountSection {
   // person's own session (liveworkspace.app, an app's Explorer), else a link to where they are.
   renderWebhooks?: () => ReactNode;
   webhooksHref?: string;
+  // Download Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): drawn here where the host has
+  // the person's session (liveworkspace.app), else a link to where it is.
+  renderDataExport?: () => ReactNode;
+  dataExportHref?: string;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
   // Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where the deployment offers Drive and the person is signed
@@ -87,6 +92,8 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
     tokensHref,
     renderWebhooks,
     webhooksHref,
+    renderDataExport,
+    dataExportHref,
     emails = true,
   } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
@@ -194,6 +201,41 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
       ),
       ...parent,
       rows: [webhooks],
+    });
+  }
+  const data: SettingsRow | null = renderDataExport
+    ? {
+        kind: 'custom',
+        key: 'dataExport',
+        label: DATA_EXPORT_CATEGORY.label,
+        description: DATA_EXPORT_CATEGORY.description,
+        keywords: DATA_EXPORT_CATEGORY.keywords,
+        section: DATA_EXPORT_CATEGORY.label,
+        render: renderDataExport,
+      }
+    : dataExportHref
+      ? {
+          ...linkOut(
+            'dataExport',
+            DATA_EXPORT_CATEGORY.label,
+            DATA_EXPORT_CATEGORY.description,
+            dataExportHref,
+            'Open',
+          ),
+          keywords: DATA_EXPORT_CATEGORY.keywords,
+        }
+      : null;
+  if (data) {
+    categories.push({
+      id: 'data',
+      label: DATA_EXPORT_CATEGORY.label,
+      icon: (
+        <SettingsSubcategoryGlyph>
+          <SettingsSharedGlyph id="data" />
+        </SettingsSubcategoryGlyph>
+      ),
+      ...parent,
+      rows: [data],
     });
   }
   categories.push(

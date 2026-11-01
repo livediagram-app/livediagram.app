@@ -20,6 +20,7 @@
     "@better-auth/oauth-provider": "1.7.12",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/brand": "workspace:^",
+    "@liveworkspace/data-export": "workspace:^",
     "@liveworkspace/email": "workspace:*",
     "@liveworkspace/index-client": "workspace:^",
     "@liveworkspace/migration": "workspace:^",

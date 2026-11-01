@@ -48,6 +48,18 @@ import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 const isId = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= MEDIA_ID_MAX;
 
+// What the data export's service names itself in X-Media-App (liveworkspace/docs/specs/006-media/media.md).
+export const EXPORT_CALLER = 'export';
+
+// Whether a request is the data export's service with its key (MEDIA_KEY_EXPORT).
+async function isExportCaller(request: Request, env: Env): Promise<boolean> {
+  if (request.headers.get(MEDIA_APP_HEADER) !== EXPORT_CALLER) return false;
+  const expected = env.MEDIA_KEY_EXPORT?.trim();
+  const token = request.headers.get('Authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
+  if (!expected || !token) return false;
+  return timingSafeEqual(token, expected);
+}
+
 // The app this request speaks for, or null when it doesn't carry that app's key.
 async function callerApp(request: Request, env: Env): Promise<MediaApp | null> {
   const app = request.headers.get(MEDIA_APP_HEADER);
@@ -70,12 +82,58 @@ async function readJson(request: Request): Promise<unknown> {
   }
 }
 
+// An image's bytes, with whose it is: for an app to serve to someone it has let in, or for the data export.
+async function imageBytes(env: Env, bucket: R2Bucket, id: string): Promise<Response> {
+  const row = await getImage(env, id);
+  if (!row) return notFound();
+  const object = await bucket.get(id);
+  if (!object) return notFound();
+  return new Response(object.body, {
+    headers: {
+      'Content-Type': row.content_type,
+      'Content-Length': String(object.size),
+      [MEDIA_OWNER_HEADER]: row.owner,
+      'X-Content-Type-Options': 'nosniff',
+      // The bytes behind an id never change, but who may see them does: the app sets its own.
+      'Cache-Control': 'private, no-store',
+    },
+  });
+}
+
+// The data export's two reads (liveworkspace/docs/specs/006-media/media.md): an owner's gallery and an image's bytes.
+// Anything else answers as missing.
+async function handleExportReads(
+  request: Request,
+  env: Env,
+  url: URL,
+  path: string,
+): Promise<Response> {
+  if (!env.MEDIA) return unavailable();
+  if (request.method !== 'GET') return notFound();
+  const segments = path.split('/').filter(Boolean);
+  if (segments[0] !== 'images') return notFound();
+  if (segments.length === 1) {
+    const owner = url.searchParams.get('owner');
+    if (!isId(owner)) return badRequest('invalid_owner');
+    return json({ images: await listImages(env, owner) });
+  }
+  let id: string;
+  try {
+    id = decodeURIComponent(segments[1]!);
+  } catch {
+    return notFound();
+  }
+  if (segments.length !== 3 || segments[2] !== 'bytes' || !isId(id)) return notFound();
+  return imageBytes(env, env.MEDIA, id);
+}
+
 export async function handleApp(
   request: Request,
   env: Env,
   url: URL,
   path: string,
 ): Promise<Response> {
+  if (await isExportCaller(request, env)) return handleExportReads(request, env, url, path);
   const app = await callerApp(request, env);
   if (!app) return unauthorized();
   if (!env.MEDIA) return unavailable();
@@ -90,7 +148,6 @@ export async function handleApp(
   }
   const method = request.method;
   const owner = url.searchParams.get('owner');
-
   if (segments[0] === 'images') {
     // GET /app/images?owner=: the owner's gallery, from every app.
     if (segments.length === 1 && method === 'GET') {
@@ -111,20 +168,7 @@ export async function handleApp(
     }
     // GET /app/images/<id>/bytes: the bytes, for the app to serve to someone it has let in.
     if (segments.length === 3 && segments[2] === 'bytes' && method === 'GET') {
-      const row = await getImage(env, id);
-      if (!row) return notFound();
-      const object = await bucket.get(id);
-      if (!object) return notFound();
-      return new Response(object.body, {
-        headers: {
-          'Content-Type': row.content_type,
-          'Content-Length': String(object.size),
-          [MEDIA_OWNER_HEADER]: row.owner,
-          'X-Content-Type-Options': 'nosniff',
-          // The bytes behind an id never change, but who may see them does: the app sets its own.
-          'Cache-Control': 'private, no-store',
-        },
-      });
+      return imageBytes(env, bucket, id);
     }
     // DELETE /app/images/<id>?owner=: its owner removes it from their gallery.
     if (segments.length === 2 && method === 'DELETE') {

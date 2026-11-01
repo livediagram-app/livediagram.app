@@ -4,7 +4,7 @@
 import type { Tab } from '@liveplanner/project';
 import { boardCsvEntryOf } from '@/components/plan/board-csv-registry';
 import { sheetSettingsEntryOf } from '@/components/sheets/sheet-settings-registry';
-import { sheetCsvText } from '@/components/sheets/sheet-csv';
+import { sheetCsvText } from '@liveplanner/sheets';
 
 export function tabCsvText(tab: Pick<Tab, 'kind' | 'elements'>): string {
   const shape = tab.kind === 'board' ? 'plan-board' : tab.kind === 'sheet' ? 'plan-sheet' : null;

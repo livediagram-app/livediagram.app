@@ -12,6 +12,7 @@ import type { DesignFileImport } from './design-room/design-file';
 import type { RouteIdentity } from './design-room/design-route';
 import type {
   Copier,
+  ExportCommentsResult,
   ExportQuery,
   ExportResult,
   ShareAnswer,
@@ -40,6 +41,9 @@ export type DesignRoomClient = {
   // made from one (the import door).
   exportFile(query: ExportQuery): Promise<ExportResult>;
   importFile(file: DesignFileImport): Promise<void>;
+  // Every comment thread in the design, its authors unredacted (the export door's `comments` format, for the data
+  // export: liveworkspace/docs/specs/003-accounts/data-export.md).
+  exportComments(): Promise<ExportCommentsResult>;
   // Whether the design holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // Of `ids`, the photo blobs this tab holds, with what they are: the source side of an adoption into another
@@ -87,6 +91,7 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     exportImage: (query) => room.exportImage(designId, query),
     exportFile: (query) => room.exportFile(designId, query),
     importFile: (file) => room.importFile(designId, file),
+    exportComments: () => room.exportComments(designId),
     hasTab: (tabId) => room.hasTab(designId, tabId),
     heldBlobs: (tabId, ids) => room.heldBlobs(designId, tabId, ids),
     servesImage: (imageId, onlyTabId) => room.servesImage(designId, imageId, onlyTabId),
@@ -113,6 +118,7 @@ export type DesignRoomRpc = {
   exportImage(designId: string, query: ExportQuery): Promise<ExportResult>;
   exportFile(designId: string, query: ExportQuery): Promise<ExportResult>;
   importFile(designId: string, file: DesignFileImport): Promise<void>;
+  exportComments(designId: string): Promise<ExportCommentsResult>;
   hasTab(designId: string, tabId: string): Promise<boolean>;
   heldBlobs(designId: string, tabId: string, ids: string[]): Promise<PhotoBlobMeta[]>;
   servesImage(designId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;

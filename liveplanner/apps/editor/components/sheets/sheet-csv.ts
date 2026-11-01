@@ -1,11 +1,10 @@
 // CSV in and out of a sheet (docs/specs/029-sheets/sheet.md "CSV"): Download CSV saves every row and column up to the
-// last filled cell, each value as shown; Import CSV reads a file into the sheet (replacing it, or at the
-// selection), each value read as typed.
+// last filled cell, each value as shown (@liveplanner/sheets sheetCsvText, which the api's data export writes too);
+// Import CSV reads a file into the sheet (replacing it, or at the selection), each value read as typed.
 import {
-  displayValue,
   parseCsv,
   pasteExternal,
-  toCsv,
+  sheetCsvText,
   clearRanges,
   type GridRange,
   type Sheet,
@@ -17,20 +16,6 @@ import { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';
 import type { SheetController } from './sheet-controller';
 
 // The file Download CSV saves: made safe for a spreadsheet to open (no field runs as a formula, sheet.md "CSV").
-export function sheetCsvText(wb: Workbook, sheet: Sheet): string {
-  const ext = wb.extent(sheet.id);
-  const rows: string[][] = [];
-  for (let r = 0; r < ext.rows; r++) {
-    const row: string[] = [];
-    for (let c = 0; c < ext.cols; c++) {
-      const cell = sheet.cells.get(`${sheet.layout.rows[r]}:${sheet.layout.cols[c]}`);
-      row.push(displayValue(wb.value(sheet.id, r, c), cell?.format, wb.locale).text);
-    }
-    rows.push(row);
-  }
-  return toCsv(rows, { safe: true });
-}
-
 export function downloadSheetCsv(wb: Workbook, sheet: Sheet): void {
   const name = `${sheet.title.replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'Sheet'}.csv`;
   downloadBlob(new Blob([sheetCsvText(wb, sheet)], { type: 'text/csv;charset=utf-8' }), name);

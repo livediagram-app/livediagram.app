@@ -1,4 +1,4 @@
-import { WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
+import { DATA_EXPORT_CATEGORY, WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import {
   HIDE_CURSORS_HINT,
@@ -1385,6 +1385,26 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: WEBHOOKS_CATEGORY.label,
         description: WEBHOOKS_CATEGORY.description,
         note: WEBHOOKS_CATEGORY.signInNote,
+        signIn: true,
+        available: (ctx) => !ctx.signedIn,
+      },
+    ],
+  },
+  // Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): downloading everything an account owns,
+  // made in liveworkspace's Settings. Signed in, the Account section's Your Data links there; a guest gets this
+  // stand-in, as for Webhooks.
+  {
+    id: 'data',
+    label: DATA_EXPORT_CATEGORY.label,
+    parent: 'account',
+    rows: [
+      {
+        kind: 'note',
+        key: 'dataExportSignIn',
+        keywords: DATA_EXPORT_CATEGORY.keywords,
+        label: DATA_EXPORT_CATEGORY.label,
+        description: DATA_EXPORT_CATEGORY.description,
+        note: DATA_EXPORT_CATEGORY.signInNote,
         signIn: true,
         available: (ctx) => !ctx.signedIn,
       },

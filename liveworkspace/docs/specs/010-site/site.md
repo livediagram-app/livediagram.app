@@ -15,6 +15,7 @@ apps/telemetry     the telemetry API, /api/telemetry/* (telemetry.md)
 apps/community     the Community API, /api/community/* (community.md)
 apps/status        the hourly status checks and their history, /api/status* (status.md)
 apps/drive         Google Drive sync for every app, /api/drive* (drive.md)
+apps/export        Download Your Data, behind accounts only: no route of its own (003-accounts/data-export.md)
 apps/redirect      the bare liveworkspace.app's page loads, one 301 to www. ("Hosting")
 ```
 
@@ -375,7 +376,7 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link, the old
   `/account/settings` and `/account/tokens`, a Search result) opens the Settings panel here, in place, once the
   page knows who is here (`settingsOpening` in `lib/explorer/host.ts`): `notifications`, `profile` (or `account`),
-  `tokens`, `webhooks`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
+  `tokens`, `webhooks`, `data`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
   (`liveplanner`) that app's side, `teams` goes to the Invites, and anything else (an editor's own category) the
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
@@ -507,7 +508,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   address a link to the same category on liveworkspace.app, since tokens are the session's), **Webhooks** beside
   them (`components/settings/webhooks/`, its own chunk; on liveworkspace.app and on an app's address alike, since
   both reach the index with the person's token; an editor's Settings links to it,
-  [webhooks.md](../004-index/webhooks.md#managing-them)), then
+  [webhooks.md](../004-index/webhooks.md#managing-them)), **Your Data** beside those (downloading everything the
+  person owns, or a team they run owns, as one zip, `components/settings/data-export/`, its own chunk; on an app's
+  address and in an editor a link to the same category on liveworkspace.app, since its doors are the session's,
+  [data-export.md](../003-accounts/data-export.md#settings)), then
   **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
   something in an editor (UI scale, panel opacity and the rest) are left to that editor's own rows.
@@ -572,6 +576,22 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     handed over); and in an editor's own Settings a guest finds a **Webhooks** category under Account holding
     one stand-in row, "Sign in to add webhooks." with the **Sign In** link, as its API Tokens row says "Sign in to
     create API tokens." The index refuses a guest's token too (403 `webhooks_need_account`).
+- **Your Data** is one card in the same frame ([data-export.md](../003-accounts/data-export.md#settings)):
+  - **The top** says in a line what a download holds and names the apps it covers by their logos (each app's Living
+    Prism and wordmark).
+  - **Your Data** is a row with the export's state: **Download All My Data** with none; a progress bar and what it is
+    doing ("Adding items: 12 of 48", "Adding images", "Finishing") while it is built, with the line that an email
+    follows; ready, its size, when it was made and when the link lapses, with **Download** and **Make a New One**;
+    failed, why in a red note with **Try Again**; capped, an amber note of how many items were left out.
+  - **Your Teams**, for someone who runs a team: one row per team they are an admin of, the same states, with
+    **Download Team Data**. A section only someone who runs a team sees.
+  - It reads `GET /api/account/data-export` when first shown, and again every 3 seconds while an export is being
+    built and the panel is open, never otherwise. A refused emailed link lands here with an amber note saying why
+    (the link lapsed, it is for another account, or there is no file any more). Loading shows the card's skeleton;
+    a failed read says why with **Try Again**.
+  - **Signed in only, as API Tokens are.** On liveworkspace.app the session's; on an app's address and in an editor,
+    a link to liveworkspace.app's Your Data; a guest finds the editor's stand-in row, "Sign in to download your
+    data." with **Sign In**.
 - **The Account section shows once.** Each editor's own Settings has Account, Notifications, API Tokens, Privacy
   and Accessibility categories of its own, and each app's catalogue an Account › Notifications. In All they are
   folded into the Account section rather than listed again under the app: the app's rows the Account section

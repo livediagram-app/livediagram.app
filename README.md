@@ -5,8 +5,8 @@ livedesign, plus what they share.
 
 ```
 packages/        shared by every product (@liveworkspace/*)
-liveworkspace/   the platform: the liveworkspace.app site, its services (accounts, index, drive, media,
-                 community, telemetry, status), the migrate tool, and its specs (liveworkspace/docs/specs)
+liveworkspace/   the platform: the liveworkspace.app site, its services (accounts, index, drive, export,
+                 media, community, telemetry, status), the migrate tool, and its specs (liveworkspace/docs/specs)
 livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics

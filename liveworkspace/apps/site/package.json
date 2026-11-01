@@ -31,6 +31,7 @@
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/community": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
+    "@liveworkspace/data-export": "workspace:^",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",

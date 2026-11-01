@@ -49,3 +49,32 @@ describe('accountCategories, Webhooks', () => {
     expect(webhooksOf(base)).toBeUndefined();
   });
 });
+
+// Its Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): the same, after Webhooks.
+const dataOf = (section: Parameters<typeof accountCategories>[0]) =>
+  accountCategories(section).find((c) => c.id === 'data');
+
+describe('accountCategories, Your Data', () => {
+  it('draws the host’s own downloads in the panel when it has them, after Webhooks', () => {
+    const render = () => null;
+    const section = {
+      ...base,
+      renderWebhooks: render,
+      renderDataExport: render,
+      dataExportHref: '/x',
+    };
+    const row = dataOf(section)?.rows[0];
+    expect(row).toMatchObject({ kind: 'custom', key: 'dataExport', label: 'Your Data' });
+    expect(row?.kind === 'custom' && row.render).toBe(render);
+    const ids = accountCategories(section).map((c) => c.id);
+    expect(ids.indexOf('data')).toBe(ids.indexOf('webhooks') + 1);
+  });
+
+  it('links to them where the host has none of its own, and leaves the category out with neither', () => {
+    expect(dataOf({ ...base, dataExportHref: '/explorer?settings=data' })?.rows[0]).toMatchObject({
+      kind: 'custom',
+      key: 'dataExport',
+    });
+    expect(dataOf(base)).toBeUndefined();
+  });
+});

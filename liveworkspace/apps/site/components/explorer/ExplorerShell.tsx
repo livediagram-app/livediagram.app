@@ -75,6 +75,7 @@ import {
   rememberApp,
   RETIRED_TARGETS,
   retiredTarget,
+  EXPORT_LINK_PARAM,
   SECTION_PARAM,
   SETTINGS_PARAM,
   settingsOpening,
@@ -523,6 +524,7 @@ export function ExplorerShell() {
     if (!url.searchParams.has(SETTINGS_PARAM) && !url.searchParams.has(SECTION_PARAM)) return;
     url.searchParams.delete(SETTINGS_PARAM);
     url.searchParams.delete(SECTION_PARAM);
+    url.searchParams.delete(EXPORT_LINK_PARAM);
     window.history.replaceState(null, '', url);
   }, []);
 

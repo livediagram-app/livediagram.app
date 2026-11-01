@@ -15,8 +15,6 @@ import {
   lucideUsers,
 } from '@liveworkspace/icons/lucide';
 import type { WebhookKind } from '@liveworkspace/index-client';
-import { listedApps } from '@/lib/apps';
-import { AppLogo } from '@/components/landing/AppLogo';
 import type { EventGroupId } from './webhooks-api';
 
 // Settings › Webhooks' marks (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks): each destination's
@@ -74,22 +72,5 @@ export function GroupGlyph({ id }: { id: EventGroupId }) {
   return <Glyph />;
 }
 
-// The apps, by the brand package's name, as the home page lists them.
-const APPS = new Map(listedApps().map((app) => [app.id.replace(/\.app$/, ''), app]));
-
-/** An app named by its logo and wordmark, at the size of the words around it, never as plain text. */
-export function AppName({ app }: { app: string }) {
-  const listed = APPS.get(app);
-  return listed ? <AppLogo app={listed} size="xs" /> : <span>{app}</span>;
-}
-
-/** Every app whose work a webhook hears about, by their logos. */
-export function EveryAppName() {
-  return (
-    <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
-      {[...APPS.values()].map((app) => (
-        <AppLogo key={app.id} app={app} size="xs" />
-      ))}
-    </span>
-  );
-}
+// The apps named by their logos, shared with Your Data.
+export { AppName, EveryAppName } from '../app-names';

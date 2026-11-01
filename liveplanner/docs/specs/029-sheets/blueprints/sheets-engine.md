@@ -78,6 +78,7 @@ src/selection.ts           Selection ops: move, extend, jump (Ctrl+arrows), sele
 src/fill.ts                series detection and continuation
 src/clipboard.ts           SheetClip, clipFromRange, clipToTsv, clipToHtml, readPastedHtml, readPastedText
 src/csv.ts                 parseCsv(text, sep?) (RFC 4180), toCsv(rows)
+src/sheet-csv.ts           sheetCsvText(workbook, sheet): Download CSV's text (the editor's, and the api's data export)
 src/sort.ts                sort key order, sorting rows and ranges
 src/filter.ts              FilterCondition, conditionMatches, filteredOutRows, columnValueCounts
 src/find.ts                findMatches(workbook, sheetId, query, options), replaceAll(...)
