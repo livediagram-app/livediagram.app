@@ -107,6 +107,13 @@ describe('the post page', () => {
     answer = () => new Response(null, { status: 404 });
     render(<PostView />, { wrapper });
     expect(await screen.findByText("This canvas isn't in the Community any more.")).toBeTruthy();
+    // The page's one heading, as the post's title is when it is there.
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: "This canvas isn't in the Community any more.",
+      }),
+    ).toBeTruthy();
     expect(h.telemetry.openedPost).not.toHaveBeenCalled();
   });
 

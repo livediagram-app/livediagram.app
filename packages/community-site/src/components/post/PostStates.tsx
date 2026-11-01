@@ -11,6 +11,8 @@ export function PostNotFound() {
   return (
     <EmptyState
       icon={<PeopleIcon aria-hidden />}
+      // All the page says: its heading, as the post's title is when it is there.
+      heading="h1"
       title={`This ${words.noun} isn't in the Community any more.`}
       description="It may have been removed by its author. There's plenty more to explore."
     >
