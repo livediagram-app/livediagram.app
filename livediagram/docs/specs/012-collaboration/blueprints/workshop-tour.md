@@ -83,7 +83,7 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 
 | Rule                                                                           | Test                                                                         |
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| On the button in Workshop, never starting on its own; stays on offer once seen | `WorkshopTourHost.test.tsx`                                                  |
+| On the button in Workshop, never starting on its own; off it once seen         | `WorkshopTourHost.test.tsx`                                                  |
 | Never starts beside another tour on screen                                     | `WorkshopTourHost.test.tsx`                                                  |
 | Rerun in Workshop only                                                         | `WorkshopTourHost.test.tsx`                                                  |
 | Skip and completion mark it seen and send telemetry; leaving ends as skipped   | `WorkshopTourHost.test.tsx`                                                  |

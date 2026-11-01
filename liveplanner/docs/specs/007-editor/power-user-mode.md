@@ -22,8 +22,9 @@ Switching the mode **on** writes these values, once:
 | Minimal chrome | `minimalChrome` | on    |
 
 The Plan tour records each track taken (`planTourTracks`); its seen flag counts every track only while the
-mode is on, so switching it off gives back every track not yet taken. Marking a tour seen only changes its Settings
-row and which Plan track the footer's Start Tour button names: the button stays on offer. The Diagram, Pages and element tours'
+mode is on, so switching it off gives back every track not yet taken. Marking a tour seen turns its Settings row off
+and takes it off the footer's Start Tour button until the row is on again, so the preset leaves no tour on the
+button. The Diagram, Pages and element tours'
 rows went with what they toured ([Editor tours](editor-tour.md), [Element tours](element-tours.md)).
 
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone

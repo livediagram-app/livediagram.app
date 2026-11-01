@@ -77,7 +77,7 @@ its own (no settle delay, no arming).
 
 | State   | Event                                                        | Guard                                                            | Effect                                                                               |
 | ------- | ------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| idle    | render                                                       | usable, can edit, tab unlocked, has plan work                    | publish `{ name: 'Boards' \| 'Sheets', rank: TOUR_OFFER_RANK.mode, start, onShown }` |
+| idle    | render                                                       | usable, can edit, tab unlocked, has plan work                    | publish `{ name: 'Boards' \| 'Sheets', rank: TOUR_OFFER_RANK.mode, start, onShown, seen }` |
 | idle    | render                                                       | otherwise                                                        | publish `null` (the button names another tour, or is not drawn)                      |
 | idle    | the button first shows this offer in a page load (`onShown`) | none                                                             | `Opened` · `PlanTourOffer`                                                           |
 | idle    | a press (`start`) or relaunch event                          | not active, no other tour, `offerTrack` set (relaunch: on offer) | fix the subject, `tourTrack = offerTrack`, `start()` (sends `Started` · `PlanTour`)  |
@@ -87,7 +87,9 @@ its own (no settle delay, no arming).
 "Usable": `hydrated && !anyWelcomeOpen && !isReadOnly && !embedMode`. "No other tour": `activeTour()` is null or
 `'plan'`. "Has plan work": a `plan-board` or `plan-sheet` shape on `activeTab.elements`. `offerTrack`: of the tracks
 with work on the tab (Boards first), the first not `planTrackSeen` (in `planTourTracks`, or every track when
-`planTourSeen` and Power user mode are both on), else the first; so a taken tour stays on offer.
+`planTourSeen` and Power user mode are both on), else the first. `seen`: every track with work on the tab is
+`planTrackSeen`; `useOfferTour` then withholds the offer, so a taken tour is off the button until a Settings row
+forgets it. A press marks `offerTrack` taken at once, as the end does.
 
 At a press: `subject = { boardId: visiblePlanWork(boardIds, boardRoot), sheetId: visiblePlanWork(sheetIds, sheetRoot) }`
 (of every board and Sheet on the tab: the one inside `[data-canvas-cover]`, maximised or filling its tab, else the
@@ -152,7 +154,7 @@ another project is kept. Nothing writes a record any more.
   `planTourSeen-boards`, `planTourSeen-sheets` and `planTourSeen-dashboards`, labels **Boards Tour**, **Sheets Tour**
   and **Dashboards Tour**. A track's row reads on while `!planTrackSeen(p, track)`; it writes `planTourSeen: false`
   and `planTourTracks` = the tracks seen in `p` (the single flag folded in) with its own track added (off) or removed
-  (on). The rows only record: the button stays on offer however they read. Help articles `planTour` (Boards, Sheets) and `planDashboards` (Dashboards); events
+  (on). A row on puts its track back on the button (the host's `seen` reads the same `planTrackSeen`). Help articles `planTour` (Boards, Sheets) and `planDashboards` (Dashboards); events
   `{ on: 'BoardsTourSeenOff', off: 'BoardsTourSeenOn' }`, `{ on: 'SheetsTourSeenOff', off: 'SheetsTourSeenOn' }` and
   `{ on: 'DashboardsTourSeenOff', off: 'DashboardsTourSeenOn' }`. `SettingsDialog`'s close relaunches when a track is
   owed that was not owed at open; the host starts the tour then only if it is on offer.

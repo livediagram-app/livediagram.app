@@ -33,8 +33,10 @@ Sankey Tour**, **Start Layer Stack Tour**, **Start Hub and Spoke Tour** (`tourNa
   - exactly one element is selected, of a toured kind;
   - the person may edit it (for a Sankey, `canEditSankey`: an Editor, on an unlocked diagram);
   - the editor is usable: hydrated, no welcome overlay, no start panel open, not an embed, not on a phone.
-- **Whether taken or not.** A tour stays on offer after it has been taken: selecting the element again and pressing
-  the button reruns it. Deselecting takes it off the button, and the mode's own tour (Pages) comes back.
+- **Gone once taken, back from Settings.** Starting an element's tour takes that kind off the button: selecting
+  another element of the kind offers the mode's own tour (Pages) instead, if a track is still owed, or no button.
+  Its switch in Settings' **Show Me** section (below) puts it back. Until 1 November 2026 a taken element tour stayed
+  on the button for good (Work Tracker #177). Deselecting takes it off the button, and the mode's own tour comes back.
 - **On a phone** (narrower than 640px, or a phone held sideways: `useIsMobileViewport`) no element tour is on offer:
   the button offers the mode's tour, if any.
 - **A press** starts the tour on its first step; there is no welcome card. A press while another tour is on screen
@@ -43,8 +45,8 @@ Sankey Tour**, **Start Layer Stack Tour**, **Start Hub and Spoke Tour** (`tourNa
 ## Remembering who has taken it
 
 - A synced user preference, `elementTourKinds`, lists the toured kinds whose tour has been started, so the record
-  follows the account ([User preferences](user-preferences.md)). It feeds the Settings rows only; it never
-  hides the button.
+  follows the account ([User preferences](user-preferences.md)). It feeds the Settings rows and hides that kind's
+  tour from the Start Tour button until its switch is turned on again.
 - `elementToursSeen`, written only by [Power user mode](power-user-mode.md)'s preset, counts every kind as taken
   while the mode is on, as `pagesTourSeen` does for its kinds.
 
@@ -55,8 +57,8 @@ Settings' **Tours** category holds element tours in their own section, **Show Me
 how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show Me on Every Element**, one switch
 over them all ("Every element’s Show Me at once": on while any kind is untaken; off marks every kind taken, on
 forgets every record), with one switch per toured kind nested beneath it, named for the element alone: **Sankey
-Diagram**, linking the Sankey Diagram article. On means not yet taken. A switch changes the record only: the
-tour is on the Start Tour button whenever its element is selected, either way. The accordion opens on its own when
+Diagram**, linking the Sankey Diagram article. On means not yet taken. On puts the kind's tour back on the
+Start Tour button whenever its element is selected; off takes it off the button. The accordion opens on its own when
 Settings is opened on one of its rows (a search result) or on the section. Power user mode's readout lists the
 switch over them all as **Show Me on Every Element**.
 

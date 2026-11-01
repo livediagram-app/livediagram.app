@@ -236,11 +236,11 @@ type UserPreferences = {
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
   // The page kinds whose Pages tour track has been taken (completed or skipped). Feeds Settings' row per kind (Logo Tour, ...), which adds or removes its own kind, and which page a
-  // Start Pages Tour press prefers; it never hides the button.
+  // Start Pages Tour press prefers; the button offers the tour only while a kind on the tab is not in it.
   pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started
   // (a press of Start Tour). Surfaced in Settings as Tours › Show Me, one switch
-  // per kind (inverted); it never hides the Start Tour button.
+  // per kind (inverted); a kind in it is off the Start Tour button.
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as taken while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
@@ -674,7 +674,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it runs and a **Learn more** to its article, under
   one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
-  **Start Tour** button, immediately left of Search, and stays there once taken ([Pages tour](pages-tour.md)).
+  **Start Tour** button, immediately left of Search, and leaves it once taken until its switch here is turned back on ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
   tour when it is on offer right now. (The note's words, and the Show Me section's, say tours offer themselves once; none
   does.) A tour is not an accessibility setting, so the rows are not under Accessibility. Every switch is inverted: on means "not taken yet", the
@@ -694,7 +694,7 @@ and the dialog stays as the one complete, browsable index of them.
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
   as Pages Tours is (`tourTracksSwitch`) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
-  need no relaunch: the Start Tour button offers one whenever its element is selected. A category may mark any section
+  need no relaunch: switched back on, the Start Tour button offers one whenever its element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 
   **Toggle groups.** Several related switches that share one description are
