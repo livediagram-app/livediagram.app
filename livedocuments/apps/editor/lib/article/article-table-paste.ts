@@ -5,6 +5,7 @@
 import { Fragment, Slice } from 'prosemirror-model';
 import type { EditorView } from 'prosemirror-view';
 import { __pastedCells, isInTable } from 'prosemirror-tables';
+import { parseInert } from '@livedocuments/ui/trusted-types';
 import {
   MAX_ARTICLE_TABLE_COLS,
   MAX_ARTICLE_TABLE_ROWS,
@@ -168,7 +169,7 @@ function rebuildTable(table: HTMLTableElement): void {
  *  (its own table cells) keeps its rows and only has its cells' blocks made lines. */
 export function normalisePastedTables(html: string): string {
   if (!/<table[\s>]/i.test(html)) return html;
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = parseInert(html, 'text/html');
   const fromEditor = doc.querySelector('[data-pm-slice]') !== null;
   const tables = Array.from(doc.querySelectorAll('table')).filter(
     (t) => !t.parentElement?.closest('table'),
