@@ -434,6 +434,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const rights: TableRights = {
       editable: isEditable,
       reshape: () => latest.current.reshape !== false,
+      commit: () => {
+        flush();
+      },
     };
     const bridge: SlashBridge = {
       onChange: (s, v) => {
