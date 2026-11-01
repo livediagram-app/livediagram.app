@@ -502,7 +502,12 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (making a token, seeing its
   secret once with room to copy it, and revoking one, the AI tools connected in an app among them,
   `components/settings/TokensPanel.tsx`, its own chunk fetched when the category is first shown; on an app's
-  address a link to the same category on liveworkspace.app, since tokens are the session's), then
+  address a link to the same category on liveworkspace.app, since tokens are the session's), **Webhooks** beside
+  them (adding a webhook for your own items or a team you run, as a plain HTTPS endpoint, a Slack channel or a
+  Microsoft Teams channel, its signing secret shown once, Send Test, pausing, resuming and deleting, and each
+  one's recent deliveries, `components/settings/webhooks/`, its own chunk; on liveworkspace.app and on an app's
+  address alike, since both reach the index with the person's token; an editor's Settings links to it,
+  [webhooks.md](../004-index/webhooks.md)), then
   **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
   something in an editor (UI scale, panel opacity and the rest) are left to that editor's own rows.

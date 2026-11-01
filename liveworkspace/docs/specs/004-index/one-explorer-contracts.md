@@ -221,6 +221,10 @@ holds for that person:
   `anonymiseJson`). The notices go when the app confirms. An app that answers anything else is asked
   again an hour later, and given up on after a week.
 
+Their webhooks ([webhooks.md](webhooks.md)) go too: those for their own items, and those of a team that closed with
+the account, are deleted; those of a team that outlives them are paused, their creator `deleted`, for another admin
+to resume.
+
 Their Google Drive mirror's flag (`drive_mirrored`, below) goes too; accounts tells the mirror's service itself.
 
 Grants are not stored (they lapse within 10 minutes), and the link codes of their own items go with the
@@ -404,6 +408,10 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
 - `PUT /app/people/events`: `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
   app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
   person's one `image_uploaded` event for the app and UTC day, seen by them alone.
+- `PUT /app/items/:id/card-moves`: `{moves: [{cardId, cardKey, card, from, to, actorName?, at}]}`, up to 100: a
+  plan's cards that changed status (liveplanner), for its scope's webhooks only (`card_moved`,
+  [webhooks.md](webhooks.md)); nothing goes on the Timeline. Each is one delivery per webhook however often it is
+  sent (its id is made from the item, card and time). 204; 400 `invalid_moves`.
 
 ## The migration's handoff
 
@@ -499,6 +507,9 @@ by link are not on it.
   it out again at once; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
   reached, and leaves one the owner removed from their Timeline removed.
 - Apps report `edited` and `image_uploaded` (above).
+- Each event the index records about an item (`created`, `renamed`, `moved`, `trashed`, `shared`, `commented`,
+  `action_assigned`, `action_done`) is also handed, in the same batch, to the webhooks of the item's scope that
+  listen for it ([webhooks.md](webhooks.md)).
 - liveworkspace accounts reports its teams' and API tokens' events, `POST /internal/timeline {events}` with
   its key (up to 100, each `{id, type, actorId, actorName?, title, detail?, at, scopes}`): `team_invite_sent`,
   `team_joined`, `team_declined`, `team_role_changed`, `team_member_removed` (`left` when they left),

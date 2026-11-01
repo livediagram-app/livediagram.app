@@ -602,7 +602,12 @@ CREATE INDEX IF NOT EXISTS item_history_item ON item_history (plan_id, item_id, 
     for a create; `at` = `after.updatedAt`), so a bulk of 40 cards is still one statement. Then, for each changed
     (not created) card, `DELETE ... WHERE plan_id = ? AND item_id = ? AND (at < cutoff OR id <= the id
 ITEM_HISTORY_MAX back)`, which reads at most that card's `ITEM_HISTORY_MAX` + 1 index entries. A new card has
-    nothing to trim. Never throws: a failure logs `[items] history.append.failed` and the write stands.
+    nothing to trim. Each `moved` change also writes, in the same batch, one `INSERT OR IGNORE INTO outbox (plan_id,
+kind, key) SELECT ?, 'card_moved', value FROM json_each(?)`: the key is `cardMoveKeyOf` (`@liveworkspace/index-app`)
+    of `{cardId, cardKey, card (the title, '' when not text), from, to (a null status 'No Status'), actorName (the
+writer's name), at}`. The room's drain pushes them to the index (`PUT /app/items/:id/card-moves`, at most 100 a
+    drain) for webhooks (liveworkspace/docs/specs/004-index/webhooks.md). Never throws: a failure logs `[items]
+history.append.failed` and the write stands.
   - `readItemHistory(env, projectId, itemId, now)`: `SELECT at, by, tag, changes FROM item_history WHERE plan_id = ?
 AND item_id = ? AND at >= ? ORDER BY id DESC LIMIT ITEM_HISTORY_MAX`, rows that do not parse skipped.
   - `deleteOldItemHistory(env, cutoff)`: the daily upkeep's sweep (`PlanRoom.maintain`): deletes every row before the
