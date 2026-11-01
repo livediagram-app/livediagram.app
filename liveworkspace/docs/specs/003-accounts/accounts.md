@@ -931,6 +931,10 @@ and accounts holds what they need: addresses, the switches, teams' people and th
 rules every app keeps, and the two questions it asks before it writes, are shared in
 `@liveworkspace/auth-client` (`src/notify.ts`), so the apps send them the same way.
 
+Phone notifications are not the app's to send: the app decides who hears of what, and accounts delivers. It keeps
+the devices, the `push…` switches and the VAPID key, and sends what an app hands it on
+`POST /api/account/internal/push`, beside the reads above ([push.md](push.md)).
+
 - **Who gets one.** `notificationRecipients(credentials, { app, ids, setting, scope })` answers the
   verified addresses of those accounts who have not turned `setting` off, in two requests at once
   whatever the count: the emails above, and
@@ -1151,6 +1155,8 @@ the same token (`PUT /api/participants/:id`). Joining by link and tokens stay th
 | `PATCH /api/account/settings` `{ all }`                        | patches `all`; answers `{ all, updatedAt }`                                                                          |
 | `GET /api/account/settings/:app`                               | `all` and that app's own scope: `{ all, app, updatedAt }`                                                            |
 | `PATCH /api/account/settings/:app` `{ app }`                   | patches the app's own scope; answers `{ all, app, updatedAt }`                                                       |
+| `GET` / `POST /api/account/push/devices`                       | their phone devices and the VAPID public key / registers this browser ([push.md](push.md)); bearer too               |
+| `DELETE /api/account/push/devices/:id`                         | removes one of their devices; bearer too                                                                             |
 
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
@@ -1175,6 +1181,7 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/milestones/claim`    | `{ userId, milestone }` → `{ claimed }`, for the client's own app                                                                |
 | `POST /api/account/internal/emails`              | `{ ids }` (up to 100 accounts) → `{ emails }`, verified addresses only                                                           |
 | `POST /api/account/internal/activity`            | `{ userId, at? }` → `{ ok }`: they saved something they own (a guest's is ignored)                                               |
+| `POST /api/account/internal/push`                | `{ notifications }` (up to 50) → 202 `{ accepted }`, sent after the answer ([push.md](push.md))                                  |
 | `POST /api/account/internal/workbench/session`   | `{ session }` → the workbench session for the client's app, or 404 `{ reason }`                                                  |
 | `POST /api/account/internal/workbench/rooms`     | `{ ownerId, sessionId, itemId }` → 204: a workspace session joined that item's room                                              |
 | `POST /api/account/internal/allowance`           | `{ personId, kind, max, windowMs, count }` → `{ taken }`, per the client's app                                                   |
