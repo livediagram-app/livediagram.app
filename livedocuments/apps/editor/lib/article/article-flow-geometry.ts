@@ -28,14 +28,19 @@ type FlowFrame = {
   count: number;
 };
 
-/** The frame over an article's pages (all one size, in a row, in order). */
-export function flowFrame(pages: readonly LaidOutPage[], margin: number): FlowFrame {
+/** The frame over an article's pages (all one size, in a row, in order). `topMin`: the least top margin,
+ *  ARTICLE_TOP_MIN_PX, and the header's band above that when the article has a header. */
+export function flowFrame(
+  pages: readonly LaidOutPage[],
+  margin: number,
+  topMin: number = ARTICLE_TOP_MIN_PX,
+): FlowFrame {
   const lead = pages[0]!;
   const { width: pageW, height: pageH } = lead.rect;
   // A margin never leaves a column narrower than a quarter of the page.
   const m = Math.min(margin, pageW * 0.375, pageH * 0.375);
   // The top keeps room for the page toolbar above the first line (articleTopMarginPx).
-  const top = Math.min(Math.max(m, ARTICLE_TOP_MIN_PX), pageH * 0.375);
+  const top = Math.min(Math.max(m, topMin), pageH * 0.375);
   const columnWidth = pageW - 2 * m;
   const gap = 2 * m + PAGE_GAP;
   const count = pages.length;
