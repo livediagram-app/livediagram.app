@@ -3716,6 +3716,1264 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  livehuddle:
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../packages/oxlint-config
+      '@liveworkspace/prettier-config':
+        specifier: workspace:*
+        version: link:../packages/prettier-config
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.2
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      oxlint-tsgolint:
+        specifier: ^7.0.2004
+        version: 7.0.2004
+      prettier:
+        specifier: ^3.9.9
+        version: 3.9.10
+      turbo:
+        specifier: ^2.11.7
+        version: 2.11.10
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      wrangler:
+        specifier: ^4.148.0
+        version: 4.151.3(@cloudflare/workers-types@5.20261021.1)(@types/node@26.6.5)
+
+  livehuddle/apps/api:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livehuddle/diagram-lint':
+        specifier: workspace:*
+        version: link:../../packages/diagram-lint
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../../packages/document
+      '@livehuddle/document-views':
+        specifier: workspace:*
+        version: link:../../packages/document-views
+      '@livehuddle/edit-operations':
+        specifier: workspace:*
+        version: link:../../packages/edit-operations
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
+      '@liveworkspace/drive':
+        specifier: workspace:*
+        version: link:../../../packages/drive
+      '@liveworkspace/email':
+        specifier: workspace:*
+        version: link:../../../packages/email
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/index-app':
+        specifier: workspace:*
+        version: link:../../../packages/index-app
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../../../packages/index-client
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
+      '@liveworkspace/migration':
+        specifier: workspace:*
+        version: link:../../../packages/migration
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
+      jose:
+        specifier: ^6.2.12
+        version: 6.2.13
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20261007.1
+        version: 5.20261021.1
+      '@liveworkspace/community-service':
+        specifier: workspace:*
+        version: link:../../../liveworkspace/apps/community
+      '@liveworkspace/index-service':
+        specifier: workspace:*
+        version: link:../../../liveworkspace/apps/index
+      '@liveworkspace/media-service':
+        specifier: workspace:*
+        version: link:../../../liveworkspace/apps/media
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      ts-json-schema-generator:
+        specifier: ^2.9.0
+        version: 2.9.0
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+      wrangler:
+        specifier: ^4.148.0
+        version: 4.151.3(@cloudflare/workers-types@5.20261021.1)(@types/node@26.6.5)
+
+  livehuddle/apps/cli:
+    dependencies:
+      '@livehuddle/agent-verbs':
+        specifier: workspace:*
+        version: link:../../packages/agent-verbs
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livehuddle/diagram-lint':
+        specifier: workspace:*
+        version: link:../../packages/diagram-lint
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../../packages/document
+      '@livehuddle/document-views':
+        specifier: workspace:*
+        version: link:../../packages/document-views
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client
+      '@liveworkspace/cli-kit':
+        specifier: workspace:*
+        version: link:../../../packages/cli-kit
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/render-png':
+        specifier: workspace:*
+        version: link:../../../packages/render-png
+      smol-toml:
+        specifier: ^1.9.1
+        version: 1.9.1
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@resvg/resvg-wasm':
+        specifier: ^2.6.2
+        version: 2.6.2
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.2
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/apps/community:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livehuddle/telemetry-client':
+        specifier: workspace:*
+        version: link:../../packages/telemetry-client
+      '@livehuddle/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@liveworkspace/community-site':
+        specifier: workspace:*
+        version: link:../../../packages/community-site
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
+      '@liveworkspace/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../packages/tailwind-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@tailwindcss/postcss':
+        specifier: ^4.3.3
+        version: 4.3.3
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/apps/editor:
+    dependencies:
+      '@huggingface/transformers':
+        specifier: ^3.8.1
+        version: 3.8.1(@types/node@26.6.5)
+      '@jsquash/webp':
+        specifier: 1.5.0
+        version: 1.5.0
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../../packages/document
+      '@livehuddle/document-views':
+        specifier: workspace:*
+        version: link:../../packages/document-views
+      '@livehuddle/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
+      '@livehuddle/sticky-model':
+        specifier: workspace:*
+        version: link:../../packages/sticky-model
+      '@livehuddle/sticky-vision':
+        specifier: workspace:*
+        version: link:../../packages/sticky-vision
+      '@livehuddle/telemetry-client':
+        specifier: workspace:*
+        version: link:../../packages/telemetry-client
+      '@livehuddle/template-previews':
+        specifier: workspace:*
+        version: link:../../packages/template-previews
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
+      '@livehuddle/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
+      '@liveworkspace/avatar':
+        specifier: workspace:*
+        version: link:../../../packages/avatar
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
+      '@liveworkspace/explorer':
+        specifier: workspace:*
+        version: link:../../../packages/explorer
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../../../packages/index-client
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
+      '@liveworkspace/migration':
+        specifier: workspace:*
+        version: link:../../../packages/migration
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../../../packages/model-core
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
+      '@liveworkspace/settings-ui':
+        specifier: workspace:*
+        version: link:../../../packages/settings-ui
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
+      '@liveworkspace/telemetry-client':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry-client
+      '@liveworkspace/workbench':
+        specifier: workspace:*
+        version: link:../../../packages/workbench
+      '@tensorflow/tfjs-backend-wasm':
+        specifier: 4.22.0
+        version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
+      '@tensorflow/tfjs-backend-webgpu':
+        specifier: 4.22.0
+        version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
+      '@tensorflow/tfjs-core':
+        specifier: 4.22.0
+        version: 4.22.0
+      '@tensorflow/tfjs-layers':
+        specifier: 4.22.0
+        version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/source-ast':
+        specifier: workspace:*
+        version: link:../../../packages/source-ast
+      '@liveworkspace/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../packages/tailwind-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@playwright/test':
+        specifier: ^1.63.0
+        version: 1.64.1
+      '@tailwindcss/postcss':
+        specifier: ^4.3.3
+        version: 4.3.3
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/jsdom':
+        specifier: ^30.0.0
+        version: 30.0.0
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      fake-indexeddb:
+        specifier: ^6.2.5
+        version: 6.2.6
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/apps/help:
+    dependencies:
+      '@livehuddle/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
+      '@livehuddle/telemetry-client':
+        specifier: workspace:*
+        version: link:../../packages/telemetry-client
+      '@livehuddle/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@liveworkspace/help-site':
+        specifier: workspace:*
+        version: link:../../../packages/help-site
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
+      '@mdx-js/loader':
+        specifier: ^3.1.0
+        version: 3.1.1
+      '@mdx-js/react':
+        specifier: ^3.1.0
+        version: 3.1.1(@types/react@19.3.0)(react@19.3.1)
+      '@next/mdx':
+        specifier: ^16.4.1
+        version: 16.4.2(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+      remark-gfm:
+        specifier: ^4.0.1
+        version: 4.0.1
+    devDependencies:
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
+      '@liveworkspace/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../packages/tailwind-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@tailwindcss/postcss':
+        specifier: ^4.3.3
+        version: 4.3.3
+      '@types/mdx':
+        specifier: ^2.0.13
+        version: 2.0.14
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/apps/marketing:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livehuddle/template-previews':
+        specifier: workspace:*
+        version: link:../../packages/template-previews
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
+      '@livehuddle/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
+      '@liveworkspace/comparisons':
+        specifier: workspace:*
+        version: link:../../../packages/comparisons
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/licences':
+        specifier: workspace:*
+        version: link:../../../packages/licences
+      '@liveworkspace/marketing-site':
+        specifier: workspace:*
+        version: link:../../../packages/marketing-site
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../../packages/document
+      '@livehuddle/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
+      '@livehuddle/licences':
+        specifier: workspace:*
+        version: link:../../packages/licences
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
+      '@liveworkspace/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../packages/tailwind-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@tailwindcss/postcss':
+        specifier: ^4.3.3
+        version: 4.3.3
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/apps/mcp:
+    dependencies:
+      '@livehuddle/agent-verbs':
+        specifier: workspace:*
+        version: link:../../packages/agent-verbs
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livehuddle/diagram-lint':
+        specifier: workspace:*
+        version: link:../../packages/diagram-lint
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../../packages/document
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/mcp-kit':
+        specifier: workspace:*
+        version: link:../../../packages/mcp-kit
+      '@liveworkspace/render-png':
+        specifier: workspace:*
+        version: link:../../../packages/render-png
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.32.1
+        version: 1.32.1(zod@4.6.7)
+      '@resvg/resvg-wasm':
+        specifier: ^2.6.2
+        version: 2.6.2
+      hono:
+        specifier: ^4.13.13
+        version: 4.13.13
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20261007.1
+        version: 5.20261021.1
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+      wrangler:
+        specifier: ^4.148.0
+        version: 4.151.3(@cloudflare/workers-types@5.20261021.1)(@types/node@26.6.5)
+
+  livehuddle/apps/router:
+    dependencies:
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20261007.1
+        version: 5.20261021.1
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livehuddle/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+      wrangler:
+        specifier: ^4.148.0
+        version: 4.151.3(@cloudflare/workers-types@5.20261021.1)(@types/node@26.6.5)
+
+  livehuddle/packages/agent-verbs:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@livehuddle/diagram-lint':
+        specifier: workspace:*
+        version: link:../diagram-lint
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+      '@livehuddle/document-views':
+        specifier: workspace:*
+        version: link:../document-views
+      '@livehuddle/edit-operations':
+        specifier: workspace:*
+        version: link:../edit-operations
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../templates
+      '@liveworkspace/agent-verbs':
+        specifier: workspace:*
+        version: link:../../../packages/agent-verbs
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/api-schema:
+    dependencies:
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
+      '@liveworkspace/community':
+        specifier: workspace:*
+        version: link:../../../packages/community
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/diagram-lint:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+      '@liveworkspace/diagram-lint':
+        specifier: workspace:*
+        version: link:../../../packages/diagram-lint
+    devDependencies:
+      '@livehuddle/edit-operations':
+        specifier: workspace:*
+        version: link:../edit-operations
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../templates
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/document:
+    dependencies:
+      '@liveworkspace/avatar':
+        specifier: workspace:*
+        version: link:../../../packages/avatar
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../../../packages/model-core
+      perfect-freehand:
+        specifier: ^1.2.3
+        version: 1.2.3
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/document-views:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+      '@liveworkspace/document-views':
+        specifier: workspace:*
+        version: link:../../../packages/document-views
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/edit-operations:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../templates
+      '@liveworkspace/edit-operations':
+        specifier: workspace:*
+        version: link:../../../packages/edit-operations
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+    devDependencies:
+      '@livehuddle/document-views':
+        specifier: workspace:*
+        version: link:../document-views
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/help-registry:
+    dependencies:
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
+  livehuddle/packages/licences:
+    dependencies:
+      '@liveworkspace/licences':
+        specifier: workspace:*
+        version: link:../../../packages/licences
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/sticky-model:
+    dependencies:
+      '@livehuddle/sticky-vision':
+        specifier: workspace:*
+        version: link:../sticky-vision
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@tensorflow/tfjs':
+        specifier: 4.22.0
+        version: 4.22.0(seedrandom@3.0.5)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/sticky-vision:
+    dependencies:
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@playwright/test':
+        specifier: ^1.63.0
+        version: 1.64.1
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/telemetry-client:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
+      '@liveworkspace/telemetry-client':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry-client
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/template-previews:
+    dependencies:
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../templates
+      '@liveworkspace/template-previews':
+        specifier: workspace:*
+        version: link:../../../packages/template-previews
+      react:
+        specifier: ^19.3.0
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.0
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/templates:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livehuddle/packages/ui:
+    dependencies:
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@livehuddle/document':
+        specifier: workspace:*
+        version: link:../document
+      '@livehuddle/telemetry-client':
+        specifier: workspace:*
+        version: link:../telemetry-client
+      '@liveworkspace/account-menu':
+        specifier: workspace:*
+        version: link:../../../packages/account-menu
+      '@liveworkspace/brand':
+        specifier: workspace:*
+        version: link:../../../packages/brand
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../../../packages/index-client
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
+      '@liveworkspace/telemetry-client':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry-client
+      '@liveworkspace/trusted-types':
+        specifier: workspace:*
+        version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
+      react:
+        specifier: ^19.3.0
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.0
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   liveplanner:
     devDependencies:
       '@liveworkspace/oxlint-config':
