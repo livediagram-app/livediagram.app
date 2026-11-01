@@ -27,6 +27,7 @@
     "./room-multiplayer": "./src/room-multiplayer.ts",
     "./sealed": "./src/sealed.ts",
     "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",
+    "./typed-text": "./src/typed-text.ts",
     "./unfurl": "./src/unfurl.ts",
     "./unfurl-fetch": "./src/unfurl-fetch.ts"
   },

@@ -4,7 +4,7 @@
 // a timing attack could use.
 
 import { timelineStatement, type TimelineEvent } from './index-timeline.ts';
-import { cleanText } from './text.ts';
+import { cleanText } from '@liveworkspace/api-kit/typed-text';
 
 export const API_TOKEN_PREFIX = 'lwt_';
 // Tokens carried over from the old livediagram.app (docs/migration.md step 1): their rows were copied in as they

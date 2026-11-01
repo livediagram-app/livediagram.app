@@ -1,5 +1,6 @@
-// Free text people type that this Worker keeps and every app shows: token names, team names and organisations,
-// account names and display names (liveworkspace/docs/specs/003-accounts/accounts.md "Names and other typed text").
+// Free text people type that a Worker keeps and every app shows: accounts' token names, team names and organisations,
+// account names and display names, the index's webhook names and the MCP servers' registered client names
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Names and other typed text").
 
 // The explicit bidi embeddings, overrides and isolates (LRE, RLE, PDF, LRO, RLO, LRI, RLI, FSI, PDI). One left open
 // turns the text drawn after it around too ("\u202Eevil org · 1 member" reads "rebmem 1 · gro live"), and an override
