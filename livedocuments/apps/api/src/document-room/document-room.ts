@@ -57,6 +57,8 @@ import {
 import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
 import { opForScope, opFromScopedSender } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
+import { ROOM_ELEMENT_RULES } from '../room-element-rules';
+import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
 import {
@@ -1322,6 +1324,9 @@ export class DocumentRoom extends DurableObject<Env> {
         else void this.participantWrites.applyArticleOp(writer, msg.op, msg.ref);
         return;
       }
+      // An Editor's element op the validator refuses goes nowhere; its sender alone hears why
+      // (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+      if (!gate.presence && this.refusesElementOp(ws, msg)) return;
       const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
       const isPresenceOp = gate.presence;
       // Remember the sender's current tab so a future joiner learns it
@@ -1420,6 +1425,15 @@ export class DocumentRoom extends DurableObject<Env> {
     } catch {
       this.opRates.delete(ws);
     }
+  }
+
+  // The element gate (@liveworkspace/api-kit/room-element-ops, docs/specs/015-api/blueprints/room-element-ops.md):
+  // one per room instance, so its bounded log is per room. Answers a refused op to its sender alone.
+  private readonly elementGate = createRoomElementGate(ROOM_ELEMENT_RULES);
+  private refusesElementOp(ws: WebSocket, msg: { op: unknown; ref?: unknown }): boolean {
+    const refused = this.elementGate(msg.op, msg.ref);
+    if (refused) this.sendTo(ws, refused);
+    return refused !== null;
   }
 
   /** Deliver one frame to one socket. */

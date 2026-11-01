@@ -1,4 +1,5 @@
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
+import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { DashboardPatch, ElementDelta, RoomElementOp, Tab } from '@liveplanner/project';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
@@ -174,7 +175,9 @@ export type ServerMessage =
   // replayed dot was counted twice.
   | CursorMessage
   | FormatMessage
-  | GrantRenewMessage;
+  | GrantRenewMessage
+  // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+  | OpRefusedMessage;
 
 // `ref`: the `ref` the sender put on the op this frame answers, echoed so the sender knows that op is
 // sequenced (docs/specs/012-collaboration/collab-race-hardening.md phase 6). Absent on hello.
@@ -405,7 +408,9 @@ export type RoomIncoming =
     }
   | CursorMessage
   | FormatMessage
-  | GrantRenewMessage;
+  | GrantRenewMessage
+  // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+  | OpRefusedMessage;
 
 // The WebSocket close code the realtime room ends a session with when an access
 // change narrows who may be in it without revoking a link (docs/specs/015-api/api.md

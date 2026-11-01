@@ -22,6 +22,7 @@
     "./responses": "./src/responses.ts",
     "./room-access": "./src/room-access.ts",
     "./room-agent-presence": "./src/room-agent-presence.ts",
+    "./room-element-ops": "./src/room-element-ops.ts",
     "./room-follows": "./src/room-follows.ts",
     "./room-multiplayer": "./src/room-multiplayer.ts",
     "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",
