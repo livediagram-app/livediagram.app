@@ -159,3 +159,25 @@ describe('the Seasonal toggle', () => {
     expect(selected?.textContent).toContain(SEASONAL_LOOKS[3]!.label);
   });
 });
+
+// The picked card's tint is brand-50; slate-500 small text read 4.46:1 on it (axe color-contrast), under AA.
+describe('a look card', () => {
+  it('sets its description in a colour that reads on the picked card', () => {
+    render(
+      <LooksCarousel
+        settings={UNTOUCHED}
+        activeLook={TAB_LOOKS[0]!.id}
+        onPickLook={() => {}}
+        headingClass=""
+      />,
+    );
+    const picked = screen
+      .getAllByRole('button')
+      .find((b) => b.getAttribute('aria-pressed') === 'true' && b.textContent !== 'Seasonal')!;
+    const description = [...picked.querySelectorAll('span')].find(
+      (s) => s.textContent === TAB_LOOKS[0]!.description,
+    )!;
+    expect(description.className).not.toMatch(/(^|\s)text-slate-500(\s|$)/);
+    expect(description.className).toContain('text-slate-600');
+  });
+});
