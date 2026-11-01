@@ -270,18 +270,20 @@ Every access is wrapped so a blocked storage reads as empty.
 
 ## Errors and edge cases
 
-| Case                                       | What the page shows                                           |
-| ------------------------------------------ | ------------------------------------------------------------- |
-| An address that isn't one                  | "Please enter a valid email address."                         |
-| Too many code requests (429)               | "Too many codes requested. Wait a minute and try again."      |
-| A send that fails otherwise                | "We could not send a code. Check the address and try again."  |
-| A wrong or expired code                    | "That code is wrong or has expired."; the boxes cleared       |
-| Too many wrong codes (`TOO_MANY_ATTEMPTS`) | "Too many wrong codes. Request a new one."                    |
-| Too many attempts (429)                    | "Too many attempts. Wait a minute and try again."             |
-| The name not saved                         | "We could not save your name. Please try again."              |
-| An expired OAuth request                   | "That sign-in has expired. Go back to the app and try again." |
-| A `return` that leaves the site            | ignored; the page goes home                                   |
-| No hand-off possible on an app's address   | straight to `next`; the app still signs in                    |
+| Case                                       | What the page shows                                                                     |
+| ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| An address that isn't one                  | "Please enter a valid email address."                                                   |
+| Too many code requests (429)               | "Too many codes requested. Wait a minute and try again."                                |
+| A send that fails otherwise                | "We could not send a code. Check the address and try again."                            |
+| A wrong or expired code                    | "That code is wrong or has expired."; the boxes cleared                                 |
+| Too many wrong codes (`TOO_MANY_ATTEMPTS`) | "Too many wrong codes. Request a new one."                                              |
+| Too many attempts (429)                    | "Too many attempts. Wait a minute and try again."                                       |
+| The name not saved                         | "We could not save your name. Please try again."                                        |
+| An expired OAuth request                   | "That sign-in has expired. Go back to the app and try again."                           |
+| A `return` that leaves the site            | ignored; the page goes home                                                             |
+| A page that throws while rendering         | `app/error.tsx`: the `PageError` card, Try Again calls `reset`                          |
+| The root layout throws                     | `app/global-error.tsx`: its own `<html lang="en-GB">`, the same card, Try Again reloads |
+| No hand-off possible on an app's address   | straight to `next`; the app still signs in                                              |
 
 ## Constants and configuration: the Worker
 
@@ -419,6 +421,8 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 
 123 test files:
 
+- `liveworkspace/apps/site/app/error.test.tsx`
+- `liveworkspace/apps/site/app/global-error.test.tsx`
 - `liveworkspace/apps/site/app/not-found.test.ts`
 - `liveworkspace/apps/site/app/seo-pages.test.ts`
 - `liveworkspace/apps/site/app/telemetry/AllApps.test.ts`
