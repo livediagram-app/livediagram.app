@@ -68,11 +68,16 @@ export function stackSheets(rect: PageRect, behind: number): StackSheet[] {
 }
 
 /** The card in front: the one asked for while it is a card of the row, else the first card. Null
- *  off a stack. */
+ *  off a stack. When the card asked for has gone (an undo of the split that made it, a peer's
+ *  delete), the card before its place (`at`, where it last stood) comes to the front, as a delete
+ *  lands on the page before; an undone split no longer threw the stack back to its first card. */
 export function cardInFrontOf(
   pages: readonly Pick<LaidOutPage, 'id' | 'kind'>[],
   wanted: string | null,
+  at = 0,
 ): string | null {
   if (pages[0]?.kind !== 'flashcard') return null;
-  return wanted && pages.some((p) => p.id === wanted) ? wanted : pages[0].id;
+  if (wanted && pages.some((p) => p.id === wanted)) return wanted;
+  if (!wanted) return pages[0].id;
+  return pages[Math.min(Math.max(0, at - 1), pages.length - 1)]!.id;
 }
