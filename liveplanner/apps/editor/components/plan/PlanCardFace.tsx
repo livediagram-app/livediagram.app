@@ -199,7 +199,7 @@ export function PlanCardFace({
   const flag = (
     <>
       {fresh ? <NewResponseMark /> : null}
-      {blocked > 0 ? <BlockedMark count={blocked} /> : null}
+      {blocked > 0 ? <BlockedMark count={blocked} card={palette.card} /> : null}
       {isFlagged(item) ? <FlagMark /> : null}
       {hasRepeat(item) ? <RepeatMark color={palette.muted} /> : null}
     </>

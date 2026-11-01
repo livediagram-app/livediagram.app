@@ -20,6 +20,7 @@ import { BlockedBySections } from './BlockedBy';
 import { LinkedCardGroup } from './LinkedCards';
 import { ItemFieldEditor, type ItemFieldContext } from './ItemFieldEditor';
 import { planBlocking } from './blocking';
+import { contrastRatio } from '@liveplanner/project';
 
 // docs/specs/026-plan/item-types.md "Blocked By": the switch, the badge at every size, the panel's two lists, the
 // picker's loop refusal and who may set a link (docs/specs/013-workspace/share-roles.md).
@@ -155,6 +156,30 @@ describe('the blocked badge', () => {
     expect(document.querySelector('[data-blocked-mark]')).toBeNull();
   });
 
+  it('draws its count at AA contrast on a light and a dark card', () => {
+    const a = card('Website', 'doing');
+    const launch = card('Launch', 'todo', [a.id]);
+    for (const surface of ['light', 'dark'] as const) {
+      const palette = planPalette(surface, {});
+      render(
+        <PlanProvider value={planOf([a, launch], VIEWER)}>
+          <PlanCardFace item={launch} palette={palette} fields={['key']} size="minimal" />
+        </PlanProvider>,
+      );
+      const badge = document.querySelector<HTMLElement>('[data-blocked-mark]')!;
+      const hex = (rgb: string) =>
+        '#' +
+        rgb
+          .match(/\d+/g)!
+          .slice(0, 3)
+          .map((n) => Number(n).toString(16).padStart(2, '0'))
+          .join('');
+      const ink = badge.style.color.startsWith('#') ? badge.style.color : hex(badge.style.color);
+      expect(contrastRatio(ink, palette.card)).toBeGreaterThanOrEqual(4.5);
+      cleanup();
+    }
+  });
+
   it('builds the lookup once per items change', () => {
     const a = card('A', 'todo');
     const b = card('B', 'todo', [a.id]);
@@ -181,7 +206,7 @@ describe('the item panel', () => {
       </PlanProvider>,
     );
     const section = screen.getByRole('region', { name: /Blocked By/ });
-    expect(within(section).getByText('1 open')).toBeTruthy();
+    expect(within(section).getByText('1 open').className).toContain('dark:text-red-400');
     expect(section.querySelectorAll('[data-blocker-done]')).toHaveLength(1);
     fireEvent.click(within(section).getByRole('button', { name: `Open #${a.key} Website, Doing` }));
     expect(onOpen).toHaveBeenCalledWith(a.id);
