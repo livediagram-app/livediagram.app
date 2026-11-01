@@ -57,6 +57,17 @@ const GROUPS = [
     editorDir: 'livedocuments/apps/editor',
     cli: 'livedocuments/apps/cli',
   },
+  // Held until its launch (livehuddle/docs/specs/005-project-roadmap/build-plan.md step 8): its suites run only when
+  // a change touches livehuddle/ itself (or everything runs), never because a shared package it uses changed; it has
+  // no E2E yet, and none of its Workers deploy.
+  {
+    group: 'livehuddle',
+    dirs: ['livehuddle/'],
+    editor: '@livehuddle/editor',
+    editorDir: 'livehuddle/apps/editor',
+    cli: 'livehuddle/apps/cli',
+    held: true,
+  },
   {
     group: 'platform',
     dirs: ['packages/', 'liveworkspace/'],
@@ -79,7 +90,7 @@ const RUN_ALL = [
   /^prettier\.config\.js$/,
   /^\.prettierignore$/,
   /^\.npmrc$/,
-  /^(livediagram|liveplanner|livedesign|livedocuments)\/(package\.json|tsconfig\.base\.json|prettier\.config\.js|\.prettierignore)$/,
+  /^(livediagram|liveplanner|livedesign|livedocuments|livehuddle)\/(package\.json|tsconfig\.base\.json|prettier\.config\.js|\.prettierignore)$/,
 ];
 
 // Deploys ignore what only CI and formatting read.
@@ -161,6 +172,9 @@ for (const spec of GROUPS) {
   // A product's root is a workspace too (its scripts), but has nothing of its own to run.
   const runnable = members.filter((p) => !GROUPS.some((g) => g.dirs.includes(`${p.path}/`)));
   if (runnable.length === 0) continue;
+  // A held product runs on its own changes only, so a change to a shared package doesn't pay for its whole suite.
+  if (spec.held && !all && !changed.some((file) => spec.dirs.some((dir) => file.startsWith(dir))))
+    continue;
   const editorAffected = spec.editor && runnable.some((p) => p.name === spec.editor);
   const tested = runnable.filter((p) => p.name !== spec.editor);
   const coverage = tested.filter((p) => scriptsOf(p.path)['test:coverage']).map((p) => p.name);
@@ -188,7 +202,7 @@ for (const spec of GROUPS) {
         total: EDITOR_SHARDS,
       });
     }
-    e2e.push(spec.group);
+    if (!spec.held) e2e.push(spec.group);
   }
 }
 
@@ -201,11 +215,16 @@ const TIER_OF = new Map([
   ['liveworkspace/apps/accounts', 1],
   ['liveworkspace/apps/redirect', 2],
 ]);
+// A held product's Workers never deploy: its first deploy is its launch card's.
+const HELD_PRODUCTS = new Set(
+  GROUPS.filter((g) => g.held).flatMap((g) => g.dirs.map((d) => d.replace(/\/$/, ''))),
+);
 function deployOf(p) {
   const toml = `${p.path}/wrangler.toml`;
   if (!existsSync(toml)) return null;
-  const config = readFileSync(toml, 'utf8');
   const product = p.path.split('/')[0];
+  if (HELD_PRODUCTS.has(product)) return null;
+  const config = readFileSync(toml, 'utf8');
   const app = p.path.split('/').pop();
   const d1 = existsSync(`${p.path}/migrations`)
     ? (config.match(/^\[\[d1_databases\]\][^[]*?^binding\s*=\s*"([^"]+)"/ms)?.[1] ?? '')

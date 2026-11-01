@@ -80,9 +80,16 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
 │  ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livedesign/*, with photo-engine of its own
-└─ livehuddle/                 planned, awaiting approval: its product spec only (meetings, workshops, Avatar mode)
-   └─ docs/specs               the spec and build plan; forked from livediagram in-tree once approved
+└─ livehuddle/                 forked from livediagram in-tree, held until launch (meetings, workshops, Avatar mode)
+   ├─ apps/                    the same set as livediagram's, for now
+   ├─ packages/                @livehuddle/*
+   └─ docs/specs               the spec and build plan
 ```
+
+livehuddle was forked from livediagram at monorepo `main` `fd73b2c921` on 2026-11-01 (livehuddle/.forked-from), with
+every name renamed, and is cut down to Workshop by the steps in
+livehuddle/docs/specs/005-project-roadmap/build-plan.md. It stays held until its launch: no Worker deploys, no list on
+the platform names it, and CI runs its suites only on changes to `livehuddle/` (docs/ci.md).
 
 livedocuments (first called livepages) was forked from livediagram `main` at `82e6ed79a` on 2026-10-22
 and cut down to Pages mode (livedocuments/plans/0001-livedocuments-fork.md); Phase 8 took Pages out of livediagram.
