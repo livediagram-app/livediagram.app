@@ -63,7 +63,7 @@ function TabName({
       if (next && next !== name) rename.rename(next);
     };
     return (
-      <span data-tab-name-in-box="" className={`flex items-center ${frame}`}>
+      <span data-tab-name-in-box="" className={`flex min-w-0 items-center ${frame}`}>
         <input
           autoFocus
           data-keeps-escape
@@ -78,7 +78,7 @@ function TabName({
             if (e.key === 'Enter') save();
             if (e.key === 'Escape') setDraft(null);
           }}
-          className="w-48 rounded-md border border-brand-400 bg-transparent px-1.5 py-0.5 text-[14px] font-normal leading-tight outline-none"
+          className="w-48 min-w-0 rounded-md border border-brand-400 bg-transparent px-1.5 py-0.5 text-[14px] font-normal leading-tight outline-none"
         />
       </span>
     );

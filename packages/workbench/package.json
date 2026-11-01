@@ -19,6 +19,7 @@
     "./components/canvas/EmptyPageInvite": "./src/components/canvas/EmptyPageInvite.tsx",
     "./components/canvas/EraserBrushRing": "./src/components/canvas/EraserBrushRing.tsx",
     "./components/canvas/InlineTextLine": "./src/components/canvas/InlineTextLine.tsx",
+    "./components/canvas/menu-join": "./src/components/canvas/menu-join.tsx",
     "./components/canvas/LockedElementMenu": "./src/components/canvas/LockedElementMenu.tsx",
     "./components/canvas/OffscreenContentHint": "./src/components/canvas/OffscreenContentHint.tsx",
     "./components/canvas/PageCornerFold": "./src/components/canvas/PageCornerFold.tsx",

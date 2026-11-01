@@ -887,6 +887,18 @@ canvas's ink.
   corner panels' places are ([Panel docking](panel-docking.md)). It stays open while the person
   works; the cluster has no Contents button while it shows, and the corner panels and the
   bottom-right cluster on its side start past it.
+- **Joined to the menu box**: pinned left, the sidebar rises to the canvas's top and the menu box
+  (the menu button and the tab's name, top left) becomes its top row, so the two read as one panel
+  rather than a card floating over a sidebar. The box's own border, fill and shadow fade away
+  (200 ms, none under reduced motion) and the sidebar's surface carries it; the box reaches across
+  the sidebar (8 px short of its inner edge), the tab's name cut short to fit, then a hairline, then
+  the Contents header exactly where it sits without the join. The menu button itself never moves or
+  changes: the same glyph, size, hover and pressed look, and the Explorer still hangs under it. A
+  workspace frame's Back takes the row the same way. The palette strip keeps clear of the whole row
+  and centres in what shows beside the sidebar, as a page is framed beside it, so a laptop's strip
+  keeps its category names. Pinned right, while it is being dragged, minimised, and on a phone
+  (which has no sidebar), the box is its usual card. It is the same for every role: a Viewer's box
+  joins as an Editor's does.
 - **Minimised to its button**: the bottom-right cluster holds **Contents** (a list glyph, named
   beside it on a desktop), left of the Theme & canvas button. It opens the **Contents** popover
   above it, whose header adds **Dock as Sidebar** (a panel-open glyph; HoverCard "Dock as Sidebar",
