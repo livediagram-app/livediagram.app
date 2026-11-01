@@ -50,7 +50,11 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
   the page's (a light slide takes the light half, a dark one the dark half), its stock colours for that surface. A
   layout placed on a light slide in Steel keeps its dark words in dark chrome, where the dark half's light ink would
-  sink into the slide. Elements on plain paper (no fill) follow the chrome as before, since the paper does. The canvas
+  sink into the slide. A label with no fill of its own sits on the page itself, so its words are drawn against the
+  page as a box's are against its fill: where the half's ink would put them on the page below 4.5:1, and read worse
+  than the stored ink does there, they keep the stored ink (a template's pale slate words on its dark cover once took
+  the half's dark stroke, since a theme slot shared their colour, and vanished into the page). Elements on plain
+  paper (no fill) follow the chrome as before, since the paper does. The canvas
   (`usePageView`, `apps/editor/lib/stock-colour-projector.ts`) and every export (`tabAsSeen`) draw it the same way.
 - **A Border-tier preset is a line drawing on the paper.** Hairline, Outline, Dotted, Dash-Dot and Frame sit on white
   in a light half and, in a dark half, on that half's element fill (the dark ink's for a theme that paints none, as
