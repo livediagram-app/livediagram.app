@@ -306,7 +306,12 @@ export class DesignRoom extends DurableObject<Env> {
       onWrite: () => this.noteWrite(),
     });
     this.roomEnv = env
-      ? { ...env, DESIGN_DB: this.db.asD1(), DESIGN_ROOM: this.localNamespace(env.DESIGN_ROOM) }
+      ? {
+          ...env,
+          DESIGN_DB: this.db.asD1(),
+          DESIGN_ROOM: this.localNamespace(env.DESIGN_ROOM),
+          ROOM_PEOPLE: () => this.roomPeople(),
+        }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage);
     this.head = createItemHeadSync({
@@ -1584,6 +1589,15 @@ export class DesignRoom extends DurableObject<Env> {
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
     this.broadcastPresence(ws);
+  }
+
+  // The person tags of the hello'd sessions: who is looking at the design now, whom a phone notification skips
+  // (docs/specs/014-identity/phone-notifications.md).
+  private roomPeople(): Set<string> {
+    const tags = new Set<string>();
+    for (const session of this.liveSessions().values())
+      if (session.personTag) tags.add(session.personTag);
+    return tags;
   }
 
   // Every hello'd session with a live socket, by presence id: what the selection store answers

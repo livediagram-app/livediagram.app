@@ -148,4 +148,6 @@ export type Env = {
 // worker's bindings plus `DESIGN_DB`, the design's own SQLite behind the D1 surface the room builds.
 // Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
 // the worker reaches content through the design's Durable Object instead.
-export type DesignEnv = Env & { DESIGN_DB: D1Database };
+// `ROOM_PEOPLE`: the person tags of the sessions in the design's room right now, so a phone notification skips
+// someone already looking at it (docs/specs/014-identity/phone-notifications.md).
+export type DesignEnv = Env & { DESIGN_DB: D1Database; ROOM_PEOPLE?: () => ReadonlySet<string> };

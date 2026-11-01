@@ -2,7 +2,11 @@
 // (docs/specs/012-collaboration/assigned-actions.md "The email"). Answered inside the design's Durable Object, which
 // keeps the email's once-only claim. The assignment itself is already in the design (the tab save); this only says so.
 //
-//   body: { teamId, assigneeUserId? | assigneeMemberId?, actionName, description? }
+//   body: { teamId, assigneeUserId? | assigneeMemberId?, actionName, description?, email?, tabId?, elementId? }
+//
+// `email: false` (the dialog's Email box unticked) sends no email; the phone notification goes either way, to an
+// assignee with an account who can open the design, linking `tabId` and `elementId` when given
+// (docs/specs/014-identity/phone-notifications.md).
 //
 // The server establishes every fact that matters itself. The caller is a signed-in person (never an API token)
 // who can open the design (its grant) and has joined `teamId` (their token's teams). The assignee is one of that
@@ -18,6 +22,7 @@ import { requestGrant } from '../index-service';
 import { teamPeople } from '../accounts/notify';
 import { isAccountOwner } from '../accounts/client';
 import { getParticipant } from '../accounts/profiles';
+import { designUrl, elementUrl, pusher, pushItemOf, pushTag } from '../accounts/push';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import { gateRead, readBody, requireOwner, type DesignRouteContext } from './context';
 
@@ -75,9 +80,13 @@ export async function handleNotifyAction(ctx: DesignRouteContext, id: string): P
   const actionName = typeof body.actionName === 'string' ? body.actionName.trim() : '';
   const description =
     typeof body.description === 'string' && body.description.trim() ? body.description : null;
+  const email = body.email !== false;
+  const tabId = optionalId(body.tabId);
+  const elementId = optionalId(body.elementId);
   if (!teamId || assigneeUserId === false || assigneeMemberId === false) {
     return badRequest('missing teamId');
   }
+  if (tabId === false || elementId === false) return badRequest('invalid tabId/elementId');
   if ((!assigneeUserId && !assigneeMemberId) || !actionName) {
     return badRequest('missing assigneeUserId/actionName');
   }
@@ -103,11 +112,27 @@ export async function handleNotifyAction(ctx: DesignRouteContext, id: string): P
     assigneeCanOpen(ctx, design, teamId, assignee),
     getParticipant(ctx.env, userId),
   ]);
+  const assignerName = assigner?.name ?? ctx.accountEmail ?? null;
+  if (canOpen && assignee.userId)
+    ctx.waitUntil?.(
+      pusher.pushActionAssigned(ctx.env, {
+        item: pushItemOf(design),
+        assignerId: userId,
+        assignerName,
+        assigneeUserId: assignee.userId,
+        url:
+          tabId && elementId
+            ? elementUrl(ctx.env, design.id, tabId, elementId)
+            : designUrl(ctx.env, design.id),
+        tag: pushTag(design.id, elementId || 'action'),
+      }),
+    );
+  if (!email) return json({ ok: true }, { status: 202 });
   ctx.waitUntil?.(
     notifyActionAssigned(ctx.env, {
       assignee,
       assignerUserId: userId,
-      assignerName: assigner?.name ?? ctx.accountEmail ?? null,
+      assignerName,
       design: { id: design.id, name: design.name },
       assigneeCanOpen: canOpen,
       actionName,

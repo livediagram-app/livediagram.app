@@ -36,7 +36,7 @@ A title names who and the design, never what they wrote: `Ada commented on Roadm
 
 ## Code
 
-- `apps/api/src/person/push.ts`: the pusher, the links and tags.
+- `apps/api/src/accounts/push.ts`: the pusher, the links and tags.
 - The triggers: the tab save route, `changesets/after.ts`, the comment routes and the
   notify-action route.
 - The room's `ROOM_PEOPLE` on its env facade.

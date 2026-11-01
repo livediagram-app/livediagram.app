@@ -56,6 +56,8 @@ export type FakeAccounts = {
   designCounts: Map<string, number>;
   // Each sender's allowance uses, by `<personId> <kind>`: when each was taken.
   allowances: Map<string, number[]>;
+  // Every phone notification asked for (POST internal/push), in order.
+  pushes: { userId: string; kind: string; title: string; url: string; tag?: string }[];
   // Makes the next calls to a path fail with this status.
   failing: Map<string, number>;
 };
@@ -83,6 +85,7 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
     teamPeople: new Map(),
     designCounts: new Map(),
     allowances: new Map(),
+    pushes: [],
     failing: new Map(),
   };
   const prefix = `${ACCOUNTS_ENV.ACCOUNTS_URL}/api/account/internal/`;
@@ -216,6 +219,11 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
           if (email) emails[id] = email;
         }
         return json({ emails });
+      }
+      case 'push': {
+        const notifications = body.notifications as FakeAccounts['pushes'];
+        state.pushes.push(...notifications);
+        return json({ accepted: notifications.length }, 202);
       }
       case 'activity':
         state.activity.push({ userId: String(body.userId), at: body.at as number | undefined });
