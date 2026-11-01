@@ -345,8 +345,9 @@ function BoxedElementViewImpl({
       data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
-      // so its buttons stay reachable; so is any element selected for editing, whose lines edit in place.
-      role={elementRole(element, isSelected && !readOnly)}
+      // so its buttons stay reachable, as is one showing indicator buttons (its link, note, action or comments) and a
+      // face that edits in place while selected for editing.
+      role={elementRole(element, isSelected && !readOnly, indicators.items.length > 0)}
       aria-label={elementAriaLabel(element)}
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
