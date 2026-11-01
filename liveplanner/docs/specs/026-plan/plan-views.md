@@ -280,8 +280,9 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
     Tokyo is on Friday for a viewer in London. A plain Date is always its own day, whatever the viewer's zone.
   - A Date Range picked for **Starts On** reads its start, for **Due On** its end: picked for both, the Gantt chart
     draws the range as a bar; a Due Calendar places the card on the range's last day, a Start Calendar on its first.
-  - **On a calendar day** a timed card shows its time before its title ("17:00 Launch", in the viewer's clock) and
-    the day lists its timed cards by time, earliest first, after its cards with no time.
+  - **On a calendar day** a timed card shows its time before its title ("17:00 Launch", in the viewer's clock), or in
+    its card's top corner where the day draws cards, and the day lists its timed cards by time, earliest first, after
+    its cards with no time.
   - **Overdue** (a Gantt bar's red edge): a timed Due is overdue once its moment has passed, to the minute; a day
     once the day has passed.
   - **Moving** (a calendar drag, Alt+Arrows, a Gantt drag) moves a timed date by whole days and keeps its time of

@@ -232,12 +232,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     turns into a Date and Time field (or back), since its stored days carry no time.
     - **Stored** as an instant in UTC, followed by the time zone it was set in (the creator's, by its IANA name), as
       one ISO 8601 string with the zone in brackets (RFC 9557): `2026-10-31T17:00:00Z[Europe/London]`. Minutes are
-      kept; seconds are always `00`. The zone is kept so its tooltip can say where it was set; it never changes
+      kept; seconds are always `00`. The zone is kept so the panel can say where it was set; it never changes
       the moment.
     - **Shown** in each viewer's own time zone, so a 17:00 London deadline reads 13:00 in New York: on the card short
       ("Fri 31 Oct, 17:00", the year added when it is not this year's), in the panel whole ("Fri 31 Oct 2026, 17:00"),
-      in the viewer's locale and 12- or 24-hour clock. Its tooltip names the viewer's zone ("Your time, Europe/London")
-      and, when it was set in another, that zone's time too ("Set as 13:00 in America/New_York").
+      in the viewer's locale and 12- or 24-hour clock. A line under the panel's box names the viewer's zone ("Your
+      time, Europe/London") and, when it was set in another, that zone's time too ("Set as Fri 31 Oct, 13:00 in
+      America/New_York"): a line rather than a tooltip, so a phone shows it too.
     - **Edited** in the panel with a date-and-time box (`datetime-local`), read in the viewer's zone; a whole value
       saves at once, as a [date field](../004-interface-design/date-fields.md) does, and emptying it clears it.
     - **Past due**: on the card, a Date and Time whose moment has passed draws in red, as an overdue Due does
@@ -250,7 +251,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       never before the start: a range written the wrong way round is kept in order (ends swapped).
     - **Shown** "31 Oct to 2 Nov" on the card (each end with its year when it is not this year's; a range of one day
       "31 Oct"), "31 Oct 2026 to 2 Nov 2026" in the panel; with times "31 Oct, 09:00 to 2 Nov, 17:00", or "31 Oct,
-      09:00 to 17:00" within one day, in the viewer's zone (tooltip as a Date and Time).
+      09:00 to 17:00" within one day, in the viewer's zone (with times, the zone line as a Date and Time's, for its start).
     - **Edited** in the panel as two boxes, **From** and **To** (date boxes, or date-and-time boxes with Include
       Time): picking a From with no To sets both to it; moving From past To moves To with it, and To before From
       moves From, so the range never runs backwards. Clearing either clears the field.
@@ -263,8 +264,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     (a time without one is refused: "give the time with its offset, such as 2026-10-31T17:00:00Z"), while Import CSV
     reads a time without one in the importer's own zone ("2026-10-31 17:00"). A Date Range also takes a list of
     its two ends. The Gantt chart and calendars read both ([Fields by role](#fields-by-role)); a form asks them with
-    the [Date and Time and Date Range questions](../030-forms/forms.md#question-types). Either may be
-    [required](#required-fields).
+    the [Date and Time and Date Range questions](../030-forms/forms.md#question-types). A formula reads a Date and
+    Time as its UTC instant's text and a Date Range as a list of its two ends, never as a day, since the day depends on
+    whose zone reads it. Either may be [required](#required-fields).
     Every value
     is a plain string, number or true/false, or a list of them, which the item store keeps for any field; a Person
     is the Assignee's `{ id, name, color }` and a Checklist the Checklist's rows (`{ text, done }`), which the store

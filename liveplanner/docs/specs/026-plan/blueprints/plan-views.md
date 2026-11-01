@@ -66,11 +66,14 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   `breakdownModel(..., measure)` adds `measureValue` (positive numbers, else 0) in place of 1 and totals the rows.
   The setters (`planViewSettingsModel.setDate`, `setMeasure`) drop the default rather than store it.
 - Times and ranges (spec "Dates", "Times and ranges"): `viewDatesOf` also takes custom `datetime` and `daterange`
-  fields and answers each role's kind (`ViewDates.kinds`). Every reader goes through `roleValue(item, dates, role)`
+  fields and answers each role's shape (`ViewDates.shapes`: `date`, `datetime`, `daterange` or `daterange-time`;
+  absent for a built-in). Every reader goes through `roleValue(item, dates, role)`
   (a range's start for `start`, its end for `due`) and `dayNumber(value, tz?)` (an instant's day in the viewer's
   zone); every writer through `roleDays(item, dates, { start?, due? }, tz?)` (`view-dates-write.ts`), which keeps an
   instant's wall-clock time (`instantOnDay`) and writes a range as one value. `ganttModel(..., dates)` marks a timed
-  Due overdue once `now` passes it; `calendarModel` sets `at` on a timed card and sorts a day's cards untimed first
+  Due overdue once `now` passes it, `GanttView` then reading the clock each minute (`useMinute`, one shared
+  interval, only while the Due is timed); `GanttDrawRow` and `ganttNewCardDates` (`GanttAddCard.tsx`) write through
+  `roleDays`; `calendarModel` sets `at` on a timed card and sorts a day's cards untimed first
   (by key), then by `at`; `calendar-day.tsx` prints `at` before the title in the viewer's clock (`timeOfDayText`).
 - Calendar: `calendarModel(items, phases, year, month, field, dates)` (`field` from `calendarFieldOf(view)`: `due` for
   `calendar`, `start` for `start-calendar`; read through `dates[field]`); the month offset is component state. A day shows
@@ -80,7 +83,8 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   `calendarDayAt(gridBox, x, y, firstDay, weeks)` reads the day under the pointer from the grid's on-screen box
   (zoom included), and the ghost's place is scaled back by `offsetWidth / box.width`. Pointer-up commits when the
   day differs; Escape (capture-phase, stopped) and pointercancel drop; a moved press calls `swallowNextClick()`.
-  `calendarMove(item, field, toDay)` gives `{ set, days }` or null (no date, same day, not a whole day); the
+  `calendarMove(item, field, toDay, dates, tz?)` gives `{ set, days, carried }` (`carried` when the other date moved
+  too) or null (no date, same day, not a whole day); the
   other date shifts by `days` only when it would cross, clamped to the moved day. The view writes
   `patchItem(id, { set })`, tracks `('Plan', 'Changed', 'CalendarDue' | 'CalendarStart')` and announces. Alt+Arrow
   on an entry (`CALENDAR_MOVE_KEYS`: ±1, ±7) runs the same move, steps the month offset when the day leaves the

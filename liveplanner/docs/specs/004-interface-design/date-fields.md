@@ -68,5 +68,5 @@ clears it.
   it was set in. A plain Date is a day and is never shifted by a viewer's zone; nor are a range's days.
 - **Showing a moment** goes through one `dateTimeText` helper (`@liveplanner/items`), the moment's day as `dayLabel`
   draws it with its weekday and the time in the viewer's clock: "Fri 31 Oct, 17:00" on a board card, "Fri 31 Oct
-  2026, 17:00" in the card panel. Its tooltip names the viewer's zone. A range goes through `dateRangeText`: "31 Oct to
+  2026, 17:00" in the card panel. A line under the panel's box names the viewer's zone (`dateTimeZones`). A range goes through `dateRangeText`: "31 Oct to
   2 Nov".
