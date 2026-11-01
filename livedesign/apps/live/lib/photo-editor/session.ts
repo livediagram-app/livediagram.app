@@ -194,8 +194,9 @@ export class PhotoSession {
     if (next === this.photo) return;
     this.photo = next;
     this.keepToLayers(next);
+    // What sync changed it has named, tile by tile.
     this.sync(next);
-    this.changed();
+    this.changed([]);
   }
 
   /** The active and chosen layers kept to the photo's: none active, or the active one gone (a photo just
@@ -369,7 +370,7 @@ export class PhotoSession {
     this.keepToLayers(photo);
     this.sync(photo);
     this.deps.commit(photo, label, opts);
-    this.changed();
+    this.changed([]);
   }
 
   /** This person's active layer (and what painting targets on it), redrawn. */
