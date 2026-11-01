@@ -6345,6 +6345,9 @@ importers:
       '@liveworkspace/licences':
         specifier: workspace:*
         version: link:../licences
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../settings
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
@@ -6605,6 +6608,9 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:^
         version: link:../account-menu
+      '@liveworkspace/brand':
+        specifier: workspace:^
+        version: link:../brand
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../drive
@@ -6614,6 +6620,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../sites
       '@liveworkspace/ui':
         specifier: workspace:^
         version: link:../ui

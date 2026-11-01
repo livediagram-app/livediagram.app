@@ -31,9 +31,11 @@
   },
   "dependencies": {
     "@liveworkspace/account-menu": "workspace:^",
+    "@liveworkspace/brand": "workspace:^",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/ui": "workspace:^"
   }
 }

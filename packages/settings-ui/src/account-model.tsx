@@ -13,6 +13,7 @@ import {
   IN_APP_ROWS,
   NOTIFICATION_ROWS,
   PRIVACY_ROWS,
+  PUSH_ROWS,
   readAccountToggle,
   type AccountToggle,
 } from '@liveworkspace/settings/account';
@@ -22,6 +23,8 @@ import type { AccountIdentity } from './profile/ProfileHeader';
 import type { ProfileHost } from './profile/profile-host';
 import type { AccountSecurity } from './profile/SecurityRows';
 import { cloudSyncRows, type CloudSync } from './cloud-sync/cloud-sync-host';
+import type { PhoneHost } from './push/phone-host';
+import { PHONE_SECTION, phoneRows } from './push/phone-rows';
 import type { SettingsCategory, SettingsRow } from './model';
 
 export interface AccountSection {
@@ -49,6 +52,9 @@ export interface AccountSection {
   // Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where the deployment offers Drive and the person is signed
   // in (useCloudSync), its section in the Profile, before Your Account.
   cloudSync?: CloudSync | null;
+  // Phone notifications (liveworkspace/docs/specs/003-accounts/push.md "Settings"): for a signed-in person, the
+  // panel's own door to the accounts API, whose Phone section turns them on and lists the devices.
+  phone?: PhoneHost | null;
 }
 
 const toggleRow =
@@ -104,6 +110,7 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
     rows: [
       ...toggle(IN_APP_ROWS, 'In the Editor'),
       ...(emails ? toggle(NOTIFICATION_ROWS, 'Email') : []),
+      ...(section.phone ? phoneRows(section.phone, toggle(PUSH_ROWS, PHONE_SECTION)) : []),
     ],
   });
   const tokens: SettingsRow | null = renderTokens
