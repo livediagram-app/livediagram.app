@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import {
   EXPORT_CHUNK_MS,
   EXPORT_FAILURES_MAX,
@@ -612,24 +613,24 @@ describe('a realistic account (measured)', () => {
       bytes: new Uint8Array(200_000).fill(i),
     }));
     await begin(t);
-    const startedAt = performance.now();
     let chunks = 0;
     let maxRequests = 0;
-    while (t.store.job()!.status === 'running') {
-      await runChunk(t.ctx);
-      maxRequests = Math.max(maxRequests, t.sources.calls);
-      t.sources.calls = 0;
-      chunks += 1;
-    }
-    const ms = performance.now() - startedAt;
+    const ms = await cpuMsOfAsync(async () => {
+      while (t.store.job()!.status === 'running') {
+        await runChunk(t.ctx);
+        maxRequests = Math.max(maxRequests, t.sources.calls);
+        t.sources.calls = 0;
+        chunks += 1;
+      }
+    });
     const job = t.store.job()!;
     const files = zipOf(t);
     console.log(
-      `[measure] 200 items x 3 tabs + 30 images: ${chunks} chunks, ${files.size} files, ${(job.bytes / 1e6).toFixed(1)} MB, ${Math.round(ms)} ms, most requests in a chunk ${maxRequests}`,
+      `[measure] 200 items x 3 tabs + 30 images: ${chunks} chunks, ${files.size} files, ${(job.bytes / 1e6).toFixed(1)} MB, ${Math.round(ms)} ms CPU, most requests in a chunk ${maxRequests}`,
     );
     expect(job).toMatchObject({ status: 'ready', itemsDone: 200, imagesDone: 30 });
     expect(files.size).toBe(200 * 4 + 30 + 4);
     expect(maxRequests).toBeLessThanOrEqual(400);
-    expect(ms).toBeLessThan(15_000);
+    expect(ms).toBeLessThan(cpuBudgetMs(15_000));
   });
 });
