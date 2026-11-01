@@ -4,13 +4,19 @@ Derived from [Board widgets](../board-widgets.md).
 
 ## Domain and naming
 
-| Spec term     | Identifier                                                        |
-| ------------- | ----------------------------------------------------------------- |
-| widget kind   | `BoardWidgetKind` (`BOARD_WIDGET_KINDS`, packages/items)          |
-| a board's set | `PlanBoardSetup.widgets?: BoardWidgetKind[]`; read by `widgetsOf` |
-| default set   | `DEFAULT_BOARD_WIDGETS` (+ `votes` when `voting.on`)              |
-| widget zone   | `BoardWidgetZone` (`data-widget-zone`), in `[data-board-header]`  |
-| widget        | `BoardWidgetView` inside a `[data-widget=<kind>]` wrapper         |
+| Spec term      | Identifier                                                                     |
+| -------------- | ------------------------------------------------------------------------------ |
+| widget kind    | `BoardWidgetKind` (`BOARD_WIDGET_KINDS`, packages/items)                       |
+| field widget   | `FieldWidgetKey` `field:<view>:<fieldId>` (field-widgets.ts)                   |
+| widget view    | `FieldWidgetView` (`FIELD_WIDGET_VIEWS`); a field's by `viewsOfField`          |
+| widget id      | `BoardWidgetId` = `BoardWidgetKind \| FieldWidgetKey`                          |
+| a board's set  | `PlanBoardSetup.widgets?: BoardWidgetId[]`; read by `widgetsOf`                |
+| board's fields | `BoardField` `{ def, types }` from `boardFields(setup, types)`                 |
+| default set    | `DEFAULT_BOARD_WIDGETS` (+ `votes` when `voting.on`)                           |
+| widget zone    | `BoardWidgetZone` (`data-widget-zone`), in `[data-board-header]`               |
+| widget         | `BoardWidgetView` / `FieldWidgetView` inside a `[data-widget=<id>]` wrapper    |
+| widget gallery | `BoardWidgetPicker` (`AnchoredPopover` "Add a Widget"), `gallerySections`      |
+| For You        | `suggestWidgets` (packages/plan-art widget-suggestions.ts), `WidgetSuggestion` |
 
 ## Files
 
@@ -26,7 +32,20 @@ apps/editor/components/plan/widgets/BoardWidgetView.tsx one pill per kind (WIDGE
 apps/editor/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
 apps/editor/components/plan/PlanBoardHeader.tsx         title, zone, Reveal / Retry, the unplaced list
 apps/editor/hooks/plan/widget-slot.ts                   widgetSlotAt (the reorder's landmark)
-apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widgets the board lacks, a row each
+apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + gallery: search, rail, sections of tiles, keys, live
+                                                            announcements
+packages/items/src/field-widgets.ts      field shapes and views, keys (fieldWidgetKey, parseFieldWidget),
+                                         FIELD_WIDGETS_MAX, boardFields, fieldWidgetState (pure)
+packages/plan-art/src/field-widget-stats.ts   fieldSummary per shape, fieldSummaryOf (kept per list), fieldFills,
+                                              fieldNumberText, typeNamesText (pure)
+packages/plan-art/src/widget-suggestions.ts   suggestWidgets: For You, scored with reasons (pure)
+apps/editor/components/plan/widgets/FieldWidgetView.tsx      a field widget's pill per view, and the gone pill
+apps/editor/components/plan/widgets/field-widget-charts.tsx  Ring, SplitBar, MiniBars, Stars (inline SVG)
+apps/editor/components/plan/widgets/use-field-widgets.ts     fields, Calculated reader, labelOf, suggest
+apps/editor/components/plan/widgets/widget-gallery-model.ts  WIDGET_GROUPS, gallerySections, sectionSize (pure)
+apps/editor/components/plan/widgets/WidgetGalleryRail.tsx    the rail (a chip row under 600 px)
+apps/editor/components/plan/widgets/WidgetGalleryTile.tsx    a tile: live preview (FitWidth), name, line, On Board
+apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObserver per gallery (useSeenRoot, useSeen)
 ```
 
 ## Behaviour and state
@@ -38,8 +57,16 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
   `widgetSlotAt(zone, x, kind)` gives the slot; pointerup commits `placeWidget` when the order changed, and the
   click that follows is swallowed. Pointercancel drops it.
 - Keys on a focused wrapper: Alt+←/→ `nudgeWidget`; Delete/Backspace `removeWidget`.
-- Add: widgets are not in the palette; the zone's + opens `BoardWidgetPicker` and a pick places at the end (see
-  below).
+- Add: widgets are not in the palette; the zone's + opens `BoardWidgetPicker` and a tile calls
+  `onChange(toggleWidget(widgets, id))`: added at the end, or taken off when the board has it; a field widget past
+  `FIELD_WIDGETS_MAX` is refused (its tile is `aria-disabled`). The gallery stays open; the + or Escape closes it.
+- Field widgets: `PlanBoardHeader` dispatches an id to `FieldWidgetView` when `isFieldWidgetKey`, with a
+  `FieldWidgetContext` (fields, the board's cards before its quick filter, set-up, palette, `now`, the Calculated
+  reader, `canEdit`, `onRemove`). `fieldWidgetState` gives `ok`, `removed` (no board type offers the field) or
+  `changed` (the view is not in `viewsOfField`); the last two draw the dashed pill with Remove for editors.
+- For You: `suggest()` runs once, on the + press, and the gallery freezes its result, so adding one marks it On
+  Board rather than reshuffling. Fields score `1 + share` past half filled, else `0.4 + 0.5 * share`; built-ins
+  0.5 to 0.9; ties keep fields first; top `SUGGESTIONS_MAX`.
 - Taking Filter off clears `quick.text`; taking Only Mine off clears `quick.mine`.
 
 ## Narrowing and feedback
@@ -53,8 +80,10 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
   column (`setColumnDone`, `DoneColumn`).
 - Reorder captures the pointer only once a press passes `REORDER_THRESHOLD_PX`, so a still press is a click on
   the widget's control.
-- The + toggles `BoardWidgetPicker` (a `PortalMenu`, `below-start`, wide) offering `BOARD_WIDGET_KINDS` minus the
-  board's; a pick calls `onChange(placeWidget(widgets, kind, widgets.length))` and closes it.
+- The + toggles `BoardWidgetPicker` (an `AnchoredPopover`, `GALLERY_WIDTH` 720, a `@container`) listing every
+  widget: For You, `WIDGET_GROUPS`, then a section per card type of its fields (`gallerySections`); a tile toggles
+  (see Add above). The rail's entry scrolls its section to the list's top (smooth unless reduced motion); a scroll
+  marks the last section whose top has passed as current. A search resets to the top only when its text changes.
 - New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
   `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount` over `staleItems`, `STALE_DAYS` 14), `time` (`boardTime` over `timeFieldOf(type)`: the first Time Spent field, else the first Duration; minutes, cards counted and timers running); `dueCounts`, `staleItems` and the Due Soon narrowing (`QuickDueWindow.finished`) leave out `finishedStatuses(setup)`, every done column's status (`isDoneColumn`); `boardPoints` counts points in any of them as done. Presets
   carry their own `widgets` (presets.ts), Blank included, per board-widgets.md "Defaults"; a guard test keeps
@@ -64,18 +93,26 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 
 ## Interfaces and contracts
 
-- Stored shape: `widgets` is an array of kind strings. `readBoardWidgets` drops unknown kinds and repeats; a
-  non-array is absent. No new column: it rides in the element's `planBoard`.
+- Stored shape: `widgets` is an array of kind strings and `field:<view>:<fieldId>` keys. `readBoardWidgets` drops
+  unknown kinds, malformed keys (a view not in `FIELD_WIDGET_VIEWS`, a field id off `CUSTOM_FIELD_ID_PATTERN`),
+  repeats and field keys past `FIELD_WIDGETS_MAX`; a non-array is absent. A key naming a field the board no longer
+  offers is kept (it draws as gone). No new column: it rides in the element's `planBoard`; the API's generated
+  OpenAPI schema (`schemas.generated.ts`) carries the wider union.
 
 ## Errors and edge cases
 
-| Case                               | Handling                                               |
-| ---------------------------------- | ------------------------------------------------------ |
-| A viewer who may not edit          | Zone has no +, no Edit Widgets, no ×, no drag, no keys |
-| Kind the board already has         | Left out of the + picker                               |
-| Completion with no done column     | "No done column"                                       |
-| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)         |
-| More widgets than fit              | The zone scrolls sideways                              |
+| Case                               | Handling                                                             |
+| ---------------------------------- | -------------------------------------------------------------------- |
+| A viewer who may not edit          | Zone has no +, no Edit Widgets, no ×, no drag, no keys               |
+| Widget the board already has       | Its tile shows On Board; pressing takes it off                       |
+| Field widget past the cap          | Tile `aria-disabled`, Tooltip "A board holds up to 12 field widgets" |
+| Field gone from the board's types  | Dashed pill "This field was removed", Remove for editors             |
+| Field kind no longer fits the view | Dashed pill "This field changed kind", Remove for editors            |
+| Field with no values               | "<Field>: no values yet"                                             |
+| Suggested field gone before open   | Dropped from For You (`gallerySections`)                             |
+| Completion with no done column     | "No done column"                                                     |
+| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)                       |
+| More widgets than fit              | The zone scrolls sideways                                            |
 
 ## Presentation and UX
 
@@ -98,6 +135,11 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 - Zone `role="list"`, `aria-label="Board widgets"`; wrapper `role="listitem"`, focusable for editors, named
   "<Label> widget", `aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight Delete"`; × named "Remove <Label>".
 - Completion and People are `role="img"` with a spoken summary; Only Mine is `aria-pressed`.
+- A field widget is `role="img"` named "<Title>: <spoken>" ("Budget Sum, on Feature cards: £4,000 over 2 cards").
+- Gallery: the search is `autoFocus`, ArrowDown from it focuses the first tile; arrows move between tiles by layout
+  (`stepFrom`); each tile is one button named "Add <Name>" / "Remove <Name>", `aria-pressed`; the rail is
+  `nav` "Widget sections" with `aria-current`; an `aria-live="polite"` line says "<Name> added" / "taken off the
+  board".
 
 ## Observability
 
@@ -107,29 +149,61 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 
 - `boardItems(projection)` reads the cards an unfiltered projection placed (so archived cards stay off an
   ordinary board's counts and All Cards and Archive boards count what they show), memoised on the setup and items; widget stats are linear in the board's items (≤ the
-  project's item cap). At most `BOARD_WIDGET_KINDS.length` (10) widgets per board.
+  project's item cap). At most `BOARD_WIDGET_KINDS.length` built-in widgets and `FIELD_WIDGETS_MAX` field widgets
+  per board.
+- Field summaries: one pass per field over the board's cards, kept in a `WeakMap` keyed by the card list and checked
+  against the field's definition, its types, the reader, the day and the done columns, so re-renders and a field's
+  several views cost nothing more. `fieldFills` reads every field in one pass for For You. Ten fields and For You
+  over 2,000 cards: 12 ms CPU measured (field-widget-stats.perf.test.ts, budget 60 ms).
+- The gallery computes For You only on open, and draws a tile's preview only once `useSeen` reports it near view
+  (`SEEN_MARGIN`); `fields` is memoised on `addTypes` and the types, so adding a widget never rebuilds sections.
 
 ## Testing
 
-| Rule                                                          | Test                                                         |
-| ------------------------------------------------------------- | ------------------------------------------------------------ |
-| Known kinds once, default set, place/nudge/remove             | packages/items/src/board-widgets.test.ts                     |
-| Counts behind People, Types, WIP, Due                         | packages/plan-art/src/widget-stats.test.ts                   |
-| Slot math, the + picker offering only the missing             | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx |
-| Edit Widgets: × on every widget, Done, Escape, outside, roles | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx |
+| Rule                                                          | Test                                                           |
+| ------------------------------------------------------------- | -------------------------------------------------------------- |
+| Known kinds once, default set, place/nudge/remove             | packages/items/src/board-widgets.test.ts                       |
+| Counts behind People, Types, WIP, Due                         | packages/plan-art/src/widget-stats.test.ts                     |
+| Slot math, the + picker offering only the missing             | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx   |
+| Edit Widgets: × on every widget, Done, Escape, outside, roles | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx   |
+| Field shapes, views, keys, cap, boardFields, state, toggle    | packages/items/src/field-widgets.test.ts                       |
+| Each shape's summary, caching, fills, number text             | packages/plan-art/src/field-widget-stats.test.ts               |
+| 2,000 cards × 10 fields within the CPU budget                 | packages/plan-art/src/field-widget-stats.perf.test.ts          |
+| For You scores, reasons, cap, empty board                     | packages/plan-art/src/widget-suggestions.test.ts               |
+| Each view's pill, gone states, Remove by role                 | apps/editor/components/plan/widgets/FieldWidgetView.test.tsx   |
+| Gallery sections, rail, On Board, cap, search, keys, empty    | apps/editor/components/plan/widgets/BoardWidgetPicker.test.tsx |
+| labelOf, fields kept, Calculated reader, lazy previews        | apps/editor/components/plan/widgets/use-field-widgets.test.tsx |
 
 ## Constants and configuration
 
-| Constant               | Value | Where               | Safe range |
-| ---------------------- | ----- | ------------------- | ---------- |
-| `REORDER_THRESHOLD_PX` | 4     | BoardWidgetZone.tsx | 2..10      |
-| `PEOPLE_SHOWN`         | 5     | BoardWidgetView.tsx | 3..8       |
-| `TYPES_SHOWN`          | 3     | BoardWidgetView.tsx | 3..8       |
-| `DUE_SOON_DAYS`        | 7     | widget-stats.ts     | 1..30      |
+| Constant               | Value | Where                 | Safe range |
+| ---------------------- | ----- | --------------------- | ---------- |
+| `REORDER_THRESHOLD_PX` | 4     | BoardWidgetZone.tsx   | 2..10      |
+| `PEOPLE_SHOWN`         | 5     | BoardWidgetView.tsx   | 3..8       |
+| `TYPES_SHOWN`          | 3     | BoardWidgetView.tsx   | 3..8       |
+| `DUE_SOON_DAYS`        | 7     | widget-stats.ts       | 1..30      |
+| `FIELD_WIDGETS_MAX`    | 12    | field-widgets.ts      | 6..20      |
+| `SPREAD_BINS`          | 8     | field-widget-stats.ts | 5..12      |
+| `TIMELINE_WEEKS`       | 4     | field-widget-stats.ts | 2..8       |
+| `SUGGESTIONS_MAX`      | 6     | widget-suggestions.ts | 4..8       |
+| `FILTER_SUGGEST_CARDS` | 20    | widget-suggestions.ts | 10..50     |
+| `BREAKDOWN_NAMED`      | 2     | FieldWidgetView.tsx   | 1..3       |
+| `GALLERY_WIDTH`        | 720   | BoardWidgetPicker.tsx | 600..800   |
+| `SEEN_MARGIN`          | 160px | use-seen.ts           | 0..400px   |
 
 ## Defaults ledger
 
-See DEFAULTS.md D17 to D19.
+See DEFAULTS.md D17 to D19. The field widget and gallery defaults below join DEFAULTS.md once the open import work
+there (#1168) lands:
+
+| Default                                 | Value                                                                      |
+| --------------------------------------- | -------------------------------------------------------------------------- |
+| Field widgets a board holds             | 12, beside the built-ins                                                   |
+| A number field's suggested view         | Sum (Percent: Average; Rating: Average Stars)                              |
+| When a field outranks the built-ins     | Filled on more than half the cards offered it                              |
+| Where a field shared by types is listed | Under the first of the board's types offering it, "Also on" the others     |
+| A Timeline's horizon                    | Overdue, then the next 4 weeks                                             |
+| Whether field widgets follow the filter | No: like every widget, they read the board's cards before its quick filter |
 
 ## Filter field and saved filters (board-widgets.md "The Filter widget", "Saved filters")
 
