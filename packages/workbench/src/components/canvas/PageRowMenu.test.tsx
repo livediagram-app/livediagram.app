@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { LONG_PRESS_MS } from '../../hooks/ui/useLongPress';
 import {
+  focusRowAfterRemove,
   LIFT_CLICK_MS,
   PageRowMenu,
   PageRowMenuButton,
@@ -241,5 +242,45 @@ describe('row keys', () => {
       window.removeEventListener('keydown', onKey);
     }
     expect(seen).toEqual(['Meta+z', 'Ctrl+z', 'Meta+z', 'Ctrl+z']);
+  });
+});
+
+describe('focusRowAfterRemove', () => {
+  const rows = (ids: string[]) => {
+    const els = new Map<string, HTMLButtonElement>();
+    for (const id of ids) {
+      const b = document.createElement('button');
+      document.body.append(b);
+      els.set(id, b);
+    }
+    return els;
+  };
+  const flush = () => {
+    act(() => {
+      vi.runAllTimers();
+    });
+  };
+
+  it('moves focus to the row before, else the next, passing rows gone with the page', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame'] });
+    try {
+      const els = rows(['a', 'b', 'c', 'd']);
+      els.get('c')!.remove();
+      focusRowAfterRemove(['a', 'b', 'c', 'd'], 'c', (id) => els.get(id));
+      flush();
+      expect(document.activeElement).toBe(els.get('b'));
+      els.get('a')!.remove();
+      focusRowAfterRemove(['a', 'b', 'd'], 'a', (id) => els.get(id));
+      flush();
+      expect(document.activeElement).toBe(els.get('b'));
+      // An article's other page, gone with it, is passed by.
+      els.get('b')!.remove();
+      focusRowAfterRemove(['b', 'x', 'd'], 'b', (id) => (id === 'x' ? undefined : els.get(id)));
+      flush();
+      expect(document.activeElement).toBe(els.get('d'));
+    } finally {
+      vi.useRealTimers();
+      document.body.replaceChildren();
+    }
   });
 });

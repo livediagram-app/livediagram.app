@@ -83,6 +83,27 @@ export function keepRowKeys(e: {
   if (!e.metaKey && !e.ctrlKey) e.stopPropagation();
 }
 
+/** Once a row's page is deleted, focus goes to the row before it (the next, when the first goes),
+ *  as the view does, never to the page's body. `order` is the rows' ids as shown before the delete;
+ *  `button` finds a row's button after it, so a row gone with the page (an article's) is passed by. */
+export function focusRowAfterRemove(
+  order: readonly string[],
+  removed: string,
+  button: (id: string) => HTMLElement | undefined,
+) {
+  const at = order.indexOf(removed);
+  requestAnimationFrame(() => {
+    const after = [...order.slice(0, Math.max(0, at)).reverse(), ...order.slice(at + 1)];
+    for (const id of after) {
+      const el = button(id);
+      if (el?.isConnected) {
+        el.focus();
+        return;
+      }
+    }
+  });
+}
+
 // After a long press opens the menu, the click the lift makes is swallowed, wherever it lands (the
 // row, or the menu now under the finger), for this long after the finger leaves the glass.
 export const LIFT_CLICK_MS = 400;

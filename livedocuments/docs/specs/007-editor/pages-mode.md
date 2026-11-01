@@ -1274,7 +1274,8 @@ Both show the same list:
     Deck does; none but Page Settings glides to the page. A Participant and a Viewer see no grip,
     no Delete and no ⋯, and a right-click or long press opens nothing.
     A row's tools keep its arrows their own, but a Cmd or Ctrl chord (undo, redo, search) still
-    reaches the editor from them.
+    reaches the editor from them. Deleting a page from its row (its bin or its menu) moves focus to
+    the row before it (the next, when the first goes), never to the page's body.
   - A row's name carries the padlock on a locked page and a crossed eye (**Hidden in Slides**) on a
     page whose slide is hidden in the deck, so a skipped slide shows at a glance.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
