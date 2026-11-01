@@ -111,25 +111,28 @@ export function useComponentLibrary(opts: {
   }, [library]);
   useEffect(() => () => setComponentRegistry(null), []);
 
-  const save = useCallback((id: string) => {
-    const p = pending.current.get(id);
-    if (!p) return;
-    pending.current.delete(id);
-    const patch = diffComponent(p.base, p.latest);
-    if (!patch) return;
-    const { designId: did, ownerId: oid, shareCode: code } = ctx.current;
-    if (!did) return;
-    apiPatchComponent(oid, did, id, patch, code, p.latest)
-      .then((stored) => {
-        noteStored(stamps.current, stored);
-      })
-      .catch((err: unknown) => {
-        console.warn('[components] save failed', err);
-        // A main gone from the library (or out of this link's reach): read the library again.
-        if (err instanceof ApiError && err.status === 404) setLoadCount((n) => n + 1);
-        else ctx.current.onSaveError();
-      });
-  }, [ctx]);
+  const save = useCallback(
+    (id: string) => {
+      const p = pending.current.get(id);
+      if (!p) return;
+      pending.current.delete(id);
+      const patch = diffComponent(p.base, p.latest);
+      if (!patch) return;
+      const { designId: did, ownerId: oid, shareCode: code } = ctx.current;
+      if (!did) return;
+      apiPatchComponent(oid, did, id, patch, code, p.latest)
+        .then((stored) => {
+          noteStored(stamps.current, stored);
+        })
+        .catch((err: unknown) => {
+          console.warn('[components] save failed', err);
+          // A main gone from the library (or out of this link's reach): read the library again.
+          if (err instanceof ApiError && err.status === 404) setLoadCount((n) => n + 1);
+          else ctx.current.onSaveError();
+        });
+    },
+    [ctx],
+  );
 
   // Anything still waiting saves when the editor goes.
   useEffect(
@@ -154,17 +157,20 @@ export function useComponentLibrary(opts: {
     [save, libraryRef],
   );
 
-  const addComponent = useCallback(async (component: DesignComponent) => {
-    setLibrary((prev) => new Map(prev).set(component.id, component));
-    const { designId: did, ownerId: oid, shareCode: code } = ctx.current;
-    if (!did) return;
-    try {
-      noteStored(stamps.current, await apiPutComponent(oid, did, component, code));
-    } catch (err) {
-      console.warn('[components] make failed', err);
-      ctx.current.onSaveError();
-    }
-  }, [ctx]);
+  const addComponent = useCallback(
+    async (component: DesignComponent) => {
+      setLibrary((prev) => new Map(prev).set(component.id, component));
+      const { designId: did, ownerId: oid, shareCode: code } = ctx.current;
+      if (!did) return;
+      try {
+        noteStored(stamps.current, await apiPutComponent(oid, did, component, code));
+      } catch (err) {
+        console.warn('[components] make failed', err);
+        ctx.current.onSaveError();
+      }
+    },
+    [ctx],
+  );
 
   const addMissing = useCallback(
     (components: readonly DesignComponent[]) => {

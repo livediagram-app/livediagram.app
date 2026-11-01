@@ -18,8 +18,16 @@ import { ApiError } from '@/lib/api/core';
 import { componentRegistry } from '@/lib/component-registry';
 import { noteStored, useComponentLibrary } from './useComponentLibrary';
 
-const box = (id: string, label = id): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label });
+const box = (id: string, label = id): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label,
+});
 
 const main = (over: Partial<DesignComponent> = {}): DesignComponent => ({
   id: 'm',
@@ -31,17 +39,16 @@ const main = (over: Partial<DesignComponent> = {}): DesignComponent => ({
   ...over,
 });
 
-const instanceOf = (componentId: string): Element =>
-  ({
-    id: `i-${componentId}`,
-    type: 'shape',
-    shape: 'instance',
-    componentId,
-    x: 0,
-    y: 0,
-    width: 10,
-    height: 10,
-  });
+const instanceOf = (componentId: string): Element => ({
+  id: `i-${componentId}`,
+  type: 'shape',
+  shape: 'instance',
+  componentId,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+});
 
 function setup(elements: Element[] = []) {
   const onSaveError = vi.fn();
