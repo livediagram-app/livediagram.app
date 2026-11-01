@@ -215,16 +215,14 @@ export function usePagesMode(deps: {
   // Where the card in front last stood, so a card taken away under it (an undo, a peer) hands the
   // front to the card before it.
   const frontAt = useRef(0);
-  const cardId = cardInFrontOf(
-    pages,
-    wantedCard?.tabId === tabId ? wantedCard.id : null,
-    frontAt.current,
-  );
+  const wanted = wantedCard?.tabId === tabId ? wantedCard.id : null;
+  const cardId = cardInFrontOf(pages, wanted, frontAt.current);
+  // The card standing in for one gone becomes the one asked for (set while rendering, as React derives
+  // state from a change in its inputs), so the next render keeps it rather than stepping back again.
+  if (wanted && cardId && cardId !== wanted) setWantedCard({ tabId, id: cardId });
   useEffect(() => {
-    frontAt.current = Math.max(
-      0,
-      pages.findIndex((p) => p.id === cardId),
-    );
+    const at = pages.findIndex((p) => p.id === cardId);
+    if (at >= 0) frontAt.current = at;
   }, [pages, cardId]);
   const cardStage = useMemo(() => cardStageOf(pages, cardId), [pages, cardId]);
   // The card that was in front, pictured as it went, flipped away once its successor is drawn.
